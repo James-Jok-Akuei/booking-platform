@@ -1,0 +1,11 @@
+# Backend-specific ignores. Most rules live in the repo-root .gitignore.
+node_modules/
+dist/
+*.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+*.log
+coverage/

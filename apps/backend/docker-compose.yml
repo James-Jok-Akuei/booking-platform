@@ -1,0 +1,43 @@
+# Local development services for the booking platform backend.
+#   Postgres  -> localhost:5433  (matches DATABASE_URL in .env.example)
+#   Mailhog   -> localhost:1025 (SMTP), localhost:8025 (web UI + JSON API)
+#
+# Nothing here is production config; it exists so OTP emails can be tested
+# without wiring up a real email provider.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: booking_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: booking_platform
+    # Host port is 5433, not 5432, on purpose: a natively-installed Postgres
+    # (e.g. Postgres.app / Homebrew) commonly owns 5432 already, and it binds
+    # 127.0.0.1 specifically, which quietly beats Docker's wildcard forward —
+    # so tools would silently connect to the wrong database.
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d booking_platform']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: booking_mailhog
+    restart: unless-stopped
+    # MailHog only publishes linux/amd64 images; on Apple Silicon this runs
+    # under emulation. Swap to axllent/mailpit if that ever becomes a problem.
+    platform: linux/amd64
+    ports:
+      - '1025:1025' # SMTP
+      - '8025:8025' # Web UI / API
+
+volumes:
+  postgres_data:

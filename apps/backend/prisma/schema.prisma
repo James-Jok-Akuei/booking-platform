@@ -1,0 +1,92 @@
+// Prisma schema for the booking platform backend.
+// Single database, single backend, role-based access for
+// business / customer / admin as agreed.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUSINESS
+  CUSTOMER
+  ADMIN
+}
+
+// A business account's approval status.
+// New businesses land on PENDING until an admin approves them (see admin portal, later module).
+enum BusinessStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum OtpPurpose {
+  LOGIN // covers both signup and login since OTP-only auth treats them the same
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Only populated / relevant when role = BUSINESS.
+  // Kept as a separate 1:1 table rather than nullable columns on User
+  // so the User table stays clean as CUSTOMER/ADMIN grow their own needs later.
+  businessProfile BusinessProfile?
+
+  refreshTokens RefreshToken[]
+  otpCodes      OtpCode[]
+
+  @@map("users")
+}
+
+model BusinessProfile {
+  id        String         @id @default(uuid())
+  userId    String         @unique
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String? // business display name, set during onboarding (next module)
+  status    BusinessStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("business_profiles")
+}
+
+model OtpCode {
+  id         String     @id @default(uuid())
+  email      String
+  codeHash   String // never store the raw code
+  purpose    OtpPurpose @default(LOGIN)
+  attempts   Int        @default(0)
+  maxAttempts Int       @default(5)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, purpose])
+  @@map("otp_codes")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique // raw refresh token is never stored, only its hash
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
