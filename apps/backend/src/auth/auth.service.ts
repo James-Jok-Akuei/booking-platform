@@ -8,7 +8,13 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { OtpPurpose, UserRole } from '@prisma/client';
+import {
+  BusinessMemberRole,
+  BusinessMemberStatus,
+  InvitationStatus,
+  OtpPurpose,
+  UserRole,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { JwtPayload } from './strategies/jwt.strategy';
@@ -36,10 +42,16 @@ export class AuthService {
   async requestOtp(email: string, role: UserRole): Promise<{ message: string }> {
     const normalizedEmail = email.trim().toLowerCase();
 
-    await this.enforceRateLimits(normalizedEmail);
-
     // If the email is already registered under a different role, block it.
     // MVP rule: one email maps to exactly one role/account.
+    //
+    // This runs BEFORE enforceRateLimits() deliberately. OTP history is keyed
+    // by email alone, with no notion of role, so checking the rate limit first
+    // meant someone who typed their business email into the Customer app was
+    // told "Please wait 47s before requesting another code" — a cooldown from
+    // their own earlier business logins — instead of the actual problem. The
+    // role-conflict answer is the same no matter how recently they last
+    // requested a code, so it should be given straight away.
     const existingUser = await this.prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
@@ -48,6 +60,11 @@ export class AuthService {
         `This email is already registered as a ${existingUser.role.toLowerCase()} account.`,
       );
     }
+
+    // Only now that we know this request could legitimately produce an OTP —
+    // a new account, or an existing one under its correct role — does the
+    // rate limit apply.
+    await this.enforceRateLimits(normalizedEmail);
 
     const code = this.generateOtpCode();
     const codeHash = await bcrypt.hash(code, BCRYPT_ROUNDS);
@@ -144,26 +161,154 @@ export class AuthService {
 
   private async findOrCreateUser(email: string, role: UserRole) {
     const existing = await this.prisma.user.findUnique({ where: { email } });
+
     if (existing) {
       if (existing.role !== role) {
         throw new BadRequestException(
           `This email is already registered as a ${existing.role.toLowerCase()} account.`,
         );
       }
+      if (role === UserRole.BUSINESS) {
+        await this.acceptInvitationForExistingUser(existing.id, email);
+      }
       return existing;
     }
 
-    return this.prisma.user.create({
-      data: {
-        email,
-        role,
-        // A brand-new business account gets its profile row immediately,
-        // starting PENDING until admin approval and onboarding is completed
-        // (see business-profile module).
-        businessProfile:
-          role === UserRole.BUSINESS ? { create: {} } : undefined,
-      },
+    if (role !== UserRole.BUSINESS) {
+      return this.prisma.user.create({ data: { email, role } });
+    }
+
+    // ---- Brand-new business account ----
+    //
+    // There is no separate "accept invitation" endpoint. Verifying an OTP as a
+    // BUSINESS user IS acceptance: the invited person just logs in with the
+    // address they were invited at. That avoids an accept-token flow, a second
+    // email, and the dead-end state where someone has an account but has not
+    // yet clicked accept.
+    const invitation = await this.findAcceptableInvitation(email);
+
+    if (invitation) {
+      return this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({ data: { email, role } });
+        await tx.businessMembership.create({
+          data: {
+            userId: user.id,
+            businessProfileId: invitation.businessProfileId,
+            role: invitation.role,
+          },
+        });
+        await tx.businessInvitation.update({
+          where: { id: invitation.id },
+          data: { status: InvitationStatus.ACCEPTED },
+        });
+        this.logger.log(
+          `${email} joined business ${invitation.businessProfileId} as ${invitation.role} via invitation.`,
+        );
+        return user;
+      });
+    }
+
+    // No invitation: this person is founding their own business, which is the
+    // original pre-membership behaviour. They become its one and only OWNER.
+    // The profile starts PENDING until an admin approves it, exactly as before.
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({ data: { email, role } });
+      const business = await tx.businessProfile.create({ data: {} });
+      await tx.businessMembership.create({
+        data: {
+          userId: user.id,
+          businessProfileId: business.id,
+          role: BusinessMemberRole.OWNER,
+        },
+      });
+      return user;
     });
+  }
+
+  /** A PENDING, unexpired invitation for this address, if there is one. */
+  private async findAcceptableInvitation(email: string) {
+    return this.prisma.businessInvitation.findFirst({
+      where: {
+        email,
+        status: InvitationStatus.PENDING,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, businessProfileId: true, role: true },
+    });
+  }
+
+  /**
+   * Applies a pending invitation to someone who already has an account.
+   *
+   * Deliberately NEVER blocks the login. If the invitation cannot be applied —
+   * because this person is already an active member somewhere — their login
+   * still succeeds and the invitation is left pending for the inviting owner to
+   * revoke.
+   *
+   * Rejecting the login instead would hand any stranger a lockout primitive:
+   * invite the email of a business owner, and their next login fails on an
+   * invitation they never asked for and cannot revoke. The check that actually
+   * prevents this situation lives at invite time, where MembersService refuses
+   * to create an invitation for an address that already belongs to a business.
+   */
+  private async acceptInvitationForExistingUser(
+    userId: string,
+    email: string,
+  ): Promise<void> {
+    const invitation = await this.findAcceptableInvitation(email);
+    if (!invitation) return;
+
+    // Only an ACTIVE membership blocks acceptance. REMOVED rows are history:
+    // since the unique index is partial, they no longer reserve the person's
+    // one slot, so someone who left a business is free to join another.
+    const active = await this.prisma.businessMembership.findFirst({
+      where: { userId, status: BusinessMemberStatus.ACTIVE },
+      select: { id: true, businessProfileId: true },
+    });
+
+    if (active) {
+      this.logger.warn(
+        `Invitation ${invitation.id} for ${email} not applied: already an active member of business ${active.businessProfileId}. Login allowed; invitation left pending.`,
+      );
+      return;
+    }
+
+    // Is there already a row for this person in the inviting business? There is
+    // at most one, guaranteed by the @@unique([userId, businessProfileId])
+    // index, so re-hiring reactivates it instead of inserting a duplicate.
+    const priorHere = await this.prisma.businessMembership.findUnique({
+      where: {
+        userId_businessProfileId: {
+          userId,
+          businessProfileId: invitation.businessProfileId,
+        },
+      },
+      select: { id: true },
+    });
+
+    await this.prisma.$transaction([
+      priorHere
+        ? this.prisma.businessMembership.update({
+            where: { id: priorHere.id },
+            data: { status: BusinessMemberStatus.ACTIVE, role: invitation.role },
+          })
+        : this.prisma.businessMembership.create({
+            data: {
+              userId,
+              businessProfileId: invitation.businessProfileId,
+              role: invitation.role,
+            },
+          }),
+      this.prisma.businessInvitation.update({
+        where: { id: invitation.id },
+        data: { status: InvitationStatus.ACCEPTED },
+      }),
+    ]);
+
+    this.logger.log(
+      `${email} joined business ${invitation.businessProfileId} as ${invitation.role} (${priorHere ? 'reactivated' : 'new'} membership).`,
+    );
   }
 
   // ---------- Token issuance / refresh / logout ----------
