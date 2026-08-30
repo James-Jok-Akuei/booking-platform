@@ -1,0 +1,12 @@
+{
+  // The build compiles src/ only (rootDir: ./src), so the standalone scripts in
+  // prisma/ and scripts/ need their own project file. It is run through ts-node rather than compiled into
+  // dist/ — including it in the main tsconfig would widen the inferred rootDir
+  // to the package root and emit dist/src/main.js instead of dist/main.js.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./",
+    "noEmit": true
+  },
+  "include": ["prisma/**/*.ts", "scripts/**/*.ts"]
+}

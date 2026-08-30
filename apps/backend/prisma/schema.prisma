@@ -19,6 +19,13 @@ enum UserRole {
 
 // A business account's approval status.
 // New businesses land on PENDING until an admin approves them (see admin portal, later module).
+//
+// NOTE (approval-status rule): a PENDING business may still complete its entire
+// profile — locations, hours, services, gallery. Status gates *visibility*, not
+// editing. Only APPROVED businesses should ever surface in public customer-facing
+// search/discovery; PENDING / REJECTED / SUSPENDED must be filtered out there.
+// That filter is NOT enforced in this module — there are no public discovery
+// endpoints yet. It belongs to the customer search module.
 enum BusinessStatus {
   PENDING
   APPROVED
@@ -30,6 +37,53 @@ enum OtpPurpose {
   LOGIN // covers both signup and login since OTP-only auth treats them the same
 }
 
+// Who a person is within a business. Exactly one OWNER per business is an
+// invariant enforced in the service layer: OWNER cannot be invited, assigned,
+// removed, or demoted, so the founding signup's OWNER is permanent for MVP.
+enum BusinessMemberRole {
+  OWNER // full control, including membership management
+  MANAGER // everything OWNER can do EXCEPT managing members and invitations
+  STAFF // read-only for now; gains booking permissions with the Appointment module
+}
+
+// Soft-delete state for a membership. Removed rows are kept, never deleted, so
+// the record of who had access survives.
+enum BusinessMemberStatus {
+  ACTIVE
+  REMOVED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
+// Gallery media kind. Only PHOTO is produced today — the enum exists so VIDEO
+// can be added later without a destructive column-type migration.
+enum MediaType {
+  PHOTO
+}
+
+// Uploaded media is moderated: it lands PENDING and an admin approves or rejects
+// it (admin portal, later module). Mirrors BusinessStatus in spirit.
+enum MediaStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// The appointment lifecycle. Transitions are enforced in AppointmentsService;
+/// see DECISIONS.md for the state machine and why COMPLETED has no bypass.
+enum AppointmentStatus {
+  PENDING_PAYMENT // created, deposit not yet paid
+  BOOKED // deposit paid, slot held
+  IN_PROGRESS // customer arrived and their code was verified
+  COMPLETED // service delivered
+  CANCELLED // called off from PENDING_PAYMENT or BOOKED
+  NO_SHOW // never verified, and the window has passed
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -37,10 +91,22 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Only populated / relevant when role = BUSINESS.
-  // Kept as a separate 1:1 table rather than nullable columns on User
-  // so the User table stays clean as CUSTOMER/ADMIN grow their own needs later.
-  businessProfile BusinessProfile?
+  // A business user reaches their BusinessProfile through BusinessMembership,
+  // never directly.
+  //
+  // A LIST, not a single row: someone who leaves a business keeps that
+  // membership as a REMOVED row and may later join another, so the history
+  // accumulates. At most one of these is ACTIVE at a time — enforced by a
+  // partial unique index; see BusinessMembership.userId. Callers wanting "the
+  // business this person works in" must filter to ACTIVE rather than taking
+  // the first row.
+  businessMemberships BusinessMembership[]
+
+  // Invitations this user has sent. Only OWNERs can send them.
+  sentInvitations BusinessInvitation[] @relation("InvitedBy")
+
+  // Appointments booked by this user. Only populated when role = CUSTOMER.
+  appointments Appointment[] @relation("CustomerAppointments")
 
   refreshTokens RefreshToken[]
   otpCodes      OtpCode[]
@@ -49,27 +115,497 @@ model User {
 }
 
 model BusinessProfile {
-  id        String         @id @default(uuid())
-  userId    String         @unique
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String? // business display name, set during onboarding (next module)
-  status    BusinessStatus @default(PENDING)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id String @id @default(uuid())
 
+  // No userId column. A business is reached through BusinessMembership, which
+  // is what allows more than one person to work in it.
+
+  name        String? // business display name, set during onboarding
+  description String?
+  phone       String?
+
+  // Taxonomy. Both nullable: the profile row is created at signup, before the
+  // business has picked anything. SetNull on delete so retiring a category
+  // never cascades away a business account.
+  categoryId    String?
+  category      Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategoryId String?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+
+  // Business-level branding. Per-location photos live in LocationMedia instead.
+  logoUrl       String?
+  coverImageUrl String?
+
+  status          BusinessStatus @default(PENDING)
+  // Set by an admin when status = REJECTED, so the business is told what to fix
+  // rather than being left guessing. Cleared when they resubmit.
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  locations   Location[]
+  services    Service[]
+  members     BusinessMembership[]
+  invitations BusinessInvitation[]
+
+  @@index([categoryId])
+  @@index([status])
   @@map("business_profiles")
 }
 
+// ---------- Taxonomy ----------
+// Seeded from prisma/seed.ts, not from a migration, so the MVP taxonomy stays
+// re-runnable and editable without writing a new migration each time.
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  icon        String? // icon key/emoji for the frontends; not a URL
+  description String?
+
+  subcategories Subcategory[]
+  businesses    BusinessProfile[]
+
+  @@map("categories")
+}
+
+model Subcategory {
+  id         String   @id @default(uuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name       String
+
+  businesses BusinessProfile[]
+
+  // Unique per parent, not globally: "Bridal Makeup" under Beauty and a
+  // same-named entry under a future category must not collide.
+  @@unique([categoryId, name])
+  @@index([categoryId])
+  @@map("subcategories")
+}
+
+// ---------- Locations ----------
+
+model Location {
+  id         String          @id @default(uuid())
+  businessId String
+  business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name    String // e.g. "Juba Town Branch"
+  address String
+
+  // Nullable: many businesses onboard with a street address long before anyone
+  // pins exact coordinates. Distance search must tolerate their absence.
+  latitude  Float?
+  longitude Float?
+
+  // Optional per-location override of BusinessProfile.phone.
+  phone String?
+
+  // How many appointments this location can run at the same instant — four
+  // chairs, three treatment rooms, one photographer. Defaults to 1, which is
+  // exactly the behaviour every existing location had before this column
+  // existed. Answers the four-chair-salon limitation noted in DECISIONS.md.
+  //
+  // Capacity is per LOCATION, not per staff member: there is still no staff
+  // model, so this counts units of simultaneous service, not people.
+  capacity Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hours              LocationHours[]
+  media              LocationMedia[]
+  scheduleExceptions LocationScheduleException[]
+  timeBlocks         LocationTimeBlock[]
+  appointments       Appointment[]
+
+  @@index([businessId])
+  @@map("locations")
+}
+
+model LocationHours {
+  id         String   @id @default(uuid())
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int // 0 = Sunday ... 6 = Saturday (JS Date.getDay() convention)
+  openTime  String // "HH:mm", 24-hour
+  closeTime String // "HH:mm", 24-hour
+  isClosed  Boolean @default(false) // true = shut all day; open/close ignored
+
+  // One row per day per location — the hours endpoint replaces the whole week.
+  @@unique([locationId, dayOfWeek])
+  @@index([locationId])
+  @@map("location_hours")
+}
+
+// ---------- Services ----------
+
+model Service {
+  id         String          @id @default(uuid())
+  businessId String
+  business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+
+  // Money is stored as integer cents, never a float. Binary floating point
+  // cannot represent most decimal money values exactly, and the deposit /
+  // platform-fee split (see DECISIONS.md §2) does arithmetic on these amounts.
+  priceCents      Int
+  durationMinutes Int
+
+  /// ISO 4217 code for priceCents. Always "USD" today — the platform's internal
+  /// unit of account (see DECISIONS.md).
+  ///
+  /// Stored explicitly even though every row reads the same value, so that a
+  /// future multi-currency world never has to GUESS what an old row meant.
+  /// An unlabelled amount is only unambiguous while exactly one currency has
+  /// ever existed, and that property is impossible to restore afterwards.
+  currency String @default("USD")
+
+  // Share of priceCents the customer pays up front to hold the slot.
+  //
+  // Must be >= the live PlatformSetting.platformFeePercentage, validated on
+  // every write. Both percentages apply to the same base (the service price),
+  // so that floor is precisely what guarantees the platform fee never exceeds
+  // the deposit it is taken from — i.e. businessAmountCents can never go
+  // negative. Decimal, never Float: this multiplies money.
+  depositPercentage Decimal @default(10.00) @db.Decimal(5, 2)
+
+  // Soft-delete flag. Services are never hard-deleted: appointments booked in
+  // the future will reference serviceId, and those records must still resolve
+  // to a real name/price after the business stops offering the service.
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments Appointment[]
+
+  @@index([businessId])
+  @@map("services")
+}
+
+// ---------- Gallery ----------
+
+model LocationMedia {
+  id         String   @id @default(uuid())
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  type   MediaType   @default(PHOTO)
+  url    String
+  status MediaStatus @default(PENDING)
+
+  displayOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([locationId])
+  @@map("location_media")
+}
+
+// ---------- Availability ----------
+//
+// Availability is NOT stored. It is computed live on every request from three
+// inputs: the weekly template (LocationHours), the date-specific exceptions and
+// blocks below, and existing appointments. There is deliberately no table of
+// pre-generated future slots — see DECISIONS.md for why.
+
+/// A date-specific override of the weekly template. Either closes the day
+/// outright or replaces that date's opening hours.
+model LocationScheduleException {
+  id         String   @id @default(uuid())
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  // A calendar day, not an instant — @db.Date so Postgres stores no time or
+  // offset. "Closed on 2026-12-25" is true regardless of what hour it is.
+  date DateTime @db.Date
+
+  isClosed Boolean @default(false)
+
+  // Set only when isClosed = false and this date's hours differ from the
+  // weekly template. Both null means "closed", both set means "open, but with
+  // these hours instead". "HH:mm", 24-hour, same convention as LocationHours.
+  customOpenTime  String?
+  customCloseTime String?
+
+  reason String? // e.g. "Public holiday", "Staff training"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One exception per location per date — a date cannot be both closed and
+  // open-with-custom-hours. Enforced in the database, not just the service.
+  @@unique([locationId, date])
+  @@index([locationId, date])
+  @@map("location_schedule_exceptions")
+}
+
+/// A partial-day manual block, e.g. "2pm-4pm, owner unavailable". Subtracts
+/// from availability exactly the way a booked appointment does, without
+/// closing the whole day. Many blocks per location per date are allowed.
+model LocationTimeBlock {
+  id         String   @id @default(uuid())
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  date      DateTime @db.Date
+  startTime String // "HH:mm"
+  endTime   String // "HH:mm"
+
+  reason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([locationId, date])
+  @@map("location_time_blocks")
+}
+
+// ---------- Business membership ----------
+
+/// Links a person to the business they work in, with a role.
+///
+/// Replaces the old one-user-one-business 1:1 relation. Every ownership and
+/// permission decision in the business and availability modules now resolves
+/// through this table.
+model BusinessMembership {
+  id String @id @default(uuid())
+
+  // NOT unique here, deliberately. One business per person is still the rule,
+  // but it applies only to ACTIVE rows — enforced by a PARTIAL unique index
+  // that Prisma's DSL cannot express:
+  //
+  //   CREATE UNIQUE INDEX "business_memberships_active_userId_key"
+  //     ON "business_memberships"("userId") WHERE "status" = 'ACTIVE';
+  //
+  // It lives in the migration for that change. A blanket @unique would let a
+  // REMOVED row keep occupying the slot forever, permanently barring someone
+  // from ever joining a different business after leaving one.
+  //
+  // The index is invisible to this schema, so Prisma neither creates nor
+  // manages it. Checked with `prisma migrate diff` after applying: Prisma
+  // reports no drift and does not propose dropping it — it simply cannot see
+  // it. Still worth a glance whenever a generated migration touches this
+  // table: if one ever contains DROP INDEX
+  // "business_memberships_active_userId_key", delete that line and keep the
+  // index, because nothing in the schema would restore it.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  businessProfileId String
+  businessProfile   BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+
+  role   BusinessMemberRole
+  // Soft delete: removing a member sets REMOVED, keeping the row so the record
+  // of who had access survives. Re-hiring into the same business reactivates
+  // that row rather than inserting a second one.
+  status BusinessMemberStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // At most one row per person per business, so someone's history with a given
+  // business is a single row that flips between ACTIVE and REMOVED. This is
+  // what makes the reactivation path unambiguous — there can never be two rows
+  // to choose between. Expressible in Prisma, unlike the partial index above.
+  @@unique([userId, businessProfileId])
+  @@index([businessProfileId, status])
+  @@index([userId, status])
+  @@map("business_memberships")
+}
+
+/// A pending invitation for an email address to join a business.
+///
+/// There is no separate "accept" endpoint: verifying an OTP as a BUSINESS user
+/// with a pending invitation IS acceptance. See AuthService.
+model BusinessInvitation {
+  id String @id @default(uuid())
+
+  businessProfileId String
+  businessProfile   BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+
+  // Stored lowercase/trimmed, matching how AuthService normalises emails, so
+  // invitation lookup at OTP verification is an exact match.
+  email String
+
+  // MANAGER or STAFF only — never OWNER. Ownership transfer does not exist in
+  // MVP, so there is no path by which an invitation can create a second OWNER.
+  role BusinessMemberRole
+
+  invitedByUserId String
+  invitedBy       User   @relation("InvitedBy", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+
+  status    InvitationStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  expiresAt DateTime
+
+  @@index([email, status])
+  @@index([businessProfileId, status])
+  @@map("business_invitations")
+}
+
+// ---------- Platform settings ----------
+
+/// Admin-tunable platform configuration, held as a single row.
+///
+/// Single-row rather than key-value: every setting here is strongly typed and
+/// arithmetic-bearing, and a key-value table would turn `platformFeePercentage`
+/// into a string that every reader has to parse and trust. The `id` is pinned
+/// to a constant so there is exactly one row and no way to accidentally create
+/// a second.
+model PlatformSetting {
+  // Fixed sentinel id — see PLATFORM_SETTING_ID in platform-settings.service.ts.
+  id String @id
+
+  /// Percentage of the service price taken as the platform's fee, deducted
+  /// from the customer's deposit before the remainder reaches the business.
+  ///
+  /// Editable at runtime by an admin, so every booking reads it live. Already
+  /// booked appointments keep the amounts computed at their booking time; see
+  /// the snapshot fields on Appointment.
+  platformFeePercentage Decimal @default(10.00) @db.Decimal(5, 2)
+
+  /// The currency the payment provider actually charges in.
+  ///
+  /// Authoritative — this supersedes the MOMO_CURRENCY env var, so the value
+  /// can be corrected by an admin without a redeploy. "EUR" is MTN's sandbox
+  /// requirement; production for South Sudan is still unconfirmed.
+  providerCurrency String @default("EUR")
+
+  /// How many units of providerCurrency one USD buys.
+  ///
+  /// Set MANUALLY by an admin. Nullable on purpose: there is no sensible
+  /// default for an exchange rate, and a wrong guess charges the customer the
+  /// wrong amount. Payment initiation fails loudly when this is unset rather
+  /// than falling back to anything.
+  ///
+  /// Decimal(18,8) gives room for both a rate near 1 (USD->EUR) and a rate in
+  /// the thousands (USD->SSP) without losing precision at either end.
+  exchangeRateUsdToProviderCurrency Decimal? @db.Decimal(18, 8)
+
+  /// When the rate above was last set. Surfaced by the admin endpoint so it is
+  /// obvious at a glance how stale a manually-maintained rate has become.
+  exchangeRateUpdatedAt DateTime?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_settings")
+}
+
+// ---------- Appointments ----------
+
+/// A booking. Replaces the §12 placeholder with the full lifecycle and money.
+model Appointment {
+  id String @id @default(uuid())
+
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  // Required now, unlike the placeholder: an appointment is always for a
+  // specific service, because that is what fixes its duration and its price.
+  // Restrict, not SetNull — services are soft-deleted precisely so a booked
+  // appointment always resolves to the service it was made for.
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  customerId String
+  customer   User   @relation("CustomerAppointments", fields: [customerId], references: [id], onDelete: Cascade)
+
+  // Absolute instants, unlike the wall-clock "HH:mm" strings used by hours,
+  // exceptions and blocks. endTime is derived server-side from the service's
+  // durationMinutes at booking time, never accepted from the client.
+  startTime DateTime
+  endTime   DateTime
+
+  status AppointmentStatus @default(PENDING_PAYMENT)
+
+  // ---- Money, snapshotted at booking time ----
+  //
+  // All three are integer cents and satisfy, permanently:
+  //     platformFeeAmountCents + businessAmountCents == depositAmountCents
+  //
+  // They are stored rather than derived because every input can move
+  // afterwards: an admin may change the platform fee, and a business may
+  // change its price or deposit percentage. What the customer agreed to pay,
+  // and what the business is owed, must not silently change with them.
+  depositAmountCents     Int
+  platformFeeAmountCents Int
+  businessAmountCents    Int
+
+  /// ISO 4217 code covering all three amounts above. One field rather than
+  /// three: a deposit, the fee taken from it, and the remainder are by
+  /// construction the same currency, so separate fields could only ever
+  /// disagree by accident.
+  currency String @default("USD")
+
+  // ---- Deposit payment ----
+  //
+  // The provider's own reference for the in-flight request-to-pay, used to poll
+  // its outcome. Null when no payment has been started, and CLEARED on failure
+  // so the customer can initiate a fresh attempt — a failed reference is not
+  // retryable at the provider, so keeping it would strand the appointment.
+  paymentProviderReferenceId String?
+  paymentInitiatedAt         DateTime?
+
+  /// What was actually sent to the provider, and the rate used to get there.
+  ///
+  /// Kept ALONGSIDE the USD amounts rather than replacing them. Reconciliation
+  /// needs both numbers: when the provider's statement shows a figure that does
+  /// not match our USD ledger, the only way to explain the difference rather
+  /// than merely observe it is to have recorded the converted amount and the
+  /// rate that produced it. Storing just one side makes a discrepancy
+  /// permanently unexplainable.
+  ///
+  /// Null until a payment is initiated.
+  providerCurrency            String?
+  providerCurrencyAmountCents Int?
+  exchangeRateUsed            Decimal? @db.Decimal(18, 8)
+
+  // ---- Arrival verification ----
+  //
+  // The customer receives a 6-digit code by email; the business enters it to
+  // prove the customer actually turned up. Bcrypt-hashed exactly like OTP
+  // codes — the raw code is never stored.
+  verificationCodeHash String?
+  verificationAttempts Int       @default(0)
+  verifiedAt           DateTime?
+
+  // Transition timestamps. Kept separate from updatedAt so the auto-transition
+  // job, and any later audit, can tell when each clock actually started.
+  completedAt DateTime?
+  cancelledAt DateTime?
+  noShowAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Availability counts overlapping appointments at one location for one day.
+  @@index([locationId, startTime])
+  // The customer's own list, newest first.
+  @@index([customerId, startTime])
+  // Drives the auto-transition sweep, which scans by status and end time.
+  @@index([status, endTime])
+  // Drives the payment-confirmation poll and the PENDING_PAYMENT expiry sweep,
+  // both of which scan by status and creation time.
+  @@index([status, createdAt])
+  @@map("appointments")
+}
+
 model OtpCode {
-  id         String     @id @default(uuid())
-  email      String
-  codeHash   String // never store the raw code
-  purpose    OtpPurpose @default(LOGIN)
-  attempts   Int        @default(0)
-  maxAttempts Int       @default(5)
-  expiresAt  DateTime
-  consumedAt DateTime?
-  createdAt  DateTime   @default(now())
+  id          String     @id @default(uuid())
+  email       String
+  codeHash    String // never store the raw code
+  purpose     OtpPurpose @default(LOGIN)
+  attempts    Int        @default(0)
+  maxAttempts Int        @default(5)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime   @default(now())
 
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
