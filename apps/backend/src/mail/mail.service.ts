@@ -51,4 +51,55 @@ export class MailService {
       // In dev, swallow the error since the code is already logged above.
     }
   }
+
+  /**
+   * Sends a customer their appointment arrival code.
+   *
+   * Deliberately NOT an extra branch inside sendOtpEmail: this code has a
+   * different lifetime (until the appointment happens, not ten minutes), a
+   * different audience, and different copy. Folding it in would mean one method
+   * whose subject line and expiry text depend on a flag, which is how the login
+   * email eventually ends up telling someone about a haircut.
+   */
+  async sendAppointmentVerificationEmail(
+    email: string,
+    code: string,
+    details: { serviceName: string; locationName: string; startTime: Date },
+  ): Promise<void> {
+    const from = this.config.get<string>('SMTP_FROM');
+    const when = details.startTime.toISOString();
+
+    if (this.config.get<string>('NODE_ENV') !== 'production') {
+      this.logger.warn(`[DEV ONLY] Appointment code for ${email}: ${code}`);
+    }
+
+    const text =
+      `Your booking for ${details.serviceName} at ${details.locationName} is confirmed for ${when}.\n\n` +
+      `Your arrival code is ${code}.\n\n` +
+      'Give this code to the business when you arrive. They cannot complete your appointment without it, ' +
+      'so do not share it with anyone beforehand.';
+
+    try {
+      await this.transporter.sendMail({
+        from,
+        to: email,
+        subject: `Your arrival code for ${details.serviceName}`,
+        text,
+        html:
+          `<p>Your booking for <strong>${details.serviceName}</strong> at ` +
+          `<strong>${details.locationName}</strong> is confirmed for ${when}.</p>` +
+          `<p>Your arrival code is <strong>${code}</strong>.</p>` +
+          '<p>Give this code to the business when you arrive. They cannot complete your ' +
+          'appointment without it, so do not share it with anyone beforehand.</p>',
+      });
+    } catch (err) {
+      this.logger.error(
+        `Failed to send appointment verification email to ${email}`,
+        err as Error,
+      );
+      if (this.config.get<string>('NODE_ENV') === 'production') {
+        throw err;
+      }
+    }
+  }
 }
