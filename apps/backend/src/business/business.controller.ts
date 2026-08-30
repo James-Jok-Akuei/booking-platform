@@ -1,0 +1,246 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  UploadedFile,
+  UseFilters,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { BusinessMemberRole, UserRole } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { BusinessRoles } from '../common/decorators/business-roles.decorator';
+import {
+  BusinessContext,
+  CurrentBusiness,
+} from '../common/decorators/current-business.decorator';
+import { BusinessRolesGuard } from './guards/business-roles.guard';
+import {
+  AuthenticatedUser,
+  CurrentUser,
+} from '../common/decorators/current-user.decorator';
+import { BusinessProfileService } from './business-profile.service';
+import { LocationsService } from './locations.service';
+import { ServicesService } from './services.service';
+import { GalleryService } from './gallery.service';
+import { galleryUploadOptions } from './gallery-upload.options';
+import { MulterExceptionFilter } from './filters/multer-exception.filter';
+import { UpdateBusinessProfileDto } from './dto/update-profile.dto';
+import { CreateLocationDto } from './dto/create-location.dto';
+import { UpdateLocationDto } from './dto/update-location.dto';
+import { UpdateLocationCapacityDto } from './dto/update-capacity.dto';
+import { SetLocationHoursDto } from './dto/set-hours.dto';
+import { CreateServiceDto } from './dto/create-service.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
+import { UploadMediaDto } from './dto/upload-media.dto';
+
+/**
+ * Everything a business manages about itself: profile, locations, opening
+ * hours, service catalogue and per-location photo gallery.
+ *
+ * Guarded four deep. JwtAuthGuard establishes *who* is calling; RolesGuard +
+ * @Roles(BUSINESS) establishes that they hold a business account;
+ * BusinessRolesGuard + @BusinessRoles(...) establishes what they may do inside
+ * their business; and ownership is still enforced per-resource inside the
+ * services via BusinessAccessService, which scopes every query to the caller's
+ * own businessId. A business can never reach another business's data.
+ *
+ * The role split: OWNER and MANAGER may write. STAFF may read everything and
+ * write nothing — their real purpose is managing bookings, which does not
+ * exist until the Appointment module, so their permissions are deliberately
+ * narrow for now rather than guessed at.
+ *
+ * NOTE — approval status: a PENDING business may use every endpoint here.
+ * Onboarding has to be completable *before* an admin reviews it, otherwise
+ * there is nothing for the admin to review. Status gates public visibility, not
+ * editing: PENDING, REJECTED and SUSPENDED businesses must be excluded from
+ * customer-facing search and discovery. That filter is not implemented here
+ * because no public discovery endpoint exists yet — it belongs to the customer
+ * search/discovery module.
+ */
+@Controller('business')
+@UseGuards(JwtAuthGuard, RolesGuard, BusinessRolesGuard)
+@Roles(UserRole.BUSINESS)
+export class BusinessController {
+  constructor(
+    private readonly profiles: BusinessProfileService,
+    private readonly locations: LocationsService,
+    private readonly services: ServicesService,
+    private readonly gallery: GalleryService,
+  ) {}
+
+  // ---------- Profile ----------
+
+  @Get('profile')
+  @BusinessRoles(
+    BusinessMemberRole.OWNER,
+    BusinessMemberRole.MANAGER,
+    BusinessMemberRole.STAFF,
+  )
+  getProfile(@CurrentBusiness() business: BusinessContext) {
+    return this.profiles.findOwn(business.businessId);
+  }
+
+  @Patch('profile')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  updateProfile(
+    @CurrentBusiness() business: BusinessContext,
+    @Body() dto: UpdateBusinessProfileDto,
+  ) {
+    return this.profiles.update(business.businessId, dto);
+  }
+
+  // ---------- Locations ----------
+
+  @Post('locations')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  createLocation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateLocationDto,
+  ) {
+    return this.locations.create(user.userId, dto);
+  }
+
+  @Get('locations')
+  @BusinessRoles(
+    BusinessMemberRole.OWNER,
+    BusinessMemberRole.MANAGER,
+    BusinessMemberRole.STAFF,
+  )
+  listLocations(@CurrentUser() user: AuthenticatedUser) {
+    return this.locations.findAll(user.userId);
+  }
+
+  @Patch('locations/:id')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  updateLocation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateLocationDto,
+  ) {
+    return this.locations.update(user.userId, id, dto);
+  }
+
+  @Delete('locations/:id')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  deleteLocation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.locations.remove(user.userId, id);
+  }
+
+  /** Sets concurrent-appointment capacity. See LocationsService.setCapacity. */
+  @Patch('locations/:id/capacity')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  updateLocationCapacity(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateLocationCapacityDto,
+  ) {
+    return this.locations.setCapacity(user.userId, id, dto.capacity);
+  }
+
+  /** Replaces the location's whole week of operating hours in one call. */
+  @Post('locations/:id/hours')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @HttpCode(HttpStatus.OK)
+  setLocationHours(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SetLocationHoursDto,
+  ) {
+    return this.locations.setHours(user.userId, id, dto);
+  }
+
+  // ---------- Gallery ----------
+  // Declared before the generic locations routes would matter; Nest matches on
+  // the full path so `locations/:id/gallery` and `locations/:id` never collide.
+
+  @Post('locations/:id/gallery')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
+  @UseFilters(MulterExceptionFilter) // renders the 15MB trip as a clear 400
+  uploadPhoto(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: UploadMediaDto,
+  ) {
+    return this.gallery.upload(user.userId, id, file, dto.displayOrder);
+  }
+
+  @Get('locations/:id/gallery')
+  @BusinessRoles(
+    BusinessMemberRole.OWNER,
+    BusinessMemberRole.MANAGER,
+    BusinessMemberRole.STAFF,
+  )
+  listGallery(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.gallery.list(user.userId, id);
+  }
+
+  @Delete('locations/:id/gallery/:mediaId')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  deletePhoto(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('mediaId', ParseUUIDPipe) mediaId: string,
+  ) {
+    return this.gallery.remove(user.userId, id, mediaId);
+  }
+
+  // ---------- Services ----------
+
+  @Post('services')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  createService(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateServiceDto,
+  ) {
+    return this.services.create(user.userId, dto);
+  }
+
+  @Get('services')
+  @BusinessRoles(
+    BusinessMemberRole.OWNER,
+    BusinessMemberRole.MANAGER,
+    BusinessMemberRole.STAFF,
+  )
+  listServices(@CurrentUser() user: AuthenticatedUser) {
+    return this.services.findAll(user.userId);
+  }
+
+  @Patch('services/:id')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  updateService(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateServiceDto,
+  ) {
+    return this.services.update(user.userId, id, dto);
+  }
+
+  /** Soft delete: flips isActive to false so past appointments still resolve. */
+  @Delete('services/:id')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  deleteService(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.services.deactivate(user.userId, id);
+  }
+}
