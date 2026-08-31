@@ -2305,9 +2305,10 @@ empty. Debounce: 3 rapid → 1 notification, 4th past the window → 2, sender �
 ### 21.10 Deferred
 
 - **Voice and video** (§21.7).
-- **No realtime transport.** Messages are polled; there is no WebSocket, so a
+- ~~**No realtime transport.** Messages are polled; there is no WebSocket, so a
   frontend refreshes rather than receives. Fine before a frontend exists, and
-  the obvious next step once one does.
+  the obvious next step once one does.~~ **Done in §22** — and the stated reason
+  for deferring did not survive scrutiny; see §22.1.
 - **No editing, deleting or reactions.**
 - **No typing indicators or delivery/read receipts** visible to the other side —
   read state is private to each person.
@@ -2318,3 +2319,144 @@ empty. Debounce: 3 rapid → 1 notification, 4th past the window → 2, sender �
   admin-configurable — unlike the platform fee (§16), which earned a setting.
 - **No attachment cleanup.** A photo whose message is deleted has no deletion
   path, since messages cannot be deleted yet.
+
+---
+
+## 22. Realtime chat transport (2026-08-31)
+
+A WebSocket layer **alongside** the §21 REST endpoints. No schema changed, no
+endpoint changed, nothing was replaced.
+
+### 22.1 Correcting the deferral
+
+§21.10 deferred this on the grounds that "a WebSocket has nothing to connect to
+without a frontend, and its hard parts are shaped by how the client behaves".
+
+**That reasoning does not hold.** Every module in this project has been built
+and verified without a frontend, using curl as a stand-in client. The socket
+layer is no different: a throwaway `socket.io-client` script exercises it the
+same way, and the parts that genuinely need a real client — reconnection
+strategy, presence, offline queueing — are exactly the parts deliberately left
+out of the gateway (§22.4). What remains is authentication, authorisation and
+delivery, all of which are server-side and independently testable.
+
+The honest version: the deferral confused "the client half is unknown" with
+"the server half is unknown". Only the first was true.
+
+### 22.2 REST stays the single source of truth
+
+The gateway is **push-only**. There is no `message:send` event.
+
+Creating a message carries real logic — the empty-message rule, the 2000-char
+limit, photo upload through StorageService, the gallery's size and type limits,
+the `lastMessageAt` update, and the notification debounce. Accepting messages
+over a second transport would mean two paths that must agree forever, and they
+would drift the first time one changed.
+
+So the split is: **sending is REST, receiving live is socket.** A client POSTs
+to `/threads/:id/messages` exactly as before and learns about other people's
+messages over the socket.
+
+The emit sits immediately after the message is persisted, next to the existing
+`notifyOtherParty` call, so the socket push and the debounced email are
+triggered by the same event and neither can fire for a message that was not
+saved. It never throws — realtime delivery is a convenience on top of a message
+that already exists, the same rule notifications follow (§20.3).
+
+### 22.3 Authentication over the handshake, not the query string
+
+The client connects with the existing access token in socket.io's `auth`
+handshake payload. An `Authorization: Bearer` header is also accepted for
+clients that cannot set handshake auth.
+
+**A query-string token was rejected outright.** URLs end up in access logs,
+proxy logs, referrer headers and browser history, and an access token in any of
+those is a credential leak that outlives the connection.
+
+Verification is as strict as `JwtAuthGuard` on the REST side: a missing,
+malformed, wrongly-signed or expired token **disconnects** rather than
+degrading to an anonymous socket. There is nothing an unauthenticated socket
+could usefully subscribe to. The error message does not distinguish expired
+from malformed from wrong-signature — that difference is only useful to someone
+probing.
+
+### 22.4 Rooms, and what the gateway deliberately does not do
+
+One socket.io room per thread. A client emits `thread:join` after connecting,
+and the gateway authorises it by calling **ChatService's own participation
+check** — `assertParticipant`, a thin public wrapper over the same
+`requireParticipant` the REST endpoints use. One definition of who may see a
+thread, not two.
+
+A non-participant gets an explicit error event and is **not** joined. Failing
+silently would leave a client believing it is subscribed while quietly missing
+every message. The error says `Thread not found.`, matching the REST 404, so
+the leak §21.8 avoids does not become observable just because the transport
+changed.
+
+**Reconnection and missed-message replay are not the gateway's job.** A client
+that reconnects — or opens the app fresh — calls the existing
+`GET /threads/:id/messages` to backfill, then relies on the socket for what
+arrives after that. Building replay into the gateway would duplicate the
+pagination, ordering and participation checks the REST endpoint already gets
+right, and would need its own notion of "where was this client up to", which
+the client itself knows better.
+
+`thread:read` is offered over the socket because marking read naturally happens
+while a socket is already open. It calls the same `ChatService.markRead` as
+`POST /threads/:id/read`, so read state cannot diverge between transports.
+
+### 22.5 Events
+
+| Direction | Event | Notes |
+|---|---|---|
+| server → client | `connected` | after successful auth |
+| client → server | `thread:join` | acked; authorised via ChatService |
+| client → server | `thread:leave` | |
+| client → server | `thread:read` | same logic as the REST endpoint |
+| server → client | `message:new` | the created message, pushed to the room |
+| server → client | `error` | `{ event, message }` on any failure |
+
+Namespace `/chat`. CORS matches the REST app's permissive setting — tighten
+both together before production.
+
+ChatService and ChatGateway reference each other (the gateway asks who may
+join; the service asks the gateway to push), resolved with `forwardRef` on both
+sides.
+
+### 22.6 Verified end-to-end (2026-08-31)
+
+With `scripts/ws-smoke-test.js`, a `socket.io-client` harness kept in the repo
+because it is the only executable check of this layer and curl cannot exercise
+it. It drives the REST POST itself, so there is no race between the test and
+the shell.
+
+Connection auth — all five cases: no token, garbage, valid-shape/wrong-
+signature and correctly-signed-but-expired were each **rejected and
+disconnected**; a valid token connected as CUSTOMER.
+
+Rooms: the participant joined; the **non-participant was refused with
+`Thread not found.`**; a missing threadId was refused.
+
+Delivery: two messages POSTed over REST by the business arrived on the
+customer's socket in real time — `13:50:26.256` POST → `13:50:26.291` received,
+about **35ms**. The outsider, connected but never joined, received **0**.
+Server logs confirm `Pushing message:new to thread:… (1 socket(s) in room)`.
+
+`thread:read` succeeded for the participant and was refused for the outsider.
+Harness exit code 0, which it returns only when the participant got both
+messages and the outsider got none.
+
+### 22.7 Deferred
+
+- **No presence or typing indicators.** Both need product decisions about what
+  the other side should see, and neither is meaningful without a frontend.
+- **No delivery or read receipts pushed to the other party** — read state
+  remains private per person (§21.3).
+- **Single-node only.** socket.io rooms live in the process's memory, so two
+  backend instances would not deliver to each other's clients. Fixing that is
+  the Redis adapter, and it should land with whatever else makes this
+  horizontally scalable — nothing here is multi-instance safe yet.
+- **No socket-side rate limiting.** Message creation is REST and unthrottled
+  there too; the inquiry cap (§21.4) is the only chat rate limit.
+- **CORS is `*`**, matching the REST app. One decision, to be made once.

@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import {
   BusinessMemberStatus,
@@ -13,6 +15,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ChatGateway } from './chat.gateway';
 
 /** New inquiry threads one customer may open in a rolling 24 hours. */
 export const MAX_INQUIRY_THREADS_PER_DAY = 10;
@@ -28,6 +31,10 @@ export class ChatService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly notifications: NotificationsService,
+    // Cycle: the gateway asks this service who may join a room, and this
+    // service asks the gateway to push. forwardRef is Nest's resolution.
+    @Inject(forwardRef(() => ChatGateway))
+    private readonly gateway: ChatGateway,
   ) {}
 
   // ---------- Threads ----------
@@ -256,6 +263,11 @@ export class ChatService {
       return created;
     });
 
+    // Realtime push and the debounced email are triggered by the same event,
+    // right after the message is persisted — so neither can fire for a message
+    // that was not saved, and the socket cannot disagree with what REST stored.
+    this.gateway.emitNewMessage(params.threadId, message);
+
     await this.notifyOtherParty(thread, params.userId, body, Boolean(photoUrl));
 
     return message;
@@ -397,6 +409,17 @@ export class ChatService {
     // scope that matches nothing.
     if (!membership) return { id: '__none__' };
     return { businessProfileId: membership.businessProfileId };
+  }
+
+  /**
+   * Public participation check, for callers outside this service.
+   *
+   * Exists so ChatGateway can authorise a room join using the SAME rule the
+   * REST endpoints use, rather than growing its own copy. Delegates straight to
+   * requireParticipant and throws the same NotFoundException.
+   */
+  async assertParticipant(userId: string, threadId: string, role: string) {
+    return this.requireParticipant(userId, threadId, role);
   }
 
   private async requireParticipant(
