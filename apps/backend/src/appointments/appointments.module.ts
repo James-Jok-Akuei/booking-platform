@@ -10,11 +10,12 @@ import {
 import { AvailabilityModule } from '../availability/availability.module';
 import { BusinessModule } from '../business/business.module';
 import { MailModule } from '../mail/mail.module';
+import { ChatModule } from '../chat/chat.module';
 
 // AvailabilityModule for the booking-time slot re-check, BusinessModule for
 // BusinessRolesGuard, MailModule for the verification email.
 @Module({
-  imports: [AvailabilityModule, BusinessModule, MailModule],
+  imports: [AvailabilityModule, BusinessModule, MailModule, ChatModule],
   controllers: [
     AppointmentsCustomerController,
     AppointmentsBusinessController,

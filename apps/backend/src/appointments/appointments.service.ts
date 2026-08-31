@@ -27,6 +27,7 @@ import {
 import { AvailabilityService } from '../availability/availability.service';
 import { computeAppointmentAmounts } from './appointment-pricing';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ChatService } from '../chat/chat.service';
 import { NotificationType } from '@prisma/client';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
@@ -71,6 +72,7 @@ export class AppointmentsService {
     private readonly availability: AvailabilityService,
     @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
     private readonly notifications: NotificationsService,
+    private readonly chat: ChatService,
   ) {}
 
   /**
@@ -233,6 +235,15 @@ export class AppointmentsService {
       serviceName: service.name,
       locationName: location.name,
       startTime,
+    });
+
+    // Every booking gets a conversation, created here rather than as a
+    // separate customer action — a booking should always have somewhere to
+    // talk without anyone having to set that up.
+    await this.chat.createAppointmentThread({
+      appointmentId: appointment.id,
+      customerId,
+      businessProfileId: location.businessId,
     });
 
     // The business learns about the booking immediately, while it is still

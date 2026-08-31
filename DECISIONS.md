@@ -139,8 +139,8 @@ before it is built.
 6. **Notifications** — DONE (§20). ~~Was listed 7th~~ — moved ahead of Chat,
    because a business was never told it had a booking, and a chat message
    nobody is notified about is half a feature. See §20.1.
-7. **Chat** — NEXT
-8. Reviews & reporting
+7. **Chat** — DONE (§21)
+8. **Reviews & reporting** — NEXT
 9. Admin portal
 
 ---
@@ -2131,3 +2131,190 @@ token returned 401.
 - **No notification for `COMPLETED`**, or for the §16.8 auto-transitions —
   arguably a customer should be told their appointment was auto-completed or
   auto-marked a no-show 24h later.
+
+---
+
+## 21. Chat (2026-08-31)
+
+Module 7. In-app messaging between a customer and a business — the channel §5
+assumed when it dropped the postponement workflow in favour of "two parties can
+settle it in a message".
+
+### 21.1 One Thread model, two shapes
+
+A single `Thread`, distinguished only by whether `appointmentId` is set:
+
+- **set** — tied to a booking, created automatically *with* the appointment.
+- **null** — a pre-booking inquiry, created on demand, exactly one per
+  (customer, business) pair and reused forever after.
+
+Two tables would have duplicated every message, read-state and permission rule
+for a distinction that only matters at creation time. Everything downstream —
+posting, listing, unread counts, participation checks — is identical.
+
+**The appointment thread is created inside the booking flow**, not as a separate
+customer action. A booking should always have somewhere to talk without anyone
+setting that up. It is created best-effort and never throws: a chat thread
+failing to materialise must not roll back a booking, the same rule notifications
+follow (§20.3).
+
+**The inquiry thread is idempotent.** A customer asking a second question weeks
+later lands in the same conversation rather than starting a parallel one the
+business has to notice separately. Verified: three consecutive requests returned
+the same thread id and left one row.
+
+### 21.2 Two constraints Prisma cannot express
+
+Both are hand-written in the migration, the same way §15 handles membership.
+
+**One inquiry thread per pair** needs a *partial* unique index — the rule
+applies only `WHERE appointmentId IS NULL`, because a customer may also have
+many appointment-scoped threads with the same business, one per booking:
+
+```sql
+CREATE UNIQUE INDEX "threads_inquiry_customer_business_key"
+  ON "threads" ("customerId", "businessProfileId")
+  WHERE "appointmentId" IS NULL;
+```
+
+Enforcing it in the database rather than only in the service is what makes the
+race safe: two simultaneous inquiry requests both pass the existence check, and
+the loser catches `P2002` and returns the winner's thread. The caller wanted a
+thread; one now exists.
+
+Note `appointmentId` itself needs only a plain `@unique` — Postgres treats NULLs
+as distinct, so "at most one thread per appointment" and "unconstrained for
+inquiries" come free from the same index.
+
+**A message must carry something**, enforced by a CHECK so the rule holds
+however a row is inserted, not just through the API:
+
+```sql
+CHECK (NULLIF(BTRIM("body"), '') IS NOT NULL OR "photoUrl" IS NOT NULL)
+```
+
+`NULLIF(BTRIM(...))` is deliberate: a whitespace-only body is not content. The
+service rejects the same case first, with a clear message.
+
+### 21.3 Read state is per person, not per thread
+
+`ThreadReadState` is one row per (thread, user) rather than a flag on the
+thread, because a business has several people in it (§14). **An owner glancing
+at a message must not silently mark it read for the staff member who actually
+has to answer it.** Verified: after the owner marked a thread read, their unread
+count went to 0 while the staff member's stayed at 3.
+
+Unread counts also exclude your own messages — nobody has unread mail from
+themselves.
+
+### 21.4 Ten new inquiry threads per customer per day
+
+A rolling 24-hour cap on **new** inquiry threads. It exists to stop one account
+spraying fresh conversations across many businesses, which is what spam looks
+like here.
+
+**Reuse never counts against it.** The limit is on starting relationships, not
+on asking questions inside one — a customer at their cap can still message every
+business they have already contacted. Verified: the 11th new inquiry was
+refused while reopening an existing thread still returned 200.
+
+### 21.5 Notifications are debounced, not suppressed
+
+New messages notify the other side through the §20 infrastructure — no parallel
+delivery path. Business-side messages go to every active member, for the same
+reason bookings do (§20.4): whoever is on the floor should see it.
+
+At most **one email per thread, per recipient, per 5 minutes**. A back-and-forth
+conversation would otherwise produce an email per line, which trains people to
+ignore the channel entirely.
+
+The marker is `lastNotifiedAt` on `ThreadReadState` — the key is already exactly
+"per thread, per person", so a second table would duplicate it for nothing. It
+is **claimed atomically before sending**, with the cutoff inside the `WHERE`
+clause of an `updateMany`, so two rapid messages cannot both pass. Same
+claim-the-timestamp trick as appointment reminders (§20.5).
+
+Verified: three rapid messages produced **one** notification; ageing the marker
+past the window and sending a fourth produced a **second**; the sender received
+none for their own messages.
+
+### 21.6 Photos reuse the gallery's storage and limits
+
+`chatUploadOptions` **is** `galleryUploadOptions` — the same object, not a copy.
+15MB, jpg/png/webp, memory storage, one file, and `MulterExceptionFilter` for
+the same clear oversize error. Uploads go through `StorageService` exactly as
+§10.6 does: R2 when configured, the dev-only local fallback otherwise, under a
+`chat/<threadId>/` prefix.
+
+Two configs would drift the moment one limit changed, and a customer refused a
+20MB photo in a gallery should get the identical refusal attaching it to a
+message. Verified: 20MB → 413 with the 15MB message, PDF and GIF → 400 naming
+the allowed types, and an uploaded photo served back byte-identical.
+
+### 21.7 Voice notes and video are deliberately out of scope
+
+Not built, and not an oversight.
+
+- **Bandwidth and cost.** Same reasoning as §10's video decision. A voice note
+  is orders of magnitude larger than a text message, and mobile data in Juba is
+  expensive enough that a chat which quietly burns it is a chat people stop
+  using. Storage and egress costs scale the same way.
+- **There is no frontend.** Capturing and playing audio is almost entirely a
+  client concern — recording UI, waveform, playback, permissions. Building the
+  server half now would mean designing an API against a client nobody has
+  written, and testing it with `curl` proves only that bytes round-trip.
+
+`Message` carries `body` and `photoUrl`; adding `voiceUrl`/`videoUrl` later is
+additive. **Revisit once a frontend exists** and the real cost of a voice note
+on a Juba mobile connection can be measured rather than guessed.
+
+### 21.8 Endpoints
+
+| Method | Path | Who |
+|---|---|---|
+| POST | `/threads/inquiry` | CUSTOMER only |
+| GET | `/threads` | either side; scoped to the caller |
+| GET | `/threads/:id` | participants |
+| GET | `/threads/:id/messages` | participants, chronological, paginated |
+| POST | `/threads/:id/messages` | participants; multipart, optional photo |
+| POST | `/threads/:id/read` | participants |
+
+Inquiry creation is CUSTOMER-only on purpose: a business cold-opening a
+conversation with someone who never contacted them would make this an outbound
+marketing tool rather than a support channel.
+
+Everything else is guarded by `JwtAuthGuard` alone, with participation enforced
+per-thread inside the service by scoping every query to the caller. Non-
+participants get **404, not 403** — confirming a thread exists but belongs to
+someone else is itself a small leak (§10.7).
+
+### 21.9 Verified end-to-end (2026-08-31)
+
+A booking auto-created its thread with no customer action. Inquiry creation
+returned the same id three times over one row. PENDING, REJECTED, SUSPENDED and
+a nonexistent business all returned an identical `404 Business not found`. The
+10/day cap refused the 11th new inquiry while still returning an existing thread
+on reuse. Text-only, photo-only and text+photo all sent; empty and
+whitespace-only were refused. 20MB → 413, PDF and GIF → 400. Messages listed in
+ascending order and the attachment came back byte-identical. Owner and staff
+held independent read state on one thread. Nine isolation probes — another
+customer and a rival business reading, posting, and marking read — all returned
+404, while both legitimate participants got 200 and the rival's thread list was
+empty. Debounce: 3 rapid → 1 notification, 4th past the window → 2, sender → 0.
+
+### 21.10 Deferred
+
+- **Voice and video** (§21.7).
+- **No realtime transport.** Messages are polled; there is no WebSocket, so a
+  frontend refreshes rather than receives. Fine before a frontend exists, and
+  the obvious next step once one does.
+- **No editing, deleting or reactions.**
+- **No typing indicators or delivery/read receipts** visible to the other side —
+  read state is private to each person.
+- **No moderation or reporting.** `LocationMedia` has a PENDING/APPROVED status
+  (§10) but chat photos are published immediately, which is a gap once the
+  platform is public.
+- **The debounce window and the 10/day cap are constants**, not
+  admin-configurable — unlike the platform fee (§16), which earned a setting.
+- **No attachment cleanup.** A photo whose message is deleted has no deletion
+  path, since messages cannot be deleted yet.

@@ -99,6 +99,16 @@ export function renderNotification(
           'to start your appointment.',
       };
 
+    case NotificationType.NEW_MESSAGE:
+      return {
+        subject: `New message from ${ctx.businessName}`,
+        body:
+          `You have a new message in your conversation with ${ctx.businessName}.\n\n` +
+          (ctx.reason ? `"${ctx.reason}"\n\n` : '') +
+          'Open the app to read it and reply. Further messages in this ' +
+          'conversation will not email you again straight away.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,
