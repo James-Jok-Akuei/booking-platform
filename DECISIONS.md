@@ -136,8 +136,10 @@ before it is built.
 4. **Appointment state machine** — DONE (§16)
 5. **Payments / deposits** — DONE (§17, currency in §18). Wallet and payouts
    still to come.
-6. **Chat** — NEXT
-7. Notifications
+6. **Notifications** — DONE (§20). ~~Was listed 7th~~ — moved ahead of Chat,
+   because a business was never told it had a booking, and a chat message
+   nobody is notified about is half a feature. See §20.1.
+7. **Chat** — NEXT
 8. Reviews & reporting
 9. Admin portal
 
@@ -1079,11 +1081,9 @@ Regressions: anonymous and garbage tokens still 401, CUSTOMER tokens still 403,
 
 ### 14.9 Deferred
 
-- **Invitation emails are not sent.** The row is created and the server logs a
-  warning saying so explicitly; the owner has to pass the address along out of
-  band. Wiring this to `MailService` is small and obvious, and belongs with the
-  Notifications module so invitations, OTPs and booking alerts share one
-  templating path.
+- ~~**Invitation emails are not sent.**~~ **Done in §20.** Invitations are now
+  emailed through the notifications channel. Because an invitee usually has no
+  account yet, there is no inbox row to write — only a message to send (§20.4).
 - ~~**STAFF permissions expand with the Appointment module** (§14.2).~~
   **Done in §16.6:** STAFF can verify, complete and no-show appointments.
 - **Ownership transfer** (§14.3).
@@ -1503,8 +1503,8 @@ parties got 200; and a rival's list returned `total=0`.
   date/time directly; that edit is not built, and would need to re-run the same
   availability and capacity checks booking does.
 - **No admin portal** for the settings endpoints (§16.9).
-- **No customer-facing notification** on cancellation or no-show; only the
-  booking email exists. That belongs with Notifications.
+- ~~**No customer-facing notification** on cancellation or no-show; only the
+  booking email exists.~~ **Done in §20.**
 
 ---
 
@@ -1968,3 +1968,166 @@ implementing this needs a migration plan for them (raise their deposit
 percentage, or grandfather them), not just a change to the validator. Worth
 knowing before the work is scoped, because it turns a one-line arithmetic change
 into a data-migration conversation.
+
+---
+
+## 20. Notifications (2026-08-31)
+
+Module 6, built ahead of Chat.
+
+### 20.1 Why this jumped the queue
+
+`MailService` had exactly two methods: the OTP, and the customer's booking
+code. Which meant **a business was never told it had a booking.** The only way
+to discover one was to poll `GET /appointments`.
+
+That is a bigger hole than a missing chat. Chat is for negotiating with someone
+you already know exists; notifications are what make the appointment loop work
+at all. And Chat *depends* on this — a message nobody is told about is half a
+feature. §7's order has been corrected rather than followed.
+
+### 20.2 Notifications are stored, not fired and forgotten
+
+A `Notification` row per message, with recipient, type, channel, status,
+rendered subject/body, `readAt` and an optional appointment link.
+
+Two reasons for a table rather than a bare `sendMail` call:
+
+- **It is the audit trail.** When a business says nobody told them about a
+  booking, the row either exists or it does not — with `sentAt`, `failureCount`
+  and `lastError` to say what happened. That question is unanswerable if the
+  only record is an SMTP call that already returned.
+- **It is the in-app inbox**, so a frontend can list notifications later
+  without a schema change.
+
+**Copy is rendered once, at send time, and stored.** Re-rendering on read
+against live data would let a later cancellation silently rewrite the message
+that announced the booking. The inbox has to show what was actually sent.
+
+The appointment link is `onDelete: SetNull`, not Cascade: a notification is
+evidence that something was communicated, and should outlive what it referred
+to.
+
+### 20.3 Raising a notification can never break what caused it
+
+`NotificationsService.notify()` **never throws.** A booking, a payment
+confirmation or a cancellation is already a fact by the time anyone is told
+about it, and none of them should roll back because SMTP was briefly
+unreachable. Failures are recorded on the row and retried by a sweep every 5
+minutes, giving up after 5 attempts so a permanently bad address is not retried
+forever — the row then stays FAILED with its `lastError`, which is what makes
+"why didn't they hear?" answerable.
+
+### 20.4 What is sent, and to whom
+
+| Event | Recipient |
+|---|---|
+| `APPOINTMENT_BOOKED` | every active business member |
+| `DEPOSIT_CONFIRMED` | customer **and** business |
+| `APPOINTMENT_CANCELLED` | customer **and** business (incl. expiry) |
+| `APPOINTMENT_NO_SHOW` | customer |
+| `DEPOSIT_FAILED` | customer only |
+| `APPOINTMENT_REMINDER` | customer |
+| `BUSINESS_INVITATION` | the invitee |
+
+Three deliberate asymmetries:
+
+- **A failed payment goes only to the customer.** It is theirs to retry, and
+  the business has nothing to act on until it succeeds.
+- **A no-show goes to the customer**, because a forfeited deposit (§2) should
+  never be a silent charge someone discovers later.
+- **Bookings go to every active member, not just the owner.** Staff run the
+  day's appointments (§16.6), so a booking nobody on the floor hears about is
+  precisely the failure this module exists to fix. Per-person preferences are a
+  later concern.
+
+**Invitations are the one case with no inbox row.** `Notification.recipientId`
+is a foreign key to `users`, and the whole point of an invitation is to reach
+someone who has not signed up. When there is no account,
+`notifyUnregisteredEmail` renders through the same templates and sends through
+the same channel, with no row — correct, because there is no inbox to put it
+in. This closes §14.9.
+
+### 20.5 Reminders
+
+A sweep every 15 minutes sends a reminder for appointments starting within 24
+hours. Every 15 minutes rather than nightly, so an appointment booked *inside*
+the window still gets one instead of waiting for a batch that has already run.
+
+Only `BOOKED` and `IN_PROGRESS` qualify — reminding someone about an
+appointment they never paid for would be worse than silence.
+
+`Appointment.reminderSentAt` is the dedup marker, and it is **claimed
+conditionally before the send**, so two overlapping runs cannot both remind the
+same customer. Verified: a second immediate run sent 0.
+
+This is the highest-value notification in the set: `NO_SHOW` currently only
+records the damage, and a reminder is the cheapest way to reduce it.
+
+### 20.6 Email now, SMS-ready
+
+`NotificationChannelDriver` mirrors §17's `PaymentProvider` — callers state what
+to deliver and know nothing about who delivers it. `EmailNotificationChannel`
+is the only implementation; `SMS` already exists in the channel enum.
+
+This matters more than the usual abstraction argument. The platform targets
+South Sudan, where SMS reaches people far more reliably than email — a booking
+alert landing in an unchecked inbox is not really a notification. The channel
+is *expected* to change, and building the seam now is what stops that being a
+rewrite across every service that raises a notification. Swapping it is one
+class and one case in the factory.
+
+`MailService` gained a generic `sendGenericEmail` for this, which deliberately
+does **not** swallow errors the way the OTP and booking-code methods do — a
+notification's delivery result has to reach the caller so it can be recorded
+and retried.
+
+### 20.7 Endpoints
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/notifications` | own inbox; `unreadOnly`, `limit`, `offset`; returns `unread` count |
+| PATCH | `/notifications/:id/read` | idempotent |
+| PATCH | `/notifications/read-all` | |
+
+Guarded by `JwtAuthGuard` only — customers, business members and admins all
+have an inbox, and every query is scoped to the caller's own id inside the
+service, so there is nothing role-specific to enforce.
+
+### 20.8 Verified end-to-end (2026-08-31)
+
+Against a live server and Mailhog, with a real MTN sandbox payment driving the
+deposit events.
+
+A booking notified the business, with the email delivered and the time rendered
+as `10:00` Africa/Juba from an `08:00Z` start. A real sandbox deposit notified
+both sides; a rejected one (MSISDN 46733123451) notified only the customer, and
+the business's inbox correctly held zero `DEPOSIT_FAILED` rows. Cancelling
+notified both with `Reason: Cancelled by the customer.` A no-show notified the
+customer. An invitation reached an address with no account, producing an email
+and zero notification rows.
+
+Reminders: of three seeded appointments — BOOKED in 6h, BOOKED in 3 days,
+PENDING_PAYMENT in 5h — only the first was reminded, and a second run sent 0.
+Retry: a row forced to FAILED was recovered on the next sweep
+(`{retried: 1, recovered: 1}`).
+
+Inbox: another user marking someone else's notification read got "Notification
+not found"; the owner's own succeeded; `unreadOnly` and `read-all` behaved; no
+token returned 401.
+
+### 20.9 Deferred
+
+- **SMS is not wired**, only anticipated (§20.6). Needs a provider account and
+  has a per-message cost, which matters when deposits are small.
+- **No per-user preferences or quiet hours.** Deliberately skipped: there is no
+  frontend or admin portal to reach such settings, so they would be API-only
+  and untestable by a real user.
+- **Every active member gets every booking notification.** Fine at one or two
+  staff; a busy salon will want this narrowed, which is the same feature as
+  preferences above.
+- **No digest or batching.** Ten bookings send ten emails.
+- **The reminder lead time is a constant**, not per-business configurable.
+- **No notification for `COMPLETED`**, or for the §16.8 auto-transitions —
+  arguably a customer should be told their appointment was auto-completed or
+  auto-marked a no-show 24h later.

@@ -26,6 +26,8 @@ import {
 } from '../payments/currency';
 import { AvailabilityService } from '../availability/availability.service';
 import { computeAppointmentAmounts } from './appointment-pricing';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '@prisma/client';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
 
@@ -68,7 +70,72 @@ export class AppointmentsService {
     private readonly settings: PlatformSettingsService,
     private readonly availability: AvailabilityService,
     @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
+    private readonly notifications: NotificationsService,
   ) {}
+
+  /**
+   * Loads everything the notification templates need for one appointment.
+   *
+   * One helper rather than widening each call site's select, so adding a field
+   * to a template does not mean hunting through five queries.
+   */
+  private async notificationContext(appointmentId: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      select: {
+        id: true,
+        startTime: true,
+        customerId: true,
+        depositAmountCents: true,
+        currency: true,
+        service: { select: { name: true } },
+        location: {
+          select: { id: true, name: true, businessId: true, business: { select: { name: true } } },
+        },
+      },
+    });
+    if (!appointment) return null;
+
+    return {
+      appointmentId: appointment.id,
+      customerId: appointment.customerId,
+      businessId: appointment.location.businessId,
+      context: {
+        serviceName: appointment.service.name,
+        locationName: appointment.location.name,
+        businessName: appointment.location.business.name ?? 'the business',
+        startTime: appointment.startTime,
+        depositAmountCents: appointment.depositAmountCents,
+        currency: appointment.currency,
+      },
+    };
+  }
+
+  /** Tells both sides about the same event. Public so the expiry sweep reuses it. */
+  async notifyBothParties(
+    appointmentId: string,
+    type: NotificationType,
+    reason?: string,
+  ) {
+    const loaded = await this.notificationContext(appointmentId);
+    if (!loaded) return;
+    const context = { ...loaded.context, reason };
+
+    await Promise.all([
+      this.notifications.notify({
+        recipientId: loaded.customerId,
+        type,
+        context,
+        appointmentId,
+      }),
+      this.notifications.notifyBusiness({
+        businessId: loaded.businessId,
+        type,
+        context,
+        appointmentId,
+      }),
+    ]);
+  }
 
   // ---------- Booking ----------
 
@@ -167,6 +234,18 @@ export class AppointmentsService {
       locationName: location.name,
       startTime,
     });
+
+    // The business learns about the booking immediately, while it is still
+    // unpaid — a held slot they cannot see is worse than one they can.
+    const loaded = await this.notificationContext(appointment.id);
+    if (loaded) {
+      await this.notifications.notifyBusiness({
+        businessId: loaded.businessId,
+        type: NotificationType.APPOINTMENT_BOOKED,
+        context: loaded.context,
+        appointmentId: appointment.id,
+      });
+    }
 
     this.logger.log(
       `Appointment ${appointment.id} created PENDING_PAYMENT: deposit=${amounts.depositAmountCents}c ` +
@@ -443,6 +522,9 @@ export class AppointmentsService {
         this.logger.log(
           `Deposit confirmed for appointment ${appointmentId} (reference ${providerReferenceId}) -> BOOKED.`,
         );
+        // Guarded by count > 0, so a racing poll and status-read cannot both
+        // announce the same confirmation.
+        await this.notifyBothParties(appointmentId, NotificationType.DEPOSIT_CONFIRMED);
       }
       return AppointmentStatus.BOOKED;
     }
@@ -463,6 +545,17 @@ export class AppointmentsService {
         `Deposit failed for appointment ${appointmentId} (reference ${providerReferenceId}): ` +
           `${failureReason ?? 'no reason given'}. Reference cleared; the customer may retry.`,
       );
+      // Only the customer: a failed attempt is theirs to retry, and the
+      // business has nothing to act on until it succeeds.
+      const loaded = await this.notificationContext(appointmentId);
+      if (loaded) {
+        await this.notifications.notify({
+          recipientId: loaded.customerId,
+          type: NotificationType.DEPOSIT_FAILED,
+          context: { ...loaded.context, reason: failureReason },
+          appointmentId,
+        });
+      }
     }
     return AppointmentStatus.PENDING_PAYMENT;
   }
@@ -563,11 +656,25 @@ export class AppointmentsService {
 
     this.logger.log(`Appointment ${appointmentId} -> NO_SHOW.`);
 
-    return this.prisma.appointment.update({
+    const updated = await this.prisma.appointment.update({
       where: { id: appointmentId },
       data: { status: AppointmentStatus.NO_SHOW, noShowAt: new Date() },
       select: APPOINTMENT_SELECT,
     });
+
+    // The customer is told, because a forfeited deposit should never be a
+    // silent charge they discover later.
+    const loaded = await this.notificationContext(appointmentId);
+    if (loaded) {
+      await this.notifications.notify({
+        recipientId: loaded.customerId,
+        type: NotificationType.APPOINTMENT_NO_SHOW,
+        context: loaded.context,
+        appointmentId,
+      });
+    }
+
+    return updated;
   }
 
   /**
@@ -595,11 +702,21 @@ export class AppointmentsService {
 
     this.logger.log(`Appointment ${appointmentId} -> CANCELLED.`);
 
-    return this.prisma.appointment.update({
+    const updated = await this.prisma.appointment.update({
       where: { id: appointmentId },
       data: { status: AppointmentStatus.CANCELLED, cancelledAt: new Date() },
       select: APPOINTMENT_SELECT,
     });
+
+    await this.notifyBothParties(
+      appointmentId,
+      NotificationType.APPOINTMENT_CANCELLED,
+      appointment.customerId === userId
+        ? 'Cancelled by the customer.'
+        : 'Cancelled by the business.',
+    );
+
+    return updated;
   }
 
   // ---------- Reads ----------

@@ -22,6 +22,39 @@ export class MailService {
     });
   }
 
+  /** Whether an SMTP host is configured at all. */
+  isConfigured(): boolean {
+    const host = this.config.get<string>('SMTP_HOST');
+    return Boolean(host && host.trim().length > 0);
+  }
+
+  /**
+   * Sends an arbitrary subject/body.
+   *
+   * Used by the notifications module, which renders its own copy. Unlike the
+   * two methods below it does NOT swallow failures: a notification's delivery
+   * result is recorded on its row and retried, so the caller has to learn that
+   * the send failed.
+   */
+  async sendGenericEmail(email: string, subject: string, body: string): Promise<void> {
+    const from = this.config.get<string>('SMTP_FROM');
+
+    if (this.config.get<string>('NODE_ENV') !== 'production') {
+      this.logger.log(`[DEV] Email to ${email}: ${subject}`);
+    }
+
+    await this.transporter.sendMail({
+      from,
+      to: email,
+      subject,
+      text: body,
+      html: body
+        .split('\n\n')
+        .map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br/>')}</p>`)
+        .join(''),
+    });
+  }
+
   async sendOtpEmail(email: string, code: string): Promise<void> {
     const from = this.config.get<string>('SMTP_FROM');
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { AppointmentStatus } from '@prisma/client';
+import { AppointmentStatus, NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   PAYMENT_PROVIDER,
@@ -173,6 +173,14 @@ export class PaymentsScheduler {
 
       if (count > 0) {
         cancelled++;
+        // Both sides are told. An expiry is still a cancellation from the
+        // customer's point of view, and the business needs to know the slot
+        // came back rather than discovering it in a list later.
+        await this.appointments.notifyBothParties(
+          appointment.id,
+          NotificationType.APPOINTMENT_CANCELLED,
+          'The deposit was not paid in time, so the booking was released.',
+        );
         const ageSeconds = Math.round((Date.now() - appointment.createdAt.getTime()) / 1000);
         this.logger.log(
           `Expired appointment ${appointment.id}: PENDING_PAYMENT for ${ageSeconds}s ` +

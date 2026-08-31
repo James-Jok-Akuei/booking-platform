@@ -9,9 +9,11 @@ import {
   BusinessMemberRole,
   BusinessMemberStatus,
   InvitationStatus,
+  NotificationType,
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { InviteMemberDto } from './dto/invite-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 
@@ -22,7 +24,10 @@ export const INVITATION_TTL_DAYS = 7;
 export class MembersService {
   private readonly logger = new Logger(MembersService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   // ---------- Invitations ----------
 
@@ -54,7 +59,8 @@ export class MembersService {
       }),
       this.prisma.businessProfile.findUniqueOrThrow({
         where: { id: businessId },
-        select: { id: true },
+        // name is needed for the invitation email copy further down.
+        select: { id: true, name: true },
       }),
     ]);
 
@@ -107,12 +113,36 @@ export class MembersService {
       },
     });
 
-    // No email is sent yet — see DECISIONS.md. The invited person becomes a
-    // member simply by logging in with this address, so the owner has to tell
-    // them out of band for now.
-    this.logger.warn(
-      `Invitation ${invitation.id} created for ${email} but NOT emailed — invite delivery is not built yet.`,
-    );
+    // The invitee is emailed. Note the recipient may have no account yet —
+    // that is the normal case for an invitation — so when there is no user row
+    // there is no inbox entry to create, only a message to send.
+    const inviter = await this.prisma.user.findUnique({
+      where: { id: inviterUserId },
+      select: { email: true },
+    });
+
+    const context = {
+      serviceName: '',
+      locationName: '',
+      businessName: business?.name ?? 'a business',
+      startTime: undefined as unknown as Date,
+      inviterEmail: inviter?.email,
+      role: dto.role,
+    };
+
+    if (existingUser) {
+      await this.notifications.notify({
+        recipientId: existingUser.id,
+        type: NotificationType.BUSINESS_INVITATION,
+        context,
+      });
+    } else {
+      await this.notifications.notifyUnregisteredEmail({
+        email,
+        type: NotificationType.BUSINESS_INVITATION,
+        context,
+      });
+    }
 
     return invitation;
   }

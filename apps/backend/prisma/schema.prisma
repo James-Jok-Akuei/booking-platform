@@ -59,6 +59,33 @@ enum InvitationStatus {
   REVOKED
 }
 
+/// What happened. One value per notifiable event, so a recipient's history is
+/// queryable by kind ("show me every booking I was told about") rather than by
+/// parsing rendered copy.
+enum NotificationType {
+  APPOINTMENT_BOOKED // a customer booked; the business is told
+  DEPOSIT_CONFIRMED // deposit landed; both sides are told
+  APPOINTMENT_CANCELLED // called off by either side, or expired unpaid
+  APPOINTMENT_NO_SHOW // business recorded a no-show
+  DEPOSIT_FAILED // the payment attempt failed; the customer may retry
+  APPOINTMENT_REMINDER // sent ahead of the appointment
+  BUSINESS_INVITATION // someone was invited to join a business
+}
+
+/// How it was delivered. EMAIL is the only implementation today; SMS exists in
+/// the enum because South Sudan runs on SMS far more than email, and the
+/// channel abstraction is built so adding it touches no calling code.
+enum NotificationChannel {
+  EMAIL
+  SMS
+}
+
+enum NotificationStatus {
+  PENDING // created, not yet dispatched
+  SENT
+  FAILED // dispatch failed; retried by the sweep
+}
+
 // Gallery media kind. Only PHOTO is produced today — the enum exists so VIDEO
 // can be added later without a destructive column-type migration.
 enum MediaType {
@@ -107,6 +134,8 @@ model User {
 
   // Appointments booked by this user. Only populated when role = CUSTOMER.
   appointments Appointment[] @relation("CustomerAppointments")
+
+  notifications Notification[] @relation("UserNotifications")
 
   refreshTokens RefreshToken[]
   otpCodes      OtpCode[]
@@ -581,8 +610,15 @@ model Appointment {
   cancelledAt DateTime?
   noShowAt    DateTime?
 
+  /// Set when the pre-appointment reminder goes out, so the sweep never sends
+  /// the same reminder twice. A timestamp rather than a boolean so it is
+  /// visible *when* the customer was reminded.
+  reminderSentAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  notifications Notification[]
 
   // Availability counts overlapping appointments at one location for one day.
   @@index([locationId, startTime])
@@ -594,6 +630,54 @@ model Appointment {
   // both of which scan by status and creation time.
   @@index([status, createdAt])
   @@map("appointments")
+}
+
+/// A message sent to one person about one event.
+///
+/// Stored rather than fire-and-forget for two reasons. It is the audit trail —
+/// when a business says nobody told them about a booking, the row either exists
+/// or it does not — and it is the in-app inbox, so a frontend can list
+/// notifications later without a schema change.
+model Notification {
+  id String @id @default(uuid())
+
+  /// Who it is for. Cascades: a deleted account's notifications are of no use
+  /// to anyone, unlike an appointment, which is a financial record.
+  recipientId String
+  recipient   User   @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  channel NotificationChannel @default(EMAIL)
+  status  NotificationStatus  @default(PENDING)
+
+  /// Rendered at send time and kept, so the inbox shows exactly what was sent
+  /// rather than re-rendering against data that has since changed — a
+  /// cancelled appointment must not rewrite the message that announced it.
+  subject String
+  body    String
+
+  /// The appointment this concerns, when it concerns one. SetNull rather than
+  /// Cascade: the notification is evidence that something was communicated and
+  /// should outlive the record it referred to.
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  /// Null until the recipient marks it read. Not a boolean, so "when" is
+  /// answerable later without another column.
+  readAt DateTime?
+
+  sentAt       DateTime?
+  failureCount Int       @default(0)
+  lastError    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The inbox query: one recipient, newest first.
+  @@index([recipientId, createdAt])
+  /// The retry sweep: everything not yet delivered.
+  @@index([status])
+  @@map("notifications")
 }
 
 model OtpCode {
