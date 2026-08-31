@@ -64,6 +64,33 @@ installed from the **repo root** (`npm install`) via npm workspaces — see the
    ```
    Server starts on `http://localhost:3000` (or `PORT` from `.env`).
 
+## Automated tests
+
+```bash
+docker compose up -d     # the only manual setup step
+npm test                 # run the suite once
+npm run test:watch       # re-run on change
+```
+
+The suite targets four invariants where a silent regression is expensive —
+the deposit/fee split, the appointment state machine, capacity counting, and
+cross-tenant isolation. It is a foundation, not full coverage; see
+[DECISIONS.md §23](../../DECISIONS.md) for what is covered and why those four.
+
+**Tests run against a real Postgres, never a mocked Prisma.** They use a
+separate `booking_platform_test` database on the same container as the dev
+database, created and migrated automatically on the first run. Your dev data is
+never touched — `test/setup/env.ts` refuses to run unless `DATABASE_URL` names
+the test database.
+
+Each suite truncates the tables it uses before and after itself, so runs are
+repeatable and order-independent. Jest runs serially (`maxWorkers: 1`) because
+the suites share those tables.
+
+The MTN MoMo integration is deliberately **not** in the suite: it depends on an
+external sandbox and real test MSISDNs, so it stays a manual check
+(`scripts/ws-smoke-test.js` plays the same role for the chat WebSocket layer).
+
 ## Testing the auth flow locally
 
 ```bash

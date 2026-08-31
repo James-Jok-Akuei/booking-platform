@@ -1,4 +1,4 @@
-import { Inject, Logger, forwardRef } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -12,6 +12,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { ChatService } from './chat.service';
+import { ChatRealtimePublisher } from './chat-realtime.interface';
 
 /** socket.io room name for a thread. One room per conversation. */
 const threadRoom = (threadId: string) => `thread:${threadId}`;
@@ -48,7 +49,7 @@ interface SocketUser {
   // production — see main.ts.
   cors: { origin: '*' },
 })
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, ChatRealtimePublisher {
   @WebSocketServer()
   private server!: Server;
 
@@ -57,10 +58,8 @@ export class ChatGateway implements OnGatewayConnection {
   constructor(
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
-    // ChatService emits through this gateway, and this gateway calls back into
-    // ChatService for participation checks — a genuine cycle that forwardRef
-    // is the standard resolution for.
-    @Inject(forwardRef(() => ChatService))
+    // One-directional: the gateway knows the service, the service knows only
+    // the CHAT_REALTIME token. No cycle, so no forwardRef.
     private readonly chat: ChatService,
   ) {}
 

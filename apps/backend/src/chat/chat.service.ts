@@ -4,7 +4,6 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import {
   BusinessMemberStatus,
@@ -15,7 +14,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { ChatGateway } from './chat.gateway';
+import { CHAT_REALTIME, ChatRealtimePublisher } from './chat-realtime.interface';
 
 /** New inquiry threads one customer may open in a rolling 24 hours. */
 export const MAX_INQUIRY_THREADS_PER_DAY = 10;
@@ -31,10 +30,10 @@ export class ChatService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly notifications: NotificationsService,
-    // Cycle: the gateway asks this service who may join a room, and this
-    // service asks the gateway to push. forwardRef is Nest's resolution.
-    @Inject(forwardRef(() => ChatGateway))
-    private readonly gateway: ChatGateway,
+    // Injected by token, not by class, so this service never imports the
+    // gateway — see chat-realtime.interface.ts for why that matters.
+    @Inject(CHAT_REALTIME)
+    private readonly realtime: ChatRealtimePublisher,
   ) {}
 
   // ---------- Threads ----------
@@ -266,7 +265,7 @@ export class ChatService {
     // Realtime push and the debounced email are triggered by the same event,
     // right after the message is persisted — so neither can fire for a message
     // that was not saved, and the socket cannot disagree with what REST stored.
-    this.gateway.emitNewMessage(params.threadId, message);
+    this.realtime.emitNewMessage(params.threadId, message);
 
     await this.notifyOtherParty(thread, params.userId, body, Boolean(photoUrl));
 

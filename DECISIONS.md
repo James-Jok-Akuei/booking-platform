@@ -2460,3 +2460,128 @@ messages and the outsider got none.
 - **No socket-side rate limiting.** Message creation is REST and unthrottled
   there too; the inquiry cap (§21.4) is the only chat rate limit.
 - **CORS is `*`**, matching the REST app. One decision, to be made once.
+
+---
+
+## 23. Automated test suite (2026-08-31)
+
+Infrastructure, not a module. Nine modules had been verified by hand with curl
+and never re-checked afterwards, so every later change risked silently breaking
+an earlier one.
+
+### 23.1 Four areas, deliberately not full coverage
+
+Chasing endpoint coverage would produce hundreds of tests asserting that
+`@IsString()` rejects a number. These four were chosen because a silent
+regression in them is **expensive and invisible**:
+
+1. **The money invariant.** `platformFee + business === deposit`, across a
+   spread of prices and percentages including exactly at the fee floor, plus the
+   currency conversion from §18. A rounding error here is money, and nobody
+   notices for months.
+2. **The appointment state machine.** Every transition, legal and illegal. The
+   load-bearing one is that COMPLETED is unreachable from BOOKED — verification
+   is the only route in (§16.2). A regression there would let a business mark
+   work done without the customer ever confirming they arrived, which is what
+   the whole deposit model rests on.
+3. **Capacity counting.** Including that PENDING_PAYMENT consumes a unit
+   (§16.4) — the non-obvious rule that prevents overbooking, and the one most
+   likely to be "simplified" by someone who has not read why.
+4. **Cross-tenant isolation.** Location, Service, Appointment and Thread. This
+   is the class of bug that is silent until it is a disclosure.
+
+Each test is named for the specific rule it guards, so a failure identifies the
+broken invariant rather than merely reporting that something is wrong.
+
+### 23.2 A real database, never a mocked Prisma
+
+The invariants above are largely *database* behaviour — a partial unique index
+(§15, §21.2), a CHECK constraint, capacity counted across rows. A mocked Prisma
+would assert that the mock behaves as written, which is a different claim, and
+would have caught none of the bugs found by hand in earlier modules.
+
+**A separate database on the existing Postgres instance**, not a second
+container:
+
+- `docker compose up` stays the only manual step. A second compose service is
+  one more thing to remember and keep in sync.
+- Same server and version, so tests exercise the engine behaviour these modules
+  actually depend on.
+- Isolation that matters is at the database level: `booking_platform_test`
+  shares no tables, rows or sequences with `booking_platform`.
+
+The trade-off — a wrong `DATABASE_URL` could point the suite at dev data — is
+closed in `test/setup/env.ts`, which throws unless the URL names the test
+database. `globalSetup` creates the database if absent and runs
+`prisma migrate deploy` (not `migrate dev`), so the schema under test is the
+schema that ships, hand-written partial indexes included.
+
+Suites truncate with `TRUNCATE ... CASCADE` before and after themselves, so runs
+are order-independent and repeatable. Jest runs serially — the suites share
+those tables, and the suite is far too fast for parallelism to be worth the
+flakiness. Verified: two consecutive `npm test` runs, 118 tests each, no manual
+reset in between, dev database untouched.
+
+### 23.3 Two things the setup had to work around
+
+**Jest runs in ESM mode.** `@nestjs/common@12` ships ESM only
+(`"type": "module"`, no CommonJS build). Node 24.1 handles `require(esm)` so the
+application runs fine, but Jest's own module registry cannot until Node 24.9.
+Hence `NODE_OPTIONS=--experimental-vm-modules`, a `tsconfig.test.json` emitting
+ESNext, and `import { jest } from '@jest/globals'` — in ESM, Jest injects
+`describe`/`it`/`expect` as globals but not `jest` itself.
+
+**Suites build a targeted provider list rather than importing AppModule.**
+Booting the whole AppModule under Jest's ESM loader hangs indefinitely at
+`.compile()` — measured at over three minutes at ~2% CPU, so blocked rather than
+slow. A targeted module compiles in ~74ms. This is better testing anyway: each
+suite states exactly which collaborators the behaviour under test needs, and
+anything reaching the network is stubbed.
+
+The consequence worth stating plainly: **these tests exercise the service layer,
+not the HTTP layer.** Guards and pipes are not covered. That is acceptable for
+what is being asserted here, because isolation in this codebase is enforced by
+query scoping inside the services rather than by guards — the guards only
+establish identity and role. `NotFoundException` is what Nest maps to 404, so
+asserting the exception type asserts the status. But it is a real gap: a
+regression in the guard chain itself would not be caught.
+
+### 23.4 A latent defect the suite surfaced immediately
+
+`ChatService` and `ChatGateway` imported each other, resolved with `forwardRef`
+on both sides (§22.5). CommonJS tolerates that; ES modules do not — under ESM
+the gateway's decorator metadata evaluates before `ChatService` is initialised,
+giving `Cannot access 'ChatService' before initialization`.
+
+It was fixed properly rather than worked around: a `CHAT_REALTIME` token and a
+one-method `ChatRealtimePublisher` interface, so the dependency now runs one way
+only — the gateway knows the service, the service knows only the token. No cycle,
+no `forwardRef` on either side. The application build is CommonJS and was never
+broken by this, but a circular import that only works under one module system is
+a fragility worth removing regardless.
+
+### 23.5 What is deliberately not tested here
+
+- **The MTN MoMo integration.** It depends on an external sandbox and real test
+  MSISDNs, so an automated suite covering it would fail for reasons unrelated
+  to this code. It stays a manual check, as does the chat WebSocket layer via
+  `scripts/ws-smoke-test.js`.
+- **The HTTP layer** — guards, pipes, status codes (§23.3).
+- **Availability slot generation**, notifications, uploads, and everything else
+  hand-verified in earlier sections.
+
+### 23.6 This is a foundation, not the test-writing effort
+
+118 tests across four files is a starting point, and the danger is that it
+becomes the one and only time tests were written.
+
+**Every future module should add its own critical-path tests as part of the
+module, not later.** The bar is not coverage — it is the same question asked
+here: *which invariant in this module, if it silently broke, would cost money,
+leak data, or corrupt a record before anyone noticed?* Test that, name the test
+after the rule, and leave the rest to the hand-verification pattern the rest of
+this file records.
+
+The obvious next additions, when the modules they cover next change:
+availability slot generation including the fits-before-closing rule (§12.2),
+the notification debounce (§21.5), and the HTTP guard chain (§23.3).

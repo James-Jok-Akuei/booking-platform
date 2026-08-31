@@ -1,0 +1,15 @@
+{
+  // ts-jest compiles tests to ESM, because @nestjs/common@12 is ESM-only
+  // ("type": "module", no CommonJS build). Jest's CommonJS registry cannot
+  // require() an ES module on Node below 24.9, so the suite runs as ESM
+  // instead. The application build is unaffected and still emits CommonJS.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "rootDir": "./",
+    "noEmit": true,
+    "types": ["jest", "node"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}
