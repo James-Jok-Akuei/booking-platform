@@ -164,6 +164,33 @@ enum AppointmentStatus {
   NO_SHOW // never verified, and the window has passed
 }
 
+/// What a ledger entry records. The sign lives on the amount, not here: an
+/// entry's type says what happened, and `amountCents` says which way the money
+/// went from the BUSINESS's point of view.
+enum LedgerEntryType {
+  /// A customer's deposit landed. Positive.
+  DEPOSIT_RECEIVED
+
+  /// The platform's cut of that deposit. Negative.
+  PLATFORM_FEE
+
+  /// A deposit given back to the customer, because the business cancelled.
+  /// Negative.
+  DEPOSIT_REFUND
+
+  /// The platform fee handed back with it, so the customer is made whole.
+  /// Positive — it offsets the PLATFORM_FEE that was taken at booking.
+  PLATFORM_FEE_REVERSAL
+
+  /// What the payment gateway charged to process the refund, borne by the
+  /// business that caused it (§25). Negative.
+  GATEWAY_FEE_DEBIT
+
+  /// A manual correction, from an executed BillingAdjustment. Signed by the
+  /// adjustment's own type.
+  ADJUSTMENT
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -267,6 +294,8 @@ model BusinessProfile {
   @@index([categoryId])
   @@index([status])
   @@map("business_profiles")
+
+  ledgerEntries LedgerEntry[]
 }
 
 // ---------- Taxonomy ----------
@@ -793,6 +822,7 @@ model Appointment {
   tickets       Ticket[]            @relation("TicketAppointment")
   adjustments   BillingAdjustment[]
   review        Review?
+  ledgerEntries LedgerEntry[]
 
   // Availability counts overlapping appointments at one location for one day.
   @@index([locationId, startTime])
@@ -1099,6 +1129,10 @@ model BillingAdjustment {
   settledAt     DateTime?
   settlementRef String?
 
+  /// The ledger entry this adjustment produced when it was executed. At most
+  /// one — an adjustment executes once (§36).
+  ledgerEntries LedgerEntry[]
+
   createdById String
   createdBy   User   @relation("CreatedAdjustments", fields: [createdById], references: [id], onDelete: Cascade)
 
@@ -1107,6 +1141,66 @@ model BillingAdjustment {
   /// The query a future settlement run makes: this business's outstanding rows.
   @@index([businessId, settledAt])
   @@map("billing_adjustments")
+}
+
+
+// ---------- Money owed to businesses ----------
+
+/// One immutable fact about money, from a business's point of view (§34).
+///
+/// A business's balance is ALWAYS the sum of its entries. There is deliberately
+/// no balance column anywhere: a stored total and the rows that justify it drift
+/// the first time a write fails halfway, and then no one can tell which is
+/// right. Summing is cheap, and it can only ever be wrong if an entry is wrong.
+///
+/// IMMUTABLE after insert: `type`, `amountCents`, `currency`, `businessId`,
+/// `appointmentId` and `createdAt` are never updated — enforced by a database
+/// trigger, not by convention. Only `availableAt` and `payoutId` may be written
+/// later, because those record what happened to an entry, not what it says.
+/// Corrections are made by appending an opposing entry. An edited ledger is not
+/// a ledger.
+model LedgerEntry {
+  id String @id @default(uuid())
+
+  businessId      String
+  businessProfile BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// Null for entries that do not arise from one appointment — a manual
+  /// adjustment, say. SetNull rather than Cascade: a deleted appointment must
+  /// not silently delete the record of money that moved because of it.
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  type LedgerEntryType
+
+  /// SIGNED, from the business's perspective. Positive is owed to them,
+  /// negative is owed back. Integer cents, like every other money column.
+  amountCents Int
+
+  currency String @default("USD")
+
+  /// When this entry becomes payable. NULL means "not yet" — the appointment it
+  /// came from has not resolved. Set once the outcome is known: a week after
+  /// completion, or a week after the scheduled end time for an appointment that
+  /// never reached COMPLETED (§34.3).
+  availableAt DateTime?
+
+  /// The payout that settled this entry. NULL means unsettled — which is also
+  /// the definition of money the platform is still holding.
+  payoutId String?
+
+  /// Set when this entry came from executing a BillingAdjustment, so the
+  /// correction and its ledger effect are traceable in both directions.
+  billingAdjustmentId String?
+  billingAdjustment   BillingAdjustment? @relation(fields: [billingAdjustmentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  /// The payout run's query: this business's unsettled, now-payable entries.
+  @@index([businessId, payoutId, availableAt])
+  /// Everything that happened to one appointment.
+  @@index([appointmentId])
+  @@map("ledger_entries")
 }
 
 // ---------- Reviews ----------

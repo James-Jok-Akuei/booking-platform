@@ -30,6 +30,7 @@ import { AvailabilityService } from '../availability/availability.service';
 import { computeAppointmentAmounts } from './appointment-pricing';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ChatService } from '../chat/chat.service';
+import { LedgerService } from '../ledger/ledger.service';
 import { NotificationType } from '@prisma/client';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
@@ -97,6 +98,7 @@ export class AppointmentsService {
     @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
     private readonly notifications: NotificationsService,
     private readonly chat: ChatService,
+    private readonly ledger: LedgerService,
   ) {}
 
   /**
@@ -550,17 +552,32 @@ export class AppointmentsService {
     }
 
     if (status === 'SUCCESSFUL') {
-      const { count } = await this.prisma.appointment.updateMany({
-        where: {
-          id: appointmentId,
-          status: AppointmentStatus.PENDING_PAYMENT,
-          paymentProviderReferenceId: providerReferenceId,
-        },
-        // depositPaidAt is written here and nowhere else, and is never
-        // cleared. Status alone cannot answer "was this ever paid?" once a
-        // later transition has moved the row on (§33).
-        data: { status: AppointmentStatus.BOOKED, depositPaidAt: new Date() },
+      // One transaction: the status change, the paid-at stamp and the two
+      // ledger entries commit together or not at all. A confirmed deposit that
+      // failed to reach the ledger is money the platform holds and cannot
+      // account for.
+      const count = await this.prisma.$transaction(async (tx) => {
+        const result = await tx.appointment.updateMany({
+          where: {
+            id: appointmentId,
+            status: AppointmentStatus.PENDING_PAYMENT,
+            paymentProviderReferenceId: providerReferenceId,
+          },
+          // depositPaidAt is written here and nowhere else, and is never
+          // cleared. Status alone cannot answer "was this ever paid?" once a
+          // later transition has moved the row on (§33).
+          data: { status: AppointmentStatus.BOOKED, depositPaidAt: new Date() },
+        });
+
+        // The conditional update above is also what makes the ledger write
+        // exactly-once: a second confirmation for an appointment already BOOKED
+        // matches no rows, so no entries are appended (§34.4).
+        if (result.count > 0) {
+          await this.ledger.recordDepositReceived(tx, appointmentId);
+        }
+        return result.count;
       });
+
       if (count > 0) {
         this.logger.log(
           `Deposit confirmed for appointment ${appointmentId} (reference ${providerReferenceId}) -> BOOKED.`,
@@ -675,10 +692,16 @@ export class AppointmentsService {
 
     this.logger.log(`Appointment ${appointmentId} -> COMPLETED.`);
 
-    return this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: { status: AppointmentStatus.COMPLETED, completedAt: new Date() },
-      select: APPOINTMENT_SELECT,
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: { status: AppointmentStatus.COMPLETED, completedAt: new Date() },
+        select: APPOINTMENT_SELECT,
+      });
+      // Resolving the appointment is what makes its money payable, so the two
+      // happen together (§34.3).
+      await this.ledger.releaseOnResolution(tx, appointmentId);
+      return updated;
     });
   }
 
@@ -699,10 +722,17 @@ export class AppointmentsService {
 
     this.logger.log(`Appointment ${appointmentId} -> NO_SHOW.`);
 
-    const updated = await this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: { status: AppointmentStatus.NO_SHOW, noShowAt: new Date() },
-      select: APPOINTMENT_SELECT,
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: { status: AppointmentStatus.NO_SHOW, noShowAt: new Date() },
+        select: APPOINTMENT_SELECT,
+      });
+      // A forfeited deposit is the business's to keep, payable a week after the
+      // appointment WOULD have ended — it never reaches COMPLETED, so there is
+      // no completion date to count from (§34.3).
+      await this.ledger.releaseOnResolution(tx, appointmentId);
+      return row;
     });
 
     // The customer is told, because a forfeited deposit should never be a
@@ -765,16 +795,23 @@ export class AppointmentsService {
       `Appointment ${appointmentId} -> CANCELLED by ${cancelledBy} (user ${userId}).`,
     );
 
-    const updated = await this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        status: AppointmentStatus.CANCELLED,
-        cancelledAt: new Date(),
-        cancelledBy,
-        cancelledByUserId: userId,
-        cancellationReason: dto.reason ?? null,
-      },
-      select: APPOINTMENT_SELECT,
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          status: AppointmentStatus.CANCELLED,
+          cancelledAt: new Date(),
+          cancelledBy,
+          cancelledByUserId: userId,
+          cancellationReason: dto.reason ?? null,
+        },
+        select: APPOINTMENT_SELECT,
+      });
+      // A CUSTOMER cancellation releases the existing entries: the deposit is
+      // not refunded (§2), so the business keeps its share. A BUSINESS
+      // cancellation releases nothing here — it owes a refund, which is §36.
+      await this.ledger.releaseOnResolution(tx, appointmentId);
+      return row;
     });
 
     // Read back from the row rather than recomputed, so the sentence the

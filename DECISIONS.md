@@ -3613,3 +3613,122 @@ not exist:
 `settlementRef`) and §25.3 already records that nothing writes or settles those
 rows. So the refund module is blocked on **the payout/wallet decision**, not on
 cancellation data. That is the next thing to settle.
+
+---
+
+## 34. The ledger (2026-09-02)
+
+§33.5 said refunds were blocked on the payout model. This is the first of three
+commits that build it. **This one changes nothing a user can observe. It
+records.**
+
+### 34.1 What existed before: nothing
+
+There was no payout, balance, transfer, settlement or wallet code anywhere —
+the honest answer, as it was for invoicing in §24.7. `BillingAdjustment` models
+a correction and §25.3 already recorded that nothing writes or settles those
+rows. The MoMo integration is **collections only**: it holds one subscription
+key pair and calls `/collection/token/`, `/collection/v1_0/requesttopay` and its
+status endpoint. There is no disbursement client, no disbursement credential,
+and `PaymentProvider` exposes exactly two methods, both inbound. So payouts are
+manual by necessity, not by preference — see §35.
+
+### 34.2 One table, signed amounts, and no balance column anywhere
+
+`LedgerEntry` is an append-only row per money fact, signed from the **business's**
+point of view: positive is owed to them, negative is owed back.
+
+**A business's balance is always the SUM of its entries.** There is deliberately
+no balance column, and there must never be one. A stored total and the rows that
+justify it drift the first time a write fails halfway, and from then on nobody
+can say which is right. Summing is cheap; it can only be wrong if an entry is
+wrong, and an entry cannot be edited.
+
+**Immutability is enforced by the database, not by convention.** A `BEFORE
+UPDATE` trigger rejects any change to `type`, `amountCents`, `currency`,
+`businessId`, `appointmentId`, `billingAdjustmentId`, `createdAt` or `id`. Only
+`availableAt` and `payoutId` stay writable, because those record what *happened
+to* an entry rather than what it *says*. Corrections are made by appending an
+opposing entry. An edited ledger is not a ledger — if the history that explains a
+balance can be rewritten to match whatever the balance was supposed to be, it has
+stopped being evidence. Tested: four rejected mutations, one permitted one, and a
+correction that leaves the original readable.
+
+A deposit produces **two** entries, not one net row — `DEPOSIT_RECEIVED` and a
+negative `PLATFORM_FEE` — because they are two facts that reverse independently:
+a business cancellation hands back the deposit *and* the fee, as separate events
+(§25). A single netted row could not express that. They sum to
+`businessAmountCents` by construction, and a test asserts it.
+
+### 34.3 When money becomes payable, and why the rule is not uniform
+
+`availableAt` is null at insert and set when the appointment resolves. Funds are
+held for **7 days** — a settling period in which a dispute can still arrive, not
+a processing delay. Paying out inside it would mean clawing money back from a
+business that already has it.
+
+| Outcome | Payable from |
+|---|---|
+| `COMPLETED` | `completedAt` + 7 days |
+| `NO_SHOW` | scheduled **end time** + 7 days |
+| Cancelled by `CUSTOMER`, deposit paid | scheduled **end time** + 7 days |
+| Cancelled by `BUSINESS` | nothing released — a refund is owed (§36) |
+| `SYSTEM_EXPIRY`, never paid | no entries exist at all |
+
+The second and third rows are the point. Neither ever reaches `COMPLETED`, so
+keying off `completedAt` would leave the business permanently unpaid for money
+§2 says it keeps. The scheduled end time is the only date those appointments
+have, and it is the right one: it is when the service would have happened.
+
+**An unverified appointment does not sit unresolved forever.** The §16 auto-
+transition sweep moves `BOOKED` → `NO_SHOW` and `IN_PROGRESS` → `COMPLETED` 24
+hours after the end time, so every paid appointment reaches a resolved state and
+becomes payable without anyone pressing a button. That sweep now releases the
+ledger in the same transaction as the status change.
+
+### 34.4 Exactly-once, and every write in a transaction
+
+The deposit entries are appended inside the same transaction as the status
+change, guarded by the same conditional `updateMany` that already prevented a
+racing poll and status-read from both announcing a confirmation. A repeated
+confirmation matches no `PENDING_PAYMENT` row, so no entries follow — tested with
+three repeat calls. Release is idempotent for the same reason: it only touches
+entries that are still unstamped.
+
+Every money write in this commit is inside a transaction, including the
+per-appointment writes in the auto-transition sweep, which were previously bare
+updates. A confirmed deposit that failed to reach the ledger would be money the
+platform holds and cannot account for.
+
+### 34.5 Currency, and what is not designed here
+
+An appointment carries three currency facts (§18): `currency` — always `USD`, the
+internal unit of account — plus `providerCurrency`, `providerCurrencyAmountCents`
+and `exchangeRateUsed`, recording what was actually charged and at what rate.
+Ledger entries copy the appointment's `currency`, so **the ledger is denominated
+in USD**, like every other money column in the schema.
+
+A payout would plausibly have to be *paid* in the provider's currency, at the
+rate on the payout date rather than the booking date — which is a real question
+about who bears the movement between the two. **Not designed here, and not
+guessed at.** Payout amounts are recorded in USD; converting them is a decision
+for whoever wires up an actual transfer.
+
+### 34.6 No backfill
+
+Appointments that were paid before this existed have no entries and are not
+payable through this system. There is no way to synthesise them honestly: the
+entries would have to claim a `depositPaidAt` and a resolution date that were
+never recorded for most of those rows (§33.4). They must be handled out of band,
+and a business's ledger balance is a claim about the period since this commit,
+not about all time.
+
+### 34.7 A test now pins the `cancelledBy` inference
+
+§33.4's analytics figure infers "`cancelledBy IS NULL` means the row predates
+§33". That is only sound while every path writing `CANCELLED` sets it. A test
+now reads `src/`, finds every `status: AppointmentStatus.CANCELLED` that sits
+inside a `data:` block, asserts there are exactly two, and asserts each sets
+`cancelledBy` in the same write — plus exercises both paths for real. A third
+path added without it fails here, rather than quietly poisoning a money figure
+months later.

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { AppointmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { LedgerService } from '../ledger/ledger.service';
 
 /** How long after an appointment ends before it is resolved automatically. */
 export const AUTO_TRANSITION_GRACE_HOURS = 24;
@@ -27,7 +28,10 @@ export const AUTO_TRANSITION_GRACE_HOURS = 24;
 export class AppointmentsScheduler {
   private readonly logger = new Logger(AppointmentsScheduler.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ledger: LedgerService,
+  ) {}
 
   // Every 15 minutes. Written as a raw expression because @nestjs/schedule's
   // CronExpression enum has no 15-minute constant.
@@ -75,9 +79,16 @@ export class AppointmentsScheduler {
 
     const now = new Date();
     for (const appointment of due) {
-      await this.prisma.appointment.update({
-        where: { id: appointment.id },
-        data: { status: to, [timestampField]: now },
+      // Per appointment, and transactional: the status change and the ledger
+      // release it triggers commit together. An appointment auto-resolved
+      // without its money becoming payable would leave a business unpaid with
+      // nothing in the record to explain why.
+      await this.prisma.$transaction(async (tx) => {
+        await tx.appointment.update({
+          where: { id: appointment.id },
+          data: { status: to, [timestampField]: now },
+        });
+        await this.ledger.releaseOnResolution(tx, appointment.id);
       });
       this.logger.log(
         `Auto-transition: appointment ${appointment.id} (location ${appointment.locationId}) ` +

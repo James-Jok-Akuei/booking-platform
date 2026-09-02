@@ -5,6 +5,7 @@ import { Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { LedgerService } from '../../src/ledger/ledger.service';
 import { MailService } from '../../src/mail/mail.service';
 import { NotificationsService } from '../../src/notifications/notifications.service';
 import { ChatService } from '../../src/chat/chat.service';
@@ -27,7 +28,13 @@ import { PAYMENT_PROVIDER } from '../../src/payments/payment-provider.interface'
 export async function createTestModule(providers: Provider[]): Promise<TestingModule> {
   return Test.createTestingModule({
     imports: [ConfigModule.forRoot({ isGlobal: true })],
-    providers: [PrismaService, ...providers],
+    // LedgerService sits alongside PrismaService rather than in each suite's
+    // list, and REAL rather than stubbed. It reaches nothing outside the
+    // database, and "money was recorded" is an invariant that should hold in
+    // every suite that books an appointment — not only the one testing it
+    // (§34). A stub here would let a missing ledger write pass unnoticed
+    // everywhere except the ledger suite.
+    providers: [PrismaService, LedgerService, ...providers],
   }).compile();
 }
 
