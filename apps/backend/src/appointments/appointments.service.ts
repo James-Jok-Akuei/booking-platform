@@ -31,6 +31,11 @@ import { computeAppointmentAmounts } from './appointment-pricing';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ChatService } from '../chat/chat.service';
 import { LedgerService } from '../ledger/ledger.service';
+import {
+  ApproxSettlementMap,
+  RateContext,
+  approxSettlementMap,
+} from '../payments/approx-settlement';
 import { NotificationType } from '@prisma/client';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
@@ -298,7 +303,8 @@ export class AppointmentsService {
         `at ${platformFeePercentage.toFixed(2)}% platform fee.`,
     );
 
-    return appointment;
+    // Always a customer: only @Roles(CUSTOMER) reaches this route.
+    return this.withApproxSettlement(appointment, await this.rateContext());
   }
 
   /**
@@ -853,7 +859,11 @@ export class AppointmentsService {
         : `Cancelled by the business.${updated.cancellationReason ? ` Reason: ${updated.cancellationReason}` : ''}`,
     );
 
-    return updated;
+    // Shared route: the caller may be either party, so the figure follows who
+    // is actually reading it, not which endpoint they used.
+    if (appointment.customerId !== userId) return updated;
+
+    return this.withApproxSettlement(updated, await this.rateContext());
   }
 
   /**
@@ -942,14 +952,74 @@ export class AppointmentsService {
     return updated;
   }
 
+  // ---------- Approximate local-currency figures (§39) ----------
+
+  /**
+   * The rate for THIS request, read once.
+   *
+   * Once per response, never once per item: a listing whose two services were
+   * converted at different rates would be indefensible to anyone comparing
+   * them, and it would happen exactly when the rate changed mid-request.
+   *
+   * Returns null when no rate is configured, which is the signal to omit the
+   * figure entirely rather than show a zero or a placeholder.
+   */
+  private async rateContext(): Promise<RateContext | null> {
+    // A STALE rate still converts. Staleness is an admin problem, surfaced to
+    // admins (§37), and must not degrade what a customer sees. An UNSET rate
+    // returns null, which omits the figure entirely — and reads quietly,
+    // because this runs on every customer read (§39.2).
+    return this.settings.getExchangeRateForDisplay();
+  }
+
+  /**
+   * Attaches the indicative figures to one appointment response.
+   *
+   * Every USD amount on the response gets one, including the fee split. Picking
+   * a subset would leave a client converting the rest itself, which is the
+   * thing this exists to prevent. `providerCurrencyAmountCents` is deliberately
+   * absent: it is already in the provider's currency and converting it again
+   * would be nonsense.
+   */
+  private withApproxSettlement<
+    T extends {
+      servicePriceCents?: number | null;
+      depositAmountCents?: number | null;
+      platformFeeAmountCents?: number | null;
+      businessAmountCents?: number | null;
+    },
+  >(appointment: T, context: RateContext | null): T & { approxSettlement?: ApproxSettlementMap } {
+    if (!context) return appointment;
+
+    return {
+      ...appointment,
+      approxSettlement: approxSettlementMap(
+        {
+          servicePriceCents: appointment.servicePriceCents,
+          depositAmountCents: appointment.depositAmountCents,
+          platformFeeAmountCents: appointment.platformFeeAmountCents,
+          businessAmountCents: appointment.businessAmountCents,
+        },
+        context,
+      ),
+    };
+  }
+
   // ---------- Reads ----------
 
   async findOne(userId: string, appointmentId: string) {
-    await this.requireParticipantAppointment(userId, appointmentId);
-    return this.prisma.appointment.findUniqueOrThrow({
+    const scope = await this.requireParticipantAppointment(userId, appointmentId);
+    const appointment = await this.prisma.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
       select: APPOINTMENT_SELECT,
     });
+
+    // Only the customer. A business prices in USD and is paid against USD, so
+    // an indicative pound figure in their view would invite them to reconcile
+    // a payout against a number that means nothing (§39.3).
+    if (scope.customerId !== userId) return appointment;
+
+    return this.withApproxSettlement(appointment, await this.rateContext());
   }
 
   /**
@@ -1004,7 +1074,16 @@ export class AppointmentsService {
       }),
     ]);
 
-    return { total, limit, offset, appointments };
+    // One rate read for the whole page, applied to every item.
+    const context =
+      role === UserRole.CUSTOMER ? await this.rateContext() : null;
+
+    return {
+      total,
+      limit,
+      offset,
+      appointments: appointments.map((a) => this.withApproxSettlement(a, context)),
+    };
   }
 
   // ---------- Access helpers ----------

@@ -4123,3 +4123,109 @@ in the guard, per §27.1. **The sibling fee and exchange-rate methods do not** �
 they predate that rule and remain guard-only. Widening them is a refactor of the
 settings module in its own right, and smuggling it into a commit about the
 payout hold would make both harder to review. Logged here as outstanding.
+
+---
+
+## 39. Approximate SSP alongside USD (2026-09-02)
+
+Customers in Juba shop in pounds; every price this platform shows is USD (§18).
+Customer-facing reads now carry an indicative local-currency figure beside each
+USD amount. **USD remains the authoritative price and the unit of account.**
+
+### 39.1 What surfaces actually exist
+
+Worth stating plainly, because the brief assumed more of them than the codebase
+has: **there are no public service-listing or location-browsing endpoints.** The
+only routes reachable without a business account are
+`GET /locations/:id/availability` and `GET /locations/:id/reviews`, and neither
+carries a money amount. Services are listed only through `GET /business/services`,
+which is business-facing by definition.
+
+So the customer-facing money surface is the appointment, and that is what
+changed:
+
+| Response | Changed |
+|---|---|
+| `POST /appointments` (create) | yes — always a customer |
+| `GET /appointments` (list) | yes, when the caller's role is CUSTOMER |
+| `GET /appointments/:id` | yes, when the caller is the appointment's customer |
+| `POST /appointments/:id/cancel` | yes, same test — the route is shared |
+| Business transitions (verify / complete / no-show) | no |
+| `PATCH /admin/appointments/:id/business-cancellation` | no |
+| Everything else | no |
+
+Three of those routes are shared between a customer and a business member, so
+the figure follows **who is reading**, not which endpoint they used. Tested over
+HTTP: the same appointment, fetched by both, differs only by the presence of
+this field.
+
+### 39.2 Shape, and the one deviation
+
+Per amount, keyed by the USD field it converts:
+
+```
+depositAmountCents: 900,
+approxSettlement: {
+  depositAmountCents: { currency, amountMinor, exchangeRate, rateAsOf, approximate },
+  ...
+}
+```
+
+The brief's shape was an `approxSettlement` object beside each amount. A single
+top-level object would have been ambiguous about which amount it converted, and
+four suffixed sibling keys would have bloated the response — so the object is
+keyed by field name. The substance is unchanged: one figure per amount, so **a
+client never converts anything itself**, which was the requirement.
+
+Every USD amount gets one, the fee split included. Converting a subset would
+leave a client converting the rest, which is the thing this exists to prevent.
+`providerCurrencyAmountCents` deliberately gets none — it is already in the
+provider's currency. A **null** amount is skipped rather than converted to zero:
+a missing price and a free one are different claims.
+
+**Rounded to whole units.** The rate behind this is set by hand and may be a day
+old (§37), so presenting piastres would claim precision the number does not
+have. `amountMinor` keeps the platform's integer-minor-units convention and is
+therefore always a multiple of 100 — the rounding is in the value, not the unit.
+
+One thing this commit had to fix in passing: `getExchangeRate()` logs an ERROR
+when the settings row is missing, which is right for the payment path and wrong
+for a display read that now runs on every customer request. An unconfigured rate
+would have produced an error every few seconds, which is how a log stops being
+read. Display uses `getExchangeRateForDisplay()`, which returns null quietly.
+
+### 39.3 Rules, and who does not get it
+
+- **One rate read per response**, reused for every item in a list. A page whose
+  two items were converted at different rates would be indefensible to anyone
+  comparing them, and it would happen precisely when the rate moved
+  mid-request. Asserted by spying on the read and requiring exactly one call.
+- **Unset rate → the field is absent.** Not zero, not null, not a placeholder.
+- **Stale rate → the figure is still shown.** Staleness is an admin problem and
+  is surfaced to admins (§37); degrading what a customer sees over it would
+  punish the wrong person. `rateAsOf` is disclosed, so a client can label it.
+- **Business and admin views stay USD-only.** A business prices in USD and is
+  paid against USD (§35), so an indicative pound figure in their view would
+  invite them to reconcile a payout against a number that means nothing.
+
+**Never persisted, never compared, never calculated with, never accepted as
+input.** There is no column, and the global `forbidNonWhitelisted` pipe rejects
+`approxSettlement` on writes with a 400 rather than ignoring it — tested on two
+write endpoints. A test also asserts the appointment row is byte-identical
+before and after a rate change that visibly moves the displayed figure.
+
+### 39.4 The gap between shown and charged is the point
+
+`initiateDepositPayment` still converts from its own rate read and holds that
+figure from the read until the customer approves MTN's prompt. Unchanged, and
+tested to be unchanged: the charge keeps full precision while only the *display*
+figure rounds to whole pounds.
+
+So a displayed figure can differ from the charged one if the rate moves between
+browsing and paying. That is exactly why it is labelled `approximate: true` — a
+literal, not a computed flag, because it is never false.
+
+**No rate is locked or reserved at browse time**, deliberately. A quoted rate the
+platform cannot honour is worse than an honest approximation: honouring it would
+mean either eating the difference on every stale quote or refusing payments that
+drifted, and both are worse failures than a customer seeing "approximately".

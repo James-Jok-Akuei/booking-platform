@@ -134,6 +134,40 @@ export class PlatformSettingsService {
   }
 
   /**
+   * The rate, read for DISPLAY only, without raising an alarm when it is absent.
+   *
+   * `getExchangeRate()` logs an error when the settings row is missing, which is
+   * right for the payment path — that is a real "someone deleted your settings"
+   * emergency. It is wrong here: this runs on every customer appointment read,
+   * and an unconfigured rate would turn a cosmetic omission into an error every
+   * few seconds, which is how a log stops being read at all (§39.2).
+   *
+   * Null means "show nothing", never "show zero".
+   */
+  async getExchangeRateForDisplay(): Promise<{
+    providerCurrency: string;
+    rate: Prisma.Decimal;
+    updatedAt: Date | null;
+  } | null> {
+    const setting = await this.prisma.platformSetting.findUnique({
+      where: { id: PLATFORM_SETTING_ID },
+      select: {
+        providerCurrency: true,
+        exchangeRateUsdToProviderCurrency: true,
+        exchangeRateUpdatedAt: true,
+      },
+    });
+
+    if (!setting?.exchangeRateUsdToProviderCurrency) return null;
+
+    return {
+      providerCurrency: setting.providerCurrency,
+      rate: setting.exchangeRateUsdToProviderCurrency,
+      updatedAt: setting.exchangeRateUpdatedAt,
+    };
+  }
+
+  /**
    * Whether the manual rate has gone past its configured age, and by how much.
    *
    * A rate that has NEVER been set is not "stale" — it is missing, which is a

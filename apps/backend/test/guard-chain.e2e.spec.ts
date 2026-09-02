@@ -778,6 +778,70 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('approxSettlement is display only, over HTTP (§39)', () => {
+    it('is rejected as input on a write endpoint -> 400', async () => {
+      const res = await request(url, '/appointments', {
+        method: 'POST',
+        token: tokenCustomerA,
+        body: {
+          locationId: alpha.locationId,
+          serviceId: alpha.serviceId,
+          startTime: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+          approxSettlement: { currency: 'SSP', amountMinor: 1 },
+        },
+      });
+
+      // forbidNonWhitelisted: the field is not on any DTO, so it cannot be
+      // smuggled in and quietly ignored either.
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('approxSettlement');
+    });
+
+    it('is rejected on cancel too', async () => {
+      const res = await request(url, `/appointments/${appointmentA}/cancel`, {
+        method: 'POST',
+        token: tokenCustomerA,
+        body: { approxSettlement: { currency: 'SSP', amountMinor: 1 } },
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('approxSettlement');
+    });
+
+    it('appears for the customer and not for the business on the same appointment', async () => {
+      await prisma.platformSetting.upsert({
+        where: { id: 'platform' },
+        update: {
+          providerCurrency: 'SSP',
+          exchangeRateUsdToProviderCurrency: 650,
+          exchangeRateUpdatedAt: new Date(),
+        },
+        create: {
+          id: 'platform',
+          providerCurrency: 'SSP',
+          exchangeRateUsdToProviderCurrency: 650,
+          exchangeRateUpdatedAt: new Date(),
+        },
+      });
+
+      const asCustomer = await request(url, `/appointments/${appointmentA}`, {
+        token: tokenCustomerA,
+      });
+      const asBusiness = await request(url, `/appointments/${appointmentA}`, {
+        token: tokenAlpha,
+      });
+
+      expect(asCustomer.status).toBe(200);
+      expect(asBusiness.status).toBe(200);
+      expect(asCustomer.body).toHaveProperty('approxSettlement');
+      // Same route, same appointment: the figure follows the reader.
+      expect(asBusiness.body).not.toHaveProperty('approxSettlement');
+      expect(asBusiness.body.depositAmountCents).toBe(
+        asCustomer.body.depositAmountCents,
+      );
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {
