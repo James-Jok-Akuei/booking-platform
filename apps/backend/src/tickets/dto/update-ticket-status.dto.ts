@@ -12,7 +12,14 @@ import {
 import { BillingAdjustmentType, TicketStatus } from '@prisma/client';
 import { MaxDecimalPlaces } from '../../common/validators/max-decimal-places.validator';
 
-/** Optional payload an admin may attach when resolving a ticket. */
+/**
+ * Optional payload an admin may attach when resolving a ticket.
+ *
+ * Recording a decision, not moving money. FEE_REFUND says the platform fee
+ * taken at booking should go back to the customer (the business-cancelled
+ * case); GATEWAY_FEE_DEBIT says the provider's charge on that refund is borne
+ * by the business. Nothing settles either yet — see DECISIONS.md §25.
+ */
 export class BillingAdjustmentDto {
   @IsUUID()
   appointmentId!: string;

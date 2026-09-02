@@ -2720,10 +2720,9 @@ So:
   correctly attributed, and remain unapplied.
 - **No invoicing was restructured or invented**, per the instruction.
 
-**This needs a decision before it means anything.** Either the fee model changes
-to monthly invoicing (a reversal of §2), or "fee credit" means refunding a fee
-already taken from a deposit — a different operation, closer to the refund
-accounting §17.7 already lists as missing.
+~~**This needs a decision before it means anything.**~~ **Answered in §25:** the
+fee model is unchanged, and the adjustment types were renamed to match it. The
+table's invoicing-shaped fields were corrected before any row was ever written.
 
 ### 24.8 A regression this module exposed — introduced in §23, now fixed
 
@@ -2799,3 +2798,79 @@ project's standard validation error shape.
 - **No attachment cleanup** when a ticket is deleted; tickets are never deleted.
 - **Notifications are not debounced** the way chat messages are (§21.5). Ticket
   traffic is far lower, but a busy thread will email per message.
+
+---
+
+## 25. Correcting BillingAdjustment to the real fee model (2026-09-02)
+
+§24.7 flagged that `BillingAdjustment` was specced against monthly invoicing,
+which this platform does not do. This corrects the table before it holds a
+single row.
+
+### 25.1 The confirmed money rules
+
+The fee model is unchanged from §2 and §16.3 — the platform fee is a percentage
+taken out of the customer's **deposit at booking time**. What was missing was
+what happens when a booking falls through:
+
+- **Business cancels** → the customer is refunded **in full**, including the
+  platform fee taken at booking. The payment gateway's own charge (1–2%) on that
+  refund is borne by the **business**.
+- **Customer cancels, or no-shows** → **no refund at all.** Nothing reverses.
+  This is §2's non-refundable deposit, unchanged.
+
+The asymmetry is the point: the deposit exists to make a customer's commitment
+real, so it cannot survive the business being the one to break it.
+
+### 25.2 What changed, and why the names mattered
+
+| Was | Now |
+|---|---|
+| `FEE_CREDIT` | `FEE_REFUND` |
+| `FEE_CHARGE` | `GATEWAY_FEE_DEBIT` |
+| `appliedInvoiceId` | `settledAt` + `settlementRef` |
+| index `(businessId, appliedInvoiceId)` | index `(businessId, settledAt)` |
+
+"Credit" and "applied invoice" are invoicing words. They describe adjusting a
+bill that has not been sent yet — and this platform never sends one, because the
+money was already taken at booking. Left in place, those names would have
+quietly reintroduced the invoicing premise every time someone read the model:
+the schema would have been documentation for a system that does not exist.
+
+The replacements describe what actually has to happen. A `FEE_REFUND` is settled
+by reversing a charge at the payment provider, so `settledAt` records when the
+money moved and `settlementRef` records the provider's reference for it —
+the same reconciliation pairing as `providerCurrencyAmountCents` +
+`exchangeRateUsed` on Appointment (§18.4).
+
+`GATEWAY_FEE_DEBIT` exists because the gateway's cut is not recoverable: when a
+business cancels and the customer is made whole, someone absorbs the provider's
+1–2%, and that someone is the business.
+
+The migration rewrites the enum and columns in place, guarded by a check that
+aborts if the table is not empty. It was — the feature shipped one commit
+earlier and only an admin resolving a ticket can write to it.
+
+### 25.3 Still records intent, deliberately
+
+**Nothing writes these rows automatically and nothing settles them.** There is
+no cancellation-refund flow, and this commit did not build one. `settledAt` is
+null on every row by definition.
+
+That is correct for now: the row is a record that an admin decided a refund is
+owed. Building the movement is a payments concern and belongs with the refund
+accounting §17.7 already lists as missing.
+
+**Nothing reporter-facing says or implies money has moved.** Verified, and now
+asserted by a test: the adjustment appears in no reporter response and no
+notification — not on the transition response, not on the ticket detail view.
+The only thing the reporter sees is the admin's own `resolutionNote`, which
+describes a decision. Telling someone they have been refunded when no money has
+moved would be worse than telling them nothing, and it is the kind of wording
+that ends up in a dispute.
+
+### 25.4 Verified
+
+169 tests pass. The new one asserts that a resolution carrying a FEE_REFUND
+leaks neither the type, nor the word "adjustment", nor `settledAt` into any
+reporter-facing shape, while still surfacing the admin's note.

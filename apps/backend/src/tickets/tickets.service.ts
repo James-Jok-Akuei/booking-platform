@@ -560,11 +560,15 @@ export class TicketsService {
   /**
    * Records an adjustment an admin attached while resolving.
    *
-   * IMPORTANT: this stores intent and nothing more. The platform has no
-   * invoicing — the platform fee is taken from the customer's deposit at
-   * booking time (§2, §16.3), not billed monthly — so there is no billable
-   * count to exclude an appointment from and no invoice run to pick this up.
-   * `appliedInvoiceId` stays null. See DECISIONS.md §24.
+   * IMPORTANT: this stores INTENT and nothing more. No money moves because a
+   * row exists here. The platform fee is taken from the customer's deposit at
+   * booking (§2, §16.3), so settling a FEE_REFUND means reversing that charge
+   * at the payment provider — which nothing does yet. `settledAt` stays null
+   * on every row by definition. See DECISIONS.md §25.
+   *
+   * Nothing about this adjustment is returned to the reporter or mentioned in
+   * any notification, deliberately: telling someone they have been refunded
+   * when no money has moved is worse than telling them nothing.
    */
   private async recordBillingAdjustment(
     ticket: { id: string; businessId: string | null; reference: string },
@@ -601,7 +605,8 @@ export class TicketsService {
     this.logger.warn(
       `Billing adjustment ${adjustment.id} (${dto.type} ${dto.amount}) recorded against ` +
         `appointment ${dto.appointmentId} for ticket ${ticket.reference}. ` +
-        'NOT APPLIED: the platform has no invoicing, so nothing consumes this row yet.',
+        'UNSETTLED: nothing moves money against this row yet — it is a record of ' +
+        'the decision only.',
     );
 
     return adjustment;

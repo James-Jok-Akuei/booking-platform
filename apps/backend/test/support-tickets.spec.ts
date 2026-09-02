@@ -583,7 +583,7 @@ describe('Support tickets (§24)', () => {
   });
 
   describe('billing adjustments', () => {
-    it('records a FEE_CREDIT against the appointment when resolving', async () => {
+    it('records a FEE_REFUND against the appointment when resolving', async () => {
       const appointment = await createAppointment(prisma, {
         business: alpha,
         customerId: customerA.userId,
@@ -611,7 +611,7 @@ describe('Support tickets (§24)', () => {
         resolutionNote: 'Credit granted.',
         billingAdjustment: {
           appointmentId: appointment.id,
-          type: BillingAdjustmentType.FEE_CREDIT,
+          type: BillingAdjustmentType.FEE_REFUND,
           amount: 4.5,
           reason: 'Appointment did not take place.',
         },
@@ -620,19 +620,66 @@ describe('Support tickets (§24)', () => {
       const adjustment = await prisma.billingAdjustment.findFirstOrThrow({
         where: { ticketId: ticket.id },
       });
-      expect(adjustment.type).toBe(BillingAdjustmentType.FEE_CREDIT);
+      expect(adjustment.type).toBe(BillingAdjustmentType.FEE_REFUND);
       expect(adjustment.amount.toString()).toBe('4.5');
       expect(adjustment.businessId).toBe(alpha.businessId);
       expect(adjustment.appointmentId).toBe(appointment.id);
     });
 
-    it('leaves the adjustment unapplied — nothing consumes it yet', async () => {
+    it('leaves the adjustment UNSETTLED — no money has moved', async () => {
       const adjustments = await prisma.billingAdjustment.findMany();
 
-      // There is no invoicing in this platform, so no run can pick these up.
-      // See DECISIONS.md §24 for the full finding.
+      // Nothing settles these rows yet: a FEE_REFUND means reversing a charge
+      // at the payment provider, which is not built. See DECISIONS.md §25.
       expect(adjustments.length).toBeGreaterThan(0);
-      expect(adjustments.every((a) => a.appliedInvoiceId === null)).toBe(true);
+      expect(adjustments.every((a) => a.settledAt === null)).toBe(true);
+      expect(adjustments.every((a) => a.settlementRef === null)).toBe(true);
+    });
+
+    it('tells the reporter nothing that implies money has moved', async () => {
+      const appointment = await createAppointment(prisma, {
+        business: alpha,
+        customerId: customerA.userId,
+        status: AppointmentStatus.COMPLETED,
+        verified: true,
+      });
+      const ticket = await tickets.create(asUser(customerA.userId, 'CUSTOMER'), {
+        category: TicketCategory.APPOINTMENT_DISPUTE,
+        subject: 'Business cancelled on me',
+        body: 'They called it off.',
+        appointmentId: appointment.id,
+      });
+      await tickets.transitionStatus({
+        ticketId: ticket.id,
+        to: TicketStatus.IN_PROGRESS,
+        actor: 'ADMIN',
+        actorUserId: admin.userId,
+      });
+
+      const resolved = await tickets.transitionStatus({
+        ticketId: ticket.id,
+        to: TicketStatus.RESOLVED,
+        actor: 'ADMIN',
+        actorUserId: admin.userId,
+        resolutionNote: 'Approved for a fee refund.',
+        billingAdjustment: {
+          appointmentId: appointment.id,
+          type: BillingAdjustmentType.FEE_REFUND,
+          amount: 4.5,
+          reason: 'Business cancelled.',
+        },
+      });
+
+      // The adjustment is not part of any reporter-facing shape at all: not on
+      // the transition response, and not on the detail view.
+      const detail = await tickets.findOne(asUser(customerA.userId, 'CUSTOMER'), ticket.id);
+      const serialised = JSON.stringify(resolved) + JSON.stringify(detail);
+
+      expect(serialised).not.toContain('FEE_REFUND');
+      expect(serialised).not.toContain('adjustment');
+      expect(serialised).not.toContain('settledAt');
+      // Only the admin's own note is surfaced, which is a decision, not a receipt.
+      expect(resolved.resolutionNote).toBe('Approved for a fee refund.');
     });
 
     it("rejects an adjustment for another business's appointment", async () => {
@@ -659,7 +706,7 @@ describe('Support tickets (§24)', () => {
           resolutionNote: 'Attempting a cross-business credit.',
           billingAdjustment: {
             appointmentId: foreign.id,
-            type: BillingAdjustmentType.FEE_CREDIT,
+            type: BillingAdjustmentType.FEE_REFUND,
             amount: 1,
             reason: 'Should not be allowed.',
           },

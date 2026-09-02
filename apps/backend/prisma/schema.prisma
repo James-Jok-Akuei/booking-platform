@@ -88,9 +88,20 @@ enum TicketAuthorType {
   ADMIN
 }
 
+/// What kind of money movement an admin recorded.
+///
+/// Named for how this platform actually charges (DECISIONS.md §2, §25): the
+/// platform fee comes out of the customer's deposit at booking, so there is
+/// nothing to "credit" against a future invoice — only a fee already taken that
+/// may need refunding, or a gateway cost the business bears.
 enum BillingAdjustmentType {
-  FEE_CREDIT
-  FEE_CHARGE
+  /// The platform fee taken at booking should go back to the customer.
+  /// Recorded when a BUSINESS cancels: the customer is refunded in full.
+  FEE_REFUND
+
+  /// The payment gateway's own charge (1-2%) on a refunded transaction, borne
+  /// by the business that cancelled.
+  GATEWAY_FEE_DEBIT
 }
 
 /// What happened. One value per notifiable event, so a recipient's history is
@@ -944,11 +955,11 @@ model TicketAttachment {
 
 /// A fee credit or charge an admin recorded while resolving a ticket.
 ///
-/// NOTE: this table records intent only. The platform has no invoicing —
-/// the platform fee is taken from the customer's deposit at booking time
-/// (DECISIONS.md §2, §16.3), not invoiced monthly — so nothing consumes these
-/// rows yet. `appliedInvoiceId` is a plain nullable String rather than a
-/// relation because there is no Invoice model to point at. See §24.
+/// NOTE: this table records ADMIN INTENT only. Nothing writes to it
+/// automatically and nothing consumes it — no money moves because a row exists
+/// here. The platform fee is taken from the customer's deposit at booking
+/// (DECISIONS.md §2, §16.3), so settlement means reversing that charge at the
+/// payment provider, not adjusting an invoice. See §25.
 model BillingAdjustment {
   id String @id @default(uuid())
 
@@ -965,16 +976,21 @@ model BillingAdjustment {
   amount Decimal               @db.Decimal(12, 2)
   reason String
 
-  /// Null until an invoice run picks it up. Nothing sets this today.
-  appliedInvoiceId String?
+  /// When the money actually moved, and the provider's reference for it.
+  /// Both null until something settles this adjustment — nothing does yet, so
+  /// every row is unsettled by definition. They exist so that when refunds are
+  /// built, a settled adjustment is distinguishable from an outstanding one
+  /// without a second table.
+  settledAt     DateTime?
+  settlementRef String?
 
   createdById String
   createdBy   User   @relation("CreatedAdjustments", fields: [createdById], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
-  /// The query a future invoice run makes: this business's unapplied rows.
-  @@index([businessId, appliedInvoiceId])
+  /// The query a future settlement run makes: this business's outstanding rows.
+  @@index([businessId, settledAt])
   @@map("billing_adjustments")
 }
 
