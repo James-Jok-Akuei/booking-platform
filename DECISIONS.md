@@ -3377,3 +3377,97 @@ itself as a floor.
 The fix is small (`cancelledBy` and `cancellationReason`, written where the
 notification wording is already decided) but it is a schema and policy change,
 and this commit was scoped to pricing. **Logged as the blocker for refunds.**
+
+---
+
+## 31. Customer display names for reviews (2026-09-02)
+
+Reviews had no byline at all. `User` has no name field (§1), and §28
+deliberately exposes nothing about the customer publicly, so every public review
+was attributed to nobody. That is not privacy, it is a missing feature: a reader
+cannot weigh feedback with no author, and a customer had no way to sign their
+own words.
+
+### 31.1 On the User, not on the Review
+
+`User.displayName String?`. One field, one source of truth: a customer who
+changes their name changes it on every review at once, instead of accumulating
+one frozen name per review and appearing to be three different people.
+
+This is the opposite of the snapshot rule in §16.3 and §30, and deliberately so.
+Money must be snapshotted because it describes a transaction that happened at a
+moment. A name describes a person now, and the person is the same person on all
+of their reviews. Copying it per review would also make moderation a loop over
+rows instead of one write (§31.4).
+
+Nullable, no backfill.
+
+### 31.2 "Anonymous" is rendered, never stored
+
+Null renders as `Anonymous` at read time. The literal string is never written on
+a customer's behalf.
+
+The difference matters exactly once, and it is the case that would otherwise be
+silently wrong: a customer who **chooses** "Anonymous" and a customer who skips
+the field look identical to a reader, and must not be identical in the database.
+Storing the literal would erase that, and it would also make an admin clear
+(§31.4) indistinguishable from a deliberate choice.
+
+Every review response now carries a `displayName` string. `GET /users/me`
+returns the raw value — to the owner, null means "you have not set one", which
+is a different statement from "Anonymous".
+
+### 31.3 Exposure follows §28, with the name added
+
+| Viewer | Sees |
+| --- | --- |
+| Anonymous / any other user | `displayName` only |
+| Owning business, admin | `displayName` + `{ id, email }`, unchanged |
+
+The public listing selects `displayName` and nothing else from the customer —
+`id` and `email` are added to the select only for entitled viewers, rather than
+selected and stripped afterwards. A field somebody adds to that select later
+cannot leak to an anonymous reader, because it was never fetched.
+
+### 31.4 Set through the review endpoints; there is no profile endpoint
+
+`POST /appointments/:id/reviews` and `PATCH /reviews/:id` both accept an
+optional `displayName` and write it to the `User` **in the same transaction** as
+the review. A review that posted while its byline failed to save would publish
+under the wrong name, visibly.
+
+There is no profile-update endpoint in this project — `/users/me` is read-only
+and nothing anywhere else writes a `User` row — and none was invented for this.
+Omitting the field keeps whatever the customer has; supplying it overwrites,
+last write wins. The edit path is bounded by the existing 7-day window (§28).
+
+Renaming does **not** set `editedAt`: that marker tells a reader the review's
+content changed, and changing your own name is not that.
+
+**Moderation:** `PATCH /admin/users/:id/display-name/clear`, admin only, reason
+required, and the customer is notified (`DISPLAY_NAME_CLEARED`) exactly as
+review hiding notifies them — moderation nobody is told about reads as a bug to
+the person it happened to. It clears to **null**, so the customer is shown as
+"Anonymous" and can set a new name on their next review or edit. There is no
+admin *edit*: substituting wording an administrator preferred would publish
+words under a customer's byline that they never wrote.
+
+The role is asserted in `UsersService` as well as by `@Roles(ADMIN)`, per §27.1
+— a service method that trusts a decorator on a controller class is one refactor
+away from being callable by anyone. Tested at both levels.
+
+### 31.5 Validation, and what it deliberately rejects
+
+Control and format characters are stripped and the value trimmed **before** any
+other rule, so length is measured on what will actually be displayed and
+invisible padding cannot smuggle a one-character name past a two-character
+minimum. Then: 2–40 characters, no `@` together with a dot, and nothing that
+reads as a link (a scheme, a `www.` prefix, a bare `something.tld`, or anything
+`new URL()` accepts).
+
+**Known trade-off:** the bare-domain rule rejects a single unspaced token ending
+in a dot and two or more letters, so `Anne.Marie` is refused while `Anne Marie`
+and `Anne-Marie` are accepted. Chosen knowingly — `mysite.com` as a review
+byline is advertising on someone else's page, and the two forms are not
+distinguishable by shape. If it proves a real annoyance the rule to relax is
+that one, not the email rule.

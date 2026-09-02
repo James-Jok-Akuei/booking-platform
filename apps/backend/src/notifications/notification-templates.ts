@@ -166,6 +166,17 @@ export function renderNotification(
           'If you believe this is a mistake, raise a support ticket.',
       };
 
+    case NotificationType.DISPLAY_NAME_CLEARED:
+      return {
+        subject: 'Your review display name was removed',
+        body:
+          'An administrator has removed the name shown beside your reviews. ' +
+          'They now appear as "Anonymous".\n\n' +
+          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
+          'You can set a new one the next time you write or edit a review. ' +
+          'If you believe this is a mistake, raise a support ticket.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,

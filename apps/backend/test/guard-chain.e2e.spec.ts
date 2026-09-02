@@ -474,6 +474,87 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('clearing a display name over HTTP (§31)', () => {
+    const clear = (targetId: string, token: string | undefined, body: unknown) =>
+      request(url, `/admin/users/${targetId}/display-name/clear`, {
+        method: 'PATCH',
+        token,
+        body,
+      });
+
+    it('rejects a CUSTOMER token -> 403', async () => {
+      const res = await clear(customerB.userId, tokenCustomerA, { reason: 'I object.' });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('rejects a BUSINESS token -> 403', async () => {
+      const res = await clear(customerA.userId, tokenAlpha, { reason: 'Bad name.' });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('rejects an unauthenticated request -> 401', async () => {
+      const res = await clear(customerA.userId, undefined, { reason: 'Bad name.' });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('rejects an admin who gives no reason -> 400', async () => {
+      const res = await clear(customerA.userId, tokenAdmin, {});
+
+      // The ValidationPipe, not the service: moderation without a recorded
+      // reason should never reach the database in the first place.
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('reason');
+    });
+
+    it('lets an admin with a reason through -> 200, and the name is null', async () => {
+      await prisma.user.update({
+        where: { id: customerA.userId },
+        data: { displayName: 'Moderate Me' },
+      });
+
+      const res = await clear(customerA.userId, tokenAdmin, {
+        reason: 'Impersonates a business.',
+      });
+
+      expect(res.status).toBe(200);
+      const row = await prisma.user.findUniqueOrThrow({
+        where: { id: customerA.userId },
+        select: { displayName: true },
+      });
+      // Null, not the literal 'Anonymous' the reader will be shown.
+      expect(row.displayName).toBeNull();
+    });
+  });
+
+  describe('a display name over HTTP passes through the ValidationPipe', () => {
+    it('rejects an email address as a display name -> 400', async () => {
+      const res = await request(url, `/appointments/${appointmentA}/reviews`, {
+        method: 'POST',
+        token: tokenCustomerA,
+        body: { rating: 5, displayName: 'jane.doe@example.com' },
+      });
+
+      // 400 from the pipe, before the service can rule the appointment out
+      // for not being COMPLETED - the pipe runs first.
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('displayName');
+    });
+
+    it('rejects a one-character display name -> 400', async () => {
+      const res = await request(url, `/appointments/${appointmentA}/reviews`, {
+        method: 'POST',
+        token: tokenCustomerA,
+        body: { rating: 5, displayName: ' A ' },
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('displayName');
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {

@@ -2,10 +2,20 @@ import { AppointmentStatus, BusinessMemberRole } from '@prisma/client';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { ReviewsService } from '../src/reviews/reviews.service';
+import { UsersService } from '../src/users/users.service';
+import { NotificationsService } from '../src/notifications/notifications.service';
+import {
+  CreateReviewDto,
+  UpdateReviewDto,
+} from '../src/reviews/dto/create-review.dto';
+import { ClearDisplayNameDto } from '../src/users/dto/clear-display-name.dto';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { REVIEW_EDIT_WINDOW_MS } from '../src/reviews/review-window';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
@@ -23,6 +33,7 @@ describe('Reviews (§28)', () => {
   let moduleRef: TestingModule;
   let prisma: PrismaService;
   let reviews: ReviewsService;
+  let users: UsersService;
 
   let admin: { userId: string; email: string };
   let alpha: TestBusiness;
@@ -31,9 +42,14 @@ describe('Reviews (§28)', () => {
   let customerB: { userId: string; email: string };
 
   beforeAll(async () => {
-    moduleRef = await createTestModule([ReviewsService, commonStubs.notifications()]);
+    moduleRef = await createTestModule([
+      ReviewsService,
+      UsersService,
+      commonStubs.notifications(),
+    ]);
     prisma = moduleRef.get(PrismaService);
     reviews = moduleRef.get(ReviewsService);
+    users = moduleRef.get(UsersService);
     await resetDatabase(prisma);
     admin = await createAdmin(prisma);
     alpha = await createBusiness(prisma);
@@ -443,6 +459,397 @@ describe('Reviews (§28)', () => {
       expect(row.comment).toBe('Evidence.');
       expect(row.hiddenReason).toBe('Under dispute.');
       expect(row.hiddenById).toBe(admin.userId);
+    });
+  });
+
+  // ------------------------------------------------------------------
+  // Display names (§31)
+  // ------------------------------------------------------------------
+
+  describe('display names', () => {
+    // Built rather than typed, so they survive an editor and a diff intact.
+    const ZWSP = String.fromCharCode(0x200b);
+    const NUL = String.fromCharCode(0);
+
+    /** What the DTO layer does to a value before the service ever sees it. */
+    const validateDto = async (cls: any, payload: Record<string, unknown>) => {
+      const dto = plainToInstance(cls, payload);
+      const errors = await validate(dto as object);
+      return { dto: dto as { displayName?: string }, errors };
+    };
+
+    const storedName = async (userId: string) =>
+      (
+        await prisma.user.findUniqueOrThrow({
+          where: { id: userId },
+          select: { displayName: true },
+        })
+      ).displayName;
+
+    describe('setting and changing the name', () => {
+      it('stores the name given when the review is created', async () => {
+        const customer = await createCustomer(prisma);
+        const appointment = await completedAppointment(alpha, customer.userId);
+
+        const review = await reviews.create(customer.userId, appointment.id, {
+          rating: 5,
+          displayName: 'Akuei J.',
+        });
+
+        expect(review.displayName).toBe('Akuei J.');
+        expect(await storedName(customer.userId)).toBe('Akuei J.');
+      });
+
+      it('leaves an existing name untouched when the field is omitted', async () => {
+        const customer = await createCustomer(prisma);
+        const first = await completedAppointment(alpha, customer.userId);
+        await reviews.create(customer.userId, first.id, {
+          rating: 5,
+          displayName: 'Nyandeng',
+        });
+
+        const second = await completedAppointment(alpha, customer.userId);
+        const review = await reviews.create(customer.userId, second.id, { rating: 3 });
+
+        // Omitting is not clearing: the second review publishes under the name
+        // they already chose.
+        expect(review.displayName).toBe('Nyandeng');
+        expect(await storedName(customer.userId)).toBe('Nyandeng');
+      });
+
+      it('overwrites the name when supplied on an edit - last write wins', async () => {
+        const customer = await createCustomer(prisma);
+        const appointment = await completedAppointment(alpha, customer.userId);
+        const review = await reviews.create(customer.userId, appointment.id, {
+          rating: 4,
+          displayName: 'Old Name',
+        });
+
+        const updated = await reviews.update(customer.userId, review.id, {
+          displayName: 'New Name',
+        });
+
+        expect(updated.displayName).toBe('New Name');
+        expect(await storedName(customer.userId)).toBe('New Name');
+      });
+
+      it('accepts a display name as the only field on an edit', async () => {
+        const customer = await createCustomer(prisma);
+        const appointment = await completedAppointment(alpha, customer.userId);
+        const review = await reviews.create(customer.userId, appointment.id, {
+          rating: 4,
+          comment: 'Unchanged.',
+        });
+
+        const updated = await reviews.update(customer.userId, review.id, {
+          displayName: 'Renamed',
+        });
+
+        expect(updated.rating).toBe(4);
+        expect(updated.comment).toBe('Unchanged.');
+        // Renaming yourself is not an edit to the review's content, so the
+        // "edited" marker a reader relies on is not raised by it.
+        expect(updated.editedAt).toBeNull();
+      });
+
+      it('still rejects an edit that changes nothing at all', async () => {
+        const customer = await createCustomer(prisma);
+        const appointment = await completedAppointment(alpha, customer.userId);
+        const review = await reviews.create(customer.userId, appointment.id, { rating: 4 });
+
+        await expect(
+          reviews.update(customer.userId, review.id, {}),
+        ).rejects.toBeInstanceOf(BadRequestException);
+      });
+
+      it('renames the byline on EVERY review the customer has left', async () => {
+        // A fresh business, so the listing contains only this customer's work.
+        const shop = await createBusiness(prisma);
+        const customer = await createCustomer(prisma);
+        const a = await completedAppointment(shop, customer.userId);
+        const b = await completedAppointment(shop, customer.userId);
+        const first = await reviews.create(customer.userId, a.id, {
+          rating: 5,
+          displayName: 'Before',
+        });
+        await reviews.create(customer.userId, b.id, { rating: 4 });
+
+        await reviews.update(customer.userId, first.id, { displayName: 'After' });
+
+        const list = await reviews.listForLocation(shop.locationId, undefined, {});
+        expect(list.reviews).toHaveLength(2);
+        // Including the review that was never edited: one name, one place.
+        expect(list.reviews.map((r) => r.displayName)).toEqual(['After', 'After']);
+      });
+
+      it('rejects a display name change aimed at another customer review', async () => {
+        const customer = await createCustomer(prisma);
+        const appointment = await completedAppointment(alpha, customer.userId);
+        const review = await reviews.create(customer.userId, appointment.id, { rating: 5 });
+
+        await expect(
+          reviews.update(customerB.userId, review.id, { displayName: 'Hijack' }),
+        ).rejects.toBeInstanceOf(NotFoundException);
+        // Neither their own name nor the author's was written.
+        expect(await storedName(customerB.userId)).toBeNull();
+        expect(await storedName(customer.userId)).toBeNull();
+      });
+    });
+
+    describe('Anonymous is rendered, never stored', () => {
+      it('renders a customer with no name as Anonymous', async () => {
+        const customer = await createCustomer(prisma);
+        const appointment = await completedAppointment(alpha, customer.userId);
+
+        const review = await reviews.create(customer.userId, appointment.id, { rating: 5 });
+
+        expect(review.displayName).toBe('Anonymous');
+        // Rendered on the way out. Nothing was written.
+        expect(await storedName(customer.userId)).toBeNull();
+      });
+
+      it('keeps a customer who typed Anonymous distinguishable from one who did not', async () => {
+        const chose = await createCustomer(prisma);
+        const skipped = await createCustomer(prisma);
+        const a = await completedAppointment(alpha, chose.userId);
+        const b = await completedAppointment(alpha, skipped.userId);
+
+        const chosen = await reviews.create(chose.userId, a.id, {
+          rating: 5,
+          displayName: 'Anonymous',
+        });
+        const blank = await reviews.create(skipped.userId, b.id, { rating: 5 });
+
+        // Identical to a reader...
+        expect(chosen.displayName).toBe('Anonymous');
+        expect(blank.displayName).toBe('Anonymous');
+        // ...and never identical in the database. This is the whole reason the
+        // literal string is not written on a customer's behalf.
+        expect(await storedName(chose.userId)).toBe('Anonymous');
+        expect(await storedName(skipped.userId)).toBeNull();
+      });
+    });
+
+    describe('validation', () => {
+      const REJECTED: Array<[string, string]> = [
+        ['a single character', 'A'],
+        ['a single character once trimmed', '   B   '],
+        ['nothing but whitespace', '     '],
+        ['41 characters', 'x'.repeat(41)],
+        ['an email address', 'jane.doe@example.com'],
+        ['an email address with surrounding words', 'mail me at jane@example.com'],
+        ['a full URL', 'https://example.com/me'],
+        ['a www address', 'www.example.com'],
+        ['a bare domain', 'example.com'],
+        ['a mailto scheme', 'mailto:jane@example'],
+        ['a name that is only invisible characters', ZWSP + ZWSP + ZWSP],
+        ['padding that hides a too-short name', ZWSP + 'A' + ZWSP],
+      ];
+
+      it.each(REJECTED)('rejects %s', async (_label, value) => {
+        const { errors } = await validateDto(CreateReviewDto, {
+          rating: 5,
+          displayName: value,
+        });
+        expect(errors.map((e) => e.property)).toContain('displayName');
+      });
+
+      it.each(REJECTED)('rejects %s on an edit too', async (_label, value) => {
+        const { errors } = await validateDto(UpdateReviewDto, { displayName: value });
+        expect(errors.map((e) => e.property)).toContain('displayName');
+      });
+
+      const ACCEPTED: Array<[string, string, string]> = [
+        ['the shortest allowed name', 'Jo', 'Jo'],
+        ['a name needing trimming', '   Kwame   ', 'Kwame'],
+        ['exactly 40 characters', 'y'.repeat(40), 'y'.repeat(40)],
+        ['a hyphenated name', 'Anne-Marie', 'Anne-Marie'],
+        ['an initial and a surname', 'J. Smith', 'J. Smith'],
+        ['a name carrying a control character', 'Jo' + NUL + 'hn', 'John'],
+        ['a name padded with zero-width characters', ZWSP + 'Ama' + ZWSP, 'Ama'],
+      ];
+
+      it.each(ACCEPTED)('accepts %s', async (_label, value, expected) => {
+        const { dto, errors } = await validateDto(CreateReviewDto, {
+          rating: 5,
+          displayName: value,
+        });
+        expect(errors).toHaveLength(0);
+        // Stripping and trimming happen BEFORE the length rules, so what is
+        // stored is exactly what was measured.
+        expect(dto.displayName).toBe(expected);
+      });
+
+      it('leaves the field absent when it is not supplied', async () => {
+        const { dto, errors } = await validateDto(CreateReviewDto, { rating: 5 });
+        expect(errors).toHaveLength(0);
+        expect(dto.displayName).toBeUndefined();
+      });
+    });
+
+    describe('exposure', () => {
+      let owner: { userId: string; email: string };
+      let shop: TestBusiness;
+
+      beforeAll(async () => {
+        shop = await createBusiness(prisma);
+        owner = await createCustomer(prisma);
+        const appointment = await completedAppointment(shop, owner.userId);
+        await reviews.create(owner.userId, appointment.id, {
+          rating: 5,
+          displayName: 'Public Name',
+        });
+      });
+
+      it('shows an anonymous reader the name and nothing else about the customer', async () => {
+        const list = await reviews.listForLocation(shop.locationId, undefined, {});
+
+        expect(list.reviews[0].displayName).toBe('Public Name');
+        expect(list.reviews[0]).not.toHaveProperty('customer');
+        expect(list.reviews[0]).not.toHaveProperty('customerId');
+        const serialised = JSON.stringify(list);
+        expect(serialised).not.toContain(owner.email);
+        expect(serialised).not.toContain(owner.userId);
+      });
+
+      it('shows the owning business id and email as before, plus the name', async () => {
+        const list = await reviews.listForLocation(
+          shop.locationId,
+          asUser(shop.userId, 'BUSINESS'),
+          {},
+        );
+
+        expect(list.reviews[0].displayName).toBe('Public Name');
+        expect(list.reviews[0].customer).toEqual({
+          id: owner.userId,
+          email: owner.email,
+        });
+      });
+
+      it('shows an admin the same as the owning business', async () => {
+        const list = await reviews.listForLocation(
+          shop.locationId,
+          asUser(admin.userId, 'ADMIN'),
+          {},
+        );
+
+        expect(list.reviews[0].displayName).toBe('Public Name');
+        expect(list.reviews[0].customer).toEqual({
+          id: owner.userId,
+          email: owner.email,
+        });
+      });
+
+      it('gives a DIFFERENT business the name but no identity', async () => {
+        const list = await reviews.listForLocation(
+          shop.locationId,
+          asUser(beta.userId, 'BUSINESS'),
+          {},
+        );
+
+        expect(list.reviews[0].displayName).toBe('Public Name');
+        expect(list.reviews[0]).not.toHaveProperty('customer');
+        expect(JSON.stringify(list)).not.toContain(owner.email);
+      });
+    });
+
+    describe('admin moderation', () => {
+      it('clears the name back to null, not to the literal string', async () => {
+        const customer = await createCustomer(prisma);
+        const appointment = await completedAppointment(alpha, customer.userId);
+        await reviews.create(customer.userId, appointment.id, {
+          rating: 5,
+          displayName: 'Bad Name',
+        });
+
+        await users.clearDisplayName(
+          { userId: admin.userId, role: 'ADMIN' },
+          customer.userId,
+          { reason: 'Impersonates a business.' },
+        );
+
+        expect(await storedName(customer.userId)).toBeNull();
+      });
+
+      it('changes what every existing review of that customer shows', async () => {
+        const customer = await createCustomer(prisma);
+        const shop = await createBusiness(prisma);
+        const a = await completedAppointment(shop, customer.userId);
+        const b = await completedAppointment(shop, customer.userId);
+        await reviews.create(customer.userId, a.id, { rating: 5, displayName: 'Slur' });
+        await reviews.create(customer.userId, b.id, { rating: 4 });
+
+        const before = await reviews.listForLocation(shop.locationId, undefined, {});
+        expect(before.reviews.every((r) => r.displayName === 'Slur')).toBe(true);
+
+        await users.clearDisplayName(
+          { userId: admin.userId, role: 'ADMIN' },
+          customer.userId,
+          { reason: 'Abusive.' },
+        );
+
+        // One action, every review - which is the argument for holding the
+        // name on the user rather than copying it onto each review.
+        const after = await reviews.listForLocation(shop.locationId, undefined, {});
+        expect(after.reviews).toHaveLength(2);
+        expect(after.reviews.every((r) => r.displayName === 'Anonymous')).toBe(true);
+      });
+
+      it('notifies the customer, the way review hiding does', async () => {
+        const customer = await createCustomer(prisma);
+        const notifications = moduleRef.get(NotificationsService);
+        const spy = notifications.notify as unknown as { mock: { calls: any[][] } };
+        const before = spy.mock.calls.length;
+
+        await users.clearDisplayName(
+          { userId: admin.userId, role: 'ADMIN' },
+          customer.userId,
+          { reason: 'Contains a phone number.' },
+        );
+
+        const call = spy.mock.calls[before][0];
+        expect(call.recipientId).toBe(customer.userId);
+        expect(call.type).toBe('DISPLAY_NAME_CLEARED');
+        expect(call.context.reason).toBe('Contains a phone number.');
+      });
+
+      it.each(['CUSTOMER', 'BUSINESS'])(
+        'refuses a %s at the service level, not only in the guard',
+        async (role) => {
+          const customer = await createCustomer(prisma);
+          const appointment = await completedAppointment(alpha, customer.userId);
+          await reviews.create(customer.userId, appointment.id, {
+            rating: 5,
+            displayName: 'Keep Me',
+          });
+
+          await expect(
+            users.clearDisplayName({ userId: customerB.userId, role }, customer.userId, {
+              reason: 'I do not like it.',
+            }),
+          ).rejects.toBeInstanceOf(ForbiddenException);
+
+          expect(await storedName(customer.userId)).toBe('Keep Me');
+        },
+      );
+
+      it('404s on a user that does not exist', async () => {
+        await expect(
+          users.clearDisplayName(
+            { userId: admin.userId, role: 'ADMIN' },
+            '00000000-0000-4000-8000-000000000000',
+            { reason: 'Nobody.' },
+          ),
+        ).rejects.toBeInstanceOf(NotFoundException);
+      });
+
+      it('requires a reason', async () => {
+        const missing = await validateDto(ClearDisplayNameDto, {});
+        expect(missing.errors.map((e) => e.property)).toContain('reason');
+
+        const tooShort = await validateDto(ClearDisplayNameDto, { reason: 'x' });
+        expect(tooShort.errors.map((e) => e.property)).toContain('reason');
+      });
     });
   });
 });

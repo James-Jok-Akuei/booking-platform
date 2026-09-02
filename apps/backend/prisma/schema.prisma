@@ -122,6 +122,7 @@ enum NotificationType {
   REVIEW_CREATED // a customer reviewed a location; the business is told
   REVIEW_RESPONSE // the business replied to a review
   REVIEW_HIDDEN // an admin hid a review; both sides are told
+  DISPLAY_NAME_CLEARED // an admin cleared a customer's review display name
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in
@@ -169,6 +170,16 @@ model User {
   role      UserRole
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// The name shown beside this customer's reviews, on the User rather than on
+  /// each Review: one source of truth means changing it changes every review at
+  /// once, instead of leaving three different names across three reviews.
+  ///
+  /// Nullable, no backfill, and null is NOT the string "Anonymous". Readers
+  /// render null as "Anonymous", which keeps a customer who deliberately typed
+  /// "Anonymous" distinguishable from one who never supplied a name at all.
+  /// Cleared back to null by admin moderation; see §31.
+  displayName String?
 
   // A business user reaches their BusinessProfile through BusinessMembership,
   // never directly.

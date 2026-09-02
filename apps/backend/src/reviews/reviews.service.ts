@@ -34,7 +34,33 @@ const REVIEW_SELECT = {
   createdAt: true,
   locationId: true,
   businessId: true,
+  // The byline. Always selected, for every viewer, because a review with no
+  // attribution at all is what the platform showed before §31 and it read as
+  // broken. Only the NAME is public — never the id or the email.
+  customer: { select: { displayName: true } },
 } as const;
+
+/** What a review with no display name is shown as. Never stored; see §31. */
+export const ANONYMOUS_DISPLAY_NAME = 'Anonymous';
+
+/**
+ * Turns the selected customer row into the byline the caller is entitled to.
+ *
+ * The nested `customer` object is always replaced, never passed through: that
+ * is what stops a `displayName`-only select from leaking a field somebody
+ * later adds to it. A viewer entitled to identity gets `{ id, email }` back
+ * exactly as before, alongside the name.
+ */
+function withByline<
+  T extends { customer: { displayName: string | null; id?: string; email?: string } },
+>(row: T) {
+  const { customer, ...rest } = row;
+  const displayName = customer.displayName ?? ANONYMOUS_DISPLAY_NAME;
+
+  return customer.id !== undefined
+    ? { ...rest, displayName, customer: { id: customer.id, email: customer.email } }
+    : { ...rest, displayName };
+}
 
 @Injectable()
 export class ReviewsService {
@@ -85,6 +111,16 @@ export class ReviewsService {
 
     try {
       const review = await this.prisma.$transaction(async (tx) => {
+        // Same transaction as the review itself. A review that posted while
+        // its byline failed to save would publish under the customer's OLD
+        // name, or under none — visibly not what they just asked for.
+        if (dto.displayName !== undefined) {
+          await tx.user.update({
+            where: { id: customerId },
+            data: { displayName: dto.displayName },
+          });
+        }
+
         const created = await tx.review.create({
           data: {
             appointmentId,
@@ -113,7 +149,7 @@ export class ReviewsService {
         `Review ${review.id} created for location ${locationId} (${dto.rating}/5).`,
       );
 
-      return review;
+      return withByline(review);
     } catch (error) {
       // The unique index is the real guard against double submission — a
       // read-then-write check loses the race between two concurrent posts.
@@ -148,26 +184,38 @@ export class ReviewsService {
       );
     }
 
-    if (dto.rating === undefined && dto.comment === undefined) {
-      throw new BadRequestException('Provide a rating, a comment, or both.');
+    const changesReview = dto.rating !== undefined || dto.comment !== undefined;
+    if (!changesReview && dto.displayName === undefined) {
+      throw new BadRequestException('Provide a rating, a comment, a display name, or any combination.');
     }
 
     return this.prisma.$transaction(async (tx) => {
+      // Last write wins, and it wins across every review this customer has
+      // left — the name is one field on one user, which is the whole reason
+      // it is not stored per review.
+      if (dto.displayName !== undefined) {
+        await tx.user.update({
+          where: { id: customerId },
+          data: { displayName: dto.displayName },
+        });
+      }
+
       const updated = await tx.review.update({
         where: { id: reviewId },
         data: {
           ...(dto.rating !== undefined ? { rating: dto.rating } : {}),
           ...(dto.comment !== undefined ? { comment: dto.comment } : {}),
           // Surfaced in every response: a rating that changed after the
-          // business replied is context the reader needs.
-          editedAt: new Date(),
+          // business replied is context the reader needs. Renaming yourself is
+          // not an edit to the review, so it does not set this.
+          ...(changesReview ? { editedAt: new Date() } : {}),
         },
         select: REVIEW_SELECT,
       });
 
       await this.recalculateLocationRating(tx, review.locationId);
 
-      return updated;
+      return withByline(updated);
     });
   }
 
@@ -198,7 +246,7 @@ export class ReviewsService {
       context: this.reviewContext('The business replied to your review.'),
     });
 
-    return updated;
+    return withByline(updated);
   }
 
   async updateResponse(userId: string, reviewId: string, dto: ReviewResponseDto) {
@@ -213,11 +261,13 @@ export class ReviewsService {
       );
     }
 
-    return this.prisma.review.update({
+    const updated = await this.prisma.review.update({
       where: { id: reviewId },
       data: { responseText: dto.responseText, responseEditedAt: new Date() },
       select: REVIEW_SELECT,
     });
+
+    return withByline(updated);
   }
 
   /** Loads a review and proves the caller belongs to the business that owns it. */
@@ -291,7 +341,7 @@ export class ReviewsService {
 
     this.logger.log(`Review ${reviewId} hidden by admin ${adminId}: ${dto.hiddenReason}`);
 
-    return updated;
+    return withByline(updated);
   }
 
   async unhide(adminId: string, reviewId: string) {
@@ -318,7 +368,7 @@ export class ReviewsService {
 
     this.logger.log(`Review ${reviewId} unhidden by admin ${adminId}.`);
 
-    return updated;
+    return withByline(updated);
   }
 
   // ---------- Public listing ----------
@@ -381,10 +431,16 @@ export class ReviewsService {
         skip: offset,
         select: {
           ...REVIEW_SELECT,
-          // Only selected for viewers entitled to it; see below.
-          ...(isMember || isAdmin
-            ? { customer: { select: { id: true, email: true } } }
-            : {}),
+          // The public gets the byline and nothing else. id and email are
+          // selected only for viewers entitled to identity — the counterparty
+          // business and admins — so an anonymous reader cannot be handed them
+          // by a later change to the shared select.
+          customer: {
+            select: {
+              displayName: true,
+              ...(isMember || isAdmin ? { id: true, email: true } : {}),
+            },
+          },
         },
       }),
     ]);
@@ -397,7 +453,7 @@ export class ReviewsService {
       total,
       limit,
       offset,
-      reviews,
+      reviews: reviews.map(withByline),
     };
   }
 

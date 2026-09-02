@@ -21,6 +21,10 @@ export class UsersController {
         email: true,
         role: true,
         createdAt: true,
+        // Their own name, so they can see what a reviewer of theirs sees.
+        // Returned raw — null here means "you have not set one", which is a
+        // different thing to say to the owner than "Anonymous".
+        displayName: true,
         // The direct 1:1 businessProfile relation was replaced by
         // BusinessMembership, so a business user's profile is reached through
         // their membership — which also surfaces their role in it.
