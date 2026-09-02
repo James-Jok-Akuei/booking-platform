@@ -555,6 +555,129 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('payout and balance routes over HTTP (§35)', () => {
+    it('POST /admin/payouts/run rejects a BUSINESS token -> 403', async () => {
+      const res = await request(url, '/admin/payouts/run', {
+        method: 'POST',
+        token: tokenAlpha,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('POST /admin/payouts/run rejects a CUSTOMER token -> 403', async () => {
+      const res = await request(url, '/admin/payouts/run', {
+        method: 'POST',
+        token: tokenCustomerA,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('POST /admin/payouts/run accepts an ADMIN token -> 200', async () => {
+      const res = await request(url, '/admin/payouts/run', {
+        method: 'POST',
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('GET /admin/payouts rejects a BUSINESS token -> 403', async () => {
+      const res = await request(url, '/admin/payouts', { token: tokenAlpha });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('mark-paid with no reference -> 400 from the ValidationPipe', async () => {
+      const payout = await prisma.payout.create({
+        data: {
+          businessId: alpha.businessId,
+          amountCents: 1000,
+          currency: 'USD',
+          runAt: new Date(),
+        },
+      });
+
+      const res = await request(url, `/admin/payouts/${payout.id}/mark-paid`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: {},
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('reference');
+    });
+
+    it('mark-failed with no reason -> 400', async () => {
+      const payout = await prisma.payout.create({
+        data: {
+          businessId: alpha.businessId,
+          amountCents: 1000,
+          currency: 'USD',
+          runAt: new Date(),
+        },
+      });
+
+      const res = await request(url, `/admin/payouts/${payout.id}/mark-failed`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: {},
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('reason');
+    });
+
+    it("a business cannot read another business's balance -> 404", async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/balance`, {
+        token: tokenBeta,
+      });
+
+      // 404, not 403: the same rule the rest of the platform uses.
+      expect(res.status).toBe(404);
+    });
+
+    it("a business cannot read another business's payouts -> 404", async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/payouts`, {
+        token: tokenBeta,
+      });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('a business can read its own balance -> 200', async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/balance`, {
+        token: tokenAlpha,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('availableNowCents');
+    });
+
+    it('an admin can read any balance -> 200', async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/balance`, {
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('an unauthenticated request is refused -> 401', async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/balance`);
+
+      expect(res.status).toBe(401);
+    });
+
+    it('a CUSTOMER token cannot reach the balance route at all -> 403', async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/balance`, {
+        token: tokenCustomerA,
+      });
+
+      expect(res.status).toBe(403);
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {

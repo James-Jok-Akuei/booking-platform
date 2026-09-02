@@ -286,12 +286,22 @@ describe('Ledger (§34)', () => {
       const a = await paidAppointment();
       const [entry] = await entriesFor(a.id);
 
-      const updated = await prisma.ledgerEntry.update({
-        where: { id: entry.id },
-        data: { availableAt: new Date(), payoutId: 'payout-1' },
+      // A real payout, because payoutId is a foreign key once §35 lands.
+      const payout = await prisma.payout.create({
+        data: {
+          businessId: business.businessId,
+          amountCents: 1,
+          currency: 'USD',
+          runAt: new Date(),
+        },
       });
 
-      expect(updated.payoutId).toBe('payout-1');
+      const updated = await prisma.ledgerEntry.update({
+        where: { id: entry.id },
+        data: { availableAt: new Date(), payoutId: payout.id },
+      });
+
+      expect(updated.payoutId).toBe(payout.id);
       expect(updated.availableAt).not.toBeNull();
     });
 

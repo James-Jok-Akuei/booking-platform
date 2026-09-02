@@ -3732,3 +3732,113 @@ inside a `data:` block, asserts there are exactly two, and asserts each sets
 `cancelledBy` in the same write — plus exercises both paths for real. A third
 path added without it fails here, rather than quietly poisoning a money figure
 months later.
+
+---
+
+## 35. Payout runs (2026-09-02)
+
+The second of three. Money now leaves the ledger and becomes a payout — but
+**no transfer API is called**, because there is none to call.
+
+### 35.1 Payouts are manual, and that is the expected outcome
+
+The MoMo integration is collections only (§34.1): one subscription key pair,
+`/collection/token/`, `/collection/v1_0/requesttopay`, and its status endpoint.
+There is no disbursement client, no disbursement credential, and
+`PaymentProvider` has exactly two methods, both inbound. Nothing was found to
+integrate, so nothing was invented.
+
+A run therefore creates `PENDING` payouts, a human sends the money, and
+`PATCH /admin/payouts/:id/mark-paid` records the provider's reference. The
+reference is **required**: a payout marked paid with nothing to look it up by is
+a claim that money moved which nothing can corroborate. `PayoutStatus` has no
+`IN_PROGRESS` for the same reason — there is no transfer to be in the middle of.
+
+### 35.2 What a run selects
+
+Entries with **no payout** whose **`availableAt` has passed**. Both halves
+matter: an unstamped entry that is not yet payable is money the platform holds
+but does not owe yet.
+
+Grouped in the database, not looped per business — the set of businesses with
+money waiting is exactly what the `groupBy` returns, so there is no list to
+iterate and no N+1.
+
+A payout carries `amountCents`, but it is not the authority: the entries stamped
+with its id are. The column exists so the figure a business was told survives an
+entry being later reclassified by an opposing entry.
+
+A run refuses to create a payout spanning two currencies rather than netting
+across them at a rate this module does not own (§34.5).
+
+### 35.3 A non-positive balance creates nothing, and stamps nothing
+
+If a business's available sum is `<= 0`, **no payout is created and the entries
+are left unstamped**. This is not an error path; it is the ordinary shape of a
+business that cancelled a booking it had already been credited for.
+
+Stamping them would be the bug. A stamped entry is settled, so stamping a
+negative balance would quietly forgive the debt — the business would owe nothing
+and the platform would have written off real money. Leaving them in the pool is
+what lets the negative carry forward and net against the next earnings, which a
+test walks through end to end: `-1000`, then `+2500`, produces one payout of
+`1500` settling both.
+
+This is the day-one case the spec called out, and it works on day one.
+
+### 35.4 A failed payout returns its money to the pool
+
+`mark-failed` requires a reason and **unstamps every entry the payout held**, in
+one transaction. The entries were never wrong — only the transfer failed — so
+they go back to being available and the next run picks them up. The `FAILED`
+`Payout` row stays as the record that an attempt was made and why it did not
+work. A failed payout that kept its entries stamped would strand that money
+forever, invisible to every future run.
+
+### 35.5 Two concurrent runs cannot pay the same money twice
+
+Inside the transaction: select the available entries, create the payout, then
+stamp with `updateMany` **conditional on `payoutId` still being null**. If the
+stamped count is fewer than the selected count, something else took some of them
+in between, and the whole transaction — payout included — is rolled back rather
+than paying a partial, unexplained sum.
+
+That works under the default isolation level: the loser blocks on the row locks,
+re-evaluates the `payoutId: null` predicate, matches fewer rows, and aborts. It
+needs no advisory lock and no serializable retry loop. The rolled-back run
+leaves no payout behind, and its entries stay in the pool for the next one.
+
+### 35.6 Balances are computed, never stored
+
+`GET /businesses/:id/balance` sums entries on read — available now, pending
+(`availableAt` in the future), unresolved (`availableAt` still null, i.e. the
+appointment has not ended), and lifetime paid from `PAID` payouts only. A
+`PENDING` payout is not "paid": it has not gone out.
+
+Consistent with §34.2, none of this is stored. A test appends one entry between
+two reads and asserts the figure moves — the only way it can move.
+
+A negative available balance is returned as a negative number with a note saying
+what it means, rather than clamped to zero. A business seeing `0` when it owes
+money would find out at the worst possible moment.
+
+### 35.7 Access
+
+Two-layer throughout (§27.1). `@Roles(ADMIN)` on the admin controller and an
+`assertAdmin` in the service; `@Roles(BUSINESS, ADMIN)` on the business routes
+and an `assertMayRead` that lets an admin read any business and a business user
+only their own — **404, not 403**, matching the rest of the platform. Tested at
+both levels: service-level refusals for every role, and over HTTP through the
+real guard chain.
+
+`BusinessRolesGuard` is deliberately not used on the business routes, for the
+same reason analytics does not use it: it requires an active membership, and an
+admin has none.
+
+### 35.8 Scheduling
+
+A daily `@Cron` at 02:00 alongside the existing sweeps. Daily rather than
+hourly because entries mature on a seven-day hold, so the difference is noise —
+and because a human currently makes each transfer by hand, so batching matters.
+The manual `POST /admin/payouts/run` stays regardless: a scheduled job nobody can
+trigger is one nobody can test or use to fix a bad day.

@@ -1,0 +1,393 @@
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  BusinessMemberStatus,
+  PayoutStatus,
+  Prisma,
+  UserRole,
+} from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
+import { INTERNAL_CURRENCY } from '../payments/currency';
+import { ListPayoutsDto } from './dto/list-payouts.dto';
+import { MarkPaidDto, MarkFailedDto } from './dto/mark-payout.dto';
+
+export interface RunSummary {
+  runAt: Date;
+  businessesConsidered: number;
+  payoutsCreated: number;
+  totalCents: number;
+  /** Businesses whose available balance was zero or negative — see §35.3. */
+  skippedNonPositive: number;
+}
+
+@Injectable()
+export class PayoutsService {
+  private readonly logger = new Logger(PayoutsService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  // ---------- The run ----------
+
+  /**
+   * Pays out every business whose available balance is positive.
+   *
+   * "Available" means: entries with no payout, whose `availableAt` has passed.
+   * Both halves matter — an unstamped entry that is not yet payable is money
+   * the platform holds but does not owe yet.
+   */
+  async run(now = new Date()): Promise<RunSummary> {
+    // Grouped in the database rather than looped per business: the set of
+    // businesses with money waiting is exactly the set this query returns, so
+    // there is no list of businesses to iterate and no N+1.
+    const owing = await this.prisma.ledgerEntry.groupBy({
+      by: ['businessId'],
+      where: { payoutId: null, availableAt: { not: null, lte: now } },
+      _sum: { amountCents: true },
+    });
+
+    let created = 0;
+    let total = 0;
+    let skipped = 0;
+
+    for (const group of owing) {
+      const sum = group._sum.amountCents ?? 0;
+      if (sum <= 0) {
+        // NOT an error, and nothing is stamped. A business whose only booking
+        // they cancelled themselves sits at a negative balance, and that
+        // negative must carry forward to net against future earnings (§35.3).
+        // Stamping the entries would erase the debt.
+        skipped++;
+        continue;
+      }
+
+      const payout = await this.payOne(group.businessId, sum, now);
+      if (payout) {
+        created++;
+        total += payout.amountCents;
+      }
+    }
+
+    const summary: RunSummary = {
+      runAt: now,
+      businessesConsidered: owing.length,
+      payoutsCreated: created,
+      totalCents: total,
+      skippedNonPositive: skipped,
+    };
+
+    if (created > 0 || skipped > 0) {
+      this.logger.log(
+        `Payout run: ${created} payout(s) totalling ${total}c across ` +
+          `${owing.length} business(es); ${skipped} skipped for a non-positive balance.`,
+      );
+    }
+
+    return summary;
+  }
+
+  /**
+   * Creates one business's payout and stamps its entries, atomically.
+   *
+   * The stamp is conditional on `payoutId: null`, and the transaction is thrown
+   * away unless every selected entry was still unstamped. That is what makes
+   * two concurrent runs safe: the loser blocks on the row locks, re-evaluates
+   * the condition, matches fewer rows than it selected, and rolls back its own
+   * payout rather than paying the same money twice (§35.5).
+   */
+  private async payOne(businessId: string, expectedSum: number, now: Date) {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const entries = await tx.ledgerEntry.findMany({
+          where: { businessId, payoutId: null, availableAt: { not: null, lte: now } },
+          select: { id: true, amountCents: true, currency: true },
+        });
+        if (entries.length === 0) return null;
+
+        const amountCents = entries.reduce((sum, e) => sum + e.amountCents, 0);
+        if (amountCents <= 0) return null;
+
+        const currencies = new Set(entries.map((e) => e.currency));
+        if (currencies.size > 1) {
+          // One payout cannot be denominated in two currencies, and netting
+          // across them would need a rate this module deliberately does not
+          // own (§34.5). Refuse rather than invent one.
+          throw new BadRequestException(
+            `Business ${businessId} has available entries in more than one currency ` +
+              `(${[...currencies].join(', ')}). A payout cannot span currencies.`,
+          );
+        }
+
+        const payout = await tx.payout.create({
+          data: {
+            businessId,
+            amountCents,
+            currency: entries[0].currency ?? INTERNAL_CURRENCY,
+            status: PayoutStatus.PENDING,
+            runAt: now,
+          },
+        });
+
+        const { count } = await tx.ledgerEntry.updateMany({
+          where: { id: { in: entries.map((e) => e.id) }, payoutId: null },
+          data: { payoutId: payout.id },
+        });
+
+        if (count !== entries.length) {
+          // Another run took some of these between the select and the stamp.
+          // Roll back entirely rather than pay out a partial, unexplained sum.
+          throw new ConflictException(
+            'Ledger entries changed during the payout run. No payout was created.',
+          );
+        }
+
+        return payout;
+      });
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        this.logger.warn(
+          `Payout for business ${businessId} rolled back: ${error.message} ` +
+            'The entries stay in the pool and go out on the next run.',
+        );
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  // ---------- Admin ----------
+
+  async list(actor: { role: UserRole | string }, query: ListPayoutsDto) {
+    this.assertAdmin(actor);
+
+    const where: Prisma.PayoutWhereInput = {
+      ...(query.businessId ? { businessId: query.businessId } : {}),
+      ...(query.status ? { status: query.status } : {}),
+    };
+    const limit = query.limit ?? 25;
+    const offset = query.offset ?? 0;
+
+    const [total, payouts] = await Promise.all([
+      this.prisma.payout.count({ where }),
+      this.prisma.payout.findMany({
+        where,
+        orderBy: { runAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+    ]);
+
+    return { total, limit, offset, payouts };
+  }
+
+  /**
+   * Records that a payout actually went out, with the provider's reference.
+   *
+   * The reference is required and unforgiving about it: a PAID payout with no
+   * reference is a claim that money moved which nothing can corroborate.
+   */
+  async markPaid(
+    actor: { userId: string; role: UserRole | string },
+    payoutId: string,
+    dto: MarkPaidDto,
+  ) {
+    this.assertAdmin(actor);
+    const payout = await this.requirePayout(payoutId);
+
+    if (payout.status !== PayoutStatus.PENDING) {
+      throw new BadRequestException(
+        `Only a PENDING payout can be marked paid. This one is ${payout.status}.`,
+      );
+    }
+
+    const updated = await this.prisma.payout.update({
+      where: { id: payoutId },
+      data: {
+        status: PayoutStatus.PAID,
+        reference: dto.reference,
+        paidAt: new Date(),
+      },
+    });
+
+    this.logger.log(
+      `Payout ${payoutId} (${payout.amountCents}c to business ${payout.businessId}) ` +
+        `marked PAID by admin ${actor.userId}, reference ${dto.reference}.`,
+    );
+
+    return updated;
+  }
+
+  /**
+   * Records that a payout did not go out, and returns its money to the pool.
+   *
+   * Unstamping is the whole point. The entries were never wrong — only the
+   * transfer failed — so they go back to being available and are picked up by
+   * the next run. The failed Payout row stays as the record that an attempt was
+   * made and why it did not work.
+   */
+  async markFailed(
+    actor: { userId: string; role: UserRole | string },
+    payoutId: string,
+    dto: MarkFailedDto,
+  ) {
+    this.assertAdmin(actor);
+    const payout = await this.requirePayout(payoutId);
+
+    if (payout.status !== PayoutStatus.PENDING) {
+      throw new BadRequestException(
+        `Only a PENDING payout can be marked failed. This one is ${payout.status}.`,
+      );
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.payout.update({
+        where: { id: payoutId },
+        data: { status: PayoutStatus.FAILED, failureReason: dto.reason },
+      });
+      // Same transaction: a failed payout that kept its entries stamped would
+      // strand that money forever, invisible to every future run.
+      await tx.ledgerEntry.updateMany({
+        where: { payoutId },
+        data: { payoutId: null },
+      });
+      return row;
+    });
+
+    this.logger.warn(
+      `Payout ${payoutId} marked FAILED by admin ${actor.userId}: ${dto.reason}. ` +
+        `${payout.amountCents}c returned to the pool.`,
+    );
+
+    return updated;
+  }
+
+  // ---------- Business-facing ----------
+
+  /**
+   * What a business is owed, split by whether they can have it yet.
+   *
+   * Every figure is a SUM over entries, computed on read. Nothing is stored
+   * (§34.2), so these cannot disagree with the rows that justify them.
+   */
+  async balance(actor: { userId: string; role: UserRole | string }, businessId: string) {
+    await this.assertMayRead(actor, businessId);
+    const now = new Date();
+
+    const [available, pending, paid, unresolved] = await Promise.all([
+      this.prisma.ledgerEntry.aggregate({
+        where: { businessId, payoutId: null, availableAt: { not: null, lte: now } },
+        _sum: { amountCents: true },
+        _count: { _all: true },
+      }),
+      this.prisma.ledgerEntry.aggregate({
+        where: { businessId, payoutId: null, availableAt: { gt: now } },
+        _sum: { amountCents: true },
+        _count: { _all: true },
+      }),
+      this.prisma.payout.aggregate({
+        where: { businessId, status: PayoutStatus.PAID },
+        _sum: { amountCents: true },
+        _count: { _all: true },
+      }),
+      this.prisma.ledgerEntry.aggregate({
+        where: { businessId, payoutId: null, availableAt: null },
+        _sum: { amountCents: true },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const availableCents = available._sum.amountCents ?? 0;
+
+    return {
+      businessId,
+      currency: INTERNAL_CURRENCY,
+      availableNowCents: availableCents,
+      pendingCents: pending._sum.amountCents ?? 0,
+      /** Deposits on appointments that have not happened yet, or not resolved. */
+      unresolvedCents: unresolved._sum.amountCents ?? 0,
+      lifetimePaidCents: paid._sum.amountCents ?? 0,
+      payoutCount: paid._count._all,
+      entryCounts: {
+        available: available._count._all,
+        pending: pending._count._all,
+        unresolved: unresolved._count._all,
+      },
+      note:
+        availableCents < 0
+          ? 'This balance is negative, which happens after a cancellation the ' +
+            'business was responsible for. No payout is made while it is; it ' +
+            'nets against future earnings instead.'
+          : 'Available funds go out on the next payout run.',
+    };
+  }
+
+  async listForBusiness(
+    actor: { userId: string; role: UserRole | string },
+    businessId: string,
+    query: ListPayoutsDto,
+  ) {
+    await this.assertMayRead(actor, businessId);
+
+    const where: Prisma.PayoutWhereInput = {
+      businessId,
+      ...(query.status ? { status: query.status } : {}),
+    };
+    const limit = query.limit ?? 25;
+    const offset = query.offset ?? 0;
+
+    const [total, payouts] = await Promise.all([
+      this.prisma.payout.count({ where }),
+      this.prisma.payout.findMany({
+        where,
+        orderBy: { runAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+    ]);
+
+    return { businessId, total, limit, offset, payouts };
+  }
+
+  // ---------- Access ----------
+
+  /**
+   * The service-level half of the two-layer rule (§27.1). `@Roles(ADMIN)` on a
+   * controller is a decorator on a class; a service method that trusts it is
+   * one refactor away from being callable by anyone.
+   */
+  private assertAdmin(actor: { role: UserRole | string }) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only an administrator can do that.');
+    }
+  }
+
+  /** An admin may read any business; a business user only their own. */
+  private async assertMayRead(
+    actor: { userId: string; role: UserRole | string },
+    businessId: string,
+  ) {
+    if (actor.role === UserRole.ADMIN) return;
+
+    const membership = await this.prisma.businessMembership.count({
+      where: {
+        userId: actor.userId,
+        businessProfileId: businessId,
+        status: BusinessMemberStatus.ACTIVE,
+      },
+    });
+    // 404, not 403: the same rule used everywhere. Do not confirm that another
+    // tenant's business exists to someone who may not read it.
+    if (membership === 0) throw new NotFoundException('Business not found.');
+  }
+
+  private async requirePayout(payoutId: string) {
+    const payout = await this.prisma.payout.findUnique({ where: { id: payoutId } });
+    if (!payout) throw new NotFoundException('Payout not found.');
+    return payout;
+  }
+}

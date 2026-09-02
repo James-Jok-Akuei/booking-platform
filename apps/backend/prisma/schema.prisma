@@ -167,6 +167,15 @@ enum AppointmentStatus {
 /// What a ledger entry records. The sign lives on the amount, not here: an
 /// entry's type says what happened, and `amountCents` says which way the money
 /// went from the BUSINESS's point of view.
+/// Where a payout has got to. There is no IN_PROGRESS: the platform has no
+/// transfer API to be in the middle of (§35.1), so a payout is either awaiting
+/// a human, done, or failed.
+enum PayoutStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
 enum LedgerEntryType {
   /// A customer's deposit landed. Positive.
   DEPOSIT_RECEIVED
@@ -296,6 +305,7 @@ model BusinessProfile {
   @@map("business_profiles")
 
   ledgerEntries LedgerEntry[]
+  payouts       Payout[]
 }
 
 // ---------- Taxonomy ----------
@@ -1187,7 +1197,11 @@ model LedgerEntry {
 
   /// The payout that settled this entry. NULL means unsettled — which is also
   /// the definition of money the platform is still holding.
+  ///
+  /// SetNull is not an accident: marking a payout FAILED unstamps its entries
+  /// so they return to the pool and go out on the next run (§35.4).
   payoutId String?
+  payout   Payout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
 
   /// Set when this entry came from executing a BillingAdjustment, so the
   /// correction and its ledger effect are traceable in both directions.
@@ -1201,6 +1215,48 @@ model LedgerEntry {
   /// Everything that happened to one appointment.
   @@index([appointmentId])
   @@map("ledger_entries")
+}
+
+
+/// One transfer of money to one business (§35).
+///
+/// A payout does not hold its own arithmetic: `amountCents` is the sum of the
+/// entries stamped with its id at the moment it was created, and those entries
+/// remain the authority. The column exists so the figure a business was told
+/// survives even if an entry is later reclassified by an opposing entry.
+model Payout {
+  id String @id @default(uuid())
+
+  businessId      String
+  businessProfile BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  amountCents Int
+  currency    String       @default("USD")
+  status      PayoutStatus @default(PENDING)
+
+  /// The provider's reference for the transfer, supplied by the admin who made
+  /// it. Required to mark a payout PAID: a payout with no reference cannot be
+  /// reconciled against a bank or provider statement, which is the only thing
+  /// that proves the money left.
+  reference String?
+
+  /// Why it failed. Required to mark a payout FAILED, for the same reason a
+  /// hidden review needs one — this returns money to the pool and someone will
+  /// ask later why it did not go out.
+  failureReason String?
+
+  /// When the run selected its entries.
+  runAt  DateTime
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  entries LedgerEntry[]
+
+  /// The admin queue and a business's own history, newest first.
+  @@index([businessId, status])
+  @@index([status, runAt])
+  @@map("payouts")
 }
 
 // ---------- Reviews ----------
