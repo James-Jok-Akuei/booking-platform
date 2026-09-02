@@ -76,6 +76,12 @@ describe('Payouts (§35)', () => {
             : LedgerEntryType.PLATFORM_FEE,
         amountCents,
         currency: 'USD',
+        // Payouts settle in settlement currency (§46), so a fixture entry must
+        // carry one or it is correctly excluded as unpayable. Mirroring the USD
+        // figure keeps every amount in this suite readable as one number.
+        settlementCurrency: 'USD',
+        settlementAmountMinor: amountCents,
+        bookingExchangeRate: 1,
         availableAt,
       },
     });

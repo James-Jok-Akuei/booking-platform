@@ -115,13 +115,14 @@ describe('Refunds and adjustments (§36)', () => {
 
       await appointments.cancel(business.userId, a.id, {
         reason: 'Stylist is ill.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       const entries = await entriesFor(a.id);
       const byType = Object.fromEntries(entries.map((e) => [e.type, e.amountCents]));
       expect(byType[LedgerEntryType.DEPOSIT_REFUND]).toBe(-a.depositAmountCents);
       expect(byType[LedgerEntryType.PLATFORM_FEE_REVERSAL]).toBe(a.platformFeeAmountCents);
+      // 32 500 SSP at the booking rate of 650 is 50 USD cents (§45.4).
       expect(byType[LedgerEntryType.GATEWAY_FEE_DEBIT]).toBe(-50);
     });
 
@@ -130,7 +131,7 @@ describe('Refunds and adjustments (§36)', () => {
 
       await appointments.cancel(business.userId, a.id, {
         reason: 'Closed.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       const entries = await entriesFor(a.id);
@@ -151,7 +152,7 @@ describe('Refunds and adjustments (§36)', () => {
 
       await appointments.cancel(business.userId, a.id, {
         reason: 'Closed.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       // Everything the appointment ever produced, summed: only the gateway's
@@ -175,7 +176,7 @@ describe('Refunds and adjustments (§36)', () => {
 
       await appointments.cancel(business.userId, a.id, {
         reason: 'Closed.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       const refund = (await entriesFor(a.id)).find(
@@ -192,7 +193,7 @@ describe('Refunds and adjustments (§36)', () => {
 
       await appointments.cancel(business.userId, a.id, {
         reason: 'Closed.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       const entries = await entriesFor(a.id);
@@ -204,7 +205,7 @@ describe('Refunds and adjustments (§36)', () => {
       const a = await paidAppointment();
       await appointments.cancel(business.userId, a.id, {
         reason: 'Closed.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       const balance = await payouts.balance(AS_ADMIN(), business.businessId);
@@ -247,7 +248,7 @@ describe('Refunds and adjustments (§36)', () => {
       const a = await paidAppointment();
       await appointments.cancel(business.userId, a.id, {
         reason: 'Closed.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       await expect(
@@ -307,7 +308,7 @@ describe('Refunds and adjustments (§36)', () => {
       const selfService = await paidAppointment();
       await appointments.cancel(business.userId, selfService.id, {
         reason: 'We closed.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       const disputed = await paidAppointment();
@@ -326,7 +327,7 @@ describe('Refunds and adjustments (§36)', () => {
       await appointments.reclassifyAsBusinessCancellation(AS_ADMIN(), disputed.id, {
         reason: 'Business did not open.',
         ticketId: ticket.id,
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       // Same types, same signs, same amounts. One implementation, called twice.
@@ -342,7 +343,7 @@ describe('Refunds and adjustments (§36)', () => {
 
       await appointments.reclassifyAsBusinessCancellation(AS_ADMIN(), a.id, {
         reason: 'Business did not open.',
-        gatewayChargeMinor: 25,
+        gatewayChargeMinor: 16_250,
       });
 
       const row = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
@@ -368,7 +369,7 @@ describe('Refunds and adjustments (§36)', () => {
       await appointments.reclassifyAsBusinessCancellation(AS_ADMIN(), a.id, {
         reason: 'Resolved for the customer.',
         ticketId: ticket.id,
-        gatewayChargeMinor: 25,
+        gatewayChargeMinor: 16_250,
       });
 
       const row = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
@@ -391,13 +392,13 @@ describe('Refunds and adjustments (§36)', () => {
       const a = await paidAppointment();
       await appointments.reclassifyAsBusinessCancellation(AS_ADMIN(), a.id, {
         reason: 'First.',
-        gatewayChargeMinor: 25,
+        gatewayChargeMinor: 16_250,
       });
 
       await expect(
         appointments.reclassifyAsBusinessCancellation(AS_ADMIN(), a.id, {
           reason: 'Second.',
-          gatewayChargeMinor: 25,
+          gatewayChargeMinor: 16_250,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(await netFor(a.id)).toBe(-25);

@@ -27,6 +27,8 @@ export interface RunSummary {
   skippedNonPositive: number;
   /** Businesses skipped because they are SUSPENDED — see §42.4. */
   pausedForSuspension: number;
+  /** Entries with no settlement amount, which cannot be paid — see §46.3. */
+  entriesWithoutSettlement: number;
 }
 
 @Injectable()
@@ -58,13 +60,33 @@ export class PayoutsService {
   }
 
   async run(now = new Date()): Promise<RunSummary> {
-    // Grouped in the database rather than looped per business: the set of
-    // businesses with money waiting is exactly the set this query returns, so
-    // there is no list of businesses to iterate and no N+1.
+    // Grouped by (business, SETTLEMENT CURRENCY) — the pair a payout is actually
+    // denominated in (§46.1). Grouped in the database rather than looped per
+    // business: the set with money waiting is exactly what this returns.
+    //
+    // The sum is over settlementAmountMinor, and NO exchange rate is read
+    // anywhere in this method. That is the whole decision: a payout carries the
+    // amount its entries were created with.
     const owing = await this.prisma.ledgerEntry.groupBy({
-      by: ['businessId'],
-      where: { payoutId: null, availableAt: { not: null, lte: now } },
-      _sum: { amountCents: true },
+      by: ['businessId', 'settlementCurrency'],
+      where: {
+        payoutId: null,
+        availableAt: { not: null, lte: now },
+        // Entries with no settlement figure cannot be paid — there is no
+        // amount to send. Excluded and counted, never converted at today's
+        // rate (§46.3).
+        settlementCurrency: { not: null },
+        settlementAmountMinor: { not: null },
+      },
+      _sum: { settlementAmountMinor: true, amountCents: true },
+    });
+
+    const entriesWithoutSettlement = await this.prisma.ledgerEntry.count({
+      where: {
+        payoutId: null,
+        availableAt: { not: null, lte: now },
+        OR: [{ settlementCurrency: null }, { settlementAmountMinor: null }],
+      },
     });
 
     // Suspension pauses payouts (§42.4). Entries are NOT stamped and nothing is
@@ -95,7 +117,7 @@ export class PayoutsService {
         continue;
       }
 
-      const sum = group._sum.amountCents ?? 0;
+      const sum = group._sum.settlementAmountMinor ?? 0;
       if (sum <= 0) {
         // NOT an error, and nothing is stamped. A business whose only booking
         // they cancelled themselves sits at a negative balance, and that
@@ -105,10 +127,14 @@ export class PayoutsService {
         continue;
       }
 
-      const payout = await this.payOne(group.businessId, sum, now);
+      const payout = await this.payOne(
+        group.businessId,
+        group.settlementCurrency!,
+        now,
+      );
       if (payout) {
         created++;
-        total += payout.amountCents;
+        total += payout.settlementAmountMinor;
       }
     }
 
@@ -119,13 +145,18 @@ export class PayoutsService {
       totalCents: total,
       skippedNonPositive: skipped,
       pausedForSuspension,
+      entriesWithoutSettlement,
     };
 
     if (created > 0 || skipped > 0 || pausedForSuspension > 0) {
       this.logger.log(
-        `Payout run: ${created} payout(s) totalling ${total}c across ` +
-          `${owing.length} business(es); ${skipped} skipped for a non-positive balance, ` +
-          `${pausedForSuspension} paused for suspension.`,
+        `Payout run: ${created} payout(s) totalling ${total} minor unit(s) across ` +
+          `${owing.length} business/currency group(s); ${skipped} skipped for a ` +
+          `non-positive balance, ${pausedForSuspension} paused for suspension` +
+          (entriesWithoutSettlement > 0
+            ? `, ${entriesWithoutSettlement} entr(ies) skipped for having no settlement amount`
+            : '') +
+          '.',
       );
     }
 
@@ -141,26 +172,45 @@ export class PayoutsService {
    * the condition, matches fewer rows than it selected, and rolls back its own
    * payout rather than paying the same money twice (§35.5).
    */
-  private async payOne(businessId: string, expectedSum: number, now: Date) {
+  private async payOne(businessId: string, settlementCurrency: string, now: Date) {
     try {
       return await this.prisma.$transaction(async (tx) => {
         const entries = await tx.ledgerEntry.findMany({
-          where: { businessId, payoutId: null, availableAt: { not: null, lte: now } },
-          select: { id: true, amountCents: true, currency: true },
+          where: {
+            businessId,
+            settlementCurrency,
+            payoutId: null,
+            availableAt: { not: null, lte: now },
+            settlementAmountMinor: { not: null },
+          },
+          select: {
+            id: true,
+            amountCents: true,
+            currency: true,
+            settlementCurrency: true,
+            settlementAmountMinor: true,
+          },
         });
         if (entries.length === 0) return null;
 
-        const amountCents = entries.reduce((sum, e) => sum + e.amountCents, 0);
-        if (amountCents <= 0) return null;
+        const settlementAmountMinor = entries.reduce(
+          (sum, e) => sum + (e.settlementAmountMinor ?? 0),
+          0,
+        );
+        if (settlementAmountMinor <= 0) return null;
 
-        const currencies = new Set(entries.map((e) => e.currency));
+        // The USD figure is carried alongside for reporting; it is never what
+        // is sent, and it is never used to decide anything here (§46.1).
+        const amountCents = entries.reduce((sum, e) => sum + e.amountCents, 0);
+
+        // Belt and braces: the query is already scoped to one settlement
+        // currency, so this can only fire if that scoping is ever broken. A
+        // payout denominated in two currencies is not a payout anyone can send.
+        const currencies = new Set(entries.map((e) => e.settlementCurrency));
         if (currencies.size > 1) {
-          // One payout cannot be denominated in two currencies, and netting
-          // across them would need a rate this module deliberately does not
-          // own (§34.5). Refuse rather than invent one.
           throw new BadRequestException(
-            `Business ${businessId} has available entries in more than one currency ` +
-              `(${[...currencies].join(', ')}). A payout cannot span currencies.`,
+            `Business ${businessId} has available entries in more than one settlement ` +
+              `currency (${[...currencies].join(', ')}). A payout cannot span currencies.`,
           );
         }
 
@@ -168,7 +218,9 @@ export class PayoutsService {
           data: {
             businessId,
             amountCents,
-            currency: entries[0].currency ?? INTERNAL_CURRENCY,
+            currency: INTERNAL_CURRENCY,
+            settlementCurrency,
+            settlementAmountMinor,
             status: PayoutStatus.PENDING,
             runAt: now,
           },
@@ -319,7 +371,7 @@ export class PayoutsService {
     await this.assertMayRead(actor, businessId);
     const now = new Date();
 
-    const [available, pending, paid, unresolved] = await Promise.all([
+    const [available, pending, paid, unresolved, settlement] = await Promise.all([
       this.prisma.ledgerEntry.aggregate({
         where: { businessId, payoutId: null, availableAt: { not: null, lte: now } },
         _sum: { amountCents: true },
@@ -340,6 +392,18 @@ export class PayoutsService {
         _sum: { amountCents: true },
         _count: { _all: true },
       }),
+      // What will actually be sent, by currency. The USD figures above are
+      // reporting; this is the money (§46.1).
+      this.prisma.ledgerEntry.groupBy({
+        by: ['settlementCurrency'],
+        where: {
+          businessId,
+          payoutId: null,
+          availableAt: { not: null, lte: now },
+          settlementCurrency: { not: null },
+        },
+        _sum: { settlementAmountMinor: true },
+      }),
     ]);
 
     const availableCents = available._sum.amountCents ?? 0;
@@ -352,6 +416,10 @@ export class PayoutsService {
     return {
       businessId,
       payoutsPaused: paused,
+      availableBySettlementCurrency: settlement.map((row) => ({
+        currency: row.settlementCurrency!,
+        amountMinor: row._sum.settlementAmountMinor ?? 0,
+      })),
       currency: INTERNAL_CURRENCY,
       availableNowCents: availableCents,
       pendingCents: pending._sum.amountCents ?? 0,

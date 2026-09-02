@@ -1,9 +1,15 @@
-import { AppointmentStatus, LedgerEntryType } from '@prisma/client';
+import { jest } from '@jest/globals';
+import {
+  AppointmentStatus,
+  BusinessStatus,
+  LedgerEntryType,
+} from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { AppointmentsService } from '../src/appointments/appointments.service';
 import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { LedgerService } from '../src/ledger/ledger.service';
+import { PayoutsService } from '../src/payouts/payouts.service';
 import { splitSettlement } from '../src/ledger/settlement';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
@@ -36,6 +42,7 @@ describe('Settlement currency on the ledger (§45)', () => {
     moduleRef = await createTestModule([
       AppointmentsService,
       AvailabilityService,
+      PayoutsService,
       commonStubs.mail(),
       commonStubs.notifications(),
       commonStubs.payments(),
@@ -269,6 +276,8 @@ describe('Settlement currency on the ledger (§45)', () => {
         business,
         customerId: customer.userId,
         status: AppointmentStatus.PENDING_PAYMENT,
+        // The pre-§45 shape: no charged amount was ever recorded.
+        providerCharge: null,
       });
       const reference = `ref-nocharge-${appointment.id}`;
       await prisma.appointment.update({
@@ -376,6 +385,217 @@ describe('Settlement currency on the ledger (§45)', () => {
           entries.reduce((sum, e) => sum + (e.settlementAmountMinor ?? 0), 0),
         ).toBe(-6_500);
       });
+    });
+  });
+
+  // ------------------------------------------------------------------
+  /**
+   * THE TEST THAT IS THE DECISION (§46).
+   *
+   * The business's payable is fixed at the booking-date rate. If this suite is
+   * ever failing and someone is tempted to delete or relax it, the thing being
+   * deleted is not a test — it is the guarantee that a business is paid what it
+   * was promised, whatever the currency does afterwards.
+   */
+  describe('A RATE CHANGE MUST NOT MOVE A PAYOUT — do not delete this', () => {
+    const payouts = () => moduleRef.get(PayoutsService);
+    const AS_ADMIN = { userId: 'admin', role: 'ADMIN' };
+
+    /** Books, pays, resolves and matures one appointment so it is payable. */
+    const payableBooking = async (rate: number) => {
+      const shop = await createBusiness(prisma, {
+        priceCents: 4500,
+        depositPercentage: 20,
+      });
+      const buyer = await createCustomer(prisma);
+      const appointment = await createAppointment(prisma, {
+        business: shop,
+        customerId: buyer.userId,
+        status: AppointmentStatus.PENDING_PAYMENT,
+      });
+      const reference = `ref-fixed-${appointment.id}`;
+      await prisma.appointment.update({
+        where: { id: appointment.id },
+        data: {
+          paymentProviderReferenceId: reference,
+          paymentInitiatedAt: new Date(),
+          providerCurrency: 'SSP',
+          providerCurrencyAmountCents: 900 * rate,
+          exchangeRateUsed: rate,
+          startTime: new Date(Date.now() - 2 * DAY - 3_600_000),
+          endTime: new Date(Date.now() - 2 * DAY),
+        },
+      });
+      await appointments.applyPaymentResult(appointment.id, reference, 'SUCCESSFUL');
+      await prisma.appointment.update({
+        where: { id: appointment.id },
+        data: { status: AppointmentStatus.BOOKED },
+      });
+      await appointments.noShow(shop.userId, appointment.id);
+      await prisma.ledgerEntry.updateMany({
+        where: { appointmentId: appointment.id },
+        data: { availableAt: new Date(Date.now() - DAY) },
+      });
+      return { shop, appointmentId: appointment.id };
+    };
+
+    it('pays the same amount whether the rate doubles, halves, or does not move', async () => {
+      const booked = await settings.setExchangeRate(650, 'SSP', { role: 'ADMIN' });
+      expect(booked.exchangeRateUsdToProviderCurrency).toBe('650.00000000');
+      const { shop } = await payableBooking(650);
+
+      // 900 USD cents charged at 650 = 585 000 SSP; the fee is half of it.
+      const expected = 292_500;
+
+      // The rate moves violently between booking and payout.
+      await settings.setExchangeRate(1300, 'SSP', { role: 'ADMIN' });
+      await payouts().run();
+
+      const [payout] = await prisma.payout.findMany({
+        where: { businessId: shop.businessId },
+      });
+      // Not 585 000, not 146 250 — exactly what the entries were created with.
+      expect(payout.settlementAmountMinor).toBe(expected);
+      expect(payout.settlementCurrency).toBe('SSP');
+    });
+
+    it('reads no exchange rate at all during a run', async () => {
+      await settings.setExchangeRate(650, 'SSP', { role: 'ADMIN' });
+      await payableBooking(650);
+      const live = jest.spyOn(settings, 'getExchangeRate');
+      const display = jest.spyOn(settings, 'getExchangeRateForDisplay');
+
+      await payouts().run();
+
+      // A payout that consulted a rate could be moved by one. This one cannot.
+      expect(live).toHaveBeenCalledTimes(0);
+      expect(display).toHaveBeenCalledTimes(0);
+    });
+
+    it('pays what the entries carry even if the rate is UNSET at payout time', async () => {
+      await settings.setExchangeRate(650, 'SSP', { role: 'ADMIN' });
+      const { shop } = await payableBooking(650);
+
+      // An admin clears the rate. A conversion-at-payout design would now be
+      // unable to pay anybody.
+      await prisma.platformSetting.updateMany({
+        data: { exchangeRateUsdToProviderCurrency: null },
+      });
+      await payouts().run();
+
+      const [payout] = await prisma.payout.findMany({
+        where: { businessId: shop.businessId },
+      });
+      expect(payout.settlementAmountMinor).toBe(292_500);
+    });
+
+    it('the USD figure is carried for reporting but is not what is sent', async () => {
+      await settings.setExchangeRate(650, 'SSP', { role: 'ADMIN' });
+      const { shop } = await payableBooking(650);
+
+      await payouts().run();
+
+      const [payout] = await prisma.payout.findMany({
+        where: { businessId: shop.businessId },
+      });
+      expect(payout.amountCents).toBe(450);
+      expect(payout.currency).toBe('USD');
+      expect(payout.settlementAmountMinor).toBe(292_500);
+      expect(payout.settlementCurrency).toBe('SSP');
+    });
+  });
+
+  // ------------------------------------------------------------------
+  describe('a run groups by business AND settlement currency', () => {
+    const payouts = () => moduleRef.get(PayoutsService);
+
+    const entry = (
+      businessId: string,
+      settlementCurrency: string | null,
+      settlementAmountMinor: number | null,
+    ) =>
+      prisma.ledgerEntry.create({
+        data: {
+          businessId,
+          type: LedgerEntryType.DEPOSIT_RECEIVED,
+          amountCents: 1000,
+          currency: 'USD',
+          settlementCurrency,
+          settlementAmountMinor,
+          availableAt: new Date(Date.now() - DAY),
+        },
+      });
+
+    it('never mixes two settlement currencies in one payout', async () => {
+      const shop = await createBusiness(prisma);
+      await entry(shop.businessId, 'SSP', 100_000);
+      await entry(shop.businessId, 'EUR', 5_000);
+
+      await payouts().run();
+
+      const created = await prisma.payout.findMany({
+        where: { businessId: shop.businessId },
+        orderBy: { settlementCurrency: 'asc' },
+      });
+      // Two payouts, not one summing figures that share no unit.
+      expect(created).toHaveLength(2);
+      expect(created.map((p) => p.settlementCurrency)).toEqual(['EUR', 'SSP']);
+      expect(created.map((p) => p.settlementAmountMinor)).toEqual([5_000, 100_000]);
+    });
+
+    it('excludes and REPORTS entries with no settlement amount', async () => {
+      const shop = await createBusiness(prisma);
+      await entry(shop.businessId, 'SSP', 100_000);
+      await entry(shop.businessId, null, null);
+
+      const summary = await payouts().run();
+
+      expect(summary.entriesWithoutSettlement).toBeGreaterThanOrEqual(1);
+      const [payout] = await prisma.payout.findMany({
+        where: { businessId: shop.businessId },
+      });
+      // The unpayable entry is not silently folded in at today's rate.
+      expect(payout.settlementAmountMinor).toBe(100_000);
+      const orphan = await prisma.ledgerEntry.findFirst({
+        where: { businessId: shop.businessId, settlementAmountMinor: null },
+      });
+      expect(orphan!.payoutId).toBeNull();
+    });
+
+    it('carries a negative balance forward in settlement currency', async () => {
+      const shop = await createBusiness(prisma);
+      await entry(shop.businessId, 'SSP', -20_000);
+
+      const first = await payouts().run();
+      expect(
+        await prisma.payout.count({ where: { businessId: shop.businessId } }),
+      ).toBe(0);
+
+      await entry(shop.businessId, 'SSP', 50_000);
+      await payouts().run();
+
+      const [payout] = await prisma.payout.findMany({
+        where: { businessId: shop.businessId },
+      });
+      // 50 000 − 20 000, netted in the currency the money is actually in.
+      expect(first.payoutsCreated).toBe(0);
+      expect(payout.settlementAmountMinor).toBe(30_000);
+    });
+
+    it('still skips a suspended business (§42.4)', async () => {
+      const shop = await createBusiness(prisma);
+      await entry(shop.businessId, 'SSP', 100_000);
+      await prisma.businessProfile.update({
+        where: { id: shop.businessId },
+        data: { status: BusinessStatus.SUSPENDED },
+      });
+
+      const summary = await payouts().run();
+
+      expect(summary.pausedForSuspension).toBeGreaterThanOrEqual(1);
+      expect(
+        await prisma.payout.count({ where: { businessId: shop.businessId } }),
+      ).toBe(0);
     });
   });
 });

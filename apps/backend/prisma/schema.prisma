@@ -1330,9 +1330,16 @@ model Payout {
   businessId      String
   businessProfile BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
+  /// The USD figure, for reporting. NOT what is sent (§45.1).
   amountCents Int
   currency    String       @default("USD")
-  status      PayoutStatus @default(PENDING)
+
+  /// What is actually transferred, and in what. Summed from the entries'
+  /// settlementAmountMinor with NO conversion and no rate read (§46).
+  settlementCurrency    String
+  settlementAmountMinor Int
+
+  status PayoutStatus @default(PENDING)
 
   /// The provider's reference for the transfer, supplied by the admin who made
   /// it. Required to mark a payout PAID: a payout with no reference cannot be

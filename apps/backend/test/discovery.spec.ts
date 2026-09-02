@@ -89,6 +89,12 @@ describe('Discovery (§43)', () => {
 
   const setRate = () => settings.setExchangeRate(650, 'SSP', { role: 'ADMIN' });
 
+  /** Today in Africa/Juba, as a UTC-midnight Date — the @db.Date convention. */
+  const platformToday = () =>
+    new Date(
+      `${new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Juba' }).format(new Date())}T00:00:00.000Z`,
+    );
+
   /** Direct prisma writes bypass the write paths that maintain the column. */
   const reprice = (businessId: string) => recalculateFromPrice(prisma, businessId);
 
@@ -621,7 +627,10 @@ describe('Discovery (§43)', () => {
       await prisma.locationScheduleException.create({
         data: {
           locationId: business.locationId,
-          date: new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`),
+          // The platform timezone's today, not UTC's. Near midnight UTC the two
+          // are different days, and an exception filed against the wrong one
+          // silently does nothing.
+          date: platformToday(),
           isClosed: true,
           reason: 'Public holiday',
         },

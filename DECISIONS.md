@@ -4887,3 +4887,67 @@ Unlike a deposit, an adjustment is a decision made **now**, not one belonging to
 a past booking — so it settles in today's provider currency at today's rate. The
 admin's figure is in settlement currency and the USD amount is the reporting
 equivalent, the mirror image of §36.5.
+
+---
+
+## 46. Payouts settle in settlement currency (2026-09-02)
+
+A payout **performs no conversion and reads no exchange rate**. It sums
+`settlementAmountMinor` over entries that already carry it (§45), so a rate
+change between booking and payout cannot move a payout by a single minor unit.
+
+### 46.1 Grouped by (business, settlement currency)
+
+That pair is what a payout is denominated in, so it is the grouping key. `Payout`
+gains `settlementCurrency` and `settlementAmountMinor`; `amountCents` stays as
+the USD reporting figure and is **never** what is sent, never used to decide
+whether to pay, and never used to decide how much.
+
+**A payout can never mix settlement currencies.** The grouping makes it
+structurally impossible, and `payOne` re-checks anyway — a payout denominated in
+two currencies is not a payout anyone can send, and summing figures that share no
+unit is the kind of error that looks fine until someone tries to transfer it.
+
+`GET /businesses/:id/balance` now also reports
+`availableBySettlementCurrency` — what will actually be sent, beside the USD
+figures that are only reporting.
+
+### 46.2 The test that is the decision
+
+`A RATE CHANGE MUST NOT MOVE A PAYOUT — do not delete this`.
+
+It books at 650, doubles the rate to 1300, runs a payout, and asserts the amount
+is **exactly** what the entries were created with. Three companions:
+
+- the run reads **no** exchange rate at all — both settings methods are spied and
+  asserted to be called zero times, so a payout that consulted a rate would fail
+  here rather than quietly become movable;
+- a payout still succeeds when the rate is **unset** at payout time, which a
+  convert-at-payout design could not do;
+- the USD figure is carried but is demonstrably not what is sent.
+
+Named that way deliberately. If it is ever failing, what is under pressure is not
+a test — it is the guarantee that a business is paid what it was promised.
+
+### 46.3 Entries with no settlement amount are excluded and counted
+
+Never converted at today's rate. They are reported as
+`entriesWithoutSettlement` on the run summary and left unstamped, so they are
+visible and still there once someone works out what they should have been. A
+zero would be a lie and a conversion would be a guess.
+
+The negative carry-forward (§35.3) and the suspension pause (§42.4) both still
+hold, now in settlement currency — both re-asserted rather than assumed.
+
+### 46.4 A note on the test fixtures
+
+The appointment factory now records a charged amount by default. That is not
+test convenience: a real paid appointment always has one, and a fixture without
+it produced ledger entries that were silently unpayable — which is exactly the
+state §46.3 exists to surface. `providerCharge: null` opts into the pre-§45
+shape for the one test that needs it.
+
+One fixture bug surfaced while doing this: a discovery test built "today" from
+`toISOString()` (UTC) while the service computes it in `Africa/Juba`. Near
+midnight UTC those are different days and the exception filed against the wrong
+one silently did nothing. It now derives the date the same way the service does.

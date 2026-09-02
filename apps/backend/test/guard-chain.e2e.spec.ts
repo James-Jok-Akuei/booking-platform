@@ -595,6 +595,8 @@ describe('Guard chain over HTTP (§23.3)', () => {
           businessId: alpha.businessId,
           amountCents: 1000,
           currency: 'USD',
+          settlementCurrency: 'SSP',
+          settlementAmountMinor: 650_000,
           runAt: new Date(),
         },
       });
@@ -615,6 +617,8 @@ describe('Guard chain over HTTP (§23.3)', () => {
           businessId: alpha.businessId,
           amountCents: 1000,
           currency: 'USD',
+          settlementCurrency: 'SSP',
+          settlementAmountMinor: 650_000,
           runAt: new Date(),
         },
       });

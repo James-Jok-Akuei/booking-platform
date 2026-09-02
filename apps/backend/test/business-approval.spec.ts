@@ -433,6 +433,9 @@ describe('Business approval (§42)', () => {
           type: LedgerEntryType.DEPOSIT_RECEIVED,
           amountCents: 4500,
           currency: 'USD',
+          settlementCurrency: 'USD',
+          settlementAmountMinor: 4500,
+          bookingExchangeRate: 1,
           availableAt: new Date(Date.now() - DAY),
         },
       });

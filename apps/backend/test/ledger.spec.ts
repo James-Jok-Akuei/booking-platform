@@ -222,7 +222,7 @@ describe('Ledger (§34)', () => {
 
       await appointments.cancel(business.userId, a.id, {
         reason: 'Shop closed.',
-        gatewayChargeMinor: 50,
+        gatewayChargeMinor: 32_500,
       });
 
       // A refund, not a payout. The original pair is released — settled by
@@ -520,6 +520,10 @@ describe('Ledger (§34)', () => {
         data: {
           paymentProviderReferenceId: reference,
           paymentInitiatedAt: new Date(),
+          // What the provider charged, as initiateDepositPayment would record.
+          providerCurrency: 'SSP',
+          providerCurrencyAmountCents: 650 * (depositPercentage === 10 ? 450 : 900),
+          exchangeRateUsed: 650,
           startTime: new Date(Date.now() - 2 * DAY - 3_600_000),
           endTime: new Date(Date.now() - 2 * DAY),
         },
@@ -631,6 +635,8 @@ describe('Ledger (§34)', () => {
           businessId: business.businessId,
           amountCents: 1,
           currency: 'USD',
+          settlementCurrency: 'USD',
+          settlementAmountMinor: 1,
           runAt: new Date(),
         },
       });
@@ -655,6 +661,11 @@ describe('Ledger (§34)', () => {
           type: LedgerEntryType.ADJUSTMENT,
           amountCents: -original.amountCents,
           currency: original.currency,
+          settlementCurrency: original.settlementCurrency,
+          settlementAmountMinor:
+            original.settlementAmountMinor === null
+              ? null
+              : -original.settlementAmountMinor,
         },
       });
 

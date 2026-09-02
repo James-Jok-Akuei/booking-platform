@@ -147,6 +147,13 @@ export async function createAppointment(
     startsInHours?: number;
     durationMinutes?: number;
     verified?: boolean;
+    /**
+     * What the provider charged, in settlement minor units (§45). Defaults to
+     * 900 USD cents at 650 SSP/USD, matching the hardcoded money below — a real
+     * paid appointment always has this, and without it every ledger entry a
+     * fixture produces is unpayable. Pass null for the pre-§45 shape.
+     */
+    providerCharge?: number | null;
   },
 ) {
   const start = new Date(Date.now() + (params.startsInHours ?? 48) * 3_600_000);
@@ -164,6 +171,13 @@ export async function createAppointment(
       platformFeeAmountCents: 450,
       businessAmountCents: 450,
       currency: 'USD',
+      ...(params.providerCharge === null
+        ? {}
+        : {
+            providerCurrency: 'SSP',
+            providerCurrencyAmountCents: params.providerCharge ?? 585_000,
+            exchangeRateUsed: 650,
+          }),
       verificationCodeHash: await bcrypt.hash(KNOWN_VERIFICATION_CODE, 10),
       verifiedAt: params.verified ? new Date() : null,
     },
