@@ -119,6 +119,9 @@ enum NotificationType {
   TICKET_CREATED // a support ticket was raised; admins are told
   TICKET_MESSAGE // a reply on a ticket; never sent for internal notes
   TICKET_STATUS_CHANGED // the ticket moved through its lifecycle
+  REVIEW_CREATED // a customer reviewed a location; the business is told
+  REVIEW_RESPONSE // the business replied to a review
+  REVIEW_HIDDEN // an admin hid a review; both sides are told
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in
@@ -196,6 +199,10 @@ model User {
   ticketAttachments  TicketAttachment[]  @relation("TicketAttachments")
   createdAdjustments BillingAdjustment[] @relation("CreatedAdjustments")
 
+  reviews         Review[] @relation("CustomerReviews")
+  hiddenReviews   Review[] @relation("HiddenReviews")
+  reviewResponses Review[] @relation("ReviewResponses")
+
   refreshTokens RefreshToken[]
   otpCodes      OtpCode[]
 
@@ -239,6 +246,7 @@ model BusinessProfile {
   threads     Thread[]
   tickets     Ticket[]
   adjustments BillingAdjustment[]
+  reviews     Review[]
 
   @@index([categoryId])
   @@index([status])
@@ -303,10 +311,21 @@ model Location {
   // model, so this counts units of simultaneous service, not people.
   capacity Int @default(1)
 
+  /// Denormalised review aggregates, recalculated inside the same transaction
+  /// as any review change. Location browsing is a hot read path and must never
+  /// run AVG() across the review table to render a star rating.
+  ///
+  /// Both count NON-HIDDEN reviews only. ratingAvg is null until the first
+  /// review lands — meaningfully different from 0, which would read as "rated
+  /// zero" rather than "not yet rated".
+  ratingAvg   Decimal? @db.Decimal(3, 2)
+  ratingCount Int      @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   hours              LocationHours[]
+  reviews            Review[]
   media              LocationMedia[]
   scheduleExceptions LocationScheduleException[]
   timeBlocks         LocationTimeBlock[]
@@ -684,6 +703,7 @@ model Appointment {
   thread        Thread?
   tickets       Ticket[]
   adjustments   BillingAdjustment[]
+  review        Review?
 
   // Availability counts overlapping appointments at one location for one day.
   @@index([locationId, startTime])
@@ -992,6 +1012,70 @@ model BillingAdjustment {
   /// The query a future settlement run makes: this business's outstanding rows.
   @@index([businessId, settledAt])
   @@map("billing_adjustments")
+}
+
+// ---------- Reviews ----------
+
+/// A customer's review of one appointment, scoped to the LOCATION it happened
+/// at rather than to the business.
+///
+/// Per-location is the product decision: a chain's well-run branch should not
+/// be dragged down by a badly-run one, and a customer choosing between two
+/// branches is choosing between those branches, not between companies.
+model Review {
+  id String @id @default(uuid())
+
+  /// One review per completed appointment, enforced HERE rather than by a
+  /// read-then-write check — two concurrent submissions both pass a read and
+  /// only the unique index stops the second.
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   User   @relation("CustomerReviews", fields: [customerId], references: [id], onDelete: Cascade)
+
+  /// Both denormalised from the appointment at creation and never accepted
+  /// from the request: a review must describe where the service actually
+  /// happened, not where the reviewer says it did.
+  businessId      String
+  businessProfile BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  locationId      String
+  location        Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  rating  Int // 1-5, validated in the DTO and by a CHECK constraint
+  comment String?
+
+  /// Set on any customer edit. Surfaced in responses, because a rating that
+  /// changed after a business replied is context the reader needs.
+  editedAt DateTime?
+
+  // ---- Moderation ----
+  //
+  // Soft-hide: hidden reviews leave public listings and aggregates but stay in
+  // the table. A hidden review is usually the evidence in the ticket that got
+  // it hidden, so deleting it destroys the record of why.
+  hiddenAt     DateTime?
+  hiddenReason String?
+  hiddenById   String?
+  hiddenBy     User?     @relation("HiddenReviews", fields: [hiddenById], references: [id], onDelete: SetNull)
+
+  // ---- Business response ----
+  //
+  // Fields on the review rather than a table, because the rule is exactly one
+  // response per review and a separate table would imply many.
+  responseText     String?
+  responseAt       DateTime?
+  responseById     String?
+  responseBy       User?     @relation("ReviewResponses", fields: [responseById], references: [id], onDelete: SetNull)
+  responseEditedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The public listing: one location, visible reviews, newest first.
+  @@index([locationId, hiddenAt, createdAt])
+  @@index([businessId])
+  @@map("reviews")
 }
 
 model OtpCode {

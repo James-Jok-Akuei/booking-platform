@@ -141,8 +141,8 @@ before it is built.
    nobody is notified about is half a feature. See §20.1.
 7. **Chat** — DONE (§21, realtime in §22)
 8. **Support tickets** — DONE (§24)
-9. **Reviews & reporting** — NEXT
-10. Admin portal
+9. **Reviews** — DONE (§28). Reporting/analytics still to come.
+10. Admin portal — NEXT
 
 ---
 
@@ -3036,3 +3036,135 @@ the §26 boot test is the one that leaves the real schedule running.
 ### 27.5 Verified
 
 33 new tests, **203 total across 7 suites**, all passing.
+
+---
+
+## 28. Reviews (2026-09-02)
+
+The customer-facing trust signal, scoped per location.
+
+### 28.1 Per location, not per business
+
+A `Review` carries `locationId` alongside `businessId`, and the aggregate lives
+on `Location`. A chain gets a separate rating per branch.
+
+A well-run branch should not be dragged down by a badly-run one, and a customer
+choosing between two branches of the same salon is choosing between those
+branches. Asserted directly: a review at branch A leaves branch B's
+`ratingAvg` null, for the same business.
+
+### 28.2 What actually prevents a double review
+
+`@unique` on `appointmentId`, and the service handles the constraint violation
+(`P2002` → `ConflictException`) rather than reading first.
+
+A read-then-write check loses the race: two concurrent submissions both find no
+existing review and both insert. Only the index can decide.
+
+`businessId` and `locationId` are copied from the appointment and never accepted
+from the body — a review has to describe where the service actually happened.
+Both preconditions (status is COMPLETED, caller is the appointment's customer)
+are checked in the service, since a guard cannot see either without repeating
+the query.
+
+### 28.3 Editable for 7 days, never deletable
+
+The customer may change rating and comment for 7 days; after that it is locked.
+Any edit stamps `editedAt`, which every response exposes — a rating that changed
+after the business replied is context the reader needs.
+
+**There is no customer delete**, deliberately. Delete-and-repost is how a review
+escapes a business response it did not like, and a review the business has
+already answered is a two-sided record.
+
+The business gets one response, editable by that business for 7 days
+(`responseEditedAt`), also not deletable. Any ACTIVE member may respond,
+including STAFF: replying to a customer is day-to-day work, not configuration,
+so it sits with the STAFF-permitted actions (§16.6) rather than the OWNER-only
+ones.
+
+Response fields live **on** `Review` rather than in a table, because the rule is
+exactly one response and a separate table would imply many.
+
+### 28.4 Moderation is a soft-hide
+
+Admin hide sets `hiddenAt`, `hiddenReason` (required) and `hiddenById`. Hidden
+reviews leave public listings and aggregates but **stay in the table** — a
+hidden review is usually the evidence in the ticket that got it hidden, so
+deleting it destroys the record of why it was hidden.
+
+Requiring a reason is not ceremony: hiding customer feedback without recording
+why cannot be reviewed later or explained in a dispute.
+
+Both sides are notified — the author, because their words stopped being visible,
+and the business, because its rating just moved.
+
+### 28.5 Aggregates are recalculated on write, never computed on read
+
+`Location.ratingAvg` and `ratingCount` are recomputed **inside the same
+transaction** as any create, edit, hide or unhide. Location browsing is a hot
+read path and must never run `AVG()` across the review table to draw stars.
+
+Same transaction matters: an aggregate updated afterwards can disagree with the
+rows it summarises, and a hidden review that still moves the star rating is not
+hidden.
+
+`ratingAvg` is **null**, not 0, when nothing is visible. "Not yet rated" and
+"rated zero" are different claims, and 0 is not a valid rating.
+
+Tested with exact numbers rather than "it changed": three reviews of 5, 3 and 4
+give exactly 4.00; editing the 4 to a 1 gives exactly 3.00; hiding that review
+gives exactly 4.00 over 2; unhiding restores 3.00 over 3; hiding the only review
+returns the average to null.
+
+### 28.6 Auth posture and customer identity — both found, not invented
+
+**Posture, found:** the only other public `/locations` route is
+`GET /locations/:id/availability`, guarded by `OptionalJwtAuthGuard` with the
+§13.2 rule that a non-APPROVED business is 404 to anyone but its own members.
+`GET /locations/:id/reviews` mirrors that exactly. No new posture.
+
+**Identity: there is no precedent, because there is no data.** `User` has
+**no name field at all** — only `email`, `role` and timestamps. The existing
+practice is that a customer is exposed as `{ id, email }` and only ever to a
+counterparty: the business sees its own customer on an appointment
+(`APPOINTMENT_SELECT`) and in a chat thread. **Nothing about a customer is
+public anywhere today.**
+
+So the rule that follows the project rather than inventing something:
+
+- **Anonymous / other viewers** — no customer identity at all. Rating, comment,
+  dates, business response.
+- **A member of the owning business, or an admin** — `{ id, email }`, exactly as
+  appointments and chat already do for the same counterparty relationship.
+
+Deriving initials from an email was rejected: it exposes part of an identifier
+the customer never chose as a public handle, and at a small salon with one
+review it identifies them anyway. **A real `User.displayName` is the missing
+piece** — it needs a product decision about where a name is collected, since
+signup is OTP-by-email and asks for nothing else.
+
+### 28.7 Endpoints
+
+| Method | Path | Who |
+|---|---|---|
+| POST | `/appointments/:id/reviews` | CUSTOMER, COMPLETED appointments only |
+| PATCH | `/reviews/:id` | the author, within 7 days |
+| GET | `/locations/:id/reviews` | optionally authenticated, as availability is |
+| POST | `/reviews/:id/response` | any ACTIVE member of the owning business |
+| PATCH | `/reviews/:id/response` | same, within 7 days |
+| PATCH | `/admin/reviews/:id/hide` | ADMIN, reason required |
+| PATCH | `/admin/reviews/:id/unhide` | ADMIN |
+
+### 28.8 Verified
+
+37 service tests and 11 HTTP tests on the §27 harness; **254 total across 8
+suites**, all passing, and the application boots with all seven routes mapped.
+
+Covers every non-COMPLETED status rejected, a non-participant customer rejected,
+the conflict on a second review, ratings 1 and 5 accepted with 0/6/-1 refused,
+the edit window in both directions, one-response-only, a different business
+refused, aggregates asserted as exact numbers through create/edit/hide/unhide,
+per-location separation, and identity hidden from anonymous callers but shown to
+the owning business. Over HTTP: 401 unauthenticated, 403 for a business token
+creating a review and for any non-admin hiding one.

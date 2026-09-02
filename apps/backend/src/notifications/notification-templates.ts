@@ -140,6 +140,32 @@ export function renderNotification(
           '\nOpen the ticket to see the full history.',
       };
 
+    case NotificationType.REVIEW_CREATED:
+      return {
+        subject: 'You have a new review',
+        body:
+          `A customer has reviewed one of your locations.\n\n` +
+          (ctx.reason ? `${ctx.reason}\n\n` : '') +
+          'Open the location to read it. You can post one public reply.',
+      };
+
+    case NotificationType.REVIEW_RESPONSE:
+      return {
+        subject: 'The business replied to your review',
+        body:
+          `${ctx.reason ?? 'The business has replied to your review.'}\n\n` +
+          'Open the location to read their reply.',
+      };
+
+    case NotificationType.REVIEW_HIDDEN:
+      return {
+        subject: 'A review was hidden by moderation',
+        body:
+          `A review has been hidden by an administrator and is no longer public.\n\n` +
+          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
+          'If you believe this is a mistake, raise a support ticket.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,

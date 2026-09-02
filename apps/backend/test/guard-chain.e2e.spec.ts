@@ -98,6 +98,26 @@ describe('Guard chain over HTTP (§23.3)', () => {
     await ctx.close();
   });
 
+  /** A COMPLETED appointment for customerA at alpha, plus its review. */
+  const seedReview = async () => {
+    const appointment = await createAppointment(prisma, {
+      business: alpha,
+      customerId: customerA.userId,
+      status: AppointmentStatus.COMPLETED,
+      verified: true,
+    });
+    const review = await prisma.review.create({
+      data: {
+        appointmentId: appointment.id,
+        customerId: customerA.userId,
+        businessId: alpha.businessId,
+        locationId: alpha.locationId,
+        rating: 4,
+      },
+    });
+    return { appointmentId: appointment.id, reviewId: review.id };
+  };
+
   /** One representative guarded route per protected module. */
   const GUARDED = [
     ['appointments', () => `/appointments/${appointmentA}`],
@@ -283,6 +303,111 @@ describe('Guard chain over HTTP (§23.3)', () => {
 
       expect(foreign.status).toBe(missing.status);
       expect(foreign.body.message).toBe(missing.body.message);
+    });
+  });
+
+  describe('reviews over HTTP (§28)', () => {
+    it('unauthenticated review creation -> 401', async () => {
+      const { appointmentId } = await seedReview();
+      const res = await request(url, `/appointments/${appointmentId}/reviews`, {
+        method: 'POST',
+        body: { rating: 5 },
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('unauthenticated response posting -> 401', async () => {
+      const { reviewId } = await seedReview();
+      const res = await request(url, `/reviews/${reviewId}/response`, {
+        method: 'POST',
+        body: { responseText: 'hello' },
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('unauthenticated hide -> 401', async () => {
+      const { reviewId } = await seedReview();
+      const res = await request(url, `/admin/reviews/${reviewId}/hide`, {
+        method: 'PATCH',
+        body: { hiddenReason: 'because' },
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it('a BUSINESS token cannot create a review -> 403', async () => {
+      const { appointmentId } = await seedReview();
+      const res = await request(url, `/appointments/${appointmentId}/reviews`, {
+        method: 'POST',
+        token: tokenAlpha,
+        body: { rating: 5 },
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it.each([
+      ['CUSTOMER', () => tokenCustomerA],
+      ['BUSINESS', () => tokenAlpha],
+    ])('a %s token cannot hide a review -> 403', async (_role, token) => {
+      const { reviewId } = await seedReview();
+      const res = await request(url, `/admin/reviews/${reviewId}/hide`, {
+        method: 'PATCH',
+        token: token(),
+        body: { hiddenReason: 'Not my call to make.' },
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it("customer B cannot edit customer A's review", async () => {
+      const { reviewId } = await seedReview();
+      const res = await request(url, `/reviews/${reviewId}`, {
+        method: 'PATCH',
+        token: tokenCustomerB,
+        body: { rating: 1 },
+      });
+
+      expect(res.status).toBe(404);
+    });
+
+    it("a different business cannot respond to another business's review", async () => {
+      const { reviewId } = await seedReview();
+      const res = await request(url, `/reviews/${reviewId}/response`, {
+        method: 'POST',
+        token: tokenBeta,
+        body: { responseText: 'Not my customer.' },
+      });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('the public listing is reachable with no token at all', async () => {
+      await seedReview();
+      const res = await request(url, `/locations/${alpha.locationId}/reviews`);
+
+      expect(res.status).toBe(200);
+      expect(typeof res.body.ratingCount).toBe('number');
+    });
+
+    it('the public listing exposes no customer email to an anonymous caller', async () => {
+      await seedReview();
+      const res = await request(url, `/locations/${alpha.locationId}/reviews`);
+
+      expect(JSON.stringify(res.body)).not.toContain(customerA.email);
+    });
+
+    it('an admin token hides successfully', async () => {
+      const { reviewId } = await seedReview();
+      const res = await request(url, `/admin/reviews/${reviewId}/hide`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: { hiddenReason: 'Contains personal data.' },
+      });
+
+      expect(res.status).toBe(200);
     });
   });
 
