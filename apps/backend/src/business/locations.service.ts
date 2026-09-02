@@ -59,6 +59,21 @@ export class LocationsService {
       dto.longitude ?? existing.longitude ?? undefined,
     );
 
+    // Coordinates that exist cannot be removed (§43.2). A location that has
+    // them is discoverable; clearing them would drop it out of every distance
+    // search silently, which looks to the business like the platform losing
+    // their listing. Adding them to a location that lacks them is allowed and
+    // is exactly how a pre-§43 row becomes discoverable.
+    const clearing =
+      (existing.latitude !== null && dto.latitude === null) ||
+      (existing.longitude !== null && dto.longitude === null);
+    if (clearing) {
+      throw new BadRequestException(
+        'Coordinates cannot be removed once set. Send corrected values instead — ' +
+          'a location without them cannot appear in a distance search.',
+      );
+    }
+
     return this.prisma.location.update({
       where: { id: locationId },
       data: dto,

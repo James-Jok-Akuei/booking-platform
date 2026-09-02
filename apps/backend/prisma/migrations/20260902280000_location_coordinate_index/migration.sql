@@ -1,0 +1,11 @@
+-- Discovery: the bounding-box prefilter for distance search (§43.5).
+--
+-- There is no PostGIS. Distance search cuts the candidate set with a plain
+-- lat/lng box that this index can serve, then computes haversine in SQL only
+-- over what survives. Without the index the box degenerates into a sequential
+-- scan and the prefilter buys nothing.
+--
+-- The columns stay NULLABLE: locations created before coordinates were required
+-- genuinely have none, and NULLs are simply excluded from distance search
+-- rather than guessed at.
+CREATE INDEX "locations_latitude_longitude_idx" ON "locations"("latitude", "longitude");

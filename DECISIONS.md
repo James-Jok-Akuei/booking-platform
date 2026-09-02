@@ -4539,3 +4539,145 @@ Four new notification types go to every ACTIVE member: `BUSINESS_APPROVED`,
 `BUSINESS_REINSTATED`. The suspension copy states plainly that existing
 appointments still stand and that held money has not been lost, because those
 are the two things a suspended business will assume the worst about.
+
+---
+
+## 43. Discovery and browsing (2026-09-02)
+
+The platform had no customer front door. Nothing listed businesses, locations or
+services to the public, so a customer had no way to obtain the location id that
+every customer endpoint requires. The feature set was complete and unreachable.
+
+### 43.1 Four answers that shaped the design
+
+**(a) Services belong to the BUSINESS, not the location.** `Service.businessId`,
+no `locationId`, and `AppointmentsService.create` proves the intent by checking
+`service.businessId === location.businessId` and rejecting the mismatch. A
+service is therefore offered at **all** of a business's locations (§10.2), so a
+location's cheapest price is a property of its business — which is why
+`cheapestByBusiness` groups by `businessId` and two branches of one salon
+genuinely show the same `fromPriceCents`.
+
+**(b) A single platform timezone already exists.** `PLATFORM_TIMEZONE`, default
+`Africa/Juba`, read by `AvailabilityService` (§12). No per-location timezone is
+stored anywhere. Discovery reuses that constant and the existing `time.util`
+helpers rather than inventing a second notion of "today" — if the two disagreed,
+"open now" and the availability calendar would contradict each other for the
+same location.
+
+**(c) Zero locations exist**, so zero are missing coordinates. **No business has
+to be asked to add them**, and there is nothing to backfill.
+
+**(d) Offset/limit**, response shaped `{ total, limit, offset, items }` — the
+convention in six existing services. Followed exactly; no cursor.
+
+### 43.2 Coordinates are required for new locations
+
+`POST /business/locations` now requires `latitude` and `longitude`, range-checked
+and with **0,0 rejected** — a valid pair of numbers and almost never a real
+place. It is what a form submits when both fields were empty, or a geocoder
+returned zeroes, and accepting it would put every misconfigured business at the
+same point in the Gulf of Guinea, each one the others' nearest neighbour.
+
+`PATCH` **cannot clear** coordinates that exist: clearing would silently drop a
+location out of every distance search, which reads to the business as the
+platform losing their listing. A location that lacks them may have them added,
+which is exactly how a pre-§43 row becomes discoverable.
+
+**The columns stay nullable.** Existing rows genuinely have no coordinates and
+there is nothing honest to backfill them with. They still appear in ordinary
+browse; they are excluded only from distance search, because a distance to an
+unknown point cannot be computed and must not be faked.
+
+### 43.3 A result is a LOCATION
+
+Everything customer-facing here is already location-scoped — availability,
+reviews, `ratingAvg`, hours, gallery — so a branch is the unit a customer
+actually chooses between. Returning businesses would mean a customer picking a
+company and then being asked a second question the data was already organised to
+answer.
+
+Only publicly bookable businesses appear, through `isPubliclyBookable()` from
+§42 — not a second status check. A non-public location 404s on detail, matching
+availability and reviews.
+
+### 43.4 Query budget
+
+**A page of any size costs a fixed number of queries. None are per-row.**
+
+| # | Query |
+|---|---|
+| 1 | count |
+| 2 | the page of locations (with business, category, subcategory joined) |
+| 3 | cheapest active service, **grouped by business**, for the whole page |
+| 4 | `LocationHours` for the whole page, today's weekday only |
+| 5 | today's `LocationScheduleException` for the whole page |
+| (+1) | the bounding-box + haversine prefilter, only when searching by distance |
+
+So **five, or six with distance** — the same for 1 result as for 20. Asserted by
+spying on each lookup and requiring exactly one call on a 20-result page.
+
+The exchange rate is read **once per response** and reused for every
+`approxSettlement` in it (§39). A page whose rows converted at different rates
+would be indefensible to anyone comparing them.
+
+### 43.5 Distance without PostGIS
+
+A bounding box on `(latitude, longitude)` — now indexed — cuts the candidate set,
+then haversine is computed **in SQL** over what survives, in a subquery whose
+outer `WHERE` applies the radius. The box is a superset of the circle (its
+corners are farther than the radius), so the radius filter is what actually
+enforces the limit.
+
+`$queryRaw` is appropriate here for the reason §29 already established for the
+busiest-hour aggregate: Prisma's builder cannot express a computed ordering key.
+The aggregation stays in the database either way.
+
+Two details worth keeping: the longitude delta is divided by `cos(latitude)`,
+clamped at 0.01 so a search near a pole cannot produce an infinite box; and
+`radiusKm` is capped at 200 km, which is what bounds the candidate set a
+distance sort has to hold in memory to order it.
+
+A test asserts a **computed distance against hand arithmetic** — 0.1° of
+latitude is 11.12 km, from `6371 × π / 180` — not merely that ordering looks
+right. Ordering can be right while every distance is wrong.
+
+### 43.6 Text search, sorting, and what was deliberately not built
+
+**Text search is a case-insensitive substring** over business name, location name
+and service name (`contains` + `mode: 'insensitive'`). **No full-text index, no
+trigram extension, no new dependency.** It will not handle typos, stemming or
+relevance ranking, and when that becomes the complaint the answer is Postgres
+full-text search — a decision worth making with real queries in front of it
+rather than guessed at now.
+
+**`sort=price` falls back to ordering by name.** The price lives on the
+business's services, not on the location row, so SQL cannot order by it without
+a join-and-aggregate that would change the query budget above. Stating it here
+rather than shipping a sort that silently does nothing: `maxPriceCents` filters
+correctly, and `fromPriceCents` is returned on every row, so a client can order a
+page itself. If price ordering matters across pages, it needs a denormalised
+`Location.fromPriceCents` maintained on service writes — the same shape as
+`ratingAvg` — and that is a bigger decision than this module.
+
+**Reviews are not embedded** in the detail response. `GET /locations/:id/reviews`
+already exists, is paginated, and has its own exposure rules (§31); duplicating
+them would mean two places to keep those rules right.
+
+### 43.7 Open now, and the boundary
+
+`openNow` uses the platform timezone from (b) and resolves the day exactly as
+availability does (§13.1): **a date-specific exception outranks the weekly
+template**, including one that opens a day the template calls closed.
+
+**Boundary convention: half-open, `[open, close)`.** A location open 09:00–17:00
+is open at exactly 09:00 and **closed at exactly 17:00**. This matches every
+other interval in the codebase — slot overlap, `[from, to)` date ranges — and it
+is the honest answer: at 17:00 the shop is shutting, and saying "open" sends
+someone to a locked door.
+
+Malformed or inverted stored hours are treated as **closed** rather than
+throwing. Overnight hours (close ≤ open) are not modelled anywhere in this
+platform — availability does not generate slots across midnight either — so such
+a row is closed rather than silently guessed at. A search that 500s because one
+location has a corrupt hours row is worse than one that omits it.

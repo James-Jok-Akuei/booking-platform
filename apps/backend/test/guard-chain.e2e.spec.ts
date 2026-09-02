@@ -925,6 +925,186 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('discovery is public, over HTTP (§43)', () => {
+    it('GET /discover/locations works with NO token at all', async () => {
+      const res = await request(url, '/discover/locations');
+
+      // The front door. A customer must be able to find a business before they
+      // have any reason to sign up.
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('locations');
+      expect(res.body).toHaveProperty('total');
+      expect(res.body).toHaveProperty('limit');
+      expect(res.body).toHaveProperty('offset');
+    });
+
+    it('GET /discover/locations/:id works with no token', async () => {
+      const res = await request(url, `/discover/locations/${alpha.locationId}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(alpha.locationId);
+      // Reviews are NOT embedded — /locations/:id/reviews already exists.
+      expect(res.body).not.toHaveProperty('reviews');
+    });
+
+    it('accepts a valid token too, and returns the same thing', async () => {
+      const anon = await request(url, '/discover/locations');
+      const authed = await request(url, '/discover/locations', {
+        token: tokenCustomerA,
+      });
+
+      expect(authed.status).toBe(200);
+      expect(authed.body.total).toBe(anon.body.total);
+    });
+
+    it('rejects lat without lng -> 400', async () => {
+      const res = await request(url, '/discover/locations?lat=4.85');
+
+      expect(res.status).toBe(400);
+    });
+
+    it('rejects sort=distance with no centre -> 400', async () => {
+      const res = await request(url, '/discover/locations?sort=distance');
+
+      expect(res.status).toBe(400);
+    });
+
+    it('rejects an unknown sort value -> 400', async () => {
+      const res = await request(url, '/discover/locations?sort=nonsense');
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('sort');
+    });
+
+    it('rejects a malformed location id -> 400', async () => {
+      const res = await request(url, '/discover/locations/not-a-uuid');
+
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('location coordinates are required (§43.2)', () => {
+    it('POST /business/locations without coordinates -> 400', async () => {
+      const res = await request(url, '/business/locations', {
+        method: 'POST',
+        token: tokenAlpha,
+        body: { name: 'No pin', address: 'Somewhere in Juba' },
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('latitude');
+    });
+
+    it('POST with 0,0 is rejected -> 400', async () => {
+      const res = await request(url, '/business/locations', {
+        method: 'POST',
+        token: tokenAlpha,
+        body: {
+          name: 'Null Island',
+          address: 'Gulf of Guinea',
+          latitude: 0,
+          longitude: 0,
+        },
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it.each([
+      ['latitude out of range', { latitude: 91, longitude: 31.58 }],
+      ['longitude out of range', { latitude: 4.85, longitude: 181 }],
+    ])('POST with %s -> 400', async (_label, coords) => {
+      const res = await request(url, '/business/locations', {
+        method: 'POST',
+        token: tokenAlpha,
+        body: { name: 'Bad pin', address: 'Somewhere', ...coords },
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('POST with valid coordinates succeeds -> 201', async () => {
+      const res = await request(url, '/business/locations', {
+        method: 'POST',
+        token: tokenAlpha,
+        body: {
+          name: 'Juba Town Branch',
+          address: 'Ministries Road',
+          latitude: 4.85,
+          longitude: 31.58,
+        },
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.body.latitude).toBe(4.85);
+    });
+
+    it('PATCH cannot clear coordinates that exist -> 400', async () => {
+      const created = await request(url, '/business/locations', {
+        method: 'POST',
+        token: tokenAlpha,
+        body: {
+          name: 'Clearable?',
+          address: 'Ministries Road',
+          latitude: 4.85,
+          longitude: 31.58,
+        },
+      });
+
+      const res = await request(url, `/business/locations/${created.body.id}`, {
+        method: 'PATCH',
+        token: tokenAlpha,
+        body: { latitude: null, longitude: null },
+      });
+
+      // Clearing would drop the location out of every distance search silently.
+      expect(res.status).toBe(400);
+    });
+
+    it('PATCH can ADD coordinates to a pre-§43 location -> 200', async () => {
+      // Rows created before coordinates were required genuinely have none.
+      // This is exactly how such a location becomes discoverable.
+      const legacy = await prisma.location.create({
+        data: {
+          businessId: alpha.businessId,
+          name: 'Legacy branch',
+          address: 'Recorded before coordinates were required',
+        },
+      });
+
+      const res = await request(url, `/business/locations/${legacy.id}`, {
+        method: 'PATCH',
+        token: tokenAlpha,
+        body: { latitude: 4.85, longitude: 31.58 },
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.latitude).toBe(4.85);
+    });
+
+    it('PATCH can correct coordinates -> 200', async () => {
+      const created = await request(url, '/business/locations', {
+        method: 'POST',
+        token: tokenAlpha,
+        body: {
+          name: 'Correctable',
+          address: 'Ministries Road',
+          latitude: 4.85,
+          longitude: 31.58,
+        },
+      });
+
+      const res = await request(url, `/business/locations/${created.body.id}`, {
+        method: 'PATCH',
+        token: tokenAlpha,
+        body: { latitude: 4.86, longitude: 31.59 },
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.latitude).toBe(4.86);
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {

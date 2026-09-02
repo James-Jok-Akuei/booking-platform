@@ -409,6 +409,9 @@ model Location {
   appointments       Appointment[]
 
   @@index([businessId])
+  /// The bounding-box prefilter behind distance search (§43.5). Postgres can
+  /// use it to cut the candidate set before any haversine is computed.
+  @@index([latitude, longitude])
   @@map("locations")
 }
 
