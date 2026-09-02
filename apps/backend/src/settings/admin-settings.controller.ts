@@ -6,6 +6,11 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { PlatformSettingsService } from './platform-settings.service';
 import { UpdatePlatformFeeDto } from './dto/update-platform-fee.dto';
 import { UpdateExchangeRateDto } from './dto/update-exchange-rate.dto';
+import { UpdateStalenessDto } from './dto/update-staleness.dto';
+import {
+  AuthenticatedUser,
+  CurrentUser,
+} from '../common/decorators/current-user.decorator';
 
 /**
  * Admin-only platform configuration.
@@ -49,11 +54,26 @@ export class AdminSettingsController {
    * Appointment.
    */
   @Patch('exchange-rate')
-  updateExchangeRate(@Body() dto: UpdateExchangeRateDto) {
+  updateExchangeRate(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: UpdateExchangeRateDto,
+  ) {
     return this.settings.setExchangeRate(
       dto.exchangeRateUsdToProviderCurrency,
       dto.providerCurrency,
+      // Recorded so a rate that looks wrong is a question with an answer.
+      user.userId,
     );
+  }
+
+  /**
+   * How old the rate may get before it is reported stale.
+   *
+   * Reporting only. Nothing here can block a booking or a payment (§37.3).
+   */
+  @Patch('exchange-rate/staleness')
+  updateStaleness(@Body() dto: UpdateStalenessDto) {
+    return this.settings.setExchangeRateStalenessHours(dto.exchangeRateStalenessHours);
   }
 
   /**

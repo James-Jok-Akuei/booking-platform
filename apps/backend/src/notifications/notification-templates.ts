@@ -177,6 +177,18 @@ export function renderNotification(
           'If you believe this is a mistake, raise a support ticket.',
       };
 
+    case NotificationType.EXCHANGE_RATE_STALE:
+      return {
+        subject: 'The exchange rate needs checking',
+        body:
+          'The manual USD to provider-currency exchange rate has not been ' +
+          'updated recently.\n\n' +
+          (ctx.reason ? `${ctx.reason}\n\n` : '') +
+          'Deposits are STILL BEING CHARGED at the stored rate, so nothing is ' +
+          'blocked and no customer is affected yet. Check it against the ' +
+          'market rate and update it if it has moved.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,

@@ -10,6 +10,9 @@ import { INTERNAL_CURRENCY } from '../payments/currency';
  * pinning the id means every read and write targets it by primary key with no
  * "find the first row" ambiguity and no way to end up with two.
  */
+/** How old a manually-set exchange rate may be before it is reported stale. */
+export const DEFAULT_STALENESS_HOURS = 24;
+
 export const PLATFORM_SETTING_ID = 'platform';
 
 /** Fallback if the row is somehow missing — matches the column default. */
@@ -81,6 +84,8 @@ export class PlatformSettingsService {
     providerCurrency: string;
     rate: Prisma.Decimal | null;
     updatedAt: Date | null;
+    updatedById: string | null;
+    stalenessHours: number;
   }> {
     const setting = await this.prisma.platformSetting.findUnique({
       where: { id: PLATFORM_SETTING_ID },
@@ -88,6 +93,8 @@ export class PlatformSettingsService {
         providerCurrency: true,
         exchangeRateUsdToProviderCurrency: true,
         exchangeRateUpdatedAt: true,
+        exchangeRateUpdatedById: true,
+        exchangeRateStalenessHours: true,
       },
     });
 
@@ -95,19 +102,61 @@ export class PlatformSettingsService {
       this.logger.error(
         `Platform settings row "${PLATFORM_SETTING_ID}" is missing; no exchange rate available.`,
       );
-      return { providerCurrency: 'EUR', rate: null, updatedAt: null };
+      return {
+        providerCurrency: 'EUR',
+        rate: null,
+        updatedAt: null,
+        updatedById: null,
+        stalenessHours: DEFAULT_STALENESS_HOURS,
+      };
     }
 
     return {
       providerCurrency: setting.providerCurrency,
       rate: setting.exchangeRateUsdToProviderCurrency,
       updatedAt: setting.exchangeRateUpdatedAt,
+      updatedById: setting.exchangeRateUpdatedById,
+      stalenessHours: setting.exchangeRateStalenessHours,
+    };
+  }
+
+  /**
+   * Whether the manual rate has gone past its configured age, and by how much.
+   *
+   * A rate that has NEVER been set is not "stale" — it is missing, which is a
+   * different and already-fatal condition at payment time. Reporting it as
+   * stale would file an unconfigured platform under the same heading as a
+   * slightly old number.
+   */
+  async getExchangeRateStaleness() {
+    const { rate, updatedAt, stalenessHours } = await this.getExchangeRate();
+
+    if (rate === null || updatedAt === null) {
+      return { configured: false, stale: false, ageInHours: null, stalenessHours };
+    }
+
+    const ageInHours = Math.floor((Date.now() - updatedAt.getTime()) / 3_600_000);
+
+    return {
+      configured: true,
+      stale: ageInHours >= stalenessHours,
+      ageInHours,
+      stalenessHours,
     };
   }
 
   /** Admin-facing view, including how stale the rate has become. */
   async getExchangeRateSettings() {
-    const { providerCurrency, rate, updatedAt } = await this.getExchangeRate();
+    const { providerCurrency, rate, updatedAt, updatedById, stalenessHours } =
+      await this.getExchangeRate();
+    const staleness = await this.getExchangeRateStaleness();
+
+    const updatedBy = updatedById
+      ? await this.prisma.user.findUnique({
+          where: { id: updatedById },
+          select: { id: true, email: true },
+        })
+      : null;
 
     return {
       internalCurrency: INTERNAL_CURRENCY,
@@ -116,8 +165,17 @@ export class PlatformSettingsService {
       exchangeRateUpdatedAt: updatedAt,
       // Surfaced explicitly so a stale manual rate is visible without anyone
       // having to do date arithmetic in their head.
-      ageInHours: updatedAt
-        ? Math.floor((Date.now() - updatedAt.getTime()) / 3_600_000)
+      ageInHours: staleness.ageInHours,
+      exchangeRateUpdatedBy: updatedBy,
+      stalenessThresholdHours: stalenessHours,
+      stale: staleness.stale,
+      // A field, not just a flag: whoever reads this response should not have
+      // to know what `stale: true` implies. Null when there is nothing wrong,
+      // so the presence of the key is itself the signal.
+      warning: staleness.stale
+        ? `This exchange rate was last set ${staleness.ageInHours} hours ago, past the ` +
+          `${stalenessHours}-hour threshold. Deposits are still being charged at it. ` +
+          'Check it against the market rate.'
         : null,
       configured: rate !== null,
       note:
@@ -128,12 +186,53 @@ export class PlatformSettingsService {
   }
 
   /**
+   * Changes how old the rate may get before it is reported stale.
+   *
+   * Zero is allowed and means "always report it stale" — a legitimate setting
+   * for a currency moving fast enough that any stored rate is suspect.
+   */
+  async setExchangeRateStalenessHours(hours: number) {
+    await this.prisma.platformSetting.upsert({
+      where: { id: PLATFORM_SETTING_ID },
+      update: { exchangeRateStalenessHours: hours },
+      create: { id: PLATFORM_SETTING_ID, exchangeRateStalenessHours: hours },
+    });
+
+    this.logger.log(`Exchange-rate staleness threshold set to ${hours} hours.`);
+
+    return this.getExchangeRateSettings();
+  }
+
+  /**
+   * Records that admins have been told the rate is stale, so the reminder fires
+   * once a day rather than on every sweep.
+   */
+  async markStaleNotified(at = new Date()) {
+    await this.prisma.platformSetting.update({
+      where: { id: PLATFORM_SETTING_ID },
+      data: { exchangeRateStaleNotifiedAt: at },
+    });
+  }
+
+  async getStaleNotifiedAt(): Promise<Date | null> {
+    const setting = await this.prisma.platformSetting.findUnique({
+      where: { id: PLATFORM_SETTING_ID },
+      select: { exchangeRateStaleNotifiedAt: true },
+    });
+    return setting?.exchangeRateStaleNotifiedAt ?? null;
+  }
+
+  /**
    * `providerCurrency` is optional: omitting it keeps whatever is stored, so a
    * rate can be corrected without restating the currency. Defaulting it to a
    * literal here would silently overwrite a configured currency on every rate
    * tweak.
    */
-  async setExchangeRate(rate: number, providerCurrency?: string) {
+  async setExchangeRate(
+    rate: number,
+    providerCurrency?: string,
+    updatedById?: string,
+  ) {
     const updated = await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: {
@@ -141,12 +240,18 @@ export class PlatformSettingsService {
         providerCurrency: providerCurrency ?? undefined,
         exchangeRateUsdToProviderCurrency: rate,
         exchangeRateUpdatedAt: new Date(),
+        exchangeRateUpdatedById: updatedById ?? null,
+        // A fresh rate is not stale, so the daily reminder starts over. Left
+        // set, the next staleness would be judged against an old notification
+        // and the reminder would be a day late.
+        exchangeRateStaleNotifiedAt: null,
       },
       create: {
         id: PLATFORM_SETTING_ID,
         providerCurrency: providerCurrency ?? 'EUR',
         exchangeRateUsdToProviderCurrency: rate,
         exchangeRateUpdatedAt: new Date(),
+        exchangeRateUpdatedById: updatedById ?? null,
       },
     });
 

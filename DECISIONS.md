@@ -3976,3 +3976,71 @@ Still open, and now the next real decision:
   being calculated and the money being sent (§34.5).
 - **Pre-§34 appointments have no entries** and are not payable through this
   system. They must be settled out of band.
+
+---
+
+## 37. Exchange-rate staleness (2026-09-02)
+
+### 37.1 There is no display conversion, and no window
+
+**The customer never sees an SSP figure from this platform before paying.**
+`convertUsdCentsToProviderCents` is called in exactly one place —
+`initiateDepositPayment` — and nowhere else in `src`. Service prices, deposits
+and every appointment response are USD; the provider-currency amount first
+exists on the customer's handset, in MTN's own prompt, and is written back to
+`providerCurrencyAmountCents` afterwards.
+
+So the question of whether the displayed rate and `exchangeRateUsed` can differ
+has a clean answer: **they cannot**. There is one read of `getExchangeRate()`
+per payment attempt, and the same `rate` variable both computes the charged
+amount and is persisted as `exchangeRateUsed` on the appointment. No second read,
+no window.
+
+The one real interval is between that read and the customer approving the prompt
+on their phone — seconds to minutes. The amount is fixed at the read rate for the
+whole of it, which is correct: the customer approves a specific figure, and an
+admin changing the rate mid-prompt must not change what they agreed to. A failed
+attempt clears the reference (§17.3), and a fresh attempt reads a fresh rate,
+which is also correct.
+
+### 37.2 The rate's shape, and what was already there
+
+A single admin-set `Decimal(18,8)` on the singleton `PlatformSetting` row,
+nullable with no default, `providerCurrency` alongside it. Payment initiation
+fails loudly when it is unset rather than falling back to anything.
+
+It **was already timestamped** — `exchangeRateUpdatedAt`, surfaced with
+`ageInHours` on the admin endpoint. What was missing: who set it, any definition
+of "too old", and anything that told a human when it drifted past that. Those are
+what this commit adds; the timestamp was not re-added.
+
+### 37.3 Loud, never fatal
+
+Added:
+
+- `exchangeRateUpdatedById` — a manually-maintained rate that looks wrong is a
+  question with an answer, and "when" alone does not say who to ask.
+- `exchangeRateStalenessHours`, default **24**, admin-settable, 0–720.
+  Configurable because the right threshold depends on how fast the currency is
+  actually moving: 24 hours suits a stable pair and is far too slow for a
+  collapsing one. Zero means "always warn", which is a legitimate setting here.
+- `stale` and a `warning` **field** on every admin response exposing the rate.
+  A field rather than only a flag, so the reader does not have to know what
+  `stale: true` implies; null when there is nothing wrong, so the presence of
+  the key is itself the signal. The warning says explicitly that deposits are
+  still being charged at the rate.
+- An hourly sweep that notifies every admin, **debounced to once a day** per
+  stale spell via `exchangeRateStaleNotifiedAt`. A warning that arrives every
+  hour is one people filter, and then the real one lands in a folder nobody
+  reads. Updating the rate clears the marker, so a later stale spell warns
+  promptly instead of a day late.
+
+**Nothing blocks.** No booking, no payment initiation, no read is refused
+because the rate is old — a stale rate is still served and still charged at.
+A platform that stops taking money because nobody updated a setting is worse
+than one charging a slightly old rate. There is a test asserting exactly that:
+a 500-hour-old rate is still returned by `getExchangeRate()`.
+
+An **unset** rate is deliberately not reported as stale. It is missing, not old,
+and payment initiation already refuses outright on it — filing the two under one
+heading would hide the fatal case behind the cosmetic one.
