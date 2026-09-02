@@ -34,7 +34,10 @@ import { LedgerService } from '../ledger/ledger.service';
 import { NotificationType } from '@prisma/client';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
-import { CancelAppointmentDto } from './dto/cancel-appointment.dto';
+import {
+  CancelAppointmentDto,
+  ReclassifyCancellationDto,
+} from './dto/cancel-appointment.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -791,6 +794,20 @@ export class AppointmentsService {
       );
     }
 
+    // A business cancelling a PAID appointment owes a refund, and the gateway's
+    // charge on that refund is theirs to bear (§25). It has to be supplied:
+    // nothing in the integration reports it, and guessing it from a percentage
+    // would put a figure in the ledger the provider's statement disagrees with.
+    const owesRefund =
+      cancelledBy === CancelledBy.BUSINESS && appointment.depositPaidAt !== null;
+    if (owesRefund && dto.gatewayChargeCents === undefined) {
+      throw new BadRequestException(
+        'gatewayChargeCents is required when a business cancels an appointment ' +
+          'whose deposit was paid. It is the gateway\'s charge on the refund, and ' +
+          'it is borne by the business.',
+      );
+    }
+
     this.logger.log(
       `Appointment ${appointmentId} -> CANCELLED by ${cancelledBy} (user ${userId}).`,
     );
@@ -807,10 +824,21 @@ export class AppointmentsService {
         },
         select: APPOINTMENT_SELECT,
       });
-      // A CUSTOMER cancellation releases the existing entries: the deposit is
-      // not refunded (§2), so the business keeps its share. A BUSINESS
-      // cancellation releases nothing here — it owes a refund, which is §36.
-      await this.ledger.releaseOnResolution(tx, appointmentId);
+      if (owesRefund) {
+        // The refund and the cancellation commit together. A cancellation whose
+        // refund failed to record would leave the platform holding money it has
+        // told a customer it gave back.
+        await this.ledger.recordBusinessCancellationRefund(
+          tx,
+          appointmentId,
+          dto.gatewayChargeCents!,
+        );
+      } else {
+        // A CUSTOMER cancellation releases the existing entries: the deposit is
+        // not refunded (§2), so the business keeps its share. An unpaid business
+        // cancellation has no entries to do anything with.
+        await this.ledger.releaseOnResolution(tx, appointmentId);
+      }
       return row;
     });
 
@@ -823,6 +851,92 @@ export class AppointmentsService {
       updated.cancelledBy === CancelledBy.CUSTOMER
         ? 'Cancelled by the customer.'
         : `Cancelled by the business.${updated.cancellationReason ? ` Reason: ${updated.cancellationReason}` : ''}`,
+    );
+
+    return updated;
+  }
+
+  /**
+   * An admin resolving a dispute in the customer's favour.
+   *
+   * Reclassifies the appointment as business-cancelled and runs the SAME refund
+   * path a self-service business cancellation runs — deliberately the same
+   * call, not a second implementation. Two refund paths drift, and the one that
+   * drifts is the one used rarely, under pressure, in a dispute.
+   *
+   * `cancelledBy` becomes BUSINESS while `cancelledByUserId` stays the admin who
+   * acted, which is exactly the divergence §33.2 kept the two columns apart for.
+   */
+  async reclassifyAsBusinessCancellation(
+    actor: { userId: string; role: UserRole | string },
+    appointmentId: string,
+    dto: ReclassifyCancellationDto,
+  ) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException(
+        'Only an administrator can reclassify a cancellation.',
+      );
+    }
+
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      select: { id: true, status: true, cancelledBy: true, depositPaidAt: true },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found.');
+
+    if (appointment.cancelledBy === CancelledBy.BUSINESS) {
+      throw new BadRequestException(
+        'This appointment is already recorded as a business cancellation.',
+      );
+    }
+    if (appointment.status === AppointmentStatus.COMPLETED) {
+      throw new BadRequestException(
+        'A completed appointment cannot be reclassified as cancelled.',
+      );
+    }
+
+    if (dto.ticketId) {
+      const ticket = await this.prisma.ticket.count({ where: { id: dto.ticketId } });
+      if (ticket === 0) throw new NotFoundException('Ticket not found.');
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          status: AppointmentStatus.CANCELLED,
+          cancelledAt: appointment.status === AppointmentStatus.CANCELLED
+            ? undefined
+            : new Date(),
+          cancelledBy: CancelledBy.BUSINESS,
+          // Who ACTED. The party who bears it is the business, above.
+          cancelledByUserId: actor.userId,
+          cancellationReason: dto.reason,
+          cancellationTicketId: dto.ticketId ?? null,
+        },
+        select: APPOINTMENT_SELECT,
+      });
+
+      if (appointment.depositPaidAt) {
+        await this.ledger.recordBusinessCancellationRefund(
+          tx,
+          appointmentId,
+          dto.gatewayChargeCents,
+        );
+      }
+
+      return row;
+    });
+
+    this.logger.warn(
+      `Appointment ${appointmentId} reclassified as a BUSINESS cancellation by admin ` +
+        `${actor.userId}${dto.ticketId ? ` on ticket ${dto.ticketId}` : ''}: ${dto.reason}`,
+    );
+
+    await this.notifyBothParties(
+      appointmentId,
+      NotificationType.APPOINTMENT_CANCELLED,
+      `Reclassified by support as a business cancellation. Reason: ${dto.reason}`,
     );
 
     return updated;
@@ -936,6 +1050,8 @@ export class AppointmentsService {
         id: true,
         status: true,
         customerId: true,
+        // Needed by cancel(): whether a refund is owed turns on it.
+        depositPaidAt: true,
         location: { select: { businessId: true } },
       },
     });

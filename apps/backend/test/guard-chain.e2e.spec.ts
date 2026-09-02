@@ -678,6 +678,58 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('refund and reconciliation routes over HTTP (§36)', () => {
+    it('GET /admin/ledger/held rejects a BUSINESS token -> 403', async () => {
+      const res = await request(url, '/admin/ledger/held', { token: tokenAlpha });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('GET /admin/ledger/held accepts an ADMIN token -> 200', async () => {
+      const res = await request(url, '/admin/ledger/held', { token: tokenAdmin });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('byCurrency');
+    });
+
+    it('reclassifying a cancellation rejects a BUSINESS token -> 403', async () => {
+      const res = await request(
+        url,
+        `/admin/appointments/${appointmentA}/business-cancellation`,
+        {
+          method: 'PATCH',
+          token: tokenAlpha,
+          body: { reason: 'Let me off.', gatewayChargeCents: 0 },
+        },
+      );
+
+      expect(res.status).toBe(403);
+    });
+
+    it('reclassifying without a gateway charge -> 400 from the ValidationPipe', async () => {
+      const res = await request(
+        url,
+        `/admin/appointments/${appointmentA}/business-cancellation`,
+        { method: 'PATCH', token: tokenAdmin, body: { reason: 'No figure given.' } },
+      );
+
+      // The charge is supplied, never guessed (§36.2), so its absence is a
+      // request error rather than a silent zero.
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('gatewayChargeCents');
+    });
+
+    it('executing a billing adjustment rejects a CUSTOMER token -> 403', async () => {
+      const res = await request(
+        url,
+        '/admin/billing-adjustments/00000000-0000-4000-8000-000000000000/execute',
+        { method: 'PATCH', token: tokenCustomerA, body: {} },
+      );
+
+      expect(res.status).toBe(403);
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {

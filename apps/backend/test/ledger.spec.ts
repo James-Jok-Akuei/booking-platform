@@ -209,12 +209,19 @@ describe('Ledger (§34)', () => {
     it('cancelled by the BUSINESS: nothing is released here', async () => {
       const a = await paidAppointment();
 
-      await appointments.cancel(business.userId, a.id, { reason: 'Shop closed.' });
+      await appointments.cancel(business.userId, a.id, {
+        reason: 'Shop closed.',
+        gatewayChargeCents: 50,
+      });
 
-      // The business owes a refund, not a payout. Releasing these would pay it
-      // money it is about to hand back (§36).
-      const dates = await availableDates(a.id);
-      expect(dates.every((d) => d === null)).toBe(true);
+      // A refund, not a payout. The original pair is released — settled by
+      // being reversed — alongside three reversal entries (§36.1).
+      const entries = await entriesFor(a.id);
+      expect(entries).toHaveLength(5);
+      expect(entries.every((e) => e.availableAt !== null)).toBe(true);
+      // Net: the business is back to zero for this appointment, less the
+      // gateway's charge.
+      expect(entries.reduce((sum, e) => sum + e.amountCents, 0)).toBe(-50);
     });
 
     it('stays null while the appointment is still open', async () => {
@@ -372,9 +379,11 @@ describe('Ledger (§34)', () => {
       const sites = writeSites();
 
       // If this number changes, a path was added or removed and the test below
-      // needs to have seen it.
-      expect(sites.length).toBe(2);
+      // needs to have seen it. It has already earned its keep once: §36's admin
+      // reclassification showed up here as a third site.
+      expect(sites.length).toBe(3);
       expect(sites.map((s) => s.file).sort()).toEqual([
+        '/src/appointments/appointments.service.ts',
         '/src/appointments/appointments.service.ts',
         '/src/appointments/payments.scheduler.ts',
       ]);

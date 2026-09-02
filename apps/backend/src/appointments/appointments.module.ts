@@ -7,6 +7,7 @@ import {
   AppointmentsCustomerController,
   AppointmentsSharedController,
 } from './appointments.controller';
+import { AdminAppointmentsController } from './admin-appointments.controller';
 import { AvailabilityModule } from '../availability/availability.module';
 import { BusinessModule } from '../business/business.module';
 import { MailModule } from '../mail/mail.module';
@@ -21,6 +22,7 @@ import { LedgerModule } from '../ledger/ledger.module';
     AppointmentsCustomerController,
     AppointmentsBusinessController,
     AppointmentsSharedController,
+    AdminAppointmentsController,
   ],
   providers: [AppointmentsService, AppointmentsScheduler, PaymentsScheduler],
   exports: [AppointmentsService],

@@ -3842,3 +3842,137 @@ hourly because entries mature on a seven-day hold, so the difference is noise �
 and because a human currently makes each transfer by hand, so batching matters.
 The manual `POST /admin/payouts/run` stays regardless: a scheduled job nobody can
 trigger is one nobody can test or use to fix a bad day.
+
+---
+
+## 36. Business-cancellation refunds, and executing adjustments (2026-09-02)
+
+The third of three. §25's refund policy, written in October and unexecutable
+until §33 recorded who cancelled, now runs.
+
+### 36.1 What a business cancellation appends
+
+Three entries, all payable immediately — the appointment is not happening, so
+the seven-day settling window has nothing to settle:
+
+| Type | Amount |
+|---|---|
+| `DEPOSIT_REFUND` | `-depositAmountCents` |
+| `PLATFORM_FEE_REVERSAL` | `+platformFeeAmountCents` |
+| `GATEWAY_FEE_DEBIT` | `-gatewayChargeCents` |
+
+The first two net to exactly `-businessAmountCents`, cancelling the pair
+appended when the deposit landed and returning the business to **zero** for that
+appointment. That is what "refunded in full, including the platform fee" means
+in ledger terms: the platform gives up its own cut rather than making the
+business fund it. The customer gets the whole deposit back, not the deposit less
+the fee — asserted directly.
+
+The gateway charge is then the third, separate fact, and the only part of a
+business cancellation the business actually bears. With a charge of zero the
+business lands at exactly zero; with 50c it lands at −50c, which is a negative
+balance that blocks its next payout and carries forward (§35.3). The full path
+is tested end to end.
+
+The deposit pair is released at the same time — settled by being reversed.
+Leaving it unreleased would hide the refund from every payout run, and the debt
+with it.
+
+Refunding twice is refused: the method looks for an existing `DEPOSIT_REFUND` on
+the appointment and throws.
+
+### 36.2 The gateway charge is supplied, never derived
+
+**The integration does not expose it.** `checkPaymentStatus` parses exactly two
+fields off MTN's response — `status` and `reason` — and neither
+`PaymentProvider` nor the MoMo client has any notion of a fee, charge or
+commission anywhere. So the second branch of the spec applies: `gatewayChargeCents`
+is an explicit figure supplied by whoever performs the cancellation-refund, and
+it is **required** when a business cancels an appointment whose deposit was paid.
+Not required when nothing was ever collected — there is no refund to be charged
+for.
+
+It is deliberately not computed from a percentage constant. A ledger that
+asserts a fee the provider actually charged differently is a ledger nobody can
+reconcile, and the whole point of §34 is that the rows explain the balance.
+
+### 36.3 A customer cancellation and a no-show append nothing
+
+The absence **is** the behaviour, so it is tested as one: after either, the
+appointment still has exactly its two original entries, no `DEPOSIT_REFUND`
+exists, no `GATEWAY_FEE_DEBIT` exists, and the net is `businessAmountCents`. The
+existing entries simply become available per §34.3.
+
+### 36.4 The admin dispute path calls the same code
+
+`PATCH /admin/appointments/:id/business-cancellation` sets `cancelledBy =
+BUSINESS`, leaves `cancelledByUserId` as the **admin** who acted, links the
+ticket, and calls `recordBusinessCancellationRefund` — **the same method**, not a
+second implementation. Two refund paths drift, and the one that drifts is the
+one used rarely, under pressure, in a dispute.
+
+A test asserts the entries are identical in type, sign, amount and currency to a
+self-service cancellation's. Reclassifying twice is refused, so it cannot refund
+twice, and a completed appointment cannot be reclassified at all.
+
+This is the divergence §33.2 kept `cancelledBy` and `cancelledByUserId` apart
+for, now doing real work.
+
+It lives on an admin **appointments** route rather than inside ticket
+resolution: the constraint was not to touch Tickets beyond adjustment execution,
+and an optional `ticketId` gives the audit link without reaching into that
+module.
+
+### 36.5 Executing a BillingAdjustment
+
+`PATCH /admin/billing-adjustments/:id/execute` emits an `ADJUSTMENT` entry
+signed by the adjustment's type — `FEE_REFUND` positive, `GATEWAY_FEE_DEBIT`
+negative, both from the business's perspective — sets `settledAt` and
+`settlementRef`, and links the entry back via `billingAdjustmentId`. This is what
+§25.2 renamed those columns for; until now nothing wrote them and every
+adjustment was unsettled by definition.
+
+`amount` is a `Decimal` in **major** units and the ledger is integer cents, so
+the conversion runs through `Prisma.Decimal` with `ROUND_HALF_UP`, like every
+other money conversion here — never float arithmetic.
+
+**Executable exactly once**, enforced by requiring `settledAt` to still be null
+inside the transaction. A twice-executed adjustment is a business paid, or
+charged, twice for one decision. Tested, including that no second entry is
+written.
+
+`settlementRef` is optional here, unlike a payout's required reference: some
+adjustments are settled by netting against a future payout rather than a
+separate transfer, and inventing a reference for those would make a
+reconciliation look complete when it is not.
+
+### 36.6 Reconciliation
+
+`GET /admin/ledger/held` returns the sum of every entry with no payout, by
+currency, matured or not — matured money is still in the platform's hands until
+a transfer actually goes out. This is the figure to compare against the
+provider's balance.
+
+Nothing compares it automatically, and that is deliberate for now: a
+reconciliation that runs itself and reports "fine" is worse than one a human
+performs, until there is something real to reconcile against. Tested that it
+equals the sum of unstamped entries, that settled entries drop out of it, and
+that unmatured money is counted.
+
+### 36.7 What is now closed, and what is not
+
+§33.5's blocker is cleared: deposits reach businesses through payout runs
+(§35), and the gateway-fee debit lands as a negative ledger entry that nets
+against future earnings — which was the open question about *where* it lands.
+
+Still open, and now the next real decision:
+
+- **No transfer is automated.** Every payout is sent by a human and recorded by
+  hand (§35.1). That is correct given a collections-only integration, but it does
+  not scale, and MTN Disbursements would need its own subscription, credentials
+  and provider class.
+- **Payout currency.** The ledger is USD; a business is paid in SSP. Nothing
+  decides which day's rate applies or who bears the movement between the payout
+  being calculated and the money being sent (§34.5).
+- **Pre-§34 appointments have no entries** and are not payable through this
+  system. They must be settled out of band.

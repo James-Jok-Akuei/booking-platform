@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   AppointmentStatus,
+  BillingAdjustmentType,
   CancelledBy,
   LedgerEntryType,
   Prisma,
@@ -140,6 +141,223 @@ export class LedgerService {
     }
 
     return count;
+  }
+
+  /**
+   * Reverses an appointment a business called off, per §25.
+   *
+   * Three entries, all payable immediately — there is nothing to wait for. The
+   * appointment is not happening, so the seven-day settling window has nothing
+   * to settle.
+   *
+   *   DEPOSIT_REFUND        -deposit
+   *   PLATFORM_FEE_REVERSAL +fee
+   *   GATEWAY_FEE_DEBIT     -whatever the gateway charged
+   *
+   * The first two net to exactly `-businessAmountCents`, cancelling the pair
+   * appended when the deposit landed and returning the business to zero for
+   * this appointment. That is what "the customer is refunded in full, including
+   * the platform fee" means in ledger terms: the platform gives back its own
+   * cut rather than making the business fund it.
+   *
+   * The gateway charge is then a separate, third fact — the only part of a
+   * business cancellation the business actually bears.
+   *
+   * `gatewayChargeCents` is supplied by the caller and never derived. The MoMo
+   * integration does not report what it charged on a transaction or a refund
+   * (§36.2), so a percentage constant here would be a number the ledger
+   * asserted and the provider's statement contradicted. A ledger that computes
+   * a fee the provider charged differently is a ledger nobody can reconcile.
+   */
+  async recordBusinessCancellationRefund(
+    tx: Prisma.TransactionClient,
+    appointmentId: string,
+    gatewayChargeCents: number,
+  ): Promise<void> {
+    const appointment = await tx.appointment.findUniqueOrThrow({
+      where: { id: appointmentId },
+      select: {
+        depositAmountCents: true,
+        platformFeeAmountCents: true,
+        businessAmountCents: true,
+        currency: true,
+        depositPaidAt: true,
+        location: { select: { businessId: true } },
+      },
+    });
+
+    if (!appointment.depositPaidAt) {
+      // Nothing was ever collected, so there is nothing to give back. An entry
+      // here would be the platform refunding money it never received.
+      return;
+    }
+
+    // Idempotent: a reclassification of an already-refunded appointment must
+    // not refund it twice.
+    const existing = await tx.ledgerEntry.count({
+      where: { appointmentId, type: LedgerEntryType.DEPOSIT_REFUND },
+    });
+    if (existing > 0) {
+      throw new ConflictException(
+        'This appointment has already been refunded.',
+      );
+    }
+
+    const businessId = appointment.location.businessId;
+    const now = new Date();
+
+    await tx.ledgerEntry.createMany({
+      data: [
+        {
+          businessId,
+          appointmentId,
+          type: LedgerEntryType.DEPOSIT_REFUND,
+          amountCents: -appointment.depositAmountCents,
+          currency: appointment.currency,
+          availableAt: now,
+        },
+        {
+          businessId,
+          appointmentId,
+          type: LedgerEntryType.PLATFORM_FEE_REVERSAL,
+          amountCents: appointment.platformFeeAmountCents,
+          currency: appointment.currency,
+          availableAt: now,
+        },
+        {
+          businessId,
+          appointmentId,
+          type: LedgerEntryType.GATEWAY_FEE_DEBIT,
+          amountCents: -gatewayChargeCents,
+          currency: appointment.currency,
+          availableAt: now,
+        },
+      ],
+    });
+
+    // The deposit pair appended at booking is released at the same time: it is
+    // now settled, by being reversed. Leaving it unreleased would hide the
+    // refund from every payout run, and the debt with it.
+    await tx.ledgerEntry.updateMany({
+      where: { appointmentId, availableAt: null, payoutId: null },
+      data: { availableAt: now },
+    });
+
+    this.logger.warn(
+      `Ledger: appointment ${appointmentId} refunded in full ` +
+        `(-${appointment.depositAmountCents}c deposit, +${appointment.platformFeeAmountCents}c fee back), ` +
+        `gateway charge ${gatewayChargeCents}c borne by business ${businessId}.`,
+    );
+  }
+
+  /**
+   * Executes a BillingAdjustment: the decision becomes money.
+   *
+   * §25.2 renamed `appliedInvoiceId` to `settledAt` + `settlementRef` for this
+   * moment. Until now nothing wrote them, so every adjustment was unsettled by
+   * definition.
+   *
+   * Executable exactly once, enforced by requiring `settledAt` to still be null
+   * inside the transaction. A twice-executed adjustment is a business paid — or
+   * charged — twice for one decision.
+   */
+  async executeAdjustment(
+    tx: Prisma.TransactionClient,
+    adjustmentId: string,
+    settlementRef: string | null,
+  ) {
+    const adjustment = await tx.billingAdjustment.findUnique({
+      where: { id: adjustmentId },
+      select: {
+        id: true,
+        businessId: true,
+        appointmentId: true,
+        type: true,
+        amount: true,
+        settledAt: true,
+      },
+    });
+    if (!adjustment) throw new NotFoundException('Billing adjustment not found.');
+    if (adjustment.settledAt) {
+      throw new ConflictException(
+        'This adjustment has already been executed. Record a new adjustment instead.',
+      );
+    }
+
+    // `amount` is a Decimal in MAJOR units (§24), and the ledger is integer
+    // cents. Converted through Prisma.Decimal rather than float arithmetic,
+    // like every other money conversion here.
+    const cents = new Prisma.Decimal(adjustment.amount)
+      .mul(100)
+      .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
+      .toNumber();
+
+    // Signed by the adjustment's own type, from the business's perspective:
+    // a fee refund puts money back that was taken from them, a gateway debit
+    // takes money they owe.
+    const amountCents =
+      adjustment.type === BillingAdjustmentType.FEE_REFUND ? cents : -cents;
+
+    const entry = await tx.ledgerEntry.create({
+      data: {
+        businessId: adjustment.businessId,
+        appointmentId: adjustment.appointmentId,
+        billingAdjustmentId: adjustment.id,
+        type: LedgerEntryType.ADJUSTMENT,
+        amountCents,
+        // Payable at once. An adjustment is a decision already made; there is
+        // no appointment outcome left to wait for.
+        availableAt: new Date(),
+      },
+    });
+
+    const settled = await tx.billingAdjustment.update({
+      where: { id: adjustmentId },
+      data: { settledAt: new Date(), settlementRef },
+    });
+
+    this.logger.warn(
+      `Adjustment ${adjustmentId} (${adjustment.type} ${adjustment.amount}) executed as ` +
+        `ledger entry ${entry.id} for ${amountCents}c against business ${adjustment.businessId}.`,
+    );
+
+    return { adjustment: settled, entry };
+  }
+
+  /**
+   * What the platform should currently be holding, by currency.
+   *
+   * Every entry with no payout, whether or not it has matured — matured money
+   * is still in the platform's hands until a transfer goes out. This is the
+   * figure to compare against the provider's actual balance.
+   *
+   * Nothing compares it automatically. Producing the number is the point; a
+   * reconciliation that runs itself and reports "fine" is worse than one a
+   * human performs, until there is something to reconcile against.
+   */
+  async heldTotals() {
+    const grouped = await this.prisma.ledgerEntry.groupBy({
+      by: ['currency'],
+      where: { payoutId: null },
+      _sum: { amountCents: true },
+      _count: { _all: true },
+    });
+
+    const byCurrency = grouped.map((row) => ({
+      currency: row.currency,
+      amountCents: row._sum.amountCents ?? 0,
+      entryCount: row._count._all,
+    }));
+
+    return {
+      asOf: new Date(),
+      byCurrency,
+      totalEntries: byCurrency.reduce((sum, c) => sum + c.entryCount, 0),
+      note:
+        'Ledger entries not yet settled by a payout, matured or not. Compare ' +
+        "against the payment provider's actual balance by hand — nothing " +
+        'reconciles these automatically.',
+    };
   }
 
   private availableAtFor(appointment: {
