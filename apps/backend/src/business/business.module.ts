@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BusinessController } from './business.controller';
+import { AdminBusinessController } from './admin-business.controller';
+import { BusinessModerationService } from './business-moderation.service';
 import { BusinessAccessService } from './business-access.service';
 import { BusinessProfileService } from './business-profile.service';
 import { LocationsService } from './locations.service';
@@ -12,8 +14,9 @@ import { BusinessRolesGuard } from './guards/business-roles.guard';
 // PrismaModule, AuthModule (guards) and StorageModule are all @Global(),
 // so none of them need importing here.
 @Module({
-  controllers: [BusinessController, MembersController],
+  controllers: [BusinessController, AdminBusinessController, MembersController],
   providers: [
+    BusinessModerationService,
     BusinessAccessService,
     BusinessProfileService,
     LocationsService,

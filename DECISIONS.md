@@ -4435,3 +4435,107 @@ Two categories deliberately do **not** assert a role, and should not:
 
 A service-level test with a non-admin actor now exists for every hardened
 method, asserting both the refusal and that nothing was written.
+
+---
+
+## 42. Business approval (2026-09-02)
+
+`BusinessStatus` has gated every public read since §13.2, but **nothing could
+set it**. A business could only be approved by editing the database by hand,
+which meant the entire public surface was unreachable in practice — the feature
+existed and could never fire.
+
+### 42.1 One surface was not gated at all
+
+Availability (§13.2), the review listing (§28) and chat inquiries (§21) all
+refused a non-`APPROVED` business. **`POST /appointments` did not check the
+status at all.** A customer holding a location id could book with a business
+that was suspended, rejected, or had never been approved.
+
+Fixed here. Booking now refuses with **404, not 403** — the rule used
+everywhere: a business that is not public does not exist as far as a customer is
+concerned, and "this business is suspended" would leak a moderation decision to
+someone with no standing to receive it.
+
+`isPubliclyBookable(status)` is now a single exported predicate, so the four
+call sites cannot drift into disagreeing about what "open for business" means.
+
+### 42.2 One reason field, not one per state
+
+`rejectionReason` is replaced by `statusReason`, plus `statusChangedAt` and
+`statusChangedById`. A field that can only describe one of four states is a
+field that is wrong three-quarters of the time; the migration carries existing
+rejection reasons across before dropping the old column, because a rejection
+reason is the only thing a rejected applicant has been told.
+
+`statusReason` is **cleared** on approval and reinstatement. A stale rejection
+reason sitting beside an APPROVED business reads as an accusation.
+
+### 42.3 A declarative transition table
+
+`business-status.ts` follows `ticket-status.ts`, deliberately — **not** the
+appointment lifecycle, whose rules live in guard clauses across five methods
+(§16.1) with no single place to read them.
+
+| From | To | Reason required |
+|---|---|---|
+| `PENDING` | `APPROVED` | no |
+| `PENDING` | `REJECTED` | **yes** |
+| `REJECTED` | `APPROVED` | no — an appeal; there is no resubmission flow |
+| `APPROVED` | `SUSPENDED` | **yes** |
+| `SUSPENDED` | `APPROVED` | no — reinstatement |
+
+Anything else throws. **Nothing returns to `PENDING`**: a decision cannot be
+un-made, only replaced by another decision. A test derives the illegal set from
+the table itself, so a new rule cannot be added without the test seeing it.
+
+A reason is required exactly where the business is being told something bad.
+Demanding one for approval too would produce boilerplate that makes the required
+reasons look equally unimportant.
+
+Every route funnels through one private `transition`, so the table, the audit
+stamp and the notification cannot get out of step.
+
+### 42.4 What each status does
+
+**Not APPROVED** → invisible to availability, reviews and chat, and **new
+bookings are refused** (§42.1).
+
+**SUSPENDED does NOT cancel existing appointments.** Customers who already
+booked keep them and the business is still expected to honour them. Cancelling
+wholesale would punish customers for the business's conduct — they chose a time,
+arranged their day, and paid a deposit. Tested: a suspension leaves a booked
+appointment byte-identical.
+
+**SUSPENDED DOES pause payouts.** The run skips those businesses and **leaves
+their entries unstamped** — nothing is written off, the money simply waits, and
+the first run after reinstatement pays it. Suspension usually means something is
+wrong with the money or the conduct, and paying out mid-investigation is hard to
+undo; leaving entries in the pool is not.
+
+**This one is reversible if it proves wrong.** It is a `Set` membership check in
+`PayoutsService.run` and a note on the balance response — deleting both restores
+the previous behaviour with no data migration, because nothing about a paused
+payout is persisted. If it turns out businesses are more often suspended for
+paperwork than for fraud, holding their money will be the wrong default.
+
+**The business keeps its dashboard**, and `GET /business/profile` now returns
+`statusReason` and `statusChangedAt` alongside the status. `GET
+/businesses/:id/balance` reports `payoutsPaused: true` with the reason and says
+explicitly that nothing has been written off. Being suspended without being told
+why is worse than the suspension — the business would otherwise discover it from
+a customer who cannot book.
+
+### 42.5 Endpoints and notifications
+
+`GET /admin/businesses` (filterable, paginated, **oldest first** — a queue
+sorted newest-first reads the person who has waited longest last),
+`GET /admin/businesses/:id` (locations, services and members, so an admin can
+actually decide), and the four transitions. All `@Roles(ADMIN)` plus a
+service-level assertion, per §41.
+
+Four new notification types go to every ACTIVE member: `BUSINESS_APPROVED`,
+`BUSINESS_REJECTED` and `BUSINESS_SUSPENDED` (both with the reason), and
+`BUSINESS_REINSTATED`. The suspension copy states plainly that existing
+appointments still stand and that held money has not been lost, because those
+are the two things a suspended business will assume the worst about.

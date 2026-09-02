@@ -189,6 +189,47 @@ export function renderNotification(
           'market rate and update it if it has moved.',
       };
 
+    case NotificationType.BUSINESS_APPROVED:
+      return {
+        subject: 'Your business has been approved',
+        body:
+          'Your business is now live. Customers can find your locations, see ' +
+          'your availability and book with you.\n\n' +
+          'If anything about your profile looks wrong, you can edit it now.',
+      };
+
+    case NotificationType.BUSINESS_REJECTED:
+      return {
+        subject: 'Your business application was not approved',
+        body:
+          'An administrator has reviewed your application and not approved it.\n\n' +
+          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
+          'Your account and everything in it is intact. Raise a support ticket ' +
+          'if you would like this looked at again.',
+      };
+
+    case NotificationType.BUSINESS_SUSPENDED:
+      return {
+        subject: 'Your business has been suspended',
+        body:
+          'An administrator has suspended your business. New customers cannot ' +
+          'find or book with you while this lasts, and payouts are paused.\n\n' +
+          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
+          'IMPORTANT: appointments customers have ALREADY booked are unaffected ' +
+          'and you are still expected to honour them. Nothing has been written ' +
+          'off — any balance owed to you is held and paid out once this is ' +
+          'resolved. Raise a support ticket to discuss it.',
+      };
+
+    case NotificationType.BUSINESS_REINSTATED:
+      return {
+        subject: 'Your business has been reinstated',
+        body:
+          'The suspension has been lifted. Customers can find and book with you ' +
+          'again, and any balance held while you were suspended goes out on the ' +
+          'next payout run.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,

@@ -31,6 +31,7 @@ import { computeAppointmentAmounts } from './appointment-pricing';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ChatService } from '../chat/chat.service';
 import { LedgerService } from '../ledger/ledger.service';
+import { isPubliclyBookable } from '../business/business-status';
 import {
   ApproxSettlementMap,
   RateContext,
@@ -206,9 +207,27 @@ export class AppointmentsService {
 
     const location = await this.prisma.location.findUnique({
       where: { id: dto.locationId },
-      select: { id: true, businessId: true, name: true, address: true },
+      select: {
+        id: true,
+        businessId: true,
+        name: true,
+        address: true,
+        business: { select: { status: true } },
+      },
     });
     if (!location) throw new NotFoundException('Location not found.');
+
+    // Booking was the one public surface that never checked this (§42.1).
+    // Availability, reviews and chat all hid a non-APPROVED business, but a
+    // customer holding a location id could still book with one that was
+    // suspended, rejected, or had never been approved at all.
+    //
+    // 404, not 403: the same rule used everywhere. A business that is not
+    // public does not exist as far as a customer is concerned, and saying
+    // "this business is suspended" would leak a moderation decision.
+    if (!isPubliclyBookable(location.business.status)) {
+      throw new NotFoundException('Location not found.');
+    }
 
     // Services belong to a business and are shared across its locations
     // (DECISIONS.md §10.2), so the pairing must be checked explicitly —

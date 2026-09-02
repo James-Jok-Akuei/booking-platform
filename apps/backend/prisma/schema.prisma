@@ -124,6 +124,10 @@ enum NotificationType {
   REVIEW_HIDDEN // an admin hid a review; both sides are told
   DISPLAY_NAME_CLEARED // an admin cleared a customer's review display name
   EXCHANGE_RATE_STALE // the manual USD->provider rate has not been updated
+  BUSINESS_APPROVED // an admin approved the business; it is now public
+  BUSINESS_REJECTED // an admin rejected the application, with a reason
+  BUSINESS_SUSPENDED // an admin suspended the business, with a reason
+  BUSINESS_REINSTATED // a suspended business was restored
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in
@@ -261,6 +265,9 @@ model User {
   /// single settings row.
   exchangeRateUpdates PlatformSetting[] @relation("ExchangeRateUpdates")
 
+  /// Businesses whose status this user last changed. The admin moderation trail.
+  businessStatusChanges BusinessProfile[] @relation("BusinessStatusChanges")
+
   refreshTokens RefreshToken[]
   otpCodes      OtpCode[]
 
@@ -289,10 +296,19 @@ model BusinessProfile {
   logoUrl       String?
   coverImageUrl String?
 
-  status          BusinessStatus @default(PENDING)
-  // Set by an admin when status = REJECTED, so the business is told what to fix
-  // rather than being left guessing. Cleared when they resubmit.
-  rejectionReason String?
+  status BusinessStatus @default(PENDING)
+
+  /// Why the business is in its CURRENT status — the rejection reason, the
+  /// suspension reason, or null.
+  ///
+  /// Replaces `rejectionReason` (§42.2): one field describing whichever state
+  /// the row is actually in, rather than a field that could only ever describe
+  /// one of four. Cleared on approval and reinstatement, because a stale reason
+  /// sitting beside an APPROVED business reads as an accusation.
+  statusReason      String?
+  statusChangedAt   DateTime?
+  statusChangedById String?
+  statusChangedBy   User?     @relation("BusinessStatusChanges", fields: [statusChangedById], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

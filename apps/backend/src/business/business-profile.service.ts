@@ -10,7 +10,11 @@ const PROFILE_SELECT = {
   logoUrl: true,
   coverImageUrl: true,
   status: true,
-  rejectionReason: true,
+  // The business's own view of its status. A suspended business must be able
+  // to see that it is suspended and why (§42.5) — discovering it from a
+  // customer who cannot book is the worst possible way to find out.
+  statusReason: true,
+  statusChangedAt: true,
   createdAt: true,
   updatedAt: true,
   category: { select: { id: true, name: true, icon: true } },

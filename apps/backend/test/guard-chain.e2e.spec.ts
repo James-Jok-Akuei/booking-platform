@@ -842,6 +842,89 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('business moderation over HTTP (§42)', () => {
+    const pendingShop = async () => {
+      const b = await prisma.businessProfile.create({
+        data: { name: 'Applicant', status: 'PENDING' },
+      });
+      return b.id;
+    };
+
+    it.each(['/admin/businesses'])('%s rejects a CUSTOMER token -> 403', async (path) => {
+      const res = await request(url, path, { token: tokenCustomerA });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('GET /admin/businesses rejects a BUSINESS token -> 403', async () => {
+      const res = await request(url, '/admin/businesses', { token: tokenAlpha });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('GET /admin/businesses accepts an ADMIN token -> 200', async () => {
+      const res = await request(url, '/admin/businesses?status=PENDING', {
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('businesses');
+    });
+
+    it('approving rejects a BUSINESS token -> 403', async () => {
+      const id = await pendingShop();
+
+      const res = await request(url, `/admin/businesses/${id}/approve`, {
+        method: 'PATCH',
+        token: tokenAlpha,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('rejecting with no reason -> 400 from the ValidationPipe', async () => {
+      const id = await pendingShop();
+
+      const res = await request(url, `/admin/businesses/${id}/reject`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: {},
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('reason');
+    });
+
+    it('suspending with no reason -> 400', async () => {
+      const res = await request(url, `/admin/businesses/${alpha.businessId}/suspend`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: {},
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('reason');
+    });
+
+    it('an admin can approve, and the business goes public -> 200', async () => {
+      const id = await pendingShop();
+
+      const res = await request(url, `/admin/businesses/${id}/approve`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('APPROVED');
+    });
+
+    it('an unauthenticated request is refused -> 401', async () => {
+      const res = await request(url, '/admin/businesses');
+
+      expect(res.status).toBe(401);
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {

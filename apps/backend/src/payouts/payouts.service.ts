@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   BusinessMemberStatus,
+  BusinessStatus,
   PayoutStatus,
   Prisma,
   UserRole,
@@ -24,6 +25,8 @@ export interface RunSummary {
   totalCents: number;
   /** Businesses whose available balance was zero or negative — see §35.3. */
   skippedNonPositive: number;
+  /** Businesses skipped because they are SUSPENDED — see §42.4. */
+  pausedForSuspension: number;
 }
 
 @Injectable()
@@ -64,11 +67,34 @@ export class PayoutsService {
       _sum: { amountCents: true },
     });
 
+    // Suspension pauses payouts (§42.4). Entries are NOT stamped and nothing is
+    // written off — the money simply waits, and the next run after
+    // reinstatement pays it. Suspension usually means something is wrong with
+    // the money or the conduct, and paying out mid-investigation is hard to
+    // undo; leaving the entries in the pool is not.
+    const suspended = new Set(
+      (
+        await this.prisma.businessProfile.findMany({
+          where: {
+            status: BusinessStatus.SUSPENDED,
+            id: { in: owing.map((g) => g.businessId) },
+          },
+          select: { id: true },
+        })
+      ).map((b) => b.id),
+    );
+
     let created = 0;
     let total = 0;
     let skipped = 0;
+    let pausedForSuspension = 0;
 
     for (const group of owing) {
+      if (suspended.has(group.businessId)) {
+        pausedForSuspension++;
+        continue;
+      }
+
       const sum = group._sum.amountCents ?? 0;
       if (sum <= 0) {
         // NOT an error, and nothing is stamped. A business whose only booking
@@ -92,12 +118,14 @@ export class PayoutsService {
       payoutsCreated: created,
       totalCents: total,
       skippedNonPositive: skipped,
+      pausedForSuspension,
     };
 
-    if (created > 0 || skipped > 0) {
+    if (created > 0 || skipped > 0 || pausedForSuspension > 0) {
       this.logger.log(
         `Payout run: ${created} payout(s) totalling ${total}c across ` +
-          `${owing.length} business(es); ${skipped} skipped for a non-positive balance.`,
+          `${owing.length} business(es); ${skipped} skipped for a non-positive balance, ` +
+          `${pausedForSuspension} paused for suspension.`,
       );
     }
 
@@ -315,9 +343,15 @@ export class PayoutsService {
     ]);
 
     const availableCents = available._sum.amountCents ?? 0;
+    const business = await this.prisma.businessProfile.findUnique({
+      where: { id: businessId },
+      select: { status: true, statusReason: true },
+    });
+    const paused = business?.status === BusinessStatus.SUSPENDED;
 
     return {
       businessId,
+      payoutsPaused: paused,
       currency: INTERNAL_CURRENCY,
       availableNowCents: availableCents,
       pendingCents: pending._sum.amountCents ?? 0,
@@ -330,8 +364,11 @@ export class PayoutsService {
         pending: pending._count._all,
         unresolved: unresolved._count._all,
       },
-      note:
-        availableCents < 0
+      note: paused
+        ? 'Payouts are paused while this business is suspended. Nothing has been ' +
+          'written off — the balance is held and goes out on the first run after ' +
+          `reinstatement.${business?.statusReason ? ` Reason: ${business.statusReason}` : ''}`
+        : availableCents < 0
           ? 'This balance is negative, which happens after a cancellation the ' +
             'business was responsible for. No payout is made while it is; it ' +
             'nets against future earnings instead.'
