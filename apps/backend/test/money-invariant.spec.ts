@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { computeAppointmentAmounts } from '../src/appointments/appointment-pricing';
 import { convertUsdCentsToProviderCents } from '../src/payments/currency';
 import { ServicesService } from '../src/business/services.service';
@@ -205,6 +205,138 @@ describe('Money invariant: platformFee + business === deposit', () => {
       expect(after.servicePriceCents).toBe(4500);
       expect(Number(after.depositPercentage)).toBe(20);
       expect(after.depositAmountCents).toBe(row.depositAmountCents);
+    });
+  });
+
+  describe('appointment responses never render today price (§32)', () => {
+    let moduleRef: TestingModule;
+    let prisma: PrismaService;
+    let appointments: AppointmentsService;
+    let business: Awaited<ReturnType<typeof createBusiness>>;
+    let customer: { userId: string; email: string };
+    let appointmentId: string;
+
+    beforeAll(async () => {
+      moduleRef = await createTestModule([
+        AppointmentsService,
+        AvailabilityService,
+        PlatformSettingsService,
+        commonStubs.mail(),
+        commonStubs.notifications(),
+        commonStubs.payments(),
+        commonStubs.chat(),
+      ]);
+      prisma = moduleRef.get(PrismaService);
+      appointments = moduleRef.get(AppointmentsService);
+      await resetDatabase(prisma);
+      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10);
+      business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
+      customer = await createCustomer(prisma);
+
+      const created = await appointments.create(customer.userId, {
+        locationId: business.locationId,
+        serviceId: business.serviceId,
+        startTime: futureSlot(9, 8).toISOString(),
+      });
+      appointmentId = created.id;
+
+      // The business reprices AFTER the booking. Everything below asks what a
+      // customer opening that booking now is shown.
+      await prisma.service.update({
+        where: { id: business.serviceId },
+        data: { priceCents: 9999 },
+      });
+    });
+
+    afterAll(async () => {
+      await resetDatabase(prisma);
+      await moduleRef.close();
+    });
+
+    it('findOne reports the original price, not the repriced one', async () => {
+      const found = await appointments.findOne(customer.userId, appointmentId);
+
+      expect(found.servicePriceCents).toBe(4500);
+      // The live price is not reachable anywhere in the response.
+      expect(found.service).not.toHaveProperty('priceCents');
+      expect(JSON.stringify(found)).not.toContain('9999');
+    });
+
+    it('findAll reports the original price, not the repriced one', async () => {
+      const list = await appointments.findAll(customer.userId, UserRole.CUSTOMER, {});
+      const row = list.appointments.find((a: any) => a.id === appointmentId);
+
+      expect(row.servicePriceCents).toBe(4500);
+      expect(row.service).not.toHaveProperty('priceCents');
+      expect(JSON.stringify(list)).not.toContain('9999');
+    });
+
+    it('a transition method return value reports the original price too', async () => {
+      // Every transition returns APPOINTMENT_SELECT, so the same select that
+      // served the stale price to a detail view served it here as well.
+      const cancelled = await appointments.cancel(customer.userId, appointmentId);
+
+      expect(cancelled.servicePriceCents).toBe(4500);
+      expect(cancelled.service).not.toHaveProperty('priceCents');
+      expect(JSON.stringify(cancelled)).not.toContain('9999');
+    });
+
+    it('keeps the service NAME joined - a renamed label drifts, a price must not', async () => {
+      await prisma.service.update({
+        where: { id: business.serviceId },
+        data: { name: 'Renamed Service' },
+      });
+
+      const found = await appointments.findOne(customer.userId, appointmentId);
+
+      expect(found.service.name).toBe('Renamed Service');
+      expect(found.servicePriceCents).toBe(4500);
+    });
+
+    describe('a pre-snapshot appointment', () => {
+      let legacyId: string;
+
+      beforeAll(async () => {
+        const created = await appointments.create(customer.userId, {
+          locationId: business.locationId,
+          serviceId: business.serviceId,
+          startTime: futureSlot(10, 8).toISOString(),
+        });
+        legacyId = created.id;
+
+        // Exactly what a row booked before §30 looks like.
+        await prisma.appointment.update({
+          where: { id: legacyId },
+          data: {
+            servicePriceCents: null,
+            depositPercentage: null,
+            platformFeePercentage: null,
+          },
+        });
+      });
+
+      it('returns null rather than falling back to the live price', async () => {
+        const found = await appointments.findOne(customer.userId, legacyId);
+
+        // Null is "not recorded", which a client can render honestly. The live
+        // price would be a wrong number presented as a fact, which is the bug
+        // this whole change exists to remove.
+        expect(found.servicePriceCents).toBeNull();
+        expect(JSON.stringify(found)).not.toContain('9999');
+      });
+
+      it('exposes the live price nowhere in the response shape', async () => {
+        const found = await appointments.findOne(customer.userId, legacyId);
+        const list = await appointments.findAll(customer.userId, UserRole.CUSTOMER, {});
+
+        expect(found.service).not.toHaveProperty('priceCents');
+        expect(Object.keys(found.service).sort()).toEqual([
+          'durationMinutes',
+          'id',
+          'name',
+        ]);
+        expect(JSON.stringify(list)).not.toContain('9999');
+      });
     });
   });
 

@@ -3471,3 +3471,35 @@ and `Anne-Marie` are accepted. Chosen knowingly — `mysite.com` as a review
 byline is advertising on someone else's page, and the two forms are not
 distinguishable by shape. If it proves a real annoyance the rule to relax is
 that one, not the email rule.
+
+---
+
+## 32. Appointment responses show the price that was agreed (2026-09-02)
+
+Fixes the bug §30.3(a) reported.
+
+`APPOINTMENT_SELECT` pulled `priceCents` off the joined `Service` row. Services
+are repriceable at any time (§10), and that select backs `findOne`, `findAll`
+**and the return value of every transition method** — so a customer opening a
+three-month-old booking was shown the business's price *today*, presented as
+what they had agreed to pay. Not a reporting problem: a wrong number on the
+customer's own booking.
+
+The appointment now reports its own `servicePriceCents` snapshot (§30). The
+joined price is gone from the select entirely, so no future caller can reach it
+by accident.
+
+**Pre-snapshot appointments return null, and null is the final answer.** There
+is no fallback to the live price. That fallback would be the original bug
+wearing a condition, and it would be worse for being intermittent — correct on
+new rows, silently wrong on old ones. A client can render null as "not
+recorded"; it cannot know that a number it was handed is fiction.
+
+The service **name** stays joined. A renamed service makes the label drift,
+which is cosmetic and self-correcting. A repriced service makes the number
+wrong, which is neither.
+
+No consumer anywhere read `appointment.service.priceCents` — the build is clean
+and there is no frontend in this repository. The only other read of
+`Service.priceCents` is in `create()`, which is where the snapshot comes from
+and is unchanged.

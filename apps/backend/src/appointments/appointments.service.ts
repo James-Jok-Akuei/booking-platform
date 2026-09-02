@@ -61,7 +61,17 @@ const APPOINTMENT_SELECT = {
   noShowAt: true,
   createdAt: true,
   location: { select: { id: true, name: true, address: true, businessId: true } },
-  service: { select: { id: true, name: true, priceCents: true, durationMinutes: true } },
+  // NO priceCents. The joined Service row carries the business's CURRENT price,
+  // and a business may reprice at any time (§10) — selecting it here rendered
+  // today's price as what a customer agreed to months ago, on every appointment
+  // detail and list response. The price of record is the appointment's own
+  // `servicePriceCents` snapshot above (§30), which is null for appointments
+  // booked before it existed. Null is the honest answer there; falling back to
+  // the live price is the bug.
+  //
+  // The NAME stays joined deliberately: a renamed service makes the label drift,
+  // which is cosmetic. A reprice makes the number wrong, which is not.
+  service: { select: { id: true, name: true, durationMinutes: true } },
   customer: { select: { id: true, email: true } },
 } as const;
 
