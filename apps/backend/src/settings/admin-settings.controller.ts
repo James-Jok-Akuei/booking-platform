@@ -32,8 +32,8 @@ export class AdminSettingsController {
   constructor(private readonly settings: PlatformSettingsService) {}
 
   @Get('platform-fee')
-  getPlatformFee() {
-    return this.settings.getSettings();
+  getPlatformFee(@CurrentUser() user: AuthenticatedUser) {
+    return this.settings.getSettings(user);
   }
 
   /**
@@ -43,8 +43,8 @@ export class AdminSettingsController {
    * otherwise would be worse than an admin knowing they own this number.
    */
   @Get('exchange-rate')
-  getExchangeRate() {
-    return this.settings.getExchangeRateSettings();
+  getExchangeRate(@CurrentUser() user: AuthenticatedUser) {
+    return this.settings.getExchangeRateSettings(user);
   }
 
   /**
@@ -62,8 +62,9 @@ export class AdminSettingsController {
     return this.settings.setExchangeRate(
       dto.exchangeRateUsdToProviderCurrency,
       dto.providerCurrency,
-      // Recorded so a rate that looks wrong is a question with an answer.
-      user.userId,
+      // The actor both authorises the change and is recorded as its author, so
+      // a rate that looks wrong is a question with an answer.
+      user,
     );
   }
 
@@ -73,8 +74,14 @@ export class AdminSettingsController {
    * Reporting only. Nothing here can block a booking or a payment (§37.3).
    */
   @Patch('exchange-rate/staleness')
-  updateStaleness(@Body() dto: UpdateStalenessDto) {
-    return this.settings.setExchangeRateStalenessHours(dto.exchangeRateStalenessHours);
+  updateStaleness(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: UpdateStalenessDto,
+  ) {
+    return this.settings.setExchangeRateStalenessHours(
+      dto.exchangeRateStalenessHours,
+      user,
+    );
   }
 
   /**
@@ -102,7 +109,10 @@ export class AdminSettingsController {
    * the amounts computed at their booking time — see DECISIONS.md.
    */
   @Patch('platform-fee')
-  updatePlatformFee(@Body() dto: UpdatePlatformFeeDto) {
-    return this.settings.setPlatformFeePercentage(dto.platformFeePercentage);
+  updatePlatformFee(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: UpdatePlatformFeeDto,
+  ) {
+    return this.settings.setPlatformFeePercentage(dto.platformFeePercentage, user);
   }
 }

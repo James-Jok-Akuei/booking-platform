@@ -198,7 +198,8 @@ export class PlatformSettingsService {
   }
 
   /** Admin-facing view, including how stale the rate has become. */
-  async getExchangeRateSettings() {
+  async getExchangeRateSettings(actor: { role: UserRole | string }) {
+    this.assertAdmin(actor);
     const { providerCurrency, rate, updatedAt, updatedById, stalenessHours } =
       await this.getExchangeRate();
     const staleness = await this.getExchangeRateStaleness();
@@ -243,7 +244,12 @@ export class PlatformSettingsService {
    * Zero is allowed and means "always report it stale" — a legitimate setting
    * for a currency moving fast enough that any stored rate is suspect.
    */
-  async setExchangeRateStalenessHours(hours: number) {
+  async setExchangeRateStalenessHours(
+    hours: number,
+    actor: { role: UserRole | string },
+  ) {
+    this.assertAdmin(actor);
+
     await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: { exchangeRateStalenessHours: hours },
@@ -252,7 +258,7 @@ export class PlatformSettingsService {
 
     this.logger.log(`Exchange-rate staleness threshold set to ${hours} hours.`);
 
-    return this.getExchangeRateSettings();
+    return this.getExchangeRateSettings(actor);
   }
 
   /**
@@ -282,9 +288,12 @@ export class PlatformSettingsService {
    */
   async setExchangeRate(
     rate: number,
-    providerCurrency?: string,
-    updatedById?: string,
+    providerCurrency: string | undefined,
+    actor: { userId?: string; role: UserRole | string },
   ) {
+    this.assertAdmin(actor);
+    const updatedById = actor.userId;
+
     const updated = await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: {
@@ -312,7 +321,7 @@ export class PlatformSettingsService {
         'Applies to future charges only; appointments already paid keep the rate they were charged at.',
     );
 
-    return this.getExchangeRateSettings();
+    return this.getExchangeRateSettings(actor);
   }
 
   /** Full settings record for the admin endpoint. */
@@ -374,13 +383,23 @@ export class PlatformSettingsService {
     return this.getPayoutHoldSettings(actor);
   }
 
+  /**
+   * The service-level half of the two-layer rule (§27.1, §41).
+   *
+   * Every method on this service that reads or writes platform configuration
+   * calls it. `@Roles(ADMIN)` is a decorator on a controller class; a service
+   * method that trusts it is one refactor — or one new caller — away from being
+   * reachable by anyone.
+   */
   private assertAdmin(actor: { role: UserRole | string }) {
     if (actor.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only an administrator can do that.');
     }
   }
 
-  async getSettings() {
+  async getSettings(actor: { role: UserRole | string }) {
+    this.assertAdmin(actor);
+
     const setting = await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: {},
@@ -471,7 +490,11 @@ export class PlatformSettingsService {
     });
   }
 
-  async setPlatformFeePercentage(percentage: number) {
+  async setPlatformFeePercentage(
+    percentage: number,
+    actor: { role: UserRole | string },
+  ) {
+    this.assertAdmin(actor);
     await this.assertNoServiceStrandedBy(percentage);
 
     const updated = await this.prisma.platformSetting.upsert({

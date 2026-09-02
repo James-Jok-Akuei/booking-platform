@@ -74,12 +74,14 @@ describe('Support tickets (§24)', () => {
       to: TicketStatus.IN_PROGRESS,
       actor: 'ADMIN',
       actorUserId: admin.userId,
+      actorRole: 'ADMIN',
     });
     return tickets.transitionStatus({
       ticketId,
       to: TicketStatus.RESOLVED,
       actor: 'ADMIN',
       actorUserId: admin.userId,
+      actorRole: 'ADMIN',
       resolutionNote: note,
     });
   };
@@ -187,6 +189,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.IN_PROGRESS,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
       if (state === TicketStatus.IN_PROGRESS) return t;
       await tickets.transitionStatus({
@@ -194,6 +197,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.RESOLVED,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
         resolutionNote: 'Done.',
       });
       if (state === TicketStatus.RESOLVED) return t;
@@ -202,6 +206,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.CLOSED,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
       return t;
     };
@@ -222,6 +227,7 @@ describe('Support tickets (§24)', () => {
           to,
           actor: 'ADMIN',
           actorUserId: admin.userId,
+          actorRole: 'ADMIN',
           resolutionNote: 'note',
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -235,6 +241,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.IN_PROGRESS,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
 
       expect(moved.status).toBe(TicketStatus.IN_PROGRESS);
@@ -261,6 +268,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.IN_PROGRESS,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
 
       await expect(
@@ -269,6 +277,7 @@ describe('Support tickets (§24)', () => {
           to: TicketStatus.RESOLVED,
           actor: 'ADMIN',
           actorUserId: admin.userId,
+          actorRole: 'ADMIN',
         }),
       ).rejects.toThrow(/resolutionNote is required/);
     });
@@ -280,6 +289,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.IN_PROGRESS,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
 
       await expect(
@@ -288,6 +298,7 @@ describe('Support tickets (§24)', () => {
           to: TicketStatus.RESOLVED,
           actor: 'ADMIN',
           actorUserId: admin.userId,
+          actorRole: 'ADMIN',
           resolutionNote: '   ',
         }),
       ).rejects.toThrow(/resolutionNote is required/);
@@ -312,6 +323,7 @@ describe('Support tickets (§24)', () => {
             to,
             actor: 'ADMIN',
             actorUserId: admin.userId,
+            actorRole: 'ADMIN',
             resolutionNote: 'note',
           }),
         ).rejects.toBeInstanceOf(BadRequestException);
@@ -362,6 +374,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.RESOLVED,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
         resolutionNote: 'Fixed again.',
       });
 
@@ -403,6 +416,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.CLOSED,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
 
       await expect(
@@ -422,6 +436,7 @@ describe('Support tickets (§24)', () => {
             to: TicketStatus.IN_PROGRESS,
             actor: 'ADMIN',
             actorUserId: admin.userId,
+            actorRole: 'ADMIN',
           });
         }
         if (state === TicketStatus.RESOLVED) {
@@ -430,6 +445,7 @@ describe('Support tickets (§24)', () => {
             to: TicketStatus.RESOLVED,
             actor: 'ADMIN',
             actorUserId: admin.userId,
+            actorRole: 'ADMIN',
             resolutionNote: 'Done.',
           });
         }
@@ -616,6 +632,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.IN_PROGRESS,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
 
       await tickets.transitionStatus({
@@ -623,6 +640,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.RESOLVED,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
         resolutionNote: 'Credit granted.',
         billingAdjustment: {
           appointmentId: appointment.id,
@@ -669,6 +687,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.IN_PROGRESS,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
 
       const resolved = await tickets.transitionStatus({
@@ -676,6 +695,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.RESOLVED,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
         resolutionNote: 'Approved for a fee refund.',
         billingAdjustment: {
           appointmentId: appointment.id,
@@ -710,6 +730,7 @@ describe('Support tickets (§24)', () => {
         to: TicketStatus.IN_PROGRESS,
         actor: 'ADMIN',
         actorUserId: admin.userId,
+        actorRole: 'ADMIN',
       });
 
       await expect(
@@ -718,6 +739,7 @@ describe('Support tickets (§24)', () => {
           to: TicketStatus.RESOLVED,
           actor: 'ADMIN',
           actorUserId: admin.userId,
+          actorRole: 'ADMIN',
           resolutionNote: 'Attempting a cross-business credit.',
           billingAdjustment: {
             appointmentId: foreign.id,
@@ -727,6 +749,68 @@ describe('Support tickets (§24)', () => {
           },
         }),
       ).rejects.toThrow(/different business/);
+    });
+  });
+
+  describe('admin ticket operations assert the role in the service (§41)', () => {
+    const NON_ADMINS = ['CUSTOMER', 'BUSINESS'];
+
+    it.each(NON_ADMINS)('refuses a %s assigning a ticket', async (role) => {
+      const ticket = await openTicket(customerA.userId, 'CUSTOMER');
+
+      await expect(
+        tickets.assign({ role }, ticket.id, admin.userId),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+
+      const row = await prisma.ticket.findUniqueOrThrow({ where: { id: ticket.id } });
+      expect(row.assignedAdminId).toBeNull();
+    });
+
+    it.each(NON_ADMINS)(
+      'refuses a %s making an ADMIN transition, however it labels itself',
+      async (role) => {
+        const ticket = await openTicket(customerA.userId, 'CUSTOMER');
+
+        await expect(
+          tickets.transitionStatus({
+            ticketId: ticket.id,
+            to: TicketStatus.IN_PROGRESS,
+            // The literal claim. Without the role check it would be believed.
+            actor: 'ADMIN',
+            actorUserId: customerA.userId,
+            actorRole: role,
+          }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+
+        const row = await prisma.ticket.findUniqueOrThrow({ where: { id: ticket.id } });
+        expect(row.status).toBe(TicketStatus.OPEN);
+      },
+    );
+
+    it('still allows a genuine admin transition', async () => {
+      const ticket = await openTicket(customerA.userId, 'CUSTOMER');
+
+      const moved = await tickets.transitionStatus({
+        ticketId: ticket.id,
+        to: TicketStatus.IN_PROGRESS,
+        actor: 'ADMIN',
+        actorUserId: admin.userId,
+        actorRole: 'ADMIN',
+      });
+
+      expect(moved.status).toBe(TicketStatus.IN_PROGRESS);
+    });
+
+    it('still allows the reporter to reopen — REPORTER is unaffected', async () => {
+      const ticket = await openTicket(customerA.userId, 'CUSTOMER');
+      await resolveTicket(ticket.id);
+
+      const reopened = await tickets.reopen(
+        asUser(customerA.userId, 'CUSTOMER'),
+        ticket.id,
+      );
+
+      expect(reopened.status).toBe(TicketStatus.IN_PROGRESS);
     });
   });
 });

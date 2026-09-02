@@ -4353,3 +4353,85 @@ the balance endpoint reports exactly that.
 
 At `deposit > fee` the share is positive and pays out normally — also tested, so
 the two cases are distinguished by behaviour and not by assertion alone.
+
+---
+
+## 41. Closing the last guard-only admin surfaces (2026-09-02)
+
+§27.1 set the two-layer rule: an admin-only operation asserts the role in the
+service as well as in the guard, because `@Roles(ADMIN)` is a decorator on a
+controller class and a service method that trusts it is one refactor — or one
+new caller — away from being reachable by anyone.
+
+Three surfaces still relied on the guard alone. §38.4 logged the settings one;
+**the reviews and tickets ones were never recorded anywhere**, which is the more
+useful half of this entry.
+
+### 41.1 What was open, and what it means
+
+**`PlatformSettingsService`** — the platform-fee and exchange-rate methods took
+no actor at all. Every method that reads or writes platform configuration now
+takes one and asserts `ADMIN`.
+
+**`ReviewsService.hide` / `unhide`** — took a bare `adminId: string` and trusted
+the caller to have checked. A string parameter named after a role is not a
+check: nothing stopped a future caller passing any user id. Both now take the
+acting user.
+
+**`TicketsService`** — three separate problems, and only one was a real hole:
+
+- `assign` took **no acting user whatsoever**, only the id of the admin to
+  assign *to*. Now asserts.
+- `transitionStatus` takes `actor: 'ADMIN' | 'REPORTER' | 'SYSTEM'` as a
+  **literal supplied by the caller**. The transition table checked which actor
+  *may* make a move but never that the caller actually was that actor — so any
+  future caller could move a ticket as an administrator simply by saying so. It
+  now takes `actorRole` and verifies the claim. `REPORTER` and `SYSTEM` are
+  unaffected: the reporter path is already scoped by `visibilityScope`, and the
+  sweep is the system.
+- `addMessage` was **not** a hole and was left alone. It is shared between the
+  reporter and admin controllers, already scopes by `visibilityScope(user)`, and
+  already refuses a non-admin posting an internal note. Asserting `ADMIN` there
+  would have broken the reporter route — the fix would have been the bug.
+
+**`AdminLedgerController`** asserted the role in the *controller body*, which is
+functionally two-layer but structurally unlike everywhere else. The assertion
+moved into `LedgerService` (`heldTotals`, `executeAdjustment`), so the rule is
+"the service asserts" with no exceptions to remember.
+
+**`AppointmentsSharedController`** carried no `@Roles` at all. `RolesGuard`
+returns `true` when the decorator is absent, so an ADMIN token reached
+`findAll` and was refused by the **service** — the same fall-through already
+fixed in Chat (§23.1) and in `findAll` itself. It now declares
+`@Roles(CUSTOMER, BUSINESS)`, and the service check stays as the second layer.
+
+### 41.2 One deliberate asymmetry: the payout run
+
+`POST /admin/payouts/run` called `PayoutsService.run()`, which takes no actor —
+and must not require one, because the daily cron is a legitimate caller with no
+acting user.
+
+Rather than make the actor nullable (an optional actor is an actor that is easy
+to pass as `undefined`, which is how this class of hole reappears), there are now
+two methods: `run()` for the scheduler and `runAsAdmin(actor)` for the endpoint.
+"The system may run this" and "only an admin may ask for it" stay two separate
+statements. Both paths are tested.
+
+### 41.3 Result
+
+**Every admin-only or role-restricted service method now asserts its own role.**
+Verified by enumerating every route on every controller declaring
+`@Roles(ADMIN)` and following each to its service call. Nothing is guard-only.
+
+Two categories deliberately do **not** assert a role, and should not:
+
+- **`getExchangeRateForDisplay()`** — the customer-facing read behind §39. It
+  exposes only a rate a customer is about to be charged at, and gating it would
+  break the display path it exists for.
+- **The `/business/**` surface** — `BusinessRolesGuard` resolves the caller's
+  ACTIVE membership and attaches it, and the services take an already-resolved
+  `businessId`. The second layer there is the query scoping (§5.4), not a role
+  string. That is a different mechanism, not a missing one.
+
+A service-level test with a non-admin actor now exists for every hardened
+method, asserting both the refusal and that nothing was written.

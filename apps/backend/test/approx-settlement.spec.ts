@@ -68,7 +68,7 @@ describe('Approximate local-currency figures (§39)', () => {
 
   /** 650 SSP to the dollar, set now. */
   const setRate = (rate = 650) =>
-    settings.setExchangeRate(rate, 'SSP', undefined);
+    settings.setExchangeRate(rate, 'SSP', { role: 'ADMIN' });
 
   const booked = async () =>
     createAppointment(prisma, {

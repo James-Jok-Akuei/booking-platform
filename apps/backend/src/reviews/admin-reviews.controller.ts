@@ -35,7 +35,7 @@ export class AdminReviewsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: HideReviewDto,
   ) {
-    return this.reviews.hide(user.userId, id, dto);
+    return this.reviews.hide(user, id, dto);
   }
 
   @Patch(':id/unhide')
@@ -43,6 +43,6 @@ export class AdminReviewsController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.reviews.unhide(user.userId, id);
+    return this.reviews.unhide(user, id);
   }
 }

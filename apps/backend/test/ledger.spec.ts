@@ -540,7 +540,7 @@ describe('Ledger (§34)', () => {
     };
 
     beforeEach(async () => {
-      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10);
+      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10, { role: 'ADMIN' });
     });
 
     it('prices the business share at exactly zero', async () => {

@@ -40,7 +40,7 @@ describe('Location capacity (§16.4)', () => {
     appointments = moduleRef.get(AppointmentsService);
     scheduler = moduleRef.get(PaymentsScheduler);
     await resetDatabase(prisma);
-    await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10);
+    await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10, { role: 'ADMIN' });
   });
 
   afterAll(async () => {

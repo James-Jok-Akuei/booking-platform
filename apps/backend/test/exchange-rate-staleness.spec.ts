@@ -54,9 +54,9 @@ describe('Exchange-rate staleness (§37)', () => {
 
   /** Sets the rate, then backdates it to a chosen age. */
   const rateAgedHours = async (hours: number, thresholdHours?: number) => {
-    await settings.setExchangeRate(650, 'SSP', admin.userId);
+    await settings.setExchangeRate(650, 'SSP', { userId: admin.userId, role: 'ADMIN' });
     if (thresholdHours !== undefined) {
-      await settings.setExchangeRateStalenessHours(thresholdHours);
+      await settings.setExchangeRateStalenessHours(thresholdHours, { role: 'ADMIN' });
     }
     await prisma.platformSetting.update({
       where: { id: PLATFORM_SETTING_ID },
@@ -66,9 +66,9 @@ describe('Exchange-rate staleness (§37)', () => {
 
   describe('setting the rate records who and when', () => {
     it('records the acting admin', async () => {
-      await settings.setExchangeRate(650, 'SSP', admin.userId);
+      await settings.setExchangeRate(650, 'SSP', { userId: admin.userId, role: 'ADMIN' });
 
-      const view = await settings.getExchangeRateSettings();
+      const view = await settings.getExchangeRateSettings({ role: 'ADMIN' });
       expect(view.exchangeRateUpdatedBy).toEqual({
         id: admin.userId,
         email: admin.email,
@@ -78,11 +78,11 @@ describe('Exchange-rate staleness (§37)', () => {
 
     it('moves the timestamp forward on every change', async () => {
       await rateAgedHours(48);
-      const before = await settings.getExchangeRateSettings();
+      const before = await settings.getExchangeRateSettings({ role: 'ADMIN' });
 
-      await settings.setExchangeRate(700, undefined, admin.userId);
+      await settings.setExchangeRate(700, undefined, { userId: admin.userId, role: 'ADMIN' });
 
-      const after = await settings.getExchangeRateSettings();
+      const after = await settings.getExchangeRateSettings({ role: 'ADMIN' });
       expect(before.ageInHours).toBe(48);
       expect(after.ageInHours).toBe(0);
       expect(after.exchangeRateUsdToProviderCurrency).toBe('700.00000000');
@@ -93,9 +93,9 @@ describe('Exchange-rate staleness (§37)', () => {
 
   describe('reporting', () => {
     it('defaults the threshold to 24 hours', async () => {
-      await settings.setExchangeRate(650, 'SSP', admin.userId);
+      await settings.setExchangeRate(650, 'SSP', { userId: admin.userId, role: 'ADMIN' });
 
-      const view = await settings.getExchangeRateSettings();
+      const view = await settings.getExchangeRateSettings({ role: 'ADMIN' });
 
       expect(view.stalenessThresholdHours).toBe(24);
     });
@@ -103,7 +103,7 @@ describe('Exchange-rate staleness (§37)', () => {
     it('reports a rate older than the threshold as stale', async () => {
       await rateAgedHours(30);
 
-      const view = await settings.getExchangeRateSettings();
+      const view = await settings.getExchangeRateSettings({ role: 'ADMIN' });
 
       expect(view.stale).toBe(true);
       expect(view.ageInHours).toBe(30);
@@ -115,7 +115,7 @@ describe('Exchange-rate staleness (§37)', () => {
     it('reports a rate inside the threshold as not stale', async () => {
       await rateAgedHours(3);
 
-      const view = await settings.getExchangeRateSettings();
+      const view = await settings.getExchangeRateSettings({ role: 'ADMIN' });
 
       expect(view.stale).toBe(false);
       // Null rather than an "everything is fine" string: the presence of the
@@ -126,24 +126,24 @@ describe('Exchange-rate staleness (§37)', () => {
     it('treats the threshold as inclusive at the boundary', async () => {
       await rateAgedHours(24);
 
-      expect((await settings.getExchangeRateSettings()).stale).toBe(true);
+      expect((await settings.getExchangeRateSettings({ role: 'ADMIN' })).stale).toBe(true);
     });
 
     it('honours a changed threshold', async () => {
       await rateAgedHours(10, 48);
 
-      const relaxed = await settings.getExchangeRateSettings();
-      await settings.setExchangeRateStalenessHours(6);
-      const tightened = await settings.getExchangeRateSettings();
+      const relaxed = await settings.getExchangeRateSettings({ role: 'ADMIN' });
+      await settings.setExchangeRateStalenessHours(6, { role: 'ADMIN' });
+      const tightened = await settings.getExchangeRateSettings({ role: 'ADMIN' });
 
       expect(relaxed.stale).toBe(false);
       expect(tightened.stale).toBe(true);
     });
 
     it('does not call an unset rate stale - that is a different problem', async () => {
-      await settings.setPlatformFeePercentage(10);
+      await settings.setPlatformFeePercentage(10, { role: 'ADMIN' });
 
-      const view = await settings.getExchangeRateSettings();
+      const view = await settings.getExchangeRateSettings({ role: 'ADMIN' });
 
       // Missing, not old. Payment initiation already refuses outright on this
       // (§18), and filing it under "stale" would hide that.
@@ -212,7 +212,7 @@ describe('Exchange-rate staleness (§37)', () => {
       await rateAgedHours(30);
       await scheduler.checkStaleness();
 
-      await settings.setExchangeRate(700, undefined, admin.userId);
+      await settings.setExchangeRate(700, undefined, { userId: admin.userId, role: 'ADMIN' });
 
       const setting = await prisma.platformSetting.findUniqueOrThrow({
         where: { id: PLATFORM_SETTING_ID },
@@ -236,20 +236,80 @@ describe('Exchange-rate staleness (§37)', () => {
 
   describe('the threshold is validated', () => {
     it('accepts zero - always warn', async () => {
-      await settings.setExchangeRate(650, 'SSP', admin.userId);
+      await settings.setExchangeRate(650, 'SSP', { userId: admin.userId, role: 'ADMIN' });
 
-      const view = await settings.setExchangeRateStalenessHours(0);
+      const view = await settings.setExchangeRateStalenessHours(0, { role: 'ADMIN' });
 
       expect(view.stalenessThresholdHours).toBe(0);
       expect(view.stale).toBe(true);
     });
 
     it('accepts the maximum', async () => {
-      await settings.setExchangeRate(650, 'SSP', admin.userId);
+      await settings.setExchangeRate(650, 'SSP', { userId: admin.userId, role: 'ADMIN' });
 
-      const view = await settings.setExchangeRateStalenessHours(720);
+      const view = await settings.setExchangeRateStalenessHours(720, { role: 'ADMIN' });
 
       expect(view.stalenessThresholdHours).toBe(720);
+    });
+  });
+
+  describe('every settings method asserts ADMIN in the service (§41)', () => {
+    const NON_ADMINS = ['CUSTOMER', 'BUSINESS'];
+
+    it.each(NON_ADMINS)('refuses a %s reading the platform fee', async (role) => {
+      await expect(settings.getSettings({ role })).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it.each(NON_ADMINS)('refuses a %s changing the platform fee', async (role) => {
+      await expect(
+        settings.setPlatformFeePercentage(30, { role }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it.each(NON_ADMINS)('refuses a %s reading the exchange rate', async (role) => {
+      await expect(
+        settings.getExchangeRateSettings({ role }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it.each(NON_ADMINS)('refuses a %s setting the exchange rate', async (role) => {
+      await expect(
+        settings.setExchangeRate(900, 'SSP', { userId: admin.userId, role }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it.each(NON_ADMINS)('refuses a %s changing the staleness threshold', async (role) => {
+      await expect(
+        settings.setExchangeRateStalenessHours(1, { role }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('writes nothing when it refuses', async () => {
+      await settings.setExchangeRate(650, 'SSP', {
+        userId: admin.userId,
+        role: 'ADMIN',
+      });
+
+      await expect(
+        settings.setExchangeRate(999, 'SSP', { userId: admin.userId, role: 'CUSTOMER' }),
+      ).rejects.toThrow();
+
+      const view = await settings.getExchangeRateSettings({ role: 'ADMIN' });
+      expect(view.exchangeRateUsdToProviderCurrency).toBe('650.00000000');
+    });
+
+    it('reads the LIVE rate for display without any role at all', async () => {
+      await settings.setExchangeRate(650, 'SSP', {
+        userId: admin.userId,
+        role: 'ADMIN',
+      });
+
+      // The customer-facing display read (§39) is deliberately not admin-gated;
+      // it exposes only a rate a customer is about to be charged at.
+      const display = await settings.getExchangeRateForDisplay();
+      expect(Number(display!.rate)).toBe(650);
     });
   });
 });

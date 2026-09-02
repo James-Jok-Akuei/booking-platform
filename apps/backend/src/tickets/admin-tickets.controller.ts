@@ -62,10 +62,11 @@ export class AdminTicketsController {
 
   @Patch(':id/assign')
   assign(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AssignTicketDto,
   ) {
-    return this.tickets.assign(id, dto.assignedAdminId);
+    return this.tickets.assign(user, id, dto.assignedAdminId);
   }
 
   /**
@@ -84,6 +85,8 @@ export class AdminTicketsController {
       to: dto.status,
       actor: 'ADMIN',
       actorUserId: user.userId,
+      // Verified against the claim above, so 'ADMIN' cannot simply be asserted.
+      actorRole: user.role,
       resolutionNote: dto.resolutionNote,
       billingAdjustment: dto.billingAdjustment,
     });

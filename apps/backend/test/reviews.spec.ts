@@ -307,13 +307,13 @@ describe('Reviews (§28)', () => {
     });
 
     it('hiding excludes it from the aggregate: 5,3 gives exactly 4.00 over 2', async () => {
-      await reviews.hide(admin.userId, reviewIds[2], { hiddenReason: 'Abusive language.' });
+      await reviews.hide(asUser(admin.userId, 'ADMIN'), reviewIds[2], { hiddenReason: 'Abusive language.' });
 
       expect(await ratingOf(location)).toEqual({ avg: 4, count: 2 });
     });
 
     it('unhiding restores it: back to 3.00 over 3', async () => {
-      await reviews.unhide(admin.userId, reviewIds[2]);
+      await reviews.unhide(asUser(admin.userId, 'ADMIN'), reviewIds[2]);
 
       expect(await ratingOf(location)).toEqual({ avg: 3, count: 3 });
     });
@@ -330,7 +330,7 @@ describe('Reviews (§28)', () => {
       const appointment = await completedAppointment(solo, customer.userId);
       const review = await reviews.create(customer.userId, appointment.id, { rating: 5 });
 
-      await reviews.hide(admin.userId, review.id, { hiddenReason: 'Spam.' });
+      await reviews.hide(asUser(admin.userId, 'ADMIN'), review.id, { hiddenReason: 'Spam.' });
 
       expect(await ratingOf(solo.locationId)).toEqual({ avg: null, count: 0 });
     });
@@ -347,7 +347,7 @@ describe('Reviews (§28)', () => {
       });
 
       const before = await reviews.listForLocation(shop.locationId, undefined, {});
-      await reviews.hide(admin.userId, review.id, { hiddenReason: 'Abusive.' });
+      await reviews.hide(asUser(admin.userId, 'ADMIN'), review.id, { hiddenReason: 'Abusive.' });
       const after = await reviews.listForLocation(shop.locationId, undefined, {});
 
       expect(before.total).toBe(1);
@@ -433,10 +433,10 @@ describe('Reviews (§28)', () => {
     it('rejects hiding an already-hidden review', async () => {
       const appointment = await completedAppointment();
       const review = await reviews.create(customerA.userId, appointment.id, { rating: 2 });
-      await reviews.hide(admin.userId, review.id, { hiddenReason: 'Spam.' });
+      await reviews.hide(asUser(admin.userId, 'ADMIN'), review.id, { hiddenReason: 'Spam.' });
 
       await expect(
-        reviews.hide(admin.userId, review.id, { hiddenReason: 'Again.' }),
+        reviews.hide(asUser(admin.userId, 'ADMIN'), review.id, { hiddenReason: 'Again.' }),
       ).rejects.toThrow(/already hidden/);
     });
 
@@ -444,7 +444,42 @@ describe('Reviews (§28)', () => {
       const appointment = await completedAppointment();
       const review = await reviews.create(customerA.userId, appointment.id, { rating: 2 });
 
-      await expect(reviews.unhide(admin.userId, review.id)).rejects.toThrow(/not hidden/);
+      await expect(reviews.unhide(asUser(admin.userId, 'ADMIN'), review.id)).rejects.toThrow(/not hidden/);
+    });
+
+    describe('moderation is admin-only at the service level (§41)', () => {
+      const NON_ADMINS = ['CUSTOMER', 'BUSINESS'];
+
+      it.each(NON_ADMINS)('refuses a %s hiding a review', async (role) => {
+        const appointment = await completedAppointment();
+        const review = await reviews.create(customerA.userId, appointment.id, {
+          rating: 1,
+          comment: 'Unflattering.',
+        });
+
+        await expect(
+          reviews.hide(asUser(alpha.userId, role), review.id, { hiddenReason: 'Dislike.' }),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+
+        // And nothing was hidden.
+        const row = await prisma.review.findUniqueOrThrow({ where: { id: review.id } });
+        expect(row.hiddenAt).toBeNull();
+      });
+
+      it.each(NON_ADMINS)('refuses a %s unhiding a review', async (role) => {
+        const appointment = await completedAppointment();
+        const review = await reviews.create(customerA.userId, appointment.id, { rating: 1 });
+        await reviews.hide(asUser(admin.userId, 'ADMIN'), review.id, {
+          hiddenReason: 'Spam.',
+        });
+
+        await expect(
+          reviews.unhide(asUser(alpha.userId, role), review.id),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+
+        const row = await prisma.review.findUniqueOrThrow({ where: { id: review.id } });
+        expect(row.hiddenAt).not.toBeNull();
+      });
     });
 
     it('keeps the row after hiding — it is evidence, not deleted', async () => {
@@ -453,7 +488,7 @@ describe('Reviews (§28)', () => {
         rating: 1,
         comment: 'Evidence.',
       });
-      await reviews.hide(admin.userId, review.id, { hiddenReason: 'Under dispute.' });
+      await reviews.hide(asUser(admin.userId, 'ADMIN'), review.id, { hiddenReason: 'Under dispute.' });
 
       const row = await prisma.review.findUniqueOrThrow({ where: { id: review.id } });
       expect(row.comment).toBe('Evidence.');

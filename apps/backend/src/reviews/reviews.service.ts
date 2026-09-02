@@ -299,7 +299,14 @@ export class ReviewsService {
 
   // ---------- Moderation ----------
 
-  async hide(adminId: string, reviewId: string, dto: HideReviewDto) {
+  async hide(
+    actor: { userId: string; role: UserRole | string },
+    reviewId: string,
+    dto: HideReviewDto,
+  ) {
+    this.assertAdmin(actor);
+    const adminId = actor.userId;
+
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
       select: { id: true, locationId: true, businessId: true, customerId: true, hiddenAt: true },
@@ -344,7 +351,10 @@ export class ReviewsService {
     return withByline(updated);
   }
 
-  async unhide(adminId: string, reviewId: string) {
+  async unhide(actor: { userId: string; role: UserRole | string }, reviewId: string) {
+    this.assertAdmin(actor);
+    const adminId = actor.userId;
+
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
       select: { id: true, locationId: true, hiddenAt: true },
@@ -369,6 +379,18 @@ export class ReviewsService {
     this.logger.log(`Review ${reviewId} unhidden by admin ${adminId}.`);
 
     return withByline(updated);
+  }
+
+  /**
+   * Moderation is admin-only, asserted here as well as by the guard (§41).
+   *
+   * Both methods previously took a bare `adminId` and trusted the caller to
+   * have checked — a string parameter named after a role is not a check.
+   */
+  private assertAdmin(actor: { role: UserRole | string }) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only an administrator can moderate reviews.');
+    }
   }
 
   // ---------- Public listing ----------

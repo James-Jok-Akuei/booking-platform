@@ -136,7 +136,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       prisma = moduleRef.get(PrismaService);
       appointments = moduleRef.get(AppointmentsService);
       await resetDatabase(prisma);
-      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10);
+      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10, { role: 'ADMIN' });
       business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
       customer = await createCustomer(prisma);
     });
@@ -230,7 +230,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       prisma = moduleRef.get(PrismaService);
       appointments = moduleRef.get(AppointmentsService);
       await resetDatabase(prisma);
-      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10);
+      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10, { role: 'ADMIN' });
       business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
       customer = await createCustomer(prisma);
 
@@ -377,7 +377,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
 
     beforeEach(async () => {
       await prisma.service.deleteMany({});
-      await settings.setPlatformFeePercentage(10);
+      await settings.setPlatformFeePercentage(10, { role: 'ADMIN' });
     });
 
     const service = (depositPercentage: number, name = 'Service') =>
@@ -435,7 +435,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       it('rejects an increase that would strand an active service', async () => {
         await service(15, 'Deposit 15%');
 
-        await expect(settings.setPlatformFeePercentage(20)).rejects.toBeInstanceOf(
+        await expect(settings.setPlatformFeePercentage(20, { role: 'ADMIN' })).rejects.toBeInstanceOf(
           BadRequestException,
         );
       });
@@ -444,7 +444,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         const created = await service(15, 'Haircut');
 
         const error = await settings
-          .setPlatformFeePercentage(20)
+          .setPlatformFeePercentage(20, { role: 'ADMIN' })
           .catch((e: BadRequestException) => e.getResponse() as any);
 
         expect(error.offendingCount).toBe(1);
@@ -462,7 +462,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       it('changes nothing when it refuses', async () => {
         await service(15);
 
-        await expect(settings.setPlatformFeePercentage(20)).rejects.toThrow();
+        await expect(settings.setPlatformFeePercentage(20, { role: 'ADMIN' })).rejects.toThrow();
 
         // Neither the fee nor anybody's pricing moved.
         expect(Number(await settings.getPlatformFeePercentage())).toBe(10);
@@ -473,7 +473,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       it('never auto-raises a deposit percentage', async () => {
         const created = await service(15);
 
-        await expect(settings.setPlatformFeePercentage(20)).rejects.toThrow();
+        await expect(settings.setPlatformFeePercentage(20, { role: 'ADMIN' })).rejects.toThrow();
 
         const after = await prisma.service.findUniqueOrThrow({
           where: { id: created.id },
@@ -485,10 +485,10 @@ describe('Money invariant: platformFee + business === deposit', () => {
 
       it('succeeds once the offending service is fixed', async () => {
         const created = await service(15);
-        await expect(settings.setPlatformFeePercentage(20)).rejects.toThrow();
+        await expect(settings.setPlatformFeePercentage(20, { role: 'ADMIN' })).rejects.toThrow();
 
         await services.update(business.userId, created.id, { depositPercentage: 20 });
-        const result = await settings.setPlatformFeePercentage(20);
+        const result = await settings.setPlatformFeePercentage(20, { role: 'ADMIN' });
 
         expect(result.platformFeePercentage).toBe('20.00');
       });
@@ -499,7 +499,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         }
 
         const error = await settings
-          .setPlatformFeePercentage(20)
+          .setPlatformFeePercentage(20, { role: 'ADMIN' })
           .catch((e: BadRequestException) => e.getResponse() as any);
 
         expect(error.offendingCount).toBe(23);
@@ -514,7 +514,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
           data: { depositPercentage: 5, isActive: false },
         });
 
-        const result = await settings.setPlatformFeePercentage(20);
+        const result = await settings.setPlatformFeePercentage(20, { role: 'ADMIN' });
 
         expect(result.platformFeePercentage).toBe('20.00');
       });
@@ -528,7 +528,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         });
 
         const error = await settings
-          .setPlatformFeePercentage(20)
+          .setPlatformFeePercentage(20, { role: 'ADMIN' })
           .catch((e: BadRequestException) => e.getResponse() as any);
 
         expect(error.offendingCount).toBe(1);
@@ -536,10 +536,10 @@ describe('Money invariant: platformFee + business === deposit', () => {
       });
 
       it('always allows a decrease', async () => {
-        await settings.setPlatformFeePercentage(20);
+        await settings.setPlatformFeePercentage(20, { role: 'ADMIN' });
         await service(20);
 
-        const result = await settings.setPlatformFeePercentage(5);
+        const result = await settings.setPlatformFeePercentage(5, { role: 'ADMIN' });
 
         // Lowering the fee can only widen the margin.
         expect(result.platformFeePercentage).toBe('5.00');
@@ -548,7 +548,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       it('allows setting the same value again', async () => {
         await service(10);
 
-        const result = await settings.setPlatformFeePercentage(10);
+        const result = await settings.setPlatformFeePercentage(10, { role: 'ADMIN' });
 
         expect(result.platformFeePercentage).toBe('10.00');
       });
@@ -556,7 +556,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       it('allows an increase that strands nobody', async () => {
         await service(30);
 
-        const result = await settings.setPlatformFeePercentage(25);
+        const result = await settings.setPlatformFeePercentage(25, { role: 'ADMIN' });
 
         expect(result.platformFeePercentage).toBe('25.00');
       });
@@ -609,7 +609,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       settings = moduleRef.get(PlatformSettingsService);
       await resetDatabase(prisma);
       business = await createBusiness(prisma);
-      await settings.setPlatformFeePercentage(10);
+      await settings.setPlatformFeePercentage(10, { role: 'ADMIN' });
     });
 
     afterAll(async () => {
@@ -645,7 +645,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       // That is the rule doing its job, not an obstacle to working around: the
       // point of this test is the CREATE floor, which is read live.
       await prisma.service.updateMany({ where: {}, data: { isActive: false } });
-      await settings.setPlatformFeePercentage(25);
+      await settings.setPlatformFeePercentage(25, { role: 'ADMIN' });
 
       await expect(
         services.create(business.userId, {
@@ -656,7 +656,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         }),
       ).rejects.toThrow(/at least 25.00%/);
 
-      await settings.setPlatformFeePercentage(10);
+      await settings.setPlatformFeePercentage(10, { role: 'ADMIN' });
     });
 
     it('rejects an update that would drop an existing service below the floor', async () => {

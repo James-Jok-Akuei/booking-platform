@@ -134,7 +134,13 @@ export class AppointmentsBusinessController {
  * AppointmentsService then decides what this particular caller may see or do.
  */
 @Controller('appointments')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+// Explicit, rather than relying on the absence of @Roles meaning "any
+// authenticated user". RolesGuard passes anything through when the decorator is
+// missing, so an ADMIN token used to reach findAll and be refused by the SERVICE
+// — the same fall-through already fixed in Chat (§23.1) and appointments'
+// own findAll (§27). The service check below stays as the second layer (§41).
+@Roles(UserRole.CUSTOMER, UserRole.BUSINESS)
 export class AppointmentsSharedController {
   constructor(private readonly appointments: AppointmentsService) {}
 

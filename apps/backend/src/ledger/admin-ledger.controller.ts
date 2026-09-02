@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Param,
   ParseUUIDPipe,
@@ -23,9 +22,9 @@ import { ExecuteAdjustmentDto } from './dto/execute-adjustment.dto';
 /**
  * Reconciliation, and turning a recorded decision into money.
  *
- * Two-layer, per §27.1: `@Roles(ADMIN)` says who reaches the routes, and the
- * role is asserted again here before anything is written — a decorator on a
- * class is one refactor away from not being there.
+ * Two-layer, per §27.1: `@Roles(ADMIN)` says who reaches the routes, and
+ * LedgerService asserts the role again before anything is read or written — a
+ * decorator on a class is one refactor away from not being there.
  */
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -44,8 +43,7 @@ export class AdminLedgerController {
    */
   @Get('ledger/held')
   held(@CurrentUser() user: AuthenticatedUser) {
-    this.assertAdmin(user);
-    return this.ledger.heldTotals();
+    return this.ledger.heldTotals(user);
   }
 
   /**
@@ -58,15 +56,8 @@ export class AdminLedgerController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ExecuteAdjustmentDto,
   ) {
-    this.assertAdmin(user);
     return this.prisma.$transaction((tx) =>
-      this.ledger.executeAdjustment(tx, id, dto.settlementRef ?? null),
+      this.ledger.executeAdjustment(tx, id, dto.settlementRef ?? null, user),
     );
-  }
-
-  private assertAdmin(user: AuthenticatedUser) {
-    if (user.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only an administrator can do that.');
-    }
   }
 }

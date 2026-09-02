@@ -41,6 +41,19 @@ export class PayoutsService {
    * Both halves matter — an unstamped entry that is not yet payable is money
    * the platform holds but does not owe yet.
    */
+  /**
+   * The admin-triggered run.
+   *
+   * A thin wrapper rather than a parameter on `run()`, because the scheduler is
+   * a legitimate caller with no acting user (§41.2). Splitting them keeps
+   * "system may run this" and "only an admin may ask for it" as two different
+   * statements instead of one nullable actor that is easy to pass as undefined.
+   */
+  async runAsAdmin(actor: { role: UserRole | string }): Promise<RunSummary> {
+    this.assertAdmin(actor);
+    return this.run();
+  }
+
   async run(now = new Date()): Promise<RunSummary> {
     // Grouped in the database rather than looped per business: the set of
     // businesses with money waiting is exactly the set this query returns, so

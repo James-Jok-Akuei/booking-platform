@@ -1,13 +1,23 @@
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   AppointmentStatus,
   BillingAdjustmentType,
   CancelledBy,
   LedgerEntryType,
   Prisma,
+  UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
+
+/** Admin-only ledger operations, asserted in the service as well as the guard (§41). */
 
 /**
  * Adds a hold period, in days, to an anchor date.
@@ -279,7 +289,10 @@ export class LedgerService {
     tx: Prisma.TransactionClient,
     adjustmentId: string,
     settlementRef: string | null,
+    actor: { role: UserRole | string },
   ) {
+    this.assertAdmin(actor);
+
     const adjustment = await tx.billingAdjustment.findUnique({
       where: { id: adjustmentId },
       select: {
@@ -349,7 +362,9 @@ export class LedgerService {
    * reconciliation that runs itself and reports "fine" is worse than one a
    * human performs, until there is something to reconcile against.
    */
-  async heldTotals() {
+  async heldTotals(actor: { role: UserRole | string }) {
+    this.assertAdmin(actor);
+
     const grouped = await this.prisma.ledgerEntry.groupBy({
       by: ['currency'],
       where: { payoutId: null },
@@ -372,6 +387,12 @@ export class LedgerService {
         "against the payment provider's actual balance by hand — nothing " +
         'reconciles these automatically.',
     };
+  }
+
+  private assertAdmin(actor: { role: UserRole | string }) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only an administrator can do that.');
+    }
   }
 
   private availableAtFor(

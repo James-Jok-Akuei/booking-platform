@@ -434,6 +434,8 @@ export class TicketsService {
     to: TicketStatus;
     actor: TransitionActor;
     actorUserId?: string;
+    /** The acting user's real role, verified against `actor` below. */
+    actorRole?: UserRole | string;
     resolutionNote?: string;
     billingAdjustment?: BillingAdjustmentDto;
   }) {
@@ -467,6 +469,14 @@ export class TicketsService {
       throw new ForbiddenException(
         `${from} to ${params.to} is not a transition you can make.`,
       );
+    }
+
+    // The caller passes `actor` as a literal, so a claim of ADMIN has to be
+    // checked against the acting user's real role rather than believed (§41).
+    // Without this, any future caller could move a ticket as an administrator
+    // simply by saying so.
+    if (params.actor === 'ADMIN' && params.actorRole !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only administrators can make that transition.');
     }
 
     const data: Prisma.TicketUpdateInput = { status: params.to };
@@ -551,7 +561,13 @@ export class TicketsService {
     });
   }
 
-  async assign(ticketId: string, assignedAdminId: string) {
+  async assign(
+    actor: { role: UserRole | string },
+    ticketId: string,
+    assignedAdminId: string,
+  ) {
+    this.assertAdmin(actor);
+
     const admin = await this.prisma.user.findFirst({
       where: { id: assignedAdminId, role: UserRole.ADMIN },
       select: { id: true },
@@ -569,6 +585,13 @@ export class TicketsService {
       data: { assignedAdminId },
       select: REPORTER_TICKET_SELECT,
     });
+  }
+
+  /** Admin-only ticket operations, asserted here as well as by the guard (§41). */
+  private assertAdmin(actor: { role: UserRole | string }) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only an administrator can do that.');
+    }
   }
 
   // ---------- Billing ----------

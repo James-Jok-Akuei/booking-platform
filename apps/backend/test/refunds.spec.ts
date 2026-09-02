@@ -64,7 +64,7 @@ describe('Refunds and adjustments (§36)', () => {
     payouts = moduleRef.get(PayoutsService);
     ledger = moduleRef.get(LedgerService);
     await resetDatabase(prisma);
-    await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10);
+    await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10, { role: 'ADMIN' });
     admin = await createAdmin(prisma);
     business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
     customer = await createCustomer(prisma);
@@ -432,7 +432,7 @@ describe('Refunds and adjustments (§36)', () => {
     };
 
     const execute = (id: string, ref: string | null = 'REF-1') =>
-      prisma.$transaction((tx) => ledger.executeAdjustment(tx, id, ref));
+      prisma.$transaction((tx) => ledger.executeAdjustment(tx, id, ref, { role: 'ADMIN' }));
 
     it('emits a signed ADJUSTMENT entry and settles the row', async () => {
       const row = await adjustment(BillingAdjustmentType.FEE_REFUND, 12.5);
@@ -498,7 +498,7 @@ describe('Refunds and adjustments (§36)', () => {
       const entries = await prisma.ledgerEntry.findMany({ where: { payoutId: null } });
       const expected = entries.reduce((sum, e) => sum + e.amountCents, 0);
 
-      const held = await ledger.heldTotals();
+      const held = await ledger.heldTotals({ role: 'ADMIN' });
 
       const usd = held.byCurrency.find((c) => c.currency === 'USD')!;
       expect(usd.amountCents).toBe(expected);
@@ -515,9 +515,9 @@ describe('Refunds and adjustments (§36)', () => {
         data: { availableAt: new Date(Date.now() - DAY) },
       });
 
-      const before = await ledger.heldTotals();
+      const before = await ledger.heldTotals({ role: 'ADMIN' });
       await payouts.run();
-      const after = await ledger.heldTotals();
+      const after = await ledger.heldTotals({ role: 'ADMIN' });
 
       expect(before.byCurrency[0].amountCents).toBe(a.businessAmountCents);
       // Settled money is no longer held: it has gone out.
@@ -530,12 +530,64 @@ describe('Refunds and adjustments (§36)', () => {
       await prisma.payout.deleteMany({});
       const a = await paidAppointment();
 
-      const held = await ledger.heldTotals();
+      const held = await ledger.heldTotals({ role: 'ADMIN' });
 
       // Still BOOKED, so availableAt is null — but the platform is holding the
       // money all the same, and that is what this figure is for.
       expect(held.byCurrency[0].amountCents).toBe(a.businessAmountCents);
       expect(held.byCurrency[0].entryCount).toBe(2);
+    });
+  });
+
+  describe('ledger admin operations assert the role in the service (§41)', () => {
+    const NON_ADMINS = ['CUSTOMER', 'BUSINESS'];
+
+    it.each(NON_ADMINS)('refuses a %s the held total', async (role) => {
+      await expect(ledger.heldTotals({ role })).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it.each(NON_ADMINS)('refuses a %s executing an adjustment', async (role) => {
+      const a = await paidAppointment();
+      const row = await prisma.billingAdjustment.create({
+        data: {
+          businessId: business.businessId,
+          appointmentId: a.id,
+          type: BillingAdjustmentType.FEE_REFUND,
+          amount: new Prisma.Decimal(5),
+          reason: 'Agreed in support.',
+          createdById: admin.userId,
+        },
+      });
+
+      await expect(
+        prisma.$transaction((tx) =>
+          ledger.executeAdjustment(tx, row.id, 'REF-X', { role }),
+        ),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+
+      // Nothing settled, and no entry written.
+      const after = await prisma.billingAdjustment.findUniqueOrThrow({
+        where: { id: row.id },
+      });
+      expect(after.settledAt).toBeNull();
+      expect(
+        await prisma.ledgerEntry.count({ where: { billingAdjustmentId: row.id } }),
+      ).toBe(0);
+    });
+
+    it.each(NON_ADMINS)('refuses a %s triggering a payout run', async (role) => {
+      await expect(payouts.runAsAdmin({ role })).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it('still lets the scheduler run payouts with no acting user', async () => {
+      // The cron path is a legitimate caller with no actor (§41.2).
+      const summary = await payouts.run();
+
+      expect(summary).toHaveProperty('payoutsCreated');
     });
   });
 });

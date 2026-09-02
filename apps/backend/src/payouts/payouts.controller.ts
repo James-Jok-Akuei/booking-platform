@@ -40,7 +40,7 @@ export class AdminPayoutsController {
   @Post('run')
   @HttpCode(HttpStatus.OK)
   run(@CurrentUser() user: AuthenticatedUser) {
-    return this.payouts.run();
+    return this.payouts.runAsAdmin(user);
   }
 
   @Get()
