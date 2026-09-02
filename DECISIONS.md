@@ -2550,6 +2550,11 @@ establish identity and role. `NotFoundException` is what Nest maps to 404, so
 asserting the exception type asserts the status. But it is a real gap: a
 regression in the guard chain itself would not be caught.
 
+> **CLOSED in §27.** The gap is now covered by HTTP-level tests against the real
+> booted application. The claim above that "the guards only establish identity
+> and role" turned out to understate them — see §27.3, where removing one
+> `@Roles(ADMIN)` exposed every ticket on the platform to any customer.
+
 ### 23.4 A latent defect the suite surfaced immediately
 
 `ChatService` and `ChatGateway` imported each other, resolved with `forwardRef`
@@ -2570,7 +2575,7 @@ a fragility worth removing regardless.
   MSISDNs, so an automated suite covering it would fail for reasons unrelated
   to this code. It stays a manual check, as does the chat WebSocket layer via
   `scripts/ws-smoke-test.js`.
-- **The HTTP layer** — guards, pipes, status codes (§23.3).
+- ~~**The HTTP layer** — guards, pipes, status codes (§23.3).~~ **Done in §27.**
 - **Availability slot generation**, notifications, uploads, and everything else
   hand-verified in earlier sections.
 
@@ -2587,8 +2592,9 @@ after the rule, and leave the rest to the hand-verification pattern the rest of
 this file records.
 
 The obvious next additions, when the modules they cover next change:
-availability slot generation including the fits-before-closing rule (§12.2),
-the notification debounce (§21.5), and the HTTP guard chain (§23.3).
+availability slot generation including the fits-before-closing rule (§12.2) and
+the notification debounce (§21.5). ~~the HTTP guard chain (§23.3)~~ — closed in
+§27 rather than waiting for Auth to change next.
 
 ---
 
@@ -2935,3 +2941,98 @@ signature, while nothing else changed. The cycle was then reverted.
 
 170 tests pass, and this one runs as part of the default `npm test` rather than
 an opt-in script — a smoke test nobody runs is not a smoke test.
+
+---
+
+## 27. Guard-chain tests over HTTP — closing §23.3 (2026-09-02)
+
+§23.3 recorded that authorization was verified only at the service layer, never
+through the real request pipeline, and deferred fixing it. The blocker was the
+AppModule boot hang; §24.8 fixed it and §26 built the harness, so it is closed
+now rather than "next time Auth changes".
+
+### 27.1 What is covered
+
+One representative route per protected module — appointments, chat, tickets —
+against the real booted application, over the wire. The guards are declared per
+controller, so re-testing every handler would assert the same decorator
+repeatedly.
+
+- **No token → 401**, on all three modules.
+- **Malformed token → 401.** **Wrong signature → 401.** **Correctly signed but
+  expired → 401.**
+- **Wrong role → 403:** a BUSINESS token booking an appointment or opening a
+  chat inquiry (both CUSTOMER-only); a CUSTOMER token on a BUSINESS route.
+- **Admin routes → 403** for both CUSTOMER and BUSINESS tokens, 200 for ADMIN,
+  across `/admin/tickets` and `/admin/settings/platform-fee`.
+- **Business role tiers → 403:** STAFF cannot create a service, can still read
+  the list, and the OWNER can.
+- **Another tenant's resource → 404**, consistently, with the response
+  indistinguishable from a genuinely missing id.
+- **The global ValidationPipe is in the chain:** an unknown property is
+  rejected 400 (proving `whitelist`/`forbidNonWhitelisted` are active), as is a
+  malformed uuid path param.
+
+### 27.2 Which of these actually test a guard
+
+The brief asked for this specifically, and the answer is not uniform.
+
+**Genuinely guard-dependent:**
+
+- Every **401**. Without `JwtAuthGuard` the handler would run with no `user` and
+  fail on a property access — a 500, not a 401. The status is the guard.
+- **Admin-route 403s** — see §27.3, the strongest case in the suite.
+- **STAFF → 403 on service creation.** `ServicesService.create` resolves the
+  caller's business and never checks their role, so without
+  `BusinessRolesGuard` a staff member would successfully create a service.
+- **BUSINESS token → 403 on booking.** `AppointmentsService.create` takes a
+  customerId and does not verify the caller is a customer.
+
+**Passes, but not because of a guard:**
+
+- **The cross-tenant 404s.** A valid token with the right role passes the entire
+  guard chain and reaches the handler; the *service's* query scoping is what
+  refuses. They are worth having — they prove the scoping survives the real
+  pipeline, which the service-level suite cannot show — but they are not
+  evidence about guards, and should not be read as such.
+- **CUSTOMER token → 403 on `/business/services`.** `RolesGuard` refuses it, but
+  `BusinessRolesGuard` would too: a customer has no active membership, so
+  `requireActiveMembership` throws Forbidden. This test cannot distinguish which
+  layer fired.
+
+### 27.3 One guard is doing far more than §23.3 assumed
+
+§23.3 asserted the guards "only establish identity and role", with isolation
+enforced by service-level scoping. That is true almost everywhere — and false in
+one place that matters.
+
+`TicketsService.listForAdmin` applies **no scoping at all**: it is the admin
+queue, so it deliberately returns every ticket on the platform. Its only
+protection is `@Roles(ADMIN)` on the controller.
+
+This was tested rather than reasoned about. With that one decorator temporarily
+removed, a request from an ordinary customer's token returned **200 and included
+another user's private ticket subject**. The decorator was restored immediately
+and the experiment was not committed.
+
+So the general claim in §23.3 needed correcting: for most routes the guards are
+a coarse first filter over a service that would refuse anyway, but for the admin
+endpoints they are the *entire* access control. A service-layer-only suite would
+never have shown that.
+
+### 27.4 Harness
+
+`test/setup/e2e-app.ts` boots the real `AppModule` through `NestFactory`, applies
+the same `configureApp` as `main.ts` (§26.3), and listens on an ephemeral port.
+It uses the existing test database, `resetDatabase` and factories — no second DB
+strategy and no new framework, per the existing setup.
+
+Tokens are minted with the application's own `JwtService` and real signing
+secret, so they are indistinguishable from tokens issued by the OTP flow; the
+guards verify them normally. Cron jobs are stopped once listening, since they
+are irrelevant to authorization and would otherwise mutate fixtures mid-run —
+the §26 boot test is the one that leaves the real schedule running.
+
+### 27.5 Verified
+
+33 new tests, **203 total across 7 suites**, all passing.
