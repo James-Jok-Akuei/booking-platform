@@ -1109,6 +1109,54 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('payout export over HTTP (§47)', () => {
+    const aPayout = async () =>
+      prisma.payout.create({
+        data: {
+          businessId: alpha.businessId,
+          amountCents: 4500,
+          currency: 'USD',
+          settlementCurrency: 'SSP',
+          settlementAmountMinor: 2_925_000,
+          runAt: new Date(),
+        },
+      });
+
+    it('rejects a BUSINESS token -> 403', async () => {
+      const payout = await aPayout();
+
+      const res = await request(url, `/admin/payouts/${payout.id}/export`, {
+        token: tokenAlpha,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('rejects an unauthenticated request -> 401', async () => {
+      const payout = await aPayout();
+
+      const res = await request(url, `/admin/payouts/${payout.id}/export`);
+
+      expect(res.status).toBe(401);
+    });
+
+    it('serves CSV as an attachment to an admin -> 200', async () => {
+      const payout = await aPayout();
+
+      const response = await fetch(`${url}/admin/payouts/${payout.id}/export`, {
+        headers: { Authorization: `Bearer ${tokenAdmin}` },
+      });
+      const body = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toContain('text/csv');
+      expect(response.headers.get('content-disposition')).toContain('attachment');
+      expect(body.split('\n')[0]).toContain('businessId,businessName');
+      expect(body).toContain('SSP,2925000');
+      expect(body).toContain('NOT RECORDED');
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {

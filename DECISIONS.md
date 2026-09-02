@@ -4951,3 +4951,58 @@ One fixture bug surfaced while doing this: a discovery test built "today" from
 `toISOString()` (UTC) while the service computes it in `Africa/Juba`. Near
 midnight UTC those are different days and the exception filed against the wrong
 one silently did nothing. It now derives the date the same way the service does.
+
+---
+
+## 47. Payout batch export (2026-09-02)
+
+MoMo is collections-only (§34.1), so every payout is sent by hand. This turns one
+run into one document instead of one browser tab per business.
+
+`GET /admin/payouts/:id/export` — admin, CSV, with the role asserted in the
+service as well as the guard (§41).
+
+### 47.1 Addressed by a payout, scoped to its run
+
+The route takes a **payout** id but exports the **whole run** that payout belongs
+to, matched on `runAt`. A run is not an entity — there is no `PayoutRun` model,
+only payouts that share a timestamp — and an admin has a payout in front of them
+and wants the batch it arrived in. "Give me this payout's run" is the operation
+that matches the job.
+
+One row per business paid: business id and name, settlement currency and amount,
+the USD figure for reference, status, provider reference and payout id.
+
+**Totals are per currency, never one number across two.** A grand total spanning
+SSP and USD would be a figure with no unit, which is worse than no total.
+
+CSV quoting is nine lines rather than a dependency, and it is not decoration: a
+business called `Nile Barbers, Juba` would otherwise split into two columns and
+shift every following value along — in a document someone reads amounts of money
+off. Tested.
+
+### 47.2 There is no payout destination, and none was invented
+
+**Nothing in the schema records where to send a business's money.**
+`BusinessProfile.phone` exists, but it is a **contact** number: never verified,
+never confirmed as a mobile-money account, quite possibly a landline or a
+receptionist's mobile.
+
+So the export carries two separate columns:
+
+- `payoutDestination`, whose value is the literal string **`NOT RECORDED`**. Not
+  a blank — a blank cell reads as "we forgot to fill this in", while `NOT
+  RECORDED` reads as what it is: nobody has ever collected one.
+- `contactPhoneNotAPayoutDestination`, so the operator has a lead to chase
+  without the column name inviting them to send money to it.
+
+**Collecting a real payout destination is a separate product decision, and it is
+the one thing standing between this file and being directly usable.** It needs
+more than a column: a destination has to be verified before money is sent to it,
+which means a confirmation flow, a record of who confirmed it and when, and a
+rule about what happens to pending payouts when it changes. That is a module, not
+a field, and guessing at it here would produce a schema that the real
+requirements then have to be bent around.
+
+Until then the export is a worksheet: correct amounts, correct currencies,
+correct references, and an explicit blank where the account number belongs.

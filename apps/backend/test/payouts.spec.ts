@@ -452,4 +452,110 @@ describe('Payouts (§35)', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
+
+  describe('batch export (§47)', () => {
+    const runWithPayouts = async () => {
+      await entry(alpha, 4500);
+      await entry(beta, 2000);
+      await payouts.run();
+      return prisma.payout.findMany({ orderBy: { amountCents: 'desc' } });
+    };
+
+    it('exports the whole RUN, one row per business, not just one payout', async () => {
+      const [first] = await runWithPayouts();
+
+      const { csv, payoutCount } = await payouts.exportRun(AS_ADMIN(), first.id);
+
+      // Addressed by a payout id, but the unit of work is the run it came in.
+      expect(payoutCount).toBe(2);
+      const lines = csv.trim().split('\n');
+      expect(lines[0]).toContain('businessId,businessName');
+      // header + 2 businesses + 1 totals row (single currency)
+      expect(lines).toHaveLength(4);
+    });
+
+    it('says NOT RECORDED for the payout destination, and does not invent one', async () => {
+      const [first] = await runWithPayouts();
+
+      const { csv } = await payouts.exportRun(AS_ADMIN(), first.id);
+
+      // No payout destination exists in the schema (§47.2). A blank cell would
+      // read as missing data; this reads as "nobody has ever collected one".
+      expect(csv).toContain('NOT RECORDED');
+      expect(csv).toContain('contactPhoneNotAPayoutDestination');
+    });
+
+    it('carries the settlement amount and currency, not just USD', async () => {
+      const [first] = await runWithPayouts();
+
+      const { csv } = await payouts.exportRun(AS_ADMIN(), first.id);
+
+      expect(csv).toContain('settlementCurrency,settlementAmountMinor');
+      expect(csv).toContain('USD,4500');
+    });
+
+    it('totals per currency, never one number across two', async () => {
+      const shop = await createBusiness(prisma);
+      await prisma.ledgerEntry.create({
+        data: {
+          businessId: shop.businessId,
+          type: LedgerEntryType.DEPOSIT_RECEIVED,
+          amountCents: 1000,
+          currency: 'USD',
+          settlementCurrency: 'SSP',
+          settlementAmountMinor: 650_000,
+          availableAt: new Date(Date.now() - DAY),
+        },
+      });
+      await entry(alpha, 4500);
+      await payouts.run();
+      const [any] = await prisma.payout.findMany();
+
+      const { csv } = await payouts.exportRun(AS_ADMIN(), any.id);
+
+      // A grand total across currencies would be a number with no unit.
+      const totalLines = csv.split('\n').filter((l) => l.includes('TOTAL'));
+      expect(totalLines).toHaveLength(2);
+      expect(csv).toContain('SSP,650000');
+      expect(csv).toContain('USD,4500');
+    });
+
+    it('quotes a business name containing a comma', async () => {
+      await prisma.businessProfile.update({
+        where: { id: alpha.businessId },
+        data: { name: 'Nile Barbers, Juba' },
+      });
+      const [first] = await runWithPayouts();
+
+      const { csv } = await payouts.exportRun(AS_ADMIN(), first.id);
+
+      // Unquoted, this would split into two columns and shift every following
+      // value — in a document someone reads amounts of money off.
+      expect(csv).toContain('"Nile Barbers, Juba"');
+    });
+
+    it('includes the provider reference once a payout is marked paid', async () => {
+      const [first] = await runWithPayouts();
+      await payouts.markPaid(AS_ADMIN(), first.id, { reference: 'MOMO-9911' });
+
+      const { csv } = await payouts.exportRun(AS_ADMIN(), first.id);
+
+      expect(csv).toContain('MOMO-9911');
+      expect(csv).toContain('PAID');
+    });
+
+    it.each(['CUSTOMER', 'BUSINESS'])('refuses a %s at the service level', async (role) => {
+      const [first] = await runWithPayouts();
+
+      await expect(
+        payouts.exportRun({ role }, first.id),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('404s on a payout that does not exist', async () => {
+      await expect(
+        payouts.exportRun(AS_ADMIN(), '00000000-0000-4000-8000-000000000000'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
 });

@@ -16,6 +16,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { ListPayoutsDto } from './dto/list-payouts.dto';
+import { toCsvRow } from './payout-csv';
 import { MarkPaidDto, MarkFailedDto } from './dto/mark-payout.dto';
 
 export interface RunSummary {
@@ -357,6 +358,119 @@ export class PayoutsService {
     );
 
     return updated;
+  }
+
+  // ---------- Batch export ----------
+
+  /**
+   * The whole RUN a payout belongs to, as CSV — one row per business paid
+   * (§47).
+   *
+   * Addressed by a payout id rather than a run id because a run is not an
+   * entity: there is no PayoutRun model, and payouts from one run share their
+   * `runAt`. An admin has a payout in front of them and wants the batch it came
+   * in, so "give me this payout's run" is the operation that matches the job.
+   *
+   * The job being: MoMo is collections-only (§34.1), so every payout is sent by
+   * hand. This turns one run into one document instead of one browser tab per
+   * business.
+   *
+   * **There is no payout destination in the schema.** `BusinessProfile` records
+   * a `phone`, but that is a CONTACT number — never verified, never confirmed as
+   * a mobile-money account, and quite possibly a landline or a receptionist. It
+   * is included under a column that says so, beside a `payoutDestination` column
+   * that reads `NOT RECORDED` rather than sitting blank, because a blank looks
+   * like missing data and `NOT RECORDED` looks like what it is. Collecting a
+   * real destination is a separate product decision (§47.2), and it is the one
+   * thing standing between this file and being directly usable.
+   */
+  async exportRun(actor: { role: UserRole | string }, payoutId: string) {
+    this.assertAdmin(actor);
+
+    const payout = await this.requirePayout(payoutId);
+
+    const batch = await this.prisma.payout.findMany({
+      where: { runAt: payout.runAt },
+      orderBy: [{ settlementCurrency: 'asc' }, { settlementAmountMinor: 'desc' }],
+      select: {
+        id: true,
+        amountCents: true,
+        currency: true,
+        settlementCurrency: true,
+        settlementAmountMinor: true,
+        status: true,
+        reference: true,
+        businessProfile: { select: { id: true, name: true, phone: true } },
+      },
+    });
+
+    const header = [
+      'businessId',
+      'businessName',
+      'payoutDestination',
+      'contactPhoneNotAPayoutDestination',
+      'settlementCurrency',
+      'settlementAmountMinor',
+      'usdAmountCents',
+      'status',
+      'payoutReference',
+      'payoutId',
+    ];
+
+    const rows = batch.map((row) =>
+      toCsvRow([
+        row.businessProfile.id,
+        row.businessProfile.name,
+        // Not blank. A blank cell reads as "we forgot"; this reads as "nobody
+        // has ever collected one", which is the truth.
+        'NOT RECORDED',
+        row.businessProfile.phone,
+        row.settlementCurrency,
+        row.settlementAmountMinor,
+        row.amountCents,
+        row.status,
+        row.reference,
+        row.id,
+      ]),
+    );
+
+    // One totals row PER CURRENCY. A single grand total across currencies would
+    // be a number with no unit, which is worse than no total at all.
+    const totals = new Map<string, { amountMinor: number; count: number }>();
+    for (const row of batch) {
+      const current = totals.get(row.settlementCurrency) ?? { amountMinor: 0, count: 0 };
+      current.amountMinor += row.settlementAmountMinor;
+      current.count += 1;
+      totals.set(row.settlementCurrency, current);
+    }
+
+    const totalRows = [...totals.entries()].map(([currency, total]) =>
+      toCsvRow([
+        '',
+        `TOTAL (${total.count} payout${total.count === 1 ? '' : 's'})`,
+        '',
+        '',
+        currency,
+        total.amountMinor,
+        '',
+        '',
+        '',
+        '',
+      ]),
+    );
+
+    const csv = [toCsvRow(header), ...rows, ...totalRows].join('\n') + '\n';
+
+    this.logger.log(
+      `Payout run of ${payout.runAt.toISOString()} exported by admin: ` +
+        `${batch.length} payout(s) across ${totals.size} currency/currencies.`,
+    );
+
+    return {
+      csv,
+      filename: `payout-run-${payout.runAt.toISOString().slice(0, 19).replace(/[:T]/g, '')}.csv`,
+      payoutCount: batch.length,
+    };
   }
 
   // ---------- Business-facing ----------

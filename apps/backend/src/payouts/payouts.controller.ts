@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Header,
+  Res,
   HttpCode,
   HttpStatus,
   Param,
@@ -12,6 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
+import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -46,6 +49,22 @@ export class AdminPayoutsController {
   @Get()
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListPayoutsDto) {
     return this.payouts.list(user, query);
+  }
+
+  /**
+   * The run this payout belongs to, as a CSV batch (§47). One row per business
+   * paid, plus a totals row per settlement currency.
+   */
+  @Get(':id/export')
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  async exportRun(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { csv, filename } = await this.payouts.exportRun(user, id);
+    response.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return csv;
   }
 
   @Patch(':id/mark-paid')
