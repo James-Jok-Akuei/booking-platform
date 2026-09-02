@@ -6,8 +6,10 @@ import { PlatformSettingsService } from '../src/settings/platform-settings.servi
 import { PrismaService } from '../src/prisma/prisma.service';
 import { TestingModule } from '@nestjs/testing';
 import { BusinessAccessService } from '../src/business/business-access.service';
-import { createTestModule, resetDatabase } from './setup/test-module';
-import { createBusiness } from './setup/factories';
+import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
+import { createBusiness, createCustomer, futureSlot } from './setup/factories';
+import { AppointmentsService } from '../src/appointments/appointments.service';
+import { AvailabilityService } from '../src/availability/availability.service';
 
 const D = (v: string | number) => new Prisma.Decimal(v);
 
@@ -110,6 +112,99 @@ describe('Money invariant: platformFee + business === deposit', () => {
       expect(a.platformFeeAmountCents + a.businessAmountCents).toBe(
         a.depositAmountCents,
       );
+    });
+  });
+
+  describe('pricing snapshot reproduces the stored amounts (§30)', () => {
+    let moduleRef: TestingModule;
+    let prisma: PrismaService;
+    let appointments: AppointmentsService;
+    let business: Awaited<ReturnType<typeof createBusiness>>;
+    let customer: { userId: string; email: string };
+
+    beforeAll(async () => {
+      moduleRef = await createTestModule([
+        AppointmentsService,
+        AvailabilityService,
+        PlatformSettingsService,
+        commonStubs.mail(),
+        commonStubs.notifications(),
+        commonStubs.payments(),
+        commonStubs.chat(),
+      ]);
+      prisma = moduleRef.get(PrismaService);
+      appointments = moduleRef.get(AppointmentsService);
+      await resetDatabase(prisma);
+      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10);
+      business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
+      customer = await createCustomer(prisma);
+    });
+
+    afterAll(async () => {
+      await resetDatabase(prisma);
+      await moduleRef.close();
+    });
+
+    it('records the inputs the amounts were computed from', async () => {
+      const created = await appointments.create(customer.userId, {
+        locationId: business.locationId,
+        serviceId: business.serviceId,
+        startTime: futureSlot(7, 8).toISOString(),
+      });
+
+      const row = await prisma.appointment.findUniqueOrThrow({ where: { id: created.id } });
+
+      expect(row.servicePriceCents).toBe(4500);
+      expect(Number(row.depositPercentage)).toBe(20);
+      expect(Number(row.platformFeePercentage)).toBe(10);
+    });
+
+    it('the snapshot reproduces depositAmountCents exactly', async () => {
+      const row = await prisma.appointment.findFirstOrThrow({
+        where: { customerId: customer.userId },
+      });
+
+      const recomputed = computeAppointmentAmounts(
+        row.servicePriceCents!,
+        new Prisma.Decimal(row.depositPercentage!),
+        new Prisma.Decimal(row.platformFeePercentage!),
+      );
+
+      // The point of the snapshot: the stored amounts are explainable from the
+      // stored inputs, with no reference to today's editable Service row.
+      expect(recomputed.depositAmountCents).toBe(row.depositAmountCents);
+    });
+
+    it('the snapshot reproduces platformFeeAmountCents and businessAmountCents exactly', async () => {
+      const row = await prisma.appointment.findFirstOrThrow({
+        where: { customerId: customer.userId },
+      });
+
+      const recomputed = computeAppointmentAmounts(
+        row.servicePriceCents!,
+        new Prisma.Decimal(row.depositPercentage!),
+        new Prisma.Decimal(row.platformFeePercentage!),
+      );
+
+      expect(recomputed.platformFeeAmountCents).toBe(row.platformFeeAmountCents);
+      expect(recomputed.businessAmountCents).toBe(row.businessAmountCents);
+    });
+
+    it('editing the service afterwards does not change the snapshot', async () => {
+      const row = await prisma.appointment.findFirstOrThrow({
+        where: { customerId: customer.userId },
+      });
+
+      // The exact failure the snapshot exists to prevent.
+      await prisma.service.update({
+        where: { id: business.serviceId },
+        data: { priceCents: 9999, depositPercentage: 55 },
+      });
+
+      const after = await prisma.appointment.findUniqueOrThrow({ where: { id: row.id } });
+      expect(after.servicePriceCents).toBe(4500);
+      expect(Number(after.depositPercentage)).toBe(20);
+      expect(after.depositAmountCents).toBe(row.depositAmountCents);
     });
   });
 

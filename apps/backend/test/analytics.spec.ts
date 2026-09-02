@@ -45,10 +45,13 @@ describe('Business analytics (§29)', () => {
     startsInDays: number;
     deposit?: number;
     fee?: number;
+    /** Omit to simulate an appointment booked before snapshotting existed. */
+    priceCents?: number | null;
   }) => {
     const start = new Date(now + params.startsInDays * DAY);
     const deposit = params.deposit ?? 900;
     const fee = params.fee ?? 450;
+    const price = params.priceCents === undefined ? 4500 : params.priceCents;
     return prisma.appointment.create({
       data: {
         locationId: params.locationId,
@@ -61,6 +64,9 @@ describe('Business analytics (§29)', () => {
         platformFeeAmountCents: fee,
         businessAmountCents: deposit - fee,
         currency: 'USD',
+        servicePriceCents: price,
+        depositPercentage: price === null ? null : 20,
+        platformFeePercentage: price === null ? null : 10,
       },
     });
   };
@@ -162,14 +168,81 @@ describe('Business analytics (§29)', () => {
       expect(r.money.platformFeesPaidCents).toBe(2250);
     });
 
-    it('reports the balance owed as unavailable rather than approximating it', async () => {
+    it('computes the balance owed from the price snapshot', async () => {
       const r = await analytics.getAnalytics(AS_ALPHA(), alpha.businessId, {
         locationId: alpha.locationId,
         ...RANGE,
       });
 
-      expect(r.money.balanceOwedToBusiness.available).toBe(false);
+      // 4 COMPLETED, each 4500 price - 900 deposit = 3600 still owed.
+      expect(r.money.balanceOwedToBusiness.amountCents).toBe(14400);
+      expect(r.money.balanceOwedToBusiness.fromAppointments).toBe(4);
+      expect(r.money.balanceOwedToBusiness.complete).toBe(true);
       expect(r.money).not.toHaveProperty('revenue');
+    });
+
+    it('never sums the balance into the platform-collected figure', async () => {
+      const r = await analytics.getAnalytics(AS_ALPHA(), alpha.businessId, {
+        locationId: alpha.locationId,
+        ...RANGE,
+      });
+
+      // The two must stay separate: the platform saw 4500, not 18900.
+      expect(r.money.collectedThroughPlatform.depositsCents).toBe(4500);
+      expect(r.money.balanceOwedToBusiness.amountCents).toBe(14400);
+    });
+  });
+
+  describe('balance owed is never silently partial', () => {
+    beforeAll(async () => {
+      await prisma.appointment.deleteMany({});
+      // Two with a snapshot, one without (as a pre-snapshot booking would be).
+      await seed({ locationId: alpha.locationId, status: AppointmentStatus.COMPLETED, startsInDays: -1 });
+      await seed({ locationId: alpha.locationId, status: AppointmentStatus.COMPLETED, startsInDays: -2 });
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.COMPLETED,
+        startsInDays: -3,
+        priceCents: null,
+      });
+    });
+
+    it('excludes appointments without a snapshot from the figure', async () => {
+      const r = await analytics.getAnalytics(AS_ALPHA(), alpha.businessId, {
+        locationId: alpha.locationId, ...RANGE,
+      });
+
+      expect(r.money.balanceOwedToBusiness.amountCents).toBe(7200);
+      expect(r.money.balanceOwedToBusiness.fromAppointments).toBe(2);
+    });
+
+    it('reports how many were excluded, and flags the total as incomplete', async () => {
+      const r = await analytics.getAnalytics(AS_ALPHA(), alpha.businessId, {
+        locationId: alpha.locationId, ...RANGE,
+      });
+
+      expect(r.money.balanceOwedToBusiness.appointmentsMissingSnapshot).toBe(1);
+      expect(r.money.balanceOwedToBusiness.complete).toBe(false);
+      expect(r.money.balanceOwedToBusiness.note).toMatch(/Excludes 1 completed appointment/);
+    });
+
+    it('says the platform has not seen this money', async () => {
+      const r = await analytics.getAnalytics(AS_ALPHA(), alpha.businessId, {
+        locationId: alpha.locationId, ...RANGE,
+      });
+
+      expect(r.money.balanceOwedToBusiness.note).toMatch(/cannot confirm it was paid/);
+    });
+
+    it('counts only COMPLETED appointments toward the balance', async () => {
+      await seed({ locationId: alpha.locationId, status: AppointmentStatus.BOOKED, startsInDays: -4 });
+
+      const r = await analytics.getAnalytics(AS_ALPHA(), alpha.businessId, {
+        locationId: alpha.locationId, ...RANGE,
+      });
+
+      // Unchanged: a booked appointment owes nothing yet.
+      expect(r.money.balanceOwedToBusiness.amountCents).toBe(7200);
     });
   });
 

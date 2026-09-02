@@ -47,6 +47,9 @@ const APPOINTMENT_SELECT = {
   platformFeeAmountCents: true,
   businessAmountCents: true,
   currency: true,
+  servicePriceCents: true,
+  depositPercentage: true,
+  platformFeePercentage: true,
   paymentProviderReferenceId: true,
   paymentInitiatedAt: true,
   providerCurrency: true,
@@ -222,6 +225,11 @@ export class AppointmentsService {
           endTime,
           status: AppointmentStatus.PENDING_PAYMENT,
           ...amounts,
+          // The inputs those amounts came from, recorded alongside them. Same
+          // values, same transaction — this changes no arithmetic.
+          servicePriceCents: service.priceCents,
+          depositPercentage: service.depositPercentage,
+          platformFeePercentage,
           verificationCodeHash,
         },
         select: APPOINTMENT_SELECT,

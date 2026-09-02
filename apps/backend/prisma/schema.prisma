@@ -647,6 +647,23 @@ model Appointment {
   platformFeeAmountCents Int
   businessAmountCents    Int
 
+  /// The INPUTS the three amounts above were computed from, snapshotted at
+  /// booking and never updated.
+  ///
+  /// Without these the amounts cannot be explained after the fact: the service
+  /// price and its deposit percentage are both editable (§10), and the platform
+  /// fee percentage is an admin setting (§16.3), so joining to them later gives
+  /// today's values for a historical booking. Recording the inputs alongside
+  /// the outputs is what makes a past appointment reconstructable — and what
+  /// makes the balance owed to the business computable at all (§29.1).
+  ///
+  /// Nullable with no backfill: appointments booked before this existed
+  /// genuinely do not have the information, and inventing it would be worse
+  /// than admitting it. Every reader must treat null as "not recorded".
+  servicePriceCents     Int?
+  depositPercentage     Decimal? @db.Decimal(5, 2)
+  platformFeePercentage Decimal? @db.Decimal(5, 2)
+
   /// ISO 4217 code covering all three amounts above. One field rather than
   /// three: a deposit, the fee taken from it, and the remainder are by
   /// construction the same currency, so separate fields could only ever

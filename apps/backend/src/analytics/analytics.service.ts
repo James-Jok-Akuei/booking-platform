@@ -226,16 +226,61 @@ export class AnalyticsService {
           'whose deposits may or may not have been taken — nothing records which.',
       },
       platformFeesPaidCents: totals._sum.platformFeeAmountCents ?? 0,
-      // Explicitly reported as unavailable rather than omitted silently, so a
-      // caller does not assume the field was forgotten.
-      balanceOwedToBusiness: {
-        available: false,
-        reason:
-          'Not computable. The service price at booking time is not snapshotted ' +
-          'on the appointment, and Service.priceCents and depositPercentage are ' +
-          'both editable, so a historical balance cannot be reconstructed. ' +
-          'Nothing records whether an offline balance was ever paid either.',
-      },
+      balanceOwedToBusiness: await this.balanceOwed(baseWhere),
+    };
+  }
+
+  /**
+   * What customers still owe the business directly, on completed appointments.
+   *
+   * Computable only since pricing inputs began being snapshotted: it is
+   * `servicePriceCents - depositAmountCents`, and the price at booking time is
+   * not otherwise recoverable (§29.1).
+   *
+   * Two things this figure is NOT, both stated in the response rather than left
+   * to the reader:
+   *
+   * - It is not money the platform has seen. §2 places settlement of the
+   *   balance directly between customer and business, and nothing records
+   *   whether it was ever collected. It is an expectation, not a receipt.
+   * - It is not necessarily complete. Appointments booked before snapshotting
+   *   have no price recorded and are excluded, so the count of those is
+   *   returned alongside — a partial total that does not say it is partial is
+   *   the kind of number a business acts on and then distrusts.
+   */
+  private async balanceOwed(baseWhere: Prisma.AppointmentWhereInput) {
+    const completed: Prisma.AppointmentWhereInput = {
+      ...baseWhere,
+      status: AppointmentStatus.COMPLETED,
+    };
+
+    const [withSnapshot, missing] = await Promise.all([
+      this.prisma.appointment.aggregate({
+        where: { ...completed, servicePriceCents: { not: null } },
+        _sum: { servicePriceCents: true, depositAmountCents: true },
+        _count: { _all: true },
+      }),
+      this.prisma.appointment.count({
+        where: { ...completed, servicePriceCents: null },
+      }),
+    ]);
+
+    const price = withSnapshot._sum.servicePriceCents ?? 0;
+    const deposits = withSnapshot._sum.depositAmountCents ?? 0;
+
+    return {
+      amountCents: price - deposits,
+      fromAppointments: withSnapshot._count._all,
+      appointmentsMissingSnapshot: missing,
+      // The one flag a caller should branch on before presenting the number.
+      complete: missing === 0,
+      note:
+        'Expected to be settled directly between customer and business. The ' +
+        'platform never sees this money and cannot confirm it was paid.' +
+        (missing > 0
+          ? ` Excludes ${missing} completed appointment(s) booked before pricing ` +
+            'was snapshotted, whose original price is not recoverable.'
+          : ''),
     };
   }
 

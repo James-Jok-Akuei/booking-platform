@@ -3286,3 +3286,94 @@ Figures are asserted as exact numbers throughout — 57.14% completion over 7
 appointments, 4500 cents collected from 5 of 7, fees matching an independently
 computed sum — because "a value is present" would pass against arithmetic that
 is quietly wrong.
+
+---
+
+## 30. Pricing snapshot on Appointment (2026-09-02)
+
+Records the inputs the money amounts were already computed from. **No
+arithmetic changed and no money moved** — this commit adds three columns.
+
+### 30.1 What was missing
+
+`depositAmountCents`, `platformFeeAmountCents` and `businessAmountCents` were
+snapshotted at booking (§16.3). The values they were *derived from* were not:
+
+- `Service.priceCents` and `Service.depositPercentage` are editable at any time
+  (§10), so a historical appointment joined to today's price.
+- `PlatformSetting.platformFeePercentage` is a live admin setting (§16.3).
+
+So a past appointment's numbers could not be explained. `servicePriceCents`,
+`depositPercentage` and `platformFeePercentage` now sit on the appointment,
+written in the same transaction, from the same values `computeAppointmentAmounts`
+already received.
+
+**Nullable, no backfill.** Rows booked before this genuinely lack the
+information, and it cannot be recovered — the equations have two unknowns and
+both sides have since been editable. Writing a guess would turn "unknown" into
+"wrong". Every reader treats null as "not recorded".
+
+Asserted by test: the snapshot reproduces all three stored amounts exactly, and
+editing the service afterwards to 9999/55% leaves both the snapshot and the
+amounts untouched — the precise failure this exists to prevent.
+
+### 30.2 Balance owed is now computable, and says how complete it is
+
+§29.1 reported `balanceOwedToBusiness` as not computable. With the snapshot it
+is `servicePriceCents − depositAmountCents` over COMPLETED appointments in
+range, and it is returned as a real figure.
+
+Two qualifications ship **in the response**, not in documentation nobody reads:
+
+- **It is not money the platform has seen.** §2 places balance settlement
+  directly between customer and business, and nothing records whether it was
+  collected. It is an expectation, not a receipt.
+- **It may be partial.** Appointments without the snapshot are excluded, and
+  `appointmentsMissingSnapshot` plus `complete: false` say so. A partial total
+  that does not announce itself is the number a business acts on and then stops
+  trusting.
+
+It remains a separate field from `collectedThroughPlatform`; the two are never
+summed (§29.2).
+
+### 30.3 Two findings from the pre-work — reported, not fixed
+
+**(a) Appointment responses render TODAY's service price.**
+`APPOINTMENT_SELECT` includes `service: { select: { priceCents } }`, and that
+select backs `findOne`, `findAll` and the return value of every transition
+method. So a customer opening a booking from three months ago sees whatever the
+business charges now, presented as that appointment's price.
+
+Not fixed here, as instructed. The snapshot added above is what a fix would use:
+render `servicePriceCents` when present and fall back to the join only when it
+is null. Notification templates are unaffected — they use the deposit snapshot,
+never the service price — and there are no receipts.
+
+**(b) Cancellation records almost nothing, and the §25 refund policy is
+therefore not implementable.**
+
+The only field is `cancelledAt DateTime?`. There is **no `cancelledBy` and no
+`cancellationReason`**. Two code paths set CANCELLED:
+
+- `payments.scheduler.ts:171` — the expiry sweep, an unpaid hold.
+- `appointments.service.ts:719` — `cancel()`, by either party.
+
+`cancel()` *knows* who acted: it computes
+`appointment.customerId === userId ? 'Cancelled by the customer.' : 'Cancelled by the business.'`
+— but only to interpolate into a notification string. **It is never persisted.**
+
+Consequently the stored data cannot distinguish:
+
+1. a business cancellation from a customer cancellation;
+2. either from an automatic expiry;
+3. an expired unpaid hold from a paid appointment cancelled later.
+
+§25's rules — business cancels means a full refund including the platform fee;
+customer cancels means nothing reverses — **cannot be applied to any existing
+row**, because which rule applies is exactly what was not recorded. This is also
+why §29.1's collected-deposits figure has to exclude CANCELLED and describe
+itself as a floor.
+
+The fix is small (`cancelledBy` and `cancellationReason`, written where the
+notification wording is already decided) but it is a schema and policy change,
+and this commit was scoped to pricing. **Logged as the blocker for refunds.**
