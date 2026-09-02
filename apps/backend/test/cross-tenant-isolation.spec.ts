@@ -228,12 +228,12 @@ describe('Cross-tenant isolation', () => {
     });
 
     it("another customer gets 404 reading someone else's thread", async () => {
-      await expect404(chat.getThread(betaCustomer.userId, alphaThread.id, 'CUSTOMER'));
+      await expect404(chat.getThread(betaCustomer.userId, alphaThread.id, UserRole.CUSTOMER));
     });
 
     it("another customer gets 404 listing someone else's messages", async () => {
       await expect404(
-        chat.listMessages(betaCustomer.userId, alphaThread.id, 'CUSTOMER', 50, 0),
+        chat.listMessages(betaCustomer.userId, alphaThread.id, UserRole.CUSTOMER, 50, 0),
       );
     });
 
@@ -241,7 +241,7 @@ describe('Cross-tenant isolation', () => {
       await expect404(
         chat.sendMessage({
           userId: betaCustomer.userId,
-          role: 'CUSTOMER',
+          role: UserRole.CUSTOMER,
           threadId: alphaThread.id,
           body: 'I should not be here',
         }),
@@ -249,18 +249,18 @@ describe('Cross-tenant isolation', () => {
     });
 
     it("another customer gets 404 marking someone else's thread read", async () => {
-      await expect404(chat.markRead(betaCustomer.userId, alphaThread.id, 'CUSTOMER'));
+      await expect404(chat.markRead(betaCustomer.userId, alphaThread.id, UserRole.CUSTOMER));
     });
 
     it("business B gets 404 reading business A's thread", async () => {
-      await expect404(chat.getThread(beta.userId, alphaThread.id, 'BUSINESS'));
+      await expect404(chat.getThread(beta.userId, alphaThread.id, UserRole.BUSINESS));
     });
 
     it("business B gets 404 posting into business A's thread", async () => {
       await expect404(
         chat.sendMessage({
           userId: beta.userId,
-          role: 'BUSINESS',
+          role: UserRole.BUSINESS,
           threadId: alphaThread.id,
           body: 'Not my conversation',
         }),
@@ -268,17 +268,32 @@ describe('Cross-tenant isolation', () => {
     });
 
     it("business B's thread list is empty", async () => {
-      const list = await chat.listThreads(beta.userId, 'BUSINESS', 25, 0);
+      const list = await chat.listThreads(beta.userId, UserRole.BUSINESS, 25, 0);
 
       expect(list.total).toBe(0);
     });
 
+    it('listThreads refuses an unexpected role instead of widening the scope', async () => {
+      // The branch used to be "customer, else business", so any value that was
+      // not 'CUSTOMER' fell through to a whole business's threads. Same defect
+      // and same fix as AppointmentsService.findAll (b03674a).
+      await expect(
+        chat.listThreads(alphaCustomer.userId, UserRole.ADMIN, 25, 0),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('requireParticipant refuses an unexpected role too', async () => {
+      await expect(
+        chat.getThread(alphaCustomer.userId, alphaThread.id, UserRole.ADMIN),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
     it('both legitimate participants can reach the thread', async () => {
       await expect(
-        chat.getThread(alphaCustomer.userId, alphaThread.id, 'CUSTOMER'),
+        chat.getThread(alphaCustomer.userId, alphaThread.id, UserRole.CUSTOMER),
       ).resolves.toBeDefined();
       await expect(
-        chat.getThread(alpha.userId, alphaThread.id, 'BUSINESS'),
+        chat.getThread(alpha.userId, alphaThread.id, UserRole.BUSINESS),
       ).resolves.toBeDefined();
     });
 

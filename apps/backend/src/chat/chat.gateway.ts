@@ -10,6 +10,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { UserRole } from '@prisma/client';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { ChatService } from './chat.service';
 import { ChatRealtimePublisher } from './chat-realtime.interface';
@@ -146,7 +147,7 @@ export class ChatGateway
     }
 
     try {
-      await this.chat.assertParticipant(user.userId, threadId, user.role);
+      await this.chat.assertParticipant(user.userId, threadId, user.role as UserRole);
     } catch {
       // Same wording as the REST 404. Confirming a thread exists but belongs
       // to someone else is the leak §21.8 avoids, and it should not become
@@ -193,7 +194,11 @@ export class ChatGateway
     }
 
     try {
-      const result = await this.chat.markRead(user.userId, payload.threadId, user.role);
+      const result = await this.chat.markRead(
+        user.userId,
+        payload.threadId,
+        user.role as UserRole,
+      );
       client.emit('thread:read:ok', { threadId: payload.threadId, ...result });
       return { ok: true, ...result };
     } catch {

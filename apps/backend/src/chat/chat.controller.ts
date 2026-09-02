@@ -69,7 +69,7 @@ export class ChatController {
   ) {
     return this.chat.listThreads(
       user.userId,
-      user.role,
+      user.role as UserRole,
       query.limit ?? 25,
       query.offset ?? 0,
     );
@@ -80,7 +80,7 @@ export class ChatController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.chat.getThread(user.userId, id, user.role);
+    return this.chat.getThread(user.userId, id, user.role as UserRole);
   }
 
   @Get(':id/messages')
@@ -92,7 +92,7 @@ export class ChatController {
     return this.chat.listMessages(
       user.userId,
       id,
-      user.role,
+      user.role as UserRole,
       query.limit ?? 50,
       query.offset ?? 0,
     );
@@ -117,7 +117,7 @@ export class ChatController {
   ) {
     return this.chat.sendMessage({
       userId: user.userId,
-      role: user.role,
+      role: user.role as UserRole,
       threadId: id,
       body: dto.body,
       file: photo,
@@ -130,6 +130,6 @@ export class ChatController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.chat.markRead(user.userId, id, user.role);
+    return this.chat.markRead(user.userId, id, user.role as UserRole);
   }
 }

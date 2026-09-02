@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -9,6 +10,7 @@ import {
   BusinessStatus,
   NotificationType,
   Prisma,
+  UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -158,7 +160,7 @@ export class ChatService {
    * Threads the caller can see: a customer's own, or every thread belonging to
    * the business they are an active member of.
    */
-  async listThreads(userId: string, role: string, limit: number, offset: number) {
+  async listThreads(userId: string, role: UserRole, limit: number, offset: number) {
     const where = await this.participantScope(userId, role);
 
     const [total, threads] = await Promise.all([
@@ -181,7 +183,7 @@ export class ChatService {
     return { total, limit, offset, threads: decorated };
   }
 
-  async getThread(userId: string, threadId: string, role: string) {
+  async getThread(userId: string, threadId: string, role: UserRole) {
     await this.requireParticipant(userId, threadId, role);
     return this.loadThread(threadId, userId);
   }
@@ -191,7 +193,7 @@ export class ChatService {
   async listMessages(
     userId: string,
     threadId: string,
-    role: string,
+    role: UserRole,
     limit: number,
     offset: number,
   ) {
@@ -220,7 +222,7 @@ export class ChatService {
 
   async sendMessage(params: {
     userId: string;
-    role: string;
+    role: UserRole;
     threadId: string;
     body?: string;
     file?: Express.Multer.File;
@@ -383,7 +385,7 @@ export class ChatService {
 
   // ---------- Read state ----------
 
-  async markRead(userId: string, threadId: string, role: string) {
+  async markRead(userId: string, threadId: string, role: UserRole) {
     await this.requireParticipant(userId, threadId, role);
 
     const now = new Date();
@@ -407,19 +409,27 @@ export class ChatService {
    */
   private async participantScope(
     userId: string,
-    role: string,
+    role: UserRole,
   ): Promise<Prisma.ThreadWhereInput> {
-    if (role === 'CUSTOMER') return { customerId: userId };
+    // Explicitly enumerated rather than "customer, else business". A string
+    // compared against a literal falls through on any unexpected value, and
+    // here the fall-through led to the WIDER scope — a whole business's
+    // threads. Same fix as AppointmentsService.findAll.
+    if (role === UserRole.CUSTOMER) return { customerId: userId };
 
-    const membership = await this.prisma.businessMembership.findFirst({
-      where: { userId, status: BusinessMemberStatus.ACTIVE },
-      select: { businessProfileId: true },
-    });
+    if (role === UserRole.BUSINESS) {
+      const membership = await this.prisma.businessMembership.findFirst({
+        where: { userId, status: BusinessMemberStatus.ACTIVE },
+        select: { businessProfileId: true },
+      });
 
-    // No active membership means no threads — not an error, just an empty
-    // scope that matches nothing.
-    if (!membership) return { id: '__none__' };
-    return { businessProfileId: membership.businessProfileId };
+      // No active membership means no threads — not an error, just an empty
+      // scope that matches nothing.
+      if (!membership) return { id: '__none__' };
+      return { businessProfileId: membership.businessProfileId };
+    }
+
+    throw new ForbiddenException('This account type cannot access chat threads.');
   }
 
   /**
@@ -429,14 +439,14 @@ export class ChatService {
    * REST endpoints use, rather than growing its own copy. Delegates straight to
    * requireParticipant and throws the same NotFoundException.
    */
-  async assertParticipant(userId: string, threadId: string, role: string) {
+  async assertParticipant(userId: string, threadId: string, role: UserRole) {
     return this.requireParticipant(userId, threadId, role);
   }
 
   private async requireParticipant(
     userId: string,
     threadId: string,
-    role: string,
+    role: UserRole,
   ): Promise<ThreadRecord> {
     const scope = await this.participantScope(userId, role);
     const thread = await this.prisma.thread.findFirst({
