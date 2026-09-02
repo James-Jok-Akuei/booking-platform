@@ -411,6 +411,69 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('analytics over HTTP (§29)', () => {
+    it('unauthenticated -> 401', async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/analytics`);
+
+      expect(res.status).toBe(401);
+    });
+
+    it('a CUSTOMER token -> 403 (business and admin only)', async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/analytics`, {
+        token: tokenCustomerA,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it("business B cannot read business A's analytics -> 403", async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/analytics`, {
+        token: tokenBeta,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('a member of the business can read its own -> 200', async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/analytics`, {
+        token: tokenAlpha,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.businessId).toBe(alpha.businessId);
+    });
+
+    it('an admin can read any business -> 200', async () => {
+      const res = await request(url, `/businesses/${beta.businessId}/analytics`, {
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('a range longer than the cap -> 400', async () => {
+      const from = new Date(Date.now() - 400 * 86_400_000).toISOString();
+      const to = new Date().toISOString();
+      const res = await request(
+        url,
+        `/businesses/${alpha.businessId}/analytics?from=${from}&to=${to}`,
+        { token: tokenAlpha },
+      );
+
+      expect(res.status).toBe(400);
+    });
+
+    it('never returns a single combined "revenue" figure', async () => {
+      const res = await request(url, `/businesses/${alpha.businessId}/analytics`, {
+        token: tokenAlpha,
+      });
+
+      // A business reading one number as its total takings, finding it wrong,
+      // and distrusting the dashboard is worse than no dashboard.
+      expect(JSON.stringify(res.body)).not.toContain('"revenue"');
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {

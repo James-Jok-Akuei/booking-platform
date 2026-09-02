@@ -141,8 +141,8 @@ before it is built.
    nobody is notified about is half a feature. See §20.1.
 7. **Chat** — DONE (§21, realtime in §22)
 8. **Support tickets** — DONE (§24)
-9. **Reviews** — DONE (§28). Reporting/analytics still to come.
-10. Admin portal — NEXT
+9. **Reviews & reporting** — DONE (§28 reviews, §29 analytics)
+10. **Admin portal** — NEXT
 
 ---
 
@@ -3168,3 +3168,121 @@ refused, aggregates asserted as exact numbers through create/edit/hide/unhide,
 per-location separation, and identity hidden from anonymous callers but shown to
 the owning business. Over HTTP: 401 unauthenticated, 403 for a business token
 creating a review and for any non-admin hiding one.
+
+---
+
+## 29. Business analytics (2026-09-02)
+
+Reporting for businesses, and the last piece of the reviews-and-reporting pair.
+
+### 29.1 What money data actually exists — checked before building
+
+The appointment carries three snapshotted amounts, written once at booking and
+historical thereafter (§16.3): `depositAmountCents`, `platformFeeAmountCents`,
+`businessAmountCents`, with `currency`, plus the gateway record
+(`paymentProviderReferenceId`, `providerCurrency`,
+`providerCurrencyAmountCents`, `exchangeRateUsed`).
+
+**What does not exist, and therefore is not reported:**
+
+- **The service price at the time of booking.** It lives on
+  `Service.priceCents`, which a business can edit at any time (§10). Joining to
+  it gives *today's* price for a booking made months ago.
+- **Any way to reconstruct it.** `deposit = round(price × depositPercentage)`
+  and `platformFee = round(price × platformFeePercentage)`, but neither
+  percentage is snapshotted and both are editable, so the equations cannot be
+  inverted.
+- **Therefore the balance owed directly to the business is NOT COMPUTABLE**, and
+  it is not returned. The endpoint says so explicitly —
+  `balanceOwedToBusiness: { available: false, reason }` — rather than omitting
+  the field, so a caller does not assume it was forgotten. Approximating it from
+  today's price would produce a figure that silently changes when a business
+  edits a price, which is exactly the "reads one number, finds it wrong, stops
+  trusting the dashboard" failure worth avoiding.
+- **Whether an offline balance was ever paid.** Nothing records it; §2 places
+  that settlement outside the platform entirely.
+- **Full online payment.** §2 offers it as a customer option; it is not
+  implemented, so there is nothing to sum. Only the deposit flow exists.
+
+**One imprecision, stated rather than hidden.** A deposit is known collected for
+BOOKED, IN_PROGRESS, COMPLETED and NO_SHOW. CANCELLED is ambiguous — the §17.4
+expiry sweep cancels *unpaid* holds, while a customer or business cancelling
+from BOOKED had a deposit that is non-refundable (§2) — and nothing records
+which, since there is no `depositPaidAt` and no status history. Cancelled
+appointments are **excluded**, making the collected figure a floor, and the
+response carries a note saying so.
+
+### 29.2 Two money figures, never one
+
+`collectedThroughPlatform` (deposits, and the business's share after the fee)
+and `platformFeesPaidCents` are separate fields with distinct names. There is
+deliberately **no** `revenue` — asserted by a test that the string never appears
+in the response.
+
+The platform simply does not see most of a business's takings: the balance is
+settled in person. A single number labelled "revenue" would be wrong by whatever
+that balance is, and a business that discovers this stops believing the rest of
+the dashboard too.
+
+Platform fees are reported as **paid**, never owed. The fee is taken from the
+deposit at booking, so it is always historical — reintroducing any notion of an
+accrued or outstanding fee would be the invoicing model this project does not
+have (§25).
+
+### 29.3 Conventions chosen
+
+- **Range is half-open, `[from, to)`** — an appointment exactly on `from` counts,
+  one exactly on `to` does not. This matches `GET /appointments`, which already
+  uses `gte` on `from` and `lt` on `to`. Both directions are tested.
+- **Membership of the period is by `startTime`** — when the appointment happened,
+  which is what a business means by "last month's numbers".
+- **Empty period returns `null` for every rate**, never `0` and never `NaN`.
+  "No appointments" and "0% completed" are different claims, the same reasoning
+  that makes `Location.ratingAvg` null rather than zero (§28.5). Counts and
+  money return `0`, which is genuinely zero.
+- **Rate denominator is every appointment in the range**, whatever its status.
+- **Default range is 30 days; the maximum is 365**, rejected with the standard
+  validation error beyond that.
+
+### 29.4 Aggregated in the database, including the roll-up
+
+Every metric is a `groupBy`, an `aggregate`, or one raw grouped query. Nothing
+is loaded into memory and reduced.
+
+The business-wide roll-up is **the same query with the location filter
+omitted**, not a loop over locations. That is not only faster — it is the only
+way the rates come out right. A rate across two locations is not the mean of
+their rates: 1 of 2 and 3 of 4 is 4 of 6, or 66.67%, not (50 + 75) / 2 = 62.5%.
+Tested explicitly against both numbers.
+
+Busiest day and hour use `$queryRaw` because Prisma's `groupBy` cannot express
+`EXTRACT` over a timezone conversion — but the grouping still happens in the
+database. The double `AT TIME ZONE` idiom converts the stored UTC timestamp into
+`PLATFORM_TIMEZONE`; without it "busiest hour" would be reported in UTC and be
+wrong by the offset. Day numbering is 0 = Sunday, matching
+`LocationHours.dayOfWeek` (§10.4).
+
+### 29.5 Access
+
+`@Roles(BUSINESS, ADMIN)` gates the route; `assertMayRead` decides *which*
+business — an admin any, a business user only one they are an ACTIVE member of.
+`BusinessRolesGuard` is deliberately not used here: it requires a membership,
+which an admin does not have.
+
+A `locationId` belonging to another business is refused with 404 rather than
+silently ignored, so it cannot be used to widen a query.
+
+Cross-tenant refusal is `Forbidden`, not `NotFound`, unlike most of this
+project: the caller supplies a business id they already know, and business
+profiles are discoverable through public browsing, so there is no existence to
+protect.
+
+### 29.6 Verified
+
+21 service tests and 7 HTTP tests; **284 total across 9 suites**, all passing,
+and the route maps on a real boot.
+
+Figures are asserted as exact numbers throughout — 57.14% completion over 7
+appointments, 4500 cents collected from 5 of 7, fees matching an independently
+computed sum — because "a value is present" would pass against arithmetic that
+is quietly wrong.
