@@ -10,6 +10,7 @@ import {
   AppointmentStatus,
   BusinessMemberStatus,
   Prisma,
+  UserRole,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -744,12 +745,16 @@ export class AppointmentsService {
    * Lists appointments the caller is entitled to see: a customer's own, or
    * every appointment across the business the caller is an active member of.
    */
-  async findAll(userId: string, role: string, query: ListAppointmentsDto) {
+  async findAll(userId: string, role: UserRole, query: ListAppointmentsDto) {
     const where: Prisma.AppointmentWhereInput = {};
 
-    if (role === 'CUSTOMER') {
+    // Explicitly enumerated rather than "customer, else business". A string
+    // compared against a literal falls through on any unexpected value, and
+    // here the fall-through led to the WIDER scope — a whole business's
+    // appointments. Anything that is not one of these two is refused.
+    if (role === UserRole.CUSTOMER) {
       where.customerId = userId;
-    } else {
+    } else if (role === UserRole.BUSINESS) {
       const membership = await this.prisma.businessMembership.findFirst({
         where: { userId, status: BusinessMemberStatus.ACTIVE },
         select: { businessProfileId: true },
@@ -760,6 +765,10 @@ export class AppointmentsService {
         );
       }
       where.location = { businessId: membership.businessProfileId };
+    } else {
+      throw new ForbiddenException(
+        'This account type cannot list appointments.',
+      );
     }
 
     if (query.status) where.status = query.status;

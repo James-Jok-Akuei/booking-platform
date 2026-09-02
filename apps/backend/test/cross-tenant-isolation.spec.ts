@@ -1,5 +1,5 @@
-import { AppointmentStatus, BusinessStatus } from '@prisma/client';
-import { NotFoundException } from '@nestjs/common';
+import { AppointmentStatus, BusinessStatus, UserRole } from '@prisma/client';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { LocationsService } from '../src/business/locations.service';
 import { ServicesService } from '../src/business/services.service';
@@ -182,16 +182,24 @@ describe('Cross-tenant isolation', () => {
     });
 
     it("business B's appointment list excludes business A's appointments", async () => {
-      const list = await appointments.findAll(beta.userId, 'BUSINESS', {});
+      const list = await appointments.findAll(beta.userId, UserRole.BUSINESS, {});
 
       expect(list.appointments.every((a) => a.id !== alphaAppointment.id)).toBe(true);
       expect(list.total).toBe(0);
     });
 
     it("the customer's own list contains only their own appointments", async () => {
-      const list = await appointments.findAll(betaCustomer.userId, 'CUSTOMER', {});
+      const list = await appointments.findAll(betaCustomer.userId, UserRole.CUSTOMER, {});
 
       expect(list.total).toBe(0);
+    });
+
+    it('findAll refuses an unexpected role instead of widening the scope', async () => {
+      // The branch used to be "customer, else business", so any value that was
+      // not 'CUSTOMER' fell through to a whole business's appointments.
+      await expect(
+        appointments.findAll(alphaCustomer.userId, UserRole.ADMIN, {}),
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('the legitimate participants can still reach it', async () => {

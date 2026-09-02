@@ -573,8 +573,23 @@ describe('Support tickets (§24)', () => {
       expect(list.tickets.some((t) => t.id === alphaTicketId)).toBe(true);
     });
 
+    it('listForAdmin refuses a non-admin actor at the SERVICE layer', async () => {
+      // The controller's @Roles(ADMIN) is not the only thing standing between a
+      // customer and every ticket on the platform — verified in §27.3, where
+      // removing that decorator leaked another user's ticket.
+      await expect(
+        tickets.listForAdmin(asUser(customerA.userId, 'CUSTOMER'), {}),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('listForAdmin refuses a business member too', async () => {
+      await expect(
+        tickets.listForAdmin(asUser(alpha.userId, 'BUSINESS'), {}),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
     it('an admin sees tickets from every tenant', async () => {
-      const list = await tickets.listForAdmin({});
+      const list = await tickets.listForAdmin(AS_ADMIN(), {});
       const ids = list.tickets.map((t) => t.id);
 
       expect(ids).toContain(alphaTicketId);

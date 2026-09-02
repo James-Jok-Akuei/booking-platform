@@ -142,7 +142,9 @@ export class AppointmentsSharedController {
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListAppointmentsDto,
   ) {
-    return this.appointments.findAll(user.userId, user.role, query);
+    // AuthenticatedUser.role is the same string union as UserRole; the cast
+    // keeps the service's signature typed without touching the auth decorator.
+    return this.appointments.findAll(user.userId, user.role as UserRole, query);
   }
 
   @Get(':id')

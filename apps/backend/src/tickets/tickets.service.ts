@@ -248,7 +248,23 @@ export class TicketsService {
     return { total, limit, offset, tickets: tickets.map((t) => this.withLazyClosure(t)) };
   }
 
-  async listForAdmin(query: ListAdminTicketsDto) {
+  /**
+   * The admin queue: every ticket on the platform, unscoped by design.
+   *
+   * Because it applies no tenant scoping, `@Roles(ADMIN)` on the controller was
+   * its ONLY protection — verified by removing that decorator, at which point
+   * an ordinary customer's token returned another user's private ticket (§27.3).
+   * Every other read in this project is guarded twice, and a method whose whole
+   * purpose is to bypass scoping is the last one that should be the exception.
+   *
+   * The role is therefore re-asserted here, so a future controller that forgets
+   * the decorator fails closed rather than leaking the table.
+   */
+  async listForAdmin(actor: { userId: string; role: string }, query: ListAdminTicketsDto) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only administrators can list all tickets.');
+    }
+
     const where: Prisma.TicketWhereInput = {
       ...(query.status ? { status: query.status } : {}),
       ...(query.category ? { category: query.category } : {}),

@@ -44,8 +44,11 @@ export class AdminTicketsController {
   constructor(private readonly tickets: TicketsService) {}
 
   @Get()
-  list(@Query() query: ListAdminTicketsDto) {
-    return this.tickets.listForAdmin(query);
+  list(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListAdminTicketsDto,
+  ) {
+    return this.tickets.listForAdmin(user, query);
   }
 
   /** Includes internal notes — the one view that does. */
