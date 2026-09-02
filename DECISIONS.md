@@ -139,9 +139,10 @@ before it is built.
 6. **Notifications** — DONE (§20). ~~Was listed 7th~~ — moved ahead of Chat,
    because a business was never told it had a booking, and a chat message
    nobody is notified about is half a feature. See §20.1.
-7. **Chat** — DONE (§21)
-8. **Reviews & reporting** — NEXT
-9. Admin portal
+7. **Chat** — DONE (§21, realtime in §22)
+8. **Support tickets** — DONE (§24)
+9. **Reviews & reporting** — NEXT
+10. Admin portal
 
 ---
 
@@ -2585,3 +2586,216 @@ this file records.
 The obvious next additions, when the modules they cover next change:
 availability slot generation including the fits-before-closing rule (§12.2),
 the notification debounce (§21.5), and the HTTP guard chain (§23.3).
+
+---
+
+## 24. Support tickets (2026-09-02)
+
+How customers and businesses report problems to the platform: payment failures,
+disputes over whether an appointment happened, account problems, bugs.
+
+### 24.1 Parallel to Chat, not built on it
+
+Tickets deliberately do NOT reuse `Thread`/`Message` (§21). The participants
+differ — a reporter and the platform's admins, rather than a customer and a
+business — and a ticket carries status, assignment, resolution and a reopen
+window that a chat thread has no notion of. Forcing both onto one table would
+mean a `Thread` with half its columns null in every row.
+
+What is borrowed is the *shape*, not the models: a denormalised `lastMessageAt`
+for queue ordering, query-level visibility scoping, and the same notification
+service.
+
+### 24.2 References come from a sequence
+
+`reference` is `TKT-` plus a zero-padded `nextval('ticket_reference_seq')`,
+taken inside the creating transaction.
+
+A count-and-increment read is not collision-safe: two concurrent creates read
+the same count and mint the same reference, and the unique index then fails one
+of them for a reason the user cannot act on. `nextval()` is atomic and never
+returns a value twice. Tested with 20 concurrent creates — 20 distinct
+references.
+
+### 24.3 The status machine lives in one method
+
+`TICKET_TRANSITIONS` is a table of `{from, to, actors}`, and
+`transitionStatus()` is the only thing that writes `status`. Anything not in the
+table throws. Keeping it in one place is what stops the reopen window, the
+resolution-note rule and the actor checks being bypassed by a second code path.
+
+| From | To | Who |
+|---|---|---|
+| OPEN | IN_PROGRESS | admin; assigns them |
+| IN_PROGRESS | RESOLVED | admin; `resolutionNote` **required** |
+| RESOLVED | IN_PROGRESS | reporter, within 14 days; increments `reopenCount` |
+| RESOLVED | CLOSED | admin, or the sweep |
+| CLOSED | — | terminal |
+
+A resolution with no note is rejected, whitespace included: a resolution the
+reporter cannot read is not one they can act on. Reopening clears `resolvedAt`,
+so the next resolution has to state its own reasoning rather than leaving the
+superseded one in place.
+
+All 12 illegal pairs are asserted rejected, generated from the state list rather
+than hand-listed, so adding a status to the enum without adding its rules makes
+the test fail rather than silently pass.
+
+### 24.4 Auto-close: a daily cron, because the project already had a scheduler
+
+The brief allowed either a scheduled job or lazy closure. **`@nestjs/schedule`
+is already a dependency** with five existing sweeps (§16.8, §17.4, §20.5), so a
+daily 03:00 cron closing RESOLVED tickets past 14 days adds no dependency and
+matches the established pattern. The lazy-closure fallback was not needed.
+
+Reads *also* treat a past-window RESOLVED ticket as CLOSED. That is not
+redundancy: it closes the gap between the window elapsing and the next sweep, so
+a reopen cannot slip through at hour 337. The sweep does the persisting, keeping
+a read a read.
+
+### 24.5 Internal notes are excluded by the query
+
+`isInternal` messages are filtered with `where: { isInternal: false }` for every
+non-admin read — never stripped from a result afterwards, because a filter
+applied late is one someone eventually forgets on a new endpoint.
+
+Reporter-facing messages do not even carry the `isInternal` field, so its
+absence is structural rather than a value the client is trusted to ignore.
+Asserted three ways: the note is absent, no message carries the field, and the
+serialised response does not contain the text anywhere.
+
+A reporter who sets `isInternal` is rejected outright rather than silently
+downgraded — otherwise they would author something they could never see again.
+
+### 24.6 Visibility, in both layers
+
+Guards restrict who reaches a route at all (`@Roles(CUSTOMER, BUSINESS)` for the
+reporter controller, `@Roles(ADMIN)` for the admin one), and the service scopes
+every query on top:
+
+- **Customer** — `reporterId = self`.
+- **Business member** — `businessId = their business`. The whole queue, not only
+  tickets they personally raised, because a colleague picking up someone's
+  problem is the normal case.
+- **Admin** — everything, including internal notes.
+
+Non-participants get **404, not 403**, as everywhere else. `reporterType` is
+derived from the authenticated role, never read from the body, so a customer
+cannot file as a business and gain its queue.
+
+An `appointmentId` is verified in the **service**: the reporter must be the
+customer on it or a member of the owning business. A guard cannot see a body
+field without duplicating that query.
+
+### 24.7 The billing hook — what I found, and what I did not build
+
+**STOP AND REPORT, as the brief instructed.** The brief says to read the
+existing invoicing code and integrate with how it computes the billable set.
+**There is no invoicing code.** A search for `invoice`, `billable`, `billing` or
+`monthly` across all source and the schema returns nothing; there is no Invoice
+model and no invoice run.
+
+More importantly, the premise does not match this platform. The brief describes
+"a fee per completed appointment, invoiced monthly". This platform does the
+opposite, deliberately: **the platform fee is a percentage taken out of the
+customer's deposit at booking time** and snapshotted onto the appointment
+(§2, §16.3). §2's stated reason is precisely to avoid billing businesses —
+"revenue never depends on businesses honestly self-reporting that an appointment
+was completed". There is no monthly billable count for a credit to exclude an
+appointment from.
+
+So:
+
+- `BillingAdjustment` is built exactly as specified and **records intent**. An
+  admin resolving a ticket can attach `{appointmentId, type, amount, reason}`,
+  and the row is written with `appliedInvoiceId = null`, validated so an
+  adjustment cannot be attached to another business's appointment.
+- **Nothing consumes those rows**, because there is nothing to consume them.
+  `appliedInvoiceId` is a plain nullable String rather than a relation, since
+  there is no Invoice model to reference. The index
+  `(businessId, appliedInvoiceId)` is exactly the query a future invoice run
+  would make.
+- The two invoice-related tests could not be written as specified. In their
+  place the suite asserts what is actually true: adjustments are created,
+  correctly attributed, and remain unapplied.
+- **No invoicing was restructured or invented**, per the instruction.
+
+**This needs a decision before it means anything.** Either the fee model changes
+to monthly invoicing (a reversal of §2), or "fee credit" means refunding a fee
+already taken from a deposit — a different operation, closer to the refund
+accounting §17.7 already lists as missing.
+
+### 24.8 A regression this module exposed — introduced in §23, now fixed
+
+While verifying the app boots with the new module, **the whole application
+turned out to hang at startup** — before route mapping, no error logged. It
+reproduced with `TicketsModule` removed, so it predates this work.
+
+Cause: §23.4's fix for the ChatService/ChatGateway ESM cycle replaced
+`forwardRef` with `{ provide: CHAT_REALTIME, useExisting: ChatGateway }`. That
+removed the *import* cycle but created a **dependency-injection** cycle —
+Gateway → Service → CHAT_REALTIME → Gateway — and Nest's injector hangs on one
+rather than reporting it.
+
+**It shipped because §23's suite builds targeted provider modules and never
+boots AppModule** — the exact gap §23.3 records. The tests all passed against a
+binary that could not start.
+
+Fixed by inverting the direction: `ChatGateway` implements `OnModuleInit` and
+registers *itself* with `ChatService`, which holds a no-op publisher until then.
+No token, no `forwardRef`, no cycle in either sense. Verified: the app boots,
+12 ticket routes map, the gateway still subscribes, and the §22 websocket smoke
+test passes end-to-end (participant received both messages, outsider none).
+
+`scripts/ws-smoke-test.js` was also unrunnable — a mangled comment header from
+when it was moved into `scripts/` in §22, never executed after the move. Also
+fixed.
+
+**The lesson is §23.3's gap, now concrete:** a suite that never boots the real
+application cannot tell you the application boots. A smoke test that starts
+AppModule and asserts it listens would have caught both.
+
+### 24.9 Endpoints
+
+| Method | Path | Who |
+|---|---|---|
+| POST | `/tickets` | CUSTOMER or BUSINESS; multipart, optional attachment |
+| GET | `/tickets` | own scope; `status`, `category`, paginated, `lastMessageAt` desc |
+| GET | `/tickets/:id` | own scope; internal notes excluded |
+| POST | `/tickets/:id/messages` | reporter; blocked when CLOSED |
+| POST | `/tickets/:id/reopen` | reporter; RESOLVED only, inside the window |
+| GET | `/admin/tickets` | ADMIN; adds `assignedAdminId` filter |
+| GET | `/admin/tickets/:id` | ADMIN; includes internal notes |
+| PATCH | `/admin/tickets/:id/assign` | ADMIN |
+| PATCH | `/admin/tickets/:id/status` | ADMIN; optional billing adjustment |
+| POST | `/admin/tickets/:id/messages` | ADMIN; supports `isInternal` |
+
+Admin routes are API-only, like the platform-fee and exchange-rate settings
+(§16.9). Attachments reuse `StorageService` and the gallery's multer options
+object — 15MB, jpg/png/webp — so ticket limits cannot drift from gallery limits.
+
+### 24.10 Verified (2026-09-02)
+
+50 new tests, 168 total across the suite, no regressions. Covers: every illegal
+transition; reopen refused past 14 days; resolution without a note refused;
+CLOSED refusing reporter messages; internal notes absent from all three
+reporter-facing shapes; customer A blocked from reading, messaging or reopening
+customer B's ticket; business A blocked from business B's; a colleague who did
+not create a ticket seeing their business's; an unrelated `appointmentId`
+rejected at creation for both reporter types; 20 concurrent creates yielding 20
+unique references; auto-close closing stale and sparing fresh.
+
+Also verified over HTTP against the running app: guards (403 customer → admin
+routes, 401 anonymous), multipart creation returning `TKT-000002`, and the
+project's standard validation error shape.
+
+### 24.11 Deferred
+
+- **The billing hook does nothing until invoicing exists** (§24.7).
+- **No attachment on the reopen or status endpoints** — only on create and
+  messages.
+- **No SLA, priority or category-based routing.** Every ticket goes to every
+  admin until assigned.
+- **No attachment cleanup** when a ticket is deleted; tickets are never deleted.
+- **Notifications are not debounced** the way chat messages are (§21.5). Ticket
+  traffic is far lower, but a busy thread will email per message.

@@ -163,6 +163,16 @@ export async function createAppointment(
   });
 }
 
+/** A seeded ADMIN. Per §3 admins are never self-service, so tests create them directly. */
+export async function createAdmin(prisma: PrismaService) {
+  const email = uniqueEmail('admin');
+  const user = await prisma.user.create({ data: { email, role: UserRole.ADMIN } });
+  return { userId: user.id, email };
+}
+
+/** The caller shape TicketsService expects, mirroring the JWT payload. */
+export const asUser = (userId: string, role: string) => ({ userId, role });
+
 /** The next occurrence of a given local hour, on the grid, comfortably ahead. */
 export function futureSlot(daysAhead: number, utcHour: number): Date {
   const d = new Date();

@@ -59,6 +59,40 @@ enum InvitationStatus {
   REVOKED
 }
 
+/// Which side of the platform raised a ticket. Derived from the authenticated
+/// user's role at creation, never accepted from the request body.
+enum ReporterType {
+  CUSTOMER
+  BUSINESS
+}
+
+enum TicketCategory {
+  PAYMENT_ISSUE
+  APPOINTMENT_DISPUTE
+  ACCOUNT_ISSUE
+  TECHNICAL_ISSUE
+  OTHER
+}
+
+/// Lifecycle. Transitions are enforced in one place — see
+/// TicketsService.transitionStatus — and anything not in that table throws.
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketAuthorType {
+  REPORTER
+  ADMIN
+}
+
+enum BillingAdjustmentType {
+  FEE_CREDIT
+  FEE_CHARGE
+}
+
 /// What happened. One value per notifiable event, so a recipient's history is
 /// queryable by kind ("show me every booking I was told about") rather than by
 /// parsing rendered copy.
@@ -71,6 +105,9 @@ enum NotificationType {
   APPOINTMENT_REMINDER // sent ahead of the appointment
   BUSINESS_INVITATION // someone was invited to join a business
   NEW_MESSAGE // a chat message arrived; debounced, see DECISIONS.md
+  TICKET_CREATED // a support ticket was raised; admins are told
+  TICKET_MESSAGE // a reply on a ticket; never sent for internal notes
+  TICKET_STATUS_CHANGED // the ticket moved through its lifecycle
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in
@@ -142,6 +179,12 @@ model User {
   sentMessages     Message[]         @relation("SentMessages")
   threadReadStates ThreadReadState[] @relation("ThreadReadStates")
 
+  reportedTickets    Ticket[]            @relation("ReportedTickets")
+  assignedTickets    Ticket[]            @relation("AssignedTickets")
+  ticketMessages     TicketMessage[]     @relation("TicketMessages")
+  ticketAttachments  TicketAttachment[]  @relation("TicketAttachments")
+  createdAdjustments BillingAdjustment[] @relation("CreatedAdjustments")
+
   refreshTokens RefreshToken[]
   otpCodes      OtpCode[]
 
@@ -183,6 +226,8 @@ model BusinessProfile {
   members     BusinessMembership[]
   invitations BusinessInvitation[]
   threads     Thread[]
+  tickets     Ticket[]
+  adjustments BillingAdjustment[]
 
   @@index([categoryId])
   @@index([status])
@@ -626,6 +671,8 @@ model Appointment {
 
   notifications Notification[]
   thread        Thread?
+  tickets       Ticket[]
+  adjustments   BillingAdjustment[]
 
   // Availability counts overlapping appointments at one location for one day.
   @@index([locationId, startTime])
@@ -782,6 +829,153 @@ model ThreadReadState {
   @@unique([threadId, userId])
   @@index([userId])
   @@map("thread_read_states")
+}
+
+// ---------- Support tickets ----------
+//
+// Deliberately NOT built on Chat's Thread/Message (§21). The participants are
+// different — a reporter and the platform's admins, rather than a customer and
+// a business — and tickets carry status, assignment and resolution that a chat
+// thread has no notion of. These tables borrow Chat's proven shapes without
+// sharing its models.
+
+/// A problem reported to the platform admins.
+model Ticket {
+  id String @id @default(uuid())
+
+  /// Human-quotable in an email or a phone call, e.g. "TKT-000123". Generated
+  /// from a Postgres sequence inside the creating transaction, so concurrent
+  /// creates cannot collide the way a count-and-increment read would.
+  reference String @unique
+
+  reporterId   String
+  reporter     User         @relation("ReportedTickets", fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterType ReporterType
+
+  /// Set when reporterType = BUSINESS. It is what lets every member of that
+  /// business see the ticket, not only the person who raised it.
+  businessId      String?
+  businessProfile BusinessProfile? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// Optional — a ticket may be general ("I cannot log in"). When present, the
+  /// reporter is verified to be a party to it at creation.
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  category TicketCategory
+  subject  String
+  status   TicketStatus   @default(OPEN)
+
+  assignedAdminId String?
+  assignedAdmin   User?   @relation("AssignedTickets", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+
+  /// Required to move IN_PROGRESS -> RESOLVED. A resolution with no
+  /// explanation is not a resolution the reporter can act on.
+  resolutionNote String?
+
+  resolvedAt  DateTime?
+  closedAt    DateTime?
+  reopenedAt  DateTime?
+  reopenCount Int       @default(0)
+
+  /// Denormalised so the admin queue sorts by recency without aggregating
+  /// messages on every request — the same trick Thread.lastMessageAt uses.
+  lastMessageAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages    TicketMessage[]
+  attachments TicketAttachment[]
+  adjustments BillingAdjustment[]
+
+  /// The admin queue: open work, most recently active first.
+  @@index([status, lastMessageAt])
+  @@index([reporterId])
+  @@index([businessId])
+  @@map("tickets")
+}
+
+model TicketMessage {
+  id       String @id @default(uuid())
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId   String
+  author     User             @relation("TicketMessages", fields: [authorId], references: [id], onDelete: Cascade)
+  authorType TicketAuthorType
+
+  body String
+
+  /// An admin-only note. Filtered out in the QUERY for every reporter-facing
+  /// read, never removed after the fact — a filter applied late is a filter
+  /// someone eventually forgets to apply.
+  isInternal Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  attachments TicketAttachment[]
+
+  @@index([ticketId, createdAt])
+  @@map("ticket_messages")
+}
+
+model TicketAttachment {
+  id       String @id @default(uuid())
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  /// Null when attached to the ticket itself rather than to a later message.
+  ticketMessageId String?
+  ticketMessage   TicketMessage? @relation(fields: [ticketMessageId], references: [id], onDelete: Cascade)
+
+  url       String
+  mimeType  String
+  sizeBytes Int
+
+  uploadedById String
+  uploadedBy   User   @relation("TicketAttachments", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+  @@map("ticket_attachments")
+}
+
+/// A fee credit or charge an admin recorded while resolving a ticket.
+///
+/// NOTE: this table records intent only. The platform has no invoicing —
+/// the platform fee is taken from the customer's deposit at booking time
+/// (DECISIONS.md §2, §16.3), not invoiced monthly — so nothing consumes these
+/// rows yet. `appliedInvoiceId` is a plain nullable String rather than a
+/// relation because there is no Invoice model to point at. See §24.
+model BillingAdjustment {
+  id String @id @default(uuid())
+
+  businessId      String
+  businessProfile BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  ticketId String?
+  ticket   Ticket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  type   BillingAdjustmentType
+  amount Decimal               @db.Decimal(12, 2)
+  reason String
+
+  /// Null until an invoice run picks it up. Nothing sets this today.
+  appliedInvoiceId String?
+
+  createdById String
+  createdBy   User   @relation("CreatedAdjustments", fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  /// The query a future invoice run makes: this business's unapplied rows.
+  @@index([businessId, appliedInvoiceId])
+  @@map("billing_adjustments")
 }
 
 model OtpCode {

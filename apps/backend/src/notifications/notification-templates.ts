@@ -109,6 +109,37 @@ export function renderNotification(
           'conversation will not email you again straight away.',
       };
 
+    // Ticket notifications reuse the shared context: serviceName carries the
+    // reference and locationName the subject, so no new context shape is needed
+    // for what is essentially a title and a line of detail.
+    case NotificationType.TICKET_CREATED:
+      return {
+        subject: `New support ticket ${ctx.serviceName}: ${ctx.locationName}`,
+        body:
+          `A support ticket has been raised.\n\n` +
+          `Reference: ${ctx.serviceName}\nSubject: ${ctx.locationName}\n\n` +
+          'Open the admin ticket queue to review it.',
+      };
+
+    case NotificationType.TICKET_MESSAGE:
+      return {
+        subject: `New reply on ${ctx.serviceName}`,
+        body:
+          `There is a new reply on support ticket ${ctx.serviceName}.\n\n` +
+          `Subject: ${ctx.locationName}\n\n` +
+          'Open the ticket to read it and respond.',
+      };
+
+    case NotificationType.TICKET_STATUS_CHANGED:
+      return {
+        subject: `Update on ${ctx.serviceName}: ${ctx.locationName}`,
+        body:
+          `The status of your support ticket has changed.\n\n` +
+          `Reference: ${ctx.serviceName}\nSubject: ${ctx.locationName}\n` +
+          (ctx.reason ? `${ctx.reason}\n` : '') +
+          '\nOpen the ticket to see the full history.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,

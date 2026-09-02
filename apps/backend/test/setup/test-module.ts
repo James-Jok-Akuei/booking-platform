@@ -9,7 +9,6 @@ import { MailService } from '../../src/mail/mail.service';
 import { NotificationsService } from '../../src/notifications/notifications.service';
 import { ChatService } from '../../src/chat/chat.service';
 import { PAYMENT_PROVIDER } from '../../src/payments/payment-provider.interface';
-import { CHAT_REALTIME, NOOP_CHAT_REALTIME } from '../../src/chat/chat-realtime.interface';
 
 /**
  * Builds a testing module from an explicit provider list, rather than importing
@@ -65,7 +64,6 @@ export const commonStubs = {
   }),
   payments: (): Provider => ({ provide: PAYMENT_PROVIDER, useValue: paymentProviderStub() }),
   chat: (): Provider => ({ provide: ChatService, useValue: chatStub() }),
-  realtime: (): Provider => ({ provide: CHAT_REALTIME, useValue: NOOP_CHAT_REALTIME }),
 };
 
 /**

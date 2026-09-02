@@ -52,7 +52,6 @@ describe('Cross-tenant isolation', () => {
       commonStubs.mail(),
       commonStubs.notifications(),
       commonStubs.payments(),
-      commonStubs.realtime(),
     ]);
     prisma = moduleRef.get(PrismaService);
     locations = moduleRef.get(LocationsService);

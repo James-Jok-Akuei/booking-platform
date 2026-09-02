@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -14,7 +13,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { CHAT_REALTIME, ChatRealtimePublisher } from './chat-realtime.interface';
+import { ChatRealtimePublisher, NOOP_CHAT_REALTIME } from './chat-realtime.interface';
 
 /** New inquiry threads one customer may open in a rolling 24 hours. */
 export const MAX_INQUIRY_THREADS_PER_DAY = 10;
@@ -30,11 +29,24 @@ export class ChatService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly notifications: NotificationsService,
-    // Injected by token, not by class, so this service never imports the
-    // gateway — see chat-realtime.interface.ts for why that matters.
-    @Inject(CHAT_REALTIME)
-    private readonly realtime: ChatRealtimePublisher,
   ) {}
+
+  /**
+   * Where realtime pushes go. Defaults to a no-op so this service never has to
+   * null-check, and so it works unchanged in tests and in any context with no
+   * websocket transport.
+   *
+   * REGISTERED BY THE GATEWAY, not injected. ChatGateway needs ChatService for
+   * its participation checks, so injecting the gateway back into this service —
+   * by class, by token, or via `useExisting` — is a dependency cycle that hangs
+   * Nest's injector at boot with no error. Letting the gateway hand itself over
+   * on init keeps the dependency strictly one-directional.
+   */
+  private realtime: ChatRealtimePublisher = NOOP_CHAT_REALTIME;
+
+  registerRealtimePublisher(publisher: ChatRealtimePublisher): void {
+    this.realtime = publisher;
+  }
 
   // ---------- Threads ----------
 

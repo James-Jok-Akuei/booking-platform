@@ -10,9 +10,9 @@
  *   node scripts/ws-smoke-test.js <customerJwt> <outsiderJwt> <businessJwt> <threadId>
  *
  * Exits 0 only if the joined participant received both messages and the
- * non-participant received none.
+ * non-participant received none. The script drives the REST POST itself after
+ * confirming the join, so there is no race with the caller.
  */
-   REST POST after confirming the join, so there is no race with the shell. */
 const { io } = require('socket.io-client');
 const URL = 'http://localhost:3000/chat';
 const [, , CUST_TOKEN, OUT_TOKEN, BIZ_TOKEN, THREAD] = process.argv;

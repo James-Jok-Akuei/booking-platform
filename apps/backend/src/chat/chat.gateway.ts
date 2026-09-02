@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -49,7 +49,9 @@ interface SocketUser {
   // production — see main.ts.
   cors: { origin: '*' },
 })
-export class ChatGateway implements OnGatewayConnection, ChatRealtimePublisher {
+export class ChatGateway
+  implements OnGatewayConnection, OnModuleInit, ChatRealtimePublisher
+{
   @WebSocketServer()
   private server!: Server;
 
@@ -62,6 +64,17 @@ export class ChatGateway implements OnGatewayConnection, ChatRealtimePublisher {
     // the CHAT_REALTIME token. No cycle, so no forwardRef.
     private readonly chat: ChatService,
   ) {}
+
+  /**
+   * Hands this gateway to ChatService as its realtime publisher.
+   *
+   * Done here rather than by injecting the gateway into the service, because
+   * the service is already a dependency of this class — injecting it back would
+   * be a cycle, and Nest hangs at boot on one rather than reporting it.
+   */
+  onModuleInit() {
+    this.chat.registerRealtimePublisher(this);
+  }
 
   /**
    * Authenticates the connection, or drops it.
