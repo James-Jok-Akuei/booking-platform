@@ -5,6 +5,7 @@ import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { BusinessAccessService } from './business-access.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { recalculateFromPrice } from './from-price';
 
 /**
  * Services belong to the *business*, not to a location.
@@ -53,7 +54,14 @@ export class ServicesService {
     const businessId = await this.access.requireBusinessId(userId);
     await this.assertDepositCoversPlatformFee(dto.depositPercentage);
 
-    return this.prisma.service.create({ data: { businessId, ...dto } });
+    // The service and every affected location's headline price commit together
+    // (§44). A catalogue that has changed while the listing has not is a
+    // listing advertising a price nobody can book at.
+    return this.prisma.$transaction(async (tx) => {
+      const service = await tx.service.create({ data: { businessId, ...dto } });
+      await recalculateFromPrice(tx, businessId);
+      return service;
+    });
   }
 
   /** Returns inactive services too — this is the owner's own catalogue view. */
@@ -71,7 +79,15 @@ export class ServicesService {
     await this.requireOwned(businessId, serviceId);
     await this.assertDepositCoversPlatformFee(dto.depositPercentage);
 
-    return this.prisma.service.update({ where: { id: serviceId }, data: dto });
+    // Recomputed unconditionally rather than only when `priceCents` is in the
+    // patch: an update can also flip `isActive` back on, which changes the
+    // cheapest price without touching a price field. Checking which fields
+    // moved would be a second place to get the rule right.
+    return this.prisma.$transaction(async (tx) => {
+      const service = await tx.service.update({ where: { id: serviceId }, data: dto });
+      await recalculateFromPrice(tx, businessId);
+      return service;
+    });
   }
 
   /**
@@ -86,9 +102,14 @@ export class ServicesService {
     const businessId = await this.access.requireBusinessId(userId);
     await this.requireOwned(businessId, serviceId);
 
-    const service = await this.prisma.service.update({
-      where: { id: serviceId },
-      data: { isActive: false },
+    const service = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.service.update({
+        where: { id: serviceId },
+        data: { isActive: false },
+      });
+      // A retired service must stop setting the headline price immediately.
+      await recalculateFromPrice(tx, businessId);
+      return updated;
     });
 
     return {

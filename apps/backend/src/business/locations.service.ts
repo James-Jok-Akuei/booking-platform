@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { BusinessAccessService } from './business-access.service';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
+import { recalculateFromPrice } from './from-price';
 import { SetLocationHoursDto } from './dto/set-hours.dto';
 
 const DAY_NAMES = [
@@ -29,9 +30,19 @@ export class LocationsService {
     // half-set pair rather than storing a point that can never be mapped.
     this.assertCoordinatePair(dto.latitude, dto.longitude);
 
-    return this.prisma.location.create({
-      data: { businessId, ...dto },
-      include: { hours: { orderBy: { dayOfWeek: 'asc' } } },
+    return this.prisma.$transaction(async (tx) => {
+      const location = await tx.location.create({
+        data: { businessId, ...dto },
+        include: { hours: { orderBy: { dayOfWeek: 'asc' } } },
+      });
+      // A new branch inherits the business's existing catalogue immediately —
+      // it opens with a headline price, not with a blank that fills in when
+      // someone next edits a service (§44).
+      await recalculateFromPrice(tx, businessId);
+      return tx.location.findUniqueOrThrow({
+        where: { id: location.id },
+        include: { hours: { orderBy: { dayOfWeek: 'asc' } } },
+      });
     });
   }
 

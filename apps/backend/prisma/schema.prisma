@@ -398,6 +398,21 @@ model Location {
   ratingAvg   Decimal? @db.Decimal(3, 2)
   ratingCount Int      @default(0)
 
+  /// The cheapest ACTIVE service price of the owning business, in cents.
+  ///
+  /// Denormalised exactly like ratingAvg/ratingCount above: maintained on write,
+  /// never computed on read. It is what lets `sort=price` and `maxPriceCents`
+  /// agree on one number and order across pages — a value derived at read time
+  /// can filter a page but cannot order the rows that were never fetched (§44).
+  ///
+  /// Business-scoped, because services are (§10.2): one service write updates
+  /// every location that business owns.
+  ///
+  /// NULL means the business has no active services. That is not the same as
+  /// "no results" — such a location still browses, and sorts last under
+  /// sort=price.
+  fromPriceCents Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -412,6 +427,8 @@ model Location {
   /// The bounding-box prefilter behind distance search (§43.5). Postgres can
   /// use it to cut the candidate set before any haversine is computed.
   @@index([latitude, longitude])
+  /// Serves ORDER BY fromPriceCents and the maxPriceCents filter (§44).
+  @@index([fromPriceCents])
   @@map("locations")
 }
 

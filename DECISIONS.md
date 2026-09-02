@@ -4609,13 +4609,18 @@ availability and reviews.
 |---|---|
 | 1 | count |
 | 2 | the page of locations (with business, category, subcategory joined) |
-| 3 | cheapest active service, **grouped by business**, for the whole page |
+| 3 | ~~cheapest active service, **grouped by business**, for the whole page~~ **removed in §44 — it is a column now** |
 | 4 | `LocationHours` for the whole page, today's weekday only |
 | 5 | today's `LocationScheduleException` for the whole page |
+| 6 | the exchange rate, once per response |
 | (+1) | the bounding-box + haversine prefilter, only when searching by distance |
 
-So **five, or six with distance** — the same for 1 result as for 20. Asserted by
+So **six, or seven with distance** — the same for 1 result as for 20. Asserted by
 spying on each lookup and requiring exactly one call on a 20-result page.
+**§44 removes row 3, bringing it to five (six with distance).**
+
+*(The exchange-rate read was omitted from this table when it was first written;
+it is a query and is counted here.)*
 
 The exchange rate is read **once per response** and reused for every
 `approxSettlement` in it (§39). A page whose rows converted at different rates
@@ -4681,3 +4686,109 @@ throwing. Overnight hours (close ≤ open) are not modelled anywhere in this
 platform — availability does not generate slots across midnight either — so such
 a row is closed rather than silently guessed at. A search that 500s because one
 location has a corrupt hours row is worse than one that omits it.
+
+---
+
+## 44. Denormalised `Location.fromPriceCents` (2026-09-02)
+
+§43.6 shipped `sort=price` falling back to ordering by name, and said plainly
+that real price ordering would need a denormalised column maintained on service
+writes. This is that column.
+
+### 44.1 Why a column, and not a smarter query
+
+A value derived at read time can **filter** a page but cannot **order** rows the
+page never fetched. Sorting 26 locations by price with a limit of 5 requires the
+database to know every price before it picks the five — which means the price has
+to be a column it can `ORDER BY`.
+
+Same pattern as `ratingAvg` / `ratingCount` on the same model: an aggregate
+maintained on write, never computed on read. `fromPriceCents Int?` holds the
+cheapest **ACTIVE** service price of the owning business.
+
+**Backfilled in the migration**, unlike the appointment pricing snapshot (§30).
+The distinction matters: this is a *derived* value with exactly one correct
+answer available right now, so computing it recovers a fact. §30's columns
+recorded inputs that were never captured, where any value would have been
+invented.
+
+### 44.2 One statement, never a loop
+
+Services are business-scoped (§10.2), so **one service write changes the headline
+price of every branch that business owns**. `recalculateFromPrice` is a single
+correlated `UPDATE`:
+
+```sql
+UPDATE "locations" l
+   SET "fromPriceCents" = (SELECT MIN(s."priceCents") FROM "services" s
+                            WHERE s."businessId" = l."businessId" AND s."isActive")
+ WHERE l."businessId" = $1
+```
+
+Raw SQL because the new value is an aggregate over another table, which Prisma's
+`update` cannot express — the same judgement as the haversine in §43.5. A salon
+with six branches costs one statement, not six, and a loop would additionally
+leave those six briefly disagreeing with each other. Asserted: no per-location
+Prisma write is issued at all.
+
+`MIN` over an empty set is `NULL`, which is exactly the meaning wanted, so no
+special case is needed.
+
+### 44.3 Maintained inside the same transaction, on four paths
+
+Service **create**, service **update**, service **deactivate**, and location
+**create**. A catalogue that has changed while the listing has not is a listing
+advertising a price nobody can book at, so the two commit together.
+
+The recompute on `update` is **unconditional** rather than gated on
+`priceCents` appearing in the patch: an update can flip `isActive` back on, which
+changes the cheapest price without touching a price field. Checking which fields
+moved would be a second place to get the rule right.
+
+A **new location inherits** the business's existing catalogue immediately — it
+opens with a headline price rather than a blank that fills in whenever someone
+next happens to edit a service.
+
+The test factory maintains it too. A fixture that writes rows straight to the
+database bypasses these paths, so without that every factory-built location would
+look like a business with no services.
+
+### 44.4 NULL means "no active services", and sorts last
+
+Not "no results". Such a location still appears in ordinary browse, and under
+`sort=price` it sorts **last** rather than being hidden — a business that has not
+listed a service yet is a real business a customer may still want to find, and it
+is certainly not free.
+
+`maxPriceCents` **excludes** it, which is the opposite treatment and also right:
+there is no price at or below the cap because there is no price at all.
+
+### 44.5 Filter and sort now read the same number
+
+`maxPriceCents` moved from a post-filter in application code into the query,
+against the same column `sort=price` orders by. Two consequences beyond
+correctness of the sort:
+
+- **`total` now agrees with the filter.** Previously the count was taken before
+  the price filter ran, so a filtered page reported a total that included rows it
+  had removed.
+- The filter and the sort can no longer disagree about what a location's
+  cheapest price is, because there is only one number.
+
+`openNow` remains a post-filter, because it is computed from today's hours rather
+than stored — its `total` is still the unfiltered count.
+
+### 44.6 Query budget: one lower
+
+The listing reads `fromPriceCents` off the row it already fetched, so the grouped
+query is gone.
+
+| | Before (§43.4) | Now |
+|---|---|---|
+| Ordinary page | 6 | **5** |
+| With distance | 7 | **6** |
+
+Asserted directly: `service.groupBy` is now called **zero** times on a 20-result
+page, while the remaining lookups are still exactly one each. (§43.4's table
+omitted the exchange-rate read; it has been corrected to include it, which is why
+the "before" figure there is six rather than the five originally written.)

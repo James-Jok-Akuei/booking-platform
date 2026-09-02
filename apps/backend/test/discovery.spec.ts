@@ -9,6 +9,7 @@ import { PlatformSettingsService } from '../src/settings/platform-settings.servi
 import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestModule, resetDatabase } from './setup/test-module';
 import { TestBusiness, createBusiness } from './setup/factories';
+import { recalculateFromPrice } from '../src/business/from-price';
 
 /** Juba, roughly. The centre every distance test measures from. */
 const JUBA = { lat: 4.85, lng: 31.58 };
@@ -47,7 +48,15 @@ describe('Discovery (§43)', () => {
     await prisma.location.deleteMany({});
     await prisma.service.deleteMany({});
     await prisma.businessProfile.deleteMany({});
-    await prisma.platformSetting.deleteMany({});
+    // Clear only the exchange rate, not the whole settings row: deleting the
+    // row makes the platform-fee read log a genuine alarm on every test, and a
+    // suite that cries wolf teaches everyone to ignore that log.
+    await prisma.platformSetting.updateMany({
+      data: {
+        exchangeRateUsdToProviderCurrency: null,
+        exchangeRateUpdatedAt: null,
+      },
+    });
   });
 
   /** A business with one located branch. */
@@ -79,6 +88,9 @@ describe('Discovery (§43)', () => {
   };
 
   const setRate = () => settings.setExchangeRate(650, 'SSP', { role: 'ADMIN' });
+
+  /** Direct prisma writes bypass the write paths that maintain the column. */
+  const reprice = (businessId: string) => recalculateFromPrice(prisma, businessId);
 
   const ids = (result: { locations: Array<{ id: string }> }) =>
     result.locations.map((l) => l.id);
@@ -386,6 +398,7 @@ describe('Discovery (§43)', () => {
           depositPercentage: 20,
         },
       });
+      await reprice(business.businessId);
 
       const result = await discovery.search({});
 
@@ -404,6 +417,7 @@ describe('Discovery (§43)', () => {
           isActive: false,
         },
       });
+      await reprice(business.businessId);
 
       const result = await discovery.search({});
 
@@ -417,6 +431,7 @@ describe('Discovery (§43)', () => {
         where: { businessId: business.businessId },
         data: { isActive: false },
       });
+      await reprice(business.businessId);
 
       const result = await discovery.search({});
 
@@ -435,6 +450,7 @@ describe('Discovery (§43)', () => {
           longitude: JUBA.lng,
         },
       });
+      await reprice(business.businessId);
 
       const result = await discovery.search({});
 
@@ -730,6 +746,104 @@ describe('Discovery (§43)', () => {
   });
 
   // ------------------------------------------------------------------
+  describe('sort=price orders across pages (§44)', () => {
+    it('puts the cheapest on page one, not merely first within a page', async () => {
+      // More locations than a page holds, with the cheapest created LAST so it
+      // could only reach page one by being ordered in SQL.
+      for (let i = 0; i < 25; i++) {
+        await shop({ priceCents: 9000 + i, locationName: `Dear ${i}` });
+      }
+      const bargain = await shop({ priceCents: 100, locationName: 'Bargain' });
+
+      const page = await discovery.search({ sort: DiscoverySort.PRICE, limit: 5 });
+
+      expect(page.total).toBe(26);
+      expect(ids(page)[0]).toBe(bargain.locationId);
+      expect(page.locations[0].fromPriceCents).toBe(100);
+    });
+
+    it('orders ascending and pages coherently', async () => {
+      const prices = [500, 1500, 2500, 3500];
+      for (const priceCents of prices) {
+        await shop({ priceCents, locationName: `At ${priceCents}` });
+      }
+
+      const first = await discovery.search({ sort: DiscoverySort.PRICE, limit: 2 });
+      const second = await discovery.search({
+        sort: DiscoverySort.PRICE,
+        limit: 2,
+        offset: 2,
+      });
+
+      expect(first.locations.map((l) => l.fromPriceCents)).toEqual([500, 1500]);
+      expect(second.locations.map((l) => l.fromPriceCents)).toEqual([2500, 3500]);
+    });
+
+    it('sorts a business with no active services LAST, not out', async () => {
+      const priced = await shop({ priceCents: 4500 });
+      const empty = await shop();
+      await prisma.service.updateMany({
+        where: { businessId: empty.businessId },
+        data: { isActive: false },
+      });
+      await reprice(empty.businessId);
+
+      const page = await discovery.search({ sort: DiscoverySort.PRICE });
+
+      // A business with no services yet is not free, and is not "no results".
+      expect(ids(page)).toEqual([priced.locationId, empty.locationId]);
+      expect(page.locations[1].fromPriceCents).toBeNull();
+    });
+
+    it('a business with no active services still appears in ordinary browse', async () => {
+      const empty = await shop();
+      await prisma.service.updateMany({
+        where: { businessId: empty.businessId },
+        data: { isActive: false },
+      });
+      await reprice(empty.businessId);
+
+      const page = await discovery.search({});
+
+      expect(ids(page)).toContain(empty.locationId);
+    });
+
+    it('filter and sort agree on the same number', async () => {
+      for (const priceCents of [1000, 4000, 7000, 12000]) {
+        await shop({ priceCents, locationName: `At ${priceCents}` });
+      }
+
+      const page = await discovery.search({
+        maxPriceCents: 5000,
+        sort: DiscoverySort.PRICE,
+      });
+
+      // Every row the filter let through is at or below the cap, by the same
+      // column the ordering used.
+      expect(page.locations).toHaveLength(2);
+      expect(
+        page.locations.every((l) => l.fromPriceCents !== null && l.fromPriceCents <= 5000),
+      ).toBe(true);
+      // And `total` agrees, because the filter is in the query now.
+      expect(page.total).toBe(2);
+    });
+
+    it('maxPriceCents excludes a business with no active services', async () => {
+      const empty = await shop();
+      await prisma.service.updateMany({
+        where: { businessId: empty.businessId },
+        data: { isActive: false },
+      });
+      await reprice(empty.businessId);
+
+      const page = await discovery.search({ maxPriceCents: 100_000 });
+
+      // There is no price at or below the cap because there is no price at all.
+      expect(ids(page)).not.toContain(empty.locationId);
+    });
+  });
+
+  // ------------------------------------------------------------------
   describe('pagination and query budget', () => {
     it('follows the offset/limit convention used everywhere else', async () => {
       for (let i = 0; i < 5; i++) await shop({ locationName: `Branch ${i}` });
@@ -754,11 +868,13 @@ describe('Discovery (§43)', () => {
       const result = await discovery.search({ limit: 20 });
 
       expect(result.locations).toHaveLength(20);
+      // ZERO since §44: the cheapest price is a column now, not a query.
+      expect(cheapest).toHaveBeenCalledTimes(0);
       // One each, for the whole page — not one per row.
-      expect(cheapest).toHaveBeenCalledTimes(1);
       expect(hours).toHaveBeenCalledTimes(1);
       expect(exceptions).toHaveBeenCalledTimes(1);
       expect(rate).toHaveBeenCalledTimes(1);
+      expect(result.locations.every((l) => l.fromPriceCents === 4500)).toBe(true);
     });
 
     it('costs the same number of lookups for 1 row as for 20', async () => {
@@ -770,7 +886,7 @@ describe('Discovery (§43)', () => {
 
       await discovery.search({});
 
-      expect(cheapest).toHaveBeenCalledTimes(1);
+      expect(cheapest).toHaveBeenCalledTimes(0);
       expect(hours).toHaveBeenCalledTimes(1);
     });
   });

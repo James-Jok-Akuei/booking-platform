@@ -7,6 +7,7 @@ import {
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { recalculateFromPrice } from '../../src/business/from-price';
 
 let counter = 0;
 /** Unique per call, so suites never collide on the one-email-one-account rule. */
@@ -84,6 +85,12 @@ export async function createBusiness(
       depositPercentage: options.depositPercentage ?? 20,
     },
   });
+
+  // Location.fromPriceCents is a denormalised aggregate maintained by the
+  // service and location write paths (§44). A fixture that writes rows straight
+  // to the database bypasses those, so it must maintain it too — otherwise
+  // every factory-built location would look like a business with no services.
+  await recalculateFromPrice(prisma, business.id);
 
   return {
     userId: user.id,

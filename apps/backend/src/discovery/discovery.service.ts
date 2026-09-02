@@ -50,7 +50,8 @@ export class DiscoveryService {
    * so a branch is the unit a customer actually chooses between.
    *
    * Query budget for a page of any size, stated because it is easy to regress:
-   * **five queries plus one when distance is used**, and none of them per-row.
+   * **four queries, plus one when distance is used**, and none of them per-row.
+   * Down from five since §44 made the cheapest price a column.
    */
   async search(query: DiscoverLocationsDto) {
     const limit = query.limit ?? DEFAULT_LIMIT;
@@ -95,6 +96,7 @@ export class DiscoveryService {
           longitude: true,
           ratingAvg: true,
           ratingCount: true,
+          fromPriceCents: true,
           businessId: true,
           business: {
             select: {
@@ -120,11 +122,12 @@ export class DiscoveryService {
         .slice(offset, offset + limit);
     }
 
-    // (4) Cheapest price for the WHOLE page in one grouped query, and (5) the
-    // open-now inputs for the whole page in one more. Never per row.
-    const businessIds = [...new Set(rows.map((l) => l.businessId))];
-    const [cheapest, openNow, rate] = await Promise.all([
-      this.cheapestByBusiness(businessIds),
+    // (4) and (5): the open-now inputs for the whole page. Never per row.
+    //
+    // The cheapest price no longer needs a query at all — it is a column on the
+    // location now (§44), maintained on write. That is one fewer query per page
+    // AND the reason `sort=price` can order rows this page never fetched.
+    const [openNow, rate] = await Promise.all([
       this.openNowByLocation(rows.map((l) => l.id)),
       // One rate read per response, reused for every amount in it (§39).
       this.settings.getExchangeRateForDisplay(),
@@ -139,7 +142,7 @@ export class DiscoveryService {
         : {}),
       locations: rows
         .map((location) => {
-          const fromPriceCents = cheapest.get(location.businessId) ?? null;
+          const fromPriceCents = location.fromPriceCents;
           return {
             id: location.id,
             name: location.name,
@@ -157,13 +160,9 @@ export class DiscoveryService {
               : {}),
           };
         })
-        // maxPriceCents is applied here rather than in SQL because the price
-        // belongs to the business's service catalogue, not to the location row.
-        .filter((l) =>
-          query.maxPriceCents === undefined
-            ? true
-            : l.fromPriceCents !== null && l.fromPriceCents <= query.maxPriceCents,
-        )
+        // maxPriceCents is applied in the QUERY now (see buildWhere), so `total`
+        // and the page agree with it. openNow stays a post-filter because it is
+        // computed from today's hours rather than stored.
         .filter((l) => (query.openNow ? l.openNow : true)),
     };
   }
@@ -373,34 +372,6 @@ export class DiscoveryService {
   // ---------- Page-wide lookups ----------
 
   /**
-   * The cheapest ACTIVE service per business, for the whole page at once.
-   *
-   * Keyed by BUSINESS, not location: services belong to a `BusinessProfile` and
-   * are shared across all of its locations (§10.2, and the pairing check in
-   * `AppointmentsService.create` proves it) — so two branches of one salon
-   * genuinely have the same cheapest price. Keying by location would be a
-   * fiction and would cost a query per row.
-   *
-   * `isActive: true` matters: a soft-deleted service is not bookable, so a
-   * cheaper retired one must not set the headline price.
-   */
-  private async cheapestByBusiness(businessIds: string[]) {
-    if (businessIds.length === 0) return new Map<string, number>();
-
-    const grouped = await this.prisma.service.groupBy({
-      by: ['businessId'],
-      where: { businessId: { in: businessIds }, isActive: true },
-      _min: { priceCents: true },
-    });
-
-    return new Map(
-      grouped
-        .filter((g) => g._min.priceCents !== null)
-        .map((g) => [g.businessId, g._min.priceCents!]),
-    );
-  }
-
-  /**
    * Open-now for the whole page, in one hours query and one exception query.
    *
    * Same precedence as availability (§13.1): a date-specific exception outranks
@@ -489,6 +460,13 @@ export class DiscoveryService {
       },
       ...(ids ? { id: { in: ids } } : {}),
       ...(query.minRating !== undefined ? { ratingAvg: { gte: query.minRating } } : {}),
+      // Filters on the SAME column `sort=price` orders by, so the two can never
+      // disagree about what a location's cheapest price is. A location with no
+      // active services (null) is excluded — there is no price at or below the
+      // cap because there is no price at all.
+      ...(query.maxPriceCents !== undefined
+        ? { fromPriceCents: { lte: query.maxPriceCents } }
+        : {}),
     };
 
     if (query.q) {
@@ -517,9 +495,15 @@ export class DiscoveryService {
       // Nulls last: an unrated location is not better than a 5.0 one.
       return [{ ratingAvg: { sort: 'desc', nulls: 'last' } }, { ratingCount: 'desc' }];
     }
-    // `price` cannot be ordered in SQL — the price lives on the business's
-    // services, not the location — so the page is ordered by name and the
-    // caller gets a stable list; see §43.6 for why this is not silently wrong.
+    if (query.sort === DiscoverySort.PRICE) {
+      // Cheapest first, and ACROSS pages — §43.6 could not do this because the
+      // price was not a column. Nulls last: a business with no services yet is
+      // not free, and burying it at the end is different from hiding it.
+      return [
+        { fromPriceCents: { sort: 'asc', nulls: 'last' } },
+        { name: 'asc' },
+      ];
+    }
     return [{ name: 'asc' }];
   }
 
