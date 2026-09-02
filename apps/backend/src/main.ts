@@ -1,20 +1,14 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { configureApp } from './app-bootstrap';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // strip unknown properties from incoming DTOs
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-
-  app.enableCors(); // tighten this to your PWA's origin(s) before production
+  // Shared with the boot smoke test, so the test cannot pass against a
+  // configuration this file no longer uses.
+  configureApp(app);
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

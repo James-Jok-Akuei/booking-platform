@@ -2533,11 +2533,14 @@ ESNext, and `import { jest } from '@jest/globals'` — in ESM, Jest injects
 `describe`/`it`/`expect` as globals but not `jest` itself.
 
 **Suites build a targeted provider list rather than importing AppModule.**
-Booting the whole AppModule under Jest's ESM loader hangs indefinitely at
+~~Booting the whole AppModule under Jest's ESM loader hangs indefinitely at
 `.compile()` — measured at over three minutes at ~2% CPU, so blocked rather than
-slow. A targeted module compiles in ~74ms. This is better testing anyway: each
-suite states exactly which collaborators the behaviour under test needs, and
-anything reaching the network is stubbed.
+slow.~~ **That diagnosis was wrong — see §26.1.** The hang was the DI cycle
+introduced in §23.4, not the ESM loader; with it fixed, AppModule compiles and
+boots inside Jest in about a second. The targeted-module approach is kept
+because it is genuinely better testing — each suite states exactly which
+collaborators the behaviour under test needs, and anything reaching the network
+is stubbed — but it is a preference, not a workaround.
 
 The consequence worth stating plainly: **these tests exercise the service layer,
 not the HTTP layer.** Guards and pipes are not covered. That is acceptable for
@@ -2874,3 +2877,61 @@ that ends up in a dispute.
 169 tests pass. The new one asserts that a resolution carrying a FEE_REFUND
 leaks neither the type, nor the word "adjustment", nor `settledAt` into any
 reporter-facing shape, while still surfacing the admin's note.
+
+---
+
+## 26. Boot smoke test (2026-09-02)
+
+One test that starts the real application and asserts it answers.
+
+### 26.1 The misdiagnosis it corrected
+
+§23.3 recorded that booting AppModule under Jest "hangs indefinitely at
+`.compile()` — blocked rather than slow", and attributed it to Jest's ESM
+loader. **That was wrong.** The hang was the dependency-injection cycle
+introduced in the very same commit (§23.4, fixed in §24.8). With the cycle gone,
+AppModule compiles, boots, listens and serves inside Jest in **about a second**.
+
+Worth stating plainly because the wrong diagnosis had a cost: it made "we cannot
+boot the real app in tests" look like an environmental constraint to work
+around, when it was a bug in our own wiring. That belief is precisely what let a
+non-booting binary ship green.
+
+### 26.2 What the test does
+
+Boots the whole `AppModule` through `NestFactory`, applies the same global
+configuration `main.ts` applies, listens on an **ephemeral port** (`listen(0)`,
+so it never collides with a dev server or a parallel run), fetches an unknown
+route, asserts a 404, and closes.
+
+An unknown route is deliberately the cheapest possible assertion: reaching a 404
+proves the server bound a port, the router resolved, and the exception layer
+rendered a response. A health endpoint would prove the same thing and this
+project has none, so inventing one purely for a test would be the tail wagging
+the dog.
+
+**The timeout is explicit and tight — 25 seconds.** The failure mode being
+guarded against is a *hang*, not an exception, so the default timeout mattering
+is the whole design: a test that waits patiently for a hang is worthless.
+
+### 26.3 `configureApp` was extracted so the test cannot drift
+
+`main.ts` previously inlined its `ValidationPipe` and CORS setup. That is now
+`configureApp(app)` in `src/app-bootstrap.ts`, called by both `main.ts` and the
+test.
+
+Copying the configuration into the test would have been the obvious shortcut and
+the wrong one: `main.ts` could later gain a global filter or interceptor and the
+test would keep passing against a shape production no longer uses. Sharing one
+function means the test exercises whatever bootstrap actually does. `main.ts`
+behaviour is unchanged.
+
+### 26.4 Verified to fail for the right reason
+
+A test that passes proves little on its own — it has to fail when the bug
+returns. The §23.4 DI cycle was temporarily reintroduced and the suite re-run:
+the boot test **failed with `Exceeded timeout of 25000 ms`**, exactly the hang
+signature, while nothing else changed. The cycle was then reverted.
+
+170 tests pass, and this one runs as part of the default `npm test` rather than
+an opt-in script — a smoke test nobody runs is not a smoke test.
