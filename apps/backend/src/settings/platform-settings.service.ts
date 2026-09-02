@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 
@@ -12,6 +12,19 @@ import { INTERNAL_CURRENCY } from '../payments/currency';
  */
 /** How old a manually-set exchange rate may be before it is reported stale. */
 export const DEFAULT_STALENESS_HOURS = 24;
+
+/**
+ * Days between an appointment resolving and its money becoming payable.
+ *
+ * The fallback when the settings row is missing, and the column's default. Two
+ * days: long enough for a dispute to arrive, short enough that a business is
+ * not financing the platform.
+ */
+export const DEFAULT_PAYOUT_HOLD_DAYS = 2;
+
+/** The range an admin may set the hold to. */
+export const MIN_PAYOUT_HOLD_DAYS = 0;
+export const MAX_PAYOUT_HOLD_DAYS = 30;
 
 export const PLATFORM_SETTING_ID = 'platform';
 
@@ -264,6 +277,70 @@ export class PlatformSettingsService {
   }
 
   /** Full settings record for the admin endpoint. */
+  /**
+   * The payout hold currently in force, in days.
+   *
+   * Read at RESOLUTION time and then recorded on the appointment (§38.2). It is
+   * never read again for that appointment: an `availableAt` already set is a
+   * date a business has been shown, and moving it because an admin changed a
+   * setting would be changing a promise after the fact.
+   */
+  async getPayoutHoldDays(): Promise<number> {
+    const setting = await this.prisma.platformSetting.findUnique({
+      where: { id: PLATFORM_SETTING_ID },
+      select: { payoutHoldDays: true },
+    });
+
+    // Same reasoning as the platform fee: a missing row means someone deleted
+    // it, and falling back to the documented default beats stranding every
+    // resolution on the platform.
+    return setting?.payoutHoldDays ?? DEFAULT_PAYOUT_HOLD_DAYS;
+  }
+
+  /**
+   * Admin-facing read.
+   *
+   * Takes the actor and checks the role here as well as in the guard, per
+   * §27.1. The sibling fee and exchange-rate methods predate that rule and are
+   * still guard-only; widening them is a refactor of its own, not something to
+   * smuggle into a commit about the payout hold (§38.4).
+   */
+  async getPayoutHoldSettings(actor: { role: UserRole | string }) {
+    this.assertAdmin(actor);
+    const days = await this.getPayoutHoldDays();
+
+    return {
+      payoutHoldDays: days,
+      note:
+        `Funds become payable ${days} day(s) after an appointment resolves. ` +
+        'Changing this affects appointments resolved afterwards; dates already ' +
+        'set are never rewritten.',
+    };
+  }
+
+  async setPayoutHoldDays(days: number, actor: { role: UserRole | string }) {
+    this.assertAdmin(actor);
+
+    await this.prisma.platformSetting.upsert({
+      where: { id: PLATFORM_SETTING_ID },
+      update: { payoutHoldDays: days },
+      create: { id: PLATFORM_SETTING_ID, payoutHoldDays: days },
+    });
+
+    this.logger.log(
+      `Payout hold set to ${days} day(s). Applies to appointments resolved from ` +
+        'now on; entries that already have an availableAt keep it.',
+    );
+
+    return this.getPayoutHoldSettings(actor);
+  }
+
+  private assertAdmin(actor: { role: UserRole | string }) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only an administrator can do that.');
+    }
+  }
+
   async getSettings() {
     const setting = await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },

@@ -641,6 +641,14 @@ model PlatformSetting {
   /// the snapshot fields on Appointment.
   platformFeePercentage Decimal @default(10.00) @db.Decimal(5, 2)
 
+  /// How many days after an appointment resolves before its money may be paid
+  /// out (§38).
+  ///
+  /// A settling window in which a dispute can still arrive, not a processing
+  /// delay. The hold in force AT RESOLUTION TIME is the one that applies:
+  /// changing this never rewrites an availableAt that has already been set.
+  payoutHoldDays Int @default(2)
+
   /// The currency the payment provider actually charges in.
   ///
   /// Authoritative — this supersedes the MOMO_CURRENCY env var, so the value
@@ -847,6 +855,14 @@ model Appointment {
   /// the same reminder twice. A timestamp rather than a boolean so it is
   /// visible *when* the customer was reminded.
   reminderSentAt DateTime?
+
+  /// The payout hold, in days, that was in force when this appointment resolved
+  /// (§38.2). Recorded so a payout date can be explained afterwards without
+  /// knowing the setting's history — which nothing stores.
+  ///
+  /// Null until the appointment resolves, and for appointments resolved before
+  /// the hold became configurable.
+  payoutHoldDaysApplied Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

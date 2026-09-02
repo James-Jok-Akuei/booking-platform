@@ -7,18 +7,18 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { PlatformSettingsService } from '../settings/platform-settings.service';
 
 /**
- * How long after an appointment resolves before its money can be paid out.
+ * Adds a hold period, in days, to an anchor date.
  *
- * A settling period, not a processing delay: it is the window in which a
- * dispute can still arrive, and paying out inside it would mean clawing money
- * back from a business that has already been given it.
+ * The hold itself is an admin setting (§38), read at resolution time. It is a
+ * settling window in which a dispute can still arrive, not a processing delay:
+ * paying out inside it would mean clawing money back from a business that has
+ * already been given it.
  */
-export const PAYOUT_HOLD_DAYS = 7;
-
-export const addHoldPeriod = (from: Date) =>
-  new Date(from.getTime() + PAYOUT_HOLD_DAYS * 24 * 60 * 60 * 1000);
+export const addHoldPeriod = (from: Date, holdDays: number) =>
+  new Date(from.getTime() + holdDays * 24 * 60 * 60 * 1000);
 
 /**
  * The append-only record of what the platform owes each business (§34).
@@ -33,7 +33,10 @@ export const addHoldPeriod = (from: Date) =>
 export class LedgerService {
   private readonly logger = new Logger(LedgerService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly settings: PlatformSettingsService,
+  ) {}
 
   /**
    * Records a confirmed deposit as two entries: the money in, and the
@@ -125,7 +128,11 @@ export class LedgerService {
       },
     });
 
-    const availableAt = this.availableAtFor(appointment);
+    // Read now, at resolution, and recorded below. Whatever an admin changes it
+    // to afterwards applies to the NEXT appointment to resolve, not this one.
+    const holdDays = await this.settings.getPayoutHoldDays();
+
+    const availableAt = this.availableAtFor(appointment, holdDays);
     if (!availableAt) return 0;
 
     const { count } = await tx.ledgerEntry.updateMany({
@@ -134,9 +141,16 @@ export class LedgerService {
     });
 
     if (count > 0) {
+      // On the appointment, not the entry: a payout date has to be explainable
+      // afterwards, and nothing stores the setting's history (§38.2).
+      await tx.appointment.update({
+        where: { id: appointmentId },
+        data: { payoutHoldDaysApplied: holdDays },
+      });
+
       this.logger.log(
         `Ledger: ${count} entr${count === 1 ? 'y' : 'ies'} for appointment ${appointmentId} ` +
-          `become payable at ${availableAt.toISOString()}.`,
+          `become payable at ${availableAt.toISOString()} (${holdDays}-day hold).`,
       );
     }
 
@@ -360,21 +374,24 @@ export class LedgerService {
     };
   }
 
-  private availableAtFor(appointment: {
-    status: AppointmentStatus;
-    completedAt: Date | null;
-    endTime: Date;
-    cancelledBy: CancelledBy | null;
-    depositPaidAt: Date | null;
-  }): Date | null {
+  private availableAtFor(
+    appointment: {
+      status: AppointmentStatus;
+      completedAt: Date | null;
+      endTime: Date;
+      cancelledBy: CancelledBy | null;
+      depositPaidAt: Date | null;
+    },
+    holdDays: number,
+  ): Date | null {
     if (appointment.status === AppointmentStatus.COMPLETED) {
       // completedAt is set by the same update that sets the status, but fall
       // back rather than throw: a missing timestamp must not strand money.
-      return addHoldPeriod(appointment.completedAt ?? new Date());
+      return addHoldPeriod(appointment.completedAt ?? new Date(), holdDays);
     }
 
     if (appointment.status === AppointmentStatus.NO_SHOW) {
-      return addHoldPeriod(appointment.endTime);
+      return addHoldPeriod(appointment.endTime, holdDays);
     }
 
     if (
@@ -385,7 +402,7 @@ export class LedgerService {
       // The deposit is not refunded when the customer calls it off (§2), so the
       // business keeps its share — from the date the appointment would have
       // ended, since it never had a completion date.
-      return addHoldPeriod(appointment.endTime);
+      return addHoldPeriod(appointment.endTime, holdDays);
     }
 
     // A business cancellation (§36), or an expiry that never took a deposit and

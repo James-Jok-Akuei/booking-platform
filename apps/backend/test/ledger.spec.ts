@@ -1,3 +1,6 @@
+import { ForbiddenException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -12,7 +15,12 @@ import { PaymentsScheduler } from '../src/appointments/payments.scheduler';
 import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { LedgerService, PAYOUT_HOLD_DAYS } from '../src/ledger/ledger.service';
+import { LedgerService } from '../src/ledger/ledger.service';
+import {
+  DEFAULT_PAYOUT_HOLD_DAYS,
+  PlatformSettingsService,
+} from '../src/settings/platform-settings.service';
+import { UpdatePayoutHoldDto } from '../src/settings/dto/update-payout-hold.dto';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import {
   TestBusiness,
@@ -22,7 +30,7 @@ import {
 } from './setup/factories';
 
 const DAY = 86_400_000;
-const HOLD_MS = PAYOUT_HOLD_DAYS * DAY;
+const HOLD_MS = DEFAULT_PAYOUT_HOLD_DAYS * DAY;
 
 /**
  * The ledger is the only record of what the platform owes anyone (§34). Every
@@ -260,6 +268,215 @@ describe('Ledger (§34)', () => {
 
       expect(touched).toBe(0);
       expect((await availableDates(a.id))[0]!.getTime()).toBe(first);
+    });
+  });
+
+  /**
+   * The hold is an admin setting (§38), not a constant. What matters is
+   * WHEN it is read: at resolution, once, and never again for that appointment.
+   */
+  describe('the payout hold is configurable', () => {
+    const settings = () => moduleRef.get(PlatformSettingsService);
+    const AS_ADMIN = { role: 'ADMIN' };
+
+    afterEach(async () => {
+      await settings().setPayoutHoldDays(DEFAULT_PAYOUT_HOLD_DAYS, AS_ADMIN);
+    });
+
+    it('defaults to 2 days', async () => {
+      await prisma.platformSetting.deleteMany({});
+
+      expect(await settings().getPayoutHoldDays()).toBe(DEFAULT_PAYOUT_HOLD_DAYS);
+      expect(DEFAULT_PAYOUT_HOLD_DAYS).toBe(2);
+    });
+
+    it('uses the configured hold when an appointment resolves', async () => {
+      await settings().setPayoutHoldDays(5, AS_ADMIN);
+      const a = await paidAppointment({ endsInDays: -2 });
+      await prisma.appointment.update({
+        where: { id: a.id },
+        data: { status: AppointmentStatus.BOOKED },
+      });
+
+      await appointments.noShow(business.userId, a.id);
+
+      const [entry] = await entriesFor(a.id);
+      expect(entry.availableAt!.getTime()).toBe(a.endTime.getTime() + 5 * DAY);
+    });
+
+    it('records the hold that was applied, on the appointment', async () => {
+      await settings().setPayoutHoldDays(5, AS_ADMIN);
+      const a = await paidAppointment({ endsInDays: -2 });
+      await prisma.appointment.update({
+        where: { id: a.id },
+        data: { status: AppointmentStatus.BOOKED },
+      });
+
+      await appointments.noShow(business.userId, a.id);
+
+      // Nothing stores the setting's history, so without this a payout date
+      // could only be explained with TODAY's hold - which may not be the one
+      // that produced it.
+      const row = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
+      expect(row.payoutHoldDaysApplied).toBe(5);
+    });
+
+    it('leaves it null on an appointment that has not resolved', async () => {
+      const a = await paidAppointment({ endsInDays: 5 });
+
+      const row = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
+      expect(row.payoutHoldDaysApplied).toBeNull();
+    });
+
+    it('does not rewrite availableAt on entries that already have one', async () => {
+      const a = await paidAppointment({ endsInDays: -2 });
+      await appointments.cancel(customer.userId, a.id);
+      const before = (await entriesFor(a.id))[0].availableAt!.getTime();
+
+      await settings().setPayoutHoldDays(30, AS_ADMIN);
+
+      // A date already set is a date a business has been shown. Moving it
+      // because an admin changed a setting is changing a promise after the fact.
+      const after = (await entriesFor(a.id))[0].availableAt!.getTime();
+      expect(after).toBe(before);
+      expect(after).toBe(a.endTime.getTime() + DEFAULT_PAYOUT_HOLD_DAYS * DAY);
+    });
+
+    it('applies the OLD hold to what resolved before the change and the NEW hold after', async () => {
+      await settings().setPayoutHoldDays(2, AS_ADMIN);
+      const early = await paidAppointment({ endsInDays: -4 });
+      await appointments.cancel(customer.userId, early.id);
+
+      await settings().setPayoutHoldDays(10, AS_ADMIN);
+      const late = await paidAppointment({ endsInDays: -4 });
+      await appointments.cancel(customer.userId, late.id);
+
+      const earlyAt = (await entriesFor(early.id))[0].availableAt!.getTime();
+      const lateAt = (await entriesFor(late.id))[0].availableAt!.getTime();
+
+      // Same anchor, different holds: the setting in force at RESOLUTION is the
+      // one that applies, and the earlier appointment keeps its shorter one.
+      expect(earlyAt).toBe(early.endTime.getTime() + 2 * DAY);
+      expect(lateAt).toBe(late.endTime.getTime() + 10 * DAY);
+      const earlyRow = await prisma.appointment.findUniqueOrThrow({
+        where: { id: early.id },
+      });
+      const lateRow = await prisma.appointment.findUniqueOrThrow({
+        where: { id: late.id },
+      });
+      expect(earlyRow.payoutHoldDaysApplied).toBe(2);
+      expect(lateRow.payoutHoldDaysApplied).toBe(10);
+    });
+
+    it('accepts a zero hold - payable immediately', async () => {
+      await settings().setPayoutHoldDays(0, AS_ADMIN);
+      const a = await paidAppointment({ endsInDays: -2 });
+      await appointments.cancel(customer.userId, a.id);
+
+      const [entry] = await entriesFor(a.id);
+      expect(entry.availableAt!.getTime()).toBe(a.endTime.getTime());
+    });
+
+    describe('the setting is admin-only', () => {
+      it.each(['BUSINESS', 'CUSTOMER'])(
+        'refuses a %s reading it, at the service level',
+        async (role) => {
+          await expect(
+            settings().getPayoutHoldSettings({ role }),
+          ).rejects.toBeInstanceOf(ForbiddenException);
+        },
+      );
+
+      it.each(['BUSINESS', 'CUSTOMER'])(
+        'refuses a %s writing it, at the service level',
+        async (role) => {
+          await expect(
+            settings().setPayoutHoldDays(9, { role }),
+          ).rejects.toBeInstanceOf(ForbiddenException);
+
+          // And nothing was written.
+          expect(await settings().getPayoutHoldDays()).toBe(DEFAULT_PAYOUT_HOLD_DAYS);
+        },
+      );
+
+      it.each([
+        ['below zero', -1],
+        ['above thirty', 31],
+        ['not a whole number', 2.5],
+      ])('rejects a hold %s', async (_label, days) => {
+        const dto = plainToInstance(UpdatePayoutHoldDto, { payoutHoldDays: days });
+        const errors = await validate(dto as object);
+
+        expect(errors.map((e) => e.property)).toContain('payoutHoldDays');
+      });
+
+      it.each([0, 2, 30])('accepts a hold of %s days', async (days) => {
+        const dto = plainToInstance(UpdatePayoutHoldDto, { payoutHoldDays: days });
+
+        expect(await validate(dto as object)).toHaveLength(0);
+      });
+    });
+
+    /**
+     * The anchors are unchanged, and they do not line up. Confirmed here rather
+     * than assumed - see §38.3 for why the gap is left in place.
+     */
+    describe('the two anchors do not line up, and that is deliberate', () => {
+      it('an auto-completed appointment is payable at end + 24h + hold', async () => {
+        await settings().setPayoutHoldDays(2, AS_ADMIN);
+        const a = await paidAppointment({ endsInDays: -3 });
+        await prisma.appointment.update({
+          where: { id: a.id },
+          data: { status: AppointmentStatus.IN_PROGRESS, verifiedAt: new Date() },
+        });
+
+        await scheduler.runAutoTransitions();
+
+        const row = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
+        const [entry] = await entriesFor(a.id);
+        // completedAt is when the SWEEP ran, roughly end + 24h at the earliest,
+        // so the payable date lands about a day later than a no-show's.
+        expect(entry.availableAt!.getTime()).toBe(
+          row.completedAt!.getTime() + 2 * DAY,
+        );
+        expect(entry.availableAt!.getTime()).toBeGreaterThan(
+          a.endTime.getTime() + 2 * DAY,
+        );
+      });
+
+      it('an auto-no-showed appointment is payable at end + hold exactly', async () => {
+        await settings().setPayoutHoldDays(2, AS_ADMIN);
+        const a = await paidAppointment({ endsInDays: -3 });
+        await prisma.appointment.update({
+          where: { id: a.id },
+          data: { status: AppointmentStatus.BOOKED },
+        });
+
+        await scheduler.runAutoTransitions();
+
+        const [entry] = await entriesFor(a.id);
+        // A no-show has no completedAt to key off, so the scheduled end time is
+        // the only date it has.
+        expect(entry.availableAt!.getTime()).toBe(a.endTime.getTime() + 2 * DAY);
+      });
+
+      it('a manually completed appointment has no such gap', async () => {
+        await settings().setPayoutHoldDays(2, AS_ADMIN);
+        const a = await paidAppointment({ endsInDays: -1 });
+        await prisma.appointment.update({
+          where: { id: a.id },
+          data: { status: AppointmentStatus.IN_PROGRESS, verifiedAt: new Date() },
+        });
+
+        const done = await appointments.complete(business.userId, a.id);
+
+        // The extra day only appears when the sweep does the completing. A
+        // business that presses the button gets paid from when they pressed it.
+        const [entry] = await entriesFor(a.id);
+        expect(entry.availableAt!.getTime()).toBe(
+          done.completedAt!.getTime() + 2 * DAY,
+        );
+      });
     });
   });
 

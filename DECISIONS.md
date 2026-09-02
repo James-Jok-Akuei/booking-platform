@@ -4044,3 +4044,82 @@ a 500-hour-old rate is still returned by `getExchangeRate()`.
 An **unset** rate is deliberately not reported as stale. It is missing, not old,
 and payment initiation already refuses outright on it — filing the two under one
 heading would hide the fatal case behind the cosmetic one.
+
+---
+
+## 38. The payout hold becomes a setting (2026-09-02)
+
+§34.3 held funds for a hardcoded 7 days. That is a product decision, not a
+technical one, so it now sits beside the platform fee and the exchange rate.
+**Default 2 days.**
+
+### 38.1 The hold in force at RESOLUTION is the one that applies
+
+Read once, when the appointment resolves, and never read again for that
+appointment. Changing the setting affects appointments that resolve **after**
+the change; it never rewrites an `availableAt` that is already set.
+
+That is the whole rule, and it exists because an `availableAt` is a date a
+business has already been shown. Moving it because an admin changed a setting is
+changing a promise after the fact — and it would move in both directions,
+including money a business had been told was coming tomorrow.
+
+Tested in one assertion pair: two identical appointments, one resolved under a
+2-day hold and one under a 10-day hold, land on dates 8 days apart from the same
+anchor, and changing the setting to 30 afterwards moves neither.
+
+### 38.2 The applied hold is recorded
+
+`Appointment.payoutHoldDaysApplied`, written by the same transaction that sets
+`availableAt`. Nothing stores the setting's history, so without this a business
+asking "why is this payable on the 14th?" could only be answered with *today's*
+hold, which may not be the one that produced the date.
+
+On the appointment rather than the entry, because the entry is append-only
+(§34.2) and the hold is not part of what an entry *says* — and because refund
+and adjustment entries are payable immediately, with no hold involved at all.
+
+Null for appointments not yet resolved, and for anything resolved before this
+existed.
+
+### 38.3 The anchors are unchanged, and they still do not line up
+
+Confirmed by test rather than assumed. With a 2-day hold:
+
+| Path | Payable |
+|---|---|
+| Auto-completed by the sweep | `completedAt` + 2d ≈ **end + 3 days** |
+| Auto-no-showed by the sweep | `endTime` + 2d = **end + 2 days** |
+| **Manually** completed | `completedAt` + 2d ≈ **end + 2 days** |
+
+The extra day appears only when the 24-hour auto-transition sweep does the
+completing. A business that presses the button itself is paid from when it
+pressed it; the gap is the price of not pressing it.
+
+**I do not think these should be made to line up, and I am not proposing a
+change.** Two reasons:
+
+1. A `NO_SHOW` has no `completedAt` to key off — that is precisely why the
+   anchor differs — so lining them up would mean anchoring `COMPLETED` to
+   `endTime` too. That would start the hold before the service was confirmed
+   delivered, which is the one thing the hold exists to wait for.
+2. The gap is not a penalty for the *customer's* no-show; it is an incentive for
+   the business to close out its own appointments, and it disappears the moment
+   they do.
+
+If it does need changing later, the honest fix is to shorten the sweep's 24-hour
+grace period, not to move the anchor — but that grace period is doing separate
+work (§16) and should not be touched for a payout reason.
+
+### 38.4 Access, and a note on the rest of the settings module
+
+Validated 0–30 days. Zero is allowed and means "payable immediately", a
+deliberate choice for a platform that trusts its businesses. Thirty is the cap:
+past a month a hold stops being a settling window and becomes the business
+financing the platform.
+
+The two hold methods take the actor and assert `ADMIN` in the service as well as
+in the guard, per §27.1. **The sibling fee and exchange-rate methods do not** —
+they predate that rule and remain guard-only. Widening them is a refactor of the
+settings module in its own right, and smuggling it into a commit about the
+payout hold would make both harder to review. Logged here as outstanding.

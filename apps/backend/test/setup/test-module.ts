@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { LedgerService } from '../../src/ledger/ledger.service';
+import { PlatformSettingsService } from '../../src/settings/platform-settings.service';
 import { MailService } from '../../src/mail/mail.service';
 import { NotificationsService } from '../../src/notifications/notifications.service';
 import { ChatService } from '../../src/chat/chat.service';
@@ -34,7 +35,10 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
     // every suite that books an appointment — not only the one testing it
     // (§34). A stub here would let a missing ledger write pass unnoticed
     // everywhere except the ledger suite.
-    providers: [PrismaService, LedgerService, ...providers],
+    // PlatformSettingsService joins them: LedgerService reads the payout hold
+    // from it (§38), and like LedgerService it reaches nothing but the
+    // database, so the real one is both cheaper and more honest than a stub.
+    providers: [PrismaService, LedgerService, PlatformSettingsService, ...providers],
   }).compile();
 }
 

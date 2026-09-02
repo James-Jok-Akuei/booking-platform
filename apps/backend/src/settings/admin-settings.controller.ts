@@ -7,6 +7,7 @@ import { PlatformSettingsService } from './platform-settings.service';
 import { UpdatePlatformFeeDto } from './dto/update-platform-fee.dto';
 import { UpdateExchangeRateDto } from './dto/update-exchange-rate.dto';
 import { UpdateStalenessDto } from './dto/update-staleness.dto';
+import { UpdatePayoutHoldDto } from './dto/update-payout-hold.dto';
 import {
   AuthenticatedUser,
   CurrentUser,
@@ -74,6 +75,26 @@ export class AdminSettingsController {
   @Patch('exchange-rate/staleness')
   updateStaleness(@Body() dto: UpdateStalenessDto) {
     return this.settings.setExchangeRateStalenessHours(dto.exchangeRateStalenessHours);
+  }
+
+  /**
+   * How long after an appointment resolves before its money may be paid out.
+   *
+   * The hold in force AT RESOLUTION TIME is the one that applies. Changing this
+   * affects appointments resolved afterwards; it never rewrites a date already
+   * set on an entry (§38.1).
+   */
+  @Get('payout-hold')
+  getPayoutHold(@CurrentUser() user: AuthenticatedUser) {
+    return this.settings.getPayoutHoldSettings(user);
+  }
+
+  @Patch('payout-hold')
+  updatePayoutHold(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: UpdatePayoutHoldDto,
+  ) {
+    return this.settings.setPayoutHoldDays(dto.payoutHoldDays, user);
   }
 
   /**

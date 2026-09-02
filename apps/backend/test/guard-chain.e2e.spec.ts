@@ -730,6 +730,54 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('the payout hold setting over HTTP (§38)', () => {
+    it('rejects a BUSINESS token reading it -> 403', async () => {
+      const res = await request(url, '/admin/settings/payout-hold', {
+        token: tokenAlpha,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('rejects a CUSTOMER token reading it -> 403', async () => {
+      const res = await request(url, '/admin/settings/payout-hold', {
+        token: tokenCustomerA,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('rejects a BUSINESS token writing it -> 403', async () => {
+      const res = await request(url, '/admin/settings/payout-hold', {
+        method: 'PATCH',
+        token: tokenAlpha,
+        body: { payoutHoldDays: 0 },
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('accepts an ADMIN token -> 200', async () => {
+      const res = await request(url, '/admin/settings/payout-hold', {
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('payoutHoldDays');
+    });
+
+    it.each([-1, 31])('rejects a hold of %s days -> 400', async (days) => {
+      const res = await request(url, '/admin/settings/payout-hold', {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: { payoutHoldDays: days },
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('payoutHoldDays');
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {
