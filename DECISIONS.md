@@ -62,6 +62,40 @@ guaranteed to flow through the platform; everything else is optional.
 business payable, and treat "balance paid offline" as a normal, expected outcome
 rather than an exception.
 
+### 2.1 Correction: the fee is a percentage of the SERVICE PRICE (2026-09-02)
+
+The wording above — and the §16.3 note that superseded the flat fee — says the
+fee "comes out of the deposit". That describes where the money is *taken from*
+and is right about the cash flow, but it has misled every reading of the
+arithmetic. **Both percentages apply to the service price, not to each other:**
+
+```
+deposit     = round(price × depositPercentage / 100)
+platformFee = round(price × platformFeePercentage / 100)   ← price, NOT deposit
+business    = deposit − platformFee
+```
+
+The fee is a percentage **of the full service price**, and it is then collected
+out of the deposit. A 10% fee on a $45 service is $4.50 whether the deposit is
+20% or 90% — the deposit only determines how much cash is on hand to take it
+from. `computeAppointmentAmounts` (`appointment-pricing.ts`) has always worked
+this way; only the prose was wrong.
+
+**The rule that follows: `depositPercentage >= platformFeePercentage`.**
+
+Because `business = deposit − fee` and both derive from the same base, the
+business's share is non-negative if and only if the deposit percentage is at
+least the fee percentage. Below it, the business would owe money for accepting a
+booking. This is now enforced in three places — see §40.
+
+**At `deposit == fee` the business's share is exactly zero.** That is legal and
+deliberate, not a bug: the deposit exists purely to make the customer's
+commitment real, the platform takes all of it, and the business is paid its
+entire take offline as the balance. The consequence to state plainly is that
+**such an appointment generates no payout at all** — its two ledger entries net
+to zero, and a payout run skips a business whose available balance is not
+positive (§35.3).
+
 ---
 
 ## 3. Authentication — one email, one role
@@ -3663,15 +3697,20 @@ a business cancellation hands back the deposit *and* the fee, as separate events
 ### 34.3 When money becomes payable, and why the rule is not uniform
 
 `availableAt` is null at insert and set when the appointment resolves. Funds are
-held for **7 days** — a settling period in which a dispute can still arrive, not
-a processing delay. Paying out inside it would mean clawing money back from a
+held for a settling period in which a dispute can still arrive — not a
+processing delay. Paying out inside it would mean clawing money back from a
 business that already has it.
+
+~~The hold is **7 days**.~~ **Superseded by §38 (2026-09-02): the hold is an
+admin setting, `PlatformSetting.payoutHoldDays`, defaulting to 2 days.** The
+hold in force at RESOLUTION time is the one that applies, and it is recorded on
+the appointment as `payoutHoldDaysApplied`. The anchors below are unchanged.
 
 | Outcome | Payable from |
 |---|---|
-| `COMPLETED` | `completedAt` + 7 days |
-| `NO_SHOW` | scheduled **end time** + 7 days |
-| Cancelled by `CUSTOMER`, deposit paid | scheduled **end time** + 7 days |
+| `COMPLETED` | `completedAt` + hold |
+| `NO_SHOW` | scheduled **end time** + hold |
+| Cancelled by `CUSTOMER`, deposit paid | scheduled **end time** + hold |
 | Cancelled by `BUSINESS` | nothing released — a refund is owed (§36) |
 | `SYSTEM_EXPIRY`, never paid | no entries exist at all |
 
@@ -4229,3 +4268,88 @@ literal, not a computed flag, because it is never false.
 platform cannot honour is worse than an honest approximation: honouring it would
 mean either eating the difference on every stale quote or refusing payments that
 drifted, and both are worse failures than a customer seeing "approximately".
+
+---
+
+## 40. Enforcing deposit >= platform fee (2026-09-02)
+
+`businessAmountCents = deposit − fee`, and both derive from the service price
+(§2.1). So a service whose `depositPercentage` is below the platform fee
+percentage prices every booking with a **negative business share** — the
+business paying to take work. This closes that off from both directions and
+adds a backstop for whatever a future change opens.
+
+### 40.1 State of the data before the change
+
+Reported before touching anything, since it decided whether a data fix was
+needed:
+
+| depositPercentage | services | active |
+|---|---|---|
+| *(no rows)* | 0 | 0 |
+
+**Zero services exist in the database**, and therefore zero active services
+below the current 10.00% fee. No backfill or data correction was required, and
+none was performed.
+
+### 40.2 Three layers
+
+**At service create and update — already existed.**
+`ServicesService.assertDepositCoversPlatformFee` was written in §16.3 and reads
+the fee live on every write. Only its message changed: it now states *why*
+rather than only the number, because "must be at least 10.00%" tells a business
+what to type without telling them what they would have been agreeing to.
+
+**At platform-fee change — new.** `PlatformSettingsService` now refuses an
+**increase** that would leave any ACTIVE service's deposit below the new fee.
+The rejection carries `offendingCount` and up to **20** offenders (service id,
+business id and name, service name, current deposit percentage) so the admin can
+start the conversation immediately rather than go hunting.
+
+- **Nothing is auto-raised.** Silently rewriting a business's deposit
+  percentage changes their pricing without their knowledge — a far worse outcome
+  than a failed admin request, given fee changes are rare and admin-only.
+- **INACTIVE services are ignored.** A soft-deleted service takes no bookings,
+  so it cannot produce a negative share; blocking on one would let a business's
+  archive permanently veto a platform decision.
+- **Decreases and no-op sets are always allowed.** Lowering the fee can only
+  widen the margin.
+- The check runs **before** the write, so a refused change leaves both the fee
+  and everybody's pricing exactly as they were. Tested.
+
+**In the money path — new.** `computeAppointmentAmounts` throws if the fee
+exceeds the deposit. With the two checks above this is unreachable, which is the
+point: a negative `businessAmountCents` must never reach the database whatever
+route a later change opens.
+
+It **never clamps to zero**. A clamp hides the misconfiguration and quietly
+moves the business's money to the platform — the failure would be invisible
+until someone reconciled a payout months later. The exception stops the booking
+and names both percentages. It throws a plain `Error`, not a
+`BadRequestException`: this is a server-side invariant violation, and a 500 is
+the honest signal. Blaming the caller for a misconfigured platform would send
+whoever debugs it to the wrong place entirely.
+
+### 40.3 What did not change
+
+The rounding and the subtraction that derive `businessAmountCents` are
+untouched. `ROUND_HALF_UP` on both percentages, business by subtraction, and the
+invariant `platformFee + business == deposit` all hold exactly as before.
+
+### 40.4 The `deposit == fee` case, end to end
+
+Legal, and now tested as a whole path rather than merely permitted:
+
+- `businessAmountCents` is exactly `0` and `platformFeeAmountCents` equals the
+  full deposit
+- the two ledger entries net to `0`
+- a payout run creates **no payout** for that business, because zero is not
+  positive (§35.3), and the entries stay unstamped
+
+That is the correct outcome: the deposit exists only to make the customer's
+commitment real, and the business collects its entire take offline. A business
+in this configuration should expect to see nothing from the platform, ever, and
+the balance endpoint reports exactly that.
+
+At `deposit > fee` the share is positive and pays out normally — also tested, so
+the two cases are distinguished by behaviour and not by assertion alone.

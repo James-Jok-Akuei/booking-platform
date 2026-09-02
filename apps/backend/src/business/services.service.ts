@@ -42,7 +42,9 @@ export class ServicesService {
     const fee = await this.settings.getPlatformFeePercentage();
     if (new Prisma.Decimal(depositPercentage).lessThan(fee)) {
       throw new BadRequestException(
-        `Deposit percentage must be at least ${fee.toFixed(2)}% (current platform fee).`,
+        `Deposit percentage must be at least ${fee.toFixed(2)}% — the platform fee is ` +
+          `${fee.toFixed(2)}% of the service price and is taken out of the deposit. ` +
+          'A smaller deposit would leave you owing money on every booking.',
       );
     }
   }

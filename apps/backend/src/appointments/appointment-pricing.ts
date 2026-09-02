@@ -39,6 +39,25 @@ export function computeAppointmentAmounts(
   depositPercentage: Prisma.Decimal,
   platformFeePercentage: Prisma.Decimal,
 ): AppointmentAmounts {
+  // Unreachable if ServicesService and PlatformSettingsService are both doing
+  // their jobs (§40) — which is exactly why it is here. A negative
+  // businessAmountCents means a business owes money for taking a booking, and
+  // it must not be possible to write one whatever route a future change opens.
+  //
+  // Deliberately NOT clamped to zero. A clamp hides the misconfiguration and
+  // silently moves money from the business to the platform; an exception stops
+  // the booking and names the numbers. This is a server-side invariant
+  // violation, not bad user input, so it throws a plain Error and surfaces as a
+  // 500 rather than blaming the caller.
+  if (platformFeePercentage.greaterThan(depositPercentage)) {
+    throw new Error(
+      `Platform fee ${platformFeePercentage.toFixed(2)}% exceeds deposit ` +
+        `${depositPercentage.toFixed(2)}%, which would make the business's share ` +
+        'negative. Refusing to price this appointment. Fix the service or the ' +
+        'platform fee setting.',
+    );
+  }
+
   const price = new Prisma.Decimal(priceCents);
   const hundred = new Prisma.Decimal(100);
 

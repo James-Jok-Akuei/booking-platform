@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
@@ -388,7 +393,87 @@ export class PlatformSettingsService {
     };
   }
 
+  /**
+   * Refuses a fee INCREASE that would strand an existing service (§40.2).
+   *
+   * `businessAmountCents = deposit − fee`, so a service whose depositPercentage
+   * is below the new fee would price every future booking with a negative
+   * business share — the business paying to take work. `ServicesService` already
+   * refuses to SAVE such a service; this is the other direction, where the
+   * service was fine and the fee moved underneath it.
+   *
+   * **Nothing is auto-raised.** Quietly rewriting a business's deposit
+   * percentage changes their pricing without their knowledge, which is worse
+   * than an admin request that fails: fee changes are rare, admin-only, and the
+   * admin can see exactly who to talk to. Up to 20 offenders are named so that
+   * conversation can start immediately.
+   *
+   * INACTIVE services are ignored — a soft-deleted service takes no bookings, so
+   * it cannot produce a negative share, and blocking on one would make a
+   * business's archive permanently veto a platform decision.
+   *
+   * Decreases are always allowed: lowering the fee can only widen the margin.
+   */
+  private async assertNoServiceStrandedBy(percentage: number) {
+    const next = new Prisma.Decimal(percentage);
+    const current = await this.getPlatformFeePercentage();
+
+    // Equal or lower can strand nobody.
+    if (next.lessThanOrEqualTo(current)) return;
+
+    const where = {
+      isActive: true,
+      depositPercentage: { lt: next },
+    };
+
+    const offendingCount = await this.prisma.service.count({ where });
+    if (offendingCount === 0) return;
+
+    const offendingServices = await this.prisma.service.findMany({
+      where,
+      // Lowest deposit first: the ones furthest from the new floor are the ones
+      // whose owners need the longest conversation.
+      orderBy: { depositPercentage: 'asc' },
+      take: 20,
+      select: {
+        id: true,
+        name: true,
+        depositPercentage: true,
+        businessId: true,
+        business: { select: { id: true, name: true } },
+      },
+    });
+
+    this.logger.warn(
+      `Platform fee increase to ${next.toFixed(2)}% refused: ${offendingCount} active ` +
+        'service(s) have a deposit percentage below it.',
+    );
+
+    throw new BadRequestException({
+      message:
+        `Cannot raise the platform fee to ${next.toFixed(2)}%: ${offendingCount} active ` +
+        'service(s) have a deposit percentage below that, and would price bookings ' +
+        "with a negative business share. Ask those businesses to raise their deposit " +
+        'percentage first. No pricing was changed.',
+      error: 'Bad Request',
+      statusCode: 400,
+      currentPlatformFeePercentage: current.toFixed(2),
+      requestedPlatformFeePercentage: next.toFixed(2),
+      offendingCount,
+      offendingShown: offendingServices.length,
+      offendingServices: offendingServices.map((service) => ({
+        id: service.id,
+        businessId: service.business?.id ?? service.businessId,
+        businessName: service.business?.name ?? null,
+        name: service.name,
+        depositPercentage: service.depositPercentage.toFixed(2),
+      })),
+    });
+  }
+
   async setPlatformFeePercentage(percentage: number) {
+    await this.assertNoServiceStrandedBy(percentage);
+
     const updated = await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: { platformFeePercentage: percentage },

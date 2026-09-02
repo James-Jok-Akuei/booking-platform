@@ -16,6 +16,7 @@ import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { LedgerService } from '../src/ledger/ledger.service';
+import { PayoutsService } from '../src/payouts/payouts.service';
 import {
   DEFAULT_PAYOUT_HOLD_DAYS,
   PlatformSettingsService,
@@ -27,6 +28,7 @@ import {
   createAppointment,
   createBusiness,
   createCustomer,
+  futureSlot,
 } from './setup/factories';
 
 const DAY = 86_400_000;
@@ -51,6 +53,7 @@ describe('Ledger (§34)', () => {
       AppointmentsService,
       AppointmentsScheduler,
       PaymentsScheduler,
+      PayoutsService,
       AvailabilityService,
       PlatformSettingsService,
       commonStubs.mail(),
@@ -477,6 +480,118 @@ describe('Ledger (§34)', () => {
           done.completedAt!.getTime() + 2 * DAY,
         );
       });
+    });
+  });
+
+  /**
+   * What the floor rule means once money actually moves (§40.4).
+   *
+   * At deposit == fee the business's share is exactly zero: the deposit exists
+   * purely to hold the slot and the platform takes all of it, with the business
+   * paid entirely offline. That is legal and it has to work end to end, not
+   * merely not crash.
+   */
+  describe('deposit == fee means a zero business share (§40.4)', () => {
+    const payouts = () => moduleRef.get(PayoutsService);
+    const AS_ADMIN = { userId: 'admin', role: 'ADMIN' };
+
+    /**
+     * A paid, resolved appointment for a business at a given deposit %.
+     *
+     * Booked through `appointments.create` rather than the factory, because the
+     * whole point is the amounts the REAL pricing path produces — the factory
+     * hardcodes them.
+     */
+    const settledAppointment = async (depositPercentage: number) => {
+      const shop = await createBusiness(prisma, {
+        priceCents: 4500,
+        depositPercentage,
+      });
+      const buyer = await createCustomer(prisma);
+      const created = await appointments.create(buyer.userId, {
+        locationId: shop.locationId,
+        serviceId: shop.serviceId,
+        startTime: futureSlot(12, 8).toISOString(),
+      });
+      const a = { id: created.id };
+      const reference = `ref-floor-${a.id}`;
+      await prisma.appointment.update({
+        where: { id: a.id },
+        data: {
+          paymentProviderReferenceId: reference,
+          paymentInitiatedAt: new Date(),
+          startTime: new Date(Date.now() - 2 * DAY - 3_600_000),
+          endTime: new Date(Date.now() - 2 * DAY),
+        },
+      });
+      await appointments.applyPaymentResult(a.id, reference, 'SUCCESSFUL');
+      await prisma.appointment.update({
+        where: { id: a.id },
+        data: { status: AppointmentStatus.BOOKED },
+      });
+      await appointments.noShow(shop.userId, a.id);
+      // Past the hold, so a run would pay it if there were anything to pay.
+      await prisma.ledgerEntry.updateMany({
+        where: { appointmentId: a.id },
+        data: { availableAt: new Date(Date.now() - DAY) },
+      });
+      const row = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
+      return { shop, appointment: row };
+    };
+
+    beforeEach(async () => {
+      await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10);
+    });
+
+    it('prices the business share at exactly zero', async () => {
+      const { appointment } = await settledAppointment(10);
+
+      expect(appointment.businessAmountCents).toBe(0);
+      // The platform takes the whole deposit; the invariant still holds.
+      expect(appointment.platformFeeAmountCents).toBe(appointment.depositAmountCents);
+      expect(
+        appointment.platformFeeAmountCents + appointment.businessAmountCents,
+      ).toBe(appointment.depositAmountCents);
+    });
+
+    it('the ledger pair nets to zero', async () => {
+      const { appointment } = await settledAppointment(10);
+
+      const net = (await entriesFor(appointment.id)).reduce(
+        (sum, e) => sum + e.amountCents,
+        0,
+      );
+
+      expect(net).toBe(0);
+    });
+
+    it('a payout run creates no payout for that business', async () => {
+      const { shop } = await settledAppointment(10);
+
+      await payouts().run();
+
+      // Zero is not positive, so there is nothing to send (§35.3). The entries
+      // stay unstamped, which is correct: they net to nothing.
+      const created = await prisma.payout.findMany({
+        where: { businessId: shop.businessId },
+      });
+      expect(created).toHaveLength(0);
+      const balance = await payouts().balance(AS_ADMIN, shop.businessId);
+      expect(balance.availableNowCents).toBe(0);
+    });
+
+    it('a deposit ABOVE the fee pays out normally', async () => {
+      const { shop, appointment } = await settledAppointment(20);
+
+      expect(appointment.businessAmountCents).toBeGreaterThan(0);
+
+      await payouts().run();
+
+      const [payout] = await prisma.payout.findMany({
+        where: { businessId: shop.businessId },
+      });
+      expect(payout).toBeDefined();
+      expect(payout.amountCents).toBe(appointment.businessAmountCents);
     });
   });
 

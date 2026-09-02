@@ -1,4 +1,5 @@
 import { Prisma, UserRole } from '@prisma/client';
+import { BadRequestException } from '@nestjs/common';
 import { computeAppointmentAmounts } from '../src/appointments/appointment-pricing';
 import { convertUsdCentsToProviderCents } from '../src/payments/currency';
 import { ServicesService } from '../src/business/services.service';
@@ -340,6 +341,256 @@ describe('Money invariant: platformFee + business === deposit', () => {
     });
   });
 
+  /**
+   * The floor rule, from both directions (§40).
+   *
+   * ServicesService refuses to save a service below the fee; this covers the
+   * other direction — the service was fine and the FEE moved underneath it — and
+   * the defensive assertion that catches anything either misses.
+   */
+  describe('deposit >= platform fee, enforced both ways (§40)', () => {
+    let moduleRef: TestingModule;
+    let prisma: PrismaService;
+    let services: ServicesService;
+    let settings: PlatformSettingsService;
+    let business: Awaited<ReturnType<typeof createBusiness>>;
+    let other: Awaited<ReturnType<typeof createBusiness>>;
+
+    beforeAll(async () => {
+      moduleRef = await createTestModule([
+        PlatformSettingsService,
+        BusinessAccessService,
+        ServicesService,
+      ]);
+      prisma = moduleRef.get(PrismaService);
+      services = moduleRef.get(ServicesService);
+      settings = moduleRef.get(PlatformSettingsService);
+      await resetDatabase(prisma);
+      business = await createBusiness(prisma);
+      other = await createBusiness(prisma);
+    });
+
+    afterAll(async () => {
+      await resetDatabase(prisma);
+      await moduleRef.close();
+    });
+
+    beforeEach(async () => {
+      await prisma.service.deleteMany({});
+      await settings.setPlatformFeePercentage(10);
+    });
+
+    const service = (depositPercentage: number, name = 'Service') =>
+      services.create(business.userId, {
+        name,
+        priceCents: 4500,
+        durationMinutes: 60,
+        depositPercentage,
+      });
+
+    describe('at service create and update', () => {
+      it('rejects a deposit below the fee, and says why', async () => {
+        await expect(service(9)).rejects.toThrow(/at least 10.00%/);
+        // The message has to explain the rule, not just state a number.
+        await expect(service(9)).rejects.toThrow(/taken out of the deposit/);
+      });
+
+      it('accepts a deposit exactly equal to the fee', async () => {
+        const created = await service(10, 'At the floor');
+
+        expect(Number(created.depositPercentage)).toBe(10);
+      });
+
+      it('accepts a deposit above the fee', async () => {
+        const created = await service(25, 'Above the floor');
+
+        expect(Number(created.depositPercentage)).toBe(25);
+      });
+
+      it('rejects an UPDATE that drops the deposit below the fee', async () => {
+        const created = await service(25);
+
+        await expect(
+          services.update(business.userId, created.id, { depositPercentage: 5 }),
+        ).rejects.toThrow(/at least 10.00%/);
+
+        const after = await prisma.service.findUniqueOrThrow({
+          where: { id: created.id },
+        });
+        expect(Number(after.depositPercentage)).toBe(25);
+      });
+
+      it('allows an update that leaves the deposit at or above the fee', async () => {
+        const created = await service(25);
+
+        const updated = await services.update(business.userId, created.id, {
+          depositPercentage: 10,
+        });
+
+        expect(Number(updated.depositPercentage)).toBe(10);
+      });
+    });
+
+    describe('at platform-fee change', () => {
+      it('rejects an increase that would strand an active service', async () => {
+        await service(15, 'Deposit 15%');
+
+        await expect(settings.setPlatformFeePercentage(20)).rejects.toBeInstanceOf(
+          BadRequestException,
+        );
+      });
+
+      it('names the offending services so the admin can act', async () => {
+        const created = await service(15, 'Haircut');
+
+        const error = await settings
+          .setPlatformFeePercentage(20)
+          .catch((e: BadRequestException) => e.getResponse() as any);
+
+        expect(error.offendingCount).toBe(1);
+        expect(error.requestedPlatformFeePercentage).toBe('20.00');
+        expect(error.currentPlatformFeePercentage).toBe('10.00');
+        expect(error.offendingServices).toHaveLength(1);
+        expect(error.offendingServices[0]).toMatchObject({
+          id: created.id,
+          businessId: business.businessId,
+          name: 'Haircut',
+          depositPercentage: '15.00',
+        });
+      });
+
+      it('changes nothing when it refuses', async () => {
+        await service(15);
+
+        await expect(settings.setPlatformFeePercentage(20)).rejects.toThrow();
+
+        // Neither the fee nor anybody's pricing moved.
+        expect(Number(await settings.getPlatformFeePercentage())).toBe(10);
+        const rows = await prisma.service.findMany({});
+        expect(rows.every((r) => Number(r.depositPercentage) === 15)).toBe(true);
+      });
+
+      it('never auto-raises a deposit percentage', async () => {
+        const created = await service(15);
+
+        await expect(settings.setPlatformFeePercentage(20)).rejects.toThrow();
+
+        const after = await prisma.service.findUniqueOrThrow({
+          where: { id: created.id },
+        });
+        // Silently rewriting a business's pricing is worse than a failed admin
+        // request. The admin is told who to talk to instead.
+        expect(Number(after.depositPercentage)).toBe(15);
+      });
+
+      it('succeeds once the offending service is fixed', async () => {
+        const created = await service(15);
+        await expect(settings.setPlatformFeePercentage(20)).rejects.toThrow();
+
+        await services.update(business.userId, created.id, { depositPercentage: 20 });
+        const result = await settings.setPlatformFeePercentage(20);
+
+        expect(result.platformFeePercentage).toBe('20.00');
+      });
+
+      it('caps the named list at 20 but reports the true count', async () => {
+        for (let i = 0; i < 23; i++) {
+          await service(15, `Service ${i}`);
+        }
+
+        const error = await settings
+          .setPlatformFeePercentage(20)
+          .catch((e: BadRequestException) => e.getResponse() as any);
+
+        expect(error.offendingCount).toBe(23);
+        expect(error.offendingServices).toHaveLength(20);
+        expect(error.offendingShown).toBe(20);
+      });
+
+      it('ignores INACTIVE services - a soft-deleted one takes no bookings', async () => {
+        const created = await service(5.0 + 5.0, 'Will be retired');
+        await prisma.service.update({
+          where: { id: created.id },
+          data: { depositPercentage: 5, isActive: false },
+        });
+
+        const result = await settings.setPlatformFeePercentage(20);
+
+        expect(result.platformFeePercentage).toBe('20.00');
+      });
+
+      it('blocks on ANY business, not just the caller', async () => {
+        await services.create(other.userId, {
+          name: 'Someone else',
+          priceCents: 4500,
+          durationMinutes: 60,
+          depositPercentage: 12,
+        });
+
+        const error = await settings
+          .setPlatformFeePercentage(20)
+          .catch((e: BadRequestException) => e.getResponse() as any);
+
+        expect(error.offendingCount).toBe(1);
+        expect(error.offendingServices[0].businessId).toBe(other.businessId);
+      });
+
+      it('always allows a decrease', async () => {
+        await settings.setPlatformFeePercentage(20);
+        await service(20);
+
+        const result = await settings.setPlatformFeePercentage(5);
+
+        // Lowering the fee can only widen the margin.
+        expect(result.platformFeePercentage).toBe('5.00');
+      });
+
+      it('allows setting the same value again', async () => {
+        await service(10);
+
+        const result = await settings.setPlatformFeePercentage(10);
+
+        expect(result.platformFeePercentage).toBe('10.00');
+      });
+
+      it('allows an increase that strands nobody', async () => {
+        await service(30);
+
+        const result = await settings.setPlatformFeePercentage(25);
+
+        expect(result.platformFeePercentage).toBe('25.00');
+      });
+    });
+
+    describe('the defensive assertion in the money path', () => {
+      it('throws when the fee exceeds the deposit', () => {
+        // Unreachable given the two checks above — which is the point.
+        expect(() => computeAppointmentAmounts(4500, D(10), D(15))).toThrow(
+          /exceeds deposit/,
+        );
+      });
+
+      it('never clamps to zero', () => {
+        // A clamp would hide the misconfiguration and quietly move the
+        // business's money to the platform.
+        let result: unknown = 'not thrown';
+        try {
+          result = computeAppointmentAmounts(4500, D(10), D(15));
+        } catch {
+          result = 'threw';
+        }
+        expect(result).toBe('threw');
+      });
+
+      it('permits fee exactly equal to deposit', () => {
+        const a = computeAppointmentAmounts(4500, D(10), D(10));
+
+        expect(a.businessAmountCents).toBe(0);
+        expect(a.platformFeeAmountCents).toBe(a.depositAmountCents);
+      });
+    });
+  });
+
   describe('deposit floor validation against the live platform fee (§16.3)', () => {
     let moduleRef: TestingModule;
     let services: ServicesService;
@@ -389,6 +640,11 @@ describe('Money invariant: platformFee + business === deposit', () => {
     });
 
     it('reads the floor LIVE: raising the fee invalidates a previously valid deposit', async () => {
+      // The raise is only permitted once nothing active sits below the new fee
+      // (§40.2), so retire the sub-floor services this suite created first.
+      // That is the rule doing its job, not an obstacle to working around: the
+      // point of this test is the CREATE floor, which is read live.
+      await prisma.service.updateMany({ where: {}, data: { isActive: false } });
       await settings.setPlatformFeePercentage(25);
 
       await expect(
