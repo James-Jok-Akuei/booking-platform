@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { AppointmentStatus, NotificationType } from '@prisma/client';
+import { AppointmentStatus, CancelledBy, NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   PAYMENT_PROVIDER,
@@ -168,7 +168,16 @@ export class PaymentsScheduler {
       // appointment confirmed by the poll a moment ago is never clobbered.
       const { count } = await this.prisma.appointment.updateMany({
         where: { id: appointment.id, status: AppointmentStatus.PENDING_PAYMENT },
-        data: { status: AppointmentStatus.CANCELLED, cancelledAt: new Date() },
+        data: {
+          status: AppointmentStatus.CANCELLED,
+          cancelledAt: new Date(),
+          // SYSTEM_EXPIRY, with no acting user: nobody called this off, a hold
+          // simply lapsed. Recording it as a party's cancellation would make
+          // the refund policy charge someone for a booking that never got paid
+          // for in the first place (§33).
+          cancelledBy: CancelledBy.SYSTEM_EXPIRY,
+          cancelledByUserId: null,
+        },
       });
 
       if (count > 0) {

@@ -198,6 +198,11 @@ model User {
   // Appointments booked by this user. Only populated when role = CUSTOMER.
   appointments Appointment[] @relation("CustomerAppointments")
 
+  /// Appointments this user cancelled — as a customer, as a business member, or
+  /// as an admin acting on a dispute. Who ACTED; Appointment.cancelledBy says
+  /// who bears responsibility, which is a different question.
+  cancelledAppointments Appointment[] @relation("CancelledAppointments")
+
   notifications Notification[] @relation("UserNotifications")
 
   threads          Thread[]          @relation("CustomerThreads")
@@ -621,6 +626,18 @@ model PlatformSetting {
 // ---------- Appointments ----------
 
 /// A booking. Replaces the §12 placeholder with the full lifecycle and money.
+/// Who BEARS RESPONSIBILITY for a cancellation.
+///
+/// Not the same question as who performed it — see Appointment.cancelledByUserId.
+/// This is the field the refund policy (§25) keys off: a business cancellation
+/// costs the business, a customer cancellation does not, and an unpaid hold
+/// released by the sweep is not a cancellation anyone owes anything for.
+enum CancelledBy {
+  CUSTOMER
+  BUSINESS
+  SYSTEM_EXPIRY
+}
+
 model Appointment {
   id String @id @default(uuid())
 
@@ -719,6 +736,48 @@ model Appointment {
   cancelledAt DateTime?
   noShowAt    DateTime?
 
+  // ---- Who cancelled, and why (§33) ----
+  //
+  // §25's refund policy turns on WHICH party called an appointment off, and
+  // until these existed nothing recorded it: cancel() derived the actor to
+  // write a notification sentence and then threw it away.
+  //
+  // Two fields, deliberately not one:
+  //
+  //   cancelledBy       — the party who bears responsibility, which is what
+  //                       decides the money outcome.
+  //   cancelledByUserId — who physically performed the action.
+  //
+  // Usually the same person, and deliberately not always. When an admin
+  // resolves a dispute by reclassifying an appointment as business-cancelled,
+  // cancelledBy is BUSINESS while cancelledByUserId is the admin, and
+  // cancellationTicketId links the ticket that says why. Collapsing them would
+  // force a second refund path for admin-resolved cancellations.
+  //
+  // Null for the expiry sweep, which has no acting user.
+  cancelledBy       CancelledBy?
+  cancelledByUserId String?
+  cancelledByUser   User?        @relation("CancelledAppointments", fields: [cancelledByUserId], references: [id], onDelete: SetNull)
+
+  /// Required when a business cancels, optional when a customer does, null for
+  /// the sweep. A business cancellation costs the business money under §25, so
+  /// it should be a deliberate act with a stated reason.
+  cancellationReason String?
+
+  /// Set when the cancellation came out of a support ticket rather than the
+  /// self-service route. It is what makes an admin reclassification auditable.
+  cancellationTicketId String?
+  cancellationTicket   Ticket? @relation("CancellationTickets", fields: [cancellationTicketId], references: [id], onDelete: SetNull)
+
+  /// When the deposit was confirmed by the provider. Set once, never cleared.
+  ///
+  /// Status cannot answer "was this ever paid?" because later transitions
+  /// destroy the evidence: once an appointment is CANCELLED, nothing remains to
+  /// distinguish an expired unpaid hold from a deposit that was taken and then
+  /// called off. That is why the collected-deposits figure was only ever a
+  /// floor (§29.1). A timestamp survives every subsequent transition.
+  depositPaidAt DateTime?
+
   /// Set when the pre-appointment reminder goes out, so the sweep never sends
   /// the same reminder twice. A timestamp rather than a boolean so it is
   /// visible *when* the customer was reminded.
@@ -729,7 +788,9 @@ model Appointment {
 
   notifications Notification[]
   thread        Thread?
-  tickets       Ticket[]
+  // Named because there are now TWO relations to Ticket: tickets raised ABOUT
+  // this appointment, and the single ticket a cancellation came out of.
+  tickets       Ticket[]            @relation("TicketAppointment")
   adjustments   BillingAdjustment[]
   review        Review?
 
@@ -918,8 +979,11 @@ model Ticket {
 
   /// Optional — a ticket may be general ("I cannot log in"). When present, the
   /// reporter is verified to be a party to it at creation.
+  ///
+  /// Named because there are now two Appointment<->Ticket relations; see
+  /// citedByCancellations below.
   appointmentId String?
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  appointment   Appointment? @relation("TicketAppointment", fields: [appointmentId], references: [id], onDelete: SetNull)
 
   category TicketCategory
   subject  String
@@ -947,6 +1011,9 @@ model Ticket {
   messages    TicketMessage[]
   attachments TicketAttachment[]
   adjustments BillingAdjustment[]
+
+  /// Cancellations that cite this ticket as their reason.
+  citedByCancellations Appointment[] @relation("CancellationTickets")
 
   /// The admin queue: open work, most recently active first.
   @@index([status, lastMessageAt])

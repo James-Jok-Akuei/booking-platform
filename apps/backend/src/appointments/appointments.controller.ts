@@ -25,6 +25,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { InitiateDepositPaymentDto } from './dto/initiate-payment.dto';
 import { VerifyAppointmentDto } from './dto/verify-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
+import { CancelAppointmentDto } from './dto/cancel-appointment.dto';
 
 /**
  * Customer-side booking.
@@ -177,7 +178,8 @@ export class AppointmentsSharedController {
   cancel(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CancelAppointmentDto,
   ) {
-    return this.appointments.cancel(user.userId, id);
+    return this.appointments.cancel(user.userId, id, dto);
   }
 }

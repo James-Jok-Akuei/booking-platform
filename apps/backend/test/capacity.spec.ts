@@ -1,4 +1,4 @@
-import { AppointmentStatus } from '@prisma/client';
+import { AppointmentStatus, CancelledBy } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { AppointmentsService } from '../src/appointments/appointments.service';
 import { PaymentsScheduler } from '../src/appointments/payments.scheduler';
@@ -6,7 +6,12 @@ import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
-import { TestBusiness, createBusiness, createCustomer, futureSlot } from './setup/factories';
+import {
+  TestBusiness,
+  createBusiness,
+  createCustomer,
+  futureSlot,
+} from './setup/factories';
 
 /**
  * Capacity is what stops a one-chair salon taking two customers at once, and
@@ -176,6 +181,29 @@ describe('Location capacity (§16.4)', () => {
   });
 
   describe('the expiry sweep frees capacity (§17.4)', () => {
+    it('records SYSTEM_EXPIRY with no acting user (§33)', async () => {
+      const business = await createBusiness(prisma, { capacity: 1 });
+      const abandoned = await book(business, (await createCustomer(prisma)).userId, slot());
+      await prisma.appointment.update({
+        where: { id: abandoned.id },
+        data: { createdAt: new Date(Date.now() - 10 * 60 * 1000) },
+      });
+
+      await scheduler.expirePendingPayments();
+
+      const stored = await prisma.appointment.findUniqueOrThrow({
+        where: { id: abandoned.id },
+      });
+      expect(stored.status).toBe(AppointmentStatus.CANCELLED);
+      // Nobody called this off — a hold lapsed. Attributing it to a party would
+      // make the refund policy charge someone for a booking that was never paid
+      // for in the first place.
+      expect(stored.cancelledBy).toBe(CancelledBy.SYSTEM_EXPIRY);
+      expect(stored.cancelledByUserId).toBeNull();
+      expect(stored.cancellationReason).toBeNull();
+      expect(stored.depositPaidAt).toBeNull();
+    });
+
     it('cancels an unpaid hold past its window and reopens the slot', async () => {
       const business = await createBusiness(prisma, { capacity: 1 });
       const at = slot();

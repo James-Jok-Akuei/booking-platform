@@ -24,13 +24,10 @@ export const MAX_RANGE_DAYS = 365;
  * once the provider confirms it (§17.3), so every status beyond that implies
  * money arrived.
  *
- * CANCELLED is deliberately EXCLUDED, and it is the one imprecise case: a
- * cancellation can happen either before payment (the §17.4 expiry sweep, no
- * money) or after (a customer or business calling it off, where the deposit was
- * paid and is non-refundable per §2). Nothing records which — there is no
- * `depositPaidAt` and no status history — so including them would overstate and
- * excluding them understates. Excluded, and reported as a floor rather than
- * silently guessed at.
+ * CANCELLED is not in this list because status alone cannot answer the question
+ * for a cancelled row — it may have been an unpaid hold released by the §17.4
+ * sweep, or a paid deposit later called off. It is added back separately, by
+ * `depositPaidAt`, which records the answer directly (§33).
  */
 export const DEPOSIT_COLLECTED_STATUSES: AppointmentStatus[] = [
   AppointmentStatus.BOOKED,
@@ -201,18 +198,39 @@ export class AnalyticsService {
   private async moneyCollected(baseWhere: Prisma.AppointmentWhereInput) {
     const where: Prisma.AppointmentWhereInput = {
       ...baseWhere,
-      status: { in: DEPOSIT_COLLECTED_STATUSES },
+      OR: [
+        { status: { in: DEPOSIT_COLLECTED_STATUSES } },
+        // A cancellation whose deposit was confirmed before it was called off.
+        // The money arrived and, per §2, was not refunded — excluding it
+        // understated what the platform actually took. `depositPaidAt` is what
+        // makes this answerable at all (§33).
+        { status: AppointmentStatus.CANCELLED, depositPaidAt: { not: null } },
+      ],
     };
 
-    const totals = await this.prisma.appointment.aggregate({
-      where,
-      _sum: {
-        depositAmountCents: true,
-        platformFeeAmountCents: true,
-        businessAmountCents: true,
-      },
-      _count: { _all: true },
-    });
+    const [totals, unknown] = await Promise.all([
+      this.prisma.appointment.aggregate({
+        where,
+        _sum: {
+          depositAmountCents: true,
+          platformFeeAmountCents: true,
+          businessAmountCents: true,
+        },
+        _count: { _all: true },
+      }),
+      // Cancelled rows from BEFORE §33, and only those: every cancellation
+      // since records cancelledBy, so a null one is by construction a row that
+      // predates the migration. Their payment state is not recoverable, so they
+      // are excluded and counted rather than guessed at.
+      this.prisma.appointment.count({
+        where: {
+          ...baseWhere,
+          status: AppointmentStatus.CANCELLED,
+          depositPaidAt: null,
+          cancelledBy: null,
+        },
+      }),
+    ]);
 
     return {
       currency: 'USD',
@@ -221,9 +239,19 @@ export class AnalyticsService {
         // What the business actually received of those deposits, after the fee.
         businessShareOfDepositsCents: totals._sum.businessAmountCents ?? 0,
         appointmentCount: totals._count._all,
+        // Named the same way balanceOwedToBusiness reports its own gaps: a
+        // partial total that does not announce itself is the number a business
+        // acts on and then stops trusting.
+        cancelledWithUnknownPaymentState: unknown,
+        complete: unknown === 0,
         note:
-          'Deposits confirmed as collected. Excludes cancelled appointments, ' +
-          'whose deposits may or may not have been taken — nothing records which.',
+          'Deposits confirmed as collected, including appointments cancelled ' +
+          'after their deposit was taken — those are not refunded (§2).' +
+          (unknown > 0
+            ? ` Excludes ${unknown} cancelled appointment(s) from before ` +
+              'payment state was recorded, whose deposits may or may not have ' +
+              'been taken. Every cancellation since then is accounted for exactly.'
+            : ' Every cancellation in this range is accounted for exactly.'),
       },
       platformFeesPaidCents: totals._sum.platformFeeAmountCents ?? 0,
       balanceOwedToBusiness: await this.balanceOwed(baseWhere),

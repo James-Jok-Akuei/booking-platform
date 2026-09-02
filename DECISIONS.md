@@ -3503,3 +3503,113 @@ No consumer anywhere read `appointment.service.priceCents` — the build is clea
 and there is no frontend in this repository. The only other read of
 `Service.priceCents` is in `create()`, which is where the snapshot comes from
 and is unchanged.
+
+---
+
+## 33. Recording who cancelled, and whether the deposit was paid (2026-09-02)
+
+Clears the blocker §30.3(b) reported. **This commit records state. It moves no
+money, implements no refund, and changes no fee or deposit calculation.**
+
+### 33.1 The gap
+
+§25's refund policy turns on which party called an appointment off — a business
+cancellation refunds the customer in full and charges the gateway's 1–2% to the
+business; a customer cancellation or no-show reverses nothing. The stored data
+could not answer that question. `cancel()` derived the actor, spent it on a
+notification sentence, and discarded it; the expiry sweep was indistinguishable
+from a real cancellation; and once a row was CANCELLED nothing said whether its
+deposit had ever been taken.
+
+### 33.2 Two fields for the actor, deliberately
+
+```
+cancelledBy          CancelledBy?   // CUSTOMER | BUSINESS | SYSTEM_EXPIRY
+cancelledByUserId    String?
+cancellationReason   String?
+cancellationTicketId String?
+depositPaidAt        DateTime?
+```
+
+`cancelledBy` is **who bears responsibility** — the input to the money outcome.
+`cancelledByUserId` is **who physically performed the action**. Usually the same
+person, and deliberately not always: when an admin resolves a dispute by
+reclassifying an appointment as business-cancelled, `cancelledBy` is `BUSINESS`,
+`cancelledByUserId` is the admin, and `cancellationTicketId` links the ticket
+that explains it. Collapsing them into one column would mean either lying about
+who acted or building a second refund path for admin-resolved cancellations. One
+refund path can serve both, because the field it reads means the same thing in
+both.
+
+There is no admin reclassification **endpoint** yet — that belongs with refunds.
+The columns are the contract it will write through, and a test asserts the two
+fields hold divergent values independently.
+
+`cancellationReason` is **required when a business cancels**, optional for a
+customer, null for the sweep. A business cancellation now costs the business
+money, so it should be a deliberate act with a stated reason; a customer calling
+off their own booking owes nobody an explanation. The check is in the service,
+not the DTO, because only the service knows which side the caller is on.
+
+The notification now reads the persisted value back rather than recomputing the
+actor. One source of truth: the sentence the customer receives and the value the
+refund module will act on cannot drift apart.
+
+### 33.3 `depositPaidAt`, because status forgets
+
+Status cannot answer "was this ever paid?" once a later transition has moved the
+row on. A CANCELLED appointment looks identical whether it was an unpaid hold
+released by the sweep or a deposit that was taken and then called off — which is
+precisely why §29.1 could only report collected deposits as a floor.
+
+A timestamp survives every subsequent transition. Written in exactly one place,
+the `SUCCESSFUL` branch of `applyPaymentResult`, and never cleared. Tested to
+survive both cancellation and completion.
+
+### 33.4 No backfill, and analytics reads the gap as a gap
+
+Existing CANCELLED rows keep `cancelledBy` null, meaning "not recorded". Nothing
+infers it from timestamps or status history — that would manufacture an answer
+to the one question the data never held, and that answer would go on to decide
+who gets refunded.
+
+Collected deposits now include CANCELLED rows with `depositPaidAt` set: the money
+arrived and, per §2, was not returned. Excluding them understated the platform's
+actual take.
+
+The excluded remainder is exactly the pre-migration set, and it identifies itself
+without guesswork: **every** cancellation since this commit records `cancelledBy`,
+so a CANCELLED row with `cancelledBy` null is by construction older than the
+migration. Those are counted as `cancelledWithUnknownPaymentState`, reported with
+`complete: false`, and named in the note. The blanket "cancelled deposits may or
+may not have been taken" caveat is gone; when the count is zero the response says
+every cancellation in range is accounted for exactly.
+
+One consequence worth stating: a deposit that was paid and then cancelled *by the
+business* currently counts as collected, because refunds do not exist yet. When
+they do, this figure must subtract them — see below.
+
+### 33.5 What is still outstanding before refunds can ship
+
+The data side is now clear. The **money** side is not, and the open question is
+not about cancellation at all:
+
+**How does deposit money reach businesses?** Today it does not. Deposits land in
+MTN's collection account and nothing moves them onward (§17, and the "No payouts"
+note). `businessAmountCents` records what a business is *owed* of each deposit;
+no wallet, ledger or payout run exists to pay it.
+
+That gap decides where the gateway-fee debit lands. §25 says the business bears
+the 1–2% the gateway charges on a refund it caused — but "the business bears it"
+has to be a mechanism, and every candidate depends on the payout model that does
+not exist:
+
+- net it off the next payout — requires payouts;
+- hold it as a negative balance — requires a wallet;
+- bill it separately — requires collecting money *from* businesses, which
+  nothing does.
+
+`BillingAdjustment` already models the row (`GATEWAY_FEE_DEBIT`, `settledAt`,
+`settlementRef`) and §25.3 already records that nothing writes or settles those
+rows. So the refund module is blocked on **the payout/wallet decision**, not on
+cancellation data. That is the next thing to settle.

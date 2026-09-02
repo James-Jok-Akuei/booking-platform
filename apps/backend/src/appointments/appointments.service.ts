@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   AppointmentStatus,
+  CancelledBy,
   BusinessMemberStatus,
   Prisma,
   UserRole,
@@ -32,6 +33,7 @@ import { ChatService } from '../chat/chat.service';
 import { NotificationType } from '@prisma/client';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
+import { CancelAppointmentDto } from './dto/cancel-appointment.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -59,6 +61,14 @@ const APPOINTMENT_SELECT = {
   completedAt: true,
   cancelledAt: true,
   noShowAt: true,
+  // Who called it off and why (§33). Exposed because the party that cancelled
+  // is what decides the money outcome, and the customer reading the booking is
+  // one of the two parties it decides it for.
+  cancelledBy: true,
+  cancelledByUserId: true,
+  cancellationReason: true,
+  cancellationTicketId: true,
+  depositPaidAt: true,
   createdAt: true,
   location: { select: { id: true, name: true, address: true, businessId: true } },
   // NO priceCents. The joined Service row carries the business's CURRENT price,
@@ -546,7 +556,10 @@ export class AppointmentsService {
           status: AppointmentStatus.PENDING_PAYMENT,
           paymentProviderReferenceId: providerReferenceId,
         },
-        data: { status: AppointmentStatus.BOOKED },
+        // depositPaidAt is written here and nowhere else, and is never
+        // cleared. Status alone cannot answer "was this ever paid?" once a
+        // later transition has moved the row on (§33).
+        data: { status: AppointmentStatus.BOOKED, depositPaidAt: new Date() },
       });
       if (count > 0) {
         this.logger.log(
@@ -717,7 +730,11 @@ export class AppointmentsService {
    * here moves money, and the refund/forfeit posting belongs to the Payments
    * module.
    */
-  async cancel(userId: string, appointmentId: string) {
+  async cancel(
+    userId: string,
+    appointmentId: string,
+    dto: CancelAppointmentDto = {},
+  ) {
     const appointment = await this.requireParticipantAppointment(userId, appointmentId);
 
     const cancellable: AppointmentStatus[] = [
@@ -730,20 +747,45 @@ export class AppointmentsService {
       );
     }
 
-    this.logger.log(`Appointment ${appointmentId} -> CANCELLED.`);
+    // requireParticipantAppointment has already established that the caller is
+    // one of the two parties, so this is the whole question. Derived once and
+    // then PERSISTED — before §33 it was derived here, spent on a notification
+    // sentence, and thrown away, which is why the refund policy could not be
+    // applied to any row.
+    const cancelledBy =
+      appointment.customerId === userId ? CancelledBy.CUSTOMER : CancelledBy.BUSINESS;
+
+    if (cancelledBy === CancelledBy.BUSINESS && !dto.reason) {
+      throw new BadRequestException(
+        'A reason is required when a business cancels an appointment.',
+      );
+    }
+
+    this.logger.log(
+      `Appointment ${appointmentId} -> CANCELLED by ${cancelledBy} (user ${userId}).`,
+    );
 
     const updated = await this.prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status: AppointmentStatus.CANCELLED, cancelledAt: new Date() },
+      data: {
+        status: AppointmentStatus.CANCELLED,
+        cancelledAt: new Date(),
+        cancelledBy,
+        cancelledByUserId: userId,
+        cancellationReason: dto.reason ?? null,
+      },
       select: APPOINTMENT_SELECT,
     });
 
+    // Read back from the row rather than recomputed, so the sentence the
+    // customer is sent and the value the refund module will read can never
+    // disagree.
     await this.notifyBothParties(
       appointmentId,
       NotificationType.APPOINTMENT_CANCELLED,
-      appointment.customerId === userId
+      updated.cancelledBy === CancelledBy.CUSTOMER
         ? 'Cancelled by the customer.'
-        : 'Cancelled by the business.',
+        : `Cancelled by the business.${updated.cancellationReason ? ` Reason: ${updated.cancellationReason}` : ''}`,
     );
 
     return updated;

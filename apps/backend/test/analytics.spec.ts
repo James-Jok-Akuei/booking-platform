@@ -1,4 +1,4 @@
-import { AppointmentStatus } from '@prisma/client';
+import { AppointmentStatus, CancelledBy } from '@prisma/client';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { AnalyticsService, MAX_RANGE_DAYS } from '../src/analytics/analytics.service';
@@ -47,6 +47,10 @@ describe('Business analytics (§29)', () => {
     fee?: number;
     /** Omit to simulate an appointment booked before snapshotting existed. */
     priceCents?: number | null;
+    /** Set to mark the deposit as confirmed before whatever happened next. */
+    depositPaid?: boolean;
+    /** Omit on a CANCELLED row to simulate one from before §33. */
+    cancelledBy?: CancelledBy;
   }) => {
     const start = new Date(now + params.startsInDays * DAY);
     const deposit = params.deposit ?? 900;
@@ -67,6 +71,10 @@ describe('Business analytics (§29)', () => {
         servicePriceCents: price,
         depositPercentage: price === null ? null : 20,
         platformFeePercentage: price === null ? null : 10,
+        depositPaidAt: params.depositPaid ? new Date(now - DAY) : null,
+        cancelledAt:
+          params.status === AppointmentStatus.CANCELLED ? new Date(now - DAY) : null,
+        cancelledBy: params.cancelledBy ?? null,
       },
     });
   };
@@ -475,6 +483,132 @@ describe('Business analytics (§29)', () => {
           ...RANGE,
         }),
       ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('cancelled deposits are counted by whether they were paid (§33)', () => {
+    beforeEach(async () => {
+      await prisma.appointment.deleteMany({});
+    });
+
+    const money = async () => {
+      const report = await analytics.getAnalytics(AS_ALPHA(), alpha.businessId, {
+        locationId: alpha.locationId,
+        ...RANGE,
+      });
+      return report.money;
+    };
+
+    it('counts a deposit that was paid and then cancelled', async () => {
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.CANCELLED,
+        startsInDays: -2,
+        depositPaid: true,
+        cancelledBy: CancelledBy.CUSTOMER,
+      });
+
+      const m = await money();
+
+      // The money arrived and, per §2, was not given back. Excluding it
+      // understated what the platform actually took.
+      expect(m.collectedThroughPlatform.depositsCents).toBe(900);
+      expect(m.collectedThroughPlatform.appointmentCount).toBe(1);
+      expect(m.platformFeesPaidCents).toBe(450);
+    });
+
+    it('excludes an expired unpaid hold', async () => {
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.CANCELLED,
+        startsInDays: -2,
+        cancelledBy: CancelledBy.SYSTEM_EXPIRY,
+      });
+
+      const m = await money();
+
+      expect(m.collectedThroughPlatform.depositsCents).toBe(0);
+      expect(m.collectedThroughPlatform.appointmentCount).toBe(0);
+    });
+
+    it('separates the two in the same range', async () => {
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.CANCELLED,
+        startsInDays: -2,
+        depositPaid: true,
+        cancelledBy: CancelledBy.BUSINESS,
+      });
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.CANCELLED,
+        startsInDays: -3,
+        cancelledBy: CancelledBy.SYSTEM_EXPIRY,
+      });
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.COMPLETED,
+        startsInDays: -4,
+        depositPaid: true,
+      });
+
+      const m = await money();
+
+      // The completed one plus the paid-then-cancelled one. The lapsed hold
+      // is not money and never was.
+      expect(m.collectedThroughPlatform.depositsCents).toBe(1800);
+      expect(m.collectedThroughPlatform.appointmentCount).toBe(2);
+    });
+
+    it('reports itself complete when every cancellation in range is attributed', async () => {
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.CANCELLED,
+        startsInDays: -2,
+        cancelledBy: CancelledBy.SYSTEM_EXPIRY,
+      });
+
+      const m = await money();
+
+      expect(m.collectedThroughPlatform.cancelledWithUnknownPaymentState).toBe(0);
+      expect(m.collectedThroughPlatform.complete).toBe(true);
+      expect(m.collectedThroughPlatform.note).toContain('accounted for exactly');
+    });
+
+    it('counts, and says, how many pre-§33 cancellations it cannot place', async () => {
+      // No cancelledBy and no depositPaidAt: exactly a row from before this
+      // existed. Its payment state is not recoverable.
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.CANCELLED,
+        startsInDays: -2,
+      });
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.CANCELLED,
+        startsInDays: -3,
+      });
+
+      const m = await money();
+
+      expect(m.collectedThroughPlatform.cancelledWithUnknownPaymentState).toBe(2);
+      expect(m.collectedThroughPlatform.complete).toBe(false);
+      // The number says so itself rather than leaving the reader to find out.
+      expect(m.collectedThroughPlatform.note).toContain('2 cancelled appointment(s)');
+      expect(m.collectedThroughPlatform.depositsCents).toBe(0);
+    });
+
+    it('never guesses: an unattributed cancellation is excluded, not assumed paid', async () => {
+      await seed({
+        locationId: alpha.locationId,
+        status: AppointmentStatus.CANCELLED,
+        startsInDays: -2,
+      });
+
+      const m = await money();
+
+      expect(m.collectedThroughPlatform.depositsCents).toBe(0);
+      expect(m.collectedThroughPlatform.appointmentCount).toBe(0);
     });
   });
 });
