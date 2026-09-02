@@ -825,11 +825,11 @@ export class AppointmentsService {
     // would put a figure in the ledger the provider's statement disagrees with.
     const owesRefund =
       cancelledBy === CancelledBy.BUSINESS && appointment.depositPaidAt !== null;
-    if (owesRefund && dto.gatewayChargeCents === undefined) {
+    if (owesRefund && dto.gatewayChargeMinor === undefined) {
       throw new BadRequestException(
-        'gatewayChargeCents is required when a business cancels an appointment ' +
-          'whose deposit was paid. It is the gateway\'s charge on the refund, and ' +
-          'it is borne by the business.',
+        'gatewayChargeMinor is required when a business cancels an appointment ' +
+          'whose deposit was paid. It is the gateway\'s charge on the refund, in ' +
+          'minor units of the settlement currency, and it is borne by the business.',
       );
     }
 
@@ -856,7 +856,7 @@ export class AppointmentsService {
         await this.ledger.recordBusinessCancellationRefund(
           tx,
           appointmentId,
-          dto.gatewayChargeCents!,
+          dto.gatewayChargeMinor!,
         );
       } else {
         // A CUSTOMER cancellation releases the existing entries: the deposit is
@@ -950,7 +950,7 @@ export class AppointmentsService {
         await this.ledger.recordBusinessCancellationRefund(
           tx,
           appointmentId,
-          dto.gatewayChargeCents,
+          dto.gatewayChargeMinor,
         );
       }
 

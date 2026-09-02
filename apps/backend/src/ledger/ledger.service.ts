@@ -16,6 +16,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
+import { splitSettlement } from './settlement';
 
 /** Admin-only ledger operations, asserted in the service as well as the guard (§41). */
 
@@ -70,11 +71,33 @@ export class LedgerService {
         depositAmountCents: true,
         platformFeeAmountCents: true,
         currency: true,
+        providerCurrency: true,
+        providerCurrencyAmountCents: true,
+        exchangeRateUsed: true,
         location: { select: { businessId: true } },
       },
     });
 
     const businessId = appointment.location.businessId;
+
+    // The figure the provider ACTUALLY CHARGED, not a recomputation from a rate
+    // (§45.2). Null when the appointment never went through the payment
+    // initiation that records it; such entries carry no settlement figure and
+    // payouts exclude them rather than convert at a guessed rate.
+    const charged = appointment.providerCurrencyAmountCents;
+    const settlement =
+      charged === null
+        ? null
+        : splitSettlement({
+            chargedMinor: charged,
+            depositAmountCents: appointment.depositAmountCents,
+            platformFeeAmountCents: appointment.platformFeeAmountCents,
+          });
+
+    const settlementFields = {
+      settlementCurrency: settlement ? appointment.providerCurrency : null,
+      bookingExchangeRate: settlement ? appointment.exchangeRateUsed : null,
+    };
 
     await tx.ledgerEntry.createMany({
       data: [
@@ -84,6 +107,8 @@ export class LedgerService {
           type: LedgerEntryType.DEPOSIT_RECEIVED,
           amountCents: appointment.depositAmountCents,
           currency: appointment.currency,
+          ...settlementFields,
+          settlementAmountMinor: settlement?.depositMinor ?? null,
           // Null: the deposit has landed, but nothing is payable until the
           // appointment resolves one way or the other.
           availableAt: null,
@@ -94,6 +119,11 @@ export class LedgerService {
           type: LedgerEntryType.PLATFORM_FEE,
           amountCents: -appointment.platformFeeAmountCents,
           currency: appointment.currency,
+          ...settlementFields,
+          // Negative, matching amountCents. The business's settlement share is
+          // the remainder by construction, so the pair sums exactly.
+          settlementAmountMinor:
+            settlement === null ? null : -settlement.feeMinor,
           availableAt: null,
         },
       ],
@@ -187,7 +217,8 @@ export class LedgerService {
    * The gateway charge is then a separate, third fact — the only part of a
    * business cancellation the business actually bears.
    *
-   * `gatewayChargeCents` is supplied by the caller and never derived. The MoMo
+   * `gatewayChargeMinor` is supplied by the caller, in the SETTLEMENT currency,
+   * and never derived. The MoMo
    * integration does not report what it charged on a transaction or a refund
    * (§36.2), so a percentage constant here would be a number the ledger
    * asserted and the provider's statement contradicted. A ledger that computes
@@ -196,7 +227,7 @@ export class LedgerService {
   async recordBusinessCancellationRefund(
     tx: Prisma.TransactionClient,
     appointmentId: string,
-    gatewayChargeCents: number,
+    gatewayChargeMinor: number,
   ): Promise<void> {
     const appointment = await tx.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
@@ -230,6 +261,41 @@ export class LedgerService {
     const businessId = appointment.location.businessId;
     const now = new Date();
 
+    // The originals, read back rather than recomputed (§45.3). Copying their
+    // exact negatives in BOTH currencies is what guarantees a business
+    // cancellation returns the business to precisely zero — a recomputation
+    // from today's rate would leave a residue that grows with every rate move.
+    const originals = await tx.ledgerEntry.findMany({
+      where: {
+        appointmentId,
+        type: {
+          in: [LedgerEntryType.DEPOSIT_RECEIVED, LedgerEntryType.PLATFORM_FEE],
+        },
+      },
+      select: {
+        type: true,
+        amountCents: true,
+        settlementCurrency: true,
+        settlementAmountMinor: true,
+        bookingExchangeRate: true,
+      },
+    });
+    const original = (type: LedgerEntryType) =>
+      originals.find((entry) => entry.type === type) ?? null;
+    const deposit = original(LedgerEntryType.DEPOSIT_RECEIVED);
+    const fee = original(LedgerEntryType.PLATFORM_FEE);
+
+    // The gateway charge is supplied in the SETTLEMENT currency, because that is
+    // what the provider actually charged (§45.4). Its USD figure is a reporting
+    // equivalent at the booking rate, not the authority.
+    const rate = deposit?.bookingExchangeRate ?? null;
+    const gatewayUsdCents = rate
+      ? new Prisma.Decimal(gatewayChargeMinor)
+          .div(rate)
+          .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
+          .toNumber()
+      : gatewayChargeMinor;
+
     await tx.ledgerEntry.createMany({
       data: [
         {
@@ -238,6 +304,13 @@ export class LedgerService {
           type: LedgerEntryType.DEPOSIT_REFUND,
           amountCents: -appointment.depositAmountCents,
           currency: appointment.currency,
+          settlementCurrency: deposit?.settlementCurrency ?? null,
+          settlementAmountMinor:
+            deposit?.settlementAmountMinor === null ||
+            deposit?.settlementAmountMinor === undefined
+              ? null
+              : -deposit.settlementAmountMinor,
+          bookingExchangeRate: deposit?.bookingExchangeRate ?? null,
           availableAt: now,
         },
         {
@@ -246,14 +319,26 @@ export class LedgerService {
           type: LedgerEntryType.PLATFORM_FEE_REVERSAL,
           amountCents: appointment.platformFeeAmountCents,
           currency: appointment.currency,
+          settlementCurrency: fee?.settlementCurrency ?? null,
+          settlementAmountMinor:
+            fee?.settlementAmountMinor === null ||
+            fee?.settlementAmountMinor === undefined
+              ? null
+              : -fee.settlementAmountMinor,
+          bookingExchangeRate: fee?.bookingExchangeRate ?? null,
           availableAt: now,
         },
         {
           businessId,
           appointmentId,
           type: LedgerEntryType.GATEWAY_FEE_DEBIT,
-          amountCents: -gatewayChargeCents,
+          amountCents: -gatewayUsdCents,
           currency: appointment.currency,
+          settlementCurrency: deposit?.settlementCurrency ?? null,
+          settlementAmountMinor: deposit?.settlementCurrency
+            ? -gatewayChargeMinor
+            : null,
+          bookingExchangeRate: rate,
           availableAt: now,
         },
       ],
@@ -270,7 +355,8 @@ export class LedgerService {
     this.logger.warn(
       `Ledger: appointment ${appointmentId} refunded in full ` +
         `(-${appointment.depositAmountCents}c deposit, +${appointment.platformFeeAmountCents}c fee back), ` +
-        `gateway charge ${gatewayChargeCents}c borne by business ${businessId}.`,
+        `gateway charge ${gatewayChargeMinor} ${deposit?.settlementCurrency ?? 'minor units'} ` +
+        `borne by business ${businessId}.`,
     );
   }
 
@@ -325,6 +411,18 @@ export class LedgerService {
     const amountCents =
       adjustment.type === BillingAdjustmentType.FEE_REFUND ? cents : -cents;
 
+    // An adjustment is a decision made TODAY, so it settles in today's provider
+    // currency at today's rate — unlike a deposit, whose settlement is fixed at
+    // the booking it belongs to. The admin's figure is in settlement currency
+    // (§45.5); the USD amount above is the reporting equivalent.
+    const display = await this.settings.getExchangeRateForDisplay();
+    const settlementAmountMinor = display
+      ? new Prisma.Decimal(amountCents)
+          .mul(display.rate)
+          .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
+          .toNumber()
+      : null;
+
     const entry = await tx.ledgerEntry.create({
       data: {
         businessId: adjustment.businessId,
@@ -332,6 +430,9 @@ export class LedgerService {
         billingAdjustmentId: adjustment.id,
         type: LedgerEntryType.ADJUSTMENT,
         amountCents,
+        settlementCurrency: display?.providerCurrency ?? null,
+        settlementAmountMinor,
+        bookingExchangeRate: display?.rate ?? null,
         // Payable at once. An adjustment is a decision already made; there is
         // no appointment outcome left to wait for.
         availableAt: new Date(),

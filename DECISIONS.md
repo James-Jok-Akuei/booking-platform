@@ -4792,3 +4792,98 @@ Asserted directly: `service.groupBy` is now called **zero** times on a 20-result
 page, while the remaining lookups are still exactly one each. (§43.4's table
 omitted the exchange-rate read; it has been corrected to include it, which is why
 the "before" figure there is six rather than the five originally written.)
+
+---
+
+## 45. Settlement amounts on the ledger (2026-09-02)
+
+§34.5 and §36.7 left payout currency explicitly undecided. This decides it.
+
+**The business's payable is fixed at the BOOKING-DATE rate.** A payout performs
+no conversion and reads no exchange rate: every entry already carries the amount
+it will be paid in. A rate change between booking and payout must not move a
+payout by a single minor unit.
+
+### 45.1 Two figures, two jobs
+
+`amountCents` stays the **USD reporting and analytics** figure — every existing
+analytics query is unchanged. `settlementAmountMinor` is **authoritative for
+payouts**, carries the same sign, and sits alongside `settlementCurrency` and
+`bookingExchangeRate`.
+
+All three are nullable, and only because entries created before this — or whose
+appointment never recorded a charged amount — genuinely have no settlement
+figure. Those are **excluded from payouts and reported**, never converted at a
+guessed rate. The immutability trigger (§34.2) now covers all three: a payout
+amount that can be edited after the fact is not a ledger.
+
+**Backfill:** the migration fills every entry whose appointment recorded a
+charge, using the same arithmetic the application uses, so a backfilled pair and
+a freshly written pair are indistinguishable. It runs **before** the trigger is
+extended — once the trigger names these columns it would reject the very UPDATE
+that populates them. On the current database there were **0 entries, 0
+backfilled, 0 unbackfillable**.
+
+### 45.2 The fee is a proportion of what was charged
+
+The deposit entry takes `providerCurrencyAmountCents` — the figure the provider
+**actually charged**, not a recomputation from a rate. A test uses a charged
+amount deliberately one unit off the round conversion, so a recomputation would
+be visible.
+
+The fee is then a proportion **of that charged amount**:
+
+```
+fee = round(charged × platformFeeAmountCents / depositAmountCents)
+```
+
+Not `platformFeePercentage` applied to something converted independently. The
+fee percentage applies to the **service price**, which was never denominated in
+the provider's currency; converting it separately would drift from the money
+really collected, and the ledger would disagree with the provider's statement by
+a few units on every booking.
+
+**Rounded once, on the fee. The business's share is the remainder** — exactly the
+reasoning behind `businessAmountCents` being computed by subtraction in USD
+(§16.3). Rounding both independently would let them disagree by a unit, and
+
+```
+DEPOSIT_RECEIVED + PLATFORM_FEE === the business's share
+```
+
+has to hold **exactly in both currencies**. Tested across nine amounts including
+primes and thirds and sevenths, where an independent second rounding would show.
+
+The §40 deposit ≥ fee rule guarantees the proportion is in [0, 1]. **At deposit
+== fee it is exactly 1**: the fee takes the whole charged amount and the
+business's settlement share is exactly zero — asserted in both currencies, not
+"about zero".
+
+### 45.3 A refund copies, never recomputes
+
+`DEPOSIT_REFUND` and `PLATFORM_FEE_REVERSAL` are read back from the original
+entries and negated, in both currencies. That is what guarantees a business
+cancellation returns the business to **precisely** zero.
+
+Recomputing from today's rate would leave a residue that grows with every rate
+move — the business would be a little up or a little down on every cancelled
+booking, for no reason anyone could explain. Tested by doubling the rate between
+booking and cancellation and asserting the entries still sum to exactly zero.
+
+### 45.4 The gateway charge is supplied in settlement currency
+
+Renamed `gatewayChargeCents` → **`gatewayChargeMinor`**. It is minor units of the
+**settlement** currency, because that is what the provider actually charged. A
+name ending in "Cents" would have read as USD, which is the convention
+everywhere else in this codebase — a misleading name on a money field is worse
+than a rename.
+
+Its USD figure is a **reporting equivalent** at the booking rate, not the
+authority.
+
+### 45.5 An adjustment settles at today's rate
+
+Unlike a deposit, an adjustment is a decision made **now**, not one belonging to
+a past booking — so it settles in today's provider currency at today's rate. The
+admin's figure is in settlement currency and the USD amount is the reporting
+equivalent, the mirror image of §36.5.

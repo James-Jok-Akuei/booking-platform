@@ -16,8 +16,10 @@ export class CancelAppointmentDto {
   reason?: string;
 
   /**
-   * What the payment gateway charged to process the refund, in cents. REQUIRED
-   * when a business cancels an appointment whose deposit was paid.
+   * What the payment gateway charged to process the refund, in MINOR UNITS OF
+   * THE SETTLEMENT CURRENCY — the currency the provider actually charged in
+   * (§45.4). REQUIRED when a business cancels an appointment whose deposit was
+   * paid.
    *
    * Supplied, never derived. The MoMo integration does not report its own
    * charge on a transaction or a refund (§36.2), so computing it from a
@@ -27,9 +29,9 @@ export class CancelAppointmentDto {
    */
   @IsOptional()
   @Type(() => Number)
-  @IsInt({ message: 'gatewayChargeCents must be a whole number of cents.' })
+  @IsInt({ message: 'gatewayChargeMinor must be a whole number of minor units.' })
   @Min(0)
-  gatewayChargeCents?: number;
+  gatewayChargeMinor?: number;
 }
 
 /**
@@ -47,7 +49,7 @@ export class ReclassifyCancellationDto {
   ticketId?: string;
 
   @Type(() => Number)
-  @IsInt({ message: 'gatewayChargeCents must be a whole number of cents.' })
+  @IsInt({ message: 'gatewayChargeMinor must be a whole number of minor units.' })
   @Min(0)
-  gatewayChargeCents!: number;
+  gatewayChargeMinor!: number;
 }

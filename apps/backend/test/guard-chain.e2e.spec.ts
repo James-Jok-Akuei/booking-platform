@@ -699,7 +699,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
         {
           method: 'PATCH',
           token: tokenAlpha,
-          body: { reason: 'Let me off.', gatewayChargeCents: 0 },
+          body: { reason: 'Let me off.', gatewayChargeMinor: 0 },
         },
       );
 
@@ -716,7 +716,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       // The charge is supplied, never guessed (§36.2), so its absence is a
       // request error rather than a silent zero.
       expect(res.status).toBe(400);
-      expect(JSON.stringify(res.body)).toContain('gatewayChargeCents');
+      expect(JSON.stringify(res.body)).toContain('gatewayChargeMinor');
     });
 
     it('executing a billing adjustment rejects a CUSTOMER token -> 403', async () => {

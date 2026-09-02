@@ -222,7 +222,7 @@ describe('Ledger (§34)', () => {
 
       await appointments.cancel(business.userId, a.id, {
         reason: 'Shop closed.',
-        gatewayChargeCents: 50,
+        gatewayChargeMinor: 50,
       });
 
       // A refund, not a payout. The original pair is released — settled by

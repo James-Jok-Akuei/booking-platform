@@ -1267,6 +1267,26 @@ model LedgerEntry {
 
   currency String @default("USD")
 
+  // ---- Settlement, fixed at booking (§45) ----
+  //
+  // amountCents above stays the USD reporting and analytics figure.
+  // settlementAmountMinor is AUTHORITATIVE FOR PAYOUTS, and carries the same
+  // sign as amountCents.
+  //
+  // The business's payable is fixed at the booking-date rate, so a payout
+  // performs no conversion and reads no exchange rate: every entry already
+  // carries the amount it will be paid in. A rate change between booking and
+  // payout must not move a payout by a single minor unit.
+  //
+  // Nullable only because entries created before §45, or whose appointment
+  // never recorded a charged amount, genuinely have no settlement figure.
+  // Those are EXCLUDED from payouts rather than converted at a guessed rate.
+  settlementCurrency    String?
+  settlementAmountMinor Int?
+  /// The rate in force when the entry was created, kept so a settlement figure
+  /// can be explained afterwards without knowing the rate's history.
+  bookingExchangeRate Decimal? @db.Decimal(18, 8)
+
   /// When this entry becomes payable. NULL means "not yet" — the appointment it
   /// came from has not resolved. Set once the outcome is known: a week after
   /// completion, or a week after the scheduled end time for an appointment that
@@ -1290,6 +1310,8 @@ model LedgerEntry {
 
   /// The payout run's query: this business's unsettled, now-payable entries.
   @@index([businessId, payoutId, availableAt])
+  /// The payout run's grouping key (§45): one business, one currency.
+  @@index([businessId, settlementCurrency, payoutId])
   /// Everything that happened to one appointment.
   @@index([appointmentId])
   @@map("ledger_entries")
