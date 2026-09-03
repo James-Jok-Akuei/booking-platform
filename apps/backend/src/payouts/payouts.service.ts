@@ -28,7 +28,17 @@ export interface RunSummary {
   runAt: Date;
   businessesConsidered: number;
   payoutsCreated: number;
-  totalCents: number;
+  /**
+   * Minor units of the settlement currency, NOT USD cents (§51.2).
+   *
+   * It was called `totalCents` until the settlement change (§46) made it a sum
+   * of `settlementAmountMinor`. A name ending in "Cents" reads as USD
+   * everywhere else in this codebase — the same reason `gatewayChargeCents` was
+   * renamed in 7cdc411.
+   */
+  totalMinor: number;
+  /** The currencies that total spans. Plural because a run can pay several. */
+  settlementCurrencies: string[];
   /** Businesses whose available balance was zero or negative — see §35.3. */
   skippedNonPositive: number;
   /** Businesses skipped because they are SUSPENDED — see §42.4. */
@@ -175,7 +185,10 @@ export class PayoutsService {
       runAt: now,
       businessesConsidered: owing.length,
       payoutsCreated: created,
-      totalCents: total,
+      totalMinor: total,
+      settlementCurrencies: [
+        ...new Set(owing.map((g) => g.settlementCurrency).filter((c): c is string => !!c)),
+      ],
       skippedNonPositive: skipped,
       pausedForSuspension,
       pausedForUnverifiedDestination,
@@ -194,7 +207,7 @@ export class PayoutsService {
       pausedForUnverifiedDestination > 0
     ) {
       this.logger.log(
-        `Payout run: ${created} payout(s) totalling ${total} minor unit(s) across ` +
+        `Payout run: ${created} payout(s) totalling ${total} settlement minor unit(s) across ` +
           `${owing.length} business/currency group(s); ${skipped} skipped for a ` +
           `non-positive balance, ${pausedForSuspension} paused for suspension, ` +
           `${pausedForUnverifiedDestination} paused for having no verified payout destination` +
@@ -556,7 +569,7 @@ export class PayoutsService {
     await this.assertMayRead(actor, businessId);
     const now = new Date();
 
-    const [available, pending, paid, unresolved, settlement] = await Promise.all([
+    const [available, pending, paid, unresolved, inFlight, settlement] = await Promise.all([
       this.prisma.ledgerEntry.aggregate({
         where: { businessId, payoutId: null, availableAt: { not: null, lte: now } },
         _sum: { amountCents: true },
@@ -575,6 +588,16 @@ export class PayoutsService {
       this.prisma.ledgerEntry.aggregate({
         where: { businessId, payoutId: null, availableAt: null },
         _sum: { amountCents: true },
+        _count: { _all: true },
+      }),
+      // Money in flight: a payout exists and is not yet marked paid (§51.3).
+      // Without this it appeared NOWHERE — the entries are stamped so
+      // `availableNow` is zero, and `lifetimePaid` only counts PAID. A business
+      // that was told it would be paid and can see nothing is a support ticket.
+      this.prisma.payout.groupBy({
+        by: ['settlementCurrency'],
+        where: { businessId, status: PayoutStatus.PENDING },
+        _sum: { settlementAmountMinor: true, amountCents: true },
         _count: { _all: true },
       }),
       // What will actually be sent, by currency. The USD figures above are
@@ -612,6 +635,15 @@ export class PayoutsService {
       unresolvedCents: unresolved._sum.amountCents ?? 0,
       lifetimePaidCents: paid._sum.amountCents ?? 0,
       payoutCount: paid._count._all,
+      /** Payouts created and not yet sent. Money on its way, not lost. */
+      pendingPayouts: {
+        count: inFlight.reduce((sum, row) => sum + row._count._all, 0),
+        reportingUsdCents: inFlight.reduce((sum, row) => sum + (row._sum.amountCents ?? 0), 0),
+        bySettlementCurrency: inFlight.map((row) => ({
+          settlementCurrency: row.settlementCurrency,
+          amountMinor: row._sum.settlementAmountMinor ?? 0,
+        })),
+      },
       entryCounts: {
         available: available._count._all,
         pending: pending._count._all,

@@ -497,15 +497,31 @@ describe('Refunds and adjustments (§36)', () => {
   });
 
   describe('held total', () => {
-    it('equals the sum of every unstamped entry', async () => {
+    it('equals the sum of every unstamped entry, in SETTLEMENT currency', async () => {
       const entries = await prisma.ledgerEntry.findMany({ where: { payoutId: null } });
-      const expected = entries.reduce((sum, e) => sum + e.amountCents, 0);
+      const expectedMinor = entries.reduce(
+        (sum, e) => sum + (e.settlementAmountMinor ?? 0),
+        0,
+      );
+      const expectedUsd = entries.reduce((sum, e) => sum + e.amountCents, 0);
 
       const held = await ledger.heldTotals({ role: 'ADMIN' });
 
-      const usd = held.byCurrency.find((c) => c.currency === 'USD')!;
-      expect(usd.amountCents).toBe(expected);
-      expect(usd.entryCount).toBe(entries.length);
+      // The figure an operator compares against MTN's balance is the one in the
+      // currency the money is actually held in (§51.1).
+      const withSettlement = entries.filter((e) => e.settlementCurrency !== null);
+      const ssp = held.bySettlementCurrency.find((c) => c.settlementCurrency === 'SSP')!;
+      expect(ssp.amountMinor).toBe(expectedMinor);
+      expect(ssp.entryCount).toBe(withSettlement.length);
+      // Entries with no settlement figure are money the platform holds but
+      // cannot pay out (§45.1). Counted separately rather than folded into a
+      // currency they do not belong to.
+      expect(held.entriesWithoutSettlement).toBe(
+        entries.length - withSettlement.length,
+      );
+      expect(held.totalEntries).toBe(entries.length);
+      // USD is carried alongside, explicitly labelled as reporting.
+      expect(ssp.reportingUsdCents).toBeLessThanOrEqual(expectedUsd);
     });
 
     it('drops entries once a payout has settled them', async () => {
@@ -522,9 +538,11 @@ describe('Refunds and adjustments (§36)', () => {
       await payouts.run();
       const after = await ledger.heldTotals({ role: 'ADMIN' });
 
-      expect(before.byCurrency[0].amountCents).toBe(a.businessAmountCents);
+      expect(before.bySettlementCurrency[0].reportingUsdCents).toBe(
+        a.businessAmountCents,
+      );
       // Settled money is no longer held: it has gone out.
-      expect(after.byCurrency).toHaveLength(0);
+      expect(after.bySettlementCurrency).toHaveLength(0);
       expect(after.totalEntries).toBe(0);
     });
 
@@ -537,8 +555,11 @@ describe('Refunds and adjustments (§36)', () => {
 
       // Still BOOKED, so availableAt is null — but the platform is holding the
       // money all the same, and that is what this figure is for.
-      expect(held.byCurrency[0].amountCents).toBe(a.businessAmountCents);
-      expect(held.byCurrency[0].entryCount).toBe(2);
+      expect(held.bySettlementCurrency[0].reportingUsdCents).toBe(
+        a.businessAmountCents,
+      );
+      expect(held.bySettlementCurrency[0].entryCount).toBe(2);
+      expect(held.bySettlementCurrency[0].settlementCurrency).toBe('SSP');
     });
   });
 

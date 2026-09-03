@@ -5260,3 +5260,83 @@ signup requires a name before an approval decision is asked for.
 - **No admin endpoint to simulate a payment confirmation.** With the sandbox
   unavailable there is no supported way to move an appointment to `BOOKED`,
   which is why the seed calls `applyPaymentResult` directly.
+
+---
+
+## 51. Money reporting says what it means (2026-09-03)
+
+Walk-through findings 2, 7, 5 and 3 (§49.4). Nothing about the arithmetic
+changed; what changed is that the numbers now say what they are.
+
+### 51.1 `/admin/ledger/held` reports the currency the money is actually in
+
+It grouped by the USD `currency` column and reported `USD 900c` while the
+platform was holding `SSP 585,000`. Its **only** purpose is to be compared
+against the provider's statement, so reporting a currency the platform holds
+none of defeated it entirely.
+
+Now grouped by `settlementCurrency`, reporting `amountMinor`, with
+`reportingUsdCents` alongside and explicitly named as the internal unit of
+account rather than the money.
+
+Entries with **no** settlement figure (§45.1) are counted separately as
+`entriesWithoutSettlement`, not folded into a currency they do not belong to.
+They are money the platform holds and cannot pay out, which is a third thing,
+not a rounding error.
+
+### 51.2 `totalCents` was never cents
+
+Renamed `totalMinor`, with `settlementCurrencies` beside it — the same reasoning
+as the `gatewayChargeCents` → `gatewayChargeMinor` rename in 7cdc411. A name
+ending in "Cents" reads as USD everywhere else in this codebase, and this figure
+became a sum of `settlementAmountMinor` in §46.
+
+The currency list is plural because a run can pay several: a single total across
+two currencies is a number with no unit, so the units are named next to it.
+
+### 51.3 Money in flight is visible to the business
+
+`GET /businesses/:id/balance` had `availableNowCents` (zero once entries are
+stamped) and `lifetimePaidCents` (zero until an admin marks it paid) — so
+between a run and a transfer, **a payout appeared nowhere at all**. From the
+business's side their balance simply vanished. A business that was told it would
+be paid and can see nothing is a support ticket waiting to happen.
+
+`pendingPayouts` now reports the count, the USD figure for reference, and the
+amount by settlement currency. Tested through the whole cycle: it appears on a
+run, clears on mark-paid, and returns to `availableNow` on mark-failed.
+
+### 51.4 A return type a caller can use
+
+`PayoutDestinationsService.submit()` spread through `Record<string, unknown>`,
+so TypeScript inferred `{ msisdnLast3: string }` — the `id` needed to then
+verify the row was unreachable, and the demo seed had to re-query the database
+for an id it had just been handed.
+
+Now an explicit `PayoutDestinationView`, with `msisdn` optional because it is
+present only for the owner (§48.5) — the redaction is in the type, not only in
+the runtime branch.
+
+**Audit result: this was the only one.** `Record<string, unknown>` appears
+nowhere else in `src/`.
+
+### 51.5 Audit — names that still imply the wrong unit
+
+Reported, not renamed: each is a schema column or a provider interface read by
+several modules, and renaming them is a migration and a refactor rather than
+part of this commit.
+
+| Name | Actually holds | Where |
+|---|---|---|
+| `Appointment.providerCurrencyAmountCents` | **provider-currency minor units** | schema, §18 |
+| `InitiatePaymentParams.amountCents` | **provider-currency minor units** | `payment-provider.interface.ts:36` |
+| `providerAmountCents` (local) | **provider-currency minor units** | `appointments.service.ts:444` |
+
+All three predate the settlement work and all three are the same mistake this
+commit fixed twice. They are correct *within* the payment path, where everything
+is provider currency by definition — but a reader arriving from the ledger, where
+`amountCents` means USD, will read them wrong.
+
+Correctly named and left alone: `gatewayUsdCents`, `usdAmountCents`,
+`reportingUsdCents`, and every `*PriceCents` / `*AmountCents` on the appointment
+money snapshot, which really are USD.

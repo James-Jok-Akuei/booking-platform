@@ -568,4 +568,30 @@ describe('Payout destinations (§48)', () => {
       });
     });
   });
+
+  describe('the returned view is usable by a caller (§51.4)', () => {
+    it('submit returns an id the caller can immediately verify with', async () => {
+      // The whole point: this used to spread through Record<string, unknown> and
+      // collapse to { msisdnLast3 }, so a typed caller could not reach `id` —
+      // the demo seed had to re-query for an id it had just been handed.
+      const created = await destinations.submit(shop.userId, { msisdn: VALID });
+
+      const verifiedRow = await destinations.verify(AS_ADMIN(), created.id, {
+        verificationNote: 'Straight from the submit response.',
+      });
+
+      expect(created.id).toBeDefined();
+      expect(verifiedRow.id).toBe(created.id);
+      expect(verifiedRow.status).toBe(PayoutDestinationStatus.VERIFIED);
+    });
+
+    it('carries the full number for the owner and the mask for everyone', async () => {
+      const created = await destinations.submit(shop.userId, { msisdn: VALID });
+
+      expect(created.msisdn).toBe(VALID);
+      expect(created.msisdnLast3).toContain('567');
+      expect(created.status).toBe(PayoutDestinationStatus.UNVERIFIED);
+      expect(created.verificationMethod).toBeNull();
+    });
+  });
 });

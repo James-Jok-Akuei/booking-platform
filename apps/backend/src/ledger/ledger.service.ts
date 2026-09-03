@@ -466,27 +466,50 @@ export class LedgerService {
   async heldTotals(actor: { role: UserRole | string }) {
     this.assertAdmin(actor);
 
-    const grouped = await this.prisma.ledgerEntry.groupBy({
-      by: ['currency'],
-      where: { payoutId: null },
-      _sum: { amountCents: true },
-      _count: { _all: true },
-    });
+    // Grouped by SETTLEMENT currency, because that is the money the platform is
+    // actually holding (§51.1). Grouping by the USD `currency` column reported
+    // a figure in a currency the platform holds none of — and this endpoint's
+    // only purpose is to be compared against the provider's statement, so that
+    // defeated it entirely.
+    const [grouped, unsettled] = await Promise.all([
+      this.prisma.ledgerEntry.groupBy({
+        by: ['settlementCurrency'],
+        where: { payoutId: null },
+        _sum: { settlementAmountMinor: true, amountCents: true },
+        _count: { _all: true },
+      }),
+      this.prisma.ledgerEntry.count({
+        where: { payoutId: null, settlementCurrency: null },
+      }),
+    ]);
 
-    const byCurrency = grouped.map((row) => ({
-      currency: row.currency,
-      amountCents: row._sum.amountCents ?? 0,
-      entryCount: row._count._all,
-    }));
+    const bySettlementCurrency = grouped
+      .filter((row) => row.settlementCurrency !== null)
+      .map((row) => ({
+        settlementCurrency: row.settlementCurrency!,
+        amountMinor: row._sum.settlementAmountMinor ?? 0,
+        entryCount: row._count._all,
+        /** The USD equivalent, for reporting only. Never what is held. */
+        reportingUsdCents: row._sum.amountCents ?? 0,
+      }));
 
     return {
       asOf: new Date(),
-      byCurrency,
-      totalEntries: byCurrency.reduce((sum, c) => sum + c.entryCount, 0),
+      bySettlementCurrency,
+      /**
+       * Entries carrying no settlement figure (§45.1). They are money the
+       * platform holds but cannot pay out, so they are counted separately
+       * rather than folded into a currency they do not belong to.
+       */
+      entriesWithoutSettlement: unsettled,
+      totalEntries:
+        bySettlementCurrency.reduce((sum, c) => sum + c.entryCount, 0) + unsettled,
       note:
-        'Ledger entries not yet settled by a payout, matured or not. Compare ' +
-        "against the payment provider's actual balance by hand — nothing " +
-        'reconciles these automatically.',
+        'Ledger entries not yet settled by a payout, matured or not, in the ' +
+        'currency they will be PAID in. Compare against the payment ' +
+        "provider's actual balance by hand — nothing reconciles these " +
+        'automatically. reportingUsdCents is the internal unit of account and ' +
+        'is not what is held.',
     };
   }
 

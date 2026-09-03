@@ -11,6 +11,7 @@ import {
   BusinessMemberStatus,
   NotificationType,
   PayoutDestinationStatus,
+  PayoutProvider,
   PayoutVerificationMethod,
   Prisma,
   UserRole,
@@ -24,6 +25,33 @@ import {
   VerifyPayoutDestinationDto,
 } from './dto/verify-payout-destination.dto';
 import { ListPayoutDestinationsDto } from './dto/list-payout-destinations.dto';
+
+/**
+ * What a caller gets back about a destination.
+ *
+ * Declared explicitly rather than inferred through a `Record<string, unknown>`
+ * spread (§51.4). The inferred version collapsed to `{ msisdnLast3: string }`,
+ * so a caller could not reach the `id` it needs to then verify the row — the
+ * demo seed had to re-query the database for an id it had just been handed.
+ */
+export interface PayoutDestinationView {
+  id: string;
+  businessId: string;
+  provider: PayoutProvider;
+  status: PayoutDestinationStatus;
+  submittedById: string;
+  submittedAt: Date;
+  verifiedById: string | null;
+  verifiedAt: Date | null;
+  verificationMethod: PayoutVerificationMethod | null;
+  verificationNote: string | null;
+  rejectionReason: string | null;
+  createdAt: Date;
+  /** Always present. The last three digits, safe to show anyone. */
+  msisdnLast3: string;
+  /** Present only for the OWNER; omitted entirely for everyone else (§48.5). */
+  msisdn?: string;
+}
 
 /** Statuses that occupy the one live slot per business. */
 export const LIVE_DESTINATION_STATUSES: PayoutDestinationStatus[] = [
@@ -47,6 +75,23 @@ const DESTINATION_SELECT = {
   rejectionReason: true,
   createdAt: true,
 } as const;
+
+/** The row shape `DESTINATION_SELECT` produces. */
+type DestinationRow = {
+  id: string;
+  businessId: string;
+  msisdn: string;
+  provider: PayoutProvider;
+  status: PayoutDestinationStatus;
+  submittedById: string;
+  submittedAt: Date;
+  verifiedById: string | null;
+  verifiedAt: Date | null;
+  verificationMethod: PayoutVerificationMethod | null;
+  verificationNote: string | null;
+  rejectionReason: string | null;
+  createdAt: Date;
+};
 
 /**
  * Where a business's payouts are sent, and the proof that it is really theirs
@@ -87,7 +132,10 @@ export class PayoutDestinationsService {
    * actually sent has to survive the number changing, or a later dispute has
    * nothing to read.
    */
-  async submit(userId: string, dto: CreatePayoutDestinationDto) {
+  async submit(
+    userId: string,
+    dto: CreatePayoutDestinationDto,
+  ): Promise<PayoutDestinationView> {
     const membership = await this.requireOwner(userId);
     const msisdn = this.assertValidMsisdn(dto.msisdn);
 
@@ -201,7 +249,7 @@ export class PayoutDestinationsService {
     actor: { userId: string; role: UserRole | string },
     destinationId: string,
     dto: VerifyPayoutDestinationDto,
-  ) {
+  ): Promise<PayoutDestinationView> {
     this.assertAdmin(actor);
     const destination = await this.requireDestination(destinationId);
 
@@ -243,7 +291,7 @@ export class PayoutDestinationsService {
     actor: { userId: string; role: UserRole | string },
     destinationId: string,
     dto: RejectPayoutDestinationDto,
-  ) {
+  ): Promise<PayoutDestinationView> {
     this.assertAdmin(actor);
     const destination = await this.requireDestination(destinationId);
 
@@ -333,13 +381,27 @@ export class PayoutDestinationsService {
     }
   }
 
-  private publicFields(destination: { [k: string]: unknown }) {
-    const { msisdn, ...rest } = destination as Record<string, unknown>;
-    return rest;
+  /** Everything except the number itself. */
+  private publicFields(destination: DestinationRow): Omit<PayoutDestinationView, 'msisdn'> {
+    return {
+      id: destination.id,
+      businessId: destination.businessId,
+      provider: destination.provider,
+      status: destination.status,
+      submittedById: destination.submittedById,
+      submittedAt: destination.submittedAt,
+      verifiedById: destination.verifiedById,
+      verifiedAt: destination.verifiedAt,
+      verificationMethod: destination.verificationMethod,
+      verificationNote: destination.verificationNote,
+      rejectionReason: destination.rejectionReason,
+      createdAt: destination.createdAt,
+      msisdnLast3: maskMsisdn(destination.msisdn),
+    };
   }
 
-  private forOwner(destination: Record<string, unknown>) {
-    return { ...destination, msisdnLast3: maskMsisdn(String(destination.msisdn)) };
+  private forOwner(destination: DestinationRow): PayoutDestinationView {
+    return { ...this.publicFields(destination), msisdn: destination.msisdn };
   }
 
   private async requireDestination(id: string) {

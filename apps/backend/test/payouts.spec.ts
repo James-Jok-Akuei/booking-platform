@@ -592,4 +592,94 @@ describe('Payouts (§35)', () => {
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
+
+  describe('money reporting says what it means (§51)', () => {
+    it('the run summary reports MINOR units and names the currency', async () => {
+      await entry(alpha, 4500);
+
+      const summary = await payouts.run();
+
+      // Was `totalCents`, which it never was after §46 (§51.2).
+      expect(summary.totalMinor).toBe(4500);
+      expect(summary.settlementCurrencies).toEqual(['USD']);
+      expect(summary).not.toHaveProperty('totalCents');
+    });
+
+    it('names every currency a run spans', async () => {
+      await entry(alpha, 4500);
+      await prisma.ledgerEntry.create({
+        data: {
+          businessId: beta.businessId,
+          type: LedgerEntryType.DEPOSIT_RECEIVED,
+          amountCents: 1000,
+          currency: 'USD',
+          settlementCurrency: 'SSP',
+          settlementAmountMinor: 650_000,
+          availableAt: new Date(Date.now() - DAY),
+        },
+      });
+
+      const summary = await payouts.run();
+
+      expect(summary.settlementCurrencies.sort()).toEqual(['SSP', 'USD']);
+      // One total across two currencies would be a number with no unit, so the
+      // currencies are named beside it rather than the figure being trusted
+      // alone.
+      expect(summary.totalMinor).toBe(654_500);
+    });
+
+    describe('a PENDING payout is visible to the business', () => {
+      it('appears in the balance, in neither available nor lifetime paid', async () => {
+        await entry(alpha, 4500);
+        await payouts.run();
+
+        const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
+
+        // Before §51.3 this money appeared NOWHERE: the entries are stamped so
+        // available is zero, and lifetimePaid only counts PAID.
+        expect(balance.availableNowCents).toBe(0);
+        expect(balance.lifetimePaidCents).toBe(0);
+        expect(balance.pendingPayouts.count).toBe(1);
+        expect(balance.pendingPayouts.reportingUsdCents).toBe(4500);
+        expect(balance.pendingPayouts.bySettlementCurrency).toEqual([
+          { settlementCurrency: 'USD', amountMinor: 4500 },
+        ]);
+      });
+
+      it('moves out of pending once it is marked paid', async () => {
+        await entry(alpha, 4500);
+        await payouts.run();
+        const [payout] = await prisma.payout.findMany();
+
+        await payouts.markPaid(AS_ADMIN(), payout.id, { reference: 'MOMO-1' });
+
+        const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
+        expect(balance.pendingPayouts.count).toBe(0);
+        expect(balance.lifetimePaidCents).toBe(4500);
+      });
+
+      it('returns to available when a payout fails', async () => {
+        await entry(alpha, 4500);
+        await payouts.run();
+        const [payout] = await prisma.payout.findMany();
+
+        await payouts.markFailed(AS_ADMIN(), payout.id, { reason: 'Wrong number.' });
+
+        const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
+        // Not pending, not paid — back in the pool where it can be seen.
+        expect(balance.pendingPayouts.count).toBe(0);
+        expect(balance.availableNowCents).toBe(4500);
+      });
+
+      it('reports zero rather than an empty shape when nothing is in flight', async () => {
+        const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
+
+        expect(balance.pendingPayouts).toEqual({
+          count: 0,
+          reportingUsdCents: 0,
+          bySettlementCurrency: [],
+        });
+      });
+    });
+  });
 });

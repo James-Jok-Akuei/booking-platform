@@ -693,7 +693,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const res = await request(url, '/admin/ledger/held', { token: tokenAdmin });
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('byCurrency');
+      expect(res.body).toHaveProperty('bySettlementCurrency');
     });
 
     it('reclassifying a cancellation rejects a BUSINESS token -> 403', async () => {

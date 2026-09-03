@@ -26,7 +26,8 @@ export class PayoutsScheduler {
     if (summary.payoutsCreated > 0) {
       this.logger.log(
         `Scheduled payout run created ${summary.payoutsCreated} payout(s) ` +
-          `totalling ${summary.totalCents}c, awaiting transfer.`,
+          `totalling ${summary.totalMinor} minor unit(s) of ` +
+          `${summary.settlementCurrencies.join('/') || 'no currency'}, awaiting transfer.`,
       );
     }
     return summary;
