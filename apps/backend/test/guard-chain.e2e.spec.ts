@@ -1153,7 +1153,139 @@ describe('Guard chain over HTTP (§23.3)', () => {
       expect(response.headers.get('content-disposition')).toContain('attachment');
       expect(body.split('\n')[0]).toContain('businessId,businessName');
       expect(body).toContain('SSP,2925000');
-      expect(body).toContain('NOT RECORDED');
+      // alpha has a verified destination seeded by the factory (§48), so the
+      // real number is exported and the row is payable.
+      expect(body).toContain('payable');
+      expect(body).toContain('MTN_MOMO');
+    });
+  });
+
+  describe('payout destinations over HTTP (§48)', () => {
+    it('a STAFF member cannot submit -> 403', async () => {
+      const res = await request(url, '/business/payout-destination', {
+        method: 'POST',
+        token: tokenAlphaStaff,
+        body: { msisdn: '+211921234567' },
+      });
+
+      // Redirecting where money is sent is OWNER-only.
+      expect(res.status).toBe(403);
+    });
+
+    it('a CUSTOMER cannot reach the business route at all -> 403', async () => {
+      const res = await request(url, '/business/payout-destination', {
+        token: tokenCustomerA,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('an OWNER can submit a valid number -> 201', async () => {
+      const res = await request(url, '/business/payout-destination', {
+        method: 'POST',
+        token: tokenBeta,
+        body: { msisdn: '+211925550001' },
+      });
+
+      expect(res.status).toBe(201);
+      expect(res.body.status).toBe('UNVERIFIED');
+    });
+
+    it('rejects a malformed msisdn -> 400', async () => {
+      const res = await request(url, '/business/payout-destination', {
+        method: 'POST',
+        token: tokenBeta,
+        body: { msisdn: 'not-a-number' },
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('msisdn');
+    });
+
+    it('a STAFF member reading sees the status but not the number', async () => {
+      const res = await request(url, '/business/payout-destination', {
+        token: tokenAlphaStaff,
+      });
+
+      expect(res.status).toBe(200);
+      expect(JSON.stringify(res.body)).not.toMatch(/\+2119\d{7}/);
+    });
+
+    it('GET /admin/payout-destinations rejects a BUSINESS token -> 403', async () => {
+      const res = await request(url, '/admin/payout-destinations', {
+        token: tokenAlpha,
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('GET /admin/payout-destinations accepts an ADMIN token -> 200', async () => {
+      const res = await request(url, '/admin/payout-destinations?status=UNVERIFIED', {
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('destinations');
+    });
+
+    it('verifying with no note -> 400 from the ValidationPipe', async () => {
+      const created = await prisma.payoutDestination.findFirstOrThrow({
+        where: { status: 'UNVERIFIED' },
+      });
+
+      const res = await request(url, `/admin/payout-destinations/${created.id}/verify`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: {},
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('verificationNote');
+    });
+
+    it('rejecting with no reason -> 400', async () => {
+      const created = await prisma.payoutDestination.findFirstOrThrow({
+        where: { status: 'UNVERIFIED' },
+      });
+
+      const res = await request(url, `/admin/payout-destinations/${created.id}/reject`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: {},
+      });
+
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain('reason');
+    });
+
+    it('a BUSINESS token cannot verify its own number -> 403', async () => {
+      const created = await prisma.payoutDestination.findFirstOrThrow({
+        where: { status: 'UNVERIFIED' },
+      });
+
+      const res = await request(url, `/admin/payout-destinations/${created.id}/verify`, {
+        method: 'PATCH',
+        token: tokenBeta,
+        body: { verificationNote: 'It is mine, honestly.' },
+      });
+
+      expect(res.status).toBe(403);
+    });
+
+    it('an admin can verify -> 200, recording ADMIN as the method', async () => {
+      const created = await prisma.payoutDestination.findFirstOrThrow({
+        where: { status: 'UNVERIFIED' },
+      });
+
+      const res = await request(url, `/admin/payout-destinations/${created.id}/verify`, {
+        method: 'PATCH',
+        token: tokenAdmin,
+        body: { verificationNote: 'Confirmed by phone.' },
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('VERIFIED');
+      expect(res.body.verificationMethod).toBe('ADMIN');
     });
   });
 

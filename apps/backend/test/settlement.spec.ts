@@ -10,6 +10,7 @@ import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { LedgerService } from '../src/ledger/ledger.service';
 import { PayoutsService } from '../src/payouts/payouts.service';
+import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import { splitSettlement } from '../src/ledger/settlement';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
@@ -43,6 +44,7 @@ describe('Settlement currency on the ledger (§45)', () => {
       AppointmentsService,
       AvailabilityService,
       PayoutsService,
+      PayoutDestinationsService,
       commonStubs.mail(),
       commonStubs.notifications(),
       commonStubs.payments(),

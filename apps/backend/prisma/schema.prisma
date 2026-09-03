@@ -128,6 +128,9 @@ enum NotificationType {
   BUSINESS_REJECTED // an admin rejected the application, with a reason
   BUSINESS_SUSPENDED // an admin suspended the business, with a reason
   BUSINESS_REINSTATED // a suspended business was restored
+  PAYOUT_DESTINATION_SUBMITTED // a business submitted a payout number; admins check it
+  PAYOUT_DESTINATION_VERIFIED // the number was verified; payouts can flow
+  PAYOUT_DESTINATION_REJECTED // an admin refused it, with a reason
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in
@@ -205,6 +208,32 @@ enum LedgerEntryType {
   ADJUSTMENT
 }
 
+/// Where a business's payouts are sent. One provider today; the enum exists so
+/// adding a second is a migration rather than a reinterpretation of a string.
+enum PayoutProvider {
+  MTN_MOMO
+}
+
+enum PayoutDestinationStatus {
+  UNVERIFIED // submitted, not yet checked. BLOCKS payouts (§48.3).
+  VERIFIED // money may be sent here
+  REJECTED // an admin refused it, with a reason
+  SUPERSEDED // replaced by a later submission; kept as history
+}
+
+/// HOW a destination was verified.
+///
+/// Null until it is. `ADMIN` today; an OTP path later sets `OTP` with
+/// `verifiedById` null, because the number's holder is not a user in this
+/// system. A row verified by an administrator and one verified by the person
+/// holding the SIM are different facts and must not look identical in the
+/// table — recording the method now means the OTP path adds rows rather than
+/// forcing a reinterpretation of old ones.
+enum PayoutVerificationMethod {
+  ADMIN
+  OTP
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -268,6 +297,9 @@ model User {
   /// Businesses whose status this user last changed. The admin moderation trail.
   businessStatusChanges BusinessProfile[] @relation("BusinessStatusChanges")
 
+  submittedPayoutDestinations PayoutDestination[] @relation("SubmittedPayoutDestinations")
+  verifiedPayoutDestinations  PayoutDestination[] @relation("VerifiedPayoutDestinations")
+
   refreshTokens RefreshToken[]
   otpCodes      OtpCode[]
 
@@ -326,8 +358,9 @@ model BusinessProfile {
   @@index([status])
   @@map("business_profiles")
 
-  ledgerEntries LedgerEntry[]
-  payouts       Payout[]
+  ledgerEntries      LedgerEntry[]
+  payouts            Payout[]
+  payoutDestinations PayoutDestination[]
 }
 
 // ---------- Taxonomy ----------
@@ -1364,6 +1397,52 @@ model Payout {
   @@index([businessId, status])
   @@index([status, runAt])
   @@map("payouts")
+}
+
+
+/// Where one business's payouts are sent (§48).
+///
+/// APPEND-ONLY history with one live row per business. A new submission
+/// SUPERSEDES the previous row; a VERIFIED row is never mutated, because the
+/// record of where money was actually sent has to survive the number changing.
+/// Sending money to the wrong number is the one mistake in this system that
+/// cannot be undone by appending a correcting entry (§34.2) — so the history is
+/// the audit trail for the only irreversible thing the platform does.
+model PayoutDestination {
+  id String @id @default(uuid())
+
+  businessId      String
+  businessProfile BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// E.164, validated against a configurable expected country prefix (§48.2).
+  msisdn   String
+  provider PayoutProvider @default(MTN_MOMO)
+
+  status PayoutDestinationStatus @default(UNVERIFIED)
+
+  submittedById String
+  submittedBy   User   @relation("SubmittedPayoutDestinations", fields: [submittedById], references: [id], onDelete: Cascade)
+  submittedAt   DateTime @default(now())
+
+  /// Null when verification did not come from a user — an OTP to the number's
+  /// holder, who has no account here.
+  verifiedById String?
+  verifiedBy   User?   @relation("VerifiedPayoutDestinations", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedAt   DateTime?
+
+  verificationMethod PayoutVerificationMethod?
+
+  /// How the admin confirmed it. Required for ADMIN verification: "verified" on
+  /// its own is not a record anybody can audit.
+  verificationNote String?
+
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId, status])
+  @@index([status, submittedAt])
+  @@map("payout_destinations")
 }
 
 // ---------- Reviews ----------

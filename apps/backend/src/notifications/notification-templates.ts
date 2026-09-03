@@ -230,6 +230,38 @@ export function renderNotification(
           'next payout run.',
       };
 
+    case NotificationType.PAYOUT_DESTINATION_SUBMITTED:
+      return {
+        subject: 'A payout number needs verifying',
+        body:
+          'A business has submitted a mobile-money number for payouts.\n\n' +
+          (ctx.reason ? `${ctx.reason}\n\n` : '') +
+          'Their payouts are PAUSED until it is verified — nothing is lost, but ' +
+          'the money is not moving. Verify or reject it in the admin queue.',
+      };
+
+    case NotificationType.PAYOUT_DESTINATION_VERIFIED:
+      return {
+        subject: 'Your payout number has been verified',
+        body:
+          'The mobile-money number you submitted has been verified. Any balance ' +
+          'held while it was pending goes out on the next payout run.\n\n' +
+          'If you ever lose control of that number, submit a new one straight ' +
+          'away — payouts pause again until the new one is verified, which is ' +
+          'the point.',
+      };
+
+    case NotificationType.PAYOUT_DESTINATION_REJECTED:
+      return {
+        subject: 'Your payout number was not accepted',
+        body:
+          'The mobile-money number you submitted has not been accepted, so ' +
+          'payouts remain paused.\n\n' +
+          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
+          'Nothing has been written off — your balance is held. Submit a ' +
+          'corrected number to start again.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,

@@ -17,7 +17,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { ListPayoutsDto } from './dto/list-payouts.dto';
 import { toCsvRow } from './payout-csv';
+import { PayoutDestinationsService } from './payout-destinations.service';
+import { maskMsisdn } from './msisdn';
 import { MarkPaidDto, MarkFailedDto } from './dto/mark-payout.dto';
+
+/** Why a business was held back from a run. */
+export type PauseReason = 'SUSPENDED' | 'NO_VERIFIED_PAYOUT_DESTINATION';
 
 export interface RunSummary {
   runAt: Date;
@@ -28,6 +33,13 @@ export interface RunSummary {
   skippedNonPositive: number;
   /** Businesses skipped because they are SUSPENDED — see §42.4. */
   pausedForSuspension: number;
+  /** Businesses skipped for having no VERIFIED payout destination — §48.3. */
+  pausedForUnverifiedDestination: number;
+  /**
+   * Every business held back this run, and why — so an admin has a list to
+   * chase rather than a silently smaller payout batch.
+   */
+  pausedBusinesses: Array<{ businessId: string; reason: PauseReason }>;
   /** Entries with no settlement amount, which cannot be paid — see §46.3. */
   entriesWithoutSettlement: number;
 }
@@ -36,7 +48,10 @@ export interface RunSummary {
 export class PayoutsService {
   private readonly logger = new Logger(PayoutsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly destinations: PayoutDestinationsService,
+  ) {}
 
   // ---------- The run ----------
 
@@ -95,26 +110,43 @@ export class PayoutsService {
     // reinstatement pays it. Suspension usually means something is wrong with
     // the money or the conduct, and paying out mid-investigation is hard to
     // undo; leaving the entries in the pool is not.
+    const candidateIds = [...new Set(owing.map((g) => g.businessId))];
+
     const suspended = new Set(
       (
         await this.prisma.businessProfile.findMany({
-          where: {
-            status: BusinessStatus.SUSPENDED,
-            id: { in: owing.map((g) => g.businessId) },
-          },
+          where: { status: BusinessStatus.SUSPENDED, id: { in: candidateIds } },
           select: { id: true },
         })
       ).map((b) => b.id),
     );
 
+    // A business with no VERIFIED destination has nowhere for the money to go
+    // (§48.3). It is paused through the SAME mechanism as a suspension —
+    // entries left unstamped, nothing written off, picked up by the first run
+    // after it is fixed — rather than a second, subtly different skip path.
+    const verifiedDestinations = await this.destinations.verifiedFor(candidateIds);
+
     let created = 0;
     let total = 0;
     let skipped = 0;
     let pausedForSuspension = 0;
+    let pausedForUnverifiedDestination = 0;
+    const pausedBusinesses: Array<{ businessId: string; reason: PauseReason }> = [];
 
     for (const group of owing) {
       if (suspended.has(group.businessId)) {
         pausedForSuspension++;
+        pausedBusinesses.push({ businessId: group.businessId, reason: 'SUSPENDED' });
+        continue;
+      }
+
+      if (!verifiedDestinations.has(group.businessId)) {
+        pausedForUnverifiedDestination++;
+        pausedBusinesses.push({
+          businessId: group.businessId,
+          reason: 'NO_VERIFIED_PAYOUT_DESTINATION',
+        });
         continue;
       }
 
@@ -146,14 +178,26 @@ export class PayoutsService {
       totalCents: total,
       skippedNonPositive: skipped,
       pausedForSuspension,
+      pausedForUnverifiedDestination,
+      // De-duplicated: a business owed money in two currencies would otherwise
+      // appear twice on a list an admin is meant to work through.
+      pausedBusinesses: [
+        ...new Map(pausedBusinesses.map((p) => [p.businessId, p])).values(),
+      ],
       entriesWithoutSettlement,
     };
 
-    if (created > 0 || skipped > 0 || pausedForSuspension > 0) {
+    if (
+      created > 0 ||
+      skipped > 0 ||
+      pausedForSuspension > 0 ||
+      pausedForUnverifiedDestination > 0
+    ) {
       this.logger.log(
         `Payout run: ${created} payout(s) totalling ${total} minor unit(s) across ` +
           `${owing.length} business/currency group(s); ${skipped} skipped for a ` +
-          `non-positive balance, ${pausedForSuspension} paused for suspension` +
+          `non-positive balance, ${pausedForSuspension} paused for suspension, ` +
+          `${pausedForUnverifiedDestination} paused for having no verified payout destination` +
           (entriesWithoutSettlement > 0
             ? `, ${entriesWithoutSettlement} entr(ies) skipped for having no settlement amount`
             : '') +
@@ -408,6 +452,8 @@ export class PayoutsService {
       'businessId',
       'businessName',
       'payoutDestination',
+      'payoutProvider',
+      'payable',
       'contactPhoneNotAPayoutDestination',
       'settlementCurrency',
       'settlementAmountMinor',
@@ -417,13 +463,22 @@ export class PayoutsService {
       'payoutId',
     ];
 
-    const rows = batch.map((row) =>
-      toCsvRow([
+    // The VERIFIED destination for everyone in this batch, in one query (§48.5).
+    const destinations = await this.destinations.verifiedFor(
+      batch.map((row) => row.businessProfile.id),
+    );
+
+    const rows = batch.map((row) => {
+      const destination = destinations.get(row.businessProfile.id);
+      return toCsvRow([
         row.businessProfile.id,
         row.businessProfile.name,
-        // Not blank. A blank cell reads as "we forgot"; this reads as "nobody
-        // has ever collected one", which is the truth.
-        'NOT RECORDED',
+        // The real number when there is a verified one. When there is not, the
+        // §47.2 placeholder survives for exactly this case — and `payable` says
+        // plainly that this line must not be sent.
+        destination ? destination.msisdn : 'NOT RECORDED',
+        destination ? destination.provider : '',
+        destination ? 'YES' : 'NO — DESTINATION NOT VERIFIED, DO NOT SEND',
         row.businessProfile.phone,
         row.settlementCurrency,
         row.settlementAmountMinor,
@@ -431,8 +486,8 @@ export class PayoutsService {
         row.status,
         row.reference,
         row.id,
-      ]),
-    );
+      ]);
+    });
 
     // One totals row PER CURRENCY. A single grand total across currencies would
     // be a number with no unit, which is worse than no total at all.
@@ -450,6 +505,8 @@ export class PayoutsService {
         `TOTAL (${total.count} payout${total.count === 1 ? '' : 's'})`,
         '',
         '',
+        '',
+        '',
         currency,
         total.amountMinor,
         '',
@@ -459,17 +516,31 @@ export class PayoutsService {
       ]),
     );
 
+    const unpayable = batch.filter(
+      (row) => !destinations.has(row.businessProfile.id),
+    ).length;
+
     const csv = [toCsvRow(header), ...rows, ...totalRows].join('\n') + '\n';
 
     this.logger.log(
       `Payout run of ${payout.runAt.toISOString()} exported by admin: ` +
-        `${batch.length} payout(s) across ${totals.size} currency/currencies.`,
+        `${batch.length} payout(s) across ${totals.size} currency/currencies` +
+        (unpayable > 0
+          ? `; ${unpayable} flagged unpayable — destination not verified`
+          : '') +
+        '.',
     );
 
     return {
       csv,
       filename: `payout-run-${payout.runAt.toISOString().slice(0, 19).replace(/[:T]/g, '')}.csv`,
       payoutCount: batch.length,
+      /**
+       * Payouts in this batch whose destination is no longer verified — because
+       * the business changed its number after the run (§48.4). Flagged rather
+       * than dropped: the money is still owed, it just must not be sent yet.
+       */
+      unpayableCount: unpayable,
     };
   }
 

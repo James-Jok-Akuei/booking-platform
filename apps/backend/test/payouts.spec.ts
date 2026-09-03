@@ -6,8 +6,9 @@ import {
 import { LedgerEntryType, PayoutStatus } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { PayoutsService } from '../src/payouts/payouts.service';
+import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { createTestModule, resetDatabase } from './setup/test-module';
+import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import {
   TestBusiness,
   asUser,
@@ -37,7 +38,11 @@ describe('Payouts (§35)', () => {
   let customer: { userId: string; email: string };
 
   beforeAll(async () => {
-    moduleRef = await createTestModule([PayoutsService]);
+    moduleRef = await createTestModule([
+      PayoutsService,
+      PayoutDestinationsService,
+      commonStubs.notifications(),
+    ]);
     prisma = moduleRef.get(PrismaService);
     payouts = moduleRef.get(PayoutsService);
     await resetDatabase(prisma);
@@ -55,6 +60,11 @@ describe('Payouts (§35)', () => {
   beforeEach(async () => {
     await prisma.ledgerEntry.deleteMany({});
     await prisma.payout.deleteMany({});
+    // Payout destinations are business-level state that outlives a test, and a
+    // run pauses any business without a VERIFIED one (§48.3). Restoring them
+    // keeps each test's starting position the same regardless of what an
+    // earlier one superseded.
+    await prisma.payoutDestination.updateMany({ data: { status: 'VERIFIED' } });
   });
 
   const AS_ADMIN = () => asUser(admin.userId, 'ADMIN');
@@ -474,14 +484,38 @@ describe('Payouts (§35)', () => {
       expect(lines).toHaveLength(4);
     });
 
-    it('says NOT RECORDED for the payout destination, and does not invent one', async () => {
+    it('carries the VERIFIED number and marks the row payable', async () => {
       const [first] = await runWithPayouts();
+      const destination = await prisma.payoutDestination.findFirstOrThrow({
+        where: { businessId: alpha.businessId, status: 'VERIFIED' },
+      });
 
-      const { csv } = await payouts.exportRun(AS_ADMIN(), first.id);
+      const { csv, unpayableCount } = await payouts.exportRun(AS_ADMIN(), first.id);
 
-      // No payout destination exists in the schema (§47.2). A blank cell would
-      // read as missing data; this reads as "nobody has ever collected one".
+      // §47.2's placeholder is gone for the normal case — there is a real,
+      // verified number to send to now (§48.5).
+      expect(csv).toContain(destination.msisdn);
+      expect(csv).toContain('MTN_MOMO');
+      expect(csv).toContain('payable');
+      expect(unpayableCount).toBe(0);
+      expect(csv).not.toContain('NOT RECORDED');
+    });
+
+    it('falls back to NOT RECORDED and flags the row when nothing is verified', async () => {
+      // A business that changed its number after the run: the payout is still
+      // owed, but it must not be sent (§48.4).
+      const [first] = await runWithPayouts();
+      await prisma.payoutDestination.updateMany({
+        where: { businessId: alpha.businessId },
+        data: { status: 'SUPERSEDED' },
+      });
+
+      const { csv, unpayableCount } = await payouts.exportRun(AS_ADMIN(), first.id);
+
+      expect(unpayableCount).toBe(1);
       expect(csv).toContain('NOT RECORDED');
+      // Unmistakable in a spreadsheet someone is working down.
+      expect(csv).toContain('DO NOT SEND');
       expect(csv).toContain('contactPhoneNotAPayoutDestination');
     });
 

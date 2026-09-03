@@ -5006,3 +5006,106 @@ requirements then have to be bent around.
 
 Until then the export is a worksheet: correct amounts, correct currencies,
 correct references, and an explicit blank where the account number belongs.
+
+---
+
+## 48. Payout destinations (2026-09-03)
+
+Until now the platform could not pay anyone. A run produced a CSV with `NOT
+RECORDED` where the account number belongs (§47.2). This is the module §47.2 said
+was needed, built rather than reduced to a column.
+
+**Verification is the module, not a flag on it.** Sending money to an unverified
+number is the only mistake in this system that an opposing ledger entry cannot
+undo — every other error here is correctable by appending (§34.2).
+
+### 48.1 An append-only history, and how it was verified
+
+`PayoutDestination` is a history: a new submission **SUPERSEDES** the previous row
+rather than editing it, and a `VERIFIED` row is **never mutated**. The record of
+where money was actually sent has to survive the number changing, or a later
+dispute has nothing to read. Tested field by field: after supersession only
+`status` differs.
+
+`verificationMethod` (`ADMIN` | `OTP`, null until verified) is recorded even
+though only `ADMIN` is reachable today — the platform has no SMS channel, so
+OTP-to-number is not buildable yet. Recording it now means an OTP path later
+*adds* rows rather than forcing a reinterpretation of old ones: `OTP` will carry
+`verifiedById = null`, because the number's holder is not a user in this system.
+A row verified by an administrator and one verified by the SIM's holder are
+different facts and must not look identical in the table.
+
+`verificationNote` is required for `ADMIN`. "Verified" with no account of how is
+not something anyone can audit after money has gone to the wrong place.
+
+**At most one live row per business**, enforced by a partial unique index
+exempting `SUPERSEDED` — the pattern from the single ACTIVE membership (§15.2),
+hand-written for the same reason Prisma's DSL cannot express it. In the database
+and not only in the service, because two simultaneous submissions would otherwise
+race into two live destinations, and "which number does this business get paid
+at?" must have exactly one answer. Tested by inserting behind the service's back.
+
+### 48.2 MSISDN validation, and where the country lives
+
+E.164 **shape** is checked in the DTO; the expected **country prefix** is checked
+in the service, because it is configurable:
+
+**`PAYOUT_MSISDN_COUNTRY_PREFIX`, default `+211`** (South Sudan), read via
+`ConfigService` and documented in `.env.example`.
+
+Same reasoning as `PLATFORM_TIMEZONE` (§12): a country baked into a constant is a
+redeploy the first time the platform crosses a border, and it would be discovered
+by a business unable to submit a perfectly valid number. Whitespace is stripped
+before validation, so a number pasted as `+211 921 234 567` is accepted rather
+than rejected on formatting.
+
+### 48.3 Unverified BLOCKS payouts, through the existing pause
+
+A run skips any business without a `VERIFIED` destination, using the **same
+mechanism** as a suspension (§42.4) rather than a second, subtly different skip:
+entries stay unstamped, nothing is written off, and the first run after
+verification pays it.
+
+The run result now carries `pausedForUnverifiedDestination` and a
+**`pausedBusinesses` list with a reason for each**, de-duplicated by business —
+so an admin gets a list to chase rather than a silently smaller batch. That was
+the thing most likely to go unnoticed: a payout run that quietly pays fewer
+people looks exactly like a quiet week.
+
+### 48.4 Changing the number while a payout is PENDING is ALLOWED
+
+Deliberately not a hard failure. Transfers are manual (§35.1), so `PENDING` can
+persist for days, and **a business that has lost control of its SIM must be able
+to change the number immediately** — that is precisely the emergency the block
+exists for. Hard-failing would trap them behind the payout they most urgently
+need to stop.
+
+What happens instead: the old row is superseded, the business returns to
+`UNVERIFIED`, and the pending payout is **flagged in the export** — `NOT
+RECORDED` in the destination column and `DO NOT SEND` in a `payable` column — until
+the new number is verified. The money is still owed and the payout still exists;
+it simply must not be sent yet. Money already sent is untouched: a completed
+transfer is a fact about the past.
+
+### 48.5 Exposure, permissions and the export
+
+**OWNER only may submit.** A MANAGER can change prices, hours and staff; only the
+owner may redirect where the money goes. Any ACTIVE member may **read** the
+status — they need to know why payouts are paused — but only the owner sees the
+full number. Everyone else gets the last three digits: enough for the owner's
+colleague to recognise it, not enough for anyone to dial it. The full number is
+also masked in the admin *notification*, because an email sits in an inbox
+forever; it belongs in the admin queue behind a login.
+
+The export now writes the **verified msisdn** and provider, with a `payable`
+column. §47.2's `NOT RECORDED` placeholder and the
+`contactPhoneNotAPayoutDestination` column survive only for the paused case,
+which is the one case they were ever honest for.
+
+### 48.6 A note on the test fixtures
+
+`createBusiness` now seeds a `VERIFIED` destination by default, with
+`payoutDestination: 'NONE' | 'UNVERIFIED'` to opt out. A business that cannot be
+paid is the special case, not the normal one — and without the default every
+existing payout fixture would silently have become paused, which is exactly the
+failure §48.3 exists to make visible.

@@ -16,6 +16,7 @@ import { AppointmentsService } from '../src/appointments/appointments.service';
 import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PayoutsService } from '../src/payouts/payouts.service';
+import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import { LedgerService } from '../src/ledger/ledger.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
@@ -54,6 +55,7 @@ describe('Refunds and adjustments (§36)', () => {
       AvailabilityService,
       PlatformSettingsService,
       PayoutsService,
+      PayoutDestinationsService,
       commonStubs.mail(),
       commonStubs.notifications(),
       commonStubs.payments(),

@@ -17,6 +17,7 @@ import { PlatformSettingsService } from '../src/settings/platform-settings.servi
 import { PrismaService } from '../src/prisma/prisma.service';
 import { LedgerService } from '../src/ledger/ledger.service';
 import { PayoutsService } from '../src/payouts/payouts.service';
+import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import {
   DEFAULT_PAYOUT_HOLD_DAYS,
   PlatformSettingsService,
@@ -54,6 +55,7 @@ describe('Ledger (§34)', () => {
       AppointmentsScheduler,
       PaymentsScheduler,
       PayoutsService,
+      PayoutDestinationsService,
       AvailabilityService,
       PlatformSettingsService,
       commonStubs.mail(),

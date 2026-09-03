@@ -19,6 +19,7 @@ import { AppointmentsService } from '../src/appointments/appointments.service';
 import { AvailabilityService } from '../src/availability/availability.service';
 import { ReviewsService } from '../src/reviews/reviews.service';
 import { PayoutsService } from '../src/payouts/payouts.service';
+import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { NotificationsService } from '../src/notifications/notifications.service';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -64,6 +65,7 @@ describe('Business approval (§42)', () => {
       AvailabilityService,
       ReviewsService,
       PayoutsService,
+      PayoutDestinationsService,
       commonStubs.mail(),
       commonStubs.notifications(),
       commonStubs.payments(),

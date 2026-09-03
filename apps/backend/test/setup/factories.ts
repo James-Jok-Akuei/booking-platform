@@ -3,6 +3,8 @@ import {
   BusinessMemberRole,
   BusinessMemberStatus,
   BusinessStatus,
+  PayoutDestinationStatus,
+  PayoutVerificationMethod,
   UserRole,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
@@ -38,6 +40,13 @@ export async function createBusiness(
     depositPercentage?: number;
     status?: BusinessStatus;
     durationMinutes?: number;
+    /**
+     * The payout destination to seed (§48). Defaults to VERIFIED, because a
+     * business that cannot be paid is a special case, not the normal one — and
+     * without it every payout fixture would silently be paused. Pass 'NONE' or
+     * 'UNVERIFIED' for the cases that are about exactly that.
+     */
+    payoutDestination?: 'VERIFIED' | 'UNVERIFIED' | 'NONE';
   } = {},
 ): Promise<TestBusiness> {
   const email = uniqueEmail('owner');
@@ -85,6 +94,27 @@ export async function createBusiness(
       depositPercentage: options.depositPercentage ?? 20,
     },
   });
+
+  if ((options.payoutDestination ?? 'VERIFIED') !== 'NONE') {
+    const verified = (options.payoutDestination ?? 'VERIFIED') === 'VERIFIED';
+    await prisma.payoutDestination.create({
+      data: {
+        businessId: business.id,
+        msisdn: `+21192${String(Date.now()).slice(-7)}`,
+        submittedById: user.id,
+        status: verified
+          ? PayoutDestinationStatus.VERIFIED
+          : PayoutDestinationStatus.UNVERIFIED,
+        ...(verified
+          ? {
+              verificationMethod: PayoutVerificationMethod.ADMIN,
+              verificationNote: 'Seeded fixture.',
+              verifiedAt: new Date(),
+            }
+          : {}),
+      },
+    });
+  }
 
   // Location.fromPriceCents is a denormalised aggregate maintained by the
   // service and location write paths (§44). A fixture that writes rows straight
