@@ -873,6 +873,14 @@ model Appointment {
   verificationAttempts Int       @default(0)
   verifiedAt           DateTime?
 
+  /// When the arrival code was emailed (§53.2).
+  ///
+  /// A timestamp, never the code. Nothing in the booking response previously
+  /// said a code had been sent or would be needed, so a client had to know it
+  /// from documentation — and a customer who never received the email had no
+  /// signal that one was owed to them.
+  verificationCodeSentAt DateTime?
+
   // Transition timestamps. Kept separate from updatedAt so the auto-transition
   // job, and any later audit, can tell when each clock actually started.
   completedAt DateTime?

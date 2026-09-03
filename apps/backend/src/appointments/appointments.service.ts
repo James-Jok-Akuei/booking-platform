@@ -69,6 +69,8 @@ const APPOINTMENT_SELECT = {
   providerCurrencyAmountCents: true,
   exchangeRateUsed: true,
   verifiedAt: true,
+  /// Not the code — only that one was sent, and when (§53.2).
+  verificationCodeSentAt: true,
   completedAt: true,
   cancelledAt: true,
   noShowAt: true,
@@ -296,6 +298,18 @@ export class AppointmentsService {
       startTime,
     });
 
+    // Recorded AFTER the send, so it means "an email went out" rather than "we
+    // intended to send one" (§53.2). A timestamp, never the code.
+    //
+    // The response is rebuilt from this update rather than from the row read
+    // inside the transaction, which predates the send and would report null —
+    // a flag saying "no code was sent" on the very response that sent one.
+    const withCodeSent = await this.prisma.appointment.update({
+      where: { id: appointment.id },
+      data: { verificationCodeSentAt: new Date() },
+      select: APPOINTMENT_SELECT,
+    });
+
     // Every booking gets a conversation, created here rather than as a
     // separate customer action — a booking should always have somewhere to
     // talk without anyone having to set that up.
@@ -324,7 +338,7 @@ export class AppointmentsService {
     );
 
     // Always a customer: only @Roles(CUSTOMER) reaches this route.
-    return this.withApproxSettlement(appointment, await this.rateContext());
+    return this.withApproxSettlement(withCodeSent, await this.rateContext());
   }
 
   /**

@@ -596,4 +596,61 @@ describe('Business approval (§42)', () => {
       expect(detail.members[0].user.email).toContain('@');
     });
   });
+
+  // ------------------------------------------------------------------
+  describe('a nameless business cannot be approved (§53.1)', () => {
+    const nameless = async (status = BusinessStatus.PENDING) => {
+      const business = await prisma.businessProfile.create({
+        data: { name: null, status },
+      });
+      return business.id;
+    };
+
+    it('refuses approval, and says why', async () => {
+      const id = await nameless();
+
+      await expect(moderation.approve(AS_ADMIN(), id)).rejects.toThrow(
+        /no name/i,
+      );
+      expect((await statusOf(id)).status).toBe(BusinessStatus.PENDING);
+    });
+
+    it('refuses a name that is only whitespace', async () => {
+      const business = await prisma.businessProfile.create({
+        data: { name: '   ', status: BusinessStatus.PENDING },
+      });
+
+      await expect(
+        moderation.approve(AS_ADMIN(), business.id),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('allows it once a name exists', async () => {
+      const id = await nameless();
+      await prisma.businessProfile.update({
+        where: { id },
+        data: { name: 'Now Named Ltd' },
+      });
+
+      const result = await moderation.approve(AS_ADMIN(), id);
+
+      expect(result.status).toBe(BusinessStatus.APPROVED);
+    });
+
+    it('still allows REJECTION without a name', async () => {
+      const id = await nameless();
+
+      // Rejecting an incomplete application is exactly what should be possible.
+      const result = await moderation.reject(AS_ADMIN(), id, 'Incomplete profile.');
+
+      expect(result.status).toBe(BusinessStatus.REJECTED);
+    });
+
+    it('refuses reinstatement of a nameless suspended business too', async () => {
+      const id = await nameless(BusinessStatus.SUSPENDED);
+
+      // Reinstatement is an approval, and would put a blank back in search.
+      await expect(moderation.reinstate(AS_ADMIN(), id)).rejects.toThrow(/no name/i);
+    });
+  });
 });

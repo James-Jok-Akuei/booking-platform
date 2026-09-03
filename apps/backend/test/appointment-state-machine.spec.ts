@@ -12,6 +12,7 @@ import {
   createAppointment,
   createBusiness,
   createCustomer,
+  futureSlot,
 } from './setup/factories';
 
 /**
@@ -476,6 +477,39 @@ describe('Appointment state machine (§16.1)', () => {
 
       const stored = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
       expect(stored.depositPaidAt).toBeNull();
+    });
+  });
+
+  describe('the arrival code is announced, never exposed (§53.2)', () => {
+    it('records that a code was sent, and when', async () => {
+      const created = await appointments.create(customer.userId, {
+        locationId: business.locationId,
+        serviceId: business.serviceId,
+        startTime: futureSlot(20, 8).toISOString(),
+      });
+
+      // Nothing previously said a code had been sent or would be needed, so a
+      // client had to know it from documentation.
+      expect(created.verificationCodeSentAt).not.toBeNull();
+    });
+
+    it('never returns the code itself, or its hash', async () => {
+      const created = await appointments.create(customer.userId, {
+        locationId: business.locationId,
+        serviceId: business.serviceId,
+        startTime: futureSlot(21, 8).toISOString(),
+      });
+
+      const serialised = JSON.stringify(created);
+      expect(serialised).not.toContain('verificationCodeHash');
+      expect(created).not.toHaveProperty('verificationCodeHash');
+
+      // And the real code still works, so nothing was traded away for the flag.
+      const row = await prisma.appointment.findUniqueOrThrow({
+        where: { id: created.id },
+      });
+      expect(row.verificationCodeHash).not.toBeNull();
+      expect(serialised).not.toContain(row.verificationCodeHash!);
     });
   });
 });

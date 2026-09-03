@@ -452,6 +452,123 @@ export class LedgerService {
     return { adjustment: settled, entry };
   }
 
+  // ---------- Admin reads (§53.3) ----------
+
+  /**
+   * The entries behind a balance, a payout or an appointment.
+   *
+   * READ-ONLY, and deliberately so: the ledger is append-only and corrections
+   * are opposing entries (§34.2). There is no reason for a read endpoint to
+   * offer anything else, and every reason for it not to.
+   *
+   * Added because there was no way to see them at all. Reconciling a figure or
+   * answering "why is this business owed that?" meant opening a SQL client,
+   * which is not something support can do and not something anyone should have
+   * to do to explain money.
+   */
+  async listEntries(
+    actor: { role: UserRole | string },
+    query: {
+      businessId?: string;
+      appointmentId?: string;
+      payoutId?: string;
+      type?: LedgerEntryType;
+      limit?: number;
+      offset?: number;
+    },
+  ) {
+    this.assertAdmin(actor);
+
+    const where: Prisma.LedgerEntryWhereInput = {
+      ...(query.businessId ? { businessId: query.businessId } : {}),
+      ...(query.appointmentId ? { appointmentId: query.appointmentId } : {}),
+      ...(query.payoutId ? { payoutId: query.payoutId } : {}),
+      ...(query.type ? { type: query.type } : {}),
+    };
+    const limit = query.limit ?? 50;
+    const offset = query.offset ?? 0;
+
+    const [total, entries, totals] = await Promise.all([
+      this.prisma.ledgerEntry.count({ where }),
+      this.prisma.ledgerEntry.findMany({
+        where,
+        // Newest first: reading a ledger almost always starts from "what just
+        // happened", not from the beginning of time.
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+      // Over the WHOLE filter, not the page. A total that changed when you
+      // turned the page would be worse than no total.
+      this.prisma.ledgerEntry.groupBy({
+        by: ['settlementCurrency'],
+        where,
+        _sum: { settlementAmountMinor: true, amountCents: true },
+      }),
+    ]);
+
+    return {
+      total,
+      limit,
+      offset,
+      entries,
+      totalsBySettlementCurrency: totals.map((row) => ({
+        settlementCurrency: row.settlementCurrency,
+        amountMinor: row._sum.settlementAmountMinor ?? 0,
+        reportingUsdCents: row._sum.amountCents ?? 0,
+      })),
+    };
+  }
+
+  /**
+   * Billing adjustments, settled or not.
+   *
+   * There was no way to list these either — the id had to come from the
+   * resolving ticket's response or the database, so an adjustment recorded and
+   * never executed was invisible. That is the one state where a decision has
+   * been taken and no money has moved (§36.5), which is exactly the state
+   * somebody needs to find.
+   */
+  async listAdjustments(
+    actor: { role: UserRole | string },
+    query: {
+      businessId?: string;
+      appointmentId?: string;
+      ticketId?: string;
+      limit?: number;
+      offset?: number;
+    },
+  ) {
+    this.assertAdmin(actor);
+
+    const where: Prisma.BillingAdjustmentWhereInput = {
+      ...(query.businessId ? { businessId: query.businessId } : {}),
+      ...(query.appointmentId ? { appointmentId: query.appointmentId } : {}),
+      ...(query.ticketId ? { ticketId: query.ticketId } : {}),
+    };
+    const limit = query.limit ?? 50;
+    const offset = query.offset ?? 0;
+
+    const [total, adjustments, outstanding] = await Promise.all([
+      this.prisma.billingAdjustment.count({ where }),
+      this.prisma.billingAdjustment.findMany({
+        where,
+        // Unsettled first: those are the ones still waiting on somebody.
+        orderBy: [{ settledAt: 'asc' }, { createdAt: 'desc' }],
+        take: limit,
+        skip: offset,
+        include: {
+          ledgerEntries: {
+            select: { id: true, amountCents: true, settlementAmountMinor: true },
+          },
+        },
+      }),
+      this.prisma.billingAdjustment.count({ where: { ...where, settledAt: null } }),
+    ]);
+
+    return { total, limit, offset, outstanding, adjustments };
+  }
+
   /**
    * What the platform should currently be holding, by currency.
    *

@@ -5,6 +5,7 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
@@ -18,6 +19,10 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { LedgerService } from './ledger.service';
 import { ExecuteAdjustmentDto } from './dto/execute-adjustment.dto';
+import {
+  ListAdjustmentsDto,
+  ListLedgerEntriesDto,
+} from './dto/list-ledger.dto';
 
 /**
  * Reconciliation, and turning a recorded decision into money.
@@ -41,6 +46,24 @@ export class AdminLedgerController {
    * The figure to compare against the provider's actual balance. Nothing
    * compares it automatically; producing the number is the point.
    */
+  /** The entries behind a balance, a payout or an appointment. Read-only. */
+  @Get('ledger/entries')
+  entries(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListLedgerEntriesDto,
+  ) {
+    return this.ledger.listEntries(user, query);
+  }
+
+  /** Billing adjustments, unsettled first. Read-only. */
+  @Get('billing-adjustments')
+  adjustments(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListAdjustmentsDto,
+  ) {
+    return this.ledger.listAdjustments(user, query);
+  }
+
   @Get('ledger/held')
   held(@CurrentUser() user: AuthenticatedUser) {
     return this.ledger.heldTotals(user);

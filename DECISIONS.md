@@ -5405,3 +5405,95 @@ noticing. If it ever becomes noisy, the noise is the signal.
 An **unclassified** failure is treated as transient. Defaulting to "wake the
 admins" would make every provider blip an alarm, and the alarm would stop being
 read — the failure mode §37 already avoided for the exchange rate.
+
+---
+
+## 53. Remaining walk-through gaps (2026-09-03)
+
+Findings 9, 6 and 10 (§49.4).
+
+### 53.1 A nameless business cannot be approved
+
+`BusinessProfile.name` is nullable, and the approval queue rendered a row with
+`name: null` during the walk-through. A queue whose entire job is "decide about
+this business" cannot show a blank, and approving one puts a blank into public
+search.
+
+A name is now required to reach `APPROVED` — including via reinstatement, which
+is the same transition and would put the same blank back. **The column stays
+nullable**: a profile mid-onboarding legitimately has no name yet, and forcing
+one at creation would block the step before it.
+
+**Rejection is still possible without a name**, deliberately. Refusing an
+incomplete application is exactly what an admin should be able to do, and
+requiring a name first would trap a half-finished signup in the queue forever.
+
+### 53.2 The arrival code is announced, never exposed
+
+`Appointment.verificationCodeSentAt` — a timestamp, never the code. Nothing
+previously told a client that a six-digit code had been sent or would be needed,
+so it had to be known from documentation, and a customer who received no email
+had no signal that one was owed to them.
+
+Set **after** the send, so it means "an email went out" rather than "we intended
+to send one". That ordering forced a small change: `create()`'s response is now
+built from the row that carries the flag, because the row read inside the
+transaction predates the send and would have reported `null` on the very
+response that triggered it.
+
+**Left as a decision, not built: there is no way to resend it.** A customer who
+deletes the email, or whose address bounced, cannot get another code — and the
+business cannot mark them arrived without one. Building a resend endpoint means
+answering questions this commit has no mandate for: who may trigger it (the
+customer, or the business standing in front of them?), how often, and whether a
+resend invalidates the previous code. Worth deciding before it is built.
+
+### 53.3 Admin reads for the ledger and adjustments
+
+`GET /admin/ledger/entries` (filterable by business, appointment, payout and
+type) and `GET /admin/billing-adjustments` (by business, appointment, ticket).
+Both admin-only with the service-level assertion, both **read-only**: the ledger
+is append-only and corrections are opposing entries (§34.2), so a read endpoint
+has no business offering anything else.
+
+They exist because there was no way to see any of this. Answering "why is this
+business owed that?" meant opening a SQL client — which support cannot do, and
+which nobody should have to do to explain money.
+
+Two details: entry totals are computed over the **whole filter**, not the page,
+because a total that changed when you turned the page would be worse than no
+total. Adjustments are ordered **unsettled first** and carry an `outstanding`
+count — recorded-but-not-executed is the one state where a decision has been
+taken and no money has moved (§36.5), and it was previously invisible.
+
+### 53.4 Confirming a deposit without the provider is a script
+
+`npm run dev:confirm-deposit -- <appointmentId> [chargedMinor]`, guarded exactly
+as the demo seed is: `NODE_ENV`, host and database name, all three.
+
+**Deliberately not an endpoint.** An endpoint that marks money as received is
+one misconfiguration away from being the worst bug in this system — a guard
+mis-wired, an environment variable unset in the wrong place, and anyone can tell
+the platform they have paid. No amount of convenience is worth that risk. A
+script cannot be reached over the network at all, and it runs where someone
+already holds the database credentials — a person who could have written the row
+by hand anyway.
+
+It fabricates only **the provider's answer**, which is the part the sandbox owns.
+Everything downstream runs through the real `applyPaymentResult`: the status
+change, `depositPaidAt`, the ledger pair and its settlement split, the
+notifications. It refuses anything that is not `PENDING_PAYMENT`, so it cannot
+write a second set of entries.
+
+### 53.5 Things to decide rather than build
+
+- **Resending an arrival code** (§53.2). The gap is real; the answer is a
+  product decision.
+- **The three misnamed money fields** in §51.5. Renaming
+  `providerCurrencyAmountCents` is a migration touching a column several modules
+  read, for a clarity benefit — worth doing, worth deciding when.
+- **`test/support-tickets.spec.ts` "keeps reference unique under concurrent
+  creation" flaked once** during this work and passed on every re-run since.
+  Recorded rather than chased: a concurrency test that fails once in many runs is
+  either a real race worth finding properly or a fixture artefact, and guessing
+  between those in passing is how a real race gets papered over.

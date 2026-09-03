@@ -173,6 +173,20 @@ export class BusinessModerationService {
       );
     }
 
+    // An APPROVED business becomes publicly listed, and a listing with no name
+    // is not something a customer can choose (§53.1). The approval queue itself
+    // rendered a nameless row during the walk-through, which is not a decision
+    // anyone can make.
+    //
+    // The COLUMN stays nullable: a profile mid-onboarding legitimately has no
+    // name yet, and forcing one at creation would block the step before it.
+    if (to === BusinessStatus.APPROVED && !business.name?.trim()) {
+      throw new BadRequestException(
+        'This business has no name, so it cannot be approved — it would appear ' +
+          'in search as a blank. Ask the business to complete its profile first.',
+      );
+    }
+
     if (rule.requiresReason && !reason?.trim()) {
       throw new BadRequestException(
         `A reason is required to move a business to ${to}. The business is told ` +

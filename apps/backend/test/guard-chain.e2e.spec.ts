@@ -1289,6 +1289,44 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
   });
 
+  describe('admin ledger reads over HTTP (§53.3)', () => {
+    it.each(['/admin/ledger/entries', '/admin/billing-adjustments'])(
+      '%s rejects a BUSINESS token -> 403',
+      async (path) => {
+        const res = await request(url, path, { token: tokenAlpha });
+
+        expect(res.status).toBe(403);
+      },
+    );
+
+    it('GET /admin/ledger/entries accepts an ADMIN token -> 200', async () => {
+      const res = await request(url, '/admin/ledger/entries?limit=5', {
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('entries');
+      expect(res.body).toHaveProperty('totalsBySettlementCurrency');
+    });
+
+    it('GET /admin/billing-adjustments accepts an ADMIN token -> 200', async () => {
+      const res = await request(url, '/admin/billing-adjustments', {
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('outstanding');
+    });
+
+    it('rejects a malformed filter -> 400', async () => {
+      const res = await request(url, '/admin/ledger/entries?businessId=not-a-uuid', {
+        token: tokenAdmin,
+      });
+
+      expect(res.status).toBe(400);
+    });
+  });
+
   describe('the global ValidationPipe is in the chain', () => {
     it('rejects an unknown property with 400, proving whitelist/forbidNonWhitelisted ran', async () => {
       const res = await request(url, '/threads/inquiry', {

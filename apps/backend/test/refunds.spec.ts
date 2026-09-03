@@ -614,4 +614,104 @@ describe('Refunds and adjustments (§36)', () => {
       expect(summary).toHaveProperty('payoutsCreated');
     });
   });
+
+  describe('admin ledger reads (§53.3)', () => {
+    const AS = { role: 'ADMIN' };
+
+    it('lists the entries behind one appointment', async () => {
+      const a = await paidAppointment();
+
+      const page = await ledger.listEntries(AS, { appointmentId: a.id });
+
+      expect(page.total).toBe(2);
+      expect(page.entries.map((e) => e.type).sort()).toEqual([
+        LedgerEntryType.DEPOSIT_RECEIVED,
+        LedgerEntryType.PLATFORM_FEE,
+      ]);
+    });
+
+    it('filters by business and by type', async () => {
+      const a = await paidAppointment();
+
+      const fees = await ledger.listEntries(AS, {
+        businessId: business.businessId,
+        type: LedgerEntryType.PLATFORM_FEE,
+      });
+
+      expect(fees.entries.every((e) => e.type === LedgerEntryType.PLATFORM_FEE)).toBe(
+        true,
+      );
+      expect(fees.entries.some((e) => e.appointmentId === a.id)).toBe(true);
+    });
+
+    it('totals over the WHOLE filter, not the page', async () => {
+      const a = await paidAppointment();
+
+      const page = await ledger.listEntries(AS, { appointmentId: a.id, limit: 1 });
+
+      // A total that changed when you turned the page would be worse than none.
+      expect(page.entries).toHaveLength(1);
+      expect(page.total).toBe(2);
+      const ssp = page.totalsBySettlementCurrency.find(
+        (t) => t.settlementCurrency === 'SSP',
+      );
+      expect(ssp?.reportingUsdCents).toBe(a.businessAmountCents);
+    });
+
+    it('lists adjustments, unsettled first, and counts what is outstanding', async () => {
+      const a = await paidAppointment();
+      const row = await prisma.billingAdjustment.create({
+        data: {
+          businessId: business.businessId,
+          appointmentId: a.id,
+          type: BillingAdjustmentType.FEE_REFUND,
+          amount: new Prisma.Decimal(2),
+          reason: 'Recorded, not yet executed.',
+          createdById: admin.userId,
+        },
+      });
+
+      const page = await ledger.listAdjustments(AS, { appointmentId: a.id });
+
+      expect(page.total).toBe(1);
+      // The state where a decision was taken and no money moved is exactly the
+      // one somebody needs to find (§36.5).
+      expect(page.outstanding).toBe(1);
+      expect(page.adjustments[0].id).toBe(row.id);
+      expect(page.adjustments[0].settledAt).toBeNull();
+      expect(page.adjustments[0].ledgerEntries).toHaveLength(0);
+    });
+
+    it('shows an executed adjustment linked to its entry', async () => {
+      const a = await paidAppointment();
+      const row = await prisma.billingAdjustment.create({
+        data: {
+          businessId: business.businessId,
+          appointmentId: a.id,
+          type: BillingAdjustmentType.FEE_REFUND,
+          amount: new Prisma.Decimal(3),
+          reason: 'Will be executed.',
+          createdById: admin.userId,
+        },
+      });
+      await prisma.$transaction((tx) =>
+        ledger.executeAdjustment(tx, row.id, 'REF-READ', AS),
+      );
+
+      const page = await ledger.listAdjustments(AS, { appointmentId: a.id });
+
+      expect(page.outstanding).toBe(0);
+      expect(page.adjustments[0].settledAt).not.toBeNull();
+      expect(page.adjustments[0].ledgerEntries).toHaveLength(1);
+    });
+
+    it.each(['CUSTOMER', 'BUSINESS'])('refuses a %s both reads', async (role) => {
+      await expect(ledger.listEntries({ role }, {})).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      await expect(ledger.listAdjustments({ role }, {})).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+  });
 });
