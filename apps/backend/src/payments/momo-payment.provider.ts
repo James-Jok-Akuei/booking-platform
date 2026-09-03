@@ -4,6 +4,7 @@ import * as crypto from 'crypto';
 import {
   InitiatePaymentParams,
   InitiatePaymentResult,
+  PaymentFailureKind,
   PaymentProvider,
   PaymentStatusResult,
 } from './payment-provider.interface';
@@ -58,6 +59,20 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
   private readonly baseUrl: string;
   private readonly subscriptionKey: string;
   private readonly targetEnvironment: string;
+  /**
+   * SANDBOX ONLY. Overrides the currency in the OUTBOUND request, and nothing
+   * else (§52.1).
+   *
+   * MTN's sandbox accepts only EUR, while a realistic dataset is priced in SSP —
+   * so without this, a working sandbox and realistic data cannot coexist. The
+   * override touches the request body alone: what the customer is quoted, what
+   * is stored on the appointment, and what the ledger settles in all remain the
+   * real `providerCurrency`.
+   *
+   * That asymmetry is exactly why it must never run in production, and why boot
+   * refuses if it is set there.
+   */
+  private readonly sandboxCurrencyOverride?: string;
   private readonly apiUser: string;
   private readonly apiKey: string;
 
@@ -67,6 +82,26 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
     this.baseUrl = (this.env('MOMO_BASE_URL') ?? 'https://sandbox.momodeveloper.mtn.com').replace(/\/+$/, '');
     this.subscriptionKey = this.env('MOMO_SUBSCRIPTION_KEY_PRIMARY') ?? '';
     this.targetEnvironment = this.env('MOMO_TARGET_ENVIRONMENT') ?? 'sandbox';
+    this.sandboxCurrencyOverride = this.env('MOMO_SANDBOX_CURRENCY_OVERRIDE');
+
+    // Fail to START, not to pay. A misconfiguration discovered at boot is an
+    // ops problem; the same one discovered at charge time is a customer being
+    // billed in a currency nobody chose.
+    if (process.env.NODE_ENV === 'production' && this.sandboxCurrencyOverride) {
+      throw new Error(
+        'MOMO_SANDBOX_CURRENCY_OVERRIDE is set and NODE_ENV is production. It ' +
+          'rewrites the currency sent to the payment provider and exists only to ' +
+          'work around the sandbox accepting EUR alone. Unset it.',
+      );
+    }
+    if (this.sandboxCurrencyOverride) {
+      this.logger.warn(
+        `SANDBOX CURRENCY OVERRIDE ACTIVE: outbound requests will say ` +
+          `${this.sandboxCurrencyOverride} regardless of the configured provider ` +
+          'currency. Testing aid only — the ledger and the customer still see the ' +
+          'real currency, so the two WILL disagree.',
+      );
+    }
     this.apiUser = this.env('MOMO_API_USER') ?? '';
     this.apiKey = this.env('MOMO_API_KEY') ?? '';
   }
@@ -163,7 +198,8 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
       },
       body: JSON.stringify({
         amount,
-        currency: params.currency,
+        // The override applies HERE and nowhere else (§52.1).
+        currency: this.sandboxCurrencyOverride ?? params.currency,
         externalId: params.externalReferenceId,
         payer: {
           partyIdType: 'MSISDN',
@@ -178,13 +214,18 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
     // payer will be prompted. Anything else means it never started.
     if (response.status !== 202) {
       const body = await response.text();
+      const kind = this.classifyFailure(response.status, body);
       this.logger.error(
-        `MoMo requesttopay rejected (${response.status}) for appointment ${params.externalReferenceId}: ${body.slice(0, 300)}`,
+        `MoMo requesttopay rejected (${response.status}, ${kind}) for appointment ` +
+          `${params.externalReferenceId}: ${body.slice(0, 300)}`,
       );
       return {
         providerReferenceId: '',
         status: 'FAILED',
-        failureReason: `Provider rejected the request (HTTP ${response.status}).`,
+        failureKind: kind,
+        failureReason: `Provider rejected the request (HTTP ${response.status}): ${
+          this.providerCode(body) ?? 'no code given'
+        }.`,
       };
     }
 
@@ -193,6 +234,46 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
     );
 
     return { providerReferenceId: referenceId, status: 'PENDING' };
+  }
+
+  /** MTN codes that mean the platform is misconfigured, not that MTN is busy. */
+  private static readonly CONFIGURATION_CODES = [
+    'INVALID_CURRENCY',
+    'NOT_ALLOWED',
+    'NOT_ALLOWED_TARGET_ENVIRONMENT',
+    'RESOURCE_NOT_FOUND',
+    'SERVICE_UNAVAILABLE_FOR_SUBSCRIPTION',
+  ];
+
+  /**
+   * Platform's fault, or the world's?
+   *
+   * The distinction decides who hears about it (§52.2): a configuration failure
+   * is an admin's problem and no amount of retrying fixes it, while a transient
+   * one is a "try again shortly". Before this, both reached the customer as
+   * "Provider rejected the request (HTTP 500)" and the real cause lived only in
+   * a log a support agent could not see.
+   *
+   * A 4xx is the platform's fault by definition. A 5xx is normally MTN's — but
+   * MTN returns 500 with an INVALID_CURRENCY body, so the body is read too.
+   */
+  private classifyFailure(httpStatus: number, body: string): PaymentFailureKind {
+    const code = this.providerCode(body);
+    if (code && MomoPaymentProvider.CONFIGURATION_CODES.includes(code)) {
+      return 'CONFIGURATION';
+    }
+    if (httpStatus >= 400 && httpStatus < 500) return 'CONFIGURATION';
+    return 'TRANSIENT';
+  }
+
+  /** MTN's machine-readable code, when the body carries one. */
+  private providerCode(body: string): string | null {
+    try {
+      const parsed = JSON.parse(body) as { code?: string };
+      return parsed.code ?? null;
+    } catch {
+      return null;
+    }
   }
 
   async checkPaymentStatus(providerReferenceId: string): Promise<PaymentStatusResult> {

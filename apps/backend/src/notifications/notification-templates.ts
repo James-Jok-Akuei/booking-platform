@@ -262,6 +262,19 @@ export function renderNotification(
           'corrected number to start again.',
       };
 
+    case NotificationType.PAYMENT_PROVIDER_MISCONFIGURED:
+      return {
+        subject: 'URGENT: deposits are failing — payment provider misconfigured',
+        body:
+          'A customer tried to pay a deposit and the payment provider refused ' +
+          'the request for a reason that will not fix itself.\n\n' +
+          (ctx.reason ? `${ctx.reason}\n\n` : '') +
+          'This is a PLATFORM fault, not the customer\'s. Every deposit will ' +
+          'keep failing until it is corrected — check the provider currency, ' +
+          'the credentials and the target environment.\n\n' +
+          'No customer has been charged.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,

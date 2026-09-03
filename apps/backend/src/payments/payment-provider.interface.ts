@@ -42,9 +42,21 @@ export interface InitiatePaymentParams {
   payeeNote?: string;
 }
 
+/**
+ * Why an attempt failed, as far as the caller needs to care (§52.2).
+ *
+ * `CONFIGURATION` is the platform's own fault — a wrong currency, a missing
+ * credential, a subscription that does not cover this product. The customer did
+ * nothing wrong and retrying will not help, so it is worth telling an admin.
+ * `TRANSIENT` is everything else: try again later.
+ */
+export type PaymentFailureKind = 'CONFIGURATION' | 'TRANSIENT';
+
 export interface InitiatePaymentResult {
   providerReferenceId: string;
   status: 'PENDING' | 'FAILED';
+  /** Set when status is FAILED. Decides who is told what (§52.2). */
+  failureKind?: PaymentFailureKind;
   /** Provider-specific reason when status is FAILED, for logs and support. */
   failureReason?: string;
 }

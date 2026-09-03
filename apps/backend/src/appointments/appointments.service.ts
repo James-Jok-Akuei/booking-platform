@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  ServiceUnavailableException,
   Inject,
   Injectable,
   Logger,
@@ -453,8 +454,26 @@ export class AppointmentsService {
       this.logger.error(
         `Deposit initiation failed for appointment ${appointmentId}: ${result.failureReason ?? 'unknown reason'}`,
       );
+
+      // A CONFIGURATION failure is the platform's fault and will not fix itself
+      // (§52.2). The customer gets a plain, honest message; the admins get told,
+      // because until now nobody was — the cause lived only in a server log a
+      // support agent could not see, and every deposit was failing.
+      if (result.failureKind === 'CONFIGURATION') {
+        await this.notifyAdminsOfProviderMisconfiguration(
+          appointmentId,
+          result.failureReason,
+        );
+        throw new ServiceUnavailableException(
+          'Payments are temporarily unavailable. You have NOT been charged, and ' +
+            'your booking is still held — please try again shortly. Our team has ' +
+            'been notified.',
+        );
+      }
+
       throw new BadRequestException(
-        `Could not start the payment: ${result.failureReason ?? 'the payment provider rejected the request.'} Please try again.`,
+        `Could not start the payment: ${result.failureReason ?? 'the payment provider rejected the request.'} ` +
+          'You have not been charged. Please try again.',
       );
     }
 
@@ -969,6 +988,40 @@ export class AppointmentsService {
     );
 
     return updated;
+  }
+
+  /**
+   * Tells every admin the platform cannot take payments.
+   *
+   * Deliberately not rate-limited or debounced: a configuration failure means
+   * EVERY deposit is failing, and the cost of a duplicate email is nothing
+   * beside the cost of nobody noticing. If it ever becomes noisy, that noise is
+   * itself the signal.
+   */
+  private async notifyAdminsOfProviderMisconfiguration(
+    appointmentId: string,
+    reason?: string,
+  ) {
+    const admins = await this.prisma.user.findMany({
+      where: { role: UserRole.ADMIN },
+      select: { id: true },
+    });
+
+    await Promise.all(
+      admins.map((admin) =>
+        this.notifications.notify({
+          recipientId: admin.id,
+          type: NotificationType.PAYMENT_PROVIDER_MISCONFIGURED,
+          context: {
+            serviceName: 'Payments',
+            locationName: 'the platform',
+            businessName: 'the platform',
+            startTime: undefined as unknown as Date,
+            reason: `${reason ?? 'No reason given.'} (appointment ${appointmentId})`,
+          },
+        }),
+      ),
+    );
   }
 
   // ---------- Approximate local-currency figures (§39) ----------

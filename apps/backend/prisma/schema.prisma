@@ -131,6 +131,7 @@ enum NotificationType {
   PAYOUT_DESTINATION_SUBMITTED // a business submitted a payout number; admins check it
   PAYOUT_DESTINATION_VERIFIED // the number was verified; payouts can flow
   PAYOUT_DESTINATION_REJECTED // an admin refused it, with a reason
+  PAYMENT_PROVIDER_MISCONFIGURED // the platform cannot take payments; admins only
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in

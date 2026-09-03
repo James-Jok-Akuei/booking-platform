@@ -5340,3 +5340,68 @@ is provider currency by definition — but a reader arriving from the ledger, wh
 Correctly named and left alone: `gatewayUsdCents`, `usdAmountCents`,
 `reportingUsdCents`, and every `*PriceCents` / `*AmountCents` on the appointment
 money snapshot, which really are USD.
+
+---
+
+## 52. Sandbox currency, and telling the right person (2026-09-03)
+
+Walk-through finding 4 (§49.4), in two halves.
+
+### 52.1 The override applies to the request, and nothing else
+
+`providerCurrency` decided both what the customer is quoted **and** what is sent
+to MTN. Set to `SSP` (correct for production) the sandbox rejects every payment
+with `INVALID_CURRENCY`; set to `EUR` (what the sandbox needs) every customer is
+quoted euros. A realistic dataset and a working sandbox could not coexist.
+
+`MOMO_SANDBOX_CURRENCY_OVERRIDE` rewrites the currency **in the outbound request
+body and nowhere else**. What the customer is quoted, what is stored on the
+appointment, and what the ledger settles in all remain the real
+`providerCurrency`.
+
+That asymmetry is the whole point, and it is also why it is dangerous: while it
+is set, **the provider's records and the platform's deliberately disagree**. So:
+
+- **The application refuses to start** if it is set and `NODE_ENV=production`.
+  A misconfiguration caught at boot is an ops problem; the same one caught at
+  charge time is a customer billed in a currency nobody chose.
+- Boot logs a loud warning whenever it is active, saying in as many words that
+  the two sets of records will disagree.
+- `.env.example` documents it as a **sandbox testing aid, never a config knob**.
+
+It is an environment variable rather than a `PlatformSetting` deliberately.
+Settings are admin-editable at runtime and this must not be reachable from a UI
+— an admin who could toggle it could silently decouple the platform's books from
+the provider's.
+
+### 52.2 A misconfiguration is not the customer's fault
+
+Every failed initiation produced the same customer-facing string —
+*"Provider rejected the request (HTTP 500)"* — whether MTN was briefly busy or
+the platform was configured wrongly. The real cause lived only in a server log,
+so a support agent could not diagnose it from what a customer could show them,
+and **nobody was told at all**.
+
+`InitiatePaymentResult` now carries a `failureKind`:
+
+- **`CONFIGURATION`** — a 4xx by definition, or a body carrying one of MTN's
+  configuration codes (`INVALID_CURRENCY`, `NOT_ALLOWED`,
+  `NOT_ALLOWED_TARGET_ENVIRONMENT`, `RESOURCE_NOT_FOUND`,
+  `SERVICE_UNAVAILABLE_FOR_SUBSCRIPTION`). The body is read because MTN returns
+  **500** with `INVALID_CURRENCY` — status code alone would have classified the
+  exact failure that prompted this as transient.
+- **`TRANSIENT`** — everything else.
+
+The customer gets a **503** and a plain sentence: payments are temporarily
+unavailable, **they have not been charged**, their booking is still held. No
+HTTP status, no provider code — those are platform details, and a customer
+cannot act on them.
+
+Admins get `PAYMENT_PROVIDER_MISCONFIGURED` with the real cause and the
+appointment id. **Not debounced**, deliberately: a configuration failure means
+*every* deposit is failing, and a duplicate email costs nothing against nobody
+noticing. If it ever becomes noisy, the noise is the signal.
+
+An **unclassified** failure is treated as transient. Defaulting to "wake the
+admins" would make every provider blip an alarm, and the alarm would stop being
+read — the failure mode §37 already avoided for the exchange rate.
