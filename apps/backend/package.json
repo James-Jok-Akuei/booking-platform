@@ -13,7 +13,8 @@
     "start:debug": "nest start --debug --watch",
     "prisma:seed": "prisma db seed",
     "momo:provision": "ts-node --project tsconfig.seed.json scripts/momo-provision.ts",
-    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch"
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "seed:demo": "ts-node --project tsconfig.seed.json prisma/seed-demo.ts"
   },
   "keywords": [],
   "author": "",

@@ -5109,3 +5109,154 @@ which is the one case they were ever honest for.
 paid is the special case, not the normal one — and without the default every
 existing payout fixture would silently have become paused, which is exactly the
 failure §48.3 exists to make visible.
+
+---
+
+## 49. Demo seed and manual walk-through (2026-09-03)
+
+851 tests passed against fixtures the tests built themselves. The database had
+never held realistic data and nobody had walked the customer journey. This adds
+`prisma/seed-demo.ts` and `docs/MANUAL_WALKTHROUGH.md`, and — the actual output —
+the list in §49.4 of everywhere reality differed from the plan.
+
+### 49.1 The seed goes through the services
+
+Almost everything is created through the real services, so the seed hits the
+same validation a real caller does. A seed that writes rows Prisma-directly can
+create data the API would have refused, and then the walk-through explores a
+system that does not exist.
+
+Three kinds of raw write remain, each marked `RAW WRITE` at the call site:
+fabricating **the past** (`create` rightly refuses a slot behind the clock),
+fabricating a **provider charge** (MoMo is not called), and planting a **known
+verification code** (the real one is emailed and stored only as a bcrypt hash,
+so nobody running the script could verify an arrival by hand).
+
+**Guard:** it refuses unless *all three* hold — `NODE_ENV` is not `production`,
+the host is local, and the database name is one of three allowed. Any single
+condition is too easy to satisfy by accident: a staging box can be called
+`booking_platform`, and `NODE_ENV` is unset far more often than it is set. The
+script deletes rows; the cost of an over-strict guard is one environment
+variable, the cost of a loose one is a wiped database. Idempotent by deleting
+only what carries the `demo-` email prefix.
+
+### 49.2 What is seeded
+
+Eight businesses across the taxonomy at real Juba coordinates spread over ~3 km,
+covering every state that behaves differently: two branches sharing one
+catalogue; deposit exactly at the fee floor (zero business share); a business
+cancellation with a refund; an `UNVERIFIED` payout destination; no destination
+at all; `PENDING`; `SUSPENDED`; and an approved business with no services.
+Thirteen appointments across every status, 28 ledger entries, six reviews (one
+hidden, one answered), two tickets (one resolved with an executed adjustment).
+
+### 49.3 Three things the seed itself got wrong first
+
+Worth recording, because each is the system correctly refusing something:
+
+1. **Sunday.** Every seeded location is closed Sunday, and `create` refuses a
+   slot on a closed day — so "today + N days" failed roughly one run in seven
+   depending on the weekday. The seed now skips Sundays. The API was right.
+2. **Suspension ordering.** The seed suspended Munuki Fitness *before* booking
+   it, and a suspended business cannot be booked (§42.1). Reordered so the
+   booking exists first — which is also the realistic sequence, and is what
+   makes the "existing appointments survive a suspension" case demonstrable.
+3. **`submit()`'s return type.** See §49.4 finding 3.
+
+---
+
+### 49.4 Findings from the walk-through
+
+Reported, not fixed. Ordered by how much they matter.
+
+#### 1. An ADMIN cannot log in. At all.
+
+`RequestOtpDto.role` accepts only `BUSINESS | CUSTOMER`, and `requestOtp`
+refuses an email already registered under a different role
+(`auth.service.ts:58`) — so an admin email is rejected either way. **There is no
+API path by which an administrator obtains a token.**
+
+Every admin surface built since §16 — approvals, payout runs, the export,
+destination verification, moderation, settings — is unreachable through the API
+by any legitimate flow. The walk-through only proceeded by signing a JWT by hand
+with `JWT_ACCESS_SECRET`.
+
+The inventory recorded "admins are not self-service", which reads as *cannot
+sign up*. The truth is *cannot sign in*. This is the single biggest gap in the
+system and it is invisible to the test suite, because every test mints its own
+token.
+
+#### 2. `/admin/ledger/held` reports a currency the platform does not hold
+
+It groups by the **USD** `currency` column and reported `USD 900c`, while the
+actual unsettled balance is **SSP 585,000** minor units. §46 moved payouts to
+settlement currency; the reconciliation endpoint was not moved with them.
+
+An operator comparing this figure against MTN's balance is comparing different
+units. The endpoint exists specifically to be compared against a provider
+statement, so this defeats its only purpose.
+
+#### 3. `PayoutDestinationsService.submit()` returns a type with no usable fields
+
+`forOwner()` spreads through a `Record<string, unknown>`, so TypeScript sees the
+return as `{ msisdnLast3: string }`. A caller cannot reach `id` — the one field
+needed to then verify the destination. The seed had to re-query the database for
+an id it had just been handed. Any typed client hits the same wall.
+
+#### 4. The MoMo sandbox and a realistic dataset are mutually exclusive
+
+`providerCurrency` controls both what the customer is quoted and what is sent to
+MTN. Set to `SSP` (correct for production), the sandbox rejects every payment
+with `INVALID_CURRENCY`; set to `EUR` (what the sandbox needs), every customer is
+quoted euros. There is no way to have a realistic local-currency dataset and a
+working sandbox payment at once.
+
+Related: the customer sees *"Provider rejected the request (HTTP 500)"*. The
+actual cause — `INVALID_CURRENCY`, an **admin misconfiguration** — appears only
+in the server log. A support agent cannot diagnose it from what the customer can
+show them.
+
+#### 5. A PENDING payout is invisible to the business
+
+After a run, `GET /businesses/:id/balance` shows `availableNowCents: 0` (correct
+— it is stamped) and `lifetimePaidCents: 0` (correct — not yet marked paid).
+Money in flight appears in neither, and there is no field for it. From the
+business's side the balance simply vanished. `GET /businesses/:id/payouts` shows
+it, but nothing in the balance response points there.
+
+#### 6. Nothing tells a customer an arrival code was emailed
+
+The booking response carries no hint that a six-digit code was sent, nor that it
+will be needed on arrival. A client would have to know from documentation. The
+code is correctly absent from the response; a flag saying one was sent is not.
+
+#### 7. `RunSummary.totalCents` is not cents
+
+It sums `settlementAmountMinor`, so it is minor units of the settlement currency
+— `1998750` SSP in the walk-through, not $19,987.50. The name survived §46.
+
+#### 8. `role` must be resent on OTP verify
+
+`/auth/otp/verify` requires `role` again even though the request step already
+took it and the account already has one. A client must carry it across two
+calls, and the wrong value fails with a validation error rather than being
+inferred.
+
+#### 9. `BusinessProfile.name` is nullable, and the approval queue shows it
+
+The admin queue rendered a row with `name: null`. For a queue whose entire job is
+"decide about this business", a nameless row is not actionable — and nothing at
+signup requires a name before an approval decision is asked for.
+
+#### 10. Smaller edges
+
+- **No ledger read API.** A business cannot see the entries behind its balance,
+  and an admin cannot see them per business; the walk-through used SQL.
+- **No way to list billing adjustments.** The id must come from the resolving
+  ticket's response or the database.
+- **Analytics' 30-day default silently excludes backdated data.** The `range` is
+  in the response, so it is discoverable — but the first read of a demo dataset
+  looks emptier than it is.
+- **No admin endpoint to simulate a payment confirmation.** With the sandbox
+  unavailable there is no supported way to move an appointment to `BOOKED`,
+  which is why the seed calls `applyPaymentResult` directly.
