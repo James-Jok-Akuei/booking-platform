@@ -1,0 +1,11 @@
+-- Role belongs to registration, not authentication (§50).
+--
+-- Before this, both /auth/otp/request and /auth/otp/verify demanded a role, and
+-- requestOtp refused an email registered under a different one. An ADMIN was
+-- therefore rejected on both paths and COULD NOT LOG IN AT ALL — every admin
+-- surface in the platform was unreachable by any legitimate flow.
+--
+-- The role now travels on the OTP row instead: set when a code is issued for an
+-- email nobody has yet, and NULL for every existing user, who simply logs in as
+-- whoever they already are.
+ALTER TABLE "otp_codes" ADD COLUMN "registrationRole" "UserRole";

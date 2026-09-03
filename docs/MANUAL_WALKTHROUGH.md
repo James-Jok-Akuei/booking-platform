@@ -123,11 +123,11 @@ grep -oE "OTP for walkthrough@example.com: [0-9]{6}" <server log> | tail -1
 # ...or from Mailhog at http://localhost:8025 if you configured SMTP.
 
 curl -s -X POST "$B/auth/otp/verify" -H 'Content-Type: application/json' \
-  -d '{"email":"walkthrough@example.com","code":"<code>","role":"CUSTOMER"}' | J
+  -d '{"email":"walkthrough@example.com","code":"<code>"}' | J
 ```
 
-> **`role` is required again on verify.** It is not inferred from the request
-> step or from the existing account. Sending the wrong one fails.
+> `role` is needed only on **request**, and only for an email that has never
+> signed up. Verify takes email and code (§50).
 
 Save `accessToken`, then book:
 
@@ -276,19 +276,19 @@ curl -s -X POST "$B/reviews/<reviewId>/response" -H "$BIZ" \
 
 ## 8. Admin
 
-> **An admin cannot log in through the API.** `/auth/otp/request` accepts only
-> `BUSINESS` or `CUSTOMER`, and refuses an email already registered as an admin.
-> Mint a token by hand:
+Admins log in exactly like anyone else — **no role in the body**, at either
+step (§50):
 
 ```bash
-cd apps/backend && node -e "
-const jwt=require('jsonwebtoken');require('dotenv').config();
-const {PrismaClient}=require('@prisma/client');
-(async()=>{const p=new PrismaClient();
-const a=await p.user.findFirstOrThrow({where:{role:'ADMIN'}});
-console.log(jwt.sign({sub:a.id,email:a.email,role:'ADMIN'},process.env.JWT_ACCESS_SECRET,{expiresIn:'12h'}));
-await p.\$disconnect();})();"
+curl -s -X POST "$B/auth/otp/request" -H 'Content-Type: application/json' \
+  -d '{"email":"demo-admin@example.com"}'
+# read the code from the server log, then:
+curl -s -X POST "$B/auth/otp/verify" -H 'Content-Type: application/json' \
+  -d '{"email":"demo-admin@example.com","code":"<code>"}' | J
 ```
+
+They still cannot self-*register*: a brand-new email may only be created as
+`BUSINESS` or `CUSTOMER`. An admin has to be seeded, which the demo seed does.
 
 ```bash
 ADMIN="Authorization: Bearer <token>"

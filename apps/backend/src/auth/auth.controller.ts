@@ -12,13 +12,13 @@ export class AuthController {
   @Post('otp/request')
   @HttpCode(HttpStatus.OK)
   requestOtp(@Body() dto: RequestOtpDto) {
-    return this.authService.requestOtp(dto.email, dto.role as UserRole);
+    return this.authService.requestOtp(dto.email, dto.role as UserRole | undefined);
   }
 
   @Post('otp/verify')
   @HttpCode(HttpStatus.OK)
   verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto.email, dto.code, dto.role as UserRole);
+    return this.authService.verifyOtp(dto.email, dto.code);
   }
 
   @Post('refresh')

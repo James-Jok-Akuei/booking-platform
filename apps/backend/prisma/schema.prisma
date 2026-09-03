@@ -1523,6 +1523,16 @@ model OtpCode {
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  /// The role to create the account with, when this code is for a brand-new
+  /// email (§50). NULL for every existing user — they log in as whoever they
+  /// already are, and the request body does not get a vote.
+  ///
+  /// It lives here rather than on the verify request because role belongs to
+  /// REGISTRATION, not authentication: the decision was made when the code was
+  /// asked for, and re-asking at verify time was both redundant and the reason
+  /// administrators could not log in at all.
+  registrationRole UserRole?
+
   @@index([email, purpose])
   @@map("otp_codes")
 }

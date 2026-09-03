@@ -39,27 +39,42 @@ export class AuthService {
 
   // ---------- OTP request ----------
 
-  async requestOtp(email: string, role: UserRole): Promise<{ message: string }> {
+  /**
+   * Issues a login code.
+   *
+   * `role` is a REGISTRATION detail, not an authentication one (§50.1):
+   *
+   *  - The email already exists  -> log in as whoever they are. The body's role
+   *    is ignored, not compared. This is what makes an ADMIN able to sign in at
+   *    all: the previous version rejected any email whose stored role differed
+   *    from the body, and the body could never say ADMIN.
+   *  - The email is new          -> a role is required, and still restricted to
+   *    BUSINESS | CUSTOMER by the DTO, so admins remain impossible to
+   *    self-register (§3).
+   *
+   * The intended role is carried on the OTP row rather than asked for again at
+   * verify time.
+   */
+  async requestOtp(email: string, role?: UserRole): Promise<{ message: string }> {
     const normalizedEmail = email.trim().toLowerCase();
 
-    // If the email is already registered under a different role, block it.
-    // MVP rule: one email maps to exactly one role/account.
-    //
-    // This runs BEFORE enforceRateLimits() deliberately. OTP history is keyed
-    // by email alone, with no notion of role, so checking the rate limit first
-    // meant someone who typed their business email into the Customer app was
-    // told "Please wait 47s before requesting another code" — a cooldown from
-    // their own earlier business logins — instead of the actual problem. The
-    // role-conflict answer is the same no matter how recently they last
-    // requested a code, so it should be given straight away.
     const existingUser = await this.prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
-    if (existingUser && existingUser.role !== role) {
+
+    // Registration, not login. Checked BEFORE enforceRateLimits() for the
+    // reason §11 recorded: OTP history is keyed by email alone, so rate-limiting
+    // first answered "please wait 47s" to someone whose actual problem was a
+    // missing role. The answer here does not change with time either.
+    if (!existingUser && !role) {
       throw new BadRequestException(
-        `This email is already registered as a ${existingUser.role.toLowerCase()} account.`,
+        'This email has no account yet. Send `role` as BUSINESS or CUSTOMER to ' +
+          'create one.',
       );
     }
+
+    // An existing user's role wins outright. A new user gets the requested one.
+    const registrationRole = existingUser ? null : (role as UserRole);
 
     // Only now that we know this request could legitimately produce an OTP —
     // a new account, or an existing one under its correct role — does the
@@ -78,6 +93,7 @@ export class AuthService {
         purpose: OtpPurpose.LOGIN,
         expiresAt: new Date(Date.now() + expiresInMinutes * 60 * 1000),
         maxAttempts,
+        registrationRole,
         userId: existingUser?.id,
       },
     });
@@ -122,7 +138,16 @@ export class AuthService {
 
   // ---------- OTP verification / login-signup ----------
 
-  async verifyOtp(email: string, code: string, role: UserRole): Promise<TokenPair & { user: { id: string; email: string; role: UserRole } }> {
+  /**
+   * Exchanges a code for tokens.
+   *
+   * Takes no role. An existing user is logged in as themselves; a new one is
+   * created with the role recorded on the OTP row when it was issued.
+   */
+  async verifyOtp(
+    email: string,
+    code: string,
+  ): Promise<TokenPair & { user: { id: string; email: string; role: UserRole } }> {
     const normalizedEmail = email.trim().toLowerCase();
 
     const otp = await this.prisma.otpCode.findFirst({
@@ -153,25 +178,36 @@ export class AuthService {
       data: { consumedAt: new Date() },
     });
 
-    const user = await this.findOrCreateUser(normalizedEmail, role);
+    const user = await this.findOrCreateUser(normalizedEmail, otp.registrationRole);
 
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);
     return { ...tokens, user: { id: user.id, email: user.email, role: user.role } };
   }
 
-  private async findOrCreateUser(email: string, role: UserRole) {
+  /**
+   * `role` is null whenever the code was issued for an email that already had
+   * an account — the caller is logging in, not registering.
+   */
+  private async findOrCreateUser(email: string, role: UserRole | null) {
     const existing = await this.prisma.user.findUnique({ where: { email } });
 
     if (existing) {
-      if (existing.role !== role) {
-        throw new BadRequestException(
-          `This email is already registered as a ${existing.role.toLowerCase()} account.`,
-        );
-      }
-      if (role === UserRole.BUSINESS) {
+      // No role comparison. The code was issued to THIS account, and the caller
+      // proved control of the mailbox — they log in as whoever they are (§50.1).
+      // Comparing against a body value is what locked administrators out.
+      if (existing.role === UserRole.BUSINESS) {
         await this.acceptInvitationForExistingUser(existing.id, email);
       }
       return existing;
+    }
+
+    // Registration. `requestOtp` refuses to issue a code for an unknown email
+    // without a role, so this cannot be null here — but a defensive throw beats
+    // a non-null assertion on the field that decides what someone can do.
+    if (!role) {
+      throw new BadRequestException(
+        'This code was issued for an account that no longer exists. Request a new one.',
+      );
     }
 
     if (role !== UserRole.BUSINESS) {
