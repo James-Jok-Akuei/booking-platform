@@ -2,7 +2,10 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
 
 /** Only the sections that exist. Others are added as they are built. */
-const SECTIONS = [{ to: '/businesses', label: 'Businesses' }];
+const SECTIONS = [
+  { to: '/businesses', label: 'Businesses' },
+  { to: '/payout-destinations', label: 'Payout destinations' },
+];
 
 export function Layout() {
   const { user, signOut } = useAuth();

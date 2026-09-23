@@ -61,3 +61,67 @@ export const suspendBusiness = (id: string, reason: string) =>
     method: 'PATCH',
     body: { reason },
   });
+
+// ---------------------------------------------------------------------------
+// Payout destinations (§48)
+// ---------------------------------------------------------------------------
+
+export type PayoutDestinationStatus =
+  | 'UNVERIFIED'
+  | 'VERIFIED'
+  | 'REJECTED'
+  | 'SUPERSEDED';
+
+export interface PayoutDestination {
+  id: string;
+  businessId: string;
+  /**
+   * The FULL number, not the masked `msisdnLast3` other callers get.
+   *
+   * Deliberate: verification means contacting the holder and confirming the
+   * number is theirs, which cannot be done against the last three digits. Every
+   * other reader — including the business's own staff — sees the mask (§48.4).
+   */
+  msisdn: string;
+  provider: 'MTN_MOMO' | 'AIRTEL_MONEY';
+  status: PayoutDestinationStatus;
+  submittedById: string;
+  submittedAt: string;
+  verifiedById: string | null;
+  verifiedAt: string | null;
+  verificationMethod: 'ADMIN' | 'OTP' | null;
+  verificationNote: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  businessProfile: { id: string; name: string | null; phone: string | null };
+}
+
+export interface DestinationPage {
+  total: number;
+  limit: number;
+  offset: number;
+  destinations: PayoutDestination[];
+}
+
+export const listPayoutDestinations = (params: {
+  status?: PayoutDestinationStatus;
+  limit?: number;
+  offset?: number;
+}) => api<DestinationPage>('/admin/payout-destinations', { query: params });
+
+/**
+ * `verificationNote` is required, and is the record of how the number was
+ * confirmed. Money goes here and does not come back, so "verified" with no
+ * account of how is not something anyone can audit afterwards (§48).
+ */
+export const verifyPayoutDestination = (id: string, verificationNote: string) =>
+  api<PayoutDestination>(`/admin/payout-destinations/${id}/verify`, {
+    method: 'PATCH',
+    body: { verificationNote },
+  });
+
+export const rejectPayoutDestination = (id: string, reason: string) =>
+  api<PayoutDestination>(`/admin/payout-destinations/${id}/reject`, {
+    method: 'PATCH',
+    body: { reason },
+  });

@@ -146,3 +146,19 @@ td.actions { white-space: nowrap; display: flex; gap: 6px; flex-wrap: wrap; alig
 .empty { padding: 28px 0; }
 .count { margin-top: 12px; font-size: 13px; }
 .error { color: var(--danger); font-size: 13px; margin: 6px 0 0; }
+
+.pill.verified { background: #dcfae6; color: var(--ok); }
+.pill.unverified { background: #fef0c7; color: var(--warn); }
+.pill.superseded { background: var(--line); color: var(--muted); }
+
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+
+.notice {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #7a4a06;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin: 0 0 16px;
+}

@@ -6343,8 +6343,70 @@ Against a real backend on current code, with `seed:demo` data:
   "needs a name first" case the queue disables the Approve button for.
 - `npm run build`: typecheck clean, 216 kB of JS (69 kB gzipped).
 
-**Not verified: the rendered UI.** Nothing here has been clicked in a browser.
-Every request the app makes has been proven against the live backend, and the
-components compile, but the screens themselves are unexercised. That is the gap
-to close first, and the honest thing to say about it is that it is a gap.
+~~**Not verified: the rendered UI.** Nothing here has been clicked in a browser.~~
+**Closed the same day**: the login screen and the approval queue were driven by
+hand in a browser and behave — two pending businesses, the nameless one with
+Approve disabled and "Needs a name first" beside it.
+
+---
+
+## 62. Admin console: payout destinations (2026-09-23)
+
+The second screen, and the one that unblocks money.
+
+### 62.1 Why this screen before any other
+
+An unverified payout destination **pauses** that business's payouts rather than
+skipping them quietly (§48.3). So a business sitting in this queue is a business
+not being paid, and until now the only way to clear it was a hand-written PATCH.
+Of everything still missing from the console, this was the one whose absence
+actively costs someone money.
+
+The page says so, above the queue, rather than leaving an admin to infer that an
+untouched list is an unpaid business.
+
+### 62.2 The admin sees the full number, and should
+
+Every other reader gets `msisdnLast3` — including the business's own staff, so
+that a manager cannot read off where the money goes (§48.4). The admin list
+returns the whole number.
+
+That is not an inconsistency to fix. Verification means contacting the holder
+and confirming the number is theirs, and that cannot be done against three
+digits. The asymmetry is the design: the one person who must see it does, and
+nobody else does.
+
+Worth recording because it is easy to "tidy up" later. `PayoutDestinationsService.list`
+returns rows straight from Prisma rather than through `publicFields`, and a
+future refactor routing it through the view mapper for consistency would quietly
+remove the admin's ability to do the job.
+
+### 62.3 The verification note is the whole control
+
+`verificationNote` is required, 3–500 characters, and the prompt asks *how* the
+number was confirmed rather than for a comment. Money sent to a payout
+destination does not come back, and "VERIFIED" with no account of how is not
+something anyone can audit afterwards. The note, the admin's id, and
+`verificationMethod: ADMIN` are all recorded — §48.1's point that an
+admin-verified row and an OTP-verified row are different facts.
+
+Both prompts validate the minimum length in the browser before sending. The
+server enforces it regardless; doing it here means an admin who types "ok" is
+told immediately instead of after a round trip.
+
+### 62.4 Verified by hand
+
+Against the live backend, with the token from a real OTP login:
+
+- `GET /admin/payout-destinations` — 4 destinations, 1 UNVERIFIED (Juba Auto
+  Care), full msisdn present as expected.
+- A note of 2 characters → **400**, and the message arrives as an ARRAY —
+  which the client's error handling already joins, so it renders as a sentence
+  rather than `[object Object]`.
+- Verifying an already-VERIFIED destination → **400**, *"Only an UNVERIFIED
+  destination can be verified. This one is VERIFIED."*
+
+The happy path was deliberately **not** exercised by curl: there is exactly one
+unverified destination in the demo data, and consuming it would have left the
+queue empty for whoever opens the screen next.
 
