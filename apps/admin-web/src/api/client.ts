@@ -226,3 +226,28 @@ export async function logout(): Promise<void> {
   }
   tokens.clear();
 }
+
+/**
+ * Downloads a file the browser cannot fetch on its own.
+ *
+ * A plain `<a href>` sends no Authorization header, so the CSV export would come
+ * back 401. This fetches it with the token like any other request, then hands
+ * the browser a blob to save.
+ */
+export async function download(path: string, filename: string): Promise<void> {
+  const response = await fetch(`${BASE_URL}${path}`, {
+    headers: tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {},
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, `Could not download ${filename}.`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}

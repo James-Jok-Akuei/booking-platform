@@ -5,6 +5,7 @@ import { useAuth } from '../auth/auth-context';
 const SECTIONS = [
   { to: '/businesses', label: 'Businesses' },
   { to: '/payout-destinations', label: 'Payout destinations' },
+  { to: '/payouts', label: 'Payouts' },
 ];
 
 export function Layout() {

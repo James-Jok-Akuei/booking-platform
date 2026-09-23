@@ -162,3 +162,21 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
   font-size: 13px;
   margin: 0 0 16px;
 }
+
+.pill.paid { background: #dcfae6; color: var(--ok); }
+.pill.pending { background: #fef0c7; color: var(--warn); }
+.pill.failed { background: #fee4e2; color: var(--danger); }
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+}
+.summary h2 { margin: 0 0 8px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.summary p { margin: 0 0 4px; }
+.summary ul { margin: 6px 0 0; padding-left: 18px; }
+.figure { font-size: 18px; font-weight: 600; }
+.run-result { background: #f8fafc; }

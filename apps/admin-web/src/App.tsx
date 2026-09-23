@@ -4,6 +4,7 @@ import { LoginPage } from './auth/LoginPage';
 import { RequireAuth } from './auth/RequireAuth';
 import { BusinessesPage } from './pages/BusinessesPage';
 import { PayoutDestinationsPage } from './pages/PayoutDestinationsPage';
+import { PayoutsPage } from './pages/PayoutsPage';
 
 export function App() {
   return (
@@ -18,6 +19,7 @@ export function App() {
       >
         <Route path="/businesses" element={<BusinessesPage />} />
         <Route path="/payout-destinations" element={<PayoutDestinationsPage />} />
+        <Route path="/payouts" element={<PayoutsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/businesses" replace />} />
     </Routes>

@@ -125,3 +125,84 @@ export const rejectPayoutDestination = (id: string, reason: string) =>
     method: 'PATCH',
     body: { reason },
   });
+
+// ---------------------------------------------------------------------------
+// Payouts (§35, §36, §46, §47)
+// ---------------------------------------------------------------------------
+
+export type PayoutStatus = 'PENDING' | 'PAID' | 'FAILED';
+
+export interface Payout {
+  id: string;
+  businessId: string;
+  /** The internal unit of account. REPORTING only — never what is sent. */
+  amountMinor: number;
+  currency: string;
+  /** What is actually transferred, and the currency it is transferred in. */
+  settlementCurrency: string;
+  settlementAmountMinor: number;
+  status: PayoutStatus;
+  reference: string | null;
+  failureReason: string | null;
+  runAt: string;
+  paidAt: string | null;
+  createdAt: string;
+}
+
+export interface PayoutPage {
+  total: number;
+  limit: number;
+  offset: number;
+  payouts: Payout[];
+}
+
+export type PauseReason = string;
+
+/** What a run did, and — as importantly — who it held back and why (§48.3). */
+export interface RunSummary {
+  runAt: string;
+  businessesConsidered: number;
+  payoutsCreated: number;
+  totalMinor: number;
+  settlementCurrencies: string[];
+  skippedNonPositive: number;
+  pausedForSuspension: number;
+  pausedForUnverifiedDestination: number;
+  pausedBusinesses: Array<{ businessId: string; reason: PauseReason }>;
+  entriesWithoutSettlement: number;
+}
+
+export interface HeldTotals {
+  asOf: string;
+  bySettlementCurrency: Array<{
+    settlementCurrency: string;
+    amountMinor: number;
+    entryCount: number;
+    reportingInternalMinor: number;
+  }>;
+  entriesWithoutSettlement: number;
+  totalEntries: number;
+  note: string;
+}
+
+export const listPayouts = (params: { status?: PayoutStatus; limit?: number }) =>
+  api<PayoutPage>('/admin/payouts', { query: params });
+
+export const heldTotals = () => api<HeldTotals>('/admin/ledger/held');
+
+export const runPayouts = () => api<RunSummary>('/admin/payouts/run', { method: 'POST' });
+
+/**
+ * The provider's reference is required: a payout marked paid with nothing to
+ * look it up by cannot be reconciled against a statement, and the statement is
+ * the only thing that proves the money left.
+ */
+export const markPayoutPaid = (id: string, reference: string) =>
+  api<Payout>(`/admin/payouts/${id}/mark-paid`, { method: 'PATCH', body: { reference } });
+
+/** Marking a payout failed puts its money back in the pool, so it needs a reason. */
+export const markPayoutFailed = (id: string, reason: string) =>
+  api<Payout>(`/admin/payouts/${id}/mark-failed`, { method: 'PATCH', body: { reason } });
+
+/** The whole RUN this payout belongs to, as CSV — every transfer to make by hand. */
+export const exportRunUrl = (id: string) => `/admin/payouts/${id}/export`;

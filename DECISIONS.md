@@ -6410,3 +6410,74 @@ The happy path was deliberately **not** exercised by curl: there is exactly one
 unverified destination in the demo data, and consuming it would have left the
 queue empty for whoever opens the screen next.
 
+---
+
+## 63. Admin console: payouts (2026-09-23)
+
+The screen that lets money actually leave. Third of the console.
+
+### 63.1 Nothing here moves money
+
+Every transfer is made by hand against the provider (§36.7). This screen creates
+the list and records what a human did afterwards — which is why "Mark sent"
+demands the provider's reference rather than being a button that just flips a
+status. A PAID payout with nothing to look it up by is a claim that money moved
+which nothing can corroborate.
+
+"Failed" returns the money to the pool for the next run, so it demands a reason
+for the same reason every other moderation action here does: somebody will ask
+later why it did not go out.
+
+### 63.2 Held-back businesses are listed, never summarised
+
+A run returns counts *and* `pausedBusinesses`, and the page prints the list. A
+smaller batch with no explanation is precisely how a business quietly stops
+being paid (§48.3) — the count tells an admin something is wrong, the list tells
+them who to chase.
+
+`skippedNonPositive` is shown separately and worded as carry-forward rather than
+as an error, because a negative balance is not a failure: §35 deliberately
+leaves those entries unstamped rather than forgiving the debt.
+
+### 63.3 Money is shown in minor units, undivided
+
+`SSP 2,583,750 minor`, not `SSP 25,837.50`.
+
+A currency's decimal places are a property of the currency (§55.2), and this app
+does not carry that table — only the backend does. Dividing by 100 here would be
+the exact mistake §55 and §56 exist to prevent, and it would be invisible: the
+number would look like money and be wrong by a factor of a hundred in any
+zero-decimal currency.
+
+Both figures are shown per payout, labelled: the settlement amount is what is
+actually sent, and the internal amount is marked "reporting" so nobody
+reconciles a transfer against it (§51.2).
+
+### 63.4 The CSV export could not be a link
+
+`<a href>` sends no Authorization header, so the export came back **401** —
+confirmed by hand. It goes through a `download()` helper that fetches with the
+token and hands the browser a blob.
+
+Worth recording because "make it a link" is the obvious simplification, and it
+fails in a way that looks like a permissions bug rather than a missing header.
+
+### 63.5 Verified by hand, end to end
+
+Against the live backend:
+
+- `POST /admin/payouts/run` — **3 payouts created** from 4 businesses considered,
+  1,998,750 SSP minor, 1 skipped for a non-positive balance.
+- `GET /admin/payouts/:id/export` — 200, `text/csv`, a
+  `Content-Disposition` filename, three rows and a TOTAL row carrying each
+  business's verified destination, provider and `payable` flag.
+- The same export **without** a token — 401, which is what §63.4 is about.
+- `mark-paid` with a two-character reference — 400.
+
+**The payout destinations screen (§62) is confirmed working by use, not by
+assertion.** Juba Auto Care's destination was UNVERIFIED when §62 shipped and was
+VERIFIED through the console before this run, recorded as
+`verificationMethod: ADMIN` with the operator's own note. That is why its payout
+appears in the CSV — and it is a better test than anything written here, because
+it went through the browser.
+
