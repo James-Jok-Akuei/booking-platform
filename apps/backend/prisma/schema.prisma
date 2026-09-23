@@ -212,8 +212,19 @@ enum LedgerEntryType {
 
 /// Where a business's payouts are sent. One provider today; the enum exists so
 /// adding a second is a migration rather than a reinterpretation of a string.
-enum PayoutProvider {
+/// A mobile money operator, in EITHER direction (§57.1).
+///
+/// One enum rather than two. Collections and disbursements move money opposite
+/// ways, but "which company" is the same question and the same set of answers —
+/// two parallel enums would drift the first time an operator was added to one
+/// and not the other.
+///
+/// Renamed from `PayoutProvider`, which named the direction rather than the
+/// thing: it was only ever about payouts because payouts were the only place
+/// the operator was recorded. Since §57 a payment records it too.
+enum MobileMoneyProvider {
   MTN_MOMO
+  AIRTEL_MONEY
 }
 
 enum PayoutDestinationStatus {
@@ -868,6 +879,21 @@ model Appointment {
   paymentProviderReferenceId String?
   paymentInitiatedAt         DateTime?
 
+  /// WHICH operator holds that reference (§57.2).
+  ///
+  /// Not bookkeeping — the payment poller cannot work without it. A reference
+  /// is meaningful only to the operator that issued it, so asking MTN about an
+  /// Airtel transaction returns "no such transaction", which is
+  /// indistinguishable from a genuine failure. With one operator configured the
+  /// question never arose and the column was not needed; with two it is the
+  /// difference between confirming a payment and cancelling a paid booking.
+  ///
+  /// Backfilled, unlike §33's actor columns, because the answer is actually
+  /// known: exactly one provider implementation has ever existed, so every
+  /// historical payment went through MTN. This is a case where inferring is
+  /// honest — there was only one possible answer.
+  paymentProvider MobileMoneyProvider?
+
   /// What was actually sent to the provider, and the rate used to get there.
   ///
   /// Kept ALONGSIDE the USD amounts rather than replacing them. Reconciliation
@@ -878,9 +904,9 @@ model Appointment {
   /// permanently unexplainable.
   ///
   /// Null until a payment is initiated.
-  providerCurrency            String?
+  providerCurrency    String?
   providerAmountMinor Int?
-  exchangeRateUsed            Decimal? @db.Decimal(18, 8)
+  exchangeRateUsed    Decimal? @db.Decimal(18, 8)
 
   // ---- Arrival verification ----
   //
@@ -1490,7 +1516,7 @@ model PayoutDestination {
 
   /// E.164, validated against a configurable expected country prefix (§48.2).
   msisdn   String
-  provider PayoutProvider @default(MTN_MOMO)
+  provider MobileMoneyProvider @default(MTN_MOMO)
 
   status PayoutDestinationStatus @default(UNVERIFIED)
 

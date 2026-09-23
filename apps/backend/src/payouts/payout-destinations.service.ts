@@ -11,7 +11,7 @@ import {
   BusinessMemberStatus,
   NotificationType,
   PayoutDestinationStatus,
-  PayoutProvider,
+  MobileMoneyProvider,
   PayoutVerificationMethod,
   Prisma,
   UserRole,
@@ -37,7 +37,7 @@ import { ListPayoutDestinationsDto } from './dto/list-payout-destinations.dto';
 export interface PayoutDestinationView {
   id: string;
   businessId: string;
-  provider: PayoutProvider;
+  provider: MobileMoneyProvider;
   status: PayoutDestinationStatus;
   submittedById: string;
   submittedAt: Date;
@@ -81,7 +81,7 @@ type DestinationRow = {
   id: string;
   businessId: string;
   msisdn: string;
-  provider: PayoutProvider;
+  provider: MobileMoneyProvider;
   status: PayoutDestinationStatus;
   submittedById: string;
   submittedAt: Date;

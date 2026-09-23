@@ -1,3 +1,5 @@
+import { MobileMoneyProvider } from '@prisma/client';
+
 /**
  * The payment abstraction the booking flow talks to.
  *
@@ -12,8 +14,26 @@
  * problems and would each need their own thinking about provider differences.
  */
 export interface PaymentProvider {
+  /**
+   * Which operator this is, as stored on the appointment (§57.2).
+   *
+   * The stable identity. `name` is prose and may be reworded; this is what a
+   * payment reference is recorded against and what the poller looks up months
+   * later, so it has to be an enum value and not a string someone tidies.
+   */
+  readonly key: MobileMoneyProvider;
+
   /** Human-readable name, for logs and the payment-status response. */
   readonly name: string;
+
+  /**
+   * Whether this provider has everything it needs to be used.
+   *
+   * The registry only offers providers that answer true, so an operator whose
+   * credentials are not configured is absent rather than failing every payment
+   * routed to it (§57.3).
+   */
+  isConfigured(): boolean;
 
   /**
    * Asks the provider to collect `amountMinor` from `phoneNumber`.
@@ -66,5 +86,6 @@ export interface PaymentStatusResult {
   failureReason?: string;
 }
 
-/** DI token. An interface has no runtime identity, so injection needs this. */
-export const PAYMENT_PROVIDER = Symbol('PAYMENT_PROVIDER');
+// The PAYMENT_PROVIDER DI token was removed in §57. Callers inject
+// PaymentProviderRegistry and ask it for a named operator, because a single
+// injected provider cannot answer "which one issued this reference".

@@ -10,7 +10,8 @@ import { PlatformSettingsService } from '../../src/settings/platform-settings.se
 import { MailService } from '../../src/mail/mail.service';
 import { NotificationsService } from '../../src/notifications/notifications.service';
 import { ChatService } from '../../src/chat/chat.service';
-import { PAYMENT_PROVIDER } from '../../src/payments/payment-provider.interface';
+import { PaymentProviderRegistry } from '../../src/payments/payment-provider.registry';
+import { MobileMoneyProvider } from '@prisma/client';
 
 /**
  * Builds a testing module from an explicit provider list, rather than importing
@@ -58,7 +59,9 @@ export const mailStub = () => ({
 
 /** Never contacted. Payment behaviour is verified by hand against the sandbox. */
 export const paymentProviderStub = () => ({
+  key: MobileMoneyProvider.MTN_MOMO,
   name: 'stub',
+  isConfigured: () => true,
   initiatePayment: jest.fn(),
   checkPaymentStatus: jest.fn().mockResolvedValue({ status: 'PENDING' }),
 });
@@ -73,7 +76,14 @@ export const commonStubs = {
     provide: NotificationsService,
     useValue: notificationsStub(),
   }),
-  payments: (): Provider => ({ provide: PAYMENT_PROVIDER, useValue: paymentProviderStub() }),
+  // A REAL registry over a stubbed provider, not a stubbed registry: the
+  // resolution logic — which operator issued this reference — is exactly what
+  // §57 added, so stubbing it out would test nothing. Reach the stub itself
+  // with `registry.require(MobileMoneyProvider.MTN_MOMO)`.
+  payments: (): Provider => ({
+    provide: PaymentProviderRegistry,
+    useValue: new PaymentProviderRegistry([paymentProviderStub() as never]),
+  }),
   chat: (): Provider => ({ provide: ChatService, useValue: chatStub() }),
 };
 

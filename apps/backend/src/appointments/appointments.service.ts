@@ -12,6 +12,7 @@ import {
   CancelledBy,
   BusinessMemberStatus,
   Prisma,
+  MobileMoneyProvider,
   UserRole,
   VerificationMethod,
 } from '@prisma/client';
@@ -20,10 +21,7 @@ import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
-import {
-  PAYMENT_PROVIDER,
-  PaymentProvider,
-} from '../payments/payment-provider.interface';
+import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
 import {
   INTERNAL_CURRENCY,
   convertMinorUnits,
@@ -144,7 +142,7 @@ export class AppointmentsService {
     private readonly mail: MailService,
     private readonly settings: PlatformSettingsService,
     private readonly availability: AvailabilityService,
-    @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
+    private readonly payments: PaymentProviderRegistry,
     private readonly notifications: NotificationsService,
     private readonly chat: ChatService,
     private readonly ledger: LedgerService,
@@ -409,6 +407,21 @@ export class AppointmentsService {
     }
   }
 
+  /**
+   * The provider that issued an appointment's payment reference (§57.2).
+   *
+   * Falls back to the single configured provider only when the column is null,
+   * which means the row predates §57 — and those rows all belong to MTN, since
+   * it was the only implementation that ever existed. The migration backfilled
+   * them, so this path should be unreachable; it exists so a row written by
+   * something other than `initiateDepositPayment` cannot crash the poller.
+   */
+  private providerFor(appointment: { paymentProvider: MobileMoneyProvider | null }) {
+    return appointment.paymentProvider
+      ? this.payments.require(appointment.paymentProvider)
+      : this.payments.requireOnlyOne();
+  }
+
   private generateVerificationCode(): string {
     return crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
   }
@@ -502,7 +515,12 @@ export class AppointmentsService {
         (updatedAt ? ` (rate set ${updatedAt.toISOString()})` : ''),
     );
 
-    const result = await this.payments.initiatePayment({
+    // Which operator takes this payment. While one is configured this resolves
+    // to it; once Rwanda has both, the caller has to choose from the customer's
+    // number rather than defaulting into the wrong network (§57.3, §58).
+    const provider = this.payments.requireOnlyOne();
+
+    const result = await provider.initiatePayment({
       phoneNumber,
       amountMinor: providerAmountMinor,
       currency: providerCurrency,
@@ -542,6 +560,9 @@ export class AppointmentsService {
     await this.prisma.appointment.update({
       where: { id: appointmentId },
       data: {
+        // Recorded WITH the reference, never separately: a reference whose
+        // operator is unknown cannot be polled, so the two are one fact (§57.2).
+        paymentProvider: provider.key,
         paymentProviderReferenceId: result.providerReferenceId,
         paymentInitiatedAt: new Date(),
         // Recorded alongside the USD amounts, never instead of them: a
@@ -554,9 +575,9 @@ export class AppointmentsService {
     });
 
     this.logger.log(
-      `Deposit payment initiated for appointment ${appointmentId}: provider=${this.payments.name} ` +
-        `reference=${result.providerReferenceId} charged=${providerAmountMinor}c ${providerCurrency} ` +
-        `(internal ${appointment.depositAmountMinor}c ${INTERNAL_CURRENCY})`,
+      `Deposit payment initiated for appointment ${appointmentId}: provider=${provider.key} ` +
+        `reference=${result.providerReferenceId} charged=${providerAmountMinor} ${providerCurrency} minor ` +
+        `(internal ${appointment.depositAmountMinor} ${INTERNAL_CURRENCY} minor)`,
     );
 
     return {
@@ -594,6 +615,7 @@ export class AppointmentsService {
         status: true,
         depositAmountMinor: true,
         paymentProviderReferenceId: true,
+        paymentProvider: true,
         paymentInitiatedAt: true,
       },
     });
@@ -621,7 +643,12 @@ export class AppointmentsService {
       };
     }
 
-    const result = await this.payments.checkPaymentStatus(full.paymentProviderReferenceId);
+    // The operator that ISSUED this reference, not whichever is configured now.
+    // Asking the wrong one returns "no such transaction", which reads exactly
+    // like a genuine failure and would cancel a paid booking (§57.2).
+    const result = await this.providerFor(full).checkPaymentStatus(
+      full.paymentProviderReferenceId,
+    );
     const applied = await this.applyPaymentResult(
       appointmentId,
       full.paymentProviderReferenceId,

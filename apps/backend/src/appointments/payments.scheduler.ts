@@ -1,11 +1,13 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { AppointmentStatus, CancelledBy, NotificationType } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
 import {
-  PAYMENT_PROVIDER,
-  PaymentProvider,
-} from '../payments/payment-provider.interface';
+  AppointmentStatus,
+  CancelledBy,
+  MobileMoneyProvider,
+  NotificationType,
+} from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
+import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
 import { AppointmentsService } from './appointments.service';
 
 /**
@@ -39,7 +41,7 @@ export class PaymentsScheduler {
   constructor(
     private readonly prisma: PrismaService,
     private readonly appointments: AppointmentsService,
-    @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
+    private readonly payments: PaymentProviderRegistry,
   ) {}
 
   /**
@@ -58,7 +60,9 @@ export class PaymentsScheduler {
         status: AppointmentStatus.PENDING_PAYMENT,
         paymentProviderReferenceId: { not: null },
       },
-      select: { id: true, paymentProviderReferenceId: true },
+      // paymentProvider comes along because a reference can only be polled
+      // against the operator that issued it (§57.2).
+      select: { id: true, paymentProviderReferenceId: true, paymentProvider: true },
     });
 
     if (pending.length === 0) return { confirmed: 0, failed: 0 };
@@ -69,7 +73,7 @@ export class PaymentsScheduler {
     for (const appointment of pending) {
       const reference = appointment.paymentProviderReferenceId!;
       try {
-        const result = await this.payments.checkPaymentStatus(reference);
+        const result = await this.providerFor(appointment).checkPaymentStatus(reference);
         if (result.status === 'PENDING') continue;
 
         // Delegated so the poll and the on-demand status read share one
@@ -116,6 +120,20 @@ export class PaymentsScheduler {
    * produce. If that last check comes back SUCCESSFUL the appointment is booked
    * instead of cancelled.
    */
+  /**
+   * The operator that issued this appointment's payment reference (§57.2).
+   *
+   * Never "the configured provider": a reference is meaningful only to the
+   * operator that created it, and asking another returns "no such transaction"
+   * — which this sweep would read as a failure and act on, cancelling a booking
+   * whose deposit had actually been paid.
+   */
+  private providerFor(appointment: { paymentProvider: MobileMoneyProvider | null }) {
+    return appointment.paymentProvider
+      ? this.payments.require(appointment.paymentProvider)
+      : this.payments.requireOnlyOne();
+  }
+
   @Cron('0 * * * * *', { name: 'pending-payment-expiry' })
   async expirePendingPayments(): Promise<{ cancelled: number; rescued: number }> {
     const cutoff = new Date(Date.now() - PENDING_PAYMENT_TTL_MS);
@@ -125,7 +143,12 @@ export class PaymentsScheduler {
         status: AppointmentStatus.PENDING_PAYMENT,
         createdAt: { lt: cutoff },
       },
-      select: { id: true, createdAt: true, paymentProviderReferenceId: true },
+      select: {
+        id: true,
+        createdAt: true,
+        paymentProviderReferenceId: true,
+        paymentProvider: true,
+      },
     });
 
     if (stale.length === 0) return { cancelled: 0, rescued: 0 };
@@ -136,7 +159,7 @@ export class PaymentsScheduler {
     for (const appointment of stale) {
       if (appointment.paymentProviderReferenceId) {
         try {
-          const result = await this.payments.checkPaymentStatus(
+          const result = await this.providerFor(appointment).checkPaymentStatus(
             appointment.paymentProviderReferenceId,
           );
           if (result.status === 'SUCCESSFUL') {

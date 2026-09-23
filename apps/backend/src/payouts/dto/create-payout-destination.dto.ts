@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString, Matches } from 'class-validator';
-import { PayoutProvider } from '@prisma/client';
+import { MobileMoneyProvider } from '@prisma/client';
 import { E164 } from '../msisdn';
 
 export class CreatePayoutDestinationDto {
@@ -18,6 +18,6 @@ export class CreatePayoutDestinationDto {
   msisdn!: string;
 
   @IsOptional()
-  @IsEnum(PayoutProvider)
-  provider?: PayoutProvider;
+  @IsEnum(MobileMoneyProvider)
+  provider?: MobileMoneyProvider;
 }

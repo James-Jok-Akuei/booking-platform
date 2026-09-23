@@ -5879,3 +5879,115 @@ rewritten by the rename into an assertion that the field it had just checked for
 was absent. It now names the superseded field deliberately, and guards that the
 old name stays gone.
 
+---
+
+## 57. One operator per payment, not one per deployment (2026-09-23)
+
+Rwanda has two mobile money operators that matter, MTN and Airtel, and a
+customer pays with whichever one their SIM belongs to. This commit is the
+infrastructure for that. The Airtel client itself is §58.
+
+### 57.1 The provider is chosen per payment, not at boot
+
+`PaymentsModule` read `PAYMENT_PROVIDER` from the environment and returned a
+single instance, so every payment on the platform went to whichever operator was
+named at startup. That is coherent for one operator per country and incoherent
+for two: the choice belongs to the customer's phone number, and it is made after
+the process has started.
+
+`PaymentProviderRegistry` replaces the single `PAYMENT_PROVIDER` token. It holds
+every provider whose credentials are configured and hands out a named one.
+
+`PAYMENT_PROVIDER` is gone rather than retained: an operator is available when
+its own keys are set, which is a fact, and one fewer setting to keep consistent
+with another. A provider that is not configured is **absent from the registry**
+rather than present and failing — so a payment routed to it gets a 503 naming
+what *is* accepted, instead of a generic provider error.
+
+### 57.2 Recording the operator is not bookkeeping — the poller needs it
+
+This is the part that made the commit urgent rather than tidy.
+
+A payment reference is meaningful **only to the operator that issued it**. Three
+places call `checkPaymentStatus(reference)`: the on-demand status read, the
+20-second poll, and the expiry sweep's final check. All three asked "the"
+provider, because there was only ever one.
+
+Ask the wrong operator and the answer is *"no such transaction"* — which is
+indistinguishable from a genuine failure. `applyPaymentResult` would then treat
+a perfectly good payment as FAILED, and the expiry sweep would cancel the
+booking. **Adding a second operator without this column would cancel paid
+appointments**, and the one it would cancel is the one whose customer had
+already been charged.
+
+So `Appointment.paymentProvider` is written **in the same statement** as the
+reference, and every caller resolves the provider from the row rather than from
+configuration.
+
+**Backfilled, unlike §33.** §33 refused to backfill `cancelledBy` because the
+information was genuinely gone — several parties could have cancelled and
+nothing recorded which. Here there is exactly one possible answer: one
+`PaymentProvider` implementation has ever existed, so every reference in the
+table was issued by MTN. Writing that down records a fact rather than inventing
+one, and the distinction is worth keeping straight: the rule is not "never
+backfill", it is "never fabricate".
+
+### 57.3 With two operators available, there is no default
+
+`requireOnlyOne()` resolves while exactly one operator is configured and
+**throws once two are**. That looks unhelpful and is deliberate: "the default
+provider" with two operators live is a coin toss that charges the wrong network
+about half the time, silently, and the failure surfaces to the customer as a
+payment that never arrives. Refusing forces the choice to be made from the
+customer's number — which is §58's job, and which this makes impossible to skip.
+
+### 57.4 `PayoutProvider` became `MobileMoneyProvider`
+
+One enum for "which operator", in both directions. The old name described the
+direction rather than the thing, and it was only about payouts because payouts
+were the only place the operator was recorded. Two parallel enums would drift
+the first time an operator was added to one and not the other.
+
+`AIRTEL_MONEY` is added now. It is immediately meaningful on the payout side —
+transfers are manual (§36.7), so a business can nominate an Airtel number today
+and be paid by hand — and it is what §58 registers a collections client against.
+
+The migration is hand-written: Prisma treats an enum rename as
+drop-and-recreate, which would take every payout destination's provider with it.
+
+### 57.5 Verified
+
+`test/payment-providers.spec.ts` (11). The four that matter are the routing
+ones: with both operators registered, an Airtel reference is polled against
+Airtel and MTN is **never called**, and vice versa; a mixed sweep routes each
+appointment to its own operator; and one operator throwing does not stop the
+other being polled.
+
+Test fixtures use a **real registry over stubbed providers** rather than a
+stubbed registry — the resolution logic is exactly what this commit adds, so
+stubbing it would test nothing.
+
+Full suite: **950 passing across 24 suites**, no drift.
+
+### 57.6 A deployment constraint, discovered while registering with Airtel
+
+Airtel's developer portal makes **IP whitelisting mandatory for all products in
+all countries**: API calls are accepted only from addresses on an allow-list,
+maintained per mode (TEST and production have separate lists).
+
+This is a hosting requirement, not a coding one, and it is stricter than MTN's —
+whose sandbox has no such rule. Since the platform will talk to both, **Airtel's
+constraint is the platform's constraint**: the backend must call out from a
+fixed, known address. Hosting with rotating egress IPs — most serverless
+platforms, several PaaS options — needs a NAT gateway or a dedicated egress IP
+on top. A VPS or container host with a static IP does not.
+
+Recorded here so the hosting decision is not made without it.
+
+### 57.7 Not yet done
+
+The Airtel credentials are **pending approval** — the portal generates them only
+after a human approves the application, so there is nothing to configure yet.
+§58 builds the client; verifying it against the real sandbox by hand, as §17.6
+did for MTN, waits on those keys and is not claimed until it happens.
+

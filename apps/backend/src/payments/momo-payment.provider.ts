@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { MobileMoneyProvider } from '@prisma/client';
 import * as crypto from 'crypto';
 import {
   InitiatePaymentParams,
@@ -54,6 +55,7 @@ const TOKEN_EXPIRY_SAFETY_MARGIN_MS = 60_000;
  */
 @Injectable()
 export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
+  readonly key = MobileMoneyProvider.MTN_MOMO;
   readonly name = 'MTN MoMo Collections';
 
   private readonly logger = new Logger(MomoPaymentProvider.name);

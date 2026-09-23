@@ -8,7 +8,8 @@ import {
   PlatformSettingsService,
 } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { PAYMENT_PROVIDER } from '../src/payments/payment-provider.interface';
+import { PaymentProviderRegistry } from '../src/payments/payment-provider.registry';
+import { MobileMoneyProvider } from '@prisma/client';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import {
   TestBusiness,
@@ -361,7 +362,9 @@ describe('Approximate local-currency figures (§39)', () => {
         customerId: customer.userId,
         status: AppointmentStatus.PENDING_PAYMENT,
       });
-      const provider = moduleRef.get<any>(PAYMENT_PROVIDER);
+      const provider = moduleRef
+        .get(PaymentProviderRegistry)
+        .require(MobileMoneyProvider.MTN_MOMO) as any;
       provider.initiatePayment.mockResolvedValue({
         providerReferenceId: 'ref-charge-1',
         status: 'PENDING',

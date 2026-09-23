@@ -3,13 +3,17 @@ import {
   BadRequestException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { AppointmentStatus, NotificationType } from '@prisma/client';
+import {
+  AppointmentStatus,
+  MobileMoneyProvider,
+  NotificationType,
+} from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { AppointmentsService } from '../src/appointments/appointments.service';
 import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { NotificationsService } from '../src/notifications/notifications.service';
-import { PAYMENT_PROVIDER } from '../src/payments/payment-provider.interface';
+import { PaymentProviderRegistry } from '../src/payments/payment-provider.registry';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import {
@@ -48,7 +52,9 @@ describe('Payment failures (§52)', () => {
     ]);
     prisma = moduleRef.get(PrismaService);
     appointments = moduleRef.get(AppointmentsService);
-    provider = moduleRef.get(PAYMENT_PROVIDER) as never;
+    provider = moduleRef
+      .get(PaymentProviderRegistry)
+      .require(MobileMoneyProvider.MTN_MOMO) as never;
     notifications = moduleRef.get(NotificationsService) as never;
     await resetDatabase(prisma);
     await moduleRef

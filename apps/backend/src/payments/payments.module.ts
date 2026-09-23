@@ -1,17 +1,29 @@
-import { Global, Logger, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Global, Module } from '@nestjs/common';
 import { CurrencyGuard } from './currency-guard.service';
 import { MomoPaymentProvider } from './momo-payment.provider';
-import { PAYMENT_PROVIDER, PaymentProvider } from './payment-provider.interface';
+import { PaymentProviderRegistry } from './payment-provider.registry';
 
 /**
- * Wires the configured PaymentProvider.
+ * Wires every payment provider the platform can talk to (§57.1).
  *
- * The swap point is this factory and nothing else: adding NilPay means writing
- * a class that implements PaymentProvider and adding one case here. Everything
- * downstream injects the PAYMENT_PROVIDER token and never names a provider.
+ * Adding an operator means writing a class implementing PaymentProvider and
+ * listing it in the factory below. Nothing downstream names a provider: callers
+ * ask the registry for the one a given appointment was paid through.
  *
- * Global because both AppointmentsService and the payment-polling job need it.
+ * ## What changed, and why the old shape could not stay
+ *
+ * This used to read `PAYMENT_PROVIDER` from the environment and return a single
+ * instance, so the operator was chosen once at boot. That works for one
+ * operator per country and breaks for two: which operator a customer pays with
+ * is a property of their SIM, not of the deployment. It also left the payment
+ * poller unable to tell which operator issued a reference, which is not a
+ * cosmetic problem — see PaymentProviderRegistry.
+ *
+ * `PAYMENT_PROVIDER` is no longer read. A provider is available when its own
+ * credentials are configured, which is a fact rather than a setting, and one
+ * fewer thing to get wrong in two places.
+ *
+ * Global because AppointmentsService and the payment-polling job both need it.
  */
 @Global()
 @Module({
@@ -19,26 +31,11 @@ import { PAYMENT_PROVIDER, PaymentProvider } from './payment-provider.interface'
     CurrencyGuard,
     MomoPaymentProvider,
     {
-      provide: PAYMENT_PROVIDER,
-      inject: [ConfigService, MomoPaymentProvider],
-      useFactory: (config: ConfigService, momo: MomoPaymentProvider): PaymentProvider => {
-        const configured = (config.get<string>('PAYMENT_PROVIDER') ?? 'momo').trim().toLowerCase();
-
-        switch (configured) {
-          case 'momo':
-            return momo;
-          default:
-            // Fail loud but keep booting: an unknown provider name is a config
-            // typo, and every payment attempt failing with a clear message is
-            // more debuggable than the whole API refusing to start.
-            new Logger('PaymentsModule').error(
-              `Unknown PAYMENT_PROVIDER "${configured}". Falling back to "momo". Valid values: momo.`,
-            );
-            return momo;
-        }
-      },
+      provide: PaymentProviderRegistry,
+      inject: [MomoPaymentProvider],
+      useFactory: (momo: MomoPaymentProvider) => new PaymentProviderRegistry([momo]),
     },
   ],
-  exports: [PAYMENT_PROVIDER],
+  exports: [PaymentProviderRegistry],
 })
 export class PaymentsModule {}
