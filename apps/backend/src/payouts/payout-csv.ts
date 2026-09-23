@@ -16,3 +16,25 @@ function escapeCsv(field: string | number | null | undefined): string {
   if (!/[",\r\n]/.test(value)) return value;
   return `"${value.replace(/"/g, '""')}"`;
 }
+
+/**
+ * A value that must survive being opened in a spreadsheet as TEXT (§65.2).
+ *
+ * `+211921000004` is a phone number. Excel sees a leading `+`, decides it is a
+ * number, and renders `2.11921E+11` — so the one column the reader actually
+ * needs becomes unreadable. Quoting does not help: Excel converts quoted
+ * numeric-looking cells too.
+ *
+ * `="…"` is the escape hatch spreadsheets honour: a formula returning a string,
+ * which Excel, Google Sheets and Numbers all display verbatim. It is ugly in a
+ * text editor, and this file exists to be opened in a spreadsheet by a person
+ * checking a payout against a statement — so that is the reader to optimise
+ * for.
+ *
+ * A script consuming this strips a leading `="` and a trailing `"`. That is
+ * documented here rather than discovered.
+ */
+export function csvTextCell(value: string | null | undefined): string {
+  if (value === null || value === undefined || value === '') return '';
+  return `="${String(value).replace(/"/g, '""')}"`;
+}

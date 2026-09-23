@@ -18,7 +18,7 @@ import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { ListPayoutsDto } from './dto/list-payouts.dto';
-import { toCsvRow } from './payout-csv';
+import { csvTextCell, toCsvRow } from './payout-csv';
 import { PayoutDestinationsService } from './payout-destinations.service';
 import { DisbursementProviderRegistry } from '../payments/disbursement-provider.registry';
 import { maskMsisdn } from './msisdn';
@@ -327,15 +327,35 @@ export class PayoutsService {
     const limit = query.limit ?? 25;
     const offset = query.offset ?? 0;
 
-    const [total, payouts] = await Promise.all([
+    const [total, rows] = await Promise.all([
       this.prisma.payout.count({ where }),
       this.prisma.payout.findMany({
         where,
         orderBy: { runAt: 'desc' },
         take: limit,
         skip: offset,
+        include: { businessProfile: { select: { id: true, name: true } } },
       }),
     ]);
+
+    // WHO is being paid and WHERE the money goes, on the row itself (§65.1).
+    //
+    // Without these the console showed a truncated business id and an amount,
+    // which is not enough to pay anyone — so an admin had to export the CSV
+    // just to read a name and a number that the screen could have shown. The
+    // export then looked load-bearing when it was really covering a gap here.
+    const destinations = await this.destinations.verifiedFor(
+      rows.map((row) => row.businessId),
+    );
+
+    const payouts = rows.map((row) => ({
+      ...row,
+      businessName: row.businessProfile.name,
+      // Null when there is no verified destination — which is also why this
+      // payout cannot be sent. The console reads it to say so.
+      destinationMsisdn: destinations.get(row.businessId)?.msisdn ?? null,
+      destinationProvider: destinations.get(row.businessId)?.provider ?? null,
+    }));
 
     return { total, limit, offset, payouts };
   }
@@ -705,10 +725,12 @@ export class PayoutsService {
         // The real number when there is a verified one. When there is not, the
         // §47.2 placeholder survives for exactly this case — and `payable` says
         // plainly that this line must not be sent.
-        destination ? destination.msisdn : 'NOT RECORDED',
+        // Forced to TEXT: a leading "+" makes Excel render the one column the
+        // reader needs as 2.11921E+11 (§65.2).
+        destination ? csvTextCell(destination.msisdn) : 'NOT RECORDED',
         destination ? destination.provider : '',
         destination ? 'YES' : 'NO — DESTINATION NOT VERIFIED, DO NOT SEND',
-        row.businessProfile.phone,
+        csvTextCell(row.businessProfile.phone),
         row.settlementCurrency,
         row.settlementAmountMinor,
         row.amountMinor,

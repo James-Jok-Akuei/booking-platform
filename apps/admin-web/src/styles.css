@@ -180,3 +180,9 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
 .summary ul { margin: 6px 0 0; padding-left: 18px; }
 .figure { font-size: 18px; font-weight: 600; }
 .run-result { background: #f8fafc; }
+
+.pill.processing { background: #dbeafe; color: #1e40af; }
+
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primary:hover:not(:disabled) { filter: brightness(1.07); }
+button.link.danger-link { color: var(--danger); }

@@ -496,6 +496,15 @@ describe('Payouts (§35)', () => {
       // verified number to send to now (§48.5).
       expect(csv).toContain(destination.msisdn);
       expect(csv).toContain('MTN_MOMO');
+      // Forced to TEXT, or Excel renders a "+…" number as 2.11921E+11 and the
+      // one column the reader needs becomes unreadable (§65.2).
+      //
+      // On disk the cell reads `"=""+211…"""`: csvTextCell wraps the value as a
+      // formula, and the RFC-4180 escaper then quotes the field and doubles the
+      // inner quotes. A spreadsheet unescapes that back to `="+211…"` and shows
+      // the digits. Asserted on the BYTES, so a well-meaning simplification back
+      // to a bare value fails here.
+      expect(csv).toContain(`=""${destination.msisdn}""`);
       expect(csv).toContain('payable');
       expect(unpayableCount).toBe(0);
       expect(csv).not.toContain('NOT RECORDED');

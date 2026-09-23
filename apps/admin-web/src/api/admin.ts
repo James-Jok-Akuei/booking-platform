@@ -130,7 +130,7 @@ export const rejectPayoutDestination = (id: string, reason: string) =>
 // Payouts (§35, §36, §46, §47)
 // ---------------------------------------------------------------------------
 
-export type PayoutStatus = 'PENDING' | 'PAID' | 'FAILED';
+export type PayoutStatus = 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
 
 export interface Payout {
   id: string;
@@ -147,6 +147,22 @@ export interface Payout {
   runAt: string;
   paidAt: string | null;
   createdAt: string;
+
+  /** Our own id for an automated transfer, set before it is sent (§64.3). */
+  providerReferenceId: string | null;
+  sentAt: string | null;
+
+  /**
+   * Who is being paid and where the money goes (§65.1).
+   *
+   * On the row because a truncated business id and an amount are not enough to
+   * pay anyone — which is why an admin used to export the CSV just to read a
+   * name and a number the screen could have shown.
+   */
+  businessName: string | null;
+  /** Null when there is no VERIFIED destination — which is also why it cannot be sent. */
+  destinationMsisdn: string | null;
+  destinationProvider: string | null;
 }
 
 export interface PayoutPage {
@@ -206,3 +222,12 @@ export const markPayoutFailed = (id: string, reason: string) =>
 
 /** The whole RUN this payout belongs to, as CSV — every transfer to make by hand. */
 export const exportRunUrl = (id: string) => `/admin/payouts/${id}/export`;
+
+/**
+ * Sends ONE payout through the operator (§64.4).
+ *
+ * No batch equivalent, deliberately: a bug in a batch pays every business
+ * wrongly before anyone notices; a bug here pays one and stops.
+ */
+export const sendPayout = (id: string) =>
+  api<Payout>(`/admin/payouts/${id}/send`, { method: 'POST' });

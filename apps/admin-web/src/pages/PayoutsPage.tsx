@@ -8,6 +8,7 @@ import {
   markPayoutFailed,
   markPayoutPaid,
   runPayouts,
+  sendPayout,
   type Payout,
   type PayoutStatus,
   type RunSummary,
@@ -15,6 +16,7 @@ import {
 
 const STATUSES: Array<{ value: PayoutStatus | 'ALL'; label: string }> = [
   { value: 'PENDING', label: 'To send' },
+  { value: 'PROCESSING', label: 'In flight' },
   { value: 'PAID', label: 'Sent' },
   { value: 'FAILED', label: 'Failed' },
   { value: 'ALL', label: 'All' },
@@ -65,6 +67,19 @@ export function PayoutsPage() {
       setLastRun(summary);
       refresh();
     },
+  });
+
+  /**
+   * Hands one payout to the operator.
+   *
+   * The result is PROCESSING, never PAID: the operator has accepted the
+   * request, and whether the money arrived is decided by the status poll a
+   * minute later (§64.3). Saying "sent" here would be a claim the platform
+   * cannot support yet.
+   */
+  const send = useMutation({
+    mutationFn: sendPayout,
+    onSuccess: refresh,
   });
 
   const mark = useMutation({
@@ -196,6 +211,12 @@ export function PayoutsPage() {
         </div>
       )}
 
+      {send.error && (
+        <p className="error" role="alert">
+          {send.error instanceof ApiError ? send.error.message : 'The send failed.'}
+        </p>
+      )}
+
       {mark.error && (
         <p className="error" role="alert">
           {mark.error instanceof ApiError ? mark.error.message : 'That did not work.'}
@@ -225,7 +246,20 @@ export function PayoutsPage() {
             {payouts.data.payouts.map((payout) => (
               <tr key={payout.id}>
                 <td>
-                  <code>{payout.businessId.slice(0, 8)}</code>
+                  <strong>
+                    {payout.businessName ?? <em className="muted">No name</em>}
+                  </strong>
+                  {payout.destinationMsisdn ? (
+                    <div className="muted small">
+                      <code>{payout.destinationMsisdn}</code>
+                      {payout.destinationProvider &&
+                        ` · ${payout.destinationProvider.replace('_', ' ')}`}
+                    </div>
+                  ) : (
+                    // No verified destination is also why Send is disabled, so
+                    // the row says it rather than leaving a dead button.
+                    <div className="error small">No verified destination</div>
+                  )}
                 </td>
                 <td>
                   <strong>
@@ -254,22 +288,54 @@ export function PayoutsPage() {
                 <td className="actions">
                   {payout.status === 'PENDING' && (
                     <>
+                      {/* The main action. Sending through the operator is what
+                          removes the whole leave-the-app-and-come-back loop. */}
                       <button
                         type="button"
+                        className="primary"
+                        disabled={send.isPending || !payout.destinationMsisdn}
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Send ${money(
+                                payout.settlementAmountMinor,
+                                payout.settlementCurrency,
+                              )} to ${payout.businessName ?? 'this business'} ` +
+                                `at ${payout.destinationMsisdn}?\n\n` +
+                                'This moves real money and cannot be undone.',
+                            )
+                          ) {
+                            send.mutate(payout.id);
+                          }
+                        }}
+                      >
+                        Send
+                      </button>
+                      {/* Kept, but secondary: for an operator the platform
+                          cannot disburse through, or a day its API is down and
+                          somebody pays by hand anyway. */}
+                      <button
+                        type="button"
+                        className="link"
                         disabled={mark.isPending}
                         onClick={() => markPaid(payout)}
                       >
-                        Mark sent
+                        Sent by hand
                       </button>
                       <button
                         type="button"
-                        className="danger"
+                        className="link danger-link"
                         disabled={mark.isPending}
                         onClick={() => markFailed(payout)}
                       >
-                        Failed
+                        Mark failed
                       </button>
                     </>
+                  )}
+                  {payout.status === 'PROCESSING' && (
+                    <span className="muted small">
+                      With the operator — checked every minute
+                    </span>
                   )}
                   <button
                     type="button"
@@ -280,8 +346,9 @@ export function PayoutsPage() {
                         `payout-run-${payout.runAt.slice(0, 10)}.csv`,
                       )
                     }
+                    title="The whole run as a spreadsheet, for checking against your operator statement"
                   >
-                    Export run
+                    Export for checking
                   </button>
                 </td>
               </tr>
