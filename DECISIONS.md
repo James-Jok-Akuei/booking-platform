@@ -6254,3 +6254,97 @@ the inventory is history.
 
 Full suite: **961 passing across 25 suites**.
 
+---
+
+## 61. The admin console (2026-09-23)
+
+The first frontend. React + Vite + TypeScript in `apps/admin-web`, built to
+static files.
+
+### 61.1 Why admin first, and why not all three at once
+
+§4 planned three apps: Business, Customer, Admin. The order is not a preference,
+it is a dependency.
+
+**Nothing works until an admin exists.** A business cannot go live without
+approval (§42); no payout can flow until an admin verifies the destination
+(§48); a manual arrival verification (§54.3) is only a control if somebody reads
+it. All of that was curl-only — which is why §49's walk-through needed a
+hand-signed JWT to get past step 8.
+
+The Business app is next, and it matters more than it sounds: with only Customer
+and Admin, a customer can book and pay a deposit and then **nothing further can
+happen** — nobody can enter the arrival code, so no appointment reaches
+COMPLETED, so no ledger entry becomes payable, so no payout ever runs. The
+platform could take money and never finish a transaction.
+
+### 61.2 React + Vite, not a framework with a server
+
+An internal tool behind a login has nothing for SSR or SEO to buy, and a
+framework with a server is a second thing to deploy and a second place for
+secrets to live. This compiles to files.
+
+Vite proxies `/api/*` to the backend in development, so the browser sees one
+origin and **CORS does not apply locally**. That is deliberate: it keeps the
+current `enableCors()`-allows-everything state from being papered over. The
+first production deploy is the moment it has to be narrowed, and the README says
+so rather than leaving it to be discovered.
+
+### 61.3 The client is the only place that talks to the backend
+
+Three things are easy to get subtly wrong at every call site, so they are done
+once:
+
+- **Attaching the token.**
+- **Refreshing it.** A single in-flight refresh promise, shared. Without that, a
+  page firing five queries on a stale access token starts five refreshes; four
+  present a token the first has already rotated, and the person is signed out in
+  the middle of a working session.
+- **Giving up.** Exactly ONE retry after a refresh. A second 401 means the token
+  is fine and the account genuinely may not do this, so retrying again would
+  loop forever against a server answering correctly.
+
+Tokens live in `localStorage`: an admin who reloads mid-task should not have to
+sign in again, and this is an internal tool on a trusted device. The honest cost
+is that an XSS bug could read them — which is why the app renders no
+user-supplied HTML anywhere, and why the access token stays 15 minutes.
+
+`RequireAuth` and the role check on the login screen are **presentation**. Every
+admin route is guarded on the server and asserts the role again in the service
+(§27.1). Deleting them would make the app ugly, not insecure.
+
+### 61.4 Hand-written endpoint signatures over a generated client
+
+`docs/openapi.json` owns the shapes; `src/api/admin.ts` records which of the
+backend's ninety endpoints this app actually touches. A fully generated client
+would hide that, and an endpoint disappearing would surface as errors scattered
+across components rather than in one file.
+
+### 61.5 A bug that only running it could find
+
+The client defaulted its base URL to `''`, so it called `/auth/otp/request` on
+the dev server's own origin — where nothing listens, because the proxy only
+forwards `/api/*`. **Every request in development would have 404'd**, and the
+build, the typecheck and the unit-level reasoning all pass regardless.
+
+Found by starting both servers and calling through the proxy by hand. It
+defaults to `/api` now. This is the §49 lesson again, at a smaller scale: tests
+and types inherit your assumptions, and running the thing does not.
+
+### 61.6 Verified by hand
+
+Against a real backend on current code, with `seed:demo` data:
+
+- `/docs` serves the generated contract (200).
+- The **real OTP flow**: request a code for `demo-admin@example.com`, read it
+  from the backend log, verify it, receive an access and refresh token pair.
+- `GET /admin/businesses?status=PENDING` through the **vite proxy**, with that
+  token: 200, two businesses, one of them nameless — which is exactly the
+  "needs a name first" case the queue disables the Approve button for.
+- `npm run build`: typecheck clean, 216 kB of JS (69 kB gzipped).
+
+**Not verified: the rendered UI.** Nothing here has been clicked in a browser.
+Every request the app makes has been proven against the live backend, and the
+components compile, but the screens themselves are unexercised. That is the gap
+to close first, and the honest thing to say about it is that it is a gap.
+

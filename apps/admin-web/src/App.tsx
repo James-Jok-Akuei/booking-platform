@@ -1,0 +1,23 @@
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { LoginPage } from './auth/LoginPage';
+import { RequireAuth } from './auth/RequireAuth';
+import { BusinessesPage } from './pages/BusinessesPage';
+
+export function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        element={
+          <RequireAuth>
+            <Layout />
+          </RequireAuth>
+        }
+      >
+        <Route path="/businesses" element={<BusinessesPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/businesses" replace />} />
+    </Routes>
+  );
+}

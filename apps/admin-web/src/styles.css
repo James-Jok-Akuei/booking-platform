@@ -1,0 +1,148 @@
+/* A deliberately plain internal tool: no component library, no design system.
+   Nothing here is customer-facing, and every dependency added to an admin
+   console is one more thing to keep current for an audience of a few people. */
+
+:root {
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --ink: #16191d;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --accent: #1f6feb;
+  --danger: #b42318;
+  --ok: #067647;
+  --warn: #b54708;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+/* ---------- shell ---------- */
+
+.shell { display: flex; min-height: 100vh; }
+
+aside {
+  width: 220px;
+  flex: 0 0 220px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+
+.brand { font-weight: 650; padding: 0 20px 18px; letter-spacing: 0.01em; }
+
+nav { display: flex; flex-direction: column; flex: 1; }
+
+nav a {
+  padding: 9px 20px;
+  color: var(--ink);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+}
+nav a:hover { background: var(--bg); }
+nav a.active { border-left-color: var(--accent); color: var(--accent); font-weight: 550; }
+
+.who {
+  padding: 14px 20px 0;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+main { flex: 1; padding: 28px 32px; min-width: 0; }
+
+/* ---------- auth ---------- */
+
+.centred { display: grid; place-items: center; min-height: 100vh; padding: 20px; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 28px;
+}
+
+.auth { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; }
+.auth h1 { margin: 0 0 4px; font-size: 20px; }
+
+label { font-size: 13px; color: var(--muted); }
+
+input {
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font: inherit;
+  background: #fff;
+}
+input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+
+/* ---------- buttons ---------- */
+
+button {
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: var(--bg); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.auth button[type='submit'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  margin-top: 6px;
+}
+.auth button[type='submit']:hover:not(:disabled) { filter: brightness(1.07); }
+
+button.danger { color: var(--danger); border-color: #f3c6c1; }
+button.link {
+  border: none;
+  background: none;
+  color: var(--accent);
+  padding: 0;
+  text-align: left;
+  font-size: 13px;
+}
+
+/* ---------- page furniture ---------- */
+
+.page-head { display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
+.page-head h1 { margin: 0; font-size: 21px; }
+
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { font-size: 13px; padding: 5px 11px; border-radius: 999px; }
+.tab.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; }
+tbody tr:last-child td { border-bottom: none; }
+
+td.actions { white-space: nowrap; display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-start; }
+
+.pill { font-size: 11px; font-weight: 650; padding: 2px 8px; border-radius: 999px; background: var(--line); letter-spacing: 0.03em; }
+.pill.approved { background: #dcfae6; color: var(--ok); }
+.pill.pending { background: #fef0c7; color: var(--warn); }
+.pill.suspended, .pill.rejected { background: #fee4e2; color: var(--danger); }
+
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.empty { padding: 28px 0; }
+.count { margin-top: 12px; font-size: 13px; }
+.error { color: var(--danger); font-size: 13px; margin: 6px 0 0; }
