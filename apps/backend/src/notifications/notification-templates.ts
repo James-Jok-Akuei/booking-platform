@@ -275,6 +275,20 @@ export function renderNotification(
           'No customer has been charged.',
       };
 
+    case NotificationType.APPOINTMENT_MANUALLY_VERIFIED:
+      return {
+        subject: `Arrival verified WITHOUT a code — ${ctx.serviceName} at ${ctx.locationName}`,
+        body:
+          `${ctx.businessName} marked a customer as arrived for ${ctx.serviceName} ` +
+          `at ${ctx.locationName}${when ? ` on ${when}` : ''} without entering the ` +
+          'arrival code (§54.3).\n\n' +
+          (ctx.reason ? `${ctx.reason}\n\n` : '') +
+          'This is a permitted path, not an error: a customer with no phone and ' +
+          'no email still has to be served. It is reported because it is the one ' +
+          'way an appointment can be completed on the business\'s word alone, so ' +
+          'a business that uses it often is worth a look.',
+      };
+
     case NotificationType.BUSINESS_INVITATION:
       return {
         subject: `You have been invited to join ${ctx.businessName}`,

@@ -5487,8 +5487,8 @@ write a second set of entries.
 
 ### 53.5 Things to decide rather than build
 
-- **Resending an arrival code** (§53.2). The gap is real; the answer is a
-  product decision.
+- ~~**Resending an arrival code** (§53.2). The gap is real; the answer is a
+  product decision.~~ DECIDED and built — see §54.
 - **The three misnamed money fields** in §51.5. Renaming
   `providerCurrencyAmountCents` is a migration touching a column several modules
   read, for a clarity benefit — worth doing, worth deciding when.
@@ -5497,3 +5497,142 @@ write a second set of entries.
   Recorded rather than chased: a concurrency test that fails once in many runs is
   either a real race worth finding properly or a fixture artefact, and guessing
   between those in passing is how a real race gets papered over.
+
+---
+
+## 54. Arrival codes: resend, display, and verifying without one (2026-09-23)
+
+Closes the first item in §53.5. Three changes to one feature, and each of them
+leans on the same rule from §16.2 — that a business must not be able to complete
+an appointment on its own say-so — so each is described below in terms of where
+that rule still holds.
+
+### 54.1 A resend replaces the previous code; it never joins it
+
+The customer asks, on their own appointment. The business cannot: a code the
+business can summon on demand is a code the business controls, and its only job
+is to be the one thing the business does not have. `resendVerificationCode` is
+scoped by `customerId`, so a business member asking for one gets the usual 404.
+
+**The new code retires the old one**, which was the decided answer and is also
+the only coherent one. Two live codes double the guessing surface, and — worse —
+make "the code did not work" unanswerable, because nobody can tell whether the
+customer read out a stale one. Replacement is structural rather than a policy:
+`verificationCodeHash` is overwritten, so the previous code stops matching at
+the instant the new one is stored.
+
+`verificationAttempts` resets to zero on a resend. Those attempts were spent
+against a code that no longer exists, and carrying them forward would let a
+stranger's typos lock a customer out of every future code as well as the one
+they got wrong.
+
+Two independent limits, because either alone is insufficient:
+
+- `RESEND_COOLDOWN_MS` (60s) — without a floor the endpoint is a mail-bomb
+  aimed at whoever booked.
+- `MAX_VERIFICATION_CODE_SENDS` (5, counting the booking email) — a cooldown
+  alone only slows abuse down. Five is well past the point where a sixth code
+  helps; a customer who has burned five needs §54.3, not another email.
+
+The cooldown is measured from `verificationCodeSentAt`, which is still stamped
+*after* the send (§53.2). A failed send therefore does not start the clock, and
+the customer may retry immediately — which is the behaviour you want from a
+limit whose whole purpose is to ration successful emails.
+
+The database write happens *before* the send, though. The other order leaves a
+window in which an email is in flight carrying a code the database has never
+heard of, and that code would be refused through no fault of the customer.
+
+### 54.2 The customer can see their own code, which means storing it readably
+
+The code was bcrypt-hashed and nothing else, so **the app could not show it** —
+only the emailed copy existed. Showing it in the customer's booking was decided,
+so the appointment now stores the plaintext in `verificationCode` **alongside**
+the hash, both written from the same generated value in the same statement, in
+the only two places a code is ever issued.
+
+Alongside, not instead of: `verify()` still compares against the hash, so the
+verification path is untouched and keeps bcrypt's constant-time comparison. The
+new column is for display and nothing else.
+
+**This is a real reduction in secrecy and is worth naming.** Hashing an arrival
+code only ever protected against a database leak — and the same code is emailed
+in the clear, so it already exists in plaintext in the customer's mailbox and in
+whatever handled that mail. Hashing it in the database while mailing it in the
+open bought very little, and it cost the customer the ability to see a code they
+are the rightful holder of. The trade is deliberate.
+
+What protects it instead is narrow exposure:
+
+- It is **not in `APPOINTMENT_SELECT`**. A separate `CUSTOMER_APPOINTMENT_SELECT`
+  carries it, and only the customer branch of `findOne` names that constant. A
+  business or admin read therefore cannot leak it by *omission* — the failure
+  mode of a shared projection that each new read path must remember to strip.
+  Here, showing it takes a deliberate act.
+- **Detail only, never the list.** A list read exposes every booking's code at
+  once, on a screen that gets screenshotted and scrolled past strangers, for no
+  benefit: the code is used on the booking's own screen.
+- **Null once spent.** A used code is not a secret, but it is not information
+  either, and rendering it beside a completed appointment invites a customer to
+  read out a number that will be refused. `codeIsLive()` is one predicate, used
+  by both the read and the resend endpoint, so the code a customer can see is
+  exactly the code they can ask to have resent.
+
+Rows created before this have `verificationCode: null` and keep working through
+the hash. No backfill — the plaintext is genuinely unrecoverable from bcrypt,
+and §33.4's rule applies: null means "not recorded", never a fallback.
+
+### 54.3 Manual verification is permitted, and impossible to do quietly
+
+`POST /business/appointments/:id/verify-manually` moves `BOOKED -> IN_PROGRESS`
+on the business's assertion, against details the customer recalls.
+
+**This is a deliberate hole in §16.2.** The alternative is worse: a customer at
+the counter with a flat phone and no email cannot be served, and the business
+cannot be paid for work it is about to do. A rule that produces that outcome
+gets worked around in ways nobody records, which is strictly worse than a
+recorded exception.
+
+What makes it acceptable is not that it is hard — it is not — but that it is
+**impossible to do invisibly**:
+
+- `verificationMethod` is set to `MANUAL`, and `verifiedById` names the
+  individual. The same separation §33.2 drew between the party responsible and
+  the person who acted.
+- `manualVerificationNote` stores what the customer recalled, verbatim.
+- **Every admin is notified as it happens**, undebounced, for §52's reason: the
+  event is rare by design, and if it ever becomes noisy the noise is itself what
+  an admin needs to know.
+
+A business that does this once a month is unremarkable. One doing it for half
+its bookings is visible in a single query, and that is the control.
+
+Two supporting decisions:
+
+**The note is not validated against the appointment.** Every fact a server could
+check here — the service, the time, the price, the reference — is already on the
+business's own screen, so checking them would confirm that the business can read
+its own booking list, not that the customer is present. A validated challenge
+would look like a second code while proving nothing, which is worse than an
+honest attestation, because it invites the reader to trust it.
+
+**OWNER and MANAGER only**, where `verify` is open to STAFF as well. Taking a
+code a customer reads out is counter work. Deciding to proceed *without* one is
+a judgement about whether a stranger is who they say they are, and it is
+recorded against whoever makes it.
+
+`verificationMethod` is also set to `CODE` on the normal path, rather than being
+left null for it. If only manual verifications carried a method, `CODE` would be
+encoded as "null" — and null already means "verified before §54 existed". Those
+are different facts and a reader has to be able to tell them apart.
+
+### 54.4 Verified
+
+`test/arrival-code.spec.ts`, 28 tests. The ones that matter most are the
+negatives: a business cannot resend, a business read has no `verificationCode`
+property at all (absent, not null), a list read has none either, and the
+superseded code is refused while the new one works.
+
+Full suite: **922 passing across 22 suites**, `prisma migrate diff` reporting no
+drift.
+

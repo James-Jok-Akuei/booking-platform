@@ -24,6 +24,7 @@ import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { InitiateDepositPaymentDto } from './dto/initiate-payment.dto';
 import { VerifyAppointmentDto } from './dto/verify-appointment.dto';
+import { ManualVerifyAppointmentDto } from './dto/manual-verify-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
 import { CancelAppointmentDto } from './dto/cancel-appointment.dto';
 
@@ -55,6 +56,22 @@ export class AppointmentsCustomerController {
    * without moving money. The appointment stays PENDING_PAYMENT until the
    * payment is confirmed — see AppointmentsService.initiateDepositPayment.
    */
+  /**
+   * A fresh arrival code, emailed to the customer (§54.1).
+   *
+   * The CUSTOMER's route, not the business's: a code the business could summon
+   * on demand is a code the business controls, and its only job is to be
+   * something the business does not have.
+   */
+  @Post(':id/resend-verification-code')
+  @HttpCode(HttpStatus.OK)
+  resendVerificationCode(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.appointments.resendVerificationCode(user.userId, id);
+  }
+
   @Post(':id/initiate-deposit-payment')
   @HttpCode(HttpStatus.OK)
   initiateDepositPayment(
@@ -95,6 +112,25 @@ export class AppointmentsBusinessController {
     @Body() dto: VerifyAppointmentDto,
   ) {
     return this.appointments.verify(user.userId, id, dto.code);
+  }
+
+  /**
+   * Verification without the code (§54.3).
+   *
+   * OWNER and MANAGER only, unlike `verify` above, which STAFF may also use.
+   * Taking a code the customer reads out is counter work; deciding to proceed
+   * WITHOUT one is a judgement about whether a stranger is who they say they
+   * are, and it is recorded against whoever makes it.
+   */
+  @Post(':id/verify-manually')
+  @HttpCode(HttpStatus.OK)
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  verifyManually(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ManualVerifyAppointmentDto,
+  ) {
+    return this.appointments.verifyManually(user.userId, id, dto.note);
   }
 
   @Post(':id/complete')

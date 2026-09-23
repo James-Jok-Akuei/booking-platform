@@ -13,6 +13,7 @@ import {
   BusinessMemberStatus,
   Prisma,
   UserRole,
+  VerificationMethod,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -50,6 +51,26 @@ const BCRYPT_ROUNDS = 10;
 
 /** Wrong-code attempts before the code is locked, mirroring OTP handling. */
 export const MAX_VERIFICATION_ATTEMPTS = 5;
+
+/**
+ * Minimum gap between two sends of an arrival code (§54.1).
+ *
+ * The resend endpoint emails a customer on demand, so without a floor it is a
+ * mail-bomb aimed at whoever booked. A minute is long enough to make that
+ * useless and short enough that a customer whose first email genuinely failed
+ * is not left waiting.
+ */
+export const RESEND_COOLDOWN_MS = 60_000;
+
+/**
+ * Total codes that may be emailed for one appointment, including the first.
+ *
+ * A ceiling as well as a cooldown, because a cooldown alone only slows an abuse
+ * down. Five is well past the point where resending is the problem: a customer
+ * who has burned five codes is not going to be helped by a sixth, they need the
+ * manual path (§54.3).
+ */
+export const MAX_VERIFICATION_CODE_SENDS = 5;
 
 const APPOINTMENT_SELECT = {
   id: true,
@@ -96,6 +117,22 @@ const APPOINTMENT_SELECT = {
   // which is cosmetic. A reprice makes the number wrong, which is not.
   service: { select: { id: true, name: true, durationMinutes: true } },
   customer: { select: { id: true, email: true } },
+} as const;
+
+/**
+ * The customer's own view, which additionally carries the live arrival code
+ * (§54.2).
+ *
+ * A SEPARATE projection rather than a field on the shared one that business and
+ * admin reads remember to strip. The difference matters: with a shared
+ * projection, forgetting to strip leaks the code, and every new read path is
+ * another chance to forget. Here the shared projection cannot leak it at all,
+ * and showing it takes naming this constant — which only the customer's own
+ * detail read does.
+ */
+const CUSTOMER_APPOINTMENT_SELECT = {
+  ...APPOINTMENT_SELECT,
+  verificationCode: true,
 } as const;
 
 @Injectable()
@@ -282,7 +319,12 @@ export class AppointmentsService {
           servicePriceCents: service.priceCents,
           depositPercentage: service.depositPercentage,
           platformFeePercentage,
+          // Both written from the same generated value, in the same statement:
+          // the hash is what `verify()` compares against, the plaintext is what
+          // the customer's own app displays (§54.2). One of the only two places
+          // a code is ever issued — the other is `resendVerificationCode`.
           verificationCodeHash,
+          verificationCode: code,
         },
         select: APPOINTMENT_SELECT,
       });
@@ -720,16 +762,230 @@ export class AppointmentsService {
       );
     }
 
-    this.logger.log(`Appointment ${appointmentId} verified -> IN_PROGRESS.`);
+    this.logger.log(`Appointment ${appointmentId} verified by code -> IN_PROGRESS.`);
 
     return this.prisma.appointment.update({
       where: { id: appointmentId },
       data: {
         status: AppointmentStatus.IN_PROGRESS,
         verifiedAt: new Date(),
+        // Recorded on the code path too, not only on the manual one (§54.3).
+        // If only manual verifications carried a method, CODE would be encoded
+        // as "null", and null already means "verified before §54 existed".
+        // Those are different facts and a reader must be able to tell them
+        // apart.
+        verificationMethod: VerificationMethod.CODE,
+        verifiedById: userId,
       },
       select: APPOINTMENT_SELECT,
     });
+  }
+
+  /**
+   * Emails the customer a FRESH arrival code, retiring the previous one (§54.1).
+   *
+   * Customer-triggered, on their own appointment. The business cannot ask for
+   * one: a code the business could summon is a code the business controls, and
+   * the whole point of it is that only the customer has it.
+   *
+   * The new code REPLACES the old rather than joining it. Two live codes double
+   * the guessing surface and, worse, make "the code did not work" unanswerable
+   * — nobody can tell whether the customer read out a stale one. Replacement is
+   * structural here: `verificationCodeHash` is overwritten, so the previous
+   * code stops matching the moment this succeeds.
+   *
+   * Attempts reset to zero, because they were spent against a code that no
+   * longer exists. Carrying them over would let a stranger's typos lock a
+   * customer out of every future code as well as the one they got wrong.
+   */
+  async resendVerificationCode(customerId: string, appointmentId: string) {
+    const appointment = await this.requireCustomerAppointment(customerId, appointmentId);
+
+    if (!this.codeIsLive(appointment.status, appointment.verifiedAt)) {
+      throw new BadRequestException(
+        appointment.verifiedAt
+          ? 'This appointment has already been verified, so its code is spent.'
+          : `An arrival code is only useful while the appointment is live. This one is ${appointment.status}.`,
+      );
+    }
+
+    if (appointment.verificationCodeSentCount >= MAX_VERIFICATION_CODE_SENDS) {
+      throw new BadRequestException(
+        `A code has already been sent ${appointment.verificationCodeSentCount} times for this appointment. ` +
+          'Ask the business to verify you in person instead.',
+      );
+    }
+
+    const sentAt = appointment.verificationCodeSentAt;
+    if (sentAt && Date.now() - sentAt.getTime() < RESEND_COOLDOWN_MS) {
+      const wait = Math.ceil(
+        (RESEND_COOLDOWN_MS - (Date.now() - sentAt.getTime())) / 1000,
+      );
+      throw new BadRequestException(
+        `A code was just sent. Try again in ${wait} second(s), and check your spam folder.`,
+      );
+    }
+
+    const context = await this.prisma.appointment.findUniqueOrThrow({
+      where: { id: appointmentId },
+      select: {
+        startTime: true,
+        service: { select: { name: true } },
+        location: { select: { name: true } },
+        customer: { select: { email: true } },
+      },
+    });
+
+    const code = this.generateVerificationCode();
+    const verificationCodeHash = await bcrypt.hash(code, BCRYPT_ROUNDS);
+
+    // Written BEFORE the send. The opposite order would leave a window where an
+    // email is in flight carrying a code the database has never heard of, and
+    // that code would fail verification through no fault of the customer.
+    await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        verificationCodeHash,
+        verificationCode: code,
+        verificationAttempts: 0,
+        verificationCodeSentCount: { increment: 1 },
+      },
+    });
+
+    await this.mail.sendAppointmentVerificationEmail(context.customer.email, code, {
+      serviceName: context.service.name,
+      locationName: context.location.name,
+      startTime: context.startTime,
+    });
+
+    // Stamped after the send, so it keeps meaning "an email went out" (§53.2) —
+    // which is also what the cooldown above must measure from. A failed send
+    // therefore does not start the clock, and the customer may retry at once.
+    const updated = await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: { verificationCodeSentAt: new Date() },
+      select: CUSTOMER_APPOINTMENT_SELECT,
+    });
+
+    this.logger.log(
+      `Arrival code resent for appointment ${appointmentId} ` +
+        `(send ${appointment.verificationCodeSentCount + 1} of ${MAX_VERIFICATION_CODE_SENDS}).`,
+    );
+
+    return this.withApproxSettlement(updated, await this.rateContext());
+  }
+
+  /**
+   * Verifies an arrival WITHOUT the code, on the business's assertion (§54.3).
+   *
+   * This is a deliberate hole in §16.2, which says completion must never rest
+   * on "the business says so". It exists because the alternative is worse: a
+   * customer standing at the counter with a flat phone and no email cannot be
+   * served, and the business cannot be paid for work it is about to do.
+   *
+   * What makes it acceptable is not that it is hard to do — it is not — but
+   * that it is IMPOSSIBLE TO DO INVISIBLY. Every manual verification records
+   * the method, the individual who performed it, and what the customer recalled,
+   * and notifies every admin as it happens. A business that verifies manually
+   * once a month is unremarkable; one that does it for half its bookings is
+   * visible in a single query, which is the control.
+   *
+   * The note is NOT checked against the appointment, and that is not laziness.
+   * Every fact a server could check here — the service, the time, the price —
+   * is already on the business's own screen, so checking them would confirm
+   * that the business can read, not that the customer is present. A validated
+   * challenge would look like a second code while proving nothing, which is
+   * worse than an honest attestation.
+   */
+  async verifyManually(userId: string, appointmentId: string, note: string) {
+    const appointment = await this.requireBusinessAppointment(userId, appointmentId);
+
+    if (appointment.status !== AppointmentStatus.BOOKED) {
+      throw new BadRequestException(
+        `Only a BOOKED appointment can be verified. This one is ${appointment.status}.`,
+      );
+    }
+
+    const updated = await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        status: AppointmentStatus.IN_PROGRESS,
+        verifiedAt: new Date(),
+        verificationMethod: VerificationMethod.MANUAL,
+        verifiedById: userId,
+        manualVerificationNote: note,
+      },
+      select: APPOINTMENT_SELECT,
+    });
+
+    this.logger.warn(
+      `Appointment ${appointmentId} verified MANUALLY by user ${userId} -> IN_PROGRESS.`,
+    );
+
+    await this.notifyAdminsOfManualVerification(appointmentId, userId, note);
+
+    return updated;
+  }
+
+  /**
+   * Tells every admin that an arrival was verified without a code.
+   *
+   * Undebounced, like §52's misconfiguration alert and for the same reason: the
+   * event is rare by design, and if it ever becomes noisy then the noise is
+   * itself what an admin needs to know.
+   *
+   * Raised after the verification is committed, and never allowed to undo it
+   * (§20.3) — a failing mail server must not strand a customer mid-appointment.
+   */
+  private async notifyAdminsOfManualVerification(
+    appointmentId: string,
+    actorId: string,
+    note: string,
+  ) {
+    try {
+      const loaded = await this.notificationContext(appointmentId);
+      if (!loaded) return;
+
+      const admins = await this.prisma.user.findMany({
+        where: { role: UserRole.ADMIN },
+        select: { id: true },
+      });
+
+      await Promise.all(
+        admins.map((admin) =>
+          this.notifications.notify({
+            recipientId: admin.id,
+            type: NotificationType.APPOINTMENT_MANUALLY_VERIFIED,
+            context: {
+              ...loaded.context,
+              reason: `Verified without a code by user ${actorId}. Customer recalled: ${note}`,
+            },
+            appointmentId,
+          }),
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to notify admins of manual verification on ${appointmentId}: ` +
+          `${error instanceof Error ? error.message : error}`,
+      );
+    }
+  }
+
+  /**
+   * Whether an arrival code can still be used.
+   *
+   * One predicate, used by both the resend endpoint and the customer's read, so
+   * the code a customer can see is exactly the code they can ask to be resent.
+   * Two conditions expressed separately would eventually disagree, and the
+   * disagreement would read as a bug in whichever one the customer hit first.
+   */
+  private codeIsLive(status: AppointmentStatus, verifiedAt: Date | null): boolean {
+    if (verifiedAt) return false;
+    return (
+      status === AppointmentStatus.PENDING_PAYMENT ||
+      status === AppointmentStatus.BOOKED
+    );
   }
 
   /**
@@ -1095,17 +1351,40 @@ export class AppointmentsService {
 
   async findOne(userId: string, appointmentId: string) {
     const scope = await this.requireParticipantAppointment(userId, appointmentId);
+
+    // Two branches with two projections, rather than one projection trimmed
+    // afterwards. Only the customer's branch names the select that carries the
+    // arrival code (§54.2), so the business branch cannot leak it by omission.
+    //
+    // The approximate local figure splits the same way. A business prices in
+    // USD and is paid against USD, so an indicative pound figure in their view
+    // would invite them to reconcile a payout against a number that means
+    // nothing (§39.3).
+    if (scope.customerId !== userId) {
+      return this.prisma.appointment.findUniqueOrThrow({
+        where: { id: appointmentId },
+        select: APPOINTMENT_SELECT,
+      });
+    }
+
     const appointment = await this.prisma.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
-      select: APPOINTMENT_SELECT,
+      select: CUSTOMER_APPOINTMENT_SELECT,
     });
 
-    // Only the customer. A business prices in USD and is paid against USD, so
-    // an indicative pound figure in their view would invite them to reconcile
-    // a payout against a number that means nothing (§39.3).
-    if (scope.customerId !== userId) return appointment;
-
-    return this.withApproxSettlement(appointment, await this.rateContext());
+    return this.withApproxSettlement(
+      {
+        ...appointment,
+        // Shown while it can still be used, null once it cannot. A spent code
+        // is not a secret worth keeping, but it is not information either, and
+        // rendering it next to a completed appointment invites a customer to
+        // read out a number that will be refused.
+        verificationCode: this.codeIsLive(appointment.status, appointment.verifiedAt)
+          ? appointment.verificationCode
+          : null,
+      },
+      await this.rateContext(),
+    );
   }
 
   /**

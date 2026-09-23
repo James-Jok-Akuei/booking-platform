@@ -209,6 +209,11 @@ export async function createAppointment(
             exchangeRateUsed: 650,
           }),
       verificationCodeHash: await bcrypt.hash(KNOWN_VERIFICATION_CODE, 10),
+      // The readable copy the customer's own app shows (§54.2). Written here
+      // too, from the same constant, because a fixture that sets only the hash
+      // is a pre-§54 row — and a suite whose every appointment looks pre-§54
+      // cannot test the display path at all.
+      verificationCode: KNOWN_VERIFICATION_CODE,
       verifiedAt: params.verified ? new Date() : null,
     },
   });

@@ -132,6 +132,7 @@ enum NotificationType {
   PAYOUT_DESTINATION_VERIFIED // the number was verified; payouts can flow
   PAYOUT_DESTINATION_REJECTED // an admin refused it, with a reason
   PAYMENT_PROVIDER_MISCONFIGURED // the platform cannot take payments; admins only
+  APPOINTMENT_MANUALLY_VERIFIED // a business verified an arrival without the code; admins only
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in
@@ -267,7 +268,10 @@ model User {
   sentInvitations BusinessInvitation[] @relation("InvitedBy")
 
   // Appointments booked by this user. Only populated when role = CUSTOMER.
-  appointments Appointment[] @relation("CustomerAppointments")
+  appointments         Appointment[] @relation("CustomerAppointments")
+  /// Appointments this user verified the arrival for, as a business member
+  /// (§54.3). Separate from `appointments`, which is the customer side.
+  verifiedAppointments Appointment[] @relation("VerifiedAppointments")
 
   /// Appointments this user cancelled — as a customer, as a business member, or
   /// as an admin acting on a dispute. Who ACTED; Appointment.cancelledBy says
@@ -355,13 +359,13 @@ model BusinessProfile {
   adjustments BillingAdjustment[]
   reviews     Review[]
 
-  @@index([categoryId])
-  @@index([status])
-  @@map("business_profiles")
-
   ledgerEntries      LedgerEntry[]
   payouts            Payout[]
   payoutDestinations PayoutDestination[]
+
+  @@index([categoryId])
+  @@index([status])
+  @@map("business_profiles")
 }
 
 // ---------- Taxonomy ----------
@@ -781,6 +785,20 @@ enum CancelledBy {
   SYSTEM_EXPIRY
 }
 
+/// HOW an arrival was verified (§54).
+///
+/// Recorded rather than inferred, and kept as a distinct fact rather than a
+/// boolean, for the reason §48 separated admin verification from OTP
+/// verification on a payout destination: an arrival proved by a code the
+/// customer read out and one a business asserted after answering challenge
+/// questions are different facts, and they must not look identical in the
+/// table. Null for appointments verified before this existed, and for every
+/// appointment not yet verified.
+enum VerificationMethod {
+  CODE // the customer's 6-digit code was entered and matched
+  MANUAL // the code path failed; a business verified against recalled details
+}
+
 model Appointment {
   id String @id @default(uuid())
 
@@ -873,13 +891,63 @@ model Appointment {
   verificationAttempts Int       @default(0)
   verifiedAt           DateTime?
 
-  /// When the arrival code was emailed (§53.2).
+  /// When the arrival code was LAST emailed (§53.2, §54.1).
   ///
   /// A timestamp, never the code. Nothing in the booking response previously
   /// said a code had been sent or would be needed, so a client had to know it
   /// from documentation — and a customer who never received the email had no
   /// signal that one was owed to them.
+  ///
+  /// Since §54 this moves on every resend, and is what the resend cooldown is
+  /// measured from.
   verificationCodeSentAt DateTime?
+
+  /// The live arrival code, readable (§54.2).
+  ///
+  /// Stored ALONGSIDE the bcrypt hash above, never instead of it: `verify()`
+  /// still compares against the hash, so the verification path is unchanged and
+  /// keeps bcrypt's constant-time comparison. This column exists only so the
+  /// customer's own app can DISPLAY the code, which a hash cannot do.
+  ///
+  /// Both are written from the same generated value, in the same statement,
+  /// in the two places a code is ever issued — creation and resend — so they
+  /// cannot drift.
+  ///
+  /// EXPOSURE: returned only on a customer's read of their OWN appointment, and
+  /// only while the code can still be used. It is never selected into the
+  /// shared appointment projection, so a business or admin read cannot leak it
+  /// by omission — showing it takes a deliberate act rather than remembering to
+  /// strip it (§54.2).
+  ///
+  /// Null for appointments created before §54; those rows keep working through
+  /// the hash, and their customers use the emailed code as before. No backfill,
+  /// because the plaintext is genuinely unrecoverable from a bcrypt hash.
+  verificationCode String?
+
+  /// How many times a code has been emailed for this appointment, including the
+  /// first (§54.1). Caps resends, so the endpoint cannot be used to mail-bomb a
+  /// customer.
+  verificationCodeSentCount Int @default(1)
+
+  /// How the arrival was verified, and by whom (§54.3).
+  ///
+  /// `verifiedById` is the business user who performed it — the same
+  /// separation §33.2 drew between the party responsible and the person who
+  /// acted, and it is what makes a manual verification attributable.
+  verificationMethod VerificationMethod?
+  verifiedById       String?
+  verifiedBy         User?               @relation("VerifiedAppointments", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  /// What the customer recalled, when the code path could not be used (§54.3).
+  ///
+  /// Free text, required for a manual verification and null for every other.
+  /// Deliberately NOT validated against the appointment: every fact a server
+  /// could check here — the service, the time, the price — is already visible
+  /// to the business in its own booking list, so checking them would verify
+  /// that the business can read its own screen, not that the customer is
+  /// present. The control on this path is that it is recorded, attributed and
+  /// reviewable, not that it is guessed correctly (§54.3).
+  manualVerificationNote String?
 
   // Transition timestamps. Kept separate from updatedAt so the auto-transition
   // job, and any later audit, can tell when each clock actually started.
@@ -1273,7 +1341,6 @@ model BillingAdjustment {
   @@map("billing_adjustments")
 }
 
-
 // ---------- Money owed to businesses ----------
 
 /// One immutable fact about money, from a business's point of view (§34).
@@ -1327,7 +1394,7 @@ model LedgerEntry {
   settlementAmountMinor Int?
   /// The rate in force when the entry was created, kept so a settlement figure
   /// can be explained afterwards without knowing the rate's history.
-  bookingExchangeRate Decimal? @db.Decimal(18, 8)
+  bookingExchangeRate   Decimal? @db.Decimal(18, 8)
 
   /// When this entry becomes payable. NULL means "not yet" — the appointment it
   /// came from has not resolved. Set once the outcome is known: a week after
@@ -1359,7 +1426,6 @@ model LedgerEntry {
   @@map("ledger_entries")
 }
 
-
 /// One transfer of money to one business (§35).
 ///
 /// A payout does not hold its own arithmetic: `amountCents` is the sum of the
@@ -1374,7 +1440,7 @@ model Payout {
 
   /// The USD figure, for reporting. NOT what is sent (§45.1).
   amountCents Int
-  currency    String       @default("USD")
+  currency    String @default("USD")
 
   /// What is actually transferred, and in what. Summed from the entries'
   /// settlementAmountMinor with NO conversion and no rate read (§46).
@@ -1408,7 +1474,6 @@ model Payout {
   @@map("payouts")
 }
 
-
 /// Where one business's payouts are sent (§48).
 ///
 /// APPEND-ONLY history with one live row per business. A new submission
@@ -1430,13 +1495,13 @@ model PayoutDestination {
   status PayoutDestinationStatus @default(UNVERIFIED)
 
   submittedById String
-  submittedBy   User   @relation("SubmittedPayoutDestinations", fields: [submittedById], references: [id], onDelete: Cascade)
+  submittedBy   User     @relation("SubmittedPayoutDestinations", fields: [submittedById], references: [id], onDelete: Cascade)
   submittedAt   DateTime @default(now())
 
   /// Null when verification did not come from a user — an OTP to the number's
   /// holder, who has no account here.
   verifiedById String?
-  verifiedBy   User?   @relation("VerifiedPayoutDestinations", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedBy   User?     @relation("VerifiedPayoutDestinations", fields: [verifiedById], references: [id], onDelete: SetNull)
   verifiedAt   DateTime?
 
   verificationMethod PayoutVerificationMethod?

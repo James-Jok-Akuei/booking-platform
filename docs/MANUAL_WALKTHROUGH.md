@@ -148,7 +148,11 @@ curl -s -X POST "$B/appointments" -H "$CUST" -H 'Content-Type: application/json'
 - `servicePriceCents: 2000` is the price *you agreed*; `service` carries the
   name and duration but **no price**, so a later reprice cannot rewrite history.
 - `approxSettlement.depositAmountCents` — SSP 2,600.00.
-- Nothing in the response mentions that an arrival code was emailed to you.
+- `verificationCodeSentAt` is set: an arrival code went to your inbox (§53.2).
+  Fetch the booking on its own (`GET /appointments/$APPT`) and the response also
+  carries `verificationCode` — **the customer's own read, and only theirs**
+  (§54.2). Do the same read with the business token in step 5 and the field is
+  not there at all.
 
 ---
 
@@ -209,6 +213,42 @@ curl -s -X POST "$B/business/appointments/$APPT/complete" -H "$BIZ" | J  # -> CO
 
 - `complete` is refused from `BOOKED`. Verification is the gate, and the error
   says so.
+- `verificationMethod` is now `CODE`, and `verifiedById` names the business user
+  who entered it (§54.3).
+
+### 5a. When the code cannot be used at all (§54)
+
+A customer whose email never arrived asks for another — **from their own
+token**, and the previous code dies the moment this succeeds:
+
+```bash
+curl -s -X POST "$B/appointments/$APPT/resend-verification-code" -H "$CUST" | J
+# Immediately again -> 400 "A code was just sent. Try again in N second(s)"
+# With the BUSINESS token -> 404. A code the business can summon is not a code.
+```
+
+Read the new code from the server log (or Mailhog), and confirm `123456` is now
+refused while the new one works.
+
+When there is no usable code at all — flat phone, no email, five codes burned —
+an OWNER or MANAGER verifies on the customer's account of themselves:
+
+```bash
+curl -s -X POST "$B/business/appointments/$APPT/verify-manually" -H "$BIZ" \
+  -H 'Content-Type: application/json' \
+  -d '{"note":"Read back the booking time, the service and the branch."}' | J
+```
+
+**Look at:**
+
+- It works, and it is the one route to `IN_PROGRESS` that rests on the
+  business's word. That is why the row now carries `verificationMethod: MANUAL`,
+  `verifiedById`, and the note verbatim — and why **every admin is emailed as it
+  happens**. Check an admin's `GET /notifications`.
+- STAFF is refused. Taking a code is counter work; deciding to proceed without
+  one is not.
+- The note is not checked against the appointment, deliberately: every fact the
+  server could check is already on the business's own screen (§54.3).
 - Immediately after completion, that appointment's ledger entries gain an
   `availableAt` of `completedAt + 2 days` (the configurable hold), and the
   appointment gains `payoutHoldDaysApplied: 2`.
