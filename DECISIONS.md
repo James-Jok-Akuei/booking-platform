@@ -5492,11 +5492,13 @@ write a second set of entries.
 - **The three misnamed money fields** in §51.5. Renaming
   `providerCurrencyAmountCents` is a migration touching a column several modules
   read, for a clarity benefit — worth doing, worth deciding when.
-- **`test/support-tickets.spec.ts` "keeps reference unique under concurrent
+- ~~**`test/support-tickets.spec.ts` "keeps reference unique under concurrent
   creation" flaked once** during this work and passed on every re-run since.
   Recorded rather than chased: a concurrency test that fails once in many runs is
   either a real race worth finding properly or a fixture artefact, and guessing
-  between those in passing is how a real race gets papered over.
+  between those in passing is how a real race gets papered over.~~ INVESTIGATED
+  — see §54.5. The race it is named for cannot happen; the flake was not a
+  uniqueness failure.
 
 ---
 
@@ -5635,4 +5637,39 @@ superseded code is refused while the new one works.
 
 Full suite: **922 passing across 22 suites**, `prisma migrate diff` reporting no
 drift.
+
+### 54.5 The ticket-reference flake, settled
+
+§53.5 recorded a one-off failure of `support-tickets.spec.ts` "keeps reference
+unique under concurrent creation" and deliberately did not chase it. Chased now,
+because the answer turned out to be cheap.
+
+**The race the test is named for does not exist.** References come from a
+Postgres sequence:
+
+```sql
+SELECT 'TKT-' || LPAD(nextval('ticket_reference_seq')::text, 6, '0')
+```
+
+`nextval()` is explicitly non-transactional: two concurrent callers cannot
+receive the same value, in the same transaction or different ones, and a
+rollback does not return a value to the pool. The assertion — twenty concurrent
+creates producing twenty distinct references — therefore cannot fail for the
+reason the test's name suggests.
+
+Which means the observed failure was a **rejection**, not a mismatch: one of the
+twenty `Promise.all` calls threw, and the test failed before reaching the
+assertion. The likely cause is connection-pool pressure — twenty simultaneous
+transactions, each running a raw query, an insert and admin notifications,
+against a pool sized for a single-worker run.
+
+Re-run in isolation **40 times: 40 passes**. Not reproduced, so nothing is
+changed. The entry is downgraded from "possible race in reference generation" to
+what it is: occasional pool pressure under `Promise.all(20)`, in a test whose
+stated invariant is guaranteed by the database. Recorded so the next person to
+see it red does not go looking for a race that Postgres has already ruled out.
+
+The test is kept as it stands. It is cheap, and it would still catch the real
+regression available here — someone replacing the sequence with a count, a
+timestamp or a random suffix.
 
