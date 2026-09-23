@@ -362,8 +362,12 @@ describe('Money invariant: platformFee + business === deposit', () => {
       const list = await appointments.findAll(customer.userId, UserRole.CUSTOMER, {});
       const row = list.appointments.find((a: any) => a.id === appointmentId);
 
-      expect(row.servicePriceMinor).toBe(4500);
-      expect(row.service).not.toHaveProperty('priceMinor');
+      // Asserted before it is read: `.find` returns undefined when the listing
+      // does not contain the appointment, and a bare `row.x` would then fail
+      // with a TypeError that says nothing about what actually went wrong.
+      expect(row).toBeDefined();
+      expect(row!.servicePriceMinor).toBe(4500);
+      expect(row!.service).not.toHaveProperty('priceMinor');
       expect(JSON.stringify(list)).not.toContain('9999');
     });
 

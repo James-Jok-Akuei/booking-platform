@@ -15,7 +15,12 @@ import { PlatformSettingsService } from '../src/settings/platform-settings.servi
 import { NotificationsService } from '../src/notifications/notifications.service';
 import { PaymentProviderRegistry } from '../src/payments/payment-provider.registry';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
+import {
+  commonStubs,
+  createTestModule,
+  paymentProviderStub,
+  resetDatabase,
+} from './setup/test-module';
 import {
   TestBusiness,
   createAppointment,
@@ -35,7 +40,9 @@ describe('Payment failures (§52)', () => {
   let moduleRef: TestingModule;
   let prisma: PrismaService;
   let appointments: AppointmentsService;
-  let provider: { initiatePayment: jest.Mock };
+  // Typed from the stub itself rather than `jest.Mock`, which is generic-free
+  // and makes mockResolvedValue take `never` (§59.1).
+  let provider: ReturnType<typeof paymentProviderStub>;
   let notifications: { notify: { mock: { calls: any[][] } } };
 
   let business: TestBusiness;

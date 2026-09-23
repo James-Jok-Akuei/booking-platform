@@ -6105,3 +6105,82 @@ throwing.
 
 Full suite: **961 passing across 25 suites**, no schema change and no drift.
 
+---
+
+## 59. The test suite is typechecked, and cannot stop being (2026-09-23)
+
+Closes the gap §58.4 found: `test/` was never type-checked, and had accumulated
+20 errors nobody could see.
+
+### 59.1 Why nothing caught it
+
+Two things had to be true at once, and both were.
+
+`tsconfig.json` has `include: ["src/**/*"]`, so `tsc --noEmit -p tsconfig.json`
+— the only typecheck anyone ran — never looked at a test file.
+
+`tsconfig.test.json` *does* include both trees, and ts-jest is pointed at it
+with no `diagnostics: false`. It looked as though tests were checked at
+transform time. They were not: running `tsc` against that very config reports 20
+errors while `npm test` passes them all. ts-jest (29.4, ESM mode) was
+transpiling without type information.
+
+That second part is the lesson worth keeping. **A type check that happens as a
+side effect of something else is not a type check you have.** The fix is not to
+coax ts-jest into checking, which would leave the guarantee resting on a
+transform's internals again, but to run `tsc` explicitly and make it a gate.
+
+### 59.2 The gate
+
+```json
+"typecheck": "tsc --noEmit -p tsconfig.test.json",
+"pretest":   "npm run typecheck"
+```
+
+`npm test` now refuses to start Jest if either tree fails to compile. Verified
+the way §26.4 verified the boot test — by breaking it on purpose: a deliberate
+`const x: number = "..."` in a spec makes `npm test` exit non-zero *without
+running a single test*, and removing it restores a clean run.
+
+1.4 seconds, so it costs nothing worth mentioning against the feedback it buys.
+
+### 59.3 What the 20 errors actually were
+
+Only one was cosmetic. In order of how much they mattered:
+
+- **Stubs typed as `jest.fn()` with no signature.** `jest.fn()` from
+  `@jest/globals` infers an untyped function, which makes `mockResolvedValue`
+  take `never` — so *every* override in the suite was a type error. Worse, an
+  untyped stub cannot drift from the interface it stands in for, because there
+  is nothing to drift from. Each stub now carries a real signature, so a stub
+  that stops matching its interface fails to compile.
+- **`withByline` in `reviews.service.ts` returned an inferred union**, one arm
+  of which has no `customer`. Reading `.customer` was therefore a compile error
+  even for the viewer entitled to it. **The tests were right and the source type
+  was wrong** — the return type is now explicit, with `customer` optional. This
+  is the one `src` change here, and it is the point of the exercise: typechecking
+  tests found a defect in the code, not in the tests.
+- **`Array.prototype.at`** used against an ES2021 target. It runs fine on Node
+  24, so it worked; it would have failed a build that honoured the target.
+- **`.find()` result read without a null check**, which would have produced a
+  `TypeError` saying nothing useful had the row ever been absent.
+- **A duplicate import** of `PlatformSettingsService` in `ledger.spec.ts`.
+- **A helper whose parameter was narrowed to `BusinessStatus.PENDING`** by its
+  own default value, so passing `SUSPENDED` was an error.
+
+### 59.4 The pattern this is the third instance of
+
+§50: every test minted its own token, so nothing noticed that no admin could log
+in. §58.4: a test passed an object where a string was declared, and it surfaced
+only when production code finally read the argument. Now this.
+
+Each time, the suite was measuring something narrower than it appeared to, and
+the gap was invisible *because* everything was green. A test suite held to a
+lower standard than the code it guards quietly stops testing what it looks like
+it tests — and the failure mode is always silence, never a red build.
+
+### 59.5 Verified
+
+`npm run typecheck`: **0 errors** across `src/` and `test/`. Full suite: **961
+passing across 25 suites**, unchanged, with the gate in front of it.
+

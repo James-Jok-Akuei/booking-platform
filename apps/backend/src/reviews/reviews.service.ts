@@ -53,7 +53,21 @@ export const ANONYMOUS_DISPLAY_NAME = 'Anonymous';
  */
 function withByline<
   T extends { customer: { displayName: string | null; id?: string; email?: string } },
->(row: T) {
+>(
+  row: T,
+): Omit<T, 'customer'> & {
+  displayName: string;
+  /**
+   * Present only for a viewer entitled to the customer's identity (§28.6).
+   *
+   * Declared explicitly, because the inferred type was a UNION of the two
+   * branches below — and a union member without `customer` makes reading
+   * `.customer` a compile error even where it is genuinely there. Tests
+   * asserting the business-side shape were correct and the type was not; that
+   * only became visible once `test/` was typechecked (§59).
+   */
+  customer?: { id?: string; email?: string };
+} {
   const { customer, ...rest } = row;
   const displayName = customer.displayName ?? ANONYMOUS_DISPLAY_NAME;
 

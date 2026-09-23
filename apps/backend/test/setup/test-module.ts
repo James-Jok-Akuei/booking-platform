@@ -12,6 +12,11 @@ import { NotificationsService } from '../../src/notifications/notifications.serv
 import { ChatService } from '../../src/chat/chat.service';
 import { PaymentProviderRegistry } from '../../src/payments/payment-provider.registry';
 import { MobileMoneyProvider } from '@prisma/client';
+import {
+  InitiatePaymentParams,
+  InitiatePaymentResult,
+  PaymentStatusResult,
+} from '../../src/payments/payment-provider.interface';
 
 /**
  * Builds a testing module from an explicit provider list, rather than importing
@@ -43,18 +48,31 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
   }).compile();
 }
 
+/**
+ * Stubs are declared with an implementation rather than `jest.fn()` alone.
+ *
+ * `jest.fn()` from `@jest/globals` infers an untyped function, which makes
+ * `mockResolvedValue` take `never` — so every override was a type error, and
+ * every one of them was invisible because `test/` was never typechecked
+ * (§59.1). Giving each mock a real signature restores both: the overrides
+ * typecheck, and a stub that drifts from the interface it stands in for now
+ * fails to compile.
+ */
+
 /** Records calls so a test can assert a notification was raised, without SMTP. */
 export const notificationsStub = () => ({
-  notify: jest.fn().mockResolvedValue(undefined),
-  notifyBusiness: jest.fn().mockResolvedValue(undefined),
-  notifyUnregisteredEmail: jest.fn().mockResolvedValue(undefined),
+  notify: jest.fn(async (_params: unknown): Promise<void> => undefined),
+  notifyBusiness: jest.fn(async (_params: unknown): Promise<void> => undefined),
+  notifyUnregisteredEmail: jest.fn(async (_params: unknown): Promise<void> => undefined),
 });
 
 export const mailStub = () => ({
   isConfigured: () => false,
-  sendGenericEmail: jest.fn().mockResolvedValue(undefined),
-  sendOtpEmail: jest.fn().mockResolvedValue(undefined),
-  sendAppointmentVerificationEmail: jest.fn().mockResolvedValue(undefined),
+  sendGenericEmail: jest.fn(async (..._args: unknown[]): Promise<void> => undefined),
+  sendOtpEmail: jest.fn(async (..._args: unknown[]): Promise<void> => undefined),
+  sendAppointmentVerificationEmail: jest.fn(
+    async (..._args: unknown[]): Promise<void> => undefined,
+  ),
 });
 
 /** Never contacted. Payment behaviour is verified by hand against the sandbox. */
@@ -62,12 +80,19 @@ export const paymentProviderStub = () => ({
   key: MobileMoneyProvider.MTN_MOMO,
   name: 'stub',
   isConfigured: () => true,
-  initiatePayment: jest.fn(),
-  checkPaymentStatus: jest.fn().mockResolvedValue({ status: 'PENDING' }),
+  initiatePayment: jest.fn(
+    async (_params: InitiatePaymentParams): Promise<InitiatePaymentResult> => ({
+      providerReferenceId: 'stub-reference',
+      status: 'PENDING',
+    }),
+  ),
+  checkPaymentStatus: jest.fn(
+    async (_reference: string): Promise<PaymentStatusResult> => ({ status: 'PENDING' }),
+  ),
 });
 
 export const chatStub = () => ({
-  createAppointmentThread: jest.fn().mockResolvedValue(undefined),
+  createAppointmentThread: jest.fn(async (_params: unknown): Promise<void> => undefined),
 });
 
 export const commonStubs = {

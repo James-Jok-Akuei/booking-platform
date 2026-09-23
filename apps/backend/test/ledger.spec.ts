@@ -13,7 +13,6 @@ import { AppointmentsService } from '../src/appointments/appointments.service';
 import { AppointmentsScheduler } from '../src/appointments/appointments.scheduler';
 import { PaymentsScheduler } from '../src/appointments/payments.scheduler';
 import { AvailabilityService } from '../src/availability/availability.service';
-import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { LedgerService } from '../src/ledger/ledger.service';
 import { PayoutsService } from '../src/payouts/payouts.service';

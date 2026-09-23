@@ -38,6 +38,15 @@ const VALID = '+211921234567';
  * cannot be undone by appending a correcting entry (§34.2). Everything here is
  * about making that impossible by default rather than by remembering.
  */
+/**
+ * The most recent call's first argument.
+ *
+ * `calls.at(-1)` would read better, but `Array.prototype.at` is ES2022 and the
+ * project compiles to ES2021 — which nothing noticed while `test/` went
+ * untypechecked (§59). Indexing works on every target.
+ */
+const lastCall = (calls: unknown[][]): any => calls[calls.length - 1][0];
+
 describe('Payout destinations (§48)', () => {
   let moduleRef: TestingModule;
   let prisma: PrismaService;
@@ -335,7 +344,7 @@ describe('Payout destinations (§48)', () => {
         verificationNote: 'Checked.',
       });
 
-      const call = notifications.notifyBusiness.mock.calls.at(-1)![0];
+      const call = lastCall(notifications.notifyBusiness.mock.calls);
       expect(call.type).toBe(NotificationType.PAYOUT_DESTINATION_VERIFIED);
       expect(call.businessId).toBe(shop.businessId);
     });
@@ -371,7 +380,7 @@ describe('Payout destinations (§48)', () => {
 
       expect(result.status).toBe(PayoutDestinationStatus.REJECTED);
       expect(result.rejectionReason).toBe('Number belongs to a different person.');
-      const call = notifications.notifyBusiness.mock.calls.at(-1)![0];
+      const call = lastCall(notifications.notifyBusiness.mock.calls);
       expect(call.type).toBe(NotificationType.PAYOUT_DESTINATION_REJECTED);
       expect(call.context.reason).toBe('Number belongs to a different person.');
     });

@@ -599,7 +599,7 @@ describe('Business approval (§42)', () => {
 
   // ------------------------------------------------------------------
   describe('a nameless business cannot be approved (§53.1)', () => {
-    const nameless = async (status = BusinessStatus.PENDING) => {
+    const nameless = async (status: BusinessStatus = BusinessStatus.PENDING) => {
       const business = await prisma.businessProfile.create({
         data: { name: null, status },
       });
