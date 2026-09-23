@@ -6184,3 +6184,73 @@ it tests — and the failure mode is always silence, never a red build.
 `npm run typecheck`: **0 errors** across `src/` and `test/`. Full suite: **961
 passing across 25 suites**, unchanged, with the gate in front of it.
 
+---
+
+## 60. A generated API contract, before three clients are built against it (2026-09-23)
+
+Frontend work starts now: an Admin dashboard, then a Business app, then a
+Customer app in React Native (§61). All three talk to this backend, and until
+this commit the only description of its shape was a hand-written table in
+`docs/IMPLEMENTATION_INVENTORY.md`.
+
+That table is a dated snapshot, and §56.5 deliberately left it holding the OLD
+money field names — `depositAmountCents`, not `depositAmountMinor`. **A client
+written from it would have been wrong on its first request**, in the money
+fields, which is the worst place to be wrong.
+
+### 60.1 Generated, never written
+
+`@nestjs/swagger` with the CLI plugin, reading the DTOs' own TypeScript types.
+The contract therefore cannot disagree with what the validation pipe accepts,
+because they are derived from the same declarations.
+
+This matters more than it usually would. `whitelist` + `forbidNonWhitelisted`
+are doing security work here (inventory risk #5): the DTO is the boundary. A
+separately maintained contract would drift from that boundary silently, and the
+drift would be discovered by whoever was building a client, days later.
+
+`introspectComments` is on, so the doc comments already on the DTOs become the
+API descriptions. The explanation of MSISDN format that was written for the next
+developer is now also what a client author reads.
+
+### 60.2 Two failures that generate cleanly and describe nothing
+
+Both were hit, both silent, and both would have shipped:
+
+**The plugin only runs at compile time.** Generating through `ts-node` — the way
+every other script in this repo runs — produced **43 schemas with no
+properties**. It exits zero. It writes a well-formed file. A client generated
+from it cannot send a single field. So the generator lives under `src/`, is
+compiled by `nest build`, and runs from `dist/`.
+
+**`PartialType` from the wrong package.** `UpdateLocationDto` and
+`UpdateServiceDto` extend `PartialType(...)` from `@nestjs/mapped-types`, which
+produces identical runtime validation and carries **no property metadata**. They
+appeared as empty objects. Swapped for `@nestjs/swagger`'s, which behaves the
+same and keeps the metadata.
+
+The generator now **refuses to write a contract containing any property-less
+schema**, naming them and both likely causes. A contract that looks finished and
+describes nothing is worse than no contract, because nobody goes looking for it.
+
+### 60.3 Where it lives
+
+- `docs/openapi.json` — committed, so the contract a client was built against is
+  visible in a diff rather than reconstructed from a server that has since moved
+  on. **90 paths, 45 schemas, none empty.**
+- `GET /docs` — the interactive page, served only outside production, or with
+  `OPENAPI_PUBLIC=true`. The spec is a complete map of the attack surface and
+  the clients are generated from the file, so there is no reason to publish it.
+- `setupOpenApi` is called from `configureApp`, not `main.ts`, so the §26 boot
+  test exercises it. Document generation throws on types it cannot resolve,
+  which makes that test a check on the contract as well as the wiring.
+
+### 60.4 What is NOT done
+
+`docs/IMPLEMENTATION_INVENTORY.md` still carries the old field names. It stays
+as it is — §56.5's reasoning holds, it is a dated audit and quietly editing it
+would make it a worse record. `docs/openapi.json` is now the live contract, and
+the inventory is history.
+
+Full suite: **961 passing across 25 suites**.
+

@@ -1,0 +1,4327 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/otp/request": {
+      "post": {
+        "operationId": "AuthController_requestOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/otp/verify": {
+      "post": {
+        "operationId": "AuthController_verifyOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "operationId": "UsersController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/admin/users/{id}/display-name/clear": {
+      "patch": {
+        "operationId": "AdminUsersController_clearDisplayName",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClearDisplayNameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminUsers"
+        ]
+      }
+    },
+    "/categories": {
+      "get": {
+        "operationId": "CategoriesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Public and unauthenticated on purpose — deliberately the only endpoint in\nthis module without JwtAuthGuard. Both sides need the taxonomy before they\nhave a token: a business picks its category during onboarding, and a\ncustomer browses categories before signing up at all.\n\nSeeded by prisma/seed.ts.",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/business/profile": {
+      "get": {
+        "operationId": "BusinessController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      },
+      "patch": {
+        "operationId": "BusinessController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBusinessProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/locations": {
+      "post": {
+        "operationId": "BusinessController_createLocation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      },
+      "get": {
+        "operationId": "BusinessController_listLocations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/locations/{id}": {
+      "patch": {
+        "operationId": "BusinessController_updateLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      },
+      "delete": {
+        "operationId": "BusinessController_deleteLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/locations/{id}/capacity": {
+      "patch": {
+        "operationId": "BusinessController_updateLocationCapacity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocationCapacityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Sets concurrent-appointment capacity. See LocationsService.setCapacity.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/locations/{id}/hours": {
+      "post": {
+        "operationId": "BusinessController_setLocationHours",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetLocationHoursDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Replaces the location's whole week of operating hours in one call.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/locations/{id}/gallery": {
+      "post": {
+        "operationId": "BusinessController_uploadPhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadMediaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      },
+      "get": {
+        "operationId": "BusinessController_listGallery",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/locations/{id}/gallery/{mediaId}": {
+      "delete": {
+        "operationId": "BusinessController_deletePhoto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mediaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/services": {
+      "post": {
+        "operationId": "BusinessController_createService",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      },
+      "get": {
+        "operationId": "BusinessController_listServices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/services/{id}": {
+      "patch": {
+        "operationId": "BusinessController_updateService",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      },
+      "delete": {
+        "operationId": "BusinessController_deleteService",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Soft delete: flips isActive to false so past appointments still resolve.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/admin/businesses": {
+      "get": {
+        "operationId": "AdminBusinessController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Omit for every business, whatever its status.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "SUSPENDED"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminBusiness"
+        ]
+      }
+    },
+    "/admin/businesses/{id}": {
+      "get": {
+        "operationId": "AdminBusinessController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminBusiness"
+        ]
+      }
+    },
+    "/admin/businesses/{id}/approve": {
+      "patch": {
+        "operationId": "AdminBusinessController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminBusiness"
+        ]
+      }
+    },
+    "/admin/businesses/{id}/reject": {
+      "patch": {
+        "operationId": "AdminBusinessController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeBusinessStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminBusiness"
+        ]
+      }
+    },
+    "/admin/businesses/{id}/suspend": {
+      "patch": {
+        "operationId": "AdminBusinessController_suspend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeBusinessStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminBusiness"
+        ]
+      }
+    },
+    "/admin/businesses/{id}/reinstate": {
+      "patch": {
+        "operationId": "AdminBusinessController_reinstate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminBusiness"
+        ]
+      }
+    },
+    "/business/members/invite": {
+      "post": {
+        "operationId": "MembersController_invite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/business/members": {
+      "get": {
+        "operationId": "MembersController_listMembers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/business/members/{membershipId}/role": {
+      "patch": {
+        "operationId": "MembersController_updateMemberRole",
+        "parameters": [
+          {
+            "name": "membershipId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/business/members/{membershipId}": {
+      "delete": {
+        "operationId": "MembersController_removeMember",
+        "parameters": [
+          {
+            "name": "membershipId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Soft delete — sets status REMOVED, never drops the row.",
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/business/invitations": {
+      "get": {
+        "operationId": "MembersController_listInvitations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/business/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "MembersController_revokeInvitation",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/locations/{id}/availability": {
+      "get": {
+        "operationId": "AvailabilityController_getAvailability",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "durationMinutes",
+            "required": false,
+            "in": "query",
+            "description": "Optional, defaulting to the grid unit. A caller who has not yet picked a\nservice still wants to see the shape of the day, and 15 minutes is the\nshortest thing that can be booked — so it yields the most permissive\n(largest) honest slot list rather than an arbitrary guess.\n\nNote it is NOT constrained to a multiple of 15: start times sit on the\ngrid, but a 50-minute service is perfectly legal and simply ends off-grid.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 1440,
+              "default": 15,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Availability"
+        ]
+      }
+    },
+    "/business/locations/{id}/schedule-exceptions": {
+      "post": {
+        "operationId": "ScheduleManagementController_createException",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateScheduleExceptionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "ScheduleManagement"
+        ]
+      },
+      "get": {
+        "operationId": "ScheduleManagementController_listExceptions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "ScheduleManagement"
+        ]
+      }
+    },
+    "/business/locations/{id}/schedule-exceptions/{exceptionId}": {
+      "delete": {
+        "operationId": "ScheduleManagementController_deleteException",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exceptionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ScheduleManagement"
+        ]
+      }
+    },
+    "/business/locations/{id}/time-blocks": {
+      "post": {
+        "operationId": "ScheduleManagementController_createTimeBlock",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTimeBlockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "ScheduleManagement"
+        ]
+      },
+      "get": {
+        "operationId": "ScheduleManagementController_listTimeBlocks",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "ScheduleManagement"
+        ]
+      }
+    },
+    "/business/locations/{id}/time-blocks/{blockId}": {
+      "delete": {
+        "operationId": "ScheduleManagementController_deleteTimeBlock",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "blockId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ScheduleManagement"
+        ]
+      }
+    },
+    "/admin/settings/platform-fee": {
+      "get": {
+        "operationId": "AdminSettingsController_getPlatformFee",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminSettings"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminSettingsController_updatePlatformFee",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformFeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Changes the fee for FUTURE bookings only. Appointments already booked keep\nthe amounts computed at their booking time — see DECISIONS.md.",
+        "tags": [
+          "AdminSettings"
+        ]
+      }
+    },
+    "/admin/settings/exchange-rate": {
+      "get": {
+        "operationId": "AdminSettingsController_getExchangeRate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "The manual USD -> provider-currency rate, and how stale it is.\n\nManual by deliberate MVP scope: there is no live FX feed, and pretending\notherwise would be worse than an admin knowing they own this number.",
+        "tags": [
+          "AdminSettings"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminSettingsController_updateExchangeRate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExchangeRateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Sets the rate used to convert deposits at charge time.\n\nApplies to FUTURE charges only. An appointment already paid keeps the\namount and rate it was actually charged at — see the snapshot fields on\nAppointment.",
+        "tags": [
+          "AdminSettings"
+        ]
+      }
+    },
+    "/admin/settings/exchange-rate/staleness": {
+      "patch": {
+        "operationId": "AdminSettingsController_updateStaleness",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStalenessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "How old the rate may get before it is reported stale.\n\nReporting only. Nothing here can block a booking or a payment (§37.3).",
+        "tags": [
+          "AdminSettings"
+        ]
+      }
+    },
+    "/admin/settings/payout-hold": {
+      "get": {
+        "operationId": "AdminSettingsController_getPayoutHold",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "How long after an appointment resolves before its money may be paid out.\n\nThe hold in force AT RESOLUTION TIME is the one that applies. Changing this\naffects appointments resolved afterwards; it never rewrites a date already\nset on an entry (§38.1).",
+        "tags": [
+          "AdminSettings"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminSettingsController_updatePayoutHold",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePayoutHoldDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminSettings"
+        ]
+      }
+    },
+    "/payments/providers": {
+      "get": {
+        "operationId": "PaymentsController_providers",
+        "parameters": [
+          {
+            "name": "phoneNumber",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/appointments": {
+      "post": {
+        "operationId": "AppointmentsCustomerController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AppointmentsCustomer"
+        ]
+      },
+      "get": {
+        "operationId": "AppointmentsSharedController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING_PAYMENT",
+                "BOOKED",
+                "IN_PROGRESS",
+                "COMPLETED",
+                "CANCELLED",
+                "NO_SHOW"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Inclusive lower bound on startTime.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Exclusive upper bound on startTime.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AppointmentsShared"
+        ]
+      }
+    },
+    "/appointments/{id}/resend-verification-code": {
+      "post": {
+        "operationId": "AppointmentsCustomerController_resendVerificationCode",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Starts collecting the deposit through the payment provider.\n\nReplaced the temporary `mark-deposit-paid` seam, which moved the status\nwithout moving money. The appointment stays PENDING_PAYMENT until the\npayment is confirmed — see AppointmentsService.initiateDepositPayment.",
+        "tags": [
+          "AppointmentsCustomer"
+        ]
+      }
+    },
+    "/appointments/{id}/initiate-deposit-payment": {
+      "post": {
+        "operationId": "AppointmentsCustomerController_initiateDepositPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateDepositPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AppointmentsCustomer"
+        ]
+      }
+    },
+    "/business/appointments/{id}/verify": {
+      "post": {
+        "operationId": "AppointmentsBusinessController_verify",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AppointmentsBusiness"
+        ]
+      }
+    },
+    "/business/appointments/{id}/verify-manually": {
+      "post": {
+        "operationId": "AppointmentsBusinessController_verifyManually",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualVerifyAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Verification without the code (§54.3).\n\nOWNER and MANAGER only, unlike `verify` above, which STAFF may also use.\nTaking a code the customer reads out is counter work; deciding to proceed\nWITHOUT one is a judgement about whether a stranger is who they say they\nare, and it is recorded against whoever makes it.",
+        "tags": [
+          "AppointmentsBusiness"
+        ]
+      }
+    },
+    "/business/appointments/{id}/complete": {
+      "post": {
+        "operationId": "AppointmentsBusinessController_complete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AppointmentsBusiness"
+        ]
+      }
+    },
+    "/business/appointments/{id}/no-show": {
+      "post": {
+        "operationId": "AppointmentsBusinessController_noShow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AppointmentsBusiness"
+        ]
+      }
+    },
+    "/appointments/{id}": {
+      "get": {
+        "operationId": "AppointmentsSharedController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AppointmentsShared"
+        ]
+      }
+    },
+    "/appointments/{id}/payment-status": {
+      "get": {
+        "operationId": "AppointmentsSharedController_paymentStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Live payment status, queried straight from the provider.\n\nExists so a frontend can poll immediately after initiating rather than\nwaiting for the background job's cycle. Open to either participant: the\nbusiness needs to see whether the deposit landed just as much as the\ncustomer does.",
+        "tags": [
+          "AppointmentsShared"
+        ]
+      }
+    },
+    "/appointments/{id}/cancel": {
+      "post": {
+        "operationId": "AppointmentsSharedController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Either the customer who booked it or an active member of its business.",
+        "tags": [
+          "AppointmentsShared"
+        ]
+      }
+    },
+    "/admin/appointments/{id}/business-cancellation": {
+      "patch": {
+        "operationId": "AdminAppointmentsController_reclassify",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReclassifyCancellationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminAppointments"
+        ]
+      }
+    },
+    "/threads/inquiry": {
+      "post": {
+        "operationId": "ChatController_createInquiry",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInquiryThreadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Opens (or returns) the inquiry thread with a business.\n\nCUSTOMER-only: a business does not cold-open a conversation with someone\nwho has not contacted them, which would make this an outbound-marketing\ntool rather than a support channel.",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/threads": {
+      "get": {
+        "operationId": "ChatController_listThreads",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/threads/{id}": {
+      "get": {
+        "operationId": "ChatController_getThread",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/threads/{id}/messages": {
+      "get": {
+        "operationId": "ChatController_listMessages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Chat"
+        ]
+      },
+      "post": {
+        "operationId": "ChatController_sendMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Sends a message: text, a photo, or both.\n\nmultipart/form-data so a photo can ride along with the text, the same shape\nas the gallery upload, and reusing its exact limits — 15MB, jpg/png/webp —\nplus MulterExceptionFilter so an oversized file gets the same clear error\nrather than a bare 500.",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/threads/{id}/read": {
+      "post": {
+        "operationId": "ChatController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/admin/ledger/entries": {
+      "get": {
+        "operationId": "AdminLedgerController_entries",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "payoutId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DEPOSIT_RECEIVED",
+                "PLATFORM_FEE",
+                "DEPOSIT_REFUND",
+                "PLATFORM_FEE_REVERSAL",
+                "GATEWAY_FEE_DEBIT",
+                "ADJUSTMENT"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "What the platform should currently be holding, by currency.\n\nThe figure to compare against the provider's actual balance. Nothing\ncompares it automatically; producing the number is the point.",
+        "tags": [
+          "AdminLedger"
+        ]
+      }
+    },
+    "/admin/billing-adjustments": {
+      "get": {
+        "operationId": "AdminLedgerController_adjustments",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "ticketId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Billing adjustments, unsettled first. Read-only.",
+        "tags": [
+          "AdminLedger"
+        ]
+      }
+    },
+    "/admin/ledger/held": {
+      "get": {
+        "operationId": "AdminLedgerController_held",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminLedger"
+        ]
+      }
+    },
+    "/admin/billing-adjustments/{id}/execute": {
+      "patch": {
+        "operationId": "AdminLedgerController_execute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteAdjustmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Executes a BillingAdjustment — §25.2 renamed `appliedInvoiceId` to\n`settledAt` + `settlementRef` for exactly this call.",
+        "tags": [
+          "AdminLedger"
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [
+          {
+            "name": "unreadOnly",
+            "required": false,
+            "in": "query",
+            "description": "Query strings are text, so \"true\"/\"false\" need an explicit transform.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/read-all": {
+      "patch": {
+        "operationId": "NotificationsController_markAllRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/tickets": {
+      "post": {
+        "operationId": "TicketsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "multipart, so an optional screenshot can accompany the report.",
+        "tags": [
+          "Tickets"
+        ]
+      },
+      "get": {
+        "operationId": "TicketsController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "IN_PROGRESS",
+                "OPEN",
+                "RESOLVED",
+                "CLOSED"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAYMENT_ISSUE",
+                "APPOINTMENT_DISPUTE",
+                "ACCOUNT_ISSUE",
+                "TECHNICAL_ISSUE",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tickets"
+        ]
+      }
+    },
+    "/tickets/{id}": {
+      "get": {
+        "operationId": "TicketsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tickets"
+        ]
+      }
+    },
+    "/tickets/{id}/messages": {
+      "post": {
+        "operationId": "TicketsController_addMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tickets"
+        ]
+      }
+    },
+    "/tickets/{id}/reopen": {
+      "post": {
+        "operationId": "TicketsController_reopen",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Tickets"
+        ]
+      }
+    },
+    "/admin/tickets": {
+      "get": {
+        "operationId": "AdminTicketsController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "IN_PROGRESS",
+                "OPEN",
+                "RESOLVED",
+                "CLOSED"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAYMENT_ISSUE",
+                "APPOINTMENT_DISPUTE",
+                "ACCOUNT_ISSUE",
+                "TECHNICAL_ISSUE",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "assignedAdminId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminTickets"
+        ]
+      }
+    },
+    "/admin/tickets/{id}": {
+      "get": {
+        "operationId": "AdminTicketsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Includes internal notes — the one view that does.",
+        "tags": [
+          "AdminTickets"
+        ]
+      }
+    },
+    "/admin/tickets/{id}/assign": {
+      "patch": {
+        "operationId": "AdminTicketsController_assign",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminTickets"
+        ]
+      }
+    },
+    "/admin/tickets/{id}/status": {
+      "patch": {
+        "operationId": "AdminTicketsController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTicketStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Moves the ticket through its lifecycle. `resolutionNote` is required for\nRESOLVED, and an optional billing adjustment may ride along — see\nTicketsService.recordBillingAdjustment for what that does, and does not, do.",
+        "tags": [
+          "AdminTickets"
+        ]
+      }
+    },
+    "/admin/tickets/{id}/messages": {
+      "post": {
+        "operationId": "AdminTicketsController_addMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminTickets"
+        ]
+      }
+    },
+    "/appointments/{id}/reviews": {
+      "post": {
+        "operationId": "ReviewsCustomerController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "ReviewsCustomer"
+        ]
+      }
+    },
+    "/reviews/{id}": {
+      "patch": {
+        "operationId": "ReviewsCustomerController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rating and comment only, within the 7-day window. There is no delete.",
+        "tags": [
+          "ReviewsCustomer"
+        ]
+      }
+    },
+    "/reviews/{id}/response": {
+      "post": {
+        "operationId": "ReviewsBusinessController_respond",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewResponseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "ReviewsBusiness"
+        ]
+      },
+      "patch": {
+        "operationId": "ReviewsBusinessController_updateResponse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewResponseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "ReviewsBusiness"
+        ]
+      }
+    },
+    "/locations/{id}/reviews": {
+      "get": {
+        "operationId": "ReviewsPublicController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "ReviewsPublic"
+        ]
+      }
+    },
+    "/admin/reviews/{id}/hide": {
+      "patch": {
+        "operationId": "AdminReviewsController_hide",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HideReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminReviews"
+        ]
+      }
+    },
+    "/admin/reviews/{id}/unhide": {
+      "patch": {
+        "operationId": "AdminReviewsController_unhide",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminReviews"
+        ]
+      }
+    },
+    "/businesses/{id}/analytics": {
+      "get": {
+        "operationId": "AnalyticsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locationId",
+            "required": false,
+            "in": "query",
+            "description": "Omit for the business-wide roll-up across every location.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Inclusive lower bound on appointment startTime. Defaults to 30 days ago.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "EXCLUSIVE upper bound on appointment startTime. Defaults to now.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/admin/payouts/run": {
+      "post": {
+        "operationId": "AdminPayoutsController_run",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminPayouts"
+        ]
+      }
+    },
+    "/admin/payouts": {
+      "get": {
+        "operationId": "AdminPayoutsController_list",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": false,
+            "in": "query",
+            "description": "Admin listing only; the business-scoped route takes it from the path.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "FAILED",
+                "PAID"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminPayouts"
+        ]
+      }
+    },
+    "/admin/payouts/{id}/export": {
+      "get": {
+        "operationId": "AdminPayoutsController_exportRun",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The run this payout belongs to, as a CSV batch (§47). One row per business\npaid, plus a totals row per settlement currency.",
+        "tags": [
+          "AdminPayouts"
+        ]
+      }
+    },
+    "/admin/payouts/{id}/mark-paid": {
+      "patch": {
+        "operationId": "AdminPayoutsController_markPaid",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkPaidDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminPayouts"
+        ]
+      }
+    },
+    "/admin/payouts/{id}/mark-failed": {
+      "patch": {
+        "operationId": "AdminPayoutsController_markFailed",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkFailedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminPayouts"
+        ]
+      }
+    },
+    "/businesses/{id}/balance": {
+      "get": {
+        "operationId": "BusinessPayoutsController_balance",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "BusinessPayouts"
+        ]
+      }
+    },
+    "/businesses/{id}/payouts": {
+      "get": {
+        "operationId": "BusinessPayoutsController_list",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "businessId",
+            "required": false,
+            "in": "query",
+            "description": "Admin listing only; the business-scoped route takes it from the path.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "FAILED",
+                "PAID"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "BusinessPayouts"
+        ]
+      }
+    },
+    "/admin/payout-destinations": {
+      "get": {
+        "operationId": "AdminPayoutDestinationsController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "REJECTED",
+                "UNVERIFIED",
+                "VERIFIED",
+                "SUPERSEDED"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminPayoutDestinations"
+        ]
+      }
+    },
+    "/admin/payout-destinations/{id}/verify": {
+      "patch": {
+        "operationId": "AdminPayoutDestinationsController_verify",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPayoutDestinationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminPayoutDestinations"
+        ]
+      }
+    },
+    "/admin/payout-destinations/{id}/reject": {
+      "patch": {
+        "operationId": "AdminPayoutDestinationsController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectPayoutDestinationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminPayoutDestinations"
+        ]
+      }
+    },
+    "/business/payout-destination": {
+      "post": {
+        "operationId": "BusinessPayoutDestinationController_submit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayoutDestinationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "BusinessPayoutDestination"
+        ]
+      },
+      "get": {
+        "operationId": "BusinessPayoutDestinationController_find",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "BusinessPayoutDestination"
+        ]
+      }
+    },
+    "/discover/locations": {
+      "get": {
+        "operationId": "DiscoveryController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Case-insensitive substring over business name, location name, service name.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "subcategoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "minRating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPriceMinor",
+            "required": false,
+            "in": "query",
+            "description": "Against the location's CHEAPEST active service.",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "openNow",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "lat",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "radiusKm",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0.1,
+              "maximum": 200,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rating",
+                "price",
+                "distance"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Discovery"
+        ]
+      }
+    },
+    "/discover/locations/{id}": {
+      "get": {
+        "operationId": "DiscoveryController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Discovery"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Booking platform API",
+    "description": "One backend serving the Customer, Business and Admin apps (§4). Money amounts are integer MINOR UNITS of the currency named beside them.",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "RequestOtpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "description": "Which kind of account to CREATE, when this email has never signed up.\n\nOptional, and ignored entirely for an email that already exists — that user\nlogs in as whoever they already are, and the body does not get a vote\n(§50.1). Required only for a genuinely new email, enforced in the service\nwhere the answer to \"does this user exist?\" is known.\n\nStill restricted to BUSINESS | CUSTOMER, so ADMIN accounts remain\nimpossible to self-register (§3). That was always the rule; the bug was\nthat it also made existing admins impossible to AUTHENTICATE.",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER"
+            ]
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "VerifyOtpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 6
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "ClearDisplayNameDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Required, exactly as it is for hiding a review (§28): moderation with no\nrecorded reason cannot be reviewed later or explained to the customer it\nhappened to — and the customer is told, so there has to be something to\ntell them.",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "UpdateBusinessProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subcategoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 30
+          },
+          "logoUrl": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "CreateLocationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "address": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          },
+          "latitude": {
+            "type": "number",
+            "description": "REQUIRED on create since §43.2. A location with no coordinates cannot\nappear in a distance search, and a customer looking for somewhere nearby is\nthe whole point of the discovery module — a business that onboards without\nthem is invisible to the search that matters most.\n\nThe column stays nullable: rows created before this genuinely have no\ncoordinates and there is nothing honest to backfill them with.",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 30
+          }
+        },
+        "required": [
+          "name",
+          "address",
+          "latitude",
+          "longitude"
+        ]
+      },
+      "UpdateLocationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "address": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          },
+          "latitude": {
+            "type": "number",
+            "description": "REQUIRED on create since §43.2. A location with no coordinates cannot\nappear in a distance search, and a customer looking for somewhere nearby is\nthe whole point of the discovery module — a business that onboards without\nthem is invisible to the search that matters most.\n\nThe column stays nullable: rows created before this genuinely have no\ncoordinates and there is nothing honest to backfill them with.",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 30
+          }
+        }
+      },
+      "UpdateLocationCapacityDto": {
+        "type": "object",
+        "properties": {
+          "capacity": {
+            "type": "number",
+            "description": "Concurrent appointments this location can run.\n\nAt least 1 — a location that can serve nobody is a closed location, which\nis what opening hours and schedule exceptions are for. Capped at 500 to\ncatch a fat-fingered entry rather than to express a real ceiling.",
+            "minimum": 1,
+            "maximum": 500
+          }
+        },
+        "required": [
+          "capacity"
+        ]
+      },
+      "LocationHoursEntryDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "openTime": {
+            "type": "string"
+          },
+          "closeTime": {
+            "type": "string"
+          },
+          "isClosed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "openTime",
+          "closeTime"
+        ]
+      },
+      "SetLocationHoursDto": {
+        "type": "object",
+        "properties": {
+          "hours": {
+            "minItems": 1,
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocationHoursEntryDto"
+            }
+          }
+        },
+        "required": [
+          "hours"
+        ]
+      },
+      "UploadMediaDto": {
+        "type": "object",
+        "properties": {
+          "displayOrder": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+      "CreateServiceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "priceMinor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000000
+          },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1440
+          },
+          "depositPercentage": {
+            "type": "number",
+            "description": "Share of the price the customer pays up front to hold the slot.\n\nThe lower bound is NOT expressed here: it is the live platform fee from\nPlatformSetting, which an admin can change at runtime, so validating it\nneeds a database read and happens in ServicesService.",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "priceMinor",
+          "durationMinutes"
+        ]
+      },
+      "UpdateServiceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "priceMinor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000000
+          },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 1440
+          },
+          "depositPercentage": {
+            "type": "number",
+            "description": "Share of the price the customer pays up front to hold the slot.\n\nThe lower bound is NOT expressed here: it is the live platform fee from\nPlatformSetting, which an admin can change at runtime, so validating it\nneeds a database read and happens in ServicesService.",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ChangeBusinessStatusDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "InviteMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "MANAGER",
+              "STAFF"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ]
+      },
+      "UpdateMemberRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "MANAGER",
+              "STAFF"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "CreateScheduleExceptionDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "isClosed": {
+            "type": "boolean"
+          },
+          "customOpenTime": {
+            "type": "string"
+          },
+          "customCloseTime": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "CreateTimeBlockDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "UpdateExchangeRateDto": {
+        "type": "object",
+        "properties": {
+          "providerCurrency": {
+            "type": "string",
+            "description": "ISO 4217 code the provider charges in. \"EUR\" for MTN's sandbox.\n\nOptional so a rate can be corrected without restating the currency; when\nomitted the stored currency is kept.",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "exchangeRateUsdToProviderCurrency": {
+            "type": "number",
+            "description": "How many units of providerCurrency one USD buys.\n\nExcluded minimum, not `@Min(0)`: a rate of exactly zero would convert every\ndeposit to nothing and charge customers zero, which is a worse failure than\nrefusing the value.",
+            "minimum": 1e-8
+          }
+        },
+        "required": [
+          "exchangeRateUsdToProviderCurrency"
+        ]
+      },
+      "UpdateStalenessDto": {
+        "type": "object",
+        "properties": {
+          "exchangeRateStalenessHours": {
+            "type": "number",
+            "description": "How many hours old the exchange rate may be before it is reported stale.\n\nZero is allowed and means \"always warn\" — legitimate for a currency moving\nfast enough that any stored rate is suspect. Capped at a month, past which\nthe warning has stopped being a warning about anything.",
+            "minimum": 0,
+            "maximum": 720
+          }
+        },
+        "required": [
+          "exchangeRateStalenessHours"
+        ]
+      },
+      "UpdatePayoutHoldDto": {
+        "type": "object",
+        "properties": {
+          "payoutHoldDays": {
+            "type": "number",
+            "description": "Days between an appointment resolving and its money becoming payable.\n\nZero is allowed and means \"payable immediately\" — a deliberate choice for a\nplatform that trusts its businesses, not an accident. Capped at 30: a hold\nlonger than a month stops being a settling window and starts being the\nbusiness financing the platform.",
+            "minimum": 0,
+            "maximum": 30
+          }
+        },
+        "required": [
+          "payoutHoldDays"
+        ]
+      },
+      "UpdatePlatformFeeDto": {
+        "type": "object",
+        "properties": {
+          "platformFeePercentage": {
+            "type": "number",
+            "description": "Percentage of the service price taken as the platform fee.\n\nTwo decimal places, matching the Decimal(5,2) column. Capped at 100 because\na fee above the whole price is nonsense, and every service's\ndepositPercentage must be at least this value — so raising it too far would\nmake existing services unsaveable.",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "platformFeePercentage"
+        ]
+      },
+      "CreateAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Requested start, as an ISO-8601 instant (e.g. \"2026-09-15T07:00:00.000Z\").\n\nOnly the start is accepted. endTime is derived server-side from the\nservice's durationMinutes — letting a client send it would let them book a\n15-minute slot for a 4-hour service."
+          }
+        },
+        "required": [
+          "locationId",
+          "serviceId",
+          "startTime"
+        ]
+      },
+      "InitiateDepositPaymentDto": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "description": "Payer's number in MSISDN form: digits only, country code first, no plus and\nno spaces (e.g. \"211920100200\"). That is the shape MTN expects in\n`payer.partyId`, and normalising here means the provider never has to guess\nwhat a \"+211 92 010 0200\" was meant to be.",
+            "pattern": "^\\d{8,15}$"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Which operator to collect through (§58.1).\n\nOptional, and it WINS when supplied. The platform infers the operator from\nthe number's prefix, which is right most of the time and wrong for anyone\nwho has ported their number to another network — and a ported customer has\nno other way to be paid from. So the inference is a default the caller can\nalways overrule, never a verdict.",
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          }
+        },
+        "required": [
+          "phoneNumber"
+        ]
+      },
+      "VerifyAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "ManualVerifyAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "note"
+        ]
+      },
+      "CancelAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Optional in the shape, REQUIRED when a business cancels — enforced in the\nservice, because only the service knows which side the caller is on.\n\nA business cancellation costs the business money under §25, so it should be\na deliberate act with a stated reason. A customer cancelling their own\nbooking owes nobody an explanation.",
+            "minLength": 3,
+            "maxLength": 500
+          },
+          "gatewayChargeMinor": {
+            "type": "number",
+            "description": "What the payment gateway charged to process the refund, in MINOR UNITS OF\nTHE SETTLEMENT CURRENCY — the currency the provider actually charged in\n(§45.4). REQUIRED when a business cancels an appointment whose deposit was\npaid.\n\nSupplied, never derived. The MoMo integration does not report its own\ncharge on a transaction or a refund (§36.2), so computing it from a\npercentage constant would put a number in the ledger that the provider's\nstatement contradicts — and a ledger that cannot be reconciled is not\ndoing its job. Zero is allowed: sometimes there is no charge.",
+            "minimum": 0
+          }
+        }
+      },
+      "ReclassifyCancellationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          },
+          "ticketId": {
+            "type": "string",
+            "description": "The ticket the decision came out of, so the reclassification is auditable.",
+            "format": "uuid"
+          },
+          "gatewayChargeMinor": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "reason",
+          "gatewayChargeMinor"
+        ]
+      },
+      "CreateInquiryThreadDto": {
+        "type": "object",
+        "properties": {
+          "businessProfileId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "businessProfileId"
+        ]
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "description": "Optional, because a photo alone is a valid message. The service rejects\nthe case where neither this nor a file is present — a rule the database\nalso enforces via the messages_content_not_empty CHECK.\n\nArrives as a multipart text field.",
+            "maxLength": 2000
+          }
+        }
+      },
+      "ExecuteAdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "settlementRef": {
+            "type": "string",
+            "description": "The provider's reference for the money movement, where there is one.\n\nOptional, unlike a payout's: some adjustments are settled by netting\nagainst a future payout rather than by a separate transfer, and inventing a\nreference for those would make a reconciliation look complete when it is\nnot.",
+            "minLength": 3,
+            "maxLength": 200
+          }
+        }
+      },
+      "CreateTicketDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "PAYMENT_ISSUE",
+              "APPOINTMENT_DISPUTE",
+              "ACCOUNT_ISSUE",
+              "TECHNICAL_ISSUE",
+              "OTHER"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "body": {
+            "type": "string",
+            "description": "The opening message. A ticket with no description is not actionable.",
+            "minLength": 1,
+            "maxLength": 5000
+          },
+          "appointmentId": {
+            "type": "string",
+            "description": "Optional. When present the reporter is verified to be a party to it —\nin the service, not only in a guard.\n\nNote reporterType is NOT accepted here: it is derived from the\nauthenticated user's role, so a customer cannot file as a business.",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "category",
+          "subject",
+          "body"
+        ]
+      },
+      "CreateTicketMessageDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 5000
+          },
+          "isInternal": {
+            "type": "boolean",
+            "description": "Admin-only. Ignored entirely on the reporter-facing endpoint, and rejected\nfor non-admins on the admin endpoint, so a reporter can never author a note\nthey would then be unable to see.\n\nArrives as a multipart text field, hence the explicit transform."
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "AssignTicketDto": {
+        "type": "object",
+        "properties": {
+          "assignedAdminId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "assignedAdminId"
+        ]
+      },
+      "BillingAdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "GATEWAY_FEE_DEBIT",
+              "FEE_REFUND"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0.01
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "appointmentId",
+          "type",
+          "amount",
+          "reason"
+        ]
+      },
+      "UpdateTicketStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "OPEN",
+              "RESOLVED",
+              "CLOSED"
+            ]
+          },
+          "resolutionNote": {
+            "type": "string",
+            "description": "Required when moving to RESOLVED; enforced in the service.",
+            "minLength": 3,
+            "maxLength": 5000
+          },
+          "billingAdjustment": {
+            "$ref": "#/components/schemas/BillingAdjustmentDto"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "displayName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rating"
+        ]
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "displayName": {
+            "type": "string"
+          }
+        }
+      },
+      "ReviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "responseText": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "responseText"
+        ]
+      },
+      "HideReviewDto": {
+        "type": "object",
+        "properties": {
+          "hiddenReason": {
+            "type": "string",
+            "description": "Required. Hiding customer feedback without recording why is the kind of\nmoderation that cannot be reviewed later or explained in a dispute.",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "hiddenReason"
+        ]
+      },
+      "MarkPaidDto": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string",
+            "description": "The provider's reference for the transfer. Required: a payout marked paid\nwith nothing to look it up by cannot be reconciled against a statement, and\nthe statement is the only thing that proves the money left.",
+            "minLength": 3,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "reference"
+        ]
+      },
+      "MarkFailedDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Required, like every other moderation reason here. Marking a payout failed\nputs its money back in the pool, and someone will ask later why it did not\ngo out.",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "VerifyPayoutDestinationDto": {
+        "type": "object",
+        "properties": {
+          "verificationNote": {
+            "type": "string",
+            "description": "How the admin confirmed the number belongs to this business.\n\nRequired. This is the record of the only irreversible decision the platform\nmakes — \"verified\" with no account of how is not something anyone can audit\nafter money has gone to the wrong place.",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "verificationNote"
+        ]
+      },
+      "RejectPayoutDestinationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Required: the business has to be told what to fix.",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "CreatePayoutDestinationDto": {
+        "type": "object",
+        "properties": {
+          "msisdn": {
+            "type": "string",
+            "description": "The mobile-money number payouts are sent to, in E.164.\n\nThe SHAPE is checked here; the expected country prefix is checked in the\nservice, because it is configurable (§48.2)."
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          }
+        },
+        "required": [
+          "msisdn"
+        ]
+      }
+    }
+  }
+}
