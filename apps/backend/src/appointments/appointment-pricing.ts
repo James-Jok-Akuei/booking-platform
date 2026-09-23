@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 
 export interface AppointmentAmounts {
-  depositAmountCents: number;
-  platformFeeAmountCents: number;
-  businessAmountCents: number;
+  depositAmountMinor: number;
+  platformFeeAmountMinor: number;
+  businessAmountMinor: number;
 }
 
 /**
@@ -26,22 +26,22 @@ export interface AppointmentAmounts {
  * percentage. Rounding each of the three independently would let them disagree
  * by a cent, and the invariant
  *
- *   platformFeeAmountCents + businessAmountCents === depositAmountCents
+ *   platformFeeAmountMinor + businessAmountMinor === depositAmountMinor
  *
  * has to hold exactly — it is the ledger line that says who is owed what.
  *
  * All arithmetic is Prisma.Decimal. Percentages are decimal fractions and money
- * is integer cents; routing either through a JS float is how a ledger acquires
+ * is integer minor units; routing either through a JS float is how a ledger acquires
  * drift that only shows up months later.
  */
 export function computeAppointmentAmounts(
-  priceCents: number,
+  priceMinor: number,
   depositPercentage: Prisma.Decimal,
   platformFeePercentage: Prisma.Decimal,
 ): AppointmentAmounts {
   // Unreachable if ServicesService and PlatformSettingsService are both doing
   // their jobs (§40) — which is exactly why it is here. A negative
-  // businessAmountCents means a business owes money for taking a booking, and
+  // businessAmountMinor means a business owes money for taking a booking, and
   // it must not be possible to write one whatever route a future change opens.
   //
   // Deliberately NOT clamped to zero. A clamp hides the misconfiguration and
@@ -58,24 +58,24 @@ export function computeAppointmentAmounts(
     );
   }
 
-  const price = new Prisma.Decimal(priceCents);
+  const price = new Prisma.Decimal(priceMinor);
   const hundred = new Prisma.Decimal(100);
 
   // ROUND_HALF_UP: the conventional expectation for money, and applied to both
   // so neither side is systematically favoured.
-  const depositAmountCents = price
+  const depositAmountMinor = price
     .mul(depositPercentage)
     .div(hundred)
     .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
     .toNumber();
 
-  const platformFeeAmountCents = price
+  const platformFeeAmountMinor = price
     .mul(platformFeePercentage)
     .div(hundred)
     .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
     .toNumber();
 
-  const businessAmountCents = depositAmountCents - platformFeeAmountCents;
+  const businessAmountMinor = depositAmountMinor - platformFeeAmountMinor;
 
-  return { depositAmountCents, platformFeeAmountCents, businessAmountCents };
+  return { depositAmountMinor, platformFeeAmountMinor, businessAmountMinor };
 }

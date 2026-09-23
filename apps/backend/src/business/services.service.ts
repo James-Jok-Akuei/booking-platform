@@ -29,7 +29,7 @@ export class ServicesService {
    *
    * Both percentages apply to the same base — the service price — so this floor
    * is exactly what guarantees the fee never exceeds the deposit it is taken
-   * from, i.e. that businessAmountCents can never be negative. At the floor the
+   * from, i.e. that businessAmountMinor can never be negative. At the floor the
    * business receives nothing from the deposit, which is legal but worth the
    * business understanding.
    *
@@ -79,7 +79,7 @@ export class ServicesService {
     await this.requireOwned(businessId, serviceId);
     await this.assertDepositCoversPlatformFee(dto.depositPercentage);
 
-    // Recomputed unconditionally rather than only when `priceCents` is in the
+    // Recomputed unconditionally rather than only when `priceMinor` is in the
     // patch: an update can also flip `isActive` back on, which changes the
     // cheapest price without touching a price field. Checking which fields
     // moved would be a second place to get the rule right.

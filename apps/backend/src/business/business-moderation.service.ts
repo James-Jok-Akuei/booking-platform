@@ -94,7 +94,7 @@ export class BusinessModerationService {
           select: {
             id: true,
             name: true,
-            priceCents: true,
+            priceMinor: true,
             durationMinutes: true,
             depositPercentage: true,
             isActive: true,

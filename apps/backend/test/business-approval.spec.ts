@@ -433,7 +433,7 @@ describe('Business approval (§42)', () => {
         data: {
           businessId: shop.businessId,
           type: LedgerEntryType.DEPOSIT_RECEIVED,
-          amountCents: 4500,
+          amountMinor: 4500,
           currency: 'USD',
           settlementCurrency: 'USD',
           settlementAmountMinor: 4500,
@@ -475,7 +475,7 @@ describe('Business approval (§42)', () => {
         where: { businessId: shop.businessId },
       });
       expect(payout).toBeDefined();
-      expect(payout.amountCents).toBe(4500);
+      expect(payout.amountMinor).toBe(4500);
     });
 
     it('does not pause an APPROVED business in the same run', async () => {
@@ -503,7 +503,7 @@ describe('Business approval (§42)', () => {
       const balance = await payouts.balance(AS_ADMIN(), shop.businessId);
 
       expect(balance.payoutsPaused).toBe(true);
-      expect(balance.availableNowCents).toBe(4500);
+      expect(balance.availableNowMinor).toBe(4500);
       expect(balance.note).toMatch(/paused/i);
       expect(balance.note).toMatch(/Fraud probe/);
       // The money is still shown as owed, not zeroed.

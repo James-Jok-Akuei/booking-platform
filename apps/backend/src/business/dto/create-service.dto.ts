@@ -22,12 +22,16 @@ export class CreateServiceDto {
   @MaxLength(2000)
   description?: string;
 
-  // Integer cents, never a float — see DECISIONS.md. Capped at ~$1,000,000 to
-  // catch the obvious "typed dollars into a cents field" mistake.
-  @IsInt({ message: 'priceCents must be an integer number of cents, not a decimal amount' })
+  // Integer MINOR UNITS of the internal currency, never a float — see §10.3
+  // and §56. Capped to catch the obvious "typed major units into a minor-unit
+  // field" mistake.
+  @IsInt({
+    message:
+      'priceMinor must be a whole number of minor units (e.g. cents), not a decimal amount',
+  })
   @Min(0)
   @Max(100_000_000)
-  priceCents!: number;
+  priceMinor!: number;
 
   @IsInt()
   @Min(1)

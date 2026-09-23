@@ -45,7 +45,7 @@ export class NotificationsScheduler {
         id: true,
         startTime: true,
         customerId: true,
-        depositAmountCents: true,
+        depositAmountMinor: true,
         currency: true,
         service: { select: { name: true } },
         location: {
@@ -75,7 +75,7 @@ export class NotificationsScheduler {
           locationName: appointment.location.name,
           businessName: appointment.location.business.name ?? 'the business',
           startTime: appointment.startTime,
-          depositAmountCents: appointment.depositAmountCents,
+          depositAmountMinor: appointment.depositAmountMinor,
           currency: appointment.currency,
         },
       });

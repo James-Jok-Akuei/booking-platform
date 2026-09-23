@@ -68,7 +68,7 @@ describe('Refunds and adjustments (§36)', () => {
     await resetDatabase(prisma);
     await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10, { role: 'ADMIN' });
     admin = await createAdmin(prisma);
-    business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
+    business = await createBusiness(prisma, { priceMinor: 4500, depositPercentage: 20 });
     customer = await createCustomer(prisma);
   });
 
@@ -104,11 +104,11 @@ describe('Refunds and adjustments (§36)', () => {
     prisma.ledgerEntry.findMany({ where: { appointmentId }, orderBy: { type: 'asc' } });
 
   const netFor = async (appointmentId: string) =>
-    (await entriesFor(appointmentId)).reduce((sum, e) => sum + e.amountCents, 0);
+    (await entriesFor(appointmentId)).reduce((sum, e) => sum + e.amountMinor, 0);
 
-  const shape = (entries: Array<{ type: LedgerEntryType; amountCents: number; currency: string }>) =>
+  const shape = (entries: Array<{ type: LedgerEntryType; amountMinor: number; currency: string }>) =>
     entries
-      .map((e) => ({ type: e.type, amountCents: e.amountCents, currency: e.currency }))
+      .map((e) => ({ type: e.type, amountMinor: e.amountMinor, currency: e.currency }))
       .sort((a, b) => a.type.localeCompare(b.type));
 
   describe('a business cancellation refunds the customer in full', () => {
@@ -121,14 +121,14 @@ describe('Refunds and adjustments (§36)', () => {
       });
 
       const entries = await entriesFor(a.id);
-      const byType = Object.fromEntries(entries.map((e) => [e.type, e.amountCents]));
-      expect(byType[LedgerEntryType.DEPOSIT_REFUND]).toBe(-a.depositAmountCents);
-      expect(byType[LedgerEntryType.PLATFORM_FEE_REVERSAL]).toBe(a.platformFeeAmountCents);
+      const byType = Object.fromEntries(entries.map((e) => [e.type, e.amountMinor]));
+      expect(byType[LedgerEntryType.DEPOSIT_REFUND]).toBe(-a.depositAmountMinor);
+      expect(byType[LedgerEntryType.PLATFORM_FEE_REVERSAL]).toBe(a.platformFeeAmountMinor);
       // 32 500 SSP at the booking rate of 650 is 50 USD cents (§45.4).
       expect(byType[LedgerEntryType.GATEWAY_FEE_DEBIT]).toBe(-50);
     });
 
-    it('the refund pair nets to exactly -businessAmountCents', async () => {
+    it('the refund pair nets to exactly -businessAmountMinor', async () => {
       const a = await paidAppointment();
 
       await appointments.cancel(business.userId, a.id, {
@@ -143,10 +143,10 @@ describe('Refunds and adjustments (§36)', () => {
             e.type === LedgerEntryType.DEPOSIT_REFUND ||
             e.type === LedgerEntryType.PLATFORM_FEE_REVERSAL,
         )
-        .reduce((sum, e) => sum + e.amountCents, 0);
+        .reduce((sum, e) => sum + e.amountMinor, 0);
 
       // It cancels the pair appended when the deposit landed, exactly.
-      expect(refundPair).toBe(-a.businessAmountCents);
+      expect(refundPair).toBe(-a.businessAmountMinor);
     });
 
     it("zeroes the business's position for that appointment, less the gateway charge", async () => {
@@ -186,8 +186,8 @@ describe('Refunds and adjustments (§36)', () => {
       )!;
       // What the customer gets back is the whole deposit, not the deposit less
       // the platform's cut. The platform gives its own fee up (§25.1).
-      expect(Math.abs(refund.amountCents)).toBe(a.depositAmountCents);
-      expect(Math.abs(refund.amountCents)).toBeGreaterThan(a.businessAmountCents);
+      expect(Math.abs(refund.amountMinor)).toBe(a.depositAmountMinor);
+      expect(Math.abs(refund.amountMinor)).toBeGreaterThan(a.businessAmountMinor);
     });
 
     it('makes every entry payable at once — there is nothing left to wait for', async () => {
@@ -213,7 +213,7 @@ describe('Refunds and adjustments (§36)', () => {
       const balance = await payouts.balance(AS_ADMIN(), business.businessId);
       const summary = await payouts.run();
 
-      expect(balance.availableNowCents).toBeLessThan(0);
+      expect(balance.availableNowMinor).toBeLessThan(0);
       expect(summary.payoutsCreated).toBe(0);
     });
 
@@ -275,7 +275,7 @@ describe('Refunds and adjustments (§36)', () => {
         LedgerEntryType.DEPOSIT_RECEIVED,
         LedgerEntryType.PLATFORM_FEE,
       ]);
-      expect(await netFor(a.id)).toBe(a.businessAmountCents);
+      expect(await netFor(a.id)).toBe(a.businessAmountMinor);
     });
 
     it('no-show: the same, and the business is paid', async () => {
@@ -288,7 +288,7 @@ describe('Refunds and adjustments (§36)', () => {
       expect(
         entries.some((e) => e.type === LedgerEntryType.DEPOSIT_REFUND),
       ).toBe(false);
-      expect(await netFor(a.id)).toBe(a.businessAmountCents);
+      expect(await netFor(a.id)).toBe(a.businessAmountMinor);
     });
 
     it('neither produces a gateway debit', async () => {
@@ -443,7 +443,7 @@ describe('Refunds and adjustments (§36)', () => {
       const { adjustment: settled, entry } = await execute(row.id);
 
       // Major units on the adjustment, integer cents in the ledger.
-      expect(entry.amountCents).toBe(1250);
+      expect(entry.amountMinor).toBe(1250);
       expect(entry.type).toBe(LedgerEntryType.ADJUSTMENT);
       expect(entry.billingAdjustmentId).toBe(row.id);
       expect(settled.settledAt).not.toBeNull();
@@ -455,7 +455,7 @@ describe('Refunds and adjustments (§36)', () => {
 
       const { entry } = await execute(row.id);
 
-      expect(entry.amountCents).toBe(-90);
+      expect(entry.amountMinor).toBe(-90);
     });
 
     it('makes it payable immediately', async () => {
@@ -492,7 +492,7 @@ describe('Refunds and adjustments (§36)', () => {
       await execute(row.id);
 
       const after = await payouts.balance(AS_ADMIN(), business.businessId);
-      expect(after.availableNowCents).toBe(before.availableNowCents - 100);
+      expect(after.availableNowMinor).toBe(before.availableNowMinor - 100);
     });
   });
 
@@ -503,7 +503,7 @@ describe('Refunds and adjustments (§36)', () => {
         (sum, e) => sum + (e.settlementAmountMinor ?? 0),
         0,
       );
-      const expectedUsd = entries.reduce((sum, e) => sum + e.amountCents, 0);
+      const expectedUsd = entries.reduce((sum, e) => sum + e.amountMinor, 0);
 
       const held = await ledger.heldTotals({ role: 'ADMIN' });
 
@@ -521,7 +521,7 @@ describe('Refunds and adjustments (§36)', () => {
       );
       expect(held.totalEntries).toBe(entries.length);
       // USD is carried alongside, explicitly labelled as reporting.
-      expect(ssp.reportingUsdCents).toBeLessThanOrEqual(expectedUsd);
+      expect(ssp.reportingInternalMinor).toBeLessThanOrEqual(expectedUsd);
     });
 
     it('drops entries once a payout has settled them', async () => {
@@ -538,8 +538,8 @@ describe('Refunds and adjustments (§36)', () => {
       await payouts.run();
       const after = await ledger.heldTotals({ role: 'ADMIN' });
 
-      expect(before.bySettlementCurrency[0].reportingUsdCents).toBe(
-        a.businessAmountCents,
+      expect(before.bySettlementCurrency[0].reportingInternalMinor).toBe(
+        a.businessAmountMinor,
       );
       // Settled money is no longer held: it has gone out.
       expect(after.bySettlementCurrency).toHaveLength(0);
@@ -555,8 +555,8 @@ describe('Refunds and adjustments (§36)', () => {
 
       // Still BOOKED, so availableAt is null — but the platform is holding the
       // money all the same, and that is what this figure is for.
-      expect(held.bySettlementCurrency[0].reportingUsdCents).toBe(
-        a.businessAmountCents,
+      expect(held.bySettlementCurrency[0].reportingInternalMinor).toBe(
+        a.businessAmountMinor,
       );
       expect(held.bySettlementCurrency[0].entryCount).toBe(2);
       expect(held.bySettlementCurrency[0].settlementCurrency).toBe('SSP');
@@ -655,7 +655,7 @@ describe('Refunds and adjustments (§36)', () => {
       const ssp = page.totalsBySettlementCurrency.find(
         (t) => t.settlementCurrency === 'SSP',
       );
-      expect(ssp?.reportingUsdCents).toBe(a.businessAmountCents);
+      expect(ssp?.reportingInternalMinor).toBe(a.businessAmountMinor);
     });
 
     it('lists adjustments, unsettled first, and counts what is outstanding', async () => {

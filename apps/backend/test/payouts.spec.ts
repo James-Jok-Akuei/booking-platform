@@ -74,23 +74,23 @@ describe('Payouts (§35)', () => {
   /** One ledger entry, with control over the two fields a run cares about. */
   const entry = (
     business: TestBusiness,
-    amountCents: number,
+    amountMinor: number,
     availableAt: Date | null = new Date(Date.now() - DAY),
   ) =>
     prisma.ledgerEntry.create({
       data: {
         businessId: business.businessId,
         type:
-          amountCents >= 0
+          amountMinor >= 0
             ? LedgerEntryType.DEPOSIT_RECEIVED
             : LedgerEntryType.PLATFORM_FEE,
-        amountCents,
+        amountMinor,
         currency: 'USD',
         // Payouts settle in settlement currency (§46), so a fixture entry must
         // carry one or it is correctly excluded as unpayable. Mirroring the USD
         // figure keeps every amount in this suite readable as one number.
         settlementCurrency: 'USD',
-        settlementAmountMinor: amountCents,
+        settlementAmountMinor: amountMinor,
         bookingExchangeRate: 1,
         availableAt,
       },
@@ -108,7 +108,7 @@ describe('Payouts (§35)', () => {
 
       expect(summary.payoutsCreated).toBe(1);
       const [payout] = await prisma.payout.findMany();
-      expect(payout.amountCents).toBe(3600);
+      expect(payout.amountMinor).toBe(3600);
       expect(payout.status).toBe(PayoutStatus.PENDING);
       expect(payout.businessId).toBe(alpha.businessId);
     });
@@ -133,8 +133,8 @@ describe('Payouts (§35)', () => {
       const [payout] = await prisma.payout.findMany();
       // Only the matured entry. The other is money the platform holds but does
       // not owe yet.
-      expect(payout.amountCents).toBe(4500);
-      const future = (await entriesOf(alpha)).find((e) => e.amountCents === 7000)!;
+      expect(payout.amountMinor).toBe(4500);
+      const future = (await entriesOf(alpha)).find((e) => e.amountMinor === 7000)!;
       expect(future.payoutId).toBeNull();
     });
 
@@ -163,7 +163,7 @@ describe('Payouts (§35)', () => {
 
       await payouts.run();
 
-      const all = await prisma.payout.findMany({ orderBy: { amountCents: 'desc' } });
+      const all = await prisma.payout.findMany({ orderBy: { amountMinor: 'desc' } });
       expect(all).toHaveLength(2);
       expect(all[0].businessId).toBe(alpha.businessId);
       expect(all[1].businessId).toBe(beta.businessId);
@@ -213,7 +213,7 @@ describe('Payouts (§35)', () => {
       await payouts.run();
 
       const [payout] = await prisma.payout.findMany();
-      expect(payout.amountCents).toBe(1500);
+      expect(payout.amountMinor).toBe(1500);
       // Both entries settled by that one payout, debt included.
       expect((await entriesOf(alpha)).every((e) => e.payoutId === payout.id)).toBe(true);
     });
@@ -249,8 +249,8 @@ describe('Payouts (§35)', () => {
       expect(distinct.size).toBe(1);
       const paidOut = all.filter((p) => distinct.has(p.id));
       expect(paidOut).toHaveLength(1);
-      expect(paidOut[0].amountCents).toBe(3600);
-      expect(all.reduce((sum, p) => sum + p.amountCents, 0)).toBe(3600);
+      expect(paidOut[0].amountMinor).toBe(3600);
+      expect(all.reduce((sum, p) => sum + p.amountMinor, 0)).toBe(3600);
     });
   });
 
@@ -325,7 +325,7 @@ describe('Payouts (§35)', () => {
 
       expect(failed.status).toBe(PayoutStatus.FAILED);
       expect(failed.failureReason).toBe('Wrong MoMo number.');
-      expect(failed.amountCents).toBe(3600);
+      expect(failed.amountMinor).toBe(3600);
     });
 
     it('lets the next run pick that money up again', async () => {
@@ -338,7 +338,7 @@ describe('Payouts (§35)', () => {
       const fresh = await prisma.payout.findFirstOrThrow({
         where: { status: PayoutStatus.PENDING },
       });
-      expect(fresh.amountCents).toBe(3600);
+      expect(fresh.amountMinor).toBe(3600);
       expect(fresh.id).not.toBe(payout.id);
     });
 
@@ -369,9 +369,9 @@ describe('Payouts (§35)', () => {
 
       const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
 
-      expect(balance.availableNowCents).toBe(3600);
-      expect(balance.pendingCents).toBe(7000);
-      expect(balance.unresolvedCents).toBe(2000);
+      expect(balance.availableNowMinor).toBe(3600);
+      expect(balance.pendingMinor).toBe(7000);
+      expect(balance.unresolvedMinor).toBe(2000);
     });
 
     it('counts lifetime paid from PAID payouts only', async () => {
@@ -386,7 +386,7 @@ describe('Payouts (§35)', () => {
       const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
 
       // The second payout is PENDING — it has not gone out, so it is not paid.
-      expect(balance.lifetimePaidCents).toBe(4500);
+      expect(balance.lifetimePaidMinor).toBe(4500);
       expect(balance.payoutCount).toBe(1);
     });
 
@@ -395,7 +395,7 @@ describe('Payouts (§35)', () => {
 
       const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
 
-      expect(balance.availableNowCents).toBe(-1000);
+      expect(balance.availableNowMinor).toBe(-1000);
       expect(balance.note).toMatch(/negative/);
     });
 
@@ -408,8 +408,8 @@ describe('Payouts (§35)', () => {
       const after = await payouts.balance(AS_ALPHA(), alpha.businessId);
 
       // Appending a row is the only way the figure moves, and it moves at once.
-      expect(before.availableNowCents).toBe(3600);
-      expect(after.availableNowCents).toBe(3000);
+      expect(before.availableNowMinor).toBe(3600);
+      expect(after.availableNowMinor).toBe(3000);
     });
   });
 
@@ -436,7 +436,7 @@ describe('Payouts (§35)', () => {
 
       const balance = await payouts.balance(AS_ADMIN(), alpha.businessId);
 
-      expect(balance.availableNowCents).toBe(4500);
+      expect(balance.availableNowMinor).toBe(4500);
     });
 
     it('scopes a business listing to its own payouts', async () => {
@@ -468,7 +468,7 @@ describe('Payouts (§35)', () => {
       await entry(alpha, 4500);
       await entry(beta, 2000);
       await payouts.run();
-      return prisma.payout.findMany({ orderBy: { amountCents: 'desc' } });
+      return prisma.payout.findMany({ orderBy: { amountMinor: 'desc' } });
     };
 
     it('exports the whole RUN, one row per business, not just one payout', async () => {
@@ -534,7 +534,7 @@ describe('Payouts (§35)', () => {
         data: {
           businessId: shop.businessId,
           type: LedgerEntryType.DEPOSIT_RECEIVED,
-          amountCents: 1000,
+          amountMinor: 1000,
           currency: 'USD',
           settlementCurrency: 'SSP',
           settlementAmountMinor: 650_000,
@@ -599,9 +599,11 @@ describe('Payouts (§35)', () => {
 
       const summary = await payouts.run();
 
-      // Was `totalCents`, which it never was after §46 (§51.2).
+      // Was `totalMinor`, which it never was after §46 (§51.2).
       expect(summary.totalMinor).toBe(4500);
       expect(summary.settlementCurrencies).toEqual(['USD']);
+      // The superseded name, which claimed a unit it did not hold (§51.2).
+      // Asserted absent so it cannot quietly come back.
       expect(summary).not.toHaveProperty('totalCents');
     });
 
@@ -611,7 +613,7 @@ describe('Payouts (§35)', () => {
         data: {
           businessId: beta.businessId,
           type: LedgerEntryType.DEPOSIT_RECEIVED,
-          amountCents: 1000,
+          amountMinor: 1000,
           currency: 'USD',
           settlementCurrency: 'SSP',
           settlementAmountMinor: 650_000,
@@ -637,10 +639,10 @@ describe('Payouts (§35)', () => {
 
         // Before §51.3 this money appeared NOWHERE: the entries are stamped so
         // available is zero, and lifetimePaid only counts PAID.
-        expect(balance.availableNowCents).toBe(0);
-        expect(balance.lifetimePaidCents).toBe(0);
+        expect(balance.availableNowMinor).toBe(0);
+        expect(balance.lifetimePaidMinor).toBe(0);
         expect(balance.pendingPayouts.count).toBe(1);
-        expect(balance.pendingPayouts.reportingUsdCents).toBe(4500);
+        expect(balance.pendingPayouts.reportingInternalMinor).toBe(4500);
         expect(balance.pendingPayouts.bySettlementCurrency).toEqual([
           { settlementCurrency: 'USD', amountMinor: 4500 },
         ]);
@@ -655,7 +657,7 @@ describe('Payouts (§35)', () => {
 
         const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
         expect(balance.pendingPayouts.count).toBe(0);
-        expect(balance.lifetimePaidCents).toBe(4500);
+        expect(balance.lifetimePaidMinor).toBe(4500);
       });
 
       it('returns to available when a payout fails', async () => {
@@ -668,7 +670,7 @@ describe('Payouts (§35)', () => {
         const balance = await payouts.balance(AS_ALPHA(), alpha.businessId);
         // Not pending, not paid — back in the pool where it can be seen.
         expect(balance.pendingPayouts.count).toBe(0);
-        expect(balance.availableNowCents).toBe(4500);
+        expect(balance.availableNowMinor).toBe(4500);
       });
 
       it('reports zero rather than an empty shape when nothing is in flight', async () => {
@@ -676,7 +678,7 @@ describe('Payouts (§35)', () => {
 
         expect(balance.pendingPayouts).toEqual({
           count: 0,
-          reportingUsdCents: 0,
+          reportingInternalMinor: 0,
           bySettlementCurrency: [],
         });
       });

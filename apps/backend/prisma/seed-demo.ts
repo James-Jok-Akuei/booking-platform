@@ -424,7 +424,7 @@ async function main() {
   });
   await setHours(munuki, munuki.locationIds[0], '06:00', '21:00');
 
-  // 8 — approved with an empty catalogue: browsable, fromPriceCents null.
+  // 8 — approved with an empty catalogue: browsable, fromPriceMinor null.
   const atlabara = await makeBusiness({
     label: 'Atlabara Studio',
     handle: 'atlabara',
@@ -434,7 +434,7 @@ async function main() {
     address: 'Atlabara C',
     locationName: 'Atlabara Studio',
     categoryIndex: 7,
-    note: 'APPROVED with NO services — browsable, fromPriceCents is null, sorts last by price.',
+    note: 'APPROVED with NO services — browsable, fromPriceMinor is null, sorts last by price.',
   });
   await setHours(atlabara, atlabara.locationIds[0], '09:00', '17:00');
 
@@ -458,13 +458,13 @@ async function main() {
   async function addService(
     business: SeededBusiness,
     name: string,
-    priceCents: number,
+    priceMinor: number,
     durationMinutes: number,
     depositPercentage: number,
   ) {
     const service = await services.create(business.userId, {
       name,
-      priceCents,
+      priceMinor,
       durationMinutes,
       depositPercentage,
     });
@@ -585,7 +585,7 @@ async function main() {
         paymentProviderReferenceId: reference,
         paymentInitiatedAt: new Date(),
         providerCurrency: 'SSP',
-        providerCurrencyAmountCents: row.depositAmountCents * DEMO_RATE,
+        providerAmountMinor: row.depositAmountMinor * DEMO_RATE,
         exchangeRateUsed: DEMO_RATE,
       },
     });
@@ -834,11 +834,11 @@ async function main() {
     seeded.map(async (business) => {
       const sum = await prisma.ledgerEntry.aggregate({
         where: { businessId: business.businessId, payoutId: null },
-        _sum: { amountCents: true, settlementAmountMinor: true },
+        _sum: { amountMinor: true, settlementAmountMinor: true },
       });
       return {
         label: business.label,
-        usd: sum._sum.amountCents ?? 0,
+        usd: sum._sum.amountMinor ?? 0,
         ssp: sum._sum.settlementAmountMinor ?? 0,
       };
     }),

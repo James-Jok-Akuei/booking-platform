@@ -70,8 +70,8 @@ export function approxSettlementFor(
 /**
  * Builds the per-amount map for one response object.
  *
- * Keyed by the USD field it converts, so a client reading `depositAmountCents`
- * finds its counterpart at `approxSettlement.depositAmountCents` and never has
+ * Keyed by the USD field it converts, so a client reading `depositAmountMinor`
+ * finds its counterpart at `approxSettlement.depositAmountMinor` and never has
  * to convert anything itself. Amounts that are null are skipped rather than
  * converted to zero — a missing price and a free one are different claims.
  */

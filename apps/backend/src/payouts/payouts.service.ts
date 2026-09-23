@@ -29,11 +29,11 @@ export interface RunSummary {
   businessesConsidered: number;
   payoutsCreated: number;
   /**
-   * Minor units of the settlement currency, NOT USD cents (§51.2).
+   * Minor units of the SETTLEMENT currency, not of the internal one (§51.2).
    *
-   * It was called `totalCents` until the settlement change (§46) made it a sum
+   * It was called `totalMinor` until the settlement change (§46) made it a sum
    * of `settlementAmountMinor`. A name ending in "Cents" reads as USD
-   * everywhere else in this codebase — the same reason `gatewayChargeCents` was
+   * everywhere else in this codebase — the same reason `gatewayChargeMinor` was
    * renamed in 7cdc411.
    */
   totalMinor: number;
@@ -104,7 +104,7 @@ export class PayoutsService {
         settlementCurrency: { not: null },
         settlementAmountMinor: { not: null },
       },
-      _sum: { settlementAmountMinor: true, amountCents: true },
+      _sum: { settlementAmountMinor: true, amountMinor: true },
     });
 
     const entriesWithoutSettlement = await this.prisma.ledgerEntry.count({
@@ -243,7 +243,7 @@ export class PayoutsService {
           },
           select: {
             id: true,
-            amountCents: true,
+            amountMinor: true,
             currency: true,
             settlementCurrency: true,
             settlementAmountMinor: true,
@@ -259,7 +259,7 @@ export class PayoutsService {
 
         // The USD figure is carried alongside for reporting; it is never what
         // is sent, and it is never used to decide anything here (§46.1).
-        const amountCents = entries.reduce((sum, e) => sum + e.amountCents, 0);
+        const amountMinor = entries.reduce((sum, e) => sum + e.amountMinor, 0);
 
         // Belt and braces: the query is already scoped to one settlement
         // currency, so this can only fire if that scoping is ever broken. A
@@ -275,7 +275,7 @@ export class PayoutsService {
         const payout = await tx.payout.create({
           data: {
             businessId,
-            amountCents,
+            amountMinor,
             currency: INTERNAL_CURRENCY,
             settlementCurrency,
             settlementAmountMinor,
@@ -366,7 +366,7 @@ export class PayoutsService {
     });
 
     this.logger.log(
-      `Payout ${payoutId} (${payout.amountCents}c to business ${payout.businessId}) ` +
+      `Payout ${payoutId} (${payout.amountMinor}c to business ${payout.businessId}) ` +
         `marked PAID by admin ${actor.userId}, reference ${dto.reference}.`,
     );
 
@@ -411,7 +411,7 @@ export class PayoutsService {
 
     this.logger.warn(
       `Payout ${payoutId} marked FAILED by admin ${actor.userId}: ${dto.reason}. ` +
-        `${payout.amountCents}c returned to the pool.`,
+        `${payout.amountMinor}c returned to the pool.`,
     );
 
     return updated;
@@ -451,7 +451,7 @@ export class PayoutsService {
       orderBy: [{ settlementCurrency: 'asc' }, { settlementAmountMinor: 'desc' }],
       select: {
         id: true,
-        amountCents: true,
+        amountMinor: true,
         currency: true,
         settlementCurrency: true,
         settlementAmountMinor: true,
@@ -470,7 +470,7 @@ export class PayoutsService {
       'contactPhoneNotAPayoutDestination',
       'settlementCurrency',
       'settlementAmountMinor',
-      'usdAmountCents',
+      'internalAmountMinor',
       'status',
       'payoutReference',
       'payoutId',
@@ -495,7 +495,7 @@ export class PayoutsService {
         row.businessProfile.phone,
         row.settlementCurrency,
         row.settlementAmountMinor,
-        row.amountCents,
+        row.amountMinor,
         row.status,
         row.reference,
         row.id,
@@ -572,22 +572,22 @@ export class PayoutsService {
     const [available, pending, paid, unresolved, inFlight, settlement] = await Promise.all([
       this.prisma.ledgerEntry.aggregate({
         where: { businessId, payoutId: null, availableAt: { not: null, lte: now } },
-        _sum: { amountCents: true },
+        _sum: { amountMinor: true },
         _count: { _all: true },
       }),
       this.prisma.ledgerEntry.aggregate({
         where: { businessId, payoutId: null, availableAt: { gt: now } },
-        _sum: { amountCents: true },
+        _sum: { amountMinor: true },
         _count: { _all: true },
       }),
       this.prisma.payout.aggregate({
         where: { businessId, status: PayoutStatus.PAID },
-        _sum: { amountCents: true },
+        _sum: { amountMinor: true },
         _count: { _all: true },
       }),
       this.prisma.ledgerEntry.aggregate({
         where: { businessId, payoutId: null, availableAt: null },
-        _sum: { amountCents: true },
+        _sum: { amountMinor: true },
         _count: { _all: true },
       }),
       // Money in flight: a payout exists and is not yet marked paid (§51.3).
@@ -597,7 +597,7 @@ export class PayoutsService {
       this.prisma.payout.groupBy({
         by: ['settlementCurrency'],
         where: { businessId, status: PayoutStatus.PENDING },
-        _sum: { settlementAmountMinor: true, amountCents: true },
+        _sum: { settlementAmountMinor: true, amountMinor: true },
         _count: { _all: true },
       }),
       // What will actually be sent, by currency. The USD figures above are
@@ -614,7 +614,7 @@ export class PayoutsService {
       }),
     ]);
 
-    const availableCents = available._sum.amountCents ?? 0;
+    const availableMinor = available._sum.amountMinor ?? 0;
     const business = await this.prisma.businessProfile.findUnique({
       where: { id: businessId },
       select: { status: true, statusReason: true },
@@ -629,16 +629,16 @@ export class PayoutsService {
         amountMinor: row._sum.settlementAmountMinor ?? 0,
       })),
       currency: INTERNAL_CURRENCY,
-      availableNowCents: availableCents,
-      pendingCents: pending._sum.amountCents ?? 0,
+      availableNowMinor: availableMinor,
+      pendingMinor: pending._sum.amountMinor ?? 0,
       /** Deposits on appointments that have not happened yet, or not resolved. */
-      unresolvedCents: unresolved._sum.amountCents ?? 0,
-      lifetimePaidCents: paid._sum.amountCents ?? 0,
+      unresolvedMinor: unresolved._sum.amountMinor ?? 0,
+      lifetimePaidMinor: paid._sum.amountMinor ?? 0,
       payoutCount: paid._count._all,
       /** Payouts created and not yet sent. Money on its way, not lost. */
       pendingPayouts: {
         count: inFlight.reduce((sum, row) => sum + row._count._all, 0),
-        reportingUsdCents: inFlight.reduce((sum, row) => sum + (row._sum.amountCents ?? 0), 0),
+        reportingInternalMinor: inFlight.reduce((sum, row) => sum + (row._sum.amountMinor ?? 0), 0),
         bySettlementCurrency: inFlight.map((row) => ({
           settlementCurrency: row.settlementCurrency,
           amountMinor: row._sum.settlementAmountMinor ?? 0,
@@ -653,7 +653,7 @@ export class PayoutsService {
         ? 'Payouts are paused while this business is suspended. Nothing has been ' +
           'written off — the balance is held and goes out on the first run after ' +
           `reinstatement.${business?.statusReason ? ` Reason: ${business.statusReason}` : ''}`
-        : availableCents < 0
+        : availableMinor < 0
           ? 'This balance is negative, which happens after a cancellation the ' +
             'business was responsible for. No payout is made while it is; it ' +
             'nets against future earnings instead.'

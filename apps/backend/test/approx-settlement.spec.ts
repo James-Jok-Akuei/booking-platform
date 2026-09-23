@@ -51,7 +51,7 @@ describe('Approximate local-currency figures (§39)', () => {
     appointments = moduleRef.get(AppointmentsService);
     settings = moduleRef.get(PlatformSettingsService);
     await resetDatabase(prisma);
-    business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
+    business = await createBusiness(prisma, { priceMinor: 4500, depositPercentage: 20 });
     customer = await createCustomer(prisma);
     admin = { userId: 'unused', email: 'unused' };
   });
@@ -91,10 +91,10 @@ describe('Approximate local-currency figures (§39)', () => {
       const found: any = await appointments.findOne(AS_CUSTOMER(), a.id);
 
       expect(Object.keys(found.approxSettlement).sort()).toEqual([
-        'businessAmountCents',
-        'depositAmountCents',
-        'platformFeeAmountCents',
-        'servicePriceCents',
+        'businessAmountMinor',
+        'depositAmountMinor',
+        'platformFeeAmountMinor',
+        'servicePriceMinor',
       ]);
     });
 
@@ -105,10 +105,10 @@ describe('Approximate local-currency figures (§39)', () => {
 
       const found: any = await appointments.findOne(AS_CUSTOMER(), a.id);
 
-      expect(found.servicePriceCents).toBeNull();
+      expect(found.servicePriceMinor).toBeNull();
       // A missing price and a free one are different claims.
-      expect(found.approxSettlement).not.toHaveProperty('servicePriceCents');
-      expect(found.approxSettlement).toHaveProperty('depositAmountCents');
+      expect(found.approxSettlement).not.toHaveProperty('servicePriceMinor');
+      expect(found.approxSettlement).toHaveProperty('depositAmountMinor');
     });
 
     it('converts the deposit — the number that decides whether someone books', async () => {
@@ -116,10 +116,10 @@ describe('Approximate local-currency figures (§39)', () => {
       const a = await booked();
 
       const found: any = await appointments.findOne(AS_CUSTOMER(), a.id);
-      const deposit = found.approxSettlement.depositAmountCents;
+      const deposit = found.approxSettlement.depositAmountMinor;
 
       // 900 USD cents = $9.00, at 650 => 5850 SSP.
-      expect(found.depositAmountCents).toBe(900);
+      expect(found.depositAmountMinor).toBe(900);
       expect(deposit.currency).toBe('SSP');
       expect(deposit.amountMinor).toBe(585_000);
       expect(deposit.exchangeRate).toBe('650.00000000');
@@ -134,8 +134,8 @@ describe('Approximate local-currency figures (§39)', () => {
       const found: any = await appointments.findOne(AS_CUSTOMER(), a.id);
 
       // $9.00 x 650.5 = 5854.5 SSP, shown as 5855 whole pounds.
-      expect(found.approxSettlement.depositAmountCents.amountMinor % 100).toBe(0);
-      expect(found.approxSettlement.depositAmountCents.amountMinor).toBe(585_500);
+      expect(found.approxSettlement.depositAmountMinor.amountMinor % 100).toBe(0);
+      expect(found.approxSettlement.depositAmountMinor.amountMinor).toBe(585_500);
     });
 
     it('leaves the USD amounts exactly as they were', async () => {
@@ -145,9 +145,9 @@ describe('Approximate local-currency figures (§39)', () => {
       const found: any = await appointments.findOne(AS_CUSTOMER(), a.id);
 
       // USD stays authoritative. The pound figure is decoration on top.
-      expect(found.depositAmountCents).toBe(a.depositAmountCents);
-      expect(found.platformFeeAmountCents).toBe(a.platformFeeAmountCents);
-      expect(found.businessAmountCents).toBe(a.businessAmountCents);
+      expect(found.depositAmountMinor).toBe(a.depositAmountMinor);
+      expect(found.platformFeeAmountMinor).toBe(a.platformFeeAmountMinor);
+      expect(found.businessAmountMinor).toBe(a.businessAmountMinor);
       expect(found.currency).toBe('USD');
     });
 
@@ -160,7 +160,7 @@ describe('Approximate local-currency figures (§39)', () => {
         startTime: futureSlot(6, 8).toISOString(),
       });
 
-      expect(created.approxSettlement.depositAmountCents.currency).toBe('SSP');
+      expect(created.approxSettlement.depositAmountMinor.currency).toBe('SSP');
     });
   });
 
@@ -197,7 +197,7 @@ describe('Approximate local-currency figures (§39)', () => {
 
       const rates = new Set(
         list.appointments.map(
-          (a: any) => a.approxSettlement.depositAmountCents.exchangeRate,
+          (a: any) => a.approxSettlement.depositAmountMinor.exchangeRate,
         ),
       );
       expect(rates.size).toBe(1);
@@ -222,7 +222,7 @@ describe('Approximate local-currency figures (§39)', () => {
 
       // Not zero, not null, not a placeholder — absent.
       expect(found).not.toHaveProperty('approxSettlement');
-      expect(found.depositAmountCents).toBe(a.depositAmountCents);
+      expect(found.depositAmountMinor).toBe(a.depositAmountMinor);
     });
 
     it('omits it from every item in a listing', async () => {
@@ -255,9 +255,9 @@ describe('Approximate local-currency figures (§39)', () => {
       // Surfaced to admins (§37), invisible to customers. Degrading the
       // customer experience over it would punish the wrong person.
       expect((await settings.getExchangeRateStaleness()).stale).toBe(true);
-      expect(found.approxSettlement.depositAmountCents.amountMinor).toBe(585_000);
+      expect(found.approxSettlement.depositAmountMinor.amountMinor).toBe(585_000);
       // The rate's age is still disclosed, so a client could label it.
-      expect(found.approxSettlement.depositAmountCents.rateAsOf).not.toBeNull();
+      expect(found.approxSettlement.depositAmountMinor.rateAsOf).not.toBeNull();
     });
   });
 
@@ -272,8 +272,8 @@ describe('Approximate local-currency figures (§39)', () => {
       const second: any = await appointments.findOne(AS_CUSTOMER(), a.id);
       const after = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
 
-      expect(first.approxSettlement.depositAmountCents.amountMinor).toBe(585_000);
-      expect(second.approxSettlement.depositAmountCents.amountMinor).toBe(1_170_000);
+      expect(first.approxSettlement.depositAmountMinor.amountMinor).toBe(585_000);
+      expect(second.approxSettlement.depositAmountMinor.amountMinor).toBe(1_170_000);
       // The row is byte-identical: nothing about this figure is persisted.
       expect(JSON.stringify(after)).toBe(JSON.stringify(before));
     });
@@ -305,7 +305,7 @@ describe('Approximate local-currency figures (§39)', () => {
       // figure here would invite reconciling a payout against a number that
       // means nothing.
       expect(found).not.toHaveProperty('approxSettlement');
-      expect(found.depositAmountCents).toBe(a.depositAmountCents);
+      expect(found.depositAmountMinor).toBe(a.depositAmountMinor);
     });
 
     it('a business listing is USD only', async () => {
@@ -349,7 +349,7 @@ describe('Approximate local-currency figures (§39)', () => {
 
       // Same route, same method — the figure follows who is reading.
       expect(byBusiness).not.toHaveProperty('approxSettlement');
-      expect(byCustomer.approxSettlement.depositAmountCents.currency).toBe('SSP');
+      expect(byCustomer.approxSettlement.depositAmountMinor.currency).toBe('SSP');
     });
   });
 
@@ -375,10 +375,10 @@ describe('Approximate local-currency figures (§39)', () => {
 
       // 900 USD cents x 650 = 585000 minor units, unrounded to whole pounds —
       // the charge keeps full precision. Only the DISPLAY figure rounds.
-      expect(result.providerCurrencyAmountCents).toBe(585_000);
+      expect(result.providerAmountMinor).toBe(585_000);
       expect(result.exchangeRateUsed).toBe('650.00000000');
       const row = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
-      expect(row.providerCurrencyAmountCents).toBe(585_000);
+      expect(row.providerAmountMinor).toBe(585_000);
       expect(Number(row.exchangeRateUsed)).toBe(650);
     });
   });

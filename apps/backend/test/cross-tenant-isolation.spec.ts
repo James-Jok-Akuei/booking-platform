@@ -117,7 +117,7 @@ describe('Cross-tenant isolation', () => {
 
   describe('Service', () => {
     it("business B gets 404 updating business A's service", async () => {
-      await expect404(services.update(beta.userId, alpha.serviceId, { priceCents: 1 }));
+      await expect404(services.update(beta.userId, alpha.serviceId, { priceMinor: 1 }));
     });
 
     it("business B gets 404 deactivating business A's service", async () => {
@@ -129,7 +129,7 @@ describe('Cross-tenant isolation', () => {
         where: { id: alpha.serviceId },
       });
 
-      expect(service.priceCents).toBe(4500);
+      expect(service.priceMinor).toBe(4500);
       expect(service.isActive).toBe(true);
     });
 

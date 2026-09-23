@@ -46,7 +46,7 @@ describe('Business analytics (§29)', () => {
     deposit?: number;
     fee?: number;
     /** Omit to simulate an appointment booked before snapshotting existed. */
-    priceCents?: number | null;
+    priceMinor?: number | null;
     /** Set to mark the deposit as confirmed before whatever happened next. */
     depositPaid?: boolean;
     /** Omit on a CANCELLED row to simulate one from before §33. */
@@ -55,7 +55,7 @@ describe('Business analytics (§29)', () => {
     const start = new Date(now + params.startsInDays * DAY);
     const deposit = params.deposit ?? 900;
     const fee = params.fee ?? 450;
-    const price = params.priceCents === undefined ? 4500 : params.priceCents;
+    const price = params.priceMinor === undefined ? 4500 : params.priceMinor;
     return prisma.appointment.create({
       data: {
         locationId: params.locationId,
@@ -64,11 +64,11 @@ describe('Business analytics (§29)', () => {
         startTime: start,
         endTime: new Date(start.getTime() + 3_600_000),
         status: params.status,
-        depositAmountCents: deposit,
-        platformFeeAmountCents: fee,
-        businessAmountCents: deposit - fee,
+        depositAmountMinor: deposit,
+        platformFeeAmountMinor: fee,
+        businessAmountMinor: deposit - fee,
         currency: 'USD',
-        servicePriceCents: price,
+        servicePriceMinor: price,
         depositPercentage: price === null ? null : 20,
         platformFeePercentage: price === null ? null : 10,
         depositPaidAt: params.depositPaid ? new Date(now - DAY) : null,
@@ -152,9 +152,9 @@ describe('Business analytics (§29)', () => {
 
       // 4 COMPLETED + 1 NO_SHOW = 5 x 900. PENDING_PAYMENT never paid;
       // CANCELLED is excluded as unknowable.
-      expect(r.money.collectedThroughPlatform.depositsCents).toBe(4500);
+      expect(r.money.collectedThroughPlatform.depositsMinor).toBe(4500);
       expect(r.money.collectedThroughPlatform.appointmentCount).toBe(5);
-      expect(r.money.collectedThroughPlatform.businessShareOfDepositsCents).toBe(2250);
+      expect(r.money.collectedThroughPlatform.businessShareOfDepositsMinor).toBe(2250);
     });
 
     it('platform fees equal the sum of the snapshots in range', async () => {
@@ -169,11 +169,11 @@ describe('Business analytics (§29)', () => {
           status: { in: ['BOOKED', 'IN_PROGRESS', 'COMPLETED', 'NO_SHOW'] },
           startTime: { gte: from, lt: to },
         },
-        _sum: { platformFeeAmountCents: true },
+        _sum: { platformFeeAmountMinor: true },
       });
 
-      expect(r.money.platformFeesPaidCents).toBe(expected._sum.platformFeeAmountCents);
-      expect(r.money.platformFeesPaidCents).toBe(2250);
+      expect(r.money.platformFeesPaidMinor).toBe(expected._sum.platformFeeAmountMinor);
+      expect(r.money.platformFeesPaidMinor).toBe(2250);
     });
 
     it('computes the balance owed from the price snapshot', async () => {
@@ -183,7 +183,7 @@ describe('Business analytics (§29)', () => {
       });
 
       // 4 COMPLETED, each 4500 price - 900 deposit = 3600 still owed.
-      expect(r.money.balanceOwedToBusiness.amountCents).toBe(14400);
+      expect(r.money.balanceOwedToBusiness.amountMinor).toBe(14400);
       expect(r.money.balanceOwedToBusiness.fromAppointments).toBe(4);
       expect(r.money.balanceOwedToBusiness.complete).toBe(true);
       expect(r.money).not.toHaveProperty('revenue');
@@ -196,8 +196,8 @@ describe('Business analytics (§29)', () => {
       });
 
       // The two must stay separate: the platform saw 4500, not 18900.
-      expect(r.money.collectedThroughPlatform.depositsCents).toBe(4500);
-      expect(r.money.balanceOwedToBusiness.amountCents).toBe(14400);
+      expect(r.money.collectedThroughPlatform.depositsMinor).toBe(4500);
+      expect(r.money.balanceOwedToBusiness.amountMinor).toBe(14400);
     });
   });
 
@@ -211,7 +211,7 @@ describe('Business analytics (§29)', () => {
         locationId: alpha.locationId,
         status: AppointmentStatus.COMPLETED,
         startsInDays: -3,
-        priceCents: null,
+        priceMinor: null,
       });
     });
 
@@ -220,7 +220,7 @@ describe('Business analytics (§29)', () => {
         locationId: alpha.locationId, ...RANGE,
       });
 
-      expect(r.money.balanceOwedToBusiness.amountCents).toBe(7200);
+      expect(r.money.balanceOwedToBusiness.amountMinor).toBe(7200);
       expect(r.money.balanceOwedToBusiness.fromAppointments).toBe(2);
     });
 
@@ -250,7 +250,7 @@ describe('Business analytics (§29)', () => {
       });
 
       // Unchanged: a booked appointment owes nothing yet.
-      expect(r.money.balanceOwedToBusiness.amountCents).toBe(7200);
+      expect(r.money.balanceOwedToBusiness.amountMinor).toBe(7200);
     });
   });
 
@@ -303,12 +303,12 @@ describe('Business analytics (§29)', () => {
       });
       const all = await analytics.getAnalytics(AS_ALPHA(), alpha.businessId, RANGE);
 
-      expect(all.money.collectedThroughPlatform.depositsCents).toBe(
-        one.money.collectedThroughPlatform.depositsCents +
-          two.money.collectedThroughPlatform.depositsCents,
+      expect(all.money.collectedThroughPlatform.depositsMinor).toBe(
+        one.money.collectedThroughPlatform.depositsMinor +
+          two.money.collectedThroughPlatform.depositsMinor,
       );
-      expect(all.money.platformFeesPaidCents).toBe(
-        one.money.platformFeesPaidCents + two.money.platformFeesPaidCents,
+      expect(all.money.platformFeesPaidMinor).toBe(
+        one.money.platformFeesPaidMinor + two.money.platformFeesPaidMinor,
       );
     });
 
@@ -318,7 +318,7 @@ describe('Business analytics (§29)', () => {
       });
 
       expect(one.appointments.total).toBe(2);
-      expect(one.money.collectedThroughPlatform.depositsCents).toBe(900);
+      expect(one.money.collectedThroughPlatform.depositsMinor).toBe(900);
     });
   });
 
@@ -354,7 +354,7 @@ describe('Business analytics (§29)', () => {
       });
 
       expect(r.appointments.total).toBe(0);
-      expect(r.money.collectedThroughPlatform.depositsCents).toBe(0);
+      expect(r.money.collectedThroughPlatform.depositsMinor).toBe(0);
     });
 
     it('rejects a range longer than the cap', async () => {
@@ -405,8 +405,8 @@ describe('Business analytics (§29)', () => {
       expect(r.appointments.completionRate).toBeNull();
       expect(r.appointments.cancellationRate).toBeNull();
       expect(r.appointments.noShowRate).toBeNull();
-      expect(r.money.collectedThroughPlatform.depositsCents).toBe(0);
-      expect(r.money.platformFeesPaidCents).toBe(0);
+      expect(r.money.collectedThroughPlatform.depositsMinor).toBe(0);
+      expect(r.money.platformFeesPaidMinor).toBe(0);
       expect(r.reviews).toEqual({ count: 0, averageRating: null });
       expect(r.busiest.dayOfWeek).toBeNull();
       expect(r.busiest.hour).toBeNull();
@@ -512,9 +512,9 @@ describe('Business analytics (§29)', () => {
 
       // The money arrived and, per §2, was not given back. Excluding it
       // understated what the platform actually took.
-      expect(m.collectedThroughPlatform.depositsCents).toBe(900);
+      expect(m.collectedThroughPlatform.depositsMinor).toBe(900);
       expect(m.collectedThroughPlatform.appointmentCount).toBe(1);
-      expect(m.platformFeesPaidCents).toBe(450);
+      expect(m.platformFeesPaidMinor).toBe(450);
     });
 
     it('excludes an expired unpaid hold', async () => {
@@ -527,7 +527,7 @@ describe('Business analytics (§29)', () => {
 
       const m = await money();
 
-      expect(m.collectedThroughPlatform.depositsCents).toBe(0);
+      expect(m.collectedThroughPlatform.depositsMinor).toBe(0);
       expect(m.collectedThroughPlatform.appointmentCount).toBe(0);
     });
 
@@ -556,7 +556,7 @@ describe('Business analytics (§29)', () => {
 
       // The completed one plus the paid-then-cancelled one. The lapsed hold
       // is not money and never was.
-      expect(m.collectedThroughPlatform.depositsCents).toBe(1800);
+      expect(m.collectedThroughPlatform.depositsMinor).toBe(1800);
       expect(m.collectedThroughPlatform.appointmentCount).toBe(2);
     });
 
@@ -595,7 +595,7 @@ describe('Business analytics (§29)', () => {
       expect(m.collectedThroughPlatform.complete).toBe(false);
       // The number says so itself rather than leaving the reader to find out.
       expect(m.collectedThroughPlatform.note).toContain('2 cancelled appointment(s)');
-      expect(m.collectedThroughPlatform.depositsCents).toBe(0);
+      expect(m.collectedThroughPlatform.depositsMinor).toBe(0);
     });
 
     it('never guesses: an unattributed cancellation is excluded, not assumed paid', async () => {
@@ -607,7 +607,7 @@ describe('Business analytics (§29)', () => {
 
       const m = await money();
 
-      expect(m.collectedThroughPlatform.depositsCents).toBe(0);
+      expect(m.collectedThroughPlatform.depositsMinor).toBe(0);
       expect(m.collectedThroughPlatform.appointmentCount).toBe(0);
     });
   });

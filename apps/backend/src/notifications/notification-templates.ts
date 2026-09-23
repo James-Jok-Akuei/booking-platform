@@ -6,7 +6,7 @@ export interface AppointmentContext {
   locationName: string;
   businessName: string;
   startTime: Date;
-  depositAmountCents?: number;
+  depositAmountMinor?: number;
   currency?: string;
   reason?: string;
 }
@@ -60,7 +60,7 @@ export function renderNotification(
         body:
           `The deposit for this appointment has been paid and the booking is confirmed.\n\n` +
           `Service: ${ctx.serviceName}\nWhere: ${ctx.locationName}\nWhen: ${when}\n` +
-          `Deposit: ${money(ctx.depositAmountCents, ctx.currency)}\n\n` +
+          `Deposit: ${money(ctx.depositAmountMinor, ctx.currency)}\n\n` +
           'The customer will give their arrival code on the day. The appointment ' +
           'cannot be completed without it.',
       };

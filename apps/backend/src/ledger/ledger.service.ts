@@ -59,7 +59,7 @@ export class LedgerService {
    * to the customer AND hands the fee back, and those are separate events with
    * separate types (§25). A single netted row could not express that.
    *
-   * They sum to `businessAmountCents` by construction, since that is defined as
+   * They sum to `businessAmountMinor` by construction, since that is defined as
    * the deposit minus the fee (§16.3). Asserted by test.
    */
   async recordDepositReceived(
@@ -69,11 +69,11 @@ export class LedgerService {
     const appointment = await tx.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
       select: {
-        depositAmountCents: true,
-        platformFeeAmountCents: true,
+        depositAmountMinor: true,
+        platformFeeAmountMinor: true,
         currency: true,
         providerCurrency: true,
-        providerCurrencyAmountCents: true,
+        providerAmountMinor: true,
         exchangeRateUsed: true,
         location: { select: { businessId: true } },
       },
@@ -85,14 +85,14 @@ export class LedgerService {
     // (§45.2). Null when the appointment never went through the payment
     // initiation that records it; such entries carry no settlement figure and
     // payouts exclude them rather than convert at a guessed rate.
-    const charged = appointment.providerCurrencyAmountCents;
+    const charged = appointment.providerAmountMinor;
     const settlement =
       charged === null
         ? null
         : splitSettlement({
             chargedMinor: charged,
-            depositAmountCents: appointment.depositAmountCents,
-            platformFeeAmountCents: appointment.platformFeeAmountCents,
+            depositAmountMinor: appointment.depositAmountMinor,
+            platformFeeAmountMinor: appointment.platformFeeAmountMinor,
           });
 
     const settlementFields = {
@@ -106,7 +106,7 @@ export class LedgerService {
           businessId,
           appointmentId,
           type: LedgerEntryType.DEPOSIT_RECEIVED,
-          amountCents: appointment.depositAmountCents,
+          amountMinor: appointment.depositAmountMinor,
           currency: appointment.currency,
           ...settlementFields,
           settlementAmountMinor: settlement?.depositMinor ?? null,
@@ -118,10 +118,10 @@ export class LedgerService {
           businessId,
           appointmentId,
           type: LedgerEntryType.PLATFORM_FEE,
-          amountCents: -appointment.platformFeeAmountCents,
+          amountMinor: -appointment.platformFeeAmountMinor,
           currency: appointment.currency,
           ...settlementFields,
-          // Negative, matching amountCents. The business's settlement share is
+          // Negative, matching amountMinor. The business's settlement share is
           // the remainder by construction, so the pair sums exactly.
           settlementAmountMinor:
             settlement === null ? null : -settlement.feeMinor,
@@ -131,8 +131,8 @@ export class LedgerService {
     });
 
     this.logger.log(
-      `Ledger: appointment ${appointmentId} deposit ${appointment.depositAmountCents}c ` +
-        `less fee ${appointment.platformFeeAmountCents}c recorded for business ${businessId}.`,
+      `Ledger: appointment ${appointmentId} deposit ${appointment.depositAmountMinor}c ` +
+        `less fee ${appointment.platformFeeAmountMinor}c recorded for business ${businessId}.`,
     );
   }
 
@@ -209,7 +209,7 @@ export class LedgerService {
    *   PLATFORM_FEE_REVERSAL +fee
    *   GATEWAY_FEE_DEBIT     -whatever the gateway charged
    *
-   * The first two net to exactly `-businessAmountCents`, cancelling the pair
+   * The first two net to exactly `-businessAmountMinor`, cancelling the pair
    * appended when the deposit landed and returning the business to zero for
    * this appointment. That is what "the customer is refunded in full, including
    * the platform fee" means in ledger terms: the platform gives back its own
@@ -233,9 +233,9 @@ export class LedgerService {
     const appointment = await tx.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
       select: {
-        depositAmountCents: true,
-        platformFeeAmountCents: true,
-        businessAmountCents: true,
+        depositAmountMinor: true,
+        platformFeeAmountMinor: true,
+        businessAmountMinor: true,
         currency: true,
         depositPaidAt: true,
         location: { select: { businessId: true } },
@@ -275,7 +275,7 @@ export class LedgerService {
       },
       select: {
         type: true,
-        amountCents: true,
+        amountMinor: true,
         settlementCurrency: true,
         settlementAmountMinor: true,
         bookingExchangeRate: true,
@@ -290,7 +290,7 @@ export class LedgerService {
     // what the provider actually charged (§45.4). Its USD figure is a reporting
     // equivalent at the booking rate, not the authority.
     const rate = deposit?.bookingExchangeRate ?? null;
-    const gatewayUsdCents = rate
+    const gatewayChargeInternalMinor = rate
       ? new Prisma.Decimal(gatewayChargeMinor)
           .div(rate)
           .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
@@ -303,7 +303,7 @@ export class LedgerService {
           businessId,
           appointmentId,
           type: LedgerEntryType.DEPOSIT_REFUND,
-          amountCents: -appointment.depositAmountCents,
+          amountMinor: -appointment.depositAmountMinor,
           currency: appointment.currency,
           settlementCurrency: deposit?.settlementCurrency ?? null,
           settlementAmountMinor:
@@ -318,7 +318,7 @@ export class LedgerService {
           businessId,
           appointmentId,
           type: LedgerEntryType.PLATFORM_FEE_REVERSAL,
-          amountCents: appointment.platformFeeAmountCents,
+          amountMinor: appointment.platformFeeAmountMinor,
           currency: appointment.currency,
           settlementCurrency: fee?.settlementCurrency ?? null,
           settlementAmountMinor:
@@ -333,7 +333,7 @@ export class LedgerService {
           businessId,
           appointmentId,
           type: LedgerEntryType.GATEWAY_FEE_DEBIT,
-          amountCents: -gatewayUsdCents,
+          amountMinor: -gatewayChargeInternalMinor,
           currency: appointment.currency,
           settlementCurrency: deposit?.settlementCurrency ?? null,
           settlementAmountMinor: deposit?.settlementCurrency
@@ -355,7 +355,7 @@ export class LedgerService {
 
     this.logger.warn(
       `Ledger: appointment ${appointmentId} refunded in full ` +
-        `(-${appointment.depositAmountCents}c deposit, +${appointment.platformFeeAmountCents}c fee back), ` +
+        `(-${appointment.depositAmountMinor}c deposit, +${appointment.platformFeeAmountMinor}c fee back), ` +
         `gateway charge ${gatewayChargeMinor} ${deposit?.settlementCurrency ?? 'minor units'} ` +
         `borne by business ${businessId}.`,
     );
@@ -401,13 +401,13 @@ export class LedgerService {
     // `amount` is a Decimal in MAJOR units (§24); the ledger is integer minor
     // units. Through `toMinorUnits` rather than a hardcoded x100, so the
     // conversion follows the internal currency's own exponent (§55.2).
-    const cents = toMinorUnits(adjustment.amount, INTERNAL_CURRENCY);
+    const minor = toMinorUnits(adjustment.amount, INTERNAL_CURRENCY);
 
     // Signed by the adjustment's own type, from the business's perspective:
     // a fee refund puts money back that was taken from them, a gateway debit
     // takes money they owe.
-    const amountCents =
-      adjustment.type === BillingAdjustmentType.FEE_REFUND ? cents : -cents;
+    const amountMinor =
+      adjustment.type === BillingAdjustmentType.FEE_REFUND ? minor : -minor;
 
     // An adjustment is a decision made TODAY, so it settles in today's provider
     // currency at today's rate — unlike a deposit, whose settlement is fixed at
@@ -415,7 +415,7 @@ export class LedgerService {
     // (§45.5); the USD amount above is the reporting equivalent.
     const display = await this.settings.getExchangeRateForDisplay();
     const settlementAmountMinor = display
-      ? new Prisma.Decimal(amountCents)
+      ? new Prisma.Decimal(amountMinor)
           .mul(display.rate)
           .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
           .toNumber()
@@ -427,7 +427,7 @@ export class LedgerService {
         appointmentId: adjustment.appointmentId,
         billingAdjustmentId: adjustment.id,
         type: LedgerEntryType.ADJUSTMENT,
-        amountCents,
+        amountMinor,
         settlementCurrency: display?.providerCurrency ?? null,
         settlementAmountMinor,
         bookingExchangeRate: display?.rate ?? null,
@@ -444,7 +444,7 @@ export class LedgerService {
 
     this.logger.warn(
       `Adjustment ${adjustmentId} (${adjustment.type} ${adjustment.amount}) executed as ` +
-        `ledger entry ${entry.id} for ${amountCents}c against business ${adjustment.businessId}.`,
+        `ledger entry ${entry.id} for ${amountMinor}c against business ${adjustment.businessId}.`,
     );
 
     return { adjustment: settled, entry };
@@ -501,7 +501,7 @@ export class LedgerService {
       this.prisma.ledgerEntry.groupBy({
         by: ['settlementCurrency'],
         where,
-        _sum: { settlementAmountMinor: true, amountCents: true },
+        _sum: { settlementAmountMinor: true, amountMinor: true },
       }),
     ]);
 
@@ -513,7 +513,7 @@ export class LedgerService {
       totalsBySettlementCurrency: totals.map((row) => ({
         settlementCurrency: row.settlementCurrency,
         amountMinor: row._sum.settlementAmountMinor ?? 0,
-        reportingUsdCents: row._sum.amountCents ?? 0,
+        reportingInternalMinor: row._sum.amountMinor ?? 0,
       })),
     };
   }
@@ -557,7 +557,7 @@ export class LedgerService {
         skip: offset,
         include: {
           ledgerEntries: {
-            select: { id: true, amountCents: true, settlementAmountMinor: true },
+            select: { id: true, amountMinor: true, settlementAmountMinor: true },
           },
         },
       }),
@@ -590,7 +590,7 @@ export class LedgerService {
       this.prisma.ledgerEntry.groupBy({
         by: ['settlementCurrency'],
         where: { payoutId: null },
-        _sum: { settlementAmountMinor: true, amountCents: true },
+        _sum: { settlementAmountMinor: true, amountMinor: true },
         _count: { _all: true },
       }),
       this.prisma.ledgerEntry.count({
@@ -605,7 +605,7 @@ export class LedgerService {
         amountMinor: row._sum.settlementAmountMinor ?? 0,
         entryCount: row._count._all,
         /** The USD equivalent, for reporting only. Never what is held. */
-        reportingUsdCents: row._sum.amountCents ?? 0,
+        reportingInternalMinor: row._sum.amountMinor ?? 0,
       }));
 
     return {
@@ -623,7 +623,7 @@ export class LedgerService {
         'Ledger entries not yet settled by a payout, matured or not, in the ' +
         'currency they will be PAID in. Compare against the payment ' +
         "provider's actual balance by hand — nothing reconciles these " +
-        'automatically. reportingUsdCents is the internal unit of account and ' +
+        'automatically. reportingInternalMinor is the internal unit of account and ' +
         'is not what is held.',
     };
   }

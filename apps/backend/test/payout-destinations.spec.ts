@@ -422,7 +422,7 @@ describe('Payout destinations (§48)', () => {
         data: {
           businessId: business.businessId,
           type: LedgerEntryType.DEPOSIT_RECEIVED,
-          amountCents: 1000,
+          amountMinor: 1000,
           currency: 'USD',
           settlementCurrency: 'SSP',
           settlementAmountMinor: amount,

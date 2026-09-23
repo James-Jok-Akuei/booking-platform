@@ -193,7 +193,7 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
     // MoMo amounts are major units as a string, not minor ones. Formatted with
     // the currency's own number of decimal places (§55.2): a hardcoded /100
     // sent "117.00" where a currency with no minor unit wanted "11700".
-    const amount = formatMajorUnits(params.amountCents, outboundCurrency);
+    const amount = formatMajorUnits(params.amountMinor, outboundCurrency);
 
     const response = await fetch(`${this.baseUrl}/collection/v1_0/requesttopay`, {
       method: 'POST',

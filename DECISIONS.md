@@ -5489,9 +5489,11 @@ write a second set of entries.
 
 - ~~**Resending an arrival code** (§53.2). The gap is real; the answer is a
   product decision.~~ DECIDED and built — see §54.
-- **The three misnamed money fields** in §51.5. Renaming
+- ~~**The three misnamed money fields** in §51.5. Renaming
   `providerCurrencyAmountCents` is a migration touching a column several modules
-  read, for a clarity benefit — worth doing, worth deciding when.
+  read, for a clarity benefit — worth doing, worth deciding when.~~ DONE, and
+  widened: §55 made the internal currency configurable, which turned every
+  `...Cents` name into a potential lie rather than just those three. See §56.
 - ~~**`test/support-tickets.spec.ts` "keeps reference unique under concurrent
   creation" flaked once** during this work and passed on every re-run since.
   Recorded rather than chased: a concurrency test that fails once in many runs is
@@ -5764,4 +5766,116 @@ for: 900 USD minor units at 1300 RWF/USD is 11,700 RWF, not 1,170,000.
 
 Full suite: **938 passing across 23 suites**, no schema change and therefore no
 migration.
+
+---
+
+## 56. Money columns say "minor units", because that is what they hold (2026-09-23)
+
+Closes the second item in §53.5, and widens it. §51.5 flagged three fields whose
+names claimed cents while holding provider-currency minor units. §55 made the
+internal unit of account configurable, which turned the same problem loose on
+**every** money name in the codebase: in a deployment priced in Rwandan francs,
+`depositAmountCents: 11700` reads to every human as 117.00.
+
+### 56.1 Why a name is worth a migration
+
+This is the only class of bug in the money code that nothing can catch.
+
+An amount in the wrong unit compiles. It passes every test, because every test
+compares amounts to other amounts in the same wrong unit. It satisfies the
+invariant — `platformFeeAmountMinor + businessAmountMinor == depositAmountMinor`
+holds just as well in francs as in cents. It reconciles against the ledger,
+because the ledger is wrong the same way. There is no runtime check that could
+find it, because **the unit exists nowhere except in the name**.
+
+So the name is the only place the unit can be enforced, and a name that lies is
+not a cosmetic problem.
+
+### 56.2 The rename
+
+`...Cents` becomes `...Minor` throughout — the convention §45 and §51 already
+established with `settlementAmountMinor` and `totalMinor`, now applied
+consistently rather than only where it was noticed.
+
+| Was | Is | Denominated in |
+|---|---|---|
+| `Appointment.depositAmountCents` | `depositAmountMinor` | internal currency |
+| `Appointment.platformFeeAmountCents` | `platformFeeAmountMinor` | internal currency |
+| `Appointment.businessAmountCents` | `businessAmountMinor` | internal currency |
+| `Appointment.servicePriceCents` | `servicePriceMinor` | internal currency |
+| `Service.priceCents` | `priceMinor` | internal currency |
+| `Location.fromPriceCents` | `fromPriceMinor` | internal currency |
+| `LedgerEntry.amountCents` | `amountMinor` | internal currency |
+| `Payout.amountCents` | `amountMinor` | internal currency |
+| `Appointment.providerCurrencyAmountCents` | `providerAmountMinor` | **provider** currency |
+| `InitiatePaymentParams.amountCents` | `amountMinor` | **provider** currency |
+| `reportingUsdCents` | `reportingInternalMinor` | internal currency |
+| `depositsCents`, `availableNowCents`, `lifetimePaidCents`, … | `...Minor` | as documented per field |
+
+Each renamed column sits beside a currency column — `currency`,
+`settlementCurrency`, `providerCurrency` — which is what now says *which*
+minor units. The name says the scale; the neighbouring column says the
+currency. Neither is guessed.
+
+`reportingUsdCents` deserves its own mention: it hardcoded **USD** into a field
+whose whole purpose is to report in the internal unit of account. It was
+introduced by §51, the commit that existed to stop money fields misstating their
+units, which is a fair measure of how easily this slips through.
+
+### 56.3 The migration is hand-written, and had to be
+
+`prisma migrate dev` cannot see a rename. It compares two schemas and generates
+`DROP COLUMN` + `ADD COLUMN`, which for these eleven columns means **deleting
+every amount in the database** and replacing them with nulls. The migration is
+therefore written by hand as `ALTER TABLE ... RENAME COLUMN`, which preserves
+the data, the type and the constraints.
+
+Two things the compiler could not have caught, and which a careless rename would
+have shipped:
+
+1. **The immutability trigger names its columns.** `ledger_entries_reject_mutation`
+   compares `NEW."amountCents"` to `OLD."amountCents"`. Renaming the column
+   without rebuilding the function leaves a trigger referring to a column that
+   no longer exists — and since it fires on every write, the append-only
+   guarantee would have taken the whole ledger down with it. The migration
+   recreates it.
+2. **Raw SQL is invisible to TypeScript.** `from-price.ts` updates
+   `"fromPriceCents"` from `MIN(s."priceCents")` inside a `$executeRaw`. A
+   string is a string; nothing would have failed to compile.
+
+`prisma migrate diff` reports no drift, which is what confirms the hand-written
+SQL and the schema actually agree.
+
+### 56.4 A source-scanning test, so it cannot come back
+
+`money-invariant.spec.ts` now reads `src/` and fails if any camelCase identifier
+ends in `Cents`. Same device as §36's cancellation scan, and for the same
+reason: the property is about the shape of the source, so the source is what
+gets asserted.
+
+It is deliberately strict. "It is only cents when the currency happens to have
+two decimal places, and since §55 that is a deployment setting rather than a
+fact" — which means there is no correct use of the suffix left, and an exception
+list would just be the bug with extra steps.
+
+### 56.5 What was deliberately NOT renamed
+
+**This file.** §16.3, §30, §34 and the rest still say `depositAmountCents`,
+because that is what those sections decided at the time and rewriting them would
+falsify the record. The convention here is to append and strike through, not to
+edit history. This section is the mapping.
+
+`docs/IMPLEMENTATION_INVENTORY.md` is likewise left alone: it is a dated audit of
+what the code looked like on the day it was taken, and silently updating it would
+make it a worse record, not a better one. `docs/MANUAL_WALKTHROUGH.md` **is**
+updated, because it is a set of commands someone runs today.
+
+### 56.6 Verified
+
+Full suite: **939 passing across 23 suites**, `prisma migrate diff` reporting no
+drift. One test needed a human decision rather than a mechanical fix: a §51
+assertion reading `expect(summary).not.toHaveProperty('totalCents')` was
+rewritten by the rename into an assertion that the field it had just checked for
+was absent. It now names the superseded field deliberately, and guards that the
+old name stays gone.
 

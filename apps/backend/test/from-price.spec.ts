@@ -10,11 +10,11 @@ import { createTestModule, resetDatabase } from './setup/test-module';
 import { TestBusiness, createBusiness } from './setup/factories';
 
 /**
- * Location.fromPriceCents is a denormalised aggregate (§44), and the only way
+ * Location.fromPriceMinor is a denormalised aggregate (§44), and the only way
  * it can be wrong is if a write path forgets to maintain it. Every test here
  * drives a REAL service or location write and then reads the column back.
  */
-describe('Denormalised fromPriceCents (§44)', () => {
+describe('Denormalised fromPriceMinor (§44)', () => {
   let moduleRef: TestingModule;
   let prisma: PrismaService;
   let services: ServicesService;
@@ -49,11 +49,11 @@ describe('Denormalised fromPriceCents (§44)', () => {
     await prisma.businessProfile.deleteMany({});
     business = await createBusiness(prisma, {
       status: BusinessStatus.APPROVED,
-      priceCents: 4500,
+      priceMinor: 4500,
     });
     other = await createBusiness(prisma, {
       status: BusinessStatus.APPROVED,
-      priceCents: 8000,
+      priceMinor: 8000,
     });
   });
 
@@ -63,9 +63,9 @@ describe('Denormalised fromPriceCents (§44)', () => {
       await prisma.location.findMany({
         where: { businessId },
         orderBy: { name: 'asc' },
-        select: { fromPriceCents: true },
+        select: { fromPriceMinor: true },
       })
-    ).map((l) => l.fromPriceCents);
+    ).map((l) => l.fromPriceMinor);
 
   /** Adds a second and third branch, so "all locations" means something. */
   const addBranches = async (target: TestBusiness, count = 2) => {
@@ -77,16 +77,16 @@ describe('Denormalised fromPriceCents (§44)', () => {
           address: 'Somewhere in Juba',
           latitude: 4.85,
           longitude: 31.58,
-          fromPriceCents: 4500,
+          fromPriceMinor: 4500,
         },
       });
     }
   };
 
-  const newService = (target: TestBusiness, priceCents: number, name = 'Extra') =>
+  const newService = (target: TestBusiness, priceMinor: number, name = 'Extra') =>
     services.create(target.userId, {
       name,
-      priceCents,
+      priceMinor,
       durationMinutes: 30,
       depositPercentage: 20,
     });
@@ -117,7 +117,7 @@ describe('Denormalised fromPriceCents (§44)', () => {
       await addBranches(business);
       const cheap = await newService(business, 1200);
 
-      await services.update(business.userId, cheap.id, { priceCents: 800 });
+      await services.update(business.userId, cheap.id, { priceMinor: 800 });
 
       expect(await pricesOf(business.businessId)).toEqual([800, 800, 800]);
     });
@@ -126,7 +126,7 @@ describe('Denormalised fromPriceCents (§44)', () => {
       await addBranches(business);
       const cheap = await newService(business, 1200);
 
-      await services.update(business.userId, cheap.id, { priceCents: 6000 });
+      await services.update(business.userId, cheap.id, { priceMinor: 6000 });
 
       // 4500 was always there; it becomes the headline again.
       expect(await pricesOf(business.businessId)).toEqual([4500, 4500, 4500]);
@@ -217,7 +217,7 @@ describe('Denormalised fromPriceCents (§44)', () => {
       const row = await prisma.location.findUniqueOrThrow({
         where: { id: created.id },
       });
-      expect(row.fromPriceCents).toBe(1500);
+      expect(row.fromPriceMinor).toBe(1500);
     });
 
     it('opens with null when the business has no active services', async () => {
@@ -236,7 +236,7 @@ describe('Denormalised fromPriceCents (§44)', () => {
       const row = await prisma.location.findUniqueOrThrow({
         where: { id: created.id },
       });
-      expect(row.fromPriceCents).toBeNull();
+      expect(row.fromPriceMinor).toBeNull();
     });
   });
 

@@ -218,7 +218,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const res = await request(url, '/business/services', {
         method: 'POST',
         token: tokenAlphaStaff,
-        body: { name: 'Staff service', priceCents: 1000, durationMinutes: 30 },
+        body: { name: 'Staff service', priceMinor: 1000, durationMinutes: 30 },
       });
 
       expect(res.status).toBe(403);
@@ -234,7 +234,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const res = await request(url, '/business/services', {
         method: 'POST',
         token: tokenAlpha,
-        body: { name: 'Owner service', priceCents: 1000, durationMinutes: 30 },
+        body: { name: 'Owner service', priceMinor: 1000, durationMinutes: 30 },
       });
 
       expect(res.status).toBe(201);
@@ -593,7 +593,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const payout = await prisma.payout.create({
         data: {
           businessId: alpha.businessId,
-          amountCents: 1000,
+          amountMinor: 1000,
           currency: 'USD',
           settlementCurrency: 'SSP',
           settlementAmountMinor: 650_000,
@@ -615,7 +615,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const payout = await prisma.payout.create({
         data: {
           businessId: alpha.businessId,
-          amountCents: 1000,
+          amountMinor: 1000,
           currency: 'USD',
           settlementCurrency: 'SSP',
           settlementAmountMinor: 650_000,
@@ -656,7 +656,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       });
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveProperty('availableNowCents');
+      expect(res.body).toHaveProperty('availableNowMinor');
     });
 
     it('an admin can read any balance -> 200', async () => {
@@ -840,8 +840,8 @@ describe('Guard chain over HTTP (§23.3)', () => {
       expect(asCustomer.body).toHaveProperty('approxSettlement');
       // Same route, same appointment: the figure follows the reader.
       expect(asBusiness.body).not.toHaveProperty('approxSettlement');
-      expect(asBusiness.body.depositAmountCents).toBe(
-        asCustomer.body.depositAmountCents,
+      expect(asBusiness.body.depositAmountMinor).toBe(
+        asCustomer.body.depositAmountMinor,
       );
     });
   });
@@ -1114,7 +1114,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       prisma.payout.create({
         data: {
           businessId: alpha.businessId,
-          amountCents: 4500,
+          amountMinor: 4500,
           currency: 'USD',
           settlementCurrency: 'SSP',
           settlementAmountMinor: 2_925_000,

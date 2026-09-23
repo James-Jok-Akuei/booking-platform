@@ -212,9 +212,9 @@ export class AnalyticsService {
       this.prisma.appointment.aggregate({
         where,
         _sum: {
-          depositAmountCents: true,
-          platformFeeAmountCents: true,
-          businessAmountCents: true,
+          depositAmountMinor: true,
+          platformFeeAmountMinor: true,
+          businessAmountMinor: true,
         },
         _count: { _all: true },
       }),
@@ -235,9 +235,9 @@ export class AnalyticsService {
     return {
       currency: 'USD',
       collectedThroughPlatform: {
-        depositsCents: totals._sum.depositAmountCents ?? 0,
+        depositsMinor: totals._sum.depositAmountMinor ?? 0,
         // What the business actually received of those deposits, after the fee.
-        businessShareOfDepositsCents: totals._sum.businessAmountCents ?? 0,
+        businessShareOfDepositsMinor: totals._sum.businessAmountMinor ?? 0,
         appointmentCount: totals._count._all,
         // Named the same way balanceOwedToBusiness reports its own gaps: a
         // partial total that does not announce itself is the number a business
@@ -253,7 +253,7 @@ export class AnalyticsService {
               'been taken. Every cancellation since then is accounted for exactly.'
             : ' Every cancellation in this range is accounted for exactly.'),
       },
-      platformFeesPaidCents: totals._sum.platformFeeAmountCents ?? 0,
+      platformFeesPaidMinor: totals._sum.platformFeeAmountMinor ?? 0,
       balanceOwedToBusiness: await this.balanceOwed(baseWhere),
     };
   }
@@ -262,7 +262,7 @@ export class AnalyticsService {
    * What customers still owe the business directly, on completed appointments.
    *
    * Computable only since pricing inputs began being snapshotted: it is
-   * `servicePriceCents - depositAmountCents`, and the price at booking time is
+   * `servicePriceMinor - depositAmountMinor`, and the price at booking time is
    * not otherwise recoverable (§29.1).
    *
    * Two things this figure is NOT, both stated in the response rather than left
@@ -284,20 +284,20 @@ export class AnalyticsService {
 
     const [withSnapshot, missing] = await Promise.all([
       this.prisma.appointment.aggregate({
-        where: { ...completed, servicePriceCents: { not: null } },
-        _sum: { servicePriceCents: true, depositAmountCents: true },
+        where: { ...completed, servicePriceMinor: { not: null } },
+        _sum: { servicePriceMinor: true, depositAmountMinor: true },
         _count: { _all: true },
       }),
       this.prisma.appointment.count({
-        where: { ...completed, servicePriceCents: null },
+        where: { ...completed, servicePriceMinor: null },
       }),
     ]);
 
-    const price = withSnapshot._sum.servicePriceCents ?? 0;
-    const deposits = withSnapshot._sum.depositAmountCents ?? 0;
+    const price = withSnapshot._sum.servicePriceMinor ?? 0;
+    const deposits = withSnapshot._sum.depositAmountMinor ?? 0;
 
     return {
-      amountCents: price - deposits,
+      amountMinor: price - deposits,
       fromAppointments: withSnapshot._count._all,
       appointmentsMissingSnapshot: missing,
       // The one flag a caller should branch on before presenting the number.

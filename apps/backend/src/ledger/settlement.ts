@@ -10,10 +10,10 @@ import { Prisma } from '@prisma/client';
  * provider really collected, and the ledger would then disagree with the
  * provider's statement by a few units on every booking.
  *
- *     fee = round(charged × platformFeeAmountCents / depositAmountCents)
+ *     fee = round(charged × platformFeeAmountMinor / depositAmountMinor)
  *
  * Rounded ONCE, on the fee. The business's share is the REMAINDER, never its own
- * rounded percentage — exactly the reasoning behind `businessAmountCents` being
+ * rounded percentage — exactly the reasoning behind `businessAmountMinor` being
  * computed by subtraction in USD (§16.3). Rounding both independently would let
  * them disagree by a unit, and the invariant
  *
@@ -27,20 +27,20 @@ import { Prisma } from '@prisma/client';
  */
 export function splitSettlement(params: {
   chargedMinor: number;
-  depositAmountCents: number;
-  platformFeeAmountCents: number;
+  depositAmountMinor: number;
+  platformFeeAmountMinor: number;
 }): { depositMinor: number; feeMinor: number; businessMinor: number } {
-  const { chargedMinor, depositAmountCents, platformFeeAmountCents } = params;
+  const { chargedMinor, depositAmountMinor, platformFeeAmountMinor } = params;
 
-  if (depositAmountCents <= 0) {
+  if (depositAmountMinor <= 0) {
     // Nothing was charged, so there is nothing to apportion. Dividing by it
     // would be a silent NaN travelling into a payout.
     return { depositMinor: chargedMinor, feeMinor: 0, businessMinor: chargedMinor };
   }
 
   const feeMinor = new Prisma.Decimal(chargedMinor)
-    .mul(platformFeeAmountCents)
-    .div(depositAmountCents)
+    .mul(platformFeeAmountMinor)
+    .div(depositAmountMinor)
     .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
     .toNumber();
 

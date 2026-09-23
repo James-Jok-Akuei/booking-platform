@@ -36,7 +36,7 @@ export async function createBusiness(
   prisma: PrismaService,
   options: {
     capacity?: number;
-    priceCents?: number;
+    priceMinor?: number;
     depositPercentage?: number;
     status?: BusinessStatus;
     durationMinutes?: number;
@@ -89,7 +89,7 @@ export async function createBusiness(
     data: {
       businessId: business.id,
       name: 'Test Service',
-      priceCents: options.priceCents ?? 4500,
+      priceMinor: options.priceMinor ?? 4500,
       durationMinutes: options.durationMinutes ?? 60,
       depositPercentage: options.depositPercentage ?? 20,
     },
@@ -116,7 +116,7 @@ export async function createBusiness(
     });
   }
 
-  // Location.fromPriceCents is a denormalised aggregate maintained by the
+  // Location.fromPriceMinor is a denormalised aggregate maintained by the
   // service and location write paths (§44). A fixture that writes rows straight
   // to the database bypasses those, so it must maintain it too — otherwise
   // every factory-built location would look like a business with no services.
@@ -197,15 +197,15 @@ export async function createAppointment(
       startTime: start,
       endTime: end,
       status: params.status,
-      depositAmountCents: 900,
-      platformFeeAmountCents: 450,
-      businessAmountCents: 450,
+      depositAmountMinor: 900,
+      platformFeeAmountMinor: 450,
+      businessAmountMinor: 450,
       currency: 'USD',
       ...(params.providerCharge === null
         ? {}
         : {
             providerCurrency: 'SSP',
-            providerCurrencyAmountCents: params.providerCharge ?? 585_000,
+            providerAmountMinor: params.providerCharge ?? 585_000,
             exchangeRateUsed: 650,
           }),
       verificationCodeHash: await bcrypt.hash(KNOWN_VERIFICATION_CODE, 10),

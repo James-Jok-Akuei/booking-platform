@@ -175,7 +175,7 @@ enum AppointmentStatus {
 }
 
 /// What a ledger entry records. The sign lives on the amount, not here: an
-/// entry's type says what happened, and `amountCents` says which way the money
+/// entry's type says what happened, and `amountMinor` says which way the money
 /// went from the BUSINESS's point of view.
 /// Where a payout has got to. There is no IN_PROGRESS: the platform has no
 /// transfer API to be in the middle of (§35.1), so a payout is either awaiting
@@ -439,7 +439,7 @@ model Location {
   /// The cheapest ACTIVE service price of the owning business, in cents.
   ///
   /// Denormalised exactly like ratingAvg/ratingCount above: maintained on write,
-  /// never computed on read. It is what lets `sort=price` and `maxPriceCents`
+  /// never computed on read. It is what lets `sort=price` and `maxPriceMinor`
   /// agree on one number and order across pages — a value derived at read time
   /// can filter a page but cannot order the rows that were never fetched (§44).
   ///
@@ -449,7 +449,7 @@ model Location {
   /// NULL means the business has no active services. That is not the same as
   /// "no results" — such a location still browses, and sorts last under
   /// sort=price.
-  fromPriceCents Int?
+  fromPriceMinor Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -465,8 +465,8 @@ model Location {
   /// The bounding-box prefilter behind distance search (§43.5). Postgres can
   /// use it to cut the candidate set before any haversine is computed.
   @@index([latitude, longitude])
-  /// Serves ORDER BY fromPriceCents and the maxPriceCents filter (§44).
-  @@index([fromPriceCents])
+  /// Serves ORDER BY fromPriceMinor and the maxPriceMinor filter (§44).
+  @@index([fromPriceMinor])
   @@map("locations")
 }
 
@@ -499,10 +499,10 @@ model Service {
   // Money is stored as integer cents, never a float. Binary floating point
   // cannot represent most decimal money values exactly, and the deposit /
   // platform-fee split (see DECISIONS.md §2) does arithmetic on these amounts.
-  priceCents      Int
+  priceMinor      Int
   durationMinutes Int
 
-  /// ISO 4217 code for priceCents. Always "USD" today — the platform's internal
+  /// ISO 4217 code for priceMinor. Always "USD" today — the platform's internal
   /// unit of account (see DECISIONS.md).
   ///
   /// Stored explicitly even though every row reads the same value, so that a
@@ -511,12 +511,12 @@ model Service {
   /// ever existed, and that property is impossible to restore afterwards.
   currency String @default("USD")
 
-  // Share of priceCents the customer pays up front to hold the slot.
+  // Share of priceMinor the customer pays up front to hold the slot.
   //
   // Must be >= the live PlatformSetting.platformFeePercentage, validated on
   // every write. Both percentages apply to the same base (the service price),
   // so that floor is precisely what guarantees the platform fee never exceeds
-  // the deposit it is taken from — i.e. businessAmountCents can never go
+  // the deposit it is taken from — i.e. businessAmountMinor can never go
   // negative. Decimal, never Float: this multiplies money.
   depositPercentage Decimal @default(10.00) @db.Decimal(5, 2)
 
@@ -826,15 +826,15 @@ model Appointment {
   // ---- Money, snapshotted at booking time ----
   //
   // All three are integer cents and satisfy, permanently:
-  //     platformFeeAmountCents + businessAmountCents == depositAmountCents
+  //     platformFeeAmountMinor + businessAmountMinor == depositAmountMinor
   //
   // They are stored rather than derived because every input can move
   // afterwards: an admin may change the platform fee, and a business may
   // change its price or deposit percentage. What the customer agreed to pay,
   // and what the business is owed, must not silently change with them.
-  depositAmountCents     Int
-  platformFeeAmountCents Int
-  businessAmountCents    Int
+  depositAmountMinor     Int
+  platformFeeAmountMinor Int
+  businessAmountMinor    Int
 
   /// The INPUTS the three amounts above were computed from, snapshotted at
   /// booking and never updated.
@@ -849,7 +849,7 @@ model Appointment {
   /// Nullable with no backfill: appointments booked before this existed
   /// genuinely do not have the information, and inventing it would be worse
   /// than admitting it. Every reader must treat null as "not recorded".
-  servicePriceCents     Int?
+  servicePriceMinor     Int?
   depositPercentage     Decimal? @db.Decimal(5, 2)
   platformFeePercentage Decimal? @db.Decimal(5, 2)
 
@@ -879,7 +879,7 @@ model Appointment {
   ///
   /// Null until a payment is initiated.
   providerCurrency            String?
-  providerCurrencyAmountCents Int?
+  providerAmountMinor Int?
   exchangeRateUsed            Decimal? @db.Decimal(18, 8)
 
   // ---- Arrival verification ----
@@ -1350,7 +1350,7 @@ model BillingAdjustment {
 /// the first time a write fails halfway, and then no one can tell which is
 /// right. Summing is cheap, and it can only ever be wrong if an entry is wrong.
 ///
-/// IMMUTABLE after insert: `type`, `amountCents`, `currency`, `businessId`,
+/// IMMUTABLE after insert: `type`, `amountMinor`, `currency`, `businessId`,
 /// `appointmentId` and `createdAt` are never updated — enforced by a database
 /// trigger, not by convention. Only `availableAt` and `payoutId` may be written
 /// later, because those record what happened to an entry, not what it says.
@@ -1372,15 +1372,15 @@ model LedgerEntry {
 
   /// SIGNED, from the business's perspective. Positive is owed to them,
   /// negative is owed back. Integer cents, like every other money column.
-  amountCents Int
+  amountMinor Int
 
   currency String @default("USD")
 
   // ---- Settlement, fixed at booking (§45) ----
   //
-  // amountCents above stays the USD reporting and analytics figure.
+  // amountMinor above stays the USD reporting and analytics figure.
   // settlementAmountMinor is AUTHORITATIVE FOR PAYOUTS, and carries the same
-  // sign as amountCents.
+  // sign as amountMinor.
   //
   // The business's payable is fixed at the booking-date rate, so a payout
   // performs no conversion and reads no exchange rate: every entry already
@@ -1428,7 +1428,7 @@ model LedgerEntry {
 
 /// One transfer of money to one business (§35).
 ///
-/// A payout does not hold its own arithmetic: `amountCents` is the sum of the
+/// A payout does not hold its own arithmetic: `amountMinor` is the sum of the
 /// entries stamped with its id at the moment it was created, and those entries
 /// remain the authority. The column exists so the figure a business was told
 /// survives even if an entry is later reclassified by an opposing entry.
@@ -1439,7 +1439,7 @@ model Payout {
   businessProfile BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   /// The USD figure, for reporting. NOT what is sent (§45.1).
-  amountCents Int
+  amountMinor Int
   currency    String @default("USD")
 
   /// What is actually transferred, and in what. Summed from the entries'

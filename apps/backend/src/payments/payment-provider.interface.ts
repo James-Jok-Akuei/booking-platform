@@ -16,7 +16,7 @@ export interface PaymentProvider {
   readonly name: string;
 
   /**
-   * Asks the provider to collect `amountCents` from `phoneNumber`.
+   * Asks the provider to collect `amountMinor` from `phoneNumber`.
    *
    * Returns PENDING when the provider has accepted the request — for MoMo that
    * is an HTTP 202, meaning the customer's handset will be prompted. It does
@@ -33,7 +33,7 @@ export interface PaymentProvider {
 
 export interface InitiatePaymentParams {
   phoneNumber: string;
-  amountCents: number;
+  amountMinor: number;
   currency: string;
   externalReferenceId: string;
   /** Shown to the payer on their handset, where the provider supports it. */

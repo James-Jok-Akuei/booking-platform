@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 
 /**
- * Recomputes `Location.fromPriceCents` for every location of one business.
+ * Recomputes `Location.fromPriceMinor` for every location of one business.
  *
  * ONE statement, never a loop. Services are business-scoped (§10.2), so a single
  * service write changes the headline price of every branch that business owns —
@@ -26,8 +26,8 @@ export function recalculateFromPrice(
 ): Promise<number> {
   return tx.$executeRaw`
     UPDATE "locations" l
-       SET "fromPriceCents" = (
-         SELECT MIN(s."priceCents")
+       SET "fromPriceMinor" = (
+         SELECT MIN(s."priceMinor")
            FROM "services" s
           WHERE s."businessId" = l."businessId"
             AND s."isActive" = true

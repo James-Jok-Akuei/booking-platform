@@ -66,13 +66,13 @@ curl -s "$B/discover/locations?categoryId=<id>" | J
 
 - `total` is **7**, not 9. Gudele Tailors (`PENDING`) and Munuki Fitness
   (`SUSPENDED`) are absent. Approve Gudele in step 8 and it appears.
-- `fromPriceCents` is `2000` for **both** Nile Barbers branches — services belong
+- `fromPriceMinor` is `2000` for **both** Nile Barbers branches — services belong
   to the business, so branches share a price. Its retired "dye" service at
   1200 is cheaper and correctly ignored.
-- Atlabara Studio has `fromPriceCents: null` and sorts **last** under
+- Atlabara Studio has `fromPriceMinor: null` and sorts **last** under
   `sort=price`. No services yet is not the same as free, and not the same as
   absent.
-- `approxSettlement.fromPriceCents` is the SSP figure, rounded to whole pounds,
+- `approxSettlement.fromPriceMinor` is the SSP figure, rounded to whole pounds,
   with `approximate: true` and the rate's `rateAsOf`. Every row on a page shares
   one `exchangeRate` — check two rows and confirm.
 - Distances: Juba Town → Hai Cinema is **0.73 km**, → Atlabara **3.02 km**. Drop
@@ -142,12 +142,12 @@ curl -s -X POST "$B/appointments" -H "$CUST" -H 'Content-Type: application/json'
 **Look at:**
 
 - `status: "PENDING_PAYMENT"` — the slot is held, nothing is paid.
-- `depositAmountCents: 400`, `platformFeeAmountCents: 200`,
-  `businessAmountCents: 200` on a 2000c haircut at 20% deposit and a 10% fee.
+- `depositAmountMinor: 400`, `platformFeeAmountMinor: 200`,
+  `businessAmountMinor: 200` on a 2000c haircut at 20% deposit and a 10% fee.
   **Both percentages apply to the service price**, so 200 + 200 = 400 exactly.
-- `servicePriceCents: 2000` is the price *you agreed*; `service` carries the
+- `servicePriceMinor: 2000` is the price *you agreed*; `service` carries the
   name and duration but **no price**, so a later reprice cannot rewrite history.
-- `approxSettlement.depositAmountCents` — SSP 2,600.00.
+- `approxSettlement.depositAmountMinor` — SSP 2,600.00.
 - `verificationCodeSentAt` is set: an arrival code went to your inbox (§53.2).
   Fetch the booking on its own (`GET /appointments/$APPT`) and the response also
   carries `verificationCode` — **the customer's own read, and only theirs**
@@ -253,13 +253,13 @@ curl -s -X POST "$B/business/appointments/$APPT/verify-manually" -H "$BIZ" \
   `availableAt` of `completedAt + 2 days` (the configurable hold), and the
   appointment gains `payoutHoldDaysApplied: 2`.
 - Two entries exist per paid appointment: `DEPOSIT_RECEIVED` positive and
-  `PLATFORM_FEE` negative, summing to `businessAmountCents`. In SSP they sum to
+  `PLATFORM_FEE` negative, summing to `businessAmountMinor`. In SSP they sum to
   the business's settlement share.
 
 Inspect them directly — there is no ledger read API for a business:
 
 ```sql
-SELECT type, "amountCents", "settlementCurrency", "settlementAmountMinor", "availableAt"
+SELECT type, "amountMinor", "settlementCurrency", "settlementAmountMinor", "availableAt"
 FROM ledger_entries WHERE "appointmentId" = '<appt>';
 ```
 
@@ -308,8 +308,8 @@ curl -s -X POST "$B/reviews/<reviewId>/response" -H "$BIZ" \
   appointments fall outside it. `range` in the response tells you what you got.
 - `balance` splits available / pending / unresolved and reports
   `availableBySettlementCurrency` — what will actually be sent.
-- **A `PENDING` payout is invisible here.** After step 8 runs, `availableNowCents`
-  drops to 0 and `lifetimePaidCents` stays 0 until an admin marks it paid; the
+- **A `PENDING` payout is invisible here.** After step 8 runs, `availableNowMinor`
+  drops to 0 and `lifetimePaidMinor` stays 0 until an admin marks it paid; the
   money in flight appears nowhere.
 
 ---
@@ -359,7 +359,7 @@ curl -s -X PATCH "$B/admin/payouts/<payoutId>/mark-paid" -H "$ADMIN" \
 - The run summary: `payoutsCreated: 3`, `skippedNonPositive: 1` (Konyo Konyo,
   whose deposit share is exactly zero), and `pausedBusinesses` listing anyone
   held back and why.
-- **`totalCents` in that summary is settlement minor units (SSP), not cents.**
+- **`totalMinor` in that summary is settlement minor units (SSP), not cents.**
 - The CSV carries the **verified msisdn**, the provider, a `payable` column, and
   one `TOTAL` row per currency. Supersede a destination and re-export: the row
   becomes `NOT RECORDED` / `DO NOT SEND` while the payout still exists.

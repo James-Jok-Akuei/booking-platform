@@ -96,7 +96,7 @@ export class DiscoveryService {
           longitude: true,
           ratingAvg: true,
           ratingCount: true,
-          fromPriceCents: true,
+          fromPriceMinor: true,
           businessId: true,
           business: {
             select: {
@@ -142,7 +142,7 @@ export class DiscoveryService {
         : {}),
       locations: rows
         .map((location) => {
-          const fromPriceCents = location.fromPriceCents;
+          const fromPriceMinor = location.fromPriceMinor;
           return {
             id: location.id,
             name: location.name,
@@ -152,15 +152,15 @@ export class DiscoveryService {
             business: location.business,
             ratingAvg: location.ratingAvg ? Number(location.ratingAvg) : null,
             ratingCount: location.ratingCount,
-            fromPriceCents,
-            ...this.priceSettlement(fromPriceCents, rate),
+            fromPriceMinor,
+            ...this.priceSettlement(fromPriceMinor, rate),
             openNow: openNow.get(location.id) ?? false,
             ...(distanceById.has(location.id)
               ? { distanceKm: round2(distanceById.get(location.id)!) }
               : {}),
           };
         })
-        // maxPriceCents is applied in the QUERY now (see buildWhere), so `total`
+        // maxPriceMinor is applied in the QUERY now (see buildWhere), so `total`
         // and the page agree with it. openNow stays a post-filter because it is
         // computed from today's hours rather than stored.
         .filter((l) => (query.openNow ? l.openNow : true)),
@@ -229,12 +229,12 @@ export class DiscoveryService {
     const [services, exceptions, todayException, rate] = await Promise.all([
       this.prisma.service.findMany({
         where: { businessId: location.businessId, isActive: true },
-        orderBy: { priceCents: 'asc' },
+        orderBy: { priceMinor: 'asc' },
         select: {
           id: true,
           name: true,
           description: true,
-          priceCents: true,
+          priceMinor: true,
           durationMinutes: true,
           depositPercentage: true,
           currency: true,
@@ -288,7 +288,7 @@ export class DiscoveryService {
         ...(rate
           ? {
               approxSettlement: {
-                priceCents: approxSettlementFor(service.priceCents, rate),
+                priceMinor: approxSettlementFor(service.priceMinor, rate),
               },
             }
           : {}),
@@ -464,8 +464,8 @@ export class DiscoveryService {
       // disagree about what a location's cheapest price is. A location with no
       // active services (null) is excluded — there is no price at or below the
       // cap because there is no price at all.
-      ...(query.maxPriceCents !== undefined
-        ? { fromPriceCents: { lte: query.maxPriceCents } }
+      ...(query.maxPriceMinor !== undefined
+        ? { fromPriceMinor: { lte: query.maxPriceMinor } }
         : {}),
     };
 
@@ -500,7 +500,7 @@ export class DiscoveryService {
       // price was not a column. Nulls last: a business with no services yet is
       // not free, and burying it at the end is different from hiding it.
       return [
-        { fromPriceCents: { sort: 'asc', nulls: 'last' } },
+        { fromPriceMinor: { sort: 'asc', nulls: 'last' } },
         { name: 'asc' },
       ];
     }
@@ -508,12 +508,12 @@ export class DiscoveryService {
   }
 
   private priceSettlement(
-    fromPriceCents: number | null,
+    fromPriceMinor: number | null,
     rate: RateContext | null,
-  ): { approxSettlement?: { fromPriceCents: ApproxSettlement } } {
-    if (!rate || fromPriceCents === null) return {};
+  ): { approxSettlement?: { fromPriceMinor: ApproxSettlement } } {
+    if (!rate || fromPriceMinor === null) return {};
     return {
-      approxSettlement: { fromPriceCents: approxSettlementFor(fromPriceCents, rate) },
+      approxSettlement: { fromPriceMinor: approxSettlementFor(fromPriceMinor, rate) },
     };
   }
 

@@ -55,7 +55,7 @@ describe('Settlement currency on the ledger (§45)', () => {
     settings = moduleRef.get(PlatformSettingsService);
     await resetDatabase(prisma);
     await settings.setPlatformFeePercentage(10, { role: 'ADMIN' });
-    business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
+    business = await createBusiness(prisma, { priceMinor: 4500, depositPercentage: 20 });
     customer = await createCustomer(prisma);
   });
 
@@ -85,11 +85,11 @@ describe('Settlement currency on the ledger (§45)', () => {
 
     it.each(CASES)(
       'sums exactly with %s',
-      (_label, chargedMinor, depositAmountCents, platformFeeAmountCents) => {
+      (_label, chargedMinor, depositAmountMinor, platformFeeAmountMinor) => {
         const split = splitSettlement({
           chargedMinor,
-          depositAmountCents,
-          platformFeeAmountCents,
+          depositAmountMinor,
+          platformFeeAmountMinor,
         });
 
         // The invariant, in the settlement currency: deposit − fee = business.
@@ -100,11 +100,11 @@ describe('Settlement currency on the ledger (§45)', () => {
 
     it.each(CASES)(
       'never lets the fee exceed the charge with %s',
-      (_label, chargedMinor, depositAmountCents, platformFeeAmountCents) => {
+      (_label, chargedMinor, depositAmountMinor, platformFeeAmountMinor) => {
         const split = splitSettlement({
           chargedMinor,
-          depositAmountCents,
-          platformFeeAmountCents,
+          depositAmountMinor,
+          platformFeeAmountMinor,
         });
 
         // Guaranteed by deposit >= fee (§40), so the business share is never
@@ -117,8 +117,8 @@ describe('Settlement currency on the ledger (§45)', () => {
     it('gives the business exactly zero when the fee equals the deposit', () => {
       const split = splitSettlement({
         chargedMinor: 585_000,
-        depositAmountCents: 900,
-        platformFeeAmountCents: 900,
+        depositAmountMinor: 900,
+        platformFeeAmountMinor: 900,
       });
 
       // The proportion is exactly 1: the fee takes the whole charged amount.
@@ -132,8 +132,8 @@ describe('Settlement currency on the ledger (§45)', () => {
       // the point is that the remainder is DERIVED, never rounded.
       const split = splitSettlement({
         chargedMinor: 1001,
-        depositAmountCents: 900,
-        platformFeeAmountCents: 300,
+        depositAmountMinor: 900,
+        platformFeeAmountMinor: 300,
       });
 
       expect(split.feeMinor + split.businessMinor).toBe(1001);
@@ -142,8 +142,8 @@ describe('Settlement currency on the ledger (§45)', () => {
     it('does not divide by zero when nothing was charged', () => {
       const split = splitSettlement({
         chargedMinor: 0,
-        depositAmountCents: 0,
-        platformFeeAmountCents: 0,
+        depositAmountMinor: 0,
+        platformFeeAmountMinor: 0,
       });
 
       expect(split).toEqual({ depositMinor: 0, feeMinor: 0, businessMinor: 0 });
@@ -164,7 +164,7 @@ describe('Settlement currency on the ledger (§45)', () => {
       amounts?: { deposit: number; fee: number };
     }) => {
       const shop = await createBusiness(prisma, {
-        priceCents: 4500,
+        priceMinor: 4500,
         depositPercentage: options.depositPercentage ?? 20,
       });
       const buyer = await createCustomer(prisma);
@@ -180,15 +180,15 @@ describe('Settlement currency on the ledger (§45)', () => {
           paymentProviderReferenceId: reference,
           paymentInitiatedAt: new Date(),
           providerCurrency: 'SSP',
-          providerCurrencyAmountCents: options.chargedMinor,
+          providerAmountMinor: options.chargedMinor,
           exchangeRateUsed: options.rate ?? 650,
           startTime: new Date(Date.now() - DAY - 3_600_000),
           endTime: new Date(Date.now() - DAY),
           ...(options.amounts
             ? {
-                depositAmountCents: options.amounts.deposit,
-                platformFeeAmountCents: options.amounts.fee,
-                businessAmountCents: options.amounts.deposit - options.amounts.fee,
+                depositAmountMinor: options.amounts.deposit,
+                platformFeeAmountMinor: options.amounts.fee,
+                businessAmountMinor: options.amounts.deposit - options.amounts.fee,
               }
             : {}),
         },
@@ -206,7 +206,7 @@ describe('Settlement currency on the ledger (§45)', () => {
     const byType = async (appointmentId: string) =>
       Object.fromEntries(
         (await entriesFor(appointmentId)).map((e) => [e.type, e]),
-      ) as Record<string, { amountCents: number; settlementAmountMinor: number | null; settlementCurrency: string | null; bookingExchangeRate: unknown }>;
+      ) as Record<string, { amountMinor: number; settlementAmountMinor: number | null; settlementCurrency: string | null; bookingExchangeRate: unknown }>;
 
     it('records the CHARGED figure, not a recomputation', async () => {
       // 585 001 is deliberately not 900 × 650 = 585 000. If the code recomputed
@@ -228,18 +228,18 @@ describe('Settlement currency on the ledger (§45)', () => {
         const { appointment } = await paid({ chargedMinor });
 
         const entries = await entriesFor(appointment.id);
-        const usd = entries.reduce((sum, e) => sum + e.amountCents, 0);
+        const usd = entries.reduce((sum, e) => sum + e.amountMinor, 0);
         const settlement = entries.reduce(
           (sum, e) => sum + (e.settlementAmountMinor ?? 0),
           0,
         );
 
-        expect(usd).toBe(appointment.businessAmountCents);
+        expect(usd).toBe(appointment.businessAmountMinor);
         // The same invariant, in the currency the business is actually paid in.
         const split = splitSettlement({
           chargedMinor,
-          depositAmountCents: appointment.depositAmountCents,
-          platformFeeAmountCents: appointment.platformFeeAmountCents,
+          depositAmountMinor: appointment.depositAmountMinor,
+          platformFeeAmountMinor: appointment.platformFeeAmountMinor,
         });
         expect(settlement).toBe(split.businessMinor);
       },
@@ -255,8 +255,8 @@ describe('Settlement currency on the ledger (§45)', () => {
 
       const entries = await entriesFor(appointment.id);
 
-      expect(appointment.businessAmountCents).toBe(0);
-      expect(entries.reduce((sum, e) => sum + e.amountCents, 0)).toBe(0);
+      expect(appointment.businessAmountMinor).toBe(0);
+      expect(entries.reduce((sum, e) => sum + e.amountMinor, 0)).toBe(0);
       // Exactly zero in the settlement currency too — not "about zero".
       expect(
         entries.reduce((sum, e) => sum + (e.settlementAmountMinor ?? 0), 0),
@@ -294,9 +294,9 @@ describe('Settlement currency on the ledger (§45)', () => {
       expect(entries.every((e) => e.settlementAmountMinor === null)).toBe(true);
       expect(entries.every((e) => e.settlementCurrency === null)).toBe(true);
       // The USD figures are still complete.
-      expect(entries.reduce((sum, e) => sum + e.amountCents, 0)).toBe(
+      expect(entries.reduce((sum, e) => sum + e.amountMinor, 0)).toBe(
         (await prisma.appointment.findUniqueOrThrow({ where: { id: appointment.id } }))
-          .businessAmountCents,
+          .businessAmountMinor,
       );
     });
 
@@ -311,7 +311,7 @@ describe('Settlement currency on the ledger (§45)', () => {
         });
 
         const entries = await entriesFor(appointment.id);
-        expect(entries.reduce((sum, e) => sum + e.amountCents, 0)).toBe(0);
+        expect(entries.reduce((sum, e) => sum + e.amountMinor, 0)).toBe(0);
         // The whole reason the originals are copied rather than recomputed.
         expect(
           entries.reduce((sum, e) => sum + (e.settlementAmountMinor ?? 0), 0),
@@ -371,7 +371,7 @@ describe('Settlement currency on the ledger (§45)', () => {
         expect(debit.settlementAmountMinor).toBe(-6_500);
         expect(debit.settlementCurrency).toBe('SSP');
         // The USD figure is a reporting equivalent at the booking rate: 6500/650.
-        expect(debit.amountCents).toBe(-10);
+        expect(debit.amountMinor).toBe(-10);
       });
 
       it('leaves the business exactly minus the gateway charge', async () => {
@@ -406,7 +406,7 @@ describe('Settlement currency on the ledger (§45)', () => {
     /** Books, pays, resolves and matures one appointment so it is payable. */
     const payableBooking = async (rate: number) => {
       const shop = await createBusiness(prisma, {
-        priceCents: 4500,
+        priceMinor: 4500,
         depositPercentage: 20,
       });
       const buyer = await createCustomer(prisma);
@@ -422,7 +422,7 @@ describe('Settlement currency on the ledger (§45)', () => {
           paymentProviderReferenceId: reference,
           paymentInitiatedAt: new Date(),
           providerCurrency: 'SSP',
-          providerCurrencyAmountCents: 900 * rate,
+          providerAmountMinor: 900 * rate,
           exchangeRateUsed: rate,
           startTime: new Date(Date.now() - 2 * DAY - 3_600_000),
           endTime: new Date(Date.now() - 2 * DAY),
@@ -500,7 +500,7 @@ describe('Settlement currency on the ledger (§45)', () => {
       const [payout] = await prisma.payout.findMany({
         where: { businessId: shop.businessId },
       });
-      expect(payout.amountCents).toBe(450);
+      expect(payout.amountMinor).toBe(450);
       expect(payout.currency).toBe('USD');
       expect(payout.settlementAmountMinor).toBe(292_500);
       expect(payout.settlementCurrency).toBe('SSP');
@@ -520,7 +520,7 @@ describe('Settlement currency on the ledger (§45)', () => {
         data: {
           businessId,
           type: LedgerEntryType.DEPOSIT_RECEIVED,
-          amountCents: 1000,
+          amountMinor: 1000,
           currency: 'USD',
           settlementCurrency,
           settlementAmountMinor,

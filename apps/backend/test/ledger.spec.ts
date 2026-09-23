@@ -67,7 +67,7 @@ describe('Ledger (§34)', () => {
     appointments = moduleRef.get(AppointmentsService);
     scheduler = moduleRef.get(AppointmentsScheduler);
     await resetDatabase(prisma);
-    business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
+    business = await createBusiness(prisma, { priceMinor: 4500, depositPercentage: 20 });
     customer = await createCustomer(prisma);
   });
 
@@ -115,21 +115,21 @@ describe('Ledger (§34)', () => {
       expect(entries).toHaveLength(2);
       const deposit = entries.find((e) => e.type === LedgerEntryType.DEPOSIT_RECEIVED)!;
       const fee = entries.find((e) => e.type === LedgerEntryType.PLATFORM_FEE)!;
-      expect(deposit.amountCents).toBe(a.depositAmountCents);
+      expect(deposit.amountMinor).toBe(a.depositAmountMinor);
       // Signed from the business's point of view: the fee leaves them.
-      expect(fee.amountCents).toBe(-a.platformFeeAmountCents);
+      expect(fee.amountMinor).toBe(-a.platformFeeAmountMinor);
       expect(deposit.currency).toBe(a.currency);
     });
 
-    it('nets to businessAmountCents exactly', async () => {
+    it('nets to businessAmountMinor exactly', async () => {
       const a = await paidAppointment();
 
       const entries = await entriesFor(a.id);
-      const net = entries.reduce((sum, e) => sum + e.amountCents, 0);
+      const net = entries.reduce((sum, e) => sum + e.amountMinor, 0);
 
       // The invariant the whole ledger hangs on: what the rows say a business
       // is owed for an appointment equals what the appointment says.
-      expect(net).toBe(a.businessAmountCents);
+      expect(net).toBe(a.businessAmountMinor);
     });
 
     it('attributes them to the business that owns the location', async () => {
@@ -234,7 +234,7 @@ describe('Ledger (§34)', () => {
       expect(entries.every((e) => e.availableAt !== null)).toBe(true);
       // Net: the business is back to zero for this appointment, less the
       // gateway's charge.
-      expect(entries.reduce((sum, e) => sum + e.amountCents, 0)).toBe(-50);
+      expect(entries.reduce((sum, e) => sum + e.amountMinor, 0)).toBe(-50);
     });
 
     it('stays null while the appointment is still open', async () => {
@@ -506,7 +506,7 @@ describe('Ledger (§34)', () => {
      */
     const settledAppointment = async (depositPercentage: number) => {
       const shop = await createBusiness(prisma, {
-        priceCents: 4500,
+        priceMinor: 4500,
         depositPercentage,
       });
       const buyer = await createCustomer(prisma);
@@ -524,7 +524,7 @@ describe('Ledger (§34)', () => {
           paymentInitiatedAt: new Date(),
           // What the provider charged, as initiateDepositPayment would record.
           providerCurrency: 'SSP',
-          providerCurrencyAmountCents: 650 * (depositPercentage === 10 ? 450 : 900),
+          providerAmountMinor: 650 * (depositPercentage === 10 ? 450 : 900),
           exchangeRateUsed: 650,
           startTime: new Date(Date.now() - 2 * DAY - 3_600_000),
           endTime: new Date(Date.now() - 2 * DAY),
@@ -552,19 +552,19 @@ describe('Ledger (§34)', () => {
     it('prices the business share at exactly zero', async () => {
       const { appointment } = await settledAppointment(10);
 
-      expect(appointment.businessAmountCents).toBe(0);
+      expect(appointment.businessAmountMinor).toBe(0);
       // The platform takes the whole deposit; the invariant still holds.
-      expect(appointment.platformFeeAmountCents).toBe(appointment.depositAmountCents);
+      expect(appointment.platformFeeAmountMinor).toBe(appointment.depositAmountMinor);
       expect(
-        appointment.platformFeeAmountCents + appointment.businessAmountCents,
-      ).toBe(appointment.depositAmountCents);
+        appointment.platformFeeAmountMinor + appointment.businessAmountMinor,
+      ).toBe(appointment.depositAmountMinor);
     });
 
     it('the ledger pair nets to zero', async () => {
       const { appointment } = await settledAppointment(10);
 
       const net = (await entriesFor(appointment.id)).reduce(
-        (sum, e) => sum + e.amountCents,
+        (sum, e) => sum + e.amountMinor,
         0,
       );
 
@@ -583,13 +583,13 @@ describe('Ledger (§34)', () => {
       });
       expect(created).toHaveLength(0);
       const balance = await payouts().balance(AS_ADMIN, shop.businessId);
-      expect(balance.availableNowCents).toBe(0);
+      expect(balance.availableNowMinor).toBe(0);
     });
 
     it('a deposit ABOVE the fee pays out normally', async () => {
       const { shop, appointment } = await settledAppointment(20);
 
-      expect(appointment.businessAmountCents).toBeGreaterThan(0);
+      expect(appointment.businessAmountMinor).toBeGreaterThan(0);
 
       await payouts().run();
 
@@ -597,7 +597,7 @@ describe('Ledger (§34)', () => {
         where: { businessId: shop.businessId },
       });
       expect(payout).toBeDefined();
-      expect(payout.amountCents).toBe(appointment.businessAmountCents);
+      expect(payout.amountMinor).toBe(appointment.businessAmountMinor);
     });
   });
 
@@ -609,7 +609,7 @@ describe('Ledger (§34)', () => {
       await expect(
         prisma.ledgerEntry.update({
           where: { id: entry.id },
-          data: { amountCents: 999_999 },
+          data: { amountMinor: 999_999 },
         }),
       ).rejects.toThrow(/append-only/);
     });
@@ -635,7 +635,7 @@ describe('Ledger (§34)', () => {
       const payout = await prisma.payout.create({
         data: {
           businessId: business.businessId,
-          amountCents: 1,
+          amountMinor: 1,
           currency: 'USD',
           settlementCurrency: 'USD',
           settlementAmountMinor: 1,
@@ -661,7 +661,7 @@ describe('Ledger (§34)', () => {
           businessId: business.businessId,
           appointmentId: a.id,
           type: LedgerEntryType.ADJUSTMENT,
-          amountCents: -original.amountCents,
+          amountMinor: -original.amountMinor,
           currency: original.currency,
           settlementCurrency: original.settlementCurrency,
           settlementAmountMinor:
@@ -676,10 +676,10 @@ describe('Ledger (§34)', () => {
       const after = await prisma.ledgerEntry.findUniqueOrThrow({
         where: { id: original.id },
       });
-      expect(after.amountCents).toBe(original.amountCents);
+      expect(after.amountMinor).toBe(original.amountMinor);
       expect(
-        (await entriesFor(a.id)).reduce((sum, e) => sum + e.amountCents, 0),
-      ).toBe(a.businessAmountCents - original.amountCents);
+        (await entriesFor(a.id)).reduce((sum, e) => sum + e.amountMinor, 0),
+      ).toBe(a.businessAmountMinor - original.amountMinor);
     });
   });
 

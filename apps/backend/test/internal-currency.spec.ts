@@ -102,7 +102,7 @@ describe('Internal unit of account (§55)', () => {
         data: {
           businessId: business.businessId,
           type: LedgerEntryType.PLATFORM_FEE,
-          amountCents: -250,
+          amountMinor: -250,
           currency: 'XOF',
         },
       });

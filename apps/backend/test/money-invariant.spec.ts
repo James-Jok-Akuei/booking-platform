@@ -10,6 +10,8 @@ import {
 import { ServicesService } from '../src/business/services.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { TestingModule } from '@nestjs/testing';
 import { BusinessAccessService } from '../src/business/business-access.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
@@ -42,32 +44,32 @@ describe('Money invariant: platformFee + business === deposit', () => {
 
     it.each(cases)(
       '%s — the three amounts reconcile exactly',
-      (_label, priceCents, depositPct, feePct) => {
-        const a = computeAppointmentAmounts(priceCents, D(depositPct), D(feePct));
+      (_label, priceMinor, depositPct, feePct) => {
+        const a = computeAppointmentAmounts(priceMinor, D(depositPct), D(feePct));
 
-        expect(a.platformFeeAmountCents + a.businessAmountCents).toBe(
-          a.depositAmountCents,
+        expect(a.platformFeeAmountMinor + a.businessAmountMinor).toBe(
+          a.depositAmountMinor,
         );
       },
     );
 
     it.each(cases)(
       '%s — the business share is never negative',
-      (_label, priceCents, depositPct, feePct) => {
-        const a = computeAppointmentAmounts(priceCents, D(depositPct), D(feePct));
+      (_label, priceMinor, depositPct, feePct) => {
+        const a = computeAppointmentAmounts(priceMinor, D(depositPct), D(feePct));
 
-        expect(a.businessAmountCents).toBeGreaterThanOrEqual(0);
+        expect(a.businessAmountMinor).toBeGreaterThanOrEqual(0);
       },
     );
 
     it.each(cases)(
       '%s — every amount is a whole number of cents',
-      (_label, priceCents, depositPct, feePct) => {
-        const a = computeAppointmentAmounts(priceCents, D(depositPct), D(feePct));
+      (_label, priceMinor, depositPct, feePct) => {
+        const a = computeAppointmentAmounts(priceMinor, D(depositPct), D(feePct));
 
-        expect(Number.isInteger(a.depositAmountCents)).toBe(true);
-        expect(Number.isInteger(a.platformFeeAmountCents)).toBe(true);
-        expect(Number.isInteger(a.businessAmountCents)).toBe(true);
+        expect(Number.isInteger(a.depositAmountMinor)).toBe(true);
+        expect(Number.isInteger(a.platformFeeAmountMinor)).toBe(true);
+        expect(Number.isInteger(a.businessAmountMinor)).toBe(true);
       },
     );
 
@@ -75,9 +77,9 @@ describe('Money invariant: platformFee + business === deposit', () => {
       const a = computeAppointmentAmounts(4500, D('10.00'), D('10.00'));
 
       expect(a).toEqual({
-        depositAmountCents: 450,
-        platformFeeAmountCents: 450,
-        businessAmountCents: 0,
+        depositAmountMinor: 450,
+        platformFeeAmountMinor: 450,
+        businessAmountMinor: 0,
       });
     });
 
@@ -87,9 +89,9 @@ describe('Money invariant: platformFee + business === deposit', () => {
       // could disagree with deposit - fee.
       const a = computeAppointmentAmounts(999, D('33.33'), D('10.00'));
 
-      expect(a.depositAmountCents).toBe(333);
-      expect(a.platformFeeAmountCents).toBe(100);
-      expect(a.businessAmountCents).toBe(233);
+      expect(a.depositAmountMinor).toBe(333);
+      expect(a.platformFeeAmountMinor).toBe(100);
+      expect(a.businessAmountMinor).toBe(233);
     });
   });
 
@@ -110,13 +112,13 @@ describe('Money invariant: platformFee + business === deposit', () => {
 
     it('conversion does not disturb the stored internal invariant', () => {
       const a = computeAppointmentAmounts(4500, D('20.00'), D('10.00'));
-      const charged = convertMinorUnits(a.depositAmountCents, 'USD', 'EUR', D('0.92'));
+      const charged = convertMinorUnits(a.depositAmountMinor, 'USD', 'EUR', D('0.92'));
 
       // The provider is charged a converted figure; the internal split is
       // untouched and still reconciles.
       expect(charged).toBe(828);
-      expect(a.platformFeeAmountCents + a.businessAmountCents).toBe(
-        a.depositAmountCents,
+      expect(a.platformFeeAmountMinor + a.businessAmountMinor).toBe(
+        a.depositAmountMinor,
       );
     });
   });
@@ -127,6 +129,49 @@ describe('Money invariant: platformFee + business === deposit', () => {
    * the tests that stand between a Rwandan customer and a bill a hundred times
    * the price.
    */
+  /**
+   * No money identifier may claim to hold cents again (§56).
+   *
+   * Reads the source and pins the rename, because nothing else can: a field
+   * called `depositAmountCents` holding 11,700 Rwandan francs compiles, passes
+   * every test, reconciles against itself perfectly, and reads to every human
+   * as 117.00. The unit is not checkable at runtime — only the NAME carries it
+   * — so the name is what gets enforced.
+   *
+   * If you are here because this test failed: the amount is in minor units of
+   * some currency, so call it `...Minor`. It is only "cents" when the currency
+   * happens to have two decimal places, and since §55 that is a deployment
+   * setting rather than a fact.
+   */
+  describe('no money field claims to hold cents (§56)', () => {
+    const sourceFiles = (dir: string): string[] =>
+      readdirSync(dir).flatMap((name) => {
+        const full = join(dir, name);
+        return statSync(full).isDirectory()
+          ? sourceFiles(full)
+          : full.endsWith('.ts')
+            ? [full]
+            : [];
+      });
+
+    it('finds no camelCase identifier ending in "Cents" anywhere in src/', () => {
+      const offenders: string[] = [];
+
+      for (const file of sourceFiles(join(process.cwd(), 'src'))) {
+        readFileSync(file, 'utf8')
+          .split('\n')
+          .forEach((line, index) => {
+            const match = line.match(/\b[a-zA-Z]+Cents\b/);
+            if (match) {
+              offenders.push(`${file.replace(process.cwd(), '.')}:${index + 1}  ${match[0]}`);
+            }
+          });
+      }
+
+      expect(offenders).toEqual([]);
+    });
+  });
+
   describe('zero-decimal currencies (§55.2)', () => {
     it('knows RWF has no minor unit, and USD has two', () => {
       expect(minorUnitExponent('RWF')).toBe(0);
@@ -187,7 +232,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       appointments = moduleRef.get(AppointmentsService);
       await resetDatabase(prisma);
       await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10, { role: 'ADMIN' });
-      business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
+      business = await createBusiness(prisma, { priceMinor: 4500, depositPercentage: 20 });
       customer = await createCustomer(prisma);
     });
 
@@ -205,40 +250,40 @@ describe('Money invariant: platformFee + business === deposit', () => {
 
       const row = await prisma.appointment.findUniqueOrThrow({ where: { id: created.id } });
 
-      expect(row.servicePriceCents).toBe(4500);
+      expect(row.servicePriceMinor).toBe(4500);
       expect(Number(row.depositPercentage)).toBe(20);
       expect(Number(row.platformFeePercentage)).toBe(10);
     });
 
-    it('the snapshot reproduces depositAmountCents exactly', async () => {
+    it('the snapshot reproduces depositAmountMinor exactly', async () => {
       const row = await prisma.appointment.findFirstOrThrow({
         where: { customerId: customer.userId },
       });
 
       const recomputed = computeAppointmentAmounts(
-        row.servicePriceCents!,
+        row.servicePriceMinor!,
         new Prisma.Decimal(row.depositPercentage!),
         new Prisma.Decimal(row.platformFeePercentage!),
       );
 
       // The point of the snapshot: the stored amounts are explainable from the
       // stored inputs, with no reference to today's editable Service row.
-      expect(recomputed.depositAmountCents).toBe(row.depositAmountCents);
+      expect(recomputed.depositAmountMinor).toBe(row.depositAmountMinor);
     });
 
-    it('the snapshot reproduces platformFeeAmountCents and businessAmountCents exactly', async () => {
+    it('the snapshot reproduces platformFeeAmountMinor and businessAmountMinor exactly', async () => {
       const row = await prisma.appointment.findFirstOrThrow({
         where: { customerId: customer.userId },
       });
 
       const recomputed = computeAppointmentAmounts(
-        row.servicePriceCents!,
+        row.servicePriceMinor!,
         new Prisma.Decimal(row.depositPercentage!),
         new Prisma.Decimal(row.platformFeePercentage!),
       );
 
-      expect(recomputed.platformFeeAmountCents).toBe(row.platformFeeAmountCents);
-      expect(recomputed.businessAmountCents).toBe(row.businessAmountCents);
+      expect(recomputed.platformFeeAmountMinor).toBe(row.platformFeeAmountMinor);
+      expect(recomputed.businessAmountMinor).toBe(row.businessAmountMinor);
     });
 
     it('editing the service afterwards does not change the snapshot', async () => {
@@ -249,13 +294,13 @@ describe('Money invariant: platformFee + business === deposit', () => {
       // The exact failure the snapshot exists to prevent.
       await prisma.service.update({
         where: { id: business.serviceId },
-        data: { priceCents: 9999, depositPercentage: 55 },
+        data: { priceMinor: 9999, depositPercentage: 55 },
       });
 
       const after = await prisma.appointment.findUniqueOrThrow({ where: { id: row.id } });
-      expect(after.servicePriceCents).toBe(4500);
+      expect(after.servicePriceMinor).toBe(4500);
       expect(Number(after.depositPercentage)).toBe(20);
-      expect(after.depositAmountCents).toBe(row.depositAmountCents);
+      expect(after.depositAmountMinor).toBe(row.depositAmountMinor);
     });
   });
 
@@ -281,7 +326,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       appointments = moduleRef.get(AppointmentsService);
       await resetDatabase(prisma);
       await moduleRef.get(PlatformSettingsService).setPlatformFeePercentage(10, { role: 'ADMIN' });
-      business = await createBusiness(prisma, { priceCents: 4500, depositPercentage: 20 });
+      business = await createBusiness(prisma, { priceMinor: 4500, depositPercentage: 20 });
       customer = await createCustomer(prisma);
 
       const created = await appointments.create(customer.userId, {
@@ -295,7 +340,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       // customer opening that booking now is shown.
       await prisma.service.update({
         where: { id: business.serviceId },
-        data: { priceCents: 9999 },
+        data: { priceMinor: 9999 },
       });
     });
 
@@ -307,9 +352,9 @@ describe('Money invariant: platformFee + business === deposit', () => {
     it('findOne reports the original price, not the repriced one', async () => {
       const found = await appointments.findOne(customer.userId, appointmentId);
 
-      expect(found.servicePriceCents).toBe(4500);
+      expect(found.servicePriceMinor).toBe(4500);
       // The live price is not reachable anywhere in the response.
-      expect(found.service).not.toHaveProperty('priceCents');
+      expect(found.service).not.toHaveProperty('priceMinor');
       expect(JSON.stringify(found)).not.toContain('9999');
     });
 
@@ -317,8 +362,8 @@ describe('Money invariant: platformFee + business === deposit', () => {
       const list = await appointments.findAll(customer.userId, UserRole.CUSTOMER, {});
       const row = list.appointments.find((a: any) => a.id === appointmentId);
 
-      expect(row.servicePriceCents).toBe(4500);
-      expect(row.service).not.toHaveProperty('priceCents');
+      expect(row.servicePriceMinor).toBe(4500);
+      expect(row.service).not.toHaveProperty('priceMinor');
       expect(JSON.stringify(list)).not.toContain('9999');
     });
 
@@ -327,8 +372,8 @@ describe('Money invariant: platformFee + business === deposit', () => {
       // served the stale price to a detail view served it here as well.
       const cancelled = await appointments.cancel(customer.userId, appointmentId);
 
-      expect(cancelled.servicePriceCents).toBe(4500);
-      expect(cancelled.service).not.toHaveProperty('priceCents');
+      expect(cancelled.servicePriceMinor).toBe(4500);
+      expect(cancelled.service).not.toHaveProperty('priceMinor');
       expect(JSON.stringify(cancelled)).not.toContain('9999');
     });
 
@@ -341,7 +386,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       const found = await appointments.findOne(customer.userId, appointmentId);
 
       expect(found.service.name).toBe('Renamed Service');
-      expect(found.servicePriceCents).toBe(4500);
+      expect(found.servicePriceMinor).toBe(4500);
     });
 
     describe('a pre-snapshot appointment', () => {
@@ -359,7 +404,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         await prisma.appointment.update({
           where: { id: legacyId },
           data: {
-            servicePriceCents: null,
+            servicePriceMinor: null,
             depositPercentage: null,
             platformFeePercentage: null,
           },
@@ -372,7 +417,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         // Null is "not recorded", which a client can render honestly. The live
         // price would be a wrong number presented as a fact, which is the bug
         // this whole change exists to remove.
-        expect(found.servicePriceCents).toBeNull();
+        expect(found.servicePriceMinor).toBeNull();
         expect(JSON.stringify(found)).not.toContain('9999');
       });
 
@@ -380,7 +425,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         const found = await appointments.findOne(customer.userId, legacyId);
         const list = await appointments.findAll(customer.userId, UserRole.CUSTOMER, {});
 
-        expect(found.service).not.toHaveProperty('priceCents');
+        expect(found.service).not.toHaveProperty('priceMinor');
         expect(Object.keys(found.service).sort()).toEqual([
           'durationMinutes',
           'id',
@@ -433,7 +478,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
     const service = (depositPercentage: number, name = 'Service') =>
       services.create(business.userId, {
         name,
-        priceCents: 4500,
+        priceMinor: 4500,
         durationMinutes: 60,
         depositPercentage,
       });
@@ -572,7 +617,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       it('blocks on ANY business, not just the caller', async () => {
         await services.create(other.userId, {
           name: 'Someone else',
-          priceCents: 4500,
+          priceMinor: 4500,
           durationMinutes: 60,
           depositPercentage: 12,
         });
@@ -635,8 +680,8 @@ describe('Money invariant: platformFee + business === deposit', () => {
       it('permits fee exactly equal to deposit', () => {
         const a = computeAppointmentAmounts(4500, D(10), D(10));
 
-        expect(a.businessAmountCents).toBe(0);
-        expect(a.platformFeeAmountCents).toBe(a.depositAmountCents);
+        expect(a.businessAmountMinor).toBe(0);
+        expect(a.platformFeeAmountMinor).toBe(a.depositAmountMinor);
       });
     });
   });
@@ -671,7 +716,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       await expect(
         services.create(business.userId, {
           name: 'Below floor',
-          priceCents: 4500,
+          priceMinor: 4500,
           durationMinutes: 60,
           depositPercentage: 9.99,
         }),
@@ -681,7 +726,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
     it('accepts a deposit percentage exactly at the floor', async () => {
       const created = await services.create(business.userId, {
         name: 'At floor',
-        priceCents: 4500,
+        priceMinor: 4500,
         durationMinutes: 60,
         depositPercentage: 10,
       });
@@ -700,7 +745,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       await expect(
         services.create(business.userId, {
           name: 'Was fine at 10%',
-          priceCents: 4500,
+          priceMinor: 4500,
           durationMinutes: 60,
           depositPercentage: 20,
         }),
@@ -712,7 +757,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
     it('rejects an update that would drop an existing service below the floor', async () => {
       const created = await services.create(business.userId, {
         name: 'To be lowered',
-        priceCents: 4500,
+        priceMinor: 4500,
         durationMinutes: 60,
         depositPercentage: 20,
       });

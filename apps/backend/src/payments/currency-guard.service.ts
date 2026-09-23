@@ -7,7 +7,7 @@ import { INTERNAL_CURRENCY, minorUnitExponent } from './currency';
  *
  * `INTERNAL_CURRENCY` is a deployment constant, and every stored amount is
  * denominated in it. Nothing in the database records the unit next to the
- * number — a ledger entry's `amountCents` is a bare integer — so changing the
+ * number — a ledger entry's `amountMinor` is a bare integer — so changing the
  * constant does not migrate anything. It silently reinterprets the whole
  * history: a balance of 1,200,000 becomes 1,200,000 of something else.
  *

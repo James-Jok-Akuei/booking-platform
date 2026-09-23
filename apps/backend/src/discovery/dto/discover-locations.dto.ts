@@ -48,7 +48,7 @@ export class DiscoverLocationsDto {
   @Type(() => Number)
   @IsInt()
   @Min(0)
-  maxPriceCents?: number;
+  maxPriceMinor?: number;
 
   @IsOptional()
   @Type(() => Boolean)

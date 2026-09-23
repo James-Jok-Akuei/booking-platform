@@ -88,9 +88,9 @@ async function main() {
     select: {
       id: true,
       status: true,
-      depositAmountCents: true,
+      depositAmountMinor: true,
       paymentProviderReferenceId: true,
-      providerCurrencyAmountCents: true,
+      providerAmountMinor: true,
     },
   });
   if (!appointment) throw new Error(`No appointment ${appointmentId}.`);
@@ -116,7 +116,7 @@ async function main() {
   // charged something other than the straight conversion.
   const chargedMinor = chargedArg
     ? Number(chargedArg)
-    : Math.round(appointment.depositAmountCents * Number(rate.rate));
+    : Math.round(appointment.depositAmountMinor * Number(rate.rate));
   if (!Number.isInteger(chargedMinor) || chargedMinor <= 0) {
     throw new Error(`chargedMinor must be a positive whole number, got "${chargedArg}".`);
   }
@@ -130,7 +130,7 @@ async function main() {
       paymentProviderReferenceId: reference,
       paymentInitiatedAt: new Date(),
       providerCurrency: rate.providerCurrency,
-      providerCurrencyAmountCents: chargedMinor,
+      providerAmountMinor: chargedMinor,
       exchangeRateUsed: rate.rate,
     },
   });
@@ -146,7 +146,7 @@ async function main() {
 
   const entries = await prisma.ledgerEntry.findMany({
     where: { appointmentId },
-    select: { type: true, amountCents: true, settlementAmountMinor: true },
+    select: { type: true, amountMinor: true, settlementAmountMinor: true },
     orderBy: { type: 'asc' },
   });
 
@@ -161,7 +161,7 @@ async function main() {
       '  ledger entries:',
       ...entries.map(
         (e) =>
-          `    ${e.type.padEnd(22)} USD ${String(e.amountCents).padStart(8)}c   ` +
+          `    ${e.type.padEnd(22)} USD ${String(e.amountMinor).padStart(8)}c   ` +
           `${rate.providerCurrency} ${String(e.settlementAmountMinor ?? 0).padStart(10)}`,
       ),
       '',

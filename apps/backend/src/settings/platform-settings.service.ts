@@ -64,7 +64,7 @@ export class PlatformSettingsService {
    *
    * Returned as a Prisma.Decimal, never a JS number — this value multiplies
    * money, and going through binary floating point is exactly the mistake the
-   * integer-cents rule exists to prevent.
+   * integer-minor-units rule exists to prevent.
    */
   async getPlatformFeePercentage(): Promise<Prisma.Decimal> {
     if (this.cached && this.cached.expiresAt > Date.now()) {
@@ -449,7 +449,7 @@ export class PlatformSettingsService {
   /**
    * Refuses a fee INCREASE that would strand an existing service (§40.2).
    *
-   * `businessAmountCents = deposit − fee`, so a service whose depositPercentage
+   * `businessAmountMinor = deposit − fee`, so a service whose depositPercentage
    * is below the new fee would price every future booking with a negative
    * business share — the business paying to take work. `ServicesService` already
    * refuses to SAVE such a service; this is the other direction, where the

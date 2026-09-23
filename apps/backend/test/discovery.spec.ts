@@ -64,13 +64,13 @@ describe('Discovery (§43)', () => {
     status?: BusinessStatus;
     lat?: number | null;
     lng?: number | null;
-    priceCents?: number;
+    priceMinor?: number;
     name?: string;
     locationName?: string;
   } = {}) => {
     const business = await createBusiness(prisma, {
       status: options.status ?? BusinessStatus.APPROVED,
-      priceCents: options.priceCents ?? 4500,
+      priceMinor: options.priceMinor ?? 4500,
     });
     await prisma.businessProfile.update({
       where: { id: business.businessId },
@@ -215,21 +215,21 @@ describe('Discovery (§43)', () => {
       expect(ids(result)).toEqual([good.locationId]);
     });
 
-    it('filters by maxPriceCents against the cheapest service', async () => {
-      const cheap = await shop({ priceCents: 2000 });
-      await shop({ priceCents: 9000 });
+    it('filters by maxPriceMinor against the cheapest service', async () => {
+      const cheap = await shop({ priceMinor: 2000 });
+      await shop({ priceMinor: 9000 });
 
-      const result = await discovery.search({ maxPriceCents: 5000 });
+      const result = await discovery.search({ maxPriceMinor: 5000 });
 
       expect(ids(result)).toEqual([cheap.locationId]);
     });
 
     it('combines two filters', async () => {
-      const target = await shop({ name: 'Nile Barbers', priceCents: 2000 });
-      await shop({ name: 'Nile Spa', priceCents: 9000 });
-      await shop({ name: 'Konyo Barbers', priceCents: 2000 });
+      const target = await shop({ name: 'Nile Barbers', priceMinor: 2000 });
+      await shop({ name: 'Nile Spa', priceMinor: 9000 });
+      await shop({ name: 'Konyo Barbers', priceMinor: 2000 });
 
-      const result = await discovery.search({ q: 'nile', maxPriceCents: 5000 });
+      const result = await discovery.search({ q: 'nile', maxPriceMinor: 5000 });
 
       expect(ids(result)).toEqual([target.locationId]);
     });
@@ -392,14 +392,14 @@ describe('Discovery (§43)', () => {
   });
 
   // ------------------------------------------------------------------
-  describe('fromPriceCents', () => {
+  describe('fromPriceMinor', () => {
     it('is the cheapest ACTIVE service', async () => {
-      const business = await shop({ priceCents: 9000 });
+      const business = await shop({ priceMinor: 9000 });
       await prisma.service.create({
         data: {
           businessId: business.businessId,
           name: 'Cheaper',
-          priceCents: 2500,
+          priceMinor: 2500,
           durationMinutes: 30,
           depositPercentage: 20,
         },
@@ -408,16 +408,16 @@ describe('Discovery (§43)', () => {
 
       const result = await discovery.search({});
 
-      expect(result.locations[0].fromPriceCents).toBe(2500);
+      expect(result.locations[0].fromPriceMinor).toBe(2500);
     });
 
     it('ignores a soft-deleted cheaper service', async () => {
-      const business = await shop({ priceCents: 9000 });
+      const business = await shop({ priceMinor: 9000 });
       await prisma.service.create({
         data: {
           businessId: business.businessId,
           name: 'Retired bargain',
-          priceCents: 100,
+          priceMinor: 100,
           durationMinutes: 30,
           depositPercentage: 20,
           isActive: false,
@@ -428,7 +428,7 @@ describe('Discovery (§43)', () => {
       const result = await discovery.search({});
 
       // A retired service is not bookable, so it must not set the headline.
-      expect(result.locations[0].fromPriceCents).toBe(9000);
+      expect(result.locations[0].fromPriceMinor).toBe(9000);
     });
 
     it('is null when a business has no active services at all', async () => {
@@ -441,12 +441,12 @@ describe('Discovery (§43)', () => {
 
       const result = await discovery.search({});
 
-      expect(result.locations[0].fromPriceCents).toBeNull();
+      expect(result.locations[0].fromPriceMinor).toBeNull();
       expect(result.locations[0]).not.toHaveProperty('approxSettlement');
     });
 
     it('is shared across two branches of one business', async () => {
-      const business = await shop({ priceCents: 3000 });
+      const business = await shop({ priceMinor: 3000 });
       await prisma.location.create({
         data: {
           businessId: business.businessId,
@@ -463,7 +463,7 @@ describe('Discovery (§43)', () => {
       // Services belong to the business and are shared across its locations
       // (§10.2), so both branches genuinely have the same cheapest price.
       expect(result.locations).toHaveLength(2);
-      expect(result.locations.every((l) => l.fromPriceCents === 3000)).toBe(true);
+      expect(result.locations.every((l) => l.fromPriceMinor === 3000)).toBe(true);
     });
   });
 
@@ -471,11 +471,11 @@ describe('Discovery (§43)', () => {
   describe('approxSettlement', () => {
     it('is attached to the headline price', async () => {
       await setRate();
-      await shop({ priceCents: 4500 });
+      await shop({ priceMinor: 4500 });
 
       const result = await discovery.search({});
 
-      const settlement = (result.locations[0] as any).approxSettlement.fromPriceCents;
+      const settlement = (result.locations[0] as any).approxSettlement.fromPriceMinor;
       // $45.00 × 650 = 29 250 SSP.
       expect(settlement.currency).toBe('SSP');
       expect(settlement.amountMinor).toBe(2_925_000);
@@ -488,7 +488,7 @@ describe('Discovery (§43)', () => {
       const result = await discovery.search({});
 
       expect(result.locations[0]).not.toHaveProperty('approxSettlement');
-      expect(result.locations[0].fromPriceCents).toBe(4500);
+      expect(result.locations[0].fromPriceMinor).toBe(4500);
     });
 
     it('reads the rate exactly ONCE for a whole page', async () => {
@@ -510,18 +510,18 @@ describe('Discovery (§43)', () => {
       const result = await discovery.search({});
 
       const rates = new Set(
-        result.locations.map((l: any) => l.approxSettlement.fromPriceCents.exchangeRate),
+        result.locations.map((l: any) => l.approxSettlement.fromPriceMinor.exchangeRate),
       );
       expect(rates.size).toBe(1);
     });
 
     it('is attached to every service on the detail response', async () => {
       await setRate();
-      const business = await shop({ priceCents: 4500 });
+      const business = await shop({ priceMinor: 4500 });
 
       const detail: any = await discovery.findOne(business.locationId);
 
-      expect(detail.services[0].approxSettlement.priceCents.amountMinor).toBe(2_925_000);
+      expect(detail.services[0].approxSettlement.priceMinor.amountMinor).toBe(2_925_000);
     });
   });
 
@@ -714,7 +714,7 @@ describe('Discovery (§43)', () => {
         data: {
           businessId: business.businessId,
           name: 'Retired',
-          priceCents: 100,
+          priceMinor: 100,
           durationMinutes: 30,
           depositPercentage: 20,
           isActive: false,
@@ -760,21 +760,21 @@ describe('Discovery (§43)', () => {
       // More locations than a page holds, with the cheapest created LAST so it
       // could only reach page one by being ordered in SQL.
       for (let i = 0; i < 25; i++) {
-        await shop({ priceCents: 9000 + i, locationName: `Dear ${i}` });
+        await shop({ priceMinor: 9000 + i, locationName: `Dear ${i}` });
       }
-      const bargain = await shop({ priceCents: 100, locationName: 'Bargain' });
+      const bargain = await shop({ priceMinor: 100, locationName: 'Bargain' });
 
       const page = await discovery.search({ sort: DiscoverySort.PRICE, limit: 5 });
 
       expect(page.total).toBe(26);
       expect(ids(page)[0]).toBe(bargain.locationId);
-      expect(page.locations[0].fromPriceCents).toBe(100);
+      expect(page.locations[0].fromPriceMinor).toBe(100);
     });
 
     it('orders ascending and pages coherently', async () => {
       const prices = [500, 1500, 2500, 3500];
-      for (const priceCents of prices) {
-        await shop({ priceCents, locationName: `At ${priceCents}` });
+      for (const priceMinor of prices) {
+        await shop({ priceMinor, locationName: `At ${priceMinor}` });
       }
 
       const first = await discovery.search({ sort: DiscoverySort.PRICE, limit: 2 });
@@ -784,12 +784,12 @@ describe('Discovery (§43)', () => {
         offset: 2,
       });
 
-      expect(first.locations.map((l) => l.fromPriceCents)).toEqual([500, 1500]);
-      expect(second.locations.map((l) => l.fromPriceCents)).toEqual([2500, 3500]);
+      expect(first.locations.map((l) => l.fromPriceMinor)).toEqual([500, 1500]);
+      expect(second.locations.map((l) => l.fromPriceMinor)).toEqual([2500, 3500]);
     });
 
     it('sorts a business with no active services LAST, not out', async () => {
-      const priced = await shop({ priceCents: 4500 });
+      const priced = await shop({ priceMinor: 4500 });
       const empty = await shop();
       await prisma.service.updateMany({
         where: { businessId: empty.businessId },
@@ -801,7 +801,7 @@ describe('Discovery (§43)', () => {
 
       // A business with no services yet is not free, and is not "no results".
       expect(ids(page)).toEqual([priced.locationId, empty.locationId]);
-      expect(page.locations[1].fromPriceCents).toBeNull();
+      expect(page.locations[1].fromPriceMinor).toBeNull();
     });
 
     it('a business with no active services still appears in ordinary browse', async () => {
@@ -818,12 +818,12 @@ describe('Discovery (§43)', () => {
     });
 
     it('filter and sort agree on the same number', async () => {
-      for (const priceCents of [1000, 4000, 7000, 12000]) {
-        await shop({ priceCents, locationName: `At ${priceCents}` });
+      for (const priceMinor of [1000, 4000, 7000, 12000]) {
+        await shop({ priceMinor, locationName: `At ${priceMinor}` });
       }
 
       const page = await discovery.search({
-        maxPriceCents: 5000,
+        maxPriceMinor: 5000,
         sort: DiscoverySort.PRICE,
       });
 
@@ -831,13 +831,13 @@ describe('Discovery (§43)', () => {
       // column the ordering used.
       expect(page.locations).toHaveLength(2);
       expect(
-        page.locations.every((l) => l.fromPriceCents !== null && l.fromPriceCents <= 5000),
+        page.locations.every((l) => l.fromPriceMinor !== null && l.fromPriceMinor <= 5000),
       ).toBe(true);
       // And `total` agrees, because the filter is in the query now.
       expect(page.total).toBe(2);
     });
 
-    it('maxPriceCents excludes a business with no active services', async () => {
+    it('maxPriceMinor excludes a business with no active services', async () => {
       const empty = await shop();
       await prisma.service.updateMany({
         where: { businessId: empty.businessId },
@@ -845,7 +845,7 @@ describe('Discovery (§43)', () => {
       });
       await reprice(empty.businessId);
 
-      const page = await discovery.search({ maxPriceCents: 100_000 });
+      const page = await discovery.search({ maxPriceMinor: 100_000 });
 
       // There is no price at or below the cap because there is no price at all.
       expect(ids(page)).not.toContain(empty.locationId);
@@ -883,7 +883,7 @@ describe('Discovery (§43)', () => {
       expect(hours).toHaveBeenCalledTimes(1);
       expect(exceptions).toHaveBeenCalledTimes(1);
       expect(rate).toHaveBeenCalledTimes(1);
-      expect(result.locations.every((l) => l.fromPriceCents === 4500)).toBe(true);
+      expect(result.locations.every((l) => l.fromPriceMinor === 4500)).toBe(true);
     });
 
     it('costs the same number of lookups for 1 row as for 20', async () => {

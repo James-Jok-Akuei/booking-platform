@@ -77,17 +77,17 @@ const APPOINTMENT_SELECT = {
   status: true,
   startTime: true,
   endTime: true,
-  depositAmountCents: true,
-  platformFeeAmountCents: true,
-  businessAmountCents: true,
+  depositAmountMinor: true,
+  platformFeeAmountMinor: true,
+  businessAmountMinor: true,
   currency: true,
-  servicePriceCents: true,
+  servicePriceMinor: true,
   depositPercentage: true,
   platformFeePercentage: true,
   paymentProviderReferenceId: true,
   paymentInitiatedAt: true,
   providerCurrency: true,
-  providerCurrencyAmountCents: true,
+  providerAmountMinor: true,
   exchangeRateUsed: true,
   verifiedAt: true,
   /// Not the code — only that one was sent, and when (§53.2).
@@ -105,11 +105,11 @@ const APPOINTMENT_SELECT = {
   depositPaidAt: true,
   createdAt: true,
   location: { select: { id: true, name: true, address: true, businessId: true } },
-  // NO priceCents. The joined Service row carries the business's CURRENT price,
+  // NO priceMinor. The joined Service row carries the business's CURRENT price,
   // and a business may reprice at any time (§10) — selecting it here rendered
   // today's price as what a customer agreed to months ago, on every appointment
   // detail and list response. The price of record is the appointment's own
-  // `servicePriceCents` snapshot above (§30), which is null for appointments
+  // `servicePriceMinor` snapshot above (§30), which is null for appointments
   // booked before it existed. Null is the honest answer there; falling back to
   // the live price is the bug.
   //
@@ -163,7 +163,7 @@ export class AppointmentsService {
         id: true,
         startTime: true,
         customerId: true,
-        depositAmountCents: true,
+        depositAmountMinor: true,
         currency: true,
         service: { select: { name: true } },
         location: {
@@ -182,7 +182,7 @@ export class AppointmentsService {
         locationName: appointment.location.name,
         businessName: appointment.location.business.name ?? 'the business',
         startTime: appointment.startTime,
-        depositAmountCents: appointment.depositAmountCents,
+        depositAmountMinor: appointment.depositAmountMinor,
         currency: appointment.currency,
       },
     };
@@ -237,7 +237,7 @@ export class AppointmentsService {
         id: true,
         businessId: true,
         isActive: true,
-        priceCents: true,
+        priceMinor: true,
         durationMinutes: true,
         depositPercentage: true,
         name: true,
@@ -288,7 +288,7 @@ export class AppointmentsService {
     // what this customer agreed to.
     const platformFeePercentage = await this.settings.getPlatformFeePercentage();
     const amounts = computeAppointmentAmounts(
-      service.priceCents,
+      service.priceMinor,
       service.depositPercentage,
       platformFeePercentage,
     );
@@ -316,7 +316,7 @@ export class AppointmentsService {
           ...amounts,
           // The inputs those amounts came from, recorded alongside them. Same
           // values, same transaction — this changes no arithmetic.
-          servicePriceCents: service.priceCents,
+          servicePriceMinor: service.priceMinor,
           depositPercentage: service.depositPercentage,
           platformFeePercentage,
           // Both written from the same generated value, in the same statement:
@@ -374,8 +374,8 @@ export class AppointmentsService {
     }
 
     this.logger.log(
-      `Appointment ${appointment.id} created PENDING_PAYMENT: deposit=${amounts.depositAmountCents}c ` +
-        `(fee=${amounts.platformFeeAmountCents}c, business=${amounts.businessAmountCents}c) ` +
+      `Appointment ${appointment.id} created PENDING_PAYMENT: deposit=${amounts.depositAmountMinor}c ` +
+        `(fee=${amounts.platformFeeAmountMinor}c, business=${amounts.businessAmountMinor}c) ` +
         `at ${platformFeePercentage.toFixed(2)}% platform fee.`,
     );
 
@@ -454,7 +454,7 @@ export class AppointmentsService {
 
     // ---- Convert the internal USD deposit into the provider's currency ----
     //
-    // Everything upstream is USD cents; the provider charges in whatever
+    // Everything upstream is in the internal currency's minor units; the provider charges in whatever
     // `providerCurrency` says. This is the ONLY point where the two meet.
     const { providerCurrency, rate, updatedAt } = await this.settings.getExchangeRate();
 
@@ -476,8 +476,8 @@ export class AppointmentsService {
     // on the way through, so an internal currency with two of them and a
     // provider currency with none convert correctly rather than by a factor of
     // 100.
-    const providerAmountCents = convertMinorUnits(
-      appointment.depositAmountCents,
+    const providerAmountMinor = convertMinorUnits(
+      appointment.depositAmountMinor,
       INTERNAL_CURRENCY,
       providerCurrency,
       rate,
@@ -485,10 +485,10 @@ export class AppointmentsService {
 
     // A rate small enough to round a real deposit down to zero would have the
     // provider collect nothing while the appointment booked normally.
-    if (providerAmountCents <= 0) {
+    if (providerAmountMinor <= 0) {
       this.logger.error(
-        `Deposit initiation blocked for appointment ${appointmentId}: ${appointment.depositAmountCents} ` +
-          `${INTERNAL_CURRENCY} cents converts to ${providerAmountCents} ${providerCurrency} cents at rate ${rate.toFixed(8)}.`,
+        `Deposit initiation blocked for appointment ${appointmentId}: ${appointment.depositAmountMinor} ` +
+          `${INTERNAL_CURRENCY} minor converts to ${providerAmountMinor} ${providerCurrency} minor at rate ${rate.toFixed(8)}.`,
       );
       throw new BadRequestException(
         'The configured exchange rate converts this deposit to zero. Check the rate before taking payments.',
@@ -497,14 +497,14 @@ export class AppointmentsService {
 
     this.logger.log(
       `Converting deposit for appointment ${appointmentId}: ` +
-        `${appointment.depositAmountCents} ${INTERNAL_CURRENCY} cents x ${rate.toFixed(8)} = ` +
-        `${providerAmountCents} ${providerCurrency} cents` +
+        `${appointment.depositAmountMinor} ${INTERNAL_CURRENCY} minor x ${rate.toFixed(8)} = ` +
+        `${providerAmountMinor} ${providerCurrency} minor` +
         (updatedAt ? ` (rate set ${updatedAt.toISOString()})` : ''),
     );
 
     const result = await this.payments.initiatePayment({
       phoneNumber,
-      amountCents: providerAmountCents,
+      amountMinor: providerAmountMinor,
       currency: providerCurrency,
       // Our own id, so the provider's records reconcile against ours.
       externalReferenceId: appointment.id,
@@ -548,15 +548,15 @@ export class AppointmentsService {
         // provider statement that disagrees with our ledger can only be
         // explained if both figures and the rate between them survive.
         providerCurrency,
-        providerCurrencyAmountCents: providerAmountCents,
+        providerAmountMinor: providerAmountMinor,
         exchangeRateUsed: rate,
       },
     });
 
     this.logger.log(
       `Deposit payment initiated for appointment ${appointmentId}: provider=${this.payments.name} ` +
-        `reference=${result.providerReferenceId} charged=${providerAmountCents}c ${providerCurrency} ` +
-        `(internal ${appointment.depositAmountCents}c ${INTERNAL_CURRENCY})`,
+        `reference=${result.providerReferenceId} charged=${providerAmountMinor}c ${providerCurrency} ` +
+        `(internal ${appointment.depositAmountMinor}c ${INTERNAL_CURRENCY})`,
     );
 
     return {
@@ -566,9 +566,9 @@ export class AppointmentsService {
       providerReferenceId: result.providerReferenceId,
       // Both sides returned, so a client never has to infer which currency a
       // bare amount was in.
-      depositAmountCents: appointment.depositAmountCents,
+      depositAmountMinor: appointment.depositAmountMinor,
       currency: appointment.currency,
-      providerCurrencyAmountCents: providerAmountCents,
+      providerAmountMinor: providerAmountMinor,
       providerCurrency,
       exchangeRateUsed: rate.toFixed(8),
       message:
@@ -592,7 +592,7 @@ export class AppointmentsService {
       select: {
         id: true,
         status: true,
-        depositAmountCents: true,
+        depositAmountMinor: true,
         paymentProviderReferenceId: true,
         paymentInitiatedAt: true,
       },
@@ -1325,16 +1325,16 @@ export class AppointmentsService {
    *
    * Every USD amount on the response gets one, including the fee split. Picking
    * a subset would leave a client converting the rest itself, which is the
-   * thing this exists to prevent. `providerCurrencyAmountCents` is deliberately
+   * thing this exists to prevent. `providerAmountMinor` is deliberately
    * absent: it is already in the provider's currency and converting it again
    * would be nonsense.
    */
   private withApproxSettlement<
     T extends {
-      servicePriceCents?: number | null;
-      depositAmountCents?: number | null;
-      platformFeeAmountCents?: number | null;
-      businessAmountCents?: number | null;
+      servicePriceMinor?: number | null;
+      depositAmountMinor?: number | null;
+      platformFeeAmountMinor?: number | null;
+      businessAmountMinor?: number | null;
     },
   >(appointment: T, context: RateContext | null): T & { approxSettlement?: ApproxSettlementMap } {
     if (!context) return appointment;
@@ -1343,10 +1343,10 @@ export class AppointmentsService {
       ...appointment,
       approxSettlement: approxSettlementMap(
         {
-          servicePriceCents: appointment.servicePriceCents,
-          depositAmountCents: appointment.depositAmountCents,
-          platformFeeAmountCents: appointment.platformFeeAmountCents,
-          businessAmountCents: appointment.businessAmountCents,
+          servicePriceMinor: appointment.servicePriceMinor,
+          depositAmountMinor: appointment.depositAmountMinor,
+          platformFeeAmountMinor: appointment.platformFeeAmountMinor,
+          businessAmountMinor: appointment.businessAmountMinor,
         },
         context,
       ),
