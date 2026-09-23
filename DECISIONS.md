@@ -6683,3 +6683,96 @@ Production. The sandbox proves the integration works; it does not prove MTN will
 let this account move real money, which needs the merchant agreement and an
 answer on the disbursement float. Airtel has no disbursement client at all, so
 an Airtel destination still returns a 503 — correctly, and under test.
+
+---
+
+## 66. The platform moves to Rwanda (2026-09-23)
+
+§55 through §58 were all Rwanda groundwork — the currency exponent, the rename,
+multi-operator support, the `+250` prefix routing. The deployment itself was
+never switched, and stayed entirely South Sudan while that work piled up behind
+it. This is the switch.
+
+### 66.1 What actually changed
+
+| | Was | Is |
+|---|---|---|
+| `INTERNAL_CURRENCY` | unset → USD | **RWF** |
+| Provider currency | SSP at 650 | **RWF at 1** |
+| `PLATFORM_TIMEZONE` | Africa/Juba | **Africa/Kigali** |
+| Payout prefix | +211 | **+250** |
+| Demo world | Juba | **Kigali** — real coordinates, `+250` numbers, franc prices |
+
+The rate is **exactly 1**, and it has to be: the platform now prices, charges
+and settles in the same currency, so there is nothing to convert. §55.3 already
+refused any other value for the unit of account, which is the check doing its
+job rather than a coincidence.
+
+### 66.2 The approximate figure now suppresses itself
+
+§39 built an indicative local-currency figure beside every price, because a
+customer quoted in USD cannot tell what they will actually pay. In Rwanda the
+price IS in francs and the charge IS in francs, so "approximately RWF 20,000"
+beside "RWF 20,000" is noise — and worse, it invites the reader to wonder which
+of the two numbers is real.
+
+`getExchangeRateForDisplay` now returns null when the provider currency is the
+unit of account, so the figure is omitted everywhere at once. §55.3 predicted
+this machinery would idle; this is where it does. Verified on a live read: no
+`approxSettlement` key on any discovery response.
+
+### 66.3 A default of "USD" in the schema, caught by the guard
+
+Four tables — `services`, `appointments`, `ledger_entries`, `payouts` — declared
+`currency String @default("USD")`. Correct for a dollar deployment, and silently
+wrong for any other: the **database** stamps "USD" on a row holding francs, and
+nothing downstream can tell, because the number and the label are equally
+confident.
+
+`CurrencyGuard` refused to boot after the switch, naming both currencies. That
+is precisely the failure §55.1 was written to produce, and it produced it on the
+first run rather than after a month of mislabelled money.
+
+**The defaults are removed rather than changed.** A default cannot be right for
+every deployment, and one that is silently applied is worse than none. With the
+column still NOT NULL and no default, every write must state the unit — and the
+compiler then listed all six sites that did not.
+
+### 66.4 The test suite pins its currency
+
+`test/setup/env.ts` sets `INTERNAL_CURRENCY=RWF` explicitly, alongside where it
+already pins the database URL and `NODE_ENV`.
+
+Without that, assertions about converted figures would pass or fail depending on
+which country a developer happened to have configured — a suite reporting on the
+environment rather than on the code. RWF specifically because it has **no minor
+unit**, which is the case most expensive to get wrong: a two-decimal assumption
+misstates it by a factor of a hundred (§55.2). Worth running every integration
+test against, not only the unit tests.
+
+Updating the suite for it surfaced the assumptions that had been hiding in test
+data rather than in code:
+
+- Converted figures are now **100× larger**, because the internal currency has
+  no minor unit and SSP has two. That is the arithmetic being asserted, not an
+  accident, and the helper now says so.
+- A billing adjustment of "1" is one franc, not one dollar, so the balance moves
+  by 1 rather than 100. The assertion derives it from the currency now, because
+  a literal `100` there was the §55.2 assumption in test form.
+- The zero-decimal case in `internal-currency.spec.ts` had to move from RWF to
+  UGX, since RWF is no longer "some other currency".
+
+### 66.5 Verified, and one thing deliberately not claimed
+
+- Boots clean: *"Internal unit of account: RWF (0 decimal places)."*
+- `prisma migrate reset` + taxonomy + demo seed: 8 businesses, 9 locations, 13
+  services, 13 appointments, 28 ledger entries — all denominated in francs.
+- A public discovery read returns 7 locations with `fromPriceMinor` in whole
+  francs and **no** `approxSettlement`.
+- Full suite: **978 passing across 26 suites**, no drift.
+
+**`docs/MANUAL_WALKTHROUGH.md` has NOT been re-walked.** Its names, coordinates
+and currency are updated and its response shapes are unchanged, but the specific
+figures and distances were measured against the Juba dataset. §49's standard is
+that a walk-through is worth trusting only when it has actually been run, so the
+document now says at the top that it currently is not.

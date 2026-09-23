@@ -29,7 +29,7 @@ import {
 } from './setup/factories';
 
 const DAY = 86_400_000;
-const VALID = '+211921234567';
+const VALID = '+250788123456';
 
 /**
  * Payout destinations (§48).
@@ -138,14 +138,14 @@ describe('Payout destinations (§48)', () => {
       // The full number belongs in the admin queue behind a login, not in an
       // email that will sit in an inbox forever.
       expect(call.context.reason).not.toContain(VALID);
-      expect(call.context.reason).toContain('567');
+      expect(call.context.reason).toContain(VALID.slice(-3));
     });
 
     describe('supersession', () => {
       it('supersedes the previous row instead of editing it', async () => {
-        const first: any = await submit(shop, '+211921111111');
+        const first: any = await submit(shop, '+250788111111');
 
-        await submit(shop, '+211922222222');
+        await submit(shop, '+250788222222');
 
         const rows = await rowsFor(shop.businessId);
         expect(rows).toHaveLength(2);
@@ -153,16 +153,16 @@ describe('Payout destinations (§48)', () => {
         expect(original.status).toBe(PayoutDestinationStatus.SUPERSEDED);
         // The old number is still readable. It is the record of where money
         // was sent, and it has to survive the number changing.
-        expect(original.msisdn).toBe('+211921111111');
+        expect(original.msisdn).toBe('+250788111111');
       });
 
       it('NEVER mutates a VERIFIED row', async () => {
-        const first: any = await verified(shop, '+211921111111');
+        const first: any = await verified(shop, '+250788111111');
         const before = await prisma.payoutDestination.findUniqueOrThrow({
           where: { id: first.id },
         });
 
-        await submit(shop, '+211922222222');
+        await submit(shop, '+250788222222');
 
         const after = await prisma.payoutDestination.findUniqueOrThrow({
           where: { id: first.id },
@@ -180,16 +180,16 @@ describe('Payout destinations (§48)', () => {
       it('returns the business to UNVERIFIED', async () => {
         await verified(shop);
 
-        await submit(shop, '+211922222222');
+        await submit(shop, '+250788222222');
 
         const current = await live(shop.businessId);
         expect(current!.status).toBe(PayoutDestinationStatus.UNVERIFIED);
       });
 
       it('leaves exactly one live row after several submissions', async () => {
-        await submit(shop, '+211921111111');
-        await submit(shop, '+211922222222');
-        await submit(shop, '+211923333333');
+        await submit(shop, '+250788111111');
+        await submit(shop, '+250788222222');
+        await submit(shop, '+250788333333');
 
         const rows = await rowsFor(shop.businessId);
         const liveRows = rows.filter(
@@ -197,7 +197,7 @@ describe('Payout destinations (§48)', () => {
         );
         expect(rows).toHaveLength(3);
         expect(liveRows).toHaveLength(1);
-        expect(liveRows[0].msisdn).toBe('+211923333333');
+        expect(liveRows[0].msisdn).toBe('+250788333333');
       });
 
       it('the DATABASE refuses two live rows, not just the service', async () => {
@@ -209,7 +209,7 @@ describe('Payout destinations (§48)', () => {
           prisma.payoutDestination.create({
             data: {
               businessId: shop.businessId,
-              msisdn: '+211929999999',
+              msisdn: '+250788999999',
               submittedById: shop.userId,
               status: PayoutDestinationStatus.UNVERIFIED,
             },
@@ -218,7 +218,7 @@ describe('Payout destinations (§48)', () => {
       });
 
       it('allows any number of SUPERSEDED rows alongside the live one', async () => {
-        for (let i = 1; i <= 4; i++) await submit(shop, `+21192111111${i}`);
+        for (let i = 1; i <= 4; i++) await submit(shop, `+25078811111${i}`);
 
         const rows = await rowsFor(shop.businessId);
         expect(rows.filter((r) => r.status === PayoutDestinationStatus.SUPERSEDED))
@@ -259,7 +259,7 @@ describe('Payout destinations (§48)', () => {
       // where the money goes.
       expect(view.destination.status).toBe(PayoutDestinationStatus.VERIFIED);
       expect(view.destination).not.toHaveProperty('msisdn');
-      expect(view.destination.msisdnLast3).toContain('567');
+      expect(view.destination.msisdnLast3).toContain(VALID.slice(-3));
       expect(JSON.stringify(view)).not.toContain(VALID);
     });
 
@@ -289,9 +289,9 @@ describe('Payout destinations (§48)', () => {
 
     it.each([
       ['no plus', '211921234567'],
-      ['letters', '+21192abc4567'],
-      ['far too short', '+21192'],
-      ['far too long', '+2119212345678901234'],
+      ['letters', '+25078abc4567'],
+      ['far too short', '+25078'],
+      ['far too long', '+2507882345678901234'],
       ['a zero country code', '+011921234567'],
       ['empty', ''],
     ])('rejects %s at the DTO', async (_label, msisdn) => {
@@ -312,7 +312,7 @@ describe('Payout destinations (§48)', () => {
 
     it('accepts the configured country and strips spacing', async () => {
       const created: any = await destinations.submit(shop.userId, {
-        msisdn: '+211 921 234 567',
+        msisdn: '+250 788 123 456',
       });
 
       expect(created.msisdn).toBe(VALID);
@@ -519,7 +519,7 @@ describe('Payout destinations (§48)', () => {
         // the number immediately — transfers are manual, so PENDING can sit for
         // days (§48.4).
         const changed: any = await destinations.submit(shop.userId, {
-          msisdn: '+211929999999',
+          msisdn: '+250788999999',
         });
 
         expect(changed.status).toBe(PayoutDestinationStatus.UNVERIFIED);
@@ -531,7 +531,7 @@ describe('Payout destinations (§48)', () => {
         await payouts.run();
         const [payout] = await payoutsFor(shop);
 
-        await destinations.submit(shop.userId, { msisdn: '+211929999999' });
+        await destinations.submit(shop.userId, { msisdn: '+250788999999' });
         const flagged = await payouts.exportRun(AS_ADMIN(), payout.id);
 
         expect(flagged.unpayableCount).toBe(1);
@@ -545,7 +545,7 @@ describe('Payout destinations (§48)', () => {
         await payouts.run();
         const [payout] = await payoutsFor(shop);
         const replacement: any = await destinations.submit(shop.userId, {
-          msisdn: '+211929999999',
+          msisdn: '+250788999999',
         });
 
         await destinations.verify(AS_ADMIN(), replacement.id, {
@@ -554,7 +554,7 @@ describe('Payout destinations (§48)', () => {
         const clean = await payouts.exportRun(AS_ADMIN(), payout.id);
 
         expect(clean.unpayableCount).toBe(0);
-        expect(clean.csv).toContain('+211929999999');
+        expect(clean.csv).toContain('+250788999999');
         expect(clean.csv).not.toContain('DO NOT SEND');
       });
 
@@ -565,7 +565,7 @@ describe('Payout destinations (§48)', () => {
         const [payout] = await payoutsFor(shop);
         await payouts.markPaid(AS_ADMIN(), payout.id, { reference: 'MOMO-1' });
 
-        await destinations.submit(shop.userId, { msisdn: '+211929999999' });
+        await destinations.submit(shop.userId, { msisdn: '+250788999999' });
 
         const after = await prisma.payout.findUniqueOrThrow({
           where: { id: payout.id },
@@ -598,7 +598,7 @@ describe('Payout destinations (§48)', () => {
       const created = await destinations.submit(shop.userId, { msisdn: VALID });
 
       expect(created.msisdn).toBe(VALID);
-      expect(created.msisdnLast3).toContain('567');
+      expect(created.msisdnLast3).toContain(VALID.slice(-3));
       expect(created.status).toBe(PayoutDestinationStatus.UNVERIFIED);
       expect(created.verificationMethod).toBeNull();
     });

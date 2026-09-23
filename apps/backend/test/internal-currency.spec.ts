@@ -59,9 +59,12 @@ describe('Internal unit of account (§55)', () => {
     });
 
     it('accepts a zero-decimal currency that IS recorded', async () => {
-      const result = await settings.setExchangeRate(1300, 'RWF', AS_ADMIN());
+      // UGX, not RWF: RWF is this deployment's own unit of account, and §55.3
+      // requires a rate of exactly 1 for that. Any OTHER zero-decimal currency
+      // is what this case is about.
+      const result = await settings.setExchangeRate(1300, 'UGX', AS_ADMIN());
 
-      expect(result.providerCurrency).toBe('RWF');
+      expect(result.providerCurrency).toBe('UGX');
     });
   });
 

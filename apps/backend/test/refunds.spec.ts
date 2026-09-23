@@ -18,6 +18,7 @@ import { PlatformSettingsService } from '../src/settings/platform-settings.servi
 import { PayoutsService } from '../src/payouts/payouts.service';
 import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import { LedgerService } from '../src/ledger/ledger.service';
+import { INTERNAL_CURRENCY, toMinorUnits } from '../src/payments/currency';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import {
@@ -438,11 +439,13 @@ describe('Refunds and adjustments (§36)', () => {
       prisma.$transaction((tx) => ledger.executeAdjustment(tx, id, ref, { role: 'ADMIN' }));
 
     it('emits a signed ADJUSTMENT entry and settles the row', async () => {
-      const row = await adjustment(BillingAdjustmentType.FEE_REFUND, 12.5);
+      const row = await adjustment(BillingAdjustmentType.FEE_REFUND, 1250);
 
       const { adjustment: settled, entry } = await execute(row.id);
 
-      // Major units on the adjustment, integer cents in the ledger.
+      // A BillingAdjustment carries MAJOR units; the ledger stores minor ones.
+      // In a currency with no minor unit those are the same number, which is
+      // why this reads as an identity rather than a x100 (§55.2).
       expect(entry.amountMinor).toBe(1250);
       expect(entry.type).toBe(LedgerEntryType.ADJUSTMENT);
       expect(entry.billingAdjustmentId).toBe(row.id);
@@ -451,7 +454,7 @@ describe('Refunds and adjustments (§36)', () => {
     });
 
     it('signs a GATEWAY_FEE_DEBIT negative, against the business', async () => {
-      const row = await adjustment(BillingAdjustmentType.GATEWAY_FEE_DEBIT, 0.9);
+      const row = await adjustment(BillingAdjustmentType.GATEWAY_FEE_DEBIT, 90);
 
       const { entry } = await execute(row.id);
 
@@ -492,7 +495,12 @@ describe('Refunds and adjustments (§36)', () => {
       await execute(row.id);
 
       const after = await payouts.balance(AS_ADMIN(), business.businessId);
-      expect(after.availableNowMinor).toBe(before.availableNowMinor - 100);
+      // ONE MAJOR unit, expressed in minor ones: 100 in a two-decimal currency,
+      // 1 in a zero-decimal one. Derived rather than hardcoded, because a
+      // literal 100 here is the §55.2 assumption in test form.
+      expect(after.availableNowMinor).toBe(
+        before.availableNowMinor - toMinorUnits(1, INTERNAL_CURRENCY),
+      );
     });
   });
 

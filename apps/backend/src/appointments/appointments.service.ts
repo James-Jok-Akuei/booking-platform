@@ -322,6 +322,10 @@ export class AppointmentsService {
           // the hash is what `verify()` compares against, the plaintext is what
           // the customer's own app displays (§54.2). One of the only two places
           // a code is ever issued — the other is `resendVerificationCode`.
+          // Said explicitly, not defaulted. The column used to default to
+          // "USD" in the schema, which silently mislabelled every amount in
+          // any deployment not denominated in dollars (§66.3).
+          currency: INTERNAL_CURRENCY,
           verificationCodeHash,
           verificationCode: code,
         },

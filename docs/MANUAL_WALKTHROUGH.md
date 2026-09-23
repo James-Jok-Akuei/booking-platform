@@ -1,5 +1,13 @@
 # Manual walk-through
 
+> **Re-point to Rwanda, but NOT yet re-walked (§66.5).** Every command in this
+> document was run against the old South Sudan dataset. The names, coordinates
+> and currency below have been updated to match the Kigali seed, and the shape
+> of every response is unchanged — but the **specific figures and distances have
+> not been re-verified by hand**, so treat them as indicative until someone
+> walks it again. §49's standard is that a walk-through is only worth trusting
+> when it has actually been run, and this one currently is not.
+
 A numbered sequence that exercises the whole system by hand, against the demo
 dataset. **Every command here was run** against a real server before this
 document was written; where reality differed from the plan it says so, and the
@@ -50,8 +58,8 @@ curl -s "$B/discover/locations?limit=5" | J
 # Cheapest first, across pages
 curl -s "$B/discover/locations?sort=price&limit=9" | J
 
-# Near Juba Town, within 5km, nearest first
-curl -s "$B/discover/locations?lat=4.8517&lng=31.5825&radiusKm=5&sort=distance" | J
+# Near Nyarugenge, within 5km, nearest first
+curl -s "$B/discover/locations?lat=-1.9441&lng=30.0619&radiusKm=5&sort=distance" | J
 
 # Open right now
 curl -s "$B/discover/locations?openNow=true" | J
@@ -64,28 +72,28 @@ curl -s "$B/discover/locations?categoryId=<id>" | J
 
 **Look at:**
 
-- `total` is **7**, not 9. Gudele Tailors (`PENDING`) and Munuki Fitness
-  (`SUSPENDED`) are absent. Approve Gudele in step 8 and it appears.
-- `fromPriceMinor` is `2000` for **both** Nile Barbers branches — services belong
+- `total` is **7**, not 9. Kicukiro Tailors (`PENDING`) and Gikondo Fitness
+  (`SUSPENDED`) are absent. Approve Kicukiro in step 8 and it appears.
+- `fromPriceMinor` is `2000` for **both** Kigali Barbers branches — services belong
   to the business, so branches share a price. Its retired "dye" service at
   1200 is cheaper and correctly ignored.
-- Atlabara Studio has `fromPriceMinor: null` and sorts **last** under
+- Kacyiru Studio has `fromPriceMinor: null` and sorts **last** under
   `sort=price`. No services yet is not the same as free, and not the same as
   absent.
 - `approxSettlement.fromPriceMinor` is the SSP figure, rounded to whole pounds,
   with `approximate: true` and the rate's `rateAsOf`. Every row on a page shares
   one `exchangeRate` — check two rows and confirm.
-- Distances: Juba Town → Hai Cinema is **0.73 km**, → Atlabara **3.02 km**. Drop
+- Distances: Nyarugenge → Nyamirambo is **0.73 km**, → Kacyiru **3.02 km**. Drop
   `radiusKm` to 1 and only the first two survive.
-- `openNow` depends on the hour you run this, in **Africa/Juba**, not your
-  machine's timezone. Hai Cinema Salon is closed all day today by design.
+- `openNow` depends on the hour you run this, in **Africa/Kigali**, not your
+  machine's timezone. Nyamirambo Salon is closed all day today by design.
 
 ---
 
 ## 2. Location detail, availability, reviews
 
 ```bash
-LOC=$(curl -s "$B/discover/locations?q=Juba%20Town" | python3 -c "import json,sys;print(json.load(sys.stdin)['locations'][0]['id'])")
+LOC=$(curl -s "$B/discover/locations?q=Nyarugenge" | python3 -c "import json,sys;print(json.load(sys.stdin)['locations'][0]['id'])")
 
 curl -s "$B/discover/locations/$LOC" | J
 DATE=$(python3 -c "import datetime;print((datetime.date.today()+datetime.timedelta(days=2)).isoformat())")
@@ -96,7 +104,7 @@ curl -s "$B/locations/$LOC/reviews" | J
 **Look at:**
 
 - The detail carries services with `approxSettlement`, the weekly `hours`,
-  `upcomingExceptions` (Nile is shut **tomorrow** — a seeded public holiday) and
+  `upcomingExceptions` (Kigali Barbers is shut **tomorrow** — a seeded public holiday) and
   `gallery`. It carries **no `reviews` key**: that is a separate paginated
   endpoint with its own exposure rules.
 - Availability returns `source: "TEMPLATE"`, `08:00`–`19:00`, 43 slots on a
@@ -200,7 +208,7 @@ without it — use a seeded appointment rather than your own.
 
 ## 5. Verify arrival, complete, and watch the ledger
 
-Use a seeded `BOOKED` appointment at Nile Barbers, and the business token from
+Use a seeded `BOOKED` appointment at Kigali Barbers, and the business token from
 step 7. **Every seeded appointment has the arrival code `123456`.**
 
 ```bash
@@ -291,7 +299,7 @@ curl -s -X POST "$B/auth/otp/request" -H 'Content-Type: application/json' \
   -d '{"email":"demo-nile@example.com","role":"BUSINESS"}'
 # read the code from the log, then verify with "role":"BUSINESS"
 BIZ="Authorization: Bearer <accessToken>"
-BID=<Nile's businessId from the seed output>
+BID=<Kigali Barbers's businessId from the seed output>
 
 curl -s "$B/businesses/$BID/analytics" -H "$BIZ" | J
 curl -s "$B/businesses/$BID/balance" -H "$BIZ" | J
@@ -353,8 +361,8 @@ curl -s -X PATCH "$B/admin/payouts/<payoutId>/mark-paid" -H "$ADMIN" \
 
 **Look at:**
 
-- Approving Gudele makes it appear in step 1's search immediately.
-- Verifying Juba Auto Care's number changes it from paused to payable on the
+- Approving Kicukiro makes it appear in step 1's search immediately.
+- Verifying Kigali Auto Care's number changes it from paused to payable on the
   **next** run, not retroactively.
 - The run summary: `payoutsCreated: 3`, `skippedNonPositive: 1` (Konyo Konyo,
   whose deposit share is exactly zero), and `pausedBusinesses` listing anyone

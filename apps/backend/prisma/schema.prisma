@@ -521,7 +521,7 @@ model Service {
   /// future multi-currency world never has to GUESS what an old row meant.
   /// An unlabelled amount is only unambiguous while exactly one currency has
   /// ever existed, and that property is impossible to restore afterwards.
-  currency String @default("USD")
+  currency String
 
   // Share of priceMinor the customer pays up front to hold the slot.
   //
@@ -869,7 +869,7 @@ model Appointment {
   /// three: a deposit, the fee taken from it, and the remainder are by
   /// construction the same currency, so separate fields could only ever
   /// disagree by accident.
-  currency String @default("USD")
+  currency String
 
   // ---- Deposit payment ----
   //
@@ -1401,7 +1401,7 @@ model LedgerEntry {
   /// negative is owed back. Integer cents, like every other money column.
   amountMinor Int
 
-  currency String @default("USD")
+  currency String
 
   // ---- Settlement, fixed at booking (§45) ----
   //
@@ -1467,7 +1467,7 @@ model Payout {
 
   /// The USD figure, for reporting. NOT what is sent (§45.1).
   amountMinor Int
-  currency    String @default("USD")
+  currency    String
 
   /// What is actually transferred, and in what. Summed from the entries'
   /// settlementAmountMinor with NO conversion and no rate read (§46).

@@ -426,6 +426,7 @@ export class LedgerService {
         businessId: adjustment.businessId,
         appointmentId: adjustment.appointmentId,
         billingAdjustmentId: adjustment.id,
+        currency: INTERNAL_CURRENCY,
         type: LedgerEntryType.ADJUSTMENT,
         amountMinor,
         settlementCurrency: display?.providerCurrency ?? null,

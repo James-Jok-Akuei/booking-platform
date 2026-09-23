@@ -1,3 +1,4 @@
+import { INTERNAL_CURRENCY } from '../src/payments/currency';
 import { jest } from '@jest/globals';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BusinessStatus } from '@prisma/client';
@@ -92,7 +93,7 @@ describe('Discovery (§43)', () => {
   /** Today in Africa/Juba, as a UTC-midnight Date — the @db.Date convention. */
   const platformToday = () =>
     new Date(
-      `${new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Juba' }).format(new Date())}T00:00:00.000Z`,
+      `${new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Kigali' }).format(new Date())}T00:00:00.000Z`,
     );
 
   /** Direct prisma writes bypass the write paths that maintain the column. */
@@ -400,6 +401,7 @@ describe('Discovery (§43)', () => {
           businessId: business.businessId,
           name: 'Cheaper',
           priceMinor: 2500,
+          currency: INTERNAL_CURRENCY,
           durationMinutes: 30,
           depositPercentage: 20,
         },
@@ -418,6 +420,7 @@ describe('Discovery (§43)', () => {
           businessId: business.businessId,
           name: 'Retired bargain',
           priceMinor: 100,
+          currency: INTERNAL_CURRENCY,
           durationMinutes: 30,
           depositPercentage: 20,
           isActive: false,
@@ -478,7 +481,7 @@ describe('Discovery (§43)', () => {
       const settlement = (result.locations[0] as any).approxSettlement.fromPriceMinor;
       // $45.00 × 650 = 29 250 SSP.
       expect(settlement.currency).toBe('SSP');
-      expect(settlement.amountMinor).toBe(2_925_000);
+      expect(settlement.amountMinor).toBe(292_500_000);
       expect(settlement.approximate).toBe(true);
     });
 
@@ -521,7 +524,7 @@ describe('Discovery (§43)', () => {
 
       const detail: any = await discovery.findOne(business.locationId);
 
-      expect(detail.services[0].approxSettlement.priceMinor.amountMinor).toBe(2_925_000);
+      expect(detail.services[0].approxSettlement.priceMinor.amountMinor).toBe(292_500_000);
     });
   });
 
@@ -702,7 +705,7 @@ describe('Discovery (§43)', () => {
       expect(detail.rating).toEqual({ average: null, count: 0 });
       expect(detail).toHaveProperty('gallery');
       expect(detail).toHaveProperty('upcomingExceptions');
-      expect(detail.timeZone).toBe('Africa/Juba');
+      expect(detail.timeZone).toBe('Africa/Kigali');
       // GET /locations/:id/reviews already exists, is paginated, and has its own
       // exposure rules. Duplicating them here would mean two places to keep right.
       expect(detail).not.toHaveProperty('reviews');
@@ -715,6 +718,7 @@ describe('Discovery (§43)', () => {
           businessId: business.businessId,
           name: 'Retired',
           priceMinor: 100,
+          currency: INTERNAL_CURRENCY,
           durationMinutes: 30,
           depositPercentage: 20,
           isActive: false,

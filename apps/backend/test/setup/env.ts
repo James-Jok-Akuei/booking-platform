@@ -36,6 +36,21 @@ if (!process.env.DATABASE_URL.includes(TEST_DATABASE_NAME)) {
 }
 
 process.env.NODE_ENV = 'test';
+
+/**
+ * Pinned, so the suite does not change behaviour with a developer's .env (§66).
+ *
+ * `INTERNAL_CURRENCY` decides what every stored amount MEANS, so leaving it to
+ * local configuration would make assertions about converted figures pass or
+ * fail depending on which country someone happens to be deploying — which is a
+ * test suite that reports on the environment rather than on the code.
+ *
+ * RWF specifically, because it has NO minor unit. That is the case most
+ * expensive to get wrong — a two-decimal assumption misstates a zero-decimal
+ * currency by a factor of a hundred (§55.2) — so it is the one worth running
+ * every integration test against, not only the unit tests.
+ */
+process.env.INTERNAL_CURRENCY = 'RWF';
 // Keep the suite off the network. No SMTP host means MailService reports itself
 // unconfigured, so notifications are recorded and marked FAILED rather than
 // attempting delivery — which is all these tests need.

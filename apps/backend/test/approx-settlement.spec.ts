@@ -68,6 +68,17 @@ describe('Approximate local-currency figures (§39)', () => {
   });
 
   /** 650 SSP to the dollar, set now. */
+  /**
+   * A provider currency that is NOT the unit of account, which is the only
+   * situation this feature exists for — when the two match, the figure is
+   * omitted entirely (§66.2).
+   *
+   * The pairing also exercises the case §55 was written for: the internal
+   * currency has no minor unit and SSP has two, so a converted figure is a
+   * hundred times the naive one. Every expectation below is that hundred times
+   * larger than it was when the platform was denominated in USD, and that is
+   * the arithmetic being asserted, not an accident.
+   */
   const setRate = (rate = 650) =>
     settings.setExchangeRate(rate, 'SSP', { role: 'ADMIN' });
 
@@ -122,7 +133,7 @@ describe('Approximate local-currency figures (§39)', () => {
       // 900 USD cents = $9.00, at 650 => 5850 SSP.
       expect(found.depositAmountMinor).toBe(900);
       expect(deposit.currency).toBe('SSP');
-      expect(deposit.amountMinor).toBe(585_000);
+      expect(deposit.amountMinor).toBe(58_500_000);
       expect(deposit.exchangeRate).toBe('650.00000000');
       expect(deposit.approximate).toBe(true);
       expect(deposit.rateAsOf).not.toBeNull();
@@ -136,7 +147,7 @@ describe('Approximate local-currency figures (§39)', () => {
 
       // $9.00 x 650.5 = 5854.5 SSP, shown as 5855 whole pounds.
       expect(found.approxSettlement.depositAmountMinor.amountMinor % 100).toBe(0);
-      expect(found.approxSettlement.depositAmountMinor.amountMinor).toBe(585_500);
+      expect(found.approxSettlement.depositAmountMinor.amountMinor).toBe(58_545_000);
     });
 
     it('leaves the USD amounts exactly as they were', async () => {
@@ -256,7 +267,7 @@ describe('Approximate local-currency figures (§39)', () => {
       // Surfaced to admins (§37), invisible to customers. Degrading the
       // customer experience over it would punish the wrong person.
       expect((await settings.getExchangeRateStaleness()).stale).toBe(true);
-      expect(found.approxSettlement.depositAmountMinor.amountMinor).toBe(585_000);
+      expect(found.approxSettlement.depositAmountMinor.amountMinor).toBe(58_500_000);
       // The rate's age is still disclosed, so a client could label it.
       expect(found.approxSettlement.depositAmountMinor.rateAsOf).not.toBeNull();
     });
@@ -273,8 +284,8 @@ describe('Approximate local-currency figures (§39)', () => {
       const second: any = await appointments.findOne(AS_CUSTOMER(), a.id);
       const after = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
 
-      expect(first.approxSettlement.depositAmountMinor.amountMinor).toBe(585_000);
-      expect(second.approxSettlement.depositAmountMinor.amountMinor).toBe(1_170_000);
+      expect(first.approxSettlement.depositAmountMinor.amountMinor).toBe(58_500_000);
+      expect(second.approxSettlement.depositAmountMinor.amountMinor).toBe(117_000_000);
       // The row is byte-identical: nothing about this figure is persisted.
       expect(JSON.stringify(after)).toBe(JSON.stringify(before));
     });
@@ -378,10 +389,10 @@ describe('Approximate local-currency figures (§39)', () => {
 
       // 900 USD cents x 650 = 585000 minor units, unrounded to whole pounds —
       // the charge keeps full precision. Only the DISPLAY figure rounds.
-      expect(result.providerAmountMinor).toBe(585_000);
+      expect(result.providerAmountMinor).toBe(58_500_000);
       expect(result.exchangeRateUsed).toBe('650.00000000');
       const row = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
-      expect(row.providerAmountMinor).toBe(585_000);
+      expect(row.providerAmountMinor).toBe(58_500_000);
       expect(Number(row.exchangeRateUsed)).toBe(650);
     });
   });

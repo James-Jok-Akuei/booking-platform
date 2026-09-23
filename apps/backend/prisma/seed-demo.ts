@@ -60,6 +60,7 @@ import { LedgerService } from '../src/ledger/ledger.service';
 import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import { BusinessModerationService } from '../src/business/business-moderation.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
+import { INTERNAL_CURRENCY } from '../src/payments/currency';
 
 const log = new Logger('seed-demo');
 
@@ -69,8 +70,14 @@ const DEMO_PREFIX = 'demo-';
 /** The code planted on every seeded appointment, so arrivals can be verified. */
 const DEMO_VERIFICATION_CODE = '123456';
 
-/** Rate used for every seeded charge, so the SSP figures are predictable. */
-const DEMO_RATE = 650;
+/**
+ * The rate for every seeded charge.
+ *
+ * Exactly 1, and it has to be: the platform collects in the same currency it
+ * prices in (§66), so there is nothing to convert — and `setExchangeRate`
+ * refuses any other value for the unit of account (§55.3).
+ */
+const DEMO_RATE = 1;
 
 const ADMIN_ACTOR = { userId: '', role: UserRole.ADMIN as string };
 
@@ -139,7 +146,7 @@ const email = (name: string) => `${DEMO_PREFIX}${name}@example.com`;
  * fail roughly one time in seven, depending on what day the seed is run. The
  * skip is the seed's problem to solve, not the API's.
  *
- * Africa/Juba is UTC+2 with no DST, so local hour − 2 is the UTC hour.
+ * Africa/Kigali is UTC+2 with no DST, so local hour − 2 is the UTC hour.
  */
 function futureSlot(daysAhead: number, hour: number): Date {
   const date = new Date(Date.now() + daysAhead * DAY);
@@ -151,17 +158,17 @@ function futureSlot(daysAhead: number, hour: number): Date {
   return date;
 }
 
-/** Today's weekday in Africa/Juba, matching LocationHours.dayOfWeek. */
+/** Today's weekday in Africa/Kigali, matching LocationHours.dayOfWeek. */
 function jubaWeekday(): number {
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Africa/Juba',
+    timeZone: 'Africa/Kigali',
     weekday: 'short',
   }).format(new Date());
   return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts);
 }
 
 function jubaToday(): Date {
-  const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Juba' }).format(
+  const ymd = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Kigali' }).format(
     new Date(),
   );
   return new Date(`${ymd}T00:00:00.000Z`);
@@ -224,7 +231,7 @@ async function main() {
   ADMIN_ACTOR.userId = admin.id;
 
   await settings.setPlatformFeePercentage(10, ADMIN_ACTOR);
-  await settings.setExchangeRate(DEMO_RATE, 'SSP', ADMIN_ACTOR);
+  await settings.setExchangeRate(DEMO_RATE, INTERNAL_CURRENCY, ADMIN_ACTOR);
   await settings.setPayoutHoldDays(2, ADMIN_ACTOR);
 
   const categories = await prisma.category.findMany({
@@ -275,7 +282,7 @@ async function main() {
     const category = categoryFor(options.categoryIndex);
     await profiles.update(profile.id, {
       description: options.description,
-      phone: '+211920000000',
+      phone: '+250788000000',
       categoryId: category.id,
       ...(category.subcategories[0] ? { subcategoryId: category.subcategories[0].id } : {}),
     });
@@ -320,21 +327,21 @@ async function main() {
 
   // 1 — the flagship: two branches, full catalogue, money flowing.
   const nile = await makeBusiness({
-    label: 'Nile Barbers',
+    label: 'Kigali Barbers',
     handle: 'nile',
-    description: 'Classic cuts and hot-towel shaves, two branches in Juba.',
-    lat: 4.8517,
-    lng: 31.5825,
-    address: 'Ministries Road, Juba Town',
-    locationName: 'Juba Town Branch',
+    description: 'Classic cuts and hot-towel shaves, two branches in Kigali.',
+    lat: -1.9441,
+    lng: 30.0619,
+    address: 'KN 4 Ave, Nyarugenge',
+    locationName: 'Nyarugenge Branch',
     categoryIndex: 0,
     note: 'APPROVED, 2 branches, verified payout destination, POSITIVE balance.',
   });
   const nileSecond = await locations.create(nile.userId, {
-    name: 'Gudele Branch',
-    address: 'Gudele Market Road',
-    latitude: 4.883,
-    longitude: 31.541,
+    name: 'Kimironko Branch',
+    address: 'KG 11 Ave, Kimironko',
+    latitude: -1.9403,
+    longitude: 30.1274,
   });
   nile.locationIds.push(nileSecond.id);
   await setHours(nile, nile.locationIds[0], '08:00', '19:00');
@@ -342,13 +349,13 @@ async function main() {
 
   // 2 — deposit exactly at the platform-fee floor: business share is ZERO.
   const konyo = await makeBusiness({
-    label: 'Konyo Konyo Spa',
+    label: 'Kimironko Spa',
     handle: 'konyo',
     description: 'Massage and steam, beside the market.',
-    lat: 4.848,
-    lng: 31.601,
-    address: 'Konyo Konyo Market',
-    locationName: 'Konyo Konyo',
+    lat: -1.9403,
+    lng: 30.1274,
+    address: 'KG 9 Ave, Kimironko',
+    locationName: 'Kimironko',
     categoryIndex: 1,
     note: 'APPROVED. Deposit == fee (10%), so the business share of a deposit is ZERO.',
   });
@@ -356,13 +363,13 @@ async function main() {
 
   // 3 — owes money after cancelling on a customer: NEGATIVE balance.
   const thongpiny = await makeBusiness({
-    label: 'Thongpiny Nails',
+    label: 'Remera Nails',
     handle: 'thongpiny',
     description: 'Manicures, pedicures and nail art.',
-    lat: 4.829,
-    lng: 31.596,
-    address: 'Thongpiny Road',
-    locationName: 'Thongpiny Studio',
+    lat: -1.9536,
+    lng: 30.1130,
+    address: 'KG 17 Ave, Remera',
+    locationName: 'Remera Studio',
     categoryIndex: 2,
     note: 'APPROVED. Cancelled a PAID booking, so its ledger balance is NEGATIVE.',
   });
@@ -370,11 +377,11 @@ async function main() {
 
   // 4 — payouts blocked: destination submitted but not yet verified.
   const autocare = await makeBusiness({
-    label: 'Juba Auto Care',
+    label: 'Kigali Auto Care',
     handle: 'autocare',
     description: 'Servicing, diagnostics and tyres.',
-    lat: 4.862,
-    lng: 31.588,
+    lat: -1.9700,
+    lng: 30.0580,
     address: 'Airport Road',
     locationName: 'Airport Road Workshop',
     categoryIndex: 3,
@@ -384,13 +391,13 @@ async function main() {
 
   // 5 — closed today, and no payout destination at all.
   const haicinema = await makeBusiness({
-    label: 'Hai Cinema Salon',
+    label: 'Nyamirambo Salon',
     handle: 'haicinema',
     description: 'Braiding, styling and treatments.',
-    lat: 4.8462,
-    lng: 31.5789,
-    address: 'Hai Cinema',
-    locationName: 'Hai Cinema Salon',
+    lat: -1.9770,
+    lng: 30.0430,
+    address: 'KN 2 Ave, Nyamirambo',
+    locationName: 'Nyamirambo Salon',
     categoryIndex: 4,
     note: 'APPROVED, CLOSED TODAY, and NO payout destination at all.',
   });
@@ -398,13 +405,13 @@ async function main() {
 
   // 6 — never reviewed by an admin: invisible to the public.
   const gudele = await makeBusiness({
-    label: 'Gudele Tailors',
+    label: 'Kicukiro Tailors',
     handle: 'gudele',
     description: 'Bespoke tailoring and alterations.',
-    lat: 4.89,
-    lng: 31.53,
-    address: 'Gudele One',
-    locationName: 'Gudele Workshop',
+    lat: -1.9890,
+    lng: 30.1030,
+    address: 'KK 15 Rd, Kicukiro',
+    locationName: 'Kicukiro Workshop',
     categoryIndex: 5,
     note: 'PENDING approval — absent from discovery, and unbookable.',
   });
@@ -412,13 +419,13 @@ async function main() {
 
   // 7 — suspended: invisible, unbookable, payouts paused, existing bookings stand.
   const munuki = await makeBusiness({
-    label: 'Munuki Fitness',
+    label: 'Gikondo Fitness',
     handle: 'munuki',
     description: 'Gym floor, classes and personal training.',
-    lat: 4.876,
-    lng: 31.562,
-    address: 'Munuki Block B',
-    locationName: 'Munuki Gym',
+    lat: -1.9840,
+    lng: 30.0740,
+    address: 'KK 3 Ave, Gikondo',
+    locationName: 'Gikondo Gym',
     categoryIndex: 6,
     note: 'SUSPENDED — invisible and unbookable, but its existing appointments stand.',
   });
@@ -426,13 +433,13 @@ async function main() {
 
   // 8 — approved with an empty catalogue: browsable, fromPriceMinor null.
   const atlabara = await makeBusiness({
-    label: 'Atlabara Studio',
+    label: 'Kacyiru Studio',
     handle: 'atlabara',
     description: 'Photography studio, opening soon.',
-    lat: 4.838,
-    lng: 31.606,
-    address: 'Atlabara C',
-    locationName: 'Atlabara Studio',
+    lat: -1.9380,
+    lng: 30.0890,
+    address: 'KG 7 Ave, Kacyiru',
+    locationName: 'Kacyiru Studio',
     categoryIndex: 7,
     note: 'APPROVED with NO services — browsable, fromPriceMinor is null, sorts last by price.',
   });
@@ -472,28 +479,28 @@ async function main() {
     return service;
   }
 
-  await addService(nile, 'Haircut', 2000, 30, 20);
-  await addService(nile, 'Hot-towel shave', 4500, 45, 20);
-  await addService(nile, 'Cut and beard', 9000, 60, 25);
-  const retired = await addService(nile, 'Retired: dye', 1200, 60, 20);
+  await addService(nile, 'Haircut', 5000, 30, 20);
+  await addService(nile, 'Hot-towel shave', 8000, 45, 20);
+  await addService(nile, 'Cut and beard', 12000, 60, 25);
+  const retired = await addService(nile, 'Retired: dye', 3000, 60, 20);
   // Soft-deleted, so it must NOT set the headline price even though it is the
   // cheapest thing the business ever offered.
   await services.deactivate(nile.userId, retired.id);
 
   // Deposit exactly at the 10% floor: the platform takes the whole deposit and
   // the business's ledger share of it is exactly zero (§40.4).
-  await addService(konyo, 'Full-body massage', 12000, 90, 10);
-  await addService(konyo, 'Steam room', 3000, 30, 10);
+  await addService(konyo, 'Full-body massage', 30000, 90, 10);
+  await addService(konyo, 'Steam room', 8000, 30, 10);
 
-  await addService(thongpiny, 'Manicure', 2500, 45, 20);
-  await addService(thongpiny, 'Pedicure', 3500, 60, 20);
+  await addService(thongpiny, 'Manicure', 6000, 45, 20);
+  await addService(thongpiny, 'Pedicure', 8000, 60, 20);
 
-  await addService(autocare, 'Oil change', 7500, 60, 15);
-  await addService(autocare, 'Full service', 25000, 180, 15);
+  await addService(autocare, 'Oil change', 20000, 60, 15);
+  await addService(autocare, 'Full service', 60000, 180, 15);
 
-  await addService(haicinema, 'Braiding', 6000, 120, 20);
-  await addService(gudele, 'Suit fitting', 15000, 60, 20);
-  await addService(munuki, 'Personal training', 5000, 60, 20);
+  await addService(haicinema, 'Braiding', 15000, 120, 20);
+  await addService(gudele, 'Suit fitting', 40000, 60, 20);
+  await addService(munuki, 'Personal training', 12000, 60, 20);
   // `atlabara` deliberately has none.
 
   // -------------------------------------------------------------------------
@@ -584,7 +591,7 @@ async function main() {
       data: {
         paymentProviderReferenceId: reference,
         paymentInitiatedAt: new Date(),
-        providerCurrency: 'SSP',
+        providerCurrency: INTERNAL_CURRENCY,
         providerAmountMinor: row.depositAmountMinor * DEMO_RATE,
         exchangeRateUsed: DEMO_RATE,
       },
@@ -622,8 +629,9 @@ async function main() {
       case 'CANCELLED_BY_BUSINESS':
         await appointments.cancel(business.userId, created.id, {
           reason: 'Demo data: the business called this one off.',
-          // Settlement minor units — 50 USD cents at 650 SSP/USD (§45.4).
-          gatewayChargeMinor: 32_500,
+          // Settlement minor units. The provider charges in the unit of
+          // account, so this is simply what the gateway took (§45.4, §66).
+          gatewayChargeMinor: 500,
         });
         break;
     }
@@ -765,12 +773,12 @@ async function main() {
     });
   }
 
-  await verifyDestination(nile, '+211921000001');
-  await verifyDestination(konyo, '+211921000002');
-  await verifyDestination(thongpiny, '+211921000003');
+  await verifyDestination(nile, '+250788100001');
+  await verifyDestination(konyo, '+250788100002');
+  await verifyDestination(thongpiny, '+250788100003');
 
   // Submitted but NOT verified: payouts paused.
-  await destinations.submit(autocare.userId, { msisdn: '+211921000004' });
+  await destinations.submit(autocare.userId, { msisdn: '+250788100004' });
   // `haicinema` deliberately has none at all.
 
   // -------------------------------------------------------------------------
@@ -781,7 +789,7 @@ async function main() {
     {
       category: 'TECHNICAL_ISSUE',
       subject: 'The app showed the wrong price',
-      body: 'The listing said SSP 13,000 but I was charged a different amount.',
+      body: 'The listing said RWF 13,000 but I was charged a different amount.',
     },
   );
 
@@ -877,7 +885,12 @@ async function main() {
     lines.push(`    owner        ${business.email}`);
     lines.push(`    businessId   ${business.businessId}`);
     lines.push(`    locationId   ${business.locationIds.join(', ')}`);
-    lines.push(`    unsettled    USD ${balance.usd}c / SSP ${balance.ssp} minor`);
+    lines.push(
+      `    unsettled    ${INTERNAL_CURRENCY} ${balance.ssp} minor` +
+        (balance.usd === balance.ssp
+          ? ''
+          : ` (reporting ${INTERNAL_CURRENCY} ${balance.usd})`),
+    );
     lines.push(`    note         ${business.note}`);
     lines.push('');
   }
@@ -887,7 +900,10 @@ async function main() {
   lines.push(`  open ticket:      ${openTicket.id}`);
   lines.push(`  resolved ticket:  ${disputed.id}`);
   lines.push(`  hidden review:    ${reviewIds[reviewIds.length - 1]}`);
-  lines.push(`  exchange rate:    1 USD = ${DEMO_RATE} SSP`);
+  lines.push(
+    `  currency:         ${INTERNAL_CURRENCY} throughout — priced, charged and settled in it,\n` +
+      '                    so no conversion happens anywhere (§66).',
+  );
   lines.push('');
   lines.push(
     `COUNTS: ${counts.businesses} businesses, ${counts.locations} locations, ` +

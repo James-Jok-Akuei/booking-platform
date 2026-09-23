@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { INTERNAL_CURRENCY } from '../payments/currency';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { BusinessAccessService } from './business-access.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -58,7 +59,13 @@ export class ServicesService {
     // (§44). A catalogue that has changed while the listing has not is a
     // listing advertising a price nobody can book at.
     return this.prisma.$transaction(async (tx) => {
-      const service = await tx.service.create({ data: { businessId, ...dto } });
+      const service = await tx.service.create({
+        // The unit of account this price is denominated in, said explicitly.
+        // The column used to default to "USD" in the schema, which silently
+        // mislabelled every price in a deployment priced in anything else
+        // (§66.3).
+        data: { businessId, currency: INTERNAL_CURRENCY, ...dto },
+      });
       await recalculateFromPrice(tx, businessId);
       return service;
     });

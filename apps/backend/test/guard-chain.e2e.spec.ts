@@ -1165,7 +1165,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const res = await request(url, '/business/payout-destination', {
         method: 'POST',
         token: tokenAlphaStaff,
-        body: { msisdn: '+211921234567' },
+        body: { msisdn: '+250788123456' },
       });
 
       // Redirecting where money is sent is OWNER-only.
@@ -1184,7 +1184,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const res = await request(url, '/business/payout-destination', {
         method: 'POST',
         token: tokenBeta,
-        body: { msisdn: '+211925550001' },
+        body: { msisdn: '+250788555001' },
       });
 
       expect(res.status).toBe(201);
@@ -1208,7 +1208,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
       });
 
       expect(res.status).toBe(200);
-      expect(JSON.stringify(res.body)).not.toMatch(/\+2119\d{7}/);
+      expect(JSON.stringify(res.body)).not.toMatch(/\+2507\d{8}/);
     });
 
     it('GET /admin/payout-destinations rejects a BUSINESS token -> 403', async () => {

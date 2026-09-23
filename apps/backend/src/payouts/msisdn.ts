@@ -8,8 +8,14 @@
  */
 export const E164 = /^\+[1-9]\d{7,14}$/;
 
-/** The default expected country prefix: South Sudan. */
-export const DEFAULT_MSISDN_COUNTRY_PREFIX = '+211';
+/**
+ * The default expected country prefix: Rwanda (§66).
+ *
+ * A DEFAULT, not a rule — `PAYOUT_MSISDN_COUNTRY_PREFIX` overrides it, which
+ * is what makes a second country a configuration change rather than a
+ * redeploy of edited source.
+ */
+export const DEFAULT_MSISDN_COUNTRY_PREFIX = '+250';
 
 /**
  * The last `count` digits, for showing a number to someone who may not see all

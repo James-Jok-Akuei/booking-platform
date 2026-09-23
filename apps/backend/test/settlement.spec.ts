@@ -12,6 +12,7 @@ import { LedgerService } from '../src/ledger/ledger.service';
 import { PayoutsService } from '../src/payouts/payouts.service';
 import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import { splitSettlement } from '../src/ledger/settlement';
+import { INTERNAL_CURRENCY } from '../src/payments/currency';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import {
@@ -491,7 +492,7 @@ describe('Settlement currency on the ledger (§45)', () => {
       expect(payout.settlementAmountMinor).toBe(292_500);
     });
 
-    it('the USD figure is carried for reporting but is not what is sent', async () => {
+    it('the INTERNAL figure is carried for reporting but is not what is sent', async () => {
       await settings.setExchangeRate(650, 'SSP', { role: 'ADMIN' });
       const { shop } = await payableBooking(650);
 
@@ -501,7 +502,11 @@ describe('Settlement currency on the ledger (§45)', () => {
         where: { businessId: shop.businessId },
       });
       expect(payout.amountMinor).toBe(450);
-      expect(payout.currency).toBe('USD');
+      // The unit of account, whatever it is configured to be (§55.1) — the
+      // point of the assertion is that it differs from the settlement
+      // currency and is not what gets sent.
+      expect(payout.currency).toBe(INTERNAL_CURRENCY);
+      expect(payout.currency).not.toBe(payout.settlementCurrency);
       expect(payout.settlementAmountMinor).toBe(292_500);
       expect(payout.settlementCurrency).toBe('SSP');
     });

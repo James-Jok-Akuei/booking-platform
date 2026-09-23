@@ -1,3 +1,4 @@
+import { INTERNAL_CURRENCY } from '../../src/payments/currency';
 import {
   AppointmentStatus,
   BusinessMemberRole,
@@ -90,6 +91,7 @@ export async function createBusiness(
       businessId: business.id,
       name: 'Test Service',
       priceMinor: options.priceMinor ?? 4500,
+      currency: INTERNAL_CURRENCY,
       durationMinutes: options.durationMinutes ?? 60,
       depositPercentage: options.depositPercentage ?? 20,
     },

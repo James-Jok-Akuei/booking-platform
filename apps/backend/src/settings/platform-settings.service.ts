@@ -169,6 +169,14 @@ export class PlatformSettingsService {
 
     if (!setting?.exchangeRateUsdToProviderCurrency) return null;
 
+    // Nothing to approximate when the provider charges in our own unit of
+    // account (§66.2). In a Rwanda deployment the price IS in francs and the
+    // customer is charged francs, so "approximately RWF 2,000" beside
+    // "RWF 2,000" is noise that also invites the reader to wonder which of the
+    // two numbers is real. §55.3 said this machinery would idle; this is where
+    // it does.
+    if (isSettlementCurrency(setting.providerCurrency)) return null;
+
     return {
       providerCurrency: setting.providerCurrency,
       rate: setting.exchangeRateUsdToProviderCurrency,
