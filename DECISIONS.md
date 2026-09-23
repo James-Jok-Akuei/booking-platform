@@ -6593,3 +6593,93 @@ collections against the real sandbox by hand before it was called done, and
 disbursement gets the same bar. The admin console still has no Send button;
 that is §65.
 
+
+---
+
+## 65. Sending from the console, and what the CSV is actually for (2026-09-23)
+
+§64 built the capability. This connects it to a button, and corrects a claim
+made earlier in the same breath.
+
+### 65.1 The export existed because the screen was incomplete
+
+Challenged on why the CSV was needed at all, the honest answer turned out to be:
+**it mostly was not.**
+
+Compare what each showed. The console: a truncated business id, an amount, a
+date, a status. The export: the business NAME and the payout NUMBER — the two
+things you actually need in order to pay somebody.
+
+So an admin exported a spreadsheet to read two fields the screen could have
+shown. That is a gap in the screen dressed up as a feature of the file. The
+payout list now carries `businessName`, `destinationMsisdn` and
+`destinationProvider`, and the daily job needs no download at all.
+
+**What the export is still for** is the one thing a web page is genuinely bad
+at: checking a batch against an operator's statement. Forty transfers on a
+statement against forty payouts in a system is a job for two spreadsheets side
+by side. The button now says "Export for checking" rather than "Export run",
+because the old name described its old purpose.
+
+It also remains the fallback for what automation does not cover — an operator
+with no disbursement client (Airtel today), a deployment without disbursement
+credentials, and the day the API is down and somebody pays by hand anyway.
+
+### 65.2 Excel ate the one column that mattered
+
+`+211921000004` opened as `2.11921E+11`. A leading `+` makes Excel decide the
+cell is a number, and quoting does not help — Excel converts quoted
+numeric-looking cells too.
+
+`csvTextCell` wraps such values in the `="..."` formula form, which Excel,
+Google Sheets and Numbers all render verbatim. After RFC-4180 escaping the cell
+on disk carries a doubled-quote form, and a test asserts those exact bytes —
+because the obvious "simplification" back to a bare value silently restores the
+bug.
+
+Ugly in a text editor, and correct for the only reader this file has: a person
+with a statement open beside it.
+
+### 65.3 Send is the main action; Mark sent is the fallback
+
+`Send` is the primary button. `Sent by hand` and `Mark failed` are demoted to
+plain links.
+
+They cannot be removed. The platform can only ask an operator about a transfer
+**it** created, because the status lookup is keyed on the reference the platform
+chose. A transfer made in the operator's own dashboard carries a reference the
+platform never sees, so there is nothing to look it up with — and matching on
+amount and number would guess wrong the first time a business is paid the same
+figure twice in a month. While a human can send money outside the system, the
+system can only learn what happened by being told.
+
+Send is disabled, with the reason printed on the row, when a business has no
+verified destination — rather than offering a button that returns an error.
+
+### 65.4 Verified against MTN's real sandbox
+
+Not against a stub. The whole loop, by hand, on the live sandbox:
+
+1. `POST /admin/payouts/:id/send` returned **HTTP 200** with status `PROCESSING`
+   and our own reference recorded.
+2. MTN accepted the transfer: *"MoMo transfer accepted ... amount=650.00 EUR"*.
+3. A minute later the scheduled poll asked MTN and got SUCCESSFUL:
+   *"Payout 34ef5d3a... confirmed PAID by the operator."*
+4. The payout now carries MTN's **own** transaction id, `772164286` — the number
+   that reconciles against a statement — and a `paidAt`.
+5. Its six ledger entries stayed stamped to it, as they must for a payout that
+   actually went out.
+
+No "Mark sent". No opening the operator's dashboard. No copied reference.
+
+**The EUR override was required** (§52.1): MTN's sandbox accepts only EUR while
+the demo data is priced in SSP, so the outbound request said 650.00 EUR for a
+payout the ledger records as 65,000 SSP minor. The two deliberately disagree,
+which is precisely why boot refuses that flag in production.
+
+### 65.5 Still not done
+
+Production. The sandbox proves the integration works; it does not prove MTN will
+let this account move real money, which needs the merchant agreement and an
+answer on the disbursement float. Airtel has no disbursement client at all, so
+an Airtel destination still returns a 503 — correctly, and under test.
