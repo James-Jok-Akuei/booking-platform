@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { INTERNAL_CURRENCY } from '../payments/currency';
+import {
+  INTERNAL_CURRENCY,
+  isSettlementCurrency,
+  minorUnitExponent,
+} from '../payments/currency';
 
 /**
  * The single settings row's primary key.
@@ -293,6 +297,36 @@ export class PlatformSettingsService {
   ) {
     this.assertAdmin(actor);
     const updatedById = actor.userId;
+
+    // The target currency must be one whose minor-unit exponent is recorded,
+    // or every conversion into it is wrong by a factor of 100 (§55.2). Checked
+    // here, at the only place it can be set, so the failure lands on the admin
+    // who typed it rather than on the next customer who tries to pay.
+    const stored = await this.prisma.platformSetting.findUnique({
+      where: { id: PLATFORM_SETTING_ID },
+      select: { providerCurrency: true },
+    });
+    const targetCurrency = providerCurrency ?? stored?.providerCurrency ?? INTERNAL_CURRENCY;
+    try {
+      minorUnitExponent(targetCurrency);
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Unknown provider currency.',
+      );
+    }
+
+    // When the provider charges in the platform's own unit of account there is
+    // nothing to convert, so the only coherent rate is 1. Any other value is a
+    // typo that would multiply every charge — and because no conversion is
+    // visible in that deployment, nobody would see it until a customer was
+    // billed (§55.3).
+    if (isSettlementCurrency(targetCurrency) && rate !== 1) {
+      throw new BadRequestException(
+        `${targetCurrency} is this platform's internal unit of account, so the ` +
+          `exchange rate must be exactly 1, not ${rate}. There is nothing to ` +
+          'convert: the amount charged IS the amount recorded.',
+      );
+    }
 
     const updated = await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },

@@ -8,6 +8,7 @@ import {
   PaymentProvider,
   PaymentStatusResult,
 } from './payment-provider.interface';
+import { formatMajorUnits } from './currency';
 
 /**
  * MTN MoMo's own transaction states, as returned by GET requesttopay.
@@ -182,10 +183,17 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
     const referenceId = crypto.randomUUID();
     const token = await this.getAccessToken();
 
-    // MoMo amounts are major units as a string, not cents. This is the one
-    // place cents are converted, and it is exact: dividing an integer by 100
-    // and fixing to 2dp cannot lose a cent.
-    const amount = (params.amountCents / 100).toFixed(2);
+    // The currency actually put on the wire, resolved ONCE. The sandbox
+    // override (§52.1) replaces it, so the amount has to be formatted against
+    // this and not against `params.currency` — labelling an amount EUR while
+    // formatting it by RWF's zero decimal places would send a figure a hundred
+    // times too large, under a currency code that disagrees with it.
+    const outboundCurrency = this.sandboxCurrencyOverride ?? params.currency;
+
+    // MoMo amounts are major units as a string, not minor ones. Formatted with
+    // the currency's own number of decimal places (§55.2): a hardcoded /100
+    // sent "117.00" where a currency with no minor unit wanted "11700".
+    const amount = formatMajorUnits(params.amountCents, outboundCurrency);
 
     const response = await fetch(`${this.baseUrl}/collection/v1_0/requesttopay`, {
       method: 'POST',
@@ -199,7 +207,7 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
       body: JSON.stringify({
         amount,
         // The override applies HERE and nowhere else (§52.1).
-        currency: this.sandboxCurrencyOverride ?? params.currency,
+        currency: outboundCurrency,
         externalId: params.externalReferenceId,
         payer: {
           partyIdType: 'MSISDN',

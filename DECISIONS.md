@@ -5673,3 +5673,95 @@ The test is kept as it stands. It is cheap, and it would still catch the real
 regression available here — someone replacing the sequence with a count, a
 timestamp or a random suffix.
 
+---
+
+## 55. The unit of account becomes configurable, and knows its own decimals (2026-09-23)
+
+Groundwork for running in Rwanda. Nothing about this commit is Rwanda-specific;
+it removes two assumptions that were only ever true by coincidence.
+
+### 55.1 `INTERNAL_CURRENCY` is a deployment constant, not a literal
+
+USD was hardcoded, and §18.1's reasoning for it is sound but narrow: SSP has run
+at roughly 97% annual inflation, so pricing a catalogue in it would mean
+repricing every few weeks. That argues against **SSP**, not for **USD**.
+
+Where the local currency is stable the argument inverts. A customer in Kigali
+should see an exact RWF price, not a USD price with an approximate RWF figure
+beside it (§39) — the approximation exists precisely because the platform cannot
+promise a rate it does not control, and a platform pricing natively in RWF has
+no rate to promise.
+
+So the unit of account is now `INTERNAL_CURRENCY`, read from the environment,
+defaulting to USD so nothing about the current deployment changes.
+
+**It is an environment variable rather than a `PlatformSetting`, deliberately.**
+Every stored amount is denominated in it and *nothing records the unit beside
+the number* — a ledger entry's `amountCents` is a bare integer. Changing it
+therefore migrates nothing; it silently reinterprets the entire history. An
+admin-editable field would put that one form submission away.
+
+`CurrencyGuard` makes it impossible to do by accident: at boot it checks the
+ledger for any entry in another currency and **refuses to start** if it finds
+one, naming both currencies. Same posture as §52's production assertion — when
+the cost of being wrong is this high, failing to start is the kind behaviour.
+
+### 55.2 Currencies carry their own minor-unit exponent
+
+`currency.ts` previously stated the gap in a comment:
+
+> *"ASSUMPTION worth stating: both currencies use two decimal places. True for
+> USD, EUR and SSP. A zero-decimal currency (JPY, KRW) or a three-decimal one
+> (KWD, BHD) would need the minor-unit exponent taken into account, and that is
+> not modelled — there is nowhere to record an exponent per currency yet."*
+
+**RWF is a zero-decimal currency**, so Rwanda walks straight into it. The old
+conversion multiplied minor units by the rate directly, which is correct only
+when both exponents match. Converting a 9.00 USD deposit at 1300 RWF/USD gave
+**1,170,000** instead of 11,700 — a bill a hundred times the price.
+
+`MINOR_UNIT_EXPONENT` now records the exponent per ISO code, and
+`convertMinorUnits(amount, from, to, rate)` applies both sides' exponents on the
+way through. An **unrecognised currency is refused, never defaulted to 2**: a
+default would look like it worked while misstating every amount by 100x or
+1000x, quietly, in the one part of the system where quiet wrongness is most
+expensive. Adding a currency is one line.
+
+The assumption had leaked into four places, all now going through the shared
+helpers:
+
+- `momo-payment.provider.ts` — `(amountCents / 100).toFixed(2)` on the outbound
+  request. This one had a second bug the exponent work surfaced: the outbound
+  currency may be rewritten by §52's sandbox override, so the amount was
+  formatted against the *configured* currency while being labelled with the
+  *overridden* one. Both now resolve from a single `outboundCurrency`.
+- `approx-settlement.ts` — `/100` and `*100` when rounding to whole local units.
+  In a currency with no minor unit, "round to whole units" is already what
+  conversion produces, and this step correctly becomes a no-op.
+- `notification-templates.ts` — the `money()` helper, which rendered "RWF
+  117.00" for 11,700 francs.
+- `ledger.service.ts` — `.mul(100)` converting a BillingAdjustment's major-unit
+  amount into ledger units.
+
+### 55.3 A provider charging in our own currency needs no rate
+
+When `providerCurrency === INTERNAL_CURRENCY` there is nothing to convert: the
+amount charged **is** the amount recorded. The machinery stays — a second
+country will need it again, and deleting it now only to rebuild it later is the
+worst of both — but it idles, with the rate at 1 and conversion the identity.
+
+`setExchangeRate` now refuses any rate other than 1 in that case. A typo there
+would multiply every charge, and because no conversion is visible in such a
+deployment, nobody would notice until a customer was billed. It also refuses a
+provider currency whose exponent is unknown, so the failure lands on the admin
+who typed it rather than on the next customer who tries to pay.
+
+### 55.4 Verified
+
+`test/internal-currency.spec.ts` (9) and a new block in
+`test/money-invariant.spec.ts` (8), including the case the whole commit exists
+for: 900 USD minor units at 1300 RWF/USD is 11,700 RWF, not 1,170,000.
+
+Full suite: **938 passing across 23 suites**, no schema change and therefore no
+migration.
+

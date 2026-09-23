@@ -1,5 +1,9 @@
 import { Prisma } from '@prisma/client';
-import { convertUsdCentsToProviderCents } from './currency';
+import {
+  INTERNAL_CURRENCY,
+  convertMinorUnits,
+  minorUnitsPerMajor,
+} from './currency';
 
 /**
  * An indicative local-currency figure shown beside a USD amount (§39).
@@ -27,24 +31,36 @@ export interface RateContext {
 }
 
 /**
- * Converts one USD amount, rounded to a whole unit of the local currency.
+ * Converts one internal amount, rounded to a whole unit of the local currency.
  *
  * Whole units, not minor ones: the rate behind this is set by hand and may be
  * a day old (§37), so presenting piastres would claim a precision the number
  * does not have. `amountMinor` keeps the platform's integer-minor-units
- * convention and is therefore always a multiple of 100 — the rounding is in
- * the value, not in the unit.
+ * convention — the rounding is in the value, not in the unit.
+ *
+ * Since §55 the rounding is exponent-aware rather than a hardcoded 100. In a
+ * currency with no minor unit, such as RWF, "rounded to whole units" is already
+ * what conversion produces and this step changes nothing — which is the correct
+ * behaviour, and was not the previous behaviour.
  */
 export function approxSettlementFor(
-  usdCents: number,
+  amountMinor: number,
   context: RateContext,
 ): ApproxSettlement {
-  const minor = convertUsdCentsToProviderCents(usdCents, context.rate);
-  const wholeUnits = Math.round(minor / 100);
+  const per = minorUnitsPerMajor(context.providerCurrency);
+  const converted = convertMinorUnits(
+    amountMinor,
+    INTERNAL_CURRENCY,
+    context.providerCurrency,
+    context.rate,
+  );
+  const wholeUnits = new Prisma.Decimal(converted)
+    .div(per)
+    .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP);
 
   return {
     currency: context.providerCurrency,
-    amountMinor: wholeUnits * 100,
+    amountMinor: wholeUnits.mul(per).toNumber(),
     exchangeRate: context.rate.toFixed(8),
     rateAsOf: context.updatedAt,
     approximate: true,

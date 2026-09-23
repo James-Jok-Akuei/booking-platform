@@ -1,7 +1,12 @@
 import { Prisma, UserRole } from '@prisma/client';
 import { BadRequestException } from '@nestjs/common';
 import { computeAppointmentAmounts } from '../src/appointments/appointment-pricing';
-import { convertUsdCentsToProviderCents } from '../src/payments/currency';
+import {
+  convertMinorUnits,
+  formatMajorUnits,
+  minorUnitExponent,
+  toMinorUnits,
+} from '../src/payments/currency';
 import { ServicesService } from '../src/business/services.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -89,23 +94,23 @@ describe('Money invariant: platformFee + business === deposit', () => {
   });
 
   describe('currency conversion at charge time (§18.4)', () => {
-    it('converts a USD deposit into provider cents at the configured rate', () => {
-      // 900 USD cents x 0.92 = 828 EUR cents.
-      expect(convertUsdCentsToProviderCents(900, D('0.92'))).toBe(828);
+    it('converts a USD deposit into provider minor units at the configured rate', () => {
+      // 9.00 USD x 0.92 = 8.28 EUR = 828 EUR minor units.
+      expect(convertMinorUnits(900, 'USD', 'EUR', D('0.92'))).toBe(828);
     });
 
     it('handles an SSP-scale rate without losing precision', () => {
-      expect(convertUsdCentsToProviderCents(900, D('6500.00000000'))).toBe(5_850_000);
+      expect(convertMinorUnits(900, 'USD', 'SSP', D('6500.00000000'))).toBe(5_850_000);
     });
 
     it('rounds half-up on the converted figure', () => {
-      // 333 x 0.925 = 308.025
-      expect(convertUsdCentsToProviderCents(333, D('0.925'))).toBe(308);
+      // 3.33 x 0.925 = 3.08025 -> 308 minor units
+      expect(convertMinorUnits(333, 'USD', 'EUR', D('0.925'))).toBe(308);
     });
 
-    it('conversion does not disturb the stored USD invariant', () => {
+    it('conversion does not disturb the stored internal invariant', () => {
       const a = computeAppointmentAmounts(4500, D('20.00'), D('10.00'));
-      const charged = convertUsdCentsToProviderCents(a.depositAmountCents, D('0.92'));
+      const charged = convertMinorUnits(a.depositAmountCents, 'USD', 'EUR', D('0.92'));
 
       // The provider is charged a converted figure; the internal split is
       // untouched and still reconciles.
@@ -113,6 +118,51 @@ describe('Money invariant: platformFee + business === deposit', () => {
       expect(a.platformFeeAmountCents + a.businessAmountCents).toBe(
         a.depositAmountCents,
       );
+    });
+  });
+
+  /**
+   * The gap `currency.ts` documented and did not model: a currency with no
+   * minor unit. Getting this wrong overcharges by exactly 100x, so these are
+   * the tests that stand between a Rwandan customer and a bill a hundred times
+   * the price.
+   */
+  describe('zero-decimal currencies (§55.2)', () => {
+    it('knows RWF has no minor unit, and USD has two', () => {
+      expect(minorUnitExponent('RWF')).toBe(0);
+      expect(minorUnitExponent('USD')).toBe(2);
+    });
+
+    it('converts USD minor units into whole francs, not into 100x of them', () => {
+      // 9.00 USD at 1300 RWF/USD = 11,700 RWF. RWF has no minor unit, so the
+      // minor-unit figure IS 11700. The pre-§55 arithmetic gave 1,170,000.
+      expect(convertMinorUnits(900, 'USD', 'RWF', D('1300'))).toBe(11_700);
+    });
+
+    it('converts back out of a zero-decimal currency correctly', () => {
+      expect(convertMinorUnits(11_700, 'RWF', 'USD', D('0.000769231'))).toBe(900);
+    });
+
+    it('is the identity when both sides are the same zero-decimal currency', () => {
+      expect(convertMinorUnits(11_700, 'RWF', 'RWF', D('1'))).toBe(11_700);
+    });
+
+    it('formats minor units with the right number of decimals', () => {
+      expect(formatMajorUnits(1234, 'USD')).toBe('12.34');
+      expect(formatMajorUnits(1234, 'RWF')).toBe('1234');
+      expect(formatMajorUnits(1234, 'KWD')).toBe('1.234');
+    });
+
+    it('converts major units back to minor using the currency exponent', () => {
+      expect(toMinorUnits(12.34, 'USD')).toBe(1234);
+      expect(toMinorUnits(1234, 'RWF')).toBe(1234);
+    });
+
+    it('REFUSES an unknown currency rather than assuming two decimals', () => {
+      // The whole point: a silent default is wrong by 100x in the one place
+      // where quiet wrongness costs the most.
+      expect(() => minorUnitExponent('ZZZ')).toThrow(/minor-unit exponent is not recorded/);
+      expect(() => convertMinorUnits(900, 'USD', 'ZZZ', D('1'))).toThrow();
     });
   });
 

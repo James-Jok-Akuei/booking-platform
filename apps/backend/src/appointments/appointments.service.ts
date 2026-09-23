@@ -26,7 +26,7 @@ import {
 } from '../payments/payment-provider.interface';
 import {
   INTERNAL_CURRENCY,
-  convertUsdCentsToProviderCents,
+  convertMinorUnits,
 } from '../payments/currency';
 import { AvailabilityService } from '../availability/availability.service';
 import { computeAppointmentAmounts } from './appointment-pricing';
@@ -464,7 +464,7 @@ export class AppointmentsService {
       // silently wrong amount — and it would look like a successful payment.
       // Refusing loudly is the only acceptable behaviour for a money bug.
       this.logger.error(
-        `Deposit initiation blocked for appointment ${appointmentId}: no USD->${providerCurrency} exchange rate configured.`,
+        `Deposit initiation blocked for appointment ${appointmentId}: no ${INTERNAL_CURRENCY}->${providerCurrency} exchange rate configured.`,
       );
       throw new BadRequestException(
         'Exchange rate not configured. Deposit payments cannot be taken until an administrator sets the ' +
@@ -472,8 +472,14 @@ export class AppointmentsService {
       );
     }
 
-    const providerAmountCents = convertUsdCentsToProviderCents(
+    // Exponent-aware since §55.2: both currencies' decimal places are applied
+    // on the way through, so an internal currency with two of them and a
+    // provider currency with none convert correctly rather than by a factor of
+    // 100.
+    const providerAmountCents = convertMinorUnits(
       appointment.depositAmountCents,
+      INTERNAL_CURRENCY,
+      providerCurrency,
       rate,
     );
 

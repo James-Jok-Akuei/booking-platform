@@ -1,5 +1,6 @@
 import { Global, Logger, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { CurrencyGuard } from './currency-guard.service';
 import { MomoPaymentProvider } from './momo-payment.provider';
 import { PAYMENT_PROVIDER, PaymentProvider } from './payment-provider.interface';
 
@@ -15,6 +16,7 @@ import { PAYMENT_PROVIDER, PaymentProvider } from './payment-provider.interface'
 @Global()
 @Module({
   providers: [
+    CurrencyGuard,
     MomoPaymentProvider,
     {
       provide: PAYMENT_PROVIDER,

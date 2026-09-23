@@ -1,4 +1,5 @@
 import { NotificationType } from '@prisma/client';
+import { INTERNAL_CURRENCY, formatMajorUnits } from '../payments/currency';
 
 export interface AppointmentContext {
   serviceName: string;
@@ -10,8 +11,14 @@ export interface AppointmentContext {
   reason?: string;
 }
 
-const money = (cents?: number, currency = 'USD') =>
-  cents === undefined ? '' : `${currency} ${(cents / 100).toFixed(2)}`;
+/**
+ * Minor units rendered for a person to read.
+ *
+ * Goes through `formatMajorUnits` rather than dividing by 100, so a currency
+ * with no minor unit reads as "RWF 11700" instead of "RWF 117.00" (§55.2).
+ */
+const money = (minor?: number, currency = INTERNAL_CURRENCY) =>
+  minor === undefined ? '' : `${currency} ${formatMajorUnits(minor, currency)}`;
 
 /**
  * Copy for each notification type, rendered once at send time.

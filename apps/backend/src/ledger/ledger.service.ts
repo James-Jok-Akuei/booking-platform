@@ -16,6 +16,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
+import { INTERNAL_CURRENCY, toMinorUnits } from '../payments/currency';
 import { splitSettlement } from './settlement';
 
 /** Admin-only ledger operations, asserted in the service as well as the guard (§41). */
@@ -397,13 +398,10 @@ export class LedgerService {
       );
     }
 
-    // `amount` is a Decimal in MAJOR units (§24), and the ledger is integer
-    // cents. Converted through Prisma.Decimal rather than float arithmetic,
-    // like every other money conversion here.
-    const cents = new Prisma.Decimal(adjustment.amount)
-      .mul(100)
-      .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
-      .toNumber();
+    // `amount` is a Decimal in MAJOR units (§24); the ledger is integer minor
+    // units. Through `toMinorUnits` rather than a hardcoded x100, so the
+    // conversion follows the internal currency's own exponent (§55.2).
+    const cents = toMinorUnits(adjustment.amount, INTERNAL_CURRENCY);
 
     // Signed by the adjustment's own type, from the business's perspective:
     // a fee refund puts money back that was taken from them, a gateway debit
