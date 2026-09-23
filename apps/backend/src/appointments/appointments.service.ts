@@ -22,6 +22,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
+import { inferOperator } from '../payments/operator-routing';
 import {
   INTERNAL_CURRENCY,
   convertMinorUnits,
@@ -446,6 +447,7 @@ export class AppointmentsService {
     customerId: string,
     appointmentId: string,
     phoneNumber: string,
+    chosenProvider?: MobileMoneyProvider,
   ) {
     const appointment = await this.requireCustomerAppointment(customerId, appointmentId);
 
@@ -515,10 +517,20 @@ export class AppointmentsService {
         (updatedAt ? ` (rate set ${updatedAt.toISOString()})` : ''),
     );
 
-    // Which operator takes this payment. While one is configured this resolves
-    // to it; once Rwanda has both, the caller has to choose from the customer's
-    // number rather than defaulting into the wrong network (§57.3, §58).
-    const provider = this.payments.requireOnlyOne();
+    // Which operator takes this payment, in order of authority (§58.1):
+    //
+    //   1. what the customer explicitly chose — they know their own network,
+    //      and a ported number makes them the only reliable source;
+    //   2. what their prefix implies, which is right for most numbers;
+    //   3. the single configured operator, when neither of the above applies.
+    //
+    // `require` throws a 503 naming what IS accepted if the chosen operator is
+    // not available here — better than silently collecting on another network,
+    // which charges the wrong SIM and fails in a way nobody can explain.
+    const chosen = chosenProvider ?? inferOperator(phoneNumber);
+    const provider = chosen
+      ? this.payments.require(chosen)
+      : this.payments.requireOnlyOne();
 
     const result = await provider.initiatePayment({
       phoneNumber,

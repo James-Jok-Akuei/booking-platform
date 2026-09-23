@@ -79,7 +79,12 @@ export class AppointmentsCustomerController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: InitiateDepositPaymentDto,
   ) {
-    return this.appointments.initiateDepositPayment(user.userId, id, dto.phoneNumber);
+    return this.appointments.initiateDepositPayment(
+      user.userId,
+      id,
+      dto.phoneNumber,
+      dto.provider,
+    );
   }
 }
 

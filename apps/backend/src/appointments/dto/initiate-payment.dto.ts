@@ -1,4 +1,5 @@
-import { Matches } from 'class-validator';
+import { IsEnum, IsOptional, Matches } from 'class-validator';
+import { MobileMoneyProvider } from '@prisma/client';
 
 export class InitiateDepositPaymentDto {
   /**
@@ -12,4 +13,17 @@ export class InitiateDepositPaymentDto {
       'phoneNumber must be in MSISDN format: 8-15 digits, country code first, no "+" or spaces.',
   })
   phoneNumber!: string;
+
+  /**
+   * Which operator to collect through (§58.1).
+   *
+   * Optional, and it WINS when supplied. The platform infers the operator from
+   * the number's prefix, which is right most of the time and wrong for anyone
+   * who has ported their number to another network — and a ported customer has
+   * no other way to be paid from. So the inference is a default the caller can
+   * always overrule, never a verdict.
+   */
+  @IsOptional()
+  @IsEnum(MobileMoneyProvider)
+  provider?: MobileMoneyProvider;
 }

@@ -373,7 +373,7 @@ describe('Approximate local-currency figures (§39)', () => {
       const result: any = await appointments.initiateDepositPayment(
         customer.userId,
         a.id,
-        { phoneNumber: '256770000000' },
+        '256770000000',
       );
 
       // 900 USD cents x 650 = 585000 minor units, unrounded to whole pounds —

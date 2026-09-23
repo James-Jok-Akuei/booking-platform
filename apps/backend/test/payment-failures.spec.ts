@@ -82,9 +82,7 @@ describe('Payment failures (§52)', () => {
     });
 
   const initiate = (appointmentId: string) =>
-    appointments.initiateDepositPayment(customer.userId, appointmentId, {
-      phoneNumber: '256770000000',
-    });
+    appointments.initiateDepositPayment(customer.userId, appointmentId, '256770000000');
 
   describe('a CONFIGURATION failure', () => {
     beforeEach(() => {

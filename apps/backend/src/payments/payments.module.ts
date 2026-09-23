@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { CurrencyGuard } from './currency-guard.service';
 import { MomoPaymentProvider } from './momo-payment.provider';
 import { PaymentProviderRegistry } from './payment-provider.registry';
+import { PaymentsController } from './payments.controller';
 
 /**
  * Wires every payment provider the platform can talk to (§57.1).
@@ -27,6 +28,7 @@ import { PaymentProviderRegistry } from './payment-provider.registry';
  */
 @Global()
 @Module({
+  controllers: [PaymentsController],
   providers: [
     CurrencyGuard,
     MomoPaymentProvider,

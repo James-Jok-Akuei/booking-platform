@@ -5991,3 +5991,117 @@ after a human approves the application, so there is nothing to configure yet.
 §58 builds the client; verifying it against the real sandbox by hand, as §17.6
 did for MTN, waits on those keys and is not claimed until it happens.
 
+---
+
+## 58. Routing a payment to the customer's own network (2026-09-23)
+
+§57 made the platform able to hold several operators and refuse to pick one by
+default. This decides which one a given payment goes to. The Airtel collections
+client itself is §59 — see §58.5.
+
+### 58.1 Infer from the number, and always let the customer overrule it
+
+Prefixes were assigned to operators and still broadly follow them, so a number
+beginning `+25078` is almost certainly MTN and `+25072` almost certainly Airtel.
+**Almost.** Mobile number portability means a subscriber keeps their number and
+changes network, and a ported customer routed by prefix has their payment sent
+to an operator that has never heard of them.
+
+So the order of authority is:
+
+1. **What the customer explicitly chose.** They know their own network, and for
+   a ported number they are the only reliable source.
+2. **What the prefix implies.** Right for most numbers, and it makes the common
+   case require no interaction at all.
+3. **The single configured operator**, when neither applies.
+
+`InitiateDepositPaymentDto.provider` is optional and wins when present. The
+inference is a default, never a verdict.
+
+**An unknown number returns null rather than a guess.** Only prefixes actually
+known are in the table — Rwanda's four, and nothing else. South Sudan is
+deliberately absent: MTN is the only operator ever collected through there, so
+every number falls back to it, and the difference matters. A fallback gets
+revisited when a second operator appears; a mapping written from memory looks
+like a rule and never gets revisited at all.
+
+If the chosen operator is not available on this platform, `require` throws a 503
+naming what *is* accepted. That is the whole point of routing: without it, an
+Airtel customer would be collected on MTN, which charges a SIM that is not
+theirs and fails in a way nobody can explain.
+
+### 58.2 `GET /payments/providers`
+
+Serves the available operators, the suggested one for a given number, and
+whether a choice is needed. Unauthenticated, like discovery: which networks a
+platform accepts is product information a customer needs before they have any
+reason to have an account.
+
+It exists so the prefix table lives in one place. The alternative is every
+client shipping its own copy, and then a prefix range moving means updating
+several apps and hoping they all ship.
+
+`suggested` is only ever an operator that is actually available — pre-selecting
+one that is not would put the customer one tap from a 503.
+
+### 58.3 Airtel payout destinations needed no work
+
+§57's rename to `MobileMoneyProvider` and the added `AIRTEL_MONEY` value were
+enough: `CreatePayoutDestinationDto` validates with `@IsEnum(MobileMoneyProvider)`
+and the service stores whatever it is given. A business can nominate an Airtel
+number today and be paid to it, because transfers are manual anyway (§36.7).
+
+### 58.4 A gap this commit fell into: the test suite is not typechecked
+
+Two tests passed `{ phoneNumber: '…' }` to a parameter declared `phoneNumber:
+string`. Nothing caught it, for two compounding reasons: `tsconfig.json` has
+`include: ["src/**/*"]`, so `tsc --noEmit` never sees `test/`; and the payment
+provider was a stub that ignored the argument entirely, so the wrong type had no
+effect at runtime.
+
+It surfaced only because this commit is the first code to actually *read* that
+argument — `inferOperator` called `.replace` on an object and threw a
+`TypeError` where the test expected a `ServiceUnavailableException`.
+
+Both call sites are fixed. **The underlying gap is not**, and should not be
+folded into this commit: typechecking `test/` alongside `src/` surfaces **22
+errors**, including a duplicate import, an unreachable enum comparison and
+several possibly-undefined reads. That is its own commit, with a `typecheck`
+script that covers both trees so it cannot regress.
+
+Worth noting what kind of bug this is: the same shape as §50's, where every test
+minted its own token and so nothing noticed that no admin could log in. A test
+suite that is not held to the same standard as the code quietly stops testing
+what it appears to.
+
+### 58.5 What is NOT done, and is not claimed
+
+**There is no Airtel client yet.** An Airtel number therefore resolves to
+`AIRTEL_MONEY`, finds no provider registered, and returns a 503 saying Airtel is
+not accepted here — which is the correct behaviour for today and the reason
+routing was worth shipping before the client: the alternative was collecting an
+Airtel customer's deposit on MTN.
+
+The client is §59, and it is blocked on two things, both outside the codebase:
+
+1. **Credentials.** The application is registered (Rwanda, TEST mode) but the
+   portal shows *"Credentials are not generated yet. Please get your application
+   approved."* Approval is a human review with no published SLA.
+2. **The API specification.** Airtel's documentation sits behind the portal
+   login, so the endpoint paths, header names, request shape and status codes
+   cannot be read from here. Writing an HTTP client from memory would produce
+   something that compiles, passes its own stubs, and cannot be trusted —
+   exactly the kind of work that looks finished and is not.
+
+§17.6 verified MTN against the real sandbox by hand before it was called done.
+Airtel gets the same bar or it does not get the claim.
+
+### 58.6 Verified
+
+`test/operator-routing.spec.ts` (11): the four Rwandan prefixes, an unrecorded
+Rwandan range returning null, South Sudan returning null rather than assuming
+MTN, longest-country-code-wins, and junk input returning null instead of
+throwing.
+
+Full suite: **961 passing across 25 suites**, no schema change and no drift.
+
