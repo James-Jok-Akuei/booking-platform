@@ -11,6 +11,7 @@ import { MailService } from '../../src/mail/mail.service';
 import { NotificationsService } from '../../src/notifications/notifications.service';
 import { ChatService } from '../../src/chat/chat.service';
 import { PaymentProviderRegistry } from '../../src/payments/payment-provider.registry';
+import { DisbursementProviderRegistry } from '../../src/payments/disbursement-provider.registry';
 import { MobileMoneyProvider } from '@prisma/client';
 import {
   InitiatePaymentParams,
@@ -44,7 +45,19 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
     // PlatformSettingsService joins them: LedgerService reads the payout hold
     // from it (§38), and like LedgerService it reaches nothing but the
     // database, so the real one is both cheaper and more honest than a stub.
-    providers: [PrismaService, LedgerService, PlatformSettingsService, ...providers],
+    // DisbursementProviderRegistry joins them, EMPTY by default: PayoutsService
+    // requires it, so without this every suite that touches payouts fails to
+    // resolve (the §23.3 / inventory-#11 cascade, again). An empty registry is
+    // the honest default — a test database has no operator credentials, so
+    // "cannot pay out" is exactly true, and any suite testing the send path
+    // supplies its own populated one.
+    providers: [
+      PrismaService,
+      LedgerService,
+      PlatformSettingsService,
+      { provide: DisbursementProviderRegistry, useValue: new DisbursementProviderRegistry([]) },
+      ...providers,
+    ],
   }).compile();
 }
 

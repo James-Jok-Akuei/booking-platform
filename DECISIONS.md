@@ -6481,3 +6481,115 @@ VERIFIED through the console before this run, recorded as
 appears in the CSV — and it is a better test than anything written here, because
 it went through the browser.
 
+---
+
+## 64. Sending a payout through the operator (2026-09-23)
+
+Until now MoMo was collections-only, so §36.7 recorded that every payout was
+wired by hand. This is the other direction.
+
+### 64.1 A separate interface, not more methods on `PaymentProvider`
+
+Collections and disbursements are different MTN products with different
+subscription keys, different API users and different token paths. A deployment
+can easily collect while being unable to pay out — during onboarding that is the
+**normal** state, because disbursement needs a merchant agreement that
+collections does not.
+
+So `DisbursementProvider` is its own interface and `MomoDisbursementProvider`
+its own class. Folding them together would mean one object holding two sets of
+credentials, where using the wrong pair fails with "subscription not found" —
+an error that reads like broken code rather than a crossed wire.
+
+`ProviderRegistry` is now a shared generic base behind both registries. The
+rules are identical in both directions and expensive to get wrong in both: an
+unconfigured operator must be **absent** rather than present-and-failing, and
+with two operators live there must be **no default**. Two copies of "refuse to
+guess which network" would drift, and the copy that drifts is the one used less.
+
+### 64.2 Being unable to pay out is not a boot failure
+
+`MomoDisbursementProvider` warns and carries on when unconfigured, exactly as
+the collections provider does. A platform that cannot pay out should still take
+bookings; payouts then fail with a message naming the three variables and the
+provisioning command.
+
+The empty `DisbursementProviderRegistry` supplied to every test suite says the
+same thing honestly: a test database has no operator credentials, so "cannot pay
+out" is simply true there.
+
+### 64.3 The order of writes is the whole safety property
+
+`providerReferenceId` and `PROCESSING` are written **before** the operator is
+called.
+
+The other order loses money. If the call succeeds and the process dies before
+recording anything, the payout still reads PENDING — and the next person to
+press send pays the business twice. Written first, a crash leaves a PROCESSING
+row whose outcome the poller can ask for.
+
+MTN keys a transfer on `X-Reference-Id`, which **we** choose. Presenting the
+same one again is rejected as a duplicate rather than paid twice, so the whole
+operation is safe to repeat. A payment system needs that far more than it needs
+speed.
+
+`PROCESSING` exists for the same reason. Without it, PENDING would mean both
+"nobody has sent this" and "it is with the operator and we do not know" — and
+the difference between those is whether pressing send again pays twice. §33.3's
+rule: a status that cannot tell two situations apart is a status that forgets.
+
+**A refusal returns the payout to PENDING, not FAILED.** The operator never took
+the request, so nothing is in flight and the money should stay stamped to this
+payout, ready for another attempt. FAILED is reserved for a transfer that was
+accepted and then did not arrive — and that is what releases the entries.
+
+### 64.4 One payout at a time, deliberately
+
+`POST /admin/payouts/:id/send` sends one. There is no batch route.
+
+A bug in a batch pays every business wrongly before anyone notices; a bug here
+pays one business wrongly and stops. Money out is the direction that cannot be
+undone, and this codebase has taken that position before — §53.4 made deposit
+confirmation a guarded script rather than an endpoint for exactly this reason.
+A "send all" can be added once this has been watched for a while.
+
+The poller runs every minute rather than every second: a mobile-money transfer
+settles in seconds to minutes, a payout sitting PROCESSING one minute longer
+costs nothing, and hammering a status endpoint is how an integration gets
+rate-limited. It is separate from the daily run, because a payout created today
+and sent tomorrow still needs its outcome recorded.
+
+### 64.5 `INSUFFICIENT_FUNDS` is its own failure kind
+
+§52.2 split provider failures into CONFIGURATION and TRANSIENT. Disbursement
+adds a third, because `NOT_ENOUGH_FUNDS` has a specific and actionable answer —
+top up the disbursement account — and reporting it as "temporary, try again
+later" would have an admin waiting a day for something that will never resolve
+on its own.
+
+### 64.6 Verified
+
+`test/disbursement.spec.ts` (17). Nearly all of them are failure modes, because
+that is where the money is:
+
+- The operator sees the row **already PROCESSING with a reference** — the §64.3
+  property, asserted from inside the provider call itself.
+- The reference handed over is the one recorded, and the amount sent is the
+  **settlement** figure, never the internal one.
+- A refusal returns it to PENDING with the entries still stamped, and it can be
+  sent again with a new reference.
+- A success becomes PAID carrying the **operator's** reference — the one that
+  reconciles against a statement.
+- A failure releases its entries, and the **next run picks that money up**.
+- An operator that throws does not stop the sweep.
+
+Full suite: **978 passing across 26 suites**, no drift.
+
+### 64.7 Not yet done
+
+Nothing has touched MTN's sandbox. The credentials are provisioned and the code
+is tested against a fake, which is not the same claim — §17.6 verified
+collections against the real sandbox by hand before it was called done, and
+disbursement gets the same bar. The admin console still has no Send button;
+that is §65.
+

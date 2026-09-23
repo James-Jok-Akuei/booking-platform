@@ -12,12 +12,15 @@ import {
   PayoutStatus,
   Prisma,
   UserRole,
+  MobileMoneyProvider,
 } from '@prisma/client';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { ListPayoutsDto } from './dto/list-payouts.dto';
 import { toCsvRow } from './payout-csv';
 import { PayoutDestinationsService } from './payout-destinations.service';
+import { DisbursementProviderRegistry } from '../payments/disbursement-provider.registry';
 import { maskMsisdn } from './msisdn';
 import { MarkPaidDto, MarkFailedDto } from './dto/mark-payout.dto';
 
@@ -61,6 +64,7 @@ export class PayoutsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly destinations: PayoutDestinationsService,
+    private readonly disbursements: DisbursementProviderRegistry,
   ) {}
 
   // ---------- The run ----------
@@ -417,6 +421,216 @@ export class PayoutsService {
     return updated;
   }
 
+  // ---------- Automated transfer (§64) ----------
+
+  /**
+   * Sends ONE payout through the operator.
+   *
+   * One, deliberately, and not a "send all". A bug in an automated batch pays
+   * every business wrongly before anyone notices; a bug here pays one business
+   * wrongly and stops. Money out is the direction that cannot be undone, and
+   * this codebase has taken that position before — §53.4 made deposit
+   * confirmation a guarded script rather than an endpoint for the same reason.
+   * A batch button can be added once this has been watched for a while.
+   *
+   * ## The order of writes is the whole safety property
+   *
+   * `providerReferenceId` and PROCESSING are written BEFORE the operator is
+   * called. If the call succeeds and this process dies before recording
+   * anything, the payout still reads PENDING and the next person to press send
+   * pays the business twice. Written first, a crash leaves a PROCESSING row
+   * whose outcome the poller can ask for.
+   *
+   * MTN keys a transfer on the reference WE choose, so presenting the same one
+   * again is rejected as a duplicate rather than paid twice. That makes the
+   * whole operation safe to repeat, which is what a payment system needs far
+   * more than it needs speed.
+   */
+  async send(actor: { userId: string; role: UserRole | string }, payoutId: string) {
+    this.assertAdmin(actor);
+    const payout = await this.requirePayout(payoutId);
+
+    if (payout.status !== PayoutStatus.PENDING) {
+      throw new BadRequestException(
+        `Only a PENDING payout can be sent. This one is ${payout.status}.` +
+          (payout.status === PayoutStatus.PROCESSING
+            ? ' It is already with the operator — its outcome is being polled.'
+            : ''),
+      );
+    }
+
+    // Where the money goes, and on which network. From the VERIFIED destination
+    // row, never from configuration: that row is the record of the only
+    // irreversible check the platform makes (§48).
+    const destinations = await this.destinations.verifiedFor([payout.businessId]);
+    const destination = destinations.get(payout.businessId);
+
+    if (!destination) {
+      throw new BadRequestException(
+        'This business has no VERIFIED payout destination, so there is nowhere ' +
+          'to send the money. Verify one first.',
+      );
+    }
+
+    const provider = this.disbursements.require(
+      destination.provider as MobileMoneyProvider,
+    );
+
+    // Ours, chosen now and recorded before the call.
+    const reference = crypto.randomUUID();
+
+    await this.prisma.payout.update({
+      where: { id: payoutId },
+      data: {
+        status: PayoutStatus.PROCESSING,
+        providerReferenceId: reference,
+        sentAt: new Date(),
+        // Cleared: a previous failure's reason must not sit beside a new attempt.
+        failureReason: null,
+      },
+    });
+
+    const result = await provider.sendTransfer({
+      msisdn: destination.msisdn.replace(/\D/g, ''),
+      amountMinor: payout.settlementAmountMinor,
+      currency: payout.settlementCurrency,
+      externalReferenceId: reference,
+      payeeNote: `Payout ${payoutId.slice(0, 8)}`,
+      payerMessage: 'Booking platform payout',
+    });
+
+    if (result.status === 'FAILED') {
+      // Back to PENDING, not FAILED: the operator never took the request, so
+      // nothing is in flight and the money should stay stamped to this payout
+      // ready for another attempt. FAILED is reserved for a transfer that was
+      // accepted and then did not arrive, which is what releases the entries.
+      const reverted = await this.prisma.payout.update({
+        where: { id: payoutId },
+        data: {
+          status: PayoutStatus.PENDING,
+          providerReferenceId: null,
+          sentAt: null,
+          failureReason: result.failureReason ?? 'The operator refused the transfer.',
+        },
+      });
+
+      this.logger.error(
+        `Payout ${payoutId} was refused by ${provider.key} (${result.failureKind}): ` +
+          `${result.failureReason}. Left PENDING for another attempt.`,
+      );
+
+      return reverted;
+    }
+
+    this.logger.log(
+      `Payout ${payoutId} handed to ${provider.key} as ${reference} ` +
+        `(${payout.settlementAmountMinor} ${payout.settlementCurrency} minor). ` +
+        'Awaiting confirmation.',
+    );
+
+    return this.prisma.payout.findUniqueOrThrow({ where: { id: payoutId } });
+  }
+
+  /**
+   * Asks the operator what happened to every transfer in flight.
+   *
+   * Run on a schedule, and safe to run at any time: it only reads, and only
+   * writes when the operator gives a final answer.
+   *
+   * A transfer that SUCCEEDS becomes PAID with the operator's own reference —
+   * the one that reconciles against a statement. One that FAILS releases its
+   * ledger entries back into the pool, exactly as a manual `markFailed` does,
+   * because money that did not arrive must be payable again.
+   */
+  async pollInFlightTransfers(): Promise<{ paid: number; failed: number }> {
+    const inFlight = await this.prisma.payout.findMany({
+      where: { status: PayoutStatus.PROCESSING, providerReferenceId: { not: null } },
+      select: { id: true, providerReferenceId: true, businessId: true, settlementAmountMinor: true },
+    });
+
+    if (inFlight.length === 0) return { paid: 0, failed: 0 };
+
+    // Which operator holds each reference, resolved from the destination — the
+    // §57.2 rule, in the other direction: a reference means something only to
+    // the operator that issued it.
+    const destinations = await this.destinations.verifiedFor(
+      inFlight.map((payout) => payout.businessId),
+    );
+
+    let paid = 0;
+    let failed = 0;
+
+    for (const payout of inFlight) {
+      const destination = destinations.get(payout.businessId);
+      if (!destination) {
+        this.logger.error(
+          `Payout ${payout.id} is PROCESSING but its business no longer has a ` +
+            'verified destination, so its operator cannot be determined. Left in place.',
+        );
+        continue;
+      }
+
+      try {
+        const provider = this.disbursements.require(
+          destination.provider as MobileMoneyProvider,
+        );
+        const result = await provider.checkTransferStatus(payout.providerReferenceId!);
+
+        if (result.status === 'PENDING') continue;
+
+        if (result.status === 'SUCCESSFUL') {
+          await this.prisma.payout.update({
+            where: { id: payout.id },
+            data: {
+              status: PayoutStatus.PAID,
+              paidAt: new Date(),
+              reference: result.providerReference ?? payout.providerReferenceId,
+            },
+          });
+          paid++;
+          this.logger.log(`Payout ${payout.id} confirmed PAID by the operator.`);
+          continue;
+        }
+
+        await this.prisma.$transaction(async (tx) => {
+          await tx.payout.update({
+            where: { id: payout.id },
+            data: {
+              status: PayoutStatus.FAILED,
+              failureReason: result.failureReason ?? 'The operator reported a failure.',
+            },
+          });
+          // Same transaction, same reason as markFailed: a failed payout that
+          // kept its entries stamped would strand that money forever, invisible
+          // to every future run.
+          await tx.ledgerEntry.updateMany({
+            where: { payoutId: payout.id },
+            data: { payoutId: null },
+          });
+        });
+        failed++;
+        this.logger.warn(
+          `Payout ${payout.id} FAILED at the operator: ${result.failureReason}. ` +
+            `${payout.settlementAmountMinor} minor returned to the pool.`,
+        );
+      } catch (error) {
+        // One operator being unreachable must not stop the rest being asked.
+        this.logger.error(
+          `Could not check payout ${payout.id}: ` +
+            `${error instanceof Error ? error.message : error}`,
+        );
+      }
+    }
+
+    if (paid + failed > 0) {
+      this.logger.log(
+        `Transfer poll: ${inFlight.length} in flight, ${paid} paid, ${failed} failed.`,
+      );
+    }
+
+    return { paid, failed };
+  }
+
   // ---------- Batch export ----------
 
   /**
@@ -428,18 +642,20 @@ export class PayoutsService {
    * `runAt`. An admin has a payout in front of them and wants the batch it came
    * in, so "give me this payout's run" is the operation that matches the job.
    *
-   * The job being: MoMo is collections-only (§34.1), so every payout is sent by
-   * hand. This turns one run into one document instead of one browser tab per
-   * business.
+   * ~~MoMo is collections-only, so every payout is sent by hand.~~ Since §64 a
+   * payout can be sent through the operator from the console, one at a time.
+   * This export remains, for the cases automation does not cover: an operator
+   * the platform cannot disburse through, a deployment without disbursement
+   * credentials, and reconciling a whole batch against a statement afterwards.
    *
-   * **There is no payout destination in the schema.** `BusinessProfile` records
-   * a `phone`, but that is a CONTACT number — never verified, never confirmed as
-   * a mobile-money account, and quite possibly a landline or a receptionist. It
-   * is included under a column that says so, beside a `payoutDestination` column
-   * that reads `NOT RECORDED` rather than sitting blank, because a blank looks
-   * like missing data and `NOT RECORDED` looks like what it is. Collecting a
-   * real destination is a separate product decision (§47.2), and it is the one
-   * thing standing between this file and being directly usable.
+   * `payoutDestination` carries the business's VERIFIED destination (§48), and
+   * reads `NOT RECORDED` rather than sitting blank when there is none — a blank
+   * looks like missing data, `NOT RECORDED` looks like what it is.
+   *
+   * `BusinessProfile.phone` appears beside it under a column named
+   * `contactPhoneNotAPayoutDestination`, because it is a CONTACT number: never
+   * verified, never confirmed as a mobile-money account, and quite possibly a
+   * landline. The column name is the warning.
    */
   async exportRun(actor: { role: UserRole | string }, payoutId: string) {
     this.assertAdmin(actor);

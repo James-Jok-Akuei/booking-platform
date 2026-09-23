@@ -52,6 +52,21 @@ export class AdminPayoutsController {
   }
 
   /**
+   * Sends ONE payout through the operator (§64.3).
+   *
+   * One route, one payout, and no batch equivalent. A bug in a batch pays every
+   * business wrongly before anyone notices; a bug here pays one and stops.
+   */
+  @Post(':id/send')
+  @HttpCode(HttpStatus.OK)
+  send(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.payouts.send(user, id);
+  }
+
+  /**
    * The run this payout belongs to, as a CSV batch (§47). One row per business
    * paid, plus a totals row per settlement currency.
    */

@@ -32,4 +32,22 @@ export class PayoutsScheduler {
     }
     return summary;
   }
+
+  /**
+   * Asks the operator what happened to every transfer in flight (§64.4).
+   *
+   * Every minute, not every second: a mobile-money transfer settles in seconds
+   * to minutes, and a payout sitting PROCESSING for an extra minute costs
+   * nothing, while hammering the operator's status endpoint is how an
+   * integration gets rate-limited.
+   *
+   * Deliberately separate from the daily run. A payout created today and sent
+   * tomorrow still needs its outcome recorded, and tying that to the run would
+   * leave it unanswered for a day.
+   */
+  @Cron('0 * * * * *', { name: 'payout-transfer-poll' })
+  async pollTransfers() {
+    const result = await this.payouts.pollInFlightTransfers();
+    return result;
+  }
 }

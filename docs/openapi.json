@@ -2896,6 +2896,7 @@
               "enum": [
                 "PENDING",
                 "FAILED",
+                "PROCESSING",
                 "PAID"
               ]
             }
@@ -2925,6 +2926,30 @@
             "description": ""
           }
         },
+        "tags": [
+          "AdminPayouts"
+        ]
+      }
+    },
+    "/admin/payouts/{id}/send": {
+      "post": {
+        "operationId": "AdminPayoutsController_send",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Sends ONE payout through the operator (§64.3).\n\nOne route, one payout, and no batch equivalent. A bug in a batch pays every\nbusiness wrongly before anyone notices; a bug here pays one and stops.",
         "tags": [
           "AdminPayouts"
         ]
@@ -3081,6 +3106,7 @@
               "enum": [
                 "PENDING",
                 "FAILED",
+                "PROCESSING",
                 "PAID"
               ]
             }

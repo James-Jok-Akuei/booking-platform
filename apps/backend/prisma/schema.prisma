@@ -181,7 +181,8 @@ enum AppointmentStatus {
 /// transfer API to be in the middle of (§35.1), so a payout is either awaiting
 /// a human, done, or failed.
 enum PayoutStatus {
-  PENDING
+  PENDING // created by a run; nothing has been sent
+  PROCESSING // handed to the operator, outcome not yet known (§64.3)
   PAID
   FAILED
 }
@@ -1475,8 +1476,22 @@ model Payout {
 
   status PayoutStatus @default(PENDING)
 
-  /// The provider's reference for the transfer, supplied by the admin who made
-  /// it. Required to mark a payout PAID: a payout with no reference cannot be
+  /// OUR reference for an automated transfer, chosen before it is sent (§64.3).
+  ///
+  /// Written together with status PROCESSING BEFORE the operator is called,
+  /// never after. The other order loses money: if the call succeeds and this
+  /// process dies before recording anything, the payout still reads PENDING and
+  /// the next person to press send pays the business twice. Written first, a
+  /// crash leaves a PROCESSING row whose outcome can be asked for.
+  providerReferenceId String?
+
+  /// When the transfer was handed to the operator. Null on the manual path,
+  /// where nothing is handed to anyone.
+  sentAt DateTime?
+
+  /// The provider's reference for the transfer — typed in by the admin who made
+  /// it on the manual path, or read back from the operator on the automated one.
+  /// Required to mark a payout PAID: a payout with no reference cannot be
   /// reconciled against a bank or provider statement, which is the only thing
   /// that proves the money left.
   reference String?

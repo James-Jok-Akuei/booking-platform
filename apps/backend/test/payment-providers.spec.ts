@@ -112,7 +112,7 @@ describe('Multiple payment providers (§57)', () => {
       // Defaulting here charges the wrong network roughly half the time, and
       // silently. Refusing forces the choice to be made from the customer's
       // number instead (§58).
-      expect(() => registry.requireOnlyOne()).toThrow(/has to be chosen for this payment/);
+      expect(() => registry.requireOnlyOne()).toThrow(/has to be chosen rather than defaulted/);
     });
 
     it('resolves without complaint while only one is configured', () => {
