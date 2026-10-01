@@ -184,6 +184,8 @@ export interface Location {
   ratingAvg: string | null;
   ratingCount: number;
   fromPriceMinor: number | null;
+  /** False means the branch is closed: no bookings, invisible to customers (§89). */
+  isActive: boolean;
   hours: Hours[];
 }
 
@@ -553,3 +555,26 @@ export const removeGalleryPhoto = (locationId: string, mediaId: string) =>
   api<void>(`/business/locations/${locationId}/gallery/${mediaId}`, {
     method: 'DELETE',
   });
+
+/** Edits a branch. Coordinates cannot be removed once set (§43.2). */
+export const updateLocation = (
+  id: string,
+  body: {
+    name?: string;
+    address?: string;
+    phone?: string | null;
+    latitude?: number;
+    longitude?: number;
+  },
+) => api<Location>(`/business/locations/${id}`, { method: 'PATCH', body });
+
+/**
+ * Closes a branch (§89). A soft close: bookings, reviews and history stay, the
+ * branch stops taking new bookings and disappears from customer search. The
+ * server refuses while appointments are still to happen.
+ */
+export const closeLocation = (id: string) =>
+  api<{ message: string }>(`/business/locations/${id}`, { method: 'DELETE' });
+
+export const reopenLocation = (id: string) =>
+  api<{ message: string }>(`/business/locations/${id}/reopen`, { method: 'PATCH' });

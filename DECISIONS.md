@@ -8287,3 +8287,93 @@ leaves no URL behind.
 
 **1060 passing across 29 suites.**
 
+## 89. A branch is closed, never erased
+
+Item 1 of the wiring plan — "two routes, no backend work" — turned out to be a
+data-loss bug with a UI gap in front of it.
+
+### 89.1 What `DELETE /business/locations/:id` actually did
+
+It hard-deleted the row, and the comment above it said:
+
+> Hard delete, unlike services. A location has no historical appointment
+> references to preserve yet ... **Revisit when appointments start pointing at
+> a locationId.**
+
+They do, and had for a long time. `Appointment.locationId` was `onDelete:
+Cascade`, so deleting a branch deleted **every appointment ever made there** —
+completed and paid ones included. From those appointments, `Review` and the chat
+`Thread` cascaded away too. `LedgerEntry.appointmentId` is `SetNull`, so the
+money rows survived with nothing left to explain them: a balance whose history
+had been removed, which is precisely what §34.2's append-only ledger exists to
+prevent.
+
+Nothing had called it, because no screen existed. Wiring the button would have
+shipped the bug.
+
+### 89.2 Closed, like a service is retired
+
+`Location.isActive`, matching `Service.isActive`, and the same shape the user
+asked for in §73: *"should not be deleting but something that toggles on and
+off"*. A closed branch stops taking bookings and disappears from customer
+search; everything that happened there stays readable, and it can be reopened.
+
+`Appointment.locationId` is now `onDelete: Restrict`. Soft deletion means
+nothing calls a hard delete — Restrict makes it **impossible rather than merely
+unused**, which is the same reasoning the adjacent `serviceId` relation already
+carried.
+
+### 89.3 Closing refuses while bookings are still to happen
+
+A branch with `BOOKED` or `IN_PROGRESS` appointments cannot be closed:
+
+> This branch has 3 bookings still to happen. Cancel or complete them first,
+> then close it.
+
+Those are real people with a time reserved. Cancelling them is a decision with
+refunds attached (§25), and it is not one a "close branch" button should make
+silently.
+
+### 89.4 Three places had to stop offering it
+
+Closing is only real if the branch actually stops selling:
+
+- **Discovery** — filtered in `buildWhere`, so the count and the page agree, the
+  same reason `maxPriceMinor` moved into the query. `findOne` became `findFirst`
+  and 404s.
+- **Availability** — 404 for the public; **members still see it**, on the same
+  reasoning as the status gate beside it: an owner reopening a branch needs to
+  check its hours still produce sensible slots first.
+- **Booking** — refuses with 404, not a message. To a customer, a branch that is
+  not open does not exist.
+
+The business's own list still shows closed branches, greyed, with a reopen
+button. It is the one place they must remain visible.
+
+### 89.5 A test that relied on the destructive cascade
+
+`business-approval.spec.ts` cleared state with
+`businessProfile.deleteMany({})`, which worked only because locations and then
+appointments cascaded away beneath it. Restrict broke it — correctly. It now
+clears appointments first.
+
+Switching it to `resetDatabase` was the wrong fix and failed differently: that
+helper truncates `users` too, removing the admin created in `beforeAll`.
+
+### 89.6 Verified
+
+Live: a branch edited; closing refused on a branch with a booking, naming the
+count; a branch with none closed, and discovery went from **7 locations to 6**,
+its detail page 404'd, its availability 404'd; reopening brought it back to 7.
+
+Eight tests, including the one that matters most — the appointment survives the
+close, where the old delete destroyed it — and a booking refused while closed
+then accepted after reopening, so closing is not a one-way door.
+
+Two attempts to verify booking refusal through the live API were defeated by the
+OTP resend cooldown, and the first produced a **false pass**: the owner login
+silently failed, so the branch was never closed and the booking succeeded for
+the wrong reason. Moved into the suite rather than retried.
+
+**1069 passing across 30 suites.**
+

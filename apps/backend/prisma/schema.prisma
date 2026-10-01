@@ -463,6 +463,16 @@ model Location {
   /// sort=price.
   fromPriceMinor Int?
 
+  /// Soft-delete flag, matching Service.isActive (§89).
+  ///
+  /// A branch is never hard-deleted. It used to be, and the comment on that
+  /// code said "a location has no historical appointment references to
+  /// preserve yet" — which stopped being true the moment Appointment grew a
+  /// locationId. Closing a branch must not erase the bookings that happened
+  /// there, the reviews customers left about it, or the appointments that
+  /// explain ledger entries.
+  isActive Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -477,6 +487,8 @@ model Location {
   services ServiceLocation[]
 
   @@index([businessId])
+  /// Branch lists and discovery filter on this constantly (§89).
+  @@index([businessId, isActive])
   /// The bounding-box prefilter behind distance search (§43.5). Postgres can
   /// use it to cut the candidate set before any haversine is computed.
   @@index([latitude, longitude])
@@ -875,7 +887,13 @@ model Appointment {
   id String @id @default(uuid())
 
   locationId String
-  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  // Restrict, not Cascade (§89). Deleting a location used to delete every
+  // appointment ever made there — and with them the reviews and threads that
+  // cascade from an appointment, while ledger entries survived with their
+  // appointmentId set to null and nothing left to explain them. Locations are
+  // soft-deleted now; this makes the destructive path impossible rather than
+  // merely unused, for the same reason the service relation below is Restrict.
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Restrict)
 
   // Required now, unlike the placeholder: an appointment is always for a
   // specific service, because that is what fixes its duration and its price.

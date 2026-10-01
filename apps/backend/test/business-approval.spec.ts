@@ -557,6 +557,7 @@ describe('Business approval (§42)', () => {
   // ------------------------------------------------------------------
   describe('the queue', () => {
     it('filters by status and returns oldest first', async () => {
+      await prisma.appointment.deleteMany({});
       await prisma.businessProfile.deleteMany({});
       const first = await shopIn(BusinessStatus.PENDING);
       const second = await shopIn(BusinessStatus.PENDING);
@@ -575,6 +576,7 @@ describe('Business approval (§42)', () => {
     });
 
     it('returns every status when unfiltered', async () => {
+      await prisma.appointment.deleteMany({});
       await prisma.businessProfile.deleteMany({});
       await shopIn(BusinessStatus.PENDING);
       await shopIn(BusinessStatus.APPROVED);

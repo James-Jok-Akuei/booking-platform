@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
-import { listLocations, setCapacity, setHours, type Hours, type Location } from '../api/business';
+import {
+  closeLocation,
+  listLocations,
+  reopenLocation,
+  setCapacity,
+  setHours,
+  updateLocation,
+  type Hours,
+  type Location,
+} from '../api/business';
 import { useMoney } from '../money';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -94,15 +103,26 @@ function LocationCard({
     );
 
   return (
-    <div className="card location">
+    <div className={location.isActive ? 'card location' : 'card location closed'}>
       <div className="setting-head">
-        <h2>{location.name}</h2>
+        <h2>
+          {location.name}
+          {!location.isActive && <span className="pill tkt-closed">Closed</span>}
+        </h2>
         <p className="muted small">
           {location.address} · cheapest service {money.format(location.fromPriceMinor)}
           {location.ratingCount > 0 &&
             ` · rated ${location.ratingAvg} over ${location.ratingCount}`}
         </p>
+        <BranchActions location={location} />
       </div>
+
+      {!location.isActive && (
+        <p className="notice">
+          This branch is closed. It takes no new bookings and customers cannot find
+          it. Everything that happened here is kept.
+        </p>
+      )}
 
       <table className="hours">
         <tbody>
@@ -185,6 +205,137 @@ function LocationCard({
           {saveCapacity.error instanceof ApiError
             ? saveCapacity.error.message
             : 'Could not save.'}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Editing a branch, and closing it.
+ *
+ * "Close", never "delete" (§89). It used to be a hard delete that cascaded
+ * through every appointment ever made there — and the server now refuses while
+ * bookings are still to happen, so the confirmation says what to do about that
+ * rather than letting a 400 explain the rule.
+ */
+function BranchActions({ location }: { location: Location }) {
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(location.name);
+  const [address, setAddress] = useState(location.address);
+  const [phone, setPhone] = useState(location.phone ?? '');
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['locations'] });
+  const fail = (error: unknown) =>
+    setProblem(error instanceof ApiError ? error.message : 'That did not work.');
+
+  const save = useMutation({
+    mutationFn: () =>
+      updateLocation(location.id, {
+        name: name.trim(),
+        address: address.trim(),
+        phone: phone.trim() === '' ? null : phone.trim(),
+      }),
+    onSuccess: () => {
+      setEditing(false);
+      setProblem(null);
+      refresh();
+    },
+    onError: fail,
+  });
+
+  const close = useMutation({
+    mutationFn: () => closeLocation(location.id),
+    onSuccess: () => {
+      setProblem(null);
+      refresh();
+    },
+    onError: fail,
+  });
+
+  const reopen = useMutation({
+    mutationFn: () => reopenLocation(location.id),
+    onSuccess: () => {
+      setProblem(null);
+      refresh();
+    },
+    onError: fail,
+  });
+
+  if (editing) {
+    return (
+      <form
+        className="stack"
+        onSubmit={(event) => {
+          event.preventDefault();
+          save.mutate();
+        }}
+      >
+        <label>
+          Branch name
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+        </label>
+        <label>
+          Address
+          <input value={address} onChange={(e) => setAddress(e.target.value)} />
+        </label>
+        <label>
+          Phone for this branch <span className="muted small">(optional)</span>
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
+        </label>
+        {problem && (
+          <p className="error small" role="alert">
+            {problem}
+          </p>
+        )}
+        <div className="row-end">
+          <button type="button" className="link" onClick={() => setEditing(false)}>
+            Cancel
+          </button>
+          <button type="submit" className="primary" disabled={save.isPending}>
+            {save.isPending ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </form>
+    );
+  }
+
+  return (
+    <div className="branch-actions">
+      <button type="button" onClick={() => setEditing(true)}>
+        Edit details
+      </button>
+
+      {location.isActive ? (
+        <button
+          type="button"
+          disabled={close.isPending}
+          onClick={() => {
+            if (
+              window.confirm(
+                `Close ${location.name}?\n\n` +
+                  'It stops taking bookings and customers will not find it. ' +
+                  'Nothing is deleted — past bookings, reviews and takings stay, ' +
+                  'and you can reopen it at any time.',
+              )
+            ) {
+              close.mutate();
+            }
+          }}
+        >
+          {close.isPending ? 'Closing…' : 'Close this branch'}
+        </button>
+      ) : (
+        <button type="button" disabled={reopen.isPending} onClick={() => reopen.mutate()}>
+          {reopen.isPending ? 'Reopening…' : 'Reopen this branch'}
+        </button>
+      )}
+
+      {problem && (
+        <p className="error small" role="alert">
+          {problem}
         </p>
       )}
     </div>

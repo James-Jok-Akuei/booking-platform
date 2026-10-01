@@ -89,8 +89,12 @@ describe('Cross-tenant isolation', () => {
       );
     });
 
-    it("business B gets 404 deleting business A's location", async () => {
-      await expect404(locations.remove(beta.userId, alpha.locationId));
+    it("business B gets 404 closing business A's location", async () => {
+      await expect404(locations.close(beta.userId, alpha.locationId));
+    });
+
+    it("business B gets 404 reopening business A's location", async () => {
+      await expect404(locations.reopen(beta.userId, alpha.locationId));
     });
 
     it("business B gets 404 setting hours on business A's location", async () => {

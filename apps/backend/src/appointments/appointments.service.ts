@@ -257,10 +257,18 @@ export class AppointmentsService {
         businessId: true,
         name: true,
         address: true,
+        isActive: true,
         business: { select: { status: true } },
       },
     });
     if (!location) throw new NotFoundException('Location not found.');
+
+    // A closed branch takes no new bookings (§89). 404 rather than a message,
+    // for the same reason the status check below is a 404: to a customer, a
+    // branch that is not open does not exist.
+    if (!location.isActive) {
+      throw new NotFoundException('Location not found.');
+    }
 
     // Booking was the one public surface that never checked this (§42.1).
     // Availability, reviews and chat all hid a non-APPROVED business, but a

@@ -105,6 +105,8 @@ export class AvailabilityService {
       select: {
         id: true,
         capacity: true,
+        // A closed branch offers no slots (§89).
+        isActive: true,
         // Members decide who may preview a non-approved location; status
         // gates public visibility.
         business: {
@@ -140,6 +142,13 @@ export class AvailabilityService {
       location.business.members.some((member) => member.userId === viewerUserId);
 
     if (!isMember && location.business.status !== BusinessStatus.APPROVED) {
+      throw new NotFoundException('Location not found.');
+    }
+
+    // A closed branch offers nothing to the public (§89). Members still see it,
+    // on the same reasoning as the status gate above: an owner reopening a
+    // branch needs to check its hours still produce sensible slots first.
+    if (!isMember && !location.isActive) {
       throw new NotFoundException('Location not found.');
     }
 

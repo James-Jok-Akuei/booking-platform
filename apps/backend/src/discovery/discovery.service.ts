@@ -177,8 +177,11 @@ export class DiscoveryService {
    * here would mean two places to keep those rules right.
    */
   async findOne(locationId: string) {
-    const location = await this.prisma.location.findUnique({
-      where: { id: locationId },
+    // findFirst, not findUnique: a closed branch must 404 for a customer the
+    // same way it is absent from search (§89), and `where` on findUnique takes
+    // only unique fields.
+    const location = await this.prisma.location.findFirst({
+      where: { id: locationId, isActive: true },
       select: {
         id: true,
         name: true,
@@ -462,6 +465,10 @@ export class DiscoveryService {
 
   private buildWhere(query: DiscoverLocationsDto, ids: string[] | null) {
     const where: Prisma.LocationWhereInput = {
+      // A closed branch is not bookable and must not be discoverable (§89).
+      // Applied in buildWhere so the count and the page agree about it, the
+      // same reason maxPriceMinor moved into the query.
+      isActive: true,
       // Only publicly bookable businesses, through the single shared predicate
       // rather than a second status check (§42.1).
       business: {

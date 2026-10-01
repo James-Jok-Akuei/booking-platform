@@ -133,13 +133,27 @@ export class BusinessController {
     return this.locations.update(user.userId, id, dto);
   }
 
+  /**
+   * Closes a branch (§89). Kept as DELETE because that is the verb a client
+   * reaches for, but it is a soft close: nothing that happened there is lost,
+   * and `reopen` puts it back.
+   */
   @Delete('locations/:id')
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
-  deleteLocation(
+  closeLocation(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.locations.remove(user.userId, id);
+    return this.locations.close(user.userId, id);
+  }
+
+  @Patch('locations/:id/reopen')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  reopenLocation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.locations.reopen(user.userId, id);
   }
 
   /** Sets concurrent-appointment capacity. See LocationsService.setCapacity. */

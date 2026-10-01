@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { AppointmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BusinessAccessService } from './business-access.service';
 import { CreateLocationDto } from './dto/create-location.dto';
@@ -92,16 +93,68 @@ export class LocationsService {
     });
   }
 
-  async remove(userId: string, locationId: string) {
+  /**
+   * Closes a branch. ~~Hard delete~~ — superseded in §89.
+   *
+   * The old comment said "a location has no historical appointment references
+   * to preserve yet ... revisit when appointments start pointing at a
+   * locationId". They do, and had for a long time. A hard delete cascaded
+   * through every appointment ever made there, taking its reviews and chat
+   * threads with them, and left ledger entries with `appointmentId` null —
+   * money still on the books with nothing to explain it.
+   *
+   * So a branch is closed, exactly as a service is retired (§73): it stops
+   * taking bookings and stops appearing to customers, and everything that
+   * happened there stays readable. `Appointment.locationId` is `Restrict` as
+   * well, so the destructive path is impossible rather than merely unused.
+   */
+  async close(userId: string, locationId: string) {
     const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    const existing = await this.access.requireOwnedLocation(businessId, locationId);
 
-    // Hard delete, unlike services. A location has no historical appointment
-    // references to preserve yet, and its hours and media cascade with it.
-    // Revisit when appointments start pointing at a locationId.
-    await this.prisma.location.delete({ where: { id: locationId } });
+    if (!existing.isActive) {
+      throw new BadRequestException('That branch is already closed.');
+    }
 
-    return { message: 'Location deleted.' };
+    const upcoming = await this.prisma.appointment.count({
+      where: {
+        locationId,
+        status: { in: [AppointmentStatus.BOOKED, AppointmentStatus.IN_PROGRESS] },
+      },
+    });
+    if (upcoming > 0) {
+      // Refusing is kinder than closing silently: these are real people with a
+      // time booked. Cancelling them is a decision with refunds attached
+      // (§25), and it is not one a "close branch" button should make.
+      throw new BadRequestException(
+        `This branch has ${upcoming} booking${upcoming === 1 ? '' : 's'} still to happen. ` +
+          'Cancel or complete them first, then close it.',
+      );
+    }
+
+    await this.prisma.location.update({
+      where: { id: locationId },
+      data: { isActive: false },
+    });
+
+    return { message: 'Branch closed. Its history is kept and it can be reopened.' };
+  }
+
+  /** Puts a closed branch back into service. */
+  async reopen(userId: string, locationId: string) {
+    const businessId = await this.access.requireBusinessId(userId);
+    const existing = await this.access.requireOwnedLocation(businessId, locationId);
+
+    if (existing.isActive) {
+      throw new BadRequestException('That branch is already open.');
+    }
+
+    await this.prisma.location.update({
+      where: { id: locationId },
+      data: { isActive: true },
+    });
+
+    return { message: 'Branch reopened.' };
   }
 
   /**

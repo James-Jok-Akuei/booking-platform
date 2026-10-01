@@ -308,3 +308,7 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .photo-grid figure { margin: 0; width: 118px; display: flex; flex-direction: column; gap: 3px; }
 .photo-grid img { width: 118px; height: 88px; object-fit: cover; border-radius: 7px; border: 1px solid var(--line); }
 @media (max-width: 620px) { .two-up { grid-template-columns: 1fr; } }
+
+.card.location.closed { opacity: 0.72; }
+.card.location.closed h2 { display: flex; align-items: center; gap: 9px; }
+.branch-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 9px; }
