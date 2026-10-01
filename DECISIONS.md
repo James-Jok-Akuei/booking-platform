@@ -6776,3 +6776,118 @@ and currency are updated and its response shapes are unchanged, but the specific
 figures and distances were measured against the Juba dataset. §49's standard is
 that a walk-through is worth trusting only when it has actually been run, so the
 document now says at the top that it currently is not.
+
+---
+
+## 67. Re-walking the guide in Rwanda (2026-10-01)
+
+§66 re-pointed the platform and explicitly did **not** re-walk the manual guide.
+This is the walk, run end to end against a freshly reseeded Kigali database.
+
+Per §49, the findings are the output. Nothing below was fixed on the way.
+
+### 67.1 `openNow` returns fewer rows than its own `total`
+
+`GET /discover/locations?openNow=true` returns **6** locations and reports
+`total: 7`. Without the filter, 7 and 7.
+
+Nyamirambo Salon is closed all day today by design, and it is correctly absent
+from the rows — but `total` is counted before `openNow` is applied, so a client
+paginating on `total` asks for a page that does not exist and reports a count
+that is wrong by one. Every other filter is applied in the query; this one is
+not.
+
+### 67.2 The guide described an `approxSettlement` that no longer exists
+
+Doc-only, and now corrected. §66.2 suppresses the indicative figure when the
+provider currency IS the unit of account, which is the whole point of pricing in
+francs — but the guide still told the reader to look for it on four different
+responses.
+
+### 67.3 The collections log prints the amount against the wrong currency
+
+```
+MoMo requesttopay accepted: ... amount=10.00 RWF ...
+```
+
+`amount` is formatted against the **outbound** currency — EUR under the sandbox
+override, hence two decimals — while the code beside it is `params.currency`,
+the real one. MTN was sent `10.00 EUR`; the log claims `10.00 RWF`, which in a
+zero-decimal currency is not even a well-formed figure.
+
+The §55.2 fix corrected the request **body** to resolve both from one
+`outboundCurrency` and missed this line. The disbursement provider, written
+later, prints `amount=46.00 EUR` correctly — so the two sit side by side in the
+same log, one right and one wrong.
+
+A logging bug, not a charging bug: the body is correct and the customer is
+charged the right amount.
+
+### 67.4 Analytics still hardcodes USD
+
+`analytics.service.ts:236` returns `currency: 'USD'` — the only hardcoded USD
+left in `src/` after §66. The same business's `/balance` correctly reports RWF.
+
+So a business reading its own analytics is shown franc amounts labelled as
+dollars, in the one screen built to tell it what it has earned. This is exactly
+the class §51 and §56 exist to prevent, surviving in the one place neither
+touched.
+
+### 67.5 Billing adjustments are now unpayable — a regression from §66.2
+
+The serious one.
+
+`executeAdjustment` derives the entry's settlement figure from
+`getExchangeRateForDisplay()`. §66.2 taught that helper to return **null** when
+the provider currency is the unit of account — correct for suppressing a display
+figure, and fatal here: the adjustment entry is written with
+`settlementCurrency: NULL` and `settlementAmountMinor: NULL`.
+
+A payout run excludes entries with no settlement figure, because there is no
+amount to send (§46.3). So **in a single-currency deployment every billing
+adjustment becomes money that can never reach a business.** Confirmed in the
+database: one `ADJUSTMENT` entry, 2 minor units, both settlement columns null,
+and the run reporting `entriesWithoutSettlement: 1`.
+
+Two faults compounded:
+
+1. A **money** path read a helper named `...ForDisplay`. That was a smell before
+   today — the name says what it is for, and settlement is not display.
+2. §66.2 changed a shared helper for a presentation reason without checking who
+   else depended on it.
+
+**978 tests did not catch this.** The refunds suite asserts the adjustment
+entry's amount and sign, never its payability; the payout suites build entries
+with settlement columns set explicitly. Nothing asserted that an adjustment is
+something a payout run can actually pay — which is the only reason an adjustment
+exists.
+
+### 67.6 What the walk CONFIRMED
+
+Not everything was a finding. Verified live, in Rwanda configuration:
+
+- Money is exact in whole francs: a 5,000 RWF haircut gives a 1,000 deposit =
+  500 fee + 500 business, and the ledger pair is +1000 / −500 with settlement
+  equal to reporting, matured, `payoutHoldDaysApplied: 2`.
+- §54.2's arrival-code rule: the customer's own read carried
+  `verificationCode: 399645`; the business's read of the same appointment had no
+  such key at all.
+- The deposit **succeeds** now, where the guide said it failed. MTN's sandbox
+  auto-approves, so the appointment reached `BOOKED` without any manual
+  confirmation — and `dev:confirm-deposit` correctly refused to write a second
+  set of entries.
+- Approval moved discovery from 7 public locations to 8.
+- A review posted, appeared with a display name and no identity, and moved
+  `ratingAvg` 3.5 → 3.8 across 5.
+- The whole payout loop: destination verified, run created 2 payouts, one sent →
+  `PROCESSING` → `PAID` with MTN's own reference, in about 35 seconds.
+- The CSV carries `="+250788100001"` text-forced (§65.2), settlement equal to
+  reporting, and the paid row's operator reference.
+
+### 67.7 The guide is now accurate
+
+Every figure in `docs/MANUAL_WALKTHROUGH.md` was replaced with what this walk
+actually produced, the §66.5 "not re-walked" banner is removed, and the two
+findings a reader will hit in passing — §67.1's count mismatch and §67.5's null
+settlement columns — are called out where they appear, so nobody wastes an hour
+deciding whether they have misread it.

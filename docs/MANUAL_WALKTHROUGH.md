@@ -1,13 +1,5 @@
 # Manual walk-through
 
-> **Re-point to Rwanda, but NOT yet re-walked (§66.5).** Every command in this
-> document was run against the old South Sudan dataset. The names, coordinates
-> and currency below have been updated to match the Kigali seed, and the shape
-> of every response is unchanged — but the **specific figures and distances have
-> not been re-verified by hand**, so treat them as indicative until someone
-> walks it again. §49's standard is that a walk-through is only worth trusting
-> when it has actually been run, and this one currently is not.
-
 A numbered sequence that exercises the whole system by hand, against the demo
 dataset. **Every command here was run** against a real server before this
 document was written; where reality differed from the plan it says so, and the
@@ -74,19 +66,22 @@ curl -s "$B/discover/locations?categoryId=<id>" | J
 
 - `total` is **7**, not 9. Kicukiro Tailors (`PENDING`) and Gikondo Fitness
   (`SUSPENDED`) are absent. Approve Kicukiro in step 8 and it appears.
-- `fromPriceMinor` is `2000` for **both** Kigali Barbers branches — services belong
-  to the business, so branches share a price. Its retired "dye" service at
-  1200 is cheaper and correctly ignored.
+- `fromPriceMinor` is `5000` for **both** Kigali Barbers branches — services
+  belong to the business, so branches share a price. Its retired "dye" service
+  at 3000 is cheaper and correctly ignored.
 - Kacyiru Studio has `fromPriceMinor: null` and sorts **last** under
   `sort=price`. No services yet is not the same as free, and not the same as
   absent.
-- `approxSettlement.fromPriceMinor` is the SSP figure, rounded to whole pounds,
-  with `approximate: true` and the rate's `rateAsOf`. Every row on a page shares
-  one `exchangeRate` — check two rows and confirm.
-- Distances: Nyarugenge → Nyamirambo is **0.73 km**, → Kacyiru **3.02 km**. Drop
-  `radiusKm` to 1 and only the first two survive.
+- **There is no `approxSettlement` anywhere.** Correct since §66.2: the platform
+  prices, charges and settles in francs, so there is nothing to approximate. The
+  key reappears only in a deployment whose provider currency differs from its
+  unit of account.
+- Distances from Nyarugenge: Airport Road Workshop **2.91 km**, Kacyiru Studio
+  **3.09 km**, Nyamirambo Salon **4.22 km**. Four locations inside 5 km.
 - `openNow` depends on the hour you run this, in **Africa/Kigali**, not your
-  machine's timezone. Nyamirambo Salon is closed all day today by design.
+  machine's timezone. Nyamirambo Salon is closed all day today by design — so it
+  drops out of the rows while `total` still says 7. **That mismatch is a real
+  bug** (§67.1), not something you have misread.
 
 ---
 
@@ -150,12 +145,15 @@ curl -s -X POST "$B/appointments" -H "$CUST" -H 'Content-Type: application/json'
 **Look at:**
 
 - `status: "PENDING_PAYMENT"` — the slot is held, nothing is paid.
-- `depositAmountMinor: 400`, `platformFeeAmountMinor: 200`,
-  `businessAmountMinor: 200` on a 2000c haircut at 20% deposit and a 10% fee.
-  **Both percentages apply to the service price**, so 200 + 200 = 400 exactly.
-- `servicePriceMinor: 2000` is the price *you agreed*; `service` carries the
+- `depositAmountMinor: 1000`, `platformFeeAmountMinor: 500`,
+  `businessAmountMinor: 500` on a 5,000 RWF haircut at 20% deposit and a 10%
+  fee. **Both percentages apply to the service price**, so 500 + 500 = 1000
+  exactly.
+- `currency: "RWF"`, and every figure is a **whole franc**. RWF has no minor
+  unit, so `1000` is one thousand francs, not ten of anything (§55.2).
+- `servicePriceMinor: 5000` is the price *you agreed*; `service` carries the
   name and duration but **no price**, so a later reprice cannot rewrite history.
-- `approxSettlement.depositAmountMinor` — SSP 2,600.00.
+- No `approxSettlement`, for the reason given in step 1.
 - `verificationCodeSentAt` is set: an arrival code went to your inbox (§53.2).
   Fetch the booking on its own (`GET /appointments/$APPT`) and the response also
   carries `verificationCode` — **the customer's own read, and only theirs**
@@ -172,37 +170,32 @@ curl -s -X POST "$B/appointments/$APPT/initiate-deposit-payment" -H "$CUST" \
   -H 'Content-Type: application/json' -d '{"phoneNumber":"256770000000"}' | J
 ```
 
-**What actually happens with the seeded data: this fails.** The seed sets the
-provider currency to `SSP`, which is right for production and which MTN's
-sandbox rejects:
+**This works.** The platform collects in RWF, and MTN's sandbox accepts the
+request because `MOMO_SANDBOX_CURRENCY_OVERRIDE="EUR"` rewrites the currency on
+the outbound request only (§52.1). You get:
 
-```
-MoMo requesttopay rejected (500): {"message":"Currency not supported.","code":"INVALID_CURRENCY"}
-```
-
-The customer-facing message is only *"Provider rejected the request (HTTP 500)"*
-— the actual reason is in the server log.
-
-**To exercise the sandbox for real**, switch the platform to EUR first (admin
-token from step 8):
-
-```bash
-curl -s -X PATCH "$B/admin/settings/exchange-rate" -H "$ADMIN" \
-  -H 'Content-Type: application/json' \
-  -d '{"exchangeRateUsdToProviderCurrency":0.92,"providerCurrency":"EUR"}' | J
+```json
+{ "paymentStatus": "PENDING", "providerReferenceId": "...",
+  "providerAmountMinor": 1000, "providerCurrency": "RWF",
+  "exchangeRateUsed": "1.00000000" }
 ```
 
-Then re-book and re-initiate. You get `paymentStatus: "PENDING"` and a
-`providerReferenceId`; the customer approves on their handset, and the
-20-second poll flips the appointment to `BOOKED`. Poll it yourself with:
+The rate is **1** and `providerAmountMinor` equals `depositAmountMinor`: there is
+nothing to convert when you price and charge in the same currency (§66.1).
 
-```bash
-curl -s "$B/appointments/$APPT/payment-status" -H "$CUST" | J
-```
+**Two things to know about the sandbox:**
 
-**If the sandbox is unavailable**, the seeded appointments already went through
-the real confirmation path (`applyPaymentResult`), so steps 5 onwards work
-without it — use a seeded appointment rather than your own.
+- It **auto-approves**. No handset prompt appears; the next poll finds the
+  payment SUCCESSFUL and the appointment is `BOOKED` within seconds. Check with
+  `GET /appointments/$APPT/payment-status`.
+- The server log reads `amount=10.00 RWF`. That figure is the EUR one — 1000
+  minor formatted with EUR's two decimals — printed beside the wrong currency
+  code. **A logging bug, not a charging bug** (§67.3): the request body itself
+  is correct.
+
+Because the sandbox confirms by itself, `npm run dev:confirm-deposit` is not
+needed here and will refuse — the appointment is already `BOOKED`, and it
+declines rather than writing a second set of ledger entries.
 
 ---
 
@@ -260,9 +253,10 @@ curl -s -X POST "$B/business/appointments/$APPT/verify-manually" -H "$BIZ" \
 - Immediately after completion, that appointment's ledger entries gain an
   `availableAt` of `completedAt + 2 days` (the configurable hold), and the
   appointment gains `payoutHoldDaysApplied: 2`.
-- Two entries exist per paid appointment: `DEPOSIT_RECEIVED` positive and
-  `PLATFORM_FEE` negative, summing to `businessAmountMinor`. In SSP they sum to
-  the business's settlement share.
+- Two entries exist per paid appointment: `DEPOSIT_RECEIVED` **+1000** and
+  `PLATFORM_FEE` **−500**, summing to `businessAmountMinor` (500). Their
+  `settlementAmountMinor` values are identical to their `amountMinor` ones and
+  `settlementCurrency` is RWF — there is no conversion anywhere (§66.1).
 
 Inspect them directly — there is no ledger read API for a business:
 
@@ -367,7 +361,7 @@ curl -s -X PATCH "$B/admin/payouts/<payoutId>/mark-paid" -H "$ADMIN" \
 - The run summary: `payoutsCreated: 3`, `skippedNonPositive: 1` (Konyo Konyo,
   whose deposit share is exactly zero), and `pausedBusinesses` listing anyone
   held back and why.
-- **`totalMinor` in that summary is settlement minor units (SSP), not cents.**
+- **`totalMinor` is settlement minor units — whole francs here, not cents.**
 - The CSV carries the **verified msisdn**, the provider, a `payable` column, and
   one `TOTAL` row per currency. Supersede a destination and re-export: the row
   becomes `NOT RECORDED` / `DO NOT SEND` while the payout still exists.
@@ -393,9 +387,12 @@ curl -s -X PATCH "$B/admin/billing-adjustments/<adjustmentId>/execute" -H "$ADMI
 ```
 
 **Look at:** recording the adjustment moves no money — `settledAt` is null and
-no ledger entry exists. **Executing** it writes one `ADJUSTMENT` entry
-(`+150` USD cents, `+97,500` SSP) and stamps `settledAt`. Execute it twice and
-the second attempt is refused.
+no ledger entry exists. **Executing** it writes one `ADJUSTMENT` entry and
+stamps `settledAt`. Execute it twice and the second attempt is refused.
+
+**But check its settlement columns.** They are `NULL`, which makes that entry
+permanently unpayable — no payout run can ever send it. This is a real
+regression, introduced by §66.2 and found by this walk-through; see §67.5.
 
 There is no endpoint that lists billing adjustments; read the id from the
 resolved ticket's response or the database.
@@ -415,9 +412,14 @@ SELECT "settlementCurrency", SUM("settlementAmountMinor"), COUNT(*)
 FROM ledger_entries WHERE "payoutId" IS NULL GROUP BY 1;
 ```
 
-**Look at:** they do not agree, and cannot. `held` groups by the **USD**
-`currency` column (`USD 900c`), while the money is actually held in **SSP**
-(`585,000` minor). See §49.4.
+**Look at:** in a single-currency deployment these now agree — `held` reports
+RWF and the money is held in RWF, because the reporting column and the
+settlement column carry the same unit. The §49.4 mismatch was an artefact of
+pricing in one currency and settling in another, and it returns the moment a
+deployment does that again.
+
+`entriesWithoutSettlement` is **1**, and that one entry is the unpayable
+adjustment above (§67.5).
 
 ---
 
