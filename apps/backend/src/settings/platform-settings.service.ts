@@ -247,16 +247,45 @@ export class PlatformSettingsService {
    * slightly old number.
    */
   async getExchangeRateStaleness() {
-    const { rate, updatedAt, stalenessHours } = await this.getExchangeRate();
+    const { providerCurrency, rate, updatedAt, stalenessHours } =
+      await this.getExchangeRate();
+
+    // A rate that cannot be wrong cannot go stale (§69.1).
+    //
+    // When the provider charges in the unit of account there is nothing to
+    // convert: §55.3 permits only a rate of exactly 1, so "last updated three
+    // weeks ago" says nothing about whether it is still correct. Reporting it
+    // stale would email every admin, every day, about a number that has one
+    // legal value — and an alarm that cries wolf is worse than no alarm,
+    // because it trains people to ignore the deployment where staleness is
+    // real money.
+    const conversionInUse = !isSettlementCurrency(providerCurrency);
+
+    if (!conversionInUse) {
+      return {
+        configured: true,
+        conversionInUse: false,
+        stale: false,
+        ageInHours: null,
+        stalenessHours,
+      };
+    }
 
     if (rate === null || updatedAt === null) {
-      return { configured: false, stale: false, ageInHours: null, stalenessHours };
+      return {
+        configured: false,
+        conversionInUse: true,
+        stale: false,
+        ageInHours: null,
+        stalenessHours,
+      };
     }
 
     const ageInHours = Math.floor((Date.now() - updatedAt.getTime()) / 3_600_000);
 
     return {
       configured: true,
+      conversionInUse: true,
       stale: ageInHours >= stalenessHours,
       ageInHours,
       stalenessHours,
@@ -287,6 +316,16 @@ export class PlatformSettingsService {
       ageInHours: staleness.ageInHours,
       exchangeRateUpdatedBy: updatedBy,
       stalenessThresholdHours: stalenessHours,
+      /**
+       * Whether any conversion actually happens (§69.1).
+       *
+       * False when the provider charges in the unit of account — the rate is
+       * then pinned at 1 by §55.3 and can never be wrong, so staleness does not
+       * apply. Exposed rather than left for a client to infer by comparing two
+       * currency codes, because a client that infers it wrongly shows an
+       * operator a red "STALE" badge on a number with one legal value.
+       */
+      conversionInUse: staleness.conversionInUse,
       stale: staleness.stale,
       // A field, not just a flag: whoever reads this response should not have
       // to know what `stale: true` implies. Null when there is nothing wrong,
@@ -300,7 +339,11 @@ export class PlatformSettingsService {
       note:
         rate === null
           ? 'No exchange rate is set. Deposit payments will fail until one is configured.'
-          : `1 ${INTERNAL_CURRENCY} = ${rate.toFixed(8)} ${providerCurrency}. Set manually; not a live feed.`,
+          : !staleness.conversionInUse
+            ? `The platform collects in ${INTERNAL_CURRENCY}, the same currency it ` +
+              'prices in, so nothing is converted and the rate is fixed at 1. It ' +
+              'cannot go stale.'
+            : `1 ${INTERNAL_CURRENCY} = ${rate.toFixed(8)} ${providerCurrency}. Set manually; not a live feed.`,
     };
   }
 

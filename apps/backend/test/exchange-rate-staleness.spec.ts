@@ -1,3 +1,4 @@
+import { INTERNAL_CURRENCY } from '../src/payments/currency';
 import { ForbiddenException } from '@nestjs/common';
 import { NotificationType, UserRole } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
@@ -310,6 +311,58 @@ describe('Exchange-rate staleness (§37)', () => {
       // it exposes only a rate a customer is about to be charged at.
       const display = await settings.getExchangeRateForDisplay();
       expect(Number(display!.rate)).toBe(650);
+    });
+  });
+
+  // ------------------------------------------------------------------
+  /**
+   * A rate that cannot be wrong cannot go stale (§69.1).
+   *
+   * When the platform collects in its own unit of account, §55.3 permits only a
+   * rate of exactly 1 — so its age says nothing about whether it is correct.
+   * Reporting it stale emails every admin, daily, about a number with one legal
+   * value, and an alarm that cries wolf is worse than none: it trains people to
+   * ignore the deployment where staleness really is money.
+   */
+  describe('a rate with nothing to convert never goes stale', () => {
+    it('reports conversionInUse false and stale false, however old', async () => {
+      await settings.setExchangeRate(1, INTERNAL_CURRENCY, { userId: admin.userId, role: 'ADMIN' });
+      await prisma.platformSetting.update({
+        where: { id: PLATFORM_SETTING_ID },
+        data: { exchangeRateUpdatedAt: new Date(Date.now() - 365 * 24 * HOUR) },
+      });
+
+      const staleness = await settings.getExchangeRateStaleness();
+
+      expect(staleness.conversionInUse).toBe(false);
+      expect(staleness.stale).toBe(false);
+    });
+
+    it('so the sweep notifies nobody', async () => {
+      await settings.setExchangeRate(1, INTERNAL_CURRENCY, { userId: admin.userId, role: 'ADMIN' });
+      await prisma.platformSetting.update({
+        where: { id: PLATFORM_SETTING_ID },
+        data: { exchangeRateUpdatedAt: new Date(Date.now() - 365 * 24 * HOUR) },
+      });
+      notifications.notify.mock.calls.length = 0;
+
+      const result = await scheduler.checkStaleness();
+
+      expect(result.stale).toBe(false);
+      expect(result.notified).toBe(0);
+    });
+
+    it('still goes stale for a currency that IS converted', async () => {
+      await settings.setExchangeRate(650, 'SSP', { userId: admin.userId, role: 'ADMIN' });
+      await prisma.platformSetting.update({
+        where: { id: PLATFORM_SETTING_ID },
+        data: { exchangeRateUpdatedAt: new Date(Date.now() - 365 * 24 * HOUR) },
+      });
+
+      const staleness = await settings.getExchangeRateStaleness();
+
+      expect(staleness.conversionInUse).toBe(true);
+      expect(staleness.stale).toBe(true);
     });
   });
 });

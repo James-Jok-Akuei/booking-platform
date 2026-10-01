@@ -7005,3 +7005,74 @@ The remaining "EUR" strings in `src/` are documentation examples, which is where
 a sandbox currency belongs.
 
 **981 tests, unchanged.**
+
+---
+
+## 69. Admin console: settings (2026-10-01)
+
+Fourth screen, and the one with a live-deployment risk behind it: the exchange
+rate has no feed, goes stale loudly (§37), and until now could only be corrected
+with curl.
+
+### 69.1 A rate that cannot be wrong cannot go stale
+
+Found while building the screen, which is the useful thing about building a
+screen for something.
+
+`getExchangeRateStaleness` compared the rate's age against a threshold and
+nothing else. In a deployment that collects in its own unit of account the rate
+is pinned at **1** by §55.3 — it has exactly one legal value — so its age says
+nothing about whether it is correct.
+
+The hourly sweep would therefore have declared it stale and emailed every admin,
+every day, forever, about a number nobody can change. **An alarm that cries wolf
+is worse than no alarm**: it trains people to ignore the one case where
+staleness really is money leaving at the wrong price.
+
+Staleness now reports `conversionInUse: false` and `stale: false` when the
+provider charges in the unit of account, and the admin view exposes that flag
+rather than leaving a client to infer it by comparing two currency codes. A
+client that infers it wrongly shows a red STALE badge on a fixed number.
+
+Three tests pin it: never stale however old, the sweep notifies nobody, and a
+genuinely converted currency still goes stale as before.
+
+### 69.2 One save per setting
+
+Four numbers, four forms, four buttons. A single "Save settings" would let
+someone adjust the payout hold and ship a fee change they had typed earlier and
+forgotten — and three of these four move money.
+
+The rate section does not render an editable field at all when nothing is being
+converted. An input that accepts exactly one value is worse than a sentence
+explaining why.
+
+### 69.3 The server's refusals are shown verbatim
+
+The backend's messages here are written for a person, and rewriting them in the
+client would lose the part that matters. Confirmed live:
+
+- Raising the fee to 30%: *"12 active service(s) have a deposit percentage below
+  that, and would price bookings with a negative business share... No pricing
+  was changed."* (§40)
+- Setting the rate to 650: *"RWF is this platform's internal unit of account, so
+  the exchange rate must be exactly 1... There is nothing to convert."* (§55.3)
+
+Both arrive as sentences an operator can act on. The screen prints them as they
+are.
+
+### 69.4 Verified
+
+**984 passing across 26 suites.** Each endpoint exercised against the live
+backend: `conversionInUse: false` with its explanatory note, both refusals
+above, and the payout hold saved and restored.
+
+### 69.5 Where the console stands
+
+Four areas built — businesses, payout destinations, payouts, settings — and four
+not: **tickets** (no support inbox at all), **ledger and adjustments** (including
+executing one, which §68 just made payable), **reviews** (no moderation), and
+**appointments** (no dispute reclassification).
+
+The console is operationally usable: a business can be onboarded, checked and
+paid. It is not complete.

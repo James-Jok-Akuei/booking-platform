@@ -186,3 +186,11 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 button.primary:hover:not(:disabled) { filter: brightness(1.07); }
 button.link.danger-link { color: var(--danger); }
+
+.setting { margin-bottom: 16px; padding: 18px 20px; }
+.setting-head h2 { margin: 0 0 4px; font-size: 16px; }
+.setting-head p { margin: 0 0 12px; max-width: 60ch; }
+.setting-form { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.setting-form label { min-width: 160px; }
+.setting-form input { width: 160px; }
+.ok { color: var(--ok); }

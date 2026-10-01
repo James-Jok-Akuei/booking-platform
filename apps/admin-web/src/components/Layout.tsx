@@ -6,6 +6,7 @@ const SECTIONS = [
   { to: '/businesses', label: 'Businesses' },
   { to: '/payout-destinations', label: 'Payout destinations' },
   { to: '/payouts', label: 'Payouts' },
+  { to: '/settings', label: 'Settings' },
 ];
 
 export function Layout() {

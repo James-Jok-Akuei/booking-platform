@@ -231,3 +231,73 @@ export const exportRunUrl = (id: string) => `/admin/payouts/${id}/export`;
  */
 export const sendPayout = (id: string) =>
   api<Payout>(`/admin/payouts/${id}/send`, { method: 'POST' });
+
+// ---------------------------------------------------------------------------
+// Platform settings (§16.3, §37, §38, §40)
+// ---------------------------------------------------------------------------
+
+export interface PlatformFee {
+  platformFeePercentage: string;
+  updatedAt: string | null;
+}
+
+export interface ExchangeRateSettings {
+  internalCurrency: string;
+  providerCurrency: string;
+  exchangeRateUsdToProviderCurrency: string | null;
+  exchangeRateUpdatedAt: string | null;
+  ageInHours: number | null;
+  exchangeRateUpdatedBy: { id: string; email: string } | null;
+  stalenessThresholdHours: number;
+  /** False when the provider charges in the unit of account — nothing converts. */
+  conversionInUse: boolean;
+  stale: boolean;
+  warning: string | null;
+  configured: boolean;
+  note: string;
+}
+
+export interface PayoutHold {
+  payoutHoldDays: number;
+  note: string;
+}
+
+export const getPlatformFee = () => api<PlatformFee>('/admin/settings/platform-fee');
+
+/**
+ * Applies to FUTURE bookings only (§16.3), and a RAISE is refused outright if
+ * any active service has a deposit percentage below it (§40) — the response
+ * names the offending services.
+ */
+export const setPlatformFee = (platformFeePercentage: number) =>
+  api<PlatformFee>('/admin/settings/platform-fee', {
+    method: 'PATCH',
+    body: { platformFeePercentage },
+  });
+
+export const getExchangeRate = () =>
+  api<ExchangeRateSettings>('/admin/settings/exchange-rate');
+
+export const setExchangeRate = (
+  exchangeRateUsdToProviderCurrency: number,
+  providerCurrency?: string,
+) =>
+  api<ExchangeRateSettings>('/admin/settings/exchange-rate', {
+    method: 'PATCH',
+    body: { exchangeRateUsdToProviderCurrency, providerCurrency },
+  });
+
+export const setStaleness = (exchangeRateStalenessHours: number) =>
+  api<ExchangeRateSettings>('/admin/settings/exchange-rate/staleness', {
+    method: 'PATCH',
+    body: { exchangeRateStalenessHours },
+  });
+
+export const getPayoutHold = () => api<PayoutHold>('/admin/settings/payout-hold');
+
+/** The hold in force AT RESOLUTION TIME applies; dates already set stand (§38). */
+export const setPayoutHold = (payoutHoldDays: number) =>
+  api<PayoutHold>('/admin/settings/payout-hold', {
+    method: 'PATCH',
+    body: { payoutHoldDays },
+  });
