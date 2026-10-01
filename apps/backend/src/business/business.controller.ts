@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -162,6 +163,29 @@ export class BusinessController {
     @Body() dto: SetLocationHoursDto,
   ) {
     return this.locations.setHours(user.userId, id, dto);
+  }
+
+  /**
+   * The logo and cover image (§88).
+   *
+   * One route with the kind in the path rather than two near-identical ones;
+   * they differ only in which column is written. `galleryUploadOptions`
+   * because these ARE shop-window images — the same rule the gallery has, and
+   * deliberately not the wider ticket list from §81.
+   */
+  @Post('profile/image/:kind')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
+  @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'image' }))
+  setProfileImage(
+    @CurrentBusiness() business: BusinessContext,
+    @Param('kind') kind: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (kind !== 'logo' && kind !== 'cover') {
+      throw new BadRequestException('Image kind must be "logo" or "cover".');
+    }
+    return this.profiles.setImage(business.businessId, kind, file);
   }
 
   // ---------- Gallery ----------

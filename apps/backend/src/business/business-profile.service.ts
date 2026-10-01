@@ -1,5 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { UpdateBusinessProfileDto } from './dto/update-profile.dto';
 
 const PROFILE_SELECT = {
@@ -23,7 +28,57 @@ const PROFILE_SELECT = {
 
 @Injectable()
 export class BusinessProfileService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
+
+  /**
+   * Stores a logo or cover image and records it on the profile (§88).
+   *
+   * The DTO has always accepted `logoUrl` and `coverImageUrl` as plain strings,
+   * which quietly assumed the business already had the image hosted somewhere.
+   * They do not — that is the whole reason this platform exists for them. So
+   * the bytes come here, the same way a gallery photo does, and the profile
+   * records the URL storage hands back.
+   *
+   * The previous image is removed after the row is updated, never before: a
+   * failed write must not leave a profile pointing at a file that is gone.
+   */
+  async setImage(
+    businessId: string,
+    kind: 'logo' | 'cover',
+    file: Express.Multer.File | undefined,
+  ) {
+    if (!file) throw new BadRequestException('No file was uploaded.');
+
+    const existing = await this.prisma.businessProfile.findUnique({
+      where: { id: businessId },
+      select: { logoUrl: true, coverImageUrl: true },
+    });
+    if (!existing) throw new NotFoundException('Business not found.');
+
+    const url = await this.storage.upload(
+      file.buffer,
+      file.mimetype,
+      `businesses/${businessId}`,
+    );
+
+    const updated = await this.prisma.businessProfile.update({
+      where: { id: businessId },
+      data: kind === 'logo' ? { logoUrl: url } : { coverImageUrl: url },
+      select: PROFILE_SELECT,
+    });
+
+    const previous = kind === 'logo' ? existing.logoUrl : existing.coverImageUrl;
+    if (previous && previous !== url) {
+      // Best-effort, and deliberately not awaited into the response path: an
+      // orphaned object is a cleanup problem, a failed request is the user's.
+      void this.storage.remove(previous);
+    }
+
+    return updated;
+  }
 
   // Takes a businessId now, not a userId: the caller's business is resolved
   // once by BusinessRolesGuard, and several people may share it.

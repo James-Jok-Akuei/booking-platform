@@ -129,6 +129,9 @@ export interface BusinessProfile {
   name: string | null;
   description: string | null;
   phone: string | null;
+  /** The shop window. Uploaded, not linked — see `setProfileImage` (§88). */
+  logoUrl: string | null;
+  coverImageUrl: string | null;
   status: string;
   statusReason: string | null;
   category: { id: string; name: string; icon: string | null } | null;
@@ -499,3 +502,54 @@ export const replyToMyTicket = (id: string, body: string, attachments: File[] = 
 
 export const reopenMyTicket = (id: string) =>
   api<Ticket>(`/tickets/${id}/reopen`, { method: 'POST' });
+
+// ---------------------------------------------------------------------------
+// Shop-window images and per-location gallery (§88)
+// ---------------------------------------------------------------------------
+
+export interface GalleryPhoto {
+  id: string;
+  url: string;
+  displayOrder: number;
+}
+
+export interface Gallery {
+  photos: GalleryPhoto[];
+  count: number;
+  limit: number;
+  remaining: number;
+}
+
+/**
+ * The logo and cover are uploaded, not linked.
+ *
+ * The profile DTO has always taken `logoUrl` as a string, which assumed the
+ * business already had the image hosted somewhere. They do not — that is the
+ * whole reason they are here — so the bytes go up and the server records what
+ * storage hands back.
+ */
+export const setProfileImage = (kind: 'logo' | 'cover', file: File) => {
+  const form = new FormData();
+  form.set('file', file);
+  return api<BusinessProfile>(`/business/profile/image/${kind}`, {
+    method: 'POST',
+    body: form,
+  });
+};
+
+export const getGallery = (locationId: string) =>
+  api<Gallery>(`/business/locations/${locationId}/gallery`);
+
+export const addGalleryPhoto = (locationId: string, file: File) => {
+  const form = new FormData();
+  form.set('file', file);
+  return api<GalleryPhoto>(`/business/locations/${locationId}/gallery`, {
+    method: 'POST',
+    body: form,
+  });
+};
+
+export const removeGalleryPhoto = (locationId: string, mediaId: string) =>
+  api<void>(`/business/locations/${locationId}/gallery/${mediaId}`, {
+    method: 'DELETE',
+  });

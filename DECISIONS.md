@@ -8220,3 +8220,70 @@ returns a sentence, and an unrecognised code is named rather than swallowed.
 
 **1053 passing across 28 suites.**
 
+## 88. A business can fill in its own shopfront
+
+Chosen as the next build after a survey of what the backend offers against what
+any screen reaches. The gap that mattered: a business that signs up today gets a
+listing with **no description and no photo, and no way to add either**. The seed
+filled those in for the demo businesses, which is exactly why it went unnoticed.
+
+Everything downstream — services, hours, payouts — sits behind a shopfront a
+customer would not click.
+
+### 88.1 The logo was never uploadable
+
+`UpdateBusinessProfileDto` has accepted `logoUrl` and `coverImageUrl` as plain
+strings since the beginning. That quietly assumed the business already had the
+image hosted somewhere. They do not — not having anywhere to put their business
+online is the reason they are here.
+
+`POST /business/profile/image/:kind` takes the bytes, the same way a gallery
+photo does. One route with the kind in the path rather than two near-identical
+ones; they differ only in which column is written.
+
+It uses **`galleryUploadOptions`**, not the wider ticket list from §81. These
+are shop-window images: a format a browser cannot render is a broken listing,
+which is the exact distinction §81 drew when it widened tickets and left the
+gallery alone.
+
+### 88.2 The old image is removed after the row is written, never before
+
+A failed write must not leave a profile pointing at a file that is gone. The
+delete is also not awaited into the response path — an orphaned object is a
+cleanup problem, a failed request is the user's. A test asserts a storage
+failure leaves `logoUrl` null rather than half-set.
+
+### 88.3 Changing category clears the subcategory
+
+The server validates that a subcategory belongs to its category, and refuses the
+pair with *"That subcategory does not belong to the selected category."* The form
+clears the subcategory whenever the category changes, so the refusable pair is
+never assembled.
+
+Verified by assembling it deliberately: Automotive + Barbershop is refused.
+
+### 88.4 Galleries stay per branch
+
+One gallery section per location, not one per business, because
+`MAX_GALLERY_PHOTOS_PER_LOCATION` is per location for a reason (§10.6): a
+customer wants to see the place they are actually walking into. The screen says
+so, and shows each branch's count against its limit.
+
+### 88.5 Verified
+
+Live: logo and cover uploaded and recorded; replacing a logo removed the
+previous file from disk and left the new one; `banner` refused as a kind; a PDF
+refused as *"Allowed types: jpg, jpeg, png, webp"*; two gallery photos added,
+listed with their display order, one deleted; the profile patched with a
+matching category pair and refused with a mismatched one.
+
+Incidentally fixed in the demo data: **Kigali Barbers was seeded as "Automotive
+/ Car Repair & Mechanic"**. It is now Beauty & Personal Care / Barbershop,
+corrected through the screen being built — which is the sort of thing only
+visible once somebody can see their own listing.
+
+Seven tests on the service, including the one that matters: storage failing
+leaves no URL behind.
+
+**1060 passing across 29 suites.**
+

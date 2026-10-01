@@ -6,6 +6,7 @@ import { AppointmentsPage } from './pages/AppointmentsPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { HoursPage } from './pages/HoursPage';
 import { GettingPaidPage } from './pages/PayoutsPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { SupportPage } from './pages/SupportPage';
 
 export function App() {
@@ -23,6 +24,7 @@ export function App() {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/hours" element={<HoursPage />} />
         <Route path="/getting-paid" element={<GettingPaidPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/help" element={<SupportPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/appointments" replace />} />
