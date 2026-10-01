@@ -410,3 +410,120 @@ export const setTicketStatus = (
     method: 'PATCH',
     body: { status, resolutionNote },
   });
+
+// ---------------------------------------------------------------------------
+// Ledger and billing adjustments (§84)
+// ---------------------------------------------------------------------------
+
+export interface Currency {
+  code: string;
+  exponent: number;
+  minorUnitsPerMajor: number;
+  note: string;
+}
+
+/** Unauthenticated: the exponent is a property of the currency, not the caller. */
+export const getCurrency = () =>
+  api<Currency>('/payments/currency', { anonymous: true });
+
+export type LedgerEntryType =
+  | 'DEPOSIT_RECEIVED'
+  | 'PLATFORM_FEE'
+  | 'DEPOSIT_REFUND'
+  | 'PLATFORM_FEE_REVERSAL'
+  | 'GATEWAY_FEE_DEBIT'
+  | 'ADJUSTMENT';
+
+export interface LedgerEntry {
+  id: string;
+  businessId: string;
+  appointmentId: string | null;
+  type: LedgerEntryType;
+  /** Signed from the BUSINESS's point of view: positive is owed to them (§34.2). */
+  amountMinor: number;
+  currency: string;
+  settlementCurrency: string | null;
+  settlementAmountMinor: number | null;
+  bookingExchangeRate: string | null;
+  /** Null until the appointment resolves and the hold expires (§34.3). */
+  availableAt: string | null;
+  payoutId: string | null;
+  billingAdjustmentId: string | null;
+  createdAt: string;
+}
+
+export interface CurrencyTotal {
+  settlementCurrency: string;
+  amountMinor: number;
+  entryCount?: number;
+  reportingInternalMinor?: number;
+}
+
+export interface LedgerPage {
+  total: number;
+  limit: number;
+  offset: number;
+  entries: LedgerEntry[];
+  totalsBySettlementCurrency: CurrencyTotal[];
+}
+
+export type BillingAdjustmentType = 'FEE_REFUND' | 'GATEWAY_FEE_DEBIT';
+
+export interface BillingAdjustment {
+  id: string;
+  businessId: string;
+  appointmentId: string | null;
+  ticketId: string | null;
+  type: BillingAdjustmentType;
+  /** A decimal string in MAJOR units — unlike ledger entries, which are minor. */
+  amount: string;
+  reason: string;
+  settledAt: string | null;
+  settlementRef: string | null;
+  createdById: string;
+  createdAt: string;
+  ledgerEntries: Array<{
+    id: string;
+    amountMinor: number;
+    settlementAmountMinor: number | null;
+  }>;
+}
+
+export interface AdjustmentPage {
+  total: number;
+  limit: number;
+  offset: number;
+  /** How many are recorded but not yet executed. */
+  outstanding: number;
+  adjustments: BillingAdjustment[];
+}
+
+export const listLedgerEntries = (params: {
+  businessId?: string;
+  appointmentId?: string;
+  payoutId?: string;
+  type?: LedgerEntryType;
+  limit?: number;
+  offset?: number;
+}) => api<LedgerPage>('/admin/ledger/entries', { query: params });
+
+export const listAdjustments = (params: {
+  businessId?: string;
+  ticketId?: string;
+  limit?: number;
+  offset?: number;
+}) => api<AdjustmentPage>('/admin/billing-adjustments', { query: params });
+
+/**
+ * Turns a recorded decision into money. Settling twice is refused by the
+ * server with a 409, so this is safe to retry but not to repeat.
+ *
+ * Returns BOTH the settled adjustment and the ledger entry it appended —
+ * checked against the running server, because typing it as a bare adjustment
+ * would read as though nothing was written to the ledger.
+ */
+export const executeAdjustment = (id: string, settlementRef?: string) =>
+  api<{ adjustment: BillingAdjustment; entry: LedgerEntry }>(
+    `/admin/billing-adjustments/${id}/execute`,
+    { method: 'PATCH', body: settlementRef ? { settlementRef } : {} },
+  );

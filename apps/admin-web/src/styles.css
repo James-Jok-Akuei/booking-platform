@@ -223,3 +223,16 @@ label.inline { display: inline-flex; gap: 6px; align-items: center; }
 .icon-button:hover { background: var(--line); color: var(--ink); }
 
 .attachments { display: flex; flex-direction: column; gap: 3px; margin-top: 5px; }
+
+.held { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 14px 16px; margin-bottom: 16px; }
+.held-figures { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 7px; }
+.held-figure { display: flex; flex-direction: column; gap: 2px; }
+.held-figure strong { font-size: 21px; font-variant-numeric: tabular-nums; }
+
+.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 11px; }
+.toolbar select { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; margin-left: 6px; }
+
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.negative { color: var(--danger); }
+td.reason { max-width: 320px; }
+.warn { color: var(--warn); }

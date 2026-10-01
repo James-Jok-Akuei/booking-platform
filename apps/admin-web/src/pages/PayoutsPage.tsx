@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError, download } from '../api/client';
+import { useMoney } from '../money';
 import {
   exportRunUrl,
   heldTotals,
@@ -26,17 +27,6 @@ const formatDate = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
 /**
- * Minor units, shown with the currency beside them and never divided by 100.
- *
- * A currency's decimal places are a property OF THE CURRENCY (§55.2), and this
- * app does not carry that table. Printing "SSP 2583750 minor" is uglier than
- * "SSP 25,837.50" and it is honest — inventing a decimal point here is exactly
- * the class of mistake §55 and §56 exist to prevent.
- */
-const money = (minor: number, currency: string) =>
-  `${currency} ${minor.toLocaleString()} minor`;
-
-/**
  * Payouts: what is owed, what has been created, and what has actually been sent.
  *
  * Nothing here moves money. Every transfer is made BY HAND against the provider
@@ -45,6 +35,9 @@ const money = (minor: number, currency: string) =>
  * why it demands the provider's reference.
  */
 export function PayoutsPage() {
+  // `format` as `money`: one convention per console (§84.2). It reads the
+  // exponent the server reports rather than assuming two decimals.
+  const { format: money } = useMoney();
   const [status, setStatus] = useState<PayoutStatus | 'ALL'>('PENDING');
   const [lastRun, setLastRun] = useState<RunSummary | null>(null);
   const queryClient = useQueryClient();

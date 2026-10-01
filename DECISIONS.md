@@ -7975,3 +7975,88 @@ accepted; the gallery still refusing a second file as a photo.
 
 **1043 passing across 27 suites.**
 
+## 84. Money: the ledger, and the one button that changes a balance
+
+`BillingAdjustment` has been writable since §25 and executable since §36. A
+ticket resolution could attach one (§24), and `PATCH
+/admin/billing-adjustments/:id/execute` would turn it into ledger entries. No
+screen showed any of it. An admin could record a decision about money and then
+had no way to see it, let alone act on it — the adjustment sat in a table
+nobody could read.
+
+`/ledger` ("Money" in the nav) is three things on one page: what is held, the
+adjustments waiting to be executed, and the entries behind both.
+
+### 84.1 Held first, because it is the number you came for
+
+The reconciliation figure sits above both tabs, with its `asOf` and the warning
+that **nothing reconciles it automatically** — it is compared against the
+provider's balance by hand (§36.7). `entriesWithoutSettlement` is surfaced in
+amber when non-zero, because those entries are *missing from the figure* and a
+total that quietly excludes rows is worse than one that admits it.
+
+### 84.2 ~~§56.4: the admin app prints "RWF 8302 minor" and never divides~~ — superseded
+
+The old reasoning: a currency's decimal places are a property of the currency,
+this app does not carry that table, and inventing a decimal point is the class
+of mistake §55 and §56 exist to prevent.
+
+The premise stopped being true in §70.1, which added `GET /payments/currency`
+reporting the exponent. Reading it is not the mistake; **assuming two decimals
+is**, and a shared `useMoney()` never assumes — it prints the raw integer until
+the exponent arrives, which is ugly and never wrong.
+
+`PayoutsPage` was migrated with it. Five call sites, one file, and the
+alternative was two money conventions inside one console — the reader would
+have had to know which page they were on to know what a number meant. The
+helper mirrors business-web's deliberately, so the two consoles cannot disagree.
+
+### 84.3 Signs are carried, not implied
+
+Ledger entries are signed from the **business's** point of view (§34.2):
+positive is owed to them, negative is owed back. The helper has a `signed()`
+that always prints the sign, and negatives are coloured. A minus swallowed by a
+column boundary is the one formatting bug on this page that would actually cost
+money.
+
+### 84.4 Executing says what it cannot undo
+
+The Execute button is the only act on this screen that changes a balance, and
+it does so by **appending** — the database forbids editing an entry (§34.2). So
+the confirmation says exactly that: *"It cannot be undone — a mistake is
+corrected by recording another adjustment, not by reversing this one."*
+
+`settlementRef` is genuinely optional (§25.2): some adjustments settle by
+netting against a future payout, and inventing a reference would make a
+reconciliation look complete when it is not. The prompt says which case is
+which, and blank is accepted while a one-character reference is not. An executed
+row shows its reference, or *"netted against a payout"* where there is none.
+
+### 84.5 Two shapes that do not match, left unmatched
+
+`BillingAdjustment.amount` is a **decimal string in major units** ("2.5").
+Every other figure on the page is a **minor-unit integer**. They are printed as
+they are, rather than converting the adjustment into minor units to make the
+columns look alike: 2.5 RWF becomes 3 minor by ROUND_HALF_UP, so a converted
+column would show "3" beside a ledger entry of 3 and hide that a rounding
+happened. The executed row names how many entries it wrote instead.
+
+### 84.6 Verified against the running server
+
+Every call the page makes, including the limit: `/admin/businesses?limit=200`
+is a **400** — the cap is 100 — which would have blanked every business name on
+the page. Found by running it, not by reading the DTO afterwards.
+
+The whole chain, end to end: a customer raised TKT-000011 against a real
+cancelled appointment, an admin resolved it with a `FEE_REFUND` of 2.5, which
+appeared as **outstanding**; executing it with reference `MOMO-REF-55012` moved
+held from **RWF 8302 across 28 entries to RWF 8305 across 29**, appended one
+`ADJUSTMENT` entry payable immediately, and a second execute returned **409
+"This adjustment has already been executed. Record a new adjustment instead."**
+
+Also corrected: `execute` returns `{adjustment, entry}`, not a bare adjustment.
+The page does not read the response, so nothing broke — but the type would have
+told the next reader that nothing was written to the ledger.
+
+**1043 passing across 27 suites.**
+
