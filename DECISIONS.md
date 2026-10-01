@@ -8060,3 +8060,65 @@ told the next reader that nothing was written to the ledger.
 
 **1043 passing across 27 suites.**
 
+## 85. The Money screen says it in words anyone can read
+
+Asked for directly: explain the page *"in very simple primary school english"*,
+and then simplify the screen itself.
+
+The page was written in the vocabulary of the thing it describes — *outstanding*,
+*settlement amount*, *reconcile*, *ledger entry*, *payable*, *executed*. Every
+one of those is correct, and together they meant the person who runs this
+platform had to ask what their own screen was telling them. A number nobody can
+read is not a number they can act on, and this is the screen where acting
+wrongly costs money.
+
+### 85.1 Say what happened, not what it is called
+
+The entry types now name who gained or lost what, which is the only question
+anyone opens this table to answer:
+
+| Was | Now |
+|---|---|
+| Deposit received | Customer paid |
+| Platform fee | Our fee |
+| Deposit refunded | Customer got their money back |
+| Platform fee returned | We gave our fee back |
+| Gateway fee | Mobile money charge |
+| Manual adjustment | A fix done by hand |
+
+Likewise **Adjustments → Fixes**, **Ledger → Money records**, **Executed →
+Done**, **Execute → Apply this fix**, **held → waiting**, **available → ready
+to send**, **paid out → already sent**, **outstanding → still to do**.
+
+The enum names are untouched. They are the API's words and the database's
+words; this is only what a person is shown.
+
+### 85.2 The warnings had to survive the translation
+
+The held figure's sentence is the one that matters most, because nothing checks
+it automatically. *"This is what the provider's balance should hold — compare it
+by hand, nothing reconciles it automatically"* became *"The mobile money account
+should hold this much. **Go and check it yourself** — nothing checks it for
+you."* Shorter, and it now says who must act.
+
+The confirmation before applying a fix was rewritten the same way and kept every
+fact: that it changes what the shop is owed, that it cannot be undone, and that
+a mistake is fixed by writing a new fix rather than taking this one back.
+
+Simple wording is not softer wording. *"You cannot undo it"* is plainer than
+*"it cannot be reversed"* and says exactly as much.
+
+### 85.3 Payouts came with it
+
+`PayoutsPage` had **"Unsettled"** as a heading and *"entries have no settlement
+amount"* as its warning — the same words, one click away. Left alone, the
+console would have taught two vocabularies for one idea. Now "Not sent yet" and
+"records do not say how much to pay, so they cannot be sent".
+
+### 85.4 Recorded as a standing preference
+
+Saved to memory rather than applied once: explanations and screens both go in
+plain words from here. The user builds every screen in this platform and is not
+an accountant — *settlement* and *reconcile* are the domain's vocabulary, not
+theirs, and an explanation that leans on them has stopped explaining.
+
