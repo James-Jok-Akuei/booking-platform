@@ -6,6 +6,7 @@ import { getMe } from '../api/business';
 const SECTIONS = [
   { to: '/appointments', label: 'Appointments' },
   { to: '/profile', label: 'Your shopfront' },
+  { to: '/people', label: 'People' },
   { to: '/services', label: 'Services' },
   { to: '/hours', label: 'Branches & hours' },
   { to: '/getting-paid', label: 'Getting paid' },

@@ -207,10 +207,18 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
  * Step one of signing in. No role is sent: role belongs to REGISTRATION, and an
  * existing account logs in as whoever it is (§50).
  */
-export const requestOtp = (email: string) =>
+/**
+ * Step one of signing in — and, with `role`, of registering (§90.3).
+ *
+ * `role` is omitted for a sign-in and sent ONLY when the person has explicitly
+ * chosen to create an account. §50's rule is intact: authentication never
+ * sends a role, because an existing account signs in as whoever it is. This is
+ * the registration case the server asks for by name when no account exists.
+ */
+export const requestOtp = (email: string, role?: 'BUSINESS') =>
   api<{ message?: string }>('/auth/otp/request', {
     method: 'POST',
-    body: { email },
+    body: role ? { email, role } : { email },
     anonymous: true,
   });
 

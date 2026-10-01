@@ -578,3 +578,61 @@ export const closeLocation = (id: string) =>
 
 export const reopenLocation = (id: string) =>
   api<{ message: string }>(`/business/locations/${id}/reopen`, { method: 'PATCH' });
+
+// ---------------------------------------------------------------------------
+// Staff and invitations (§90)
+// ---------------------------------------------------------------------------
+
+/**
+ * OWNER is absent on purpose. There is exactly one owner per business and no
+ * ownership transfer, so no invitation or role change may mint a second one —
+ * the server refuses either way.
+ */
+export type StaffRole = 'MANAGER' | 'STAFF';
+
+export type MemberStatus = 'ACTIVE' | 'REMOVED';
+
+export interface Member {
+  id: string;
+  userId: string;
+  email: string;
+  role: 'OWNER' | StaffRole;
+  status: MemberStatus;
+  createdAt: string;
+}
+
+export interface Invitation {
+  id: string;
+  email: string;
+  role: StaffRole;
+  status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
+  createdAt: string;
+  expiresAt: string;
+  invitedBy: { id: string; email: string } | null;
+}
+
+/** Any active member may look; everything else here is OWNER-only. */
+export const listMembers = () => api<Member[]>('/business/members');
+
+export const listInvitations = () => api<Invitation[]>('/business/invitations');
+
+export const inviteMember = (email: string, role: StaffRole) =>
+  api<Invitation>('/business/members/invite', {
+    method: 'POST',
+    body: { email, role },
+  });
+
+export const revokeInvitation = (id: string) =>
+  api<{ message: string }>(`/business/invitations/${id}`, { method: 'DELETE' });
+
+export const setMemberRole = (membershipId: string, role: StaffRole) =>
+  api<Member>(`/business/members/${membershipId}/role`, {
+    method: 'PATCH',
+    body: { role },
+  });
+
+/** Soft removal: the row stays as the record that this person had access. */
+export const removeMember = (membershipId: string) =>
+  api<{ message: string }>(`/business/members/${membershipId}`, {
+    method: 'DELETE',
+  });

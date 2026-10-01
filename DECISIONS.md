@@ -8377,3 +8377,72 @@ the wrong reason. Moved into the suite rather than retried.
 
 **1069 passing across 30 suites.**
 
+## 90. People: who works here, and what they can do
+
+Item 2 of the wiring plan. Unlike §89 the backend needed nothing — `members`
+was carefully built and had simply never been reachable. A business was exactly
+one person, because the only way to add a second was a POST nobody could send.
+
+### 90.1 The roles, in the words of the person choosing
+
+Taken from the guards rather than invented:
+
+| | |
+|---|---|
+| **Owner** | Runs everything, including who works here. Only one person can be the owner. |
+| **Manager** | Can change services, hours, prices and bookings. Cannot add or remove people. |
+| **Staff** | Can see everything and handle bookings, but cannot change the business. |
+
+The line between OWNER and MANAGER is exactly "may change who has access", and
+saying so is more useful than naming the role twice.
+
+### 90.2 What the screen does not offer
+
+The owner cannot be demoted or removed, and nobody can be promoted into a
+second owner — there is one owner per business and no ownership transfer. The
+server enforces all of it; the screen simply does not draw controls that would
+only earn a refusal, and shows the role as a plain label instead.
+
+Members who may not manage people still see the list. Knowing who you work with
+is not a privilege, which is also why `listMembers` is the one route in that
+controller open to every active member.
+
+Removed people stay visible under **"No longer here"**, because `removeMember`
+is a soft removal — the row is the record that this person once had access.
+
+### 90.3 The invitation was a dead end, and that is what this item really fixed
+
+The flow worked exactly as far as the email. It says *"To accept, simply sign
+in"* — and an invited colleague cannot, because they have no account, and
+business-web's login deliberately sends no role (§50: sending one locked every
+administrator out). So the server answered:
+
+> This email has no account yet. Send `role` as BUSINESS or CUSTOMER to create one.
+
+...and the page showed it as an error. Every invitation to someone new ended
+there. **The feature was unusable for its main case** and nothing revealed that
+until it was driven end to end.
+
+§50's rule is kept intact. Authentication still sends no role. The sentence the
+server returns is a *registration* prompt, so the page now treats it as one: a
+second step saying there is no account yet, that this is where an invited person
+creates theirs, and one button that re-requests with `role: BUSINESS`. A role is
+sent only when someone has explicitly asked to create an account.
+
+### 90.4 Verified end to end
+
+An owner invited an unregistered email as MANAGER; the email arrived; she
+registered through the new step; the invitation was consumed and she appeared as
+an ACTIVE MANAGER without any separate accept endpoint — verifying an OTP is the
+acceptance.
+
+Then: demoted to STAFF; refused when she tried to invite anyone (403); the owner
+refused demotion and removal, each naming why; removal succeeded and left the
+row as `REMOVED`; removing twice refused. A removed member holding a
+**still-valid token** got **403** on `/business/members`, `/business/profile`
+and `/business/services` — access ends with the membership, not with the token.
+
+Finally the whole thing again with a genuinely new person: invited as STAFF,
+blocked at sign-in, registered through the new step, joined, and confirmed STAFF
+can read `/business/services` (200) but not invite (403).
+
