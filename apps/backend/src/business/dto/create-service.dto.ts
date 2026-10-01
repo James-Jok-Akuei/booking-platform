@@ -1,26 +1,25 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Length,
   Max,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { MaxDecimalPlaces } from '../../common/validators/max-decimal-places.validator';
 
-export class CreateServiceDto {
-  @IsString()
-  @Length(2, 120)
-  name!: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(2000)
-  description?: string;
+/** One branch's offer of a service, at that branch's price (§72). */
+export class ServiceOfferDto {
+  @IsUUID()
+  locationId!: string;
 
   // Integer MINOR UNITS of the internal currency, never a float — see §10.3
   // and §56. Capped to catch the obvious "typed major units into a minor-unit
@@ -32,6 +31,32 @@ export class CreateServiceDto {
   @Min(0)
   @Max(100_000_000)
   priceMinor!: number;
+}
+
+export class CreateServiceDto {
+  @IsString()
+  @Length(2, 120)
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  description?: string;
+
+  /**
+   * Where this service is offered, and for how much at each branch (§72).
+   *
+   * At least one: a service offered nowhere cannot be booked by anybody, and
+   * creating one is almost always a mistake rather than an intention. A branch
+   * can be removed later, which is the honest way to stop offering it there.
+   */
+  @IsArray()
+  @ArrayMinSize(1, {
+    message: 'Choose at least one branch for this service, with its price there.',
+  })
+  @ValidateNested({ each: true })
+  @Type(() => ServiceOfferDto)
+  offers!: ServiceOfferDto[];
 
   @IsInt()
   @Min(1)

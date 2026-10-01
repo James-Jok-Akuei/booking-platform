@@ -400,7 +400,8 @@ describe('Discovery (§43)', () => {
         data: {
           businessId: business.businessId,
           name: 'Cheaper',
-          priceMinor: 2500,
+          // Offered at this business's branch, at that branch's price (§72).
+          locations: { create: [{ locationId: business.locationId, priceMinor: 2500 }] },
           currency: INTERNAL_CURRENCY,
           durationMinutes: 30,
           depositPercentage: 20,
@@ -419,7 +420,8 @@ describe('Discovery (§43)', () => {
         data: {
           businessId: business.businessId,
           name: 'Retired bargain',
-          priceMinor: 100,
+          // Offered at this business's branch, at that branch's price (§72).
+          locations: { create: [{ locationId: business.locationId, priceMinor: 100 }] },
           currency: INTERNAL_CURRENCY,
           durationMinutes: 30,
           depositPercentage: 20,
@@ -448,7 +450,11 @@ describe('Discovery (§43)', () => {
       expect(result.locations[0]).not.toHaveProperty('approxSettlement');
     });
 
-    it('is shared across two branches of one business', async () => {
+    /**
+     * Reversed by §72. A second branch offers nothing until it is told to, so
+     * its headline price is null rather than inherited from the chain.
+     */
+    it('is NOT shared with a branch that offers nothing', async () => {
       const business = await shop({ priceMinor: 3000 });
       await prisma.location.create({
         data: {
@@ -463,10 +469,42 @@ describe('Discovery (§43)', () => {
 
       const result = await discovery.search({});
 
-      // Services belong to the business and are shared across its locations
-      // (§10.2), so both branches genuinely have the same cheapest price.
       expect(result.locations).toHaveLength(2);
-      expect(result.locations.every((l) => l.fromPriceMinor === 3000)).toBe(true);
+      // The original branch keeps its price; the new one has nothing to sell.
+      // Compared as a set: the default sort stringifies, which puts null after
+      // a number and makes the assertion depend on JavaScript trivia.
+      const prices = result.locations.map((l) => l.fromPriceMinor);
+      expect(prices).toContain(3000);
+      expect(prices).toContain(null);
+    });
+
+    it('shows each branch its own price when they differ (§72)', async () => {
+      const business = await shop({ priceMinor: 3000 });
+      const second = await prisma.location.create({
+        data: {
+          businessId: business.businessId,
+          name: 'Second Branch',
+          address: 'Elsewhere',
+          latitude: JUBA.lat,
+          longitude: JUBA.lng,
+        },
+      });
+      await prisma.service.create({
+        data: {
+          businessId: business.businessId,
+          name: 'Dearer in town',
+          currency: INTERNAL_CURRENCY,
+          durationMinutes: 30,
+          depositPercentage: 20,
+          locations: { create: [{ locationId: second.id, priceMinor: 7000 }] },
+        },
+      });
+      await reprice(business.businessId);
+
+      const result = await discovery.search({});
+
+      const prices = result.locations.map((l) => l.fromPriceMinor).sort((a, b) => a! - b!);
+      expect(prices).toEqual([3000, 7000]);
     });
   });
 
@@ -717,7 +755,8 @@ describe('Discovery (§43)', () => {
         data: {
           businessId: business.businessId,
           name: 'Retired',
-          priceMinor: 100,
+          // Offered at this business's branch, at that branch's price (§72).
+          locations: { create: [{ locationId: business.locationId, priceMinor: 100 }] },
           currency: INTERNAL_CURRENCY,
           durationMinutes: 30,
           depositPercentage: 20,

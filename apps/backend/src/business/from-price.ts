@@ -17,8 +17,14 @@ import { Prisma } from '@prisma/client';
  * alongside it: a price that changed without the listing following it is a
  * listing that advertises a price nobody can book at.
  *
- * MIN over an empty set is NULL, which is exactly the meaning wanted — the
- * business has no active services — so no special case is needed for it.
+ * MIN over an empty set is NULL, which is exactly the meaning wanted — this
+ * BRANCH offers nothing bookable — so no special case is needed for it.
+ *
+ * Since §72 the cheapest price is per branch, not per business: the join is
+ * on `service_locations.locationId`, so two branches of one chain can and do
+ * advertise different headline prices. The update still runs over every
+ * location of the business in one statement, because one service write can
+ * change several branches at once.
  */
 export function recalculateFromPrice(
   tx: Prisma.TransactionClient,
@@ -27,9 +33,10 @@ export function recalculateFromPrice(
   return tx.$executeRaw`
     UPDATE "locations" l
        SET "fromPriceMinor" = (
-         SELECT MIN(s."priceMinor")
-           FROM "services" s
-          WHERE s."businessId" = l."businessId"
+         SELECT MIN(sl."priceMinor")
+           FROM "service_locations" sl
+           JOIN "services" s ON s."id" = sl."serviceId"
+          WHERE sl."locationId" = l."id"
             AND s."isActive" = true
        )
      WHERE l."businessId" = ${businessId}

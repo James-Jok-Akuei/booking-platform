@@ -117,7 +117,11 @@ describe('Cross-tenant isolation', () => {
 
   describe('Service', () => {
     it("business B gets 404 updating business A's service", async () => {
-      await expect404(services.update(beta.userId, alpha.serviceId, { priceMinor: 1 }));
+      await expect404(
+        services.update(beta.userId, alpha.serviceId, {
+          offers: [{ locationId: beta.locationId, priceMinor: 1 }],
+        }),
+      );
     });
 
     it("business B gets 404 deactivating business A's service", async () => {
@@ -127,9 +131,13 @@ describe('Cross-tenant isolation', () => {
     it("business A's service keeps its price after B's attempt", async () => {
       const service = await prisma.service.findUniqueOrThrow({
         where: { id: alpha.serviceId },
+        include: { locations: true },
       });
 
-      expect(service.priceMinor).toBe(4500);
+      // The price lives on the branch offer since §72, so that is where an
+      // attempt by another business would have shown up.
+      expect(service.locations[0].priceMinor).toBe(4500);
+      expect(service.locations[0].locationId).toBe(alpha.locationId);
       expect(service.isActive).toBe(true);
     });
 

@@ -292,9 +292,13 @@ describe('Money invariant: platformFee + business === deposit', () => {
       });
 
       // The exact failure the snapshot exists to prevent.
+      await prisma.serviceLocation.updateMany({
+        where: { serviceId: business.serviceId },
+        data: { priceMinor: 9999 },
+      });
       await prisma.service.update({
         where: { id: business.serviceId },
-        data: { priceMinor: 9999, depositPercentage: 55 },
+        data: { depositPercentage: 55 },
       });
 
       const after = await prisma.appointment.findUniqueOrThrow({ where: { id: row.id } });
@@ -338,8 +342,8 @@ describe('Money invariant: platformFee + business === deposit', () => {
 
       // The business reprices AFTER the booking. Everything below asks what a
       // customer opening that booking now is shown.
-      await prisma.service.update({
-        where: { id: business.serviceId },
+      await prisma.serviceLocation.updateMany({
+        where: { serviceId: business.serviceId },
         data: { priceMinor: 9999 },
       });
     });
@@ -482,9 +486,9 @@ describe('Money invariant: platformFee + business === deposit', () => {
     const service = (depositPercentage: number, name = 'Service') =>
       services.create(business.userId, {
         name,
-        priceMinor: 4500,
         durationMinutes: 60,
         depositPercentage,
+        offers: [{ locationId: business.locationId, priceMinor: 4500 }],
       });
 
     describe('at service create and update', () => {
@@ -621,7 +625,9 @@ describe('Money invariant: platformFee + business === deposit', () => {
       it('blocks on ANY business, not just the caller', async () => {
         await services.create(other.userId, {
           name: 'Someone else',
-          priceMinor: 4500,
+          // THAT business's own branch — a service can only be offered where
+          // its owner has a location (§72), and the service refuses otherwise.
+          offers: [{ locationId: other.locationId, priceMinor: 4500 }],
           durationMinutes: 60,
           depositPercentage: 12,
         });
@@ -720,7 +726,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       await expect(
         services.create(business.userId, {
           name: 'Below floor',
-          priceMinor: 4500,
+          offers: [{ locationId: business.locationId, priceMinor: 4500 }],
           durationMinutes: 60,
           depositPercentage: 9.99,
         }),
@@ -730,7 +736,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
     it('accepts a deposit percentage exactly at the floor', async () => {
       const created = await services.create(business.userId, {
         name: 'At floor',
-        priceMinor: 4500,
+        offers: [{ locationId: business.locationId, priceMinor: 4500 }],
         durationMinutes: 60,
         depositPercentage: 10,
       });
@@ -749,7 +755,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
       await expect(
         services.create(business.userId, {
           name: 'Was fine at 10%',
-          priceMinor: 4500,
+          offers: [{ locationId: business.locationId, priceMinor: 4500 }],
           durationMinutes: 60,
           depositPercentage: 20,
         }),
@@ -761,7 +767,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
     it('rejects an update that would drop an existing service below the floor', async () => {
       const created = await services.create(business.userId, {
         name: 'To be lowered',
-        priceMinor: 4500,
+        offers: [{ locationId: business.locationId, priceMinor: 4500 }],
         durationMinutes: 60,
         depositPercentage: 20,
       });

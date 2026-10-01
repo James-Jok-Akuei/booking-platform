@@ -462,24 +462,38 @@ async function main() {
   // -------------------------------------------------------------------------
   // Services
   // -------------------------------------------------------------------------
+  /**
+   * A service offered at this business's branches (§72).
+   *
+   * `prices` lets a branch charge differently: pass one number and every branch
+   * shares it, or one per branch to diverge. The second form is what the model
+   * exists for, and the seed uses it so the demo world shows a chain whose
+   * city-centre shop costs more than its suburban one.
+   */
   async function addService(
     business: SeededBusiness,
     name: string,
-    priceMinor: number,
+    priceMinor: number | number[],
     durationMinutes: number,
     depositPercentage: number,
   ) {
+    const prices = Array.isArray(priceMinor) ? priceMinor : null;
     const service = await services.create(business.userId, {
       name,
-      priceMinor,
       durationMinutes,
       depositPercentage,
+      offers: business.locationIds.map((locationId, index) => ({
+        locationId,
+        priceMinor: prices ? (prices[index] ?? prices[prices.length - 1]) : priceMinor as number,
+      })),
     });
     business.serviceIds.push(service.id);
     return service;
   }
 
-  await addService(nile, 'Haircut', 5000, 30, 20);
+  // Nyarugenge is the city-centre shop and charges more than Kimironko for the
+  // same cut — the thing §72 exists to let a chain express.
+  await addService(nile, 'Haircut', [7000, 5000], 30, 20);
   await addService(nile, 'Hot-towel shave', 8000, 45, 20);
   await addService(nile, 'Cut and beard', 12000, 60, 25);
   const retired = await addService(nile, 'Retired: dye', 3000, 60, 20);

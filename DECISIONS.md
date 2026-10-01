@@ -7215,3 +7215,99 @@ to send its money, or see what it is owed. That is the next slice, and it is the
 last one before a business can genuinely run on this without help.
 
 Then: profile, staff, review responses, analytics, gallery, schedule exceptions.
+
+---
+
+## 72. A service is offered at chosen branches, at each branch's price (2026-10-01)
+
+**Reverses §10.2.** Services belonged to the business and were shared by every
+location at one price. A chain whose city-centre shop charges more than its
+suburban one had to invent two services with the same name, and every branch
+offered everything whether it did that work or not.
+
+### 72.1 The price moves onto the link
+
+`ServiceLocation(serviceId, locationId, priceMinor)`, unique on the pair.
+`Service.priceMinor` is **gone** — a service has no price until it is offered
+somewhere, which makes "offered nowhere" an honest, visible state rather than a
+bookable service no customer can reach.
+
+The row's **existence** is the offer. No `isActive` on the link, because the
+service already has one for "we have stopped doing this at all", and two
+overlapping ways to switch something off is how one of them gets forgotten.
+
+Duration and deposit percentage stay on the service: how long the work takes and
+what share is paid up front are policies, not prices.
+
+### 72.2 What it touched
+
+- **Booking** — the pairing check was `service.businessId === location.businessId`.
+  That stays as the outer guard, and the offer row now decides whether this
+  branch sells it. The price snapshotted onto the appointment (§30) comes from
+  the offer, so a booking records what that branch charged that day.
+- **`fromPriceMinor`** (§44) changes meaning: the cheapest service **at that
+  branch**, joined through `service_locations`. Two branches of one chain now
+  advertise different headline prices, which is the point.
+- **Discovery** — a location lists its own services at its own prices, flattened
+  so a client still sees one service object with a price on it. The join is how
+  the price is stored, not a shape a customer should have to understand.
+- **Admin business detail** — each service now shows where it is offered and for
+  how much, which is more of the picture than one number ever was.
+- **Offers are replaced wholesale** on update, like the week of opening hours
+  (§12.7). Merging would make "stop offering this here" impossible to express.
+
+Branch ownership is asserted on every write: without it an owner could price
+their service at a competitor's shop, since the ids are opaque and nothing else
+in the write path compares them to the caller (§10.7).
+
+### 72.3 The migration backfills before it drops
+
+Every existing service is linked to every location of its business at the price
+it already had — today's behaviour expressed in the new shape. Nothing in flight
+changes: the same services are bookable at the same branches for the same money,
+and a business narrows the list when it chooses to rather than being made to
+re-enter its catalogue.
+
+Only then is `services.priceMinor` dropped. Past appointments are unaffected
+because each snapshots `servicePriceMinor` at booking (§30) and never reads the
+price back off the service — which is exactly the property §32 was written to
+protect, paying for itself in a migration written months later.
+
+### 72.4 Tests that encoded the old rule
+
+Four failed, and all four were asserting §10.2 rather than anything still true:
+
+- *"a new location inherits the existing catalogue"* — it no longer does. A new
+  branch offers nothing until told, so `fromPriceMinor` is null. **Null is the
+  honest answer**: showing the chain's cheapest price on a branch that cannot
+  take a booking for it is a listing advertising a price nobody can book at,
+  which is the thing §44 exists to prevent.
+- *"fromPriceMinor is shared across two branches"* — rewritten as **not** shared,
+  plus a new test that two branches show different prices.
+- Two more were fixtures passing a flat price.
+
+New tests pin the new rule in both directions: each branch shows its own
+cheapest price, and a service offered at one branch leaves the other alone.
+
+### 72.5 Verified end to end
+
+- Migration backfilled **21 links** across the demo world; no drift.
+- The seed now prices a haircut at **7,000 in Nyarugenge and 5,000 in
+  Kimironko** — one service, two branches, two prices.
+- Public discovery shows those two headline prices.
+- The **same service booked at each branch**: Nyarugenge priced 7,000 with a
+  1,400 deposit and 700 to the business; Kimironko 5,000 / 1,000 / 500.
+- Booking a service at a branch that does not offer it: *"That service is not
+  offered at this location."*
+
+**988 passing across 26 suites.**
+
+### 72.6 The business app says it plainly
+
+Price and branch are the same decision now, so the form is one control: a price
+box per branch, blank meaning not offered there. A checkbox that then reveals a
+field would imply they can be set independently.
+
+A service offered nowhere is labelled **"Offered nowhere"** in red rather than
+showing an empty price column, because in the catalogue and bookable by nobody
+is a state worth noticing.

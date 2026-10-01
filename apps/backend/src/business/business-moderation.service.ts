@@ -94,10 +94,18 @@ export class BusinessModerationService {
           select: {
             id: true,
             name: true,
-            priceMinor: true,
             durationMinutes: true,
             depositPercentage: true,
             isActive: true,
+            // Price is per branch since §72, so an admin reviewing an
+            // application sees where each service is offered and for how much —
+            // which is more of the picture than one number ever was.
+            locations: {
+              select: {
+                priceMinor: true,
+                location: { select: { id: true, name: true } },
+              },
+            },
           },
         },
         members: {

@@ -67,8 +67,26 @@ describe('Denormalised fromPriceMinor (§44)', () => {
       })
     ).map((l) => l.fromPriceMinor);
 
-  /** Adds a second and third branch, so "all locations" means something. */
+  const locationIdsOf = async (businessId: string) =>
+    (await prisma.location.findMany({ where: { businessId }, select: { id: true } })).map(
+      (l) => l.id,
+    );
+
+  /**
+   * Adds a second and third branch offering the SAME menu at the same prices.
+   *
+   * Since §72 a branch offers only what it is given, so a bare new location
+   * would have no price at all — true, and not what these tests are about. They
+   * are about the aggregate moving when a service write happens, which needs
+   * every branch to be selling the thing being written. Divergent prices get
+   * their own section below.
+   */
   const addBranches = async (target: TestBusiness, count = 2) => {
+    const existing = await prisma.serviceLocation.findMany({
+      where: { service: { businessId: target.businessId } },
+      select: { serviceId: true, priceMinor: true },
+    });
+
     for (let i = 0; i < count; i++) {
       await prisma.location.create({
         data: {
@@ -81,14 +99,53 @@ describe('Denormalised fromPriceMinor (§44)', () => {
         },
       });
     }
+
+    const branches = await prisma.location.findMany({
+      where: { businessId: target.businessId },
+      select: { id: true },
+    });
+    const offered = new Set(
+      (
+        await prisma.serviceLocation.findMany({
+          where: { service: { businessId: target.businessId } },
+          select: { serviceId: true, locationId: true },
+        })
+      ).map((row) => `${row.serviceId}:${row.locationId}`),
+    );
+    await prisma.serviceLocation.createMany({
+      data: branches.flatMap((branch) =>
+        existing
+          .filter((offer) => !offered.has(`${offer.serviceId}:${branch.id}`))
+          .map((offer) => ({
+            serviceId: offer.serviceId,
+            locationId: branch.id,
+            priceMinor: offer.priceMinor,
+          })),
+      ),
+    });
   };
 
-  const newService = (target: TestBusiness, priceMinor: number, name = 'Extra') =>
+  /**
+   * A service offered at every current branch, at one price.
+   *
+   * `offers` is the §72 shape. Defaulting to every branch keeps these tests
+   * about the aggregate rather than about which branches were picked — the
+   * picking has its own section.
+   */
+  const newService = async (
+    target: TestBusiness,
+    priceMinor: number,
+    name = 'Extra',
+    locationIds?: string[],
+  ) =>
     services.create(target.userId, {
       name,
-      priceMinor,
       durationMinutes: 30,
       depositPercentage: 20,
+      offers: (locationIds ?? (await locationIdsOf(target.businessId))).map((id) => ({
+        locationId: id,
+        priceMinor,
+      })),
     });
 
   it('the factory leaves a correct starting value', async () => {
@@ -101,7 +158,7 @@ describe('Denormalised fromPriceMinor (§44)', () => {
 
       await newService(business, 1200);
 
-      // Services are business-scoped, so all three branches move together.
+      // Offered at all three branches, so all three move together.
       expect(await pricesOf(business.businessId)).toEqual([1200, 1200, 1200]);
     });
 
@@ -117,7 +174,12 @@ describe('Denormalised fromPriceMinor (§44)', () => {
       await addBranches(business);
       const cheap = await newService(business, 1200);
 
-      await services.update(business.userId, cheap.id, { priceMinor: 800 });
+      await services.update(business.userId, cheap.id, {
+        offers: (await locationIdsOf(business.businessId)).map((id) => ({
+          locationId: id,
+          priceMinor: 800,
+        })),
+      });
 
       expect(await pricesOf(business.businessId)).toEqual([800, 800, 800]);
     });
@@ -126,7 +188,12 @@ describe('Denormalised fromPriceMinor (§44)', () => {
       await addBranches(business);
       const cheap = await newService(business, 1200);
 
-      await services.update(business.userId, cheap.id, { priceMinor: 6000 });
+      await services.update(business.userId, cheap.id, {
+        offers: (await locationIdsOf(business.businessId)).map((id) => ({
+          locationId: id,
+          priceMinor: 6000,
+        })),
+      });
 
       // 4500 was always there; it becomes the headline again.
       expect(await pricesOf(business.businessId)).toEqual([4500, 4500, 4500]);
@@ -175,6 +242,49 @@ describe('Denormalised fromPriceMinor (§44)', () => {
     });
   });
 
+  describe('two branches of one chain can charge differently (§72)', () => {
+    it('each branch shows its own cheapest price', async () => {
+      await addBranches(business, 1);
+      const [first, second] = await locationIdsOf(business.businessId);
+
+      await services.create(business.userId, {
+        name: 'City prices',
+        durationMinutes: 30,
+        depositPercentage: 20,
+        offers: [
+          { locationId: first, priceMinor: 9000 },
+          { locationId: second, priceMinor: 3000 },
+        ],
+      });
+
+      const rows = await prisma.location.findMany({
+        where: { businessId: business.businessId },
+        select: { id: true, fromPriceMinor: true },
+      });
+      const byId = new Map(rows.map((r) => [r.id, r.fromPriceMinor]));
+
+      // 4500 is the factory service, offered at both branches by addBranches.
+      expect(byId.get(first)).toBe(4500);
+      expect(byId.get(second)).toBe(3000);
+    });
+
+    it('a service offered at one branch leaves the other alone', async () => {
+      await addBranches(business, 1);
+      const [first, second] = await locationIdsOf(business.businessId);
+
+      await newService(business, 100, 'Only here', [second]);
+
+      const rows = await prisma.location.findMany({
+        where: { businessId: business.businessId },
+        select: { id: true, fromPriceMinor: true },
+      });
+      const byId = new Map(rows.map((r) => [r.id, r.fromPriceMinor]));
+
+      expect(byId.get(first)).toBe(4500);
+      expect(byId.get(second)).toBe(100);
+    });
+  });
+
   describe('another business is never touched', () => {
     it('creating a service leaves the other business alone', async () => {
       await newService(business, 100);
@@ -202,8 +312,21 @@ describe('Denormalised fromPriceMinor (§44)', () => {
     });
   });
 
-  describe('a new location inherits the existing catalogue', () => {
-    it('opens with the business cheapest price already set', async () => {
+  describe('a new location opens offering nothing', () => {
+    /**
+     * Reversed by §72, deliberately.
+     *
+     * A new branch used to inherit the business's cheapest price, because every
+     * location offered every service. Now a branch offers only what it is
+     * given, so a brand-new one has nothing to sell and `fromPriceMinor` is
+     * null until somebody says what it does.
+     *
+     * Null is the honest answer. The alternative — showing the chain's cheapest
+     * price on a branch that cannot take a booking for it — is a listing
+     * advertising a price nobody can book at, which is the thing §44 exists to
+     * prevent.
+     */
+    it('opens with null, even when the business sells plenty', async () => {
       await newService(business, 1500);
 
       const created = await locations.create(business.userId, {
@@ -213,7 +336,22 @@ describe('Denormalised fromPriceMinor (§44)', () => {
         longitude: 31.58,
       });
 
-      // Not a blank that fills in when someone next edits a service.
+      const row = await prisma.location.findUniqueOrThrow({
+        where: { id: created.id },
+      });
+      expect(row.fromPriceMinor).toBeNull();
+    });
+
+    it('gets a price as soon as a service is offered there', async () => {
+      const created = await locations.create(business.userId, {
+        name: 'Second branch',
+        address: 'Ministries Road',
+        latitude: 4.85,
+        longitude: 31.58,
+      });
+
+      await newService(business, 1500, 'Branch-only special', [created.id]);
+
       const row = await prisma.location.findUniqueOrThrow({
         where: { id: created.id },
       });

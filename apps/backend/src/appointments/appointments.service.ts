@@ -236,10 +236,16 @@ export class AppointmentsService {
         id: true,
         businessId: true,
         isActive: true,
-        priceMinor: true,
         durationMinutes: true,
         depositPercentage: true,
         name: true,
+        // The offer AT THIS BRANCH, which is where the price lives (§72). A
+        // service with no row here is not sold at this location, however much
+        // it belongs to the same business.
+        locations: {
+          where: { locationId: dto.locationId },
+          select: { priceMinor: true },
+        },
       },
     });
     if (!service) throw new NotFoundException('Service not found.');
@@ -268,14 +274,18 @@ export class AppointmentsService {
       throw new NotFoundException('Location not found.');
     }
 
-    // Services belong to a business and are shared across its locations
-    // (DECISIONS.md §10.2), so the pairing must be checked explicitly —
-    // otherwise a customer could book one business's service at another's shop.
-    if (service.businessId !== location.businessId) {
+    // A service is offered at CHOSEN branches, at each branch's price (§72).
+    // The business check stays as the outer guard — it keeps one business's
+    // service from being booked at another's shop — and the offer row is what
+    // decides whether this particular branch sells it.
+    if (service.businessId !== location.businessId || service.locations.length === 0) {
       throw new BadRequestException(
         'That service is not offered at this location.',
       );
     }
+
+    // Exactly one row, by the unique index on (serviceId, locationId).
+    const offer = service.locations[0];
     if (!service.isActive) {
       throw new BadRequestException('That service is no longer available.');
     }
@@ -287,7 +297,7 @@ export class AppointmentsService {
     // what this customer agreed to.
     const platformFeePercentage = await this.settings.getPlatformFeePercentage();
     const amounts = computeAppointmentAmounts(
-      service.priceMinor,
+      offer.priceMinor,
       service.depositPercentage,
       platformFeePercentage,
     );
@@ -315,7 +325,7 @@ export class AppointmentsService {
           ...amounts,
           // The inputs those amounts came from, recorded alongside them. Same
           // values, same transaction — this changes no arithmetic.
-          servicePriceMinor: service.priceMinor,
+          servicePriceMinor: offer.priceMinor,
           depositPercentage: service.depositPercentage,
           platformFeePercentage,
           // Both written from the same generated value, in the same statement:

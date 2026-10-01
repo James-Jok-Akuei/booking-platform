@@ -135,17 +135,29 @@ export interface BusinessProfile {
   subcategory: { id: string; name: string } | null;
 }
 
+/** Where a service is offered, and what it costs there (§72). */
+export interface ServiceOffer {
+  locationId: string;
+  /** Minor units. Format with the server's exponent, never /100. */
+  priceMinor: number;
+  location: { id: string; name: string };
+}
+
 export interface Service {
   id: string;
   name: string;
   description: string | null;
-  /** Minor units of `currency`. Format with the server's exponent, never /100. */
-  priceMinor: number;
   durationMinutes: number;
   currency: string;
   /** A decimal string, e.g. "20" — percent of the price taken up front. */
   depositPercentage: string;
   isActive: boolean;
+  /**
+   * The branches that sell this, with each branch's price.
+   *
+   * Empty means offered nowhere: still in the catalogue, bookable by nobody.
+   */
+  locations: ServiceOffer[];
 }
 
 export interface Hours {
@@ -199,9 +211,9 @@ export const listServices = () => api<Service[]>('/business/services');
 export const createService = (body: {
   name: string;
   description?: string;
-  priceMinor: number;
   durationMinutes: number;
   depositPercentage: number;
+  offers: Array<{ locationId: string; priceMinor: number }>;
 }) => api<Service>('/business/services', { method: 'POST', body });
 
 export const updateService = (
@@ -209,10 +221,11 @@ export const updateService = (
   body: Partial<{
     name: string;
     description: string;
-    priceMinor: number;
     durationMinutes: number;
     depositPercentage: number;
     isActive: boolean;
+    /** REPLACES the branch list wholesale, like the week of hours. */
+    offers: Array<{ locationId: string; priceMinor: number }>;
   }>,
 ) => api<Service>(`/business/services/${id}`, { method: 'PATCH', body });
 

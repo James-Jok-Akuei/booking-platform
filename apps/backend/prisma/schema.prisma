@@ -473,6 +473,9 @@ model Location {
   timeBlocks         LocationTimeBlock[]
   appointments       Appointment[]
 
+  /// Which services this branch offers, and at what price (§72).
+  services ServiceLocation[]
+
   @@index([businessId])
   /// The bounding-box prefilter behind distance search (§43.5). Postgres can
   /// use it to cut the candidate set before any haversine is computed.
@@ -500,6 +503,39 @@ model LocationHours {
 
 // ---------- Services ----------
 
+/// A service offered at one branch, at that branch's price (§72).
+///
+/// The row's EXISTENCE is the offer: delete it and the service is no longer
+/// bookable there. No `isActive` flag here, because the service already has one
+/// for "we have stopped doing this at all", and two overlapping ways to switch
+/// something off is how one of them gets forgotten.
+///
+/// Removing a link never touches history. An appointment snapshots the price it
+/// was booked at (§30), so a past booking stays reconstructable at a branch that
+/// no longer offers the service.
+model ServiceLocation {
+  id String @id @default(uuid())
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  /// Minor units of the service's currency: what a customer pays at THIS branch.
+  priceMinor Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// One offer per service per branch. Two rows would be two prices with no
+  /// rule for which wins.
+  @@unique([serviceId, locationId])
+  /// Serves "what does this branch offer", which is the discovery read.
+  @@index([locationId])
+  @@map("service_locations")
+}
+
 model Service {
   id         String          @id @default(uuid())
   businessId String
@@ -511,7 +547,17 @@ model Service {
   // Money is stored as integer cents, never a float. Binary floating point
   // cannot represent most decimal money values exactly, and the deposit /
   // platform-fee split (see DECISIONS.md §2) does arithmetic on these amounts.
-  priceMinor      Int
+  /// Price lives on ServiceLocation, not here (§72).
+  ///
+  /// A service is WHAT the business does — a haircut, a thirty-minute massage —
+  /// and what it costs is a property of the branch doing it. A city-centre shop
+  /// charges more than a suburban one for the same work, and before §72 the
+  /// model could not express that: one price was shared by every location, so a
+  /// business with two prices had to invent two services.
+  ///
+  /// A service therefore has no price until it is offered somewhere, which makes
+  /// "offered nowhere" an honest, visible state rather than a bookable service
+  /// no customer can reach.
   durationMinutes Int
 
   /// ISO 4217 code for priceMinor. Always "USD" today — the platform's internal
@@ -541,6 +587,10 @@ model Service {
   updatedAt DateTime @updatedAt
 
   appointments Appointment[]
+
+  /// Where this service is offered, and for how much (§72).
+
+  locations ServiceLocation[]
 
   @@index([businessId])
   @@map("services")

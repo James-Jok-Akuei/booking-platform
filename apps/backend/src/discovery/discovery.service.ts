@@ -227,17 +227,24 @@ export class DiscoveryService {
 
     const today = this.localToday();
     const [services, exceptions, todayException, rate] = await Promise.all([
-      this.prisma.service.findMany({
-        where: { businessId: location.businessId, isActive: true },
+      // What THIS branch offers, at THIS branch's prices (§72). Reading the
+      // business's services here would list work the branch does not do, and
+      // price it from somewhere else.
+      this.prisma.serviceLocation.findMany({
+        where: { locationId, service: { isActive: true } },
         orderBy: { priceMinor: 'asc' },
         select: {
-          id: true,
-          name: true,
-          description: true,
           priceMinor: true,
-          durationMinutes: true,
-          depositPercentage: true,
-          currency: true,
+          service: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              durationMinutes: true,
+              depositPercentage: true,
+              currency: true,
+            },
+          },
         },
       }),
       this.prisma.locationScheduleException.findMany({
@@ -282,13 +289,17 @@ export class DiscoveryService {
         average: location.ratingAvg ? Number(location.ratingAvg) : null,
         count: location.ratingCount,
       },
-      services: services.map((service) => ({
-        ...service,
-        depositPercentage: service.depositPercentage.toFixed(2),
+      // Flattened so a client still sees one service object with a price on it
+      // — the per-branch join is how the price is STORED, not a shape a
+      // customer should have to understand.
+      services: services.map((offer) => ({
+        ...offer.service,
+        priceMinor: offer.priceMinor,
+        depositPercentage: offer.service.depositPercentage.toFixed(2),
         ...(rate
           ? {
               approxSettlement: {
-                priceMinor: approxSettlementFor(service.priceMinor, rate),
+                priceMinor: approxSettlementFor(offer.priceMinor, rate),
               },
             }
           : {}),

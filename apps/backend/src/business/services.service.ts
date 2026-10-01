@@ -17,6 +17,17 @@ import { recalculateFromPrice } from './from-price';
  * question. Per-location availability is a scheduling concern and belongs to
  * the availability module, not to the service catalogue.
  */
+/** Every service response carries where it is offered and for how much (§72). */
+const SERVICE_INCLUDE = {
+  locations: {
+    select: {
+      locationId: true,
+      priceMinor: true,
+      location: { select: { id: true, name: true } },
+    },
+  },
+} as const;
+
 @Injectable()
 export class ServicesService {
   constructor(
@@ -51,20 +62,59 @@ export class ServicesService {
     }
   }
 
+  /**
+   * Confirms every branch named belongs to this business.
+   *
+   * Without it an owner could price their service at a competitor's shop — the
+   * ids are opaque uuids, and nothing else in the write path compares them to
+   * the caller. Ownership is checked structurally, by counting matches within
+   * the business, rather than by trusting the ids (§10.7).
+   */
+  private async assertOwnsLocations(businessId: string, locationIds: string[]) {
+    const unique = [...new Set(locationIds)];
+    if (unique.length !== locationIds.length) {
+      throw new BadRequestException('A branch is listed twice.');
+    }
+
+    const owned = await this.prisma.location.count({
+      where: { businessId, id: { in: unique } },
+    });
+    if (owned !== unique.length) {
+      throw new NotFoundException('One of those branches does not belong to you.');
+    }
+  }
+
   async create(userId: string, dto: CreateServiceDto) {
     const businessId = await this.access.requireBusinessId(userId);
     await this.assertDepositCoversPlatformFee(dto.depositPercentage);
+    await this.assertOwnsLocations(
+      businessId,
+      dto.offers.map((offer) => offer.locationId),
+    );
 
-    // The service and every affected location's headline price commit together
-    // (§44). A catalogue that has changed while the listing has not is a
-    // listing advertising a price nobody can book at.
+    const { offers, ...fields } = dto;
+
+    // The service, its branch offers and every affected location's headline
+    // price commit together (§44). A catalogue that has changed while the
+    // listing has not is a listing advertising a price nobody can book at.
     return this.prisma.$transaction(async (tx) => {
       const service = await tx.service.create({
-        // The unit of account this price is denominated in, said explicitly.
+        // The unit of account these prices are denominated in, said explicitly.
         // The column used to default to "USD" in the schema, which silently
         // mislabelled every price in a deployment priced in anything else
         // (§66.3).
-        data: { businessId, currency: INTERNAL_CURRENCY, ...dto },
+        data: {
+          businessId,
+          currency: INTERNAL_CURRENCY,
+          ...fields,
+          locations: {
+            create: offers.map((offer) => ({
+              locationId: offer.locationId,
+              priceMinor: offer.priceMinor,
+            })),
+          },
+        },
+        include: SERVICE_INCLUDE,
       });
       await recalculateFromPrice(tx, businessId);
       return service;
@@ -78,6 +128,7 @@ export class ServicesService {
     return this.prisma.service.findMany({
       where: { businessId },
       orderBy: [{ isActive: 'desc' }, { createdAt: 'asc' }],
+      include: SERVICE_INCLUDE,
     });
   }
 
@@ -90,8 +141,36 @@ export class ServicesService {
     // patch: an update can also flip `isActive` back on, which changes the
     // cheapest price without touching a price field. Checking which fields
     // moved would be a second place to get the rule right.
+    const { offers, ...fields } = dto;
+
+    if (offers) {
+      await this.assertOwnsLocations(
+        businessId,
+        offers.map((offer) => offer.locationId),
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
-      const service = await tx.service.update({ where: { id: serviceId }, data: dto });
+      // Offers are REPLACED wholesale when supplied, like the week of opening
+      // hours (§12.7): the client sends the branches it wants, and whatever is
+      // not in that list stops being offered. Merging instead would make
+      // "remove this branch" impossible to express.
+      if (offers) {
+        await tx.serviceLocation.deleteMany({ where: { serviceId } });
+        await tx.serviceLocation.createMany({
+          data: offers.map((offer) => ({
+            serviceId,
+            locationId: offer.locationId,
+            priceMinor: offer.priceMinor,
+          })),
+        });
+      }
+
+      const service = await tx.service.update({
+        where: { id: serviceId },
+        data: fields,
+        include: SERVICE_INCLUDE,
+      });
       await recalculateFromPrice(tx, businessId);
       return service;
     });

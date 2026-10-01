@@ -234,7 +234,12 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const res = await request(url, '/business/services', {
         method: 'POST',
         token: tokenAlpha,
-        body: { name: 'Owner service', priceMinor: 1000, durationMinutes: 30 },
+        body: {
+          name: 'Owner service',
+          durationMinutes: 30,
+          // Where it is offered and for how much (§72).
+          offers: [{ locationId: alpha.locationId, priceMinor: 1000 }],
+        },
       });
 
       expect(res.status).toBe(201);

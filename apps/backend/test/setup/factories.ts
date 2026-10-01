@@ -90,10 +90,15 @@ export async function createBusiness(
     data: {
       businessId: business.id,
       name: 'Test Service',
-      priceMinor: options.priceMinor ?? 4500,
       currency: INTERNAL_CURRENCY,
       durationMinutes: options.durationMinutes ?? 60,
       depositPercentage: options.depositPercentage ?? 20,
+      // Offered at this business's branch, at this branch's price (§72). A
+      // service with no offer row is bookable nowhere, so a fixture without
+      // one would make every booking test fail for the wrong reason.
+      locations: {
+        create: [{ locationId: location.id, priceMinor: options.priceMinor ?? 4500 }],
+      },
     },
   });
 

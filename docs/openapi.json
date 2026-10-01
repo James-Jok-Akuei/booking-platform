@@ -506,7 +506,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -518,7 +525,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -551,7 +568,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -1286,6 +1310,21 @@
         },
         "tags": [
           "AdminSettings"
+        ]
+      }
+    },
+    "/payments/currency": {
+      "get": {
+        "operationId": "PaymentsController_currency",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "How to render money, so no client has to guess (§70.1).\n\nEvery amount this API returns is an integer in the MINOR units of\n`code`, and how many of those make one major unit is a property of the\ncurrency — two for dollars, none for francs. A client that hardcodes a\ndivision by 100 is correct in one country and wrong by a factor of a\nhundred in another, which is the §55.2 mistake moved to the front end\nwhere it is harder to see.\n\nServed unauthenticated, like the operator list: it is a fact about the\nplatform, needed before anyone signs in, and it reveals nothing.",
+        "tags": [
+          "Payments"
         ]
       }
     },
@@ -3719,6 +3758,24 @@
           }
         }
       },
+      "ServiceOfferDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "priceMinor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000000
+          }
+        },
+        "required": [
+          "locationId",
+          "priceMinor"
+        ]
+      },
       "CreateServiceDto": {
         "type": "object",
         "properties": {
@@ -3731,10 +3788,13 @@
             "type": "string",
             "maxLength": 2000
           },
-          "priceMinor": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100000000
+          "offers": {
+            "description": "Where this service is offered, and for how much at each branch (§72).\n\nAt least one: a service offered nowhere cannot be booked by anybody, and\ncreating one is almost always a mistake rather than an intention. A branch\ncan be removed later, which is the honest way to stop offering it there.",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceOfferDto"
+            }
           },
           "durationMinutes": {
             "type": "number",
@@ -3753,7 +3813,7 @@
         },
         "required": [
           "name",
-          "priceMinor",
+          "offers",
           "durationMinutes"
         ]
       },
@@ -3769,10 +3829,13 @@
             "type": "string",
             "maxLength": 2000
           },
-          "priceMinor": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100000000
+          "offers": {
+            "description": "Where this service is offered, and for how much at each branch (§72).\n\nAt least one: a service offered nowhere cannot be booked by anybody, and\ncreating one is almost always a mistake rather than an intention. A branch\ncan be removed later, which is the honest way to stop offering it there.",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceOfferDto"
+            }
           },
           "durationMinutes": {
             "type": "number",
