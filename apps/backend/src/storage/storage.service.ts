@@ -12,7 +12,13 @@ import * as path from 'path';
 /** Hard upload ceiling, enforced by multer before the file is fully buffered. */
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15MB
 
-/** jpg / png / webp only. Anything else is rejected at the interceptor. */
+/**
+ * What a **gallery or chat** image may be: jpg / png / webp only.
+ *
+ * Deliberately narrow and deliberately NOT widened for §81. A gallery is a shop
+ * window — every item in it is displayed to customers, so a format a browser
+ * cannot render is not a stricter rule, it is a broken listing.
+ */
 export const ALLOWED_MIME_TYPES = [
   'image/jpeg',
   'image/png',
@@ -21,10 +27,49 @@ export const ALLOWED_MIME_TYPES = [
 
 export const ALLOWED_EXTENSIONS_LABEL = 'jpg, jpeg, png, webp';
 
+/**
+ * What a **support-ticket attachment** may be (§81).
+ *
+ * Wider than the gallery because the two are not the same kind of thing. An
+ * attachment is *evidence*: the honest answer to "my payout never arrived" is
+ * a PDF statement, and the honest answer to "the shop was shut" is whatever
+ * the phone took, which on an iPhone is HEIC. Nothing renders these in a
+ * listing — they are opened by one person reading one ticket.
+ */
+export const TICKET_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+  'application/pdf',
+  'text/csv',
+  'text/plain',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+] as const;
+
+export const TICKET_EXTENSIONS_LABEL =
+  'images (incl. HEIC), PDF, Word, Excel, CSV and text files';
+
 const EXTENSION_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+  'application/pdf': 'pdf',
+  'text/csv': 'csv',
+  'text/plain': 'txt',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+    'docx',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
 };
 
 const LOCAL_UPLOAD_DIR = 'uploads';

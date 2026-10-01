@@ -120,13 +120,28 @@ export function TicketsPage() {
   );
 }
 
+/**
+ * The original filename is not kept — storage names every object with a UUID —
+ * so the link says what kind of thing it is instead. Since §81 this can be a
+ * PDF statement or a spreadsheet, not only a screenshot.
+ */
+const describeFile = (mimeType: string) => {
+  if (mimeType.startsWith('image/')) return 'View image';
+  if (mimeType === 'application/pdf') return 'View PDF';
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'View spreadsheet';
+  if (mimeType.includes('word')) return 'View document';
+  if (mimeType === 'text/csv') return 'View CSV';
+  if (mimeType === 'text/plain') return 'View text file';
+  return 'View attachment';
+};
+
 function Attachments({ files }: { files: TicketAttachment[] }) {
   if (files.length === 0) return null;
   return (
     <div className="attachments">
       {files.map((file) => (
         <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="small">
-          View attachment ({Math.max(1, Math.round(file.sizeBytes / 1024))} KB)
+          {describeFile(file.mimeType)} ({Math.max(1, Math.round(file.sizeBytes / 1024))} KB)
         </a>
       ))}
     </div>

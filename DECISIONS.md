@@ -7775,3 +7775,84 @@ Ticket pill classes are namespaced `tkt-*`. The business app already had
 `.pill.in-progress` for appointments; reusing it would have had two unrelated
 meanings share a colour, and whichever page was styled second would win.
 
+## 81. A ticket attachment is evidence, not a shop-window photo
+
+Reported from use: *"I am not able to add files, images, etc."* The picker
+opened, a file could be chosen, and nothing arrived.
+
+§80.5 wired the upload correctly — multipart passes through the dev proxy and
+reaches the interceptor. The failure was one layer further in: ticket uploads
+reused `galleryUploadOptions`, which accepts **jpg, png and webp only**. A PDF
+bank statement and an iPhone photo (HEIC) are the two most obvious things to
+attach to a missing-payout ticket, and both were refused.
+
+### 81.1 ~~§10.6: tickets share the gallery's upload options~~ — superseded
+
+The original reasoning: *"someone refused a 20MB screenshot on a gallery should
+get the identical refusal attaching it to a ticket, and separate configs drift
+the moment one limit changes."*
+
+That holds for the **size** limit and not for the **type** list, and conflating
+the two cost the feature. A gallery is a shop window: every item is rendered to
+customers, so a format a browser cannot display is not a stricter rule, it is a
+broken listing. A ticket attachment is evidence, opened by one person reading
+one ticket. Nothing renders it in a grid.
+
+So the lists diverge and the **ceiling does not**: 15MB still comes from one
+constant, `MAX_UPLOAD_BYTES`, and a test asserts all three configs share it.
+
+Tickets now also take GIF, HEIC/HEIF, PDF, Word, Excel, CSV and plain text.
+The gallery and chat are unchanged — only tickets were widened.
+
+### 81.2 One filter, two lists
+
+The filter itself was still worth sharing, so `makeUploadOptions(allowed, label)`
+builds both. Only the set of types differs, which is the only thing that
+legitimately differs. The refusal still names what IS accepted:
+*"Unsupported file type "application/x-msdownload". Allowed types: images
+(incl. HEIC), PDF, Word, Excel, CSV and text files."*
+
+### 81.3 The picker judges on type OR extension
+
+Browsers report an empty or non-standard MIME type for HEIC and for some Office
+files depending on the OS. A client-side check on `file.type` alone therefore
+rejects files the server would accept — the same class of bug, moved to the
+browser. The client matches on either, and the server remains the authority.
+
+### 81.4 The control now says what it took
+
+Contributing to "it doesn't attach": the old field was a bare `<input
+type="file">` inside a `<label>` that wrapped it, with no confirmation. A label
+wrapping a file input re-dispatches the click to its control, which can open
+the picker twice and makes a selection look ignored.
+
+The input is now referenced by `htmlFor` and never wrapped, and the chosen
+filename is shown with a **remove** control. Size and type are checked before
+sending, so a file that would be refused is refused immediately rather than
+after a 15MB upload.
+
+### 81.5 Links say what they open
+
+The original filename is deliberately not kept — storage names every object with
+a UUID so a crafted upload name cannot steer the object key (§10.4). With images
+only, "View attachment" was adequate. Now that it may be a spreadsheet, both
+apps derive a label from the stored MIME type: *View PDF*, *View spreadsheet*,
+*View image*.
+
+This also fixed the admin side, which §79 shipped showing no attachments at all
+— a business could send a statement and the person answering never saw it.
+
+### 81.6 Verified
+
+Each type uploaded against the running server and fetched back: pdf, heic, csv,
+txt, docx, xlsx, png all store with the correct extension and serve with the
+correct `Content-Type`. `.exe` is refused with 400. The gallery still refuses a
+PDF and still accepts a PNG.
+
+30 new tests in `upload-allow-lists.spec.ts`, written around the divergence
+rather than either list on its own: a PDF must be accepted on a ticket **and**
+refused on a gallery. One shared object passed both halves of that trivially,
+which is why the bug survived until someone tried to attach a statement.
+
+**1037 passing across 27 suites.**
+

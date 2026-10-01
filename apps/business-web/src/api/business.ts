@@ -424,6 +424,41 @@ export interface TicketDetail extends Ticket {
   messages: TicketMessage[];
 }
 
+/**
+ * What the server will actually take, mirrored from storage.service.ts
+ * (`TICKET_MIME_TYPES`). Kept in step by hand; widening one without the other
+ * turns a greyed-out file into a failed upload, or the reverse.
+ */
+export const ACCEPTED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+  'application/pdf',
+  'text/csv',
+  'text/plain',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+];
+
+/**
+ * Also matched on extension. A browser hands over an empty or odd `type` for
+ * HEIC and for some Office files depending on the OS, and a picker that greys
+ * out a file the server would happily take is the bug this is fixing.
+ */
+export const ACCEPTED_EXTENSIONS = [
+  '.jpg', '.jpeg', '.png', '.webp', '.gif', '.heic', '.heif',
+  '.pdf', '.csv', '.txt', '.doc', '.docx', '.xls', '.xlsx',
+];
+
+export const ACCEPTED_LABEL = 'Images, PDF, Word, Excel, CSV or text';
+export const MAX_UPLOAD_MB = 15;
+export const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
+
 /** How long after being resolved a ticket can still be reopened (§24.3). */
 export const REOPEN_WINDOW_DAYS = 14;
 

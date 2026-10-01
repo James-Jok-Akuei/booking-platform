@@ -273,3 +273,12 @@ button.tiny { font-size: 11px; }
 .attachments { display: flex; flex-direction: column; gap: 3px; margin-top: 5px; }
 .reply-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .reply-actions input[type='file'] { font-size: 12px; max-width: 58%; }
+
+.stack-field { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-weight: 500; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.file-field { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 3px; }
+.file-trigger { display: inline-block; font-size: 13px; font-weight: 500; padding: 7px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); cursor: pointer; }
+.file-trigger:hover { border-color: var(--accent); color: var(--accent); }
+.visually-hidden:focus-visible + .file-trigger { outline: 2px solid var(--accent); outline-offset: 2px; }
+.file-chosen { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }

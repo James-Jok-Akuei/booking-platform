@@ -2,6 +2,11 @@ import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import {
+  ACCEPTED_EXTENSIONS,
+  ACCEPTED_LABEL,
+  ACCEPTED_TYPES,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_MB,
   getMyTicket,
   listMyTickets,
   raiseTicket,
@@ -25,6 +30,21 @@ const STATUS: Record<TicketStatus, { label: string; hint: string; tone: string }
   IN_PROGRESS: { label: 'Being looked at', hint: 'Someone is working on this.', tone: 'tkt-active' },
   RESOLVED: { label: 'Resolved', hint: 'We think this is sorted.', tone: 'tkt-resolved' },
   CLOSED: { label: 'Closed', hint: 'Finished. Raise a new one if it comes back.', tone: 'tkt-closed' },
+};
+
+/**
+ * The original filename is not kept — storage names every object with a UUID
+ * so a crafted upload name cannot steer the object key. So the link says what
+ * kind of thing it is, which is the part a reader needs before clicking.
+ */
+const describeFile = (mimeType: string) => {
+  if (mimeType.startsWith('image/')) return 'View image';
+  if (mimeType === 'application/pdf') return 'View PDF';
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'View spreadsheet';
+  if (mimeType.includes('word')) return 'View document';
+  if (mimeType === 'text/csv') return 'View CSV';
+  if (mimeType === 'text/plain') return 'View text file';
+  return 'View attachment';
 };
 
 const when = (iso: string | null) =>
@@ -116,13 +136,89 @@ function Panel({
   );
 }
 
+/**
+ * A file field that says what it took.
+ *
+ * The input is referenced by `htmlFor`, not wrapped: a <label> around a file
+ * input re-dispatches the click to its control, which can open the picker
+ * twice and makes a selection look like it was ignored.
+ *
+ * It also checks type and size here, mirroring the server, so a file that will
+ * be refused is refused immediately rather than after an upload.
+ */
+function FilePicker({
+  id,
+  file,
+  onPick,
+  label,
+}: {
+  id: string;
+  file: File | null;
+  onPick: (file: File | null) => void;
+  label: string;
+}) {
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const take = (chosen: File | null) => {
+    setProblem(null);
+    if (!chosen) return onPick(null);
+    // Type OR extension: browsers report an empty or non-standard `type` for
+    // HEIC and for some Office files, so judging on type alone rejects files
+    // the server would accept.
+    const extension = chosen.name.slice(chosen.name.lastIndexOf('.')).toLowerCase();
+    const looksAllowed =
+      ACCEPTED_TYPES.includes(chosen.type) || ACCEPTED_EXTENSIONS.includes(extension);
+    if (!looksAllowed) {
+      setProblem(
+        `We cannot take ${extension || 'that kind of file'} yet. ${ACCEPTED_LABEL}.`,
+      );
+      return onPick(null);
+    }
+    if (chosen.size > MAX_UPLOAD_BYTES) {
+      setProblem(
+        `${chosen.name} is ${Math.round(chosen.size / 1024 / 1024)}MB. The limit is ${MAX_UPLOAD_MB}MB.`,
+      );
+      return onPick(null);
+    }
+    onPick(chosen);
+  };
+
+  return (
+    <div className="file-field">
+      <input
+        id={id}
+        type="file"
+        className="visually-hidden"
+        accept={[...ACCEPTED_TYPES, ...ACCEPTED_EXTENSIONS].join(',')}
+        onChange={(event) => take(event.target.files?.[0] ?? null)}
+      />
+      <label htmlFor={id} className="file-trigger">
+        {file ? 'Choose a different one' : label}
+      </label>
+      {file && (
+        <span className="file-chosen small">
+          {file.name}
+          <button type="button" className="link" onClick={() => onPick(null)}>
+            remove
+          </button>
+        </span>
+      )}
+      {problem && (
+        <p className="error small" role="alert">
+          {problem}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Attachments({ files }: { files: TicketAttachment[] }) {
   if (files.length === 0) return null;
   return (
     <div className="attachments">
       {files.map((file) => (
         <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="small">
-          View attachment ({Math.max(1, Math.round(file.sizeBytes / 1024))} KB)
+          {describeFile(file.mimeType)} ({Math.max(1, Math.round(file.sizeBytes / 1024))} KB)
         </a>
       ))}
     </div>
@@ -215,14 +311,19 @@ function NewTicket({
           />
         </label>
 
-        <label>
-          A screenshot, if it helps <span className="muted small">(optional, JPG/PNG/WebP, up to 15MB)</span>
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(event) => setAttachment(event.target.files?.[0] ?? null)}
+        <div className="stack-field">
+          <span className="field-label">A screenshot, if it helps</span>
+          <span className="muted small">
+            Optional. {ACCEPTED_LABEL} — up to {MAX_UPLOAD_MB}MB. A statement or an
+            invoice helps most for anything about money.
+          </span>
+          <FilePicker
+            id="new-ticket-attachment"
+            file={attachment}
+            onPick={setAttachment}
+            label="Choose a screenshot"
           />
-        </label>
+        </div>
 
         {create.error && (
           <p className="error small" role="alert">
@@ -360,10 +461,11 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
                 placeholder="Add anything else that might help…"
               />
               <div className="reply-actions">
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => setAttachment(event.target.files?.[0] ?? null)}
+                <FilePicker
+                  id="reply-attachment"
+                  file={attachment}
+                  onPick={setAttachment}
+                  label="Attach a screenshot"
                 />
                 <button
                   type="submit"
