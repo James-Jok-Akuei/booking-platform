@@ -132,21 +132,21 @@ export function PayoutsPage() {
       {held.data && (
         <div className="card summary">
           <div>
-            <h2>Not sent yet</h2>
+            <h2>Unsettled</h2>
             {held.data.bySettlementCurrency.length === 0 ? (
               <p className="muted">Nothing waiting.</p>
             ) : (
               held.data.bySettlementCurrency.map((row) => (
                 <p key={row.settlementCurrency} className="figure">
                   {money(row.amountMinor, row.settlementCurrency)}
-                  <span className="muted small"> · {row.entryCount} records</span>
+                  <span className="muted small"> · {row.entryCount} entries</span>
                 </p>
               ))
             )}
             {held.data.entriesWithoutSettlement > 0 && (
               <p className="error small">
-                {held.data.entriesWithoutSettlement} records do not say how much to pay,
-                so they cannot be sent.
+                {held.data.entriesWithoutSettlement} entries have no settlement amount
+                and cannot be paid.
               </p>
             )}
           </div>

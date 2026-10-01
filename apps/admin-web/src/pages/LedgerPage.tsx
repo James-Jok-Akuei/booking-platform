@@ -14,24 +14,19 @@ import {
 const formatDate = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
-/**
- * Everyday names for the entry types in §34's enum (§85).
- *
- * The enum names are accounting words. These say who gained or lost what,
- * which is the only question anyone reads this table to answer.
- */
+/** Plain-language names for the entry types in §34's enum. */
 const ENTRY_LABEL: Record<LedgerEntryType, string> = {
-  DEPOSIT_RECEIVED: 'Customer paid',
-  PLATFORM_FEE: 'Our fee',
-  DEPOSIT_REFUND: 'Customer got their money back',
-  PLATFORM_FEE_REVERSAL: 'We gave our fee back',
-  GATEWAY_FEE_DEBIT: 'Mobile money charge',
-  ADJUSTMENT: 'A fix done by hand',
+  DEPOSIT_RECEIVED: 'Deposit received',
+  PLATFORM_FEE: 'Platform fee',
+  DEPOSIT_REFUND: 'Deposit refunded',
+  PLATFORM_FEE_REVERSAL: 'Platform fee returned',
+  GATEWAY_FEE_DEBIT: 'Gateway fee',
+  ADJUSTMENT: 'Manual adjustment',
 };
 
 const ADJUSTMENT_LABEL = {
-  FEE_REFUND: 'Give our fee back',
-  GATEWAY_FEE_DEBIT: 'Charge the shop for the mobile money fee',
+  FEE_REFUND: 'Fee refund',
+  GATEWAY_FEE_DEBIT: 'Gateway fee charged back',
 } as const;
 
 /**
@@ -50,7 +45,7 @@ export function LedgerPage() {
         <div>
           <h1>Money</h1>
           <p className="muted">
-            Money we are holding for shops, and the fixes that change it.
+            What the platform is holding, and the corrections that change it.
           </p>
         </div>
         <div className="tabs">
@@ -59,14 +54,14 @@ export function LedgerPage() {
             className={tab === 'adjustments' ? 'tab active' : 'tab'}
             onClick={() => setTab('adjustments')}
           >
-            Fixes
+            Adjustments
           </button>
           <button
             type="button"
             className={tab === 'entries' ? 'tab active' : 'tab'}
             onClick={() => setTab('entries')}
           >
-            Money records
+            Ledger
           </button>
         </div>
       </header>
@@ -113,25 +108,25 @@ function HeldSummary() {
           <div key={row.settlementCurrency} className="held-figure">
             <strong>{money.format(row.amountMinor, row.settlementCurrency)}</strong>
             <span className="muted small">
-              {row.entryCount} records of money we have not sent yet
+              {row.entryCount} entries not yet paid out
             </span>
           </div>
         ))}
         {held.data.bySettlementCurrency.length === 0 && (
           <div className="held-figure">
-            <strong>We are holding nothing</strong>
+            <strong>Nothing held</strong>
           </div>
         )}
       </div>
       <p className="muted small">
-        Counted at {formatDate(held.data.asOf)}. The mobile money account should hold
-        this much. <strong>Go and check it yourself</strong> — nothing checks it for you.
+        As of {formatDate(held.data.asOf)}. This is what the provider's balance should
+        hold — <strong>compare it by hand</strong>, nothing reconciles it automatically.
         {held.data.entriesWithoutSettlement > 0 && (
           <>
             {' '}
             <span className="warn">
-              {held.data.entriesWithoutSettlement} records do not say how much will be
-              paid, so they are not counted above.
+              {held.data.entriesWithoutSettlement} entries carry no settlement amount and
+              are missing from this figure.
             </span>
           </>
         )}
@@ -167,18 +162,17 @@ function Adjustments() {
 
   const run = (id: string, amount: string, type: keyof typeof ADJUSTMENT_LABEL) => {
     const ref = window.prompt(
-      `You are about to apply a ${ADJUSTMENT_LABEL[type].toLowerCase()} of ${amount}.\n\n` +
-        'This changes how much money the shop is owed, and you cannot undo it. ' +
-        'If it turns out to be wrong, you fix it by writing a new fix — you ' +
-        'cannot take this one back.\n\n' +
-        'If the money was already sent on its own and you have a reference ' +
-        'number for it, type it here. If it will just come off the shop\'s next ' +
-        'payment, leave this empty.',
+      `Executing a ${ADJUSTMENT_LABEL[type].toLowerCase()} of ${amount}.\n\n` +
+        'This writes ledger entries and changes what the business is owed. It ' +
+        'cannot be undone — a mistake is corrected by recording another ' +
+        'adjustment, not by reversing this one.\n\n' +
+        "The provider's reference, if this was settled by its own transfer. " +
+        'Leave blank if it nets against a future payout.',
     );
     if (ref === null) return;
     const trimmed = ref.trim();
     if (trimmed !== '' && trimmed.length < 3) {
-      window.alert('A reference number needs at least three letters. Or leave it empty.');
+      window.alert('A reference needs at least three characters, or leave it blank.');
       return;
     }
     execute.mutate({ id, ref: trimmed === '' ? undefined : trimmed });
@@ -193,11 +187,11 @@ function Adjustments() {
             checked={onlyOutstanding}
             onChange={(event) => setOnlyOutstanding(event.target.checked)}
           />
-          Only the ones still to do
+          Only ones still to execute
         </label>
         {adjustments.data && (
           <span className="muted small">
-            {adjustments.data.outstanding} still to do, out of {adjustments.data.total}
+            {adjustments.data.outstanding} outstanding of {adjustments.data.total}
           </span>
         )}
       </div>
@@ -211,9 +205,7 @@ function Adjustments() {
       {adjustments.isLoading && <p className="muted">Loading…</p>}
       {rows.length === 0 && !adjustments.isLoading && (
         <p className="muted empty">
-          {onlyOutstanding
-            ? 'Nothing is waiting to be done.'
-            : 'No fixes have been written down yet.'}
+          {onlyOutstanding ? 'Nothing waiting to be executed.' : 'No adjustments recorded.'}
         </p>
       )}
 
@@ -221,12 +213,12 @@ function Adjustments() {
         <table>
           <thead>
             <tr>
-              <th>Shop</th>
-              <th>What kind of fix</th>
-              <th className="num">How much</th>
+              <th>Business</th>
+              <th>What</th>
+              <th className="num">Amount</th>
               <th>Why</th>
-              <th>Written down</th>
-              <th>Done?</th>
+              <th>Recorded</th>
+              <th>State</th>
             </tr>
           </thead>
           <tbody>
@@ -246,16 +238,16 @@ function Adjustments() {
                 <td>
                   {row.settledAt ? (
                     <>
-                      <span className="pill resolved">Done</span>
+                      <span className="pill resolved">Executed</span>
                       <div className="muted small">
                         {formatDate(row.settledAt)}
                         {row.settlementRef && <> · {row.settlementRef}</>}
-                        {!row.settlementRef && <> · taken off a future payment</>}
+                        {!row.settlementRef && <> · netted against a payout</>}
                       </div>
                       {row.ledgerEntries.length > 0 && (
                         <div className="muted small">
-                          added {row.ledgerEntries.length} money{' '}
-                          {row.ledgerEntries.length === 1 ? 'record' : 'records'}
+                          wrote {row.ledgerEntries.length} ledger{' '}
+                          {row.ledgerEntries.length === 1 ? 'entry' : 'entries'}
                         </div>
                       )}
                     </>
@@ -266,7 +258,7 @@ function Adjustments() {
                       disabled={execute.isPending}
                       onClick={() => run(row.id, `${money.code} ${row.amount}`, row.type)}
                     >
-                      Apply this fix
+                      Execute
                     </button>
                   )}
                 </td>
@@ -295,7 +287,7 @@ function Entries() {
         <label className="inline small">
           Showing
           <select value={type} onChange={(event) => setType(event.target.value as LedgerEntryType | '')}>
-            <option value="">all kinds</option>
+            <option value="">every kind of entry</option>
             {(Object.keys(ENTRY_LABEL) as LedgerEntryType[]).map((key) => (
               <option key={key} value={key}>
                 {ENTRY_LABEL[key]}
@@ -305,11 +297,11 @@ function Entries() {
         </label>
         {ledger.data && (
           <span className="muted small">
-            {ledger.data.entries.length} of {ledger.data.total} shown
+            {ledger.data.entries.length} of {ledger.data.total}
             {ledger.data.totalsBySettlementCurrency.map((total) => (
               <span key={total.settlementCurrency}>
                 {' '}
-                · they add up to {money.signed(total.amountMinor, total.settlementCurrency)}
+                · {money.signed(total.amountMinor, total.settlementCurrency)} in view
               </span>
             ))}
           </span>
@@ -318,7 +310,7 @@ function Entries() {
 
       {ledger.isLoading && <p className="muted">Loading…</p>}
       {ledger.data?.entries.length === 0 && (
-        <p className="muted empty">No records of that kind.</p>
+        <p className="muted empty">No entries of that kind.</p>
       )}
 
       {ledger.data && ledger.data.entries.length > 0 && (
@@ -326,10 +318,10 @@ function Entries() {
           <thead>
             <tr>
               <th>When</th>
-              <th>Shop</th>
+              <th>Business</th>
               <th>What happened</th>
-              <th className="num">How much</th>
-              <th>Can we send it?</th>
+              <th className="num">Amount</th>
+              <th>Payable</th>
             </tr>
           </thead>
           <tbody>
@@ -340,7 +332,7 @@ function Entries() {
                 <td>
                   {ENTRY_LABEL[entry.type]}
                   {entry.billingAdjustmentId && (
-                    <div className="muted small">from a fix</div>
+                    <div className="muted small">from an adjustment</div>
                   )}
                 </td>
                 {/* Signed from the business's point of view (§34.2): positive
@@ -351,22 +343,22 @@ function Entries() {
                   {entry.settlementAmountMinor !== null &&
                     entry.settlementCurrency !== entry.currency && (
                       <div className="muted small">
-                        same as {money.signed(entry.amountMinor, entry.currency)}
+                        reporting {money.signed(entry.amountMinor, entry.currency)}
                       </div>
                     )}
                 </td>
                 <td className="small">
                   {entry.payoutId ? (
-                    <span className="muted">already sent</span>
+                    <span className="muted">paid out</span>
                   ) : entry.availableAt === null ? (
                     // §34.3: null means the appointment has not resolved, or
                     // the hold has not expired. Not "pending" — nothing is
                     // waiting on a process, the money is simply not payable.
-                    <span className="muted">waiting</span>
+                    <span className="muted">held</span>
                   ) : new Date(entry.availableAt) > new Date() ? (
-                    <>waiting until {formatDate(entry.availableAt)}</>
+                    <>held until {formatDate(entry.availableAt)}</>
                   ) : (
-                    <span className="ok">ready to send</span>
+                    <span className="ok">available</span>
                   )}
                 </td>
               </tr>
