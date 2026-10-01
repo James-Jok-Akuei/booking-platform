@@ -5,6 +5,7 @@ import {
   ACCEPTED_EXTENSIONS,
   ACCEPTED_LABEL,
   ACCEPTED_TYPES,
+  MAX_ATTACHMENTS,
   MAX_UPLOAD_BYTES,
   MAX_UPLOAD_MB,
   getMyTicket,
@@ -171,76 +172,124 @@ function Panel({
 }
 
 /**
- * A file field that says what it took.
+ * A file field that accumulates, and says what it is holding.
  *
- * The input is referenced by `htmlFor`, not wrapped: a <label> around a file
+ * Adding a second file used to replace the first: one `File` in state, and a
+ * fresh `<input type="file">` reports only its own latest selection. The state
+ * is now a list and each selection is appended, which is what "add another"
+ * means to everyone except the DOM.
+ *
+ * The input is referenced by `htmlFor`, never wrapped: a <label> around a file
  * input re-dispatches the click to its control, which can open the picker
- * twice and makes a selection look like it was ignored.
+ * twice and makes a selection look ignored.
  *
- * It also checks type and size here, mirroring the server, so a file that will
- * be refused is refused immediately rather than after an upload.
+ * Type and size are checked here, mirroring the server, so a file that will be
+ * refused is refused before a 15MB upload rather than after one.
  */
 function FilePicker({
   id,
-  file,
-  onPick,
-  label,
+  files,
+  onChange,
 }: {
   id: string;
-  file: File | null;
-  onPick: (file: File | null) => void;
-  label: string;
+  files: File[];
+  onChange: (files: File[]) => void;
 }) {
-  const [problem, setProblem] = useState<string | null>(null);
+  const [problems, setProblems] = useState<string[]>([]);
 
-  const take = (chosen: File | null) => {
-    setProblem(null);
-    if (!chosen) return onPick(null);
-    // Type OR extension: browsers report an empty or non-standard `type` for
-    // HEIC and for some Office files, so judging on type alone rejects files
-    // the server would accept.
-    const extension = chosen.name.slice(chosen.name.lastIndexOf('.')).toLowerCase();
-    const looksAllowed =
-      ACCEPTED_TYPES.includes(chosen.type) || ACCEPTED_EXTENSIONS.includes(extension);
-    if (!looksAllowed) {
-      setProblem(
-        `We cannot take ${extension || 'that kind of file'} yet. ${ACCEPTED_LABEL}.`,
-      );
-      return onPick(null);
+  const add = (chosen: FileList | null) => {
+    if (!chosen || chosen.length === 0) return;
+    const rejected: string[] = [];
+    const accepted: File[] = [];
+
+    for (const file of Array.from(chosen)) {
+      // Type OR extension: browsers report an empty or non-standard `type` for
+      // HEIC and for some Office files, so judging on type alone rejects files
+      // the server would accept.
+      const extension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+      const looksAllowed =
+        ACCEPTED_TYPES.includes(file.type) || ACCEPTED_EXTENSIONS.includes(extension);
+
+      if (!looksAllowed) {
+        rejected.push(`${file.name} — we cannot take ${extension || 'that kind of file'}.`);
+      } else if (file.size > MAX_UPLOAD_BYTES) {
+        rejected.push(
+          `${file.name} — ${Math.round(file.size / 1024 / 1024)}MB, over the ${MAX_UPLOAD_MB}MB limit.`,
+        );
+      } else if (
+        // Same name and size twice is the picker being opened again, not a
+        // second file worth uploading.
+        files.some((held) => held.name === file.name && held.size === file.size)
+      ) {
+        rejected.push(`${file.name} — already added.`);
+      } else {
+        accepted.push(file);
+      }
     }
-    if (chosen.size > MAX_UPLOAD_BYTES) {
-      setProblem(
-        `${chosen.name} is ${Math.round(chosen.size / 1024 / 1024)}MB. The limit is ${MAX_UPLOAD_MB}MB.`,
-      );
-      return onPick(null);
+
+    const room = MAX_ATTACHMENTS - files.length;
+    if (accepted.length > room) {
+      for (const file of accepted.slice(room)) {
+        rejected.push(`${file.name} — that would be more than ${MAX_ATTACHMENTS} files.`);
+      }
     }
-    onPick(chosen);
+
+    setProblems(rejected);
+    onChange([...files, ...accepted.slice(0, Math.max(0, room))]);
   };
+
+  const full = files.length >= MAX_ATTACHMENTS;
 
   return (
     <div className="file-field">
+      {files.length > 0 && (
+        <ul className="file-list">
+          {files.map((file) => (
+            <li key={`${file.name}-${file.size}-${file.lastModified}`}>
+              <span className="file-name">{file.name}</span>
+              <span className="muted small">
+                {Math.max(1, Math.round(file.size / 1024))} KB
+              </span>
+              <button
+                type="button"
+                className="link"
+                onClick={() => onChange(files.filter((held) => held !== file))}
+              >
+                remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <input
         id={id}
         type="file"
+        multiple
         className="visually-hidden"
         accept={[...ACCEPTED_TYPES, ...ACCEPTED_EXTENSIONS].join(',')}
-        onChange={(event) => take(event.target.files?.[0] ?? null)}
+        disabled={full}
+        // Cleared after every selection so picking the same file again still
+        // fires `change` — without this, removing a file and re-adding it does
+        // nothing at all.
+        onChange={(event) => {
+          add(event.target.files);
+          event.target.value = '';
+        }}
       />
-      <label htmlFor={id} className="file-trigger">
-        {file ? 'Choose a different one' : label}
+      <label htmlFor={id} className={full ? 'file-trigger disabled' : 'file-trigger'}>
+        {files.length === 0 ? 'Attach a file' : 'Add another file'}
       </label>
-      {file && (
-        <span className="file-chosen small">
-          {file.name}
-          <button type="button" className="link" onClick={() => onPick(null)}>
-            remove
-          </button>
-        </span>
+      {full && (
+        <span className="muted small">{MAX_ATTACHMENTS} files is the limit.</span>
       )}
-      {problem && (
-        <p className="error small" role="alert">
-          {problem}
-        </p>
+
+      {problems.length > 0 && (
+        <ul className="error small" role="alert">
+          {problems.map((problem) => (
+            <li key={problem}>{problem}</li>
+          ))}
+        </ul>
       )}
     </div>
   );
@@ -286,11 +335,11 @@ function NewTicket({
   const [category, setCategory] = useState<TicketCategory>('PAYMENT_ISSUE');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
-  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   const create = useMutation({
     mutationFn: () =>
-      raiseTicket({ category, subject: subject.trim(), body: body.trim(), attachment }),
+      raiseTicket({ category, subject: subject.trim(), body: body.trim(), attachments }),
     onSuccess: (ticket) => {
       queryClient.invalidateQueries({ queryKey: ['my-tickets'] });
       onCreated(ticket.id);
@@ -346,16 +395,15 @@ function NewTicket({
         </label>
 
         <div className="stack-field">
-          <span className="field-label">A screenshot, if it helps</span>
+          <span className="field-label">Anything that shows the problem</span>
           <span className="muted small">
-            Optional. {ACCEPTED_LABEL} — up to {MAX_UPLOAD_MB}MB. A statement or an
-            invoice helps most for anything about money.
+            Optional. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} files, {MAX_UPLOAD_MB}MB
+            each. A statement or an invoice helps most for anything about money.
           </span>
           <FilePicker
-            id="new-ticket-attachment"
-            file={attachment}
-            onPick={setAttachment}
-            label="Choose a screenshot"
+            id="new-ticket-attachments"
+            files={attachments}
+            onChange={setAttachments}
           />
         </div>
 
@@ -385,7 +433,7 @@ function NewTicket({
 function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
   const queryClient = useQueryClient();
   const [reply, setReply] = useState('');
-  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   const ticket = useQuery({ queryKey: ['my-ticket', id], queryFn: () => getMyTicket(id) });
 
@@ -395,10 +443,10 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
   };
 
   const send = useMutation({
-    mutationFn: () => replyToMyTicket(id, reply.trim(), attachment),
+    mutationFn: () => replyToMyTicket(id, reply.trim(), attachments),
     onSuccess: () => {
       setReply('');
-      setAttachment(null);
+      setAttachments([]);
       refresh();
     },
   });
@@ -496,10 +544,9 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
               />
               <div className="reply-actions">
                 <FilePicker
-                  id="reply-attachment"
-                  file={attachment}
-                  onPick={setAttachment}
-                  label="Attach a screenshot"
+                  id="reply-attachments"
+                  files={attachments}
+                  onChange={setAttachments}
                 />
                 <button
                   type="submit"

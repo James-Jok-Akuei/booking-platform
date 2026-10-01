@@ -72,7 +72,7 @@ export class TicketsService {
   async create(
     user: { userId: string; role: string },
     dto: CreateTicketDto,
-    file?: Express.Multer.File,
+    files?: Express.Multer.File[],
   ) {
     const reporterType =
       user.role === UserRole.BUSINESS ? ReporterType.BUSINESS : ReporterType.CUSTOMER;
@@ -128,9 +128,7 @@ export class TicketsService {
       return created;
     });
 
-    if (file) {
-      await this.attach(ticket.id, null, user.userId, file);
-    }
+    await this.attach(ticket.id, null, user.userId, files);
 
     await this.notifyAdmins(NotificationType.TICKET_CREATED, ticket.reference, ticket.subject);
 
@@ -171,25 +169,35 @@ export class TicketsService {
     if (!isParty) throw new NotFoundException('Appointment not found.');
   }
 
+  /**
+   * Stores every file on one ticket or message (§83).
+   *
+   * Sequential rather than `Promise.all`: the rows are read back in insert
+   * order, so uploading in parallel would list a reporter's files in whatever
+   * order the storage driver happened to finish them. Five files at 15MB is
+   * also not a load worth racing.
+   */
   private async attach(
     ticketId: string,
     ticketMessageId: string | null,
     uploadedById: string,
-    file: Express.Multer.File,
+    files: Express.Multer.File[] | undefined,
   ) {
-    // Same StorageService the gallery and chat use — R2 when configured, the
-    // dev-only local fallback otherwise.
-    const url = await this.storage.upload(file.buffer, file.mimetype, `tickets/${ticketId}`);
-    await this.prisma.ticketAttachment.create({
-      data: {
-        ticketId,
-        ticketMessageId,
-        url,
-        mimeType: file.mimetype,
-        sizeBytes: file.size,
-        uploadedById,
-      },
-    });
+    for (const file of files ?? []) {
+      // Same StorageService the gallery and chat use — R2 when configured, the
+      // dev-only local fallback otherwise.
+      const url = await this.storage.upload(file.buffer, file.mimetype, `tickets/${ticketId}`);
+      await this.prisma.ticketAttachment.create({
+        data: {
+          ticketId,
+          ticketMessageId,
+          url,
+          mimeType: file.mimetype,
+          sizeBytes: file.size,
+          uploadedById,
+        },
+      });
+    }
   }
 
   // ---------- Reads ----------
@@ -352,7 +360,7 @@ export class TicketsService {
     user: { userId: string; role: string },
     ticketId: string,
     dto: CreateTicketMessageDto,
-    file?: Express.Multer.File,
+    files?: Express.Multer.File[],
   ) {
     const scope = await this.visibilityScope(user);
     const ticket = await this.prisma.ticket.findFirst({
@@ -413,7 +421,7 @@ export class TicketsService {
       return created;
     });
 
-    if (file) await this.attach(ticketId, message.id, user.userId, file);
+    await this.attach(ticketId, message.id, user.userId, files);
 
     await this.notifyOnMessage(ticket, isAdmin, isInternal);
 

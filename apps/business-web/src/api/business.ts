@@ -456,6 +456,9 @@ export const ACCEPTED_EXTENSIONS = [
 ];
 
 export const ACCEPTED_LABEL = 'Images, PDF, Word, Excel, CSV or text';
+
+/** Mirrors MAX_TICKET_ATTACHMENTS on the server (§83). */
+export const MAX_ATTACHMENTS = 5;
 export const MAX_UPLOAD_MB = 15;
 export const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 
@@ -468,27 +471,29 @@ export const listMyTickets = (params: { status?: TicketStatus } = {}) =>
 export const getMyTicket = (id: string) => api<TicketDetail>(`/tickets/${id}`);
 
 /**
- * Multipart, because the screenshot is optional but the endpoint is the same
- * either way — sending FormData with no file is a valid request.
+ * Multipart, because files are optional but the endpoint is the same either
+ * way — sending FormData with no file is a valid request.
  */
 export const raiseTicket = (input: {
   category: TicketCategory;
   subject: string;
   body: string;
-  attachment?: File | null;
+  attachments?: File[];
 }) => {
   const form = new FormData();
   form.set('category', input.category);
   form.set('subject', input.subject);
   form.set('body', input.body);
-  if (input.attachment) form.set('attachment', input.attachment);
+  // `append`, not `set`: every file goes under the same field name, which is
+  // what FilesInterceptor('attachments') collects.
+  for (const file of input.attachments ?? []) form.append('attachments', file);
   return api<Ticket>('/tickets', { method: 'POST', body: form });
 };
 
-export const replyToMyTicket = (id: string, body: string, attachment?: File | null) => {
+export const replyToMyTicket = (id: string, body: string, attachments: File[] = []) => {
   const form = new FormData();
   form.set('body', body);
-  if (attachment) form.set('attachment', attachment);
+  for (const file of attachments) form.append('attachments', file);
   return api<TicketMessage>(`/tickets/${id}/messages`, { method: 'POST', body: form });
 };
 

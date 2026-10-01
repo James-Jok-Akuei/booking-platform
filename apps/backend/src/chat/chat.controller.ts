@@ -108,7 +108,7 @@ export class ChatController {
    */
   @Post(':id/messages')
   @UseInterceptors(FileInterceptor('photo', chatUploadOptions))
-  @UseFilters(MulterExceptionFilter)
+  @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'image' }))
   sendMessage(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

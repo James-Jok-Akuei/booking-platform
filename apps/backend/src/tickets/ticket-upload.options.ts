@@ -1,5 +1,6 @@
 import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import {
+  MAX_TICKET_ATTACHMENTS,
   TICKET_EXTENSIONS_LABEL,
   TICKET_MIME_TYPES,
 } from '../storage/storage.service';
@@ -21,4 +22,5 @@ import { makeUploadOptions } from '../storage/upload-options';
 export const ticketUploadOptions: MulterOptions = makeUploadOptions(
   TICKET_MIME_TYPES,
   TICKET_EXTENSIONS_LABEL,
+  MAX_TICKET_ATTACHMENTS,
 );

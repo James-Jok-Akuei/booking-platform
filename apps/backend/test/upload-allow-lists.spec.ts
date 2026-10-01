@@ -2,7 +2,11 @@ import { BadRequestException } from '@nestjs/common';
 import { galleryUploadOptions } from '../src/business/gallery-upload.options';
 import { ticketUploadOptions } from '../src/tickets/ticket-upload.options';
 import { chatUploadOptions } from '../src/chat/chat-upload.options';
-import { MAX_UPLOAD_BYTES } from '../src/storage/storage.service';
+import {
+  MAX_TICKET_ATTACHMENTS,
+  MAX_UPLOAD_BYTES,
+} from '../src/storage/storage.service';
+import { MulterExceptionFilter } from '../src/business/filters/multer-exception.filter';
 
 /**
  * §81. Ticket attachments accept more than the gallery does.
@@ -92,7 +96,89 @@ describe('Upload allow-lists (§81)', () => {
   it('shares one size limit across all three', () => {
     for (const options of [galleryUploadOptions, ticketUploadOptions, chatUploadOptions]) {
       expect(options.limits?.fileSize).toBe(MAX_UPLOAD_BYTES);
-      expect(options.limits?.files).toBe(1);
     }
+  });
+
+  describe('how many files (§83)', () => {
+    it('lets a ticket carry several', () => {
+      expect(ticketUploadOptions.limits?.files).toBe(MAX_TICKET_ATTACHMENTS);
+      expect(MAX_TICKET_ATTACHMENTS).toBeGreaterThan(1);
+    });
+
+    it('keeps the gallery and chat at one — a photo replaces a slot', () => {
+      expect(galleryUploadOptions.limits?.files).toBe(1);
+      expect(chatUploadOptions.limits?.files).toBe(1);
+    });
+  });
+});
+
+/**
+ * The filter rewrites multer's unhelpful sentences — and must not touch
+ * anything else. Class-validator throws BadRequestException from these same
+ * routes, so a filter that rewrote every 400 would replace a list of field
+ * errors with a sentence about uploads.
+ */
+describe('Upload error messages (§83)', () => {
+  const run = (filter: MulterExceptionFilter, error: unknown) => {
+    let status = 0;
+    let body: unknown = null;
+    const res = {
+      status(code: number) {
+        status = code;
+        return this;
+      },
+      json(payload: unknown) {
+        body = payload;
+        return this;
+      },
+    };
+    filter.catch(error as never, {
+      switchToHttp: () => ({ getResponse: () => res }),
+    } as never);
+    return { status, body: body as { message: string | string[] } };
+  };
+
+  const ticketFilter = new MulterExceptionFilter({
+    maxFiles: MAX_TICKET_ATTACHMENTS,
+    field: 'attachments',
+    noun: 'file',
+  });
+  const galleryFilter = new MulterExceptionFilter({
+    maxFiles: 1,
+    field: 'file',
+    noun: 'photo',
+  });
+
+  it('names the ticket cap and the field', () => {
+    const { body } = run(ticketFilter, new BadRequestException('Too many files'));
+    expect(body.message).toContain(String(MAX_TICKET_ATTACHMENTS));
+    expect(body.message).toContain('attachments');
+  });
+
+  it('matches multer sentences that carry the field name', () => {
+    const { body } = run(
+      ticketFilter,
+      new BadRequestException('Unexpected field - attachment'),
+    );
+    expect(body.message).toContain('attachments');
+  });
+
+  it('still tells the gallery to send exactly one photo', () => {
+    const { body } = run(galleryFilter, new BadRequestException('Too many files'));
+    expect(body.message).toContain('exactly one photo');
+  });
+
+  it('passes a validation error through untouched', () => {
+    const validation = new BadRequestException({
+      message: ['subject must be longer than or equal to 3 characters'],
+      error: 'Bad Request',
+      statusCode: 400,
+    });
+    const { status, body } = run(ticketFilter, validation);
+
+    expect(status).toBe(400);
+    expect(body.message).toEqual([
+      'subject must be longer than or equal to 3 characters',
+    ]);
   });
 });

@@ -13,6 +13,15 @@ import * as path from 'path';
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15MB
 
 /**
+ * How many files one ticket message may carry (§83).
+ *
+ * Per-file size is still capped at MAX_UPLOAD_BYTES each, so five is also the
+ * multiplier on the worst-case request. A gallery upload stays at one file:
+ * it is one image replacing one slot, not a bundle of evidence.
+ */
+export const MAX_TICKET_ATTACHMENTS = 5;
+
+/**
  * What a **gallery or chat** image may be: jpg / png / webp only.
  *
  * Deliberately narrow and deliberately NOT widened for §81. A gallery is a shop

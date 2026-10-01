@@ -171,7 +171,9 @@ export class BusinessController {
   @Post('locations/:id/gallery')
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
-  @UseFilters(MulterExceptionFilter) // renders the 15MB trip as a clear 400
+  // renders the 15MB trip as a clear 400. An instance, not the class: a
+  // class reference makes Nest try to DI the constructor argument.
+  @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'photo' }))
   uploadPhoto(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

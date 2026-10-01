@@ -11,14 +11,15 @@ import { MAX_UPLOAD_BYTES } from './storage.service';
  * before it can be buffered.
  *
  * A factory rather than one shared object, because §81 gave tickets a wider
- * list than the gallery. The *filter* is still written once — only the set of
- * types differs, which is the only thing that legitimately differs.
+ * list than the gallery and §83 gave them more than one file. The *filter* is
+ * still written once — only the allow-list and the count differ.
  */
 export const makeUploadOptions = (
   allowed: readonly string[],
   label: string,
+  maxFiles = 1,
 ): MulterOptions => ({
-  limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 },
+  limits: { fileSize: MAX_UPLOAD_BYTES, files: maxFiles },
   fileFilter: (_req, file, callback) => {
     if (!allowed.includes(file.mimetype)) {
       callback(

@@ -7888,3 +7888,90 @@ The admin console keeps the raw status names. Those are the enum, read by people
 who work the queue daily, and renaming them there would only put a translation
 layer between an admin and the transition table.
 
+## 83. Several files, listed before they are sent
+
+Reported from use: *"after choosing another image or file, it seems like it
+replaces the previous one"*, and that **"attach a screenshot"** was the wrong
+words now that a ticket takes PDFs and spreadsheets.
+
+Both were right. The second was my wording left over from §80, when a
+screenshot was all it took.
+
+### 83.1 The replacement was real, and was in the client
+
+`TicketAttachment` has always been a one-to-many on ticket and message, and
+`StorageService.upload` never cared how many times it was called. The ceiling
+was `FileInterceptor` with `limits.files: 1`, and above that a client holding a
+single `File` in state. A fresh `<input type="file">` reports only its own
+latest selection, so picking a second file genuinely discarded the first.
+
+State is now a list and each selection is appended. `FilesInterceptor(
+'attachments', MAX_TICKET_ATTACHMENTS, …)` collects them, and `attach()` loops.
+
+**Five per message.** Each is still capped at 15MB separately, so five is also
+the multiplier on the worst-case request. The gallery and chat stay at one: a
+gallery photo replaces a slot, it is not a bundle of evidence.
+
+### 83.2 Sequential uploads, on purpose
+
+`attach()` awaits each file rather than `Promise.all`. The rows are read back in
+insert order, so uploading in parallel would list a reporter's files in whatever
+order the storage driver happened to finish them — and the order someone
+attaches evidence in is usually the order they want it read. Five files is not
+a load worth racing.
+
+### 83.3 The list is the feature
+
+Chosen files are shown before sending, each with its size and its own
+**remove**. Three things only become possible once the list is visible:
+
+- **Duplicates are refused by name and size.** The same file twice is the
+  picker being reopened, not a second attachment.
+- **The input is cleared after every selection.** Without it, removing a file
+  and choosing it again fires no `change` event, and the control silently does
+  nothing — the original complaint, in a new place.
+- **Every refusal names its file.** Rejections are a list, not one message, so
+  "three added, this one was too big" is sayable.
+
+### 83.4 Wording
+
+"Attach a screenshot" → **"Attach a file"**, then "Add another file". The field
+heading is now *"Anything that shows the problem"*, which is what the field is
+for and does not promise a format.
+
+### 83.5 The error filter had to become per-endpoint
+
+`MulterExceptionFilter` hardcoded *"the maximum **photo** size"* and *"Upload
+exactly one file, under the field name `file`"*. Both were wrong for tickets
+the moment this landed, and it was not catching the count error at all —
+`platform-express` maps LIMIT_FILE_COUNT to a plain `BadRequestException`
+reading "Too many files", which the filter did not catch.
+
+It now takes its limits per endpoint, so a ticket is told "Up to 5 … under the
+field name `attachments`" and the gallery still says "exactly one photo".
+
+Two traps, both found by running it:
+
+- **It must catch `BadRequestException` narrowly.** Class-validator throws the
+  same type from the same routes. Anything that is not one of multer's own
+  sentences is re-emitted byte for byte — otherwise a list of field errors
+  becomes one sentence about uploads. A test asserts a validation error
+  survives untouched.
+- **Match multer's sentences by prefix.** It appends the field to some of them
+  ("Unexpected field - attachment"), so equality missed the case and left the
+  raw message in place.
+
+Nest also DI-instantiates a filter passed to `@UseFilters` as a *class*, and
+reads a defaulted constructor argument as a dependency it must resolve — the
+app refused to boot until every call site passed an instance.
+
+### 83.6 Verified
+
+Against the running server: a ticket raised with three files at once, a reply
+carrying two more, all read back **in submission order** with the right
+extensions; six refused naming the cap; exactly five accepted; one bad file
+among good ones refused for the whole request; a JSON reply with no files still
+accepted; the gallery still refusing a second file as a photo.
+
+**1043 passing across 27 suites.**
+
