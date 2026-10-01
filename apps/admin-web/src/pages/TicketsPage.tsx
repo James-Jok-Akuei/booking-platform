@@ -8,6 +8,7 @@ import {
   listTickets,
   replyToTicket,
   setTicketStatus,
+  type TicketAttachment,
   type TicketStatus,
 } from '../api/admin';
 
@@ -119,6 +120,19 @@ export function TicketsPage() {
   );
 }
 
+function Attachments({ files }: { files: TicketAttachment[] }) {
+  if (files.length === 0) return null;
+  return (
+    <div className="attachments">
+      {files.map((file) => (
+        <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="small">
+          View attachment ({Math.max(1, Math.round(file.sizeBytes / 1024))} KB)
+        </a>
+      ))}
+    </div>
+  );
+}
+
 function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -195,8 +209,23 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
                   {data.reporterType.toLowerCase()} · opened {when(data.createdAt)}
                 </p>
               </div>
-              <button type="button" className="link" onClick={onClose}>
-                Close
+              {/* An X, not the word "Close" — the status action below is also
+                  "Close", and the two mean very different things. */}
+              <button
+                type="button"
+                className="icon-button"
+                onClick={onClose}
+                aria-label="Close this panel"
+                title="Close this panel"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M4 4l8 8M12 4l-8 8"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </button>
             </header>
 
@@ -241,7 +270,7 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
             )}
 
             <div className="thread">
-              {data.messages.map((message) => (
+              {data.messages.map((message, index) => (
                 <div
                   key={message.id}
                   className={message.isInternal ? 'message internal' : 'message'}
@@ -252,6 +281,8 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
                     {message.isInternal && <strong> · internal note</strong>}
                   </div>
                   <p>{message.body}</p>
+                  <Attachments files={message.attachments} />
+                  {index === 0 && <Attachments files={data.attachments} />}
                 </div>
               ))}
             </div>

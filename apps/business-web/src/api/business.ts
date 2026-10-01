@@ -360,3 +360,102 @@ export const getBalance = (businessId: string) =>
 
 export const listMyPayouts = (businessId: string) =>
   api<{ total: number; payouts: Payout[] }>(`/businesses/${businessId}/payouts`);
+
+// ---------------------------------------------------------------------------
+// Support tickets (§80)
+//
+// The reporter side of the same tickets the admin console answers. Internal
+// admin notes are excluded by the server's query, so nothing here can leak one.
+// ---------------------------------------------------------------------------
+
+export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+
+export type TicketCategory =
+  | 'APPOINTMENT_DISPUTE'
+  | 'PAYMENT_ISSUE'
+  | 'TECHNICAL_ISSUE'
+  | 'ACCOUNT_ISSUE'
+  | 'OTHER';
+
+/** The wording a business sees. The enum is shared; these labels are not. */
+export const TICKET_CATEGORIES: Array<{ value: TicketCategory; label: string }> = [
+  { value: 'PAYMENT_ISSUE', label: 'Getting paid' },
+  { value: 'APPOINTMENT_DISPUTE', label: 'A booking or a customer' },
+  { value: 'ACCOUNT_ISSUE', label: 'My account or business profile' },
+  { value: 'TECHNICAL_ISSUE', label: 'Something is broken' },
+  { value: 'OTHER', label: 'Something else' },
+];
+
+export interface TicketAttachment {
+  id: string;
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export interface TicketMessage {
+  id: string;
+  body: string;
+  authorType: 'REPORTER' | 'ADMIN' | 'SYSTEM';
+  createdAt: string;
+  attachments: TicketAttachment[];
+}
+
+export interface Ticket {
+  id: string;
+  reference: string;
+  category: TicketCategory;
+  subject: string;
+  status: TicketStatus;
+  resolutionNote: string | null;
+  resolvedAt: string | null;
+  reopenCount: number;
+  lastMessageAt: string | null;
+  createdAt: string;
+  /**
+   * A file sent when the ticket was RAISED hangs off the ticket, not off the
+   * opening message — verified against the running server. A reply's file
+   * hangs off that message instead, so both places have to be rendered.
+   */
+  attachments: TicketAttachment[];
+}
+
+export interface TicketDetail extends Ticket {
+  messages: TicketMessage[];
+}
+
+/** How long after being resolved a ticket can still be reopened (§24.3). */
+export const REOPEN_WINDOW_DAYS = 14;
+
+export const listMyTickets = (params: { status?: TicketStatus } = {}) =>
+  api<{ total: number; tickets: Ticket[] }>('/tickets', { query: params });
+
+export const getMyTicket = (id: string) => api<TicketDetail>(`/tickets/${id}`);
+
+/**
+ * Multipart, because the screenshot is optional but the endpoint is the same
+ * either way — sending FormData with no file is a valid request.
+ */
+export const raiseTicket = (input: {
+  category: TicketCategory;
+  subject: string;
+  body: string;
+  attachment?: File | null;
+}) => {
+  const form = new FormData();
+  form.set('category', input.category);
+  form.set('subject', input.subject);
+  form.set('body', input.body);
+  if (input.attachment) form.set('attachment', input.attachment);
+  return api<Ticket>('/tickets', { method: 'POST', body: form });
+};
+
+export const replyToMyTicket = (id: string, body: string, attachment?: File | null) => {
+  const form = new FormData();
+  form.set('body', body);
+  if (attachment) form.set('attachment', attachment);
+  return api<TicketMessage>(`/tickets/${id}/messages`, { method: 'POST', body: form });
+};
+
+export const reopenMyTicket = (id: string) =>
+  api<Ticket>(`/tickets/${id}/reopen`, { method: 'POST' });

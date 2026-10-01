@@ -152,14 +152,21 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     }
   }
 
+  // FormData goes through untouched: the browser has to set Content-Type
+  // itself so the multipart boundary matches the body it writes. Setting it
+  // here would produce a boundary-less header the server cannot parse.
+  const isForm = body instanceof FormData;
+
   const send = async (token: string | null): Promise<Response> =>
     fetch(url.toString(), {
       method,
       headers: {
-        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      ...(body !== undefined
+        ? { body: isForm ? (body as FormData) : JSON.stringify(body) }
+        : {}),
     });
 
   let response = await send(anonymous ? null : tokens.access);

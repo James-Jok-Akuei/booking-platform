@@ -7697,3 +7697,81 @@ harness now filters by subject and requires the mail to postdate the request.
 A test fixture that picks the wrong six digits fails in a way that looks like
 a broken endpoint.
 
+## 80. A business can raise a ticket, and an X that means "close the panel"
+
+§79 gave admins somewhere to answer tickets. Only customers could raise one, so
+the console answered half the people who need it. A business with a missing
+payout had no route to us at all.
+
+### 80.1 The X
+
+The ticket drawer's dismiss control read "Close", directly above a status button
+also reading "Close" that ends the ticket for everyone. Two very different acts,
+one word, fourteen pixels apart.
+
+The dismiss control is now an X with `aria-label="Close this panel"`. The word
+"Close" is left to mean the status transition, which is the one that is hard to
+undo.
+
+### 80.2 `/help`, not "Support"
+
+In the admin console the section is **Support** — the queue you work. In the
+business app it is **Help** — the thing you ask for. Same tickets, opposite
+sides, and naming both after the admin's word would describe the business's own
+problem from our side of the desk.
+
+The statuses are relabelled for the same reason. `OPEN` reads to a business like
+something *they* must act on, when it means the opposite, so it reads **"Waiting
+for us"**. `IN_PROGRESS` → "Being looked at". Each carries a sentence saying what
+it means for them. The categories get their words too: `PAYMENT_ISSUE` is
+**"Getting paid"**, matching the nav item where they noticed the problem.
+
+### 80.3 Reopen is here, because this is the side that may
+
+§79.1 left reopening out of the admin console deliberately — only the reporter
+may. This is the reporter, so the button exists, worded **"This is not fixed"**
+rather than "Reopen", which is the thought they actually have.
+
+Past the window the button is replaced by the reason it is gone. The client
+checks the window only to decide what to show; the server enforces it.
+
+### 80.4 Attachments: the shape was not what I assumed
+
+I typed `attachmentUrl?: string` on a message. The live API disagreed, and an
+optional field that is never populated renders nothing and reports no error —
+it would have looked like a backend that drops screenshots.
+
+What it actually does: a file sent **when the ticket is raised** hangs off the
+*ticket* (`ticket.attachments`); a file sent with a **reply** hangs off that
+*message*. Both are `{id, url, mimeType, sizeBytes}` arrays. Both are now
+rendered, in both apps — the ticket-level one against the opening message, where
+a reader expects to find it.
+
+This also closed a gap in §79: the admin drawer showed no attachments at all, so
+a screenshot could be sent and never seen by the person answering.
+
+### 80.5 FormData through the shared client
+
+`api()` JSON-stringified every body. It now passes `FormData` through untouched
+and omits `Content-Type`, because the browser has to set it itself for the
+multipart boundary to match the body it writes. Setting that header by hand
+produces a boundary-less request the server cannot parse.
+
+Limits are the gallery's, unchanged: JPG/PNG/WebP, 15MB (§10.6).
+
+### 80.6 Verified end to end against the running server
+
+A business raised TKT-000006 as multipart with a real PNG; `reporterType` came
+back `BUSINESS`, derived from the token rather than the payload. Then: admin saw
+it, assigned, replied publicly and left an internal note, resolved it with a
+note; the business read the thread, saw the public reply and **not** the
+internal note, and reopened it — `reopenCount` 1.
+
+Refusals confirmed, not assumed: reopening a non-RESOLVED ticket gives
+*"Only a RESOLVED ticket can be reopened. This one is IN_PROGRESS."*, and a
+business reading a customer's ticket gets **404, not 403**, as §12 requires.
+
+Ticket pill classes are namespaced `tkt-*`. The business app already had
+`.pill.in-progress` for appointments; reusing it would have had two unrelated
+meanings share a colour, and whichever page was styled second would win.
+

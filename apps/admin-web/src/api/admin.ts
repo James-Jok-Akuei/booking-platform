@@ -328,6 +328,13 @@ export type TicketCategory =
   | 'ACCOUNT_ISSUE'
   | 'OTHER';
 
+export interface TicketAttachment {
+  id: string;
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
 export interface TicketMessage {
   id: string;
   body: string;
@@ -336,6 +343,7 @@ export interface TicketMessage {
   /** An internal note. Never shown to the reporter — excluded by their query. */
   isInternal: boolean;
   author: { id: string; email: string; role: string } | null;
+  attachments: TicketAttachment[];
 }
 
 export interface Ticket {
@@ -355,6 +363,9 @@ export interface Ticket {
   reopenCount: number;
   lastMessageAt: string | null;
   createdAt: string;
+  /** A file sent when the ticket was raised hangs off the ticket, not off the
+   *  opening message; a reply's file hangs off that message. Both get shown. */
+  attachments: TicketAttachment[];
 }
 
 export interface TicketDetail extends Ticket {
