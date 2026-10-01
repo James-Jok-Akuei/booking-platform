@@ -321,3 +321,11 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 
 .three-up { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 13px; }
 @media (max-width: 620px) { .three-up { grid-template-columns: 1fr; } }
+
+.reviews { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.review { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 14px 16px; }
+.review-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.rating { color: var(--warn); letter-spacing: 1px; }
+.review-text { margin: 7px 0 0; white-space: pre-wrap; }
+.reply-shown { margin-top: 11px; padding-left: 12px; border-left: 3px solid var(--accent); }
+.reply-shown p { margin: 3px 0 5px; white-space: pre-wrap; }

@@ -8492,3 +8492,51 @@ All five server refusals confirmed, deleting another location's exception is a
 404, and removing each row put the slots back exactly as they were. Test rows
 were deleted afterwards; the seeded demo exception is the only one left.
 
+## 92. Reviews, and the one reply a business gets
+
+Item 4 of the wiring plan. The third in a row where the backend was complete and
+only the screen was missing — a bad review sat unanswered forever, and the
+business could not even read it.
+
+### 92.1 Any active member may reply
+
+Not owner-only. Replying to a customer is day-to-day work rather than
+configuration, which is how the server has it: `BusinessRolesGuard` with no
+`@BusinessRoles`, putting it with the STAFF-permitted actions. The screen
+follows rather than inventing a stricter rule.
+
+### 92.2 The page shows exactly what a customer sees
+
+Hidden reviews are excluded **in the query**, for every viewer including the
+business. So a review an admin has hidden is simply absent here, and nothing on
+this screen can disagree with the public listing.
+
+The byline is the display name and nothing else — never an id or an email, which
+a viewer entitled to identity gets through a separate select. Confirmed from an
+anonymous request: no `customer` object in any row.
+
+### 92.3 One reply, editable for a week
+
+A second reply is a **409** — *"Edit it instead of posting a second one."* So the
+page never offers one: once a reply exists it shows the reply with an **Edit**
+control, not an empty box.
+
+That control disappears after `REVIEW_EDIT_WINDOW_DAYS` and says why, rather
+than offering an edit the server answers with a 400.
+
+### 92.4 Small things the screen does
+
+A **"waiting for a reply"** count beside the rating, because the useful question
+is not what the average is but which reviews still need an answer.
+
+The reply placeholder changes with the rating: at two stars or below it reads
+*"A calm, specific reply does more for the next reader than for this one."*
+A reply to a bad review is read mostly by people deciding whether to book.
+
+### 92.5 Verified
+
+Replied to a real 2-star review; a second reply refused with 409; the edit
+succeeded and set `responseEditedAt`; editing a review with no reply refused
+with 400; **another business replying to it got 404**, not 403. The public
+listing, fetched with no token, shows the new reply and leaks no identity.
+

@@ -710,3 +710,55 @@ export const deleteTimeBlock = (locationId: string, blockId: string) =>
   api<{ message: string }>(`/business/locations/${locationId}/time-blocks/${blockId}`, {
     method: 'DELETE',
   });
+
+// ---------------------------------------------------------------------------
+// Reviews, and the one reply a business gets (§92)
+// ---------------------------------------------------------------------------
+
+export interface Review {
+  id: string;
+  rating: number;
+  comment: string | null;
+  /** Set when the customer changed their review — context a reply needs. */
+  editedAt: string | null;
+  responseText: string | null;
+  responseAt: string | null;
+  responseEditedAt: string | null;
+  createdAt: string;
+  locationId: string;
+  /** Never the customer's id or email: only the name they chose to show. */
+  displayName: string;
+}
+
+export interface ReviewPage {
+  locationId: string;
+  ratingAvg: number | null;
+  ratingCount: number;
+  total: number;
+  limit: number;
+  offset: number;
+  reviews: Review[];
+}
+
+/** How long a reply stays editable after it is posted. */
+export const REVIEW_EDIT_WINDOW_DAYS = 7;
+
+/**
+ * Hidden reviews are excluded by the server for everyone, the business
+ * included — so this is what the public sees, which is the point.
+ */
+export const listLocationReviews = (locationId: string, limit = 50) =>
+  api<ReviewPage>(`/locations/${locationId}/reviews`, { query: { limit } });
+
+/** One reply per review. A second is refused; edit the first instead. */
+export const respondToReview = (reviewId: string, responseText: string) =>
+  api<Review>(`/reviews/${reviewId}/response`, {
+    method: 'POST',
+    body: { responseText },
+  });
+
+export const updateReviewResponse = (reviewId: string, responseText: string) =>
+  api<Review>(`/reviews/${reviewId}/response`, {
+    method: 'PATCH',
+    body: { responseText },
+  });

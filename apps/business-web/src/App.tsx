@@ -8,6 +8,7 @@ import { HoursPage } from './pages/HoursPage';
 import { GettingPaidPage } from './pages/PayoutsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ClosuresPage } from './pages/ClosuresPage';
+import { ReviewsPage } from './pages/ReviewsPage';
 import { StaffPage } from './pages/StaffPage';
 import { SupportPage } from './pages/SupportPage';
 
@@ -29,6 +30,7 @@ export function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/people" element={<StaffPage />} />
         <Route path="/closures" element={<ClosuresPage />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/help" element={<SupportPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/appointments" replace />} />
