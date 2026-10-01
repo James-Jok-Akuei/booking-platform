@@ -23,13 +23,44 @@ import {
  * What a business is told each status means.
  *
  * The enum names are ours, not theirs: "OPEN" reads like a thing they must act
- * on, when it actually means the opposite — they are waiting on us.
+ * on, when it actually means the opposite — they are waiting on support.
+ *
+ * ~~"Waiting for us"~~ (§80.2) said "us" to a business reading their own
+ * screen, where "us" is most naturally *them*. "Support" cannot be misread as
+ * their own team, and stays right once they have staff with their own logins.
+ *
+ * `short` is for the list, `hint` for the open ticket. Both exist because the
+ * list previously showed a label with no explanation anywhere near it, which
+ * is how the ambiguity went unnoticed.
  */
-const STATUS: Record<TicketStatus, { label: string; hint: string; tone: string }> = {
-  OPEN: { label: 'Waiting for us', hint: 'We have it. Nobody has picked it up yet.', tone: 'tkt-open' },
-  IN_PROGRESS: { label: 'Being looked at', hint: 'Someone is working on this.', tone: 'tkt-active' },
-  RESOLVED: { label: 'Resolved', hint: 'We think this is sorted.', tone: 'tkt-resolved' },
-  CLOSED: { label: 'Closed', hint: 'Finished. Raise a new one if it comes back.', tone: 'tkt-closed' },
+const STATUS: Record<
+  TicketStatus,
+  { label: string; short: string; hint: string; tone: string }
+> = {
+  OPEN: {
+    label: 'Waiting for support',
+    short: 'Nobody has picked it up yet',
+    hint: 'We have it. Nobody has picked it up yet.',
+    tone: 'tkt-open',
+  },
+  IN_PROGRESS: {
+    label: 'Being looked at',
+    short: 'Someone is on it',
+    hint: 'Someone is working on this.',
+    tone: 'tkt-active',
+  },
+  RESOLVED: {
+    label: 'Resolved',
+    short: `You can reopen it for ${REOPEN_WINDOW_DAYS} days`,
+    hint: 'We think this is sorted.',
+    tone: 'tkt-resolved',
+  },
+  CLOSED: {
+    label: 'Closed',
+    short: 'Finished',
+    hint: 'Finished. Raise a new one if it comes back.',
+    tone: 'tkt-closed',
+  },
 };
 
 /**
@@ -97,9 +128,12 @@ export function SupportPage() {
                     {ticket.reference} · last activity {when(ticket.lastMessageAt ?? ticket.createdAt)}
                   </div>
                 </div>
-                <span className={`pill ${STATUS[ticket.status].tone}`}>
-                  {STATUS[ticket.status].label}
-                </span>
+                <div className="row-status">
+                  <span className={`pill ${STATUS[ticket.status].tone}`}>
+                    {STATUS[ticket.status].label}
+                  </span>
+                  <span className="muted small">{STATUS[ticket.status].short}</span>
+                </div>
               </button>
             </li>
           ))}

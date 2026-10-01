@@ -7856,3 +7856,35 @@ which is why the bug survived until someone tried to attach a statement.
 
 **1037 passing across 27 suites.**
 
+## 82. "Waiting for support", because "us" is whoever is reading
+
+Asked from use: *"what does 'waiting for us' mean"*. That question is the whole
+finding — a status label nobody can read without asking has failed.
+
+### 82.1 ~~§80.2: OPEN reads "Waiting for us"~~ — superseded
+
+§80.2 relabelled the statuses for the asking side, reasoning that `OPEN` sounds
+like a task on the business's desk when it means the opposite. That was right
+about the problem and wrong about the fix: on a screen a business is reading
+about their own ticket, **"us" is most naturally them**. The label swapped one
+ambiguity for another.
+
+`OPEN` now reads **"Waiting for support"**. "Support" cannot be read as the
+business's own team, and it stays accurate once a business has staff with their
+own logins — at which point "us" would have been wrong in a second way.
+
+### 82.2 The explanation belongs next to the label
+
+The clarifying sentence existed, and only inside the opened ticket. The list —
+the screen where the question was actually asked — showed a bare pill.
+
+Each row now carries a short line under its status: *"Nobody has picked it up
+yet"*, *"Someone is on it"*, *"You can reopen it for 14 days"*. Two strings per
+status rather than one, because a table row and an open ticket have different
+amounts of room, and the previous single string fit neither place well enough
+to be read.
+
+The admin console keeps the raw status names. Those are the enum, read by people
+who work the queue daily, and renaming them there would only put a translation
+layer between an admin and the transition table.
+
