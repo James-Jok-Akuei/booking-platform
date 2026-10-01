@@ -234,7 +234,27 @@ export class BusinessController {
     return this.services.update(user.userId, id, dto);
   }
 
-  /** Soft delete: flips isActive to false so past appointments still resolve. */
+  /**
+   * Stops offering a service at ONE branch (§73).
+   *
+   * Separate route from retiring, because they are different decisions: this is
+   * "not at that shop", and the one below is "we have stopped doing this at
+   * all". Withdrawing from the last branch does both, and says so.
+   */
+  @Delete('services/:id/locations/:locationId')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  removeServiceFromLocation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('locationId', ParseUUIDPipe) locationId: string,
+  ) {
+    return this.services.removeFromLocation(user.userId, id, locationId);
+  }
+
+  /**
+   * Retires a service EVERYWHERE. Soft delete: flips isActive to false so past
+   * appointments still resolve.
+   */
   @Delete('services/:id')
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   deleteService(

@@ -599,7 +599,39 @@
             "description": ""
           }
         },
-        "summary": "Soft delete: flips isActive to false so past appointments still resolve.",
+        "summary": "Retires a service EVERYWHERE. Soft delete: flips isActive to false so past\nappointments still resolve.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/services/{id}/locations/{locationId}": {
+      "delete": {
+        "operationId": "BusinessController_removeServiceFromLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Stops offering a service at ONE branch (§73).\n\nSeparate route from retiring, because they are different decisions: this is\n\"not at that shop\", and the one below is \"we have stopped doing this at\nall\". Withdrawing from the last branch does both, and says so.",
         "tags": [
           "Business"
         ]

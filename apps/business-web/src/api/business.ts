@@ -229,7 +229,19 @@ export const updateService = (
   }>,
 ) => api<Service>(`/business/services/${id}`, { method: 'PATCH', body });
 
-/** Soft delete: past appointments still resolve to the service they were for. */
+/**
+ * Stops offering a service at ONE branch (§73).
+ *
+ * Withdrawing from the last branch retires the service outright — `retired`
+ * says whether that happened, so the caller can report it rather than guess.
+ */
+export const removeServiceFromLocation = (id: string, locationId: string) =>
+  api<{ message: string; retired: boolean; service: Service }>(
+    `/business/services/${id}/locations/${locationId}`,
+    { method: 'DELETE' },
+  );
+
+/** Retires everywhere. Past appointments still resolve to what was booked. */
 export const retireService = (id: string) =>
   api<void>(`/business/services/${id}`, { method: 'DELETE' });
 

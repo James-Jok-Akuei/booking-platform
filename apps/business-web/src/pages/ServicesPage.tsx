@@ -5,6 +5,7 @@ import {
   createService,
   listLocations,
   listServices,
+  removeServiceFromLocation,
   retireService,
   updateService,
   type Location,
@@ -41,6 +42,21 @@ export function ServicesPage() {
 
   const retire = useMutation({ mutationFn: retireService, onSuccess: refresh });
 
+  /**
+   * Withdrawing from one branch. Separate from retiring, because they are
+   * different decisions — "not at that shop" and "we have stopped doing this".
+   */
+  const withdraw = useMutation({
+    mutationFn: (input: { id: string; locationId: string }) =>
+      removeServiceFromLocation(input.id, input.locationId),
+    onSuccess: (result) => {
+      // The server says whether that was the last branch; repeating its own
+      // sentence is better than inferring it here and getting it half right.
+      if (result.retired) window.alert(result.message);
+      refresh();
+    },
+  });
+
   const active = services.data?.filter((s) => s.isActive) ?? [];
   const retired = services.data?.filter((s) => !s.isActive) ?? [];
 
@@ -61,10 +77,10 @@ export function ServicesPage() {
         directly.
       </p>
 
-      {(save.error || retire.error) && (
+      {(save.error || retire.error || withdraw.error) && (
         <p className="error" role="alert">
-          {(save.error ?? retire.error) instanceof ApiError
-            ? (save.error ?? retire.error)!.message
+          {(save.error ?? retire.error ?? withdraw.error) instanceof ApiError
+            ? (save.error ?? retire.error ?? withdraw.error)!.message
             : 'That did not work.'}
         </p>
       )}
@@ -98,8 +114,23 @@ export function ServicesPage() {
                 service={service}
                 money={money}
                 locations={locations.data ?? []}
-                busy={save.isPending || retire.isPending}
+                busy={save.isPending || retire.isPending || withdraw.isPending}
                 onSave={(body) => save.mutate({ id: service.id, body })}
+                onWithdraw={(locationId) => {
+                  const offer = service.locations.find((o) => o.locationId === locationId);
+                  const last = service.locations.length === 1;
+                  if (
+                    window.confirm(
+                      last
+                        ? `"${service.name}" is only offered at ${offer?.location.name}. ` +
+                          'Removing it there retires the service everywhere.'
+                        : `Stop offering "${service.name}" at ${offer?.location.name}? ` +
+                          'It stays on sale at your other branches.',
+                    )
+                  ) {
+                    withdraw.mutate({ id: service.id, locationId });
+                  }
+                }}
                 onRetire={() => {
                   if (
                     window.confirm(
@@ -281,6 +312,7 @@ function ServiceRow({
   busy,
   onSave,
   onRetire,
+  onWithdraw,
 }: {
   service: Service;
   money: ReturnType<typeof useMoney>;
@@ -288,6 +320,7 @@ function ServiceRow({
   busy: boolean;
   onSave: (body: Record<string, unknown>) => void;
   onRetire: () => void;
+  onWithdraw: (locationId: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -333,9 +366,21 @@ function ServiceRow({
           <span className="error small">Offered nowhere</span>
         ) : (
           service.locations.map((offer) => (
-            <div key={offer.locationId}>
+            <div key={offer.locationId} className="branch-line">
               {money.format(offer.priceMinor)}
               <span className="muted small"> · {offer.location.name}</span>
+              {/* Withdrawing from a branch sits next to that branch's price,
+                  not in the row's shared actions — it is a decision about one
+                  shop, and a single Retire button could only mean all of them. */}
+              <button
+                type="button"
+                className="link danger-link tiny"
+                disabled={busy}
+                onClick={() => onWithdraw(offer.locationId)}
+                title={`Stop offering at ${offer.location.name}`}
+              >
+                remove
+              </button>
             </div>
           ))
         )}
@@ -352,7 +397,7 @@ function ServiceRow({
           Edit
         </button>
         <button type="button" className="link danger-link" disabled={busy} onClick={onRetire}>
-          Retire
+          Retire everywhere
         </button>
       </td>
     </tr>

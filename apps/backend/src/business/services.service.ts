@@ -177,12 +177,75 @@ export class ServicesService {
   }
 
   /**
-   * Soft delete — flips isActive to false, never removes the row.
+   * Stops offering a service at ONE branch (§73).
    *
-   * Appointments will reference serviceId, and a completed booking has to keep
-   * resolving to the service name and price it was made at long after the
-   * business stops offering it. A hard delete would either orphan those records
-   * or cascade away booking history.
+   * The branch-scoped counterpart to retiring. Since §72 a service is sold
+   * where it has an offer row, so withdrawing it from a branch is deleting that
+   * row — the service carries on everywhere else, at everywhere else's prices.
+   *
+   * Deleting the offer rather than flagging it is deliberate, for the reason
+   * §72.1 gave: the service already has `isActive` for "we have stopped doing
+   * this at all", and a second disabled-but-present state would be a second way
+   * to express the same thing. History is safe regardless — an appointment
+   * snapshots its price at booking (§30), so a past booking at a branch that no
+   * longer offers the service still resolves.
+   *
+   * Withdrawing from the LAST branch retires the service outright. A service
+   * that is active but sold nowhere is bookable by nobody while still claiming
+   * to be on offer, and leaving that state reachable from the obvious action
+   * would make "active" mean two different things.
+   */
+  async removeFromLocation(userId: string, serviceId: string, locationId: string) {
+    const businessId = await this.access.requireBusinessId(userId);
+    await this.requireOwned(businessId, serviceId);
+
+    const offer = await this.prisma.serviceLocation.findUnique({
+      where: { serviceId_locationId: { serviceId, locationId } },
+    });
+    if (!offer) {
+      throw new NotFoundException('That service is not offered at that branch.');
+    }
+
+    const remaining = await this.prisma.serviceLocation.count({ where: { serviceId } });
+    const wasLast = remaining === 1;
+
+    const service = await this.prisma.$transaction(async (tx) => {
+      await tx.serviceLocation.delete({
+        where: { serviceId_locationId: { serviceId, locationId } },
+      });
+
+      const updated = await tx.service.update({
+        where: { id: serviceId },
+        data: wasLast ? { isActive: false } : {},
+        include: SERVICE_INCLUDE,
+      });
+
+      // The branch must stop advertising it immediately (§44).
+      await recalculateFromPrice(tx, businessId);
+      return updated;
+    });
+
+    return {
+      message: wasLast
+        ? 'That was the only branch offering it, so the service is now retired. ' +
+          'Add it to a branch again to bring it back.'
+        : 'No longer offered at that branch. It is unchanged everywhere else.',
+      retired: wasLast,
+      service,
+    };
+  }
+
+  /**
+   * Retires a service EVERYWHERE — a soft delete that flips isActive, never
+   * removing the row.
+   *
+   * The whole-business counterpart to `removeFromLocation`: this is "we have
+   * stopped doing this at all", not "not at that shop".
+   *
+   * Appointments reference serviceId, and a completed booking has to keep
+   * resolving to the service it was made for long after the business stops
+   * offering it. A hard delete would either orphan those records or cascade
+   * away booking history.
    */
   async deactivate(userId: string, serviceId: string) {
     const businessId = await this.access.requireBusinessId(userId);

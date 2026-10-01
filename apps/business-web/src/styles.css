@@ -220,3 +220,6 @@ input[type='time'] { width: 110px; }
 .branch-price { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .branch-price span { min-width: 150px; color: var(--ink); }
 .branch-price input { width: 120px; }
+
+.branch-line { display: flex; align-items: baseline; gap: 6px; }
+button.tiny { font-size: 11px; }

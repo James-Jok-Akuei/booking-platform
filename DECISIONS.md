@@ -7311,3 +7311,64 @@ field would imply they can be set independently.
 A service offered nowhere is labelled **"Offered nowhere"** in red rather than
 showing an empty price column, because in the catalogue and bookable by nobody
 is a state worth noticing.
+
+---
+
+## 73. Withdrawing a service from one branch (2026-10-01)
+
+§72 made a service offered at chosen branches at each branch's price, but
+retiring it was still all-or-nothing. A chain that stops doing beard trims at
+one shop had to retire the service everywhere and recreate it — which produces a
+second service with the same name and a different id, and detaches the history.
+
+`DELETE /business/services/:id/locations/:locationId` is the branch-scoped
+counterpart to `DELETE /business/services/:id`. Two routes, because they are two
+decisions: **"not at that shop"** and **"we have stopped doing this at all"**.
+
+### 73.1 Deleting the offer, not flagging it
+
+The withdrawal deletes the `ServiceLocation` row rather than disabling it, for
+the reason §72.1 gave: the service already has `isActive` for retirement, and a
+second disabled-but-present state would be a second way to express the same
+thing — the arrangement where one of them eventually gets forgotten.
+
+History is safe regardless. An appointment snapshots its price at booking (§30),
+so a past booking at a branch that no longer offers the service still resolves
+to what was actually agreed.
+
+### 73.2 Withdrawing from the last branch retires the service
+
+A service that is active but sold nowhere is bookable by nobody while still
+claiming to be on offer. Leaving that state reachable from the obvious action
+would make `isActive` mean two different things.
+
+So the last withdrawal flips `isActive` too, and the response says which
+happened — `retired: true` with a sentence explaining it, rather than leaving a
+client to infer it from an empty array. The business app repeats the server's
+own sentence instead of composing its own, which would be half right.
+
+The "offered nowhere" state still exists and the UI still labels it: deleting a
+LOCATION cascades its offers away, so a service can be orphaned by a branch
+closing rather than by this action.
+
+### 73.3 Where the control lives
+
+In the business app the **remove** link sits beside each branch's price, not in
+the row's shared actions. Withdrawing is a decision about one shop, and a single
+button in a row of actions could only plausibly mean all of them. The row's
+shared action is now labelled **"Retire everywhere"** for the same reason.
+
+### 73.4 Verified
+
+Five new tests, and live against the backend:
+
+- Withdrawing Haircut from Nyarugenge left it on sale at Kimironko, and moved
+  Nyarugenge's headline price from 7,000 to **8,000** — the next cheapest thing
+  that branch sells.
+- `retired: false`, with the service unchanged elsewhere.
+- Withdrawing the only branch returns `retired: true` and `isActive: false`.
+- A branch that was not offering it: *"That service is not offered at that
+  branch."*
+- Another business's service is refused.
+
+**993 passing across 26 suites.** Demo data restored to 7,000 / 5,000.

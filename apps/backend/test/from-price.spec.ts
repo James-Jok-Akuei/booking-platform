@@ -285,6 +285,87 @@ describe('Denormalised fromPriceMinor (§44)', () => {
     });
   });
 
+  describe('withdrawing a service from ONE branch (§73)', () => {
+    it('leaves it on sale everywhere else, at their prices', async () => {
+      await addBranches(business, 1);
+      const [first, second] = await locationIdsOf(business.businessId);
+      const service = await services.create(business.userId, {
+        name: 'Two prices',
+        durationMinutes: 30,
+        depositPercentage: 20,
+        offers: [
+          { locationId: first, priceMinor: 1000 },
+          { locationId: second, priceMinor: 2000 },
+        ],
+      });
+
+      const result = await services.removeFromLocation(
+        business.userId,
+        service.id,
+        first,
+      );
+
+      expect(result.retired).toBe(false);
+      expect(result.service.isActive).toBe(true);
+      expect(result.service.locations).toHaveLength(1);
+      expect(result.service.locations[0].locationId).toBe(second);
+    });
+
+    it('moves that branch back to its next cheapest', async () => {
+      await addBranches(business, 1);
+      const [first] = await locationIdsOf(business.businessId);
+      const cheap = await newService(business, 900, 'Cheap');
+
+      await services.removeFromLocation(business.userId, cheap.id, first);
+
+      const row = await prisma.location.findUniqueOrThrow({ where: { id: first } });
+      // 4500 is the factory service, still offered here.
+      expect(row.fromPriceMinor).toBe(4500);
+    });
+
+    /**
+     * A service active but sold nowhere is bookable by nobody while still
+     * claiming to be on offer. Reaching that state from the obvious action
+     * would make "active" mean two different things (§73).
+     */
+    it('retires the service outright when it was the last branch', async () => {
+      const [only] = await locationIdsOf(business.businessId);
+      const service = await newService(business, 1200, 'Only here', [only]);
+
+      const result = await services.removeFromLocation(
+        business.userId,
+        service.id,
+        only,
+      );
+
+      expect(result.retired).toBe(true);
+      expect(result.service.isActive).toBe(false);
+      expect(result.service.locations).toHaveLength(0);
+      expect(result.message).toMatch(/only branch/i);
+    });
+
+    it('404s on a branch that was not offering it', async () => {
+      await addBranches(business, 1);
+      const [first, second] = await locationIdsOf(business.businessId);
+      const service = await newService(business, 1000, 'One branch', [first]);
+
+      await expect(
+        services.removeFromLocation(business.userId, service.id, second),
+      ).rejects.toThrow(/not offered at that branch/);
+    });
+
+    it("404s on another business's service", async () => {
+      const [mine] = await locationIdsOf(business.businessId);
+      const theirs = await prisma.service.findFirstOrThrow({
+        where: { businessId: other.businessId },
+      });
+
+      await expect(
+        services.removeFromLocation(business.userId, theirs.id, mine),
+      ).rejects.toThrow();
+    });
+  });
+
   describe('another business is never touched', () => {
     it('creating a service leaves the other business alone', async () => {
       await newService(business, 100);
