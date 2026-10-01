@@ -18,6 +18,7 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { LedgerService } from './ledger.service';
+import { ReconciliationService } from './reconciliation.service';
 import { ExecuteAdjustmentDto } from './dto/execute-adjustment.dto';
 import {
   ListAdjustmentsDto,
@@ -38,6 +39,7 @@ export class AdminLedgerController {
   constructor(
     private readonly ledger: LedgerService,
     private readonly prisma: PrismaService,
+    private readonly reconciliation: ReconciliationService,
   ) {}
 
   /**
@@ -62,6 +64,15 @@ export class AdminLedgerController {
     @Query() query: ListAdjustmentsDto,
   ) {
     return this.ledger.listAdjustments(user, query);
+  }
+
+  /**
+   * Our figure beside the operator's, and whether they can honestly be
+   * compared at all (§87).
+   */
+  @Get('ledger/reconciliation')
+  reconcile(@CurrentUser() user: AuthenticatedUser) {
+    return this.reconciliation.compare(user);
   }
 
   @Get('ledger/held')

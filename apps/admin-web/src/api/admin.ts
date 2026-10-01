@@ -527,3 +527,43 @@ export const executeAdjustment = (id: string, settlementRef?: string) =>
     `/admin/billing-adjustments/${id}/execute`,
     { method: 'PATCH', body: settlementRef ? { settlementRef } : {} },
   );
+
+// ---------------------------------------------------------------------------
+// Reconciliation: our figure beside the operator's (§87)
+// ---------------------------------------------------------------------------
+
+export type WalletBalance =
+  | {
+      wallet: 'COLLECTION' | 'DISBURSEMENT';
+      status: 'OK';
+      /** As the operator reported it: a decimal string in MAJOR units. */
+      reportedAmount: string;
+      currency: string;
+      amountMinor: number | null;
+    }
+  | {
+      wallet: 'COLLECTION' | 'DISBURSEMENT';
+      status: 'UNAVAILABLE';
+      reason: string;
+    };
+
+export interface Reconciliation {
+  asOf: string;
+  isSandbox: boolean;
+  ledger: CurrencyTotal[];
+  entriesWithoutSettlement: number;
+  wallets: WalletBalance[];
+  /** False whenever showing a difference would be a lie. */
+  comparable: boolean;
+  difference: number | null;
+  notComparableReason:
+    | 'SANDBOX'
+    | 'DIFFERENT_CURRENCY'
+    | 'BALANCE_UNAVAILABLE'
+    | 'NOTHING_HELD'
+    | null;
+  note: string;
+}
+
+export const getReconciliation = () =>
+  api<Reconciliation>('/admin/ledger/reconciliation');

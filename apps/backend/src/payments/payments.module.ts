@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { CurrencyGuard } from './currency-guard.service';
 import { MomoDisbursementProvider } from './momo-disbursement.provider';
+import { MomoBalanceProvider } from './momo-balance.provider';
 import { MomoPaymentProvider } from './momo-payment.provider';
 import { DisbursementProviderRegistry } from './disbursement-provider.registry';
 import { PaymentProviderRegistry } from './payment-provider.registry';
@@ -35,6 +36,7 @@ import { PaymentsController } from './payments.controller';
     CurrencyGuard,
     MomoPaymentProvider,
     MomoDisbursementProvider,
+    MomoBalanceProvider,
     {
       provide: PaymentProviderRegistry,
       inject: [MomoPaymentProvider],
@@ -47,6 +49,6 @@ import { PaymentsController } from './payments.controller';
         new DisbursementProviderRegistry([momo]),
     },
   ],
-  exports: [PaymentProviderRegistry, DisbursementProviderRegistry],
+  exports: [PaymentProviderRegistry, DisbursementProviderRegistry, MomoBalanceProvider],
 })
 export class PaymentsModule {}

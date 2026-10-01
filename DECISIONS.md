@@ -8139,3 +8139,84 @@ This is the shape the §85 attempt should have taken. A term that is explained
 beside the table stays learnable and stays matched to the system underneath;
 a term replaced by a sentence is neither.
 
+## 87. Asking MTN what it is holding
+
+§34.1's held figure exists "to be compared against the provider's statement",
+and §36.7 says that comparison is made by hand. Nothing ever asked the operator
+for its side of it, so the comparison was a hand-written instruction on a screen
+and nothing more.
+
+Asked directly: *"is it possible to see the amount the platform is holding in
+the momo sandbox mtn platform now?"* It was — by curl, with nothing in the
+codebase to do it.
+
+### 87.1 A separate interface, because the ability is separate
+
+`DisbursementProvider` says it is "deliberately narrow ... balance enquiry,
+reversals and statements are separate problems and would each need their own
+thinking." That still holds, so `BalanceReporting` is its own interface rather
+than two more methods. The reason is concrete: an operator that can send money
+may be unable to report a balance, and MTN's sandbox is exactly that.
+
+`MomoBalanceProvider` is the one class that legitimately needs **both** products'
+credentials. §64.2 refused to merge collections and disbursements because one
+object holding two credential sets fails as "subscription not found", which
+reads like broken code rather than a crossed wire. The defence moves rather than
+disappearing: a credential set is one object, passed whole, and no call site
+ever picks a key and a user separately.
+
+### 87.2 The sandbox is not a smaller production — it is a prop
+
+Measured, not assumed. Within a few minutes the sandbox returned:
+
+- collection `EUR 1000`, then `EUR 0`, then **`EUR -25`**
+- disbursement `EUR 1000`, then `500 NOT_ALLOWED_TARGET_ENVIRONMENT`, then
+  `404 RESOURCE_NOT_FOUND`, then `500 NOT_ALLOWED`
+- each wallet failing independently, and the pair swapping which one worked
+
+A negative collection balance is not a number any real wallet would report. So
+the figures are props, and transfers do not move them — the two real
+disbursements of §64 left the figure untouched.
+
+### 87.3 Refusing to subtract is the feature
+
+`comparable` is false, and `difference` null, whenever a difference would be a
+lie:
+
+| Reason | Why |
+|---|---|
+| `SANDBOX` | Props, whatever they say |
+| `DIFFERENT_CURRENCY` | Sandbox reports EUR; this deployment settles RWF |
+| `BALANCE_UNAVAILABLE` | No answer is not a balance of zero |
+| `NOTHING_HELD` | Nothing to compare |
+
+**Sandbox is checked before currency, on purpose.** A sandbox that happened to
+report RWF would otherwise produce an arithmetically valid, entirely meaningless
+difference. A test asserts the hardest version of this: figures that agree
+*exactly*, in sandbox, still refuse to compare — agreeing by coincidence is the
+most dangerous case, because it is the one nobody questions.
+
+Only the **collection** wallet is compared. It holds customers' deposits, which
+is what the ledger is a claim about. The disbursement wallet answers a different
+question — can we afford the next run — and is shown beside it, never subtracted.
+
+Both wallets are reported even when nothing can be compared. Seeing MTN's number
+is useful on its own; the screen just never pretends it reconciles.
+
+### 87.4 What this is worth
+
+In sandbox: almost nothing, honestly stated. In production, where MTN reports
+both wallets in RWF, the difference is what catches a payment that landed and
+was never recorded — the failure nobody notices until month end. The work is
+done now so that switching credentials is the whole of the change.
+
+### 87.5 Verified
+
+Ten tests on the comparison logic, weighted towards the refusals. Live against
+MTN's sandbox repeatedly, which is how §87.2 is a measurement rather than a
+guess. An earlier version of the error text fell through to an empty string and
+produced *"The operator answered 500. "* with nothing after it; every branch now
+returns a sentence, and an unrecognised code is named rather than swallowed.
+
+**1053 passing across 28 suites.**
+

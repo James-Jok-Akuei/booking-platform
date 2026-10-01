@@ -4,6 +4,7 @@ import { ApiError } from '../api/client';
 import { useMoney } from '../money';
 import {
   executeAdjustment,
+  getReconciliation,
   heldTotals,
   listAdjustments,
   listBusinesses,
@@ -119,9 +120,21 @@ function useBusinessNames() {
   }, [businesses.data]);
 }
 
+const WALLET_LABEL = {
+  COLLECTION: 'Deposits land here',
+  DISBURSEMENT: 'Payouts go out from here',
+} as const;
+
 function HeldSummary() {
   const money = useMoney();
   const held = useQuery({ queryKey: ['held'], queryFn: heldTotals });
+  // Separate query: the operator is a network call away and sometimes slow or
+  // refusing, and our own figure must render without waiting for theirs.
+  const check = useQuery({
+    queryKey: ['reconciliation'],
+    queryFn: getReconciliation,
+    retry: false,
+  });
 
   if (!held.data) return null;
 
@@ -130,6 +143,7 @@ function HeldSummary() {
       <div className="held-figures">
         {held.data.bySettlementCurrency.map((row) => (
           <div key={row.settlementCurrency} className="held-figure">
+            <span className="muted small">Our ledger says</span>
             <strong>{money.format(row.amountMinor, row.settlementCurrency)}</strong>
             <span className="muted small">
               {row.entryCount} entries not yet paid out
@@ -141,10 +155,53 @@ function HeldSummary() {
             <strong>Nothing held</strong>
           </div>
         )}
+
+        {check.data?.wallets.map((wallet) => (
+          <div key={wallet.wallet} className="held-figure">
+            <span className="muted small">
+              MTN · {WALLET_LABEL[wallet.wallet]}
+            </span>
+            {wallet.status === 'OK' ? (
+              <strong>
+                {wallet.currency} {wallet.reportedAmount}
+              </strong>
+            ) : (
+              <strong className="muted">No answer</strong>
+            )}
+            {wallet.status === 'UNAVAILABLE' && (
+              <span className="muted small">{wallet.reason}</span>
+            )}
+          </div>
+        ))}
+
+        {/* Only ever shown when the server says the two figures can honestly
+            be subtracted. In sandbox, in a mismatched currency, or when the
+            operator did not answer, there is no difference to show. */}
+        {check.data?.comparable && (
+          <div className="held-figure">
+            <span className="muted small">Difference</span>
+            <strong className={check.data.difference === 0 ? 'ok' : 'warn'}>
+              {money.signed(check.data.difference ?? 0)}
+            </strong>
+          </div>
+        )}
       </div>
+
       <p className="muted small">
-        As of {formatDate(held.data.asOf)}. This is what the provider's balance should
-        hold — <strong>compare it by hand</strong>, nothing reconciles it automatically.
+        As of {formatDate(held.data.asOf)}.{' '}
+        {check.isLoading && <>Asking MTN what it is holding…</>}
+        {check.data && (
+          <>
+            {check.data.isSandbox && <strong>Sandbox. </strong>}
+            {check.data.note}
+          </>
+        )}
+        {check.isError && (
+          <>
+            MTN could not be reached, so there is nothing to compare against —{' '}
+            <strong>compare it by hand</strong>.
+          </>
+        )}
         {held.data.entriesWithoutSettlement > 0 && (
           <>
             {' '}
