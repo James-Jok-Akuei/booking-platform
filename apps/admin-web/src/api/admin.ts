@@ -661,3 +661,72 @@ export const clearDisplayName = (id: string, reason: string) =>
     method: 'PATCH',
     body: { reason },
   });
+
+// ---------------------------------------------------------------------------
+// Appointments, and reclassifying a cancellation (§95)
+// ---------------------------------------------------------------------------
+
+export type CancelledBy = 'CUSTOMER' | 'BUSINESS' | 'SYSTEM_EXPIRY';
+
+export type AppointmentStatus =
+  | 'PENDING_PAYMENT'
+  | 'BOOKED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'NO_SHOW';
+
+export interface AdminAppointment {
+  id: string;
+  status: AppointmentStatus;
+  startTime: string;
+  endTime: string;
+  currency: string;
+  depositAmountMinor: number;
+  platformFeeAmountMinor: number;
+  businessAmountMinor: number;
+  depositPaid: boolean;
+  cancelledAt: string | null;
+  cancelledBy: CancelledBy | null;
+  cancellationReason: string | null;
+  cancellationTicketId: string | null;
+  customerId: string;
+  customerEmail: string;
+  serviceName: string;
+  locationId: string;
+  locationName: string;
+  businessId: string;
+  businessName: string | null;
+  /** Computed by the server, so it cannot disagree with what the PATCH accepts. */
+  canReclassify: boolean;
+}
+
+export interface AdminAppointmentPage {
+  total: number;
+  limit: number;
+  offset: number;
+  appointments: AdminAppointment[];
+}
+
+export const listAdminAppointments = (params: {
+  status?: AppointmentStatus;
+  cancelledBy?: CancelledBy;
+  reclassifiable?: string;
+  limit?: number;
+}) => api<AdminAppointmentPage>('/admin/appointments', { query: params });
+
+/**
+ * Says a cancellation was the business's fault, which **moves money**: the
+ * customer is refunded in full including our fee, and the business carries the
+ * operator's charge for the refund (§25).
+ *
+ * One direction only. There is no endpoint to undo this.
+ */
+export const reclassifyAsBusinessCancellation = (
+  id: string,
+  body: { reason: string; gatewayChargeMinor: number; ticketId?: string },
+) =>
+  api<AdminAppointment>(`/admin/appointments/${id}/business-cancellation`, {
+    method: 'PATCH',
+    body,
+  });

@@ -1,4 +1,13 @@
-import { Body, Controller, Param, ParseUUIDPipe, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -9,6 +18,7 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { AppointmentsService } from './appointments.service';
 import { ReclassifyCancellationDto } from './dto/cancel-appointment.dto';
+import { ListAdminAppointmentsDto } from './dto/list-admin-appointments.dto';
 
 /**
  * Dispute resolution. API-only, like every other admin surface here (§16.9).
@@ -23,6 +33,18 @@ import { ReclassifyCancellationDto } from './dto/cancel-appointment.dto';
 @Roles(UserRole.ADMIN)
 export class AdminAppointmentsController {
   constructor(private readonly appointments: AppointmentsService) {}
+
+  /**
+   * The listing (§95). Without it the PATCH below took an id that nothing in
+   * the platform produced.
+   */
+  @Get()
+  list(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListAdminAppointmentsDto,
+  ) {
+    return this.appointments.listForAdmin(user, query);
+  }
 
   @Patch(':id/business-cancellation')
   reclassify(

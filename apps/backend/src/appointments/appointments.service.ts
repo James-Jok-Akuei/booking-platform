@@ -45,6 +45,7 @@ import {
   CancelAppointmentDto,
   ReclassifyCancellationDto,
 } from './dto/cancel-appointment.dto';
+import { ListAdminAppointmentsDto } from './dto/list-admin-appointments.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -1252,6 +1253,116 @@ export class AppointmentsService {
    * `cancelledBy` becomes BUSINESS while `cancelledByUserId` stays the admin who
    * acted, which is exactly the divergence §33.2 kept the two columns apart for.
    */
+  /**
+   * Appointments, for an admin (§95).
+   *
+   * There was no admin listing at all: `reclassifyAsBusinessCancellation` took
+   * an id nothing produced, so the one action on this surface could not be
+   * navigated to.
+   *
+   * Every row carries `canReclassify` rather than leaving the client to work
+   * the rule out. The three conditions — cancelled, not already blamed on the
+   * business, deposit actually taken — are the same ones the PATCH enforces,
+   * and a client deriving them independently would eventually disagree with it.
+   */
+  async listForAdmin(
+    actor: { role: UserRole | string },
+    query: ListAdminAppointmentsDto,
+  ) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only an administrator can list appointments.');
+    }
+
+    const limit = query.limit ?? 25;
+    const offset = query.offset ?? 0;
+
+    const where: Prisma.AppointmentWhereInput = {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.cancelledBy ? { cancelledBy: query.cancelledBy } : {}),
+      ...(query.businessId ? { location: { businessId: query.businessId } } : {}),
+      ...(query.customerId ? { customerId: query.customerId } : {}),
+      ...(query.reclassifiable === 'true'
+        ? {
+            status: AppointmentStatus.CANCELLED,
+            cancelledBy: { not: CancelledBy.BUSINESS },
+            depositPaidAt: { not: null },
+          }
+        : {}),
+    };
+
+    const [total, appointments] = await Promise.all([
+      this.prisma.appointment.count({ where }),
+      this.prisma.appointment.findMany({
+        where,
+        orderBy: { startTime: 'desc' },
+        take: limit,
+        skip: offset,
+        select: {
+          id: true,
+          status: true,
+          startTime: true,
+          endTime: true,
+          currency: true,
+          depositAmountMinor: true,
+          platformFeeAmountMinor: true,
+          businessAmountMinor: true,
+          depositPaidAt: true,
+          cancelledAt: true,
+          cancelledBy: true,
+          cancellationReason: true,
+          cancellationTicketId: true,
+          customer: { select: { id: true, email: true, displayName: true } },
+          service: { select: { name: true } },
+          location: {
+            select: {
+              id: true,
+              name: true,
+              businessId: true,
+              business: { select: { name: true } },
+            },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      total,
+      limit,
+      offset,
+      appointments: appointments.map((appointment) => ({
+        id: appointment.id,
+        status: appointment.status,
+        startTime: appointment.startTime,
+        endTime: appointment.endTime,
+        currency: appointment.currency,
+        depositAmountMinor: appointment.depositAmountMinor,
+        platformFeeAmountMinor: appointment.platformFeeAmountMinor,
+        businessAmountMinor: appointment.businessAmountMinor,
+        depositPaid: appointment.depositPaidAt !== null,
+        cancelledAt: appointment.cancelledAt,
+        cancelledBy: appointment.cancelledBy,
+        cancellationReason: appointment.cancellationReason,
+        cancellationTicketId: appointment.cancellationTicketId,
+        customerId: appointment.customer.id,
+        customerEmail: appointment.customer.email,
+        serviceName: appointment.service.name,
+        locationId: appointment.location.id,
+        locationName: appointment.location.name,
+        businessId: appointment.location.businessId,
+        businessName: appointment.location.business.name,
+        /**
+         * Whether reclassifying would do anything. Mirrors the PATCH exactly:
+         * a COMPLETED appointment and one already blamed on the business are
+         * both refused, and with no deposit taken there is nothing to refund.
+         */
+        canReclassify:
+          appointment.status === AppointmentStatus.CANCELLED &&
+          appointment.cancelledBy !== CancelledBy.BUSINESS &&
+          appointment.depositPaidAt !== null,
+      })),
+    };
+  }
+
   async reclassifyAsBusinessCancellation(
     actor: { userId: string; role: UserRole | string },
     appointmentId: string,

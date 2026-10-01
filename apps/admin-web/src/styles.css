@@ -256,3 +256,11 @@ td.reason { max-width: 320px; }
 .filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .filters input[type='search'] { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; min-width: 210px; }
 .filters select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; }
+
+.consequences { margin: 10px 0 16px; padding-left: 18px; font-size: 13px; }
+.consequences li { margin-bottom: 5px; }
+.pill.cancelled { background: #fee4e2; color: var(--danger); }
+.pill.booked { background: #dbeafe; color: #1e40af; }
+.pill.completed { background: #dcfae6; color: var(--ok); }
+.pill.no-show, .pill.pending-payment { background: var(--line); color: var(--muted); }
+.pill.in-progress { background: #fef0c7; color: var(--warn); }

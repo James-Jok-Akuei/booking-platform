@@ -8644,3 +8644,69 @@ was neither.
 
 **1086 passing across 31 suites.**
 
+## 95. Appointments, and the one button that pays a customer
+
+Item 7, and the last of the three where the action existed with nothing to reach
+it. `PATCH /admin/appointments/:id/business-cancellation` took an id no listing
+produced.
+
+It is also the only action in the admin console that **moves money**. Saying a
+cancellation was the business's fault triggers §25's chain: the customer is
+refunded in full including the platform fee, and the business carries the
+operator's charge for moving that refund. There is no endpoint for the reverse.
+
+### 95.1 `canReclassify` is computed on the server
+
+Three conditions decide whether reclassifying does anything: the appointment is
+CANCELLED, it is not already blamed on the business, and a deposit was actually
+taken. The PATCH enforces all three.
+
+The row carries the answer rather than leaving the client to re-derive it. A
+client working the rule out independently would eventually disagree with the
+server, and the failure mode is a button that offers to refund and then
+refuses. Tests assert the agreement directly: for each case where
+`canReclassify` is false, the PATCH is called and must throw.
+
+### 95.2 The form spells out what will happen, in money
+
+Not "this will reclassify the cancellation". The panel names the figures for
+that specific booking: what the customer gets back, that it includes our fee,
+what the business loses, and that both are told. Above them, one line:
+**"This moves money and cannot be undone."**
+
+`gatewayChargeMinor` is required and has no sensible default, because it comes
+off the operator's statement and **the business pays whatever is entered**. The
+field says so rather than pre-filling a guess that someone else would carry.
+
+The ticket id is optional in the API and the form calls it *"the evidence"*,
+because a refund with no recorded cause is the one an auditor asks about.
+
+### 95.3 Verified by the ledger, not the flag
+
+A real customer-cancelled booking with a 1400 RWF deposit, reclassified with a
+50 charge. The five entries for that appointment:
+
+| | |
+|---|---|
+| DEPOSIT_RECEIVED | +1400 |
+| PLATFORM_FEE | −700 |
+| DEPOSIT_REFUND | −1400 |
+| PLATFORM_FEE_REVERSAL | +700 |
+| GATEWAY_FEE_DEBIT | −50 |
+| **Net to the business** | **−50** |
+
+Exactly the operator's charge, which is what §25.1 says the business bears, and
+nothing else. The customer is whole; the platform gave its fee back.
+
+Also confirmed: a missing reason, a missing or negative charge, and an unknown
+ticket id are each refused; doing it twice is refused; the row leaves the queue;
+and both parties received a cancellation email.
+
+Nine tests. **1095 passing across 32 suites.**
+
+**A note on the demo data.** This was performed against a real seeded booking,
+and the ledger is append-only — those five rows are permanent. That is the
+feature working as designed, not an accident, but it means the demo data now
+contains one genuine business-cancellation refund. It is arguably the most
+useful row in it.
+
