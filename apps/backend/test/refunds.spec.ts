@@ -482,6 +482,55 @@ describe('Refunds and adjustments (§36)', () => {
       ).toBe(1);
     });
 
+    /**
+     * The test §67.5 found missing, and the reason an adjustment exists.
+     *
+     * Everything else here asserts the ENTRY — its sign, its amount, its type.
+     * Nothing asserted that the money it represents can actually reach the
+     * business, and for a while it could not: the entry was written with null
+     * settlement columns, a payout run skips entries it cannot send (§46.3),
+     * and so every adjustment became money stranded in the ledger. Visible in a
+     * balance, counted in a total, and unpayable forever.
+     *
+     * DO NOT DELETE. An adjustment that cannot be paid out is not an
+     * adjustment; it is a number in a table.
+     */
+    describe('an executed adjustment is actually payable', () => {
+      it('writes settlement columns, never null', async () => {
+        const row = await adjustment(BillingAdjustmentType.FEE_REFUND, 1000);
+
+        const { entry } = await execute(row.id);
+
+        expect(entry.settlementCurrency).not.toBeNull();
+        expect(entry.settlementAmountMinor).not.toBeNull();
+        expect(entry.bookingExchangeRate).not.toBeNull();
+      });
+
+      it('is picked up by the next payout run', async () => {
+        const row = await adjustment(BillingAdjustmentType.FEE_REFUND, 1000);
+        await execute(row.id);
+
+        const summary = await payouts.run();
+
+        // The run reports entries it had to leave behind. One of those would
+        // mean the adjustment is stranded.
+        expect(summary.entriesWithoutSettlement).toBe(0);
+        expect(summary.payoutsCreated).toBeGreaterThan(0);
+      });
+
+      it('stamps the adjustment entry with the payout that paid it', async () => {
+        const row = await adjustment(BillingAdjustmentType.FEE_REFUND, 1000);
+        const { entry } = await execute(row.id);
+
+        await payouts.run();
+
+        const after = await prisma.ledgerEntry.findUniqueOrThrow({
+          where: { id: entry.id },
+        });
+        expect(after.payoutId).not.toBeNull();
+      });
+    });
+
     it('404s on an adjustment that does not exist', async () => {
       await expect(
         execute('00000000-0000-4000-8000-000000000000'),
@@ -507,20 +556,29 @@ describe('Refunds and adjustments (§36)', () => {
   describe('held total', () => {
     it('equals the sum of every unstamped entry, in SETTLEMENT currency', async () => {
       const entries = await prisma.ledgerEntry.findMany({ where: { payoutId: null } });
-      const expectedMinor = entries.reduce(
-        (sum, e) => sum + (e.settlementAmountMinor ?? 0),
-        0,
-      );
-      const expectedUsd = entries.reduce((sum, e) => sum + e.amountMinor, 0);
+      // Summed PER CURRENCY, not across all of them. Entries written before a
+      // rate was set settle in the unit of account rather than in SSP, so
+      // summing everything into the SSP bucket compares two different piles of
+      // money. They used to fall out of both sides by having no settlement
+      // figure at all — which is the bug §67.5 fixed.
+      const expectedMinor = entries
+        .filter((e) => e.settlementCurrency === 'SSP')
+        .reduce((sum, e) => sum + (e.settlementAmountMinor ?? 0), 0);
+
 
       const held = await ledger.heldTotals({ role: 'ADMIN' });
 
       // The figure an operator compares against MTN's balance is the one in the
       // currency the money is actually held in (§51.1).
+      const sspEntries = entries.filter((e) => e.settlementCurrency === 'SSP');
+      // Two different questions, so two different filters: which entries are in
+      // the SSP bucket, and which have no settlement figure AT ALL. Since §67.5
+      // the second set is empty — an entry that cannot be paid is now refused
+      // at write rather than written and skipped forever.
       const withSettlement = entries.filter((e) => e.settlementCurrency !== null);
       const ssp = held.bySettlementCurrency.find((c) => c.settlementCurrency === 'SSP')!;
       expect(ssp.amountMinor).toBe(expectedMinor);
-      expect(ssp.entryCount).toBe(withSettlement.length);
+      expect(ssp.entryCount).toBe(sspEntries.length);
       // Entries with no settlement figure are money the platform holds but
       // cannot pay out (§45.1). Counted separately rather than folded into a
       // currency they do not belong to.
@@ -528,8 +586,14 @@ describe('Refunds and adjustments (§36)', () => {
         entries.length - withSettlement.length,
       );
       expect(held.totalEntries).toBe(entries.length);
-      // USD is carried alongside, explicitly labelled as reporting.
-      expect(ssp.reportingInternalMinor).toBeLessThanOrEqual(expectedUsd);
+      // The reporting figure is carried alongside, explicitly labelled as such
+      // (§51.1) — and it is the sum over THE SAME entries, so this is an
+      // equality rather than a bound. It was a bound only because entries with
+      // no settlement figure used to sit outside the bucket while still
+      // counting towards the total; since §67.5 there are none.
+      expect(ssp.reportingInternalMinor).toBe(
+        sspEntries.reduce((sum, e) => sum + e.amountMinor, 0),
+      );
     });
 
     it('drops entries once a payout has settled them', async () => {

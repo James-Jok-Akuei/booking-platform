@@ -185,6 +185,56 @@ export class PlatformSettingsService {
   }
 
   /**
+   * What a ledger entry written TODAY settles in (§67.5).
+   *
+   * Separate from `getExchangeRateForDisplay`, and deliberately so. That one
+   * answers a presentation question — "is there an indicative figure worth
+   * showing?" — and returns null whenever the answer is no, including when the
+   * provider charges in our own currency and there is nothing to approximate
+   * (§66.2).
+   *
+   * This answers a money question: "what would actually be sent, and in what?"
+   * Those are different questions, and conflating them cost real money. The
+   * ledger read the display helper, §66.2 taught it to return null in a
+   * single-currency deployment, and every billing adjustment was then written
+   * with no settlement figure — making it permanently unpayable, silently,
+   * because a payout run skips entries it cannot send (§46.3).
+   *
+   * Returns null only when settlement is genuinely impossible: a provider
+   * currency that is NOT ours and no rate configured to reach it. When the
+   * provider charges in the unit of account there is nothing to configure and
+   * nothing to convert, so the rate is 1 and this always succeeds.
+   */
+  async getSettlementContext(): Promise<{
+    settlementCurrency: string;
+    rate: Prisma.Decimal;
+  } | null> {
+    const setting = await this.prisma.platformSetting.findUnique({
+      where: { id: PLATFORM_SETTING_ID },
+      select: {
+        providerCurrency: true,
+        exchangeRateUsdToProviderCurrency: true,
+      },
+    });
+
+    const providerCurrency = setting?.providerCurrency ?? INTERNAL_CURRENCY;
+
+    // No conversion, so no configuration required. A deployment that prices and
+    // collects in one currency can always settle, even before an admin has
+    // touched the settings at all.
+    if (isSettlementCurrency(providerCurrency)) {
+      return { settlementCurrency: INTERNAL_CURRENCY, rate: new Prisma.Decimal(1) };
+    }
+
+    if (!setting?.exchangeRateUsdToProviderCurrency) return null;
+
+    return {
+      settlementCurrency: providerCurrency,
+      rate: setting.exchangeRateUsdToProviderCurrency,
+    };
+  }
+
+  /**
    * Whether the manual rate has gone past its configured age, and by how much.
    *
    * A rate that has NEVER been set is not "stale" — it is missing, which is a
@@ -265,7 +315,11 @@ export class PlatformSettingsService {
     await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: { exchangeRateStalenessHours: hours },
-      create: { id: PLATFORM_SETTING_ID, exchangeRateStalenessHours: hours },
+      create: {
+        id: PLATFORM_SETTING_ID,
+        providerCurrency: INTERNAL_CURRENCY,
+        exchangeRateStalenessHours: hours,
+      },
     });
 
     this.logger.log(`Exchange-rate staleness threshold set to ${hours} hours.`);
@@ -414,7 +468,11 @@ export class PlatformSettingsService {
     await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: { payoutHoldDays: days },
-      create: { id: PLATFORM_SETTING_ID, payoutHoldDays: days },
+      create: {
+        id: PLATFORM_SETTING_ID,
+        providerCurrency: INTERNAL_CURRENCY,
+        payoutHoldDays: days,
+      },
     });
 
     this.logger.log(
@@ -445,7 +503,7 @@ export class PlatformSettingsService {
     const setting = await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: {},
-      create: { id: PLATFORM_SETTING_ID },
+      create: { id: PLATFORM_SETTING_ID, providerCurrency: INTERNAL_CURRENCY },
     });
 
     return {
@@ -542,7 +600,11 @@ export class PlatformSettingsService {
     const updated = await this.prisma.platformSetting.upsert({
       where: { id: PLATFORM_SETTING_ID },
       update: { platformFeePercentage: percentage },
-      create: { id: PLATFORM_SETTING_ID, platformFeePercentage: percentage },
+      create: {
+        id: PLATFORM_SETTING_ID,
+        providerCurrency: INTERNAL_CURRENCY,
+        platformFeePercentage: percentage,
+      },
     });
 
     // Invalidate immediately so the next booking uses the new fee rather than

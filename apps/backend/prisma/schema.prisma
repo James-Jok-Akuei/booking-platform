@@ -740,7 +740,7 @@ model PlatformSetting {
   /// Authoritative — this supersedes the MOMO_CURRENCY env var, so the value
   /// can be corrected by an admin without a redeploy. "EUR" is MTN's sandbox
   /// requirement; production for South Sudan is still unconfirmed.
-  providerCurrency String @default("EUR")
+  providerCurrency String
 
   /// How many units of providerCurrency one USD buys.
   ///

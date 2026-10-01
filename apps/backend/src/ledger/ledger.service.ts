@@ -409,17 +409,33 @@ export class LedgerService {
     const amountMinor =
       adjustment.type === BillingAdjustmentType.FEE_REFUND ? minor : -minor;
 
-    // An adjustment is a decision made TODAY, so it settles in today's provider
-    // currency at today's rate — unlike a deposit, whose settlement is fixed at
-    // the booking it belongs to. The admin's figure is in settlement currency
-    // (§45.5); the USD amount above is the reporting equivalent.
-    const display = await this.settings.getExchangeRateForDisplay();
-    const settlementAmountMinor = display
-      ? new Prisma.Decimal(amountMinor)
-          .mul(display.rate)
-          .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
-          .toNumber()
-      : null;
+    // An adjustment is a decision made TODAY, so it settles at today's rate —
+    // unlike a deposit, whose settlement is fixed at the booking it belongs to.
+    //
+    // From `getSettlementContext`, NOT from the display helper. This line read
+    // `getExchangeRateForDisplay()` until §67.5: when §66.2 taught that helper
+    // to return null in a single-currency deployment — correct, there is
+    // nothing to approximate — every adjustment was written with no settlement
+    // figure and became permanently unpayable, because a payout run skips
+    // entries it cannot send. A money decision must not depend on a function
+    // whose name says "display".
+    const settlement = await this.settings.getSettlementContext();
+
+    if (!settlement) {
+      // Refuse rather than write an entry nobody can be paid. The money would
+      // otherwise sit in the ledger looking settled, visible in a balance, and
+      // silently skipped by every run forever.
+      throw new BadRequestException(
+        'This adjustment cannot be settled: the platform collects in a currency ' +
+          'it has no exchange rate for, so there is no amount to send. Set the ' +
+          'rate before executing adjustments.',
+      );
+    }
+
+    const settlementAmountMinor = new Prisma.Decimal(amountMinor)
+      .mul(settlement.rate)
+      .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
+      .toNumber();
 
     const entry = await tx.ledgerEntry.create({
       data: {
@@ -429,9 +445,9 @@ export class LedgerService {
         currency: INTERNAL_CURRENCY,
         type: LedgerEntryType.ADJUSTMENT,
         amountMinor,
-        settlementCurrency: display?.providerCurrency ?? null,
+        settlementCurrency: settlement.settlementCurrency,
         settlementAmountMinor,
-        bookingExchangeRate: display?.rate ?? null,
+        bookingExchangeRate: settlement.rate,
         // Payable at once. An adjustment is a decision already made; there is
         // no appointment outcome left to wait for.
         availableAt: new Date(),

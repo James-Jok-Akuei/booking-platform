@@ -390,9 +390,9 @@ curl -s -X PATCH "$B/admin/billing-adjustments/<adjustmentId>/execute" -H "$ADMI
 no ledger entry exists. **Executing** it writes one `ADJUSTMENT` entry and
 stamps `settledAt`. Execute it twice and the second attempt is refused.
 
-**But check its settlement columns.** They are `NULL`, which makes that entry
-permanently unpayable — no payout run can ever send it. This is a real
-regression, introduced by §66.2 and found by this walk-through; see §67.5.
+**Check its settlement columns.** They carry a currency and an amount, so the
+next payout run can actually send it. They were `NULL` when this guide was
+re-walked — an adjustment nobody could ever be paid — and §68 fixed it.
 
 There is no endpoint that lists billing adjustments; read the id from the
 resolved ticket's response or the database.
@@ -418,8 +418,8 @@ settlement column carry the same unit. The §49.4 mismatch was an artefact of
 pricing in one currency and settling in another, and it returns the moment a
 deployment does that again.
 
-`entriesWithoutSettlement` is **1**, and that one entry is the unpayable
-adjustment above (§67.5).
+`entriesWithoutSettlement` is **0**. It was 1 before §68, and that one entry was
+an adjustment that could never be paid.
 
 ---
 

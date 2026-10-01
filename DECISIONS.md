@@ -6891,3 +6891,89 @@ actually produced, the §66.5 "not re-walked" banner is removed, and the two
 findings a reader will hit in passing — §67.1's count mismatch and §67.5's null
 settlement columns — are called out where they appear, so nobody wastes an hour
 deciding whether they have misread it.
+
+---
+
+## 68. Adjustments become payable again (2026-10-01)
+
+Fixes §67.5, the regression this walk-through found. Two of the three things
+§67 recommended; the third is below.
+
+### 68.1 Settlement gets its own source
+
+`executeAdjustment` read `getExchangeRateForDisplay()` to decide what a ledger
+entry settles in. That function answers a presentation question — "is there an
+indicative figure worth showing?" — and §66.2 correctly taught it to return null
+when the provider charges in our own currency, because there is nothing to
+approximate.
+
+The ledger then wrote entries with no settlement figure, and a payout run skips
+entries it cannot send. Every billing adjustment became money stranded in the
+ledger: visible in a balance, counted in a total, unpayable forever.
+
+`getSettlementContext()` now answers the money question separately. It returns
+null **only** when settlement is genuinely impossible — a foreign provider
+currency with no rate configured to reach it. When the provider charges in the
+unit of account there is nothing to convert, so the rate is 1 and it always
+succeeds, with no configuration at all.
+
+The lesson is the naming one: a function called `...ForDisplay` should never
+decide what gets sent, and the fact that it did was visible in the name before
+it was visible in the money.
+
+### 68.2 An unsettleable adjustment is refused, not written
+
+If settlement genuinely cannot be determined, `executeAdjustment` now throws
+rather than writing a null-settlement row.
+
+This is the §67 recommendation about failing at write time, applied where it
+costs nothing. Refusing is loud, lands in the code that caused it, and leaves
+the adjustment unexecuted so it can be retried once a rate is set. The
+alternative — what happened — is money that looks settled and silently never
+moves.
+
+### 68.3 `providerCurrency` stopped defaulting to EUR
+
+The direct cause, found while fixing it. `platform_settings.providerCurrency`
+defaulted to `"EUR"` — a sandbox leftover, since MTN's sandbox accepts only EUR.
+
+So a settings row created by an unrelated write, such as setting the payout
+hold, silently declared that the platform collects in euros. With no rate to
+EUR, nothing could state a settlement amount.
+
+Removed, exactly as §66.3 removed the USD defaults and for the same reason: a
+currency default cannot be right for every deployment, and one the database
+applies silently is worse than none. The service now states the unit of account
+on every create, and the compiler listed the four sites.
+
+### 68.4 The test that was missing
+
+§67.5's real finding was not the null column — it was that **981 tests never
+asserted an adjustment is payable**, which is the only reason an adjustment
+exists. The refunds suite checked the entry's sign, amount, type and
+idempotence; nothing checked that a payout run would pick it up.
+
+Three tests now do, under a heading that says not to delete them: the settlement
+columns are non-null, the next run reports `entriesWithoutSettlement: 0` and
+creates a payout, and the entry ends up stamped with the payout that paid it.
+
+Fixing this also exposed that `held total` had been asserting across currencies
+— summing every entry into the SSP bucket and comparing. That passed only
+because null-settlement entries fell out of both sides. Scoped per currency now,
+and the reporting assertion strengthened from a bound to an equality, which is
+what it should have been.
+
+### 68.5 Verified
+
+- **981 passing across 26 suites**, no drift.
+- Dev database reset and reseeded: the adjustment entry carries `RWF / 2`, and
+  **zero** entries have no settlement figure. It was 1 before this.
+
+### 68.6 Not done
+
+§67's third recommendation — making the settlement columns `NOT NULL` so the
+database refuses an unpayable entry — is deliberately left. It is the strongest
+version of this fix, and it needs a decision about rows that legitimately
+predate settlement tracking (§45 added those columns to an existing ledger and
+backfilled only what it could). That is its own commit, not a footnote to this
+one.
