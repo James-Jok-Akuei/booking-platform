@@ -7076,3 +7076,79 @@ executing one, which §68 just made payable), **reviews** (no moderation), and
 
 The console is operationally usable: a business can be onboarded, checked and
 paid. It is not complete.
+
+---
+
+## 70. The business app, first slice (2026-10-01)
+
+The third app, and the one whose absence meant nothing could finish. A customer
+could book and pay; an admin could approve and pay out; **nobody could verify an
+arrival or complete an appointment except with curl** — so no appointment
+reached COMPLETED, no ledger entry matured, and the payout screens built in §63
+had nothing to pay.
+
+Scaffolded from the admin console: same stack, same API client, same auth
+context, port 5174 so both run at once. The token keys are namespaced per app,
+because in development both are served from localhost and would otherwise share
+one origin's `localStorage`.
+
+### 70.1 `GET /payments/currency`, so no client divides by 100
+
+Built because this app has to print money to a non-technical person every day,
+and the admin console's honest-but-ugly "RWF 5000 minor" does not survive that.
+
+The temptation is to divide by 100 in the client. That is correct in a
+two-decimal currency and wrong by a factor of a hundred in one with no minor
+unit — the §55.2 mistake, moved to the front end where it is harder to see and
+appears in three apps instead of one.
+
+So the server reports the exponent, unauthenticated, as a fact about the
+platform: `{ code, exponent, minorUnitsPerMajor, note }`. Clients format from
+it. While it is still loading the raw integer is shown with its code — ugly, and
+never wrong.
+
+### 70.2 The screen is the day's work, not the data model
+
+It opens on **Expected**: booked customers who have not arrived. Everything else
+is a tab. A business opens this app to deal with someone standing in front of
+them, not to browse records.
+
+Three decisions follow from that:
+
+- The code input sits **in the row**, not behind a dialog. Verifying is the
+  single most frequent action in the app and it should cost one keystroke
+  sequence, not a click-then-type.
+- **"You earn"** shows the business's share of the deposit, with the service
+  price beneath it and the words "rest paid to you directly". Showing one number
+  would invite reading it as the price (§29.2).
+- Manual verification is a quiet link labelled **"No code?"**, shown only to an
+  OWNER or MANAGER. It is the exception, and it should look like one.
+
+### 70.3 A non-approved business is told why its list is empty
+
+The sidebar says so when the profile is not APPROVED. A PENDING business is
+invisible to customers and unbookable (§10.8), so its appointment list is empty
+and correct — and indistinguishable from a bug unless something says otherwise.
+
+### 70.4 Verified against the live backend
+
+The whole loop, by hand, in Rwanda configuration:
+
+- `/users/me` carries the membership role, which is what decides whether "No
+  code?" is rendered at all.
+- `/payments/currency` returns `RWF, exponent 0` — so the app prints
+  `RWF 5,000`, undivided.
+- A wrong code: *"Incorrect verification code. 4 attempt(s) remaining."*
+- The right code: `BOOKED -> IN_PROGRESS`, `verifiedAt` stamped.
+- Complete: `IN_PROGRESS -> COMPLETED`, `completedAt` stamped.
+- Manual verification on a COMPLETED appointment: refused by the state machine.
+  A two-character note: refused by the DTO.
+
+**984 tests unchanged** — this slice adds one backend endpoint and no behaviour
+to existing paths.
+
+### 70.5 What is not built
+
+Profile, locations, services, opening hours, staff, review responses, payout
+destination, balance and analytics all have endpoints and no screens. This is
+the daily loop only, which is the part that unblocks the rest of the system.

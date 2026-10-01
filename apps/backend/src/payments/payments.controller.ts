@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import { inferOperator } from './operator-routing';
+import { INTERNAL_CURRENCY, minorUnitExponent } from './currency';
 
 /**
  * Which mobile money operators this platform can collect through (§58.2).
@@ -20,6 +21,34 @@ import { inferOperator } from './operator-routing';
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly registry: PaymentProviderRegistry) {}
+
+  /**
+   * How to render money, so no client has to guess (§70.1).
+   *
+   * Every amount this API returns is an integer in the MINOR units of
+   * `code`, and how many of those make one major unit is a property of the
+   * currency — two for dollars, none for francs. A client that hardcodes a
+   * division by 100 is correct in one country and wrong by a factor of a
+   * hundred in another, which is the §55.2 mistake moved to the front end
+   * where it is harder to see.
+   *
+   * Served unauthenticated, like the operator list: it is a fact about the
+   * platform, needed before anyone signs in, and it reveals nothing.
+   */
+  @Get('currency')
+  currency() {
+    const exponent = minorUnitExponent(INTERNAL_CURRENCY);
+    return {
+      code: INTERNAL_CURRENCY,
+      /** Decimal places. Divide a minor-unit amount by 10^exponent to display it. */
+      exponent,
+      minorUnitsPerMajor: 10 ** exponent,
+      note:
+        `Every money amount in this API is an integer number of ${INTERNAL_CURRENCY} ` +
+        `minor units. ${exponent === 0 ? 'This currency has no minor unit, so the ' +
+        'integer IS the amount.' : `Divide by ${10 ** exponent} to display.`}`,
+    };
+  }
 
   @Get('providers')
   providers(@Query('phoneNumber') phoneNumber?: string) {
