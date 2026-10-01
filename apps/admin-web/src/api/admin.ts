@@ -94,6 +94,19 @@ export interface PayoutDestination {
   rejectionReason: string | null;
   createdAt: string;
   businessProfile: { id: string; name: string | null; phone: string | null };
+  /**
+   * What took over, on a SUPERSEDED row (§78). Null on a live one.
+   *
+   * Resolved by the server because a status filter usually leaves the successor
+   * off this page, and because the history is read during a dispute — when
+   * inferring it from timestamps is exactly the wrong thing to ask of someone.
+   */
+  replacedBy: {
+    id: string;
+    msisdn: string;
+    status: PayoutDestinationStatus;
+    submittedAt: string;
+  } | null;
 }
 
 export interface DestinationPage {

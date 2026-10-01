@@ -162,6 +162,17 @@ export function PayoutDestinationsPage() {
                   {destination.rejectionReason && (
                     <div className="muted small">Reason: {destination.rejectionReason}</div>
                   )}
+                  {/* A superseded row exists for the history, so it has to say
+                      what came next — otherwise the page asks the reader to
+                      work it out from timestamps (§78). */}
+                  {destination.replacedBy && (
+                    <div className="muted small">
+                      Replaced by <code>{destination.replacedBy.msisdn}</code> on{' '}
+                      {formatDate(destination.replacedBy.submittedAt)}
+                      {destination.replacedBy.status !== 'VERIFIED' &&
+                        ` (${destination.replacedBy.status.toLowerCase()})`}
+                    </div>
+                  )}
                 </td>
                 <td className="actions">
                   {destination.status === 'UNVERIFIED' ? (
@@ -185,7 +196,7 @@ export function PayoutDestinationsPage() {
                   ) : (
                     <span className="muted small">
                       {destination.status === 'SUPERSEDED'
-                        ? 'Replaced by a newer submission'
+                        ? 'Kept as history'
                         : formatDate(destination.verifiedAt)}
                     </span>
                   )}

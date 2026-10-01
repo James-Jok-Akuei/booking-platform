@@ -7593,3 +7593,41 @@ decision that determines where money physically goes.
 - An admin verified it in the console, and the balance went back to not paused.
 
 **1004 passing across 26 suites.**
+
+---
+
+## 78. A superseded payout number says what replaced it (2026-10-01)
+
+Reported from the console: Kigali Barbers appeared with two different statuses
+and the page gave no way to tell they were two different numbers, one current
+and one historical.
+
+They were. §48.2 makes payout destinations append-only — changing a number
+writes a new row and marks the old `SUPERSEDED`, because money went to the old
+one and editing in place would quietly rewrite where a past transfer went.
+
+But a superseded row that does not say what came next makes the reader infer the
+successor from timestamps. That page is read during a **payment dispute**, which
+is when guessing is least affordable.
+
+### 78.1 Resolved on the server
+
+Each `SUPERSEDED` row now carries `replacedBy` — the next submission for that
+business, with its number, status and date.
+
+Server-side rather than in the client, because a status filter means the
+successor is almost never on the same page. Computing it in the browser would
+work on the "All" tab and silently return nothing on the "Superseded" one, which
+is the tab where it matters.
+
+"The next one" is unambiguous: submissions are strictly ordered, so a chain of
+three changes gives each row its own immediate successor rather than all of them
+pointing at the latest.
+
+### 78.2 Verified
+
+Three tests, including a chain of three numbers where each superseded row points
+at the one that directly followed it. Live: Kigali Barbers' `+250788100001` now
+reads *"Replaced by +250788999001"*.
+
+**1007 passing across 26 suites.**

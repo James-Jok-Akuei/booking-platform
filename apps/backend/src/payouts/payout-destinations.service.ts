@@ -242,7 +242,62 @@ export class PayoutDestinationsService {
       }),
     ]);
 
-    return { total, limit, offset, destinations };
+    // What replaced each SUPERSEDED row (§78).
+    //
+    // The history is the point of keeping these rows at all, and a superseded
+    // number with no pointer forward makes an admin infer the successor from
+    // timestamps — during a payment dispute, which is exactly when guessing is
+    // worst. Resolved here rather than in the client because a status filter
+    // means the successor is usually not on the same page.
+    const supersededByBusiness = [
+      ...new Set(
+        destinations
+          .filter((d) => d.status === PayoutDestinationStatus.SUPERSEDED)
+          .map((d) => d.businessId),
+      ),
+    ];
+
+    const successors = supersededByBusiness.length
+      ? await this.prisma.payoutDestination.findMany({
+          where: { businessId: { in: supersededByBusiness } },
+          orderBy: { submittedAt: 'asc' },
+          select: {
+            id: true,
+            businessId: true,
+            msisdn: true,
+            status: true,
+            submittedAt: true,
+          },
+        })
+      : [];
+
+    const withHistory = destinations.map((destination) => {
+      if (destination.status !== PayoutDestinationStatus.SUPERSEDED) {
+        return { ...destination, replacedBy: null };
+      }
+
+      // The next submission for that business. Submissions are strictly
+      // ordered, so "the next one" is unambiguous.
+      const next = successors.find(
+        (candidate) =>
+          candidate.businessId === destination.businessId &&
+          candidate.submittedAt > destination.submittedAt,
+      );
+
+      return {
+        ...destination,
+        replacedBy: next
+          ? {
+              id: next.id,
+              msisdn: next.msisdn,
+              status: next.status,
+              submittedAt: next.submittedAt,
+            }
+          : null,
+      };
+    });
+
+    return { total, limit, offset, destinations: withHistory };
   }
 
   async verify(

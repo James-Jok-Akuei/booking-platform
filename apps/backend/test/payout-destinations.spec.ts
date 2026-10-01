@@ -645,4 +645,49 @@ describe('Payout destinations (§48)', () => {
       expect(balance.payoutsPausedReason).toBe('BUSINESS_SUSPENDED');
     });
   });
+
+  // ------------------------------------------------------------------
+  /**
+   * A superseded row is kept for the history (§48.2), and history that does not
+   * say what came next is a riddle — read during a payment dispute, which is
+   * when guessing is least affordable (§78).
+   */
+  describe('a superseded row says what replaced it', () => {
+    it('points at the number that took over', async () => {
+      const first: any = await verified(shop, '+250788111111');
+      await submit(shop, '+250788222222');
+
+      const page = await destinations.list(AS_ADMIN(), {
+        status: PayoutDestinationStatus.SUPERSEDED,
+      });
+      const row = page.destinations.find((d: any) => d.id === first.id) as any;
+
+      expect(row.replacedBy).not.toBeNull();
+      expect(row.replacedBy.msisdn).toBe('+250788222222');
+    });
+
+    it('points at the NEXT one, not the latest, through several changes', async () => {
+      const first: any = await submit(shop, '+250788111111');
+      const second: any = await submit(shop, '+250788222222');
+      await submit(shop, '+250788333333');
+
+      const page = await destinations.list(AS_ADMIN(), {
+        status: PayoutDestinationStatus.SUPERSEDED,
+      });
+      const firstRow = page.destinations.find((d: any) => d.id === first.id) as any;
+      const secondRow = page.destinations.find((d: any) => d.id === second.id) as any;
+
+      expect(firstRow.replacedBy.msisdn).toBe('+250788222222');
+      expect(secondRow.replacedBy.msisdn).toBe('+250788333333');
+    });
+
+    it('is null on a row that is still live', async () => {
+      const only: any = await submit(shop, '+250788444444');
+
+      const page = await destinations.list(AS_ADMIN(), {});
+      const row = page.destinations.find((d: any) => d.id === only.id) as any;
+
+      expect(row.replacedBy).toBeNull();
+    });
+  });
 });
