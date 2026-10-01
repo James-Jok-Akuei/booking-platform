@@ -314,3 +314,88 @@ export const setPayoutHold = (payoutHoldDays: number) =>
     method: 'PATCH',
     body: { payoutHoldDays },
   });
+
+// ---------------------------------------------------------------------------
+// Support tickets (§24)
+// ---------------------------------------------------------------------------
+
+export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+
+export type TicketCategory =
+  | 'APPOINTMENT_DISPUTE'
+  | 'PAYMENT_ISSUE'
+  | 'TECHNICAL_ISSUE'
+  | 'ACCOUNT_ISSUE'
+  | 'OTHER';
+
+export interface TicketMessage {
+  id: string;
+  body: string;
+  authorType: 'REPORTER' | 'ADMIN' | 'SYSTEM';
+  createdAt: string;
+  /** An internal note. Never shown to the reporter — excluded by their query. */
+  isInternal: boolean;
+  author: { id: string; email: string; role: string } | null;
+}
+
+export interface Ticket {
+  id: string;
+  reference: string;
+  reporterId: string;
+  reporterType: 'CUSTOMER' | 'BUSINESS';
+  businessId: string | null;
+  appointmentId: string | null;
+  category: TicketCategory;
+  subject: string;
+  status: TicketStatus;
+  assignedAdminId: string | null;
+  resolutionNote: string | null;
+  resolvedAt: string | null;
+  closedAt: string | null;
+  reopenCount: number;
+  lastMessageAt: string | null;
+  createdAt: string;
+}
+
+export interface TicketDetail extends Ticket {
+  messages: TicketMessage[];
+}
+
+export const listTickets = (params: { status?: TicketStatus; limit?: number }) =>
+  api<{ total: number; tickets: Ticket[] }>('/admin/tickets', { query: params });
+
+/** The one view that includes internal notes (§24.5). */
+export const getTicket = (id: string) => api<TicketDetail>(`/admin/tickets/${id}`);
+
+export const assignTicket = (id: string, assignedAdminId: string) =>
+  api<Ticket>(`/admin/tickets/${id}/assign`, {
+    method: 'PATCH',
+    body: { assignedAdminId },
+  });
+
+/**
+ * `isInternal` keeps a note off the reporter's view entirely — it is excluded
+ * by their query, not hidden by a serialiser (§24.5).
+ */
+export const replyToTicket = (id: string, body: string, isInternal: boolean) =>
+  api<TicketMessage>(`/admin/tickets/${id}/messages`, {
+    method: 'POST',
+    body: { body, isInternal },
+  });
+
+/**
+ * Moves the ticket through its lifecycle (§24.3).
+ *
+ * Only the transitions the table permits: OPEN -> IN_PROGRESS -> RESOLVED ->
+ * CLOSED. An admin cannot reopen — only the reporter can, within the window,
+ * because an admin reopening their own resolution would defeat it.
+ */
+export const setTicketStatus = (
+  id: string,
+  status: TicketStatus,
+  resolutionNote?: string,
+) =>
+  api<Ticket>(`/admin/tickets/${id}/status`, {
+    method: 'PATCH',
+    body: { status, resolutionNote },
+  });

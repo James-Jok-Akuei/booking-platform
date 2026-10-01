@@ -7631,3 +7631,69 @@ at the one that directly followed it. Live: Kigali Barbers' `+250788100001` now
 reads *"Replaced by +250788999001"*.
 
 **1007 passing across 26 suites.**
+
+## 79. Someone can answer a support ticket (admin console)
+
+The ticket backend has existed since §24 — statuses, a transition table,
+internal notes, reopen windows, notification emails. None of it was reachable.
+A customer raising a ticket got an acknowledgement and then silence, because no
+screen existed on which to reply. That made every other admin feature the more
+finished-looking half of the console.
+
+`/tickets` ("Support" in the nav) is a list with status tabs and a drawer per
+ticket.
+
+### 79.1 The buttons are the transition table, minus one
+
+`TICKET_TRANSITIONS` (§24.3) is the authority; the page mirrors only which
+buttons to draw, because a button for a move the server will refuse is worse
+than no button. So: OPEN offers "Start handling", IN_PROGRESS offers "Mark
+resolved", RESOLVED offers "Close".
+
+**Reopening has no button on purpose.** Only the reporter may reopen — an admin
+reopening their own resolution would defeat the point of the reopen window. A
+RESOLVED ticket says so in words instead: *"Only the reporter can reopen this,
+and only for a while."* Verified: an admin PATCH to IN_PROGRESS returns 403,
+*"RESOLVED to IN_PROGRESS is not a transition you can make."*
+
+### 79.2 Resolving asks what the outcome was
+
+The server requires `resolutionNote` on RESOLVED, so the page prompts for it
+rather than letting a 400 explain the rule. The prompt says what the note is
+for — the reporter is sent it, and it is the record a reopen argues against —
+because "Reason:" would collect "fixed".
+
+### 79.3 Internal notes are marked, not merely excluded
+
+One textarea posts either a public reply or an internal note, by checkbox:
+*"Internal note — the reporter never sees this."* In the thread, internal notes
+are flagged and tinted. Two reasons to show them differently rather than just
+filter them out of the reporter's view: whoever picks the ticket up next needs
+the context, and an admin about to type something blunt should be able to see
+at a glance which box they are typing into.
+
+Confirmed end to end, not assumed: an internal note posted as admin appears in
+`GET /admin/tickets/{id}` flagged, and is **absent** from the reporter's
+`GET /tickets/{id}`.
+
+### 79.4 What the list surfaces without opening anything
+
+Reference, subject, category, who reported it, last activity, status — plus two
+flags that change whether you open it: **unassigned**, and **reopened ×n**. A
+reopen count above zero is a resolution that did not hold, which is the single
+most useful thing to see from outside.
+
+### 79.5 Verified against the live backend
+
+Every call the page makes, run against the running server: list (filtered and
+unfiltered), detail with its message thread, assign, public reply, internal
+note, OPEN→IN_PROGRESS, IN_PROGRESS→RESOLVED with a note, RESOLVED→CLOSED, and
+the two refusals above. TKT-000005 was raised as a customer through the real
+endpoint to test assignment from unassigned.
+
+Worth recording about the method: my first attempt read a six-digit *ticket
+reference* out of a notification email and used it as a login code. The OTP
+harness now filters by subject and requires the mail to postdate the request.
+A test fixture that picks the wrong six digits fails in a way that looks like
+a broken endpoint.
+

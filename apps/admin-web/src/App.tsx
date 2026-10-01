@@ -6,6 +6,7 @@ import { BusinessesPage } from './pages/BusinessesPage';
 import { PayoutDestinationsPage } from './pages/PayoutDestinationsPage';
 import { PayoutsPage } from './pages/PayoutsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { TicketsPage } from './pages/TicketsPage';
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
         <Route path="/businesses" element={<BusinessesPage />} />
         <Route path="/payout-destinations" element={<PayoutDestinationsPage />} />
         <Route path="/payouts" element={<PayoutsPage />} />
+        <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/businesses" replace />} />
