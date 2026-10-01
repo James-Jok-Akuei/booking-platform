@@ -8597,3 +8597,50 @@ the public listing and present in the queue, carrying the reason it was hidden.
 
 **1077 passing across 30 suites.**
 
+## 94. The user directory
+
+Item 6 of the wiring plan, and the same shape as §93: the action existed and
+nothing could reach it. `PATCH /admin/users/:id/display-name/clear` takes an id
+that **nothing in the platform produced** — no list, no search, no lookup
+anywhere. An admin who learned of an abusive display name had no way to find the
+account it belonged to.
+
+### 94.1 A directory, not a user manager
+
+`GET /admin/users` lists, filters by role, searches email and display name
+case-insensitively, and narrows to accounts that **have** a display name —
+which is the filter that turns a directory into a queue, since clearing one is
+the only action here.
+
+Deliberately not added: editing, suspending or deleting a user. §16.9's note
+still holds — there is no admin edit of a byline, because replacing a name with
+wording an administrator preferred would publish words under that customer's
+byline that they never wrote. Clearing is the whole of it, and that asymmetry is
+the point rather than an omission.
+
+### 94.2 Counts, not history
+
+Each row carries bookings, reviews and tickets as **numbers**. The question a
+directory row has to answer is whether this account is real and active; its
+history belongs to the screens that already show it. Active memberships come
+with it, so a business account says where its holder works and with what role.
+
+Removed memberships are excluded: they say where someone *used* to work, which
+is history rather than who they are now.
+
+### 94.3 Verified
+
+The reason is required, and the customer is told — both confirmed. Clearing
+`Deng` changed that reviewer's byline on the public listing from **Deng** to
+**Anonymous**, and an email arrived titled *"Your review display name was
+removed"*. A business asking for the directory got **403**. Demo data restored
+afterwards.
+
+Nine tests, including search matching a display name alone and the role scoping.
+
+A note on method: `UID=$(...)` in the verification script failed with "bad math
+expression" — `UID` is readonly in zsh. It read as corrupt data for a moment and
+was neither.
+
+**1086 passing across 31 suites.**
+

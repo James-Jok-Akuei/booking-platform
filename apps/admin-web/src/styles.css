@@ -252,3 +252,7 @@ td.reason { max-width: 320px; }
 .review-text { margin: 7px 0 0; white-space: pre-wrap; }
 .reply-shown { margin-top: 10px; padding-left: 12px; border-left: 3px solid var(--accent); }
 .reply-shown p { margin: 3px 0 0; white-space: pre-wrap; }
+
+.filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.filters input[type='search'] { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; min-width: 210px; }
+.filters select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; }

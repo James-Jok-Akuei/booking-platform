@@ -1,8 +1,14 @@
 import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { NotificationType, UserRole } from '@prisma/client';
+import {
+  BusinessMemberStatus,
+  NotificationType,
+  Prisma,
+  UserRole,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClearDisplayNameDto } from './dto/clear-display-name.dto';
+import { ListUsersDto } from './dto/list-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -29,6 +35,97 @@ export class UsersService {
    * is a decorator on a class; a service method that trusts it is one
    * refactor away from being callable by anyone (§27.1).
    */
+  /**
+   * The user directory (§94).
+   *
+   * `clearDisplayName` was the only thing here, and it takes an id that nothing
+   * produced: there was no list, no search and no way to look an account up.
+   * A moderation action you cannot navigate to is not reachable.
+   *
+   * Counts rather than rows: what an admin needs from a list is whether this
+   * account is real and active, not its history. The history is a question for
+   * the screens that already show it.
+   */
+  async list(
+    actor: { role: UserRole | string },
+    query: ListUsersDto,
+  ) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only an administrator can list users.');
+    }
+
+    const limit = query.limit ?? 25;
+    const offset = query.offset ?? 0;
+    const search = query.search?.trim();
+
+    const where: Prisma.UserWhereInput = {
+      ...(query.role ? { role: query.role } : {}),
+      ...(query.withDisplayName === 'true' ? { displayName: { not: null } } : {}),
+      ...(search
+        ? {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' as const } },
+              { displayName: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, users] = await Promise.all([
+      this.prisma.user.count({ where }),
+      this.prisma.user.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          displayName: true,
+          createdAt: true,
+          _count: {
+            select: {
+              appointments: true,
+              reviews: true,
+              reportedTickets: true,
+            },
+          },
+          // Only ACTIVE memberships: a removed one says where they used to
+          // work, which is history rather than who they are now.
+          businessMemberships: {
+            where: { status: BusinessMemberStatus.ACTIVE },
+            select: {
+              role: true,
+              businessProfile: { select: { id: true, name: true } },
+            },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      total,
+      limit,
+      offset,
+      users: users.map((user) => ({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        displayName: user.displayName,
+        createdAt: user.createdAt,
+        appointmentCount: user._count.appointments,
+        reviewCount: user._count.reviews,
+        ticketCount: user._count.reportedTickets,
+        businesses: user.businessMemberships.map((membership) => ({
+          id: membership.businessProfile.id,
+          name: membership.businessProfile.name,
+          role: membership.role,
+        })),
+      })),
+    };
+  }
+
   async clearDisplayName(
     actor: { userId: string; role: UserRole | string },
     targetUserId: string,

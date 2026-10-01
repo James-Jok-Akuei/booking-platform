@@ -618,3 +618,46 @@ export const hideReview = (id: string, hiddenReason: string) =>
 
 export const unhideReview = (id: string) =>
   api<unknown>(`/admin/reviews/${id}/unhide`, { method: 'PATCH' });
+
+// ---------------------------------------------------------------------------
+// User directory (§94)
+// ---------------------------------------------------------------------------
+
+export interface DirectoryUser {
+  id: string;
+  email: string;
+  role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
+  displayName: string | null;
+  createdAt: string;
+  appointmentCount: number;
+  reviewCount: number;
+  ticketCount: number;
+  businesses: Array<{ id: string; name: string | null; role: string }>;
+}
+
+export interface DirectoryPage {
+  total: number;
+  limit: number;
+  offset: number;
+  users: DirectoryUser[];
+}
+
+export const listUsers = (params: {
+  role?: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
+  search?: string;
+  withDisplayName?: string;
+  limit?: number;
+}) => api<DirectoryPage>('/admin/users', { query: params });
+
+/**
+ * Clears the byline a customer chose. The only moderation action on a user, and
+ * there is deliberately no edit: replacing a name with wording an admin
+ * preferred would publish words under that customer's byline they never wrote.
+ *
+ * A reason is required, and the customer is told it.
+ */
+export const clearDisplayName = (id: string, reason: string) =>
+  api<DirectoryUser>(`/admin/users/${id}/display-name/clear`, {
+    method: 'PATCH',
+    body: { reason },
+  });

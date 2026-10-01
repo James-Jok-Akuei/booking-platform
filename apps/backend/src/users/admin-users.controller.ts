@@ -1,4 +1,13 @@
-import { Body, Controller, Param, ParseUUIDPipe, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -9,6 +18,7 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { UsersService } from './users.service';
 import { ClearDisplayNameDto } from './dto/clear-display-name.dto';
+import { ListUsersDto } from './dto/list-users.dto';
 
 /**
  * User moderation. API-only, like every other admin surface here (§16.9).
@@ -22,6 +32,15 @@ import { ClearDisplayNameDto } from './dto/clear-display-name.dto';
 @Roles(UserRole.ADMIN)
 export class AdminUsersController {
   constructor(private readonly users: UsersService) {}
+
+  /**
+   * The directory (§94). Without it, the PATCH below took an id that nothing
+   * in the platform produced.
+   */
+  @Get()
+  list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListUsersDto) {
+    return this.users.list(user, query);
+  }
 
   @Patch(':id/display-name/clear')
   clearDisplayName(

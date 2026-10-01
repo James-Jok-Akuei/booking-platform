@@ -8,6 +8,7 @@ import { PayoutsPage } from './pages/PayoutsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LedgerPage } from './pages/LedgerPage';
 import { ReviewsPage } from './pages/ReviewsPage';
+import { UsersPage } from './pages/UsersPage';
 import { TicketsPage } from './pages/TicketsPage';
 
 export function App() {
@@ -26,6 +27,7 @@ export function App() {
         <Route path="/payouts" element={<PayoutsPage />} />
         <Route path="/ledger" element={<LedgerPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
+        <Route path="/users" element={<UsersPage />} />
         <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
