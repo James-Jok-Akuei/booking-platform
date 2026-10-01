@@ -636,3 +636,77 @@ export const removeMember = (membershipId: string) =>
   api<{ message: string }>(`/business/members/${membershipId}`, {
     method: 'DELETE',
   });
+
+// ---------------------------------------------------------------------------
+// Closures and breaks (§91)
+//
+// Two different things, kept apart because they answer different questions.
+// An exception replaces a WHOLE day: shut for a holiday, or different hours.
+// A time block takes a slice OUT of a normal day: a lunch break, a meeting.
+// ---------------------------------------------------------------------------
+
+export interface ScheduleException {
+  id: string;
+  locationId: string;
+  /** YYYY-MM-DD, serialised as a calendar date, never a timestamp. */
+  date: string;
+  isClosed: boolean;
+  customOpenTime: string | null;
+  customCloseTime: string | null;
+  reason: string | null;
+}
+
+export interface TimeBlock {
+  id: string;
+  locationId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  reason: string | null;
+}
+
+export const listExceptions = (locationId: string) =>
+  api<ScheduleException[]>(`/business/locations/${locationId}/schedule-exceptions`);
+
+/**
+ * Either close the day, or give it different hours — never both, and never
+ * neither. The server refuses anything else, because a row that is not closed
+ * and has no custom hours says nothing at all.
+ */
+export const createException = (
+  locationId: string,
+  body: {
+    date: string;
+    isClosed?: boolean;
+    customOpenTime?: string;
+    customCloseTime?: string;
+    reason?: string;
+  },
+) =>
+  api<ScheduleException>(`/business/locations/${locationId}/schedule-exceptions`, {
+    method: 'POST',
+    body,
+  });
+
+export const deleteException = (locationId: string, exceptionId: string) =>
+  api<{ message: string }>(
+    `/business/locations/${locationId}/schedule-exceptions/${exceptionId}`,
+    { method: 'DELETE' },
+  );
+
+export const listTimeBlocks = (locationId: string) =>
+  api<TimeBlock[]>(`/business/locations/${locationId}/time-blocks`);
+
+export const createTimeBlock = (
+  locationId: string,
+  body: { date: string; startTime: string; endTime: string; reason?: string },
+) =>
+  api<TimeBlock>(`/business/locations/${locationId}/time-blocks`, {
+    method: 'POST',
+    body,
+  });
+
+export const deleteTimeBlock = (locationId: string, blockId: string) =>
+  api<{ message: string }>(`/business/locations/${locationId}/time-blocks/${blockId}`, {
+    method: 'DELETE',
+  });

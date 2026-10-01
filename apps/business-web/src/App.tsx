@@ -7,6 +7,7 @@ import { ServicesPage } from './pages/ServicesPage';
 import { HoursPage } from './pages/HoursPage';
 import { GettingPaidPage } from './pages/PayoutsPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ClosuresPage } from './pages/ClosuresPage';
 import { StaffPage } from './pages/StaffPage';
 import { SupportPage } from './pages/SupportPage';
 
@@ -27,6 +28,7 @@ export function App() {
         <Route path="/getting-paid" element={<GettingPaidPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/people" element={<StaffPage />} />
+        <Route path="/closures" element={<ClosuresPage />} />
         <Route path="/help" element={<SupportPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/appointments" replace />} />

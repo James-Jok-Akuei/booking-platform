@@ -8446,3 +8446,49 @@ Finally the whole thing again with a genuinely new person: invited as STAFF,
 blocked at sign-in, registered through the new step, joined, and confirmed STAFF
 can read `/business/services` (200) but not invite (403).
 
+## 91. Closures and breaks
+
+Item 3 of the wiring plan, and like §90 the backend needed nothing. Availability
+has honoured both mechanisms all along — `CLOSED_EXCEPTION` and `EXCEPTION` are
+already named sources in its result. Only the screen was missing, so a business
+could not close for a public holiday without a developer.
+
+### 91.1 Two mechanisms, kept apart on the page
+
+They answer different questions, and merging them into one "unavailable" form
+would have made both harder to reach:
+
+- **Whole days** — shut for a holiday, or open at different hours. Replaces the
+  weekly template for that date.
+- **Part of a day** — lunch, a meeting, a delivery. Takes a slice out of an
+  otherwise normal day.
+
+### 91.2 The form cannot assemble a refusal
+
+An exception must either close the day **or** set both custom times — never
+both, never neither, and never one time without the other. Four separate
+refusals, all correct, and all unreachable from the screen: a single dropdown
+picks "closed all day" or "different hours", and the time fields only exist in
+the second case.
+
+The only refusal a person can still reach is a close time earlier than an open
+time, which is a genuine mistake worth being told about rather than prevented.
+
+### 91.3 Verified by watching the slots move
+
+Not "the row saved" — the thing that matters is whether a customer can still
+book. On a branch open 08:00–19:00 with 44 slots:
+
+| Change | Result |
+|---|---|
+| Closed all day | 44 → **0** slots, source `CLOSED_EXCEPTION` |
+| Custom hours 10:00–14:00 | 44 → **16** slots, source `EXCEPTION` |
+| Lunch break 13:00–14:00 | 44 → **40** slots, source still `TEMPLATE` |
+
+The lunch break leaving the source as `TEMPLATE` is right: the day is still an
+ordinary day, with an hour taken out of it.
+
+All five server refusals confirmed, deleting another location's exception is a
+404, and removing each row put the slots back exactly as they were. Test rows
+were deleted afterwards; the seeded demo exception is the only one left.
+

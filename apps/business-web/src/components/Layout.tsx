@@ -9,6 +9,7 @@ const SECTIONS = [
   { to: '/people', label: 'People' },
   { to: '/services', label: 'Services' },
   { to: '/hours', label: 'Branches & hours' },
+  { to: '/closures', label: 'Closures & breaks' },
   { to: '/getting-paid', label: 'Getting paid' },
   { to: '/help', label: 'Help' },
 ];
