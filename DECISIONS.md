@@ -7485,3 +7485,48 @@ eleven tests before anyone checked which word. §74's toggle is better than §73
 deletion and the work stands, but it was arrived at by building rather than by
 asking — and a question would have cost one message.
 
+
+---
+
+## 76. "Everywhere" acts on the branches (2026-10-01)
+
+Spotted on screen: a service sitting under **Not on sale** whose every branch
+line offered to *"Stop offering here"* — stopping something already stopped.
+
+### 76.1 Two flags that could disagree
+
+`Service.isActive` and `ServiceLocation.isOffered` were independent, and "Stop
+offering everywhere" flipped only the first. So a service could be off sale
+while every branch still reported itself on, and the screen faithfully rendered
+the contradiction.
+
+**"Everywhere" now means every branch.** It sets `isOffered` on all of them and
+does not touch `isActive` — one transaction and one price recalculation, rather
+than the client looping, because a half-applied bulk change is exactly the state
+this exists to prevent.
+
+`isActive` keeps its original meaning, a soft delete that preserves history
+(§10.5), and the business app no longer sets it. The screen still handles a
+service retired that way, since one can exist from before this change or from
+the API.
+
+### 76.2 The screen reads the effective state
+
+A branch line asks whether a customer could book **here, now** — which means
+`isActive && isOffered`, not the branch flag alone. A retired service's branches
+show "service stopped" rather than a button to stop them again.
+
+The two ways back undo two different things, so they are two actions: a service
+switched off everywhere is put back by turning its branches on at the prices it
+had; one retired through the API has its flag cleared.
+
+### 76.3 Verified
+
+Five new tests, including the one this exists for — **after turning a service
+off everywhere, no branch claims to be on sale** — plus prices surviving the
+round trip and headline prices clearing and returning.
+
+Live: stopping Haircut everywhere left `isActive: true`, both branches off, and
+putting it back restored **Kimironko 5,000 and Nyarugenge 7,000** untouched.
+
+**1001 passing across 26 suites.**

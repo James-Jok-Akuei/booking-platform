@@ -647,6 +647,40 @@
         ]
       }
     },
+    "/business/services/{id}/offered": {
+      "patch": {
+        "operationId": "BusinessController_setServiceOfferedEverywhere",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetServiceOfferedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Turns a service on or off at EVERY branch (§76).\n\nThe bulk form of the route above. Declared before `services/:id` so the\nmore specific path wins.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
     "/admin/businesses": {
       "get": {
         "operationId": "AdminBusinessController_list",

@@ -254,6 +254,22 @@ export class BusinessController {
   }
 
   /**
+   * Turns a service on or off at EVERY branch (§76).
+   *
+   * The bulk form of the route above. Declared before `services/:id` so the
+   * more specific path wins.
+   */
+  @Patch('services/:id/offered')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  setServiceOfferedEverywhere(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SetServiceOfferedDto,
+  ) {
+    return this.services.setOfferedEverywhere(user.userId, id, dto.isOffered);
+  }
+
+  /**
    * Retires a service EVERYWHERE. Soft delete: flips isActive to false so past
    * appointments still resolve.
    */

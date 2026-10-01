@@ -272,3 +272,18 @@ export const setCapacity = (locationId: string, capacity: number) =>
     method: 'PATCH',
     body: { capacity },
   });
+
+/**
+ * Turns a service on or off at EVERY branch (§76).
+ *
+ * "Everywhere" acts on the branches, not on the service's own retired flag —
+ * flipping that instead left a service off sale while every branch still
+ * claimed to be selling it.
+ */
+export const setServiceOfferedEverywhere = (id: string, isOffered: boolean) =>
+  api<{
+    message: string;
+    isOffered: boolean;
+    offeredAtCount: number;
+    service: Service;
+  }>(`/business/services/${id}/offered`, { method: 'PATCH', body: { isOffered } });

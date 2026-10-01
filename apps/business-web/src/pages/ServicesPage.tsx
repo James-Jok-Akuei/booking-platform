@@ -6,7 +6,7 @@ import {
   listLocations,
   listServices,
   setServiceOfferedAt,
-  retireService,
+  setServiceOfferedEverywhere,
   updateService,
   type Location,
   type Service,
@@ -40,7 +40,24 @@ export function ServicesPage() {
     },
   });
 
-  const retire = useMutation({ mutationFn: retireService, onSuccess: refresh });
+  /** Every branch at once. Acts on the branches, never on the retired flag. */
+  const everywhere = useMutation({
+    mutationFn: (input: { id: string; isOffered: boolean }) =>
+      setServiceOfferedEverywhere(input.id, input.isOffered),
+    onSuccess: refresh,
+  });
+
+  /**
+   * Un-retires a service whose own flag was turned off through the API.
+   *
+   * The screen never sets that flag — "everywhere" is a statement about
+   * branches (§76) — but a service retired before this existed still needs a
+   * way back.
+   */
+  const unretire = useMutation({
+    mutationFn: (id: string) => updateService(id, { isActive: true }),
+    onSuccess: refresh,
+  });
 
   /**
    * Pausing or resuming at one branch (§74). Separate from retiring, which is
@@ -89,10 +106,11 @@ export function ServicesPage() {
         directly.
       </p>
 
-      {(save.error || retire.error || toggle.error) && (
+      {(save.error || everywhere.error || toggle.error || unretire.error) && (
         <p className="error" role="alert">
-          {(save.error ?? retire.error ?? toggle.error) instanceof ApiError
-            ? (save.error ?? retire.error ?? toggle.error)!.message
+          {(save.error ?? everywhere.error ?? toggle.error ?? unretire.error) instanceof
+          ApiError
+            ? (save.error ?? everywhere.error ?? toggle.error ?? unretire.error)!.message
             : 'That did not work.'}
         </p>
       )}
@@ -126,7 +144,7 @@ export function ServicesPage() {
                 service={service}
                 money={money}
                 locations={locations.data ?? []}
-                busy={save.isPending || retire.isPending || toggle.isPending}
+                busy={save.isPending || everywhere.isPending || toggle.isPending || unretire.isPending}
                 onSave={(body) => save.mutate({ id: service.id, body })}
                 onToggle={(locationId, isOffered) =>
                   toggle.mutate({ id: service.id, locationId, isOffered })
@@ -139,7 +157,7 @@ export function ServicesPage() {
                         'back at any time. Appointments already made are unaffected.',
                     )
                   ) {
-                    retire.mutate(service.id);
+                    everywhere.mutate({ id: service.id, isOffered: false });
                   }
                 }}
               />
@@ -173,14 +191,22 @@ export function ServicesPage() {
                   service={service}
                   money={money}
                   locations={locations.data ?? []}
-                  busy={save.isPending || retire.isPending || toggle.isPending}
+                  busy={save.isPending || everywhere.isPending || toggle.isPending || unretire.isPending}
                   onSave={(body) => save.mutate({ id: service.id, body })}
                   onToggle={(locationId, isOffered) =>
                     toggle.mutate({ id: service.id, locationId, isOffered })
                   }
-                  onRetire={() => save.mutate({ id: service.id, body: { isActive: true } })}
+                  // Two different ways back, because they undo two different
+                  // things: a service retired through the API needs its flag
+                  // cleared, and one simply switched off everywhere needs its
+                  // branches turned back on.
+                  onRetire={() =>
+                    service.isActive
+                      ? everywhere.mutate({ id: service.id, isOffered: true })
+                      : unretire.mutate(service.id)
+                  }
                   retireLabel="Put back on sale"
-                  retireIsRestore={!service.isActive}
+                  retireIsRestore
                 />
               ))}
             </tbody>
@@ -360,7 +386,9 @@ function ServiceRow({
   // The deposit is a percentage, so it differs per branch wherever the price
   // does. Shown against the cheapest, which is the smallest a customer ever
   // hands over.
-  const onSale = service.locations.filter((o) => o.isOffered);
+  const onSale = service.isActive
+    ? service.locations.filter((o) => o.isOffered)
+    : [];
   const cheapest = onSale.length ? Math.min(...onSale.map((o) => o.priceMinor)) : null;
   const depositMinor =
     cheapest === null
@@ -373,10 +401,12 @@ function ServiceRow({
         <strong>{service.name}</strong>
       </td>
       <td>
-        {service.locations.filter((o) => o.isOffered).length === 0 ? (
+        {onSale.length === 0 ? (
           // No branch is selling it. Stated plainly rather than left as an
           // empty column, but not as an error — it is a choice, not a fault.
-          <span className="muted small">Switched off at every branch</span>
+          <span className="muted small">
+            {service.isActive ? 'Switched off at every branch' : 'Service stopped'}
+          </span>
         ) : null}
         {service.locations.length > 0 && (
           service.locations.map((offer) => (
@@ -386,13 +416,21 @@ function ServiceRow({
             // among the row actions, where it could only mean all of them.
             <div
               key={offer.locationId}
-              className={offer.isOffered ? 'branch-line' : 'branch-line off'}
+              className={
+                offer.isOffered && service.isActive ? 'branch-line' : 'branch-line off'
+              }
             >
               <span className="branch-price-label">
                 {money.format(offer.priceMinor)}
                 <span className="muted small"> · {offer.location.name}</span>
               </span>
-              {offer.isOffered ? (
+              {/* Reads the EFFECTIVE state, not the branch flag alone. A
+                  retired service sells nothing anywhere, so offering to "stop
+                  offering here" would be stopping something already stopped —
+                  which is what this row used to say. */}
+              {!service.isActive ? (
+                <span className="muted small">service stopped</span>
+              ) : offer.isOffered ? (
                 <button
                   type="button"
                   className="link danger-link tiny"

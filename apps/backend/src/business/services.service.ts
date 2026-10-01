@@ -256,6 +256,40 @@ export class ServicesService {
   }
 
   /**
+   * Turns a service on or off at EVERY branch at once (§76).
+   *
+   * "Everywhere" acts on the branches, not on `Service.isActive`. Flipping the
+   * service flag instead left the two disagreeing: a service could be retired
+   * while every branch still said it was on sale, and the screen then offered
+   * to "stop offering here" for something already sold nowhere.
+   *
+   * One transaction and one recalculation, rather than the client looping — a
+   * half-applied bulk change is exactly the state this exists to avoid.
+   */
+  async setOfferedEverywhere(userId: string, serviceId: string, isOffered: boolean) {
+    const businessId = await this.access.requireBusinessId(userId);
+    await this.requireOwned(businessId, serviceId);
+
+    const service = await this.prisma.$transaction(async (tx) => {
+      await tx.serviceLocation.updateMany({ where: { serviceId }, data: { isOffered } });
+      await recalculateFromPrice(tx, businessId);
+      return tx.service.findUniqueOrThrow({
+        where: { id: serviceId },
+        include: SERVICE_INCLUDE,
+      });
+    });
+
+    return {
+      message: isOffered
+        ? 'Back on sale at every branch, at the prices you had.'
+        : 'Stopped at every branch. The prices are kept, so you can put it back.',
+      isOffered,
+      offeredAtCount: service.locations.filter((o) => o.isOffered).length,
+      service,
+    };
+  }
+
+  /**
    * Retires a service EVERYWHERE — a soft delete that flips isActive, never
    * removing the row.
    *

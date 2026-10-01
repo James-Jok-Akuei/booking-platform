@@ -429,6 +429,106 @@ describe('Denormalised fromPriceMinor (§44)', () => {
     });
   });
 
+  describe('turning a service off everywhere (§76)', () => {
+    it('pauses every branch and keeps every price', async () => {
+      await addBranches(business, 1);
+      const [first, second] = await locationIdsOf(business.businessId);
+      const service = await services.create(business.userId, {
+        name: 'Both branches',
+        durationMinutes: 30,
+        depositPercentage: 20,
+        offers: [
+          { locationId: first, priceMinor: 1000 },
+          { locationId: second, priceMinor: 2000 },
+        ],
+      });
+
+      const result = await services.setOfferedEverywhere(
+        business.userId,
+        service.id,
+        false,
+      );
+
+      expect(result.offeredAtCount).toBe(0);
+      // The service itself is untouched: "everywhere" is a statement about
+      // branches, not a retirement (§76).
+      expect(result.service.isActive).toBe(true);
+      expect(result.service.locations.map((o) => o.priceMinor).sort()).toEqual([
+        1000, 2000,
+      ]);
+    });
+
+    /**
+     * The incoherence this fixes: a service could be off sale while every
+     * branch still reported itself on, so the screen offered to stop something
+     * already stopped.
+     */
+    it('leaves no branch claiming to be on sale', async () => {
+      const [only] = await locationIdsOf(business.businessId);
+      const service = await newService(business, 1200, 'Everywhere off', [only]);
+
+      await services.setOfferedEverywhere(business.userId, service.id, false);
+
+      const offers = await prisma.serviceLocation.findMany({
+        where: { serviceId: service.id },
+      });
+      expect(offers.every((o) => !o.isOffered)).toBe(true);
+    });
+
+    it('puts it back at every branch, at the prices it had', async () => {
+      await addBranches(business, 1);
+      const [first, second] = await locationIdsOf(business.businessId);
+      const service = await services.create(business.userId, {
+        name: 'Returning',
+        durationMinutes: 30,
+        depositPercentage: 20,
+        offers: [
+          { locationId: first, priceMinor: 1100 },
+          { locationId: second, priceMinor: 2200 },
+        ],
+      });
+      await services.setOfferedEverywhere(business.userId, service.id, false);
+
+      const result = await services.setOfferedEverywhere(
+        business.userId,
+        service.id,
+        true,
+      );
+
+      expect(result.offeredAtCount).toBe(2);
+      const byLocation = new Map(
+        result.service.locations.map((o) => [o.locationId, o.priceMinor]),
+      );
+      expect(byLocation.get(first)).toBe(1100);
+      expect(byLocation.get(second)).toBe(2200);
+    });
+
+    it('clears every branch headline, then restores it', async () => {
+      const [only] = await locationIdsOf(business.businessId);
+      const service = await prisma.service.findFirstOrThrow({
+        where: { businessId: business.businessId },
+      });
+
+      await services.setOfferedEverywhere(business.userId, service.id, false);
+      let row = await prisma.location.findUniqueOrThrow({ where: { id: only } });
+      expect(row.fromPriceMinor).toBeNull();
+
+      await services.setOfferedEverywhere(business.userId, service.id, true);
+      row = await prisma.location.findUniqueOrThrow({ where: { id: only } });
+      expect(row.fromPriceMinor).toBe(4500);
+    });
+
+    it("404s on another business's service", async () => {
+      const theirs = await prisma.service.findFirstOrThrow({
+        where: { businessId: other.businessId },
+      });
+
+      await expect(
+        services.setOfferedEverywhere(business.userId, theirs.id, false),
+      ).rejects.toThrow();
+    });
+  });
+
   describe('another business is never touched', () => {
     it('creating a service leaves the other business alone', async () => {
       await newService(business, 100);
