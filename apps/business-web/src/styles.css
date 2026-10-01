@@ -228,3 +228,12 @@ button.tiny { font-size: 11px; }
 .branch-line { display: flex; align-items: baseline; gap: 10px; justify-content: space-between; }
 .branch-price-label { white-space: nowrap; }
 .branch-line.off .branch-price-label { opacity: 0.55; text-decoration: line-through; }
+
+.figures { display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 12px; }
+.figure-block { display: flex; flex-direction: column; gap: 2px; max-width: 24ch; }
+.figure-block .figure { font-size: 20px; font-weight: 650; }
+.figure-block .muted-figure { font-weight: 500; color: var(--muted); }
+.destination { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.pill.unverified { background: #fef0c7; color: var(--warn); }
+.pill.verified { background: #dcfae6; color: var(--ok); }
+.pill.rejected, .pill.superseded { background: #fee4e2; color: var(--danger); }

@@ -5,6 +5,7 @@ import { RequireAuth } from './auth/RequireAuth';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { HoursPage } from './pages/HoursPage';
+import { GettingPaidPage } from './pages/PayoutsPage';
 
 export function App() {
   return (
@@ -20,6 +21,7 @@ export function App() {
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/hours" element={<HoursPage />} />
+        <Route path="/getting-paid" element={<GettingPaidPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/appointments" replace />} />
     </Routes>

@@ -13,7 +13,7 @@ export class CreatePayoutDestinationDto {
   @Matches(E164, {
     message:
       'msisdn must be in E.164 format — a leading +, a country code, then the ' +
-      'national number, e.g. +211921234567.',
+      'national number, e.g. +250788123456.',
   })
   msisdn!: string;
 

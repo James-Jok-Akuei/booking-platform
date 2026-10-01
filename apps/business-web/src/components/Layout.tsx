@@ -7,6 +7,7 @@ const SECTIONS = [
   { to: '/appointments', label: 'Appointments' },
   { to: '/services', label: 'Services' },
   { to: '/hours', label: 'Branches & hours' },
+  { to: '/getting-paid', label: 'Getting paid' },
 ];
 
 export function Layout() {

@@ -603,4 +603,46 @@ describe('Payout destinations (§48)', () => {
       expect(created.verificationMethod).toBeNull();
     });
   });
+
+  // ------------------------------------------------------------------
+  /**
+   * The balance must say what a run will do (§77).
+   *
+   * It reported only suspension, so a business whose number was waiting to be
+   * checked was told payouts were fine — while every run skipped it for exactly
+   * that reason (§48.3). A balance screen that says nothing is wrong about
+   * money that is not moving is worse than saying nothing at all.
+   */
+  describe('the balance reports an unverified destination as paused', () => {
+    it('is paused, and says which reason', async () => {
+      const fresh = await createBusiness(prisma, { payoutDestination: 'UNVERIFIED' });
+
+      const balance = await payouts.balance(AS_ADMIN(), fresh.businessId);
+
+      expect(balance.payoutsPaused).toBe(true);
+      expect(balance.payoutsPausedReason).toBe('DESTINATION_NOT_VERIFIED');
+      expect(balance.note).toMatch(/verified payout number/i);
+    });
+
+    it('is not paused once the number is verified', async () => {
+      const fresh = await createBusiness(prisma, { payoutDestination: 'VERIFIED' });
+
+      const balance = await payouts.balance(AS_ADMIN(), fresh.businessId);
+
+      expect(balance.payoutsPaused).toBe(false);
+      expect(balance.payoutsPausedReason).toBeNull();
+    });
+
+    it('suspension outranks it, because it is the bigger problem', async () => {
+      const fresh = await createBusiness(prisma, { payoutDestination: 'UNVERIFIED' });
+      await prisma.businessProfile.update({
+        where: { id: fresh.businessId },
+        data: { status: 'SUSPENDED' },
+      });
+
+      const balance = await payouts.balance(AS_ADMIN(), fresh.businessId);
+
+      expect(balance.payoutsPausedReason).toBe('BUSINESS_SUSPENDED');
+    });
+  });
 });

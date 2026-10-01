@@ -7530,3 +7530,66 @@ Live: stopping Haircut everywhere left `isActive: true`, both branches off, and
 putting it back restored **Kimironko 5,000 and Nyarugenge 7,000** untouched.
 
 **1001 passing across 26 suites.**
+
+---
+
+## 77. Business app: getting paid (2026-10-01)
+
+The last slice before a business can run on this without help. It can now say
+where its money goes and see what it is owed.
+
+### 77.1 One screen, because it is one question
+
+The destination and the balance share a page. An owner's question is "when do I
+get my money", and the answer depends on both halves: an unverified number
+pauses every payout (§48.3), so a balance shown beside no destination status
+answers half the question and misleads about the other half.
+
+### 77.2 The balance lied about being paused — a real bug this screen found
+
+`payoutsPaused` reported **only** business suspension. A business whose payout
+number was waiting to be checked was told payouts were fine, while every run
+skipped it for exactly that reason.
+
+A balance screen that says nothing is wrong about money that is not moving is
+worse than one that says nothing at all. It now reports both reasons, with
+`payoutsPausedReason` naming which — suspension outranks an unverified number,
+because it is the larger problem and the one the business must fix first.
+
+The `note` matches, and both say the same reassuring thing: **nothing is written
+off**. The balance is held and goes out on the first run after the problem is
+resolved.
+
+### 77.3 Four figures, not one
+
+"Ready to send", "still held", "not yours yet" and "paid so far". A single
+balance would have to pick one meaning and would be wrong for the others: money
+inside the payout hold is earned but not payable, and money against an
+unresolved appointment is not earned at all.
+
+Under them, one line that prevents the most likely misreading: **these are
+deposits only**. The rest of each appointment is settled with the customer
+directly and never passes through the platform (§29.2) — so a business
+reconciling this against its till would otherwise find a gap and assume a fault.
+
+### 77.4 Changing the number pauses payouts, and says so
+
+Submitting supersedes the current number and starts again as UNVERIFIED (§48.2).
+The form says that before you submit rather than after.
+
+That is deliberate on both sides: a business that has lost control of its SIM
+must be able to change the number immediately, and the pause is what stops the
+money following whoever took it. Only the OWNER may submit — it is the one
+decision that determines where money physically goes.
+
+### 77.5 Verified end to end
+
+- The three endpoints the screen calls: 200 each.
+- A number with no `+`: refused by the E.164 matcher. A `+211` number: *"msisdn
+  must be a +250 number."* (Its error example still said `+211921234567` in a
+  Rwandan deployment — fixed.)
+- Submitting `+250788999001` superseded the old one, and the balance flipped to
+  `payoutsPaused: true` with reason `DESTINATION_NOT_VERIFIED`.
+- An admin verified it in the console, and the balance went back to not paused.
+
+**1004 passing across 26 suites.**

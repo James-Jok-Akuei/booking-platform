@@ -287,3 +287,76 @@ export const setServiceOfferedEverywhere = (id: string, isOffered: boolean) =>
     offeredAtCount: number;
     service: Service;
   }>(`/business/services/${id}/offered`, { method: 'PATCH', body: { isOffered } });
+
+// ---------------------------------------------------------------------------
+// Getting paid (§48, §35)
+// ---------------------------------------------------------------------------
+
+export type PayoutDestinationStatus =
+  | 'UNVERIFIED'
+  | 'VERIFIED'
+  | 'REJECTED'
+  | 'SUPERSEDED';
+
+export interface PayoutDestination {
+  id: string;
+  provider: 'MTN_MOMO' | 'AIRTEL_MONEY';
+  status: PayoutDestinationStatus;
+  submittedAt: string;
+  verifiedAt: string | null;
+  verificationMethod: 'ADMIN' | 'OTP' | null;
+  rejectionReason: string | null;
+  /** Masked for everyone; the full number only for the OWNER who submitted it. */
+  msisdnLast3: string;
+  msisdn?: string;
+}
+
+export interface Balance {
+  payoutsPaused: boolean;
+  /** Which of the two reasons a run would skip this business (§77). */
+  payoutsPausedReason: 'BUSINESS_SUSPENDED' | 'DESTINATION_NOT_VERIFIED' | null;
+  currency: string;
+  availableBySettlementCurrency: Array<{ currency: string; amountMinor: number }>;
+  /** Matured and ready for the next run. */
+  availableNowMinor: number;
+  /** Earned, still inside the hold period. */
+  pendingMinor: number;
+  /** Appointments with no outcome yet — not yours until they resolve. */
+  unresolvedMinor: number;
+  lifetimePaidMinor: number;
+  payoutCount: number;
+  pendingPayouts: { count: number; reportingInternalMinor: number };
+  note: string;
+}
+
+export interface Payout {
+  id: string;
+  settlementCurrency: string;
+  settlementAmountMinor: number;
+  status: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
+  reference: string | null;
+  failureReason: string | null;
+  runAt: string;
+  paidAt: string | null;
+}
+
+export const getPayoutDestination = () =>
+  api<{ destination: PayoutDestination | null }>('/business/payout-destination');
+
+/**
+ * Submitting SUPERSEDES the current number and starts again as UNVERIFIED
+ * (§48.2) — payouts pause until an admin checks it. That is deliberate: a
+ * business that has lost control of its SIM must be able to change the number
+ * immediately, and the pause is what stops money going to whoever took it.
+ */
+export const submitPayoutDestination = (msisdn: string) =>
+  api<PayoutDestination>('/business/payout-destination', {
+    method: 'POST',
+    body: { msisdn },
+  });
+
+export const getBalance = (businessId: string) =>
+  api<Balance>(`/businesses/${businessId}/balance`);
+
+export const listMyPayouts = (businessId: string) =>
+  api<{ total: number; payouts: Payout[] }>(`/businesses/${businessId}/payouts`);

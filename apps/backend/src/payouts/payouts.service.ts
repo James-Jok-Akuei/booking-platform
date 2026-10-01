@@ -857,11 +857,26 @@ export class PayoutsService {
       where: { id: businessId },
       select: { status: true, statusReason: true },
     });
-    const paused = business?.status === BusinessStatus.SUSPENDED;
+
+    // BOTH reasons a run skips a business, not just one (§77).
+    //
+    // This reported only suspension, so a business whose payout number was
+    // waiting to be checked was told payouts were fine — while every run
+    // skipped it for exactly that reason (§48.3). A balance screen that says
+    // "nothing is wrong" about money that is not moving is worse than silence.
+    const verified = await this.destinations.verifiedFor([businessId]);
+    const suspended = business?.status === BusinessStatus.SUSPENDED;
+    const unverifiedDestination = !verified.has(businessId);
 
     return {
       businessId,
-      payoutsPaused: paused,
+      payoutsPaused: suspended || unverifiedDestination,
+      /** Which of the two, so a caller can say something useful. */
+      payoutsPausedReason: suspended
+        ? ('BUSINESS_SUSPENDED' as const)
+        : unverifiedDestination
+          ? ('DESTINATION_NOT_VERIFIED' as const)
+          : null,
       availableBySettlementCurrency: settlement.map((row) => ({
         currency: row.settlementCurrency!,
         amountMinor: row._sum.settlementAmountMinor ?? 0,
@@ -887,10 +902,14 @@ export class PayoutsService {
         pending: pending._count._all,
         unresolved: unresolved._count._all,
       },
-      note: paused
+      note: suspended
         ? 'Payouts are paused while this business is suspended. Nothing has been ' +
           'written off — the balance is held and goes out on the first run after ' +
           `reinstatement.${business?.statusReason ? ` Reason: ${business.statusReason}` : ''}`
+        : unverifiedDestination
+          ? 'Payouts are paused until a verified payout number is on file. ' +
+            'Nothing is written off — the balance is held and goes out on the ' +
+            'first run after the number is confirmed.'
         : availableMinor < 0
           ? 'This balance is negative, which happens after a cancellation the ' +
             'business was responsible for. No payout is made while it is; it ' +
