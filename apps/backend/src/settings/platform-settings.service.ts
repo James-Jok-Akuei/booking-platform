@@ -125,7 +125,11 @@ export class PlatformSettingsService {
         `Platform settings row "${PLATFORM_SETTING_ID}" is missing; no exchange rate available.`,
       );
       return {
-        providerCurrency: 'EUR',
+        // The unit of account, not a literal. A missing settings row means
+        // nothing has been configured — and the honest reading of that is
+        // "we collect in what we price in", not "we collect in euros"
+        // (§68.3). The old literal was a sandbox leftover.
+        providerCurrency: INTERNAL_CURRENCY,
         rate: null,
         updatedAt: null,
         updatedById: null,
@@ -405,7 +409,11 @@ export class PlatformSettingsService {
       },
       create: {
         id: PLATFORM_SETTING_ID,
-        providerCurrency: providerCurrency ?? 'EUR',
+        // The value the checks above were run against. Writing anything else
+        // means validating one currency and storing another: the §55.3 rule
+        // that a rate of 1 is required for the unit of account was being
+        // applied to `targetCurrency` while this line wrote "EUR".
+        providerCurrency: targetCurrency,
         exchangeRateUsdToProviderCurrency: rate,
         exchangeRateUpdatedAt: new Date(),
         exchangeRateUpdatedById: updatedById ?? null,

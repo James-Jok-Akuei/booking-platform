@@ -6977,3 +6977,31 @@ version of this fix, and it needs a decision about rows that legitimately
 predate settlement tracking (§45 added those columns to an existing ledger and
 backfilled only what it could). That is its own commit, not a footnote to this
 one.
+
+---
+
+## 68.7 Two more EUR fallbacks (2026-10-01)
+
+Found by the question "is EUR a default that can't be changed?", which is the
+right question to ask about a currency literal.
+
+§68.3 removed the schema default. Two more survived in code:
+
+**`getExchangeRate()` reported `providerCurrency: 'EUR'` when the settings row
+is missing.** Harmless to money — the rate is null, so the charge path refuses —
+but it tells an operator the platform collects in euros when nothing has been
+configured at all. The honest reading of "no settings row" is "we collect in
+what we price in".
+
+**`setExchangeRate` wrote `providerCurrency ?? 'EUR'` on create.** This one
+mattered: §55.3's checks run against `targetCurrency`, which falls back to the
+unit of account — so the validation and the write disagreed. An admin setting a
+rate without naming a currency, on a fresh database, would be validated as RWF
+and stored as EUR. The write now uses the value that was actually checked.
+
+Both are the same shape as §66.3 and §68.3: a currency literal left behind by
+whatever the sandbox needed at the time, surviving in a place nobody re-read.
+The remaining "EUR" strings in `src/` are documentation examples, which is where
+a sandbox currency belongs.
+
+**981 tests, unchanged.**
