@@ -730,3 +730,51 @@ export const reclassifyAsBusinessCancellation = (
     method: 'PATCH',
     body,
   });
+
+// ---------------------------------------------------------------------------
+// Notifications (§96)
+//
+// One inbox per account, whatever the role: the server guards these with the
+// JWT alone and scopes every query to the caller's own id.
+// ---------------------------------------------------------------------------
+
+export interface Notification {
+  id: string;
+  type: string;
+  channel: string;
+  status: string;
+  subject: string | null;
+  body: string | null;
+  appointmentId: string | null;
+  readAt: string | null;
+  sentAt: string | null;
+  createdAt: string;
+}
+
+export interface NotificationPage {
+  total: number;
+  /** Unread across the whole inbox, not this page. */
+  unread: number;
+  limit: number;
+  offset: number;
+  notifications: Notification[];
+}
+
+export const listNotifications = (params: { unreadOnly?: boolean; limit?: number } = {}) =>
+  api<NotificationPage>('/notifications', { query: params });
+
+export const markNotificationRead = (id: string) =>
+  api<Notification>(`/notifications/${id}/read`, { method: 'PATCH' });
+
+export const markAllNotificationsRead = () =>
+  api<{ updated: number }>('/notifications/read-all', { method: 'PATCH' });
+
+/**
+ * Which mobile money operators this deployment can actually take money through
+ * (§96). Unauthenticated, because the answer is a property of the deployment.
+ */
+export const getPaymentProviders = () =>
+  api<{ providers: string[]; suggested: string | null; choiceRequired: boolean }>(
+    '/payments/providers',
+    { anonymous: true },
+  );

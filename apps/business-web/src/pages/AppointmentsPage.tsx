@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
+import { useMoney } from '../money';
 import {
+  getAppointment,
   cancelAppointment,
   completeAppointment,
   getCurrency,
@@ -151,6 +153,103 @@ export function AppointmentsPage() {
   );
 }
 
+/**
+ * The payment trail for one appointment (§96).
+ *
+ * Separate from the list because it is reached rarely and for one reason: a
+ * customer disputes a charge, and the business needs the operator's reference
+ * and the exact figures behind it. Nothing else on the screen carries those.
+ */
+function AppointmentDetail({ id, onClose }: { id: string; onClose: () => void }) {
+  const money = useMoney();
+  const detail = useQuery({
+    queryKey: ['appointment', id],
+    queryFn: () => getAppointment(id),
+  });
+  const d = detail.data;
+
+  return (
+    <div className="drawer-backdrop" onClick={onClose}>
+      <aside className="drawer" onClick={(event) => event.stopPropagation()}>
+        <header className="drawer-head">
+          <h2>Booking details</h2>
+          <button
+            type="button"
+            className="icon-button"
+            onClick={onClose}
+            aria-label="Close this panel"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </button>
+        </header>
+
+        {!d ? (
+          <p className="muted">Loading\u2026</p>
+        ) : (
+          <dl className="detail">
+            <div><dt>Customer</dt><dd>{d.customer.email}</dd></div>
+            <div><dt>Service</dt><dd>{d.service.name}</dd></div>
+            <div><dt>Branch</dt><dd>{d.location.name}</dd></div>
+            <div><dt>Status</dt><dd>{d.status.replace('_', ' ').toLowerCase()}</dd></div>
+            <div>
+              <dt>Deposit</dt>
+              <dd>
+                {money.format(d.depositAmountMinor, d.currency)}
+                {d.depositPaidAt ? ` \u00b7 paid ${when(d.depositPaidAt)}` : ' \u00b7 not paid'}
+              </dd>
+            </div>
+            <div><dt>Your share</dt><dd>{money.format(d.businessAmountMinor, d.currency)}</dd></div>
+            <div><dt>Platform fee</dt><dd>{money.format(d.platformFeeAmountMinor, d.currency)}</dd></div>
+            {d.servicePriceMinor !== null && (
+              <div>
+                <dt>Full price</dt>
+                <dd>
+                  {money.format(d.servicePriceMinor, d.currency)}
+                  <div className="muted small">
+                    The rest is paid to you directly, not through us.
+                  </div>
+                </dd>
+              </div>
+            )}
+            {d.paymentProviderReferenceId && (
+              <div>
+                <dt>Operator reference</dt>
+                <dd><code>{d.paymentProviderReferenceId}</code></dd>
+              </div>
+            )}
+            {d.providerAmountMinor !== null && d.providerCurrency && (
+              <div>
+                <dt>Charged by the operator</dt>
+                <dd>
+                  {d.providerCurrency} {d.providerAmountMinor}
+                  {d.exchangeRateUsed && (
+                    <div className="muted small">rate used {d.exchangeRateUsed}</div>
+                  )}
+                </dd>
+              </div>
+            )}
+            {d.verifiedAt && <div><dt>Customer arrived</dt><dd>{when(d.verifiedAt)}</dd></div>}
+            {d.cancelledAt && (
+              <div>
+                <dt>Cancelled</dt>
+                <dd>
+                  {when(d.cancelledAt)} by {String(d.cancelledBy).toLowerCase()}
+                  {d.cancellationReason && (
+                    <div className="muted small">{d.cancellationReason}</div>
+                  )}
+                </dd>
+              </div>
+            )}
+            <div><dt>Booked</dt><dd>{when(d.createdAt)}</dd></div>
+          </dl>
+        )}
+      </aside>
+    </div>
+  );
+}
+
 function Row({
   appointment,
   money,
@@ -165,6 +264,7 @@ function Row({
   onAct: (action: string, text?: string) => void;
 }) {
   const [code, setCode] = useState('');
+  const [detail, setDetail] = useState(false);
 
   const askManual = () => {
     const note = window.prompt(
@@ -192,7 +292,17 @@ function Row({
 
   return (
     <tr>
-      <td className="small">{when(appointment.startTime)}</td>
+      <td className="small">
+        {when(appointment.startTime)}
+        <div>
+          <button type="button" className="link" onClick={() => setDetail(true)}>
+            Details
+          </button>
+        </div>
+        {detail && (
+          <AppointmentDetail id={appointment.id} onClose={() => setDetail(false)} />
+        )}
+      </td>
       <td>
         {appointment.customer.email}
         {/* The deposit is the platform's evidence the customer is serious. */}

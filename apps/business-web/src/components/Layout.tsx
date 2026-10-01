@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../auth/auth-context';
 import { getMe } from '../api/business';
+import { Notifications } from './Notifications';
 
 const SECTIONS = [
   { to: '/appointments', label: 'Appointments' },
@@ -12,6 +13,7 @@ const SECTIONS = [
   { to: '/closures', label: 'Closures & breaks' },
   { to: '/reviews', label: 'Reviews' },
   { to: '/getting-paid', label: 'Getting paid' },
+  { to: '/analytics', label: 'How it is going' },
   { to: '/help', label: 'Help' },
 ];
 
@@ -50,7 +52,10 @@ export function Layout() {
         </nav>
 
         <div className="who">
-          <span title={user?.email}>{user?.email}</span>
+          <div className="who-top">
+            <span title={user?.email}>{user?.email}</span>
+            <Notifications />
+          </div>
           <button
             type="button"
             className="link"

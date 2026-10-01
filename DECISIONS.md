@@ -8710,3 +8710,64 @@ feature working as designed, not an accident, but it means the demo data now
 contains one genuine business-cancellation refund. It is arguably the most
 useful row in it.
 
+## 96. The small remainder: notifications, analytics, detail, providers
+
+Items 8 to 11 together. None needed design; all four were reachable endpoints
+with nothing calling them.
+
+### 96.1 One inbox, in both shells
+
+`/notifications` is guarded by the JWT alone and scoped to the caller inside the
+service, so customers, business members and admins share one implementation. The
+bell is therefore the same component in both apps, differing only in which API
+module it imports.
+
+**Polled, not pushed.** There is no websocket in this platform, and a count that
+is a minute stale is worth more than a connection to maintain. Opening a
+notification marks it read, because the alternative is a per-row control for
+something nobody deliberately does.
+
+Verified live: 43 unread for the business, one marked read leaving 42, mark-all
+reporting *"42 notification(s) marked as read"*, and the admin seeing a
+different inbox of 28 — one per account, as the guard implies.
+
+### 96.2 §67.4 closed: analytics said USD while holding RWF
+
+`currency: 'USD'` was hardcoded in the analytics response. The amounts are sums
+over `Appointment.depositAmountMinor`, denominated in `Appointment.currency` —
+RWF since §55. The literal was correct the day it was written and silently wrong
+from the moment the deployment moved.
+
+It now reports `INTERNAL_CURRENCY`. Summing across rows is only sound because
+every row holds that currency, which `CurrencyGuard` refuses to boot without, so
+it is the right thing to name. Confirmed live: `"currency": "RWF"`.
+
+The screen reads the currency from the response rather than assuming the app's
+own — which required `business-web`'s `useMoney().format` to take an optional
+code, as admin-web's already did. The **exponent** still comes from the server's
+table either way: a label is the caller's business, a decimal place is the
+currency's.
+
+### 96.3 Partial totals are shown, not rounded over
+
+Analytics reports `complete: false` and a note when appointments could not be
+accounted for. Both are surfaced. A total that quietly omits rows is the number
+a business acts on and then stops trusting.
+
+### 96.4 Appointment detail is the dispute screen
+
+`GET /appointments/:id` carries what the list does not: when the deposit landed,
+the operator's reference, what the operator actually charged and at what rate.
+That set has one use — a customer disputes a charge — which is why it is a
+drawer rather than more columns.
+
+### 96.5 Payment providers are shown read-only
+
+`GET /payments/providers` on Settings, deliberately not editable: it is a
+consequence of which credentials are configured, not a setting. A toggle would
+invite someone to "turn Airtel on" by ticking a box that cannot do that. It also
+says plainly when **no** operator is configured, which means no deposit can be
+taken at all.
+
+**1095 passing across 32 suites.**
+

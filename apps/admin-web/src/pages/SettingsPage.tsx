@@ -9,6 +9,7 @@ import {
   setPayoutHold,
   setPlatformFee,
   setStaleness,
+  getPaymentProviders,
 } from '../api/admin';
 
 /**
@@ -41,6 +42,8 @@ export function SettingsPage() {
       />
 
       <ExchangeRateCard data={rate.data} onSaved={invalidate} />
+
+      <PaymentProvidersCard />
 
       <PayoutHoldCard
         value={hold.data?.payoutHoldDays}
@@ -333,6 +336,57 @@ function PayoutHoldCard({
         </p>
       )}
       {note && <p className="muted small">{note}</p>}
+    </SettingCard>
+  );
+}
+
+/**
+ * Which operators this deployment can actually take money through (§96).
+ *
+ * Read-only: it is not a setting but a consequence of which credentials are
+ * configured, and showing it as editable would invite someone to "turn Airtel
+ * on" by ticking a box that cannot do that. The only way to change it is to
+ * configure the keys.
+ */
+function PaymentProvidersCard() {
+  const providers = useQuery({
+    queryKey: ['settings', 'providers'],
+    queryFn: getPaymentProviders,
+  });
+
+  return (
+    <SettingCard
+      title="Payment providers"
+      description={
+        <>
+          Which mobile money operators this deployment can take money through.{' '}
+          <strong>Set by credentials, not here.</strong>
+        </>
+      }
+    >
+      {providers.isLoading && <p className="muted small">Checking…</p>}
+      {providers.data && (
+        <>
+          {providers.data.providers.length === 0 ? (
+            <p className="error small">
+              No operator is configured. No deposit can be taken.
+            </p>
+          ) : (
+            <p>
+              {providers.data.providers.map((provider) => (
+                <span key={provider} className="pill resolved">
+                  {provider.replace('_', ' ')}
+                </span>
+              ))}
+            </p>
+          )}
+          <p className="muted small">
+            {providers.data.choiceRequired
+              ? 'More than one is available, so a customer is asked to choose.'
+              : 'One operator, so nothing is asked of the customer.'}
+          </p>
+        </>
+      )}
     </SettingCard>
   );
 }

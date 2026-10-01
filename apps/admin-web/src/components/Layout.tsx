@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
+import { Notifications } from './Notifications';
 
 /** Only the sections that exist. Others are added as they are built. */
 const SECTIONS = [
@@ -30,7 +31,10 @@ export function Layout() {
           ))}
         </nav>
         <div className="who">
-          <span title={user?.email}>{user?.email}</span>
+          <div className="who-top">
+            <span title={user?.email}>{user?.email}</span>
+            <Notifications />
+          </div>
           <button
             type="button"
             className="link"

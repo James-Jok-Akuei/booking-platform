@@ -762,3 +762,119 @@ export const updateReviewResponse = (reviewId: string, responseText: string) =>
     method: 'PATCH',
     body: { responseText },
   });
+
+// ---------------------------------------------------------------------------
+// Notifications (§96)
+//
+// One inbox per account, whatever the role: the server guards these with the
+// JWT alone and scopes every query to the caller's own id.
+// ---------------------------------------------------------------------------
+
+export interface Notification {
+  id: string;
+  type: string;
+  channel: string;
+  status: string;
+  subject: string | null;
+  body: string | null;
+  appointmentId: string | null;
+  readAt: string | null;
+  sentAt: string | null;
+  createdAt: string;
+}
+
+export interface NotificationPage {
+  total: number;
+  /** Unread across the whole inbox, not this page. */
+  unread: number;
+  limit: number;
+  offset: number;
+  notifications: Notification[];
+}
+
+export const listNotifications = (params: { unreadOnly?: boolean; limit?: number } = {}) =>
+  api<NotificationPage>('/notifications', { query: params });
+
+export const markNotificationRead = (id: string) =>
+  api<Notification>(`/notifications/${id}/read`, { method: 'PATCH' });
+
+export const markAllNotificationsRead = () =>
+  api<{ updated: number }>('/notifications/read-all', { method: 'PATCH' });
+
+// ---------------------------------------------------------------------------
+// Analytics (§96)
+// ---------------------------------------------------------------------------
+
+export interface Analytics {
+  businessId: string;
+  locationId: string | null;
+  scope: 'BUSINESS' | 'LOCATION';
+  range: { from: string; to: string; days: number };
+  appointments: {
+    total: number;
+    byStatus: Record<string, number>;
+    completionRate: number;
+    cancellationRate: number;
+    noShowRate: number;
+  };
+  money: {
+    /** The unit every amount below is in. Reported by the server (§96). */
+    currency: string;
+    collectedThroughPlatform: {
+      depositsMinor: number;
+      businessShareOfDepositsMinor: number;
+      appointmentCount: number;
+      cancelledWithUnknownPaymentState: number;
+      /** False means the figure is partial, and says so rather than rounding. */
+      complete: boolean;
+      note: string;
+    };
+    platformFeesPaidMinor: number;
+    balanceOwedToBusiness: {
+      amountMinor: number;
+      fromAppointments: number;
+      appointmentsMissingSnapshot: number;
+      complete: boolean;
+      note: string;
+    };
+  };
+  reviews: { count: number; averageRating: number | null };
+  busiest: {
+    dayOfWeek: { day: number; appointments: number } | null;
+    hour: { hour: number; appointments: number } | null;
+    timeZone: string;
+  };
+}
+
+export const getAnalytics = (
+  businessId: string,
+  params: { locationId?: string; from?: string; to?: string } = {},
+) => api<Analytics>(`/businesses/${businessId}/analytics`, { query: params });
+
+/**
+ * One appointment in full (§96).
+ *
+ * The list carries what a day's schedule needs; this carries the payment trail
+ * — when the deposit landed, the operator's reference, the rate used — which is
+ * what a business reaches for when a customer disputes a charge.
+ */
+export const getAppointment = (id: string) =>
+  api<Appointment & {
+    depositPaidAt: string | null;
+    paymentInitiatedAt: string | null;
+    paymentProviderReferenceId: string | null;
+    providerCurrency: string | null;
+    providerAmountMinor: number | null;
+    exchangeRateUsed: string | null;
+    servicePriceMinor: number | null;
+    depositPercentage: string | null;
+    platformFeePercentage: string | null;
+    verificationCodeSentAt: string | null;
+    verifiedAt: string | null;
+    completedAt: string | null;
+    noShowAt: string | null;
+    cancelledAt: string | null;
+    cancelledBy: string | null;
+    cancellationReason: string | null;
+    createdAt: string;
+  }>(`/appointments/${id}`);

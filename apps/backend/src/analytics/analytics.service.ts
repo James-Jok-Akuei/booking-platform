@@ -12,6 +12,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { INTERNAL_CURRENCY } from '../payments/currency';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 
 export const DEFAULT_RANGE_DAYS = 30;
@@ -233,7 +234,17 @@ export class AnalyticsService {
     ]);
 
     return {
-      currency: 'USD',
+      /**
+       * ~~'USD', hardcoded~~ — fixed in §96, the open finding from §67.4.
+       *
+       * These totals are sums over `Appointment.depositAmountMinor`, which is
+       * denominated in `Appointment.currency`. Summing across rows is only
+       * sound because every row holds INTERNAL_CURRENCY — CurrencyGuard
+       * refuses to boot otherwise — so that is the currency to report. The
+       * literal was correct on the day it was written and silently wrong from
+       * the moment the deployment moved to RWF (§55).
+       */
+      currency: INTERNAL_CURRENCY,
       collectedThroughPlatform: {
         depositsMinor: totals._sum.depositAmountMinor ?? 0,
         // What the business actually received of those deposits, after the fee.

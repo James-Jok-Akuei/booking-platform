@@ -329,3 +329,28 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .review-text { margin: 7px 0 0; white-space: pre-wrap; }
 .reply-shown { margin-top: 11px; padding-left: 12px; border-left: 3px solid var(--accent); }
 .reply-shown p { margin: 3px 0 5px; white-space: pre-wrap; }
+
+.bell-wrap { position: relative; }
+.bell { background: none; border: none; color: var(--muted); cursor: pointer; padding: 5px; border-radius: 7px; display: inline-flex; position: relative; }
+.bell:hover { background: var(--line); color: var(--ink); }
+.bell-count { position: absolute; top: -2px; right: -3px; background: var(--danger); color: #fff; font-size: 10px; font-weight: 600; line-height: 1; padding: 2px 4px; border-radius: 9px; }
+.bell-backdrop { position: fixed; inset: 0; z-index: 30; }
+.bell-panel { position: absolute; z-index: 31; width: 330px; max-height: 420px; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); padding: 10px 12px; }
+.bell-panel header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+.bell-panel ul { list-style: none; margin: 0; padding: 0; }
+.bell-panel li { padding: 8px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.bell-panel li:last-child { border-bottom: none; }
+.bell-panel li.unread { border-left: 3px solid var(--accent); padding-left: 8px; margin-left: -8px; }
+.bell-panel li.read { opacity: 0.68; }
+.who-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bell-panel { bottom: 34px; left: 0; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 4px; }
+.stat { display: flex; flex-direction: column; gap: 2px; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px; }
+.stat strong { font-size: 21px; font-variant-numeric: tabular-nums; }
+.panel .stat-grid .stat { border: none; background: none; padding: 0; }
+
+.detail { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.detail > div { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: start; }
+.detail dt { color: var(--muted); font-size: 13px; }
+.detail dd { margin: 0; }
