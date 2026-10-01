@@ -8093,3 +8093,49 @@ the database, or this file.
 
 The standing preference is kept, and narrowed: **plain words when I explain,
 the domain's words on screen.**
+
+## 86. A legend, because a label cannot say who
+
+Asked while reading the ledger: *"'Platform fee returned', returned to who?"*
+
+A fair question the label cannot answer. It names the money and leaves out both
+parties — who hands it back, and who ends up with it. The answer is that **the
+platform** returns it and **the customer** receives it, and neither word is in
+the label.
+
+### 86.1 The answer, for the record
+
+When a business cancels, the customer is refunded in full **including the fee
+taken at booking** (§25.1). `PLATFORM_FEE_REVERSAL` is positive on the
+*business's* row because it cancels the `PLATFORM_FEE` taken when the deposit
+landed — otherwise the business would be funding our fee on a booking that
+earned it nothing. The cash goes to the customer; the entry keeps the business
+whole.
+
+Remera Nails, one booking, as it stands in the demo data:
+
+| Line | Amount |
+|---|---|
+| Deposit received | +1,200 |
+| Platform fee | −600 |
+| Deposit refunded | −1,200 |
+| Platform fee returned | +600 |
+| Gateway fee | −500 |
+| | **−500** |
+
+The business ends at exactly the gateway's charge, which §25.1 says it bears.
+The first four net to zero, which is what "refunded in full" means in ledger
+terms.
+
+### 86.2 A legend, not longer labels
+
+§85 renamed these and was reversed. So the labels stay exactly as they are —
+they match the enum, the API and this file — and a short **"What these lines
+mean"** list sits under the table, one sentence per type, saying who gained or
+lost what. It leads with the rule that makes every sign readable: amounts are
+written from the *business's* point of view.
+
+This is the shape the §85 attempt should have taken. A term that is explained
+beside the table stays learnable and stays matched to the system underneath;
+a term replaced by a sentence is neither.
+

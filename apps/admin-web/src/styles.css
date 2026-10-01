@@ -236,3 +236,10 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-sp
 td.negative { color: var(--danger); }
 td.reason { max-width: 320px; }
 .warn { color: var(--warn); }
+
+.legend { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 14px; }
+.legend h2 { font-size: 14px; margin: 0 0 4px; }
+.legend dl { margin: 10px 0 0; display: grid; grid-template-columns: minmax(140px, 200px) 1fr; gap: 7px 18px; }
+.legend dl > div { display: contents; }
+.legend dt { font-weight: 500; }
+.legend dd { margin: 0; font-size: 13px; }

@@ -24,6 +24,30 @@ const ENTRY_LABEL: Record<LedgerEntryType, string> = {
   ADJUSTMENT: 'Manual adjustment',
 };
 
+/**
+ * What each line means, and — the part the label cannot carry — WHO gained or
+ * lost the money (§86).
+ *
+ * A legend rather than longer labels: "Platform fee returned" does not say who
+ * returns it or who receives it, and no column heading can. Renaming it was
+ * tried and reversed (§85), so the words stay and the explanation sits beside
+ * them.
+ */
+const ENTRY_MEANING: Record<LedgerEntryType, string> = {
+  DEPOSIT_RECEIVED: "The customer's payment at booking. Owed to the business.",
+  PLATFORM_FEE: 'Our cut of that payment, taken from the business.',
+  DEPOSIT_REFUND:
+    'The customer got their payment back, because the business cancelled.',
+  PLATFORM_FEE_REVERSAL:
+    'We hand our own cut back too, so the business is not left funding our fee ' +
+    'on a booking it earned nothing from. The money reaches the customer, who ' +
+    'is refunded in full.',
+  GATEWAY_FEE_DEBIT:
+    'What the operator charged to move the refund. Borne by the business that ' +
+    'cancelled, because it caused it.',
+  ADJUSTMENT: 'A correction recorded and executed on the Adjustments tab.',
+};
+
 const ADJUSTMENT_LABEL = {
   FEE_REFUND: 'Fee refund',
   GATEWAY_FEE_DEBIT: 'Gateway fee charged back',
@@ -365,6 +389,23 @@ function Entries() {
             ))}
           </tbody>
         </table>
+      )}
+      {ledger.data && ledger.data.entries.length > 0 && (
+        <div className="legend">
+          <h2>What these lines mean</h2>
+          <p className="muted small">
+            Every amount is written from the <strong>business's</strong> point of view:
+            positive is owed to them, negative is owed back.
+          </p>
+          <dl>
+            {(Object.keys(ENTRY_LABEL) as LedgerEntryType[]).map((key) => (
+              <div key={key}>
+                <dt>{ENTRY_LABEL[key]}</dt>
+                <dd className="muted">{ENTRY_MEANING[key]}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       )}
     </>
   );
