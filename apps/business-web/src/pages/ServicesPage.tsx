@@ -380,24 +380,38 @@ function ServiceRow({
         ) : null}
         {service.locations.length > 0 && (
           service.locations.map((offer) => (
-            // The switch sits next to that branch's price, not in the row's
-            // shared actions — it is a decision about one shop, and a single
-            // control among the row actions could only mean all of them.
-            <label
+            // A button per branch, worded like the row's whole-service action
+            // so the pair reads as one idea at two scales: "here" and
+            // "everywhere". It sits beside that branch's price rather than
+            // among the row actions, where it could only mean all of them.
+            <div
               key={offer.locationId}
               className={offer.isOffered ? 'branch-line' : 'branch-line off'}
             >
-              <input
-                type="checkbox"
-                checked={offer.isOffered}
-                disabled={busy}
-                onChange={(e) => onToggle(offer.locationId, e.target.checked)}
-                title={offer.isOffered ? 'On sale here' : 'Paused here'}
-              />
-              {money.format(offer.priceMinor)}
-              <span className="muted small"> · {offer.location.name}</span>
-              {!offer.isOffered && <span className="muted small">(paused)</span>}
-            </label>
+              <span className="branch-price-label">
+                {money.format(offer.priceMinor)}
+                <span className="muted small"> · {offer.location.name}</span>
+              </span>
+              {offer.isOffered ? (
+                <button
+                  type="button"
+                  className="link danger-link tiny"
+                  disabled={busy}
+                  onClick={() => onToggle(offer.locationId, false)}
+                >
+                  Stop offering here
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="link tiny"
+                  disabled={busy}
+                  onClick={() => onToggle(offer.locationId, true)}
+                >
+                  Put back on sale here
+                </button>
+              )}
+            </div>
           ))
         )}
       </td>
