@@ -7152,3 +7152,66 @@ to existing paths.
 Profile, locations, services, opening hours, staff, review responses, payout
 destination, balance and analytics all have endpoints and no screens. This is
 the daily loop only, which is the part that unblocks the rest of the system.
+
+---
+
+## 71. Business app: services, branches and hours (2026-10-01)
+
+Slice two. After this a business can define what it sells and when it is open,
+which was the last thing requiring someone to edit the database to onboard one.
+
+### 71.1 A shared money formatter, fetched not assumed
+
+`src/money.ts` wraps `GET /payments/currency` (§70.1) once and gives every
+screen `format`, `toMinor` and `toMajor`.
+
+`toMinor` matters as much as `format`: a person types **5000** meaning five
+thousand francs, and the API wants an integer in minor units. In a two-decimal
+currency that is 500000; here it is 5000. Doing that arithmetic per screen is
+how one of them ends up off by a hundred, so it is done once, from the server's
+exponent, and the input's `step` follows it too.
+
+### 71.2 Services belong to the business; hours belong to the branch
+
+That asymmetry (§10.2) is invisible in the API and surprising to an owner with
+two branches, so both pages say it outright: a price change applies everywhere,
+a week of hours does not.
+
+Confirmed live, in both directions: adding a cheaper service moved
+`fromPriceMinor` from 5000 to 3500 on **both** branches at once, and retiring it
+moved both back. That is §44's denormalised aggregate doing its job, visible on
+screen rather than only in a test.
+
+### 71.3 The whole week is submitted at once
+
+`POST /business/locations/:id/hours` **replaces** the week (§12.7). Sending only
+the day someone edited would silently clear the other six.
+
+So the form holds all seven days and saves them together, seeded from the server
+and re-seeded whenever it changes — a successful save shows what was stored, not
+what was typed.
+
+### 71.4 Retiring, not deleting
+
+A retired service is kept and shown in its own section, because past
+appointments still resolve to what was booked (§10.5). The confirmation says so,
+and the list offers "Bring back" rather than making an owner recreate it — which
+would produce a second service with the same name and a different id.
+
+### 71.5 Verified against the live backend
+
+- Service created at RWF 3000, edited to 3500, retired, restored.
+- §40 refusal, verbatim: *"Deposit percentage must be at least 10.00% — the
+  platform fee is 10.00% of the service price and is taken out of the deposit.
+  A smaller deposit would leave you owing money on every booking."*
+- Seven days of hours saved in one call; `"8am"` refused by the HH:mm matcher.
+- Capacity set to 2 and back to 1.
+- Demo data left as the walk-through describes it.
+
+### 71.6 Still missing from this app
+
+Payout destination and balance — a business still cannot tell the platform where
+to send its money, or see what it is owed. That is the next slice, and it is the
+last one before a business can genuinely run on this without help.
+
+Then: profile, staff, review responses, analytics, gallery, schedule exceptions.

@@ -119,3 +119,120 @@ export const markNoShow = (id: string) =>
  */
 export const cancelAppointment = (id: string, reason: string) =>
   api<Appointment>(`/appointments/${id}/cancel`, { method: 'POST', body: { reason } });
+
+// ---------------------------------------------------------------------------
+// Profile, services, locations (§10)
+// ---------------------------------------------------------------------------
+
+export interface BusinessProfile {
+  id: string;
+  name: string | null;
+  description: string | null;
+  phone: string | null;
+  status: string;
+  statusReason: string | null;
+  category: { id: string; name: string; icon: string | null } | null;
+  subcategory: { id: string; name: string } | null;
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  description: string | null;
+  /** Minor units of `currency`. Format with the server's exponent, never /100. */
+  priceMinor: number;
+  durationMinutes: number;
+  currency: string;
+  /** A decimal string, e.g. "20" — percent of the price taken up front. */
+  depositPercentage: string;
+  isActive: boolean;
+}
+
+export interface Hours {
+  id: string;
+  dayOfWeek: number;
+  openTime: string;
+  closeTime: string;
+  isClosed: boolean;
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone: string | null;
+  capacity: number;
+  ratingAvg: string | null;
+  ratingCount: number;
+  fromPriceMinor: number | null;
+  hours: Hours[];
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: string | null;
+  subcategories: Array<{ id: string; name: string }>;
+}
+
+export const getProfile = () => api<BusinessProfile>('/business/profile');
+
+export const updateProfile = (body: {
+  name?: string;
+  description?: string;
+  phone?: string;
+  categoryId?: string;
+  subcategoryId?: string;
+}) => api<BusinessProfile>('/business/profile', { method: 'PATCH', body });
+
+export const getCategories = () => api<Category[]>('/categories', { anonymous: true });
+
+export const listServices = () => api<Service[]>('/business/services');
+
+/**
+ * `depositPercentage` must be at least the platform fee (§40) — the server
+ * refuses otherwise, naming the figure, because a smaller deposit would price
+ * the business's own share below zero.
+ */
+export const createService = (body: {
+  name: string;
+  description?: string;
+  priceMinor: number;
+  durationMinutes: number;
+  depositPercentage: number;
+}) => api<Service>('/business/services', { method: 'POST', body });
+
+export const updateService = (
+  id: string,
+  body: Partial<{
+    name: string;
+    description: string;
+    priceMinor: number;
+    durationMinutes: number;
+    depositPercentage: number;
+    isActive: boolean;
+  }>,
+) => api<Service>(`/business/services/${id}`, { method: 'PATCH', body });
+
+/** Soft delete: past appointments still resolve to the service they were for. */
+export const retireService = (id: string) =>
+  api<void>(`/business/services/${id}`, { method: 'DELETE' });
+
+export const listLocations = () => api<Location[]>('/business/locations');
+
+export const setHours = (
+  locationId: string,
+  hours: Array<{ dayOfWeek: number; openTime: string; closeTime: string; isClosed?: boolean }>,
+) =>
+  api<Hours[]>(`/business/locations/${locationId}/hours`, {
+    method: 'POST',
+    body: { hours },
+  });
+
+export const setCapacity = (locationId: string, capacity: number) =>
+  api<Location>(`/business/locations/${locationId}/capacity`, {
+    method: 'PATCH',
+    body: { capacity },
+  });

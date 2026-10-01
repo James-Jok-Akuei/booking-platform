@@ -3,6 +3,8 @@ import { Layout } from './components/Layout';
 import { LoginPage } from './auth/LoginPage';
 import { RequireAuth } from './auth/RequireAuth';
 import { AppointmentsPage } from './pages/AppointmentsPage';
+import { ServicesPage } from './pages/ServicesPage';
+import { HoursPage } from './pages/HoursPage';
 
 export function App() {
   return (
@@ -16,6 +18,8 @@ export function App() {
         }
       >
         <Route path="/appointments" element={<AppointmentsPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/hours" element={<HoursPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/appointments" replace />} />
     </Routes>

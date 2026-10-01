@@ -203,3 +203,15 @@ button.link.danger-link { color: var(--danger); }
 
 input.code { width: 80px; font-family: ui-monospace, Menlo, monospace; letter-spacing: 0.08em; }
 aside .notice { margin: 0 14px 12px; }
+
+.section-title { font-size: 15px; margin: 26px 0 4px; }
+.service-form { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; padding: 16px 18px; margin-bottom: 14px; }
+.service-form label { display: block; margin-bottom: 3px; }
+.service-form input { width: 130px; }
+.form-actions { display: flex; gap: 10px; align-items: center; }
+.location { margin-bottom: 18px; padding: 18px 20px; }
+table.hours { border: none; background: none; margin-bottom: 10px; }
+table.hours td { border: none; padding: 4px 10px 4px 0; }
+table.hours td.day { width: 110px; color: var(--muted); font-size: 13px; }
+label.inline { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
+input[type='time'] { width: 110px; }

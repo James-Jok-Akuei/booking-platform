@@ -3,7 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../auth/auth-context';
 import { getMe } from '../api/business';
 
-const SECTIONS = [{ to: '/appointments', label: 'Appointments' }];
+const SECTIONS = [
+  { to: '/appointments', label: 'Appointments' },
+  { to: '/services', label: 'Services' },
+  { to: '/hours', label: 'Branches & hours' },
+];
 
 export function Layout() {
   const { user, signOut } = useAuth();
