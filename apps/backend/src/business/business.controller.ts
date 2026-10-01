@@ -42,6 +42,7 @@ import { UpdateLocationCapacityDto } from './dto/update-capacity.dto';
 import { SetLocationHoursDto } from './dto/set-hours.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
+import { SetServiceOfferedDto } from './dto/set-service-offered.dto';
 import { UploadMediaDto } from './dto/upload-media.dto';
 
 /**
@@ -235,20 +236,21 @@ export class BusinessController {
   }
 
   /**
-   * Stops offering a service at ONE branch (§73).
+   * Turns a service on or off at ONE branch (§74).
    *
-   * Separate route from retiring, because they are different decisions: this is
-   * "not at that shop", and the one below is "we have stopped doing this at
-   * all". Withdrawing from the last branch does both, and says so.
+   * A PATCH, not a DELETE: the offer row and its price survive a pause. A
+   * separate decision from retiring below — "not here, for now" rather than
+   * "we have stopped doing this at all".
    */
-  @Delete('services/:id/locations/:locationId')
+  @Patch('services/:id/locations/:locationId')
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
-  removeServiceFromLocation(
+  setServiceOfferedAtLocation(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
     @Param('locationId', ParseUUIDPipe) locationId: string,
+    @Body() dto: SetServiceOfferedDto,
   ) {
-    return this.services.removeFromLocation(user.userId, id, locationId);
+    return this.services.setOfferedAtLocation(user.userId, id, locationId, dto.isOffered);
   }
 
   /**

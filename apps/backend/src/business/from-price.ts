@@ -37,6 +37,7 @@ export function recalculateFromPrice(
            FROM "service_locations" sl
            JOIN "services" s ON s."id" = sl."serviceId"
           WHERE sl."locationId" = l."id"
+            AND sl."isOffered" = true
             AND s."isActive" = true
        )
      WHERE l."businessId" = ${businessId}

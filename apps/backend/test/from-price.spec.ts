@@ -285,7 +285,7 @@ describe('Denormalised fromPriceMinor (§44)', () => {
     });
   });
 
-  describe('withdrawing a service from ONE branch (§73)', () => {
+  describe('pausing a service at ONE branch (§74)', () => {
     it('leaves it on sale everywhere else, at their prices', async () => {
       await addBranches(business, 1);
       const [first, second] = await locationIdsOf(business.businessId);
@@ -299,59 +299,122 @@ describe('Denormalised fromPriceMinor (§44)', () => {
         ],
       });
 
-      const result = await services.removeFromLocation(
+      const result = await services.setOfferedAtLocation(
         business.userId,
         service.id,
         first,
+        false,
       );
 
-      expect(result.retired).toBe(false);
+      expect(result.offeredAtCount).toBe(1);
       expect(result.service.isActive).toBe(true);
-      expect(result.service.locations).toHaveLength(1);
-      expect(result.service.locations[0].locationId).toBe(second);
+      const paused = result.service.locations.find((o) => o.locationId === first)!;
+      expect(paused.isOffered).toBe(false);
     });
 
-    it('moves that branch back to its next cheapest', async () => {
+    /**
+     * The whole reason §73's deletion was wrong: a pause must not cost the
+     * price. Resuming is one call, not a re-entry of what the work costs.
+     */
+    it('KEEPS the price while paused, and restores it on resume', async () => {
+      const [only] = await locationIdsOf(business.businessId);
+      const service = await newService(business, 1234, 'Seasonal', [only]);
+
+      await services.setOfferedAtLocation(business.userId, service.id, only, false);
+      const resumed = await services.setOfferedAtLocation(
+        business.userId,
+        service.id,
+        only,
+        true,
+      );
+
+      const offer = resumed.service.locations.find((o) => o.locationId === only)!;
+      expect(offer.priceMinor).toBe(1234);
+      expect(offer.isOffered).toBe(true);
+    });
+
+    it('a paused branch stops setting its headline price', async () => {
       await addBranches(business, 1);
       const [first] = await locationIdsOf(business.businessId);
       const cheap = await newService(business, 900, 'Cheap');
 
-      await services.removeFromLocation(business.userId, cheap.id, first);
+      await services.setOfferedAtLocation(business.userId, cheap.id, first, false);
 
       const row = await prisma.location.findUniqueOrThrow({ where: { id: first } });
-      // 4500 is the factory service, still offered here.
+      // 4500 is the factory service, still on sale here.
       expect(row.fromPriceMinor).toBe(4500);
     });
 
+    it('and sets it again when resumed', async () => {
+      await addBranches(business, 1);
+      const [first] = await locationIdsOf(business.businessId);
+      const cheap = await newService(business, 900, 'Cheap');
+      await services.setOfferedAtLocation(business.userId, cheap.id, first, false);
+
+      await services.setOfferedAtLocation(business.userId, cheap.id, first, true);
+
+      const row = await prisma.location.findUniqueOrThrow({ where: { id: first } });
+      expect(row.fromPriceMinor).toBe(900);
+    });
+
     /**
-     * A service active but sold nowhere is bookable by nobody while still
-     * claiming to be on offer. Reaching that state from the obvious action
-     * would make "active" mean two different things (§73).
+     * §73 auto-retired here, because deletion made "paused everywhere" awkward
+     * to undo. A toggle removes that reason: the state is recoverable, visible,
+     * and what the seller asked for.
      */
-    it('retires the service outright when it was the last branch', async () => {
+    it('pausing the last branch does NOT retire the service', async () => {
       const [only] = await locationIdsOf(business.businessId);
       const service = await newService(business, 1200, 'Only here', [only]);
 
-      const result = await services.removeFromLocation(
+      const result = await services.setOfferedAtLocation(
         business.userId,
         service.id,
         only,
+        false,
       );
 
-      expect(result.retired).toBe(true);
-      expect(result.service.isActive).toBe(false);
-      expect(result.service.locations).toHaveLength(0);
-      expect(result.message).toMatch(/only branch/i);
+      expect(result.service.isActive).toBe(true);
+      expect(result.offeredAtCount).toBe(0);
+      expect(result.message).toMatch(/last one/i);
+      const row = await prisma.location.findUniqueOrThrow({ where: { id: only } });
+      expect(row.fromPriceMinor).toBe(4500);
     });
 
-    it('404s on a branch that was not offering it', async () => {
+    it('editing a service pauses the branches left out, never deletes them', async () => {
+      await addBranches(business, 1);
+      const [first, second] = await locationIdsOf(business.businessId);
+      const service = await services.create(business.userId, {
+        name: 'Both branches',
+        durationMinutes: 30,
+        depositPercentage: 20,
+        offers: [
+          { locationId: first, priceMinor: 1000 },
+          { locationId: second, priceMinor: 2000 },
+        ],
+      });
+
+      await services.update(business.userId, service.id, {
+        offers: [{ locationId: first, priceMinor: 1000 }],
+      });
+
+      const after = await prisma.serviceLocation.findMany({
+        where: { serviceId: service.id },
+      });
+      expect(after).toHaveLength(2);
+      const dropped = after.find((o) => o.locationId === second)!;
+      expect(dropped.isOffered).toBe(false);
+      // The price it was being sold at is still there to resume with.
+      expect(dropped.priceMinor).toBe(2000);
+    });
+
+    it('404s on a branch with no price for that service', async () => {
       await addBranches(business, 1);
       const [first, second] = await locationIdsOf(business.businessId);
       const service = await newService(business, 1000, 'One branch', [first]);
 
       await expect(
-        services.removeFromLocation(business.userId, service.id, second),
-      ).rejects.toThrow(/not offered at that branch/);
+        services.setOfferedAtLocation(business.userId, service.id, second, false),
+      ).rejects.toThrow(/no price at that branch/);
     });
 
     it("404s on another business's service", async () => {
@@ -361,7 +424,7 @@ describe('Denormalised fromPriceMinor (§44)', () => {
       });
 
       await expect(
-        services.removeFromLocation(business.userId, theirs.id, mine),
+        services.setOfferedAtLocation(business.userId, theirs.id, mine, false),
       ).rejects.toThrow();
     });
   });

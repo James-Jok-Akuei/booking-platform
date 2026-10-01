@@ -140,6 +140,8 @@ export interface ServiceOffer {
   locationId: string;
   /** Minor units. Format with the server's exponent, never /100. */
   priceMinor: number;
+  /** False means paused here — the price is kept, ready to resume (§74). */
+  isOffered: boolean;
   location: { id: string; name: string };
 }
 
@@ -230,16 +232,25 @@ export const updateService = (
 ) => api<Service>(`/business/services/${id}`, { method: 'PATCH', body });
 
 /**
- * Stops offering a service at ONE branch (§73).
+ * Turns a service on or off at ONE branch (§74).
  *
- * Withdrawing from the last branch retires the service outright — `retired`
- * says whether that happened, so the caller can report it rather than guess.
+ * A toggle: the price is kept while paused, so resuming costs one tap rather
+ * than retyping what the work costs.
  */
-export const removeServiceFromLocation = (id: string, locationId: string) =>
-  api<{ message: string; retired: boolean; service: Service }>(
-    `/business/services/${id}/locations/${locationId}`,
-    { method: 'DELETE' },
-  );
+export const setServiceOfferedAt = (
+  id: string,
+  locationId: string,
+  isOffered: boolean,
+) =>
+  api<{
+    message: string;
+    isOffered: boolean;
+    offeredAtCount: number;
+    service: Service;
+  }>(`/business/services/${id}/locations/${locationId}`, {
+    method: 'PATCH',
+    body: { isOffered },
+  });
 
 /** Retires everywhere. Past appointments still resolve to what was booked. */
 export const retireService = (id: string) =>

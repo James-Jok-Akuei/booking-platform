@@ -243,7 +243,7 @@ export class AppointmentsService {
         // service with no row here is not sold at this location, however much
         // it belongs to the same business.
         locations: {
-          where: { locationId: dto.locationId },
+          where: { locationId: dto.locationId, isOffered: true },
           select: { priceMinor: true },
         },
       },

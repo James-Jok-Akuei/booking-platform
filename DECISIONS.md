@@ -7325,18 +7325,23 @@ second service with the same name and a different id, and detaches the history.
 counterpart to `DELETE /business/services/:id`. Two routes, because they are two
 decisions: **"not at that shop"** and **"we have stopped doing this at all"**.
 
-### 73.1 Deleting the offer, not flagging it
+### 73.1 ~~Deleting the offer, not flagging it~~ SUPERSEDED by §74
 
-The withdrawal deletes the `ServiceLocation` row rather than disabling it, for
+~~The withdrawal deletes the `ServiceLocation` row rather than disabling it, for
 the reason §72.1 gave: the service already has `isActive` for retirement, and a
 second disabled-but-present state would be a second way to express the same
-thing — the arrangement where one of them eventually gets forgotten.
+thing — the arrangement where one of them eventually gets forgotten.~~
+
+**Wrong on both counts.** Deleting discarded the branch's price, so resuming
+meant retyping what the work costs — data loss presented as a clean model. And
+"paused here" is not the same fact as "retired everywhere", so keeping both is
+not two ways of saying one thing. §74 replaces this with a toggle.
 
 History is safe regardless. An appointment snapshots its price at booking (§30),
 so a past booking at a branch that no longer offers the service still resolves
 to what was actually agreed.
 
-### 73.2 Withdrawing from the last branch retires the service
+### 73.2 ~~Withdrawing from the last branch retires the service~~ SUPERSEDED by §74
 
 A service that is active but sold nowhere is bookable by nobody while still
 claiming to be on offer. Leaving that state reachable from the obvious action
@@ -7372,3 +7377,66 @@ Five new tests, and live against the backend:
 - Another business's service is refused.
 
 **993 passing across 26 suites.** Demo data restored to 7,000 / 5,000.
+
+---
+
+## 74. Pausing a service at a branch, not deleting it (2026-10-01)
+
+Corrects §73, on the seller's point: withdrawing should be a switch they can
+flip back, not a deletion.
+
+### 74.1 Why §73 was wrong
+
+Two reasons, and the first is the one that matters.
+
+**Deleting discarded the price.** A branch pausing a service for a month — a
+barber on leave, a machine out of action, a seasonal treatment — had to retype
+what the work costs to resume. The model called that clean; it was data loss.
+
+**And the states are genuinely different.** §73.1 argued that a second
+off-switch duplicated `Service.isActive`. It does not: that one means *"we have
+stopped doing this at all, everywhere"*, and this means *"not here, for now"*.
+Conflating them is what cost the price.
+
+`ServiceLocation.isOffered` is the toggle. The row, and its price, survive.
+
+### 74.2 Pausing every branch no longer retires the service
+
+§73.2 auto-retired on the last withdrawal, because deletion made "active but
+sold nowhere" awkward to undo. A toggle removes that reason: the state is one
+click from recoverable, and auto-retiring would overrule what the seller just
+asked for.
+
+So pausing the last branch leaves the service active and sold nowhere, the
+response says `offeredAtCount: 0` with a sentence explaining it, and the app
+repeats that sentence once rather than composing its own.
+
+### 74.3 Editing a service pauses what it leaves out
+
+`update` used to delete every offer and recreate the listed ones. That would
+throw away a branch's price the moment somebody edited a service without
+thinking about the branch list.
+
+Listed branches are now upserted and switched on; unlisted ones are switched
+**off**, keeping their price. The wholesale-replace semantics §72.2 borrowed
+from the week of opening hours were right about intent and wrong about method.
+
+### 74.4 What reads the flag
+
+Everything that decides whether money can change hands: booking refuses a paused
+branch, discovery lists only what a branch is selling, and `fromPriceMinor`
+(§44) takes its minimum over offers that are actually on sale. The index moved
+to `(locationId, isOffered)` to match.
+
+### 74.5 Verified
+
+Eleven tests in `from-price.spec.ts`, including the one this commit exists for —
+**the price is kept while paused and restored on resume** — and that editing a
+service out of a branch pauses rather than deletes it.
+
+Live against the backend: pausing Haircut at Nyarugenge moved that branch's
+headline from 7,000 to 8,000 while Kimironko kept 5,000, and resuming restored
+**7,000 with nothing retyped**.
+
+**996 passing across 26 suites.**
+

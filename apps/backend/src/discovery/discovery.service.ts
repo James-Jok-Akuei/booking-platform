@@ -231,7 +231,7 @@ export class DiscoveryService {
       // business's services here would list work the branch does not do, and
       // price it from somewhere else.
       this.prisma.serviceLocation.findMany({
-        where: { locationId, service: { isActive: true } },
+        where: { locationId, isOffered: true, service: { isActive: true } },
         orderBy: { priceMinor: 'asc' },
         select: {
           priceMinor: true,

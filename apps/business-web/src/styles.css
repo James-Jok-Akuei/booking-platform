@@ -223,3 +223,7 @@ input[type='time'] { width: 110px; }
 
 .branch-line { display: flex; align-items: baseline; gap: 6px; }
 button.tiny { font-size: 11px; }
+
+.branch-line { display: flex; align-items: baseline; gap: 6px; }
+.branch-line.off { opacity: 0.55; text-decoration: line-through; }
+.branch-line.off .muted { text-decoration: none; }

@@ -505,10 +505,9 @@ model LocationHours {
 
 /// A service offered at one branch, at that branch's price (§72).
 ///
-/// The row's EXISTENCE is the offer: delete it and the service is no longer
-/// bookable there. No `isActive` flag here, because the service already has one
-/// for "we have stopped doing this at all", and two overlapping ways to switch
-/// something off is how one of them gets forgotten.
+/// The row carries BOTH the price and whether the branch is currently selling
+/// it (`isOffered`, §74). It is never deleted by withdrawing a service, because
+/// the price is worth keeping through a pause.
 ///
 /// Removing a link never touches history. An appointment snapshots the price it
 /// was booked at (§30), so a past booking stays reconstructable at a branch that
@@ -525,14 +524,25 @@ model ServiceLocation {
   /// Minor units of the service's currency: what a customer pays at THIS branch.
   priceMinor Int
 
+  /// Whether the branch is currently selling it (§74).
+  ///
+  /// A TOGGLE, not a deletion. A barber on leave for a month, a machine out of
+  /// action, a seasonal treatment — these are pauses, and the row is kept so
+  /// the price survives them. Deleting meant retyping the price to resume,
+  /// which is data loss dressed up as a clean model.
+  ///
+  /// Distinct from `Service.isActive`, which is "we have stopped doing this at
+  /// all, everywhere". This is "not here, for now".
+  isOffered Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   /// One offer per service per branch. Two rows would be two prices with no
   /// rule for which wins.
   @@unique([serviceId, locationId])
-  /// Serves "what does this branch offer", which is the discovery read.
-  @@index([locationId])
+  /// Serves "what is this branch selling right now", the discovery read.
+  @@index([locationId, isOffered])
   @@map("service_locations")
 }
 

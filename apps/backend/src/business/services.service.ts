@@ -23,6 +23,7 @@ const SERVICE_INCLUDE = {
     select: {
       locationId: true,
       priceMinor: true,
+      isOffered: true,
       location: { select: { id: true, name: true } },
     },
   },
@@ -151,18 +152,31 @@ export class ServicesService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      // Offers are REPLACED wholesale when supplied, like the week of opening
-      // hours (§12.7): the client sends the branches it wants, and whatever is
-      // not in that list stops being offered. Merging instead would make
-      // "remove this branch" impossible to express.
+      // Listed branches are on sale at the price given; any branch left out is
+      // PAUSED, never deleted (§74). Deleting would discard that branch's price
+      // the moment someone edited the service without thinking about it — and
+      // the price is the thing worth keeping through a pause.
       if (offers) {
-        await tx.serviceLocation.deleteMany({ where: { serviceId } });
-        await tx.serviceLocation.createMany({
-          data: offers.map((offer) => ({
-            serviceId,
-            locationId: offer.locationId,
-            priceMinor: offer.priceMinor,
-          })),
+        const listed = new Set(offers.map((offer) => offer.locationId));
+
+        for (const offer of offers) {
+          await tx.serviceLocation.upsert({
+            where: {
+              serviceId_locationId: { serviceId, locationId: offer.locationId },
+            },
+            create: {
+              serviceId,
+              locationId: offer.locationId,
+              priceMinor: offer.priceMinor,
+              isOffered: true,
+            },
+            update: { priceMinor: offer.priceMinor, isOffered: true },
+          });
+        }
+
+        await tx.serviceLocation.updateMany({
+          where: { serviceId, locationId: { notIn: [...listed] } },
+          data: { isOffered: false },
         });
       }
 
@@ -177,25 +191,28 @@ export class ServicesService {
   }
 
   /**
-   * Stops offering a service at ONE branch (§73).
+   * Turns a service on or off at ONE branch (§74).
    *
-   * The branch-scoped counterpart to retiring. Since §72 a service is sold
-   * where it has an offer row, so withdrawing it from a branch is deleting that
-   * row — the service carries on everywhere else, at everywhere else's prices.
+   * A toggle, not a deletion. The offer row is kept either way, so the price
+   * survives a pause — a barber on leave for a month resumes with one click
+   * rather than retyping what the cut costs.
    *
-   * Deleting the offer rather than flagging it is deliberate, for the reason
-   * §72.1 gave: the service already has `isActive` for "we have stopped doing
-   * this at all", and a second disabled-but-present state would be a second way
-   * to express the same thing. History is safe regardless — an appointment
-   * snapshots its price at booking (§30), so a past booking at a branch that no
-   * longer offers the service still resolves.
+   * §73 deleted the row and argued that a second off-switch duplicated
+   * `Service.isActive`. It does not: that one means "we have stopped doing this
+   * at all, everywhere", and this means "not here, for now". Different facts,
+   * and conflating them cost the price.
    *
-   * Withdrawing from the LAST branch retires the service outright. A service
-   * that is active but sold nowhere is bookable by nobody while still claiming
-   * to be on offer, and leaving that state reachable from the obvious action
-   * would make "active" mean two different things.
+   * Switching off the last branch is allowed and leaves the service paused
+   * everywhere — recoverable, visible, and what the seller asked for. §73
+   * auto-retired here because deletion made the state awkward to undo; a toggle
+   * removes the reason.
    */
-  async removeFromLocation(userId: string, serviceId: string, locationId: string) {
+  async setOfferedAtLocation(
+    userId: string,
+    serviceId: string,
+    locationId: string,
+    isOffered: boolean,
+  ) {
     const businessId = await this.access.requireBusinessId(userId);
     await this.requireOwned(businessId, serviceId);
 
@@ -203,34 +220,37 @@ export class ServicesService {
       where: { serviceId_locationId: { serviceId, locationId } },
     });
     if (!offer) {
-      throw new NotFoundException('That service is not offered at that branch.');
+      throw new NotFoundException(
+        'That service has no price at that branch. Add one before turning it on.',
+      );
     }
 
-    const remaining = await this.prisma.serviceLocation.count({ where: { serviceId } });
-    const wasLast = remaining === 1;
-
     const service = await this.prisma.$transaction(async (tx) => {
-      await tx.serviceLocation.delete({
+      await tx.serviceLocation.update({
         where: { serviceId_locationId: { serviceId, locationId } },
+        data: { isOffered },
       });
 
-      const updated = await tx.service.update({
+      // The branch must stop — or start — advertising it immediately (§44).
+      await recalculateFromPrice(tx, businessId);
+
+      return tx.service.findUniqueOrThrow({
         where: { id: serviceId },
-        data: wasLast ? { isActive: false } : {},
         include: SERVICE_INCLUDE,
       });
-
-      // The branch must stop advertising it immediately (§44).
-      await recalculateFromPrice(tx, businessId);
-      return updated;
     });
 
+    const stillOn = service.locations.filter((o) => o.isOffered).length;
+
     return {
-      message: wasLast
-        ? 'That was the only branch offering it, so the service is now retired. ' +
-          'Add it to a branch again to bring it back.'
-        : 'No longer offered at that branch. It is unchanged everywhere else.',
-      retired: wasLast,
+      message: isOffered
+        ? 'Back on sale at that branch.'
+        : stillOn === 0
+          ? 'Paused at that branch, and it was the last one — nobody can book it ' +
+            'until you turn it on somewhere. The prices are kept.'
+          : 'Paused at that branch. Unchanged everywhere else, and the price is kept.',
+      isOffered,
+      offeredAtCount: stillOn,
       service,
     };
   }

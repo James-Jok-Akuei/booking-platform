@@ -606,8 +606,8 @@
       }
     },
     "/business/services/{id}/locations/{locationId}": {
-      "delete": {
-        "operationId": "BusinessController_removeServiceFromLocation",
+      "patch": {
+        "operationId": "BusinessController_setServiceOfferedAtLocation",
         "parameters": [
           {
             "name": "id",
@@ -626,12 +626,22 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetServiceOfferedDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
           }
         },
-        "summary": "Stops offering a service at ONE branch (§73).\n\nSeparate route from retiring, because they are different decisions: this is\n\"not at that shop\", and the one below is \"we have stopped doing this at\nall\". Withdrawing from the last branch does both, and says so.",
+        "summary": "Turns a service on or off at ONE branch (§74).\n\nA PATCH, not a DELETE: the offer row and its price survive a pause. A\nseparate decision from retiring below — \"not here, for now\" rather than\n\"we have stopped doing this at all\".",
         "tags": [
           "Business"
         ]
@@ -3884,6 +3894,17 @@
             "type": "boolean"
           }
         }
+      },
+      "SetServiceOfferedDto": {
+        "type": "object",
+        "properties": {
+          "isOffered": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isOffered"
+        ]
       },
       "ChangeBusinessStatusDto": {
         "type": "object",
