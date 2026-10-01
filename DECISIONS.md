@@ -7440,3 +7440,48 @@ headline from 7,000 to 8,000 while Kimironko kept 5,000, and resuming restored
 
 **996 passing across 26 suites.**
 
+---
+
+## 75. Wording, and grouping by what a customer can book (2026-10-01)
+
+§74 was built on a misreading. The objection to §73 was the word **"remove"** on
+the per-branch control — it read as permanent deletion — not a request for a
+different mechanism. The toggle still stands on its own merits (§74.1), but this
+is the change that was actually asked for.
+
+### 75.1 Nothing is called "remove" any more
+
+Every control now says what it does and implies it is reversible:
+
+| Was | Is |
+|---|---|
+| `remove` beside a branch price | a checkbox, with the branch shown struck through and *(paused)* when off |
+| "Retire everywhere" | "Stop offering everywhere" |
+| "Retired" section | "Not on sale" |
+| — | "Put back on sale" |
+
+The confirmation no longer says a service "disappears"; it says where it goes,
+that its prices are kept, and that it can be put back.
+
+### 75.2 Grouped by whether it can be booked, not by a flag
+
+The sections split on `isActive`, so a service switched off at every branch sat
+among the live ones under a red warning. In the catalogue and bookable by nobody
+is **the same position** as retired, whichever flag expresses it — so both now
+appear under "Not on sale", where the way back is in front of you.
+
+That also fixes the recovery path §74.2 left awkward. A service paused
+everywhere is no longer stranded in the live table: it is listed with its branch
+switches, and ticking one brings it back.
+
+The red "Not on sale anywhere" became a muted "Switched off at every branch" for
+the same reason — it is a choice, not a fault, and colouring it as an error says
+somebody made a mistake.
+
+### 75.3 The lesson
+
+The request was one word. The response was a schema change, a migration and
+eleven tests before anyone checked which word. §74's toggle is better than §73's
+deletion and the work stands, but it was arrived at by building rather than by
+asking — and a question would have cost one message.
+

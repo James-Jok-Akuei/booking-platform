@@ -57,8 +57,20 @@ export function ServicesPage() {
     },
   });
 
-  const active = services.data?.filter((s) => s.isActive) ?? [];
-  const retired = services.data?.filter((s) => !s.isActive) ?? [];
+  /**
+   * Grouped by whether a customer can book it, not by the `isActive` flag.
+   *
+   * A service everybody has paused is in exactly the same position as a retired
+   * one — in your catalogue, bookable by nobody — so it belongs in the same
+   * section, where there is an obvious way to bring it back. Splitting on the
+   * flag instead left it sitting among the live services with a red warning,
+   * which reads as a fault rather than a choice.
+   */
+  const onSale =
+    services.data?.filter((s) => s.isActive && s.locations.some((o) => o.isOffered)) ?? [];
+  const notOnSale =
+    services.data?.filter((s) => !s.isActive || !s.locations.some((o) => o.isOffered)) ??
+    [];
 
   return (
     <section>
@@ -96,7 +108,7 @@ export function ServicesPage() {
 
       {services.isLoading && <p className="muted">Loading…</p>}
 
-      {active.length > 0 && (
+      {onSale.length > 0 && (
         <table>
           <thead>
             <tr>
@@ -108,7 +120,7 @@ export function ServicesPage() {
             </tr>
           </thead>
           <tbody>
-            {active.map((service) => (
+            {onSale.map((service) => (
               <ServiceRow
                 key={service.id}
                 service={service}
@@ -122,8 +134,9 @@ export function ServicesPage() {
                 onRetire={() => {
                   if (
                     window.confirm(
-                      `Retire "${service.name}"? It disappears from search and cannot be ` +
-                        'booked. Appointments already made for it are unaffected.',
+                      `Stop offering "${service.name}" at every branch?\n\n` +
+                        'It moves to "Not on sale", keeps its prices, and you can put it ' +
+                        'back at any time. Appointments already made are unaffected.',
                     )
                   ) {
                     retire.mutate(service.id);
@@ -135,40 +148,46 @@ export function ServicesPage() {
         </table>
       )}
 
-      {retired.length > 0 && (
+      {notOnSale.length > 0 && (
         <>
-          <h2 className="section-title">Retired</h2>
-          <p className="muted small">
-            Kept so past appointments still resolve to what was booked. Not
-            bookable, and invisible to customers.
+          <h2 className="section-title">Not on sale</h2>
+          <p className="muted small" style={{ maxWidth: '64ch' }}>
+            Still yours, and bookable by nobody. Kept so past appointments
+            resolve to what was booked. Switch a branch back on — or press
+            <strong> Put back on sale </strong> if you retired it everywhere.
           </p>
           <table>
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Branches</th>
+                <th>Deposit</th>
+                <th>Length</th>
+                <th aria-label="Actions" />
+              </tr>
+            </thead>
             <tbody>
-              {retired.map((service) => (
-                <tr key={service.id}>
-                  <td>{service.name}</td>
-                  <td className="muted small">
-                    {service.locations.length} branch(es)
-                  </td>
-                  <td colSpan={2} className="muted small">
-                    {service.durationMinutes} min
-                  </td>
-                  <td className="actions">
-                    <button
-                      type="button"
-                      className="link"
-                      disabled={save.isPending}
-                      onClick={() => save.mutate({ id: service.id, body: { isActive: true } })}
-                    >
-                      Bring back
-                    </button>
-                  </td>
-                </tr>
+              {notOnSale.map((service) => (
+                <ServiceRow
+                  key={service.id}
+                  service={service}
+                  money={money}
+                  locations={locations.data ?? []}
+                  busy={save.isPending || retire.isPending || toggle.isPending}
+                  onSave={(body) => save.mutate({ id: service.id, body })}
+                  onToggle={(locationId, isOffered) =>
+                    toggle.mutate({ id: service.id, locationId, isOffered })
+                  }
+                  onRetire={() => save.mutate({ id: service.id, body: { isActive: true } })}
+                  retireLabel="Put back on sale"
+                  retireIsRestore={!service.isActive}
+                />
               ))}
             </tbody>
           </table>
         </>
       )}
+
     </section>
   );
 }
@@ -301,6 +320,8 @@ function ServiceRow({
   onSave,
   onRetire,
   onToggle,
+  retireLabel,
+  retireIsRestore,
 }: {
   service: Service;
   money: ReturnType<typeof useMoney>;
@@ -309,6 +330,10 @@ function ServiceRow({
   onSave: (body: Record<string, unknown>) => void;
   onRetire: () => void;
   onToggle: (locationId: string, isOffered: boolean) => void;
+  /** Wording for the row's whole-service action. */
+  retireLabel?: string;
+  /** True in the "not on sale" table, where the action restores rather than retires. */
+  retireIsRestore?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -349,9 +374,9 @@ function ServiceRow({
       </td>
       <td>
         {service.locations.filter((o) => o.isOffered).length === 0 ? (
-          // Every branch paused (or none priced): in the catalogue, bookable by
-          // nobody. Worth saying plainly rather than showing a quiet list.
-          <span className="error small">Not on sale anywhere</span>
+          // No branch is selling it. Stated plainly rather than left as an
+          // empty column, but not as an error — it is a choice, not a fault.
+          <span className="muted small">Switched off at every branch</span>
         ) : null}
         {service.locations.length > 0 && (
           service.locations.map((offer) => (
@@ -387,9 +412,24 @@ function ServiceRow({
         <button type="button" className="link" onClick={() => setEditing(true)}>
           Edit
         </button>
-        <button type="button" className="link danger-link" disabled={busy} onClick={onRetire}>
-          Retire everywhere
-        </button>
+        {/* Only shown where it means something: a service already off sale
+            everywhere has nothing left to retire. */}
+        {retireIsRestore ? (
+          <button type="button" className="link" disabled={busy} onClick={onRetire}>
+            {retireLabel ?? 'Put back on sale'}
+          </button>
+        ) : (
+          !retireLabel && (
+            <button
+              type="button"
+              className="link danger-link"
+              disabled={busy}
+              onClick={onRetire}
+            >
+              Stop offering everywhere
+            </button>
+          )
+        )}
       </td>
     </tr>
   );
