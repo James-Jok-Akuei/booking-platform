@@ -243,3 +243,12 @@ td.reason { max-width: 320px; }
 .legend dl > div { display: contents; }
 .legend dt { font-weight: 500; }
 .legend dd { margin: 0; font-size: 13px; }
+
+.reviews { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.review { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 14px 16px; }
+.review.hidden { opacity: 0.78; border-style: dashed; }
+.review-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.rating { color: var(--warn); letter-spacing: 1px; }
+.review-text { margin: 7px 0 0; white-space: pre-wrap; }
+.reply-shown { margin-top: 10px; padding-left: 12px; border-left: 3px solid var(--accent); }
+.reply-shown p { margin: 3px 0 0; white-space: pre-wrap; }

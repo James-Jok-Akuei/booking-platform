@@ -7,6 +7,7 @@ const SECTIONS = [
   { to: '/payout-destinations', label: 'Payout destinations' },
   { to: '/payouts', label: 'Payouts' },
   { to: '/ledger', label: 'Money' },
+  { to: '/reviews', label: 'Reviews' },
   { to: '/tickets', label: 'Support' },
   { to: '/settings', label: 'Settings' },
 ];

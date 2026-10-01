@@ -429,6 +429,120 @@ describe('Reviews (§28)', () => {
     });
   });
 
+  describe('the moderation queue (§93)', () => {
+    const AS_ADMIN = () => asUser(admin.userId, 'ADMIN');
+
+    it('is the one listing that returns hidden reviews', async () => {
+      const appointment = await completedAppointment();
+      const review = await reviews.create(customerA.userId, appointment.id, {
+        rating: 1,
+        comment: 'Hidden later.',
+      });
+      await reviews.hide(AS_ADMIN(), review.id, { hiddenReason: 'Abusive.' });
+
+      // Absent from the public listing, which is what hiding means.
+      const publicList = await reviews.listForLocation(alpha.locationId, undefined, {});
+      expect(publicList.reviews.some((r) => r.id === review.id)).toBe(false);
+
+      // Present here, or hiding would be a one-way door.
+      const queue = await reviews.listForModeration(AS_ADMIN(), {});
+      const found = queue.reviews.find((r) => r.id === review.id);
+      expect(found).toBeDefined();
+      expect(found?.hiddenAt).not.toBeNull();
+      expect(found?.hiddenReason).toBe('Abusive.');
+    });
+
+    it('names who hid it and why, so the decision can be reviewed', async () => {
+      const appointment = await completedAppointment();
+      const review = await reviews.create(customerA.userId, appointment.id, { rating: 2 });
+      await reviews.hide(AS_ADMIN(), review.id, { hiddenReason: 'Names a member of staff.' });
+
+      const queue = await reviews.listForModeration(AS_ADMIN(), { visibility: 'HIDDEN' });
+      const found = queue.reviews.find((r) => r.id === review.id);
+      expect(found?.hiddenByEmail).toBe(admin.email);
+      expect(found?.hiddenReason).toBe('Names a member of staff.');
+    });
+
+    it('gives an admin the customer identity a decision needs', async () => {
+      const appointment = await completedAppointment();
+      await reviews.create(customerA.userId, appointment.id, { rating: 3 });
+
+      const queue = await reviews.listForModeration(AS_ADMIN(), {});
+      const row = queue.reviews[0];
+
+      // The public listing never carries these (§28.6).
+      expect(row.customerEmail).toBe(customerA.email);
+      expect(row.businessName).toBeTruthy();
+      expect(row.locationName).toBeTruthy();
+    });
+
+    it('filters by visibility', async () => {
+      // Its own business: this suite resets once, so reviews accumulate across
+      // it and a platform-wide assertion would be about every earlier test.
+      const shop = await createBusiness(prisma);
+      const first = await completedAppointment(shop);
+      const visible = await reviews.create(customerA.userId, first.id, { rating: 5 });
+      const second = await completedAppointment(shop, customerB.userId);
+      const hidden = await reviews.create(customerB.userId, second.id, { rating: 1 });
+      await reviews.hide(AS_ADMIN(), hidden.id, { hiddenReason: 'Spam.' });
+
+      const scope = { businessId: shop.businessId };
+
+      const onlyHidden = await reviews.listForModeration(AS_ADMIN(), {
+        ...scope,
+        visibility: 'HIDDEN',
+      });
+      expect(onlyHidden.reviews.map((r) => r.id)).toEqual([hidden.id]);
+
+      const onlyVisible = await reviews.listForModeration(AS_ADMIN(), {
+        ...scope,
+        visibility: 'VISIBLE',
+      });
+      expect(onlyVisible.reviews.map((r) => r.id)).toEqual([visible.id]);
+
+      const all = await reviews.listForModeration(AS_ADMIN(), { ...scope, visibility: 'ALL' });
+      expect(all.total).toBe(2);
+    });
+
+    it('filters by rating, which is what a dispute looks like', async () => {
+      const shop = await createBusiness(prisma);
+      const first = await completedAppointment(shop);
+      const low = await reviews.create(customerA.userId, first.id, { rating: 1 });
+      const second = await completedAppointment(shop, customerB.userId);
+      await reviews.create(customerB.userId, second.id, { rating: 5 });
+
+      const bad = await reviews.listForModeration(AS_ADMIN(), {
+        businessId: shop.businessId,
+        maxRating: 2,
+      });
+      expect(bad.reviews.map((r) => r.id)).toEqual([low.id]);
+    });
+
+    it('counts hidden reviews across the platform, not just this page', async () => {
+      const before = (await reviews.listForModeration(AS_ADMIN(), {})).hiddenCount;
+
+      const shop = await createBusiness(prisma);
+      const appointment = await completedAppointment(shop);
+      const review = await reviews.create(customerA.userId, appointment.id, { rating: 1 });
+      await reviews.hide(AS_ADMIN(), review.id, { hiddenReason: 'Spam.' });
+
+      // Scoped to a business with nothing visible: the page is empty and the
+      // platform-wide count still moved, which is the distinction being made.
+      const visibleOnly = await reviews.listForModeration(AS_ADMIN(), {
+        businessId: shop.businessId,
+        visibility: 'VISIBLE',
+      });
+      expect(visibleOnly.reviews).toHaveLength(0);
+      expect(visibleOnly.hiddenCount).toBe(before + 1);
+    });
+
+    it.each(['CUSTOMER', 'BUSINESS'])('refuses a %s', async (role) => {
+      await expect(
+        reviews.listForModeration(asUser(alpha.userId, role), {}),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
+
   describe('moderation', () => {
     it('rejects hiding an already-hidden review', async () => {
       const appointment = await completedAppointment();

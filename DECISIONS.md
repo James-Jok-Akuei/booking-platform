@@ -8540,3 +8540,60 @@ succeeded and set `responseEditedAt`; editing a review with no reply refused
 with 400; **another business replying to it got 404**, not 403. The public
 listing, fetched with no token, shows the new reply and leaks no identity.
 
+## 93. Review moderation, and the listing that makes it reversible
+
+Item 5 of the wiring plan, and the first needing backend work: `hide` and
+`unhide` existed with **nothing to list what they act on**.
+
+### 93.1 Hiding was a one-way door
+
+Every other listing excludes hidden reviews **in the query** — that is what
+makes hiding real. Which meant a hidden review was invisible to the public, to
+the business, *and to the admin who hid it*. `unhide` took an id that nothing
+would ever show you again.
+
+`GET /admin/reviews` is the one listing that returns them. It is the whole
+reason the pair of PATCHes was reachable only in theory.
+
+### 93.2 What the queue carries that other listings refuse to
+
+**Identity.** `customerEmail` and `customerId`, because an admin is entitled to
+them (§28.6) and a moderation decision about one person's words cannot be made
+against "Anonymous".
+
+**Who hid it and why.** `hiddenByEmail` and `hiddenReason` are shown on the row.
+`hiddenReason` has always been required — *"hiding customer feedback without
+recording why is the kind of moderation that cannot be reviewed later or
+explained in a dispute"* — and until now nothing displayed it, so the record
+existed and could not be read.
+
+**Business and location names**, because a sentence of complaint means little
+without knowing who it is about.
+
+### 93.3 Defaults that match the job
+
+`visibility` defaults to ALL, and the screen offers **"Only 1 and 2 star — the
+ones that get disputed"** as a filter rather than a default: a moderator usually
+arrives from a ticket about a specific review, not from a sweep.
+
+`hiddenCount` is **platform-wide, not this page**. It is the number worth
+watching, and a count that changed with the filter would answer a question
+nobody asked. A test pins exactly that: a page scoped to a business with nothing
+visible holds zero rows while the count still moves.
+
+### 93.4 Verified against live data
+
+The thing worth checking is not that a flag flipped but that the rating moved.
+On a branch with four reviews averaging **3.5**: hiding the 2-star took the
+public listing to **three reviews averaging 4.0**, and unhiding put it back to
+3.5 from four.
+
+Also: hiding with no reason refused by validation; hiding twice and unhiding
+twice both refused; a business asking for the queue got **403**. The demo data
+was restored afterwards.
+
+Seven tests, including the one this section exists for — a review absent from
+the public listing and present in the queue, carrying the reason it was hidden.
+
+**1077 passing across 30 suites.**
+

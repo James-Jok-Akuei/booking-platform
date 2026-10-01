@@ -20,6 +20,7 @@ import { CreateReviewDto, UpdateReviewDto } from './dto/create-review.dto';
 import { ReviewResponseDto } from './dto/review-response.dto';
 import { HideReviewDto } from './dto/hide-review.dto';
 import { ListReviewsDto } from './dto/list-reviews.dto';
+import { ListAdminReviewsDto } from './dto/list-admin-reviews.dto';
 import { REVIEW_EDIT_WINDOW_DAYS, isPastEditWindow } from './review-window';
 
 /** What everyone may see about a review. Customer identity is added separately. */
@@ -490,6 +491,91 @@ export class ReviewsService {
       limit,
       offset,
       reviews: reviews.map(withByline),
+    };
+  }
+
+  /**
+   * The moderation queue (§93).
+   *
+   * The ONE listing that can return hidden reviews. Every other read excludes
+   * them in the query — which is what makes hiding real — so an admin had no
+   * way to see what they had hidden, or to find it again to unhide it.
+   *
+   * Identity is included because an admin is entitled to it (§28.6) and a
+   * moderation decision about one customer's words cannot be made against
+   * "Anonymous". Business and location names come with it: a reviewer's
+   * sentence means little without knowing who it is about.
+   */
+  async listForModeration(
+    actor: { userId: string; role: UserRole | string },
+    query: ListAdminReviewsDto,
+  ) {
+    this.assertAdmin(actor);
+
+    const limit = query.limit ?? 25;
+    const offset = query.offset ?? 0;
+    const visibility = query.visibility ?? 'ALL';
+
+    const where: Prisma.ReviewWhereInput = {
+      ...(visibility === 'HIDDEN' ? { hiddenAt: { not: null } } : {}),
+      ...(visibility === 'VISIBLE' ? { hiddenAt: null } : {}),
+      ...(query.maxRating !== undefined ? { rating: { lte: query.maxRating } } : {}),
+      ...(query.businessId ? { businessId: query.businessId } : {}),
+    };
+
+    const [total, hiddenCount, reviews] = await Promise.all([
+      this.prisma.review.count({ where }),
+      this.prisma.review.count({ where: { hiddenAt: { not: null } } }),
+      this.prisma.review.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: offset,
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          editedAt: true,
+          responseText: true,
+          responseAt: true,
+          createdAt: true,
+          hiddenAt: true,
+          hiddenReason: true,
+          locationId: true,
+          businessId: true,
+          customer: { select: { id: true, email: true, displayName: true } },
+          location: { select: { name: true } },
+          businessProfile: { select: { name: true } },
+          hiddenBy: { select: { email: true } },
+        },
+      }),
+    ]);
+
+    return {
+      total,
+      limit,
+      offset,
+      /** Across the whole platform, not this page — the number worth watching. */
+      hiddenCount,
+      reviews: reviews.map((review) => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        editedAt: review.editedAt,
+        responseText: review.responseText,
+        responseAt: review.responseAt,
+        createdAt: review.createdAt,
+        hiddenAt: review.hiddenAt,
+        hiddenReason: review.hiddenReason,
+        hiddenByEmail: review.hiddenBy?.email ?? null,
+        locationId: review.locationId,
+        locationName: review.location.name,
+        businessId: review.businessId,
+        businessName: review.businessProfile.name,
+        customerId: review.customer.id,
+        customerEmail: review.customer.email,
+        displayName: review.customer.displayName ?? ANONYMOUS_DISPLAY_NAME,
+      })),
     };
   }
 

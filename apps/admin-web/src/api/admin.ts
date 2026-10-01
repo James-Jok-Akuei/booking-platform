@@ -567,3 +567,54 @@ export interface Reconciliation {
 
 export const getReconciliation = () =>
   api<Reconciliation>('/admin/ledger/reconciliation');
+
+// ---------------------------------------------------------------------------
+// Review moderation (§93)
+// ---------------------------------------------------------------------------
+
+export interface ModeratedReview {
+  id: string;
+  rating: number;
+  comment: string | null;
+  editedAt: string | null;
+  responseText: string | null;
+  responseAt: string | null;
+  createdAt: string;
+  hiddenAt: string | null;
+  hiddenReason: string | null;
+  hiddenByEmail: string | null;
+  locationId: string;
+  locationName: string;
+  businessId: string;
+  businessName: string | null;
+  /** Identity, which only an admin and the counterparty business receive. */
+  customerId: string;
+  customerEmail: string;
+  displayName: string;
+}
+
+export interface ModeratedReviewPage {
+  total: number;
+  limit: number;
+  offset: number;
+  /** Across the whole platform, not this page. */
+  hiddenCount: number;
+  reviews: ModeratedReview[];
+}
+
+/** The only listing that returns hidden reviews. */
+export const listReviewsForModeration = (params: {
+  visibility?: 'VISIBLE' | 'HIDDEN' | 'ALL';
+  maxRating?: number;
+  limit?: number;
+}) => api<ModeratedReviewPage>('/admin/reviews', { query: params });
+
+/** A reason is required: hiding feedback unexplained cannot be reviewed later. */
+export const hideReview = (id: string, hiddenReason: string) =>
+  api<unknown>(`/admin/reviews/${id}/hide`, {
+    method: 'PATCH',
+    body: { hiddenReason },
+  });
+
+export const unhideReview = (id: string) =>
+  api<unknown>(`/admin/reviews/${id}/unhide`, { method: 'PATCH' });

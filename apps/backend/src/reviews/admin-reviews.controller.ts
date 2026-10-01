@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseUUIDPipe,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
@@ -16,6 +18,7 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { ReviewsService } from './reviews.service';
 import { HideReviewDto } from './dto/hide-review.dto';
+import { ListAdminReviewsDto } from './dto/list-admin-reviews.dto';
 
 /**
  * Review moderation. API-only, like every other admin surface here (§16.9).
@@ -28,6 +31,20 @@ import { HideReviewDto } from './dto/hide-review.dto';
 @Roles(UserRole.ADMIN)
 export class AdminReviewsController {
   constructor(private readonly reviews: ReviewsService) {}
+
+  /**
+   * The moderation queue (§93) — the only listing that returns hidden reviews.
+   *
+   * Without it `hide` and `unhide` were unreachable in practice: nothing told
+   * an admin which reviews existed, and a hidden one was invisible everywhere.
+   */
+  @Get()
+  list(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListAdminReviewsDto,
+  ) {
+    return this.reviews.listForModeration(user, query);
+  }
 
   @Patch(':id/hide')
   hide(
