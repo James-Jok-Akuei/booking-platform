@@ -9450,3 +9450,19 @@ different network, and a stale one fails in a way that looks like the backend
 being down. A simulator reaches either, so the LAN address is simply always the
 right answer.
 
+### 108.5 Metro runs in the foreground, or there is no QR code
+
+Found by being asked where the QR code was, and not having an answer.
+
+Metro draws its QR **only when attached to a terminal**. Redirected to a log it
+prints a plain "Waiting on http://localhost:8081" instead, so the code existed
+nowhere — and on an iPhone there is no way in: Apple's rules stopped Expo Go
+scanning QR codes itself, so a phone camera and a visible QR are the only route.
+
+Metro now starts **last and in the foreground**, with everything else already up
+and logged to files. Two things fall out of that: the QR is on screen, and
+bundler errors appear as they happen rather than in a file nobody is watching.
+
+Generating a QR separately was the first idea and the worse one — a second
+source of the same URL, able to drift from the one Metro actually serves.
+

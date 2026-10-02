@@ -97,6 +97,7 @@ PIDS+=($!)
 wait_for 5173 admin-web 60
 wait_for 5174 business-web 60
 
+LAN_IP=""
 if [[ $WITH_APP == 1 ]]; then
   say "Phone app"
 
@@ -117,19 +118,6 @@ if [[ $WITH_APP == 1 ]]; then
   else
     bad "not on a network — a real phone will not reach the backend"
   fi
-  # Metro only. `expo start --ios` quits if the simulator deep link fails, and
-  # it fails often enough to take the whole script down with it (§102.6).
-  npm run start --workspace apps/customer-app > "$LOGS/customer-app.log" 2>&1 &
-  PIDS+=($!)
-  if wait_for 8081 customer-app 120; then
-    if xcrun simctl list devices 2>/dev/null | grep -q Booted; then
-      xcrun simctl openurl booted "exp://127.0.0.1:8081" >/dev/null 2>&1 \
-        && ok "opened in the booted simulator"
-    else
-      printf "  open a simulator, then: \033[1mxcrun simctl openurl booted exp://127.0.0.1:8081\033[0m\n"
-    fi
-    [[ -n "${LAN_IP:-}" ]] && printf "  on a phone: open Expo Go and scan, or enter \033[1mexp://%s:8081\033[0m\n" "$LAN_IP"
-  fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -139,14 +127,35 @@ cat <<EOF
   Business     http://localhost:5174
   Backend      http://localhost:3000
   Email inbox  http://localhost:8025
-$([[ $WITH_APP == 1 ]] && echo "  Phone app    exp://127.0.0.1:8081")
 
   Sign in with any demo-*@example.com address — the six-digit code
   arrives in the email inbox above, not a real mailbox.
 
-  Logs in $LOGS/   ·   Ctrl-C to stop
+  Logs in $LOGS/   ·   Ctrl-C to stop everything
 
 EOF
 
-# Hold the script open so Ctrl-C reaches the trap.
+if [[ $WITH_APP == 1 ]]; then
+  if [[ -n "$LAN_IP" ]]; then
+    say "Phone app — the app will call http://$LAN_IP:3000"
+    printf "  Android: open Expo Go, tap Scan QR Code\n"
+    printf "  iPhone:  point the normal Camera app at the QR code\n"
+    printf "  Both:    same wifi as this Mac\n\n"
+  fi
+
+  # Metro runs in the FOREGROUND and owns the terminal from here.
+  #
+  # It only draws its QR code when attached to one — redirected to a log it
+  # prints a plain "Waiting on …" line and the QR exists nowhere, which is no
+  # use to a phone. Keeping it in front also puts bundler errors on screen as
+  # they happen, which is what you watch while working on the app.
+  #
+  # Metro only, never `expo start --ios`: that quits if the simulator deep link
+  # fails and would take everything down with it (§102.6).
+  cd apps/customer-app
+  exec npx expo start
+fi
+
+# Nothing in the foreground, so hold the script open for the trap.
+say "Running. Ctrl-C to stop."
 wait
