@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { Link, Stack } from 'expo-router';
+import { Pressable, Text } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { tokens } from '../src/api/client';
@@ -38,7 +39,26 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: theme.bg },
         }}
       >
-        <Stack.Screen name="index" options={{ title: 'Find a place' }} />
+        <Stack.Screen
+          name="index"
+          options={{
+            title: 'Find a place',
+            // The only way back to a booking once this screen has been left.
+            // Shown to everyone, signed in or not: the screen itself explains
+            // that signing in is what fills it, which is a better invitation
+            // than a button that is not there.
+            headerRight: () => (
+              <Link href="/bookings" asChild>
+                <Pressable hitSlop={10}>
+                  <Text style={{ color: theme.accent, fontWeight: '600' }}>
+                    My bookings
+                  </Text>
+                </Pressable>
+              </Link>
+            ),
+          }}
+        />
+        <Stack.Screen name="bookings" options={{ title: 'My bookings' }} />
         <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
       </Stack>
     </QueryClientProvider>

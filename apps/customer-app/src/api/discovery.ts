@@ -1,4 +1,5 @@
 import { api } from './client';
+import type { paths } from './schema';
 
 export interface Currency {
   code: string;
@@ -74,7 +75,16 @@ export interface DiscoveryPage {
   locations: DiscoveredLocation[];
 }
 
-export type DiscoverySort = 'rating' | 'price' | 'distance' | 'newest';
+/**
+ * From the contract, not from here. Hand-written, this listed a fourth value —
+ * `newest` — that the backend has never accepted, so the sort chip offering it
+ * returned a 400 on every tap (§110).
+ */
+export type DiscoverySort = NonNullable<
+  NonNullable<
+    paths['/discover/locations']['get']['parameters']['query']
+  >['sort']
+>;
 
 /**
  * Browse and search. Anonymous on purpose — someone should be able to look

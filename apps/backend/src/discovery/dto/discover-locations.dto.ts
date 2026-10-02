@@ -17,6 +17,12 @@ export enum DiscoverySort {
   RATING = 'rating',
   PRICE = 'price',
   DISTANCE = 'distance',
+  /**
+   * Most recently listed first. Added because the customer app had been offering
+   * it as a chip since §102 and every tap was a 400 — the app's hand-written
+   * sort type listed a value the enum never had (§110).
+   */
+  NEWEST = 'newest',
 }
 
 /** Widest search the platform will run in one request. */

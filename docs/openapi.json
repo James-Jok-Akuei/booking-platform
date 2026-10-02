@@ -2021,6 +2021,18 @@
             }
           },
           {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "soonest",
+                "latest"
+              ]
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -4257,7 +4269,8 @@
               "enum": [
                 "rating",
                 "price",
-                "distance"
+                "distance",
+                "newest"
               ]
             }
           },
@@ -5136,7 +5149,7 @@
           },
           "failureReason": {
             "type": "string",
-            "description": "The operator's words, when it gave any. Shown to the customer verbatim."
+            "description": "The operator's own words, for logs and support — NOT customer copy.\n\nMoMo's four failure states collapse into one `FAILED` here (§57), and this\nkeeps what was lost: `FAILED: APPROVAL_REJECTED`, `FAILED: EXPIRED`,\n`FAILED: INTERNAL_PROCESSING_ERROR` are all real values. A client must\ntranslate before showing it to anyone, and should keep it visible somewhere\nsmall, because it is what a support ticket needs."
           }
         },
         "required": [

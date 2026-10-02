@@ -2389,7 +2389,15 @@ export interface components {
              *     a client seeing null here should offer the payment again, not an error.
              */
             providerReferenceId: string | null;
-            /** @description The operator's words, when it gave any. Shown to the customer verbatim. */
+            /**
+             * @description The operator's own words, for logs and support — NOT customer copy.
+             *
+             *     MoMo's four failure states collapse into one `FAILED` here (§57), and this
+             *     keeps what was lost: `FAILED: APPROVAL_REJECTED`, `FAILED: EXPIRED`,
+             *     `FAILED: INTERNAL_PROCESSING_ERROR` are all real values. A client must
+             *     translate before showing it to anyone, and should keep it visible somewhere
+             *     small, because it is what a support ticket needs.
+             */
             failureReason?: string;
         };
         CancelAppointmentDto: {
@@ -4065,6 +4073,7 @@ export interface operations {
                 from?: string;
                 /** @description Exclusive upper bound on startTime. */
                 to?: string;
+                sort?: "soonest" | "latest";
                 limit?: number;
                 offset?: number;
             };
@@ -5372,7 +5381,7 @@ export interface operations {
                 lat?: number;
                 lng?: number;
                 radiusKm?: number;
-                sort?: "rating" | "price" | "distance";
+                sort?: "rating" | "price" | "distance" | "newest";
                 limit?: number;
                 offset?: number;
             };

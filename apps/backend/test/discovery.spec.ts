@@ -252,6 +252,58 @@ describe('Discovery (§43)', () => {
 
       expect(ids(result)).toEqual([best.locationId, mid.locationId, unrated.locationId]);
     });
+
+    it('sorts by newest, most recently listed first', async () => {
+      const oldest = await shop();
+      const middle = await shop();
+      const newest = await shop();
+      // Written explicitly: three rows created inside the same millisecond would
+      // otherwise fall back to the name tie-break and test nothing.
+      await prisma.location.update({
+        where: { id: oldest.locationId },
+        data: { createdAt: new Date('2026-01-01T00:00:00Z') },
+      });
+      await prisma.location.update({
+        where: { id: middle.locationId },
+        data: { createdAt: new Date('2026-06-01T00:00:00Z') },
+      });
+      await prisma.location.update({
+        where: { id: newest.locationId },
+        data: { createdAt: new Date('2026-09-01T00:00:00Z') },
+      });
+
+      const result = await discovery.search({ sort: DiscoverySort.NEWEST });
+
+      expect(ids(result)).toEqual([
+        newest.locationId,
+        middle.locationId,
+        oldest.locationId,
+      ]);
+    });
+
+    it('newest follows when the shop was LISTED, not when it was last edited', async () => {
+      const older = await shop();
+      const newer = await shop();
+      await prisma.location.update({
+        where: { id: older.locationId },
+        data: { createdAt: new Date('2026-01-01T00:00:00Z') },
+      });
+      await prisma.location.update({
+        where: { id: newer.locationId },
+        data: { createdAt: new Date('2026-09-01T00:00:00Z') },
+      });
+
+      // The older shop edits its opening hours today. That must not promote it:
+      // on `updatedAt` the list would reshuffle every time anyone saved anything.
+      await prisma.location.update({
+        where: { id: older.locationId },
+        data: { name: 'Renamed today' },
+      });
+
+      const result = await discovery.search({ sort: DiscoverySort.NEWEST });
+
+      expect(ids(result)).toEqual([newer.locationId, older.locationId]);
+    });
   });
 
   // ------------------------------------------------------------------

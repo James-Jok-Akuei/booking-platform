@@ -41,7 +41,10 @@ import {
 } from '../payments/approx-settlement';
 import { NotificationType } from '@prisma/client';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import { ListAppointmentsDto } from './dto/list-appointments.dto';
+import {
+  AppointmentOrder,
+  ListAppointmentsDto,
+} from './dto/list-appointments.dto';
 import {
   CancelAppointmentDto,
   ReclassifyCancellationDto,
@@ -1660,7 +1663,9 @@ export class AppointmentsService {
       this.prisma.appointment.count({ where }),
       this.prisma.appointment.findMany({
         where,
-        orderBy: { startTime: 'desc' },
+        orderBy: {
+          startTime: query.sort === AppointmentOrder.SOONEST ? 'asc' : 'desc',
+        },
         take: limit,
         skip: offset,
         select: APPOINTMENT_SELECT,

@@ -9651,3 +9651,83 @@ next wonders will be standing.
 A customer can now book and pay, and be told what happened. That was the hole
 §102 opened with — "the platform could not take a booking" — and it is closed,
 against the real operator rather than a stub.
+
+## 110. My bookings, and two more things the client invented (2026-10-02)
+
+A booking could be reached only by the screen that created it. Close the app
+after paying and the arrival code was gone from the phone — it is in the email
+too (§54), but a customer standing at a counter is not reading email.
+
+### 110.1 A third hand-written value the backend never had
+
+While typing the new screen against the contract, §109's trigger fired on its
+own. The discovery screen offers a sort chip labelled **"Newest"**, and
+`DiscoverySort` in the app read:
+
+```ts
+export type DiscoverySort = 'rating' | 'price' | 'distance' | 'newest';
+```
+
+The backend enum is `rating | price | distance`. Every tap of that chip was a
+400: *"sort must be one of: rating, price, distance"*. It had been on the screen
+since §102.
+
+Unlike §109 this one was preventable on the day it was written — request
+parameters HAVE always been in the contract; the app simply was not reading it.
+Deriving the type from `paths['/discover/locations']` turned the chip into a
+compile error immediately.
+
+Then the question of what to do about it. The chip was removed from neither
+side: `newest` was **added to the backend**, ordering by `createdAt desc`. A
+control the author put there, which plainly means something, is better made to
+work than deleted — and deleting it would have been a product change made on the
+way past, which is not mine to make.
+
+`createdAt`, not `updatedAt`: when the shop was listed, not when its row last
+changed. On `updatedAt` the list would reshuffle every time a business saved its
+opening hours, which is not what "newest" means to anyone. Both are tested,
+including the edit-does-not-promote case.
+
+### 110.2 "What's next" and "what happened" are sorted differently
+
+`GET /appointments` has always ordered `startTime desc`, which is right for the
+business app — a schedule is read from the most recent backwards — and exactly
+wrong for a customer's Upcoming tab, where it opens on the booking FURTHEST
+away.
+
+Reversing the page in the client would have been worse than doing nothing:
+twenty-five rows in the right order, but the wrong twenty-five, because the
+ordering decides which rows the page contains. So `sort=soonest|latest` was added
+to the endpoint, defaulting to `latest` so the business app is untouched.
+
+Tested across pages as well as within one, since within-page order is exactly
+what a client-side reverse would have got right.
+
+### 110.3 The screen
+
+Two tabs, two different questions: Upcoming (`from=now`, soonest first) and Past
+(`to=now`, latest first). The boundary between them is pinned when the screen
+opens rather than read per render — a `now` that moves on every keystroke lets
+the two tabs disagree about the booking happening right now, and can drop it from
+both.
+
+Each row carries the status in the customer's words rather than the platform's.
+`PENDING_PAYMENT` gets the only nudge — "Pay the deposit to confirm this slot" —
+because it is not a state to describe but a thing to do, and it is the row that
+costs someone their slot if ignored.
+
+Signed out, the screen explains itself and offers a sign-in rather than hiding.
+The header link on Discovery is shown to everyone for the same reason: a button
+that is not there teaches nobody that bookings are kept with an account.
+
+### 110.4 Seen, with the part I could not see said plainly
+
+Booted in the iOS simulator against the live backend: the header link renders,
+the screen opens, and the signed-out state reads as written. Expo Go had to be
+installed on the simulator first — §102.5's run predated it.
+
+**The signed-in list was not seen.** Signing in needs an emailed code typed into
+the phone, and §102.2 is still true: I can read the screen but not tap it. What
+was verified instead is the data underneath — the list endpoint returning the
+right rows in each order, confirmed against the running backend. The rendering
+of a populated list is the part a person still has to look at.

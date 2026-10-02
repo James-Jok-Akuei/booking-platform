@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { components } from './schema';
+import type { components, paths } from './schema';
 
 export interface Appointment {
   id: string;
@@ -34,8 +34,24 @@ export const createAppointment = (input: {
   startTime: string;
 }) => api<Appointment>('/appointments', { method: 'POST', body: input });
 
-export const listMyAppointments = (params: { status?: string; limit?: number } = {}) =>
-  api<{ total: number; appointments: Appointment[] }>('/appointments', { query: params });
+/**
+ * The caller's own bookings. The query shape comes from the contract, so a
+ * parameter the backend does not have is a compile error rather than a 400 the
+ * screen discovers (§110).
+ *
+ * `sort` matters more than it looks: the endpoint's default is `latest`, which
+ * for a list of UPCOMING bookings puts the furthest-away one first — and on page
+ * one, so reversing the page client-side would not fix it.
+ */
+type ListAppointmentsQuery = NonNullable<
+  NonNullable<paths['/appointments']['get']['parameters']['query']>
+>;
+
+export const listMyAppointments = (params: ListAppointmentsQuery = {}) =>
+  api<{ total: number; limit: number; offset: number; appointments: Appointment[] }>(
+    '/appointments',
+    { query: params },
+  );
 
 export const getAppointment = (id: string) => api<Appointment>(`/appointments/${id}`);
 

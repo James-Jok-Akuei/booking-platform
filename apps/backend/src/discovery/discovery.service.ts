@@ -607,6 +607,12 @@ export class DiscoveryService {
         { name: 'asc' },
       ];
     }
+    if (query.sort === DiscoverySort.NEWEST) {
+      // When the shop was listed, not when its row last changed: `updatedAt`
+      // would reshuffle the list every time a business edited its opening hours.
+      // Tie-broken by name so the order is stable across pages.
+      return [{ createdAt: 'desc' }, { name: 'asc' }];
+    }
     return [{ name: 'asc' }];
   }
 
