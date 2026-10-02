@@ -27,6 +27,9 @@ export class CategoriesController {
         icon: true,
         description: true,
         subcategories: {
+          // ANDed with the parent by construction: a hidden category is not
+          // returned at all, so its live children never reach anyone (§100).
+          where: { isLive: true },
           orderBy: { name: 'asc' },
           select: { id: true, name: true },
         },

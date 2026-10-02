@@ -1,34 +1,51 @@
 import {
+  BadRequestException,
   Body,
+  ConflictException,
   Controller,
+  Delete,
   Get,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   UseGuards,
 } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { SetCategoryLiveDto } from './dto/set-category-live.dto';
+import {
+  CreateCategoryDto,
+  CreateSubcategoryDto,
+  UpdateCategoryDto,
+  UpdateSubcategoryDto,
+} from './dto/category-crud.dto';
 
 /**
- * Which categories a business may choose (§98).
+ * The taxonomy: what exists, and which of it a business may choose (§98, §100).
  *
- * The platform ships the whole taxonomy and opens part of it. This is the only
- * place that decides which part, and the counts are what make the decision
- * answerable: switching a category off while businesses are in it is allowed,
- * but nobody should do it without seeing how many.
+ * ## Nothing in use is ever deleted
+ *
+ * `BusinessProfile.categoryId` is `SetNull` and `Subcategory` cascades from its
+ * parent, so deleting a category in use would silently strip the category from
+ * every business in it — and take their subcategory with it. That is the §89
+ * shape of bug exactly.
+ *
+ * So a delete is refused the moment anything depends on it, and the refusal
+ * names the toggle instead. Deletion exists for the row somebody created with a
+ * typo thirty seconds ago, not for retiring part of the taxonomy.
  */
-@Controller('admin/categories')
+@Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class AdminCategoriesController {
   constructor(private readonly prisma: PrismaService) {}
 
-  @Get()
+  @Get('categories')
   async findAll() {
     const categories = await this.prisma.category.findMany({
       orderBy: { name: 'asc' },
@@ -38,7 +55,16 @@ export class AdminCategoriesController {
         icon: true,
         description: true,
         isLive: true,
-        _count: { select: { businesses: true, subcategories: true } },
+        _count: { select: { businesses: true } },
+        subcategories: {
+          orderBy: { name: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            isLive: true,
+            _count: { select: { businesses: true } },
+          },
+        },
       },
     });
 
@@ -48,26 +74,199 @@ export class AdminCategoriesController {
       icon: category.icon,
       description: category.description,
       isLive: category.isLive,
-      /** How many businesses are already in it. Shown before it is switched off. */
+      /** Businesses already in it. Shown before anything is switched off. */
       businessCount: category._count.businesses,
-      subcategoryCount: category._count.subcategories,
+      subcategories: category.subcategories.map((subcategory) => ({
+        id: subcategory.id,
+        name: subcategory.name,
+        isLive: subcategory.isLive,
+        businessCount: subcategory._count.businesses,
+        /**
+         * What a business actually sees. A live type inside a hidden category
+         * is not offered, and the screen should say that rather than show a
+         * row that looks open and is not.
+         */
+        effectivelyLive: subcategory.isLive && category.isLive,
+      })),
     }));
   }
 
-  @Patch(':id/live')
+  // ---------- Categories ----------
+
+  @Post('categories')
+  async create(@Body() dto: CreateCategoryDto) {
+    try {
+      return await this.prisma.category.create({
+        data: {
+          name: dto.name.trim(),
+          icon: dto.icon?.trim() || null,
+          description: dto.description?.trim() || null,
+        },
+      });
+    } catch (error) {
+      throw this.asConflict(error, `A category called "${dto.name.trim()}" already exists.`);
+    }
+  }
+
+  @Patch('categories/:id')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCategoryDto,
+  ) {
+    await this.requireCategory(id);
+    try {
+      return await this.prisma.category.update({
+        where: { id },
+        data: {
+          ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
+          ...(dto.icon !== undefined ? { icon: dto.icon.trim() || null } : {}),
+          ...(dto.description !== undefined
+            ? { description: dto.description.trim() || null }
+            : {}),
+        },
+      });
+    } catch (error) {
+      throw this.asConflict(error, 'Another category already has that name.');
+    }
+  }
+
+  @Patch('categories/:id/live')
   async setLive(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: SetCategoryLiveDto,
   ) {
-    await this.prisma.category.update({
-      where: { id },
-      data: { isLive: dto.isLive },
-    });
+    await this.requireCategory(id);
+    await this.prisma.category.update({ where: { id }, data: { isLive: dto.isLive } });
 
     return {
       message: dto.isLive
         ? 'Businesses can choose this category again.'
         : 'New businesses can no longer choose this category. Existing ones keep their listing.',
     };
+  }
+
+  @Delete('categories/:id')
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    const category = await this.requireCategory(id);
+
+    const inUse =
+      category._count.businesses +
+      category.subcategories.reduce((sum, s) => sum + s._count.businesses, 0);
+
+    if (inUse > 0) {
+      throw new BadRequestException(
+        `${inUse} business${inUse === 1 ? ' is' : 'es are'} using this category or one of ` +
+          'its types. Switch it off instead — deleting would strip the category from them.',
+      );
+    }
+
+    await this.prisma.category.delete({ where: { id } });
+    return { message: 'Category deleted.' };
+  }
+
+  // ---------- Subcategories ----------
+
+  @Post('categories/:id/subcategories')
+  async createSubcategory(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateSubcategoryDto,
+  ) {
+    await this.requireCategory(id);
+    try {
+      return await this.prisma.subcategory.create({
+        data: { categoryId: id, name: dto.name.trim() },
+      });
+    } catch (error) {
+      throw this.asConflict(
+        error,
+        `This category already has a type called "${dto.name.trim()}".`,
+      );
+    }
+  }
+
+  @Patch('subcategories/:id')
+  async updateSubcategory(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateSubcategoryDto,
+  ) {
+    await this.requireSubcategory(id);
+    try {
+      return await this.prisma.subcategory.update({
+        where: { id },
+        data: { name: dto.name.trim() },
+      });
+    } catch (error) {
+      throw this.asConflict(error, 'That category already has a type with that name.');
+    }
+  }
+
+  @Patch('subcategories/:id/live')
+  async setSubcategoryLive(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SetCategoryLiveDto,
+  ) {
+    await this.requireSubcategory(id);
+    await this.prisma.subcategory.update({ where: { id }, data: { isLive: dto.isLive } });
+
+    return {
+      message: dto.isLive
+        ? 'Businesses can choose this type again.'
+        : 'New businesses can no longer choose this type. Existing ones keep their listing.',
+    };
+  }
+
+  @Delete('subcategories/:id')
+  async removeSubcategory(@Param('id', ParseUUIDPipe) id: string) {
+    const subcategory = await this.requireSubcategory(id);
+
+    if (subcategory._count.businesses > 0) {
+      const n = subcategory._count.businesses;
+      throw new BadRequestException(
+        `${n} business${n === 1 ? ' is' : 'es are'} using this type. Switch it off ` +
+          'instead — deleting would strip it from them.',
+      );
+    }
+
+    await this.prisma.subcategory.delete({ where: { id } });
+    return { message: 'Type deleted.' };
+  }
+
+  // ---------- Shared ----------
+
+  private async requireCategory(id: string) {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        _count: { select: { businesses: true } },
+        subcategories: { select: { _count: { select: { businesses: true } } } },
+      },
+    });
+    if (!category) throw new NotFoundException('Category not found.');
+    return category;
+  }
+
+  private async requireSubcategory(id: string) {
+    const subcategory = await this.prisma.subcategory.findUnique({
+      where: { id },
+      select: { id: true, _count: { select: { businesses: true } } },
+    });
+    if (!subcategory) throw new NotFoundException('Type not found.');
+    return subcategory;
+  }
+
+  /**
+   * Turns Prisma's unique-violation code into the sentence a person needs.
+   * Anything else is rethrown — swallowing an unknown database error here
+   * would report "already exists" for a problem that is nothing of the sort.
+   */
+  private asConflict(error: unknown, message: string) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      return new ConflictException(message);
+    }
+    return error;
   }
 }

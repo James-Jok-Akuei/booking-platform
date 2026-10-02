@@ -8936,3 +8936,66 @@ Thirteen tests, including that the database itself refuses a second primary.
 
 **1108 passing across 33 suites.**
 
+## 100. The whole taxonomy, editable
+
+§98 gave categories a switch. This extends it to types, adds creating and
+renaming, and replaces the checkbox.
+
+### 100.1 A type's switch is ANDed with its parent, never copied into it
+
+`Subcategory.isLive` is independent in storage and combined on read. Copying the
+parent's state down would mean rewriting every child whenever a category is
+toggled, and the two would disagree the first time that half-failed.
+
+The consequence needs saying on screen, so the admin row carries
+`effectivelyLive`: a type whose own switch is on, inside a category that is off,
+shows *"Not offered while 'Beauty & Personal Care' is hidden."* Without that the
+row looks open and is not.
+
+Verified: hiding Beauty took the picker from 8 categories to 7, while Barbershop
+still reported `isLive: true` and `effectivelyLive: false`.
+
+### 100.2 Nothing in use can be deleted
+
+`BusinessProfile.categoryId` is `SetNull` and `Subcategory` cascades from its
+parent — so deleting a category in use would silently strip the category from
+every business in it **and** take their type with it. The §89 shape exactly.
+
+A delete is refused the moment anything depends on it, naming the count and
+pointing at the switch: *"4 businesses are using this category or one of its
+types. Switch it off instead — deleting would strip the category from them."*
+The button is not drawn at all in that case, because a control that always 400s
+teaches people to ignore the message.
+
+Deletion exists for the row somebody created with a typo thirty seconds ago.
+Retiring part of the taxonomy is what the switch is for.
+
+### 100.3 A switch, and a question before it moves
+
+The checkbox is now a toggle. A checkbox reads as "tick this and apply later";
+these take effect the moment they move. The control underneath is still a real
+`<input type="checkbox">` — keyboard behaviour and label association come free,
+and a `div` with an `onClick` has to reimplement both and usually gets one wrong.
+
+Every switch confirms first, and the confirmation **names the consequence rather
+than asking "are you sure"**. Switching one off with businesses in it says how
+many and that they keep their listing; switching one on says new sign-ups can
+choose it. The reassurance is the part worth reading.
+
+### 100.4 Where a business picks this
+
+Asked, and worth recording: **"Your shopfront" → Details**, the Category and
+Type of business dropdowns (§88). There is no separate onboarding wizard — a
+business signs up, gets an empty profile and fills it in there, which is also
+why a newly registered business has no category until someone sets one.
+
+### 100.5 Verified
+
+Created "Dining" with three types; duplicates refused by name at both levels
+with a 409; it appeared in the seller picker immediately; switching one type off
+took the picker from three types to two; deleting a category in use and a type
+in use both refused with counts; deleting the unused ones worked, leaving all
+eight original categories and all eight categorised businesses untouched.
+
+**1108 passing across 33 suites.**
+

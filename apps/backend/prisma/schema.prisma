@@ -426,6 +426,14 @@ model Subcategory {
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   name       String
 
+  /// Whether a business may choose this type, exactly as Category.isLive (§100).
+  ///
+  /// Independent of the parent's flag in storage and ANDed with it on read: a
+  /// live type inside a hidden category is still not offered. Copying the
+  /// parent's state down would mean rewriting every child whenever a category
+  /// is toggled, and the two would drift the first time that half-failed.
+  isLive Boolean @default(true)
+
   businesses BusinessProfile[]
 
   // Unique per parent, not globally: "Bridal Makeup" under Beauty and a

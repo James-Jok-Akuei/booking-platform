@@ -783,6 +783,15 @@ export const getPaymentProviders = () =>
 // Categories a business may choose (§98)
 // ---------------------------------------------------------------------------
 
+export interface AdminSubcategory {
+  id: string;
+  name: string;
+  isLive: boolean;
+  businessCount: number;
+  /** False when its own flag is on but the parent category is off (§100). */
+  effectivelyLive: boolean;
+}
+
 export interface AdminCategory {
   id: string;
   name: string;
@@ -791,7 +800,7 @@ export interface AdminCategory {
   isLive: boolean;
   /** Already in it. Shown before switching it off. */
   businessCount: number;
-  subcategoryCount: number;
+  subcategories: AdminSubcategory[];
 }
 
 export const listAdminCategories = () => api<AdminCategory[]>('/admin/categories');
@@ -801,6 +810,39 @@ export const setCategoryLive = (id: string, isLive: boolean) =>
     method: 'PATCH',
     body: { isLive },
   });
+
+export const createCategory = (body: {
+  name: string;
+  icon?: string;
+  description?: string;
+}) => api<AdminCategory>('/admin/categories', { method: 'POST', body });
+
+export const updateCategory = (
+  id: string,
+  body: { name?: string; icon?: string; description?: string },
+) => api<AdminCategory>(`/admin/categories/${id}`, { method: 'PATCH', body });
+
+/** Refused while anything is using it; the toggle is the way to retire one. */
+export const deleteCategory = (id: string) =>
+  api<{ message: string }>(`/admin/categories/${id}`, { method: 'DELETE' });
+
+export const createSubcategory = (categoryId: string, name: string) =>
+  api<AdminSubcategory>(`/admin/categories/${categoryId}/subcategories`, {
+    method: 'POST',
+    body: { name },
+  });
+
+export const updateSubcategory = (id: string, name: string) =>
+  api<AdminSubcategory>(`/admin/subcategories/${id}`, { method: 'PATCH', body: { name } });
+
+export const setSubcategoryLive = (id: string, isLive: boolean) =>
+  api<{ message: string }>(`/admin/subcategories/${id}/live`, {
+    method: 'PATCH',
+    body: { isLive },
+  });
+
+export const deleteSubcategory = (id: string) =>
+  api<{ message: string }>(`/admin/subcategories/${id}`, { method: 'DELETE' });
 
 // ---------------------------------------------------------------------------
 // Administrators inviting administrators (§99)
