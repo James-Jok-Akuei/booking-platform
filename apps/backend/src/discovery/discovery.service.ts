@@ -59,20 +59,27 @@ export class DiscoveryService {
     const distance = this.resolveDistance(query);
 
     if (query.sort === DiscoverySort.DISTANCE && !distance) {
-      throw new BadRequestException(
-        'sort=distance requires lat, lng and radiusKm.',
-      );
+      throw new BadRequestException('sort=distance requires lat and lng.');
     }
 
     // (1) The bounding-box + haversine prefilter, when searching by distance.
     // Returns ids and distances only; the rest is loaded by the shared path
     // below so a distance search and an ordinary browse cannot drift apart.
     const nearby = distance ? await this.locationIdsWithin(distance) : null;
-    if (nearby && nearby.length === 0) {
+
+    // An empty result only means "nothing found" when a radius was asked for.
+    // Without one the query excludes nothing, so an empty list here would be a
+    // platform with no located branches at all, and the ordinary path handles
+    // that correctly.
+    if (distance?.radiusKm !== undefined && nearby && nearby.length === 0) {
       return this.emptyPage(limit, offset, distance);
     }
 
-    const where = this.buildWhere(query, nearby?.map((r) => r.id) ?? null);
+    // Ids narrow the search ONLY when a radius was given. Otherwise `nearby`
+    // is just a distance lookup for ordering and display (§107).
+    const restrictTo =
+      distance?.radiusKm !== undefined ? (nearby?.map((r) => r.id) ?? null) : null;
+    const where = this.buildWhere(query, restrictTo);
 
     // (2) and (3): the count and the page.
     const [total, locations] = await Promise.all([
@@ -356,17 +363,34 @@ export class DiscoveryService {
 
   // ---------- Distance ----------
 
+  /**
+   * Where the customer is, and optionally how far they will travel (§107).
+   *
+   * `lat` and `lng` go together — half a coordinate is not a place. `radiusKm`
+   * is **optional and separate**: without it, distance is computed for
+   * ordering and display and **nothing is excluded**.
+   *
+   * That split is the whole point. Knowing where somebody is should put the
+   * nearest shop first, not hide the one across town — a filter is something a
+   * customer asks for (§106.2).
+   */
   private resolveDistance(query: DiscoverLocationsDto) {
-    const given = [query.lat, query.lng, query.radiusKm].filter(
-      (v) => v !== undefined,
-    ).length;
-    if (given === 0) return null;
-    if (given !== 3) {
-      throw new BadRequestException(
-        'lat, lng and radiusKm must be supplied together, or all omitted.',
-      );
+    const hasLat = query.lat !== undefined;
+    const hasLng = query.lng !== undefined;
+
+    if (!hasLat && !hasLng) {
+      if (query.radiusKm !== undefined) {
+        throw new BadRequestException(
+          'radiusKm needs lat and lng — a radius has to be a radius around something.',
+        );
+      }
+      return null;
     }
-    return { lat: query.lat!, lng: query.lng!, radiusKm: query.radiusKm! };
+    if (hasLat !== hasLng) {
+      throw new BadRequestException('lat and lng must be supplied together.');
+    }
+
+    return { lat: query.lat!, lng: query.lng!, radiusKm: query.radiusKm };
   }
 
   /**
@@ -389,8 +413,26 @@ export class DiscoveryService {
   private async locationIdsWithin(center: {
     lat: number;
     lng: number;
-    radiusKm: number;
+    radiusKm?: number;
   }): Promise<DistanceRow[]> {
+    // No radius: distance for everything that has coordinates, excluding
+    // nothing (§107). The bounding box exists to let the index narrow the set
+    // before the trigonometry; with nothing to narrow to there is none, which
+    // is a full scan over one country's branches and acceptable at this size.
+    if (center.radiusKm === undefined) {
+      return this.prisma.$queryRaw<DistanceRow[]>`
+        SELECT l."id",
+               ${EARTH_RADIUS_KM} * 2 * ASIN(SQRT(
+                 POWER(SIN(RADIANS(l."latitude" - ${center.lat}) / 2), 2)
+                 + COS(RADIANS(${center.lat})) * COS(RADIANS(l."latitude"))
+                 * POWER(SIN(RADIANS(l."longitude" - ${center.lng}) / 2), 2)
+               )) AS "distance_km"
+          FROM "locations" l
+         WHERE l."latitude" IS NOT NULL AND l."longitude" IS NOT NULL
+         ORDER BY "distance_km" ASC
+      `;
+    }
+
     const latDelta = center.radiusKm / 111.32;
     // Longitude degrees shrink towards the poles; clamped so a search near one
     // cannot divide by ~zero and produce an infinite box.
@@ -590,7 +632,7 @@ export class DiscoveryService {
   private emptyPage(
     limit: number,
     offset: number,
-    distance: { lat: number; lng: number; radiusKm: number } | null,
+    distance: { lat: number; lng: number; radiusKm?: number } | null,
   ) {
     return {
       total: 0,

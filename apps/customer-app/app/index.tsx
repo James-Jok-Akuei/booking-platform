@@ -22,6 +22,7 @@ import {
   type DiscoverySort,
 } from '../src/api/discovery';
 import { useMoney } from '../src/money';
+import { useNearMe } from '../src/useNearMe';
 import { theme } from '../src/theme';
 
 /** "City of Kigali" is what the state calls it; "Kigali" is what people say. */
@@ -44,6 +45,7 @@ const SORTS: Array<{ value: DiscoverySort; label: string }> = [
 export default function Discover() {
   const money = useMoney();
   const router = useRouter();
+  const nearMe = useNearMe();
   const [query, setQuery] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [sort, setSort] = useState<DiscoverySort>('rating');
@@ -99,12 +101,31 @@ export default function Discover() {
 
   const chosenProvince = provinces.data?.find((p) => p.id === provinceId);
 
+  // Sent ONLY for a distance sort, and never with a radius: the position
+  // orders the list, it does not narrow it (§107).
+  const position = nearMe.state.status === 'on' ? nearMe.state : null;
+  const sortingByDistance = sort === 'distance' && position !== null;
+
   const results = useQuery({
-    queryKey: ['discover', query, categoryId, sort, openNow, provinceId, districtId],
+    queryKey: [
+      'discover',
+      query,
+      categoryId,
+      sort,
+      openNow,
+      provinceId,
+      districtId,
+      position?.lat,
+      position?.lng,
+    ],
     queryFn: () =>
       discoverLocations({
         limit: 50,
-        sort,
+        // Falls back to rating when there is no position — asking the server
+        // to sort by distance without one is a 400, and a refused request is
+        // not what declining a permission should produce.
+        sort: sortingByDistance ? 'distance' : sort === 'distance' ? 'rating' : sort,
+        ...(sortingByDistance ? { lat: position.lat, lng: position.lng } : {}),
         ...(query.trim() ? { q: query.trim() } : {}),
         ...(categoryId ? { categoryId } : {}),
         ...(openNow ? { openNow: true } : {}),
@@ -127,6 +148,21 @@ export default function Discover() {
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
           <Chip label="Open now" active={openNow} onPress={() => setOpenNow((was) => !was)} />
+          {/* A SORT, deliberately sitting with the sorts. It reorders the list
+              and removes nothing — tapping it never makes a shop disappear. */}
+          <Chip
+            label={nearMe.state.status === 'asking' ? 'Finding you…' : 'Nearest'}
+            active={sort === 'distance' && nearMe.state.status === 'on'}
+            onPress={async () => {
+              if (sort === 'distance') {
+                setSort('rating');
+                nearMe.disable();
+                return;
+              }
+              if (nearMe.state.status !== 'on') await nearMe.enable();
+              setSort('distance');
+            }}
+          />
           {SORTS.map((option) => (
             <Chip
               key={option.value}
@@ -209,6 +245,14 @@ export default function Discover() {
           </ScrollView>
         )}
       </View>
+
+      {(nearMe.state.status === 'denied' || nearMe.state.status === 'failed') && (
+        <Text style={styles.notice}>
+          {nearMe.state.status === 'denied'
+            ? 'Without your location we cannot sort by nearest. Everything else still works.'
+            : 'Could not get a position just now. Everything else still works.'}
+        </Text>
+      )}
 
       {results.isLoading && <ActivityIndicator style={styles.spinner} color={theme.accent} />}
 
@@ -298,6 +342,15 @@ function LocationCard({
         {location.address}
       </Text>
 
+      {location.distanceKm !== undefined && location.distanceKm !== null && (
+        <Text style={styles.distance}>
+          {/* Under a kilometre reads as "600 m" — nobody says "0.6 km". */}
+          {location.distanceKm < 1
+            ? `${Math.round(location.distanceKm * 1000)} m away`
+            : `${location.distanceKm.toFixed(1)} km away`}
+        </Text>
+      )}
+
       <View style={styles.cardFoot}>
         {location.ratingCount > 0 ? (
           <Text style={styles.rating}>
@@ -369,4 +422,12 @@ const styles = StyleSheet.create({
   open: { color: theme.ok, fontWeight: '600', fontSize: 13 },
   shut: { color: theme.muted, fontSize: 13 },
   tag: { color: theme.muted, fontSize: 12, marginTop: 2 },
+  distance: { color: theme.accent, fontSize: 13, fontWeight: '500', marginTop: 3 },
+  notice: {
+    color: theme.muted,
+    fontSize: 13,
+    lineHeight: 19,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
 });

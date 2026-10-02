@@ -9341,3 +9341,60 @@ nobody asked for.
 
 **1124 passing across 35 suites.**
 
+## 107. Nearest first, and nothing hidden
+
+Asked: *"apart from filtering don't you think there are other uses like
+calculating nearest listings near customers etc."*
+
+Yes — and it sits with §106.2 rather than against it. **Sorting** by distance
+still shows everything; it is **filtering** by radius that hides things.
+
+### 107.1 ~~`sort=distance` requires lat, lng and radiusKm~~ — superseded
+
+That rule forced every proximity search to also be an exclusion. Knowing where
+somebody is should put the nearest shop first, not hide the one across town.
+
+Now: `lat` and `lng` go together, because half a coordinate is not a place.
+`radiusKm` is **optional and separate** — without it, distance is computed for
+ordering and display and nothing is excluded; with it, it narrows. Verified
+against the live platform: a position alone returned all **7** places ordered
+1.1 km to 7.6 km; the same position with `radiusKm=5` returned **4**.
+
+A radius with no position is refused — *"a radius has to be a radius around
+something."*
+
+### 107.2 A branch with no coordinates sorts last, it does not vanish
+
+It cannot be measured, which is not a reason to hide it. The existing ordering
+already used `?? Infinity`; what changed is that the query no longer excludes it
+when there is no radius to exclude it by.
+
+### 107.3 The permission is asked for at the moment it explains itself
+
+Three rules in the app, all consequences of §106.2:
+
+- **Never on open.** The prompt fires when someone taps **Nearest**, and not
+  before. An app that asks before showing anything gets declined, deservedly.
+- **Declining costs nothing.** The sort falls back to rating and every listing
+  is still there. The screen says so in one line rather than leaving a tapped
+  control doing nothing.
+- **It orders, it never excludes.** The app sends the position **without a
+  radius**, so the far shop stays on the list.
+
+`Accuracy.Balanced`, not `High`: this sorts a list of shops, and street-level
+precision would cost battery and a visible delay to change nothing anybody would
+notice. The iOS permission sentence says what it is for and that browsing works
+without it — *"to use your location" answers nothing and gets declined.*
+
+Distance is shown per card, as **"600 m away"** under a kilometre and
+**"2.3 km away"** above it. Nobody says "0.6 km".
+
+### 107.4 A test that documented the old rule
+
+`discovery.spec.ts` asserted all three of lat, lng and radiusKm were required.
+Correct when written, and exactly what this changed. Rewritten to the new
+contract rather than deleted, with the superseded line kept — half a coordinate
+and a lone radius are still refused, and a bare position now resolves.
+
+Eight new tests in `nearest.spec.ts`. **1132 passing across 36 suites.**
+

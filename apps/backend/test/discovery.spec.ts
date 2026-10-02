@@ -349,13 +349,23 @@ describe('Discovery (§43)', () => {
       expect(result.locations.every((l) => !('distanceKm' in l))).toBe(true);
     });
 
-    it('requires all three of lat, lng and radiusKm', async () => {
+    it('needs lat and lng together — a radius is optional (§107)', async () => {
+      // Half a coordinate is not a place.
       await expect(discovery.search({ lat: JUBA.lat })).rejects.toBeInstanceOf(
         BadRequestException,
       );
+      // And a radius has to be a radius around something.
+      await expect(discovery.search({ radiusKm: 5 })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      // ~~All three were once required.~~ Superseded in §107: a position
+      // without a radius is valid and means "order by distance, exclude
+      // nothing". Requiring the radius forced every proximity search to also
+      // be a filter.
       await expect(
         discovery.search({ lat: JUBA.lat, lng: JUBA.lng }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      ).resolves.toBeDefined();
     });
 
     it('refuses sort=distance without a centre', async () => {
