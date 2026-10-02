@@ -9439,3 +9439,14 @@ Colima was not running when this was written, which is why the first two
 attempts failed and why both failures are now handled. The third run brought up
 all five services and the backend answered with **7 places** from live data.
 
+### 108.4 The phone app is pointed at this machine, not localhost
+
+A real phone reading `EXPO_PUBLIC_API_URL=http://localhost:3000` looks for the
+backend **on itself** and finds nothing. The script writes this machine's wifi
+address into `apps/customer-app/.env` on every start.
+
+Every start, not once: the address changes whenever this machine joins a
+different network, and a stale one fails in a way that looks like the backend
+being down. A simulator reaches either, so the LAN address is simply always the
+right answer.
+
