@@ -26,6 +26,9 @@ export class PlacesController {
         id: true,
         code: true,
         name: true,
+        // A city is one place with neighbourhoods; a province is a region of
+        // separate towns. The clients present the two differently (§106).
+        isCity: true,
         districts: {
           // Only where the platform is open (§105). A retired district is not
           // offered to a new branch and not shown as a filter — the customer

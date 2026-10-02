@@ -17,11 +17,16 @@ import {
   discoverLocations,
   listCategories,
   listProvinces,
+  type Province,
   type DiscoveredLocation,
   type DiscoverySort,
 } from '../src/api/discovery';
 import { useMoney } from '../src/money';
 import { theme } from '../src/theme';
+
+/** "City of Kigali" is what the state calls it; "Kigali" is what people say. */
+const shortName = (name: string) =>
+  name.replace(/^City of /, '').replace(/ Province$/, '');
 
 const SORTS: Array<{ value: DiscoverySort; label: string }> = [
   { value: 'rating', label: 'Best rated' },
@@ -53,8 +58,45 @@ export default function Discover() {
     staleTime: Infinity,
   });
 
-  // Districts only once a province is chosen. Thirty at once is a wall of
-  // names, and twenty-seven of them are hours from the customer (§104).
+  /**
+   * The places the platform is actually open in, as a customer names them.
+   *
+   * A CITY is one chip — Kigali, not Gasabo and Kicukiro and Nyarugenge, which
+   * are parts of it rather than alternatives to it. Its districts stay
+   * available as a second row for anyone who wants to narrow.
+   *
+   * Everywhere else, the DISTRICT is the chip: Musanze and Rubavu are towns
+   * hours apart, and nobody looking for either would think to tap "Western
+   * Province" (§106).
+   */
+  type Place = {
+    kind: 'city' | 'district';
+    id: string;
+    label: string;
+    province: Province;
+  };
+
+  const places: Place[] = (provinces.data ?? []).flatMap((province): Place[] =>
+    province.isCity
+      ? [
+          {
+            kind: 'city',
+            id: province.id,
+            label: shortName(province.name),
+            province,
+          },
+        ]
+      : province.districts.map(
+          (district) =>
+            ({
+              kind: 'district',
+              id: district.id,
+              label: district.name,
+              province,
+            }),
+        ),
+  );
+
   const chosenProvince = provinces.data?.find((p) => p.id === provinceId);
 
   const results = useQuery({
@@ -95,34 +137,46 @@ export default function Discover() {
           ))}
         </ScrollView>
 
+        {/* Nothing here is applied automatically. "Anywhere" is the default
+            and stays selected until someone taps a place — a customer in
+            Gasabo sees every listing until they say otherwise (§106.2). */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
           <Chip
             label="Anywhere"
-            active={provinceId === null}
+            active={provinceId === null && districtId === null}
             onPress={() => {
               setProvinceId(null);
               setDistrictId(null);
             }}
           />
-          {provinces.data?.map((province) => (
+          {places.map((place) => (
             <Chip
-              key={province.id}
-              label={province.name.replace(' Province', '')}
-              active={provinceId === province.id}
+              key={place.id}
+              label={place.label}
+              active={
+                place.kind === 'city'
+                  ? provinceId === place.province.id
+                  : districtId === place.id
+              }
               onPress={() => {
-                // Changing province clears the district: a district from the
-                // old one would filter to nothing and look like a bug.
-                setProvinceId((was) => (was === province.id ? null : province.id));
-                setDistrictId(null);
+                if (place.kind === 'city') {
+                  const same = provinceId === place.province.id;
+                  setProvinceId(same ? null : place.province.id);
+                  setDistrictId(null);
+                } else {
+                  const same = districtId === place.id;
+                  setDistrictId(same ? null : place.id);
+                  setProvinceId(null);
+                }
               }}
             />
           ))}
         </ScrollView>
 
-        {chosenProvince && chosenProvince.districts.length > 0 && (
+        {chosenProvince?.isCity && chosenProvince.districts.length > 1 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
             <Chip
-              label={`All of ${chosenProvince.name.replace(' Province', '')}`}
+              label={`All of ${shortName(chosenProvince.name)}`}
               active={districtId === null}
               onPress={() => setDistrictId(null)}
             />

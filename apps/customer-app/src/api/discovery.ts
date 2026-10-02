@@ -29,6 +29,8 @@ export interface Province {
   id: string;
   code: string;
   name: string;
+  /** A city is one place with neighbourhoods; a province is separate towns (§106). */
+  isCity: boolean;
   districts: District[];
 }
 

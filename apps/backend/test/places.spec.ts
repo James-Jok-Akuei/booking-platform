@@ -159,6 +159,29 @@ describe('Places (§104)', () => {
     });
   });
 
+  describe('a city is one place (§106)', () => {
+    it('marks the City of Kigali and nothing else', async () => {
+      const kigali = await prisma.province.findUniqueOrThrow({ where: { code: 'KIGALI' } });
+      expect(kigali.isCity).toBe(true);
+
+      const others = await prisma.province.findMany({ where: { code: { not: 'KIGALI' } } });
+      // The four rural provinces are regions of separate towns: Rubavu and
+      // Rusizi are both "Western Province" and hours apart.
+      expect(others.every((p) => !p.isCity)).toBe(true);
+      expect(others).toHaveLength(4);
+    });
+
+    it('keeps the districts, so a city can still be narrowed', async () => {
+      const kigali = await prisma.province.findUniqueOrThrow({
+        where: { code: 'KIGALI' },
+        include: { districts: true },
+      });
+      // Collapsing would have thrown the data away; the city is one CHIP, not
+      // one row.
+      expect(kigali.districts).toHaveLength(3);
+    });
+  });
+
   describe('retiring a district (§105)', () => {
     const retire = (id: string, isLive = false) =>
       prisma.district.update({ where: { id }, data: { isLive } });

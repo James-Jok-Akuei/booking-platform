@@ -534,6 +534,8 @@ model Location {
   @@index([businessId])
   /// Branch lists and discovery filter on this constantly (§89).
   @@index([businessId, isActive])
+  /// Place filtering, which every customer search may use (§104).
+  @@index([districtId])
   /// The bounding-box prefilter behind distance search (§43.5). Postgres can
   /// use it to cut the candidate set before any haversine is computed.
   @@index([latitude, longitude])
@@ -1826,6 +1828,18 @@ model Province {
   id   String @id @default(uuid())
   code String @unique
   name String @unique
+
+  /// Whether this is a single CITY whose districts are neighbourhoods (§106).
+  ///
+  /// True for the City of Kigali, which has special status in Rwanda and is one
+  /// place to anyone living in it — Gasabo and Kicukiro are parts of Kigali,
+  /// not alternatives to it. False for the four rural provinces, whose
+  /// districts are separate towns hours apart: Rubavu and Rusizi are both
+  /// "Western Province", and nobody looking for either would search for that.
+  ///
+  /// A flag rather than special-casing the KIGALI code in the clients, because
+  /// three apps would each need the same exception and one would forget.
+  isCity Boolean @default(false)
 
   districts District[]
 

@@ -57,3 +57,6 @@ FROM (VALUES
 ) AS d(code, name, province_code)
 JOIN "provinces" p ON p."code" = d.province_code
 ON CONFLICT ("code") DO NOTHING;
+
+-- The City of Kigali is one place to anyone living in it (§106).
+UPDATE "provinces" SET "isCity" = true WHERE "code" = 'KIGALI';

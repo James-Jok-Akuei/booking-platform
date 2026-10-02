@@ -9283,3 +9283,61 @@ show.
 
 Ten tests in `places.spec.ts`. **1122 passing across 35 suites.**
 
+## 106. Four places, and filtering is always a choice
+
+*"just add this four — Kigali, Musanze, Rubavu, Rusizi — and remove everything
+else"*, then: *"leave them under kigali and not collapsed, but doesn't mean when
+a customer logs in as located in gasabo should not see listings from other
+locations, they are just for filtering explicitly."*
+
+### 106.1 A city is one place; a province is a region of separate towns
+
+The four names are not the same kind of thing. **Kigali** is a city whose three
+districts are neighbourhoods — Gasabo is part of Kigali, not an alternative to
+it. **Musanze, Rubavu and Rusizi** are districts in their own right, towns hours
+apart, and nobody looking for Rubavu would think to tap *"Western Province"*.
+
+So `Province.isCity`, true only for the City of Kigali, which genuinely has
+special administrative status in Rwanda. A flag rather than special-casing the
+`KIGALI` code in each client, because three apps would need the same exception
+and one would forget.
+
+The filter row is built from it: a city contributes **one chip**, everywhere
+else contributes **its districts**. Which gives exactly the four names asked
+for — *Anywhere · Kigali · Musanze · Rubavu · Rusizi* — and Kigali's districts
+stay underneath as a second row rather than being collapsed away.
+
+### 106.2 Nothing filters itself
+
+The important half of the instruction. **A customer in Gasabo sees every
+listing** until they choose otherwise.
+
+Confirmed rather than assumed: there is no `expo-location` dependency, no
+permission prompt, and nothing sends `lat`/`lng`/`radiusKm` — they exist on the
+API and the app never uses them. Both filters start `null`, "Anywhere" is
+selected on open, and it is the only state a customer has not asked for.
+
+Recorded because it is the kind of thing a later "helpful" change breaks:
+**place is a filter a customer applies, never one applied to them.**
+
+### 106.3 Twenty-four retired, none deleted
+
+Everything outside the four is retired, through the admin endpoint rather than
+SQL, so it went the route a person would take. All 31 districts remain in the
+admin listing with their state, and all nine demo branches stayed in search
+throughout — the §105 guarantee holding under a change that touched most of the
+table.
+
+### 106.4 Two bits of drift caught
+
+`prisma migrate diff` reported an index on `locations(districtId)` present in
+the database and missing from the schema — §104's migration created it and the
+model never declared it. Declared now, and the two are in sync.
+
+And `reference-data.sql` needed the `isCity` update too: without it a fresh
+database would have had Kigali as an ordinary province, and the filter row would
+have read "City of Kigali, Northern Province, Western Province" — three labels
+nobody asked for.
+
+**1124 passing across 35 suites.**
+
