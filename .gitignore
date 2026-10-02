@@ -50,3 +50,6 @@ docker-data/
 
 # Vite build output for the frontend apps
 apps/*/dist/
+
+# Logs from scripts/dev.sh
+.dev-logs/

@@ -9398,3 +9398,44 @@ and a lone radius are still refused, and a bare position now resolves.
 
 Eight new tests in `nearest.spec.ts`. **1132 passing across 36 suites.**
 
+## 108. One command to start everything
+
+Five things have to be running to see a change: Postgres, Mailhog, the backend,
+two web apps and Metro — in that order, because each needs the one before it.
+Starting them by hand means five terminals and remembering which comes first.
+
+`./scripts/dev.sh`, or `npm run dev`. `--no-app` skips Metro, which is the slow
+one and is not needed for backend or web work.
+
+### 108.1 What it handles that a list of commands does not
+
+**Colima.** Postgres lives in Docker and on this machine Docker lives in Colima,
+so a rebooted machine has neither. The first attempt died at "database did not
+come up", which is a poor way to be told the container runtime is off. It now
+starts Colima itself and says it is doing so, because a cold start is slow
+enough to look like a hang.
+
+**Migrations, from the right directory.** Prisma reads `DATABASE_URL` from the
+`.env` beside its schema, so `npx prisma migrate deploy` run from the repo root
+finds no database. The second attempt died there. It runs in a subshell from
+`apps/backend`, and also applies `reference-data.sql` — idempotent, and a
+database that was reset would otherwise have no provinces and every place filter
+would match nothing (§104.4).
+
+**Metro alone.** `expo start --ios` quits if the simulator deep link fails, and
+would take the whole script with it (§102.6). Metro starts on its own, and the
+simulator is opened only if one is already booted; otherwise the script prints
+the one command to run.
+
+### 108.2 Ctrl-C stops the apps and leaves the containers
+
+Postgres and Mailhog keep running on exit. A stray Ctrl-C that dropped the
+database would mean reseeding, which is a much worse outcome than two containers
+left up. `npm run dev:stop` stops those deliberately.
+
+### 108.3 Verified from a genuinely cold machine
+
+Colima was not running when this was written, which is why the first two
+attempts failed and why both failures are now handled. The third run brought up
+all five services and the backend answered with **7 places** from live data.
+

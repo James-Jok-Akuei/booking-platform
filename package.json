@@ -2,7 +2,7 @@
   "name": "booking-platform",
   "version": "1.0.0",
   "private": true,
-  "description": "Service-booking marketplace platform — monorepo (backend + web apps)",
+  "description": "Service-booking marketplace platform \u2014 monorepo (backend + web apps)",
   "license": "UNLICENSED",
   "workspaces": [
     "apps/*"
@@ -14,7 +14,10 @@
     "backend:prisma:generate": "npm run prisma:generate --workspace apps/backend",
     "backend:prisma:migrate": "npm run prisma:migrate --workspace apps/backend",
     "docker:up": "docker compose -f apps/backend/docker-compose.yml up -d",
-    "docker:down": "docker compose -f apps/backend/docker-compose.yml down"
+    "docker:down": "docker compose -f apps/backend/docker-compose.yml down",
+    "dev": "./scripts/dev.sh",
+    "dev:no-app": "./scripts/dev.sh --no-app",
+    "dev:stop": "docker compose -f apps/backend/docker-compose.yml down"
   },
   "engines": {
     "node": ">=20"
