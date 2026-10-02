@@ -10,6 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { BusinessMemberRole, UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -27,6 +28,10 @@ import { VerifyAppointmentDto } from './dto/verify-appointment.dto';
 import { ManualVerifyAppointmentDto } from './dto/manual-verify-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
 import { CancelAppointmentDto } from './dto/cancel-appointment.dto';
+import {
+  InitiateDepositPaymentResponseDto,
+  PaymentStatusResponseDto,
+} from './dto/payment-status.dto';
 
 /**
  * Customer-side booking.
@@ -74,6 +79,7 @@ export class AppointmentsCustomerController {
 
   @Post(':id/initiate-deposit-payment')
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: InitiateDepositPaymentResponseDto })
   initiateDepositPayment(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -212,6 +218,7 @@ export class AppointmentsSharedController {
    * customer does.
    */
   @Get(':id/payment-status')
+  @ApiOkResponse({ type: PaymentStatusResponseDto })
   paymentStatus(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

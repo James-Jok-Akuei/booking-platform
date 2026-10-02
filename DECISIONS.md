@@ -9466,3 +9466,188 @@ bundler errors appear as they happen rather than in a file nobody is watching.
 Generating a QR separately was the first idea and the worse one — a second
 source of the same URL, able to drift from the one Metro actually serves.
 
+
+## 109. The deposit nobody could notice being paid (2026-10-02)
+
+The platform's whole point is taking a deposit, and that loop had never once
+been driven. Driving it found the booking works — and that the phone could not
+tell.
+
+### 109.1 Every field name in the payment poll was wrong
+
+`apps/customer-app/src/api/booking.ts` declared the poll's reply by hand:
+
+```ts
+{ appointmentId, status, depositPaidAt, paymentInitiatedAt,
+  paymentProviderReferenceId, providerStatus?, message? }
+```
+
+What `GET /appointments/:id/payment-status` actually returns:
+
+```ts
+{ appointmentId, appointmentStatus, paymentStatus, providerReferenceId, failureReason? }
+```
+
+One field in five was right. The screen read `undefined` for the rest, so:
+
+* the "Check your phone and approve the payment" line, keyed on
+  `paymentInitiatedAt`, **never appeared**. Tap Pay and the screen looks dead
+  while the handset is waiting for a PIN.
+* nothing ever refetched the appointment. `awaitingPayment` came from the
+  appointment query, the four-second `refetchInterval` was on the payment query,
+  and only `pay.onSuccess` invalidated the appointment — once, immediately.
+  So the deposit lands, the backend moves to BOOKED, and the phone **polls
+  forever showing the Pay button**. The arrival code is never shown.
+
+Nothing failed. Not a type, not a test, not a request. This is the third time
+this exact class of bug has been found in this project (§81 and §83 were ticket
+attachments), and the first two were found the same way: by sending a real
+request and reading the real reply.
+
+The fix is three parts. The poll now stops on what ends the wait rather than on
+what the wait is for:
+
+```ts
+refetchInterval: ({ state }) => (state.data?.paymentStatus === 'PENDING' ? 4000 : false)
+```
+
+An effect refetches the appointment the moment the operator says SUCCESSFUL,
+because `depositPaidAt` and the arrival code live there and nothing else was
+going to ask. And the initiate reply, which already says `PENDING`, is **seeded**
+into the poll's cache rather than triggering a refetch, so the "approve on your
+phone" line appears with the handset prompt instead of up to four seconds later.
+
+### 109.2 Why the sandbox hid it
+
+MTN's sandbox approves in **under half a second** — measured at 0.54s. So the
+single early `refresh()` in `pay.onSuccess` happened to fire *after* the money
+had landed, and the screen worked. On a real handset, where someone unlocks their
+phone and types a PIN, it could not have.
+
+A sandbox that answers instantly is not a fast version of production. It is a
+different system, and it hid a total failure of the waiting state.
+
+### 109.3 The field taught people to type what it would reject
+
+`InitiateDepositPaymentDto` takes MSISDN and nothing else: `^\d{8,15}$`, no `+`,
+no spaces. The input a customer types into is labelled **`07xx xxx xxx`**.
+
+Confirmed against the live endpoint:
+
+| typed | result |
+|---|---|
+| `0788123456` | 200 |
+| `0788 123 456` | **400** |
+| `+250788123456` | **400** |
+| `250788123456` | 200 |
+
+So the placeholder demonstrated a format the backend refuses, and the app's own
+check — `phone.trim().length >= 9` — counted characters, letting `07 88` through
+as four digits dressed as five characters.
+
+Normalised in the app (`toMsisdn`, digits only) rather than by loosening the DTO.
+The operator wants MSISDN; one stripper next to the keyboard beats a regex that
+also has to accept prettiness, and nobody should be told off for typing a phone
+number the readable way.
+
+### 109.4 The sandbox's payer numbers, probed rather than assumed
+
+The FAILED branch of the screen was new, so it needed a real failure. MTN's
+sandbox drives the outcome from the payer number, and these were confirmed by
+asking it rather than taken from documentation:
+
+| payer | result |
+|---|---|
+| `46733123450` | `FAILED: INTERNAL_PROCESSING_ERROR` |
+| `46733123451` | `FAILED: APPROVAL_REJECTED` |
+| `46733123452` | `FAILED: EXPIRED` |
+| `46733123453` | **stays PENDING** — the only way to see the waiting state |
+| anything else | `SUCCESSFUL` |
+
+`46733123453` is the valuable one: it is the only way to exercise the state a
+real customer spends most of their time in.
+
+In every failure the appointment stayed `PENDING_PAYMENT` and
+`providerReferenceId` came back **null**, exactly as §57.3 intends — the slot is
+still held and a retry is possible. The screen now says so and offers "Try
+again", rather than treating a failure as the end.
+
+### 109.5 `failureReason` is for support, not for reading
+
+It arrives as `FAILED: APPROVAL_REJECTED`. The provider interface is explicit
+that it is "for logs and support", and the first draft of the response DTO said
+the opposite — that it was shown to the customer verbatim. Corrected.
+
+`explainFailedDeposit` turns the three cases into sentences, because they differ
+in what the customer should do next: a rejection was their own choice, an expiry
+means they were too slow, an internal error is the operator's fault. The raw code
+stays on screen in small print, because that is what a support ticket needs.
+
+### 109.6 The contract described no responses at all
+
+The root cause, and it is bigger than this screen. `docs/openapi.json` covered
+115 paths and described a usable response schema for **five** of them. Both
+payment endpoints returned bare object literals, so the generated contract said
+`{ type: object }` — there was nothing for a client to be wrong about, which is
+why a hand-written guess was the only option.
+
+So §60's "the contract is the source of truth for the SHAPES" was only ever true
+of **request bodies**. Every response type in all three frontends is hand-written
+and can drift in silence. That is the mechanism behind §83 and behind this.
+
+Fixed for these two endpoints: both now return a declared DTO, the service's
+return type **is** that DTO, and `@ApiOkResponse` puts it in the contract. The
+service and the DTO can no longer disagree without the backend failing to
+compile.
+
+Not fixed for the other 108 endpoints, deliberately — that is a day's work on
+its own. The trigger for doing it, written down as §97 wrote one: **the next time
+a client reads a field that is not there.** A third instance of the same bug
+means the pattern, not the instance, is what needs fixing.
+
+### 109.7 A test that asserts names, as names
+
+`test/payment-status-contract.spec.ts` asserts `Object.keys(reply).sort()` for
+both replies, which is unusual and deliberate: a test checking only values would
+have passed throughout the entire bug.
+
+Proved it fails for the right reason by renaming `appointmentStatus` to `status`
+in both the DTO and the service, as a careless refactor would. Four of the five
+tests failed, naming the drift exactly — `- "appointmentStatus" + "status"`.
+Restored, and the suite is **1137 across 37**.
+
+### 109.8 The customer app now generates its types, as §102.1 promised
+
+§102.1 chose Expo over Flutter on one argument above all: "a React Native app
+runs the same command and gets the same file, so changing a DTO breaks the mobile
+build." That command had never been wired up. The app had no `schema.d.ts` and
+every type in it was hand-written — the argument for the framework was true in
+principle and false in the repository.
+
+`scripts/api-types.sh` now regenerates the contract and all three clients in one
+command, and the payment types are imported from it. Running it immediately
+turned this bug into a compile error:
+
+```
+app/booking/[id].tsx(151,28): error TS2339:
+  Property 'paymentInitiatedAt' does not exist on type '{ appointmentId: string; ... }'
+```
+
+One command rather than three, because three clients generated from different
+versions of the contract is the same silent drift the contract exists to prevent.
+
+The generator runs out of `apps/admin-web/node_modules`, which looks wrong and is
+the only thing that works: a root devDependency forces a root `npm install`,
+which fails on a pre-existing peer conflict in `apps/backend` (`@nestjs/schematics`
+wants TypeScript >= 6, the backend pins 5.9); installing it in the customer app
+fails because `openapi-typescript@7` peers on TypeScript ^5.x while Expo SDK 57
+pins 6; and `npx -y openapi-typescript` cannot fetch here. admin-web already has
+it pinned, with a TypeScript that satisfies the peer, and the output is
+byte-identical for all three apps. The reasoning is in the script, where whoever
+next wonders will be standing.
+
+### 109.9 What this means for the platform
+
+A customer can now book and pay, and be told what happened. That was the hole
+§102 opened with — "the platform could not take a booking" — and it is closed,
+against the real operator rather than a stub.

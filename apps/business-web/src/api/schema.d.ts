@@ -84,6 +84,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The directory (§94). Without it, the PATCH below took an id that nothing
+         *     in the platform produced.
+         */
+        get: operations["AdminUsersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminUsersController_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminUsersController_listInvitations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/invitations/{invitationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AdminUsersController_revokeInvitation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{id}/admin-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AdminUsersController_revokeAdmin"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/users/{id}/display-name/clear": {
         parameters: {
             query?: never;
@@ -122,6 +206,183 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/admin/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCategoriesController_findAll"];
+        put?: never;
+        post: operations["AdminCategoriesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminCategoriesController_update"];
+        trace?: never;
+    };
+    "/admin/categories/{id}/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminCategoriesController_setLive"];
+        trace?: never;
+    };
+    "/admin/categories/{id}/subcategories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminCategoriesController_createSubcategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/subcategories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminCategoriesController_updateSubcategory"];
+        trace?: never;
+    };
+    "/admin/subcategories/{id}/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminCategoriesController_setSubcategoryLive"];
+        trace?: never;
+    };
+    "/places/provinces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PlacesController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/places/provinces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Everything, open or not — the one listing that shows retired districts. */
+        get: operations["AdminPlacesController_findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/places/districts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminPlacesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/places/districts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminPlacesController_rename"];
+        trace?: never;
+    };
+    "/admin/places/districts/{id}/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminPlacesController_setLive"];
         trace?: never;
     };
     "/business/profile": {
@@ -166,10 +427,31 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete: operations["BusinessController_deleteLocation"];
+        /**
+         * Closes a branch (§89). Kept as DELETE because that is the verb a client
+         *     reaches for, but it is a soft close: nothing that happened there is lost,
+         *     and `reopen` puts it back.
+         */
+        delete: operations["BusinessController_closeLocation"];
         options?: never;
         head?: never;
         patch: operations["BusinessController_updateLocation"];
+        trace?: never;
+    };
+    "/business/locations/{id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["BusinessController_reopenLocation"];
         trace?: never;
     };
     "/business/locations/{id}/capacity": {
@@ -200,6 +482,30 @@ export interface paths {
         put?: never;
         /** Replaces the location's whole week of operating hours in one call. */
         post: operations["BusinessController_setLocationHours"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/business/profile/image/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The logo and cover image (§88).
+         *
+         *     One route with the kind in the path rather than two near-identical ones;
+         *     they differ only in which column is written. `galleryUploadOptions`
+         *     because these ARE shop-window images — the same rule the gallery has, and
+         *     deliberately not the wider ticket list from §81.
+         */
+        post: operations["BusinessController_setProfileImage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -264,11 +570,59 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Soft delete: flips isActive to false so past appointments still resolve. */
+        /**
+         * Retires a service EVERYWHERE. Soft delete: flips isActive to false so past
+         *     appointments still resolve.
+         */
         delete: operations["BusinessController_deleteService"];
         options?: never;
         head?: never;
         patch: operations["BusinessController_updateService"];
+        trace?: never;
+    };
+    "/business/services/{id}/locations/{locationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Turns a service on or off at ONE branch (§74).
+         *
+         *     A PATCH, not a DELETE: the offer row and its price survive a pause. A
+         *     separate decision from retiring below — "not here, for now" rather than
+         *     "we have stopped doing this at all".
+         */
+        patch: operations["BusinessController_setServiceOfferedAtLocation"];
+        trace?: never;
+    };
+    "/business/services/{id}/offered": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Turns a service on or off at EVERY branch (§76).
+         *
+         *     The bulk form of the route above. Declared before `services/:id` so the
+         *     more specific path wins.
+         */
+        patch: operations["BusinessController_setServiceOfferedEverywhere"];
         trace?: never;
     };
     "/admin/businesses": {
@@ -637,6 +991,35 @@ export interface paths {
         patch: operations["AdminSettingsController_updatePayoutHold"];
         trace?: never;
     };
+    "/payments/currency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * How to render money, so no client has to guess (§70.1).
+         *
+         *     Every amount this API returns is an integer in the MINOR units of
+         *     `code`, and how many of those make one major unit is a property of the
+         *     currency — two for dollars, none for francs. A client that hardcodes a
+         *     division by 100 is correct in one country and wrong by a factor of a
+         *     hundred in another, which is the §55.2 mistake moved to the front end
+         *     where it is harder to see.
+         *
+         *     Served unauthenticated, like the operator list: it is a fact about the
+         *     platform, needed before anyone signs in, and it reveals nothing.
+         */
+        get: operations["PaymentsController_currency"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/payments/providers": {
         parameters: {
             query?: never;
@@ -837,6 +1220,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The listing (§95). Without it the PATCH below took an id that nothing in
+         *     the platform produced.
+         */
+        get: operations["AdminAppointmentsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/appointments/{id}/business-cancellation": {
         parameters: {
             query?: never;
@@ -979,6 +1382,26 @@ export interface paths {
         };
         /** Billing adjustments, unsettled first. Read-only. */
         get: operations["AdminLedgerController_adjustments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/ledger/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Our figure beside the operator's, and whether they can honestly be
+         *     compared at all (§87).
+         */
+        get: operations["AdminLedgerController_reconcile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1279,6 +1702,28 @@ export interface paths {
             cookie?: never;
         };
         get: operations["ReviewsPublicController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The moderation queue (§93) — the only listing that returns hidden reviews.
+         *
+         *     Without it `hide` and `unhide` were unreachable in practice: nothing told
+         *     an admin which reviews existed, and a hidden one was invisible everywhere.
+         */
+        get: operations["AdminReviewsController_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1599,6 +2044,10 @@ export interface components {
         RefreshTokenDto: {
             refreshToken: string;
         };
+        InviteAdminDto: {
+            /** Format: email */
+            email: string;
+        };
         ClearDisplayNameDto: {
             /**
              * @description Required, exactly as it is for hiding a review (§28): moderation with no
@@ -1607,6 +2056,42 @@ export interface components {
              *     tell them.
              */
             reason: string;
+        };
+        CreateCategoryDto: {
+            name: string;
+            /** @description An icon key or emoji for the frontends, never a URL. */
+            icon?: string;
+            description?: string;
+        };
+        UpdateCategoryDto: {
+            name?: string;
+            icon?: string;
+            description?: string;
+        };
+        SetCategoryLiveDto: {
+            isLive: boolean;
+        };
+        CreateSubcategoryDto: {
+            name: string;
+        };
+        UpdateSubcategoryDto: {
+            name: string;
+        };
+        CreateDistrictDto: {
+            /** Format: uuid */
+            provinceId: string;
+            name: string;
+            /**
+             * @description A stable handle for seeds, tests and support queries. Uppercase so it
+             *     cannot be confused with the display name, which may be reworded.
+             */
+            code: string;
+        };
+        UpdateDistrictDto: {
+            name: string;
+        };
+        SetDistrictLiveDto: {
+            isLive: boolean;
         };
         UpdateBusinessProfileDto: {
             name?: string;
@@ -1620,6 +2105,16 @@ export interface components {
             coverImageUrl?: string;
         };
         CreateLocationDto: {
+            /**
+             * Format: uuid
+             * @description Which district this branch is in (§104).
+             *
+             *     Optional, because every branch created before this exists without one and
+             *     `UpdateLocationDto` is a PartialType of this class. A branch with no
+             *     district is not findable by place, which the screen says rather than
+             *     refusing the save.
+             */
+            districtId?: string;
             name: string;
             address: string;
             /**
@@ -1636,6 +2131,16 @@ export interface components {
             phone?: string;
         };
         UpdateLocationDto: {
+            /**
+             * Format: uuid
+             * @description Which district this branch is in (§104).
+             *
+             *     Optional, because every branch created before this exists without one and
+             *     `UpdateLocationDto` is a PartialType of this class. A branch with no
+             *     district is not findable by place, which the screen says rather than
+             *     refusing the save.
+             */
+            districtId?: string;
             name?: string;
             address?: string;
             /**
@@ -1673,10 +2178,22 @@ export interface components {
         UploadMediaDto: {
             displayOrder?: number;
         };
+        ServiceOfferDto: {
+            /** Format: uuid */
+            locationId: string;
+            priceMinor: number;
+        };
         CreateServiceDto: {
             name: string;
             description?: string;
-            priceMinor: number;
+            /**
+             * @description Where this service is offered, and for how much at each branch (§72).
+             *
+             *     At least one: a service offered nowhere cannot be booked by anybody, and
+             *     creating one is almost always a mistake rather than an intention. A branch
+             *     can be removed later, which is the honest way to stop offering it there.
+             */
+            offers: components["schemas"]["ServiceOfferDto"][];
             durationMinutes: number;
             /**
              * @description Share of the price the customer pays up front to hold the slot.
@@ -1691,7 +2208,14 @@ export interface components {
         UpdateServiceDto: {
             name?: string;
             description?: string;
-            priceMinor?: number;
+            /**
+             * @description Where this service is offered, and for how much at each branch (§72).
+             *
+             *     At least one: a service offered nowhere cannot be booked by anybody, and
+             *     creating one is almost always a mistake rather than an intention. A branch
+             *     can be removed later, which is the honest way to stop offering it there.
+             */
+            offers?: components["schemas"]["ServiceOfferDto"][];
             durationMinutes?: number;
             /**
              * @description Share of the price the customer pays up front to hold the slot.
@@ -1702,6 +2226,9 @@ export interface components {
              */
             depositPercentage?: number;
             isActive?: boolean;
+        };
+        SetServiceOfferedDto: {
+            isOffered: boolean;
         };
         ChangeBusinessStatusDto: {
             reason: string;
@@ -1812,11 +2339,58 @@ export interface components {
              */
             provider?: "MTN_MOMO" | "AIRTEL_MONEY";
         };
+        InitiateDepositPaymentResponseDto: {
+            appointmentId: string;
+            /**
+             * @description The appointment's status. Still `PENDING_PAYMENT` — nothing is paid yet.
+             * @enum {string}
+             */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            /**
+             * @description Always `PENDING`: the request was accepted and is now in flight.
+             * @enum {string}
+             */
+            paymentStatus: "PENDING";
+            providerReferenceId: string;
+            /** @description What the customer was quoted, in the currency they were quoted it in. */
+            depositAmountMinor: number;
+            currency: string;
+            /**
+             * @description What was actually sent to the operator. Both sides are returned so a client
+             *     never has to infer which currency a bare amount was in — in the sandbox
+             *     these differ on purpose (§52.1).
+             */
+            providerAmountMinor: number;
+            providerCurrency: string;
+            exchangeRateUsed: string;
+            /** @description Ready to show as-is: it tells the customer to look at their handset. */
+            message: string;
+        };
         VerifyAppointmentDto: {
             code: string;
         };
         ManualVerifyAppointmentDto: {
             note: string;
+        };
+        PaymentStatusResponseDto: {
+            appointmentId: string;
+            /**
+             * @description The APPOINTMENT's status, not the payment's — the two are deliberately
+             *     separate fields because a failed payment leaves the appointment alive and
+             *     retryable, and a client that conflated them would cancel a held slot.
+             * @enum {string}
+             */
+            appointmentStatus: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            /** @enum {string} */
+            paymentStatus: "PENDING" | "FAILED" | "SUCCESSFUL" | "NOT_STARTED";
+            /**
+             * @description Null once a payment has FAILED. The operator will not accept the same
+             *     reference twice, so clearing it is what makes a retry possible (§57.3) —
+             *     a client seeing null here should offer the payment again, not an error.
+             */
+            providerReferenceId: string | null;
+            /** @description The operator's words, when it gave any. Shown to the customer verbatim. */
+            failureReason?: string;
         };
         CancelAppointmentDto: {
             /**
@@ -2099,6 +2673,112 @@ export interface operations {
             };
         };
     };
+    AdminUsersController_list: {
+        parameters: {
+            query?: {
+                role?: "BUSINESS" | "CUSTOMER" | "ADMIN";
+                /** @description Matches email or display name, case-insensitively. */
+                search?: string;
+                /**
+                 * @description Only accounts that currently have a display name.
+                 *
+                 *     The one moderation action here clears that name, so this is the filter
+                 *     that turns a user list into a queue of things that can be acted on.
+                 */
+                withDisplayName?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminUsersController_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteAdminDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminUsersController_listInvitations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminUsersController_revokeInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invitationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminUsersController_revokeAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AdminUsersController_clearDisplayName: {
         parameters: {
             query?: never;
@@ -2138,6 +2818,262 @@ export interface operations {
                 content: {
                     "application/json": Record<string, never>;
                 };
+            };
+        };
+    };
+    AdminCategoriesController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCategoriesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCategoriesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCategoriesController_setLive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetCategoryLiveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCategoriesController_createSubcategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSubcategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCategoriesController_updateSubcategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSubcategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminCategoriesController_setSubcategoryLive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetCategoryLiveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    PlacesController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    AdminPlacesController_findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminPlacesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateDistrictDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminPlacesController_rename: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDistrictDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminPlacesController_setLive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetDistrictLiveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2221,7 +3157,7 @@ export interface operations {
             };
         };
     };
-    BusinessController_deleteLocation: {
+    BusinessController_closeLocation: {
         parameters: {
             query?: never;
             header?: never;
@@ -2265,6 +3201,25 @@ export interface operations {
             };
         };
     };
+    BusinessController_reopenLocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     BusinessController_updateLocationCapacity: {
         parameters: {
             query?: never;
@@ -2304,6 +3259,25 @@ export interface operations {
         };
         responses: {
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BusinessController_setProfileImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2386,7 +3360,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>[];
+                };
             };
         };
     };
@@ -2407,7 +3383,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": Record<string, never>;
+                };
             };
         };
     };
@@ -2442,6 +3420,55 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateServiceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    BusinessController_setServiceOfferedAtLocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                locationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetServiceOfferedDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BusinessController_setServiceOfferedEverywhere: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetServiceOfferedDto"];
             };
         };
         responses: {
@@ -2994,6 +4021,23 @@ export interface operations {
             };
         };
     };
+    PaymentsController_currency: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     PaymentsController_providers: {
         parameters: {
             query?: {
@@ -3101,7 +4145,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["InitiateDepositPaymentResponseDto"];
+                };
             };
         };
     };
@@ -3224,7 +4270,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["PaymentStatusResponseDto"];
                 };
             };
         };
@@ -3243,6 +4289,32 @@ export interface operations {
                 "application/json": components["schemas"]["CancelAppointmentDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminAppointmentsController_list: {
+        parameters: {
+            query?: {
+                status?: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+                cancelledBy?: "BUSINESS" | "CUSTOMER" | "SYSTEM_EXPIRY";
+                /** @description 'true' narrows to cancellations that could still be reclassified. */
+                reclassifiable?: string;
+                businessId?: string;
+                customerId?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -3432,6 +4504,23 @@ export interface operations {
                 limit?: number;
                 offset?: number;
             };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminLedgerController_reconcile: {
+        parameters: {
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -3881,6 +4970,30 @@ export interface operations {
             };
         };
     };
+    AdminReviewsController_list: {
+        parameters: {
+            query?: {
+                visibility?: "VISIBLE" | "HIDDEN" | "ALL";
+                /** @description Only reviews at or below this rating — the ones that get disputed. */
+                maxRating?: number;
+                businessId?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AdminReviewsController_hide: {
         parameters: {
             query?: never;
@@ -4241,6 +5354,13 @@ export interface operations {
     DiscoveryController_search: {
         parameters: {
             query?: {
+                /**
+                 * @description Narrow to one province (§104). Matched through the district, so a branch
+                 *     with no district set is simply not returned — it has not said where it is.
+                 */
+                provinceId?: string;
+                /** @description Narrow to one district. The useful unit inside Kigali. */
+                districtId?: string;
                 /** @description Case-insensitive substring over business name, location name, service name. */
                 q?: string;
                 categoryId?: string;

@@ -1,4 +1,5 @@
 import { api } from './client';
+import type { components } from './schema';
 
 export interface Appointment {
   id: string;
@@ -41,16 +42,54 @@ export const getAppointment = (id: string) => api<Appointment>(`/appointments/${
 export const cancelAppointment = (id: string, reason: string) =>
   api<Appointment>(`/appointments/${id}/cancel`, { method: 'POST', body: { reason } });
 
-export interface PaymentStatus {
-  appointmentId: string;
-  status: string;
-  depositPaidAt: string | null;
-  paymentInitiatedAt: string | null;
-  paymentProviderReferenceId: string | null;
-  /** What the operator says now. Polled, because approval happens off-device. */
-  providerStatus?: string | null;
-  message?: string | null;
-}
+/**
+ * Both payment shapes come from the generated contract, not from here.
+ *
+ * They were hand-written once, and every field name was wrong: the screen polled
+ * happily, read `undefined` for all of them, and so never noticed a deposit
+ * being paid (§109). Importing them means the backend changing its mind breaks
+ * this build rather than one screen on somebody's phone.
+ */
+export type PaymentStatus = components['schemas']['PaymentStatusResponseDto'];
+export type InitiatedDeposit =
+  components['schemas']['InitiateDepositPaymentResponseDto'];
+
+/** Just the payment half, for a screen that only needs to know what to show. */
+export type DepositStage = PaymentStatus['paymentStatus'];
+
+/**
+ * A failed deposit, in words a customer can act on.
+ *
+ * `failureReason` is the operator's own string and is meant for support, not for
+ * reading: MTN's four failure states collapse into one `FAILED`, and what
+ * survives is text like `FAILED: APPROVAL_REJECTED`. Confirmed against the
+ * sandbox, whose payer numbers force each one (§109.3).
+ *
+ * The three cases genuinely differ in what the customer should do next, which is
+ * why they are not one apology: a rejection was their own choice, an expiry means
+ * they were too slow, and an internal error is nobody's fault but the operator's.
+ */
+export const explainFailedDeposit = (failureReason?: string): string => {
+  const reason = failureReason ?? '';
+  if (reason.includes('APPROVAL_REJECTED'))
+    return 'The payment was declined on your phone. Nothing was taken.';
+  if (reason.includes('EXPIRED') || reason.includes('TIMEOUT'))
+    return 'The request timed out before it was approved. Nothing was taken.';
+  if (reason.includes('not configured'))
+    return 'Mobile money is not available right now. Nothing was taken.';
+  return 'The payment did not go through. Nothing was taken.';
+};
+
+/**
+ * What a person types, as MSISDN: digits only, no `+`, no spaces.
+ *
+ * The backend accepts `^\d{8,15}$` and nothing else, while the field a customer
+ * types into is labelled `07xx xxx xxx` — spaces and all. The app was teaching
+ * people to type exactly the format it would then reject (§109.2). Normalising
+ * here rather than loosening the DTO: the operator wants MSISDN, and one
+ * stripper next to the keyboard beats a regex that also accepts prettiness.
+ */
+export const toMsisdn = (typed: string) => typed.replace(/\D/g, '');
 
 /**
  * Asks the operator to charge the customer's phone.
@@ -64,9 +103,9 @@ export const initiateDeposit = (
   phoneNumber: string,
   provider?: string,
 ) =>
-  api<PaymentStatus>(`/appointments/${appointmentId}/initiate-deposit-payment`, {
+  api<InitiatedDeposit>(`/appointments/${appointmentId}/initiate-deposit-payment`, {
     method: 'POST',
-    body: { phoneNumber, ...(provider ? { provider } : {}) },
+    body: { phoneNumber: toMsisdn(phoneNumber), ...(provider ? { provider } : {}) },
   });
 
 export const getPaymentStatus = (appointmentId: string) =>

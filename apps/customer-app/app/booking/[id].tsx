@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,9 +13,12 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   cancelAppointment,
+  explainFailedDeposit,
   getAppointment,
   getPaymentStatus,
   initiateDeposit,
+  toMsisdn,
+  type PaymentStatus,
 } from '../../src/api/booking';
 import { ApiError } from '../../src/api/client';
 import { useMoney } from '../../src/money';
@@ -49,11 +52,28 @@ export default function Booking() {
   const payment = useQuery({
     queryKey: ['payment-status', id],
     queryFn: () => getPaymentStatus(id),
-    // Only while there is something to wait for. A booking that is paid or
-    // cancelled has nothing more to say, and polling it forever drains a phone.
     enabled: awaitingPayment,
-    refetchInterval: awaitingPayment ? 4000 : false,
+    // Only while the operator has something in flight. NOT_STARTED means the
+    // customer has not tapped Pay yet; SUCCESSFUL and FAILED have nothing more
+    // to say. Polling on `awaitingPayment` alone never stopped, because the
+    // thing that ends the wait is this very query (§109.1).
+    refetchInterval: ({ state }) => (state.data?.paymentStatus === 'PENDING' ? 4000 : false),
   });
+
+  const stage = payment.data?.paymentStatus;
+
+  /**
+   * The appointment is what makes this screen say "confirmed": `depositPaidAt`
+   * and the arrival code live there, not on the payment status. Nothing else
+   * refetches it while polling, so the moment the operator says the money
+   * landed, ask again — otherwise the customer pays and the screen keeps
+   * offering the Pay button forever (§109.1).
+   */
+  useEffect(() => {
+    if (stage === 'SUCCESSFUL' || payment.data?.appointmentStatus === 'CANCELLED') {
+      queryClient.invalidateQueries({ queryKey: ['appointment', id] });
+    }
+  }, [stage, payment.data?.appointmentStatus, id, queryClient]);
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['appointment', id] });
@@ -61,8 +81,19 @@ export default function Booking() {
   };
 
   const pay = useMutation({
-    mutationFn: () => initiateDeposit(id, phone.trim()),
-    onSuccess: refresh,
+    mutationFn: () => initiateDeposit(id, phone),
+    onSuccess: (started) => {
+      // The reply already says PENDING, so seed it rather than refetching: the
+      // "approve on your phone" line then appears with the handset prompt
+      // instead of up to four seconds later.
+      const seeded: PaymentStatus = {
+        appointmentId: started.appointmentId,
+        appointmentStatus: started.status,
+        paymentStatus: started.paymentStatus,
+        providerReferenceId: started.providerReferenceId,
+      };
+      queryClient.setQueryData(['payment-status', id], seeded);
+    },
     onError: (error) =>
       Alert.alert(
         'Could not start the payment',
@@ -96,6 +127,13 @@ export default function Booking() {
 
   const a = appointment.data;
   const paid = a.depositPaidAt !== null;
+
+  // Digits only, because that is what is sent. Counting the typed string let
+  // "07 88" through as four characters and "0788 123 456" through as twelve.
+  const phoneLooksUsable = toMsisdn(phone).length >= 9;
+  // One prompt at a time: a second tap while the first is in flight would ask
+  // the operator to charge the same handset twice.
+  const payBusy = pay.isPending || stage === 'PENDING';
 
   return (
     <>
@@ -136,24 +174,48 @@ export default function Booking() {
               keyboardType="phone-pad"
             />
 
+            {/* The operator takes digits only. The field invites spaces, so they
+                are stripped on the way out rather than refused here — nobody
+                should be told off for typing a phone number the readable way. */}
             <Pressable
-              style={[styles.cta, (pay.isPending || phone.trim().length < 9) && styles.ctaOff]}
-              disabled={pay.isPending || phone.trim().length < 9}
+              style={[styles.cta, (payBusy || !phoneLooksUsable) && styles.ctaOff]}
+              disabled={payBusy || !phoneLooksUsable}
               onPress={() => pay.mutate()}
             >
               <Text style={styles.ctaText}>
-                {pay.isPending ? 'Asking your phone…' : 'Pay with mobile money'}
+                {pay.isPending
+                  ? 'Asking your phone…'
+                  : stage === 'PENDING'
+                    ? 'Waiting for your approval…'
+                    : stage === 'FAILED'
+                      ? 'Try again'
+                      : 'Pay with mobile money'}
               </Text>
             </Pressable>
 
             {/* Approval happens on the handset, not here. Saying so stops the
                 screen looking stuck while someone types their PIN. */}
-            {payment.data?.paymentInitiatedAt && (
+            {stage === 'PENDING' && (
               <View style={styles.waiting}>
                 <ActivityIndicator color={theme.accent} />
                 <Text style={styles.muted}>
                   Check your phone and approve the payment. This updates on its own.
                 </Text>
+              </View>
+            )}
+
+            {/* A failure clears the reference server-side precisely so another
+                attempt is possible, so this is an invitation, not an error. */}
+            {stage === 'FAILED' && (
+              <View style={styles.failedBox}>
+                <Text style={styles.failed}>
+                  {explainFailedDeposit(payment.data?.failureReason)} You can try again.
+                </Text>
+                {/* The operator's own code, kept small. It is unreadable as copy
+                    and essential on a support ticket. */}
+                {payment.data?.failureReason && (
+                  <Text style={styles.failedCode}>{payment.data.failureReason}</Text>
+                )}
               </View>
             )}
           </View>
@@ -253,6 +315,9 @@ const styles = StyleSheet.create({
   codeLabel: { color: theme.muted, fontSize: 13 },
   code: { fontSize: 34, fontWeight: '700', letterSpacing: 7, color: theme.ink },
   cancel: { padding: 14, alignItems: 'center' },
+  failedBox: { gap: 3, marginTop: 4 },
+  failed: { color: theme.danger, fontSize: 13, lineHeight: 19 },
+  failedCode: { color: theme.muted, fontSize: 11 },
   cancelText: { color: theme.danger, fontWeight: '500' },
   empty: { color: theme.muted, textAlign: 'center', padding: 28 },
 });

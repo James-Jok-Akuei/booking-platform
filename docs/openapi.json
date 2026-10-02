@@ -132,6 +132,157 @@
         ]
       }
     },
+    "/admin/users": {
+      "get": {
+        "operationId": "AdminUsersController_list",
+        "parameters": [
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BUSINESS",
+                "CUSTOMER",
+                "ADMIN"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Matches email or display name, case-insensitively.",
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "withDisplayName",
+            "required": false,
+            "in": "query",
+            "description": "Only accounts that currently have a display name.\n\nThe one moderation action here clears that name, so this is the filter\nthat turns a user list into a queue of things that can be acted on.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "The directory (§94). Without it, the PATCH below took an id that nothing\nin the platform produced.",
+        "tags": [
+          "AdminUsers"
+        ]
+      }
+    },
+    "/admin/users/invite": {
+      "post": {
+        "operationId": "AdminUsersController_invite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteAdminDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminUsers"
+        ]
+      }
+    },
+    "/admin/users/invitations": {
+      "get": {
+        "operationId": "AdminUsersController_listInvitations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminUsers"
+        ]
+      }
+    },
+    "/admin/users/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "AdminUsersController_revokeInvitation",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminUsers"
+        ]
+      }
+    },
+    "/admin/users/{id}/admin-access": {
+      "delete": {
+        "operationId": "AdminUsersController_revokeAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminUsers"
+        ]
+      }
+    },
     "/admin/users/{id}/display-name/clear": {
       "patch": {
         "operationId": "AdminUsersController_clearDisplayName",
@@ -184,6 +335,333 @@
         "summary": "Public and unauthenticated on purpose — deliberately the only endpoint in\nthis module without JwtAuthGuard. Both sides need the taxonomy before they\nhave a token: a business picks its category during onboarding, and a\ncustomer browses categories before signing up at all.\n\nSeeded by prisma/seed.ts.",
         "tags": [
           "Categories"
+        ]
+      }
+    },
+    "/admin/categories": {
+      "get": {
+        "operationId": "AdminCategoriesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminCategories"
+        ]
+      },
+      "post": {
+        "operationId": "AdminCategoriesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminCategories"
+        ]
+      }
+    },
+    "/admin/categories/{id}": {
+      "patch": {
+        "operationId": "AdminCategoriesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminCategories"
+        ]
+      }
+    },
+    "/admin/categories/{id}/live": {
+      "patch": {
+        "operationId": "AdminCategoriesController_setLive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCategoryLiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminCategories"
+        ]
+      }
+    },
+    "/admin/categories/{id}/subcategories": {
+      "post": {
+        "operationId": "AdminCategoriesController_createSubcategory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubcategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminCategories"
+        ]
+      }
+    },
+    "/admin/subcategories/{id}": {
+      "patch": {
+        "operationId": "AdminCategoriesController_updateSubcategory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubcategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminCategories"
+        ]
+      }
+    },
+    "/admin/subcategories/{id}/live": {
+      "patch": {
+        "operationId": "AdminCategoriesController_setSubcategoryLive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCategoryLiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminCategories"
+        ]
+      }
+    },
+    "/places/provinces": {
+      "get": {
+        "operationId": "PlacesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Places"
+        ]
+      }
+    },
+    "/admin/places/provinces": {
+      "get": {
+        "operationId": "AdminPlacesController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Everything, open or not — the one listing that shows retired districts.",
+        "tags": [
+          "AdminPlaces"
+        ]
+      }
+    },
+    "/admin/places/districts": {
+      "post": {
+        "operationId": "AdminPlacesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDistrictDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminPlaces"
+        ]
+      }
+    },
+    "/admin/places/districts/{id}": {
+      "patch": {
+        "operationId": "AdminPlacesController_rename",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDistrictDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminPlaces"
+        ]
+      }
+    },
+    "/admin/places/districts/{id}/live": {
+      "patch": {
+        "operationId": "AdminPlacesController_setLive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDistrictLiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminPlaces"
         ]
       }
     },
@@ -316,7 +794,31 @@
         ]
       },
       "delete": {
-        "operationId": "BusinessController_deleteLocation",
+        "operationId": "BusinessController_closeLocation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Closes a branch (§89). Kept as DELETE because that is the verb a client\nreaches for, but it is a soft close: nothing that happened there is lost,\nand `reopen` puts it back.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/locations/{id}/reopen": {
+      "patch": {
+        "operationId": "BusinessController_reopenLocation",
         "parameters": [
           {
             "name": "id",
@@ -400,6 +902,30 @@
           }
         },
         "summary": "Replaces the location's whole week of operating hours in one call.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/profile/image/{kind}": {
+      "post": {
+        "operationId": "BusinessController_setProfileImage",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "The logo and cover image (§88).\n\nOne route with the kind in the path rather than two near-identical ones;\nthey differ only in which column is written. `galleryUploadOptions`\nbecause these ARE shop-window images — the same rule the gallery has, and\ndeliberately not the wider ticket list from §81.",
         "tags": [
           "Business"
         ]
@@ -1582,7 +2108,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiateDepositPaymentResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -1745,7 +2278,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/PaymentStatusResponseDto"
                 }
               }
             }
@@ -1788,6 +2321,97 @@
         "summary": "Either the customer who booked it or an active member of its business.",
         "tags": [
           "AppointmentsShared"
+        ]
+      }
+    },
+    "/admin/appointments": {
+      "get": {
+        "operationId": "AdminAppointmentsController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING_PAYMENT",
+                "BOOKED",
+                "IN_PROGRESS",
+                "COMPLETED",
+                "CANCELLED",
+                "NO_SHOW"
+              ]
+            }
+          },
+          {
+            "name": "cancelledBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BUSINESS",
+                "CUSTOMER",
+                "SYSTEM_EXPIRY"
+              ]
+            }
+          },
+          {
+            "name": "reclassifiable",
+            "required": false,
+            "in": "query",
+            "description": "'true' narrows to cancellations that could still be reclassified.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "businessId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "The listing (§95). Without it the PATCH below took an id that nothing in\nthe platform produced.",
+        "tags": [
+          "AdminAppointments"
         ]
       }
     },
@@ -2142,6 +2766,21 @@
           }
         },
         "summary": "Billing adjustments, unsettled first. Read-only.",
+        "tags": [
+          "AdminLedger"
+        ]
+      }
+    },
+    "/admin/ledger/reconciliation": {
+      "get": {
+        "operationId": "AdminLedgerController_reconcile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Our figure beside the operator's, and whether they can honestly be\ncompared at all (§87).",
         "tags": [
           "AdminLedger"
         ]
@@ -2846,6 +3485,74 @@
         ]
       }
     },
+    "/admin/reviews": {
+      "get": {
+        "operationId": "AdminReviewsController_list",
+        "parameters": [
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "VISIBLE",
+                "HIDDEN",
+                "ALL"
+              ]
+            }
+          },
+          {
+            "name": "maxRating",
+            "required": false,
+            "in": "query",
+            "description": "Only reviews at or below this rating — the ones that get disputed.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "businessId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "The moderation queue (§93) — the only listing that returns hidden reviews.\n\nWithout it `hide` and `unhide` were unreachable in practice: nothing told\nan admin which reviews existed, and a hidden one was invisible everywhere.",
+        "tags": [
+          "AdminReviews"
+        ]
+      }
+    },
     "/admin/reviews/{id}/hide": {
       "patch": {
         "operationId": "AdminReviewsController_hide",
@@ -3439,6 +4146,26 @@
         "operationId": "DiscoveryController_search",
         "parameters": [
           {
+            "name": "provinceId",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to one province (§104). Matched through the district, so a branch\nwith no district set is simply not returned — it has not said where it is.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "districtId",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to one district. The useful unit inside Kigali.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "q",
             "required": false,
             "in": "query",
@@ -3654,6 +4381,18 @@
           "refreshToken"
         ]
       },
+      "InviteAdminDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
       "ClearDisplayNameDto": {
         "type": "object",
         "properties": {
@@ -3666,6 +4405,131 @@
         },
         "required": [
           "reason"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "icon": {
+            "type": "string",
+            "description": "An icon key or emoji for the frontends, never a URL.",
+            "maxLength": 40
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "icon": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 300
+          }
+        }
+      },
+      "SetCategoryLiveDto": {
+        "type": "object",
+        "properties": {
+          "isLive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isLive"
+        ]
+      },
+      "CreateSubcategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateSubcategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateDistrictDto": {
+        "type": "object",
+        "properties": {
+          "provinceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "code": {
+            "type": "string",
+            "description": "A stable handle for seeds, tests and support queries. Uppercase so it\ncannot be confused with the display name, which may be reworded.",
+            "pattern": "^[A-Z][A-Z0-9_]{1,39}$"
+          }
+        },
+        "required": [
+          "provinceId",
+          "name",
+          "code"
+        ]
+      },
+      "UpdateDistrictDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "SetDistrictLiveDto": {
+        "type": "object",
+        "properties": {
+          "isLive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isLive"
         ]
       },
       "UpdateBusinessProfileDto": {
@@ -3706,6 +4570,11 @@
       "CreateLocationDto": {
         "type": "object",
         "properties": {
+          "districtId": {
+            "type": "string",
+            "description": "Which district this branch is in (§104).\n\nOptional, because every branch created before this exists without one and\n`UpdateLocationDto` is a PartialType of this class. A branch with no\ndistrict is not findable by place, which the screen says rather than\nrefusing the save.",
+            "format": "uuid"
+          },
           "name": {
             "type": "string",
             "minLength": 2,
@@ -3743,6 +4612,11 @@
       "UpdateLocationDto": {
         "type": "object",
         "properties": {
+          "districtId": {
+            "type": "string",
+            "description": "Which district this branch is in (§104).\n\nOptional, because every branch created before this exists without one and\n`UpdateLocationDto` is a PartialType of this class. A branch with no\ndistrict is not findable by place, which the screen says rather than\nrefusing the save.",
+            "format": "uuid"
+          },
           "name": {
             "type": "string",
             "minLength": 2,
@@ -4140,6 +5014,69 @@
           "phoneNumber"
         ]
       },
+      "InitiateDepositPaymentResponseDto": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "The appointment's status. Still `PENDING_PAYMENT` — nothing is paid yet.",
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ]
+          },
+          "paymentStatus": {
+            "type": "string",
+            "description": "Always `PENDING`: the request was accepted and is now in flight.",
+            "enum": [
+              "PENDING"
+            ]
+          },
+          "providerReferenceId": {
+            "type": "string"
+          },
+          "depositAmountMinor": {
+            "type": "number",
+            "description": "What the customer was quoted, in the currency they were quoted it in."
+          },
+          "currency": {
+            "type": "string"
+          },
+          "providerAmountMinor": {
+            "type": "number",
+            "description": "What was actually sent to the operator. Both sides are returned so a client\nnever has to infer which currency a bare amount was in — in the sandbox\nthese differ on purpose (§52.1)."
+          },
+          "providerCurrency": {
+            "type": "string"
+          },
+          "exchangeRateUsed": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string",
+            "description": "Ready to show as-is: it tells the customer to look at their handset."
+          }
+        },
+        "required": [
+          "appointmentId",
+          "status",
+          "paymentStatus",
+          "providerReferenceId",
+          "depositAmountMinor",
+          "currency",
+          "providerAmountMinor",
+          "providerCurrency",
+          "exchangeRateUsed",
+          "message"
+        ]
+      },
       "VerifyAppointmentDto": {
         "type": "object",
         "properties": {
@@ -4163,6 +5100,50 @@
         },
         "required": [
           "note"
+        ]
+      },
+      "PaymentStatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string"
+          },
+          "appointmentStatus": {
+            "type": "string",
+            "description": "The APPOINTMENT's status, not the payment's — the two are deliberately\nseparate fields because a failed payment leaves the appointment alive and\nretryable, and a client that conflated them would cancel a held slot.",
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ]
+          },
+          "paymentStatus": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "FAILED",
+              "SUCCESSFUL",
+              "NOT_STARTED"
+            ]
+          },
+          "providerReferenceId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null once a payment has FAILED. The operator will not accept the same\nreference twice, so clearing it is what makes a retry possible (§57.3) —\na client seeing null here should offer the payment again, not an error."
+          },
+          "failureReason": {
+            "type": "string",
+            "description": "The operator's words, when it gave any. Shown to the customer verbatim."
+          }
+        },
+        "required": [
+          "appointmentId",
+          "appointmentStatus",
+          "paymentStatus",
+          "providerReferenceId"
         ]
       },
       "CancelAppointmentDto": {

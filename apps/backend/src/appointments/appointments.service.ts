@@ -47,6 +47,10 @@ import {
   ReclassifyCancellationDto,
 } from './dto/cancel-appointment.dto';
 import { ListAdminAppointmentsDto } from './dto/list-admin-appointments.dto';
+import {
+  InitiateDepositPaymentResponseDto,
+  PaymentStatusResponseDto,
+} from './dto/payment-status.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -514,7 +518,7 @@ export class AppointmentsService {
     appointmentId: string,
     phoneNumber: string,
     chosenProvider?: MobileMoneyProvider,
-  ) {
+  ): Promise<InitiateDepositPaymentResponseDto> {
     const appointment = await this.requireCustomerAppointment(customerId, appointmentId);
 
     if (appointment.status !== AppointmentStatus.PENDING_PAYMENT) {
@@ -683,7 +687,10 @@ export class AppointmentsService {
    * instead of waiting for the background job's next cycle. Any resulting
    * transition is applied here too, so the two paths cannot disagree.
    */
-  async getPaymentStatus(userId: string, appointmentId: string) {
+  async getPaymentStatus(
+    userId: string,
+    appointmentId: string,
+  ): Promise<PaymentStatusResponseDto> {
     const appointment = await this.requireParticipantAppointment(userId, appointmentId);
 
     const full = await this.prisma.appointment.findUniqueOrThrow({
