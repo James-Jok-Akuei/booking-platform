@@ -778,3 +778,52 @@ export const getPaymentProviders = () =>
     '/payments/providers',
     { anonymous: true },
   );
+
+// ---------------------------------------------------------------------------
+// Categories a business may choose (§98)
+// ---------------------------------------------------------------------------
+
+export interface AdminCategory {
+  id: string;
+  name: string;
+  icon: string | null;
+  description: string | null;
+  isLive: boolean;
+  /** Already in it. Shown before switching it off. */
+  businessCount: number;
+  subcategoryCount: number;
+}
+
+export const listAdminCategories = () => api<AdminCategory[]>('/admin/categories');
+
+export const setCategoryLive = (id: string, isLive: boolean) =>
+  api<{ message: string }>(`/admin/categories/${id}/live`, {
+    method: 'PATCH',
+    body: { isLive },
+  });
+
+// ---------------------------------------------------------------------------
+// Administrators inviting administrators (§99)
+// ---------------------------------------------------------------------------
+
+export interface AdminInvitation {
+  id: string;
+  email: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
+  createdAt: string;
+  expiresAt: string;
+  invitedBy: { email: string } | null;
+}
+
+/** All of these are refused to anyone but the primary administrator. */
+export const inviteAdmin = (email: string) =>
+  api<AdminInvitation>('/admin/users/invite', { method: 'POST', body: { email } });
+
+export const listAdminInvitations = () =>
+  api<AdminInvitation[]>('/admin/users/invitations');
+
+export const revokeAdminInvitation = (id: string) =>
+  api<{ message: string }>(`/admin/users/invitations/${id}`, { method: 'DELETE' });
+
+export const revokeAdminAccess = (userId: string) =>
+  api<{ message: string }>(`/admin/users/${userId}/admin-access`, { method: 'DELETE' });

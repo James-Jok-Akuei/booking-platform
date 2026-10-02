@@ -3,7 +3,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import {
   clearDisplayName,
+  inviteAdmin,
+  listAdminInvitations,
   listUsers,
+  revokeAdminAccess,
+  revokeAdminInvitation,
   type DirectoryUser,
 } from '../api/admin';
 
@@ -75,6 +79,8 @@ export function UsersPage() {
           <p className="muted">Every account on the platform.</p>
         </div>
       </header>
+
+      <Administrators />
 
       <div className="toolbar">
         <div className="filters">
@@ -165,5 +171,154 @@ export function UsersPage() {
         </table>
       )}
     </section>
+  );
+}
+
+/**
+ * Administrators, and inviting more of them (§99).
+ *
+ * Only the primary administrator may invite or remove. Rather than ask who is
+ * primary, the panel tries to list invitations: a 403 is the answer, and it
+ * then shows the administrators without the controls. One request, no new
+ * endpoint, and it cannot disagree with the server about who may act.
+ */
+function Administrators() {
+  const queryClient = useQueryClient();
+  const [email, setEmail] = useState('');
+
+  const admins = useQuery({
+    queryKey: ['users', 'ADMIN'],
+    queryFn: () => listUsers({ role: 'ADMIN', limit: 100 }),
+  });
+
+  const invites = useQuery({
+    queryKey: ['admin-invitations'],
+    queryFn: listAdminInvitations,
+    retry: false,
+  });
+
+  // A 403 here means "you are not the primary administrator", which is the
+  // only thing the controls depend on.
+  const canManage = invites.isSuccess;
+
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['users'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-invitations'] });
+  };
+
+  const invite = useMutation({
+    mutationFn: () => inviteAdmin(email.trim()),
+    onSuccess: () => {
+      setEmail('');
+      refresh();
+    },
+  });
+
+  const revokeInvite = useMutation({ mutationFn: revokeAdminInvitation, onSuccess: refresh });
+  const revokeAccess = useMutation({ mutationFn: revokeAdminAccess, onSuccess: refresh });
+
+  return (
+    <div className="card setting">
+      <div className="setting-head">
+        <h2>Administrators</h2>
+        <p className="muted small">
+          {canManage
+            ? 'You are the primary administrator. Only you can invite or remove others.'
+            : 'Only the primary administrator can invite or remove administrators.'}
+        </p>
+      </div>
+
+      <ul className="people">
+        {admins.data?.users.map((admin) => (
+          <li key={admin.id}>
+            <div>
+              <strong>{admin.email}</strong>
+              <div className="muted small">
+                joined {new Date(admin.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+            {canManage && (
+              <button
+                type="button"
+                disabled={revokeAccess.isPending}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Remove administrator access from ${admin.email}?\n\n` +
+                        'They lose it immediately, even if they are signed in. ' +
+                        'The account becomes an ordinary customer account — ' +
+                        'nothing they did is deleted, and anything they handled ' +
+                        'still names them.',
+                    )
+                  ) {
+                    revokeAccess.mutate(admin.id);
+                  }
+                }}
+              >
+                Remove access
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {canManage && (
+        <>
+          {(invites.data?.length ?? 0) > 0 && (
+            <ul className="people">
+              {invites.data?.map((invitation) => (
+                <li key={invitation.id}>
+                  <div>
+                    <strong>{invitation.email}</strong>
+                    <div className="muted small">
+                      invited, not joined yet · expires{' '}
+                      {new Date(invitation.expiresAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={revokeInvite.isPending}
+                    onClick={() => revokeInvite.mutate(invitation.id)}
+                  >
+                    Cancel invitation
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <form
+            className="row-end"
+            onSubmit={(event) => {
+              event.preventDefault();
+              invite.mutate();
+            }}
+          >
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="their@email.com"
+            />
+            <button type="submit" className="primary" disabled={invite.isPending || !email.trim()}>
+              {invite.isPending ? 'Sending…' : 'Invite an administrator'}
+            </button>
+          </form>
+
+          {/* The address must have no account at all: a role decides what every
+              guard lets someone reach, so promoting an existing customer would
+              move their own bookings out of their app. */}
+          <p className="muted small">
+            The address must not already have an account of any kind.
+          </p>
+
+          {invite.error && (
+            <p className="error small" role="alert">
+              {invite.error instanceof ApiError ? invite.error.message : 'That did not send.'}
+            </p>
+          )}
+        </>
+      )}
+    </div>
   );
 }

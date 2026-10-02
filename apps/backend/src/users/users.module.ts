@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { AdminUsersController } from './admin-users.controller';
 import { UsersService } from './users.service';
+import { AdminInvitationsService } from './admin-invitations.service';
 
 // NotificationsService is @Global(), so nothing needs importing for it.
 @Module({
   controllers: [UsersController, AdminUsersController],
-  providers: [UsersService],
+  providers: [UsersService, AdminInvitationsService],
   exports: [UsersService],
 })
 export class UsersModule {}

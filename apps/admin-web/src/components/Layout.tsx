@@ -12,6 +12,7 @@ const SECTIONS = [
   { to: '/appointments', label: 'Appointments' },
   { to: '/users', label: 'Users' },
   { to: '/tickets', label: 'Support' },
+  { to: '/categories', label: 'Categories' },
   { to: '/settings', label: 'Settings' },
 ];
 

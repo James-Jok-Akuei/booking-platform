@@ -16,6 +16,10 @@ export class CategoriesController {
   @Get()
   findAll() {
     return this.prisma.category.findMany({
+      // Only what a business may choose (§98). Discovery is NOT filtered this
+      // way — a shop already in a category that was switched off keeps its
+      // listing, because it did not make that decision.
+      where: { isLive: true },
       orderBy: { name: 'asc' },
       select: {
         id: true,

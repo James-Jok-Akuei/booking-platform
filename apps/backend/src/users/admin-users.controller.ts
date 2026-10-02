@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +21,8 @@ import {
 import { UsersService } from './users.service';
 import { ClearDisplayNameDto } from './dto/clear-display-name.dto';
 import { ListUsersDto } from './dto/list-users.dto';
+import { InviteAdminDto } from './dto/invite-admin.dto';
+import { AdminInvitationsService } from './admin-invitations.service';
 
 /**
  * User moderation. API-only, like every other admin surface here (§16.9).
@@ -31,7 +35,10 @@ import { ListUsersDto } from './dto/list-users.dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class AdminUsersController {
-  constructor(private readonly users: UsersService) {}
+  constructor(
+    private readonly users: UsersService,
+    private readonly invitations: AdminInvitationsService,
+  ) {}
 
   /**
    * The directory (§94). Without it, the PATCH below took an id that nothing
@@ -40,6 +47,37 @@ export class AdminUsersController {
   @Get()
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListUsersDto) {
     return this.users.list(user, query);
+  }
+
+  // ---------- Administrators inviting administrators (§99) ----------
+  //
+  // Declared before the ':id' routes: Nest matches in order, and
+  // 'invitations' would otherwise be read as a user id and fail the UUID pipe.
+
+  @Post('invite')
+  invite(@CurrentUser() user: AuthenticatedUser, @Body() dto: InviteAdminDto) {
+    return this.invitations.invite(user, dto);
+  }
+
+  @Get('invitations')
+  listInvitations(@CurrentUser() user: AuthenticatedUser) {
+    return this.invitations.listInvitations(user);
+  }
+
+  @Delete('invitations/:invitationId')
+  revokeInvitation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('invitationId', ParseUUIDPipe) invitationId: string,
+  ) {
+    return this.invitations.revokeInvitation(user, invitationId);
+  }
+
+  @Delete(':id/admin-access')
+  revokeAdmin(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.invitations.revokeAdmin(user, id);
   }
 
   @Patch(':id/display-name/clear')

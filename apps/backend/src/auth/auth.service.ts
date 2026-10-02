@@ -67,10 +67,17 @@ export class AuthService {
     // first answered "please wait 47s" to someone whose actual problem was a
     // missing role. The answer here does not change with time either.
     if (!existingUser && !role) {
-      throw new BadRequestException(
-        'This email has no account yet. Send `role` as BUSINESS or CUSTOMER to ' +
-          'create one.',
-      );
+      // An invited administrator is the one exception (§99). They have no
+      // account and cannot ask for one: the DTO refuses a role of ADMIN from
+      // any client, deliberately. The invitation is their authorisation, so
+      // the code is issued on the strength of it.
+      const invitedAsAdmin = await this.hasPendingAdminInvitation(normalizedEmail);
+      if (!invitedAsAdmin) {
+        throw new BadRequestException(
+          'This email has no account yet. Send `role` as BUSINESS or CUSTOMER to ' +
+            'create one.',
+        );
+      }
     }
 
     // An existing user's role wins outright. A new user gets the requested one.
@@ -201,9 +208,36 @@ export class AuthService {
       return existing;
     }
 
-    // Registration. `requestOtp` refuses to issue a code for an unknown email
-    // without a role, so this cannot be null here — but a defensive throw beats
-    // a non-null assertion on the field that decides what someone can do.
+    // Registration.
+    //
+    // The administrator invitation is consulted FIRST, before the missing-role
+    // guard below. An invited administrator's code is issued with NO role —
+    // the request DTO refuses `ADMIN` from any client — so checking the role
+    // first would reject the single case this exists for (§99).
+    //
+    // It also outranks whatever role was asked for: the
+    // row was written by the primary administrator, and the request body was
+    // not. Checked before the branches below so an invited address cannot be
+    // turned into a customer by sending `role=CUSTOMER` first (§99).
+    const adminInvitation = await this.findAcceptableAdminInvitation(email);
+    if (adminInvitation) {
+      return this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: { email, role: UserRole.ADMIN },
+        });
+        await tx.adminInvitation.update({
+          where: { id: adminInvitation.id },
+          data: { status: InvitationStatus.ACCEPTED },
+        });
+        this.logger.log(`${email} became an administrator via invitation.`);
+        return user;
+      });
+    }
+
+    // `requestOtp` refuses a code for an unknown email without a role unless
+    // that address has an administrator invitation, which the branch above has
+    // already consumed. So this cannot be null here — but a defensive throw
+    // beats a non-null assertion on the field that decides what someone can do.
     if (!role) {
       throw new BadRequestException(
         'This code was issued for an account that no longer exists. Request a new one.',
@@ -258,6 +292,30 @@ export class AuthService {
         },
       });
       return user;
+    });
+  }
+
+  /** Whether this address has been invited to administer the platform (§99). */
+  private async hasPendingAdminInvitation(email: string): Promise<boolean> {
+    const count = await this.prisma.adminInvitation.count({
+      where: {
+        email,
+        status: InvitationStatus.PENDING,
+        expiresAt: { gt: new Date() },
+      },
+    });
+    return count > 0;
+  }
+
+  private async findAcceptableAdminInvitation(email: string) {
+    return this.prisma.adminInvitation.findFirst({
+      where: {
+        email,
+        status: InvitationStatus.PENDING,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
     });
   }
 

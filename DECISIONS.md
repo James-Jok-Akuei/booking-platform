@@ -8832,3 +8832,107 @@ premise, and the A-or-B decision made with real information.
 `Africa/Kigali`. Correct in this deployment, stale as a default.
 `PlatformSetting.providerCurrency` is where a second country would first collide.
 
+## 98. Categories the platform chooses to open
+
+The taxonomy ships complete and the platform opens part of it — start with the
+two or three there is somebody to serve, add the rest as that changes.
+
+`Category.isLive`, defaulting to **true** so every seeded category keeps
+behaving exactly as it did. The opposite default would have emptied the picker
+on deploy.
+
+### 98.1 It gates the picker, never discovery
+
+Switching a category off stops a **new** business choosing it. A business
+already in it keeps its listing and stays in search.
+
+Dropping somebody's shop out of search because an admin tidied the taxonomy
+would be a silent punishment for a decision they did not make. If that is ever
+wanted it should be a deliberate act against that business, with a reason, like
+every other moderation decision here.
+
+The admin row therefore shows **how many businesses are in it** before you
+switch it off, and says *"still listed"* against the count afterwards.
+
+### 98.2 Verified
+
+Switching Automotive (0 businesses) and Beauty & Personal Care (2) off took the
+public picker from 8 categories to 6, while `/discover/locations` stayed at 7
+locations — the two Beauty businesses untouched. Both restored.
+
+## 99. Administrators inviting administrators
+
+One primary administrator, and the rest invited by them. The same line a
+business draws between OWNER and MANAGER (§90): running the platform and
+deciding who runs it are different powers.
+
+### 99.1 The invitation is what confers the role
+
+`POST /auth/otp/request` accepts `BUSINESS` or `CUSTOMER` and **nothing else** —
+the DTO has always refused `ADMIN`, which is why nobody can make themselves one.
+So an `AdminInvitation` row, writable only by the primary administrator, is the
+single path in.
+
+That has a consequence worth stating: an invited administrator has no account
+and cannot ask for one, so `requestOtp` issues them a code on the strength of
+the invitation alone. It is the one exception to "no role, no code".
+
+### 99.2 An ordering bug that the design made inevitable
+
+The first implementation put the invitation check *after* the guard that refuses
+a code with no role. Since an invited administrator's code is issued with **no
+role**, by design, that guard rejected the single case the feature exists for:
+*"This code was issued for an account that no longer exists."*
+
+The invitation is now consulted first. It also outranks whatever role was asked
+for, so an invited address cannot be turned into a customer by sending
+`role=CUSTOMER` to the verify step before accepting.
+
+### 99.3 Only an address with no account at all
+
+An existing customer or business cannot be promoted. Their role decides what
+every guard lets them reach, and changing it under them would move their own
+bookings — or their shop — out of the app they use. The refusal says which kind
+of account is in the way.
+
+### 99.4 Revoking admin access did nothing for fifteen minutes
+
+Found by doing it: after `revokeAdmin`, the demoted account's **existing token
+still opened `/admin/reviews`**. `JwtStrategy` does no database read and
+`RolesGuard` trusted the role in the token, so a revoked administrator kept
+their access until it expired.
+
+For a customer or business that is harmless — nothing demotes them. For an
+administrator it is not: access is taken away precisely when someone is no
+longer trusted with it, and "another fifteen minutes" is not an answer to that.
+
+`RolesGuard` now re-reads the role from the database **when ADMIN is required**,
+and only then. The admin console is used by a handful of people, so one query
+costs nothing there; customer and business routes, which carry the traffic, are
+untouched. Confirmed: the same token went from 200 to **403**.
+
+### 99.5 Removal demotes rather than deletes
+
+A revoked administrator becomes a CUSTOMER. They may have assigned tickets,
+hidden reviews and created adjustments, and those records name them. Deleting
+the account would break that history; demotion ends the access and keeps it.
+
+The primary cannot be removed by anyone, including themselves, and nobody can
+remove their own access. At most one primary exists, enforced by a **partial
+unique index** — a plain unique on a boolean would also forbid a second
+`false`, allowing exactly one administrator and nobody else.
+
+### 99.6 Verified
+
+Invited an unregistered address; the email arrived; she signed in with no role
+and came back as ADMIN; the invitation was consumed; she could work the console
+but not invite anyone — *"Only the primary administrator can invite or remove
+administrators."* Then: an uninvited stranger still refused a code, inviting an
+existing admin, an existing customer and an existing business each refused by
+name, a duplicate invitation refused, and removal leaving a CUSTOMER account
+whose token stopped working immediately.
+
+Thirteen tests, including that the database itself refuses a second primary.
+
+**1108 passing across 33 suites.**
+

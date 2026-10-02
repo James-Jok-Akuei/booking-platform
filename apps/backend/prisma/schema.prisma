@@ -279,6 +279,17 @@ model User {
   // Invitations this user has sent. Only OWNERs can send them.
   sentInvitations BusinessInvitation[] @relation("InvitedBy")
 
+  /// Exactly one administrator holds this, and only they may invite or remove
+  /// other administrators (§99). The same shape as a business OWNER: it is the
+  /// line between "can run the platform" and "can decide who runs it".
+  ///
+  /// Uniqueness is a partial index in the migration, not a column constraint —
+  /// Postgres treats a plain unique on a boolean as "only one row may be
+  /// false" too, which would allow a single administrator and nobody else.
+  isPrimaryAdmin Boolean @default(false)
+
+  sentAdminInvitations AdminInvitation[] @relation("AdminInvitedBy")
+
   // Appointments booked by this user. Only populated when role = CUSTOMER.
   appointments         Appointment[] @relation("CustomerAppointments")
   /// Appointments this user verified the arrival for, as a business member
@@ -389,6 +400,19 @@ model Category {
   name        String  @unique
   icon        String? // icon key/emoji for the frontends; not a URL
   description String?
+
+  /// Whether a business may CHOOSE this category (§98).
+  ///
+  /// The platform ships more of the taxonomy than it wants to open at once —
+  /// start with beauty and dining, add the rest as there is someone to serve
+  /// them. Defaults to true so every seeded category keeps behaving exactly as
+  /// it did; the admin turns off what is not wanted.
+  ///
+  /// It gates the PICKER, never discovery. A business already in a category
+  /// that is switched off keeps its listing: dropping somebody's shop out of
+  /// search because an admin tidied the taxonomy would be a silent punishment
+  /// for a decision they did not make.
+  isLive Boolean @default(true)
 
   subcategories Subcategory[]
   businesses    BusinessProfile[]
@@ -1741,4 +1765,33 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+/// An invitation to become an administrator (§99).
+///
+/// Deliberately a separate table from BusinessInvitation rather than a nullable
+/// businessProfileId on it: the two confer different things, are sent by
+/// different people, and a single table would need a check constraint saying
+/// "business invitations have a business and admin ones do not", which is a
+/// comment pretending to be a schema.
+///
+/// The invitation is what confers the role. `POST /auth/otp/request` refuses a
+/// role of ADMIN from any client, so the only way to become one is for the
+/// primary administrator to have written a row here.
+model AdminInvitation {
+  id    String @id @default(uuid())
+  email String
+
+  invitedByUserId String
+  invitedBy       User   @relation("AdminInvitedBy", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+
+  status    InvitationStatus @default(PENDING)
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Looked up by address on every registration, so it is the index that matters.
+  @@index([email, status])
+  @@map("admin_invitations")
 }
