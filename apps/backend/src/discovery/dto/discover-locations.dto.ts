@@ -23,6 +23,19 @@ export enum DiscoverySort {
 export const MAX_RADIUS_KM = 200;
 
 export class DiscoverLocationsDto {
+  /**
+   * Narrow to one province (§104). Matched through the district, so a branch
+   * with no district set is simply not returned — it has not said where it is.
+   */
+  @IsOptional()
+  @IsUUID()
+  provinceId?: string;
+
+  /** Narrow to one district. The useful unit inside Kigali. */
+  @IsOptional()
+  @IsUUID()
+  districtId?: string;
+
   /** Case-insensitive substring over business name, location name, service name. */
   @IsOptional()
   @IsString()

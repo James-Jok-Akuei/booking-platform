@@ -132,10 +132,21 @@ export const commonStubs = {
  * ordering, so adding a model later cannot silently break cleanup. Run before
  * each suite so no suite's state depends on what ran before it.
  */
+/**
+ * Reference data, which is part of the country rather than of a test (§104).
+ *
+ * Seeded by a migration and never written by the application, so truncating it
+ * would only make every test assert against a Rwanda with no provinces in it —
+ * a state no deployment is ever in. Left standing, exactly as in production.
+ */
+const REFERENCE_TABLES = ['provinces', 'districts'];
+
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
   const tables = await prisma.$queryRaw<Array<{ tablename: string }>>`
     SELECT tablename FROM pg_tables
-    WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'
+    WHERE schemaname = 'public'
+      AND tablename <> '_prisma_migrations'
+      AND tablename <> ALL(${REFERENCE_TABLES}::text[])
   `;
   const list = tables.map((t) => `"public"."${t.tablename}"`).join(', ');
   if (list) {

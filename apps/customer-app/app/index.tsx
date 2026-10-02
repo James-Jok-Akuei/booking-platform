@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   discoverLocations,
   listCategories,
+  listProvinces,
   type DiscoveredLocation,
   type DiscoverySort,
 } from '../src/api/discovery';
@@ -42,11 +43,22 @@ export default function Discover() {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [sort, setSort] = useState<DiscoverySort>('rating');
   const [openNow, setOpenNow] = useState(false);
+  const [provinceId, setProvinceId] = useState<string | null>(null);
+  const [districtId, setDistrictId] = useState<string | null>(null);
 
   const categories = useQuery({ queryKey: ['categories'], queryFn: listCategories });
+  const provinces = useQuery({
+    queryKey: ['provinces'],
+    queryFn: listProvinces,
+    staleTime: Infinity,
+  });
+
+  // Districts only once a province is chosen. Thirty at once is a wall of
+  // names, and twenty-seven of them are hours from the customer (§104).
+  const chosenProvince = provinces.data?.find((p) => p.id === provinceId);
 
   const results = useQuery({
-    queryKey: ['discover', query, categoryId, sort, openNow],
+    queryKey: ['discover', query, categoryId, sort, openNow, provinceId, districtId],
     queryFn: () =>
       discoverLocations({
         limit: 50,
@@ -54,6 +66,7 @@ export default function Discover() {
         ...(query.trim() ? { q: query.trim() } : {}),
         ...(categoryId ? { categoryId } : {}),
         ...(openNow ? { openNow: true } : {}),
+        ...(districtId ? { districtId } : provinceId ? { provinceId } : {}),
       }),
   });
 
@@ -81,6 +94,50 @@ export default function Discover() {
             />
           ))}
         </ScrollView>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
+          <Chip
+            label="Anywhere"
+            active={provinceId === null}
+            onPress={() => {
+              setProvinceId(null);
+              setDistrictId(null);
+            }}
+          />
+          {provinces.data?.map((province) => (
+            <Chip
+              key={province.id}
+              label={province.name.replace(' Province', '')}
+              active={provinceId === province.id}
+              onPress={() => {
+                // Changing province clears the district: a district from the
+                // old one would filter to nothing and look like a bug.
+                setProvinceId((was) => (was === province.id ? null : province.id));
+                setDistrictId(null);
+              }}
+            />
+          ))}
+        </ScrollView>
+
+        {chosenProvince && chosenProvince.districts.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
+            <Chip
+              label={`All of ${chosenProvince.name.replace(' Province', '')}`}
+              active={districtId === null}
+              onPress={() => setDistrictId(null)}
+            />
+            {chosenProvince.districts.map((district) => (
+              <Chip
+                key={district.id}
+                label={district.name}
+                active={districtId === district.id}
+                onPress={() =>
+                  setDistrictId((was) => (was === district.id ? null : district.id))
+                }
+              />
+            ))}
+          </ScrollView>
+        )}
 
         {(categories.data?.length ?? 0) > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
@@ -181,7 +238,10 @@ function LocationCard({
       </View>
 
       <Text style={styles.cardSub} numberOfLines={1}>
-        {location.name} · {location.address}
+        {/* The district first: "Remera" places a shop for someone in Kigali in
+            a way a street name does not. */}
+        {location.district ? `${location.district.name} · ` : ''}
+        {location.address}
       </Text>
 
       <View style={styles.cardFoot}>

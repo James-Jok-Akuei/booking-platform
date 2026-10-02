@@ -19,10 +19,34 @@ export interface Category {
 
 export const listCategories = () => api<Category[]>('/categories', { anonymous: true });
 
+export interface District {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface Province {
+  id: string;
+  code: string;
+  name: string;
+  districts: District[];
+}
+
+/** Reference data: five provinces, thirty districts, seeded (§104). */
+export const listProvinces = () =>
+  api<Province[]>('/places/provinces', { anonymous: true });
+
 export interface DiscoveredLocation {
   id: string;
   name: string;
   address: string;
+  /** Null when the branch has not said where it is; then it is unfilterable. */
+  district: {
+    id: string;
+    name: string;
+    provinceId: string;
+    provinceName: string;
+  } | null;
   latitude: number | null;
   longitude: number | null;
   business: {
@@ -63,6 +87,9 @@ export const discoverLocations = (params: {
   openNow?: boolean;
   minRating?: number;
   maxPriceMinor?: number;
+  /** districtId is the narrower of the two and wins if both are sent. */
+  provinceId?: string;
+  districtId?: string;
   lat?: number;
   lng?: number;
   radiusKm?: number;
@@ -92,6 +119,12 @@ export interface ShopDetail {
   id: string;
   name: string;
   address: string;
+  district: {
+    id: string;
+    name: string;
+    provinceId: string;
+    provinceName: string;
+  } | null;
   latitude: number | null;
   longitude: number | null;
   phone: string | null;

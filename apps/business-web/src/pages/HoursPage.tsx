@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import {
   closeLocation,
+  listProvinces,
   listLocations,
   reopenLocation,
   setCapacity,
@@ -109,6 +110,11 @@ function LocationCard({
           {location.name}
           {!location.isActive && <span className="pill tkt-closed">Closed</span>}
         </h2>
+        <p className="muted small">
+          {location.district
+            ? `${location.district.name}, ${location.district.province.name}`
+            : 'No district set — customers cannot find this branch by place'}
+        </p>
         <p className="muted small">
           {location.address} · cheapest service {money.format(location.fromPriceMinor)}
           {location.ratingCount > 0 &&
@@ -225,7 +231,15 @@ function BranchActions({ location }: { location: Location }) {
   const [name, setName] = useState(location.name);
   const [address, setAddress] = useState(location.address);
   const [phone, setPhone] = useState(location.phone ?? '');
+  const [districtId, setDistrictId] = useState(location.district?.id ?? '');
   const [problem, setProblem] = useState<string | null>(null);
+
+  // Reference data, so it is fetched once and kept.
+  const provinces = useQuery({
+    queryKey: ['provinces'],
+    queryFn: listProvinces,
+    staleTime: Infinity,
+  });
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['locations'] });
   const fail = (error: unknown) =>
@@ -237,6 +251,7 @@ function BranchActions({ location }: { location: Location }) {
         name: name.trim(),
         address: address.trim(),
         phone: phone.trim() === '' ? null : phone.trim(),
+        ...(districtId ? { districtId } : {}),
       }),
     onSuccess: () => {
       setEditing(false);
@@ -284,6 +299,27 @@ function BranchActions({ location }: { location: Location }) {
         <label>
           Phone for this branch <span className="muted small">(optional)</span>
           <input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
+        </label>
+        <label>
+          District
+          <select value={districtId} onChange={(e) => setDistrictId(e.target.value)}>
+            <option value="">Choose a district</option>
+            {/* Grouped by province, because thirty districts in one flat list
+                is not how anyone thinks about where they are (§104). */}
+            {provinces.data?.map((province) => (
+              <optgroup key={province.id} label={province.name}>
+                {province.districts.map((district) => (
+                  <option key={district.id} value={district.id}>
+                    {district.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <span className="muted small">
+            Customers filter by this. Without it, this branch does not appear when
+            someone searches their area.
+          </span>
         </label>
         {problem && (
           <p className="error small" role="alert">

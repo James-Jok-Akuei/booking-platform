@@ -98,6 +98,15 @@ export class DiscoveryService {
           ratingCount: true,
           fromPriceMinor: true,
           businessId: true,
+          // The place, with its province (§104). Shown on the card, because
+          // "Remera" means more to someone in Kigali than a street name.
+          district: {
+            select: {
+              id: true,
+              name: true,
+              province: { select: { id: true, name: true } },
+            },
+          },
           business: {
             select: {
               id: true,
@@ -149,6 +158,16 @@ export class DiscoveryService {
             address: location.address,
             latitude: location.latitude,
             longitude: location.longitude,
+            // Flattened: a caller wants "Remera, City of Kigali", not a
+            // two-level object to walk.
+            district: location.district
+              ? {
+                  id: location.district.id,
+                  name: location.district.name,
+                  provinceId: location.district.province.id,
+                  provinceName: location.district.province.name,
+                }
+              : null,
             business: location.business,
             ratingAvg: location.ratingAvg ? Number(location.ratingAvg) : null,
             ratingCount: location.ratingCount,
@@ -186,6 +205,15 @@ export class DiscoveryService {
         id: true,
         name: true,
         address: true,
+        // The place, as the list carries it (§104). A shop page that omits it
+        // while the card showed it reads as the data having been lost.
+        district: {
+          select: {
+            id: true,
+            name: true,
+            province: { select: { id: true, name: true } },
+          },
+        },
         latitude: true,
         longitude: true,
         phone: true,
@@ -307,6 +335,14 @@ export class DiscoveryService {
             }
           : {}),
       })),
+      district: location.district
+        ? {
+            id: location.district.id,
+            name: location.district.name,
+            provinceId: location.district.province.id,
+            provinceName: location.district.province.name,
+          }
+        : null,
       hours: location.hours,
       upcomingExceptions: exceptions,
       gallery: location.media,
@@ -477,6 +513,13 @@ export class DiscoveryService {
         ...(query.subcategoryId ? { subcategoryId: query.subcategoryId } : {}),
       },
       ...(ids ? { id: { in: ids } } : {}),
+      // Place (§104). districtId is the narrower of the two, so it wins when
+      // both are sent rather than being ANDed into a contradiction.
+      ...(query.districtId
+        ? { districtId: query.districtId }
+        : query.provinceId
+          ? { district: { provinceId: query.provinceId } }
+          : {}),
       ...(query.minRating !== undefined ? { ratingAvg: { gte: query.minRating } } : {}),
       // Filters on the SAME column `sort=price` orders by, so the two can never
       // disagree about what a location's cheapest price is. A location with no

@@ -51,5 +51,18 @@ export default async function globalSetup() {
     env: { ...process.env, DATABASE_URL: testUrl },
     stdio: 'pipe',
   });
+  // Reference data (§104), separately from the migrations.
+  //
+  // `migrate deploy` applies each migration ONCE. A test database created
+  // before the provinces migration existed — or one whose reference rows a
+  // reset removed — would never get them back, and every place test would
+  // assert against a Rwanda with no provinces in it. This file is idempotent,
+  // so running it on every start costs nothing and cannot drift.
+  execSync('npx prisma db execute --file prisma/reference-data.sql', {
+    cwd: process.cwd(),
+    env: { ...process.env, DATABASE_URL: testUrl },
+    stdio: 'pipe',
+  });
+
   console.log(`  [test] migrations applied to ${TEST_DATABASE_NAME}\n`);
 }

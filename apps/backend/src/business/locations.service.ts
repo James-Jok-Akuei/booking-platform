@@ -56,6 +56,9 @@ export class LocationsService {
       include: {
         hours: { orderBy: { dayOfWeek: 'asc' } },
         _count: { select: { media: true } },
+        // So the branch screen can show where it is, and say when it has not
+        // been set (§104).
+        district: { include: { province: { select: { id: true, name: true } } } },
       },
     });
   }

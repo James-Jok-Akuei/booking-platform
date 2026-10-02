@@ -186,6 +186,8 @@ export interface Location {
   fromPriceMinor: number | null;
   /** False means the branch is closed: no bookings, invisible to customers (§89). */
   isActive: boolean;
+  /** Null until someone says where it is. Not findable by place until then. */
+  district: { id: string; name: string; province: { id: string; name: string } } | null;
   hours: Hours[];
 }
 
@@ -565,6 +567,7 @@ export const updateLocation = (
     phone?: string | null;
     latitude?: number;
     longitude?: number;
+    districtId?: string;
   },
 ) => api<Location>(`/business/locations/${id}`, { method: 'PATCH', body });
 
@@ -878,3 +881,23 @@ export const getAppointment = (id: string) =>
     cancellationReason: string | null;
     createdAt: string;
   }>(`/appointments/${id}`);
+
+// ---------------------------------------------------------------------------
+// Where a branch is (§104)
+// ---------------------------------------------------------------------------
+
+export interface District {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface Province {
+  id: string;
+  code: string;
+  name: string;
+  districts: District[];
+}
+
+export const listProvinces = () =>
+  api<Province[]>('/places/provinces', { anonymous: true });

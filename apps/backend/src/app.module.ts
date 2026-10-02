@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { StorageModule } from './storage/storage.module';
 import { CategoriesModule } from './categories/categories.module';
+import { PlacesModule } from './places/places.module';
 import { BusinessModule } from './business/business.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { SettingsModule } from './settings/settings.module';
@@ -43,6 +44,7 @@ import { DiscoveryModule } from './discovery/discovery.module';
     AuthModule,
     UsersModule,
     CategoriesModule,
+    PlacesModule,
     BusinessModule,
     AvailabilityModule,
     SettingsModule,

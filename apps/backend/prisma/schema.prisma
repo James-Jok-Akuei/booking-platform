@@ -495,6 +495,19 @@ model Location {
   /// sort=price.
   fromPriceMinor Int?
 
+  /// Where this branch is, administratively (§104).
+  ///
+  /// On the LOCATION, not the business: a business with branches in Kigali and
+  /// Musanze is in two provinces, and that is a fact about its branches. The
+  /// province is reached through the district rather than stored twice — a
+  /// district cannot move province, and two columns that can disagree will.
+  ///
+  /// Nullable because every existing branch predates this and a required
+  /// column would have made them unsaveable. A branch without one is simply
+  /// not findable by place, which is a reason to set it rather than a failure.
+  districtId String?
+  district   District? @relation(fields: [districtId], references: [id], onDelete: Restrict)
+
   /// Soft-delete flag, matching Service.isActive (§89).
   ///
   /// A branch is never hard-deleted. It used to be, and the comment on that
@@ -1802,4 +1815,40 @@ model AdminInvitation {
   /// Looked up by address on every registration, so it is the index that matters.
   @@index([email, status])
   @@map("admin_invitations")
+}
+
+/// Rwanda's five provinces (§104).
+///
+/// Reference data, seeded in a migration and never edited through the API.
+/// `code` exists so a seed, a test or a support query can name one without
+/// carrying a UUID around.
+model Province {
+  id   String @id @default(uuid())
+  code String @unique
+  name String @unique
+
+  districts District[]
+
+  @@map("provinces")
+}
+
+/// The thirty districts, each inside exactly one province.
+///
+/// This is the level that actually discriminates in the launch market: every
+/// business on the platform today is in the City of Kigali, so a province
+/// filter there offers one option and answers nothing. Districts split the
+/// same businesses across Gasabo, Kicukiro and Nyarugenge.
+model District {
+  id   String @id @default(uuid())
+  code String @unique
+  name String
+
+  provinceId String
+  province   Province @relation(fields: [provinceId], references: [id], onDelete: Restrict)
+
+  locations Location[]
+
+  @@unique([provinceId, name])
+  @@index([provinceId])
+  @@map("districts")
 }

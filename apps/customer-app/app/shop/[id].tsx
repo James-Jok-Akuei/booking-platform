@@ -69,6 +69,11 @@ export default function Shop() {
           <Text style={styles.sub}>
             {s.name} · {s.address}
           </Text>
+          {s.district && (
+            <Text style={styles.sub}>
+              {s.district.name}, {s.district.provinceName}
+            </Text>
+          )}
 
           {s.rating.count > 0 ? (
             <Text style={styles.rating}>

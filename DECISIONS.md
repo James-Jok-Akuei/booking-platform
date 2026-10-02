@@ -9162,3 +9162,70 @@ A note on method: this was only visible because the verification sent the
 *literal* payload the client sends, rather than a tidied-up one with a `Z` on
 the end. A convenient test string would have hidden it completely.
 
+## 104. Provinces and districts
+
+Asked for: businesses choose a province, customers filter by one, and a business
+can be in two.
+
+### 104.1 Districts, not provinces alone
+
+Every branch on the platform is in the City of Kigali. A province filter there
+offers **one option** and answers nothing.
+
+So the model is province → district, with the district on the branch. Province
+filtering works exactly as asked (it is reached through the district), and the
+filter is useful in the launch market from day one: the same nine branches split
+Gasabo 4, Kicukiro 3, Nyarugenge 2.
+
+Rwanda's five provinces and thirty districts are seeded, checked against
+Wikipedia rather than written from memory.
+
+### 104.2 Place belongs to the branch
+
+Which is what makes "a business in two provinces" fall out rather than needing
+anything: a business already has many branches, and **Kigali Barbers appears in
+both Gasabo and Nyarugenge** in the demo data.
+
+The province is reached *through* the district rather than stored beside it. A
+district cannot move province, and two columns that can disagree eventually do.
+
+`districtId` is nullable: every existing branch predates this, and a required
+column would have made them unsaveable. A branch without one is simply not
+findable by place — which the branch screen says, rather than the save failing.
+
+### 104.3 Two filters, and the narrower one wins
+
+Sending both a province and a district applies the **district**. ANDing them
+would produce a contradiction nobody can read: a Gasabo branch asked for by
+Kigali province and Kicukiro district would silently vanish. A test pins it.
+
+In the customer app, districts appear only once a province is chosen — thirty
+at once is a wall of names, twenty-seven of them hours away.
+
+### 104.4 Reference data is not test data
+
+`resetDatabase` truncates every table, which removed the provinces, and
+`migrate deploy` applies a migration **once** — so a test database that had
+been reset never got them back. Every place test asserted against a Rwanda with
+no provinces in it.
+
+Two changes. `resetDatabase` leaves `provinces` and `districts` standing: they
+are part of the country, no application code writes them, and truncating them
+only creates a state no deployment is ever in. And `prisma/reference-data.sql`
+is now the **living** copy, idempotent, run by the test harness after migrating
+— the migration keeps a frozen copy because migrations are history and must not
+change.
+
+### 104.5 Verified
+
+`/places/provinces` returns 5 provinces and 30 districts, correctly grouped.
+Discovery carries each result's district and province. Filtering by district
+gives Gasabo 4, Kicukiro 1, Nyarugenge 2; by province, Kigali 7 and every other
+province 0. The business branch screen shows the district or says it is missing,
+and offers the thirty grouped by province.
+
+Seven tests, including one business in two provinces and a branch with no
+district staying out of every place filter.
+
+**1119 passing across 35 suites**, under the host zone and under `TZ=UTC`.
+

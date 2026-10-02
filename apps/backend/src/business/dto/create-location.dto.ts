@@ -3,6 +3,7 @@ import {
   IsLongitude,
   IsOptional,
   IsString,
+  IsUUID,
   Length,
   Max,
   Min,
@@ -11,6 +12,18 @@ import { Type } from 'class-transformer';
 import { IsNotNullIsland } from '../../common/validators/not-null-island.validator';
 
 export class CreateLocationDto {
+  /**
+   * Which district this branch is in (§104).
+   *
+   * Optional, because every branch created before this exists without one and
+   * `UpdateLocationDto` is a PartialType of this class. A branch with no
+   * district is not findable by place, which the screen says rather than
+   * refusing the save.
+   */
+  @IsOptional()
+  @IsUUID()
+  districtId?: string;
+
   @IsString()
   @Length(2, 120)
   name!: string; // e.g. "Juba Town Branch"
