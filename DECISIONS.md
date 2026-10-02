@@ -8955,7 +8955,10 @@ row looks open and is not.
 Verified: hiding Beauty took the picker from 8 categories to 7, while Barbershop
 still reported `isLive: true` and `effectivelyLive: false`.
 
-### 100.2 Nothing in use can be deleted
+### 100.2 ~~Nothing in use can be deleted~~ — superseded by §101
+
+Kept for the reasoning about the foreign keys, which still holds. The delete it
+guarded no longer exists.
 
 `BusinessProfile.categoryId` is `SetNull` and `Subcategory` cascades from its
 parent — so deleting a category in use would silently strip the category from
@@ -8999,3 +9002,46 @@ eight original categories and all eight categorised businesses untouched.
 
 **1108 passing across 33 suites.**
 
+## 101. Nothing in the taxonomy is deleted
+
+Corrected on sight: *"why do you use 'delete', we are just retiring them not
+delete at all meaning we can take them back."*
+
+Right, and it is the **second time** — §75 was the same correction about the
+word "remove" on a service. The principle was already recorded there and I did
+not carry it across to a screen I wrote fifteen minutes later. Writing it down
+is evidently not the same as applying it.
+
+### 101.1 Two controls already covered every case
+
+- A category that should no longer be offered → **switch it off**. Reversible,
+  and the businesses in it keep their listing.
+- A category created with a typo → **rename it**.
+
+There is nothing a delete does that those two do not do better, and one thing it
+does that neither does: make the decision permanent.
+
+§100.2 built a careful guard — refuse while anything depends on it, name the
+count, point at the switch — which was a correct answer to the wrong question.
+Not offering the operation is simpler than guarding it, and cannot be got wrong
+later by someone relaxing the guard.
+
+### 101.2 Removed from both sides
+
+`DELETE /admin/categories/:id` and `DELETE /admin/subcategories/:id` are gone,
+along with their client calls and buttons. The schema is untouched: rows were
+never being deleted in practice, so nothing needs migrating.
+
+The page now says so where it is used: *"Nothing here is ever deleted —
+switching one off retires it, and switching it back on brings it straight
+back."*
+
+### 101.3 The general rule, stated once
+
+Across §73 (services), §75 (wording), §89 (branches) and now the taxonomy, this
+platform retires and never erases. The reason is the same every time: retiring
+is reversible and erasing is not, and the records left behind — a booking, a
+listing, a ledger entry — are usually what somebody will need to explain a
+decision later.
+
+**Anything offering to delete should be read as a bug until proven otherwise.**

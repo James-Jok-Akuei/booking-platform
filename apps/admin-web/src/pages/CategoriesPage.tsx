@@ -5,8 +5,6 @@ import { Toggle } from '../components/Toggle';
 import {
   createCategory,
   createSubcategory,
-  deleteCategory,
-  deleteSubcategory,
   listAdminCategories,
   setCategoryLive,
   setSubcategoryLive,
@@ -21,8 +19,10 @@ import {
  *
  * Switching something off gates the **picker** only. A business already in it
  * keeps its listing and stays in search — it did not make this decision (§98).
- * Deleting is refused the moment anything is using it, because the foreign key
- * is SetNull and a delete would strip the category from every business in it.
+ *
+ * **Nothing here is deleted** (§101). Off is a retirement and can be undone; a
+ * mistake in a name is fixed by renaming. Between them there is nothing a
+ * delete would add, and plenty it could take away.
  *
  * Every switch confirms first. They take effect immediately and change what
  * thousands of future sign-ups can choose, which is not something to do by
@@ -46,8 +46,9 @@ export function CategoriesPage() {
         <div>
           <h1>Categories</h1>
           <p className="muted">
-            What a business can pick when it signs up. Switching one off never
-            removes anyone already in it.
+            What a business can pick when it signs up. Nothing here is ever
+            deleted — switching one off retires it, and switching it back on
+            brings it straight back.
           </p>
         </div>
         <div className="filters">
@@ -169,11 +170,6 @@ function CategoryCard({
     },
     onError: fail,
   });
-  const remove = useMutation({
-    mutationFn: () => deleteCategory(category.id),
-    onSuccess: done,
-    onError: fail,
-  });
   const addType = useMutation({
     mutationFn: () => createSubcategory(category.id, newType.trim()),
     onSuccess: () => {
@@ -242,29 +238,6 @@ function CategoryCard({
               Rename
             </button>
           )}
-          {/* Offered at all only when nothing depends on it. The server refuses
-              otherwise, and a button that always 400s teaches people to ignore
-              the message. */}
-          {category.businessCount === 0 &&
-            category.subcategories.every((s) => s.businessCount === 0) && (
-              <button
-                type="button"
-                className="link danger"
-                disabled={remove.isPending}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      `Delete "${category.name}" and its ${category.subcategories.length} type(s)?\n\n` +
-                        'Nothing is using it, so nothing is lost. This cannot be undone.',
-                    )
-                  ) {
-                    remove.mutate();
-                  }
-                }}
-              >
-                Delete
-              </button>
-            )}
         </div>
       </div>
 
@@ -338,11 +311,6 @@ function SubcategoryRow({
     },
     onError,
   });
-  const remove = useMutation({
-    mutationFn: () => deleteSubcategory(subcategory.id),
-    onSuccess: onChanged,
-    onError,
-  });
 
   const onToggle = (next: boolean) => {
     const n = subcategory.businessCount;
@@ -403,25 +371,6 @@ function SubcategoryRow({
         {!editing && (
           <button type="button" className="link" onClick={() => setEditing(true)}>
             Rename
-          </button>
-        )}
-        {subcategory.businessCount === 0 && (
-          <button
-            type="button"
-            className="link danger"
-            disabled={remove.isPending}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `Delete the type "${subcategory.name}"?\n\n` +
-                    'Nothing is using it. This cannot be undone.',
-                )
-              ) {
-                remove.mutate();
-              }
-            }}
-          >
-            Delete
           </button>
         )}
       </div>

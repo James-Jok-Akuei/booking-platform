@@ -1,9 +1,7 @@
 import {
-  BadRequestException,
   Body,
   ConflictException,
   Controller,
-  Delete,
   Get,
   NotFoundException,
   Param,
@@ -28,16 +26,18 @@ import {
 /**
  * The taxonomy: what exists, and which of it a business may choose (§98, §100).
  *
- * ## Nothing in use is ever deleted
+ * ## Nothing here is ever deleted — §101
  *
- * `BusinessProfile.categoryId` is `SetNull` and `Subcategory` cascades from its
- * parent, so deleting a category in use would silently strip the category from
- * every business in it — and take their subcategory with it. That is the §89
- * shape of bug exactly.
+ * There is no delete, at either level. A category is **retired** by switching
+ * it off, which is reversible, and a mistake in its name is fixed by renaming
+ * it. Between them there is nothing a delete would do that these two do not do
+ * better.
  *
- * So a delete is refused the moment anything depends on it, and the refusal
- * names the toggle instead. Deletion exists for the row somebody created with a
- * typo thirty seconds ago, not for retiring part of the taxonomy.
+ * Removing it also removes a hazard: `BusinessProfile.categoryId` is `SetNull`
+ * and `Subcategory` cascades from its parent, so deleting a category in use
+ * would silently strip the category from every business in it and take their
+ * type with it. Guarding that was possible; not offering it is simpler and
+ * cannot be got wrong.
  */
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -145,24 +145,6 @@ export class AdminCategoriesController {
     };
   }
 
-  @Delete('categories/:id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
-    const category = await this.requireCategory(id);
-
-    const inUse =
-      category._count.businesses +
-      category.subcategories.reduce((sum, s) => sum + s._count.businesses, 0);
-
-    if (inUse > 0) {
-      throw new BadRequestException(
-        `${inUse} business${inUse === 1 ? ' is' : 'es are'} using this category or one of ` +
-          'its types. Switch it off instead — deleting would strip the category from them.',
-      );
-    }
-
-    await this.prisma.category.delete({ where: { id } });
-    return { message: 'Category deleted.' };
-  }
 
   // ---------- Subcategories ----------
 
@@ -215,21 +197,6 @@ export class AdminCategoriesController {
     };
   }
 
-  @Delete('subcategories/:id')
-  async removeSubcategory(@Param('id', ParseUUIDPipe) id: string) {
-    const subcategory = await this.requireSubcategory(id);
-
-    if (subcategory._count.businesses > 0) {
-      const n = subcategory._count.businesses;
-      throw new BadRequestException(
-        `${n} business${n === 1 ? ' is' : 'es are'} using this type. Switch it off ` +
-          'instead — deleting would strip it from them.',
-      );
-    }
-
-    await this.prisma.subcategory.delete({ where: { id } });
-    return { message: 'Type deleted.' };
-  }
 
   // ---------- Shared ----------
 

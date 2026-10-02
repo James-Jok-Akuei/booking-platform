@@ -822,10 +822,6 @@ export const updateCategory = (
   body: { name?: string; icon?: string; description?: string },
 ) => api<AdminCategory>(`/admin/categories/${id}`, { method: 'PATCH', body });
 
-/** Refused while anything is using it; the toggle is the way to retire one. */
-export const deleteCategory = (id: string) =>
-  api<{ message: string }>(`/admin/categories/${id}`, { method: 'DELETE' });
-
 export const createSubcategory = (categoryId: string, name: string) =>
   api<AdminSubcategory>(`/admin/categories/${categoryId}/subcategories`, {
     method: 'POST',
@@ -841,8 +837,6 @@ export const setSubcategoryLive = (id: string, isLive: boolean) =>
     body: { isLive },
   });
 
-export const deleteSubcategory = (id: string) =>
-  api<{ message: string }>(`/admin/subcategories/${id}`, { method: 'DELETE' });
 
 // ---------------------------------------------------------------------------
 // Administrators inviting administrators (§99)
