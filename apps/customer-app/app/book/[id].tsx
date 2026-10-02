@@ -79,12 +79,22 @@ export default function Book() {
       ),
   });
 
-  if (shop.isLoading) return <ActivityIndicator style={styles.spinner} color={theme.accent} />;
+  if (shop.isLoading) {
+    return (
+      <>
+        <Stack.Screen options={{ title: 'Book' }} />
+        <ActivityIndicator style={styles.spinner} color={theme.accent} />
+      </>
+    );
+  }
   if (!service) {
     return (
-      <View style={styles.screen}>
-        <Text style={styles.empty}>That service is no longer offered here.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: 'Book' }} />
+        <View style={styles.screen}>
+          <Text style={styles.empty}>That service is no longer offered here.</Text>
+        </View>
+      </>
     );
   }
 

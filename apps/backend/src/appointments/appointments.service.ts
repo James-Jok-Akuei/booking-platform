@@ -138,8 +138,44 @@ const APPOINTMENT_SELECT = {
  * and showing it takes naming this constant — which only the customer's own
  * detail read does.
  */
+/**
+ * The customer's own review of this appointment, when they have left one.
+ *
+ * On the CUSTOMER projections only, and that is the point. The screen has to
+ * tell "you can review this" from "you already did", and nothing else could
+ * answer it: the public listing carries no `customerId`, so an app cannot find
+ * its own row in it (§111).
+ *
+ * Never joined onto the shared projection, because a business reading the same
+ * appointment would then see a review an admin had HIDDEN — §93's whole point is
+ * that hiding removes it from every listing, and a join here would quietly put
+ * it back. The author is the one person who still sees their own: hiding it from
+ * them would leave the app offering "write a review" on an appointment the
+ * server answers with 409 "already reviewed", which is worse than saying
+ * nothing. No `hiddenAt` is exposed either way — whether an author is told their
+ * review was hidden is a moderation question this does not settle.
+ */
+const OWN_REVIEW_SELECT = {
+  review: {
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      editedAt: true,
+    },
+  },
+} as const;
+
+/** The customer's own rows in a LISTING: no arrival code, which is detail-only. */
+const CUSTOMER_LIST_SELECT = {
+  ...APPOINTMENT_SELECT,
+  ...OWN_REVIEW_SELECT,
+} as const;
+
 const CUSTOMER_APPOINTMENT_SELECT = {
   ...APPOINTMENT_SELECT,
+  ...OWN_REVIEW_SELECT,
   verificationCode: true,
 } as const;
 
@@ -1668,7 +1704,10 @@ export class AppointmentsService {
         },
         take: limit,
         skip: offset,
-        select: APPOINTMENT_SELECT,
+        // The customer's own rows carry their own review, so the list can say
+        // "leave a review" or "you rated this" without a second request per row.
+        select:
+          role === UserRole.CUSTOMER ? CUSTOMER_LIST_SELECT : APPOINTMENT_SELECT,
       }),
     ]);
 

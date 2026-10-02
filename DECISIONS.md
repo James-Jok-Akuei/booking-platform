@@ -9731,3 +9731,119 @@ the phone, and §102.2 is still true: I can read the screen but not tap it. What
 was verified instead is the data underneath — the list endpoint returning the
 right rows in each order, confirmed against the running backend. The rendering
 of a populated list is the part a person still has to look at.
+
+## 111. A customer can finally leave a review (2026-10-02)
+
+The whole reviews feature was built on something nobody could produce. The
+business app can **reply** to a review (§92), the admin console can **hide and
+unhide** one (§93), and discovery's default sort is **"Best rated"** — all of it
+running on five seeded rows, because no client called
+`POST /appointments/:id/reviews`.
+
+Three of seven places had any rating at all. The moderation queue could never
+fill, the replies had nothing to reply to, and the default sort ranked on data
+that could not grow.
+
+### 111.1 The app could not tell "you can review this" from "you already did"
+
+This had to be solved before any screen could be written, and nothing existing
+answered it. The public listing deliberately carries **no `customerId`** (§92.2 —
+the byline is a display name and nothing else), so an app cannot find its own row
+in it. The only way to discover an existing review was to post one and read the
+**409**.
+
+So the customer's own appointment reads now carry their own review. On the
+CUSTOMER projections only, and that restriction is the whole design:
+
+**A business must not get it.** Joining the review onto the shared projection
+would have handed a business a review an admin had **hidden** — and §93 is
+entirely about hiding removing it from every listing. The test that matters most
+in this section asserts the field is *absent*, not null, from a business's read.
+
+**The author still sees their own, hidden or not.** Hiding it from them would
+leave the app offering "write a review" on an appointment the server answers with
+409 "already reviewed" — worse than saying nothing. No `hiddenAt` is exposed
+either way: whether an author should be *told* their review was hidden is a
+moderation question this does not settle, and inventing an answer in passing
+would be the wrong place to decide it.
+
+It is on the **list** as well as the detail, so the Past tab can say "you rated
+this" without one request per row — with fifty rows that is fifty requests.
+
+### 111.2 Driven all the way through, not stubbed
+
+The reason this took real setup: only a **COMPLETED** appointment may be
+reviewed, and nothing in the system had ever reached that state through the real
+endpoints. So the probe ran the whole lifecycle — customer books, pays through
+the MTN sandbox, the shop verifies the arrival code, the shop completes the
+visit, the customer reviews it:
+
+```
+business verifies arrival -> 200 IN_PROGRESS
+business completes        -> 200 COMPLETED
+leave a review            -> 201
+a second review           -> 409 This appointment has already been reviewed.
+edit it                   -> 200 rating=5, editedAt set
+```
+
+And the part worth checking is not that a row appeared but that **the aggregate
+moved**: the location's public listing went from 1 review to 2, and its rating
+from 1.0 to 3.0. The byline read "James A." — the name supplied with the review,
+which §31 stores on the user and not on the review.
+
+Two route prefixes were wrong in the first attempt, both found by driving it:
+verify and complete live under `business/appointments`, not `appointments`. And
+the first business account tried got a **404, not a 403**, for an appointment
+belonging to another business — the cross-tenant rule working, confirmed by
+accident.
+
+### 111.3 The screen says what the rules are instead of discovering them
+
+Both server refusals are repeated in the client, not to enforce them but to
+explain them. A visit that is not COMPLETED gets a sentence rather than a form.
+A review past its seven-day window shows what was written with the controls gone
+and a line saying why, rather than an edit box that returns a 400 — the same
+choice §92.3 made for the business's reply.
+
+The star picker names each score, so a tap is a sentence rather than a number.
+And the display-name field says the thing that is surprising: filling it in
+rewrites the byline on **every review this person has ever left**, because the
+name lives on the account. That is intended behaviour (§31) and invisible
+otherwise.
+
+### 111.4 A header that read `review/[id]`
+
+Found in the simulator, and only there. Every early return in an expo-router
+screen needs its own `<Stack.Screen>`: until one renders, the header is titled
+with the route's **file name**. So the loading and not-found states of the review
+screen showed **`review/[id]`** across the top.
+
+Not new, and not confined to the new screen — `booking/[id]`, `book/[id]` and
+`shop/[id]` all had it, on both their loading and their failure states. Six
+branches fixed. A typecheck cannot see this and neither can a test that renders
+the happy path; it took looking at the screen.
+
+The not-found copy was weak too, and the same screenshot showed why: *"That
+booking could not be found"* is what a signed-out customer sees, and it reads as
+though the booking is gone. It now says what to do about it.
+
+### 111.5 What was seen and what was not
+
+Seen in the simulator: the route resolves, the header title is right on every
+state, the not-found copy renders. **The form itself was not seen populated** —
+reaching it needs a signed-in customer with a completed visit, and signing in
+needs an emailed code typed into the phone. §102.2 still holds: I can read the
+screen, not tap it.
+
+What stands in for it is that every endpoint behind the form was driven against
+the live backend, including both refusals and the aggregate moving.
+
+### 111.6 One thing the types cannot say
+
+`findOne` and `findAll` pick their projection at runtime, so their inferred
+return type is the **union** of the two and names `review` on neither branch.
+The runtime is right and the type cannot express it, which is why the new tests
+cast through `unknown`.
+
+Worth noting rather than fixing today: it is the same shape of problem as §109.6
+— the server knows things about its responses that nothing downstream can read.

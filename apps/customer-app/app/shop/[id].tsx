@@ -34,14 +34,22 @@ export default function Shop() {
   });
 
   if (shop.isLoading) {
-    return <ActivityIndicator style={styles.spinner} color={theme.accent} />;
+    return (
+      <>
+        <Stack.Screen options={{ title: 'Place' }} />
+        <ActivityIndicator style={styles.spinner} color={theme.accent} />
+      </>
+    );
   }
 
   if (shop.isError || !shop.data) {
     return (
-      <View style={styles.screen}>
-        <Text style={styles.empty}>This place is not available right now.</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: 'Place' }} />
+        <View style={styles.screen}>
+          <Text style={styles.empty}>This place is not available right now.</Text>
+        </View>
+      </>
     );
   }
 

@@ -21,6 +21,21 @@ export interface Appointment {
   verificationCode?: string | null;
   service: { id: string; name: string; durationMinutes: number };
   location: { id: string; name: string; address: string; businessId: string };
+  /**
+   * The customer's own review, when they have left one.
+   *
+   * Only ever present on the customer's own reads (§111). Its absence is what
+   * the screen uses to offer "write a review"; without it the app could not
+   * tell an unreviewed visit from a reviewed one, because the public listing
+   * carries no `customerId` to find yourself in.
+   */
+  review?: {
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    editedAt: string | null;
+  } | null;
 }
 
 /**

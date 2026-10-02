@@ -115,13 +115,26 @@ export default function Booking() {
   });
 
   if (appointment.isLoading) {
-    return <ActivityIndicator style={styles.spinner} color={theme.accent} />;
+    return (
+      <>
+        <Stack.Screen options={{ title: 'Your booking' }} />
+        <ActivityIndicator style={styles.spinner} color={theme.accent} />
+      </>
+    );
   }
   if (!appointment.data) {
     return (
-      <View style={styles.screen}>
-        <Text style={styles.empty}>That booking could not be found.</Text>
-      </View>
+      <>
+        {/* Same reason as the review screen: without this the header reads
+            "booking/[id]". */}
+        <Stack.Screen options={{ title: 'Your booking' }} />
+        <View style={styles.screen}>
+          <Text style={styles.empty}>
+            That booking could not be found. If you have signed out, sign in
+            again and open it from My bookings.
+          </Text>
+        </View>
+      </>
     );
   }
 
@@ -239,6 +252,37 @@ export default function Booking() {
           </View>
         )}
 
+        {/* The visit is over, so the useful thing on this screen is no longer the
+            arrival code but what the customer thought (§111). */}
+        {a.status === 'COMPLETED' && (
+          <View style={styles.block}>
+            <Text style={styles.heading}>
+              {a.review ? 'Your review' : 'How was it?'}
+            </Text>
+            {a.review ? (
+              <>
+                <Text style={styles.stars}>
+                  {'★'.repeat(a.review.rating)}
+                  <Text style={styles.starsOff}>{'★'.repeat(5 - a.review.rating)}</Text>
+                </Text>
+                {a.review.comment && <Text style={styles.muted}>{a.review.comment}</Text>}
+              </>
+            ) : (
+              <Text style={styles.muted}>
+                A few words help the next person decide. It takes a moment.
+              </Text>
+            )}
+            <Pressable
+              style={styles.secondary}
+              onPress={() => router.push(`/review/${id}`)}
+            >
+              <Text style={styles.secondaryText}>
+                {a.review ? 'See or change it' : 'Write a review'}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
         {(a.status === 'PENDING_PAYMENT' || a.status === 'BOOKED') && (
           <Pressable
             style={styles.cancel}
@@ -314,6 +358,17 @@ const styles = StyleSheet.create({
   },
   codeLabel: { color: theme.muted, fontSize: 13 },
   code: { fontSize: 34, fontWeight: '700', letterSpacing: 7, color: theme.ink },
+  stars: { fontSize: 22, color: '#f0a202', letterSpacing: 2 },
+  starsOff: { color: theme.line },
+  secondary: {
+    borderWidth: 1,
+    borderColor: theme.accent,
+    borderRadius: theme.radius,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  secondaryText: { color: theme.accent, fontWeight: '700', fontSize: 15 },
   cancel: { padding: 14, alignItems: 'center' },
   failedBox: { gap: 3, marginTop: 4 },
   failed: { color: theme.danger, fontSize: 13, lineHeight: 19 },

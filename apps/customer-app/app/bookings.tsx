@@ -180,6 +180,21 @@ export default function Bookings() {
                 </Text>
 
                 {status.nudge && <Text style={styles.nudge}>{status.nudge}</Text>}
+
+                {/* The Past tab is the only place a finished visit is ever seen
+                    again, so it is the only place a review can be asked for. */}
+                {item.status === 'COMPLETED' &&
+                  (item.review ? (
+                    <Text style={styles.rated}>
+                      {'★'.repeat(item.review.rating)}
+                      <Text style={styles.ratedOff}>
+                        {'★'.repeat(5 - item.review.rating)}
+                      </Text>
+                      <Text style={styles.place}>  you rated this</Text>
+                    </Text>
+                  ) : (
+                    <Text style={styles.nudge}>Tell others how it went</Text>
+                  ))}
               </Pressable>
             );
           }}
@@ -225,6 +240,8 @@ const styles = StyleSheet.create({
   place: { color: theme.muted, fontSize: 13 },
   money: { color: theme.muted, fontSize: 13, marginTop: 2 },
   nudge: { color: theme.warn, fontSize: 13, fontWeight: '500', marginTop: 3 },
+  rated: { fontSize: 14, color: '#f0a202', marginTop: 3, letterSpacing: 1 },
+  ratedOff: { color: theme.line },
   centre: { alignItems: 'center', padding: 30, gap: 7 },
   emptyTitle: { fontSize: 17, fontWeight: '700', color: theme.ink },
   empty: { color: theme.muted, textAlign: 'center', lineHeight: 20 },
