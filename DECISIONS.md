@@ -9045,3 +9045,76 @@ listing, a ledger entry — are usually what somebody will need to explain a
 decision later.
 
 **Anything offering to delete should be read as a bug until proven otherwise.**
+
+## 102. The customer app: Expo, and the first screen
+
+The platform could not take a booking. Eleven of twelve wiring items were done
+and every one of them was tooling around that hole.
+
+### 102.1 Expo over Flutter, for a reason specific to this repo
+
+Not a judgement on the frameworks. **457 TypeScript files and a generated API
+contract**: `docs/openapi.json` comes from the NestJS DTOs, and
+`openapi-typescript` turns it into a `schema.d.ts` both web apps consume. A
+React Native app runs the same command and gets the same file, so changing a DTO
+breaks the mobile build. Dart would mean hand-written models and drift
+discovered at runtime, on somebody's phone.
+
+The client, the money helper and the OTP flow also port directly. `useMoney()`
+in particular — the helper that reads the exponent from the server rather than
+dividing by 100 — has already been the subject of two bugs (§67.4, §96).
+Rewriting it in another language is a third chance to get it wrong.
+
+### 102.2 ~~"I can exercise it end to end in a browser"~~ — that was wrong
+
+The argument offered for a web app first. Challenged, and it did not survive:
+**I have never clicked through a browser in this project.** Verification has
+been curl against the backend, plus typecheck and build on the frontend, with
+the user doing the clicking.
+
+React Native loses nothing by that measure and gains something: Xcode is
+installed here, so a simulator can be booted, screenshotted and **read**. That
+is more than is possible for the two web apps. The claim was convenient rather
+than true.
+
+What remains honest: I can see the screen but not tap it. Driving a flow still
+needs a person.
+
+### 102.3 Checked the docs instead of trusting memory
+
+The scaffold ships an `AGENTS.md` whose first instruction is that Expo ships
+breaking changes every SDK release and its APIs should not be written from
+training data. Taken seriously, and immediately useful: this is **SDK 57, React
+19.2, React Native 0.86**, and the router installation steps came from the
+versioned docs rather than memory.
+
+The file is kept, with a line added pointing at the root `CLAUDE.md` and this
+file first — Expo guidance sits on top of the product's rules, not beside them.
+
+### 102.4 Tokens go in the Keychain
+
+`SecureStore`, not `AsyncStorage`: a refresh token on a device that may be lost
+or shared deserves better than plain storage. It is async, unlike
+`localStorage`, so the token cache is held in memory and rehydrated once at
+startup — otherwise every request would await a Keychain read.
+
+Everything else about the client is the web one unchanged: single-flight
+refresh, exactly one retry after a 401, the same reasoning in the same comments.
+
+### 102.5 Discovery, anonymous
+
+Browse, search, filter by category, sort, "open now". Unauthenticated, because
+the endpoint allows it and asking someone to sign in before they can see a price
+loses most of them.
+
+Running against the live backend in the simulator: **7 places**, Kimironko Spa
+showing ★5.0 (1) and **from RWF 8,000** — formatted through the server's
+exponent, not divided by anything.
+
+### 102.6 Two setup notes
+
+`babel-preset-expo` had to be installed explicitly; npm workspace hoisting left
+Metro unable to resolve it. And `expo start --ios` exits if the simulator deep
+link fails, so Metro is started on its own and the URL opened with `xcrun simctl
+openurl`.
+
