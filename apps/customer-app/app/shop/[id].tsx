@@ -1,7 +1,18 @@
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { getShop, getShopReviews, type ShopService } from '../../src/api/discovery';
+import { openInquiry } from '../../src/api/chat';
+import { ApiError, tokens } from '../../src/api/client';
 import { useMoney } from '../../src/money';
 import { theme } from '../../src/theme';
 
@@ -31,6 +42,21 @@ export default function Shop() {
   const reviews = useQuery({
     queryKey: ['shop-reviews', id],
     queryFn: () => getShopReviews(id),
+  });
+
+  /**
+   * Idempotent on the server (§21.1), so this is safe to tap repeatedly: a
+   * customer asking a second question weeks later lands in the same thread
+   * rather than starting a parallel one the shop has to notice separately.
+   */
+  const openChat = useMutation({
+    mutationFn: () => openInquiry(shop.data!.business.id),
+    onSuccess: (thread) => router.push(`/thread/${thread.id}`),
+    onError: (error) =>
+      Alert.alert(
+        'Could not open that',
+        error instanceof ApiError ? error.message : 'Please try again.',
+      ),
   });
 
   if (shop.isLoading) {
@@ -96,6 +122,25 @@ export default function Shop() {
             <Text style={styles.description}>{s.business.description}</Text>
           )}
         </View>
+
+        {/* Before booking, not after. Most questions people have — do you take
+            card, is there parking, can you do this on a Sunday — are the reason
+            they do NOT book, and there was nowhere to ask them. */}
+        <Pressable
+          style={styles.message}
+          onPress={() => {
+            if (!tokens.access) {
+              router.push(`/sign-in?next=/shop/${s.id}`);
+              return;
+            }
+            openChat.mutate();
+          }}
+          disabled={openChat.isPending}
+        >
+          <Text style={styles.messageText}>
+            {openChat.isPending ? 'Opening…' : 'Message the shop'}
+          </Text>
+        </Pressable>
 
         <View style={styles.block}>
           <Text style={styles.heading}>What they do</Text>
@@ -210,6 +255,15 @@ function ServiceRow({
 }
 
 const styles = StyleSheet.create({
+  message: {
+    borderWidth: 1,
+    borderColor: theme.accent,
+    borderRadius: theme.radius,
+    paddingVertical: 13,
+    alignItems: 'center',
+    marginHorizontal: 16,
+  },
+  messageText: { color: theme.accent, fontWeight: '700', fontSize: 15 },
   screen: { flex: 1, backgroundColor: theme.bg },
   content: { padding: 16, gap: 12, paddingBottom: 40 },
   spinner: { marginTop: 40 },

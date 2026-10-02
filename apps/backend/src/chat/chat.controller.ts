@@ -72,6 +72,7 @@ export class ChatController {
       user.role as UserRole,
       query.limit ?? 25,
       query.offset ?? 0,
+      query.appointmentId,
     );
   }
 

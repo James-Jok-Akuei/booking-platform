@@ -12,6 +12,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { StaffPage } from './pages/StaffPage';
 import { SupportPage } from './pages/SupportPage';
+import { MessagesPage } from './pages/MessagesPage';
 
 export function App() {
   return (
@@ -31,6 +32,7 @@ export function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/people" element={<StaffPage />} />
         <Route path="/closures" element={<ClosuresPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/help" element={<SupportPage />} />

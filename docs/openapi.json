@@ -2490,6 +2490,16 @@
         "operationId": "ChatController_listThreads",
         "parameters": [
           {
+            "name": "appointmentId",
+            "required": false,
+            "in": "query",
+            "description": "Narrows to the thread created with one booking (§21.1).\n\nAdded because a booking screen needs to open ITS conversation, and the only\nway to find it was to page through every thread looking for a matching\n`appointment.id` — which works until a customer has more threads than a\npage holds, and then silently opens the wrong one or none (§112.2).\n\nStill scoped to the caller like every other listing here, so an appointment\nid belonging to someone else simply matches nothing.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",

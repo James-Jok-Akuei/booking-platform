@@ -23,6 +23,15 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      // Chat's websocket, which cannot go through `/api`: that rule rewrites
+      // the path away, and socket.io serves its handshake at a fixed
+      // `/socket.io` regardless of namespace. `ws: true` is what makes the
+      // proxy upgrade the connection rather than answer the poll and stop.
+      '/socket.io': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 });

@@ -354,3 +354,20 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .detail > div { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: start; }
 .detail dt { color: var(--muted); font-size: 13px; }
 .detail dd { margin: 0; }
+
+/* ---- Chat (§112) ----------------------------------------------------- */
+
+/* The drawer becomes a column: a fixed composer at the bottom and a log that
+   scrolls, rather than one long page where the reply box drifts off screen. */
+.chat-drawer { display: flex; flex-direction: column; }
+.chat-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 4px 0 14px; }
+.chat-line { display: flex; }
+.chat-line.ours { justify-content: flex-end; }
+.chat-bubble { max-width: 78%; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--bg); display: flex; flex-direction: column; gap: 5px; }
+.chat-line.ours .chat-bubble { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chat-line.ours .chat-bubble .muted { color: rgba(255,255,255,0.78); }
+.chat-bubble p { margin: 0; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+.chat-photo { max-width: 240px; border-radius: 8px; display: block; }
+.chat-composer { border-top: 1px solid var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 9px; }
+.chat-composer textarea { width: 100%; resize: vertical; }
+.chat-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

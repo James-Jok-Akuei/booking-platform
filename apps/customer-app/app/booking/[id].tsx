@@ -20,6 +20,7 @@ import {
   toMsisdn,
   type PaymentStatus,
 } from '../../src/api/booking';
+import { threadForAppointment } from '../../src/api/chat';
 import { ApiError } from '../../src/api/client';
 import { useMoney } from '../../src/money';
 import { theme } from '../../src/theme';
@@ -45,6 +46,14 @@ export default function Booking() {
   const appointment = useQuery({
     queryKey: ['appointment', id],
     queryFn: () => getAppointment(id),
+  });
+
+  // Looked up by appointment rather than paged for: with more threads than a
+  // page holds, a client-side search silently opens the wrong one (§112.2).
+  const thread = useQuery({
+    queryKey: ['thread-for', id],
+    queryFn: () => threadForAppointment(id),
+    enabled: Boolean(appointment.data),
   });
 
   const awaitingPayment = appointment.data?.status === 'PENDING_PAYMENT';
@@ -251,6 +260,22 @@ export default function Booking() {
             )}
           </View>
         )}
+
+        {/* Every booking is created with a conversation attached (§21.1), which
+            until now nothing could open. It is the right place for "running
+            late" and "can I bring my son too". */}
+        <Pressable
+          style={styles.secondary}
+          disabled={thread.isLoading}
+          onPress={() => {
+            if (thread.data) router.push(`/thread/${thread.data.id}`);
+            else router.push('/messages');
+          }}
+        >
+          <Text style={styles.secondaryText}>
+            {thread.isLoading ? 'Opening…' : `Message ${a.location.name}`}
+          </Text>
+        </Pressable>
 
         {/* The visit is over, so the useful thing on this screen is no longer the
             arrival code but what the customer thought (§111). */}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Stack } from 'expo-router';
-import { Pressable, Text } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { tokens } from '../src/api/client';
@@ -48,17 +48,23 @@ export default function RootLayout() {
             // that signing in is what fills it, which is a better invitation
             // than a button that is not there.
             headerRight: () => (
-              <Link href="/bookings" asChild>
-                <Pressable hitSlop={10}>
-                  <Text style={{ color: theme.accent, fontWeight: '600' }}>
-                    My bookings
-                  </Text>
-                </Pressable>
-              </Link>
+              <View style={{ flexDirection: 'row', gap: 16 }}>
+                <Link href="/messages" asChild>
+                  <Pressable hitSlop={10}>
+                    <Text style={{ color: theme.accent, fontWeight: '600' }}>Messages</Text>
+                  </Pressable>
+                </Link>
+                <Link href="/bookings" asChild>
+                  <Pressable hitSlop={10}>
+                    <Text style={{ color: theme.accent, fontWeight: '600' }}>Bookings</Text>
+                  </Pressable>
+                </Link>
+              </View>
             ),
           }}
         />
         <Stack.Screen name="bookings" options={{ title: 'My bookings' }} />
+        <Stack.Screen name="messages" options={{ title: 'Messages' }} />
         <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
       </Stack>
     </QueryClientProvider>

@@ -9847,3 +9847,115 @@ cast through `unknown`.
 
 Worth noting rather than fixing today: it is the same shape of problem as §109.6
 — the server knows things about its responses that nothing downstream can read.
+
+## 112. Chat, on both sides, and an email that should never have left the server (2026-10-02)
+
+The last unwired cluster. Six endpoints and a whole WebSocket gateway (§21, §22)
+had been built, tested and never once called by a client — which is why the thing
+below survived in it for a month.
+
+### 112.1 A customer was being handed the shop's staff email
+
+Every message carried its sender as `{ id, email, role }`, to **both sides**. On
+a customer's phone that `email` is the personal login address of whichever member
+of staff typed the reply — handed to anyone who messages the shop, on every line
+of every conversation. The realtime push carried it too.
+
+§92.2 had already settled this for reviews: *"the byline is the display name and
+nothing else — never an id or an email."* Chat simply did not follow, and nothing
+noticed because nothing had ever read the response.
+
+Fixed before a client could depend on the shape, which is the only cheap moment
+to do it. The projection now depends on who is reading:
+
+* a **customer** gets `{ id, role }`. That answers both questions they have —
+  is this mine, and which side is it from — and the shop's NAME is on the thread.
+  Which member of staff replied is not theirs to know.
+* a **business** keeps the email. They are entitled to the customer's address
+  (§28.6), and on their own side it is how several members of staff (§14) tell
+  each other apart in one thread.
+
+The socket gets the **narrow** shape regardless, because one room holds both
+sides and a single payload cannot be tailored per viewer. The business inbox
+polls underneath, so a reply appears instantly and gains its byline a moment
+later — which is the right way round.
+
+Five tests, including one asserting `Object.keys(sender)` and one driving the
+realtime publisher, because that was the path most likely to be forgotten.
+Confirmed against the running backend as well: a socket client joined as the
+customer and the push arrived carrying `{"id":…,"role":"BUSINESS"}` and no
+address.
+
+### 112.2 Finding one booking's conversation
+
+Every booking is created with a thread (§21.1), and there was no way to ask for
+it. The only route was to list every thread and search client-side for a matching
+`appointment.id` — which works until a customer has more threads than a page
+holds, and then silently opens the wrong conversation or none.
+
+`GET /threads?appointmentId=` added, narrowed **inside** the caller's scope and
+never instead of it, so someone else's appointment id matches nothing rather than
+reaching their conversation. Verified: own booking returns the right thread, a
+random uuid returns zero rows, a non-uuid is a 400.
+
+### 112.3 Sending is REST, receiving is socket
+
+§22.2's split, followed exactly. Both clients POST a message and learn about the
+other side's over the socket. Neither sends over the socket, because creating a
+message carries the real logic — the empty-message rule, the length limit, the
+photo upload, the notification debounce — and two transports accepting messages
+would be two paths that must agree forever.
+
+Both clients also **poll underneath the socket**, and that is not redundancy for
+its own sake. A phone sleeps, changes network and loses signal; a shop leaves a
+tab open all day. A socket that quietly died would leave either side looking like
+nobody had replied. The socket makes it instant, the poll makes it correct, and
+the screen is right with the socket switched off entirely.
+
+Two small things both clients needed: a seen-id check before appending a pushed
+message, because a reconnect replays and the sender's own POST already added it —
+without it every message you send appears twice; and marking a thread read tied
+to messages **arriving** rather than the screen opening, so an empty thread does
+not clear a badge for messages that had not loaded. Read state is per person
+(§21.3), so an owner opening a thread still cannot clear it for the staff member
+who has to answer it.
+
+### 112.4 What each side shows, and what it deliberately does not
+
+The business inbox has **no "new message" button**. A shop does not cold-open a
+conversation with someone who has not contacted it — the server has no endpoint
+for it either, and this is the same decision, not a coincidence.
+
+Both lists **hide threads that have never been used**. One is created with every
+booking, so a customer with ten bookings would open Messages onto ten empty
+conversations and a busy shop would bury the real ones. The customer's list keeps
+empty INQUIRY threads, because a customer who just opened one and has not typed
+yet should still see it.
+
+An appointment thread shows **what it is about** — the service and the date —
+because eight threads with the same shop are otherwise eight identical rows.
+
+### 112.5 The business app's websocket needed its own proxy
+
+The REST client talks to `/api`, which Vite proxies and rewrites. A socket cannot
+go through that: the rewrite strips the prefix, and socket.io serves its handshake
+at a fixed `/socket.io` whatever the namespace. So a second proxy entry, with
+`ws: true` — without which the proxy answers the handshake poll and never
+upgrades, and the socket silently falls back to polling forever.
+
+In development the socket connects to **this** origin and Vite forwards it, the
+same one-origin trick that keeps CORS out of the picture locally; in production
+`VITE_API_URL` names the backend.
+
+### 112.6 Seen, and not seen
+
+The customer's Messages screen renders, signed out, with its sign-in invitation.
+The business app builds. The socket was driven headlessly end to end — connect,
+join, receive a message the business POSTed over REST — which is the part most
+likely to be wrong and the part a screenshot could not have shown anyway.
+
+**Neither conversation was seen with messages in it.** That needs a signed-in
+session on both sides at once, and §102.2 still holds. Every endpoint underneath
+was driven against the live backend: thread creation and its idempotence, sending
+from both sides, the empty-message refusal, unread counts moving to zero on
+read, and the sender projection differing by viewer.

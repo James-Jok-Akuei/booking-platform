@@ -11,6 +11,7 @@ const SECTIONS = [
   { to: '/services', label: 'Services' },
   { to: '/hours', label: 'Branches & hours' },
   { to: '/closures', label: 'Closures & breaks' },
+  { to: '/messages', label: 'Messages' },
   { to: '/reviews', label: 'Reviews' },
   { to: '/getting-paid', label: 'Getting paid' },
   { to: '/analytics', label: 'How it is going' },

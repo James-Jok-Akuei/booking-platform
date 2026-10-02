@@ -23,6 +23,33 @@ export const MAX_INQUIRY_THREADS_PER_DAY = 10;
 /** At most one "new message" email per thread, per recipient, per this window. */
 export const MESSAGE_NOTIFICATION_DEBOUNCE_MS = 5 * 60 * 1000;
 
+/**
+ * What a message's sender looks like to the person reading it (§112.1).
+ *
+ * A customer never gets an email. The sender rows carry one — the login address
+ * of whoever at the shop typed the reply — and returning it told every customer
+ * who messaged a business the personal email of its staff. §92.2 settled this
+ * for reviews ("the byline is the display name and nothing else — never an id
+ * or an email") and chat simply did not follow.
+ *
+ * A customer needs to know whether a message is theirs, which `id` and `role`
+ * answer, and which shop it came from, which is on the thread. Nothing about
+ * WHICH member of staff is the customer's business.
+ *
+ * A business keeps it: they are entitled to the customer's address (§28.6), and
+ * on their own side it is how several members of staff (§14) tell each other
+ * apart in a thread.
+ */
+type SenderRow = { id: string; email: string; role: UserRole };
+
+function visibleSender(sender: SenderRow, viewerRole: UserRole) {
+  if (viewerRole === UserRole.CUSTOMER) {
+    const { email: _hidden, ...rest } = sender;
+    return rest;
+  }
+  return sender;
+}
+
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
@@ -160,8 +187,18 @@ export class ChatService {
    * Threads the caller can see: a customer's own, or every thread belonging to
    * the business they are an active member of.
    */
-  async listThreads(userId: string, role: UserRole, limit: number, offset: number) {
-    const where = await this.participantScope(userId, role);
+  async listThreads(
+    userId: string,
+    role: UserRole,
+    limit: number,
+    offset: number,
+    appointmentId?: string,
+  ) {
+    const scope = await this.participantScope(userId, role);
+    // Narrowed INSIDE the caller's scope, never instead of it: an appointment
+    // id belonging to someone else matches nothing rather than reaching their
+    // conversation.
+    const where = appointmentId ? { ...scope, appointmentId } : scope;
 
     const [total, threads] = await Promise.all([
       this.prisma.thread.count({ where }),
@@ -217,7 +254,12 @@ export class ChatService {
       }),
     ]);
 
-    return { total, limit, offset, messages };
+    return {
+      total,
+      limit,
+      offset,
+      messages: messages.map((m) => ({ ...m, sender: visibleSender(m.sender, role) })),
+    };
   }
 
   async sendMessage(params: {
@@ -279,11 +321,17 @@ export class ChatService {
     // Realtime push and the debounced email are triggered by the same event,
     // right after the message is persisted — so neither can fire for a message
     // that was not saved, and the socket cannot disagree with what REST stored.
-    this.realtime.emitNewMessage(params.threadId, message);
+    // The room holds both sides, so one payload cannot be tailored per viewer —
+    // it carries the narrower shape, and a business that wants the address has
+    // it on the thread already (§112.1).
+    this.realtime.emitNewMessage(params.threadId, {
+      ...message,
+      sender: visibleSender(message.sender, UserRole.CUSTOMER),
+    });
 
     await this.notifyOtherParty(thread, params.userId, body, Boolean(photoUrl));
 
-    return message;
+    return { ...message, sender: visibleSender(message.sender, params.role) };
   }
 
   /**
