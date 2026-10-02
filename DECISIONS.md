@@ -10123,3 +10123,193 @@ had already restarted the running one onto the fix. (It ignores a bare `touch`,
 two ports.
 
 **1156 across 40.**
+
+## 115. A billing adjustment that cannot be paid is refused by the database (2026-10-02)
+
+§68.6, deferred since 2026-10-01 and finally answered. The answer turned out to
+be different from either option that was on the table, and the tests are what
+found it.
+
+### 115.1 The question was wrong
+
+§67's recommendation was: make the settlement columns `NOT NULL`, so the database
+refuses an entry a payout run can never send. §68.6 deferred it because
+`NOT NULL` applies to every row already written, and §45 added those columns to a
+ledger that already had entries and could only backfill some. The question looked
+like "backfill the rest, or exclude them with a partial constraint".
+
+Neither. **A `CHECK ... NOT VALID` makes the choice unnecessary**: Postgres
+enforces it on every INSERT and UPDATE from now on and does not scan what is
+already there. Confirmed against Postgres rather than assumed — with a null row
+already present, the `ALTER` succeeds, the row survives, and the next null INSERT
+is rejected.
+
+Backfilling was never really available anyway, and that is worth saying because
+it was the obvious path. `ledger_entries` is append-only, and the
+`ledger_entries_immutable` trigger names `settlementCurrency`,
+`settlementAmountMinor` and `bookingExchangeRate` **specifically**. Satisfying
+`NOT NULL` would have meant disabling the trigger that makes a ledger
+trustworthy, in order to invent figures nobody recorded. The trigger's own error
+message says what to do instead: *"Append an opposing entry."*
+
+### 115.2 The broad version was wrong, and five tests said so
+
+Written as §67 described it — settlement required on **every** entry — five
+existing tests failed, and every one of them was right.
+
+A `DEPOSIT_RECEIVED` entry legitimately has no settlement figure when the
+appointment never went through the payment initiation that records what was
+charged. Payouts already exclude those rather than convert at a guessed rate, and
+that is the designed behaviour, not an oversight.
+
+Forbidding it would put the constraint **inside the transaction that confirms a
+deposit**. The write fails, the transaction rolls back, the appointment stays
+`PENDING_PAYMENT` — and the operator has taken the customer's money with nothing
+recorded. That is precisely what §34 means by "a confirmed deposit that failed to
+reach the ledger is money the platform holds and cannot account for", and it is
+far worse than an entry nobody can be paid.
+
+So the constraint covers `ADJUSTMENT` entries alone, which is exactly what §67.5
+found. An adjustment carries no such risk: nothing has moved when it is written,
+so refusing one means it is simply not applied — already what §68.2 made the
+service do. This is the same rule one layer down, where no bug in the layer above
+can get past it.
+
+`bookingExchangeRate` is excluded: a payout run reads only the two columns, and
+the rate is context for a reader rather than something the money depends on.
+
+### 115.3 What the tests had to be
+
+Seven, all going through raw SQL. Prisma's own types would stop most of this at
+compile time, which is exactly why they prove nothing about the database — and
+the entries §67.5 found were written by code that type-checked perfectly.
+
+One of them asserts the **opposite** of the rule: a `DEPOSIT_RECEIVED` with no
+settlement must still be accepted. It is there so that widening the constraint
+fails loudly rather than quietly, because the cost of widening it is a deposit
+confirmation rolling back after the money has gone.
+
+Another accepts a **negative** settlement amount. The rule is about presence, not
+sign — an adjustment that takes money back is what §68's billing adjustments
+write, and a constraint that refused it would break the feature it exists to
+protect.
+
+### 115.4 A rollback in the middle
+
+The first migration was applied before the tests were run, so undoing it meant
+dropping the constraint and deleting the row from `_prisma_migrations` in **both**
+the dev and the test database. The test database was missed on the first pass,
+which produced a failure claiming a constraint that no longer existed anywhere in
+the source — worth recording, because the symptom pointed nowhere near the cause.
+
+**1163 across 41.**
+
+## 116. Nothing stopped anyone hammering this (2026-10-02)
+
+The platform is feature-complete and had no rate limiting, no security headers,
+and CORS open to every origin. All three are the kind of thing that is invisible
+until the day it is not.
+
+### 116.1 CORS, and being honest about what it buys
+
+`app.enableCors()` with no arguments, since the beginning, with a comment saying
+to tighten it. Now an allow-list from `CORS_ORIGINS`, empty in development
+because three apps on three ports plus a simulator would make a list one more
+thing to keep in step.
+
+Worth being accurate about the gain: **CORS is not an access control.** curl, the
+phone app and any server ignore it entirely, and the guards and limits are what
+actually protect this API. Tokens live in `localStorage` rather than cookies, so a
+hostile origin could not ride an existing session even before this. What the list
+does is stop a page on another site making requests from a signed-in person's
+browser, which matters for the admin and business apps. It is one fewer way in
+for the cost of one environment variable, not a wall.
+
+`helmet` alongside it, with `contentSecurityPolicy` off — this process serves no
+HTML of its own except the Swagger page, which the default policy breaks — and
+`crossOriginResourcePolicy` relaxed, because the upload fallback serves images at
+`/uploads` that the apps load from another origin. Blocking that is §113.1's
+broken pictures again from a different direction.
+
+### 116.2 Rate limiting, and why the general ceiling is high
+
+Nothing capped request rate at all. The OTP endpoint has a per-recipient
+cooldown, which stops one address being spammed and does nothing about one
+machine walking a list of thousands; every other endpoint, including the one that
+asks MTN to charge a phone, had no limit of any kind.
+
+**Express middleware rather than `@nestjs/throttler`, and not by preference.**
+The Nest package has no release past 6.7.1 and ships a CommonJS build, while this
+project is ESM-only because `@nestjs/common@12` is. It runs perfectly under Node
+24 — verified, 5 requests through then 429 — and Jest's ESM runtime cannot
+`require` it until Node 24.9, so three suites that boot the real application
+stopped running. `express-rate-limit` ships both formats, and the policy reads
+better in one place than scattered across decorators.
+
+The narrow limits are where the protection is: 5/min on requesting a sign-in
+code, 10/min on verifying one, 10/min on asking an operator to charge a handset,
+20/min on starting a conversation. Each of those endpoints sends an email, costs
+money or makes somebody's phone buzz.
+
+**The general ceiling is 600/min, and that is deliberate.** Counting is by client
+IP, and in this market that is not one person: mobile carriers here put very
+large numbers of subscribers behind a handful of addresses, and a salon or an
+office shares one. A limit tuned to what a single enthusiastic customer could
+reach would cut off a whole neighbourhood the moment a few of them opened the app
+— a failure that looks exactly like the platform being broken, and lands on the
+busiest places first.
+
+Which is also the argument for `TRUST_PROXY_HOPS`: behind a load balancer every
+request appears to come from the balancer, so one busy customer would limit
+everyone. Set too high, a caller can forge the header and escape the limit
+entirely, so it is the number of proxies actually run rather than a guess.
+
+Off entirely when `NODE_ENV=test`. An e2e suite is one client making hundreds of
+requests in seconds from one address — indistinguishable from the abuse this
+exists to stop, and a suite that fails depending on how many tests ran before it
+is worse than no suite. Found by the guard-chain suite failing after the limiter
+went in. The numbers are unit-tested separately and were driven against a running
+build.
+
+### 116.3 Refusing to start, rather than warning
+
+`assertProductionReady` runs before the application is even built. It follows the
+two guards this codebase already has — `MomoPaymentProvider` refuses when the
+sandbox currency override is set in production, `CurrencyGuard` refuses when the
+ledger holds a currency the deployment no longer uses — for the same reason: a
+misconfiguration found at boot is an ops problem, and the same one found at
+runtime is a customer losing something.
+
+Every item has already cost something here, which is why these four and not a
+generic checklist:
+
+- **`CORS_ORIGINS` empty** — §116.1.
+- **`APP_BASE_URL` local or private** — §113.1, the one where every image in
+  every app is broken while the API beside it answers perfectly.
+- **`R2_PUBLIC_URL` empty** — the local-disk fallback on a host with an ephemeral
+  filesystem deletes every uploaded file on the next deploy, silently.
+  `ALLOW_LOCAL_UPLOADS=true` is the way to choose that on purpose, because a
+  persistent disk is a legitimate choice and must simply not be the one nobody
+  made.
+- **`OPENAPI_PUBLIC=true`** — a complete map of the attack surface, published.
+
+It reports **every** problem at once rather than the first. Whoever is fixing
+these is on a deploy pipeline with a slow feedback loop, and one error per
+attempt is four deploys.
+
+Pure, and takes its environment as an argument, so its tests run without booting
+anything and without touching `process.env` — which under `maxWorkers: 1` would
+leak into every suite after them.
+
+### 116.4 And somewhere for the errors to point
+
+`docs/DEPLOYMENT.md`, which did not exist. Written for someone who has not read
+this file, with the reasoning behind each requirement rather than a list of keys:
+what breaks, how it looks when it breaks, and the two things to do before taking
+real money — validating the §115 constraint over history, and backups, because
+the ledger is append-only and there is no other copy.
+
+It deliberately does not cover choosing a host, DNS, TLS or CI. Those depend on
+nothing in this codebase, and guessing at them would date faster than the rest.
+
+**1171 across 42.**

@@ -2,8 +2,13 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { configureApp } from './app-bootstrap';
+import { assertProductionReady } from './common/production-readiness';
 
 async function bootstrap() {
+  // Before the application is built, so a bad production configuration fails
+  // here rather than inside the first request that depends on it (§116.3).
+  assertProductionReady();
+
   const app = await NestFactory.create(AppModule);
 
   // Shared with the boot smoke test, so the test cannot pass against a

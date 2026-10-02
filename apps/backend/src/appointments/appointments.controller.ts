@@ -77,6 +77,12 @@ export class AppointmentsCustomerController {
     return this.appointments.resendVerificationCode(user.userId, id);
   }
 
+  /**
+   * Ten a minute. Every call makes a prompt appear on somebody's handset and a
+   * request to MTN, so a loop here is a person's phone buzzing and a bill the
+   * platform pays. The service already refuses a second attempt while one is in
+   * flight; this bounds the attempts themselves.
+   */
   @Post(':id/initiate-deposit-payment')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: InitiateDepositPaymentResponseDto })

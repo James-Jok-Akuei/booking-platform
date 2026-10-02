@@ -9,12 +9,25 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  /**
+   * Five a minute from one address, against the global 120 (§116.2).
+   *
+   * This endpoint sends an EMAIL to an address the caller picks. The existing
+   * cooldown is per recipient, so it stops one person being spammed and does
+   * nothing about one machine walking a list of thousands — which costs the
+   * platform its sending reputation, not just its bandwidth.
+   */
   @Post('otp/request')
   @HttpCode(HttpStatus.OK)
   requestOtp(@Body() dto: RequestOtpDto) {
     return this.authService.requestOtp(dto.email, dto.role as UserRole | undefined);
   }
 
+  /**
+   * Ten a minute. A six-digit code is a million guesses; the service counts
+   * attempts per code, and this caps how fast anyone can work through codes
+   * for DIFFERENT addresses, which per-code counting cannot see.
+   */
   @Post('otp/verify')
   @HttpCode(HttpStatus.OK)
   verifyOtp(@Body() dto: VerifyOtpDto) {

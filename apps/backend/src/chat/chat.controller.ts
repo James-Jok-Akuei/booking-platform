@@ -51,6 +51,13 @@ export class ChatController {
    * who has not contacted them, which would make this an outbound-marketing
    * tool rather than a support channel.
    */
+  /**
+   * Twenty a minute, under §21.4's ten NEW threads per day.
+   *
+   * The daily cap counts relationships started; this caps the requests. They are
+   * different things — reopening an existing thread is free under §21.4 and
+   * still costs a query here.
+   */
   @Post('inquiry')
   @UseGuards(RolesGuard)
   @Roles(UserRole.CUSTOMER)

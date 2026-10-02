@@ -1542,6 +1542,17 @@ model LedgerEntry {
   // Nullable only because entries created before §45, or whose appointment
   // never recorded a charged amount, genuinely have no settlement figure.
   // Those are EXCLUDED from payouts rather than converted at a guessed rate.
+  //
+  // STILL OPTIONAL HERE, AND NO LONGER WRITABLE AS NULL (§115). A hand-written
+  // CHECK constraint — `ledger_entries_settlement_present`, added NOT VALID —
+  // refuses any new entry missing either one, while leaving the pre-§45 rows
+  // exactly as they are. They stay optional in this model because the old rows
+  // are real and Prisma must be able to read them; making them required here
+  // would be a lie about what the table holds.
+  //
+  // Not NOT NULL, because that applies to history too, and the only way to
+  // satisfy it is to backfill — which on an append-only ledger means disabling
+  // `ledger_entries_immutable`, the trigger that names these very columns.
   settlementCurrency    String?
   settlementAmountMinor Int?
   /// The rate in force when the entry was created, kept so a settlement figure
