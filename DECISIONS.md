@@ -8771,3 +8771,64 @@ taken at all.
 
 **1095 passing across 32 suites.**
 
+## 97. Multiple countries: deferred, with the trigger written down
+
+Raised as a question rather than a request: start in Rwanda, add Kenya, Uganda
+and the rest later, with an admin toggling which are open. Discussed and
+**deferred**. Rwanda only for now.
+
+### 97.1 More of it is ready than expected
+
+- `OPERATOR_PREFIXES` is **already keyed by country code**, and already explains
+  why South Sudan is absent rather than guessing at its mapping.
+- Ledger rows already carry `currency` **and** `settlementCurrency` per row.
+- Every money aggregation in payouts and ledger already groups by
+  `settlementCurrency` and returns arrays rather than single figures (§51).
+- `PLATFORM_TIMEZONE` is already configuration.
+
+### 97.2 What actually blocks it
+
+`INTERNAL_CURRENCY` is a **deployment constant** — 49 usages across 11 modules —
+and `CurrencyGuard` refuses to boot if the ledger holds anything else. That is
+not incidental: amounts are stored as bare integers whose unit is implied, and
+the guard's own comment says why changing it is unsafe — *"a balance of
+1,200,000 becomes 1,200,000 of something else."*
+
+With it: one set of MoMo credentials per deployment (MTN Rwanda and MTN Uganda
+are separate accounts entirely), a single `PAYOUT_MSISDN_COUNTRY_PREFIX`, and
+`PlatformSetting` as a **single row** holding one fee, one payout hold and one
+exchange rate.
+
+The architecture today is therefore **one country per deployment**, deliberately.
+
+### 97.3 The choice, when it comes
+
+**A — a deployment per country.** Kenya gets its own database, env, credentials
+and admin. Costs nearly nothing today because it is what the code assumes. Costs
+later: an admin per country, a business trading in two countries holding two
+accounts, manual cross-country reporting.
+
+**B — one deployment, all countries.** Per-country currency, credentials, fees
+and discovery scoping, with every money aggregation audited. The largest change
+since the ledger, and the risk is in money rather than screens.
+
+### 97.4 Why not now
+
+Not difficulty — sequencing. There is no customer app, no live payment in
+Rwanda, and no real business yet. Building per-country payments against an API
+nobody has seen, and per-country fees for a fee model nobody has paid, means
+guessing, and the guesses get written into money code.
+
+**The trigger for revisiting is a business that trades in two countries and
+wants one account.** Until then A costs nothing and keeps both options open.
+
+When it is time, the cheap first step is `countryCode` on businesses and
+locations with Rwanda as the only value — honest data, no change to the currency
+premise, and the A-or-B decision made with real information.
+
+### 97.5 Noted in passing
+
+`PLATFORM_TIMEZONE` falls back to `Africa/Juba` in code while the env sets
+`Africa/Kigali`. Correct in this deployment, stale as a default.
+`PlatformSetting.providerCurrency` is where a second country would first collide.
+
