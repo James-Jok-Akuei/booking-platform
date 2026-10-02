@@ -863,3 +863,41 @@ export const revokeAdminInvitation = (id: string) =>
 
 export const revokeAdminAccess = (userId: string) =>
   api<{ message: string }>(`/admin/users/${userId}/admin-access`, { method: 'DELETE' });
+
+// ---------------------------------------------------------------------------
+// Where the platform is open (§105)
+// ---------------------------------------------------------------------------
+
+export interface AdminDistrict {
+  id: string;
+  code: string;
+  name: string;
+  isLive: boolean;
+  /** Branches already there. Shown before anything is retired. */
+  branchCount: number;
+}
+
+export interface AdminProvince {
+  id: string;
+  code: string;
+  name: string;
+  districts: AdminDistrict[];
+}
+
+/** The only listing that shows retired districts. */
+export const listAdminPlaces = () => api<AdminProvince[]>('/admin/places/provinces');
+
+export const createDistrict = (body: {
+  provinceId: string;
+  name: string;
+  code: string;
+}) => api<AdminDistrict>('/admin/places/districts', { method: 'POST', body });
+
+export const renameDistrict = (id: string, name: string) =>
+  api<AdminDistrict>(`/admin/places/districts/${id}`, { method: 'PATCH', body: { name } });
+
+export const setDistrictLive = (id: string, isLive: boolean) =>
+  api<{ message: string }>(`/admin/places/districts/${id}/live`, {
+    method: 'PATCH',
+    body: { isLive },
+  });

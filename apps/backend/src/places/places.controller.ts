@@ -19,12 +19,18 @@ export class PlacesController {
   @Get('provinces')
   findAll() {
     return this.prisma.province.findMany({
+      // A province with nothing open in it is noise in a filter row.
+      where: { districts: { some: { isLive: true } } },
       orderBy: { name: 'asc' },
       select: {
         id: true,
         code: true,
         name: true,
         districts: {
+          // Only where the platform is open (§105). A retired district is not
+          // offered to a new branch and not shown as a filter — the customer
+          // would otherwise pick a place with nothing in it.
+          where: { isLive: true },
           orderBy: { name: 'asc' },
           select: { id: true, code: true, name: true },
         },

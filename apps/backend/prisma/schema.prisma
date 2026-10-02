@@ -1843,6 +1843,16 @@ model District {
   code String @unique
   name String
 
+  /// Whether the platform is open here (§105).
+  ///
+  /// Rwanda's thirty districts are a fact; which of them this platform trades
+  /// in is a decision. Retiring one stops a NEW branch choosing it and takes
+  /// it out of the customer's filter — branches already there keep their
+  /// listing, exactly as a retired category does (§98.1).
+  ///
+  /// Never deleted. §101: this platform retires and does not erase.
+  isLive Boolean @default(true)
+
   provinceId String
   province   Province @relation(fields: [provinceId], references: [id], onDelete: Restrict)
 

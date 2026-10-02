@@ -159,6 +159,51 @@ describe('Places (§104)', () => {
     });
   });
 
+  describe('retiring a district (§105)', () => {
+    const retire = (id: string, isLive = false) =>
+      prisma.district.update({ where: { id }, data: { isLive } });
+
+    it('keeps the branches already there in search', async () => {
+      const business = await createBusiness(prisma);
+      const gasabo = await districtByCode('GASABO');
+      await prisma.location.update({
+        where: { id: business.locationId },
+        data: { districtId: gasabo.id },
+      });
+
+      await retire(gasabo.id);
+
+      // The whole guarantee: a shop does not vanish because the platform
+      // changed its mind about a place (§98.1).
+      const results = await discovery.search({});
+      expect(results.locations.map((l) => l.id)).toEqual([business.locationId]);
+    });
+
+    it('is still filterable for those branches', async () => {
+      const business = await createBusiness(prisma);
+      const gasabo = await districtByCode('GASABO');
+      await prisma.location.update({
+        where: { id: business.locationId },
+        data: { districtId: gasabo.id },
+      });
+      await retire(gasabo.id);
+
+      // Someone holding a link or an old filter still finds them. Retiring
+      // gates the PICKER, not the data.
+      const results = await discovery.search({ districtId: gasabo.id });
+      expect(results.total).toBe(1);
+    });
+
+    it('comes back when it is opened again', async () => {
+      const gasabo = await districtByCode('GASABO');
+      await retire(gasabo.id);
+      await retire(gasabo.id, true);
+
+      const live = await prisma.district.findUniqueOrThrow({ where: { id: gasabo.id } });
+      expect(live.isLive).toBe(true);
+    });
+  });
+
   it('a business can set its branch district', async () => {
     const business = await createBusiness(prisma);
     const musanze = await districtByCode('MUSANZE');

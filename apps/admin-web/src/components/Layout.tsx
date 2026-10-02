@@ -13,6 +13,7 @@ const SECTIONS = [
   { to: '/users', label: 'Users' },
   { to: '/tickets', label: 'Support' },
   { to: '/categories', label: 'Categories' },
+  { to: '/places', label: 'Places' },
   { to: '/settings', label: 'Settings' },
 ];
 

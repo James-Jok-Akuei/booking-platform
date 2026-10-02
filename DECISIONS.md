@@ -9229,3 +9229,57 @@ district staying out of every place filter.
 
 **1119 passing across 35 suites**, under the host zone and under `TZ=UTC`.
 
+## 105. Where the platform is open
+
+Clarified after §104: *"I meant Headquartered like Musanze, Rwamagana etc and can
+be added from the admin portal as well and can be retired from there too."*
+
+Musanze and Rwamagana are districts, which confirms §104 chose the right unit.
+What was missing is that the list is a **decision**, not a fixed fact.
+
+### 105.1 The country is a fact; the territory is a choice
+
+Rwanda has thirty districts whatever this platform does. Which of them it trades
+in is something an admin decides — open Musanze when there is somebody to serve
+there, retire it when that changes.
+
+`District.isLive`, defaulting to **true** so nothing changes on deploy and the
+backfilled branches stay findable. Exactly `Category.isLive`'s default and
+exactly its reasoning (§98).
+
+### 105.2 Retired, never deleted
+
+§101, and the case is stronger here than it was for categories. A district may
+be the recorded location of branches, of past bookings, and of the ledger
+entries that explain them. There is no delete endpoint at all; the admin screen
+offers a switch and a rename, which between them cover every reason anyone would
+have wanted one.
+
+The guarantee is the same as a retired category's: **branches already there keep
+their listing and stay in search.** Two tests hold it, including that the
+district remains filterable for them — retiring gates the picker, not the data,
+so a saved link or an old filter still works.
+
+### 105.3 A province with nothing open disappears
+
+The public list returns only provinces with at least one live district. A filter
+row offering "Western Province" that matches nothing is worse than not offering
+it: it reads as the search being broken rather than the platform not being there
+yet.
+
+Measured: retiring all 27 districts outside Kigali left the customer's filter
+showing **City of Kigali alone**.
+
+### 105.4 Verified
+
+Retiring Gasabo — four branches in it — removed it from the picker while all
+four stayed in search, and the response said so in words: *"Retired. New
+branches cannot choose it, and the 4 already there keep their listing."*
+
+Adding worked (Kinigi, in Northern Province); a duplicate name or code gives
+409; a lowercase code gives 400 naming the rule. Everything was restored
+afterwards except Kinigi, left **retired** so the screen has a closed place to
+show.
+
+Ten tests in `places.spec.ts`. **1122 passing across 35 suites.**
+
