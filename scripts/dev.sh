@@ -99,6 +99,24 @@ wait_for 5174 business-web 60
 
 if [[ $WITH_APP == 1 ]]; then
   say "Phone app"
+
+  # Point the app at this machine's address on the wifi, not localhost.
+  #
+  # On a real phone "localhost" means the phone itself, so the app would find
+  # no backend at all. A simulator is happy with either, so the LAN address is
+  # simply always right — and it is rewritten on every start because it changes
+  # whenever this machine joins a different network.
+  LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
+  if [[ -n "$LAN_IP" ]]; then
+    printf '%s\n' \
+      "# Written by scripts/dev.sh on every start — this machine's address on" \
+      "# the wifi, so a real phone can reach the backend. Do not edit by hand." \
+      "EXPO_PUBLIC_API_URL=http://$LAN_IP:3000" \
+      > apps/customer-app/.env
+    ok "app will call http://$LAN_IP:3000"
+  else
+    bad "not on a network — a real phone will not reach the backend"
+  fi
   # Metro only. `expo start --ios` quits if the simulator deep link fails, and
   # it fails often enough to take the whole script down with it (§102.6).
   npm run start --workspace apps/customer-app > "$LOGS/customer-app.log" 2>&1 &
@@ -110,6 +128,7 @@ if [[ $WITH_APP == 1 ]]; then
     else
       printf "  open a simulator, then: \033[1mxcrun simctl openurl booted exp://127.0.0.1:8081\033[0m\n"
     fi
+    [[ -n "${LAN_IP:-}" ]] && printf "  on a phone: open Expo Go and scan, or enter \033[1mexp://%s:8081\033[0m\n" "$LAN_IP"
   fi
 fi
 
