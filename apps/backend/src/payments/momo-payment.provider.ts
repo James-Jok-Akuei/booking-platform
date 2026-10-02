@@ -239,8 +239,18 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
       };
     }
 
+    // `outboundCurrency`, because that is what `amount` was FORMATTED against.
+    // Printed with `params.currency` it read "10.00 RWF" for a request that
+    // actually said "10.00 EUR" — and in a zero-decimal currency "10.00" is not
+    // even a well-formed figure (§114.1). The disbursement provider has always
+    // printed the outbound one, so the two sat in the same log disagreeing.
+    //
+    // Both are logged when they differ, since the whole point of a sandbox
+    // override is that the two are not the same and a reader needs to see it.
+    const quoted =
+      outboundCurrency === params.currency ? '' : ` (quoted in ${params.currency})`;
     this.logger.log(
-      `MoMo requesttopay accepted: reference=${referenceId} amount=${amount} ${params.currency} msisdn=${this.maskMsisdn(params.phoneNumber)}`,
+      `MoMo requesttopay accepted: reference=${referenceId} amount=${amount} ${outboundCurrency}${quoted} msisdn=${this.maskMsisdn(params.phoneNumber)}`,
     );
 
     return { providerReferenceId: referenceId, status: 'PENDING' };

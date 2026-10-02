@@ -682,6 +682,93 @@ describe('Discovery (§43)', () => {
       expect(typeof result.locations[0].openNow).toBe('boolean');
     });
 
+    /** Open or shut every day of the week, so "today" cannot matter. */
+    const alwaysOpen = (locationId: string) => setEveryDay(locationId, false);
+    const alwaysShut = (locationId: string) => setEveryDay(locationId, true);
+
+    async function setEveryDay(locationId: string, isClosed: boolean) {
+      for (let day = 0; day < 7; day++) {
+        await prisma.locationHours.upsert({
+          where: { locationId_dayOfWeek: { locationId, dayOfWeek: day } },
+          update: { openTime: '00:00', closeTime: '23:59', isClosed },
+          create: {
+            locationId,
+            dayOfWeek: day,
+            openTime: '00:00',
+            closeTime: '23:59',
+            isClosed,
+          },
+        });
+      }
+    }
+
+    describe('as a filter, it has to be in the query (§114.2)', () => {
+      it('total counts the OPEN ones, not every one', async () => {
+        const open = await shop();
+        const shut = await shop();
+        await alwaysOpen(open.locationId);
+        await alwaysShut(shut.locationId);
+
+        const result = await discovery.search({ openNow: true });
+
+        // The bug: `total` was the unfiltered count, so this said 2 while
+        // returning 1 — and a client paginating on it asked for a page that
+        // does not exist.
+        expect(ids(result)).toEqual([open.locationId]);
+        expect(result.total).toBe(1);
+      });
+
+      it('fills a page, rather than filtering rows out of one', async () => {
+        // Three shut ones first by name, so an unfiltered page of 2 would hold
+        // only closed branches and come back EMPTY after a post-filter.
+        for (const name of ['AAA 1', 'AAA 2', 'AAA 3']) {
+          const s = await shop({ locationName: name });
+          await alwaysShut(s.locationId);
+        }
+        const first = await shop({ locationName: 'ZZZ open 1' });
+        const second = await shop({ locationName: 'ZZZ open 2' });
+        await alwaysOpen(first.locationId);
+        await alwaysOpen(second.locationId);
+
+        const page = await discovery.search({ openNow: true, limit: 2 });
+
+        expect(page.total).toBe(2);
+        expect(page.locations).toHaveLength(2);
+        expect(ids(page).sort()).toEqual([first.locationId, second.locationId].sort());
+      });
+
+      it('offset counts open branches, not rows the filter would remove', async () => {
+        // Deliberately ordered so a post-filter cannot look right by accident.
+        // The default sort is by name, so this is: open, open, shut, shut, open.
+        const made: string[] = [];
+        for (const name of ['A open', 'B open', 'C shut', 'D shut', 'E open']) {
+          const s = await shop({ locationName: name });
+          const open = name.endsWith('open');
+          await (open ? alwaysOpen(s.locationId) : alwaysShut(s.locationId));
+          if (open) made.push(s.locationId);
+        }
+
+        const one = await discovery.search({ openNow: true, limit: 2, offset: 0 });
+        const two = await discovery.search({ openNow: true, limit: 2, offset: 2 });
+
+        // This is the assertion that catches the old behaviour. Filtering AFTER
+        // take/skip, offset 2 lands on "C shut" and "D shut" and returns NOTHING
+        // — while "E open" exists and is now unreachable at any offset.
+        expect(ids(two)).toHaveLength(1);
+        expect([...ids(one), ...ids(two)].sort()).toEqual([...made].sort());
+      });
+
+      it('says nothing is open rather than returning closed ones', async () => {
+        const shut = await shop();
+        await alwaysShut(shut.locationId);
+
+        const result = await discovery.search({ openNow: true });
+
+        expect(result.total).toBe(0);
+        expect(result.locations).toEqual([]);
+      });
+    });
+
     it('reports a location closed today as closed', async () => {
       const business = await shop();
       // Closed every day of the week, so whatever today is, it is closed.

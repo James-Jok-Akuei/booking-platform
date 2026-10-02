@@ -10036,3 +10036,90 @@ which settled three caveats earlier sections had to leave open:
 * **a confirmed booking** — Steam room at Kimironko, deposit RWF 800 received,
   arrival code shown. That is the §109 payment path finishing on a screen, which
   is the thing the platform could not do this morning.
+
+## 114. The last two open findings (2026-10-02)
+
+§67 listed four things found by walking the API by hand. Two were fixed at the
+time; these are the other two, open since 2026-10-01.
+
+### 114.1 The collections log named the wrong currency
+
+```
+MoMo requesttopay accepted: ... amount=10.00 RWF ...
+```
+
+`amount` is formatted against the **outbound** currency — EUR under the sandbox
+override, hence two decimals — while the code printed beside it was
+`params.currency`, the real one. So the line claimed `10.00 RWF` for a request
+that said `10.00 EUR`, and in a zero-decimal currency `10.00` is not even a
+well-formed figure.
+
+Now printed against `outboundCurrency`, the same value the amount was formatted
+with, and the quoted currency is named alongside **when the two differ**:
+
+```
+amount=30.00 EUR (quoted in RWF)
+```
+
+Both, rather than just the outbound one, because the whole point of the override
+is that they disagree (§52.1) and a reader of the log needs to see it.
+
+Never a charging bug — the request body was always right, and the §55.2 fix that
+corrected the body simply missed the log line next to it.
+
+### 114.2 `openNow` was filtering the page, not the search
+
+The reported symptom was a count: `openNow=true` returned **6** locations and
+said `total: 7`. The cause was worse than the symptom.
+
+`openNow` was applied as `.filter()` on the rows **after** they came back, while
+`total` was the database's count and `take`/`skip` had already run. Three
+separate failures from one line:
+
+1. **`total` counted rows the filter then removed**, so a client paginating on it
+   asks for a page that does not exist.
+2. **A page came back short.** Twenty-five rows fetched, nineteen open, nineteen
+   returned — looking to a client like the end of the results.
+3. **Rows became unreachable.** `offset` skipped unfiltered rows, so a page whose
+   slots were all taken by closed branches returned **nothing**, and the open
+   branches behind it could not be reached at any offset.
+
+The third is the one that matters and the one the symptom hid completely.
+
+**The fix, and why not SQL.** Whether a branch is open right now comes from
+today's template hours, today's exceptions and the clock, and that rule lives in
+`openNowByLocation`. Rewriting it as a WHERE clause would put one rule in two
+languages — the drift §44 moved the cheapest price into a column to avoid.
+
+So the rule stays where it is and its *result* goes into the query: when the
+filter is asked for, the candidate ids are resolved first, `openNowByLocation`
+decides which are open, and those ids restrict the real query. `total`, `take`
+and `skip` then all see the same set. The same shape §107's distance prefilter
+already uses, and the map it produces is reused for the page's own `openNow`
+flag, so nothing is computed twice. One extra query, only when the filter is
+asked for.
+
+### 114.3 Proving it, and a false negative on the way
+
+Four tests. Under a revert to the old behaviour all four fail, each with exactly
+the number the bug produces — `total` 2 where 1 is right, 5 where 2 is right, and
+the unreachable page returning `[]`.
+
+That took two goes. The **first** revert left the new short-circuit in place and
+changed only the `where` clause, so two of the four still passed and the proof
+was worthless. A revert that does not faithfully reproduce the old behaviour
+proves nothing, and a test that passes against it is not evidence.
+
+The first version of the paging test was also weak: with four locations and the
+default name ordering, the old post-filter happened to return the right union.
+Rewritten so the closed branches sit **at an offset boundary** — open, open,
+shut, shut, open — which is the arrangement that makes a row unreachable rather
+than merely out of order.
+
+A note on the live check: comparing the running backend against a fixed build on
+another port showed both agreeing, which proved nothing — `nest start --watch`
+had already restarted the running one onto the fix. (It ignores a bare `touch`,
+§113.1, but a real edit it picks up.) The tests are the evidence here, not the
+two ports.
+
+**1156 across 40.**

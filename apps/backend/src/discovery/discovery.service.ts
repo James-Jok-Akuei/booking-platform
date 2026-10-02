@@ -24,6 +24,19 @@ const DEFAULT_LIMIT = 20;
 /** Mean Earth radius, the standard haversine constant. */
 const EARTH_RADIUS_KM = 6371;
 
+/**
+ * Narrows two optional id restrictions into one.
+ *
+ * `null` means "no restriction", so it is not the same as an empty array — one
+ * means every location is still a candidate and the other means none is.
+ */
+function intersectIds(a: string[] | null, b: string[] | null): string[] | null {
+  if (a === null) return b;
+  if (b === null) return a;
+  const inB = new Set(b);
+  return a.filter((id) => inB.has(id));
+}
+
 @Injectable()
 export class DiscoveryService {
   private readonly timeZone: string;
@@ -79,7 +92,40 @@ export class DiscoveryService {
     // is just a distance lookup for ordering and display (§107).
     const restrictTo =
       distance?.radiusKm !== undefined ? (nearby?.map((r) => r.id) ?? null) : null;
-    const where = this.buildWhere(query, restrictTo);
+
+    /**
+     * `openNow` resolved into the WHERE, by way of the ids it matches (§114.2).
+     *
+     * It cannot be a WHERE clause directly: whether a branch is open right now
+     * comes from today's hours, today's exceptions, and the clock — and that
+     * rule lives in `openNowByLocation`. Rewriting it in SQL would put the same
+     * rule in two languages, which is the drift §44 moved the cheapest price
+     * into a column to avoid.
+     *
+     * It used to be a filter on the page AFTER it was fetched, and that was
+     * wrong twice over. `total` counted rows the filter then removed, so a
+     * client paginating on it asked for a page that does not exist. Worse, the
+     * filter ran after `take`/`skip`, so a page of 25 came back with 19 rows
+     * while more open branches waited on page two — and page two skipped 25,
+     * not 19, so some were never reachable at all.
+     *
+     * Resolving the ids first costs one extra query, and only when the filter is
+     * asked for. The map it produces is reused for the page's own flag below, so
+     * nothing is computed twice.
+     */
+    let openNowByCandidate: Map<string, boolean> | null = null;
+    let openIds: string[] | null = null;
+    if (query.openNow) {
+      const candidates = await this.prisma.location.findMany({
+        where: this.buildWhere(query, restrictTo),
+        select: { id: true },
+      });
+      openNowByCandidate = await this.openNowByLocation(candidates.map((c) => c.id));
+      openIds = candidates.map((c) => c.id).filter((id) => openNowByCandidate!.get(id));
+      if (openIds.length === 0) return this.emptyPage(limit, offset, distance);
+    }
+
+    const where = this.buildWhere(query, intersectIds(restrictTo, openIds));
 
     // (2) and (3): the count and the page.
     const [total, locations] = await Promise.all([
@@ -143,11 +189,14 @@ export class DiscoveryService {
     // The cheapest price no longer needs a query at all — it is a column on the
     // location now (§44), maintained on write. That is one fewer query per page
     // AND the reason `sort=price` can order rows this page never fetched.
-    const [openNow, rate] = await Promise.all([
-      this.openNowByLocation(rows.map((l) => l.id)),
+    const [pageOpenNow, rate] = await Promise.all([
+      // Already known when the filter was applied, and every row on this page is
+      // one of those candidates.
+      openNowByCandidate ?? this.openNowByLocation(rows.map((l) => l.id)),
       // One rate read per response, reused for every amount in it (§39).
       this.settings.getExchangeRateForDisplay(),
     ]);
+    const openNow = pageOpenNow;
 
     return {
       total: query.sort === DiscoverySort.DISTANCE ? locations.length : total,
@@ -186,10 +235,8 @@ export class DiscoveryService {
               : {}),
           };
         })
-        // maxPriceMinor is applied in the QUERY now (see buildWhere), so `total`
-        // and the page agree with it. openNow stays a post-filter because it is
-        // computed from today's hours rather than stored.
-        .filter((l) => (query.openNow ? l.openNow : true)),
+      // No post-filter any more. maxPriceMinor and openNow are both resolved in
+      // the QUERY, so `total`, the page and every filter agree (§114.2).
     };
   }
 
