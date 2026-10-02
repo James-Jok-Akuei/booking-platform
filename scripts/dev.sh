@@ -84,6 +84,32 @@ say "Migrations"
 ok "schema up to date"
 
 # ---------------------------------------------------------------------------
+# This machine's address on the wifi, worked out BEFORE anything starts because
+# both the backend and the phone app need it at boot, not after.
+LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
+
+# The backend stamps this into the URL of every file anyone uploads — chat
+# photos, shop logos, cover images, gallery shots, ticket attachments. Left at
+# localhost those URLs point a real phone at ITSELF, so every image in the app
+# is broken while the API it sits beside works perfectly (§112.7).
+#
+# Rewritten on every start for the same reason the app's is: the address changes
+# whenever this machine joins a different network. The URL is stored on the row
+# when the file is uploaded, so this fixes the NEXT upload — anything uploaded
+# under a previous address keeps pointing there.
+if [[ -n "$LAN_IP" ]]; then
+  BACKEND_ENV=apps/backend/.env
+  if grep -q '^APP_BASE_URL=' "$BACKEND_ENV"; then
+    # A temp file, because sed -i '' differs between BSD and GNU and this script
+    # should not care which one is on the path.
+    sed "s|^APP_BASE_URL=.*|APP_BASE_URL=\"http://$LAN_IP:3000\"|" "$BACKEND_ENV" > "$BACKEND_ENV.tmp" \
+      && mv "$BACKEND_ENV.tmp" "$BACKEND_ENV"
+  else
+    printf '\nAPP_BASE_URL="http://%s:3000"\n' "$LAN_IP" >> "$BACKEND_ENV"
+  fi
+  ok "uploaded files will be served from http://$LAN_IP:3000"
+fi
+
 say "Backend"
 npm run backend:dev > "$LOGS/backend.log" 2>&1 &
 PIDS+=($!)
@@ -97,7 +123,6 @@ PIDS+=($!)
 wait_for 5173 admin-web 60
 wait_for 5174 business-web 60
 
-LAN_IP=""
 if [[ $WITH_APP == 1 ]]; then
   say "Phone app"
 
@@ -105,9 +130,7 @@ if [[ $WITH_APP == 1 ]]; then
   #
   # On a real phone "localhost" means the phone itself, so the app would find
   # no backend at all. A simulator is happy with either, so the LAN address is
-  # simply always right — and it is rewritten on every start because it changes
-  # whenever this machine joins a different network.
-  LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || true)"
+  # simply always right.
   if [[ -n "$LAN_IP" ]]; then
     printf '%s\n' \
       "# Written by scripts/dev.sh on every start — this machine's address on" \

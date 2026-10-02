@@ -1,6 +1,25 @@
 import { api, tokens, type AuthenticatedUser, type TokenPair } from './client';
 
 /**
+ * The signed-in account.
+ *
+ * `displayName` is the byline on this person's reviews (§31). It lives on the
+ * user rather than on each review, which is why changing it rewrites every
+ * review they have ever left — and why the only place to set it is the review
+ * form. There is no endpoint for a customer to change it on its own, and
+ * clearing it is an admin's moderation action.
+ */
+export interface Me {
+  id: string;
+  email: string;
+  role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
+  createdAt: string;
+  displayName: string | null;
+}
+
+export const getMe = () => api<Me>('/users/me');
+
+/**
  * Step one. No role is sent for an existing account — role belongs to
  * registration, and sending it once locked every administrator out (§50).
  * A customer with no account yet registers by sending CUSTOMER explicitly.

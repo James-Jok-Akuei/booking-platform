@@ -43,6 +43,16 @@ export default function RootLayout() {
           name="index"
           options={{
             title: 'Find a place',
+            // On the left, because the right already holds the two places a
+            // customer goes often. An account is somewhere you go rarely and
+            // need to find instantly — mostly to get back out of it.
+            headerLeft: () => (
+              <Link href="/account" asChild>
+                <Pressable hitSlop={10}>
+                  <Text style={{ color: theme.accent, fontWeight: '600' }}>Account</Text>
+                </Pressable>
+              </Link>
+            ),
             // The only way back to a booking once this screen has been left.
             // Shown to everyone, signed in or not: the screen itself explains
             // that signing in is what fills it, which is a better invitation
@@ -65,6 +75,7 @@ export default function RootLayout() {
         />
         <Stack.Screen name="bookings" options={{ title: 'My bookings' }} />
         <Stack.Screen name="messages" options={{ title: 'Messages' }} />
+        <Stack.Screen name="account" options={{ title: 'Account' }} />
         <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
       </Stack>
     </QueryClientProvider>

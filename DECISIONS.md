@@ -9959,3 +9959,80 @@ session on both sides at once, and §102.2 still holds. Every endpoint underneat
 was driven against the live backend: thread creation and its idempotence, sending
 from both sides, the empty-message refusal, unread counts moving to zero on
 read, and the sender projection differing by viewer.
+
+## 113. Every image broken on a real phone, and the way out of an account (2026-10-02)
+
+Both found by opening the simulator and looking, which is becoming the pattern.
+
+### 113.1 `APP_BASE_URL` was still localhost
+
+A photo sent in a chat stored fine and served fine — at
+`http://localhost:3000/uploads/chat/…`. On the simulator that works, because it
+shares this machine's network. **On a real phone `localhost` is the phone**, so
+that image is a broken box.
+
+And not only chat photos. That base builds the URL of **everything anyone
+uploads**: shop logos, cover images, gallery shots, ticket attachments. The API
+beside them answers perfectly, which is what makes it confusing rather than
+obvious — the app works and all its pictures are missing.
+
+Exactly §108.4 again, from the other end. That section pointed the APP at this
+machine's wifi address; this is the BACKEND having to know its own. `dev.sh` now
+works the address out **before anything boots**, because both need it at start,
+and writes it into `apps/backend/.env` as well as the app's.
+
+**The URL is stored on the row at upload time**, so this fixes the next upload
+and not the last one. Anything uploaded under a previous address keeps pointing
+there. For dev data that is fine and worth knowing rather than fixing.
+
+Verified without disturbing a running stack: a second backend booted on port
+3001 with the new setting returned
+`http://192.168.1.89:3000/uploads/chat/…`, reachable, where the one still
+running returned localhost.
+
+A note on method: the first attempt to verify this was wrong twice. `touch`ing a
+source file does **not** make `nest start --watch` restart — it watches content,
+not mtime — so two uploads came back localhost and looked like the fix had
+failed. The second backend is what settled it.
+
+### 113.2 Signing out existed and was reachable from nowhere
+
+`signOut()` has been in the client since §102 and no screen ever called it. On a
+shared phone — which in this market is most of them — an account you cannot
+leave is an account somebody else is using.
+
+The account screen says who you are, the name on your reviews, when you joined,
+and offers the way out. Signing out **clears the query cache**, which is not
+housekeeping: everything in it was fetched as that person, and left in place the
+next person to open the app would see the last one's bookings until each query
+happened to refetch.
+
+It sits on the header's LEFT, because the right already holds the two places a
+customer goes often. An account is somewhere you go rarely and need to find
+instantly, mostly to get back out of it.
+
+The display name is shown and **not editable here**, which is the honest shape
+of the system rather than a gap: the name lives on the user (§31), there is no
+customer-facing endpoint to change it, and the one place it is set is the review
+form — because that is the only place it means anything. The screen says so.
+
+That also closed a weakness left open in §111.3: the review form's name field
+started blank because nothing told the app what the current name was.
+`/users/me` carries it, so the field now shows what people will actually see
+instead of an empty box and a promise.
+
+### 113.3 What the user's own session proved
+
+While this was being written, the simulator was signed in and driven by hand,
+which settled three caveats earlier sections had to leave open:
+
+* **a conversation with messages in it** — four messages both ways, including a
+  photo sent from the business side, a path the probes had not exercised. The
+  backend log shows `Pushing message:new to thread:8319… (2 socket(s) in room)`
+  and the debounced email going out.
+* **the review form, used by a person** — a 5-star "I enjoyed it" on Nyarugenge
+  Branch, posted under the name "Jok", which is also how that name came to be on
+  the account screen above.
+* **a confirmed booking** — Steam room at Kimironko, deposit RWF 800 received,
+  arrival code shown. That is the §109 payment path finishing on a screen, which
+  is the thing the platform could not do this morning.

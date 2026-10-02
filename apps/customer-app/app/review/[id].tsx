@@ -14,6 +14,7 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAppointment } from '../../src/api/booking';
+import { getMe } from '../../src/api/auth';
 import {
   REVIEW_EDIT_WINDOW_DAYS,
   canStillEdit,
@@ -53,7 +54,13 @@ export default function WriteReview() {
   const existing = appointment.data?.review ?? null;
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState('');
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  // The name already on the account, so the field shows what people will
+  // actually see rather than an empty box and a promise (§113.2). It is the
+  // same `null means untouched` trick as the two fields above.
+  const me = useQuery({ queryKey: ['me'], queryFn: getMe });
+  const name = displayName ?? me.data?.displayName ?? '';
 
   // Null means "not touched yet", so the existing review shows through until
   // the customer actually changes something. Defaulting state from a query that
@@ -63,7 +70,7 @@ export default function WriteReview() {
 
   const save = useMutation({
     mutationFn: () => {
-      const trimmedName = displayName.trim();
+      const trimmedName = name.trim();
       const body = {
         rating: score,
         comment: text.trim() || undefined,
@@ -184,7 +191,7 @@ export default function WriteReview() {
                 <Text style={styles.label}>The name to show</Text>
                 <TextInput
                   style={styles.nameInput}
-                  value={displayName}
+                  value={name}
                   onChangeText={setDisplayName}
                   maxLength={40}
                   autoCapitalize="words"
@@ -195,8 +202,9 @@ export default function WriteReview() {
                     matters: filling this in rewrites the byline on every review
                     this person has ever left, which is intended and surprising. */}
                 <Text style={styles.note}>
-                  Leave this blank to keep the name you already use. Changing it
-                  changes the name on all of your reviews.
+                  {me.data?.displayName
+                    ? 'This is the name on all of your reviews. Changing it here changes it on every one of them.'
+                    : 'Leave this blank to stay Anonymous. Whatever you put here becomes the name on all of your reviews.'}
                 </Text>
               </>
             )}
