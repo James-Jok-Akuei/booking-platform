@@ -39,6 +39,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ title: 'Find a place' }} />
+        <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
       </Stack>
     </QueryClientProvider>
   );

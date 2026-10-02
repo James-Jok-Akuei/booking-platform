@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   discoverLocations,
@@ -36,6 +37,7 @@ const SORTS: Array<{ value: DiscoverySort; label: string }> = [
  */
 export default function Discover() {
   const money = useMoney();
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [sort, setSort] = useState<DiscoverySort>('rating');
@@ -126,7 +128,13 @@ export default function Discover() {
             </Text>
           ) : null
         }
-        renderItem={({ item }) => <LocationCard location={item} format={money.format} />}
+        renderItem={({ item }) => (
+          <LocationCard
+            location={item}
+            format={money.format}
+            onPress={() => router.push(`/shop/${item.id}`)}
+          />
+        )}
       />
     </SafeAreaView>
   );
@@ -151,12 +159,14 @@ function Chip({
 function LocationCard({
   location,
   format,
+  onPress,
 }: {
   location: DiscoveredLocation;
   format: (minor: number | null | undefined) => string;
+  onPress: () => void;
 }) {
   return (
-    <Pressable style={styles.card}>
+    <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.cardHead}>
         <Text style={styles.cardTitle} numberOfLines={1}>
           {location.business.name ?? location.name}

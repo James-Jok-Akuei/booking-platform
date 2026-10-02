@@ -9118,3 +9118,47 @@ Metro unable to resolve it. And `expo start --ios` exits if the simulator deep
 link fails, so Metro is started on its own and the URL opened with `xcrun simctl
 openurl`.
 
+## 103. A booking is the shop's wall clock, not the server's
+
+Found by sending the customer app's exact payload at the real backend. The app
+sends what the customer tapped — `2026-11-03T10:00:00`, a time with **no zone**,
+because that is what availability returned and what the slot means.
+
+It stored `2026-11-03T08:00:00.000Z`, which is correct: 10:00 in Kigali. And it
+was correct **by accident**.
+
+### 103.1 The accident
+
+`new Date(dto.startTime)` reads a zone-less string in the **host's** timezone.
+This machine is set to `Africa/Kigali`, so the conversion happened to be right.
+A server in UTC — which is every deployment — would have read the same string as
+10:00 UTC and stored a booking at **12:00 Kigali**.
+
+Two hours late, on every booking, discovered by a customer arriving to a shut
+shop. Nothing in the test suite covered it because every test ran on this
+machine.
+
+### 103.2 The fix is to use the helper that already existed
+
+`zonedWallTimeToInstant` has been in `availability/time.util.ts` all along —
+availability generates its slots with it, and it handles the hour that does not
+exist on a DST boundary. Booking simply never used it.
+
+Now: a string carrying a zone (`Z` or `±HH:MM`) is an instant and is trusted. A
+zone-less one is a wall clock, resolved against the **platform zone** —
+exposed from `AvailabilityService` rather than re-read from config, so the zone
+that generated the slot and the zone that resolves the booking cannot drift.
+
+### 103.3 The test runs in two time zones
+
+Four tests, and the two that matter assert the customer's chosen time survives
+the round trip. They pass here and, more to the point, **with `TZ=UTC`**.
+
+Reverted the fix and ran them under UTC to be sure they were not passing for the
+wrong reason: *Expected "10:00", Received "12:00"*. The whole suite now passes
+under both — **1112 across 34 suites**, twice.
+
+A note on method: this was only visible because the verification sent the
+*literal* payload the client sends, rather than a tidied-up one with a `Z` on
+the end. A convenient test string would have hidden it completely.
+

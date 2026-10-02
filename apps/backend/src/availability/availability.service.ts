@@ -69,6 +69,18 @@ export interface AvailabilityResult {
 export class AvailabilityService {
   private readonly timeZone: string;
 
+  /**
+   * The zone every slot in this module is expressed in (§103).
+   *
+   * Exposed because booking has to resolve a wall-clock time against the SAME
+   * zone the slots were generated in. Reading the config separately there
+   * would let the two drift, and a drift of one hour is a customer arriving
+   * when the shop is shut.
+   */
+  get platformTimeZone(): string {
+    return this.timeZone;
+  }
+
   constructor(
     private readonly prisma: PrismaService,
     config: ConfigService,

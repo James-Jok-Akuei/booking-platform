@@ -69,3 +69,121 @@ export const discoverLocations = (params: {
   limit?: number;
   offset?: number;
 }) => api<DiscoveryPage>('/discover/locations', { query: params, anonymous: true });
+
+export interface ShopService {
+  id: string;
+  name: string;
+  description: string | null;
+  durationMinutes: number;
+  /** A decimal string, e.g. "15.00" — the share taken as a deposit. */
+  depositPercentage: string;
+  currency: string;
+  priceMinor: number;
+}
+
+export interface ShopHours {
+  dayOfWeek: number;
+  openTime: string;
+  closeTime: string;
+  isClosed: boolean;
+}
+
+export interface ShopDetail {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  phone: string | null;
+  capacity: number;
+  openNow: boolean;
+  timeZone: string;
+  rating: { average: number | null; count: number };
+  gallery: Array<{ id: string; url: string }>;
+  hours: ShopHours[];
+  /** Days in the near future that differ from the usual week (§91). */
+  upcomingExceptions: Array<{
+    date: string;
+    isClosed: boolean;
+    customOpenTime: string | null;
+    customCloseTime: string | null;
+  }>;
+  services: ShopService[];
+  business: {
+    id: string;
+    name: string | null;
+    description: string | null;
+    phone: string | null;
+    logoUrl: string | null;
+    coverImageUrl: string | null;
+    category: { id: string; name: string; icon: string | null } | null;
+    subcategory: { id: string; name: string } | null;
+  };
+}
+
+/** A closed branch 404s here, the same as it is absent from search (§89). */
+export const getShop = (id: string) =>
+  api<ShopDetail>(`/discover/locations/${id}`, { anonymous: true });
+
+export interface PublicReview {
+  id: string;
+  rating: number;
+  comment: string | null;
+  editedAt: string | null;
+  responseText: string | null;
+  responseAt: string | null;
+  createdAt: string;
+  displayName: string;
+}
+
+export interface PublicReviewPage {
+  ratingAvg: number | null;
+  ratingCount: number;
+  total: number;
+  reviews: PublicReview[];
+}
+
+/** Hidden reviews are excluded by the server, for everyone (§92). */
+export const getShopReviews = (locationId: string, limit = 20) =>
+  api<PublicReviewPage>(`/locations/${locationId}/reviews`, {
+    query: { limit },
+    anonymous: true,
+  });
+
+export interface Availability {
+  locationId: string;
+  date: string;
+  dayOfWeek: number;
+  timeZone: string;
+  durationMinutes: number;
+  capacity: number;
+  /** Why there are no slots, in the server's own words. */
+  source:
+    | 'TEMPLATE'
+    | 'EXCEPTION'
+    | 'CLOSED_TEMPLATE'
+    | 'CLOSED_EXCEPTION'
+    | string;
+  openTime: string | null;
+  closeTime: string | null;
+  reason: string | null;
+  /** Local "HH:mm" in the location's own time zone, not the phone's. */
+  slots: string[];
+}
+
+/**
+ * Free slots for one day.
+ *
+ * `durationMinutes` must be the service's, not the default grid: a 60-minute
+ * service cannot start in the last 45 minutes before closing, and asking with
+ * the default would offer starts that booking then refuses.
+ */
+export const getAvailability = (
+  locationId: string,
+  date: string,
+  durationMinutes: number,
+) =>
+  api<Availability>(`/locations/${locationId}/availability`, {
+    query: { date, durationMinutes },
+    anonymous: true,
+  });

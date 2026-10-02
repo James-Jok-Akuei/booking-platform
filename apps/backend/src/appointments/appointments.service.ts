@@ -27,6 +27,7 @@ import {
   INTERNAL_CURRENCY,
   convertMinorUnits,
 } from '../payments/currency';
+import { zonedWallTimeToInstant } from '../availability/time.util';
 import { AvailabilityService } from '../availability/availability.service';
 import { computeAppointmentAmounts } from './appointment-pricing';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -151,6 +152,51 @@ export class AppointmentsService {
   ) {}
 
   /**
+   * Turns a submitted `startTime` into an instant (§103).
+   *
+   * A string carrying a zone — `...Z` or `...+02:00` — is already an instant
+   * and is trusted. A **zone-less** one is a wall-clock time, and the only
+   * sensible reading of it is the shop's own clock: it is what availability
+   * returned, and what the customer tapped.
+   *
+   * `new Date()` alone read it as the SERVER's local time, which was right
+   * here only because this machine is set to Africa/Kigali. On a host in UTC —
+   * which is to say every deployment — the same request would have stored
+   * 10:00 UTC for a 10:00 Kigali slot and put every booking two hours late.
+   * Found by sending exactly what the app sends.
+   */
+  private resolveStartTime(raw: string): Date {
+    const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(raw.trim());
+
+    if (hasZone) {
+      const instant = new Date(raw);
+      if (Number.isNaN(instant.getTime())) {
+        throw new BadRequestException('startTime is not a valid date-time.');
+      }
+      return instant;
+    }
+
+    const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?$/.exec(
+      raw.trim(),
+    );
+    if (!match) {
+      throw new BadRequestException('startTime is not a valid date-time.');
+    }
+
+    const [, year, month, day, hour, minute] = match;
+    const calendarDate = new Date(
+      Date.UTC(Number(year), Number(month) - 1, Number(day)),
+    );
+    // The same helper availability uses, so the two cannot disagree — it also
+    // handles the hour that does not exist on a DST boundary.
+    return zonedWallTimeToInstant(
+      calendarDate,
+      Number(hour) * 60 + Number(minute),
+      this.availability.platformTimeZone,
+    );
+  }
+
+  /**
    * Loads everything the notification templates need for one appointment.
    *
    * One helper rather than widening each call site's select, so adding a field
@@ -226,10 +272,7 @@ export class AppointmentsService {
    * second caller's capacity check runs after the first has committed.
    */
   async create(customerId: string, dto: CreateAppointmentDto) {
-    const startTime = new Date(dto.startTime);
-    if (Number.isNaN(startTime.getTime())) {
-      throw new BadRequestException('startTime is not a valid date-time.');
-    }
+    const startTime = this.resolveStartTime(dto.startTime);
 
     const service = await this.prisma.service.findUnique({
       where: { id: dto.serviceId },
