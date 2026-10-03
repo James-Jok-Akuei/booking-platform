@@ -8,9 +8,20 @@ import {
   View,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMe, signOut } from '../src/api/auth';
-import { tokens } from '../src/api/client';
+/**
+ * The LEGACY entry point, deliberately.
+ *
+ * expo-file-system 57 replaced `cacheDirectory` + `writeAsStringAsync` with
+ * `File`/`Paths` classes, and that class API does not expose a text write in its
+ * published typings. The legacy module is a supported export of the same
+ * package, documented, and does exactly one thing here. Guessing at an API from
+ * memory is the mistake this app's AGENTS.md opens by warning about (§102.3).
+ */
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { closeMyAccount, exportMyData, getMe, signOut } from '../src/api/auth';
+import { ApiError, tokens } from '../src/api/client';
 import { theme } from '../src/theme';
 
 const joined = (iso: string) =>
@@ -47,6 +58,75 @@ export default function Account() {
       </>
     );
   }
+
+  /**
+   * A copy of everything, written to a file and handed to the share sheet
+   * (§119.2) — which is the only way anything leaves a phone. Shown as JSON
+   * because it is complete and nothing is quietly left out of it.
+   */
+  const exportData = useMutation({
+    mutationFn: exportMyData,
+    onSuccess: async (data) => {
+      const path = `${FileSystem.cacheDirectory}my-data.json`;
+      await FileSystem.writeAsStringAsync(path, JSON.stringify(data, null, 2));
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(path, {
+          mimeType: 'application/json',
+          dialogTitle: 'Your data',
+        });
+      } else {
+        Alert.alert(
+          'Saved',
+          `Your data is in ${path}. This device cannot open a share sheet.`,
+        );
+      }
+    },
+    onError: (error) =>
+      Alert.alert(
+        'Could not prepare that',
+        error instanceof ApiError ? error.message : 'Please try again.',
+      ),
+  });
+
+  /**
+   * Closing is final and is NOT a delete, and the dialogue says both.
+   *
+   * The server refuses while a booking is still to come, and for the only owner
+   * of a business — each with a sentence saying what to do first, which is shown
+   * as-is rather than replaced with "something went wrong".
+   */
+  const close = useMutation({
+    mutationFn: closeMyAccount,
+    onSuccess: async (result) => {
+      await signOut();
+      queryClient.clear();
+      router.replace('/');
+      Alert.alert('Account closed', result.message);
+    },
+    onError: (error) =>
+      Alert.alert(
+        'Not closed',
+        error instanceof ApiError ? error.message : 'Please try again.',
+      ),
+  });
+
+  const confirmClose = () =>
+    Alert.alert(
+      'Close your account?',
+      'This cannot be undone.\n\nYour bookings and reviews stay with the shops ' +
+        'they belong to, with your name taken off them — a shop still has its ' +
+        'record of what it did and was paid for.\n\nYour email is released, so ' +
+        'you can sign up again later, but it would be a new account with none of ' +
+        'this.\n\nTake a copy of your data first if you want one.',
+      [
+        { text: 'Keep my account', style: 'cancel' },
+        {
+          text: 'Close it',
+          style: 'destructive',
+          onPress: () => close.mutate(),
+        },
+      ],
+    );
 
   const leave = () =>
     Alert.alert(
@@ -96,9 +176,42 @@ export default function Account() {
           </View>
         )}
 
+        {/* Offered BEFORE the close, and said so in the closing dialogue: the
+            moment someone is leaving is the only moment they want this. */}
+        <View style={styles.block}>
+          <Text style={styles.sectionTitle}>Your data</Text>
+          <Text style={styles.note}>
+            A copy of everything we hold about you — your bookings, your reviews,
+            your messages and your support tickets.
+          </Text>
+          <Pressable
+            style={styles.secondary}
+            disabled={exportData.isPending}
+            onPress={() => exportData.mutate()}
+          >
+            <Text style={styles.secondaryText}>
+              {exportData.isPending ? 'Preparing…' : 'Get a copy of my data'}
+            </Text>
+          </Pressable>
+        </View>
+
         <Pressable style={styles.signOut} onPress={leave}>
           <Text style={styles.signOutText}>Sign out</Text>
         </Pressable>
+
+        <Pressable
+          style={styles.closeAccount}
+          disabled={close.isPending}
+          onPress={confirmClose}
+        >
+          <Text style={styles.closeAccountText}>
+            {close.isPending ? 'Closing…' : 'Close my account'}
+          </Text>
+        </Pressable>
+        <Text style={styles.note}>
+          Closing is permanent. Signing out is not — you can come back any time
+          with a new code.
+        </Text>
       </ScrollView>
     </>
   );
@@ -137,4 +250,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signOutText: { color: theme.danger, fontWeight: '700', fontSize: 15 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: theme.ink },
+  secondary: {
+    borderWidth: 1,
+    borderColor: theme.accent,
+    borderRadius: theme.radius,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  secondaryText: { color: theme.accent, fontWeight: '700', fontSize: 15 },
+  // Plainer than Sign out, deliberately. The irreversible thing should not be
+  // the loudest button on the screen.
+  closeAccount: { paddingVertical: 14, alignItems: 'center' },
+  closeAccountText: { color: theme.muted, fontWeight: '600', fontSize: 14 },
 });

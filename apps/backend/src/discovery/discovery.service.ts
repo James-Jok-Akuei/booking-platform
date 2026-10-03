@@ -284,6 +284,7 @@ export class DiscoveryService {
             logoUrl: true,
             coverImageUrl: true,
             status: true,
+            pausedAt: true,
             category: { select: { id: true, name: true, icon: true } },
             subcategory: { select: { id: true, name: true } },
           },
@@ -306,7 +307,7 @@ export class DiscoveryService {
 
     // 404, not 403 — identical to availability and reviews. A business that is
     // not public does not exist as far as a customer is concerned.
-    if (!location || !isPubliclyBookable(location.business.status)) {
+    if (!location || !isPubliclyBookable(location.business)) {
       throw new NotFoundException('Location not found.');
     }
 
@@ -598,6 +599,9 @@ export class DiscoveryService {
       // rather than a second status check (§42.1).
       business: {
         status: BusinessStatus.APPROVED,
+        // A business that paused itself is out of search until it resumes
+        // (§119.3). Bookings already made still happen; this stops new ones.
+        pausedAt: null,
         ...(query.categoryId ? { categoryId: query.categoryId } : {}),
         ...(query.subcategoryId ? { subcategoryId: query.subcategoryId } : {}),
       },
@@ -625,11 +629,12 @@ export class DiscoveryService {
       const contains = { contains: query.q, mode: 'insensitive' as const };
       where.OR = [
         { name: contains },
-        { business: { is: { name: contains, status: BusinessStatus.APPROVED } } },
+        { business: { is: { name: contains, status: BusinessStatus.APPROVED, pausedAt: null } } },
         {
           business: {
             is: {
               status: BusinessStatus.APPROVED,
+              pausedAt: null,
               services: { some: { name: contains, isActive: true } },
             },
           },

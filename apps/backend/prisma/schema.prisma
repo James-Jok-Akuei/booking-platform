@@ -265,6 +265,19 @@ model User {
   /// Cleared back to null by admin moderation; see §31.
   displayName String?
 
+  /// When this person closed their own account (§119). Null means open.
+  ///
+  /// A SOFT close, and it has to be: deleting the row cascades to every
+  /// appointment they ever made, which cascades to their reviews and threads and
+  /// leaves `ledger_entries.appointmentId` NULL — money the platform recorded
+  /// owing to a business, with no record of what it was for. §89 found the same
+  /// shape for branches and answered it the same way.
+  ///
+  /// The row survives; the person does not. Closing clears `displayName` and
+  /// replaces `email` with an address nobody holds, so the reviews a business
+  /// depends on keep their shape while the identity behind them is gone.
+  closedAt DateTime?
+
   // A business user reaches their BusinessProfile through BusinessMembership,
   // never directly.
   //
@@ -369,6 +382,18 @@ model BusinessProfile {
   statusChangedAt   DateTime?
   statusChangedById String?
   statusChangedBy   User?     @relation("BusinessStatusChanges", fields: [statusChangedById], references: [id], onDelete: SetNull)
+
+  /// When the business paused ITSELF (§119). Null means trading.
+  ///
+  /// Deliberately not `status: SUSPENDED`. That is a moderation state an admin
+  /// puts a business into, with a reason the business is told — reusing it for
+  /// "we are closed for a month" would make a holiday indistinguishable from a
+  /// sanction in every admin listing.
+  ///
+  /// Reversible by the business, with nothing lost: bookings already made still
+  /// happen, money owed is still paid out. It only stops NEW ones and takes the
+  /// shop out of search.
+  pausedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

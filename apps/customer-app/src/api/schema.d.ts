@@ -97,6 +97,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/me/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Everything the platform holds about the caller, as JSON (§119.2). */
+        get: operations["AccountController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/me/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Closes the caller's own account (§119.1).
+         *
+         *     POST rather than DELETE, and the name says why: nothing is deleted. The row
+         *     stays so that bookings, reviews and the ledger entries that depend on them
+         *     survive; the identity on it does not.
+         */
+        post: operations["AccountController_close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/users": {
         parameters: {
             query?: never;
@@ -412,6 +452,46 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["BusinessController_updateProfile"];
+        trace?: never;
+    };
+    "/business/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause the whole shop (§119.3). OWNER only — it takes every branch out of
+         *     search at once, which is the business's most consequential self-service act.
+         *
+         *     Not a status change: `status: SUSPENDED` is what an admin does to a business
+         *     and comes with a reason the business is told. A holiday and a sanction must
+         *     not look the same in an admin listing.
+         */
+        post: operations["BusinessController_pause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/business/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["BusinessController_resume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/business/locations": {
@@ -2700,6 +2780,40 @@ export interface operations {
             };
         };
     };
+    AccountController_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AccountController_close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AdminUsersController_list: {
         parameters: {
             query?: {
@@ -3133,6 +3247,40 @@ export interface operations {
                 "application/json": components["schemas"]["UpdateBusinessProfileDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BusinessController_pause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BusinessController_resume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

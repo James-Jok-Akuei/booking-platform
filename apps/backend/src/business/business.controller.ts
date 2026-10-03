@@ -31,6 +31,7 @@ import {
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
 import { BusinessProfileService } from './business-profile.service';
+import { AccountService } from '../users/account.service';
 import { LocationsService } from './locations.service';
 import { ServicesService } from './services.service';
 import { GalleryService } from './gallery.service';
@@ -79,6 +80,7 @@ export class BusinessController {
     private readonly locations: LocationsService,
     private readonly services: ServicesService,
     private readonly gallery: GalleryService,
+    private readonly account: AccountService,
   ) {}
 
   // ---------- Profile ----------
@@ -100,6 +102,28 @@ export class BusinessController {
     @Body() dto: UpdateBusinessProfileDto,
   ) {
     return this.profiles.update(business.businessId, dto);
+  }
+
+  /**
+   * Pause the whole shop (§119.3). OWNER only — it takes every branch out of
+   * search at once, which is the business's most consequential self-service act.
+   *
+   * Not a status change: `status: SUSPENDED` is what an admin does to a business
+   * and comes with a reason the business is told. A holiday and a sanction must
+   * not look the same in an admin listing.
+   */
+  @Post('pause')
+  @HttpCode(HttpStatus.OK)
+  @BusinessRoles(BusinessMemberRole.OWNER)
+  pause(@CurrentBusiness() business: BusinessContext) {
+    return this.account.setPaused(business.businessId, true);
+  }
+
+  @Post('resume')
+  @HttpCode(HttpStatus.OK)
+  @BusinessRoles(BusinessMemberRole.OWNER)
+  resume(@CurrentBusiness() business: BusinessContext) {
+    return this.account.setPaused(business.businessId, false);
   }
 
   // ---------- Locations ----------

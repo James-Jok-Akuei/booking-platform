@@ -80,6 +80,19 @@ export class AuthService {
       }
     }
 
+    // A closed account cannot be signed into (§119.1).
+    //
+    // Belt and braces: closing moves the address to a reserved domain, so the
+    // original email already finds no row and lands in the registration branch
+    // above — which is intended, the address is released and they may sign up
+    // again as somebody new. This is here for the closed address itself, and so
+    // the rule is written down rather than left to emerge from a rename.
+    if (existingUser?.closedAt) {
+      throw new BadRequestException(
+        'This account has been closed. Sign up again to start a new one.',
+      );
+    }
+
     // An existing user's role wins outright. A new user gets the requested one.
     const registrationRole = existingUser ? null : (role as UserRole);
 

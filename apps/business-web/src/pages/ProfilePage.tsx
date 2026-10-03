@@ -7,7 +7,9 @@ import {
   getGallery,
   getProfile,
   listLocations,
+  pauseBusiness,
   removeGalleryPhoto,
+  resumeBusiness,
   setProfileImage,
   updateProfile,
   type BusinessProfile,
@@ -38,6 +40,7 @@ export function ProfilePage() {
       {profile.isLoading && <p className="muted">Loading…</p>}
       {profile.data && (
         <>
+          <PausePanel profile={profile.data} />
           <ShopWindow profile={profile.data} />
           <Details profile={profile.data} />
           <Galleries />
@@ -369,6 +372,93 @@ function LocationGallery({ id, name }: { id: string; name: string }) {
           {problem}
         </p>
       )}
+    </div>
+  );
+}
+
+
+/**
+ * Pausing the whole shop (§119.3).
+ *
+ * At the TOP of the shopfront page and not buried in a settings list: while it
+ * is on, nothing else on this page is doing anything, and a business that cannot
+ * see why its calendar is empty will decide the platform is broken.
+ *
+ * Owner-only on the server. Everyone sees the state — a staff member who cannot
+ * find the shop in the app deserves to know why without asking.
+ */
+function PausePanel({ profile }: { profile: BusinessProfile }) {
+  const queryClient = useQueryClient();
+  const [problem, setProblem] = useState<string | null>(null);
+  const paused = profile.pausedAt !== null;
+
+  const toggle = useMutation({
+    mutationFn: () => (paused ? resumeBusiness() : pauseBusiness()),
+    onSuccess: () => {
+      setProblem(null);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: (error) =>
+      setProblem(
+        error instanceof ApiError ? error.message : 'That did not work.',
+      ),
+  });
+
+  return (
+    <div className={paused ? 'card setting paused' : 'card setting'}>
+      <div className="setting-head">
+        <h2>{paused ? 'Your shop is paused' : 'Your shop is open'}</h2>
+        <p className="muted small">
+          {paused ? (
+            <>
+              Customers cannot find you or make new bookings. Bookings you
+              already have still happen, and money you are owed is still paid out
+              — pausing does not cancel anything.
+            </>
+          ) : (
+            <>
+              Going away, or fully booked for a while? Pausing takes every branch
+              out of search and stops new bookings, and you can undo it at any
+              time.
+            </>
+          )}
+        </p>
+      </div>
+
+      {problem && (
+        <p className="error small" role="alert">
+          {problem}
+        </p>
+      )}
+
+      <div className="row-end">
+        <button
+          type="button"
+          className={paused ? 'primary' : undefined}
+          disabled={toggle.isPending}
+          onClick={() => {
+            if (
+              paused ||
+              window.confirm(
+                'Pause the shop?\n\n' +
+                  'Customers stop finding you and cannot make new bookings. ' +
+                  'Everything already booked still happens and you are still ' +
+                  'paid for it.\n\nYou can turn this off whenever you like.',
+              )
+            ) {
+              toggle.mutate();
+            }
+          }}
+        >
+          {toggle.isPending
+            ? paused
+              ? 'Opening…'
+              : 'Pausing…'
+            : paused
+              ? 'Open the shop again'
+              : 'Pause the shop'}
+        </button>
+      </div>
     </div>
   );
 }

@@ -10503,3 +10503,115 @@ and would have answered it without anyone needing to ask.
 
 A secondary administrator's row keeps its button, because that is the one case
 the server allows.
+
+## 119. Closing an account, and pausing a shop (2026-10-03)
+
+The first of the new features, and it started with a question: *"do buyers also
+need to activate and deactivate their accounts, or do they just need to delete?"*
+
+The answer is in the foreign keys, and it is neither.
+
+### 119.1 Nobody can delete anything here, and the schema says so
+
+`users` is referenced with `ON DELETE CASCADE` from fifteen tables. Deleting one
+person runs:
+
+```
+DELETE user
+  → CASCADE appointments      (every booking they ever made)
+      → CASCADE reviews       (every rating they left)
+      → CASCADE threads
+      → SET NULL ledger_entries.appointmentId
+```
+
+That last line is the one that matters. The ledger entries **survive and lose
+what they were for** — money a business is owed, with nothing saying why. And
+every business they ever reviewed changes rating because somebody else closed
+their account.
+
+This is §89 exactly, which found the same shape for branches and answered it with
+`Restrict` plus a soft close. For people it is worse, because a customer's
+appointments are the counterparty record of money a business has already been
+paid.
+
+So: **the row stays and the person goes.** `closedAt` is set, `displayName` is
+cleared, and `email` is moved to `closed-<uuid>@closed.invalid` — a reserved
+domain (RFC 2606) that holds nothing. Every review they left keeps its text and
+its rating and now reads **"Anonymous"**, because §31 renders a null name that
+way and the review itself was never touched.
+
+Releasing the address is deliberate, not a side effect. The original email now
+matches no row, so signing up again works and produces a genuinely new account
+with none of the old one's history. Verified: the old address returns *"This
+email has no account yet"*, and signing up gives a different id.
+
+**Deactivate is a business concept, not a customer one.** A business pausing
+means something — stop taking bookings, keep the shop. For a customer there is
+nothing to pause: nothing of theirs is public except a review byline, and closure
+is what deals with that.
+
+Three refusals, each driven against the live backend before the screen was built:
+
+* **a booking still to come** — *"You have 1 booking(s) still to come"*. Somebody
+  is expecting them and is usually holding their deposit. Same rule §89 applies
+  to closing a branch.
+* **the only owner of a business** — *"Make someone else an owner first"*. Only
+  an OWNER may invite, so a business left without one can never be changed again.
+* **closing twice**.
+
+Refresh tokens are revoked in the same transaction — all nine, confirmed. The
+access token still works for its remaining fifteen minutes, which is the §99
+window and acceptable here: the person doing this is the account's own owner.
+
+### 119.2 The export sits on the same screen, before the close
+
+A copy of everything — bookings, reviews, conversations and support tickets —
+assembled on request rather than queued to an email. The queue, the job, the
+signed link and the expiry are worth adding the day this is too big to answer in
+a request, and not before. 15 bookings, 1 review and 16 conversations came back
+in one call.
+
+It is offered **above** the close button and named again inside the closing
+dialogue, because the moment someone is leaving is the only moment they want it.
+Messages are labelled `you` / `the business` so a reader can tell whose words are
+whose without a key, and a ticket's internal notes are excluded — those are
+support's working-out about a person, not a record of what they were told.
+
+There is no id parameter anywhere in it. It reads the caller, so there is nothing
+to tamper with.
+
+### 119.3 A paused shop, which is not a suspended one
+
+`pausedAt` on the business, deliberately **not** `status: SUSPENDED`. That is a
+moderation state an admin puts a business into, with a reason the business is
+told — reusing it would make a holiday indistinguishable from a sanction in every
+admin listing.
+
+The widening that mattered was `isPubliclyBookable`. It took a `BusinessStatus`;
+it now takes the row and needs `pausedAt` as a **required** field. That is the
+whole design: optional would let a `select` that forgot to ask for it compile
+cleanly and silently skip half the check. Making it required turned up **both**
+call sites immediately as compile errors — availability/booking and the shop
+page were each selecting only `status`.
+
+Driven end to end, and the second attempt is the one that proves it: the *same*
+booking with a *real* service id returns **404 while paused and 201 once
+resumed**. The first attempt used a bogus service id, failed on the service, and
+proved nothing.
+
+Discovery drops from 8 places to 7, the shop page 404s on a direct link, and the
+count agrees with the rows — §114.2's rule applied to a filter added afterwards.
+
+### 119.4 Two API decisions worth recording
+
+**`POST /users/me/close`, not `DELETE`.** The name has to match what happens, and
+nothing is deleted. A `DELETE` verb on an endpoint that deliberately keeps the
+row is a lie told to the next person who reads the route table.
+
+**`expo-file-system/legacy`, on purpose.** Version 57 replaced `cacheDirectory` +
+`writeAsStringAsync` with `File`/`Paths` classes whose published typings expose no
+text write. The legacy module is a supported export of the same package and does
+exactly one thing here. Spelunking for an undocumented method and guessing is the
+mistake this app's own `AGENTS.md` opens by warning about (§102.3).
+
+**1183 across 43.**

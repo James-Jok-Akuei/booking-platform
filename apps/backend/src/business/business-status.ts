@@ -44,6 +44,19 @@ export function findBusinessTransition(
  *
  * One predicate, used by availability, reviews, chat and booking, so the four
  * cannot drift into disagreeing about what "open for business" means.
+ *
+ * Takes the ROW rather than the status since §119: a business that paused itself
+ * is just as unbookable as one that was never approved, and the two reasons are
+ * deliberately separate fields — `status` is what an admin decided, `pausedAt`
+ * is what the business decided. Passing the row means a surface cannot check one
+ * and forget the other, which is the §42.1 failure in a new costume.
  */
-export const isPubliclyBookable = (status: BusinessStatus) =>
-  status === BusinessStatus.APPROVED;
+export const isPubliclyBookable = (business: {
+  status: BusinessStatus;
+  /**
+   * REQUIRED, not optional. Optional would let a `select` that forgot to ask
+   * for it compile cleanly and silently skip half the check — the exact failure
+   * this predicate exists to make impossible.
+   */
+  pausedAt: Date | null;
+}) => business.status === BusinessStatus.APPROVED && !business.pausedAt;

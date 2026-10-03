@@ -20,6 +20,10 @@ const PROFILE_SELECT = {
   // customer who cannot book is the worst possible way to find out.
   statusReason: true,
   statusChangedAt: true,
+  // Whether the business paused ITSELF (§119.3), which is a different thing
+  // from `status` and has to be visible beside it — a shop that cannot see it
+  // is paused would read an empty calendar as the platform being broken.
+  pausedAt: true,
   createdAt: true,
   updatedAt: true,
   category: { select: { id: true, name: true, icon: true } },

@@ -134,6 +134,11 @@ export interface BusinessProfile {
   coverImageUrl: string | null;
   status: string;
   statusReason: string | null;
+  /**
+   * Set while the business has paused itself (§119.3). Distinct from `status`:
+   * that is what an admin decided, this is what the business decided.
+   */
+  pausedAt: string | null;
   category: { id: string; name: string; icon: string | null } | null;
   subcategory: { id: string; name: string } | null;
 }
@@ -919,3 +924,27 @@ export interface Province {
 
 export const listProvinces = () =>
   api<Province[]>('/places/provinces', { anonymous: true });
+
+// ---------------------------------------------------------------------------
+// Pausing the shop (§119.3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Stops NEW bookings and takes every branch out of search, reversibly.
+ *
+ * OWNER only. Not a status change: `SUSPENDED` is what an admin does to a
+ * business, with a reason the business is told — a holiday and a sanction must
+ * not look the same in an admin listing.
+ *
+ * Nothing is lost. Bookings already made still happen, money already owed is
+ * still paid out. Pausing is not a way to walk away from either.
+ */
+export const pauseBusiness = () =>
+  api<{ id: string; name: string | null; pausedAt: string | null }>('/business/pause', {
+    method: 'POST',
+  });
+
+export const resumeBusiness = () =>
+  api<{ id: string; name: string | null; pausedAt: string | null }>('/business/resume', {
+    method: 'POST',
+  });

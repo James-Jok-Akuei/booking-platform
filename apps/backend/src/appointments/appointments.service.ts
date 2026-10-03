@@ -345,7 +345,7 @@ export class AppointmentsService {
         name: true,
         address: true,
         isActive: true,
-        business: { select: { status: true } },
+        business: { select: { status: true, pausedAt: true } },
       },
     });
     if (!location) throw new NotFoundException('Location not found.');
@@ -365,7 +365,7 @@ export class AppointmentsService {
     // 404, not 403: the same rule used everywhere. A business that is not
     // public does not exist as far as a customer is concerned, and saying
     // "this business is suspended" would leak a moderation decision.
-    if (!isPubliclyBookable(location.business.status)) {
+    if (!isPubliclyBookable(location.business)) {
       throw new NotFoundException('Location not found.');
     }
 

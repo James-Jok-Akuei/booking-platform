@@ -30,7 +30,8 @@
         {
           "locationWhenInUsePermission": "Allow Booking to use your location so it can show you the nearest places first. You can browse everything without it."
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "scheme": "booking",
     "experiments": {

@@ -371,3 +371,9 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .chat-composer { border-top: 1px solid var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 9px; }
 .chat-composer textarea { width: 100%; resize: vertical; }
 .chat-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* A paused shop, said loudly (§119.3). While this is on, nothing else on the
+   page is doing anything, and a business reading an empty calendar will
+   otherwise decide the platform is broken. */
+.card.setting.paused { border-color: var(--warn); background: #fffaf0; }
+.card.setting.paused h2 { color: var(--warn); }

@@ -50,3 +50,30 @@ export async function signOut(): Promise<void> {
   }
   await tokens.clear();
 }
+
+/**
+ * Everything the platform holds about this person (§119.2).
+ *
+ * Assembled on request rather than emailed: a copy someone receives while they
+ * are still looking at the screen is a copy they actually read.
+ */
+export const exportMyData = () =>
+  api<{
+    exportedAt: string;
+    account: { id: string; email: string; role: string; displayName: string | null; createdAt: string };
+    bookings: unknown[];
+    reviews: unknown[];
+    conversations: unknown[];
+    supportTickets: unknown[];
+  }>('/users/me/export');
+
+/**
+ * Closes this account for good. Not a delete, and the message says what that
+ * means: the bookings and reviews stay with the shops they belong to, without a
+ * name on them.
+ *
+ * Refused while a booking is still to come, and for the only owner of a
+ * business — both with a sentence explaining what to do first.
+ */
+export const closeMyAccount = () =>
+  api<{ message: string }>('/users/me/close', { method: 'POST' });

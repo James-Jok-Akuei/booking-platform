@@ -134,6 +134,36 @@
         ]
       }
     },
+    "/users/me/export": {
+      "get": {
+        "operationId": "AccountController_export",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Everything the platform holds about the caller, as JSON (§119.2).",
+        "tags": [
+          "Account"
+        ]
+      }
+    },
+    "/users/me/close": {
+      "post": {
+        "operationId": "AccountController_close",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Closes the caller's own account (§119.1).\n\nPOST rather than DELETE, and the name says why: nothing is deleted. The row\nstays so that bookings, reviews and the ledger entries that depend on them\nsurvive; the identity on it does not.",
+        "tags": [
+          "Account"
+        ]
+      }
+    },
     "/admin/users": {
       "get": {
         "operationId": "AdminUsersController_list",
@@ -693,6 +723,35 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/pause": {
+      "post": {
+        "operationId": "BusinessController_pause",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Pause the whole shop (§119.3). OWNER only — it takes every branch out of\nsearch at once, which is the business's most consequential self-service act.\n\nNot a status change: `status: SUSPENDED` is what an admin does to a business\nand comes with a reason the business is told. A holiday and a sanction must\nnot look the same in an admin listing.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/resume": {
+      "post": {
+        "operationId": "BusinessController_resume",
+        "parameters": [],
         "responses": {
           "200": {
             "description": ""

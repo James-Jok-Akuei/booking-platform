@@ -7,6 +7,9 @@ import { BusinessProfileService } from './business-profile.service';
 import { LocationsService } from './locations.service';
 import { ServicesService } from './services.service';
 import { GalleryService } from './gallery.service';
+// Pausing a shop is the business-side half of §119, and the rule lives with
+// account closure rather than being written twice.
+import { UsersModule } from '../users/users.module';
 import { MembersController } from './members.controller';
 import { MembersService } from './members.service';
 import { BusinessRolesGuard } from './guards/business-roles.guard';
@@ -14,6 +17,7 @@ import { BusinessRolesGuard } from './guards/business-roles.guard';
 // PrismaModule, AuthModule (guards) and StorageModule are all @Global(),
 // so none of them need importing here.
 @Module({
+  imports: [UsersModule],
   controllers: [BusinessController, AdminBusinessController, MembersController],
   providers: [
     BusinessModerationService,
