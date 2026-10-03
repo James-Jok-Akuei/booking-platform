@@ -5,6 +5,8 @@ import { INTERNAL_CURRENCY } from '../payments/currency';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { LegalDocumentKind } from '@prisma/client';
 import { LegalService } from '../legal/legal.service';
+// One include, shared with the DTO describing its result (§128.5).
+import { SERVICE_INCLUDE } from './dto/business-response.dto';
 import { BusinessAccessService } from './business-access.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -20,16 +22,7 @@ import { recalculateFromPrice } from './from-price';
  * the availability module, not to the service catalogue.
  */
 /** Every service response carries where it is offered and for how much (§72). */
-const SERVICE_INCLUDE = {
-  locations: {
-    select: {
-      locationId: true,
-      priceMinor: true,
-      isOffered: true,
-      location: { select: { id: true, name: true } },
-    },
-  },
-} as const;
+
 
 @Injectable()
 export class ServicesService {

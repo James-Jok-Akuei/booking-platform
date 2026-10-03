@@ -11373,3 +11373,28 @@ patterns above cover every case, and `Serialised<T>` and the shared selects are
 written once. The grind is real — `/admin` alone is 57 operations — but each
 module is a slice that ends with a client deriving its types, because that is the
 step that finds things rather than the step that adds files.
+
+### 128.7 Two classes, one schema, silently
+
+`BusinessServiceDto.locations` generated as an offer with **no `isOffered` and no
+`location`** — and nothing said so. The business app's own services page simply
+stopped compiling against its own data.
+
+The cause: `create-service.dto.ts` already exports a `ServiceOfferDto` for the
+request body. **OpenAPI schema names are global.** Two classes with one name are
+one schema, the generator keeps whichever it saw, and the contract then describes
+the wrong shape to every client.
+
+Renamed to `ServiceOfferedAtDto`, and the generator now **refuses to write a
+contract containing a duplicate name**. It cannot be detected in the document —
+the duplicate has already collapsed to a single entry by then — so the check
+reads the source for `export class …Dto` and groups by name. Proved it fires by
+adding a colliding class and watching the build stop, naming both files.
+
+That is the second guard this file has earned, beside §60's empty-schema check:
+both exist because a contract that generates and is wrong is worse than one that
+does not generate, since it looks finished.
+
+The find is also the argument for the whole exercise restated. A hand-written
+client would have declared `isOffered` happily, read `undefined` forever, and
+shown every paused service as live — §109 again, in a place nobody was looking.

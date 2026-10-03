@@ -2661,6 +2661,36 @@ export interface components {
             depositPercentage?: number;
             isActive?: boolean;
         };
+        ServiceOfferLocationDto: {
+            id: string;
+            name: string;
+        };
+        ServiceOfferedAtDto: {
+            locationId: string;
+            /** @description Minor units of the service's currency. Formatted by the server's exponent (§56). */
+            priceMinor: number;
+            /**
+             * @description False means PAUSED at this branch, not withdrawn (§74). The row stays so the
+             *     price does, and turning it back on is one switch rather than retyping it.
+             */
+            isOffered: boolean;
+            location: components["schemas"]["ServiceOfferLocationDto"];
+        };
+        BusinessServiceDto: {
+            id: string;
+            businessId: string;
+            name: string;
+            description: string | null;
+            durationMinutes: number;
+            currency: string;
+            /** @description A decimal STRING — "20", not 20 (§56). */
+            depositPercentage: string;
+            /** @description False means RETIRED, never deleted (§74, §101). */
+            isActive: boolean;
+            createdAt: string;
+            updatedAt: string;
+            locations: components["schemas"]["ServiceOfferedAtDto"][];
+        };
         UpdateServiceDto: {
             name?: string;
             description?: string;
@@ -4416,7 +4446,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>[];
+                    "application/json": components["schemas"]["BusinessServiceDto"][];
                 };
             };
         };
@@ -4434,12 +4464,12 @@ export interface operations {
             };
         };
         responses: {
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["BusinessServiceDto"];
                 };
             };
         };
@@ -4483,7 +4513,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["BusinessServiceDto"];
                 };
             };
         };

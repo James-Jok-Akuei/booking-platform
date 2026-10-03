@@ -35,7 +35,10 @@ import { AccountService } from '../users/account.service';
 import { ServiceDraftsService } from './service-drafts.service';
 import { UpdateServiceDraftDto } from './dto/service-draft.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
-import { BusinessLocationDto } from './dto/business-response.dto';
+import {
+  BusinessLocationDto,
+  BusinessServiceDto,
+} from './dto/business-response.dto';
 import { LocationsService } from './locations.service';
 import { ServicesService } from './services.service';
 import { GalleryService } from './gallery.service';
@@ -313,6 +316,7 @@ export class BusinessController {
   // ---------- Services ----------
 
   @Post('services')
+  @ApiOkResponse({ type: BusinessServiceDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   createService(
     @CurrentUser() user: AuthenticatedUser,
@@ -322,6 +326,7 @@ export class BusinessController {
   }
 
   @Get('services')
+  @ApiOkResponse({ type: [BusinessServiceDto] })
   @BusinessRoles(
     BusinessMemberRole.OWNER,
     BusinessMemberRole.MANAGER,
@@ -332,6 +337,7 @@ export class BusinessController {
   }
 
   @Patch('services/:id')
+  @ApiOkResponse({ type: BusinessServiceDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   updateService(
     @CurrentUser() user: AuthenticatedUser,

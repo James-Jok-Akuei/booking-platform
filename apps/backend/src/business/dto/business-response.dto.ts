@@ -89,3 +89,66 @@ export class BusinessLocationDto implements LocationPayload {
   hours!: LocationHoursDto[];
   _count!: LocationMediaCountDto;
 }
+
+
+/**
+ * A service, and where it is offered.
+ *
+ * Price is per BRANCH since §72 — a price with no branch means nothing — so the
+ * offers are part of the service rather than a number on it.
+ */
+export const SERVICE_INCLUDE = {
+  locations: {
+    select: {
+      locationId: true,
+      priceMinor: true,
+      isOffered: true,
+      location: { select: { id: true, name: true } },
+    },
+  },
+} as const satisfies Prisma.ServiceInclude;
+
+type ServicePayload = Serialised<
+  Prisma.ServiceGetPayload<{ include: typeof SERVICE_INCLUDE }>
+>;
+
+export class ServiceOfferLocationDto {
+  id!: string;
+  name!: string;
+}
+
+/**
+ * NOT `ServiceOfferDto` — that name is already taken by the request body in
+ * `create-service.dto.ts`, and OpenAPI schema names are **global** (§128.7).
+ * The generator silently kept the request shape, so the contract described an
+ * offer with no `isOffered` and no `location`, and the business app's own
+ * screens stopped compiling against it. Caught in seconds; invisible in a
+ * hand-written client forever.
+ */
+export class ServiceOfferedAtDto {
+  locationId!: string;
+  /** Minor units of the service's currency. Formatted by the server's exponent (§56). */
+  priceMinor!: number;
+  /**
+   * False means PAUSED at this branch, not withdrawn (§74). The row stays so the
+   * price does, and turning it back on is one switch rather than retyping it.
+   */
+  isOffered!: boolean;
+  location!: ServiceOfferLocationDto;
+}
+
+export class BusinessServiceDto implements ServicePayload {
+  id!: string;
+  businessId!: string;
+  name!: string;
+  description!: string | null;
+  durationMinutes!: number;
+  currency!: string;
+  /** A decimal STRING — "20", not 20 (§56). */
+  depositPercentage!: string;
+  /** False means RETIRED, never deleted (§74, §101). */
+  isActive!: boolean;
+  createdAt!: string;
+  updatedAt!: string;
+  locations!: ServiceOfferedAtDto[];
+}

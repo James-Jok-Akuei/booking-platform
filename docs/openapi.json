@@ -1440,12 +1440,12 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/BusinessServiceDto"
                 }
               }
             }
@@ -1466,7 +1466,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object"
+                    "$ref": "#/components/schemas/BusinessServiceDto"
                   }
                 }
               }
@@ -1507,7 +1507,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/BusinessServiceDto"
                 }
               }
             }
@@ -5644,6 +5644,103 @@
           "name",
           "offers",
           "durationMinutes"
+        ]
+      },
+      "ServiceOfferLocationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ServiceOfferedAtDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string"
+          },
+          "priceMinor": {
+            "type": "number",
+            "description": "Minor units of the service's currency. Formatted by the server's exponent (§56)."
+          },
+          "isOffered": {
+            "type": "boolean",
+            "description": "False means PAUSED at this branch, not withdrawn (§74). The row stays so the\nprice does, and turning it back on is one switch rather than retyping it."
+          },
+          "location": {
+            "$ref": "#/components/schemas/ServiceOfferLocationDto"
+          }
+        },
+        "required": [
+          "locationId",
+          "priceMinor",
+          "isOffered",
+          "location"
+        ]
+      },
+      "BusinessServiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "depositPercentage": {
+            "type": "string",
+            "description": "A decimal STRING — \"20\", not 20 (§56)."
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "False means RETIRED, never deleted (§74, §101)."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceOfferedAtDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "businessId",
+          "name",
+          "description",
+          "durationMinutes",
+          "currency",
+          "depositPercentage",
+          "isActive",
+          "createdAt",
+          "updatedAt",
+          "locations"
         ]
       },
       "UpdateServiceDto": {

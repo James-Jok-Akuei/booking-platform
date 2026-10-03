@@ -23,7 +23,7 @@
  * executed from `dist`.
  */
 import { NestFactory } from '@nestjs/core';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '../app.module';
@@ -73,6 +73,28 @@ async function main() {
     );
   }
 
+  /**
+   * Two classes with the same name are ONE schema (§128.7).
+   *
+   * OpenAPI schema names are global. A response class called `ServiceOfferDto`
+   * beside a request class of the same name does not collide loudly — the
+   * generator keeps one of them, silently, and the contract then describes the
+   * wrong shape. It cost an hour: the business app stopped compiling against its
+   * own services because the offer it was handed had no `isOffered`.
+   *
+   * Cannot be detected in the document itself, where the duplicate has already
+   * collapsed to one entry, so this reads the source instead.
+   */
+  const duplicates = findDuplicateDtoNames(resolve(process.cwd(), 'src'));
+  if (duplicates.length > 0) {
+    throw new Error(
+      `${duplicates.length} DTO class name(s) declared more than once:\n` +
+        duplicates.map((d) => `  ${d.name}\n    ${d.files.join('\n    ')}`).join('\n') +
+        '\n\nOpenAPI schema names are global, so only one of each survives into ' +
+        'the contract and the other is silently discarded. Rename one.',
+    );
+  }
+
   mkdirSync(dirname(OUTPUT), { recursive: true });
   writeFileSync(OUTPUT, `${JSON.stringify(document, null, 2)}\n`);
 
@@ -90,3 +112,31 @@ main().catch((error) => {
   console.error('\nOpenAPI generation failed:\n', error);
   process.exit(1);
 });
+
+
+/** Every `export class …Dto` under a directory, grouped by name. */
+function findDuplicateDtoNames(root: string): Array<{ name: string; files: string[] }> {
+  const byName = new Map<string, string[]>();
+
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const full = resolve(dir, entry);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!full.endsWith('.ts') || full.endsWith('.spec.ts')) continue;
+      const source = readFileSync(full, 'utf8');
+      for (const match of source.matchAll(/^export class (\w*Dto)\b/gm)) {
+        const files = byName.get(match[1]) ?? [];
+        files.push(full.replace(`${root}/`, 'src/'));
+        byName.set(match[1], files);
+      }
+    }
+  };
+  walk(root);
+
+  return [...byName.entries()]
+    .filter(([, files]) => files.length > 1)
+    .map(([name, files]) => ({ name, files }));
+}

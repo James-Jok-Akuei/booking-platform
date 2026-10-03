@@ -128,32 +128,20 @@ export interface BusinessProfile {
   subcategory: { id: string; name: string } | null;
 }
 
-/** Where a service is offered, and what it costs there (§72). */
-export interface ServiceOffer {
-  locationId: string;
-  /** Minor units. Format with the server's exponent, never /100. */
-  priceMinor: number;
-  /** False means paused here — the price is kept, ready to resume (§74). */
-  isOffered: boolean;
-  location: { id: string; name: string };
-}
+/**
+ * Where a service is offered, and what it costs there (§72). From the contract
+ * (§128) — and named `ServiceOfferedAtDto` there because the request body
+ * already owns `ServiceOfferDto`, and OpenAPI names are global (§128.7).
+ */
+export type ServiceOffer = components['schemas']['ServiceOfferedAtDto'];
 
-export interface Service {
-  id: string;
-  name: string;
-  description: string | null;
-  durationMinutes: number;
-  currency: string;
-  /** A decimal string, e.g. "20" — percent of the price taken up front. */
-  depositPercentage: string;
-  isActive: boolean;
-  /**
-   * The branches that sell this, with each branch's price.
-   *
-   * Empty means offered nowhere: still in the catalogue, bookable by nobody.
-   */
-  locations: ServiceOffer[];
-}
+
+/**
+ * From the contract (§128). Price is per branch (§72), so `locations` carries
+ * the offers rather than a number sitting on the service.
+ */
+export type Service = components['schemas']['BusinessServiceDto'];
+
 
 export interface Hours {
   id: string;
