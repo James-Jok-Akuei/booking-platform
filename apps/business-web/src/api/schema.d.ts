@@ -81,6 +81,144 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/legal/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LegalAcceptanceController_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/me/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LegalAcceptanceController_accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LegalController_published"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/legal/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One document by kind.
+         *
+         *     `ParseEnumPipe` is not decoration. Without it, anything in this position
+         *     reached Prisma as a `kind` it could not parse and came back a **500** —
+         *     which is how `GET /legal/me` behaved before the controllers were ordered,
+         *     since `me` matches `:kind` perfectly well. The pipe makes any such collision
+         *     a clean 400 naming the three valid values, rather than an internal error
+         *     that says nothing.
+         */
+        get: operations["LegalController_current"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/legal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminLegalController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/legal/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminLegalController_startDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/legal/drafts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminLegalController_updateDraft"];
+        trace?: never;
+    };
+    "/admin/legal/drafts/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminLegalController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -2234,144 +2372,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/legal/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["LegalAcceptanceController_status"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/legal/me/accept": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["LegalAcceptanceController_accept"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/legal": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["LegalController_published"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/legal/{kind}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * One document by kind.
-         *
-         *     `ParseEnumPipe` is not decoration. Without it, anything in this position
-         *     reached Prisma as a `kind` it could not parse and came back a **500** —
-         *     which is how `GET /legal/me` behaved before the controllers were ordered,
-         *     since `me` matches `:kind` perfectly well. The pipe makes any such collision
-         *     a clean 400 naming the three valid values, rather than an internal error
-         *     that says nothing.
-         */
-        get: operations["LegalController_current"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/legal": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["AdminLegalController_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/legal/drafts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["AdminLegalController_startDraft"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/admin/legal/drafts/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: operations["AdminLegalController_updateDraft"];
-        trace?: never;
-    };
-    "/admin/legal/drafts/{id}/publish": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["AdminLegalController_publish"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2401,6 +2401,24 @@ export interface components {
         };
         RefreshTokenDto: {
             refreshToken: string;
+        };
+        AcceptDocumentDto: {
+            /** Format: uuid */
+            documentId: string;
+        };
+        StartDraftDto: {
+            /** @enum {string} */
+            kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
+        };
+        UpdateDraftDto: {
+            title?: string;
+            /**
+             * @description The document. Long on purpose: a privacy policy that has to fit in a tweet
+             *     is not a privacy policy, and truncating one at save time would be the worst
+             *     possible place to discover a limit.
+             */
+            body?: string;
+            changeNote?: string;
         };
         SaveNumberDto: {
             /**
@@ -2700,6 +2718,126 @@ export interface components {
              */
             startTime: string;
         };
+        AppointmentLocationDto: {
+            id: string;
+            name: string;
+            address: string;
+            businessId: string;
+        };
+        AppointmentServiceDto: {
+            id: string;
+            name: string;
+            /** @description The NAME only. The live price is deliberately not joined here (§30). */
+            durationMinutes: number;
+        };
+        AppointmentCustomerDto: {
+            id: string;
+            email: string;
+        };
+        AppointmentDto: {
+            id: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            startTime: string;
+            endTime: string;
+            /** @description Integer MINOR UNITS of `currency` — never cents unless that currency has two (§56). */
+            depositAmountMinor: number;
+            platformFeeAmountMinor: number;
+            businessAmountMinor: number;
+            currency: string;
+            /**
+             * @description The price agreed at booking, not today's. Null on appointments made before
+             *     that snapshot existed — and null is the honest answer there, because the
+             *     live price is a different number (§30).
+             */
+            servicePriceMinor: number | null;
+            depositPercentage: string | null;
+            platformFeePercentage: string | null;
+            paymentProviderReferenceId: string | null;
+            paymentInitiatedAt: string | null;
+            /** @description What the operator actually charged, and in what (§45). */
+            providerCurrency: string | null;
+            providerAmountMinor: number | null;
+            exchangeRateUsed: string | null;
+            verifiedAt: string | null;
+            /** @description That a code was sent, and when. Never the code itself (§53.2). */
+            verificationCodeSentAt: string | null;
+            completedAt: string | null;
+            cancelledAt: string | null;
+            noShowAt: string | null;
+            /**
+             * @description Which side called it off — it decides the money outcome (§33).
+             * @enum {string|null}
+             */
+            cancelledBy: "BUSINESS" | "CUSTOMER" | "SYSTEM_EXPIRY" | null;
+            cancelledByUserId: string | null;
+            cancellationReason: string | null;
+            cancellationTicketId: string | null;
+            depositPaidAt: string | null;
+            createdAt: string;
+            location: components["schemas"]["AppointmentLocationDto"];
+            service: components["schemas"]["AppointmentServiceDto"];
+            customer: components["schemas"]["AppointmentCustomerDto"];
+        };
+        AppointmentReviewDto: {
+            id: string;
+            rating: number;
+            comment: string | null;
+            createdAt: string;
+            editedAt: string | null;
+        };
+        CustomerAppointmentDetailDto: {
+            id: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            startTime: string;
+            endTime: string;
+            /** @description Integer MINOR UNITS of `currency` — never cents unless that currency has two (§56). */
+            depositAmountMinor: number;
+            platformFeeAmountMinor: number;
+            businessAmountMinor: number;
+            currency: string;
+            /**
+             * @description The price agreed at booking, not today's. Null on appointments made before
+             *     that snapshot existed — and null is the honest answer there, because the
+             *     live price is a different number (§30).
+             */
+            servicePriceMinor: number | null;
+            depositPercentage: string | null;
+            platformFeePercentage: string | null;
+            paymentProviderReferenceId: string | null;
+            paymentInitiatedAt: string | null;
+            /** @description What the operator actually charged, and in what (§45). */
+            providerCurrency: string | null;
+            providerAmountMinor: number | null;
+            exchangeRateUsed: string | null;
+            verifiedAt: string | null;
+            /** @description That a code was sent, and when. Never the code itself (§53.2). */
+            verificationCodeSentAt: string | null;
+            completedAt: string | null;
+            cancelledAt: string | null;
+            noShowAt: string | null;
+            /**
+             * @description Which side called it off — it decides the money outcome (§33).
+             * @enum {string|null}
+             */
+            cancelledBy: "BUSINESS" | "CUSTOMER" | "SYSTEM_EXPIRY" | null;
+            cancelledByUserId: string | null;
+            cancellationReason: string | null;
+            cancellationTicketId: string | null;
+            depositPaidAt: string | null;
+            createdAt: string;
+            location: components["schemas"]["AppointmentLocationDto"];
+            service: components["schemas"]["AppointmentServiceDto"];
+            customer: components["schemas"]["AppointmentCustomerDto"];
+            /**
+             * @description Shown while it can still be used, null once it cannot (§54.2). A spent code
+             *     is not a secret, but it is not information either — rendering it beside a
+             *     finished appointment invites somebody to read out a number that is refused.
+             */
+            verificationCode: string | null;
+            review: components["schemas"]["AppointmentReviewDto"] | null;
+        };
         InitiateDepositPaymentDto: {
             /**
              * @description Payer's number in MSISDN form: digits only, country code first, no plus and
@@ -2752,6 +2890,12 @@ export interface components {
         };
         ManualVerifyAppointmentDto: {
             note: string;
+        };
+        AppointmentPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            appointments: components["schemas"]["AppointmentDto"][];
         };
         PaymentStatusResponseDto: {
             appointmentId: string;
@@ -2950,24 +3094,6 @@ export interface components {
             /** Format: uuid */
             locationId: string;
         };
-        AcceptDocumentDto: {
-            /** Format: uuid */
-            documentId: string;
-        };
-        StartDraftDto: {
-            /** @enum {string} */
-            kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
-        };
-        UpdateDraftDto: {
-            title?: string;
-            /**
-             * @description The document. Long on purpose: a privacy policy that has to fit in a tweet
-             *     is not a privacy policy, and truncating one at save time would be the worst
-             *     possible place to discover a limit.
-             */
-            body?: string;
-            changeNote?: string;
-        };
     };
     responses: never;
     parameters: never;
@@ -3056,6 +3182,160 @@ export interface operations {
                 "application/json": components["schemas"]["RefreshTokenDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LegalAcceptanceController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LegalAcceptanceController_accept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptDocumentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LegalController_published: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LegalController_current: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminLegalController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminLegalController_startDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartDraftDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminLegalController_updateDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDraftDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminLegalController_publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -4727,7 +5007,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppointmentPageDto"];
+                };
             };
         };
     };
@@ -4744,12 +5026,12 @@ export interface operations {
             };
         };
         responses: {
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["AppointmentDto"];
                 };
             };
         };
@@ -4770,7 +5052,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["CustomerAppointmentDetailDto"];
                 };
             };
         };
@@ -4819,7 +5101,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppointmentDto"];
+                };
             };
         };
     };
@@ -4842,7 +5126,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppointmentDto"];
+                };
             };
         };
     };
@@ -4861,7 +5147,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppointmentDto"];
+                };
             };
         };
     };
@@ -4880,7 +5168,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppointmentDto"];
+                };
             };
         };
     };
@@ -4899,7 +5189,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CustomerAppointmentDetailDto"];
+                };
             };
         };
     };
@@ -4943,7 +5235,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppointmentDto"];
+                };
             };
         };
     };
@@ -6114,160 +6408,6 @@ export interface operations {
             header?: never;
             path: {
                 locationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    LegalAcceptanceController_status: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    LegalAcceptanceController_accept: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AcceptDocumentDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    LegalController_published: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    LegalController_current: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AdminLegalController_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AdminLegalController_startDraft: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StartDraftDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AdminLegalController_updateDraft: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateDraftDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    AdminLegalController_publish: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
             };
             cookie?: never;
         };

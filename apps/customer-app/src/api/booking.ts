@@ -1,49 +1,16 @@
 import { api } from './client';
 import type { components, paths } from './schema';
 
-export interface Appointment {
-  id: string;
-  status:
-    | 'PENDING_PAYMENT'
-    | 'BOOKED'
-    | 'IN_PROGRESS'
-    | 'COMPLETED'
-    | 'CANCELLED'
-    | 'NO_SHOW';
-  startTime: string;
-  endTime: string;
-  currency: string;
-  depositAmountMinor: number;
-  platformFeeAmountMinor: number;
-  businessAmountMinor: number;
-  servicePriceMinor: number | null;
-  depositPaidAt: string | null;
-  verificationCode?: string | null;
-  /**
-   * When a code was last emailed (§53.2) — not how many times.
-   *
-   * Enough for the screen to keep its own one-minute cooldown rather than
-   * offering a button the server answers with "a code was just sent".
-   */
-  verificationCodeSentAt?: string | null;
-  service: { id: string; name: string; durationMinutes: number };
-  location: { id: string; name: string; address: string; businessId: string };
-  /**
-   * The customer's own review, when they have left one.
-   *
-   * Only ever present on the customer's own reads (§111). Its absence is what
-   * the screen uses to offer "write a review"; without it the app could not
-   * tell an unreviewed visit from a reviewed one, because the public listing
-   * carries no `customerId` to find yourself in.
-   */
-  review?: {
-    id: string;
-    rating: number;
-    comment: string | null;
-    createdAt: string;
-    editedAt: string | null;
-  } | null;
-}
+/**
+ * From the contract, not from here (§128).
+ *
+ * This interface was hand-written and had already been wrong once — §125 spent
+ * an evening on a profile picture because a different hand-written shape was
+ * missing a field. Derived, a field the server stops sending is a compile error
+ * in this file rather than `undefined` on a screen.
+ */
+export type Appointment = components['schemas']['CustomerAppointmentDetailDto'];
+
 
 /**
  * Holds the slot. The appointment starts PENDING_PAYMENT and is not confirmed

@@ -1,4 +1,5 @@
 import { api } from './client';
+import type { components } from './schema';
 
 /**
  * The business endpoints this app uses.
@@ -16,29 +17,13 @@ export type AppointmentStatus =
   | 'CANCELLED'
   | 'NO_SHOW';
 
-export interface Appointment {
-  id: string;
-  status: AppointmentStatus;
-  startTime: string;
-  endTime: string;
-  /** Minor units of `currency`. Never divided here; see `Currency` below. */
-  depositAmountMinor: number;
-  platformFeeAmountMinor: number;
-  businessAmountMinor: number;
-  servicePriceMinor: number | null;
-  currency: string;
-  depositPaidAt: string | null;
-  verifiedAt: string | null;
-  completedAt: string | null;
-  cancelledAt: string | null;
-  noShowAt: string | null;
-  cancelledBy: string | null;
-  cancellationReason: string | null;
-  verificationCodeSentAt: string | null;
-  service: { id: string; name: string; durationMinutes: number };
-  customer: { id: string; email: string };
-  location: { id: string; name: string; address: string; businessId: string };
-}
+/**
+ * From the contract (§128). A business sees the shared projection — no arrival
+ * code, no customer's review — and that difference is now the type system's to
+ * keep rather than this file's to remember.
+ */
+export type Appointment = components['schemas']['AppointmentDto'];
+
 
 export interface AppointmentPage {
   total: number;

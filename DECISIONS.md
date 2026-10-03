@@ -11260,3 +11260,74 @@ Checked rather than assumed, since a missing business is exactly what a broken
 filter looks like.
 
 **1213 across 46.**
+
+## 128. Response contracts, and the machinery that makes them true (2026-10-04)
+
+§109.6 said the pattern would be worth fixing the next time a client read a field
+that was not there. It happened twice more — §117's admin detail, §125's profile
+picture — so this is that work, starting with appointments.
+
+**The measurement first.** 7 of 156 operations described a response. 112
+hand-written response types across the three clients, 7 derived from the
+contract. Every one of those 112 is a guess nothing checks.
+
+### 128.1 A DTO that cannot drift
+
+Writing a class per response is the obvious move and, done naively, is **the same
+guess moved one directory**: a DTO sitting beside a query can disagree with it
+exactly as a client's interface could.
+
+So each one is checked against the query it describes:
+
+```ts
+type AppointmentPayload = Serialised<
+  Prisma.AppointmentGetPayload<{ select: typeof APPOINTMENT_SELECT }>
+>;
+
+export class AppointmentDto implements AppointmentPayload { … }
+```
+
+The select moved out of the service into `appointment-select.ts` to make that
+possible. Proved it bites before trusting it: adding `verificationCodeSentCount`
+to the select and not the class fails the build, naming the field.
+
+`Serialised<T>` is the piece that makes it honest. A DTO describes **the wire**,
+not the row, and the two differ in two places that have each already cost
+something — a `Date` arrives as an ISO string, and a `Prisma.Decimal` arrives as
+a string too (`"15"`, never `15`, which is why §56 reads it and never multiplies
+it). Declaring `Prisma.Decimal` on a DTO also breaks the contract outright: it is
+a class with no enumerable properties, so the generator emitted a nameless empty
+schema and **refused the whole document**. §60 built that check and it earned its
+keep on first contact.
+
+Inline object types do the same thing — `location!: { id: string; … }` compiles
+and produces a nameless schema. Named classes, which a client wants to import
+anyway.
+
+### 128.2 It found a bug three minutes after it existed
+
+The moment the customer app derived its type:
+
+```
+Property 'verificationCode' does not exist on type { … 24 more … }
+```
+
+I had annotated `GET /appointments/:id` with the LIST shape. The detail read uses
+`CUSTOMER_APPOINTMENT_SELECT`, which names the arrival code; the list projection
+deliberately does not (§54.2). A third class fixed it — and the mistake was mine,
+made minutes earlier, caught by the machinery built to catch exactly it.
+
+That is the argument for the remaining work in one line. The same mistake made by
+hand, in a client, is an evening.
+
+### 128.3 Where this stands
+
+Appointments done: nine endpoints describing their responses, and all three
+clients deriving `Appointment` from the contract rather than declaring it.
+
+**149 operations remain undescribed.** This is incremental on purpose — each
+module is a vertical slice that ends with a client deriving its types, because
+that is the step that finds things. A pass that only added DTOs would leave the
+clients still guessing and prove nothing.
+
+**1213 across 46.**

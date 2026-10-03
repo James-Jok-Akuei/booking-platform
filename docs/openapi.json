@@ -113,6 +113,181 @@
         ]
       }
     },
+    "/legal/me": {
+      "get": {
+        "operationId": "LegalAcceptanceController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "LegalAcceptance"
+        ]
+      }
+    },
+    "/legal/me/accept": {
+      "post": {
+        "operationId": "LegalAcceptanceController_accept",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "LegalAcceptance"
+        ]
+      }
+    },
+    "/legal": {
+      "get": {
+        "operationId": "LegalController_published",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Legal"
+        ]
+      }
+    },
+    "/legal/{kind}": {
+      "get": {
+        "operationId": "LegalController_current",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "TERMS_OF_USE",
+                "PRIVACY_POLICY",
+                "SELLER_AGREEMENT"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "One document by kind.\n\n`ParseEnumPipe` is not decoration. Without it, anything in this position\nreached Prisma as a `kind` it could not parse and came back a **500** —\nwhich is how `GET /legal/me` behaved before the controllers were ordered,\nsince `me` matches `:kind` perfectly well. The pipe makes any such collision\na clean 400 naming the three valid values, rather than an internal error\nthat says nothing.",
+        "tags": [
+          "Legal"
+        ]
+      }
+    },
+    "/admin/legal": {
+      "get": {
+        "operationId": "AdminLegalController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminLegal"
+        ]
+      }
+    },
+    "/admin/legal/drafts": {
+      "post": {
+        "operationId": "AdminLegalController_startDraft",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminLegal"
+        ]
+      }
+    },
+    "/admin/legal/drafts/{id}": {
+      "patch": {
+        "operationId": "AdminLegalController_updateDraft",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminLegal"
+        ]
+      }
+    },
+    "/admin/legal/drafts/{id}/publish": {
+      "post": {
+        "operationId": "AdminLegalController_publish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminLegal"
+        ]
+      }
+    },
     "/users/me": {
       "get": {
         "operationId": "UsersController_me",
@@ -2202,12 +2377,12 @@
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/AppointmentDto"
                 }
               }
             }
@@ -2290,7 +2465,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentPageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2317,7 +2499,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/CustomerAppointmentDetailDto"
                 }
               }
             }
@@ -2395,7 +2577,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2428,7 +2617,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentDto"
+                }
+              }
+            }
           }
         },
         "summary": "Verification without the code (§54.3).\n\nOWNER and MANAGER only, unlike `verify` above, which STAFF may also use.\nTaking a code the customer reads out is counter work; deciding to proceed\nWITHOUT one is a judgement about whether a stranger is who they say they\nare, and it is recorded against whoever makes it.",
@@ -2452,7 +2648,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2475,7 +2678,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2498,7 +2708,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAppointmentDetailDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2562,7 +2779,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentDto"
+                }
+              }
+            }
           }
         },
         "summary": "Either the customer who booked it or an active member of its business.",
@@ -4631,181 +4855,6 @@
           "Favourites"
         ]
       }
-    },
-    "/legal/me": {
-      "get": {
-        "operationId": "LegalAcceptanceController_status",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "LegalAcceptance"
-        ]
-      }
-    },
-    "/legal/me/accept": {
-      "post": {
-        "operationId": "LegalAcceptanceController_accept",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AcceptDocumentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "LegalAcceptance"
-        ]
-      }
-    },
-    "/legal": {
-      "get": {
-        "operationId": "LegalController_published",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Legal"
-        ]
-      }
-    },
-    "/legal/{kind}": {
-      "get": {
-        "operationId": "LegalController_current",
-        "parameters": [
-          {
-            "name": "kind",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "enum": [
-                "TERMS_OF_USE",
-                "PRIVACY_POLICY",
-                "SELLER_AGREEMENT"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "One document by kind.\n\n`ParseEnumPipe` is not decoration. Without it, anything in this position\nreached Prisma as a `kind` it could not parse and came back a **500** —\nwhich is how `GET /legal/me` behaved before the controllers were ordered,\nsince `me` matches `:kind` perfectly well. The pipe makes any such collision\na clean 400 naming the three valid values, rather than an internal error\nthat says nothing.",
-        "tags": [
-          "Legal"
-        ]
-      }
-    },
-    "/admin/legal": {
-      "get": {
-        "operationId": "AdminLegalController_list",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminLegal"
-        ]
-      }
-    },
-    "/admin/legal/drafts": {
-      "post": {
-        "operationId": "AdminLegalController_startDraft",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StartDraftDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminLegal"
-        ]
-      }
-    },
-    "/admin/legal/drafts/{id}": {
-      "patch": {
-        "operationId": "AdminLegalController_updateDraft",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateDraftDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminLegal"
-        ]
-      }
-    },
-    "/admin/legal/drafts/{id}/publish": {
-      "post": {
-        "operationId": "AdminLegalController_publish",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminLegal"
-        ]
-      }
     }
   },
   "info": {
@@ -4873,6 +4922,55 @@
         "required": [
           "refreshToken"
         ]
+      },
+      "AcceptDocumentDto": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "documentId"
+        ]
+      },
+      "StartDraftDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "TERMS_OF_USE",
+              "PRIVACY_POLICY",
+              "SELLER_AGREEMENT"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "UpdateDraftDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "body": {
+            "type": "string",
+            "description": "The document. Long on purpose: a privacy policy that has to fit in a tweet\nis not a privacy policy, and truncating one at save time would be the worst\npossible place to discover a limit.",
+            "minLength": 0,
+            "maxLength": 200000
+          },
+          "changeNote": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 300
+          }
+        }
       },
       "SaveNumberDto": {
         "type": "object",
@@ -5562,6 +5660,435 @@
           "startTime"
         ]
       },
+      "AppointmentLocationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "address",
+          "businessId"
+        ]
+      },
+      "AppointmentServiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "description": "The NAME only. The live price is deliberately not joined here (§30)."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "durationMinutes"
+        ]
+      },
+      "AppointmentCustomerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ]
+      },
+      "AppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ],
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "depositAmountMinor": {
+            "type": "number",
+            "description": "Integer MINOR UNITS of `currency` — never cents unless that currency has two (§56)."
+          },
+          "platformFeeAmountMinor": {
+            "type": "number"
+          },
+          "businessAmountMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "servicePriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "The price agreed at booking, not today's. Null on appointments made before\nthat snapshot existed — and null is the honest answer there, because the\nlive price is a different number (§30)."
+          },
+          "depositPercentage": {
+            "type": "string",
+            "nullable": true
+          },
+          "platformFeePercentage": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentProviderReferenceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentInitiatedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerCurrency": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the operator actually charged, and in what (§45)."
+          },
+          "providerAmountMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "exchangeRateUsed": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "verificationCodeSentAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "That a code was sent, and when. Never the code itself (§53.2)."
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "noShowAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledBy": {
+            "nullable": true,
+            "description": "Which side called it off — it decides the money outcome (§33).",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "SYSTEM_EXPIRY"
+            ],
+            "type": "string"
+          },
+          "cancelledByUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationTicketId": {
+            "type": "string",
+            "nullable": true
+          },
+          "depositPaidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/AppointmentLocationDto"
+          },
+          "service": {
+            "$ref": "#/components/schemas/AppointmentServiceDto"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/AppointmentCustomerDto"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "startTime",
+          "endTime",
+          "depositAmountMinor",
+          "platformFeeAmountMinor",
+          "businessAmountMinor",
+          "currency",
+          "servicePriceMinor",
+          "depositPercentage",
+          "platformFeePercentage",
+          "paymentProviderReferenceId",
+          "paymentInitiatedAt",
+          "providerCurrency",
+          "providerAmountMinor",
+          "exchangeRateUsed",
+          "verifiedAt",
+          "verificationCodeSentAt",
+          "completedAt",
+          "cancelledAt",
+          "noShowAt",
+          "cancelledBy",
+          "cancelledByUserId",
+          "cancellationReason",
+          "cancellationTicketId",
+          "depositPaidAt",
+          "createdAt",
+          "location",
+          "service",
+          "customer"
+        ]
+      },
+      "AppointmentReviewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "editedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "rating",
+          "comment",
+          "createdAt",
+          "editedAt"
+        ]
+      },
+      "CustomerAppointmentDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ],
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "depositAmountMinor": {
+            "type": "number",
+            "description": "Integer MINOR UNITS of `currency` — never cents unless that currency has two (§56)."
+          },
+          "platformFeeAmountMinor": {
+            "type": "number"
+          },
+          "businessAmountMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "servicePriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "The price agreed at booking, not today's. Null on appointments made before\nthat snapshot existed — and null is the honest answer there, because the\nlive price is a different number (§30)."
+          },
+          "depositPercentage": {
+            "type": "string",
+            "nullable": true
+          },
+          "platformFeePercentage": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentProviderReferenceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentInitiatedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerCurrency": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the operator actually charged, and in what (§45)."
+          },
+          "providerAmountMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "exchangeRateUsed": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "verificationCodeSentAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "That a code was sent, and when. Never the code itself (§53.2)."
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "noShowAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledBy": {
+            "nullable": true,
+            "description": "Which side called it off — it decides the money outcome (§33).",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "SYSTEM_EXPIRY"
+            ],
+            "type": "string"
+          },
+          "cancelledByUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationTicketId": {
+            "type": "string",
+            "nullable": true
+          },
+          "depositPaidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/AppointmentLocationDto"
+          },
+          "service": {
+            "$ref": "#/components/schemas/AppointmentServiceDto"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/AppointmentCustomerDto"
+          },
+          "verificationCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Shown while it can still be used, null once it cannot (§54.2). A spent code\nis not a secret, but it is not information either — rendering it beside a\nfinished appointment invites somebody to read out a number that is refused."
+          },
+          "review": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentReviewDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "startTime",
+          "endTime",
+          "depositAmountMinor",
+          "platformFeeAmountMinor",
+          "businessAmountMinor",
+          "currency",
+          "servicePriceMinor",
+          "depositPercentage",
+          "platformFeePercentage",
+          "paymentProviderReferenceId",
+          "paymentInitiatedAt",
+          "providerCurrency",
+          "providerAmountMinor",
+          "exchangeRateUsed",
+          "verifiedAt",
+          "verificationCodeSentAt",
+          "completedAt",
+          "cancelledAt",
+          "noShowAt",
+          "cancelledBy",
+          "cancelledByUserId",
+          "cancellationReason",
+          "cancellationTicketId",
+          "depositPaidAt",
+          "createdAt",
+          "location",
+          "service",
+          "customer",
+          "verificationCode",
+          "review"
+        ]
+      },
       "InitiateDepositPaymentDto": {
         "type": "object",
         "properties": {
@@ -5669,6 +6196,32 @@
         },
         "required": [
           "note"
+        ]
+      },
+      "AppointmentPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "appointments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "appointments"
         ]
       },
       "PaymentStatusResponseDto": {
@@ -6059,55 +6612,6 @@
         "required": [
           "locationId"
         ]
-      },
-      "AcceptDocumentDto": {
-        "type": "object",
-        "properties": {
-          "documentId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "documentId"
-        ]
-      },
-      "StartDraftDto": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "type": "string",
-            "enum": [
-              "TERMS_OF_USE",
-              "PRIVACY_POLICY",
-              "SELLER_AGREEMENT"
-            ]
-          }
-        },
-        "required": [
-          "kind"
-        ]
-      },
-      "UpdateDraftDto": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "minLength": 2,
-            "maxLength": 200
-          },
-          "body": {
-            "type": "string",
-            "description": "The document. Long on purpose: a privacy policy that has to fit in a tweet\nis not a privacy policy, and truncating one at save time would be the worst\npossible place to discover a limit.",
-            "minLength": 0,
-            "maxLength": 200000
-          },
-          "changeNote": {
-            "type": "string",
-            "minLength": 0,
-            "maxLength": 300
-          }
-        }
       }
     }
   }

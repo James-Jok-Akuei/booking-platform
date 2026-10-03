@@ -18,6 +18,11 @@ import {
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import {
+  APPOINTMENT_SELECT,
+  CUSTOMER_APPOINTMENT_SELECT,
+  CUSTOMER_LIST_SELECT,
+} from './appointment-select';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
@@ -80,104 +85,7 @@ export const RESEND_COOLDOWN_MS = 60_000;
  */
 export const MAX_VERIFICATION_CODE_SENDS = 5;
 
-const APPOINTMENT_SELECT = {
-  id: true,
-  status: true,
-  startTime: true,
-  endTime: true,
-  depositAmountMinor: true,
-  platformFeeAmountMinor: true,
-  businessAmountMinor: true,
-  currency: true,
-  servicePriceMinor: true,
-  depositPercentage: true,
-  platformFeePercentage: true,
-  paymentProviderReferenceId: true,
-  paymentInitiatedAt: true,
-  providerCurrency: true,
-  providerAmountMinor: true,
-  exchangeRateUsed: true,
-  verifiedAt: true,
-  /// Not the code — only that one was sent, and when (§53.2).
-  verificationCodeSentAt: true,
-  completedAt: true,
-  cancelledAt: true,
-  noShowAt: true,
-  // Who called it off and why (§33). Exposed because the party that cancelled
-  // is what decides the money outcome, and the customer reading the booking is
-  // one of the two parties it decides it for.
-  cancelledBy: true,
-  cancelledByUserId: true,
-  cancellationReason: true,
-  cancellationTicketId: true,
-  depositPaidAt: true,
-  createdAt: true,
-  location: { select: { id: true, name: true, address: true, businessId: true } },
-  // NO priceMinor. The joined Service row carries the business's CURRENT price,
-  // and a business may reprice at any time (§10) — selecting it here rendered
-  // today's price as what a customer agreed to months ago, on every appointment
-  // detail and list response. The price of record is the appointment's own
-  // `servicePriceMinor` snapshot above (§30), which is null for appointments
-  // booked before it existed. Null is the honest answer there; falling back to
-  // the live price is the bug.
-  //
-  // The NAME stays joined deliberately: a renamed service makes the label drift,
-  // which is cosmetic. A reprice makes the number wrong, which is not.
-  service: { select: { id: true, name: true, durationMinutes: true } },
-  customer: { select: { id: true, email: true } },
-} as const;
 
-/**
- * The customer's own view, which additionally carries the live arrival code
- * (§54.2).
- *
- * A SEPARATE projection rather than a field on the shared one that business and
- * admin reads remember to strip. The difference matters: with a shared
- * projection, forgetting to strip leaks the code, and every new read path is
- * another chance to forget. Here the shared projection cannot leak it at all,
- * and showing it takes naming this constant — which only the customer's own
- * detail read does.
- */
-/**
- * The customer's own review of this appointment, when they have left one.
- *
- * On the CUSTOMER projections only, and that is the point. The screen has to
- * tell "you can review this" from "you already did", and nothing else could
- * answer it: the public listing carries no `customerId`, so an app cannot find
- * its own row in it (§111).
- *
- * Never joined onto the shared projection, because a business reading the same
- * appointment would then see a review an admin had HIDDEN — §93's whole point is
- * that hiding removes it from every listing, and a join here would quietly put
- * it back. The author is the one person who still sees their own: hiding it from
- * them would leave the app offering "write a review" on an appointment the
- * server answers with 409 "already reviewed", which is worse than saying
- * nothing. No `hiddenAt` is exposed either way — whether an author is told their
- * review was hidden is a moderation question this does not settle.
- */
-const OWN_REVIEW_SELECT = {
-  review: {
-    select: {
-      id: true,
-      rating: true,
-      comment: true,
-      createdAt: true,
-      editedAt: true,
-    },
-  },
-} as const;
-
-/** The customer's own rows in a LISTING: no arrival code, which is detail-only. */
-const CUSTOMER_LIST_SELECT = {
-  ...APPOINTMENT_SELECT,
-  ...OWN_REVIEW_SELECT,
-} as const;
-
-const CUSTOMER_APPOINTMENT_SELECT = {
-  ...APPOINTMENT_SELECT,
-  ...OWN_REVIEW_SELECT,
-  verificationCode: true,
-} as const;
 
 @Injectable()
 export class AppointmentsService {

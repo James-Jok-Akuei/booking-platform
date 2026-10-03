@@ -32,6 +32,11 @@ import {
   InitiateDepositPaymentResponseDto,
   PaymentStatusResponseDto,
 } from './dto/payment-status.dto';
+import {
+  AppointmentDto,
+  AppointmentPageDto,
+  CustomerAppointmentDetailDto,
+} from './dto/appointment.dto';
 
 /**
  * Customer-side booking.
@@ -47,6 +52,7 @@ export class AppointmentsCustomerController {
   constructor(private readonly appointments: AppointmentsService) {}
 
   @Post()
+  @ApiOkResponse({ type: AppointmentDto })
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateAppointmentDto,
@@ -69,6 +75,7 @@ export class AppointmentsCustomerController {
    * something the business does not have.
    */
   @Post(':id/resend-verification-code')
+  @ApiOkResponse({ type: CustomerAppointmentDetailDto })
   @HttpCode(HttpStatus.OK)
   resendVerificationCode(
     @CurrentUser() user: AuthenticatedUser,
@@ -117,6 +124,7 @@ export class AppointmentsBusinessController {
   constructor(private readonly appointments: AppointmentsService) {}
 
   @Post(':id/verify')
+  @ApiOkResponse({ type: AppointmentDto })
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(
     BusinessMemberRole.OWNER,
@@ -140,6 +148,7 @@ export class AppointmentsBusinessController {
    * are, and it is recorded against whoever makes it.
    */
   @Post(':id/verify-manually')
+  @ApiOkResponse({ type: AppointmentDto })
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   verifyManually(
@@ -151,6 +160,7 @@ export class AppointmentsBusinessController {
   }
 
   @Post(':id/complete')
+  @ApiOkResponse({ type: AppointmentDto })
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(
     BusinessMemberRole.OWNER,
@@ -165,6 +175,7 @@ export class AppointmentsBusinessController {
   }
 
   @Post(':id/no-show')
+  @ApiOkResponse({ type: AppointmentDto })
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(
     BusinessMemberRole.OWNER,
@@ -198,6 +209,7 @@ export class AppointmentsSharedController {
   constructor(private readonly appointments: AppointmentsService) {}
 
   @Get()
+  @ApiOkResponse({ type: AppointmentPageDto })
   findAll(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListAppointmentsDto,
@@ -208,6 +220,7 @@ export class AppointmentsSharedController {
   }
 
   @Get(':id')
+  @ApiOkResponse({ type: CustomerAppointmentDetailDto })
   findOne(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -234,6 +247,7 @@ export class AppointmentsSharedController {
 
   /** Either the customer who booked it or an active member of its business. */
   @Post(':id/cancel')
+  @ApiOkResponse({ type: AppointmentDto })
   @HttpCode(HttpStatus.OK)
   cancel(
     @CurrentUser() user: AuthenticatedUser,

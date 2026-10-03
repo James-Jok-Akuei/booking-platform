@@ -1,0 +1,161 @@
+import { AppointmentStatus, CancelledBy, Prisma } from '@prisma/client';
+import { Serialised } from '../../common/serialised';
+import {
+  APPOINTMENT_SELECT,
+  CUSTOMER_APPOINTMENT_SELECT,
+  CUSTOMER_LIST_SELECT,
+} from '../appointment-select';
+
+/**
+ * What an appointment looks like coming back (§128).
+ *
+ * The class exists so the generated contract DESCRIBES this response instead of
+ * calling it `{ type: object }` — which is how §109 came to read four field
+ * names wrong, §117 to miss three fields entirely, and §125 to spend an evening
+ * on a picture that had uploaded perfectly.
+ *
+ * `implements` is the part that matters. It is checked against the Prisma
+ * payload of the very `select` the service uses, so changing that select and not
+ * this class fails the build. A DTO that merely sits beside a query is the same
+ * hand-written guess the clients were already making, moved one directory.
+ */
+type AppointmentPayload = Serialised<
+  Prisma.AppointmentGetPayload<{ select: typeof APPOINTMENT_SELECT }>
+>;
+
+/**
+ * The nested shapes, as named classes.
+ *
+ * Inline object types compile perfectly and produce a NAMELESS schema the
+ * generator then refuses — "1 schema(s) have no properties" — which is §60's
+ * boot-time check doing its job. A client reading `AppointmentLocationDto` also
+ * gets a name to import rather than an anonymous shape to retype.
+ */
+export class AppointmentLocationDto {
+  id!: string;
+  name!: string;
+  address!: string;
+  businessId!: string;
+}
+
+export class AppointmentServiceDto {
+  id!: string;
+  name!: string;
+  /** The NAME only. The live price is deliberately not joined here (§30). */
+  durationMinutes!: number;
+}
+
+export class AppointmentCustomerDto {
+  id!: string;
+  email!: string;
+}
+
+/** The customer's own review of this visit, when they left one (§111). */
+export class AppointmentReviewDto {
+  id!: string;
+  rating!: number;
+  comment!: string | null;
+  createdAt!: string;
+  editedAt!: string | null;
+}
+
+export class AppointmentDto implements AppointmentPayload {
+  id!: string;
+  status!: AppointmentStatus;
+  startTime!: string;
+  endTime!: string;
+
+  /** Integer MINOR UNITS of `currency` — never cents unless that currency has two (§56). */
+  depositAmountMinor!: number;
+  platformFeeAmountMinor!: number;
+  businessAmountMinor!: number;
+  currency!: string;
+
+  /**
+   * The price agreed at booking, not today's. Null on appointments made before
+   * that snapshot existed — and null is the honest answer there, because the
+   * live price is a different number (§30).
+   */
+  servicePriceMinor!: number | null;
+  depositPercentage!: string | null;
+  platformFeePercentage!: string | null;
+
+  paymentProviderReferenceId!: string | null;
+  paymentInitiatedAt!: string | null;
+
+  /** What the operator actually charged, and in what (§45). */
+  providerCurrency!: string | null;
+  providerAmountMinor!: number | null;
+  exchangeRateUsed!: string | null;
+
+  verifiedAt!: string | null;
+  /** That a code was sent, and when. Never the code itself (§53.2). */
+  verificationCodeSentAt!: string | null;
+  completedAt!: string | null;
+  cancelledAt!: string | null;
+  noShowAt!: string | null;
+
+  /** Which side called it off — it decides the money outcome (§33). */
+  cancelledBy!: CancelledBy | null;
+  cancelledByUserId!: string | null;
+  cancellationReason!: string | null;
+  cancellationTicketId!: string | null;
+
+  depositPaidAt!: string | null;
+  createdAt!: string;
+
+  location!: AppointmentLocationDto;
+  service!: AppointmentServiceDto;
+  customer!: AppointmentCustomerDto;
+}
+
+/**
+ * The customer's own row, which additionally carries the review they left.
+ *
+ * Only on the customer's projections, because joining it onto the shared one
+ * would hand a business a review an admin had hidden (§111.1).
+ */
+type CustomerAppointmentPayload = Serialised<
+  Prisma.AppointmentGetPayload<{ select: typeof CUSTOMER_LIST_SELECT }>
+>;
+
+export class CustomerAppointmentDto
+  extends AppointmentDto
+  implements CustomerAppointmentPayload
+{
+  review!: AppointmentReviewDto | null;
+}
+
+/**
+ * The customer's own DETAIL read, which additionally carries the arrival code.
+ *
+ * A third class rather than an optional field on the one above, because that is
+ * what the server actually does: `CUSTOMER_APPOINTMENT_SELECT` names the code and
+ * the list projection deliberately does not (§54.2). Annotating the detail
+ * endpoint with the list shape was caught the moment a client derived from it —
+ * `Property 'verificationCode' does not exist` — which is the whole point of
+ * this exercise arriving three minutes after the machinery was built.
+ */
+type CustomerAppointmentDetailPayload = Serialised<
+  Prisma.AppointmentGetPayload<{ select: typeof CUSTOMER_APPOINTMENT_SELECT }>
+>;
+
+export class CustomerAppointmentDetailDto
+  extends CustomerAppointmentDto
+  implements CustomerAppointmentDetailPayload
+{
+  /**
+   * Shown while it can still be used, null once it cannot (§54.2). A spent code
+   * is not a secret, but it is not information either — rendering it beside a
+   * finished appointment invites somebody to read out a number that is refused.
+   */
+  verificationCode!: string | null;
+}
+
+/** One page of them. */
+export class AppointmentPageDto {
+  total!: number;
+  limit!: number;
+  offset!: number;
+  appointments!: AppointmentDto[];
+}
