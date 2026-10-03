@@ -10981,3 +10981,50 @@ whichever it was, the next attempt says something useful. Worth asking what the
 message actually said rather than assuming this closed it.
 
 **1208 across 46.**
+
+### 125.4 The real cause: Expo's fetch cannot carry a React Native file
+
+§125.1 found a true bug and fixed it. It was **not** the one being hit. The
+phone's actual message was:
+
+```
+Unsupported FormDataPart implementation
+```
+
+which is thrown by `expo/src/winter/fetch/convertFormData.ts`, not by the server
+and not by React Native. The mechanism, read rather than guessed:
+
+Expo installs a WinterCG `fetch`, and patches React Native's `FormData` so it has
+an `entries()`:
+
+```js
+formData.entries = () => formData.getParts().map((part) => {
+  if (part.string) return part.string;
+  if (part.file)   return part.file;
+  if (part.blob)   return part.blob;
+});
+```
+
+A React Native file part is `{ uri, name, type, headers, fieldName }` — none of
+those three keys. The map returns **undefined**, the loop below reaches its
+`else`, and throws. `ExpoFormData` even declares
+`append(name, { uri, name?, type? })` as a supported overload; the converter
+simply does not implement that branch.
+
+So `{ uri, name, type }` — React Native's own file convention, correct for a
+decade — cannot be uploaded through Expo's `fetch` at all.
+
+The fix is to stop using `fetch` for files. `File.upload()` from
+`expo-file-system` builds the multipart request natively: no FormData, nothing to
+convert, nothing to fall through. It takes the field name, the mime type, the
+headers and extra form parameters, which is everything both call sites needed —
+including the chat message's text riding alongside its photo.
+
+**Three things this says about the evening.** The first fix was real and
+unprompted by evidence I had: no upload ever reached the server, which I noted in
+§125.3 rather than claiming it closed. The actual error named its own file, and
+reading that file took minutes where guessing had taken an hour. And the bug was
+in a dependency's handling of a shape its own types advertise — the kind that
+cannot be found by reasoning about one's own code.
+
+**1208 across 46.**

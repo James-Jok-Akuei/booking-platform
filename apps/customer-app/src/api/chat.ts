@@ -1,4 +1,5 @@
 import { api } from './client';
+import { uploadFile } from '../upload';
 import type { components } from './schema';
 
 export type ThreadKind = 'INQUIRY' | 'APPOINTMENT';
@@ -104,13 +105,25 @@ export const sendMessage = (
   threadId: string,
   input: { body?: string; photo?: { uri: string; name: string; type: string } },
 ) => {
+  // With a photo this cannot go through `api()`: Expo's fetch throws
+  // "Unsupported FormDataPart implementation" on a React Native file part
+  // (§125.2), so every photo a customer sent would have failed. Expo's native
+  // uploader carries the text alongside it as a form parameter.
+  if (input.photo) {
+    return uploadFile<Message>(
+      `/threads/${threadId}/messages`,
+      { uri: input.photo.uri, mimeType: input.photo.type },
+      {
+        fieldName: 'photo',
+        ...(input.body ? { parameters: { body: input.body } } : {}),
+      },
+    );
+  }
+
+  // Text alone is still multipart, because that is the one shape the endpoint
+  // takes — but a FormData of strings converts perfectly well.
   const form = new FormData();
   if (input.body) form.append('body', input.body);
-  if (input.photo) {
-    // React Native's FormData takes this shape for a file, not a Blob — the URI
-    // is handed to the native layer, which streams it.
-    form.append('photo', input.photo as unknown as Blob);
-  }
   return api<Message>(`/threads/${threadId}/messages`, { method: 'POST', body: form });
 };
 

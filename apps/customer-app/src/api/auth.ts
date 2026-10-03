@@ -1,4 +1,5 @@
 import { api, tokens, type AuthenticatedUser, type TokenPair } from './client';
+import { uploadFile } from '../upload';
 
 /**
  * The signed-in account.
@@ -117,15 +118,17 @@ export const acceptLegal = (documentId: string) =>
 // A picture, and the numbers you pay from (§124)
 // ---------------------------------------------------------------------------
 
-/** Uploaded, never a linked URL — the rule a business logo follows (§88). */
-export const setMyImage = (photo: { uri: string; name: string; type: string }) => {
-  const form = new FormData();
-  form.append('file', photo as unknown as Blob);
-  return api<{ id: string; imageUrl: string }>('/users/me/image', {
-    method: 'POST',
-    body: form,
+/**
+ * Uploaded, never a linked URL — the rule a business logo follows (§88).
+ *
+ * Through `uploadFile`, not `api()`: Expo's fetch cannot convert a React Native
+ * file part and throws "Unsupported FormDataPart implementation" (§125.2).
+ */
+export const setMyImage = (photo: { uri: string; type: string }) =>
+  uploadFile<{ id: string; imageUrl: string }>('/users/me/image', {
+    uri: photo.uri,
+    mimeType: photo.type,
   });
-};
 
 export const removeMyImage = () =>
   api<{ id: string; imageUrl: string | null }>('/users/me/image', { method: 'DELETE' });
