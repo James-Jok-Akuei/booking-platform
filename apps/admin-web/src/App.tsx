@@ -12,6 +12,7 @@ import { LedgerPage } from './pages/LedgerPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { UsersPage } from './pages/UsersPage';
+import { LegalPage } from './pages/LegalPage';
 import { TicketsPage } from './pages/TicketsPage';
 
 export function App() {
@@ -36,6 +37,7 @@ export function App() {
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/places" element={<PlacesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/legal" element={<LegalPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/businesses" replace />} />
     </Routes>

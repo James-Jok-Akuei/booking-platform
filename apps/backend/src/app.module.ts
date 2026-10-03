@@ -23,6 +23,7 @@ import { LedgerModule } from './ledger/ledger.module';
 import { PayoutsModule } from './payouts/payouts.module';
 import { DiscoveryModule } from './discovery/discovery.module';
 import { FavouritesModule } from './favourites/favourites.module';
+import { LegalModule } from './legal/legal.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { FavouritesModule } from './favourites/favourites.module';
     PayoutsModule,
     DiscoveryModule,
     FavouritesModule,
+    LegalModule,
   ],
 })
 export class AppModule {}

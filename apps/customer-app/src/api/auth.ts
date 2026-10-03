@@ -77,3 +77,36 @@ export const exportMyData = () =>
  */
 export const closeMyAccount = () =>
   api<{ message: string }>('/users/me/close', { method: 'POST' });
+
+// ---------------------------------------------------------------------------
+// Legal documents (§122)
+// ---------------------------------------------------------------------------
+
+export interface LegalDocument {
+  id: string;
+  kind: 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
+  version: number;
+  title: string;
+  body: string;
+  publishedAt: string;
+  changeNote: string | null;
+}
+
+export interface LegalStatus extends LegalDocument {
+  /** The highest version this person ever agreed to, or null. */
+  acceptedVersion: number | null;
+  acceptedAt: string | null;
+  /** True when they never agreed, or agreed to something older. */
+  needsAcceptance: boolean;
+}
+
+/** Readable with no account at all — agreeing before reading is worth nothing. */
+export const listLegal = () => api<LegalDocument[]>('/legal', { anonymous: true });
+
+export const myLegalStatus = () => api<LegalStatus[]>('/legal/me');
+
+export const acceptLegal = (documentId: string) =>
+  api<{ documentId: string; kind: string; version: number }>('/legal/me/accept', {
+    method: 'POST',
+    body: { documentId },
+  });

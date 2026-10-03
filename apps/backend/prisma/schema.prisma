@@ -327,6 +327,8 @@ model User {
   createdAdjustments BillingAdjustment[] @relation("CreatedAdjustments")
 
   favourites      Favourite[] @relation("CustomerFavourites")
+  legalAcceptances       LegalAcceptance[] @relation("LegalAcceptances")
+  publishedLegalDocuments LegalDocument[]  @relation("PublishedLegalDocuments")
   reviews         Review[] @relation("CustomerReviews")
   hiddenReviews   Review[] @relation("HiddenReviews")
   reviewResponses Review[] @relation("ReviewResponses")
@@ -1944,4 +1946,84 @@ model Favourite {
   /// The only query there is: this customer's saved places, newest first.
   @@index([customerId, createdAt])
   @@map("favourites")
+}
+
+
+/// Which document this is. Fixed, not admin-defined: each one is referred to by
+/// name in the apps and in law, and a free-text kind would let two "Privacy
+/// Policy" rows exist with nothing to say which is the real one.
+enum LegalDocumentKind {
+  TERMS_OF_USE
+  PRIVACY_POLICY
+  SELLER_AGREEMENT
+}
+
+/// One VERSION of one legal document (§122).
+///
+/// Append-only in spirit: publishing never edits the published row, it writes a
+/// new version. What somebody agreed to has to stay readable exactly as they
+/// read it — a privacy policy that can be rewritten under the people who
+/// accepted it records nothing at all.
+///
+/// A draft is a row with `publishedAt` null. It can be edited freely, because
+/// nobody has seen it and nobody has agreed to it.
+model LegalDocument {
+  id String @id @default(uuid())
+
+  kind LegalDocumentKind
+
+  /// 1, 2, 3 … per kind. The number people quote at each other.
+  version Int
+
+  /// What the apps show as the heading. Editable per version, because the
+  /// Seller Agreement may one day be the Business Terms.
+  title String
+
+  /// The document itself. Plain text with blank lines between paragraphs — no
+  /// HTML, because an admin pasting from a word processor would paste markup
+  /// that the two apps would then have to agree about rendering, and one of them
+  /// is a phone.
+  body String
+
+  /// Null while it is a draft. Set once, never cleared: unpublishing would hide
+  /// the terms somebody is currently bound by.
+  publishedAt   DateTime?
+  publishedById String?
+  publishedBy   User?     @relation("PublishedLegalDocuments", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  /// A one-line note on what changed, shown beside "this has been updated".
+  /// Nobody rereads four thousand words to find the sentence that moved.
+  changeNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  acceptances LegalAcceptance[]
+
+  /// One row per version per kind.
+  @@unique([kind, version])
+  @@index([kind, publishedAt])
+  @@map("legal_documents")
+}
+
+/// Who agreed to what, and when (§122.3).
+///
+/// Keyed on the DOCUMENT, not on the kind: "they accepted the privacy policy" is
+/// worth nothing without saying which one, and the whole reason versions are
+/// kept is so that question has an answer years later.
+model LegalAcceptance {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation("LegalAcceptances", fields: [userId], references: [id], onDelete: Cascade)
+
+  documentId String
+  document   LegalDocument @relation(fields: [documentId], references: [id], onDelete: Restrict)
+
+  acceptedAt DateTime @default(now())
+
+  /// Accepting twice is accepting once.
+  @@unique([userId, documentId])
+  @@index([userId])
+  @@map("legal_acceptances")
 }

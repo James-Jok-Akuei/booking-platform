@@ -177,6 +177,10 @@ export default function Account() {
           </View>
         )}
 
+        <Pressable style={styles.secondary} onPress={() => router.push('/legal')}>
+          <Text style={styles.secondaryText}>Terms and privacy</Text>
+        </Pressable>
+
         <Pressable style={styles.secondary} onPress={shareApp}>
           <Text style={styles.secondaryText}>Tell a friend about this app</Text>
         </Pressable>

@@ -15,6 +15,7 @@ const SECTIONS = [
   { to: '/reviews', label: 'Reviews' },
   { to: '/getting-paid', label: 'Getting paid' },
   { to: '/analytics', label: 'How it is going' },
+  { to: '/legal', label: 'Legal' },
   { to: '/help', label: 'Help' },
 ];
 

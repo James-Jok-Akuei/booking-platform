@@ -10728,3 +10728,78 @@ nothing else changes.
 Shop sharing sits in the header beside the heart; sharing the app itself sits on
 the account screen, which is where someone is already thinking about the app
 rather than about one shop.
+
+## 122. Legal documents, written by an admin (2026-10-03)
+
+Asked for as "a legal section with the Terms of use, privacy policy and seller
+agreement", and I said the text would have to come from a lawyer. The answer was
+better than the question: **the admin writes them in the portal.** That turns the
+blocker into data and makes the versioning the interesting part.
+
+### 122.1 A published version is never edited
+
+The rule the whole feature is shaped around. What somebody agreed to has to stay
+readable exactly as they read it — a privacy policy that can be rewritten under
+the people who accepted it records nothing at all.
+
+So publishing writes `publishedAt` and from that moment the row is read-only; the
+server refuses an edit with a sentence saying why. A change is a **new version**,
+seeded with the published text so an admin changes the sentence rather than
+retyping four thousand words — which is how mistakes get in.
+
+A draft is a row with `publishedAt` null, and there is **at most one per kind**,
+enforced by a partial unique index rather than by the service's read-then-write.
+Two admins pressing "write a new version" together both pass that read, and the
+loser's work would vanish into a second draft nobody would find.
+
+`publishedAt` is set once and never cleared. Unpublishing would hide the terms
+somebody is currently bound by.
+
+### 122.2 `/legal/me` was being swallowed by `/legal/:kind`
+
+Found by driving it: the acceptance endpoint returned **500**. Nest matches
+routes in registration order, `/legal/:kind` matches `/legal/me` perfectly well,
+and `me` then reached Prisma as a `LegalDocumentKind` it could not parse.
+
+Two halves to the fix, and the second is the one that matters. Registering the
+specific controller first makes `/legal/me` reachable. Adding `ParseEnumPipe` to
+`:kind` makes **any** future collision a 400 naming the three valid values rather
+than an internal error that says nothing — a 500 from a route table is a bug
+nobody can diagnose from the outside.
+
+### 122.3 Who agreed to what, and when it goes stale
+
+`LegalAcceptance` is keyed on the **document**, not the kind. "They accepted the
+privacy policy" is worth nothing without saying which one, and keeping versions
+exists so that question has an answer years later.
+
+`onDelete: Restrict`, so a document somebody agreed to cannot be removed and
+their acceptance cannot vanish with it.
+
+Status is computed as the **highest version ever accepted**, not the most recent
+acceptance. The two differ the moment somebody reads an old version afterwards,
+and treating that as a downgrade would ask them to re-agree to something they are
+already past. Tested.
+
+**Nothing blocks on acceptance.** Locking a shop out of its own calendar over a
+wording change would cost it the day. The apps say "this is new, please read it"
+and carry the admin's one-line note on what changed, because nobody rereads four
+thousand words to find the sentence that moved.
+
+### 122.4 Who sees which
+
+Reading is **anonymous**. Somebody deciding whether to sign up has to be able to
+read the terms first — requiring agreement before reading is the thing everybody
+complains about, and it is also the one thing that would make the agreement worth
+nothing.
+
+The customer app hides the **Seller Agreement**: it binds businesses, it is shown
+in the business app, and a customer reading it there would reasonably think it
+applied to them. The business app shows all three, because a business is bound by
+the other two as well.
+
+Plain text, not HTML or Markdown. An admin pasting from a word processor would
+paste markup that two apps then have to agree about rendering, and one of them is
+a phone.
+
+**1202 across 45.**

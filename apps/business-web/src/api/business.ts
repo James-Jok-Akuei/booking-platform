@@ -948,3 +948,29 @@ export const resumeBusiness = () =>
   api<{ id: string; name: string | null; pausedAt: string | null }>('/business/resume', {
     method: 'POST',
   });
+
+// ---------------------------------------------------------------------------
+// Legal documents (§122)
+// ---------------------------------------------------------------------------
+
+export interface LegalStatus {
+  id: string;
+  kind: 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
+  version: number;
+  title: string;
+  body: string;
+  publishedAt: string;
+  changeNote: string | null;
+  acceptedVersion: number | null;
+  acceptedAt: string | null;
+  /** True when they never agreed, or agreed to an older version. */
+  needsAcceptance: boolean;
+}
+
+export const myLegalStatus = () => api<LegalStatus[]>('/legal/me');
+
+export const acceptLegal = (documentId: string) =>
+  api<{ documentId: string; version: number }>('/legal/me/accept', {
+    method: 'POST',
+    body: { documentId },
+  });

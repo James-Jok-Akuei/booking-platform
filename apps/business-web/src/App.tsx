@@ -13,6 +13,7 @@ import { ReviewsPage } from './pages/ReviewsPage';
 import { StaffPage } from './pages/StaffPage';
 import { SupportPage } from './pages/SupportPage';
 import { MessagesPage } from './pages/MessagesPage';
+import { LegalPage } from './pages/LegalPage';
 
 export function App() {
   return (
@@ -36,6 +37,7 @@ export function App() {
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/help" element={<SupportPage />} />
+        <Route path="/legal" element={<LegalPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/appointments" replace />} />
     </Routes>

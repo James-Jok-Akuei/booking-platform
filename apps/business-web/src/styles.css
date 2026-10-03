@@ -377,3 +377,6 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
    otherwise decide the platform is broken. */
 .card.setting.paused { border-color: var(--warn); background: #fffaf0; }
 .card.setting.paused h2 { color: var(--warn); }
+
+/* A published legal document reads as the paragraphs it was written as. */
+.legal-body { white-space: pre-wrap; font: inherit; margin: 8px 0 0; max-height: 420px; overflow-y: auto; line-height: 1.55; }

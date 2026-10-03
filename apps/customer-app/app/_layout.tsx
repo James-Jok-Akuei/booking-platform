@@ -102,6 +102,7 @@ export default function RootLayout() {
         <Stack.Screen name="messages" options={{ title: 'Messages' }} />
         <Stack.Screen name="saved" options={{ title: 'Saved' }} />
         <Stack.Screen name="categories" options={{ title: 'Categories' }} />
+        <Stack.Screen name="legal" options={{ title: 'Legal' }} />
         <Stack.Screen name="account" options={{ title: 'Account' }} />
         <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
       </Stack>

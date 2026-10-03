@@ -937,3 +937,39 @@ export const setDistrictLive = (id: string, isLive: boolean) =>
     method: 'PATCH',
     body: { isLive },
   });
+
+// ---------------------------------------------------------------------------
+// Legal documents (§122)
+// ---------------------------------------------------------------------------
+
+export type LegalKind = 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
+
+export interface LegalDocument {
+  id: string;
+  kind: LegalKind;
+  version: number;
+  title: string;
+  body: string;
+  /** Null while it is a draft, which is the only state it can be edited in. */
+  publishedAt: string | null;
+  changeNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedBy: { id: string; email: string } | null;
+  _count: { acceptances: number };
+}
+
+export const listLegalDocuments = () => api<LegalDocument[]>('/admin/legal');
+
+/** Starts the next version, or hands back the draft already going. */
+export const startLegalDraft = (kind: LegalKind) =>
+  api<LegalDocument>('/admin/legal/drafts', { method: 'POST', body: { kind } });
+
+export const updateLegalDraft = (
+  id: string,
+  body: { title?: string; body?: string; changeNote?: string },
+) => api<LegalDocument>(`/admin/legal/drafts/${id}`, { method: 'PATCH', body });
+
+/** From here it is read-only forever. A change is a new version. */
+export const publishLegalDraft = (id: string) =>
+  api<LegalDocument>(`/admin/legal/drafts/${id}/publish`, { method: 'POST' });
