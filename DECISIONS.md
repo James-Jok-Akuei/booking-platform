@@ -11028,3 +11028,49 @@ in a dependency's handling of a shape its own types advertise — the kind that
 cannot be found by reasoning about one's own code.
 
 **1208 across 46.**
+
+### 125.5 It was uploading the whole time
+
+Reported as "still can't get uploaded". It had been uploading for an hour. The
+evidence was on disk:
+
+```
+uploads/users/4c3b5684-.../8b77db7a-....jpg   23:48
+uploads/users/4c3b5684-.../8b77db7a-....jpg   23:49
+```
+
+Two attempts from the phone, both stored, both 200, the URL serving `image/jpeg`
+over the LAN address, and `imageUrl` set on the row.
+
+**`GET /users/me` did not return `imageUrl`.** The column was added to the model
+(§124.1) and to the client's `Me` interface, and never to the one hand-written
+`select` that feeds the account screen. So `me.data.imageUrl` was permanently
+`undefined`, the screen rendered the empty circle every time, and a feature that
+worked end to end looked like it failed.
+
+This is §109 again, in the third place it has appeared: a hand-written projection
+missing a field the client's own type promises. The §109.6 trigger said the next
+instance would be the one to act on the pattern rather than the instance. **This
+is it**, and it is recorded here as a debt rather than fixed in passing, because
+retrofitting response DTOs across 110 endpoints is its own piece of work and not
+something to start at midnight inside a bug report.
+
+### 125.6 "There is no upload button"
+
+The other half of the report, and not a bug: on Android the picker's own crop
+screen is the final step and its confirm button says **"Crop"**. Nothing is
+labelled upload or add, so tapping Crop and then looking around for the real
+button is the correct reading of what is on screen.
+
+The screen now says so, and says "Uploading…" while it works. A silent no-op was
+also possible — backing out of the picker returned `null` and the handler did
+nothing at all, which is indistinguishable from a failure. Both ends of that now
+speak.
+
+**Three bugs, one report, and only the third was the one being hit.** §125.1's
+HEIC refusal is real and would have struck any iPhone. §125.4's
+`Unsupported FormDataPart` was the error actually on screen. This one was behind
+both, and would have been found an hour earlier by checking `uploads/` before
+theorising.
+
+**1208 across 46.**

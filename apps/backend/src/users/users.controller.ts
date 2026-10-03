@@ -25,6 +25,16 @@ export class UsersController {
         // Returned raw — null here means "you have not set one", which is a
         // different thing to say to the owner than "Anonymous".
         displayName: true,
+        /**
+         * Their picture (§124.1), and its absence here is what made the whole
+         * feature look broken (§125.5): the upload worked, the file stored, the
+         * URL served — and this read never returned it, so the screen had
+         * nothing to render and every attempt looked like a failure.
+         *
+         * The §109 shape exactly: a hand-written projection missing a field that
+         * the client's own type said was there.
+         */
+        imageUrl: true,
         // The direct 1:1 businessProfile relation was replaced by
         // BusinessMembership, so a business user's profile is reached through
         // their membership — which also surfaces their role in it.

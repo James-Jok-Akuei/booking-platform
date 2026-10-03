@@ -88,7 +88,11 @@ export default function Account() {
       return picked ? setMyImage(picked) : null;
     },
     onSuccess: (result) => {
-      if (result) queryClient.invalidateQueries({ queryKey: ['me'] });
+      // `null` means they backed out of the picker. Saying nothing at all was
+      // indistinguishable from a failed upload (§125.5) — the screen simply sat
+      // there, which is how a working feature came to look broken.
+      if (!result) return;
+      queryClient.invalidateQueries({ queryKey: ['me'] });
     },
     onError: (error) =>
       Alert.alert(
@@ -236,18 +240,28 @@ export default function Account() {
                 <Pressable disabled={picture.isPending} onPress={() => picture.mutate()}>
                   <Text style={styles.linkText}>
                     {picture.isPending
-                      ? 'Adding…'
+                      ? 'Uploading…'
                       : me.data.imageUrl
                         ? 'Change picture'
                         : 'Add a picture'}
                   </Text>
                 </Pressable>
+                {/* On Android the picker's own crop screen is the last step and
+                    its button says "Crop", not "Done" — which reads as though
+                    something else is still expected. Said here so nobody taps it
+                    and then looks for an upload button that does not exist. */}
+                {picture.isPending && (
+                  <Text style={styles.note}>Sending it now…</Text>
+                )}
                 {me.data.imageUrl && (
                   <Pressable onPress={() => clearPicture.mutate()}>
                     <Text style={styles.linkMuted}>Remove</Text>
                   </Pressable>
                 )}
-                <Text style={styles.note}>Only you see this.</Text>
+                <Text style={styles.note}>
+                  Only you see this. On Android, tapping Crop is what sends it —
+                  there is no separate upload button.
+                </Text>
               </View>
             </View>
 
