@@ -10682,3 +10682,49 @@ which is what makes a missing wire a loud failure rather than a silent `undefine
 provides everything and proves less.
 
 **1191 across 44.**
+
+## 121. Browsing by category, and passing a shop on (2026-10-03)
+
+### 121.1 The chips were for people who already knew what they wanted
+
+Discovery has filtered by category since §43. The chips scroll sideways and show
+about three of eight, and the **subcategories were reachable from nowhere at
+all** — thirty-odd names the admin maintains (§100) that no customer could see.
+
+So: a screen with the whole list, what each category covers in the admin's own
+words, and its subcategories behind a tap. Behind a tap because eight categories
+with every subcategory expanded is a wall of words, and the narrower names only
+start meaning something once somebody has picked the area.
+
+Tapping a category opens discovery already filtered. `useState`'s initialiser
+runs once, which is exactly right here: the route is a **starting point**, not
+something that fights the chips afterwards.
+
+Changing or clearing a category clears the subcategory with it. "Beauty + Auto
+Electrical" matches nothing by construction, and a filter that silently returns
+nothing is worse than one that cannot be set.
+
+Verified against live data: 8 places with no filter, 3 for Beauty & Personal
+Care, 2 for Barbershop under it.
+
+A note for whoever reads the demo data and panics as I did: **Automotive returns
+zero, and that is the seed, not the filter.** Kigali Auto Care is filed under
+"Health & Wellness / Massage Therapy". The categories were assigned at random
+when the Rwanda dataset was reseeded, and it is worth fixing one day so the demo
+reads as a real market.
+
+### 121.2 A share with no link, on purpose
+
+There is no public website, so there is nothing honest to link to. Rather than
+invent a URL that 404s, a share carries the information itself — the shop's name,
+its district and address, the price it starts at.
+
+That is not a placeholder, it is the better message for this market. Somebody
+forwarding a shop over WhatsApp is passing on an address, and an address works
+whether or not the person receiving it has the app. The day
+`EXPO_PUBLIC_SHARE_BASE_URL` names a real domain, every share gains a link and
+nothing else changes.
+
+Shop sharing sits in the header beside the heart; sharing the app itself sits on
+the account screen, which is where someone is already thinking about the app
+rather than about one shop.

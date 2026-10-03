@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   discoverLocations,
@@ -50,7 +50,16 @@ export default function Discover() {
   const nearMe = useNearMe();
   const saved = useSaved();
   const [query, setQuery] = useState('');
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  /**
+   * Seeded from the route, so the browse-by-category screen can hand one over
+   * (§121). `useState`'s initialiser runs once, which is what makes this a
+   * STARTING point rather than something that fights the chips afterwards.
+   */
+  const params = useLocalSearchParams<{ categoryId?: string; subcategoryId?: string }>();
+  const [categoryId, setCategoryId] = useState<string | null>(params.categoryId ?? null);
+  const [subcategoryId, setSubcategoryId] = useState<string | null>(
+    params.subcategoryId ?? null,
+  );
   const [sort, setSort] = useState<DiscoverySort>('rating');
   const [openNow, setOpenNow] = useState(false);
   const [provinceId, setProvinceId] = useState<string | null>(null);
@@ -114,6 +123,7 @@ export default function Discover() {
       'discover',
       query,
       categoryId,
+      subcategoryId,
       sort,
       openNow,
       provinceId,
@@ -131,6 +141,7 @@ export default function Discover() {
         ...(sortingByDistance ? { lat: position.lat, lng: position.lng } : {}),
         ...(query.trim() ? { q: query.trim() } : {}),
         ...(categoryId ? { categoryId } : {}),
+        ...(subcategoryId ? { subcategoryId } : {}),
         ...(openNow ? { openNow: true } : {}),
         ...(districtId ? { districtId } : provinceId ? { provinceId } : {}),
       }),
@@ -234,19 +245,36 @@ export default function Discover() {
 
         {(categories.data?.length ?? 0) > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chips}>
-            <Chip label="All" active={categoryId === null} onPress={() => setCategoryId(null)} />
+            <Chip
+              label="All"
+              active={categoryId === null}
+              onPress={() => {
+                setCategoryId(null);
+                // A subcategory outlives its category only as a contradiction.
+                setSubcategoryId(null);
+              }}
+            />
             {categories.data?.map((category) => (
               <Chip
                 key={category.id}
                 label={category.name}
                 active={categoryId === category.id}
-                onPress={() =>
-                  setCategoryId((was) => (was === category.id ? null : category.id))
-                }
+                onPress={() => {
+                  setCategoryId((was) => (was === category.id ? null : category.id));
+                  // Changing the category leaves any narrower choice behind:
+                  // "Beauty + Auto Electrical" matches nothing by construction.
+                  setSubcategoryId(null);
+                }}
               />
             ))}
           </ScrollView>
         )}
+
+        {/* The chips scroll sideways and show about three of eight. Someone who
+            does not already know what they want needs to SEE the list (§121). */}
+        <Pressable onPress={() => router.push('/categories')}>
+          <Text style={styles.browseAll}>Browse all categories →</Text>
+        </Pressable>
       </View>
 
       {(nearMe.state.status === 'denied' || nearMe.state.status === 'failed') && (
@@ -396,6 +424,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.ink,
   },
+  browseAll: { color: theme.accent, fontWeight: '600', fontSize: 13, paddingVertical: 6 },
   chips: { flexGrow: 0 },
   chip: {
     paddingHorizontal: 13,

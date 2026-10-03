@@ -15,6 +15,8 @@ export interface Category {
   id: string;
   name: string;
   icon: string | null;
+  /** What the category covers, in the admin's own words. Shown on the browse screen. */
+  description: string | null;
   subcategories: Array<{ id: string; name: string }>;
 }
 

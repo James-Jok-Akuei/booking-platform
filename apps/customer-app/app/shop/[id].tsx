@@ -13,6 +13,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { getShop, getShopReviews, type ShopService } from '../../src/api/discovery';
 import { openInquiry } from '../../src/api/chat';
 import { useSaved } from '../../src/useSaved';
+import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
 import { ApiError, tokens } from '../../src/api/client';
 import { useMoney } from '../../src/money';
@@ -93,11 +94,34 @@ export default function Shop() {
           title: s.business.name ?? s.name,
           // In the header, so it is reachable without scrolling past the photos.
           headerRight: () => (
-            <SaveButton
-              saved={s.saved}
-              large
-              onPress={() => saved.toggle(s.id, s.saved ?? false, `/shop/${s.id}`)}
-            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Pressable
+                hitSlop={10}
+                accessibilityLabel="Share this place"
+                onPress={() =>
+                  shareShop({
+                    id: s.id,
+                    name: s.name,
+                    address: s.address,
+                    businessName: s.business.name,
+                    districtName: s.district?.name ?? null,
+                    fromPrice:
+                      s.services.length > 0
+                        ? money.format(
+                            Math.min(...s.services.map((service) => service.priceMinor)),
+                          )
+                        : null,
+                  })
+                }
+              >
+                <Text style={{ fontSize: 20, color: theme.accent }}>↗</Text>
+              </Pressable>
+              <SaveButton
+                saved={s.saved}
+                large
+                onPress={() => saved.toggle(s.id, s.saved ?? false, `/shop/${s.id}`)}
+              />
+            </View>
           ),
         }}
       />

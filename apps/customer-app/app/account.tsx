@@ -22,6 +22,7 @@ import * as Sharing from 'expo-sharing';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { closeMyAccount, exportMyData, getMe, signOut } from '../src/api/auth';
 import { ApiError, tokens } from '../src/api/client';
+import { shareApp } from '../src/share';
 import { theme } from '../src/theme';
 
 const joined = (iso: string) =>
@@ -175,6 +176,10 @@ export default function Account() {
             <Text style={styles.value}>{joined(me.data.createdAt)}</Text>
           </View>
         )}
+
+        <Pressable style={styles.secondary} onPress={shareApp}>
+          <Text style={styles.secondaryText}>Tell a friend about this app</Text>
+        </Pressable>
 
         {/* Offered BEFORE the close, and said so in the closing dialogue: the
             moment someone is leaving is the only moment they want this. */}
