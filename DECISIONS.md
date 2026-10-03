@@ -11424,18 +11424,58 @@ exactly. Rather than bridge them, the two such fields found so far —
 source**. Nothing does arithmetic on either; both are shown. One shape beats two
 shapes and a conversion between them.
 
-### 128.10 Where this stands
+### 128.11 A third kind: spread the row, join a little on top
 
-**28 of 156 operations**, up from 7 at the start and 19 last batch. Sixteen
-client types derived rather than declared.
+Payouts fit neither pattern. The admin list spreads a whole Prisma row and joins
+the business name and the destination on top, so it is **selected and built at
+once**: the dates arrive as `Date`, but three fields exist on no Prisma model.
+
+Declaring a return type would mean converting seven dates by hand, in a method
+whose job is not formatting. So it is checked the other way instead:
+
+```ts
+class AdminPayoutDto extends PayoutDto implements Serialised<PayoutWithProfile>
+```
+
+`PayoutDto` is the bare row three other routes already return — `send`,
+`mark-paid`, `mark-failed` — so describing it once covers four responses. The
+`extends` is what keeps the admin shape honest about the fourteen fields it
+inherits; Swagger flattens it, and the generated schema has 18 properties where
+the parent has 14, which is how we know the inheritance survived.
+
+The rule this settles: **a response is checked against Prisma's payload unless
+the service assembles it from nothing.** Declaring a return type is for the
+latter only. `listForBusiness` carries a comment saying exactly that, because the
+obvious-looking `Promise<BusinessPayoutPageDto>` does not compile and the reason
+is not obvious.
+
+### 128.12 `PauseReason` was `string`
+
+The console typed it `export type PauseReason = string` while the server has only
+ever sent two values. Deriving it tightened it to the enum — the same quiet
+widening as §128.8, now twice, which is why no client type here is hand-written
+any more.
+
+Two vocabularies showed up for one idea while doing this: a run reports
+`SUSPENDED` / `NO_VERIFIED_PAYOUT_DESTINATION`, a balance reports
+`BUSINESS_SUSPENDED` / `DESTINATION_NOT_VERIFIED`. Both are now in the contract
+and visibly different. **Left alone deliberately** — they are two separate
+published enums and renaming either is a breaking change made for tidiness, not
+for a reader who is stuck. Noted here so the next person knows it was seen.
+
+### 128.13 Where this stands
+
+**35 of 156 operations**, up from 28 last batch. Twenty-one client types derived
+rather than declared.
 
 Done: appointments, discovery, business locations, services and profile,
-favourites, legal.
+favourites, legal, payouts and balances.
 
-Remaining: `/admin` (57), the rest of `/business`, threads, tickets, reviews,
-users, notifications. 128 operations.
+Remaining: the rest of `/admin` (50), the rest of `/business`, threads, tickets,
+reviews, users, notifications. 121 operations.
 
-Four real findings so far, none of which a reader would have caught: a detail
-endpoint annotated with a list shape, a Date that was a string on the wire, a
-`select` copied instead of shared, and two classes sharing one global schema
-name. Each would have surfaced as a blank space on somebody's screen.
+Five real findings, none of which a reader would have caught: a detail endpoint
+annotated with a list shape, a Date that was a string on the wire, a `select`
+copied instead of shared, two classes sharing one global schema name, and two
+`string`s that were really enums. Each would have surfaced as a blank space or a
+wrong-looking value on somebody's screen.

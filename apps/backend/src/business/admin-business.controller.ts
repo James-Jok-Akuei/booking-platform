@@ -16,7 +16,13 @@ import {
   AuthenticatedUser,
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { BusinessModerationService } from './business-moderation.service';
+import {
+  AdminBusinessDetailDto,
+  AdminBusinessDto,
+  AdminBusinessPageDto,
+} from './dto/admin-business-response.dto';
 import { ChangeBusinessStatusDto } from './dto/change-business-status.dto';
 import { ListBusinessesDto } from './dto/list-businesses.dto';
 
@@ -34,11 +40,13 @@ export class AdminBusinessController {
   constructor(private readonly moderation: BusinessModerationService) {}
 
   @Get()
+  @ApiOkResponse({ type: AdminBusinessPageDto })
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListBusinessesDto) {
     return this.moderation.list(user, query);
   }
 
   @Get(':id')
+  @ApiOkResponse({ type: AdminBusinessDetailDto })
   findOne(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -47,6 +55,7 @@ export class AdminBusinessController {
   }
 
   @Patch(':id/approve')
+  @ApiOkResponse({ type: AdminBusinessDto })
   approve(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -55,6 +64,7 @@ export class AdminBusinessController {
   }
 
   @Patch(':id/reject')
+  @ApiOkResponse({ type: AdminBusinessDto })
   reject(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -64,6 +74,7 @@ export class AdminBusinessController {
   }
 
   @Patch(':id/suspend')
+  @ApiOkResponse({ type: AdminBusinessDto })
   suspend(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -73,6 +84,7 @@ export class AdminBusinessController {
   }
 
   @Patch(':id/reinstate')
+  @ApiOkResponse({ type: AdminBusinessDto })
   reinstate(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

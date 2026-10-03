@@ -1,4 +1,5 @@
 import { api } from './client';
+import type { components } from './schema';
 
 /**
  * The admin endpoints this app uses.
@@ -12,21 +13,9 @@ import { api } from './client';
 
 export type BusinessStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 
-export interface AdminBusiness {
-  id: string;
-  name: string | null;
-  description: string | null;
-  phone: string | null;
-  status: BusinessStatus;
-  statusReason: string | null;
-  statusChangedAt: string | null;
-  statusChangedById: string | null;
-  logoUrl: string | null;
-  coverImageUrl: string | null;
-  createdAt: string;
-  category: { id: string; name: string } | null;
-  subcategory: { id: string; name: string } | null;
-}
+/** From the contract (§128). */
+export type AdminBusiness = components['schemas']['AdminBusinessDto'];
+
 
 export interface Page<T> {
   total: number;
@@ -49,27 +38,9 @@ export const listBusinesses = (params: {
  * branch, and who can act for them. Approval is the gate that makes a business
  * visible to every customer, and until now it was made from a table row.
  */
-export interface AdminBusinessDetail extends AdminBusiness {
-  locations: Array<{ id: string; name: string; address: string; capacity: number }>;
-  services: Array<{
-    id: string;
-    name: string;
-    durationMinutes: number;
-    /** A decimal string, not a number — read it, never do arithmetic on it. */
-    depositPercentage: string;
-    isActive: boolean;
-    /** Price is per BRANCH since §72, so a service can cost different amounts. */
-    locations: Array<{
-      priceMinor: number;
-      location: { id: string; name: string };
-    }>;
-  }>;
-  members: Array<{
-    id: string;
-    role: 'OWNER' | 'MANAGER' | 'STAFF';
-    user: { id: string; email: string };
-  }>;
-}
+/** From the contract (§128). */
+export type AdminBusinessDetail = components['schemas']['AdminBusinessDetailDto'];
+
 
 export const getBusiness = (id: string) =>
   api<AdminBusinessDetail>(`/admin/businesses/${id}`);
@@ -174,63 +145,18 @@ export const rejectPayoutDestination = (id: string, reason: string) =>
 // Payouts (§35, §36, §46, §47)
 // ---------------------------------------------------------------------------
 
-export type PayoutStatus = 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
-
-export interface Payout {
-  id: string;
-  businessId: string;
-  /** The internal unit of account. REPORTING only — never what is sent. */
-  amountMinor: number;
-  currency: string;
-  /** What is actually transferred, and the currency it is transferred in. */
-  settlementCurrency: string;
-  settlementAmountMinor: number;
-  status: PayoutStatus;
-  reference: string | null;
-  failureReason: string | null;
-  runAt: string;
-  paidAt: string | null;
-  createdAt: string;
-
-  /** Our own id for an automated transfer, set before it is sent (§64.3). */
-  providerReferenceId: string | null;
-  sentAt: string | null;
-
-  /**
-   * Who is being paid and where the money goes (§65.1).
-   *
-   * On the row because a truncated business id and an amount are not enough to
-   * pay anyone — which is why an admin used to export the CSV just to read a
-   * name and a number the screen could have shown.
-   */
-  businessName: string | null;
-  /** Null when there is no VERIFIED destination — which is also why it cannot be sent. */
-  destinationMsisdn: string | null;
-  destinationProvider: string | null;
-}
-
-export interface PayoutPage {
-  total: number;
-  limit: number;
-  offset: number;
-  payouts: Payout[];
-}
-
-export type PauseReason = string;
-
-/** What a run did, and — as importantly — who it held back and why (§48.3). */
-export interface RunSummary {
-  runAt: string;
-  businessesConsidered: number;
-  payoutsCreated: number;
-  totalMinor: number;
-  settlementCurrencies: string[];
-  skippedNonPositive: number;
-  pausedForSuspension: number;
-  pausedForUnverifiedDestination: number;
-  pausedBusinesses: Array<{ businessId: string; reason: PauseReason }>;
-  entriesWithoutSettlement: number;
-}
+/**
+ * Derived from the contract, not hand-written (§128).
+ *
+ * `PauseReason` used to be `string` here while the backend had an enum — the
+ * kind of quiet widening deriving these types exists to stop.
+ */
+export type PayoutStatus = components['schemas']['AdminPayoutDto']['status'];
+export type Payout = components['schemas']['AdminPayoutDto'];
+export type PayoutPage = components['schemas']['AdminPayoutPageDto'];
+export type RunSummary = components['schemas']['PayoutRunSummaryDto'];
+export type PauseReason = RunSummary['pausedBusinesses'][number]['reason'];
+export type BusinessBalance = components['schemas']['BusinessBalanceDto'];
 
 export interface HeldTotals {
   asOf: string;

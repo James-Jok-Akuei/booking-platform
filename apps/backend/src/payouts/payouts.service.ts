@@ -16,6 +16,8 @@ import {
 } from '@prisma/client';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+// One include, shared with the DTO describing its result (§128.5).
+import { BusinessBalanceDto, PAYOUT_INCLUDE } from './dto/payout-response.dto';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { ListPayoutsDto } from './dto/list-payouts.dto';
 import { csvTextCell, toCsvRow } from './payout-csv';
@@ -334,7 +336,7 @@ export class PayoutsService {
         orderBy: { runAt: 'desc' },
         take: limit,
         skip: offset,
-        include: { businessProfile: { select: { id: true, name: true } } },
+        include: PAYOUT_INCLUDE,
       }),
     ]);
 
@@ -803,7 +805,10 @@ export class PayoutsService {
    * Every figure is a SUM over entries, computed on read. Nothing is stored
    * (§34.2), so these cannot disagree with the rows that justify them.
    */
-  async balance(actor: { userId: string; role: UserRole | string }, businessId: string) {
+  async balance(
+    actor: { userId: string; role: UserRole | string },
+    businessId: string,
+  ): Promise<BusinessBalanceDto> {
     await this.assertMayRead(actor, businessId);
     const now = new Date();
 
@@ -922,6 +927,9 @@ export class PayoutsService {
     actor: { userId: string; role: UserRole | string },
     businessId: string,
     query: ListPayoutsDto,
+    // Not declared as BusinessPayoutPageDto: the rows are spread from Prisma, so
+    // they still carry Dates here. The DTO is checked against the Payout model
+    // instead (§128.11), which is what catches a column changing under it.
   ) {
     await this.assertMayRead(actor, businessId);
 

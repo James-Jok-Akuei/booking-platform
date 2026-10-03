@@ -13,27 +13,13 @@ import {
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+// One select, shared with the DTO describing its result (§128.5).
+import { ADMIN_BUSINESS_SELECT } from './dto/admin-business-response.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { findBusinessTransition } from './business-status';
 import { ListBusinessesDto } from './dto/list-businesses.dto';
 
 /** What an admin reviewing an application needs to see. */
-const ADMIN_BUSINESS_SELECT = {
-  id: true,
-  name: true,
-  description: true,
-  phone: true,
-  status: true,
-  statusReason: true,
-  statusChangedAt: true,
-  statusChangedById: true,
-  logoUrl: true,
-  coverImageUrl: true,
-  createdAt: true,
-  category: { select: { id: true, name: true } },
-  subcategory: { select: { id: true, name: true } },
-} as const;
-
 const NOTIFICATION_FOR: Record<string, NotificationType> = {
   [BusinessStatus.APPROVED]: NotificationType.BUSINESS_APPROVED,
   [BusinessStatus.REJECTED]: NotificationType.BUSINESS_REJECTED,

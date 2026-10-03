@@ -25,6 +25,14 @@ import {
 import { PayoutsService } from './payouts.service';
 import { ListPayoutsDto } from './dto/list-payouts.dto';
 import { MarkFailedDto, MarkPaidDto } from './dto/mark-payout.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  AdminPayoutPageDto,
+  BusinessBalanceDto,
+  BusinessPayoutPageDto,
+  PayoutDto,
+  PayoutRunSummaryDto,
+} from './dto/payout-response.dto';
 
 /**
  * Running payouts and recording their outcome. API-only, like every other admin
@@ -42,11 +50,13 @@ export class AdminPayoutsController {
 
   @Post('run')
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: PayoutRunSummaryDto })
   run(@CurrentUser() user: AuthenticatedUser) {
     return this.payouts.runAsAdmin(user);
   }
 
   @Get()
+  @ApiOkResponse({ type: AdminPayoutPageDto })
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListPayoutsDto) {
     return this.payouts.list(user, query);
   }
@@ -59,6 +69,7 @@ export class AdminPayoutsController {
    */
   @Post(':id/send')
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: PayoutDto })
   send(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -83,6 +94,7 @@ export class AdminPayoutsController {
   }
 
   @Patch(':id/mark-paid')
+  @ApiOkResponse({ type: PayoutDto })
   markPaid(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -92,6 +104,7 @@ export class AdminPayoutsController {
   }
 
   @Patch(':id/mark-failed')
+  @ApiOkResponse({ type: PayoutDto })
   markFailed(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -116,6 +129,7 @@ export class BusinessPayoutsController {
   constructor(private readonly payouts: PayoutsService) {}
 
   @Get(':id/balance')
+  @ApiOkResponse({ type: BusinessBalanceDto })
   balance(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) businessId: string,
@@ -124,6 +138,7 @@ export class BusinessPayoutsController {
   }
 
   @Get(':id/payouts')
+  @ApiOkResponse({ type: BusinessPayoutPageDto })
   list(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) businessId: string,

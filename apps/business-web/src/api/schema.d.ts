@@ -2791,6 +2791,97 @@ export interface components {
         SetServiceOfferedDto: {
             isOffered: boolean;
         };
+        AdminBusinessCategoryDto: {
+            id: string;
+            name: string;
+        };
+        AdminBusinessDto: {
+            id: string;
+            name: string | null;
+            description: string | null;
+            phone: string | null;
+            /**
+             * @description What an admin decided. The four values, not `string` (§128.8).
+             * @enum {string}
+             */
+            status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+            /**
+             * @description Why it is in that status — the rejection or suspension reason, cleared on
+             *     approval because a stale one beside an APPROVED business reads as an
+             *     accusation (§42.2).
+             */
+            statusReason: string | null;
+            statusChangedAt: string | null;
+            statusChangedById: string | null;
+            logoUrl: string | null;
+            coverImageUrl: string | null;
+            createdAt: string;
+            category: components["schemas"]["AdminBusinessCategoryDto"] | null;
+            subcategory: components["schemas"]["AdminBusinessCategoryDto"] | null;
+        };
+        AdminBusinessPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            businesses: components["schemas"]["AdminBusinessDto"][];
+        };
+        AdminBusinessLocationDto: {
+            id: string;
+            name: string;
+            address: string;
+            capacity: number;
+        };
+        AdminServiceOfferDto: {
+            priceMinor: number;
+            location: components["schemas"]["AdminBusinessCategoryDto"];
+        };
+        AdminBusinessServiceDto: {
+            id: string;
+            name: string;
+            durationMinutes: number;
+            /** @description A decimal STRING — read, never multiplied (§56). */
+            depositPercentage: string;
+            isActive: boolean;
+            /** @description Price is per BRANCH since §72, so a service can cost different amounts. */
+            locations: components["schemas"]["AdminServiceOfferDto"][];
+        };
+        AdminBusinessMemberUserDto: {
+            id: string;
+            email: string;
+        };
+        AdminBusinessMemberDto: {
+            id: string;
+            role: string;
+            user: components["schemas"]["AdminBusinessMemberUserDto"];
+        };
+        AdminBusinessDetailDto: {
+            id: string;
+            name: string | null;
+            description: string | null;
+            phone: string | null;
+            /**
+             * @description What an admin decided. The four values, not `string` (§128.8).
+             * @enum {string}
+             */
+            status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+            /**
+             * @description Why it is in that status — the rejection or suspension reason, cleared on
+             *     approval because a stale one beside an APPROVED business reads as an
+             *     accusation (§42.2).
+             */
+            statusReason: string | null;
+            statusChangedAt: string | null;
+            statusChangedById: string | null;
+            logoUrl: string | null;
+            coverImageUrl: string | null;
+            createdAt: string;
+            category: components["schemas"]["AdminBusinessCategoryDto"] | null;
+            subcategory: components["schemas"]["AdminBusinessCategoryDto"] | null;
+            locations: components["schemas"]["AdminBusinessLocationDto"][];
+            services: components["schemas"]["AdminBusinessServiceDto"][];
+            /** @description ACTIVE members only. Removed ones stay as history and grant nothing (§14). */
+            members: components["schemas"]["AdminBusinessMemberDto"][];
+        };
         ChangeBusinessStatusDto: {
             reason: string;
         };
@@ -3211,6 +3302,101 @@ export interface components {
              */
             hiddenReason: string;
         };
+        PausedBusinessDto: {
+            businessId: string;
+            /** @enum {string} */
+            reason: "SUSPENDED" | "NO_VERIFIED_PAYOUT_DESTINATION";
+        };
+        PayoutRunSummaryDto: {
+            runAt: string;
+            businessesConsidered: number;
+            payoutsCreated: number;
+            /** @description Minor units of the SETTLEMENT currency, not of the internal one (§51.2). */
+            totalMinor: number;
+            /** @description The currencies that total spans. Plural because a run can pay several. */
+            settlementCurrencies: string[];
+            /** @description Businesses whose available balance was zero or negative (§35.3). */
+            skippedNonPositive: number;
+            /** @description Businesses skipped because they are SUSPENDED (§42.4). */
+            pausedForSuspension: number;
+            /** @description Businesses skipped for having no VERIFIED payout destination (§48.3). */
+            pausedForUnverifiedDestination: number;
+            /**
+             * @description Every business held back this run, and why — so an admin has a list to
+             *     chase rather than a silently smaller payout batch.
+             */
+            pausedBusinesses: components["schemas"]["PausedBusinessDto"][];
+            /** @description Entries with no settlement amount, which cannot be paid (§46.3). */
+            entriesWithoutSettlement: number;
+        };
+        AdminPayoutBusinessDto: {
+            id: string;
+            name: string | null;
+        };
+        AdminPayoutDto: {
+            /** @description Spread from the row, so the nested profile is on the wire too. */
+            businessProfile: components["schemas"]["AdminPayoutBusinessDto"];
+            businessName: string | null;
+            /**
+             * @description Null when there is no verified destination — which is also why this payout
+             *     cannot be sent, and what the console says instead of failing quietly (§48.3).
+             */
+            destinationMsisdn: string | null;
+            /** @enum {string|null} */
+            destinationProvider: "MTN_MOMO" | "AIRTEL_MONEY" | null;
+            id: string;
+            businessId: string;
+            /**
+             * @description The REPORTING figure, in the platform's unit of account. Not what is sent
+             *     (§45.1) — that is `settlementAmountMinor`, below.
+             */
+            amountMinor: number;
+            currency: string;
+            /** @description What is actually transferred, and in what. Summed with no conversion (§46). */
+            settlementCurrency: string;
+            settlementAmountMinor: number;
+            /** @enum {string} */
+            status: "PENDING" | "FAILED" | "PROCESSING" | "PAID";
+            /** @description OUR reference, written before the operator is called, never after (§64.3). */
+            providerReferenceId: string | null;
+            sentAt: string | null;
+            /** @description The provider's reference. Required to mark a payout PAID — it is the only proof. */
+            reference: string | null;
+            failureReason: string | null;
+            runAt: string;
+            paidAt: string | null;
+            createdAt: string;
+        };
+        AdminPayoutPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            payouts: components["schemas"]["AdminPayoutDto"][];
+        };
+        PayoutDto: {
+            id: string;
+            businessId: string;
+            /**
+             * @description The REPORTING figure, in the platform's unit of account. Not what is sent
+             *     (§45.1) — that is `settlementAmountMinor`, below.
+             */
+            amountMinor: number;
+            currency: string;
+            /** @description What is actually transferred, and in what. Summed with no conversion (§46). */
+            settlementCurrency: string;
+            settlementAmountMinor: number;
+            /** @enum {string} */
+            status: "PENDING" | "FAILED" | "PROCESSING" | "PAID";
+            /** @description OUR reference, written before the operator is called, never after (§64.3). */
+            providerReferenceId: string | null;
+            sentAt: string | null;
+            /** @description The provider's reference. Required to mark a payout PAID — it is the only proof. */
+            reference: string | null;
+            failureReason: string | null;
+            runAt: string;
+            paidAt: string | null;
+            createdAt: string;
+        };
         MarkPaidDto: {
             /**
              * @description The provider's reference for the transfer. Required: a payout marked paid
@@ -3226,6 +3412,51 @@ export interface components {
              *     go out.
              */
             reason: string;
+        };
+        SettlementAmountDto: {
+            currency: string;
+            amountMinor: number;
+        };
+        PendingSettlementAmountDto: {
+            settlementCurrency: string;
+            amountMinor: number;
+        };
+        PendingPayoutsDto: {
+            count: number;
+            reportingInternalMinor: number;
+            bySettlementCurrency: components["schemas"]["PendingSettlementAmountDto"][];
+        };
+        LedgerEntryCountsDto: {
+            available: number;
+            pending: number;
+            unresolved: number;
+        };
+        BusinessBalanceDto: {
+            businessId: string;
+            payoutsPaused: boolean;
+            /** @enum {string|null} */
+            payoutsPausedReason: "BUSINESS_SUSPENDED" | "DESTINATION_NOT_VERIFIED" | null;
+            /** @description What is payable, per settlement currency, with no conversion (§46). */
+            availableBySettlementCurrency: components["schemas"]["SettlementAmountDto"][];
+            /** @description The reporting currency the four totals below are in (§45.1). */
+            currency: string;
+            availableNowMinor: number;
+            pendingMinor: number;
+            /** @description Deposits on appointments that have not happened yet, or not resolved. */
+            unresolvedMinor: number;
+            lifetimePaidMinor: number;
+            payoutCount: number;
+            pendingPayouts: components["schemas"]["PendingPayoutsDto"];
+            entryCounts: components["schemas"]["LedgerEntryCountsDto"];
+            /** @description Plain-language explanation of the figures above, including why a payout is held. */
+            note: string;
+        };
+        BusinessPayoutPageDto: {
+            businessId: string;
+            total: number;
+            limit: number;
+            offset: number;
+            payouts: components["schemas"]["PayoutDto"][];
         };
         VerifyPayoutDestinationDto: {
             /**
@@ -4705,7 +4936,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessPageDto"];
+                };
             };
         };
     };
@@ -4724,7 +4957,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessDetailDto"];
+                };
             };
         };
     };
@@ -4743,7 +4978,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessDto"];
+                };
             };
         };
     };
@@ -4766,7 +5003,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessDto"];
+                };
             };
         };
     };
@@ -4789,7 +5028,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessDto"];
+                };
             };
         };
     };
@@ -4808,7 +5049,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminBusinessDto"];
+                };
             };
         };
     };
@@ -6314,7 +6557,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["PayoutRunSummaryDto"];
                 };
             };
         };
@@ -6338,7 +6581,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminPayoutPageDto"];
+                };
             };
         };
     };
@@ -6357,7 +6602,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayoutDto"];
+                };
             };
         };
     };
@@ -6401,7 +6648,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayoutDto"];
+                };
             };
         };
     };
@@ -6424,7 +6673,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayoutDto"];
+                };
             };
         };
     };
@@ -6443,7 +6694,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessBalanceDto"];
+                };
             };
         };
     };
@@ -6468,7 +6721,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessPayoutPageDto"];
+                };
             };
         };
     };
