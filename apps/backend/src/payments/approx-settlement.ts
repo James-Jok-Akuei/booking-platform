@@ -17,7 +17,16 @@ export interface ApproxSettlement {
   currency: string;
   amountMinor: number;
   exchangeRate: string;
-  rateAsOf: Date | null;
+  /**
+   * When the rate was last set, as an ISO string (§128.4).
+   *
+   * A string in memory as well as on the wire, deliberately. Nothing here does
+   * arithmetic on it — it is shown beside an indicative figure so a reader can
+   * judge how old the conversion is — and carrying a `Date` through meant the
+   * in-memory shape and the response shape differed by exactly one field, which
+   * is enough to need a bridge between them for no gain.
+   */
+  rateAsOf: string | null;
   approximate: true;
 }
 
@@ -62,7 +71,7 @@ export function approxSettlementFor(
     currency: context.providerCurrency,
     amountMinor: wholeUnits.mul(per).toNumber(),
     exchangeRate: context.rate.toFixed(8),
-    rateAsOf: context.updatedAt,
+    rateAsOf: context.updatedAt?.toISOString() ?? null,
     approximate: true,
   };
 }

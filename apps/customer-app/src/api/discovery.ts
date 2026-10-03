@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { paths } from './schema';
+import type { components, paths } from './schema';
 
 export interface Currency {
   code: string;
@@ -73,40 +73,14 @@ export const unsaveFavourite = (locationId: string) =>
     method: 'DELETE',
   });
 
-export interface DiscoveredLocation {
-  id: string;
-  name: string;
-  address: string;
-  /** Null when the branch has not said where it is; then it is unfilterable. */
-  district: {
-    id: string;
-    name: string;
-    provinceId: string;
-    provinceName: string;
-  } | null;
-  latitude: number | null;
-  longitude: number | null;
-  business: {
-    id: string;
-    name: string | null;
-    logoUrl: string | null;
-    category: { id: string; name: string; icon: string | null } | null;
-    subcategory: { id: string; name: string } | null;
-  };
-  ratingAvg: number | null;
-  ratingCount: number;
-  /** Cheapest service here, in minor units. Null when nothing is on sale. */
-  fromPriceMinor: number | null;
-  openNow: boolean;
-  /**
-   * Whether this customer has saved it. ABSENT when nobody is signed in — there
-   * is no answer to "have you saved this" without a "you", and `false` would
-   * render an empty heart that cannot be filled (§120).
-   */
-  saved?: boolean;
-  /** Only present on a distance search. */
-  distanceKm?: number;
-}
+/**
+ * From the contract (§128.4). Discovery's response is assembled rather than
+ * selected, so the SERVICE declares this shape as its return type and the class
+ * is checked against the implementation — the opposite direction to
+ * `AppointmentDto`, and the only one available when a response is built.
+ */
+export type DiscoveredLocation = components['schemas']['DiscoveredLocationDto'];
+
 
 export interface DiscoveryPage {
   total: number;

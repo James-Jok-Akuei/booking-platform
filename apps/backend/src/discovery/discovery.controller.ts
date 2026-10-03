@@ -5,6 +5,8 @@ import {
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
 import { DiscoveryService } from './discovery.service';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { DiscoveryPageDto } from './dto/discovery-response.dto';
 import { DiscoverLocationsDto } from './dto/discover-locations.dto';
 
 /**
@@ -28,6 +30,7 @@ export class DiscoveryController {
   constructor(private readonly discovery: DiscoveryService) {}
 
   @Get('locations')
+  @ApiOkResponse({ type: DiscoveryPageDto })
   search(
     @Query() query: DiscoverLocationsDto,
     @CurrentUser() user?: AuthenticatedUser,

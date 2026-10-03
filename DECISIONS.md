@@ -11331,3 +11331,45 @@ that is the step that finds things. A pass that only added DTOs would leave the
 clients still guessing and prove nothing.
 
 **1213 across 46.**
+
+### 128.4 Responses that are built, not selected
+
+Appointments could be checked against `Prisma.GetPayload<{select}>` because the
+service hands the row straight back. Discovery does not: it flattens the
+district, rounds a distance, attaches an indicative figure and adds `saved` only
+when somebody is signed in. There is no payload type to compare against.
+
+So the other direction — the **service declares the DTO as its return type**, and
+TypeScript checks the implementation against the class. Same guarantee, opposite
+way round, and the only one available when a response is assembled.
+
+It found something immediately: `ApproxSettlement.rateAsOf` was a `Date` in
+memory and a string on the wire. Nothing did arithmetic on it — it is shown
+beside an indicative figure so a reader can judge how old the conversion is — so
+it is now a string **end to end**. Carrying a `Date` through meant the in-memory
+shape and the response shape differed by exactly one field, which is enough to
+need a bridge between them for no gain.
+
+### 128.5 One include, not two
+
+The first version of `BusinessLocationDto` compiled perfectly against a copy of
+the service's `include` that I had pasted into the DTO file. It would have
+drifted the first time either changed, which is exactly the failure this whole
+section exists to prevent — and it compiled, so nothing would have said so.
+
+The include is now **one exported constant**, used by the query and by the type
+the DTO is checked against. A relation added to that query without a field added
+to the class fails the backend build; a field removed from the class fails the
+client's.
+
+### 128.6 Where this stands
+
+**17 of 156 operations describe a response**, up from 7. Appointments, discovery
+and business locations are done, and the clients derive nine types from the
+contract rather than declaring them.
+
+139 remain, and the remaining work is mechanical rather than uncertain: the two
+patterns above cover every case, and `Serialised<T>` and the shared selects are
+written once. The grind is real — `/admin` alone is 57 operations — but each
+module is a slice that ends with a client deriving its types, because that is the
+step that finds things rather than the step that adds files.

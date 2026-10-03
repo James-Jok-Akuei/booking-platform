@@ -34,6 +34,8 @@ import { BusinessProfileService } from './business-profile.service';
 import { AccountService } from '../users/account.service';
 import { ServiceDraftsService } from './service-drafts.service';
 import { UpdateServiceDraftDto } from './dto/service-draft.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { BusinessLocationDto } from './dto/business-response.dto';
 import { LocationsService } from './locations.service';
 import { ServicesService } from './services.service';
 import { GalleryService } from './gallery.service';
@@ -177,6 +179,7 @@ export class BusinessController {
   }
 
   @Get('locations')
+  @ApiOkResponse({ type: [BusinessLocationDto] })
   @BusinessRoles(
     BusinessMemberRole.OWNER,
     BusinessMemberRole.MANAGER,

@@ -163,23 +163,14 @@ export interface Hours {
   isClosed: boolean;
 }
 
-export interface Location {
-  id: string;
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  phone: string | null;
-  capacity: number;
-  ratingAvg: string | null;
-  ratingCount: number;
-  fromPriceMinor: number | null;
-  /** False means the branch is closed: no bookings, invisible to customers (§89). */
-  isActive: boolean;
-  /** Null until someone says where it is. Not findable by place until then. */
-  district: { id: string; name: string; province: { id: string; name: string } } | null;
-  hours: Hours[];
-}
+/**
+ * From the contract (§128.5). The include it describes is the one the query
+ * uses — literally the same constant — so a relation added to that query without
+ * a field added to the class fails the backend build, and a field removed from
+ * the class fails this one.
+ */
+export type Location = components['schemas']['BusinessLocationDto'];
+
 
 export interface Category {
   id: string;

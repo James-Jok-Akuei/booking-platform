@@ -2529,6 +2529,63 @@ export interface components {
             longitude: number;
             phone?: string;
         };
+        LocationProvinceDto: {
+            id: string;
+            name: string;
+        };
+        LocationDistrictDto: {
+            id: string;
+            code: string;
+            name: string;
+            provinceId: string;
+            isLive: boolean;
+            createdAt: string;
+            updatedAt: string;
+            province: components["schemas"]["LocationProvinceDto"];
+        };
+        LocationHoursDto: {
+            id: string;
+            locationId: string;
+            /** @description 0 = Sunday, matching JavaScript rather than ISO (§12). */
+            dayOfWeek: number;
+            openTime: string;
+            closeTime: string;
+            isClosed: boolean;
+            createdAt: string;
+            updatedAt: string;
+        };
+        LocationMediaCountDto: {
+            media: number;
+        };
+        BusinessLocationDto: {
+            id: string;
+            businessId: string;
+            name: string;
+            address: string;
+            /**
+             * @description Required on create and nullable in the column (§43.2): rows made before that
+             *     rule genuinely have no position, and there is nothing honest to invent.
+             */
+            latitude: number | null;
+            longitude: number | null;
+            /** @description Overrides the business phone for this branch when set. */
+            phone: string | null;
+            capacity: number;
+            /** @description A decimal STRING. Shown, never multiplied (§56). */
+            ratingAvg: string | null;
+            ratingCount: number;
+            /** @description The cheapest service here, maintained on write (§44). */
+            fromPriceMinor: number | null;
+            districtId: string | null;
+            /** @description Null until somebody says where it is; unfindable by place until then (§104). */
+            district: components["schemas"]["LocationDistrictDto"] | null;
+            /** @description False means CLOSED, not deleted: history and bookings stay (§89). */
+            isActive: boolean;
+            createdAt: string;
+            updatedAt: string;
+            hours: components["schemas"]["LocationHoursDto"][];
+            _count: components["schemas"]["LocationMediaCountDto"];
+        };
         UpdateLocationDto: {
             /**
              * Format: uuid
@@ -3089,6 +3146,76 @@ export interface components {
             msisdn: string;
             /** @enum {string} */
             provider?: "MTN_MOMO" | "AIRTEL_MONEY";
+        };
+        DiscoveryCentreDto: {
+            lat: number;
+            lng: number;
+            radiusKm?: number;
+        };
+        DiscoveredDistrictDto: {
+            id: string;
+            name: string;
+            provinceId: string;
+            provinceName: string;
+        };
+        DiscoveredBusinessDto: {
+            id: string;
+            name: string | null;
+            logoUrl: string | null;
+            category: {
+                id: string;
+                name: string;
+                icon: string | null;
+            };
+            subcategory: {
+                id: string;
+                name: string;
+            };
+        };
+        ApproxSettlementDto: {
+            currency: string;
+            amountMinor: number;
+            /** @description A decimal STRING. Read and shown, never multiplied (§56). */
+            exchangeRate: string;
+            rateAsOf: string | null;
+            /** @description Always true. Its presence is the warning that this is not the real figure. */
+            approximate: boolean;
+        };
+        DiscoveredLocationDto: {
+            id: string;
+            name: string;
+            address: string;
+            latitude: number | null;
+            longitude: number | null;
+            /** @description Null until the branch says where it is; unfilterable by place until then (§104). */
+            district: components["schemas"]["DiscoveredDistrictDto"] | null;
+            business: components["schemas"]["DiscoveredBusinessDto"];
+            ratingAvg: number | null;
+            ratingCount: number;
+            /** @description The cheapest service here, in minor units. Null when nothing is on sale. */
+            fromPriceMinor: number | null;
+            /** @description Computed from today's hours — the one field that answers "can I go now". */
+            openNow: boolean;
+            /**
+             * @description ABSENT when nobody is signed in, not false: there is no answer to "have you
+             *     saved this" without a "you", and false renders a heart that cannot be
+             *     filled (§120.2).
+             */
+            saved?: boolean;
+            /** @description Only on a distance search. */
+            distanceKm?: number;
+            approxSettlement?: {
+                fromPriceMinor: components["schemas"]["ApproxSettlementDto"];
+            };
+        };
+        DiscoveryPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            /** @description Echoed back on a distance search, so a client can show what it searched. */
+            center?: components["schemas"]["DiscoveryCentreDto"];
+            radiusKm?: number;
+            locations: components["schemas"]["DiscoveredLocationDto"][];
         };
         SaveFavouriteDto: {
             /** Format: uuid */
@@ -4057,7 +4184,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>[];
+                    "application/json": components["schemas"]["BusinessLocationDto"][];
                 };
             };
         };
@@ -6341,7 +6468,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DiscoveryPageDto"];
+                };
             };
         };
     };

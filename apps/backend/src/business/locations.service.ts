@@ -6,6 +6,8 @@ import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { recalculateFromPrice } from './from-price';
 import { SetLocationHoursDto } from './dto/set-hours.dto';
+// One include, shared with the DTO that describes its result (§128.5).
+import { LOCATION_INCLUDE } from './dto/business-response.dto';
 
 const DAY_NAMES = [
   'Sunday',
@@ -53,13 +55,7 @@ export class LocationsService {
     return this.prisma.location.findMany({
       where: { businessId },
       orderBy: { createdAt: 'asc' },
-      include: {
-        hours: { orderBy: { dayOfWeek: 'asc' } },
-        _count: { select: { media: true } },
-        // So the branch screen can show where it is, and say when it has not
-        // been set (§104).
-        district: { include: { province: { select: { id: true, name: true } } } },
-      },
+      include: LOCATION_INCLUDE,
     });
   }
 

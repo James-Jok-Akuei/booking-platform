@@ -1151,7 +1151,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object"
+                    "$ref": "#/components/schemas/BusinessLocationDto"
                   }
                 }
               }
@@ -4765,7 +4765,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryPageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -5274,6 +5281,211 @@
           "address",
           "latitude",
           "longitude"
+        ]
+      },
+      "LocationProvinceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "LocationDistrictDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provinceId": {
+            "type": "string"
+          },
+          "isLive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "province": {
+            "$ref": "#/components/schemas/LocationProvinceDto"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "provinceId",
+          "isLive",
+          "createdAt",
+          "updatedAt",
+          "province"
+        ]
+      },
+      "LocationHoursDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "dayOfWeek": {
+            "type": "number",
+            "description": "0 = Sunday, matching JavaScript rather than ISO (§12)."
+          },
+          "openTime": {
+            "type": "string"
+          },
+          "closeTime": {
+            "type": "string"
+          },
+          "isClosed": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "locationId",
+          "dayOfWeek",
+          "openTime",
+          "closeTime",
+          "isClosed",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "LocationMediaCountDto": {
+        "type": "object",
+        "properties": {
+          "media": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "media"
+        ]
+      },
+      "BusinessLocationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "description": "Required on create and nullable in the column (§43.2): rows made before that\nrule genuinely have no position, and there is nothing honest to invent."
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Overrides the business phone for this branch when set."
+          },
+          "capacity": {
+            "type": "number"
+          },
+          "ratingAvg": {
+            "type": "string",
+            "nullable": true,
+            "description": "A decimal STRING. Shown, never multiplied (§56)."
+          },
+          "ratingCount": {
+            "type": "number"
+          },
+          "fromPriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "The cheapest service here, maintained on write (§44)."
+          },
+          "districtId": {
+            "type": "string",
+            "nullable": true
+          },
+          "district": {
+            "nullable": true,
+            "description": "Null until somebody says where it is; unfindable by place until then (§104).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocationDistrictDto"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "False means CLOSED, not deleted: history and bookings stay (§89)."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocationHoursDto"
+            }
+          },
+          "_count": {
+            "$ref": "#/components/schemas/LocationMediaCountDto"
+          }
+        },
+        "required": [
+          "id",
+          "businessId",
+          "name",
+          "address",
+          "latitude",
+          "longitude",
+          "phone",
+          "capacity",
+          "ratingAvg",
+          "ratingCount",
+          "fromPriceMinor",
+          "districtId",
+          "district",
+          "isActive",
+          "createdAt",
+          "updatedAt",
+          "hours",
+          "_count"
         ]
       },
       "UpdateLocationDto": {
@@ -6599,6 +6811,255 @@
         },
         "required": [
           "msisdn"
+        ]
+      },
+      "DiscoveryCentreDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "radiusKm": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "DiscoveredDistrictDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provinceId": {
+            "type": "string"
+          },
+          "provinceName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provinceId",
+          "provinceName"
+        ]
+      },
+      "DiscoveredBusinessDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "icon"
+            ]
+          },
+          "subcategory": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "logoUrl",
+          "category",
+          "subcategory"
+        ]
+      },
+      "ApproxSettlementDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "exchangeRate": {
+            "type": "string",
+            "description": "A decimal STRING. Read and shown, never multiplied (§56)."
+          },
+          "rateAsOf": {
+            "type": "string",
+            "nullable": true
+          },
+          "approximate": {
+            "type": "boolean",
+            "description": "Always true. Its presence is the warning that this is not the real figure."
+          }
+        },
+        "required": [
+          "currency",
+          "amountMinor",
+          "exchangeRate",
+          "rateAsOf",
+          "approximate"
+        ]
+      },
+      "DiscoveredLocationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "district": {
+            "nullable": true,
+            "description": "Null until the branch says where it is; unfilterable by place until then (§104).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DiscoveredDistrictDto"
+              }
+            ]
+          },
+          "business": {
+            "$ref": "#/components/schemas/DiscoveredBusinessDto"
+          },
+          "ratingAvg": {
+            "type": "number",
+            "nullable": true
+          },
+          "ratingCount": {
+            "type": "number"
+          },
+          "fromPriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "The cheapest service here, in minor units. Null when nothing is on sale."
+          },
+          "openNow": {
+            "type": "boolean",
+            "description": "Computed from today's hours — the one field that answers \"can I go now\"."
+          },
+          "saved": {
+            "type": "boolean",
+            "description": "ABSENT when nobody is signed in, not false: there is no answer to \"have you\nsaved this\" without a \"you\", and false renders a heart that cannot be\nfilled (§120.2)."
+          },
+          "distanceKm": {
+            "type": "number",
+            "description": "Only on a distance search."
+          },
+          "approxSettlement": {
+            "type": "object",
+            "properties": {
+              "fromPriceMinor": {
+                "$ref": "#/components/schemas/ApproxSettlementDto"
+              }
+            },
+            "required": [
+              "fromPriceMinor"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "address",
+          "latitude",
+          "longitude",
+          "district",
+          "business",
+          "ratingAvg",
+          "ratingCount",
+          "fromPriceMinor",
+          "openNow"
+        ]
+      },
+      "DiscoveryPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "center": {
+            "description": "Echoed back on a distance search, so a client can show what it searched.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DiscoveryCentreDto"
+              }
+            ]
+          },
+          "radiusKm": {
+            "type": "number"
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscoveredLocationDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "locations"
         ]
       },
       "SaveFavouriteDto": {

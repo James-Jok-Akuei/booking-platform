@@ -13,6 +13,7 @@ import { FavouritesService } from '../favourites/favourites.service';
 import { dayOfWeekUtc, instantToZonedParts } from '../availability/time.util';
 import { isOpenAt } from './open-now';
 import { DiscoverLocationsDto, DiscoverySort } from './dto/discover-locations.dto';
+import { DiscoveryPageDto } from './dto/discovery-response.dto';
 
 /** Rows the bounding-box + haversine query returns. */
 interface DistanceRow {
@@ -68,7 +69,10 @@ export class DiscoveryService {
    * **four queries, plus one when distance is used**, and none of them per-row.
    * Down from five since §44 made the cheapest price a column.
    */
-  async search(query: DiscoverLocationsDto, viewerId?: string) {
+  async search(
+    query: DiscoverLocationsDto,
+    viewerId?: string,
+  ): Promise<DiscoveryPageDto> {
     const limit = query.limit ?? DEFAULT_LIMIT;
     const offset = query.offset ?? 0;
     const distance = this.resolveDistance(query);
