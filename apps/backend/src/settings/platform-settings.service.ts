@@ -11,6 +11,11 @@ import {
   isSettlementCurrency,
   minorUnitExponent,
 } from '../payments/currency';
+import {
+  ExchangeRateSettingsDto,
+  PayoutHoldDto,
+  PlatformFeeDto,
+} from './dto/settings-response.dto';
 
 /**
  * The single settings row's primary key.
@@ -293,7 +298,9 @@ export class PlatformSettingsService {
   }
 
   /** Admin-facing view, including how stale the rate has become. */
-  async getExchangeRateSettings(actor: { role: UserRole | string }) {
+  async getExchangeRateSettings(
+    actor: { role: UserRole | string },
+  ): Promise<ExchangeRateSettingsDto> {
     this.assertAdmin(actor);
     const { providerCurrency, rate, updatedAt, updatedById, stalenessHours } =
       await this.getExchangeRate();
@@ -310,7 +317,7 @@ export class PlatformSettingsService {
       internalCurrency: INTERNAL_CURRENCY,
       providerCurrency,
       exchangeRateUsdToProviderCurrency: rate ? rate.toFixed(8) : null,
-      exchangeRateUpdatedAt: updatedAt,
+      exchangeRateUpdatedAt: updatedAt?.toISOString() ?? null,
       // Surfaced explicitly so a stale manual rate is visible without anyone
       // having to do date arithmetic in their head.
       ageInHours: staleness.ageInHours,
@@ -500,7 +507,9 @@ export class PlatformSettingsService {
    * still guard-only; widening them is a refactor of its own, not something to
    * smuggle into a commit about the payout hold (§38.4).
    */
-  async getPayoutHoldSettings(actor: { role: UserRole | string }) {
+  async getPayoutHoldSettings(
+    actor: { role: UserRole | string },
+  ): Promise<PayoutHoldDto> {
     this.assertAdmin(actor);
     const days = await this.getPayoutHoldDays();
 
@@ -548,7 +557,7 @@ export class PlatformSettingsService {
     }
   }
 
-  async getSettings(actor: { role: UserRole | string }) {
+  async getSettings(actor: { role: UserRole | string }): Promise<PlatformFeeDto> {
     this.assertAdmin(actor);
 
     const setting = await this.prisma.platformSetting.upsert({
@@ -559,7 +568,7 @@ export class PlatformSettingsService {
 
     return {
       platformFeePercentage: setting.platformFeePercentage.toFixed(2),
-      updatedAt: setting.updatedAt,
+      updatedAt: setting.updatedAt.toISOString(),
     };
   }
 
@@ -669,7 +678,7 @@ export class PlatformSettingsService {
 
     return {
       platformFeePercentage: updated.platformFeePercentage.toFixed(2),
-      updatedAt: updated.updatedAt,
+      updatedAt: updated.updatedAt.toISOString(),
     };
   }
 }

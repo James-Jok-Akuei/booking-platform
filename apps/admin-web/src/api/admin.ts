@@ -158,18 +158,7 @@ export type RunSummary = components['schemas']['PayoutRunSummaryDto'];
 export type PauseReason = RunSummary['pausedBusinesses'][number]['reason'];
 export type BusinessBalance = components['schemas']['BusinessBalanceDto'];
 
-export interface HeldTotals {
-  asOf: string;
-  bySettlementCurrency: Array<{
-    settlementCurrency: string;
-    amountMinor: number;
-    entryCount: number;
-    reportingInternalMinor: number;
-  }>;
-  entriesWithoutSettlement: number;
-  totalEntries: number;
-  note: string;
-}
+export type HeldTotals = components['schemas']['HeldTotalsDto'];
 
 export const listPayouts = (params: { status?: PayoutStatus; limit?: number }) =>
   api<PayoutPage>('/admin/payouts', { query: params });
@@ -206,31 +195,10 @@ export const sendPayout = (id: string) =>
 // Platform settings (§16.3, §37, §38, §40)
 // ---------------------------------------------------------------------------
 
-export interface PlatformFee {
-  platformFeePercentage: string;
-  updatedAt: string | null;
-}
-
-export interface ExchangeRateSettings {
-  internalCurrency: string;
-  providerCurrency: string;
-  exchangeRateUsdToProviderCurrency: string | null;
-  exchangeRateUpdatedAt: string | null;
-  ageInHours: number | null;
-  exchangeRateUpdatedBy: { id: string; email: string } | null;
-  stalenessThresholdHours: number;
-  /** False when the provider charges in the unit of account — nothing converts. */
-  conversionInUse: boolean;
-  stale: boolean;
-  warning: string | null;
-  configured: boolean;
-  note: string;
-}
-
-export interface PayoutHold {
-  payoutHoldDays: number;
-  note: string;
-}
+/** Derived from the contract (§128). */
+export type PlatformFee = components['schemas']['PlatformFeeDto'];
+export type ExchangeRateSettings = components['schemas']['ExchangeRateSettingsDto'];
+export type PayoutHold = components['schemas']['PayoutHoldDto'];
 
 export const getPlatformFee = () => api<PlatformFee>('/admin/settings/platform-fee');
 
@@ -391,69 +359,23 @@ export type LedgerEntryType =
   | 'GATEWAY_FEE_DEBIT'
   | 'ADJUSTMENT';
 
-export interface LedgerEntry {
-  id: string;
-  businessId: string;
-  appointmentId: string | null;
-  type: LedgerEntryType;
-  /** Signed from the BUSINESS's point of view: positive is owed to them (§34.2). */
-  amountMinor: number;
-  currency: string;
-  settlementCurrency: string | null;
-  settlementAmountMinor: number | null;
-  bookingExchangeRate: string | null;
-  /** Null until the appointment resolves and the hold expires (§34.3). */
-  availableAt: string | null;
-  payoutId: string | null;
-  billingAdjustmentId: string | null;
-  createdAt: string;
-}
+export type LedgerEntry = components['schemas']['LedgerEntryDto'];
+export type LedgerPage = components['schemas']['LedgerEntryPageDto'];
 
-export interface CurrencyTotal {
-  settlementCurrency: string;
-  amountMinor: number;
-  entryCount?: number;
-  reportingInternalMinor?: number;
-}
+/**
+ * Two DIFFERENT shapes, which this file used to blur into one optional-field
+ * `CurrencyTotal` (§128.22).
+ *
+ * A held total counts entries; a filtered total does not and its currency can
+ * be null, because the column it is grouped by is nullable.
+ */
+export type HeldCurrencyTotal = components['schemas']['HeldCurrencyDto'];
+export type FilteredCurrencyTotal = components['schemas']['SettlementTotalDto'];
 
-export interface LedgerPage {
-  total: number;
-  limit: number;
-  offset: number;
-  entries: LedgerEntry[];
-  totalsBySettlementCurrency: CurrencyTotal[];
-}
-
-export type BillingAdjustmentType = 'FEE_REFUND' | 'GATEWAY_FEE_DEBIT';
-
-export interface BillingAdjustment {
-  id: string;
-  businessId: string;
-  appointmentId: string | null;
-  ticketId: string | null;
-  type: BillingAdjustmentType;
-  /** A decimal string in MAJOR units — unlike ledger entries, which are minor. */
-  amount: string;
-  reason: string;
-  settledAt: string | null;
-  settlementRef: string | null;
-  createdById: string;
-  createdAt: string;
-  ledgerEntries: Array<{
-    id: string;
-    amountMinor: number;
-    settlementAmountMinor: number | null;
-  }>;
-}
-
-export interface AdjustmentPage {
-  total: number;
-  limit: number;
-  offset: number;
-  /** How many are recorded but not yet executed. */
-  outstanding: number;
-  adjustments: BillingAdjustment[];
-}
+export type BillingAdjustmentType = BillingAdjustment['type'];
+export type BillingAdjustment = components['schemas']['AdjustmentDto'];
+export type AdjustmentPage = components['schemas']['AdjustmentPageDto'];
+export type ExecutedAdjustment = components['schemas']['ExecutedAdjustmentDto'];
 
 export const listLedgerEntries = (params: {
   businessId?: string;
@@ -489,38 +411,9 @@ export const executeAdjustment = (id: string, settlementRef?: string) =>
 // Reconciliation: our figure beside the operator's (§87)
 // ---------------------------------------------------------------------------
 
-export type WalletBalance =
-  | {
-      wallet: 'COLLECTION' | 'DISBURSEMENT';
-      status: 'OK';
-      /** As the operator reported it: a decimal string in MAJOR units. */
-      reportedAmount: string;
-      currency: string;
-      amountMinor: number | null;
-    }
-  | {
-      wallet: 'COLLECTION' | 'DISBURSEMENT';
-      status: 'UNAVAILABLE';
-      reason: string;
-    };
-
-export interface Reconciliation {
-  asOf: string;
-  isSandbox: boolean;
-  ledger: CurrencyTotal[];
-  entriesWithoutSettlement: number;
-  wallets: WalletBalance[];
-  /** False whenever showing a difference would be a lie. */
-  comparable: boolean;
-  difference: number | null;
-  notComparableReason:
-    | 'SANDBOX'
-    | 'DIFFERENT_CURRENCY'
-    | 'BALANCE_UNAVAILABLE'
-    | 'NOTHING_HELD'
-    | null;
-  note: string;
-}
+export type Reconciliation = components['schemas']['ReconciliationDto'];
+export type WalletBalance = Reconciliation['wallets'][number];
+export type NotComparableReason = Reconciliation['notComparableReason'];
 
 export const getReconciliation = () =>
   api<Reconciliation>('/admin/ledger/reconciliation');

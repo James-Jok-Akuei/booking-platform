@@ -8,6 +8,12 @@ import { UpdatePlatformFeeDto } from './dto/update-platform-fee.dto';
 import { UpdateExchangeRateDto } from './dto/update-exchange-rate.dto';
 import { UpdateStalenessDto } from './dto/update-staleness.dto';
 import { UpdatePayoutHoldDto } from './dto/update-payout-hold.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  ExchangeRateSettingsDto,
+  PayoutHoldDto,
+  PlatformFeeDto,
+} from './dto/settings-response.dto';
 import {
   AuthenticatedUser,
   CurrentUser,
@@ -32,6 +38,7 @@ export class AdminSettingsController {
   constructor(private readonly settings: PlatformSettingsService) {}
 
   @Get('platform-fee')
+  @ApiOkResponse({ type: PlatformFeeDto })
   getPlatformFee(@CurrentUser() user: AuthenticatedUser) {
     return this.settings.getSettings(user);
   }
@@ -43,6 +50,7 @@ export class AdminSettingsController {
    * otherwise would be worse than an admin knowing they own this number.
    */
   @Get('exchange-rate')
+  @ApiOkResponse({ type: ExchangeRateSettingsDto })
   getExchangeRate(@CurrentUser() user: AuthenticatedUser) {
     return this.settings.getExchangeRateSettings(user);
   }
@@ -55,6 +63,7 @@ export class AdminSettingsController {
    * Appointment.
    */
   @Patch('exchange-rate')
+  @ApiOkResponse({ type: ExchangeRateSettingsDto })
   updateExchangeRate(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: UpdateExchangeRateDto,
@@ -74,6 +83,7 @@ export class AdminSettingsController {
    * Reporting only. Nothing here can block a booking or a payment (§37.3).
    */
   @Patch('exchange-rate/staleness')
+  @ApiOkResponse({ type: ExchangeRateSettingsDto })
   updateStaleness(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: UpdateStalenessDto,
@@ -92,11 +102,13 @@ export class AdminSettingsController {
    * set on an entry (§38.1).
    */
   @Get('payout-hold')
+  @ApiOkResponse({ type: PayoutHoldDto })
   getPayoutHold(@CurrentUser() user: AuthenticatedUser) {
     return this.settings.getPayoutHoldSettings(user);
   }
 
   @Patch('payout-hold')
+  @ApiOkResponse({ type: PayoutHoldDto })
   updatePayoutHold(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: UpdatePayoutHoldDto,
@@ -109,6 +121,7 @@ export class AdminSettingsController {
    * the amounts computed at their booking time — see DECISIONS.md.
    */
   @Patch('platform-fee')
+  @ApiOkResponse({ type: PlatformFeeDto })
   updatePlatformFee(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: UpdatePlatformFeeDto,

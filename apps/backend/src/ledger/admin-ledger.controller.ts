@@ -24,6 +24,16 @@ import {
   ListAdjustmentsDto,
   ListLedgerEntriesDto,
 } from './dto/list-ledger.dto';
+import { ApiExtraModels, ApiOkResponse } from '@nestjs/swagger';
+import {
+  AdjustmentPageDto,
+  ExecutedAdjustmentDto,
+  HeldTotalsDto,
+  LedgerEntryPageDto,
+  ReconciliationDto,
+  WalletBalanceOkDto,
+  WalletBalanceUnavailableDto,
+} from './dto/ledger-response.dto';
 
 /**
  * Reconciliation, and turning a recorded decision into money.
@@ -32,6 +42,7 @@ import {
  * LedgerService asserts the role again before anything is read or written — a
  * decorator on a class is one refactor away from not being there.
  */
+@ApiExtraModels(WalletBalanceOkDto, WalletBalanceUnavailableDto)
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
@@ -50,6 +61,7 @@ export class AdminLedgerController {
    */
   /** The entries behind a balance, a payout or an appointment. Read-only. */
   @Get('ledger/entries')
+  @ApiOkResponse({ type: LedgerEntryPageDto })
   entries(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListLedgerEntriesDto,
@@ -59,6 +71,7 @@ export class AdminLedgerController {
 
   /** Billing adjustments, unsettled first. Read-only. */
   @Get('billing-adjustments')
+  @ApiOkResponse({ type: AdjustmentPageDto })
   adjustments(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListAdjustmentsDto,
@@ -71,11 +84,13 @@ export class AdminLedgerController {
    * compared at all (§87).
    */
   @Get('ledger/reconciliation')
+  @ApiOkResponse({ type: ReconciliationDto })
   reconcile(@CurrentUser() user: AuthenticatedUser) {
     return this.reconciliation.compare(user);
   }
 
   @Get('ledger/held')
+  @ApiOkResponse({ type: HeldTotalsDto })
   held(@CurrentUser() user: AuthenticatedUser) {
     return this.ledger.heldTotals(user);
   }
@@ -85,6 +100,7 @@ export class AdminLedgerController {
    * `settledAt` + `settlementRef` for exactly this call.
    */
   @Patch('billing-adjustments/:id/execute')
+  @ApiOkResponse({ type: ExecutedAdjustmentDto })
   execute(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

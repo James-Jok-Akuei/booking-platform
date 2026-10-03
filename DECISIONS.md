@@ -11561,22 +11561,64 @@ invitation row unselected, which would be a leak if an invitation carried a
 token. It does not — invitations are matched by EMAIL ADDRESS at registration —
 so every field on it is safe to show the administrator who sent it.
 
-### 128.19 Where this stands
+### 128.20 Percentages and rates are strings, and stay strings
 
-**52 of 156 operations**, up from 38 counted the same way. Twenty-nine client
-types derived rather than declared, across all three apps.
+`platformFeePercentage` is `toFixed(2)`; the exchange rate is `toFixed(8)`.
+Both are published as STRINGS, and the DTOs say so. A Decimal rendered to a
+float is the §55.2 mistake moved somewhere new — and these two numbers are what
+every booking's fee and every deposit conversion are computed from.
+
+Three dates became ISO strings at the source, per §128.9: the fee's `updatedAt`,
+the rate's `exchangeRateUpdatedAt` and `heldTotals.asOf`. All three were already
+strings on the wire — Nest serialises a Date that way — so nothing changed
+except that the types stopped disagreeing with reality.
+
+### 128.21 A union that had to stay a union
+
+`WalletBalance` is a discriminated union: a wallet reported `OK` carries an
+amount and a currency, one reported `UNAVAILABLE` carries a reason instead. The
+easy move is one class with everything optional, which would let a client read
+`reportedAmount` off an unavailable wallet and get `undefined`.
+
+So it is published as two schemas under a `oneOf`, registered with
+`@ApiExtraModels` because nothing references them by type directly. The generated
+client gets a real union back, and the console derives
+`WalletBalance = Reconciliation['wallets'][number]` from it.
+
+`notComparableReason` came through as its four-value enum, which matters more
+than it looks: `comparable: false` with `difference: null` is only useful if the
+reason is readable, and §87 exists entirely to refuse to show a difference that
+would be a lie.
+
+### 128.22 One optional-field type standing in for two real ones
+
+The console had a single `CurrencyTotal` with `entryCount?` and
+`reportingInternalMinor?` both optional, used for two genuinely different
+shapes: the held totals, which count entries, and a filtered page's totals,
+which do not. Optional fields were how one type covered both.
+
+Worse, it typed `settlementCurrency: string` for both — and the filtered total
+is grouped by a NULLABLE column, so that one really can be null. A page reading
+it as a string would print "null" as a currency code beside a money figure.
+
+Now two derived types, `HeldCurrencyTotal` and `FilteredCurrencyTotal`, each
+honest about its own fields. Nothing in the console read the optional ones, so
+again a bug prevented rather than fixed.
+
+### 128.23 Where this stands
+
+**65 of 156 operations**, up from 52. Thirty-eight client types derived rather
+than declared.
 
 Done: appointments, discovery, business locations, services and profile,
-favourites, legal, payouts and balances, admin businesses, users and accounts.
+favourites, legal, payouts and balances, admin businesses, users and accounts,
+platform settings, the ledger and billing adjustments.
 
-Remaining: the rest of `/admin` (44), the rest of `/business`, threads, tickets,
-reviews, notifications. 82 undescribed, plus 21 hollow ones now held by a
-ratchet.
+Remaining: `/business` (25 — now the biggest single block), threads, tickets and
+admin tickets, admin categories, places and legal, notifications, auth. 70
+undescribed, plus the 21 hollow ones held by the §128.14 ratchet.
 
-Eight real findings, none of which a reader would have caught: a detail endpoint
-annotated with a list shape, a Date that was a string on the wire, a `select`
-copied instead of shared, two classes sharing one global schema name, three
-`string`s that were really enums, a non-null name that is nullable, two
-endpoints returning a narrower row than their own published type, and
-twenty-three responses describing themselves as a bare object. Plus the one that
-matters most: the check itself was only half a check.
+Ten real findings so far, none of which a reader would have caught. The pattern
+in nearly all of them is the same: a hand-written client type that was slightly
+more generous than the server, in a direction nobody had tested, waiting for the
+first screen to be built on it.

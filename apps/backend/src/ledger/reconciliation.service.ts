@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { MomoBalanceProvider } from '../payments/momo-balance.provider';
 import { WalletBalance } from '../payments/balance-reporting.interface';
+import { ReconciliationDto } from './dto/ledger-response.dto';
 import { LedgerService } from './ledger.service';
 
 /** Why two figures cannot be set against each other. */
@@ -35,7 +36,9 @@ export class ReconciliationService {
     private readonly balances: MomoBalanceProvider,
   ) {}
 
-  async compare(actor: { role: UserRole | string }) {
+  async compare(
+    actor: { role: UserRole | string },
+  ): Promise<ReconciliationDto> {
     if (actor.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only administrators can read this.');
     }

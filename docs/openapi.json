@@ -2373,7 +2373,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformFeeDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2395,7 +2402,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformFeeDto"
+                }
+              }
+            }
           }
         },
         "summary": "Changes the fee for FUTURE bookings only. Appointments already booked keep\nthe amounts computed at their booking time — see DECISIONS.md.",
@@ -2410,7 +2424,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateSettingsDto"
+                }
+              }
+            }
           }
         },
         "summary": "The manual USD -> provider-currency rate, and how stale it is.\n\nManual by deliberate MVP scope: there is no live FX feed, and pretending\notherwise would be worse than an admin knowing they own this number.",
@@ -2433,7 +2454,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateSettingsDto"
+                }
+              }
+            }
           }
         },
         "summary": "Sets the rate used to convert deposits at charge time.\n\nApplies to FUTURE charges only. An appointment already paid keeps the\namount and rate it was actually charged at — see the snapshot fields on\nAppointment.",
@@ -2458,7 +2486,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateSettingsDto"
+                }
+              }
+            }
           }
         },
         "summary": "How old the rate may get before it is reported stale.\n\nReporting only. Nothing here can block a booking or a payment (§37.3).",
@@ -2473,7 +2508,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutHoldDto"
+                }
+              }
+            }
           }
         },
         "summary": "How long after an appointment resolves before its money may be paid out.\n\nThe hold in force AT RESOLUTION TIME is the one that applies. Changing this\naffects appointments resolved afterwards; it never rewrites a date already\nset on an entry (§38.1).",
@@ -2496,7 +2538,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutHoldDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3361,7 +3410,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedgerEntryPageDto"
+                }
+              }
+            }
           }
         },
         "summary": "What the platform should currently be holding, by currency.\n\nThe figure to compare against the provider's actual balance. Nothing\ncompares it automatically; producing the number is the point.",
@@ -3423,7 +3479,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdjustmentPageDto"
+                }
+              }
+            }
           }
         },
         "summary": "Billing adjustments, unsettled first. Read-only.",
@@ -3438,7 +3501,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconciliationDto"
+                }
+              }
+            }
           }
         },
         "summary": "Our figure beside the operator's, and whether they can honestly be\ncompared at all (§87).",
@@ -3453,7 +3523,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeldTotalsDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3486,7 +3563,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecutedAdjustmentDto"
+                }
+              }
+            }
           }
         },
         "summary": "Executes a BillingAdjustment — §25.2 renamed `appliedInvoiceId` to\n`settledAt` + `settlementRef` for exactly this call.",
@@ -7418,6 +7502,108 @@
           "endTime"
         ]
       },
+      "PlatformFeeDto": {
+        "type": "object",
+        "properties": {
+          "platformFeePercentage": {
+            "type": "string",
+            "description": "Two decimal places, as a STRING. A Decimal rendered to a float is the §55.2\nmistake in a different place — and this is the number every booking's fee\nis computed from."
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "platformFeePercentage",
+          "updatedAt"
+        ]
+      },
+      "ExchangeRateAuthorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ]
+      },
+      "ExchangeRateSettingsDto": {
+        "type": "object",
+        "properties": {
+          "internalCurrency": {
+            "type": "string",
+            "description": "What the platform prices in."
+          },
+          "providerCurrency": {
+            "type": "string",
+            "description": "What the operator charges in. Equal to the above in a single-currency deployment."
+          },
+          "exchangeRateUsdToProviderCurrency": {
+            "type": "string",
+            "nullable": true,
+            "description": "Eight decimal places, as a string. Null when nothing is configured."
+          },
+          "exchangeRateUpdatedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "exchangeRateUpdatedBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExchangeRateAuthorDto"
+              }
+            ]
+          },
+          "ageInHours": {
+            "type": "number",
+            "nullable": true,
+            "description": "Null when there is no rate, or when no conversion happens at all."
+          },
+          "stalenessThresholdHours": {
+            "type": "number"
+          },
+          "conversionInUse": {
+            "type": "boolean",
+            "description": "Whether any conversion actually happens (§69.1).\n\nFalse when the operator charges in the unit of account — the rate is then\npinned at 1 by §55.3 and cannot be wrong, so staleness does not apply.\nPublished rather than left for a client to infer by comparing two currency\ncodes, because a client that infers it wrongly shows an operator a red\n\"STALE\" badge on a number with one legal value."
+          },
+          "stale": {
+            "type": "boolean"
+          },
+          "configured": {
+            "type": "boolean"
+          },
+          "warning": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null when nothing is wrong."
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "internalCurrency",
+          "providerCurrency",
+          "exchangeRateUsdToProviderCurrency",
+          "exchangeRateUpdatedAt",
+          "exchangeRateUpdatedBy",
+          "ageInHours",
+          "stalenessThresholdHours",
+          "conversionInUse",
+          "stale",
+          "configured",
+          "warning",
+          "note"
+        ]
+      },
       "UpdateExchangeRateDto": {
         "type": "object",
         "properties": {
@@ -7448,6 +7634,22 @@
         },
         "required": [
           "exchangeRateStalenessHours"
+        ]
+      },
+      "PayoutHoldDto": {
+        "type": "object",
+        "properties": {
+          "payoutHoldDays": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string",
+            "description": "What the number means, in words. Dates already set are never rewritten."
+          }
+        },
+        "required": [
+          "payoutHoldDays",
+          "note"
         ]
       },
       "UpdatePayoutHoldDto": {
@@ -8169,6 +8371,443 @@
           }
         }
       },
+      "WalletBalanceOkDto": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "enum": [
+              "COLLECTION",
+              "DISBURSEMENT"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OK"
+            ]
+          },
+          "reportedAmount": {
+            "type": "string",
+            "description": "Verbatim from the operator: a decimal string in MAJOR units."
+          },
+          "currency": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "Null when the exponent for `currency` is unknown — unconverted, not guessed (§55.2)."
+          }
+        },
+        "required": [
+          "wallet",
+          "status",
+          "reportedAmount",
+          "currency",
+          "amountMinor"
+        ]
+      },
+      "WalletBalanceUnavailableDto": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "enum": [
+              "COLLECTION",
+              "DISBURSEMENT"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "UNAVAILABLE"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "What went wrong, in words, for the screen that shows it."
+          }
+        },
+        "required": [
+          "wallet",
+          "status",
+          "reason"
+        ]
+      },
+      "LedgerEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_RECEIVED",
+              "PLATFORM_FEE",
+              "DEPOSIT_REFUND",
+              "PLATFORM_FEE_REVERSAL",
+              "GATEWAY_FEE_DEBIT",
+              "ADJUSTMENT"
+            ]
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "settlementCurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "settlementAmountMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "bookingExchangeRate": {
+            "type": "string",
+            "nullable": true,
+            "description": "The rate this entry was fixed at. A string, like every Decimal here."
+          },
+          "availableAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the money matures. Null means it is not payable yet (§38.1)."
+          },
+          "payoutId": {
+            "type": "string",
+            "nullable": true
+          },
+          "billingAdjustmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "businessId",
+          "appointmentId",
+          "type",
+          "amountMinor",
+          "currency",
+          "settlementCurrency",
+          "settlementAmountMinor",
+          "bookingExchangeRate",
+          "availableAt",
+          "payoutId",
+          "billingAdjustmentId",
+          "createdAt"
+        ]
+      },
+      "SettlementTotalDto": {
+        "type": "object",
+        "properties": {
+          "settlementCurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "reportingInternalMinor": {
+            "type": "number",
+            "description": "The unit-of-account equivalent, for reporting only. Never what is held."
+          }
+        },
+        "required": [
+          "settlementCurrency",
+          "amountMinor",
+          "reportingInternalMinor"
+        ]
+      },
+      "LedgerEntryPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LedgerEntryDto"
+            }
+          },
+          "totalsBySettlementCurrency": {
+            "description": "Totals over the whole filter rather than the page. A total that changed\nwhen you turned the page would be worse than no total.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SettlementTotalDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "entries",
+          "totalsBySettlementCurrency"
+        ]
+      },
+      "AdjustmentEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "settlementAmountMinor": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "amountMinor",
+          "settlementAmountMinor"
+        ]
+      },
+      "AdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "ticketId": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "GATEWAY_FEE_DEBIT",
+              "FEE_REFUND"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "description": "MAJOR units, as a decimal string (§24). The ledger is integer minor units."
+          },
+          "reason": {
+            "type": "string"
+          },
+          "settledAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null until executed. Set together, never one without the other."
+          },
+          "settlementRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "ledgerEntries": {
+            "description": "The ledger entries this adjustment produced. Empty until it is executed.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentEntryDto"
+            }
+          },
+          "createdById": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "businessId",
+          "appointmentId",
+          "ticketId",
+          "type",
+          "amount",
+          "reason",
+          "settledAt",
+          "settlementRef",
+          "ledgerEntries",
+          "createdById",
+          "createdAt"
+        ]
+      },
+      "AdjustmentPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "outstanding": {
+            "type": "number",
+            "description": "How many are still waiting on somebody. Unsettled are listed first."
+          },
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdjustmentDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "outstanding",
+          "adjustments"
+        ]
+      },
+      "HeldCurrencyDto": {
+        "type": "object",
+        "properties": {
+          "settlementCurrency": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "entryCount": {
+            "type": "number"
+          },
+          "reportingInternalMinor": {
+            "type": "number",
+            "description": "The unit-of-account equivalent, for reporting only. Never what is held."
+          }
+        },
+        "required": [
+          "settlementCurrency",
+          "amountMinor",
+          "entryCount",
+          "reportingInternalMinor"
+        ]
+      },
+      "ReconciliationDto": {
+        "type": "object",
+        "properties": {
+          "wallets": {
+            "type": "array",
+            "description": "Each wallet reported independently, because either may fail alone.",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/WalletBalanceOkDto"
+                },
+                {
+                  "$ref": "#/components/schemas/WalletBalanceUnavailableDto"
+                }
+              ]
+            }
+          },
+          "asOf": {
+            "type": "string"
+          },
+          "isSandbox": {
+            "type": "boolean",
+            "description": "Sandbox reports a fixed balance no transfer moves, so nothing is comparable."
+          },
+          "ledger": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HeldCurrencyDto"
+            }
+          },
+          "entriesWithoutSettlement": {
+            "type": "number"
+          },
+          "comparable": {
+            "type": "boolean"
+          },
+          "difference": {
+            "type": "number",
+            "nullable": true,
+            "description": "Null whenever the figures cannot honestly be subtracted."
+          },
+          "notComparableReason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SANDBOX",
+              "DIFFERENT_CURRENCY",
+              "BALANCE_UNAVAILABLE",
+              "NOTHING_HELD"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "wallets",
+          "asOf",
+          "isSandbox",
+          "ledger",
+          "entriesWithoutSettlement",
+          "comparable",
+          "difference",
+          "notComparableReason",
+          "note"
+        ]
+      },
+      "HeldTotalsDto": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string"
+          },
+          "bySettlementCurrency": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HeldCurrencyDto"
+            }
+          },
+          "entriesWithoutSettlement": {
+            "type": "number",
+            "description": "Entries carrying no settlement figure (§45.1). Money the platform holds\nbut cannot pay out, counted separately rather than folded into a currency\nthey do not belong to."
+          },
+          "totalEntries": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asOf",
+          "bySettlementCurrency",
+          "entriesWithoutSettlement",
+          "totalEntries",
+          "note"
+        ]
+      },
       "ExecuteAdjustmentDto": {
         "type": "object",
         "properties": {
@@ -8179,6 +8818,80 @@
             "maxLength": 200
           }
         }
+      },
+      "SettledAdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "ticketId": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "GATEWAY_FEE_DEBIT",
+              "FEE_REFUND"
+            ]
+          },
+          "amount": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "settledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "settlementRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdById": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "businessId",
+          "appointmentId",
+          "ticketId",
+          "type",
+          "amount",
+          "reason",
+          "settledAt",
+          "settlementRef",
+          "createdById",
+          "createdAt"
+        ]
+      },
+      "ExecutedAdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "adjustment": {
+            "$ref": "#/components/schemas/SettledAdjustmentDto"
+          },
+          "entry": {
+            "$ref": "#/components/schemas/LedgerEntryDto"
+          }
+        },
+        "required": [
+          "adjustment",
+          "entry"
+        ]
       },
       "CreateTicketDto": {
         "type": "object",

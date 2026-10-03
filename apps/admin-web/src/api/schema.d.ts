@@ -3089,6 +3089,47 @@ export interface components {
             endTime: string;
             reason?: string;
         };
+        PlatformFeeDto: {
+            /**
+             * @description Two decimal places, as a STRING. A Decimal rendered to a float is the §55.2
+             *     mistake in a different place — and this is the number every booking's fee
+             *     is computed from.
+             */
+            platformFeePercentage: string;
+            updatedAt: string;
+        };
+        ExchangeRateAuthorDto: {
+            id: string;
+            email: string;
+        };
+        ExchangeRateSettingsDto: {
+            /** @description What the platform prices in. */
+            internalCurrency: string;
+            /** @description What the operator charges in. Equal to the above in a single-currency deployment. */
+            providerCurrency: string;
+            /** @description Eight decimal places, as a string. Null when nothing is configured. */
+            exchangeRateUsdToProviderCurrency: string | null;
+            exchangeRateUpdatedAt: string | null;
+            exchangeRateUpdatedBy: components["schemas"]["ExchangeRateAuthorDto"] | null;
+            /** @description Null when there is no rate, or when no conversion happens at all. */
+            ageInHours: number | null;
+            stalenessThresholdHours: number;
+            /**
+             * @description Whether any conversion actually happens (§69.1).
+             *
+             *     False when the operator charges in the unit of account — the rate is then
+             *     pinned at 1 by §55.3 and cannot be wrong, so staleness does not apply.
+             *     Published rather than left for a client to infer by comparing two currency
+             *     codes, because a client that infers it wrongly shows an operator a red
+             *     "STALE" badge on a number with one legal value.
+             */
+            conversionInUse: boolean;
+            stale: boolean;
+            configured: boolean;
+            /** @description Null when nothing is wrong. */
+            warning: string | null;
+            note: string;
+        };
         UpdateExchangeRateDto: {
             /**
              * @description ISO 4217 code the provider charges in. "EUR" for MTN's sandbox.
@@ -3115,6 +3156,11 @@ export interface components {
              *     the warning has stopped being a warning about anything.
              */
             exchangeRateStalenessHours: number;
+        };
+        PayoutHoldDto: {
+            payoutHoldDays: number;
+            /** @description What the number means, in words. Dates already set are never rewritten. */
+            note: string;
         };
         UpdatePayoutHoldDto: {
             /**
@@ -3406,6 +3452,125 @@ export interface components {
              */
             body?: string;
         };
+        WalletBalanceOkDto: {
+            /** @enum {string} */
+            wallet: "COLLECTION" | "DISBURSEMENT";
+            /** @enum {string} */
+            status: "OK";
+            /** @description Verbatim from the operator: a decimal string in MAJOR units. */
+            reportedAmount: string;
+            currency: string;
+            /** @description Null when the exponent for `currency` is unknown — unconverted, not guessed (§55.2). */
+            amountMinor: number | null;
+        };
+        WalletBalanceUnavailableDto: {
+            /** @enum {string} */
+            wallet: "COLLECTION" | "DISBURSEMENT";
+            /** @enum {string} */
+            status: "UNAVAILABLE";
+            /** @description What went wrong, in words, for the screen that shows it. */
+            reason: string;
+        };
+        LedgerEntryDto: {
+            id: string;
+            businessId: string;
+            appointmentId: string | null;
+            /** @enum {string} */
+            type: "DEPOSIT_RECEIVED" | "PLATFORM_FEE" | "DEPOSIT_REFUND" | "PLATFORM_FEE_REVERSAL" | "GATEWAY_FEE_DEBIT" | "ADJUSTMENT";
+            amountMinor: number;
+            currency: string;
+            settlementCurrency: string | null;
+            settlementAmountMinor: number | null;
+            /** @description The rate this entry was fixed at. A string, like every Decimal here. */
+            bookingExchangeRate: string | null;
+            /** @description When the money matures. Null means it is not payable yet (§38.1). */
+            availableAt: string | null;
+            payoutId: string | null;
+            billingAdjustmentId: string | null;
+            createdAt: string;
+        };
+        SettlementTotalDto: {
+            settlementCurrency: string | null;
+            amountMinor: number;
+            /** @description The unit-of-account equivalent, for reporting only. Never what is held. */
+            reportingInternalMinor: number;
+        };
+        LedgerEntryPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            entries: components["schemas"]["LedgerEntryDto"][];
+            /**
+             * @description Totals over the whole filter rather than the page. A total that changed
+             *     when you turned the page would be worse than no total.
+             */
+            totalsBySettlementCurrency: components["schemas"]["SettlementTotalDto"][];
+        };
+        AdjustmentEntryDto: {
+            id: string;
+            amountMinor: number;
+            settlementAmountMinor: number | null;
+        };
+        AdjustmentDto: {
+            id: string;
+            businessId: string;
+            appointmentId: string | null;
+            ticketId: string | null;
+            /** @enum {string} */
+            type: "GATEWAY_FEE_DEBIT" | "FEE_REFUND";
+            /** @description MAJOR units, as a decimal string (§24). The ledger is integer minor units. */
+            amount: string;
+            reason: string;
+            /** @description Null until executed. Set together, never one without the other. */
+            settledAt: string | null;
+            settlementRef: string | null;
+            /** @description The ledger entries this adjustment produced. Empty until it is executed. */
+            ledgerEntries: components["schemas"]["AdjustmentEntryDto"][];
+            createdById: string;
+            createdAt: string;
+        };
+        AdjustmentPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            /** @description How many are still waiting on somebody. Unsettled are listed first. */
+            outstanding: number;
+            adjustments: components["schemas"]["AdjustmentDto"][];
+        };
+        HeldCurrencyDto: {
+            settlementCurrency: string;
+            amountMinor: number;
+            entryCount: number;
+            /** @description The unit-of-account equivalent, for reporting only. Never what is held. */
+            reportingInternalMinor: number;
+        };
+        ReconciliationDto: {
+            /** @description Each wallet reported independently, because either may fail alone. */
+            wallets: (components["schemas"]["WalletBalanceOkDto"] | components["schemas"]["WalletBalanceUnavailableDto"])[];
+            asOf: string;
+            /** @description Sandbox reports a fixed balance no transfer moves, so nothing is comparable. */
+            isSandbox: boolean;
+            ledger: components["schemas"]["HeldCurrencyDto"][];
+            entriesWithoutSettlement: number;
+            comparable: boolean;
+            /** @description Null whenever the figures cannot honestly be subtracted. */
+            difference: number | null;
+            /** @enum {string|null} */
+            notComparableReason: "SANDBOX" | "DIFFERENT_CURRENCY" | "BALANCE_UNAVAILABLE" | "NOTHING_HELD" | null;
+            note: string;
+        };
+        HeldTotalsDto: {
+            asOf: string;
+            bySettlementCurrency: components["schemas"]["HeldCurrencyDto"][];
+            /**
+             * @description Entries carrying no settlement figure (§45.1). Money the platform holds
+             *     but cannot pay out, counted separately rather than folded into a currency
+             *     they do not belong to.
+             */
+            entriesWithoutSettlement: number;
+            totalEntries: number;
+            note: string;
+        };
         ExecuteAdjustmentDto: {
             /**
              * @description The provider's reference for the money movement, where there is one.
@@ -3416,6 +3581,24 @@ export interface components {
              *     not.
              */
             settlementRef?: string;
+        };
+        SettledAdjustmentDto: {
+            id: string;
+            businessId: string;
+            appointmentId: string | null;
+            ticketId: string | null;
+            /** @enum {string} */
+            type: "GATEWAY_FEE_DEBIT" | "FEE_REFUND";
+            amount: string;
+            reason: string;
+            settledAt: string | null;
+            settlementRef: string | null;
+            createdById: string;
+            createdAt: string;
+        };
+        ExecutedAdjustmentDto: {
+            adjustment: components["schemas"]["SettledAdjustmentDto"];
+            entry: components["schemas"]["LedgerEntryDto"];
         };
         CreateTicketDto: {
             /** @enum {string} */
@@ -5554,7 +5737,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PlatformFeeDto"];
+                };
             };
         };
     };
@@ -5575,7 +5760,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PlatformFeeDto"];
+                };
             };
         };
     };
@@ -5592,7 +5779,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ExchangeRateSettingsDto"];
+                };
             };
         };
     };
@@ -5613,7 +5802,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ExchangeRateSettingsDto"];
+                };
             };
         };
     };
@@ -5634,7 +5825,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ExchangeRateSettingsDto"];
+                };
             };
         };
     };
@@ -5651,7 +5844,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayoutHoldDto"];
+                };
             };
         };
     };
@@ -5672,7 +5867,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PayoutHoldDto"];
+                };
             };
         };
     };
@@ -6173,7 +6370,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LedgerEntryPageDto"];
+                };
             };
         };
     };
@@ -6196,7 +6395,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdjustmentPageDto"];
+                };
             };
         };
     };
@@ -6213,7 +6414,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReconciliationDto"];
+                };
             };
         };
     };
@@ -6230,7 +6433,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["HeldTotalsDto"];
+                };
             };
         };
     };
@@ -6253,7 +6458,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ExecutedAdjustmentDto"];
+                };
             };
         };
     };

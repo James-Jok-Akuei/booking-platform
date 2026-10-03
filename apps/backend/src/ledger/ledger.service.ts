@@ -15,6 +15,10 @@ import {
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  ADJUSTMENT_INCLUDE,
+  HeldTotalsDto,
+} from './dto/ledger-response.dto';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { INTERNAL_CURRENCY, toMinorUnits } from '../payments/currency';
 import { splitSettlement } from './settlement';
@@ -572,11 +576,7 @@ export class LedgerService {
         orderBy: [{ settledAt: 'asc' }, { createdAt: 'desc' }],
         take: limit,
         skip: offset,
-        include: {
-          ledgerEntries: {
-            select: { id: true, amountMinor: true, settlementAmountMinor: true },
-          },
-        },
+        include: ADJUSTMENT_INCLUDE,
       }),
       this.prisma.billingAdjustment.count({ where: { ...where, settledAt: null } }),
     ]);
@@ -595,7 +595,7 @@ export class LedgerService {
    * reconciliation that runs itself and reports "fine" is worse than one a
    * human performs, until there is something to reconcile against.
    */
-  async heldTotals(actor: { role: UserRole | string }) {
+  async heldTotals(actor: { role: UserRole | string }): Promise<HeldTotalsDto> {
     this.assertAdmin(actor);
 
     // Grouped by SETTLEMENT currency, because that is the money the platform is
@@ -626,7 +626,7 @@ export class LedgerService {
       }));
 
     return {
-      asOf: new Date(),
+      asOf: new Date().toISOString(),
       bySettlementCurrency,
       /**
        * Entries carrying no settlement figure (§45.1). They are money the
