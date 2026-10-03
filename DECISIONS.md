@@ -11162,3 +11162,101 @@ time: explicit providers turn a new dependency into a loud failure rather than a
 silent `undefined`, and one line per suite is the price.
 
 **1213 across 46.**
+
+## 127. The demo data said a car mechanic was a masseuse (2026-10-04)
+
+Noticed while building the browse-by-category screen (§121.1): Automotive
+returned zero places, and Kigali Auto Care was filed under **Health & Wellness /
+Massage Therapy**. A tailor was under Pet Grooming, a gym under Portrait
+Photography.
+
+### 127.1 An index into an alphabetical list
+
+```ts
+const categoryFor = (index: number) => categories[index % categories.length];
+```
+
+Each business carried a `categoryIndex` — its position in the file. So every one
+got whatever category happened to sit at that index once the taxonomy was ordered
+by name, and the assignment was arbitrary by construction.
+
+Nothing was broken by it. The filter worked perfectly on nonsense, which is why
+it survived until a screen made the nonsense visible — a browse list is the first
+thing that reads the data as a human would.
+
+Named lookups now, and they also fail loudly: an index silently picks a different
+category when the taxonomy is edited, while a name that no longer exists stops the
+seed and says which one.
+
+### 127.2 The reset had been broken since §89, unnoticed
+
+Re-running the seed failed before it wrote anything:
+
+```
+Foreign key constraint violated: appointments_locationId_fkey
+```
+
+The script deleted business profiles under a comment reading *"Cascades take
+locations, services, appointments, ledger entries, reviews, tickets and payout
+destinations with them."* That was true when it was written, and **§89 made it
+false on purpose** — `Appointment.locationId` became `onDelete: Restrict`
+because the cascade was silently deleting every booking ever made at a branch and
+orphaning the ledger entries recording the money.
+
+So the demo seed has been unrunnable for a fortnight and nobody found out,
+because nobody re-ran it. A comment describing a cascade that no longer exists is
+worse than no comment: it is the reason the one-liner underneath looked fine.
+
+### 127.3 And then the ledger refused as well
+
+With appointments deleted explicitly, the next layer spoke:
+
+```
+ledger_entries is append-only: ... appointmentId ... cannot be changed after
+insert. Append an opposing entry instead.
+```
+
+`ledger_entries.appointmentId` is `SET NULL` on delete — an **UPDATE** — and the
+immutability trigger names that column. The database refuses to let an
+appointment lose its money record.
+
+Which is right, and makes wiping demo data the one job that has to take the
+ledger apart deliberately. The trigger guards UPDATE, not DELETE, so removing the
+entries outright is allowed — and is what "this never happened" actually means.
+
+### 127.4 The gate caught its first caller, and it was mine
+
+Then §126.4 refused the seed:
+
+```
+403 Please read and accept the Seller Agreement (version 2) first.
+```
+
+The script creates users with `prisma.user.create` rather than through the OTP
+flow, so it goes around the one place that records acceptance. The gate working
+on its first outing, on the only caller that uses the back door.
+
+Fixed by having the seed accept as it registers, which is what a real business
+does — rather than making the seed an exception to a rule whose whole value is
+being universal.
+
+### 127.5 What it reads like now
+
+```
+Kigali Auto Care   -> Automotive       / Car Repair & Mechanic
+Kigali Barbers     -> Beauty & Personal Care / Barbershop
+Nyamirambo Salon   -> Beauty & Personal Care / Hair Salon
+Remera Nails       -> Beauty & Personal Care / Nail Salon
+Kimironko Spa      -> Health & Wellness / Massage Therapy
+Gikondo Fitness    -> Health & Wellness / Personal Training
+Kicukiro Tailors   -> Home Services     / Carpentry & Furniture Repair
+Kacyiru Studio     -> Photography       / Portrait Photography
+```
+
+Browsing by category returns 4 under Beauty, 1 under Automotive, 1 under Health —
+and Health has two businesses, because Gikondo Fitness is SUSPENDED and Kicukiro
+Tailors is PENDING, both by design so the moderation queue has something in it.
+Checked rather than assumed, since a missing business is exactly what a broken
+filter looks like.
+
+**1213 across 46.**

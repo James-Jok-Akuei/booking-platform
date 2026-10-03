@@ -60,6 +60,7 @@ import { LedgerService } from '../src/ledger/ledger.service';
 import { PayoutDestinationsService } from '../src/payouts/payout-destinations.service';
 import { BusinessModerationService } from '../src/business/business-moderation.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
+import { LegalService } from '../src/legal/legal.service';
 import { INTERNAL_CURRENCY } from '../src/payments/currency';
 
 const log = new Logger('seed-demo');
@@ -203,6 +204,7 @@ async function main() {
   const destinations = app.get(PayoutDestinationsService);
   const moderation = app.get(BusinessModerationService);
   const settings = app.get(PlatformSettingsService);
+  const legal = app.get(LegalService);
 
   // -------------------------------------------------------------------------
   // Idempotency: remove only what a previous run of THIS script created.
@@ -215,8 +217,45 @@ async function main() {
     const businessIds = [
       ...new Set(previous.flatMap((u) => u.businessMemberships.map((m) => m.businessProfileId))),
     ];
-    // Cascades take locations, services, appointments, ledger entries, reviews,
-    // tickets and payout destinations with them.
+    /**
+     * Appointments FIRST, and the comment that used to sit here was wrong (§127.2).
+     *
+     * It said the cascade took appointments with it. That was true until §89
+     * changed `Appointment.locationId` to `onDelete: Restrict` — on purpose,
+     * because deleting a branch was silently deleting every booking ever made
+     * there and orphaning the ledger entries that recorded the money.
+     *
+     * So this script has been unable to re-run since that fix, and nobody found
+     * out because nobody re-ran it. The same correction §89 applied to the test
+     * that relied on the same cascade: delete what Restrict protects, explicitly
+     * and in order, rather than hoping the database will do it quietly.
+     */
+    const locationIds = (
+      await prisma.location.findMany({
+        where: { businessId: { in: businessIds } },
+        select: { id: true },
+      })
+    ).map((l) => l.id);
+
+    /**
+     * Ledger entries BEFORE appointments, and this is the second protection the
+     * old one-liner walked into.
+     *
+     * `ledger_entries.appointmentId` is `SET NULL` on delete — which is an
+     * UPDATE, and the `ledger_entries_immutable` trigger names that very column
+     * among the ones that cannot change after insert. So deleting an appointment
+     * that has ledger entries is refused by the database itself:
+     *
+     *     ledger_entries is append-only: ... appointmentId ... cannot be changed
+     *     after insert. Append an opposing entry instead.
+     *
+     * Exactly right, and exactly why wiping demo data is the one job that has to
+     * take the ledger apart deliberately. The trigger guards UPDATE, not DELETE,
+     * so removing the entries outright is allowed — and is what "this never
+     * happened" actually means.
+     */
+    await prisma.ledgerEntry.deleteMany({ where: { businessId: { in: businessIds } } });
+    await prisma.appointment.deleteMany({ where: { locationId: { in: locationIds } } });
     await prisma.businessProfile.deleteMany({ where: { id: { in: businessIds } } });
     await prisma.user.deleteMany({ where: { id: { in: previous.map((u) => u.id) } } });
     log.log(`Cleared ${previous.length} user(s) from a previous demo seed.`);
@@ -244,7 +283,38 @@ async function main() {
         'is separate and this script does not duplicate it.',
     );
   }
-  const categoryFor = (index: number) => categories[index % categories.length];
+  /**
+   * The category a business is actually in, by NAME (§127).
+   *
+   * Was `categories[index % categories.length]` — a position in an
+   * alphabetically ordered list. Every business got whatever happened to sit at
+   * its index, so the demo shipped with Kigali Auto Care under **Massage
+   * Therapy**, a tailor under Pet Grooming and a gym under Portrait Photography.
+   *
+   * Nothing was broken by it: the filter worked perfectly on nonsense data,
+   * which is exactly why nobody noticed until a browse-by-category screen made
+   * the nonsense visible (§121.1).
+   *
+   * Named lookups also fail loudly. An index silently picks the wrong category
+   * when the taxonomy is edited; a name that no longer exists stops the seed and
+   * says which one.
+   */
+  const categoryFor = (categoryName: string, subcategoryName: string) => {
+    const category = categories.find((c) => c.name === categoryName);
+    if (!category) {
+      throw new Error(
+        `No category named "${categoryName}". The demo data names the categories ` +
+          'it uses, so renaming one in the taxonomy seed means renaming it here too.',
+      );
+    }
+    const subcategory = category.subcategories.find((sc) => sc.name === subcategoryName);
+    if (!subcategory) {
+      throw new Error(
+        `"${categoryName}" has no subcategory "${subcategoryName}".`,
+      );
+    }
+    return { category, subcategory };
+  };
 
   // -------------------------------------------------------------------------
   // Businesses
@@ -260,7 +330,8 @@ async function main() {
     lng: number;
     address: string;
     locationName: string;
-    categoryIndex: number;
+    category: string;
+    subcategory: string;
     note: string;
   }): Promise<SeededBusiness> {
     const owner = await prisma.user.create({
@@ -279,12 +350,28 @@ async function main() {
       },
     });
 
-    const category = categoryFor(options.categoryIndex);
+    /**
+     * The owner accepts the published documents, as a real registration does
+     * (§126.1).
+     *
+     * This script creates users with `prisma.user.create` rather than through
+     * the OTP flow, so it skips the place that records acceptance — and §126.4
+     * then refuses to let it list a single service:
+     *
+     *     403 Please read and accept the Seller Agreement (version 2) first.
+     *
+     * The gate working on its first outing, on the one caller that goes around
+     * the front door. Accepting here keeps the demo honest rather than making
+     * the seed an exception to a rule that exists to be universal.
+     */
+    await legal.acceptCurrentAtRegistration(owner.id);
+
+    const { category, subcategory } = categoryFor(options.category, options.subcategory);
     await profiles.update(profile.id, {
       description: options.description,
       phone: '+250788000000',
       categoryId: category.id,
-      ...(category.subcategories[0] ? { subcategoryId: category.subcategories[0].id } : {}),
+      subcategoryId: subcategory.id,
     });
 
     const location = await locations.create(owner.id, {
@@ -334,7 +421,8 @@ async function main() {
     lng: 30.0619,
     address: 'KN 4 Ave, Nyarugenge',
     locationName: 'Nyarugenge Branch',
-    categoryIndex: 0,
+    category: 'Beauty & Personal Care',
+    subcategory: 'Barbershop',
     note: 'APPROVED, 2 branches, verified payout destination, POSITIVE balance.',
   });
   const nileSecond = await locations.create(nile.userId, {
@@ -356,7 +444,8 @@ async function main() {
     lng: 30.1274,
     address: 'KG 9 Ave, Kimironko',
     locationName: 'Kimironko',
-    categoryIndex: 1,
+    category: 'Health & Wellness',
+    subcategory: 'Massage Therapy',
     note: 'APPROVED. Deposit == fee (10%), so the business share of a deposit is ZERO.',
   });
   await setHours(konyo, konyo.locationIds[0], '10:00', '20:00');
@@ -370,7 +459,8 @@ async function main() {
     lng: 30.1130,
     address: 'KG 17 Ave, Remera',
     locationName: 'Remera Studio',
-    categoryIndex: 2,
+    category: 'Beauty & Personal Care',
+    subcategory: 'Nail Salon',
     note: 'APPROVED. Cancelled a PAID booking, so its ledger balance is NEGATIVE.',
   });
   await setHours(thongpiny, thongpiny.locationIds[0], '09:00', '18:00');
@@ -384,7 +474,8 @@ async function main() {
     lng: 30.0580,
     address: 'Airport Road',
     locationName: 'Airport Road Workshop',
-    categoryIndex: 3,
+    category: 'Automotive',
+    subcategory: 'Car Repair & Mechanic',
     note: 'APPROVED but payout destination is UNVERIFIED — payouts are PAUSED.',
   });
   await setHours(autocare, autocare.locationIds[0], '08:00', '17:00');
@@ -398,7 +489,8 @@ async function main() {
     lng: 30.0430,
     address: 'KN 2 Ave, Nyamirambo',
     locationName: 'Nyamirambo Salon',
-    categoryIndex: 4,
+    category: 'Beauty & Personal Care',
+    subcategory: 'Hair Salon',
     note: 'APPROVED, CLOSED TODAY, and NO payout destination at all.',
   });
   await setHours(haicinema, haicinema.locationIds[0], '09:00', '17:00', true);
@@ -412,7 +504,8 @@ async function main() {
     lng: 30.1030,
     address: 'KK 15 Rd, Kicukiro',
     locationName: 'Kicukiro Workshop',
-    categoryIndex: 5,
+    category: 'Home Services',
+    subcategory: 'Carpentry & Furniture Repair',
     note: 'PENDING approval — absent from discovery, and unbookable.',
   });
   await setHours(gudele, gudele.locationIds[0], '09:00', '17:00');
@@ -426,7 +519,8 @@ async function main() {
     lng: 30.0740,
     address: 'KK 3 Ave, Gikondo',
     locationName: 'Gikondo Gym',
-    categoryIndex: 6,
+    category: 'Health & Wellness',
+    subcategory: 'Personal Training',
     note: 'SUSPENDED — invisible and unbookable, but its existing appointments stand.',
   });
   await setHours(munuki, munuki.locationIds[0], '06:00', '21:00');
@@ -440,7 +534,8 @@ async function main() {
     lng: 30.0890,
     address: 'KG 7 Ave, Kacyiru',
     locationName: 'Kacyiru Studio',
-    categoryIndex: 7,
+    category: 'Photography & Creative Services',
+    subcategory: 'Portrait Photography',
     note: 'APPROVED with NO services — browsable, fromPriceMinor is null, sorts last by price.',
   });
   await setHours(atlabara, atlabara.locationIds[0], '09:00', '17:00');
