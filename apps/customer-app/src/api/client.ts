@@ -109,9 +109,14 @@ export const tokens = {
 type SessionListener = () => void;
 const sessionListeners = new Set<SessionListener>();
 
-export function onSessionEnded(listener: SessionListener) {
+export function onSessionEnded(listener: SessionListener): () => void {
   sessionListeners.add(listener);
-  return () => sessionListeners.delete(listener);
+  // Returns void, not Set.delete's boolean: this is used as a React effect
+  // cleanup, and an effect cleanup that returns a value is a type error at
+  // every call site.
+  return () => {
+    sessionListeners.delete(listener);
+  };
 }
 
 async function endSession() {

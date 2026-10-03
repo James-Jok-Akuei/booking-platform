@@ -17,6 +17,7 @@ import {
   getAppointment,
   getPaymentStatus,
   initiateDeposit,
+  resendVerificationCode,
   toMsisdn,
   type PaymentStatus,
 } from '../../src/api/booking';
@@ -106,6 +107,33 @@ export default function Booking() {
     onError: (error) =>
       Alert.alert(
         'Could not start the payment',
+        error instanceof ApiError ? error.message : 'Please try again.',
+      ),
+  });
+
+  /**
+   * The server allows one a minute and five in total. The cooldown is mirrored
+   * here so the button is simply unavailable rather than offering something
+   * the server answers with "a code was just sent"; the five-send limit is NOT
+   * mirrored, because the count is not exposed and the server's refusal already
+   * says what to do instead — ask the shop to verify you in person.
+   */
+  const sentAt = appointment.data?.verificationCodeSentAt;
+  const resendCooling =
+    sentAt !== null && sentAt !== undefined &&
+    Date.now() - new Date(sentAt).getTime() < 60_000;
+
+  const resend = useMutation({
+    mutationFn: () => resendVerificationCode(id),
+    onSuccess: () => {
+      // The code CHANGED. Showing the old one next to "sent" would have the
+      // customer read out a number that no longer verifies.
+      queryClient.invalidateQueries({ queryKey: ['appointment', id] });
+      Alert.alert('Sent', 'A new code is on its way to your email.');
+    },
+    onError: (error) =>
+      Alert.alert(
+        'Not sent',
         error instanceof ApiError ? error.message : 'Please try again.',
       ),
   });
@@ -257,6 +285,32 @@ export default function Booking() {
                 <Text style={styles.codeLabel}>Show this when you arrive</Text>
                 <Text style={styles.code}>{a.verificationCode}</Text>
               </View>
+            )}
+
+            {/* Until now there was no way back to a code that had been deleted
+                (§117.3). It is in the email, and an email is exactly what gets
+                lost — the endpoint has existed since §53.2 with nothing calling
+                it. Sending again replaces the code, so the one above changes. */}
+            {a.verificationCode && (
+              <>
+                <Pressable
+                  style={styles.secondary}
+                  disabled={resend.isPending || resendCooling}
+                  onPress={() => resend.mutate()}
+                >
+                  <Text style={styles.secondaryText}>
+                    {resend.isPending
+                      ? 'Sending…'
+                      : resendCooling
+                        ? 'Just sent — check your email'
+                        : 'Email me this code again'}
+                  </Text>
+                </Pressable>
+                <Text style={styles.muted}>
+                  Sending a new one replaces the number above. Check your spam
+                  folder before asking for another.
+                </Text>
+              </>
             )}
           </View>
         )}

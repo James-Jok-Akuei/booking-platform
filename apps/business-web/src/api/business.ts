@@ -559,6 +559,24 @@ export const removeGalleryPhoto = (locationId: string, mediaId: string) =>
   });
 
 /** Edits a branch. Coordinates cannot be removed once set (§43.2). */
+/**
+ * Opens a branch. OWNER and MANAGER only, like every other change to how the
+ * business is set up.
+ *
+ * Coordinates are REQUIRED here and optional on update (§43.2): a branch with no
+ * position cannot appear in a distance search, and being found by someone nearby
+ * is the whole point of discovery. A business that onboarded without them is
+ * invisible to the search that matters most, which is why new ones cannot.
+ */
+export const createLocation = (body: {
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  districtId?: string;
+  phone?: string;
+}) => api<Location>('/business/locations', { method: 'POST', body });
+
 export const updateLocation = (
   id: string,
   body: {

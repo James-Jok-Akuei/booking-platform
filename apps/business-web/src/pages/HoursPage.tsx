@@ -13,6 +13,7 @@ import {
   type Location,
 } from '../api/business';
 import { useMoney } from '../money';
+import { NewBranchForm } from '../components/NewBranchForm';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -32,10 +33,27 @@ export function HoursPage() {
   return (
     <section>
       <header className="page-head">
-        <h1>Branches &amp; hours</h1>
+        <div>
+          <h1>Branches &amp; hours</h1>
+          <p className="muted">
+            Every place you work from, when it is open, and how many people it can
+            take at once.
+          </p>
+        </div>
       </header>
 
+      <NewBranchForm onCreated={refresh} />
+
       {locations.isLoading && <p className="muted">Loading…</p>}
+
+      {/* Three other pages send people here to add their first branch (§117), so
+          this is the screen that has to say what to do when there are none. */}
+      {locations.data?.length === 0 && (
+        <p className="muted empty">
+          No branches yet. Add one above — until then there is nothing for a
+          customer to book and nothing to set hours for.
+        </p>
+      )}
 
       {locations.data?.map((location) => (
         <LocationCard

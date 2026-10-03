@@ -10313,3 +10313,140 @@ It deliberately does not cover choosing a host, DNS, TLS or CI. Those depend on
 nothing in this codebase, and guessing at them would date faster than the rest.
 
 **1171 across 42.**
+
+## 117. Four things the apps could not do (2026-10-03)
+
+Found by auditing route coverage per app, in both directions. The audit script
+was wrong twice before it was right, which is recorded below because the wrong
+versions were convincing.
+
+### 117.1 A new business was told three times to do something it could not
+
+`POST /business/locations` existed, OWNER/MANAGER-gated, and no client called it.
+Meanwhile three separate pages said:
+
+> *"Add a branch first, under Branches & hours."*
+
+Go there and you can edit, close and reopen a branch. There was no way to open
+one. A newly approved business was instructed three times to do the one thing the
+app did not offer — and the only reason the platform works today is that the seed
+script creates locations.
+
+**Coordinates are the hard part**, and the reason this is not a four-field form.
+They are REQUIRED on create and optional on update (§43.2): a branch with no
+position never appears in a distance search, which is what §107 made the default.
+But a shop owner does not know their coordinates and should not have to type
+decimal degrees.
+
+So the field takes what they already have — the Google Maps link everyone here
+sends over WhatsApp to say where they are. `parseCoordinates` reads the three
+shapes those links come in plus a bare pair, and names the shortened
+`maps.app.goo.gl` case explicitly, because that one carries no coordinates at all
+and would otherwise fail as "could not read that". There is a "use my current
+position" button for someone standing in the shop, and the parsed point is shown
+with a link to check it on a map before saving.
+
+`0, 0` is refused with an explanation rather than a validator's name. The server
+refuses it too (§43's Null Island check) — this is so the person reads a sentence
+instead of a rule.
+
+Twelve cases run against the parser directly, since the web apps have no test
+runner. All pass, including the one that matters: a `/place/` URL carrying both
+`@lat,lng` and `?q=lat,lng` resolves to the `@`, which is where the map is
+actually centred.
+
+The form also says, before the save, that **a new branch starts closed every
+day** — verified, `create` writes no hours rows at all — because a business that
+does not know that reads an empty calendar as the platform being broken.
+
+### 117.2 An admin was approving businesses blind
+
+`GET /admin/businesses/:id` returns branches, services with their per-branch
+prices, and members. Its own comment says this is "more of the picture than one
+number ever was" for an admin reviewing an application. Nothing called it.
+
+So approval — the gate that makes a business visible to every customer — was done
+from a table row showing a name, a category and a date.
+
+The drawer is **read-only**. The actions stay on the row where they already are:
+duplicating approve and reject inside it would be two places to keep in step, and
+its job is to answer "what am I about to let in", not to be a second control
+panel.
+
+Two things it says that the data implies and a reader would otherwise have to
+work out: a business with no branches means "approving this puts an empty shop in
+front of customers", and a missing description is "worth asking about before
+approving".
+
+`AdminBusiness` was being returned for both the list and the detail, so the three
+extra fields were invisible to TypeScript. Now `AdminBusinessDetail extends
+AdminBusiness`, which is the §109 lesson applied before it could cost anything.
+
+### 117.3 Nobody could ask for their arrival code again
+
+`POST /appointments/:id/resend-verification-code` has existed since §53.2, with a
+one-minute cooldown and a five-send ceiling. The client function was written in
+the customer app. **No screen in any app called it.**
+
+The code is emailed, and an email is exactly the thing that gets deleted. There
+was no way back to it.
+
+Driven end to end before wiring: the code genuinely **changes** — `842890` became
+`085740` — so the screen invalidates the appointment rather than showing "sent"
+beside a number that no longer verifies. An immediate second attempt returns *"A
+code was just sent. Try again in 60 second(s)"*, which the button mirrors by
+being unavailable rather than by offering something that will be refused.
+
+The five-send ceiling is deliberately NOT mirrored: `verificationCodeSentCount`
+is not exposed, and the server's refusal already says what to do instead — ask
+the business to verify you in person. Widening a projection to show a number
+nobody acts on is not worth it.
+
+### 117.4 An expired session left the phone rendering errors
+
+Both web apps have handled this since they were written, through a
+`SESSION_ENDED` window event. The customer app shipped `onSessionEnded` for the
+same purpose — a phone has no window events — and **nothing subscribed to it**.
+So a refresh token expiring mid-use left every screen rendering with every query
+failing, and nothing to suggest that signing in again would fix it.
+
+Now it clears the query cache and routes to sign-in. Clearing matters for the
+same reason it does on sign-out (§113.2): everything cached was fetched as that
+person.
+
+One real bug fixed on the way: `onSessionEnded` returned `Set.delete`'s boolean,
+so it could not be used as a React effect cleanup without a type error. Returning
+the subscriber's own boolean was never intended; it was the implicit return of a
+one-line arrow.
+
+### 117.5 The audit was wrong twice before it was right
+
+Worth recording, because both wrong versions produced confident output.
+
+**First pass**: matched calls with `api<...>(` and read the HTTP method from a
+fixed 260-character lookahead. `api<Page<AdminBusiness>>(` has nested angle
+brackets that `[^>]*` stops short on, so half the admin app looked unwired; and
+the lookahead ran past the end of one function into the next, reporting its verb.
+It claimed nine admin calls hit the wrong method. **All nine were false.**
+
+**Second pass**: a small scanner with bracket balancing, reading the method from
+inside that call's own parentheses. Zero false positives — and then three
+findings that were still wrong for a different reason: `/auth/refresh` is called
+with raw `fetch` inside the client, and the payout CSV export through a `download`
+helper. Neither goes through `api()`, so neither is visible to a tool that only
+looks there.
+
+The lesson is the §109 one again from the other side: a tool that reads one
+pattern reports everything else as missing. Each finding was confirmed by reading
+the code before any of it was acted on, and three of the seven did not survive
+that.
+
+**Three things that looked like gaps and are not**, checked and left alone:
+`retireService` is unused because §76 decided "Everywhere" acts on the branches
+rather than the service's own flag; the operator choice is unused because
+`choiceRequired` is `available.length > 1 && suggested === null` and MTN is the
+only provider, so it is always false — latent, and a bug the day Airtel is added;
+and the business app's copy of the `download` helper is genuinely dead, left in
+place because an export is the obvious next thing to want from that app.
+
+**1171 across 42.**

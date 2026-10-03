@@ -300,3 +300,14 @@ td.reason { max-width: 320px; }
 .sub-add input { font: inherit; padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; }
 .link.danger { color: var(--danger); }
 .cat-icon { font-weight: 400; }
+
+/* ---- Business detail (§117.2) --------------------------------------- */
+
+/* A name that opens a panel. It has to read as the row's heading, not as a
+   link in a sentence — it is the first thing in the row and the way in. */
+.link-strong { background: none; border: none; padding: 0; font: inherit; font-weight: 650; color: var(--ink); cursor: pointer; text-align: left; }
+.link-strong:hover { color: var(--accent); text-decoration: underline; }
+
+.plain { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+.plain > li { display: flex; flex-direction: column; gap: 2px; }
+.plain > li .pill { align-self: flex-start; margin-top: 2px; }

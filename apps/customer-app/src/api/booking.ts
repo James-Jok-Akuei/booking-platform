@@ -19,6 +19,13 @@ export interface Appointment {
   servicePriceMinor: number | null;
   depositPaidAt: string | null;
   verificationCode?: string | null;
+  /**
+   * When a code was last emailed (§53.2) — not how many times.
+   *
+   * Enough for the screen to keep its own one-minute cooldown rather than
+   * offering a button the server answers with "a code was just sent".
+   */
+  verificationCodeSentAt?: string | null;
   service: { id: string; name: string; durationMinutes: number };
   location: { id: string; name: string; address: string; businessId: string };
   /**

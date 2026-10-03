@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, Stack } from 'expo-router';
+import { Link, Stack, router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
-import { tokens } from '../src/api/client';
+import { onSessionEnded, tokens } from '../src/api/client';
 import { theme } from '../src/theme';
 
 const queryClient = new QueryClient({
@@ -25,6 +25,26 @@ export default function RootLayout() {
   useEffect(() => {
     tokens.hydrate().finally(() => setReady(true));
   }, []);
+
+  /**
+   * When a refresh has definitively failed, send the person to sign in (§117.4).
+   *
+   * Both web apps have done this since they were written — through a window
+   * event, which a phone does not have — and the hook this app shipped for it
+   * was wired to nothing. So an expired session left every screen rendering with
+   * every query failing, and no way to tell that signing in again would fix it.
+   *
+   * The cache is cleared on the way, for the same reason the account screen
+   * clears it: everything in it was fetched as that person.
+   */
+  useEffect(
+    () =>
+      onSessionEnded(() => {
+        queryClient.clear();
+        router.replace('/sign-in?next=/');
+      }),
+    [],
+  );
 
   if (!ready) return null;
 

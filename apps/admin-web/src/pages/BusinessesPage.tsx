@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
+import { useMoney } from '../money';
 import {
   approveBusiness,
+  getBusiness,
   listBusinesses,
   reinstateBusiness,
   rejectBusiness,
@@ -32,6 +34,7 @@ const formatDate = (iso: string | null) =>
  */
 export function BusinessesPage() {
   const [status, setStatus] = useState<BusinessStatus | 'ALL'>('PENDING');
+  const [openId, setOpenId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const businesses = useQuery({
@@ -137,6 +140,7 @@ export function BusinessesPage() {
                 onReinstate={() => act.mutate({ id: business.id, action: 'reinstate' })}
                 onReject={() => withReason(business.id, 'reject')}
                 onSuspend={() => withReason(business.id, 'suspend')}
+                onOpen={() => setOpenId(business.id)}
               />
             ))}
           </tbody>
@@ -148,6 +152,8 @@ export function BusinessesPage() {
           {businesses.data.businesses.length} of {businesses.data.total}
         </p>
       )}
+
+      {openId && <BusinessDrawer id={openId} onClose={() => setOpenId(null)} />}
     </section>
   );
 }
@@ -159,6 +165,7 @@ function Row({
   onReinstate,
   onReject,
   onSuspend,
+  onOpen,
 }: {
   business: AdminBusiness;
   busy: boolean;
@@ -166,6 +173,7 @@ function Row({
   onReinstate: () => void;
   onReject: () => void;
   onSuspend: () => void;
+  onOpen: () => void;
 }) {
   // A business with no name cannot be approved — the backend refuses, because
   // an approved blank goes straight into search results (§53). Said here so the
@@ -175,7 +183,11 @@ function Row({
   return (
     <tr>
       <td>
-        <strong>{business.name ?? <em className="muted">No name yet</em>}</strong>
+        {/* The name opens the detail. Approving makes a business visible to every
+            customer, and the row alone does not say what is being approved. */}
+        <button type="button" className="link-strong" onClick={onOpen}>
+          {business.name ?? <em className="muted">No name yet</em>}
+        </button>
         {business.phone && <div className="muted small">{business.phone}</div>}
         {business.statusReason && (
           <div className="muted small">Reason: {business.statusReason}</div>
@@ -219,5 +231,150 @@ function Row({
         {business.status === 'REJECTED' && <span className="muted small">Closed</span>}
       </td>
     </tr>
+  );
+}
+
+/**
+ * Everything an approval decision rests on (§117.2).
+ *
+ * The list says a name and a status. This says where they work from, what they
+ * sell and for how much at each branch, and who can act for them — which is what
+ * `GET /admin/businesses/:id` has always returned and nothing ever showed.
+ *
+ * Read-only on purpose. The actions stay on the row where they already are:
+ * duplicating approve and reject in here would mean two places to keep in step,
+ * and the drawer's job is to answer "what am I about to let in", not to be a
+ * second control panel.
+ */
+function BusinessDrawer({ id, onClose }: { id: string; onClose: () => void }) {
+  const money = useMoney();
+  const business = useQuery({ queryKey: ['business', id], queryFn: () => getBusiness(id) });
+  const b = business.data;
+
+  return (
+    <div className="drawer-backdrop" onClick={onClose}>
+      <aside className="drawer" onClick={(event) => event.stopPropagation()}>
+        <header className="drawer-head">
+          <div>
+            <h2>{b?.name ?? 'Business'}</h2>
+            <p className="muted small">
+              {b?.category?.name ?? 'No category'}
+              {b?.subcategory ? ` · ${b.subcategory.name}` : ''}
+              {b ? ` · applied ${formatDate(b.createdAt)}` : ''}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="icon-button"
+            onClick={onClose}
+            aria-label="Close this panel"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </button>
+        </header>
+
+        {business.isLoading && <p className="muted">Loading…</p>}
+        {business.error && (
+          <p className="error" role="alert">
+            {business.error instanceof ApiError
+              ? business.error.message
+              : 'Could not load this business.'}
+          </p>
+        )}
+
+        {b && (
+          <>
+            {b.description ? (
+              <p>{b.description}</p>
+            ) : (
+              <p className="muted">
+                No description. Customers see this on the shop page, so an empty one
+                is worth asking about before approving.
+              </p>
+            )}
+
+            <section className="panel">
+              <h2>Branches ({b.locations.length})</h2>
+              {b.locations.length === 0 ? (
+                <p className="muted">
+                  None. Nothing is bookable until they add one, so approving this
+                  puts an empty shop in front of customers.
+                </p>
+              ) : (
+                <ul className="plain">
+                  {b.locations.map((location) => (
+                    <li key={location.id}>
+                      <strong>{location.name}</strong>
+                      <div className="muted small">{location.address}</div>
+                      <div className="muted small">
+                        {location.capacity} at a time
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="panel">
+              <h2>Services ({b.services.length})</h2>
+              {b.services.length === 0 ? (
+                <p className="muted">
+                  None yet. There is nothing for a customer to book.
+                </p>
+              ) : (
+                <ul className="plain">
+                  {b.services.map((service) => (
+                    <li key={service.id}>
+                      <strong>{service.name}</strong>
+                      {!service.isActive && <span className="pill">Paused</span>}
+                      <div className="muted small">
+                        {service.durationMinutes} minutes · {service.depositPercentage}%
+                        deposit
+                      </div>
+                      {/* Per branch, because §72 made price a property of where
+                          the service is offered rather than of the service. */}
+                      {service.locations.length === 0 ? (
+                        <div className="muted small">Not offered at any branch.</div>
+                      ) : (
+                        <div className="muted small">
+                          {service.locations
+                            .map(
+                              (at) =>
+                                `${at.location.name}: ${money.format(at.priceMinor)}`,
+                            )
+                            .join(' · ')}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="panel">
+              <h2>People ({b.members.length})</h2>
+              <ul className="plain">
+                {b.members.map((member) => (
+                  <li key={member.id}>
+                    <strong>{member.user.email}</strong>
+                    <span className="pill">{member.role}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            {b.statusReason && (
+              <section className="panel">
+                <h2>Why it is {b.status.toLowerCase()}</h2>
+                <p>{b.statusReason}</p>
+                <p className="muted small">{formatDate(b.statusChangedAt)}</p>
+              </section>
+            )}
+          </>
+        )}
+      </aside>
+    </div>
   );
 }

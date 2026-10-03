@@ -41,7 +41,38 @@ export const listBusinesses = (params: {
   offset?: number;
 }) => api<Page<AdminBusiness>>('/admin/businesses', { query: params });
 
-export const getBusiness = (id: string) => api<AdminBusiness>(`/admin/businesses/${id}`);
+/**
+ * One business, in full (§117.2).
+ *
+ * The list row carries a name and a status; this carries what is actually being
+ * approved — where they work from, what they sell and for how much at each
+ * branch, and who can act for them. Approval is the gate that makes a business
+ * visible to every customer, and until now it was made from a table row.
+ */
+export interface AdminBusinessDetail extends AdminBusiness {
+  locations: Array<{ id: string; name: string; address: string; capacity: number }>;
+  services: Array<{
+    id: string;
+    name: string;
+    durationMinutes: number;
+    /** A decimal string, not a number — read it, never do arithmetic on it. */
+    depositPercentage: string;
+    isActive: boolean;
+    /** Price is per BRANCH since §72, so a service can cost different amounts. */
+    locations: Array<{
+      priceMinor: number;
+      location: { id: string; name: string };
+    }>;
+  }>;
+  members: Array<{
+    id: string;
+    role: 'OWNER' | 'MANAGER' | 'STAFF';
+    user: { id: string; email: string };
+  }>;
+}
+
+export const getBusiness = (id: string) =>
+  api<AdminBusinessDetail>(`/admin/businesses/${id}`);
 
 export const approveBusiness = (id: string) =>
   api<AdminBusiness>(`/admin/businesses/${id}/approve`, { method: 'PATCH' });
