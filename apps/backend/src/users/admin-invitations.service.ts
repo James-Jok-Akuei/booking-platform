@@ -9,6 +9,8 @@ import { InvitationStatus, NotificationType, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { InviteAdminDto } from './dto/invite-admin.dto';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { ADMIN_INVITATION_SELECT } from './dto/user-response.dto';
 
 /** How long an administrator invitation stays open. */
 export const ADMIN_INVITATION_TTL_DAYS = 7;
@@ -91,6 +93,9 @@ export class AdminInvitationsService {
         invitedByUserId: actor.userId,
         expiresAt: new Date(Date.now() + ADMIN_INVITATION_TTL_DAYS * 86_400_000),
       },
+      // The same select the listing uses, so one DTO describes both and the
+      // console is not handed two different shapes for one invitation.
+      select: ADMIN_INVITATION_SELECT,
     });
 
     const inviter = await this.prisma.user.findUnique({
@@ -122,14 +127,7 @@ export class AdminInvitationsService {
     return this.prisma.adminInvitation.findMany({
       where: { status: InvitationStatus.PENDING },
       orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        status: true,
-        createdAt: true,
-        expiresAt: true,
-        invitedBy: { select: { email: true } },
-      },
+      select: ADMIN_INVITATION_SELECT,
     });
   }
 
@@ -169,7 +167,7 @@ export class AdminInvitationsService {
   async revokeAdmin(
     actor: { userId: string; role: UserRole | string },
     targetUserId: string,
-  ) {
+  ): Promise<ActionMessageDto> {
     await this.assertPrimary(actor);
 
     if (targetUserId === actor.userId) {

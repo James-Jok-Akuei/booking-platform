@@ -1,5 +1,5 @@
 import { BusinessStatus, Prisma } from '@prisma/client';
-import { Serialised } from '../../common/serialised';
+import { NoExtraFields, Serialised } from '../../common/serialised';
 
 /**
  * A business in the moderation queue (§29), and in full on its own panel (§117.2).
@@ -109,3 +109,9 @@ export class AdminBusinessDetailDto extends AdminBusinessDto {
   /** ACTIVE members only. Removed ones stay as history and grant nothing (§14). */
   members!: AdminBusinessMemberDto[];
 }
+
+/**
+ * `implements` alone never objected to a field the select had stopped
+ * providing (§128.17). These close that side.
+ */
+export const __adminBusinessDtoIsExact: NoExtraFields<AdminBusinessDto, AdminBusinessPayload> = true;

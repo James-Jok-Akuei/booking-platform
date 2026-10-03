@@ -1,5 +1,5 @@
 import { MobileMoneyProvider, PayoutStatus, Prisma } from '@prisma/client';
-import { Serialised } from '../../common/serialised';
+import { NoExtraFields, Serialised } from '../../common/serialised';
 import type { PauseReason, RunSummary } from '../payouts.service';
 
 /** One include, shared with the DTO that describes its result (§128.5). */
@@ -11,6 +11,13 @@ type PayoutRow = Serialised<Prisma.PayoutGetPayload<object>>;
 type AdminPayoutRow = Serialised<
   Prisma.PayoutGetPayload<{ include: typeof PAYOUT_INCLUDE }>
 >;
+
+/** The row plus the three fields joined on top of it — the whole wire shape. */
+type AdminPayoutWire = AdminPayoutRow & {
+  businessName: string | null;
+  destinationMsisdn: string | null;
+  destinationProvider: MobileMoneyProvider | null;
+};
 
 /**
  * A payout row as it goes over the wire.
@@ -66,7 +73,7 @@ export class AdminPayoutBusinessDto {
  * business id and an amount, which is not enough to pay anybody: an admin had to
  * export the CSV just to read a name and a number the screen could have shown.
  */
-export class AdminPayoutDto extends PayoutDto implements AdminPayoutRow {
+export class AdminPayoutDto extends PayoutDto implements AdminPayoutWire {
   /** Spread from the row, so the nested profile is on the wire too. */
   businessProfile!: AdminPayoutBusinessDto;
 
@@ -183,3 +190,14 @@ export class BusinessBalanceDto {
   /** Plain-language explanation of the figures above, including why a payout is held. */
   note!: string;
 }
+
+/**
+ * `implements` alone never objected to a field the select had stopped
+ * providing (§128.17). These close that side.
+ */
+export const __payoutDtoIsExact: NoExtraFields<PayoutDto, PayoutRow> = true;
+export const __adminPayoutDtoIsExact: NoExtraFields<
+  AdminPayoutDto,
+  AdminPayoutWire
+> = true;
+export const __payoutRunSummaryDtoIsExact: NoExtraFields<PayoutRunSummaryDto, Serialised<RunSummary>> = true;

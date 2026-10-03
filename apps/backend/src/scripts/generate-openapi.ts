@@ -95,6 +95,102 @@ async function main() {
     );
   }
 
+
+  /**
+   * A response schema of `{"type": "object"}` and nothing else (§128.14).
+   *
+   * This is what the plugin emits for a handler it cannot infer: no `$ref`, no
+   * properties, just the word "object". It is WORSE than an undescribed
+   * response, because the contract now asserts something — and a client
+   * deriving from it gets `Record<string, never>`, a type that permits no
+   * field and explains nothing.
+   *
+   * The §60 guard above never saw these: it inspects `components.schemas`, and
+   * these are inline on the operation, belonging to no named schema at all.
+   * Twenty-three were found sitting in the contract the day this was written,
+   * including `GET /users/me` — the endpoint whose missing `imageUrl` cost an
+   * hour of §125, and which a described response would have shown immediately.
+   *
+   * A RATCHET, not a wall: the known ones are listed and the build fails on any
+   * operation NOT on the list. The list may only shrink. Deleting the last
+   * entry should be followed by deleting the list.
+   */
+  const KNOWN_HOLLOW_RESPONSES = new Set([
+  'GET /business/locations/{id}/schedule-exceptions',
+  'GET /business/locations/{id}/time-blocks',
+  'GET /business/payout-destination',
+  'GET /categories',
+  'GET /locations/{id}/availability',
+  'GET /places/provinces',
+  'PATCH /admin/payout-destinations/{id}/reject',
+  'PATCH /admin/payout-destinations/{id}/verify',
+  'PATCH /admin/reviews/{id}/hide',
+  'PATCH /admin/reviews/{id}/unhide',
+  'PATCH /business/locations/{id}',
+  'PATCH /reviews/{id}',
+  'PATCH /reviews/{id}/response',
+  'POST /appointments/{id}/reviews',
+  'POST /auth/otp/verify',
+  'POST /auth/refresh',
+  'POST /business/locations',
+  'POST /business/locations/{id}/schedule-exceptions',
+  'POST /business/locations/{id}/time-blocks',
+  'POST /business/payout-destination',
+  'POST /reviews/{id}/response',
+  ]);
+
+  const isHollow = (schema: unknown): boolean => {
+    if (typeof schema !== 'object' || schema === null) return false;
+    const s = schema as Record<string, unknown>;
+    if (s.type === 'array') return isHollow(s.items);
+    if (s.$ref || s.allOf || s.oneOf || s.anyOf) return false;
+    const hasProperties =
+      Object.keys((s.properties as object) ?? {}).length > 0;
+    return !hasProperties && (s.type === undefined || s.type === 'object');
+  };
+
+  const hollow: string[] = [];
+  const fixed = new Set(KNOWN_HOLLOW_RESPONSES);
+
+  for (const [path, item] of Object.entries(document.paths)) {
+    for (const [verb, operation] of Object.entries(item as object)) {
+      if (!['get', 'post', 'patch', 'put', 'delete'].includes(verb)) continue;
+      const responses = (operation as { responses?: Record<string, unknown> })
+        .responses ?? {};
+      for (const [status, response] of Object.entries(responses)) {
+        if (!status.startsWith('2')) continue;
+        const schema = (
+          response as { content?: { 'application/json'?: { schema?: unknown } } }
+        ).content?.['application/json']?.schema;
+        if (schema === undefined || !isHollow(schema)) continue;
+        const id = `${verb.toUpperCase()} ${path}`;
+        fixed.delete(id);
+        if (!KNOWN_HOLLOW_RESPONSES.has(id)) hollow.push(id);
+      }
+    }
+  }
+
+  if (hollow.length > 0) {
+    throw new Error(
+      `${hollow.length} response(s) describe themselves as a bare object:\n` +
+        hollow.map((h) => `  ${h}`).join('\n') +
+        '\n\nThat is not an undescribed response — it is a WRONG one. A client ' +
+        'generated from it receives `Record<string, never>`.\n' +
+        'Give the handler an @ApiOkResponse({ type: SomeDto }), or add it to ' +
+        'KNOWN_HOLLOW_RESPONSES in this file if it genuinely cannot be described ' +
+        'yet. The list may only shrink.',
+    );
+  }
+
+  if (fixed.size > 0) {
+    throw new Error(
+      `${fixed.size} entr(ies) in KNOWN_HOLLOW_RESPONSES now describe themselves ` +
+        `properly:\n${[...fixed].map((f) => `  ${f}`).join('\n')}\n\n` +
+        'Remove them from the list in this file. A stale allowlist is how a ' +
+        'ratchet stops ratcheting.',
+    );
+  }
+
   mkdirSync(dirname(OUTPUT), { recursive: true });
   writeFileSync(OUTPUT, `${JSON.stringify(document, null, 2)}\n`);
 

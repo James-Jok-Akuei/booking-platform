@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { MobileMoneyProvider } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { SAVED_NUMBER_SELECT } from './dto/user-response.dto';
 
 /** Digits only, the shape the operator takes (§109.2). */
 const toMsisdn = (typed: string) => typed.replace(/\D/g, '');
@@ -23,14 +25,7 @@ export class SavedNumbersService {
     return this.prisma.savedPaymentNumber.findMany({
       where: { userId },
       orderBy: [{ lastUsedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
-      select: {
-        id: true,
-        phoneNumber: true,
-        provider: true,
-        label: true,
-        lastUsedAt: true,
-        createdAt: true,
-      },
+      select: SAVED_NUMBER_SELECT,
     });
   }
 
@@ -57,11 +52,11 @@ export class SavedNumbersService {
         ...(input.label !== undefined ? { label: input.label } : {}),
         ...(input.provider !== undefined ? { provider: input.provider } : {}),
       },
-      select: { id: true, phoneNumber: true, provider: true, label: true },
+      select: SAVED_NUMBER_SELECT,
     });
   }
 
-  async remove(userId: string, id: string) {
+  async remove(userId: string, id: string): Promise<ActionMessageDto> {
     const { count } = await this.prisma.savedPaymentNumber.deleteMany({
       where: { id, userId },
     });

@@ -1,5 +1,5 @@
 import { AppointmentStatus, CancelledBy, Prisma } from '@prisma/client';
-import { Serialised } from '../../common/serialised';
+import { NoExtraFields, Serialised } from '../../common/serialised';
 import {
   APPOINTMENT_SELECT,
   CUSTOMER_APPOINTMENT_SELECT,
@@ -159,3 +159,11 @@ export class AppointmentPageDto {
   offset!: number;
   appointments!: AppointmentDto[];
 }
+
+/**
+ * `implements` alone never objected to a field the select had stopped
+ * providing (§128.17). These close that side.
+ */
+export const __appointmentDtoIsExact: NoExtraFields<AppointmentDto, AppointmentPayload> = true;
+export const __customerAppointmentDtoIsExact: NoExtraFields<CustomerAppointmentDto, CustomerAppointmentPayload> = true;
+export const __customerAppointmentDetailDtoIsExact: NoExtraFields<CustomerAppointmentDetailDto, CustomerAppointmentDetailPayload> = true;

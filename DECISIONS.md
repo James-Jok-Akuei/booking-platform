@@ -11463,19 +11463,120 @@ and visibly different. **Left alone deliberately** — they are two separate
 published enums and renaming either is a breaking change made for tidiness, not
 for a reader who is stuck. Noted here so the next person knows it was seen.
 
-### 128.13 Where this stands
+### 128.14 A response that says `{"type": "object"}` and nothing else
 
-**35 of 156 operations**, up from 28 last batch. Twenty-one client types derived
-rather than declared.
+Counting what was left revealed something worse than an undescribed response.
+**Twenty-three operations carried a schema of `{"type": "object"}`** — no `$ref`,
+no properties, just the word "object". That is what the Swagger plugin emits for
+a handler it cannot infer, and it is a response that LIES: the contract asserts
+a shape, and a client generated from it receives `Record<string, never>`, a type
+that permits no field and explains nothing.
+
+The §60 guard never saw them. It inspects `components.schemas`, and these are
+inline on the operation, belonging to no named schema at all. One of the
+twenty-three was `GET /users/me` — the endpoint whose missing `imageUrl` cost an
+hour of §125.
+
+So a third generator guard, built as a **ratchet** rather than a wall: the known
+ones are listed in `generate-openapi.ts` and the build fails on any operation
+NOT on the list. It also fails on a stale entry — an operation that now
+describes itself properly but is still listed — because an allowlist nobody
+prunes is how a ratchet stops ratcheting. Both halves were proved to fire before
+being trusted, and the stale half then fired for real, on this very commit,
+after `/users/me` was fixed.
+
+Twenty-one entries remain. Deleting the last one should be followed by deleting
+the list.
+
+### 128.15 `{ message: string }`, written out eleven times
+
+Removing a saved number, revoking an invitation, closing an account: all answer
+with a sentence meant to be SHOWN to the person who pressed the button. Each
+client wrote the shape inline at every call site. Now `ActionMessageDto`, named
+once.
+
+### 128.16 `implements` is only half a check
+
+The important finding of this slice, and it invalidates an assumption §128 was
+built on.
+
+`implements` requires a class to have AT LEAST the payload's members. It says
+nothing about members the payload does NOT have. So a field dropped from a
+`select` leaves the DTO still declaring it, the contract still promising it, and
+all three clients still typing it — **the exact shape of the §109 and §125 bugs**,
+both of which were a response missing a field its own published type claimed.
+
+Proved, not reasoned about: deleting `imageUrl: true` from `ME_SELECT` left the
+build green and `GET /users/me` went on advertising a picture it no longer
+returned. Deleting `currency: true` from `APPOINTMENT_SELECT` did the same.
+
+Hence `NoExtraFields<Dto, Wire>` in `common/serialised.ts`, used BESIDE
+`implements`, never instead of it — together they pin the shape from both sides:
+
+```ts
+export class FooDto implements FooWire {}
+export const __fooIsExact: NoExtraFields<FooDto, FooWire> = true;
+```
+
+It names the offending field in the error. Retrofitted to every DTO written so
+far; re-running both deletions now fails the build, naming `imageUrl` and
+`currency`.
+
+The lesson is older than this section: **a check not seen to fail is not known to
+work.** The same mistake as §114.2's unfaithful revert, found this time because
+the proof was run rather than assumed.
+
+### 128.17 Three DTOs assumed a business always has a name
+
+`BusinessProfile.name` is nullable — a profile exists from registration and is
+named at the first save. `MeBusinessDto`, `AdminUserBusinessDto` and the data
+export's `conversations[].with` all declared it `string`. The compiler found all
+three.
+
+Also fixed while there: `role` and `status` fields typed `string` where enums
+exist, the §128.8 widening for a third time.
+
+### 128.18 Two shapes for one resource, twice
+
+Describing the users module exposed two endpoints answering with a narrower row
+than their sibling:
+
+- `POST /users/me/payment-numbers` selected 4 fields where the listing selects
+  6. The customer app typed BOTH as the 6-field `SavedNumber`, so `createdAt`
+  and `lastUsedAt` were promised and absent.
+- `POST /admin/users/invite` returned the whole row; the listing returns a
+  narrower one with the inviter's address joined.
+
+Both now use the listing's select, so one DTO describes each pair. Chosen over
+publishing two schemas: the clients already believed there was one shape, and
+they were right about what it should be.
+
+Neither was reachable yet — no screen consumes either response — so this is a
+bug prevented rather than fixed. `PATCH /admin/users/{id}/display-name/clear`
+was a third: the console typed it as returning a full directory row, counts and
+all, where the server answers with three fields.
+
+Checked and deliberately not changed: `POST /admin/users/invite` returns the
+invitation row unselected, which would be a leak if an invitation carried a
+token. It does not — invitations are matched by EMAIL ADDRESS at registration —
+so every field on it is safe to show the administrator who sent it.
+
+### 128.19 Where this stands
+
+**52 of 156 operations**, up from 38 counted the same way. Twenty-nine client
+types derived rather than declared, across all three apps.
 
 Done: appointments, discovery, business locations, services and profile,
-favourites, legal, payouts and balances.
+favourites, legal, payouts and balances, admin businesses, users and accounts.
 
-Remaining: the rest of `/admin` (50), the rest of `/business`, threads, tickets,
-reviews, users, notifications. 121 operations.
+Remaining: the rest of `/admin` (44), the rest of `/business`, threads, tickets,
+reviews, notifications. 82 undescribed, plus 21 hollow ones now held by a
+ratchet.
 
-Five real findings, none of which a reader would have caught: a detail endpoint
+Eight real findings, none of which a reader would have caught: a detail endpoint
 annotated with a list shape, a Date that was a string on the wire, a `select`
-copied instead of shared, two classes sharing one global schema name, and two
-`string`s that were really enums. Each would have surfaced as a blank space or a
-wrong-looking value on somebody's screen.
+copied instead of shared, two classes sharing one global schema name, three
+`string`s that were really enums, a non-null name that is nullable, two
+endpoints returning a narrower row than their own published type, and
+twenty-three responses describing themselves as a bare object. Plus the one that
+matters most: the check itself was only half a check.

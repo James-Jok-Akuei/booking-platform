@@ -11,15 +11,11 @@ import type { components } from './schema';
  * form. There is no endpoint for a customer to change it on its own, and
  * clearing it is an admin's moderation action.
  */
-export interface Me {
-  id: string;
-  email: string;
-  role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
-  createdAt: string;
-  displayName: string | null;
-  /** Shown to them and to nobody else (§124.1). */
-  imageUrl: string | null;
-}
+/**
+ * Derived from the contract (§128). Hand-written, this type claimed `imageUrl`
+ * for a month while `GET /users/me` did not select it — the whole of §125.
+ */
+export type Me = components['schemas']['MeDto'];
 
 export const getMe = () => api<Me>('/users/me');
 
@@ -61,15 +57,10 @@ export async function signOut(): Promise<void> {
  * Assembled on request rather than emailed: a copy someone receives while they
  * are still looking at the screen is a copy they actually read.
  */
+export type AccountExport = components['schemas']['AccountExportDto'];
+
 export const exportMyData = () =>
-  api<{
-    exportedAt: string;
-    account: { id: string; email: string; role: string; displayName: string | null; createdAt: string };
-    bookings: unknown[];
-    reviews: unknown[];
-    conversations: unknown[];
-    supportTickets: unknown[];
-  }>('/users/me/export');
+  api<AccountExport>('/users/me/export');
 
 /**
  * Closes this account for good. Not a delete, and the message says what that
@@ -80,7 +71,7 @@ export const exportMyData = () =>
  * business — both with a sentence explaining what to do first.
  */
 export const closeMyAccount = () =>
-  api<{ message: string }>('/users/me/close', { method: 'POST' });
+  api<ActionMessage>('/users/me/close', { method: 'POST' });
 
 // ---------------------------------------------------------------------------
 // Legal documents (§122)
@@ -115,23 +106,19 @@ export const acceptLegal = (documentId: string) =>
  * Through `uploadFile`, not `api()`: Expo's fetch cannot convert a React Native
  * file part and throws "Unsupported FormDataPart implementation" (§125.2).
  */
+export type UserImage = components['schemas']['UserImageDto'];
+export type ActionMessage = components['schemas']['ActionMessageDto'];
+
 export const setMyImage = (photo: { uri: string; type: string }) =>
-  uploadFile<{ id: string; imageUrl: string }>('/users/me/image', {
+  uploadFile<UserImage>('/users/me/image', {
     uri: photo.uri,
     mimeType: photo.type,
   });
 
 export const removeMyImage = () =>
-  api<{ id: string; imageUrl: string | null }>('/users/me/image', { method: 'DELETE' });
+  api<UserImage>('/users/me/image', { method: 'DELETE' });
 
-export interface SavedNumber {
-  id: string;
-  phoneNumber: string;
-  provider: string | null;
-  label: string | null;
-  lastUsedAt: string | null;
-  createdAt: string;
-}
+export type SavedNumber = components['schemas']['SavedPaymentNumberDto'];
 
 /**
  * Numbers used before. A keyboard shortcut, NOT a stored payment method: MTN
@@ -144,4 +131,4 @@ export const saveNumber = (body: { phoneNumber: string; label?: string }) =>
   api<SavedNumber>('/users/me/payment-numbers', { method: 'POST', body });
 
 export const removeSavedNumber = (id: string) =>
-  api<{ message: string }>(`/users/me/payment-numbers/${id}`, { method: 'DELETE' });
+  api<ActionMessage>(`/users/me/payment-numbers/${id}`, { method: 'DELETE' });

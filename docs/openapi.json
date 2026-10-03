@@ -332,7 +332,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/MeDto"
                 }
               }
             }
@@ -349,7 +349,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserImageDto"
+                }
+              }
+            }
           }
         },
         "summary": "This person's picture (§124.1). `galleryUploadOptions` because it IS an\nimage — the same allow-list a shop photo gets, and deliberately not §81's\nwider ticket-attachment list.",
@@ -362,7 +369,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserImageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -380,7 +394,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SavedPaymentNumberDto"
+                  }
                 }
               }
             }
@@ -405,7 +422,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedPaymentNumberDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -428,7 +452,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -442,7 +473,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountExportDto"
+                }
+              }
+            }
           }
         },
         "summary": "Everything the platform holds about the caller, as JSON (§119.2).",
@@ -457,7 +495,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "summary": "Closes the caller's own account (§119.1).\n\nPOST rather than DELETE, and the name says why: nothing is deleted. The row\nstays so that bookings, reviews and the ledger entries that depend on them\nsurvive; the identity on it does not.",
@@ -524,7 +569,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserPageDto"
+                }
+              }
+            }
           }
         },
         "summary": "The directory (§94). Without it, the PATCH below took an id that nothing\nin the platform produced.",
@@ -548,8 +600,15 @@
           }
         },
         "responses": {
-          "201": {
-            "description": ""
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminInvitationDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -563,7 +622,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminInvitationDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -586,7 +655,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -609,7 +685,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -642,7 +725,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearedDisplayNameDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -5260,6 +5350,168 @@
           }
         }
       },
+      "MeBusinessDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nullable: a profile exists from registration, named at the first save."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "SUSPENDED"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status"
+        ]
+      },
+      "MeMembershipDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "MANAGER",
+              "STAFF"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "REMOVED"
+            ]
+          },
+          "businessProfile": {
+            "$ref": "#/components/schemas/MeBusinessDto"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "status",
+          "businessProfile"
+        ]
+      },
+      "MeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "ADMIN"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "businessMembership": {
+            "nullable": true,
+            "description": "At most one, or null. The underlying relation is a LIST only because the\npartial unique index has to be modelled that way in Prisma; callers have\nalways seen one membership or none.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MeMembershipDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "createdAt",
+          "displayName",
+          "imageUrl",
+          "businessMembership"
+        ]
+      },
+      "UserImageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "imageUrl"
+        ]
+      },
+      "SavedPaymentNumberDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "provider": {
+            "nullable": true,
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ],
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "phoneNumber",
+          "provider",
+          "label",
+          "lastUsedAt",
+          "createdAt"
+        ]
+      },
       "SaveNumberDto": {
         "type": "object",
         "properties": {
@@ -5285,6 +5537,464 @@
           "phoneNumber"
         ]
       },
+      "ActionMessageDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ExportedAccountDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "ADMIN"
+            ]
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "closedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "displayName",
+          "createdAt",
+          "closedAt"
+        ]
+      },
+      "ExportedServiceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ExportedLocationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "address"
+        ]
+      },
+      "ExportedBookingDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ]
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "depositAmountMinor": {
+            "type": "number"
+          },
+          "servicePriceMinor": {
+            "type": "number"
+          },
+          "depositPaidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/components/schemas/ExportedServiceDto"
+          },
+          "location": {
+            "$ref": "#/components/schemas/ExportedLocationDto"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "startTime",
+          "endTime",
+          "currency",
+          "depositAmountMinor",
+          "servicePriceMinor",
+          "depositPaidAt",
+          "cancelledAt",
+          "cancellationReason",
+          "createdAt",
+          "service",
+          "location"
+        ]
+      },
+      "ExportedReviewLocationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ExportedReviewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "editedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "$ref": "#/components/schemas/ExportedReviewLocationDto"
+          }
+        },
+        "required": [
+          "id",
+          "rating",
+          "comment",
+          "createdAt",
+          "editedAt",
+          "location"
+        ]
+      },
+      "ExportedChatMessageDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "enum": [
+              "you",
+              "the business"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "photoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "sentAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "body",
+          "photoUrl",
+          "sentAt"
+        ]
+      },
+      "ExportedConversationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "with": {
+            "type": "string",
+            "nullable": true,
+            "description": "Who they were talking to, by name — null if that business never set one.\nNullable because `BusinessProfile.name` is: the profile exists from\nregistration and is named at the first save. Three DTOs in this slice\nassumed otherwise before the compiler said so (§128.18)."
+          },
+          "startedAt": {
+            "type": "string"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedChatMessageDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "with",
+          "startedAt",
+          "messages"
+        ]
+      },
+      "ExportedTicketMessageDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "enum": [
+              "you",
+              "support"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "sentAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "body",
+          "sentAt"
+        ]
+      },
+      "ExportedTicketDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "OPEN",
+              "RESOLVED",
+              "CLOSED"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "messages": {
+            "description": "Internal notes are excluded: they are support's working-out, not a record\nof what this person was told.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedTicketMessageDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "subject",
+          "status",
+          "createdAt",
+          "messages"
+        ]
+      },
+      "AccountExportDto": {
+        "type": "object",
+        "properties": {
+          "exportedAt": {
+            "type": "string"
+          },
+          "account": {
+            "$ref": "#/components/schemas/ExportedAccountDto"
+          },
+          "bookings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedBookingDto"
+            }
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedReviewDto"
+            }
+          },
+          "conversations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedConversationDto"
+            }
+          },
+          "supportTickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedTicketDto"
+            }
+          }
+        },
+        "required": [
+          "exportedAt",
+          "account",
+          "bookings",
+          "reviews",
+          "conversations",
+          "supportTickets"
+        ]
+      },
+      "AdminUserBusinessDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "OWNER",
+              "MANAGER",
+              "STAFF"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role"
+        ]
+      },
+      "AdminUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "ADMIN"
+            ]
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "isPrimaryAdmin": {
+            "type": "boolean",
+            "description": "So the console can stop offering an action the server refuses (§118).\nMeaningless on a CUSTOMER or BUSINESS row, where it is simply false."
+          },
+          "appointmentCount": {
+            "type": "number"
+          },
+          "reviewCount": {
+            "type": "number"
+          },
+          "ticketCount": {
+            "type": "number"
+          },
+          "businesses": {
+            "description": "Where they work now. Removed memberships are history, and left out.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserBusinessDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "displayName",
+          "createdAt",
+          "isPrimaryAdmin",
+          "appointmentCount",
+          "reviewCount",
+          "ticketCount",
+          "businesses"
+        ]
+      },
+      "AdminUserPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminUserDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "users"
+        ]
+      },
       "InviteAdminDto": {
         "type": "object",
         "properties": {
@@ -5295,6 +6005,53 @@
         },
         "required": [
           "email"
+        ]
+      },
+      "InviterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "AdminInvitationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "REVOKED"
+            ],
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "invitedBy": {
+            "$ref": "#/components/schemas/InviterDto"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "status",
+          "createdAt",
+          "expiresAt",
+          "invitedBy"
         ]
       },
       "ClearDisplayNameDto": {
@@ -5309,6 +6066,26 @@
         },
         "required": [
           "reason"
+        ]
+      },
+      "ClearedDisplayNameDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "displayName"
         ]
       },
       "CreateCategoryDto": {

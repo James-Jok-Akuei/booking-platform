@@ -13,6 +13,15 @@ import {
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  EXPORT_ACCOUNT_SELECT,
+  EXPORT_BOOKING_SELECT,
+  EXPORT_REVIEW_SELECT,
+  ExportedConversationDto,
+  ExportedTicketDto,
+  UserImageDto,
+} from './dto/user-response.dto';
 
 /**
  * Appointments that have not happened yet and are still expected to.
@@ -49,7 +58,10 @@ export class AccountService {
    * The previous one is deleted after the new one is stored, never before. The
    * other order loses the picture when the upload fails.
    */
-  async setImage(userId: string, file: Express.Multer.File) {
+  async setImage(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<UserImageDto> {
     const existing = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { imageUrl: true },
@@ -69,7 +81,7 @@ export class AccountService {
   }
 
   /** Takes the picture off. The file goes; the account does not. */
-  async removeImage(userId: string) {
+  async removeImage(userId: string): Promise<UserImageDto> {
     const existing = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { imageUrl: true },
@@ -101,14 +113,7 @@ export class AccountService {
   async exportFor(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        displayName: true,
-        createdAt: true,
-        closedAt: true,
-      },
+      select: EXPORT_ACCOUNT_SELECT,
     });
     if (!user) throw new NotFoundException('Account not found.');
 
@@ -116,33 +121,12 @@ export class AccountService {
       this.prisma.appointment.findMany({
         where: { customerId: userId },
         orderBy: { startTime: 'desc' },
-        select: {
-          id: true,
-          status: true,
-          startTime: true,
-          endTime: true,
-          currency: true,
-          depositAmountMinor: true,
-          servicePriceMinor: true,
-          depositPaidAt: true,
-          cancelledAt: true,
-          cancellationReason: true,
-          createdAt: true,
-          service: { select: { name: true } },
-          location: { select: { name: true, address: true } },
-        },
+        select: EXPORT_BOOKING_SELECT,
       }),
       this.prisma.review.findMany({
         where: { customerId: userId },
         orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          rating: true,
-          comment: true,
-          createdAt: true,
-          editedAt: true,
-          location: { select: { name: true } },
-        },
+        select: EXPORT_REVIEW_SELECT,
       }),
       this.prisma.thread.findMany({
         where: { customerId: userId },
@@ -188,26 +172,26 @@ export class AccountService {
       // Named so a reader can tell whose words are whose without a key.
       bookings: appointments,
       reviews,
-      conversations: threads.map((thread) => ({
+      conversations: threads.map((thread): ExportedConversationDto => ({
         id: thread.id,
         with: thread.businessProfile.name,
-        startedAt: thread.createdAt,
+        startedAt: thread.createdAt.toISOString(),
         messages: thread.messages.map((message) => ({
           from: message.senderId === userId ? 'you' : 'the business',
           body: message.body,
           photoUrl: message.photoUrl,
-          sentAt: message.createdAt,
+          sentAt: message.createdAt.toISOString(),
         })),
       })),
-      supportTickets: tickets.map((ticket) => ({
+      supportTickets: tickets.map((ticket): ExportedTicketDto => ({
         id: ticket.id,
         subject: ticket.subject,
         status: ticket.status,
-        createdAt: ticket.createdAt,
+        createdAt: ticket.createdAt.toISOString(),
         messages: ticket.messages.map((message) => ({
           from: message.authorId === userId ? 'you' : 'support',
           body: message.body,
-          sentAt: message.createdAt,
+          sentAt: message.createdAt.toISOString(),
         })),
       })),
     };
@@ -227,7 +211,7 @@ export class AccountService {
    * and the address is moved to a reserved domain so it holds nothing and
    * releases the real one for reuse.
    */
-  async close(userId: string) {
+  async close(userId: string): Promise<ActionMessageDto> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, closedAt: true },

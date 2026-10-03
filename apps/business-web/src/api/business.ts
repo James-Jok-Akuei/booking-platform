@@ -32,18 +32,9 @@ export interface AppointmentPage {
   appointments: Appointment[];
 }
 
-export interface Me {
-  id: string;
-  email: string;
-  role: string;
-  displayName: string | null;
-  businessMembership: {
-    id: string;
-    role: 'OWNER' | 'MANAGER' | 'STAFF';
-    status: string;
-    businessProfile: { id: string; name: string | null; status: string };
-  } | null;
-}
+/** Derived from the contract (§128). */
+export type Me = components['schemas']['MeDto'];
+export type BusinessMembership = NonNullable<Me['businessMembership']>;
 
 /**
  * How to render money (§70.1).

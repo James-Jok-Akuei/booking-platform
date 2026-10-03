@@ -24,6 +24,13 @@ import { SavedNumbersService } from './saved-numbers.service';
 import { SaveNumberDto } from './dto/saved-number.dto';
 import { galleryUploadOptions } from '../business/gallery-upload.options';
 import { MulterExceptionFilter } from '../business/filters/multer-exception.filter';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  AccountExportDto,
+  SavedPaymentNumberDto,
+  UserImageDto,
+} from './dto/user-response.dto';
 
 /**
  * What a person may do to their OWN account (§119).
@@ -47,6 +54,7 @@ export class AccountController {
    * wider ticket-attachment list.
    */
   @Post('image')
+  @ApiOkResponse({ type: UserImageDto })
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
   @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'image' }))
@@ -58,6 +66,7 @@ export class AccountController {
   }
 
   @Delete('image')
+  @ApiOkResponse({ type: UserImageDto })
   @HttpCode(HttpStatus.OK)
   removeImage(@CurrentUser() user: AuthenticatedUser) {
     return this.account.removeImage(user.userId);
@@ -69,11 +78,13 @@ export class AccountController {
   // without the person holding the handset.
 
   @Get('payment-numbers')
+  @ApiOkResponse({ type: SavedPaymentNumberDto, isArray: true })
   listNumbers(@CurrentUser() user: AuthenticatedUser) {
     return this.numbers.list(user.userId);
   }
 
   @Post('payment-numbers')
+  @ApiOkResponse({ type: SavedPaymentNumberDto })
   @HttpCode(HttpStatus.OK)
   saveNumber(
     @CurrentUser() user: AuthenticatedUser,
@@ -83,6 +94,7 @@ export class AccountController {
   }
 
   @Delete('payment-numbers/:id')
+  @ApiOkResponse({ type: ActionMessageDto })
   @HttpCode(HttpStatus.OK)
   removeNumber(
     @CurrentUser() user: AuthenticatedUser,
@@ -93,6 +105,7 @@ export class AccountController {
 
   /** Everything the platform holds about the caller, as JSON (§119.2). */
   @Get('export')
+  @ApiOkResponse({ type: AccountExportDto })
   export(@CurrentUser() user: AuthenticatedUser) {
     return this.account.exportFor(user.userId);
   }
@@ -105,6 +118,7 @@ export class AccountController {
    * survive; the identity on it does not.
    */
   @Post('close')
+  @ApiOkResponse({ type: ActionMessageDto })
   @HttpCode(HttpStatus.OK)
   close(@CurrentUser() user: AuthenticatedUser) {
     return this.account.close(user.userId);

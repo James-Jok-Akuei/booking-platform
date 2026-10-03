@@ -23,6 +23,13 @@ import { ClearDisplayNameDto } from './dto/clear-display-name.dto';
 import { ListUsersDto } from './dto/list-users.dto';
 import { InviteAdminDto } from './dto/invite-admin.dto';
 import { AdminInvitationsService } from './admin-invitations.service';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  AdminInvitationDto,
+  AdminUserPageDto,
+  ClearedDisplayNameDto,
+} from './dto/user-response.dto';
 
 /**
  * User moderation. API-only, like every other admin surface here (§16.9).
@@ -45,6 +52,7 @@ export class AdminUsersController {
    * in the platform produced.
    */
   @Get()
+  @ApiOkResponse({ type: AdminUserPageDto })
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListUsersDto) {
     return this.users.list(user, query);
   }
@@ -55,16 +63,19 @@ export class AdminUsersController {
   // 'invitations' would otherwise be read as a user id and fail the UUID pipe.
 
   @Post('invite')
+  @ApiOkResponse({ type: AdminInvitationDto })
   invite(@CurrentUser() user: AuthenticatedUser, @Body() dto: InviteAdminDto) {
     return this.invitations.invite(user, dto);
   }
 
   @Get('invitations')
+  @ApiOkResponse({ type: AdminInvitationDto, isArray: true })
   listInvitations(@CurrentUser() user: AuthenticatedUser) {
     return this.invitations.listInvitations(user);
   }
 
   @Delete('invitations/:invitationId')
+  @ApiOkResponse({ type: ActionMessageDto })
   revokeInvitation(
     @CurrentUser() user: AuthenticatedUser,
     @Param('invitationId', ParseUUIDPipe) invitationId: string,
@@ -73,6 +84,7 @@ export class AdminUsersController {
   }
 
   @Delete(':id/admin-access')
+  @ApiOkResponse({ type: ActionMessageDto })
   revokeAdmin(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -81,6 +93,7 @@ export class AdminUsersController {
   }
 
   @Patch(':id/display-name/clear')
+  @ApiOkResponse({ type: ClearedDisplayNameDto })
   clearDisplayName(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

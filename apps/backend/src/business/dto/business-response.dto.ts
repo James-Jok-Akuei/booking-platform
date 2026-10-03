@@ -1,5 +1,5 @@
 import { BusinessStatus, Prisma } from '@prisma/client';
-import { Serialised } from '../../common/serialised';
+import { NoExtraFields, Serialised } from '../../common/serialised';
 
 /**
  * What a business sees of its own branches and services (§128.5).
@@ -225,3 +225,11 @@ export class BusinessProfileDto implements ProfilePayload {
   category!: BusinessCategoryDto | null;
   subcategory!: BusinessSubcategoryDto | null;
 }
+
+/**
+ * `implements` alone never objected to a field the select had stopped
+ * providing (§128.17). These close that side.
+ */
+export const __businessLocationDtoIsExact: NoExtraFields<BusinessLocationDto, LocationPayload> = true;
+export const __businessServiceDtoIsExact: NoExtraFields<BusinessServiceDto, ServicePayload> = true;
+export const __businessProfileDtoIsExact: NoExtraFields<BusinessProfileDto, ProfilePayload> = true;

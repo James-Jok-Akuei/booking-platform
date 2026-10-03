@@ -1,4 +1,4 @@
-import { Serialised } from '../../common/serialised';
+import { NoExtraFields, Serialised } from '../../common/serialised';
 import type { ApproxSettlement } from '../../payments/approx-settlement';
 
 /**
@@ -82,3 +82,9 @@ export class DiscoveryPageDto {
   radiusKm?: number;
   locations!: DiscoveredLocationDto[];
 }
+
+/**
+ * `implements` alone never objected to a field the select had stopped
+ * providing (§128.17). These close that side.
+ */
+export const __approxSettlementDtoIsExact: NoExtraFields<ApproxSettlementDto, Serialised<ApproxSettlement>> = true;

@@ -580,29 +580,16 @@ export const unhideReview = (id: string) =>
 // User directory (§94)
 // ---------------------------------------------------------------------------
 
-export interface DirectoryUser {
-  id: string;
-  email: string;
-  role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
-  displayName: string | null;
-  createdAt: string;
-  /**
-   * True for the one administrator who cannot be removed (§118). Always false
-   * on a customer or business row, where it means nothing.
-   */
-  isPrimaryAdmin: boolean;
-  appointmentCount: number;
-  reviewCount: number;
-  ticketCount: number;
-  businesses: Array<{ id: string; name: string | null; role: string }>;
-}
-
-export interface DirectoryPage {
-  total: number;
-  limit: number;
-  offset: number;
-  users: DirectoryUser[];
-}
+/**
+ * Derived from the contract (§128).
+ *
+ * `clearDisplayName` used to be typed as returning one of these. It does not —
+ * the server answers with three fields, so the counts this type promises would
+ * all have been `undefined` on that path.
+ */
+export type DirectoryUser = components['schemas']['AdminUserDto'];
+export type DirectoryPage = components['schemas']['AdminUserPageDto'];
+export type ClearedDisplayName = components['schemas']['ClearedDisplayNameDto'];
 
 export const listUsers = (params: {
   role?: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
@@ -619,7 +606,7 @@ export const listUsers = (params: {
  * A reason is required, and the customer is told it.
  */
 export const clearDisplayName = (id: string, reason: string) =>
-  api<DirectoryUser>(`/admin/users/${id}/display-name/clear`, {
+  api<ClearedDisplayName>(`/admin/users/${id}/display-name/clear`, {
     method: 'PATCH',
     body: { reason },
   });
@@ -804,14 +791,9 @@ export const setSubcategoryLive = (id: string, isLive: boolean) =>
 // Administrators inviting administrators (§99)
 // ---------------------------------------------------------------------------
 
-export interface AdminInvitation {
-  id: string;
-  email: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
-  createdAt: string;
-  expiresAt: string;
-  invitedBy: { email: string } | null;
-}
+export type AdminInvitation = components['schemas']['AdminInvitationDto'];
+
+export type ActionMessage = components['schemas']['ActionMessageDto'];
 
 /** All of these are refused to anyone but the primary administrator. */
 export const inviteAdmin = (email: string) =>
@@ -821,10 +803,10 @@ export const listAdminInvitations = () =>
   api<AdminInvitation[]>('/admin/users/invitations');
 
 export const revokeAdminInvitation = (id: string) =>
-  api<{ message: string }>(`/admin/users/invitations/${id}`, { method: 'DELETE' });
+  api<ActionMessage>(`/admin/users/invitations/${id}`, { method: 'DELETE' });
 
 export const revokeAdminAccess = (userId: string) =>
-  api<{ message: string }>(`/admin/users/${userId}/admin-access`, { method: 'DELETE' });
+  api<ActionMessage>(`/admin/users/${userId}/admin-access`, { method: 'DELETE' });
 
 // ---------------------------------------------------------------------------
 // Where the platform is open (§105)

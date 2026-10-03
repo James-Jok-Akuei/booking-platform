@@ -9,6 +9,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ClearDisplayNameDto } from './dto/clear-display-name.dto';
 import { ListUsersDto } from './dto/list-users.dto';
+import {
+  AdminUserPageDto,
+  ClearedDisplayNameDto,
+} from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -49,7 +53,7 @@ export class UsersService {
   async list(
     actor: { role: UserRole | string },
     query: ListUsersDto,
-  ) {
+  ): Promise<AdminUserPageDto> {
     if (actor.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only an administrator can list users.');
     }
@@ -123,7 +127,7 @@ export class UsersService {
         email: user.email,
         role: user.role,
         displayName: user.displayName,
-        createdAt: user.createdAt,
+        createdAt: user.createdAt.toISOString(),
         isPrimaryAdmin: user.isPrimaryAdmin,
         appointmentCount: user._count.appointments,
         reviewCount: user._count.reviews,
@@ -141,7 +145,7 @@ export class UsersService {
     actor: { userId: string; role: UserRole | string },
     targetUserId: string,
     dto: ClearDisplayNameDto,
-  ) {
+  ): Promise<ClearedDisplayNameDto> {
     if (actor.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only an administrator can clear a display name.');
     }

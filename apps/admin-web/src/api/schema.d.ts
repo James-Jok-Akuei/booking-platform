@@ -2457,6 +2457,49 @@ export interface components {
             body?: string;
             changeNote?: string;
         };
+        MeBusinessDto: {
+            id: string;
+            /** @description Nullable: a profile exists from registration, named at the first save. */
+            name: string | null;
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+        };
+        MeMembershipDto: {
+            id: string;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            /** @enum {string} */
+            status: "ACTIVE" | "REMOVED";
+            businessProfile: components["schemas"]["MeBusinessDto"];
+        };
+        MeDto: {
+            id: string;
+            email: string;
+            /** @enum {string} */
+            role: "BUSINESS" | "CUSTOMER" | "ADMIN";
+            createdAt: string;
+            displayName: string | null;
+            imageUrl: string | null;
+            /**
+             * @description At most one, or null. The underlying relation is a LIST only because the
+             *     partial unique index has to be modelled that way in Prisma; callers have
+             *     always seen one membership or none.
+             */
+            businessMembership: components["schemas"]["MeMembershipDto"] | null;
+        };
+        UserImageDto: {
+            id: string;
+            imageUrl: string | null;
+        };
+        SavedPaymentNumberDto: {
+            id: string;
+            phoneNumber: string;
+            /** @enum {string|null} */
+            provider: "MTN_MOMO" | "AIRTEL_MONEY" | null;
+            label: string | null;
+            lastUsedAt: string | null;
+            createdAt: string;
+        };
         SaveNumberDto: {
             /**
              * @description The same rule the payment endpoint applies (§109.2) — digits only, 8 to 15.
@@ -2468,9 +2511,142 @@ export interface components {
             /** @enum {string} */
             provider?: "MTN_MOMO" | "AIRTEL_MONEY";
         };
+        ActionMessageDto: {
+            message: string;
+        };
+        ExportedAccountDto: {
+            id: string;
+            email: string;
+            /** @enum {string} */
+            role: "BUSINESS" | "CUSTOMER" | "ADMIN";
+            displayName: string | null;
+            createdAt: string;
+            closedAt: string | null;
+        };
+        ExportedServiceDto: {
+            name: string;
+        };
+        ExportedLocationDto: {
+            name: string;
+            address: string;
+        };
+        ExportedBookingDto: {
+            id: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            startTime: string;
+            endTime: string;
+            currency: string;
+            depositAmountMinor: number;
+            servicePriceMinor: number;
+            depositPaidAt: string | null;
+            cancelledAt: string | null;
+            cancellationReason: string | null;
+            createdAt: string;
+            service: components["schemas"]["ExportedServiceDto"];
+            location: components["schemas"]["ExportedLocationDto"];
+        };
+        ExportedReviewLocationDto: {
+            name: string;
+        };
+        ExportedReviewDto: {
+            id: string;
+            rating: number;
+            comment: string | null;
+            createdAt: string;
+            editedAt: string | null;
+            location: components["schemas"]["ExportedReviewLocationDto"];
+        };
+        ExportedChatMessageDto: {
+            /** @enum {string} */
+            from: "you" | "the business";
+            body: string | null;
+            photoUrl: string | null;
+            sentAt: string;
+        };
+        ExportedConversationDto: {
+            id: string;
+            /**
+             * @description Who they were talking to, by name — null if that business never set one.
+             *     Nullable because `BusinessProfile.name` is: the profile exists from
+             *     registration and is named at the first save. Three DTOs in this slice
+             *     assumed otherwise before the compiler said so (§128.18).
+             */
+            with: string | null;
+            startedAt: string;
+            messages: components["schemas"]["ExportedChatMessageDto"][];
+        };
+        ExportedTicketMessageDto: {
+            /** @enum {string} */
+            from: "you" | "support";
+            body: string;
+            sentAt: string;
+        };
+        ExportedTicketDto: {
+            id: string;
+            subject: string;
+            /** @enum {string} */
+            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            createdAt: string;
+            /**
+             * @description Internal notes are excluded: they are support's working-out, not a record
+             *     of what this person was told.
+             */
+            messages: components["schemas"]["ExportedTicketMessageDto"][];
+        };
+        AccountExportDto: {
+            exportedAt: string;
+            account: components["schemas"]["ExportedAccountDto"];
+            bookings: components["schemas"]["ExportedBookingDto"][];
+            reviews: components["schemas"]["ExportedReviewDto"][];
+            conversations: components["schemas"]["ExportedConversationDto"][];
+            supportTickets: components["schemas"]["ExportedTicketDto"][];
+        };
+        AdminUserBusinessDto: {
+            id: string;
+            name: string | null;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+        };
+        AdminUserDto: {
+            id: string;
+            email: string;
+            /** @enum {string} */
+            role: "BUSINESS" | "CUSTOMER" | "ADMIN";
+            displayName: string | null;
+            createdAt: string;
+            /**
+             * @description So the console can stop offering an action the server refuses (§118).
+             *     Meaningless on a CUSTOMER or BUSINESS row, where it is simply false.
+             */
+            isPrimaryAdmin: boolean;
+            appointmentCount: number;
+            reviewCount: number;
+            ticketCount: number;
+            /** @description Where they work now. Removed memberships are history, and left out. */
+            businesses: components["schemas"]["AdminUserBusinessDto"][];
+        };
+        AdminUserPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            users: components["schemas"]["AdminUserDto"][];
+        };
         InviteAdminDto: {
             /** Format: email */
             email: string;
+        };
+        InviterDto: {
+            email: string;
+        };
+        AdminInvitationDto: {
+            id: string;
+            email: string;
+            /** @enum {string} */
+            status: "PENDING" | "ACCEPTED" | "REVOKED";
+            createdAt: string;
+            expiresAt: string;
+            invitedBy: components["schemas"]["InviterDto"];
         };
         ClearDisplayNameDto: {
             /**
@@ -2480,6 +2656,11 @@ export interface components {
              *     tell them.
              */
             reason: string;
+        };
+        ClearedDisplayNameDto: {
+            id: string;
+            email: string;
+            displayName: string | null;
         };
         CreateCategoryDto: {
             name: string;
@@ -3865,7 +4046,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["MeDto"];
                 };
             };
         };
@@ -3883,7 +4064,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["UserImageDto"];
+                };
             };
         };
     };
@@ -3900,7 +4083,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["UserImageDto"];
+                };
             };
         };
     };
@@ -3918,7 +4103,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["SavedPaymentNumberDto"][];
                 };
             };
         };
@@ -3940,7 +4125,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SavedPaymentNumberDto"];
+                };
             };
         };
     };
@@ -3959,7 +4146,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -3976,7 +4165,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AccountExportDto"];
+                };
             };
         };
     };
@@ -3993,7 +4184,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -4023,7 +4216,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminUserPageDto"];
+                };
             };
         };
     };
@@ -4040,11 +4235,13 @@ export interface operations {
             };
         };
         responses: {
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminInvitationDto"];
+                };
             };
         };
     };
@@ -4061,7 +4258,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminInvitationDto"][];
+                };
             };
         };
     };
@@ -4080,7 +4279,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -4099,7 +4300,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -4122,7 +4325,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ClearedDisplayNameDto"];
+                };
             };
         };
     };
