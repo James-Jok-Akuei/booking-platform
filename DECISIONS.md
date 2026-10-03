@@ -10450,3 +10450,56 @@ and the business app's copy of the `download` helper is genuinely dead, left in
 place because an export is the obvious next thing to want from that app.
 
 **1171 across 42.**
+
+## 118. The one administrator, offered a button to remove themselves (2026-10-03)
+
+Found by being asked a question the screen should have answered: *"whose email is
+that, the primary or the secondary?"*
+
+On a platform with one administrator the Administrators panel showed one row —
+the reader's own account — with a **Remove access** button beside it, under a
+heading saying "You are the primary administrator". Nothing on the row said it
+was theirs.
+
+### 118.1 The server was never at risk
+
+`revokeAdmin` refuses twice over, and both refusals are the right ones:
+
+```
+You cannot remove your own access.
+The primary administrator cannot be removed. There must always be one.
+```
+
+Confirmed live: pressing it returns **400**. So nobody could ever have locked
+themselves out — the fault was entirely in offering it.
+
+That makes it a worse kind of bug than it looks, not a better one. The
+confirmation dialogue read *"They lose it immediately, even if they are signed
+in"* about the person reading it, which is frightening, untrue, and the only
+explanation the screen gave of a row it never identified.
+
+### 118.2 The directory did not carry the fact it needed
+
+`GET /admin/users` returned no `isPrimaryAdmin`, so the panel could not tell
+primary from secondary, and nothing compared a row against the reader. Every row
+got a button.
+
+The flag is now on the row. It is the same rule the rest of this codebase
+follows — §92.3 hides a reply control once the edit window has closed, §109's
+screen stops polling when there is nothing left to wait for — **do not offer what
+the server will refuse.** A disabled control teaches; a control that errors
+blames the person who pressed it.
+
+Comparing against the signed-in user's id alone would have been enough *today*,
+since only the primary sees these controls at all and the primary is therefore
+always the reader. The flag is there because that reasoning is a chain of three
+facts, any of which could change, and the server already refuses on the flag
+directly.
+
+### 118.3 What the row says instead
+
+"You, the primary administrator" — which answers the question that prompted this,
+and would have answered it without anyone needing to ask.
+
+A secondary administrator's row keeps its button, because that is the one case
+the server allows.

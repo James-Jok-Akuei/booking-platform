@@ -660,6 +660,11 @@ export interface DirectoryUser {
   role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
   displayName: string | null;
   createdAt: string;
+  /**
+   * True for the one administrator who cannot be removed (§118). Always false
+   * on a customer or business row, where it means nothing.
+   */
+  isPrimaryAdmin: boolean;
   appointmentCount: number;
   reviewCount: number;
   ticketCount: number;

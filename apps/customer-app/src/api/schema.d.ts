@@ -13,6 +13,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * Five a minute from one address, against the global 120 (§116.2).
+         *
+         *     This endpoint sends an EMAIL to an address the caller picks. The existing
+         *     cooldown is per recipient, so it stops one person being spammed and does
+         *     nothing about one machine walking a list of thousands — which costs the
+         *     platform its sending reputation, not just its bandwidth.
+         */
         post: operations["AuthController_requestOtp"];
         delete?: never;
         options?: never;
@@ -29,6 +37,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * Ten a minute. A six-digit code is a million guesses; the service counts
+         *     attempts per code, and this caps how fast anyone can work through codes
+         *     for DIFFERENT addresses, which per-code counting cannot see.
+         */
         post: operations["AuthController_verifyOtp"];
         delete?: never;
         options?: never;
@@ -1084,6 +1097,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * Ten a minute. Every call makes a prompt appear on somebody's handset and a
+         *     request to MTN, so a loop here is a person's phone buzzing and a bill the
+         *     platform pays. The service already refuses a second attempt while one is in
+         *     flight; this bounds the attempts themselves.
+         */
         post: operations["AppointmentsCustomerController_initiateDepositPayment"];
         delete?: never;
         options?: never;

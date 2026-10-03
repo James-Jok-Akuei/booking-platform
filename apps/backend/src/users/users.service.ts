@@ -84,6 +84,16 @@ export class UsersService {
           role: true,
           displayName: true,
           createdAt: true,
+          /**
+           * So the console can stop offering an action the server refuses
+           * (§118). `revokeAdmin` turns down two cases — removing yourself, and
+           * removing the primary administrator, because there must always be
+           * one — and the directory carried neither fact, so every row got a
+           * "Remove access" button including the reader's own.
+           *
+           * Meaningless on a CUSTOMER or BUSINESS row, where it is simply false.
+           */
+          isPrimaryAdmin: true,
           _count: {
             select: {
               appointments: true,
@@ -114,6 +124,7 @@ export class UsersService {
         role: user.role,
         displayName: user.displayName,
         createdAt: user.createdAt,
+        isPrimaryAdmin: user.isPrimaryAdmin,
         appointmentCount: user._count.appointments,
         reviewCount: user._count.reviews,
         ticketCount: user._count.reportedTickets,

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
+import { useAuth } from '../auth/auth-context';
 import {
   clearDisplayName,
   inviteAdmin,
@@ -184,6 +185,7 @@ export function UsersPage() {
  */
 function Administrators() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
 
   const admins = useQuery({
@@ -214,6 +216,9 @@ function Administrators() {
     },
   });
 
+  /** The reader's own row, which is the one the server refuses outright. */
+  const isSelf = (admin: { id: string }) => admin.id === user?.id;
+
   const revokeInvite = useMutation({ mutationFn: revokeAdminInvitation, onSuccess: refresh });
   const revokeAccess = useMutation({ mutationFn: revokeAdminAccess, onSuccess: refresh });
 
@@ -237,7 +242,21 @@ function Administrators() {
                 joined {new Date(admin.createdAt).toLocaleDateString()}
               </div>
             </div>
-            {canManage && (
+            {/* Two rows can never be removed, and the server says so plainly:
+                your own ("You cannot remove your own access") and the primary
+                administrator's ("there must always be one"). The button used to
+                appear on both — including the reader's own row, which on a
+                platform with one administrator is the ONLY row (§118). */}
+            {canManage && (isSelf(admin) || admin.isPrimaryAdmin) && (
+              <span className="muted small">
+                {isSelf(admin)
+                  ? admin.isPrimaryAdmin
+                    ? 'You, the primary administrator'
+                    : 'You'
+                  : 'The primary administrator'}
+              </span>
+            )}
+            {canManage && !isSelf(admin) && !admin.isPrimaryAdmin && (
               <button
                 type="button"
                 disabled={revokeAccess.isPending}

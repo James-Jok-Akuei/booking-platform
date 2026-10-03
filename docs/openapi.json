@@ -20,6 +20,7 @@
             "description": ""
           }
         },
+        "summary": "Five a minute from one address, against the global 120 (§116.2).\n\nThis endpoint sends an EMAIL to an address the caller picks. The existing\ncooldown is per recipient, so it stops one person being spammed and does\nnothing about one machine walking a list of thousands — which costs the\nplatform its sending reputation, not just its bandwidth.",
         "tags": [
           "Auth"
         ]
@@ -51,6 +52,7 @@
             }
           }
         },
+        "summary": "Ten a minute. A six-digit code is a million guesses; the service counts\nattempts per code, and this caps how fast anyone can work through codes\nfor DIFFERENT addresses, which per-code counting cannot see.",
         "tags": [
           "Auth"
         ]
@@ -2130,6 +2132,7 @@
             }
           }
         },
+        "summary": "Ten a minute. Every call makes a prompt appear on somebody's handset and a\nrequest to MTN, so a loop here is a person's phone buzzing and a bill the\nplatform pays. The service already refuses a second attempt while one is in\nflight; this bounds the attempts themselves.",
         "tags": [
           "AppointmentsCustomer"
         ]
