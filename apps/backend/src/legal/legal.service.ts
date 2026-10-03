@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -97,6 +98,59 @@ export class LegalService {
         /** True when they have never agreed, or agreed to something older. */
         needsAcceptance: (accepted?.version ?? 0) < document.version,
       };
+    });
+  }
+
+  /**
+   * Refuses an action until a document has been agreed to (§126).
+   *
+   * Used where consent is the point rather than a formality — putting a service
+   * in front of customers is the business holding itself to the Seller
+   * Agreement, so doing it while that agreement is unread is the one case worth
+   * stopping outright.
+   *
+   * Enforced on the SERVER, not only in the screen. A gate that lives in a
+   * client is a suggestion: the API is reachable with curl, and the record of
+   * who agreed to what is the only thing that makes any of this mean anything.
+   *
+   * Nothing published yet means nothing to agree to, and refusing then would
+   * lock a business out of its own catalogue over a document that does not
+   * exist.
+   */
+  async requireAccepted(userId: string, kind: LegalDocumentKind) {
+    const current = await this.prisma.legalDocument.findFirst({
+      where: { kind, publishedAt: { not: null } },
+      orderBy: { version: 'desc' },
+      select: { id: true, title: true, version: true },
+    });
+    if (!current) return;
+
+    const accepted = await this.prisma.legalAcceptance.findUnique({
+      where: { userId_documentId: { userId, documentId: current.id } },
+      select: { id: true },
+    });
+    if (accepted) return;
+
+    throw new ForbiddenException(
+      `Please read and accept the ${current.title} (version ${current.version}) first. ` +
+        'It is on the Legal page.',
+    );
+  }
+
+  /**
+   * Accepts every published document, for an account being created (§126.1).
+   *
+   * The Seller Agreement included: a business registering is agreeing to the
+   * terms it will trade under, and asking for it separately a moment later would
+   * be asking twice for one decision.
+   */
+  async acceptCurrentAtRegistration(userId: string) {
+    const documents = await this.published();
+    if (documents.length === 0) return;
+    await this.prisma.legalAcceptance.createMany({
+      data: documents.map((document) => ({ userId, documentId: document.id })),
+      // A retried verify must not fail on a row that is already there.
+      skipDuplicates: true,
     });
   }
 

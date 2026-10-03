@@ -3,6 +3,8 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { LocationsService } from '../src/business/locations.service';
 import { ServicesService } from '../src/business/services.service';
+// Creating a service requires the Seller Agreement to be accepted (§126).
+import { LegalService } from '../src/legal/legal.service';
 import { BusinessAccessService } from '../src/business/business-access.service';
 import { AppointmentsService } from '../src/appointments/appointments.service';
 import { AvailabilityService } from '../src/availability/availability.service';
@@ -44,6 +46,7 @@ describe('Cross-tenant isolation', () => {
       BusinessAccessService,
       LocationsService,
       ServicesService,
+      LegalService,
       AppointmentsService,
       AvailabilityService,
       PlatformSettingsService,

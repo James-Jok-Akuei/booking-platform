@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../auth/auth-context';
 import { getMe } from '../api/business';
 import { Notifications } from './Notifications';
+import { LegalBanner } from './LegalGate';
 
 const SECTIONS = [
   { to: '/appointments', label: 'Appointments' },
@@ -71,6 +72,7 @@ export function Layout() {
         </div>
       </aside>
       <main>
+        <LegalBanner />
         <Outlet />
       </main>
     </div>

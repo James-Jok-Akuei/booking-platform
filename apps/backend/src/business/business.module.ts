@@ -11,6 +11,8 @@ import { ServiceDraftsService } from './service-drafts.service';
 // Pausing a shop is the business-side half of §119, and the rule lives with
 // account closure rather than being written twice.
 import { UsersModule } from '../users/users.module';
+// Creating a service requires the Seller Agreement (§126).
+import { LegalModule } from '../legal/legal.module';
 import { MembersController } from './members.controller';
 import { MembersService } from './members.service';
 import { BusinessRolesGuard } from './guards/business-roles.guard';
@@ -18,7 +20,7 @@ import { BusinessRolesGuard } from './guards/business-roles.guard';
 // PrismaModule, AuthModule (guards) and StorageModule are all @Global(),
 // so none of them need importing here.
 @Module({
-  imports: [UsersModule],
+  imports: [UsersModule, LegalModule],
   controllers: [BusinessController, AdminBusinessController, MembersController],
   providers: [
     BusinessModerationService,

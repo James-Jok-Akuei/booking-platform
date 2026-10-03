@@ -4,6 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { onSessionEnded, tokens } from '../src/api/client';
+import { LegalPrompt } from '../src/components/LegalPrompt';
 import { theme } from '../src/theme';
 
 const queryClient = new QueryClient({
@@ -51,6 +52,10 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <StatusBar style="dark" />
+      {/* Above the navigator, so a replaced document is seen wherever somebody
+          happens to be (§126.3). It renders nothing when there is nothing to
+          say, which is almost always. */}
+      <LegalPrompt />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: theme.panel },

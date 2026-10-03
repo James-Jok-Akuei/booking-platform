@@ -22,6 +22,12 @@ export default function SignIn() {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /**
+   * Only the registration step asks. Somebody logging back in agreed when they
+   * joined, and asking again at every sign-in would turn a meaningful tick into
+   * a reflex (§126.2).
+   */
+  const [agreed, setAgreed] = useState(false);
 
   const ask = async (role?: 'CUSTOMER') => {
     setError(null);
@@ -93,7 +99,34 @@ export default function SignIn() {
             <Text style={styles.lead}>
               Creating one takes a code and nothing else — no password, no form.
             </Text>
-            <Button label="Create an account" busy={busy} onPress={() => ask('CUSTOMER')} />
+
+            {/* An explicit tick, not "by continuing you agree" buried in grey
+                text (§126.2). The documents are readable from here BEFORE the
+                box can be ticked — being asked to agree to something you cannot
+                open is the thing that makes consent worthless. */}
+            <Pressable style={styles.agreeRow} onPress={() => setAgreed((was) => !was)}>
+              <View style={[styles.checkbox, agreed && styles.checkboxOn]}>
+                {agreed && <Text style={styles.checkboxTick}>✓</Text>}
+              </View>
+              <Text style={styles.agreeText}>
+                I have read and agree to the{' '}
+                <Text style={styles.link} onPress={() => router.push('/legal')}>
+                  Terms of Use
+                </Text>{' '}
+                and{' '}
+                <Text style={styles.link} onPress={() => router.push('/legal')}>
+                  Privacy Policy
+                </Text>
+                .
+              </Text>
+            </Pressable>
+
+            <Button
+              label="Create an account"
+              busy={busy}
+              disabled={!agreed}
+              onPress={() => ask('CUSTOMER')}
+            />
             <Pressable onPress={() => setStep('email')}>
               <Text style={styles.link}>Use a different email</Text>
             </Pressable>
@@ -181,6 +214,20 @@ const styles = StyleSheet.create({
   },
   ctaOff: { backgroundColor: theme.line },
   ctaText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  agreeRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginVertical: 4 },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: theme.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  checkboxOn: { backgroundColor: theme.accent, borderColor: theme.accent },
+  checkboxTick: { color: '#fff', fontSize: 14, fontWeight: '700', lineHeight: 16 },
+  agreeText: { flex: 1, color: theme.ink, fontSize: 14, lineHeight: 20 },
   link: { color: theme.accent, textAlign: 'center', paddingVertical: 8 },
   error: { color: theme.danger, lineHeight: 19 },
 });

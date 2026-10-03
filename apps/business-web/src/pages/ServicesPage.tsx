@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
+import { SellerAgreementGate, useOutstandingLegal } from '../components/LegalGate';
 import {
   createService,
   discardServiceDraft,
@@ -101,6 +102,9 @@ export function ServicesPage() {
     setAdding(true);
   };
 
+  const { sellerAgreement } = useOutstandingLegal();
+  const [gateOpen, setGateOpen] = useState(false);
+
   const save = useMutation({
     mutationFn: (input: { id?: string; body: Record<string, unknown> }) =>
       input.id
@@ -168,6 +172,21 @@ export function ServicesPage() {
 
   return (
     <section>
+      {gateOpen && sellerAgreement && (
+        <SellerAgreementGate
+          document={sellerAgreement}
+          onCancel={() => setGateOpen(false)}
+          onAccepted={async () => {
+            setGateOpen(false);
+            // Straight on to what they were trying to do. Accepting and then
+            // being returned to where they started is a second thing to do.
+            const draft = await startServiceDraft().catch(() => null);
+            setDraftId(draft?.id ?? null);
+            setAdding(true);
+            refreshDrafts();
+          }}
+        />
+      )}
       <header className="page-head">
         <h1>Services</h1>
         <button
@@ -185,6 +204,13 @@ export function ServicesPage() {
             setResumed(undefined);
             // Started BEFORE the form opens, so the first keystroke has
             // somewhere to go rather than being the one that gets lost.
+            // Asked BEFORE the form opens, not after it is filled in (§126.4).
+            // Making somebody write a whole service and then telling them they
+            // cannot post it is the worst possible moment to raise this.
+            if (sellerAgreement) {
+              setGateOpen(true);
+              return;
+            }
             const draft = await startServiceDraft().catch(() => null);
             setDraftId(draft?.id ?? null);
             setAdding(true);

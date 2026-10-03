@@ -380,3 +380,8 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 
 /* A published legal document reads as the paragraphs it was written as. */
 .legal-body { white-space: pre-wrap; font: inherit; margin: 8px 0 0; max-height: 420px; overflow-y: auto; line-height: 1.55; }
+
+/* Something changed and nothing is blocked (§126.3). A banner, not a dialogue:
+   a shop opening its appointments on a Monday should not meet a modal. */
+.legal-banner { background: #fef0c7; border: 1px solid var(--warn); color: #7a4b00; border-radius: 9px; padding: 11px 14px; margin-bottom: 16px; font-size: 14px; }
+.legal-banner a { color: inherit; font-weight: 650; }

@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { LegalService } from '../legal/legal.service';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -35,6 +36,7 @@ export class AuthService {
     private readonly mail: MailService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly legal: LegalService,
   ) {}
 
   // ---------- OTP request ----------
@@ -198,7 +200,29 @@ export class AuthService {
       data: { consumedAt: new Date() },
     });
 
+    const wasRegistration = otp.registrationRole !== null;
     const user = await this.findOrCreateUser(normalizedEmail, otp.registrationRole);
+
+    /**
+     * A brand-new account accepts the published documents as it is created
+     * (§126.1).
+     *
+     * Recorded HERE rather than left to the client to post afterwards. The
+     * screen that registers somebody will not let them continue without ticking
+     * the box, so the acknowledgement is real — but a record that depends on a
+     * second request is a record that is missing whenever that request fails,
+     * and this one exists precisely to be produced years later.
+     *
+     * Exact versions, by id. "They accepted the terms" is worth nothing without
+     * saying which (§122.3).
+     *
+     * Never throws. An account that exists with no acceptance row is caught by
+     * the prompt on next open; an account that failed to be created because a
+     * consent row would not write is a person who cannot sign in at all.
+     */
+    if (wasRegistration) {
+      await this.legal.acceptCurrentAtRegistration(user.id).catch(() => undefined);
+    }
 
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);
     return { ...tokens, user: { id: user.id, email: user.email, role: user.role } };

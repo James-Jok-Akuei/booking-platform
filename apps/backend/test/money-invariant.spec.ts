@@ -8,6 +8,8 @@ import {
   toMinorUnits,
 } from '../src/payments/currency';
 import { ServicesService } from '../src/business/services.service';
+// Creating a service requires the Seller Agreement to be accepted (§126).
+import { LegalService } from '../src/legal/legal.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -464,6 +466,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         PlatformSettingsService,
         BusinessAccessService,
         ServicesService,
+        LegalService,
       ]);
       prisma = moduleRef.get(PrismaService);
       services = moduleRef.get(ServicesService);
@@ -708,6 +711,7 @@ describe('Money invariant: platformFee + business === deposit', () => {
         PlatformSettingsService,
         BusinessAccessService,
         ServicesService,
+        LegalService,
       ]);
       prisma = moduleRef.get(PrismaService);
       services = moduleRef.get(ServicesService);

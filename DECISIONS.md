@@ -11074,3 +11074,91 @@ both, and would have been found an hour earlier by checking `uploads/` before
 theorising.
 
 **1208 across 46.**
+
+## 126. Acceptance, asked for at the three moments it means something (2026-10-04)
+
+§122 built the documents and deliberately blocked nothing. Asked to go further:
+acknowledge at sign-up, prompt existing people when a version changes, and stop
+a business posting a service until it has agreed.
+
+The shape that falls out is **one hard gate and two soft ones**, and which is
+which is the whole design.
+
+### 126.1 A new account accepts as it is created, on the server
+
+Recorded in `verifyOtp`, not left to the client to post afterwards. The
+registration screen will not continue without the tick, so the acknowledgement is
+real — but a record that depends on a second request is missing whenever that
+request fails, and this record exists precisely to be produced years later.
+
+Exact versions, by id. "They accepted the terms" is worth nothing without saying
+which (§122.3). A business accepts the Seller Agreement at the same moment: it is
+registering to trade under those terms, and asking again a minute later would be
+asking twice for one decision.
+
+It never throws. An account with no acceptance row is caught by the prompt on
+next open; an account that **failed to be created** because a consent row would
+not write is a person who cannot sign in at all.
+
+### 126.2 The tick is explicit, and the documents open before it
+
+Not "by continuing you agree" in grey text under a button. A checkbox that gates
+the button, with both documents reachable **from that screen** — being asked to
+agree to something you cannot open is what makes consent worthless.
+
+Only on the registration step. Somebody logging back in agreed when they joined,
+and asking at every sign-in turns a meaningful tick into a reflex.
+
+### 126.3 A changed document interrupts, and blocks nothing
+
+The customer app shows a modal with no close button — a notice that can be swiped
+away is one nobody reads. It still blocks nothing: read, agree, or "Not now", and
+everything keeps working.
+
+That asymmetry is the point. Stopping somebody mid-booking over a wording change
+would cost them the slot they were about to take. The business app gets a
+**banner** rather than a modal for the same reason, one step further: a shop
+opening its appointments on a Monday morning should not meet a dialogue.
+
+It only prompts people who agreed to an **older** version. Somebody who has never
+agreed is a new account, and §126.1 already recorded them — prompting them would
+be asking twice.
+
+The change note comes before the document, because nobody rereads four thousand
+words to find the sentence that moved.
+
+### 126.4 One hard gate, on the server
+
+Listing a service is a business holding itself to the Seller Agreement, so that
+is the one action worth stopping outright.
+
+**Enforced in `ServicesService.create`, not in the screen.** A gate that lives in
+a client is a suggestion: the API is reachable with curl, and the record of who
+agreed is the only thing that makes any of this mean anything. Driven live:
+
+```
+create a service, unaccepted  -> 403 "Please read and accept the Seller
+                                      Agreement (version 1) first."
+after accepting               -> 201
+after v2 is published         -> 403 "...(version 2) first."
+```
+
+Three narrowings, each deliberate:
+
+* **Create only, never update.** Blocking an edit would trap a shop with a wrong
+  price it cannot correct.
+* **Nothing published means nothing to accept.** Refusing then would lock a
+  business out of its catalogue over a document that does not exist.
+* **Asked before the form opens**, not after it is filled in. Making somebody
+  write a whole service and then telling them they cannot post it is the worst
+  possible moment to raise this — and accepting carries them straight on to what
+  they were doing rather than returning them to the start.
+
+### 126.5 Four more test modules
+
+Adding `LegalService` to `ServicesService` broke three suites and five module
+lists. Third time this session (§120.3, §124.3), and the same conclusion each
+time: explicit providers turn a new dependency into a loud failure rather than a
+silent `undefined`, and one line per suite is the price.
+
+**1213 across 46.**

@@ -172,6 +172,62 @@ describe('Legal documents (§122)', () => {
       expect(status[0]).toMatchObject({ acceptedVersion: 2, needsAcceptance: false });
     });
 
+    it('blocks an action until the document is accepted (§126)', async () => {
+      const v1 = await publish(LegalDocumentKind.SELLER_AGREEMENT, 'Trade fairly.');
+
+      // A gate that lives only in a screen is a suggestion: the API is reachable
+      // with curl, and the record of who agreed is the point of all of this.
+      await expect(
+        legal.requireAccepted(customer.userId, LegalDocumentKind.SELLER_AGREEMENT),
+      ).rejects.toThrow(/read and accept/i);
+
+      await legal.accept(customer.userId, v1.id);
+      await expect(
+        legal.requireAccepted(customer.userId, LegalDocumentKind.SELLER_AGREEMENT),
+      ).resolves.toBeUndefined();
+    });
+
+    it('blocks again once a NEWER version is published', async () => {
+      const v1 = await publish(LegalDocumentKind.SELLER_AGREEMENT, 'One.');
+      await legal.accept(customer.userId, v1.id);
+      await publish(LegalDocumentKind.SELLER_AGREEMENT, 'Two.');
+
+      await expect(
+        legal.requireAccepted(customer.userId, LegalDocumentKind.SELLER_AGREEMENT),
+      ).rejects.toThrow(/version 2/);
+    });
+
+    it('blocks NOTHING while no version is published', async () => {
+      // Refusing here would lock a business out of its own catalogue over a
+      // document that does not exist.
+      await expect(
+        legal.requireAccepted(customer.userId, LegalDocumentKind.SELLER_AGREEMENT),
+      ).resolves.toBeUndefined();
+    });
+
+    it('a new account accepts everything published at that moment', async () => {
+      await publish(LegalDocumentKind.TERMS_OF_USE, 'Be good.');
+      await publish(LegalDocumentKind.PRIVACY_POLICY, 'We keep little.');
+      const newcomer = await createCustomer(prisma);
+
+      await legal.acceptCurrentAtRegistration(newcomer.userId);
+
+      const status = await legal.statusFor(newcomer.userId);
+      expect(status).toHaveLength(2);
+      expect(status.every((d) => !d.needsAcceptance)).toBe(true);
+    });
+
+    it('registering twice does not fail on a row already there', async () => {
+      await publish(LegalDocumentKind.TERMS_OF_USE, 'Be good.');
+      const newcomer = await createCustomer(prisma);
+
+      await legal.acceptCurrentAtRegistration(newcomer.userId);
+      // A retried verify must not blow up on the duplicate.
+      await expect(
+        legal.acceptCurrentAtRegistration(newcomer.userId),
+      ).resolves.toBeUndefined();
+    });
+
     it('a published document cannot be deleted once somebody agreed', async () => {
       const v1 = await publish(LegalDocumentKind.TERMS_OF_USE, 'Be good.');
       await legal.accept(customer.userId, v1.id);

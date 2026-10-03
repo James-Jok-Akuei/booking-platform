@@ -2,6 +2,8 @@ import { jest } from '@jest/globals';
 import { BusinessStatus } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { ServicesService } from '../src/business/services.service';
+// Creating a service requires the Seller Agreement to be accepted (§126).
+import { LegalService } from '../src/legal/legal.service';
 import { LocationsService } from '../src/business/locations.service';
 import { BusinessAccessService } from '../src/business/business-access.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
@@ -26,6 +28,7 @@ describe('Denormalised fromPriceMinor (§44)', () => {
   beforeAll(async () => {
     moduleRef = await createTestModule([
       ServicesService,
+      LegalService,
       LocationsService,
       BusinessAccessService,
     ]);

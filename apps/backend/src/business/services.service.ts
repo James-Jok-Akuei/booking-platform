@@ -3,6 +3,8 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
+import { LegalDocumentKind } from '@prisma/client';
+import { LegalService } from '../legal/legal.service';
 import { BusinessAccessService } from './business-access.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -35,6 +37,7 @@ export class ServicesService {
     private readonly prisma: PrismaService,
     private readonly access: BusinessAccessService,
     private readonly settings: PlatformSettingsService,
+    private readonly legal: LegalService,
   ) {}
 
   /**
@@ -87,6 +90,13 @@ export class ServicesService {
 
   async create(userId: string, dto: CreateServiceDto) {
     const businessId = await this.access.requireBusinessId(userId);
+
+    // Putting a service in front of customers is the business holding itself to
+    // the Seller Agreement (§126), so this is the one action worth stopping
+    // outright until it has been read. Only on CREATE: blocking an edit would
+    // trap a shop with a wrong price it cannot correct.
+    await this.legal.requireAccepted(userId, LegalDocumentKind.SELLER_AGREEMENT);
+
     await this.assertDepositCoversPlatformFee(dto.depositPercentage);
     await this.assertOwnsLocations(
       businessId,
