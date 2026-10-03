@@ -10920,3 +10920,64 @@ providers make a new dependency a loud error rather than a silent `undefined`,
 and the cost is one line per suite.
 
 **1208 across 46.**
+
+## 125. Why "Add a picture" refused (2026-10-03)
+
+Reported as "adding image to the app as profile image refuses". Two causes, both
+real, and the second was sitting in a path nobody had tried yet.
+
+### 125.1 An iPhone photo is HEIC, and the allow-list is jpg/png/webp
+
+`ALLOWED_MIME_TYPES` has been three formats since §10 and §81 deliberately kept
+it that way for shop-window images. An iPhone's photo library returns **HEIC**,
+so the upload came back:
+
+```
+400 Unsupported file type "image/heic". Allowed types: jpg, jpeg, png, webp.
+```
+
+Confirmed by sending each type at the endpoint: png and jpeg pass, `image/heic`
+and `application/octet-stream` do not. The second matters as much as the first —
+`ImagePicker`'s `mimeType` is optional, and React Native sends
+`application/octet-stream` when it does not know, which the same list refuses.
+
+**Widening the server would have been the smaller change and the wrong one.** A
+HEIC profile picture renders in neither web app, because browsers do not support
+it. §88 wanted shop-window images that display everywhere, and a picture nobody
+can see is not a picture.
+
+So the conversion happens on the phone — the only place that can read HEIC.
+`expo-image-manipulator` re-encodes to JPEG before upload, and whatever came out
+of the library, what leaves `pickImage` is a JPEG and says so. That fixes the
+unknown-type case too, because the type is no longer guessed at all.
+
+JPEG rather than PNG: a photograph is what this is for, and a PNG of one is
+several times the bytes over what is usually somebody's mobile data.
+
+### 125.2 The same bug was in chat, unhit
+
+`app/thread/[id].tsx` did this:
+
+```ts
+type: asset.mimeType ?? 'image/jpeg',
+```
+
+which looks careful and is exactly the problem — it passes HEIC straight through
+when the picker reports it. **Every photo a customer tried to send in a
+conversation would have been refused**, and nobody had found it because the only
+photo ever sent in chat came from the business side, in a browser (§112.6).
+
+One `pickImage` now serves both, so the two cannot drift again.
+
+### 125.3 What is not yet known
+
+No upload attempt appears in this backend's log, so the fix above is the cause of
+**a** refusal, and whether it is the one that was hit is not established — the
+attempt may predate the running instance, or have failed at the permission prompt
+before any request was made.
+
+The permission path now explains itself rather than throwing a bare error, so
+whichever it was, the next attempt says something useful. Worth asking what the
+message actually said rather than assuming this closed it.
+
+**1208 across 46.**

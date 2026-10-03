@@ -34,7 +34,7 @@ import {
   setMyImage,
   signOut,
 } from '../src/api/auth';
-import * as ImagePicker from 'expo-image-picker';
+import { pickImage } from '../src/pickImage';
 import { ApiError, tokens } from '../src/api/client';
 import { shareApp } from '../src/share';
 import { theme } from '../src/theme';
@@ -82,21 +82,10 @@ export default function Account() {
   /** The picture (§124.1). Uploaded, not linked. */
   const picture = useMutation({
     mutationFn: async () => {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) throw new Error('Allow photo access to add a picture.');
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-      if (result.canceled || !result.assets[0]) return null;
-      const asset = result.assets[0];
-      return setMyImage({
-        uri: asset.uri,
-        name: asset.fileName ?? 'photo.jpg',
-        type: asset.mimeType ?? 'image/jpeg',
-      });
+      // Converted to JPEG on the way out. An iPhone hands over HEIC, which the
+      // server refuses and no browser can render (§125).
+      const picked = await pickImage({ square: true });
+      return picked ? setMyImage(picked) : null;
     },
     onSuccess: (result) => {
       if (result) queryClient.invalidateQueries({ queryKey: ['me'] });

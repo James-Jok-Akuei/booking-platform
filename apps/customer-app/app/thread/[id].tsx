@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as ImagePicker from 'expo-image-picker';
+import { pickImage } from '../../src/pickImage';
 import {
   getThread,
   listMessages,
@@ -98,29 +98,21 @@ export default function ThreadScreen() {
       ),
   });
 
+  /**
+   * The same shared picker the profile picture uses (§125).
+   *
+   * This had the identical bug and nobody had hit it yet: an iPhone's library
+   * returns HEIC, the endpoint allows jpg/png/webp only, and every photo a
+   * customer tried to send would have been refused. Passing `asset.mimeType`
+   * straight through looked careful and was exactly the problem.
+   */
   const attach = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert(
-        'Photos are not allowed',
-        'Allow photo access in Settings to send a picture. You can still send text.',
-      );
-      return;
+    try {
+      const picked = await pickImage();
+      if (picked) setPhoto(picked);
+    } catch (error) {
+      Alert.alert('Photos are not allowed', (error as Error).message);
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets[0]) return;
-    const asset = result.assets[0];
-    setPhoto({
-      uri: asset.uri,
-      name: asset.fileName ?? 'photo.jpg',
-      // The endpoint allows jpg, png and webp only, and refuses anything else
-      // with a clear message — so the type is passed through rather than
-      // guessed at here.
-      type: asset.mimeType ?? 'image/jpeg',
-    });
   };
 
   const rows = messages.data?.messages ?? [];
