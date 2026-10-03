@@ -265,6 +265,16 @@ model User {
   /// Cleared back to null by admin moderation; see §31.
   displayName String?
 
+  /// This person's picture (§124). Uploaded, never a link — the same rule as a
+  /// business logo (§88): a URL somebody else controls can become anything after
+  /// it has been approved.
+  ///
+  /// Shown to them, and to nobody else. A customer's face is not part of a
+  /// booking: a shop needs a name to call out and an arrival code, and §112.1
+  /// had just finished removing an email from a chat message for the same
+  /// reason.
+  imageUrl String?
+
   /// When this person closed their own account (§119). Null means open.
   ///
   /// A SOFT close, and it has to be: deleting the row cascades to every
@@ -327,6 +337,7 @@ model User {
   createdAdjustments BillingAdjustment[] @relation("CreatedAdjustments")
 
   favourites      Favourite[] @relation("CustomerFavourites")
+  savedPaymentNumbers SavedPaymentNumber[] @relation("SavedPaymentNumbers")
   createdServiceDrafts    ServiceDraft[]    @relation("CreatedServiceDrafts")
   legalAcceptances       LegalAcceptance[] @relation("LegalAcceptances")
   publishedLegalDocuments LegalDocument[]  @relation("PublishedLegalDocuments")
@@ -2073,4 +2084,43 @@ model ServiceDraft {
 
   @@index([businessId, updatedAt])
   @@map("service_drafts")
+}
+
+
+/// A mobile money number somebody has used before (§124.2).
+///
+/// Stored so a customer does not retype it at the one moment they are least
+/// patient. It changes nothing about how a payment works: the number is still
+/// sent to the same endpoint, validated by the same DTO and charged by the same
+/// provider — this is a keyboard shortcut, not a payment method.
+///
+/// No token, no mandate, no stored credential. MTN charges by prompting the
+/// handset, so there is nothing to keep that could be used without the person
+/// holding the phone. That is worth saying plainly: a table called "payment
+/// methods" invites somebody to one day put a card in it.
+model SavedPaymentNumber {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation("SavedPaymentNumbers", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// MSISDN, digits only — the shape the operator takes (§109.2), normalised
+  /// before it is stored so one number cannot be saved twice wearing spaces.
+  phoneNumber String
+
+  /// Which operator to charge through, when the customer knows better than the
+  /// prefix does (§58.1). Null means "work it out from the number".
+  provider MobileMoneyProvider?
+
+  /// What they call it. "Mine", "My wife's", "The shop phone".
+  label String?
+
+  createdAt  DateTime  @default(now())
+  /// Moves the one they actually use to the top, without asking them to rank.
+  lastUsedAt DateTime?
+
+  /// One row per number per person. Saving the same one twice is saving it once.
+  @@unique([userId, phoneNumber])
+  @@index([userId, lastUsedAt])
+  @@map("saved_payment_numbers")
 }

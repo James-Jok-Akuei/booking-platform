@@ -134,6 +134,99 @@
         ]
       }
     },
+    "/users/me/image": {
+      "post": {
+        "operationId": "AccountController_setImage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "This person's picture (§124.1). `galleryUploadOptions` because it IS an\nimage — the same allow-list a shop photo gets, and deliberately not §81's\nwider ticket-attachment list.",
+        "tags": [
+          "Account"
+        ]
+      },
+      "delete": {
+        "operationId": "AccountController_removeImage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Account"
+        ]
+      }
+    },
+    "/users/me/payment-numbers": {
+      "get": {
+        "operationId": "AccountController_listNumbers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Account"
+        ]
+      },
+      "post": {
+        "operationId": "AccountController_saveNumber",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveNumberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Account"
+        ]
+      }
+    },
+    "/users/me/payment-numbers/{id}": {
+      "delete": {
+        "operationId": "AccountController_removeNumber",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Account"
+        ]
+      }
+    },
     "/users/me/export": {
       "get": {
         "operationId": "AccountController_export",
@@ -4779,6 +4872,31 @@
         },
         "required": [
           "refreshToken"
+        ]
+      },
+      "SaveNumberDto": {
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "description": "The same rule the payment endpoint applies (§109.2) — digits only, 8 to 15.\nChecked here as well so a number cannot be SAVED in a shape that would then\nbe refused at the moment somebody tried to pay with it.",
+            "pattern": "^\\d{8,15}$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          }
+        },
+        "required": [
+          "phoneNumber"
         ]
       },
       "InviteAdminDto": {

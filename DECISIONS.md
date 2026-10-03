@@ -10863,3 +10863,60 @@ it, and keeping every abandoned half-sentence forever would turn the Unfinished
 list into the mess it exists to prevent.
 
 **1208 across 46.**
+
+## 124. A picture, and the numbers you pay from (2026-10-03)
+
+Asked for as "logos for the business and customer apps", which I first read as
+app icons. It meant per-account images — and the business half already existed
+(§88, logo and cover on the shopfront). So one new thing, not two.
+
+### 124.1 A customer's picture is for the customer
+
+Uploaded, never a linked URL — the same rule §88 set for a shop logo: an address
+somebody else controls can become anything at all after it has been accepted. It
+reuses `galleryUploadOptions`, deliberately NOT §81's wider ticket-attachment
+list: this is a picture, not evidence.
+
+**Shown to them and to nobody else.** A shop needs a name to call out and an
+arrival code; it does not need a face, and §112.1 had just finished removing an
+email address from a chat message for the same reason. If a shop ever does need
+to recognise somebody, that is a decision to take deliberately rather than one to
+arrive at by leaving a column exposed.
+
+The old file is deleted **after** the new one is stored, never before. The other
+order loses the picture when the upload fails.
+
+### 124.2 "Payment methods" that store no payment method
+
+The feature was asked for as a payment methods section, and the honest version of
+it in this market stores a **phone number**. MTN charges by prompting the
+handset, so there is no token, no mandate and no credential to keep — nothing
+here can be charged by anybody not holding the phone.
+
+That is said in the model, in the migration, in the service and on the screen,
+because a table called "payment methods" invites somebody to one day put a card
+in it. What this actually is: a keyboard shortcut at the moment a customer is
+least patient. The number still goes to the same endpoint, through the same DTO,
+to the same provider.
+
+Normalised to digits before storing, so one number cannot be saved twice wearing
+different spaces — which the unique index alone would allow. The save DTO repeats
+the payment endpoint's own `^\d{8,15}$` rule, so a number cannot be SAVED in a
+shape that would be refused at the moment somebody tried to pay with it.
+
+Saving after a successful payment is **best-effort and silent**. A payment that
+worked must never be reported as failed because a convenience row could not be
+written — the same rule the realtime push follows (§22.2) and the draft auto-save
+(§123.3).
+
+`lastUsedAt` floats the number they actually use to the top, rather than asking
+anybody to rank their own phones.
+
+### 124.3 A second test module needed a second provider
+
+`AccountService` gained `StorageService` and the §119 suite stopped resolving —
+the same failure favourites caused in §120.3, for the same good reason. Explicit
+providers make a new dependency a loud error rather than a silent `undefined`,
+and the cost is one line per suite.
+
+**1208 across 46.**

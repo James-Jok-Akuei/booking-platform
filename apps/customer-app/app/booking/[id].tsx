@@ -22,6 +22,7 @@ import {
   type PaymentStatus,
 } from '../../src/api/booking';
 import { threadForAppointment } from '../../src/api/chat';
+import { listSavedNumbers, saveNumber } from '../../src/api/auth';
 import { ApiError } from '../../src/api/client';
 import { useMoney } from '../../src/money';
 import { theme } from '../../src/theme';
@@ -90,6 +91,8 @@ export default function Booking() {
     queryClient.invalidateQueries({ queryKey: ['payment-status', id] });
   };
 
+  const saved = useQuery({ queryKey: ['payment-numbers'], queryFn: listSavedNumbers });
+
   const pay = useMutation({
     mutationFn: () => initiateDeposit(id, phone),
     onSuccess: (started) => {
@@ -103,6 +106,11 @@ export default function Booking() {
         providerReferenceId: started.providerReferenceId,
       };
       queryClient.setQueryData(['payment-status', id], seeded);
+      // Remember it for next time, best-effort. A payment that worked must not
+      // be reported as failed because a convenience row could not be written.
+      saveNumber({ phoneNumber: toMsisdn(phone) })
+        .then(() => queryClient.invalidateQueries({ queryKey: ['payment-numbers'] }))
+        .catch(() => undefined);
     },
     onError: (error) =>
       Alert.alert(
@@ -214,6 +222,32 @@ export default function Booking() {
                 </Text>
               )}
             </View>
+
+            {/* Saved numbers first, so the usual one is a tap rather than ten
+                digits typed at the least patient moment there is (§124.2). */}
+            {(saved.data?.length ?? 0) > 0 && (
+              <View style={styles.savedRow}>
+                {saved.data?.map((number) => (
+                  <Pressable
+                    key={number.id}
+                    style={[
+                      styles.savedChip,
+                      toMsisdn(phone) === number.phoneNumber && styles.savedChipOn,
+                    ]}
+                    onPress={() => setPhone(number.phoneNumber)}
+                  >
+                    <Text
+                      style={[
+                        styles.savedChipText,
+                        toMsisdn(phone) === number.phoneNumber && styles.savedChipTextOn,
+                      ]}
+                    >
+                      {number.label ?? number.phoneNumber}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
 
             <TextInput
               style={styles.input}
@@ -408,6 +442,18 @@ const styles = StyleSheet.create({
   heading: { fontWeight: '700', color: theme.ink, fontSize: 16 },
   amountRow: { gap: 2, marginVertical: 4 },
   amount: { fontSize: 26, fontWeight: '700', color: theme.ink },
+  savedRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
+  savedChip: {
+    borderWidth: 1,
+    borderColor: theme.line,
+    borderRadius: theme.radius,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    backgroundColor: theme.bg,
+  },
+  savedChipOn: { borderColor: theme.accent, backgroundColor: theme.accent },
+  savedChipText: { color: theme.ink, fontWeight: '500', fontSize: 13 },
+  savedChipTextOn: { color: '#fff' },
   input: {
     backgroundColor: theme.bg,
     borderWidth: 1,

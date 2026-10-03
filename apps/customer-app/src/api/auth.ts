@@ -15,6 +15,8 @@ export interface Me {
   role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
   createdAt: string;
   displayName: string | null;
+  /** Shown to them and to nobody else (§124.1). */
+  imageUrl: string | null;
 }
 
 export const getMe = () => api<Me>('/users/me');
@@ -110,3 +112,42 @@ export const acceptLegal = (documentId: string) =>
     method: 'POST',
     body: { documentId },
   });
+
+// ---------------------------------------------------------------------------
+// A picture, and the numbers you pay from (§124)
+// ---------------------------------------------------------------------------
+
+/** Uploaded, never a linked URL — the rule a business logo follows (§88). */
+export const setMyImage = (photo: { uri: string; name: string; type: string }) => {
+  const form = new FormData();
+  form.append('file', photo as unknown as Blob);
+  return api<{ id: string; imageUrl: string }>('/users/me/image', {
+    method: 'POST',
+    body: form,
+  });
+};
+
+export const removeMyImage = () =>
+  api<{ id: string; imageUrl: string | null }>('/users/me/image', { method: 'DELETE' });
+
+export interface SavedNumber {
+  id: string;
+  phoneNumber: string;
+  provider: string | null;
+  label: string | null;
+  lastUsedAt: string | null;
+  createdAt: string;
+}
+
+/**
+ * Numbers used before. A keyboard shortcut, NOT a stored payment method: MTN
+ * charges by prompting the handset, so nothing kept here can be used by anybody
+ * who is not holding the phone (§124.2).
+ */
+export const listSavedNumbers = () => api<SavedNumber[]>('/users/me/payment-numbers');
+
+export const saveNumber = (body: { phoneNumber: string; label?: string }) =>
+  api<SavedNumber>('/users/me/payment-numbers', { method: 'POST', body });
+
+export const removeSavedNumber = (id: string) =>
+  api<{ message: string }>(`/users/me/payment-numbers/${id}`, { method: 'DELETE' });

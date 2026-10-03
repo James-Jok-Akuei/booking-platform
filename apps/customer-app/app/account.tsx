@@ -1,7 +1,9 @@
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
+  TextInput,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,8 +21,20 @@ import { Stack, useRouter } from 'expo-router';
  */
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { closeMyAccount, exportMyData, getMe, signOut } from '../src/api/auth';
+import {
+  closeMyAccount,
+  exportMyData,
+  getMe,
+  listSavedNumbers,
+  removeMyImage,
+  removeSavedNumber,
+  saveNumber,
+  setMyImage,
+  signOut,
+} from '../src/api/auth';
+import * as ImagePicker from 'expo-image-picker';
 import { ApiError, tokens } from '../src/api/client';
 import { shareApp } from '../src/share';
 import { theme } from '../src/theme';
@@ -65,6 +79,65 @@ export default function Account() {
    * (§119.2) — which is the only way anything leaves a phone. Shown as JSON
    * because it is complete and nothing is quietly left out of it.
    */
+  /** The picture (§124.1). Uploaded, not linked. */
+  const picture = useMutation({
+    mutationFn: async () => {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) throw new Error('Allow photo access to add a picture.');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (result.canceled || !result.assets[0]) return null;
+      const asset = result.assets[0];
+      return setMyImage({
+        uri: asset.uri,
+        name: asset.fileName ?? 'photo.jpg',
+        type: asset.mimeType ?? 'image/jpeg',
+      });
+    },
+    onSuccess: (result) => {
+      if (result) queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
+    onError: (error) =>
+      Alert.alert(
+        'Could not add that',
+        error instanceof ApiError ? error.message : (error as Error).message,
+      ),
+  });
+
+  const clearPicture = useMutation({
+    mutationFn: removeMyImage,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['me'] }),
+  });
+
+  // ---- Numbers they pay from (§124.2) ----
+  const [newNumber, setNewNumber] = useState('');
+  const numbers = useQuery({
+    queryKey: ['payment-numbers'],
+    queryFn: listSavedNumbers,
+    enabled: signedIn,
+  });
+  const refreshNumbers = () =>
+    queryClient.invalidateQueries({ queryKey: ['payment-numbers'] });
+
+  const addNumber = useMutation({
+    mutationFn: () => saveNumber({ phoneNumber: newNumber.replace(/\D/g, '') }),
+    onSuccess: () => {
+      setNewNumber('');
+      refreshNumbers();
+    },
+    onError: (error) =>
+      Alert.alert(
+        'Not saved',
+        error instanceof ApiError ? error.message : 'Please try again.',
+      ),
+  });
+
+  const dropNumber = useMutation({ mutationFn: removeSavedNumber, onSuccess: refreshNumbers });
+
   const exportData = useMutation({
     mutationFn: exportMyData,
     onSuccess: async (data) => {
@@ -158,6 +231,37 @@ export default function Account() {
 
         {me.data && (
           <View style={styles.block}>
+            {/* Shown to them and to nobody else (§124.1). A shop needs a name to
+                call out and an arrival code, not a face. */}
+            <View style={styles.pictureRow}>
+              {me.data.imageUrl ? (
+                <Image source={{ uri: me.data.imageUrl }} style={styles.picture} />
+              ) : (
+                <View style={[styles.picture, styles.pictureEmpty]}>
+                  <Text style={styles.pictureInitial}>
+                    {(me.data.displayName ?? me.data.email)[0]?.toUpperCase()}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.pictureActions}>
+                <Pressable disabled={picture.isPending} onPress={() => picture.mutate()}>
+                  <Text style={styles.linkText}>
+                    {picture.isPending
+                      ? 'Adding…'
+                      : me.data.imageUrl
+                        ? 'Change picture'
+                        : 'Add a picture'}
+                  </Text>
+                </Pressable>
+                {me.data.imageUrl && (
+                  <Pressable onPress={() => clearPicture.mutate()}>
+                    <Text style={styles.linkMuted}>Remove</Text>
+                  </Pressable>
+                )}
+                <Text style={styles.note}>Only you see this.</Text>
+              </View>
+            </View>
+
             <Text style={styles.label}>Signed in as</Text>
             <Text style={styles.value}>{me.data.email}</Text>
 
@@ -176,6 +280,58 @@ export default function Account() {
             <Text style={styles.value}>{joined(me.data.createdAt)}</Text>
           </View>
         )}
+
+        {/* A keyboard shortcut, not a stored payment method, and the screen says
+            so — nothing kept here can be charged without the handset (§124.2). */}
+        <View style={styles.block}>
+          <Text style={styles.sectionTitle}>Numbers you pay from</Text>
+          <Text style={styles.note}>
+            Saved so you do not retype them. Nothing can be charged without the
+            prompt on your phone, so saving one is safe.
+          </Text>
+
+          {numbers.data?.map((number) => (
+            <View key={number.id} style={styles.numberRow}>
+              <View>
+                <Text style={styles.value}>{number.phoneNumber}</Text>
+                {number.lastUsedAt && (
+                  <Text style={styles.note}>
+                    Last used {new Date(number.lastUsedAt).toLocaleDateString()}
+                  </Text>
+                )}
+              </View>
+              <Pressable onPress={() => dropNumber.mutate(number.id)} hitSlop={8}>
+                <Text style={styles.linkMuted}>Remove</Text>
+              </Pressable>
+            </View>
+          ))}
+
+          {numbers.data?.length === 0 && (
+            <Text style={styles.note}>None saved yet.</Text>
+          )}
+
+          <View style={styles.numberAdd}>
+            <TextInput
+              style={styles.numberInput}
+              value={newNumber}
+              onChangeText={setNewNumber}
+              placeholder="07xx xxx xxx"
+              placeholderTextColor={theme.muted}
+              keyboardType="phone-pad"
+            />
+            <Pressable
+              style={[
+                styles.addButton,
+                (addNumber.isPending || newNumber.replace(/\D/g, '').length < 9) &&
+                  styles.addButtonOff,
+              ]}
+              disabled={addNumber.isPending || newNumber.replace(/\D/g, '').length < 9}
+              onPress={() => addNumber.mutate()}
+            >
+              <Text style={styles.addButtonText}>Save</Text>
+            </Pressable>
+          </View>
+        </View>
 
         <Pressable style={styles.secondary} onPress={() => router.push('/legal')}>
           <Text style={styles.secondaryText}>Terms and privacy</Text>
@@ -260,6 +416,41 @@ const styles = StyleSheet.create({
   },
   signOutText: { color: theme.danger, fontWeight: '700', fontSize: 15 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: theme.ink },
+  pictureRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 6 },
+  picture: { width: 64, height: 64, borderRadius: 32, backgroundColor: theme.line },
+  pictureEmpty: { alignItems: 'center', justifyContent: 'center' },
+  pictureInitial: { fontSize: 26, fontWeight: '700', color: theme.muted },
+  pictureActions: { gap: 3 },
+  linkText: { color: theme.accent, fontWeight: '600', fontSize: 14 },
+  linkMuted: { color: theme.muted, fontSize: 13 },
+  numberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 9,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.line,
+  },
+  numberAdd: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  numberInput: {
+    flex: 1,
+    backgroundColor: theme.bg,
+    borderWidth: 1,
+    borderColor: theme.line,
+    borderRadius: theme.radius,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+    fontSize: 15,
+    color: theme.ink,
+  },
+  addButton: {
+    backgroundColor: theme.accent,
+    borderRadius: theme.radius,
+    paddingHorizontal: 18,
+    justifyContent: 'center',
+  },
+  addButtonOff: { backgroundColor: theme.line },
+  addButtonText: { color: '#fff', fontWeight: '700' },
   secondary: {
     borderWidth: 1,
     borderColor: theme.accent,

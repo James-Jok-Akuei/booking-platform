@@ -7,6 +7,8 @@ import {
 import { BadRequestException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { AccountService } from '../src/users/account.service';
+// A profile picture is an upload, so the service needs storage now (§124.1).
+import { StorageService } from '../src/storage/storage.service';
 import { DiscoveryService } from '../src/discovery/discovery.service';
 // Discovery marks each result saved-or-not since §120, so it needs this.
 import { FavouritesService } from '../src/favourites/favourites.service';
@@ -38,6 +40,7 @@ describe('Closing an account (§119)', () => {
   beforeAll(async () => {
     moduleRef = await createTestModule([
       AccountService,
+      StorageService,
       DiscoveryService,
       FavouritesService,
       PlatformSettingsService,

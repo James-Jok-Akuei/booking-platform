@@ -12,6 +12,7 @@ import {
 } from '@prisma/client';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 
 /**
  * Appointments that have not happened yet and are still expected to.
@@ -33,7 +34,56 @@ const CLOSED_EMAIL_DOMAIN = 'closed.invalid';
 export class AccountService {
   private readonly logger = new Logger(AccountService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
+
+  /**
+   * This person's picture (§124.1).
+   *
+   * Uploaded, never a linked URL — the same rule a business logo follows (§88):
+   * an address somebody else controls can become anything at all after it has
+   * been accepted.
+   *
+   * The previous one is deleted after the new one is stored, never before. The
+   * other order loses the picture when the upload fails.
+   */
+  async setImage(userId: string, file: Express.Multer.File) {
+    const existing = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { imageUrl: true },
+    });
+
+    const url = await this.storage.upload(file.buffer, file.mimetype, `users/${userId}`);
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { imageUrl: url },
+      select: { id: true, imageUrl: true },
+    });
+
+    if (existing?.imageUrl) {
+      await this.storage.remove(existing.imageUrl).catch(() => undefined);
+    }
+    return updated;
+  }
+
+  /** Takes the picture off. The file goes; the account does not. */
+  async removeImage(userId: string) {
+    const existing = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { imageUrl: true },
+    });
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { imageUrl: null },
+      select: { id: true, imageUrl: true },
+    });
+    if (existing?.imageUrl) {
+      await this.storage.remove(existing.imageUrl).catch(() => undefined);
+    }
+    return updated;
+  }
 
   /**
    * Everything this platform holds about one person, as they asked for it

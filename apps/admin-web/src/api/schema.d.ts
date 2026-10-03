@@ -97,6 +97,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/me/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * This person's picture (§124.1). `galleryUploadOptions` because it IS an
+         *     image — the same allow-list a shop photo gets, and deliberately not §81's
+         *     wider ticket-attachment list.
+         */
+        post: operations["AccountController_setImage"];
+        delete: operations["AccountController_removeImage"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/me/payment-numbers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AccountController_listNumbers"];
+        put?: never;
+        post: operations["AccountController_saveNumber"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/me/payment-numbers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AccountController_removeNumber"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me/export": {
         parameters: {
             query?: never;
@@ -2349,6 +2402,17 @@ export interface components {
         RefreshTokenDto: {
             refreshToken: string;
         };
+        SaveNumberDto: {
+            /**
+             * @description The same rule the payment endpoint applies (§109.2) — digits only, 8 to 15.
+             *     Checked here as well so a number cannot be SAVED in a shape that would then
+             *     be refused at the moment somebody tried to pay with it.
+             */
+            phoneNumber: string;
+            label?: string;
+            /** @enum {string} */
+            provider?: "MTN_MOMO" | "AIRTEL_MONEY";
+        };
         InviteAdminDto: {
             /** Format: email */
             email: string;
@@ -3017,6 +3081,99 @@ export interface operations {
                 content: {
                     "application/json": Record<string, never>;
                 };
+            };
+        };
+    };
+    AccountController_setImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AccountController_removeImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AccountController_listNumbers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    AccountController_saveNumber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveNumberDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AccountController_removeNumber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
