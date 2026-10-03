@@ -18,7 +18,12 @@ import {
   AuthenticatedUser,
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { FavouritesService } from './favourites.service';
+import {
+  FavouriteStateDto,
+  SavedPlacePageDto,
+} from './dto/favourite-response.dto';
 import { SaveFavouriteDto } from './dto/save-favourite.dto';
 
 /**
@@ -34,12 +39,14 @@ export class FavouritesController {
   constructor(private readonly favourites: FavouritesService) {}
 
   @Get()
+  @ApiOkResponse({ type: SavedPlacePageDto })
   list(@CurrentUser() user: AuthenticatedUser) {
     return this.favourites.list(user.userId);
   }
 
   @Post()
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: FavouriteStateDto })
   add(@CurrentUser() user: AuthenticatedUser, @Body() dto: SaveFavouriteDto) {
     return this.favourites.add(user.userId, dto.locationId);
   }
@@ -50,6 +57,7 @@ export class FavouritesController {
    */
   @Delete(':locationId')
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: FavouriteStateDto })
   remove(
     @CurrentUser() user: AuthenticatedUser,
     @Param('locationId', ParseUUIDPipe) locationId: string,

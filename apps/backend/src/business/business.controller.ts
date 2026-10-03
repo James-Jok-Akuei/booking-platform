@@ -37,6 +37,7 @@ import { UpdateServiceDraftDto } from './dto/service-draft.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import {
   BusinessLocationDto,
+  BusinessProfileDto,
   BusinessServiceDto,
 } from './dto/business-response.dto';
 import { LocationsService } from './locations.service';
@@ -94,6 +95,7 @@ export class BusinessController {
   // ---------- Profile ----------
 
   @Get('profile')
+  @ApiOkResponse({ type: BusinessProfileDto })
   @BusinessRoles(
     BusinessMemberRole.OWNER,
     BusinessMemberRole.MANAGER,
@@ -104,6 +106,7 @@ export class BusinessController {
   }
 
   @Patch('profile')
+  @ApiOkResponse({ type: BusinessProfileDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   updateProfile(
     @CurrentBusiness() business: BusinessContext,

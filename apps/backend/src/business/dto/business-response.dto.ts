@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { BusinessStatus, Prisma } from '@prisma/client';
 import { Serialised } from '../../common/serialised';
 
 /**
@@ -151,4 +151,77 @@ export class BusinessServiceDto implements ServicePayload {
   createdAt!: string;
   updatedAt!: string;
   locations!: ServiceOfferedAtDto[];
+}
+
+
+export const PROFILE_SELECT = {
+  id: true,
+  name: true,
+  description: true,
+  phone: true,
+  logoUrl: true,
+  coverImageUrl: true,
+  status: true,
+  // The business's own view of its status. A suspended business must be able
+  // to see that it is suspended and why (§42.5) — discovering it from a
+  // customer who cannot book is the worst possible way to find out.
+  statusReason: true,
+  statusChangedAt: true,
+  // Whether the business paused ITSELF (§119.3), which is a different thing
+  // from `status` and has to be visible beside it — a shop that cannot see it
+  // is paused would read an empty calendar as the platform being broken.
+  pausedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  category: { select: { id: true, name: true, icon: true } },
+  subcategory: { select: { id: true, name: true } },
+} as const;
+
+type ProfilePayload = Serialised<
+  Prisma.BusinessProfileGetPayload<{ select: typeof PROFILE_SELECT }>
+>;
+
+export class BusinessCategoryDto {
+  id!: string;
+  name!: string;
+  icon!: string | null;
+}
+
+export class BusinessSubcategoryDto {
+  id!: string;
+  name!: string;
+}
+
+/** The shopfront, as the business itself sees it. */
+export class BusinessProfileDto implements ProfilePayload {
+  id!: string;
+  name!: string | null;
+  description!: string | null;
+  phone!: string | null;
+
+  /** Uploaded, never a linked URL (§88). */
+  logoUrl!: string | null;
+  coverImageUrl!: string | null;
+
+  /**
+   * What an ADMIN decided. Separate from `pausedAt`, which is what the business
+   * did.
+   *
+   * The enum, not `string`. Declaring it loosely compiled and would have handed
+   * every client "any text at all" where the server only ever sends four values
+   * — which is how a screen ends up with a branch for a status that cannot
+   * happen, and none for one that can.
+   */
+  status!: BusinessStatus;
+  /** Why it is in that status — a suspended shop must be able to read it (§42.5). */
+  statusReason!: string | null;
+  statusChangedAt!: string | null;
+
+  /** Set while the business has paused ITSELF (§119.3). */
+  pausedAt!: string | null;
+
+  createdAt!: string;
+  updatedAt!: string;
+  category!: BusinessCategoryDto | null;
+  subcategory!: BusinessSubcategoryDto | null;
 }

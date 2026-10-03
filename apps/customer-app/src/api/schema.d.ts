@@ -2402,9 +2402,46 @@ export interface components {
         RefreshTokenDto: {
             refreshToken: string;
         };
+        LegalStatusDto: {
+            /** @description The HIGHEST version they ever agreed to, not the most recent tap (§122.3). */
+            acceptedVersion: number | null;
+            acceptedAt: string | null;
+            /** @description True when they never agreed, or agreed to something older. */
+            needsAcceptance: boolean;
+            id: string;
+            /** @enum {string} */
+            kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
+            /** @description 1, 2, 3 … per kind. The number people quote at each other. */
+            version: number;
+            title: string;
+            /** @description Plain text, blank lines between paragraphs. Never HTML (§122.4). */
+            body: string;
+            publishedAt: string;
+            /** @description One line on what moved, so nobody rereads four thousand words (§122.3). */
+            changeNote: string | null;
+        };
         AcceptDocumentDto: {
             /** Format: uuid */
             documentId: string;
+        };
+        LegalAcceptanceDto: {
+            documentId: string;
+            /** @enum {string} */
+            kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
+            version: number;
+        };
+        LegalDocumentDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
+            /** @description 1, 2, 3 … per kind. The number people quote at each other. */
+            version: number;
+            title: string;
+            /** @description Plain text, blank lines between paragraphs. Never HTML (§122.4). */
+            body: string;
+            publishedAt: string;
+            /** @description One line on what moved, so nobody rereads four thousand words (§122.3). */
+            changeNote: string | null;
         };
         StartDraftDto: {
             /** @enum {string} */
@@ -2479,6 +2516,44 @@ export interface components {
         };
         SetDistrictLiveDto: {
             isLive: boolean;
+        };
+        BusinessCategoryDto: {
+            id: string;
+            name: string;
+            icon: string | null;
+        };
+        BusinessSubcategoryDto: {
+            id: string;
+            name: string;
+        };
+        BusinessProfileDto: {
+            id: string;
+            name: string | null;
+            description: string | null;
+            phone: string | null;
+            /** @description Uploaded, never a linked URL (§88). */
+            logoUrl: string | null;
+            coverImageUrl: string | null;
+            /**
+             * @description What an ADMIN decided. Separate from `pausedAt`, which is what the business
+             *     did.
+             *
+             *     The enum, not `string`. Declaring it loosely compiled and would have handed
+             *     every client "any text at all" where the server only ever sends four values
+             *     — which is how a screen ends up with a branch for a status that cannot
+             *     happen, and none for one that can.
+             * @enum {string}
+             */
+            status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+            /** @description Why it is in that status — a suspended shop must be able to read it (§42.5). */
+            statusReason: string | null;
+            statusChangedAt: string | null;
+            /** @description Set while the business has paused ITSELF (§119.3). */
+            pausedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+            category: components["schemas"]["BusinessCategoryDto"] | null;
+            subcategory: components["schemas"]["BusinessSubcategoryDto"] | null;
         };
         UpdateBusinessProfileDto: {
             name?: string;
@@ -3247,9 +3322,44 @@ export interface components {
             radiusKm?: number;
             locations: components["schemas"]["DiscoveredLocationDto"][];
         };
+        SavedPlaceDistrictDto: {
+            id: string;
+            name: string;
+            provinceName: string;
+        };
+        SavedPlaceBusinessDto: {
+            id: string;
+            name: string | null;
+            logoUrl: string | null;
+        };
+        SavedPlaceDto: {
+            savedAt: string;
+            id: string;
+            name: string;
+            address: string;
+            ratingAvg: number | null;
+            ratingCount: number;
+            fromPriceMinor: number | null;
+            district: components["schemas"]["SavedPlaceDistrictDto"] | null;
+            business: components["schemas"]["SavedPlaceBusinessDto"];
+            /**
+             * @description Whether it can be booked right now. ONE field, not three: the branch
+             *     closing, the shop pausing and approval going are the same thing to a
+             *     customer (§120.1).
+             */
+            bookable: boolean;
+        };
+        SavedPlacePageDto: {
+            total: number;
+            favourites: components["schemas"]["SavedPlaceDto"][];
+        };
         SaveFavouriteDto: {
             /** Format: uuid */
             locationId: string;
+        };
+        FavouriteStateDto: {
+            locationId: string;
+            saved: boolean;
         };
     };
     responses: never;
@@ -3361,7 +3471,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LegalStatusDto"][];
+                };
             };
         };
     };
@@ -3382,7 +3494,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LegalAcceptanceDto"];
+                };
             };
         };
     };
@@ -3399,7 +3513,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LegalDocumentDto"][];
+                };
             };
         };
     };
@@ -3418,7 +3534,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LegalDocumentDto"];
+                };
             };
         };
     };
@@ -4065,7 +4183,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessProfileDto"];
+                };
             };
         };
     };
@@ -4086,7 +4206,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessProfileDto"];
+                };
             };
         };
     };
@@ -6536,7 +6658,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SavedPlacePageDto"];
+                };
             };
         };
     };
@@ -6557,7 +6681,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FavouriteStateDto"];
+                };
             };
         };
     };
@@ -6576,7 +6702,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FavouriteStateDto"];
+                };
             };
         };
     };

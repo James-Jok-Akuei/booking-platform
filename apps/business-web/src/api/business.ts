@@ -109,24 +109,12 @@ export const cancelAppointment = (id: string, reason: string) =>
 // Profile, services, locations (§10)
 // ---------------------------------------------------------------------------
 
-export interface BusinessProfile {
-  id: string;
-  name: string | null;
-  description: string | null;
-  phone: string | null;
-  /** The shop window. Uploaded, not linked — see `setProfileImage` (§88). */
-  logoUrl: string | null;
-  coverImageUrl: string | null;
-  status: string;
-  statusReason: string | null;
-  /**
-   * Set while the business has paused itself (§119.3). Distinct from `status`:
-   * that is what an admin decided, this is what the business decided.
-   */
-  pausedAt: string | null;
-  category: { id: string; name: string; icon: string | null } | null;
-  subcategory: { id: string; name: string } | null;
-}
+/**
+ * From the contract (§128). `status` arrives as the real enum rather than
+ * `string`, so a screen cannot branch on a status the server never sends.
+ */
+export type BusinessProfile = components['schemas']['BusinessProfileDto'];
+
 
 /**
  * Where a service is offered, and what it costs there (§72). From the contract
@@ -917,19 +905,9 @@ export const resumeBusiness = () =>
 // Legal documents (§122)
 // ---------------------------------------------------------------------------
 
-export interface LegalStatus {
-  id: string;
-  kind: 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
-  version: number;
-  title: string;
-  body: string;
-  publishedAt: string;
-  changeNote: string | null;
-  acceptedVersion: number | null;
-  acceptedAt: string | null;
-  /** True when they never agreed, or agreed to an older version. */
-  needsAcceptance: boolean;
-}
+/** From the contract (§128). */
+export type LegalStatus = components['schemas']['LegalStatusDto'];
+
 
 export const myLegalStatus = () => api<LegalStatus[]>('/legal/me');
 

@@ -11398,3 +11398,44 @@ does not generate, since it looks finished.
 The find is also the argument for the whole exercise restated. A hand-written
 client would have declared `isOffered` happily, read `undefined` forever, and
 shown every paused service as live — §109 again, in a place nobody was looking.
+
+### 128.8 `string` where the server only ever sends four values
+
+`BusinessProfileDto.status` was written as `string` and compiled — until the
+`implements` check against the Prisma payload rejected it: the column is a
+`BusinessStatus`.
+
+Worth more than it looks. `string` is not wrong so much as useless: it hands
+every client "any text at all" where the server sends one of four values, so a
+screen can carry a branch for a status that cannot happen and none for one that
+can. The business app had `status: string` hand-written for exactly as long.
+
+A loose type is the same failure as a wrong one, arriving quietly.
+
+### 128.9 Dates, and where a response is assembled
+
+Appointments return `Date` objects and Nest serialises them; the DTO says
+`string` and `Serialised<T>` bridges the two. That works because the service does
+not declare its return type — Prisma's payload does.
+
+A response that is **built** declares its own shape, and then the two must agree
+exactly. Rather than bridge them, the two such fields found so far —
+`ApproxSettlement.rateAsOf` and `SavedPlace.savedAt` — are ISO strings **at the
+source**. Nothing does arithmetic on either; both are shown. One shape beats two
+shapes and a conversion between them.
+
+### 128.10 Where this stands
+
+**28 of 156 operations**, up from 7 at the start and 19 last batch. Sixteen
+client types derived rather than declared.
+
+Done: appointments, discovery, business locations, services and profile,
+favourites, legal.
+
+Remaining: `/admin` (57), the rest of `/business`, threads, tickets, reviews,
+users, notifications. 128 operations.
+
+Four real findings so far, none of which a reader would have caught: a detail
+endpoint annotated with a list shape, a Date that was a string on the wire, a
+`select` copied instead of shared, and two classes sharing one global schema
+name. Each would have surfaced as a blank space on somebody's screen.

@@ -4,31 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+// One select, shared with the DTO describing its result (§128.5).
+import { PROFILE_SELECT } from './dto/business-response.dto';
 import { StorageService } from '../storage/storage.service';
 import { UpdateBusinessProfileDto } from './dto/update-profile.dto';
-
-const PROFILE_SELECT = {
-  id: true,
-  name: true,
-  description: true,
-  phone: true,
-  logoUrl: true,
-  coverImageUrl: true,
-  status: true,
-  // The business's own view of its status. A suspended business must be able
-  // to see that it is suspended and why (§42.5) — discovering it from a
-  // customer who cannot book is the worst possible way to find out.
-  statusReason: true,
-  statusChangedAt: true,
-  // Whether the business paused ITSELF (§119.3), which is a different thing
-  // from `status` and has to be visible beside it — a shop that cannot see it
-  // is paused would read an empty calendar as the platform being broken.
-  pausedAt: true,
-  createdAt: true,
-  updatedAt: true,
-  category: { select: { id: true, name: true, icon: true } },
-  subcategory: { select: { id: true, name: true } },
-} as const;
 
 @Injectable()
 export class BusinessProfileService {

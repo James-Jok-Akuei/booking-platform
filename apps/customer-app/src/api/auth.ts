@@ -1,5 +1,6 @@
 import { api, tokens, type AuthenticatedUser, type TokenPair } from './client';
 import { uploadFile } from '../upload';
+import type { components } from './schema';
 
 /**
  * The signed-in account.
@@ -85,23 +86,13 @@ export const closeMyAccount = () =>
 // Legal documents (§122)
 // ---------------------------------------------------------------------------
 
-export interface LegalDocument {
-  id: string;
-  kind: 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
-  version: number;
-  title: string;
-  body: string;
-  publishedAt: string;
-  changeNote: string | null;
-}
+/** From the contract (§128). */
+export type LegalDocument = components['schemas']['LegalDocumentDto'];
 
-export interface LegalStatus extends LegalDocument {
-  /** The highest version this person ever agreed to, or null. */
-  acceptedVersion: number | null;
-  acceptedAt: string | null;
-  /** True when they never agreed, or agreed to something older. */
-  needsAcceptance: boolean;
-}
+
+/** From the contract (§128). */
+export type LegalStatus = components['schemas']['LegalStatusDto'];
+
 
 /** Readable with no account at all — agreeing before reading is worth nothing. */
 export const listLegal = () => api<LegalDocument[]>('/legal', { anonymous: true });

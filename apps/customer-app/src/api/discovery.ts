@@ -41,23 +41,9 @@ export interface Province {
 export const listProvinces = () =>
   api<Province[]>('/places/provinces', { anonymous: true });
 
-export interface SavedPlace {
-  savedAt: string;
-  id: string;
-  name: string;
-  address: string;
-  ratingAvg: number | null;
-  ratingCount: number;
-  fromPriceMinor: number | null;
-  district: { id: string; name: string; provinceName: string } | null;
-  business: { id: string; name: string | null; logoUrl: string | null };
-  /**
-   * Whether it can be booked right now. ONE field, not three: a branch that
-   * closed, a shop that paused and a shop no longer approved all mean the same
-   * thing to a customer, and two of the three are nobody's business (§120).
-   */
-  bookable: boolean;
-}
+/** From the contract (§128). */
+export type SavedPlace = components['schemas']['SavedPlaceDto'];
+
 
 export const listFavourites = () =>
   api<{ total: number; favourites: SavedPlace[] }>('/favourites');

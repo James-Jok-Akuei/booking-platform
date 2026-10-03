@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BusinessStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  FavouriteStateDto,
+  SavedPlacePageDto,
+} from './dto/favourite-response.dto';
 
 @Injectable()
 export class FavouritesService {
@@ -12,7 +16,7 @@ export class FavouritesService {
    * Idempotent through the unique index rather than a read-then-write, which two
    * taps both pass — the same reasoning §21.1 used for inquiry threads.
    */
-  async add(customerId: string, locationId: string) {
+  async add(customerId: string, locationId: string): Promise<FavouriteStateDto> {
     // A branch that is closed, or whose business is not public, is not
     // something to save. 404 rather than 403: it does not exist to a customer.
     const location = await this.prisma.location.findFirst({
@@ -34,7 +38,7 @@ export class FavouritesService {
   }
 
   /** Removing one that is not saved is not an error — the end state is the same. */
-  async remove(customerId: string, locationId: string) {
+  async remove(customerId: string, locationId: string): Promise<FavouriteStateDto> {
     await this.prisma.favourite.deleteMany({ where: { customerId, locationId } });
     return { locationId, saved: false };
   }
@@ -47,7 +51,7 @@ export class FavouritesService {
    * app lost it; "this shop is not taking bookings right now" is the useful
    * answer, and it comes back on its own when the shop does.
    */
-  async list(customerId: string) {
+  async list(customerId: string): Promise<SavedPlacePageDto> {
     const rows = await this.prisma.favourite.findMany({
       where: { customerId },
       orderBy: { createdAt: 'desc' },
@@ -82,7 +86,11 @@ export class FavouritesService {
     return {
       total: rows.length,
       favourites: rows.map(({ createdAt, location }) => ({
-        savedAt: createdAt,
+        // An ISO string here as well as on the wire (§128.4). A response that is
+        // ASSEMBLED declares its own shape, so the two differing by one field
+        // would mean a bridge between them for nothing — nobody does arithmetic
+        // on this, it is shown.
+        savedAt: createdAt.toISOString(),
         id: location.id,
         name: location.name,
         address: location.address,

@@ -119,7 +119,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LegalStatusDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -143,7 +153,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalAcceptanceDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -157,7 +174,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LegalDocumentDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -185,7 +212,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalDocumentDto"
+                }
+              }
+            }
           }
         },
         "summary": "One document by kind.\n\n`ParseEnumPipe` is not decoration. Without it, anything in this position\nreached Prisma as a `kind` it could not parse and came back a **500** —\nwhich is how `GET /legal/me` behaved before the controllers were ordered,\nsince `me` matches `:kind` perfectly well. The pipe makes any such collision\na clean 400 naming the three valid values, rather than an internal error\nthat says nothing.",
@@ -971,7 +1005,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessProfileDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -993,7 +1034,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessProfileDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4809,7 +4857,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedPlacePageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4831,7 +4886,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavouriteStateDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4854,7 +4916,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavouriteStateDto"
+                }
+              }
+            }
           }
         },
         "summary": "Keyed by LOCATION, not by the favourite's own id: the client has the\nlocation in hand and would otherwise have to look up a row id to delete one.",
@@ -4930,6 +4999,66 @@
           "refreshToken"
         ]
       },
+      "LegalStatusDto": {
+        "type": "object",
+        "properties": {
+          "acceptedVersion": {
+            "type": "number",
+            "nullable": true,
+            "description": "The HIGHEST version they ever agreed to, not the most recent tap (§122.3)."
+          },
+          "acceptedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "needsAcceptance": {
+            "type": "boolean",
+            "description": "True when they never agreed, or agreed to something older."
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "TERMS_OF_USE",
+              "PRIVACY_POLICY",
+              "SELLER_AGREEMENT"
+            ]
+          },
+          "version": {
+            "type": "number",
+            "description": "1, 2, 3 … per kind. The number people quote at each other."
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain text, blank lines between paragraphs. Never HTML (§122.4)."
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "changeNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "One line on what moved, so nobody rereads four thousand words (§122.3)."
+          }
+        },
+        "required": [
+          "acceptedVersion",
+          "acceptedAt",
+          "needsAcceptance",
+          "id",
+          "kind",
+          "version",
+          "title",
+          "body",
+          "publishedAt",
+          "changeNote"
+        ]
+      },
       "AcceptDocumentDto": {
         "type": "object",
         "properties": {
@@ -4940,6 +5069,74 @@
         },
         "required": [
           "documentId"
+        ]
+      },
+      "LegalAcceptanceDto": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "TERMS_OF_USE",
+              "PRIVACY_POLICY",
+              "SELLER_AGREEMENT"
+            ]
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "documentId",
+          "kind",
+          "version"
+        ]
+      },
+      "LegalDocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "TERMS_OF_USE",
+              "PRIVACY_POLICY",
+              "SELLER_AGREEMENT"
+            ],
+            "type": "string"
+          },
+          "version": {
+            "type": "number",
+            "description": "1, 2, 3 … per kind. The number people quote at each other."
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Plain text, blank lines between paragraphs. Never HTML (§122.4)."
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "changeNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "One line on what moved, so nobody rereads four thousand words (§122.3)."
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "version",
+          "title",
+          "body",
+          "publishedAt",
+          "changeNote"
         ]
       },
       "StartDraftDto": {
@@ -5153,6 +5350,134 @@
         },
         "required": [
           "isLive"
+        ]
+      },
+      "BusinessCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ]
+      },
+      "BusinessSubcategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "BusinessProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Uploaded, never a linked URL (§88)."
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "description": "What an ADMIN decided. Separate from `pausedAt`, which is what the business\ndid.\n\nThe enum, not `string`. Declaring it loosely compiled and would have handed\nevery client \"any text at all\" where the server only ever sends four values\n— which is how a screen ends up with a branch for a status that cannot\nhappen, and none for one that can.",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "SUSPENDED"
+            ],
+            "type": "string"
+          },
+          "statusReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Why it is in that status — a suspended shop must be able to read it (§42.5)."
+          },
+          "statusChangedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "pausedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Set while the business has paused ITSELF (§119.3)."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "category": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BusinessCategoryDto"
+              }
+            ]
+          },
+          "subcategory": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BusinessSubcategoryDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "phone",
+          "logoUrl",
+          "coverImageUrl",
+          "status",
+          "statusReason",
+          "statusChangedAt",
+          "pausedAt",
+          "createdAt",
+          "updatedAt",
+          "category",
+          "subcategory"
         ]
       },
       "UpdateBusinessProfileDto": {
@@ -7159,6 +7484,120 @@
           "locations"
         ]
       },
+      "SavedPlaceDistrictDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provinceName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provinceName"
+        ]
+      },
+      "SavedPlaceBusinessDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "logoUrl"
+        ]
+      },
+      "SavedPlaceDto": {
+        "type": "object",
+        "properties": {
+          "savedAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "ratingAvg": {
+            "type": "number",
+            "nullable": true
+          },
+          "ratingCount": {
+            "type": "number"
+          },
+          "fromPriceMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "district": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SavedPlaceDistrictDto"
+              }
+            ]
+          },
+          "business": {
+            "$ref": "#/components/schemas/SavedPlaceBusinessDto"
+          },
+          "bookable": {
+            "type": "boolean",
+            "description": "Whether it can be booked right now. ONE field, not three: the branch\nclosing, the shop pausing and approval going are the same thing to a\ncustomer (§120.1)."
+          }
+        },
+        "required": [
+          "savedAt",
+          "id",
+          "name",
+          "address",
+          "ratingAvg",
+          "ratingCount",
+          "fromPriceMinor",
+          "district",
+          "business",
+          "bookable"
+        ]
+      },
+      "SavedPlacePageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "favourites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SavedPlaceDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "favourites"
+        ]
+      },
       "SaveFavouriteDto": {
         "type": "object",
         "properties": {
@@ -7169,6 +7608,21 @@
         },
         "required": [
           "locationId"
+        ]
+      },
+      "FavouriteStateDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string"
+          },
+          "saved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "locationId",
+          "saved"
         ]
       }
     }

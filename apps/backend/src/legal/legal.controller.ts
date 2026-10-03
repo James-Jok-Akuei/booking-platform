@@ -19,7 +19,13 @@ import {
   AuthenticatedUser,
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { LegalService } from './legal.service';
+import {
+  LegalAcceptanceDto,
+  LegalDocumentDto,
+  LegalStatusDto,
+} from './dto/legal-response.dto';
 import {
   AcceptDocumentDto,
   StartDraftDto,
@@ -39,6 +45,7 @@ export class LegalController {
   constructor(private readonly legal: LegalService) {}
 
   @Get()
+  @ApiOkResponse({ type: [LegalDocumentDto] })
   published() {
     return this.legal.published();
   }
@@ -54,6 +61,7 @@ export class LegalController {
    * that says nothing.
    */
   @Get(':kind')
+  @ApiOkResponse({ type: LegalDocumentDto })
   current(
     @Param('kind', new ParseEnumPipe(LegalDocumentKind)) kind: LegalDocumentKind,
   ) {
@@ -68,12 +76,14 @@ export class LegalAcceptanceController {
   constructor(private readonly legal: LegalService) {}
 
   @Get()
+  @ApiOkResponse({ type: [LegalStatusDto] })
   status(@CurrentUser() user: AuthenticatedUser) {
     return this.legal.statusFor(user.userId);
   }
 
   @Post('accept')
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: LegalAcceptanceDto })
   accept(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: AcceptDocumentDto,
