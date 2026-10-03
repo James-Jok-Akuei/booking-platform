@@ -1,6 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DiscoveryService } from '../src/discovery/discovery.service';
+// Discovery marks each result saved-or-not since §120, so it needs this.
+import { FavouritesService } from '../src/favourites/favourites.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import { createBusiness } from './setup/factories';
@@ -24,6 +26,7 @@ describe('Nearest (§107)', () => {
   beforeAll(async () => {
     moduleRef = await createTestModule([
       DiscoveryService,
+      FavouritesService,
       commonStubs.mail(),
       commonStubs.notifications(),
     ]);

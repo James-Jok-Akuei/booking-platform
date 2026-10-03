@@ -9,6 +9,7 @@ import {
   approxSettlementFor,
 } from '../payments/approx-settlement';
 import { isPubliclyBookable } from '../business/business-status';
+import { FavouritesService } from '../favourites/favourites.service';
 import { dayOfWeekUtc, instantToZonedParts } from '../availability/time.util';
 import { isOpenAt } from './open-now';
 import { DiscoverLocationsDto, DiscoverySort } from './dto/discover-locations.dto';
@@ -44,6 +45,7 @@ export class DiscoveryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly settings: PlatformSettingsService,
+    private readonly favourites: FavouritesService,
     config: ConfigService,
   ) {
     // The same single platform timezone AvailabilityService uses (§12). No
@@ -66,7 +68,7 @@ export class DiscoveryService {
    * **four queries, plus one when distance is used**, and none of them per-row.
    * Down from five since §44 made the cheapest price a column.
    */
-  async search(query: DiscoverLocationsDto) {
+  async search(query: DiscoverLocationsDto, viewerId?: string) {
     const limit = query.limit ?? DEFAULT_LIMIT;
     const offset = query.offset ?? 0;
     const distance = this.resolveDistance(query);
@@ -189,12 +191,15 @@ export class DiscoveryService {
     // The cheapest price no longer needs a query at all — it is a column on the
     // location now (§44), maintained on write. That is one fewer query per page
     // AND the reason `sort=price` can order rows this page never fetched.
-    const [pageOpenNow, rate] = await Promise.all([
+    const [pageOpenNow, rate, saved] = await Promise.all([
       // Already known when the filter was applied, and every row on this page is
       // one of those candidates.
       openNowByCandidate ?? this.openNowByLocation(rows.map((l) => l.id)),
       // One rate read per response, reused for every amount in it (§39).
       this.settings.getExchangeRateForDisplay(),
+      // One query for the page, never one per row — and none at all for a
+      // signed-out caller, which is most of them (§120).
+      this.favourites.savedAmong(viewerId, rows.map((l) => l.id)),
     ]);
     const openNow = pageOpenNow;
 
@@ -230,6 +235,10 @@ export class DiscoveryService {
             fromPriceMinor,
             ...this.priceSettlement(fromPriceMinor, rate),
             openNow: openNow.get(location.id) ?? false,
+            // Absent rather than false when nobody is signed in: there is no
+            // answer to "have you saved this" without a "you", and false would
+            // render an empty heart that cannot be filled.
+            ...(viewerId ? { saved: saved.has(location.id) } : {}),
             ...(distanceById.has(location.id)
               ? { distanceKm: round2(distanceById.get(location.id)!) }
               : {}),
@@ -249,7 +258,7 @@ export class DiscoveryService {
    * exists, is paginated and has its own exposure rules (§31). Duplicating them
    * here would mean two places to keep those rules right.
    */
-  async findOne(locationId: string) {
+  async findOne(locationId: string, viewerId?: string) {
     // findFirst, not findUnique: a closed branch must 404 for a customer the
     // same way it is absent from search (§89), and `where` on findUnique takes
     // only unique fields.
@@ -353,7 +362,12 @@ export class DiscoveryService {
 
     const template = location.hours.find((h) => h.dayOfWeek === today.dayOfWeek) ?? null;
 
+    const saved = await this.favourites.savedAmong(viewerId, [location.id]);
+
     return {
+      // Absent for a signed-out reader: there is no answer to "have you saved
+      // this" without a "you" (§120).
+      ...(viewerId ? { saved: saved.has(location.id) } : {}),
       id: location.id,
       name: location.name,
       address: location.address,

@@ -4398,6 +4398,66 @@
           "Discovery"
         ]
       }
+    },
+    "/favourites": {
+      "get": {
+        "operationId": "FavouritesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Favourites"
+        ]
+      },
+      "post": {
+        "operationId": "FavouritesController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveFavouriteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Favourites"
+        ]
+      }
+    },
+    "/favourites/{locationId}": {
+      "delete": {
+        "operationId": "FavouritesController_remove",
+        "parameters": [
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Keyed by LOCATION, not by the favourite's own id: the client has the\nlocation in hand and would otherwise have to look up a row id to delete one.",
+        "tags": [
+          "Favourites"
+        ]
+      }
     }
   },
   "info": {
@@ -5562,6 +5622,18 @@
         },
         "required": [
           "msisdn"
+        ]
+      },
+      "SaveFavouriteDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "locationId"
         ]
       }
     }

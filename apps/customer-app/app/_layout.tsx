@@ -79,6 +79,11 @@ export default function RootLayout() {
             // than a button that is not there.
             headerRight: () => (
               <View style={{ flexDirection: 'row', gap: 16 }}>
+                <Link href="/saved" asChild>
+                  <Pressable hitSlop={10}>
+                    <Text style={{ color: theme.danger, fontSize: 18 }}>♥</Text>
+                  </Pressable>
+                </Link>
                 <Link href="/messages" asChild>
                   <Pressable hitSlop={10}>
                     <Text style={{ color: theme.accent, fontWeight: '600' }}>Messages</Text>
@@ -95,6 +100,7 @@ export default function RootLayout() {
         />
         <Stack.Screen name="bookings" options={{ title: 'My bookings' }} />
         <Stack.Screen name="messages" options={{ title: 'Messages' }} />
+        <Stack.Screen name="saved" options={{ title: 'Saved' }} />
         <Stack.Screen name="account" options={{ title: 'Account' }} />
         <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
       </Stack>

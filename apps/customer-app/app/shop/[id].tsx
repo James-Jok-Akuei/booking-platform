@@ -12,6 +12,8 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getShop, getShopReviews, type ShopService } from '../../src/api/discovery';
 import { openInquiry } from '../../src/api/chat';
+import { useSaved } from '../../src/useSaved';
+import { SaveButton } from '../../src/components/SaveButton';
 import { ApiError, tokens } from '../../src/api/client';
 import { useMoney } from '../../src/money';
 import { theme } from '../../src/theme';
@@ -49,6 +51,8 @@ export default function Shop() {
    * customer asking a second question weeks later lands in the same thread
    * rather than starting a parallel one the shop has to notice separately.
    */
+  const saved = useSaved();
+
   const openChat = useMutation({
     mutationFn: () => openInquiry(shop.data!.business.id),
     onSuccess: (thread) => router.push(`/thread/${thread.id}`),
@@ -84,7 +88,19 @@ export default function Shop() {
 
   return (
     <>
-      <Stack.Screen options={{ title: s.business.name ?? s.name }} />
+      <Stack.Screen
+        options={{
+          title: s.business.name ?? s.name,
+          // In the header, so it is reachable without scrolling past the photos.
+          headerRight: () => (
+            <SaveButton
+              saved={s.saved}
+              large
+              onPress={() => saved.toggle(s.id, s.saved ?? false, `/shop/${s.id}`)}
+            />
+          ),
+        }}
+      />
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
         {s.business.coverImageUrl && (
           <Image source={{ uri: s.business.coverImageUrl }} style={styles.cover} />

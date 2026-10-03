@@ -3,6 +3,8 @@ import { AppointmentStatus } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { LocationsService } from '../src/business/locations.service';
 import { DiscoveryService } from '../src/discovery/discovery.service';
+// Discovery marks each result saved-or-not since §120, so it needs this.
+import { FavouritesService } from '../src/favourites/favourites.service';
 import { AppointmentsService } from '../src/appointments/appointments.service';
 import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
@@ -38,6 +40,7 @@ describe('Closing a branch (§89)', () => {
     moduleRef = await createTestModule([
       LocationsService,
       DiscoveryService,
+      FavouritesService,
       BusinessAccessService,
       AppointmentsService,
       AvailabilityService,

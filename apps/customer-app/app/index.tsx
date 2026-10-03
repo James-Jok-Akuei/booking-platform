@@ -23,6 +23,8 @@ import {
 } from '../src/api/discovery';
 import { useMoney } from '../src/money';
 import { useNearMe } from '../src/useNearMe';
+import { useSaved } from '../src/useSaved';
+import { SaveButton } from '../src/components/SaveButton';
 import { theme } from '../src/theme';
 
 /** "City of Kigali" is what the state calls it; "Kigali" is what people say. */
@@ -46,6 +48,7 @@ export default function Discover() {
   const money = useMoney();
   const router = useRouter();
   const nearMe = useNearMe();
+  const saved = useSaved();
   const [query, setQuery] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [sort, setSort] = useState<DiscoverySort>('rating');
@@ -288,6 +291,7 @@ export default function Discover() {
             location={item}
             format={money.format}
             onPress={() => router.push(`/shop/${item.id}`)}
+            onSave={() => saved.toggle(item.id, item.saved ?? false, '/')}
           />
         )}
       />
@@ -315,10 +319,12 @@ function LocationCard({
   location,
   format,
   onPress,
+  onSave,
 }: {
   location: DiscoveredLocation;
   format: (minor: number | null | undefined) => string;
   onPress: () => void;
+  onSave: () => void;
 }) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
@@ -333,6 +339,9 @@ function LocationCard({
         ) : (
           <Text style={styles.shut}>Closed</Text>
         )}
+        {/* Inside the card and outside the Pressable's job: tapping the heart
+            must not also open the shop. */}
+        <SaveButton saved={location.saved} onPress={onSave} />
       </View>
 
       <Text style={styles.cardSub} numberOfLines={1}>

@@ -8,6 +8,8 @@ import { BadRequestException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { AccountService } from '../src/users/account.service';
 import { DiscoveryService } from '../src/discovery/discovery.service';
+// Discovery marks each result saved-or-not since §120, so it needs this.
+import { FavouritesService } from '../src/favourites/favourites.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
@@ -37,6 +39,7 @@ describe('Closing an account (§119)', () => {
     moduleRef = await createTestModule([
       AccountService,
       DiscoveryService,
+      FavouritesService,
       PlatformSettingsService,
       commonStubs.mail(),
       commonStubs.notifications(),

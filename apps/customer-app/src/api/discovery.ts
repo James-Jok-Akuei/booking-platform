@@ -39,6 +39,38 @@ export interface Province {
 export const listProvinces = () =>
   api<Province[]>('/places/provinces', { anonymous: true });
 
+export interface SavedPlace {
+  savedAt: string;
+  id: string;
+  name: string;
+  address: string;
+  ratingAvg: number | null;
+  ratingCount: number;
+  fromPriceMinor: number | null;
+  district: { id: string; name: string; provinceName: string } | null;
+  business: { id: string; name: string | null; logoUrl: string | null };
+  /**
+   * Whether it can be booked right now. ONE field, not three: a branch that
+   * closed, a shop that paused and a shop no longer approved all mean the same
+   * thing to a customer, and two of the three are nobody's business (§120).
+   */
+  bookable: boolean;
+}
+
+export const listFavourites = () =>
+  api<{ total: number; favourites: SavedPlace[] }>('/favourites');
+
+export const saveFavourite = (locationId: string) =>
+  api<{ locationId: string; saved: boolean }>('/favourites', {
+    method: 'POST',
+    body: { locationId },
+  });
+
+export const unsaveFavourite = (locationId: string) =>
+  api<{ locationId: string; saved: boolean }>(`/favourites/${locationId}`, {
+    method: 'DELETE',
+  });
+
 export interface DiscoveredLocation {
   id: string;
   name: string;
@@ -64,6 +96,12 @@ export interface DiscoveredLocation {
   /** Cheapest service here, in minor units. Null when nothing is on sale. */
   fromPriceMinor: number | null;
   openNow: boolean;
+  /**
+   * Whether this customer has saved it. ABSENT when nobody is signed in — there
+   * is no answer to "have you saved this" without a "you", and `false` would
+   * render an empty heart that cannot be filled (§120).
+   */
+  saved?: boolean;
   /** Only present on a distance search. */
   distanceKm?: number;
 }
@@ -128,6 +166,13 @@ export interface ShopHours {
 }
 
 export interface ShopDetail {
+  /**
+   * Whether this customer has saved it. ABSENT when nobody is signed in — there
+   * is no answer to "have you saved this" without a "you", and `false` would
+   * render an empty heart that cannot be filled (§120).
+   */
+  saved?: boolean;
+
   id: string;
   name: string;
   address: string;

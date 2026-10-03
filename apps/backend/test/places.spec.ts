@@ -1,5 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { DiscoveryService } from '../src/discovery/discovery.service';
+// Discovery marks each result saved-or-not since §120, so it needs this.
+import { FavouritesService } from '../src/favourites/favourites.service';
 import { LocationsService } from '../src/business/locations.service';
 import { BusinessAccessService } from '../src/business/business-access.service';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -26,6 +28,7 @@ describe('Places (§104)', () => {
   beforeAll(async () => {
     moduleRef = await createTestModule([
       DiscoveryService,
+      FavouritesService,
       LocationsService,
       BusinessAccessService,
       commonStubs.mail(),

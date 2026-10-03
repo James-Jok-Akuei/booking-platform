@@ -10615,3 +10615,70 @@ exactly one thing here. Spelunking for an undocumented method and guessing is th
 mistake this app's own `AGENTS.md` opens by warning about (§102.3).
 
 **1183 across 43.**
+
+## 120. Saved places, which is where the cart went (2026-10-03)
+
+Asked for as "adding to cart". A cart does not fit this platform, and saying so
+was worth more than building one: each booking is a specific slot at a specific
+branch with its own deposit, so a basket of them would mean either reserving time
+nobody has paid for, or one payment split across several businesses and a ledger
+that has to be taught about it.
+
+Offered three readings — a shortlist, several services in one visit, several
+bookings paid together — and the answer was the shortlist. So this is a list of
+places kept to come back to, and the screen says so by what it does not have: no
+total, no checkout, no quantity. **Saving reserves nothing.** A slot is held by
+booking it, and a basket that held slots would take them from somebody who was
+ready.
+
+### 120.1 A place, not a business, and never a hidden one
+
+Keyed on the LOCATION for the same reason a search result is one (§43): a
+customer saves the branch they would actually walk into, and a chain's two
+branches are different answers to "where shall I go".
+
+Saving one twice is saving it once, enforced by the unique index rather than a
+read-then-write that two taps both pass — the same reasoning §21.1 used for
+inquiry threads. Unsaving something never saved is not an error either: the end
+state is what was asked for, and a client that lost a response should be able to
+repeat itself.
+
+Saving a branch that is not public is a **404**, not a 403. It does not exist to
+a customer, and "that one is pending" leaks a moderation state.
+
+**A saved place that stops being bookable stays in the list, marked.** Hidden, a
+customer whose barber vanished would conclude the app lost it. And `bookable` is
+one field rather than three, because the branch closing, the shop pausing and the
+shop losing approval all mean the same thing to a customer — and two of the three
+are nobody's business.
+
+### 120.2 The field that is absent rather than false
+
+Each search result says whether this customer saved it, and **says nothing at all
+when nobody is signed in**. Not `false`: there is no answer to "have you saved
+this" without a "you", and `false` renders an empty heart that cannot be filled.
+`SaveButton` returns null for `undefined` for exactly that reason.
+
+The discovery controller's own comment had already called this: *"Nothing here
+varies by viewer... and so this route cannot later grow a viewer-specific branch
+without one."* It grew one. The comment is updated rather than deleted, because
+being right in advance is worth keeping.
+
+One query per page, never one per row, and none at all for a signed-out caller —
+the query budget §43 states out loud.
+
+The heart is optimistic, which almost nothing else in this app is. A heart that
+waits for a round trip feels broken on a slow connection, and being wrong costs
+nothing. It is written into **every** cached page at once — the search list, a
+filtered list, the shop's own page — because the same place appears on several
+and patching one leaves the others disagreeing until they happen to refetch.
+
+### 120.3 Five test modules needed a new provider
+
+Adding `FavouritesService` to `DiscoveryService` broke five suites at once with
+"Nest can't resolve dependencies". They construct their providers explicitly,
+which is what makes a missing wire a loud failure rather than a silent `undefined`
+— the cost is five edits, and the alternative is a test module that quietly
+provides everything and proves less.
+
+**1191 across 44.**

@@ -326,6 +326,7 @@ model User {
   ticketAttachments  TicketAttachment[]  @relation("TicketAttachments")
   createdAdjustments BillingAdjustment[] @relation("CreatedAdjustments")
 
+  favourites      Favourite[] @relation("CustomerFavourites")
   reviews         Review[] @relation("CustomerReviews")
   hiddenReviews   Review[] @relation("HiddenReviews")
   reviewResponses Review[] @relation("ReviewResponses")
@@ -567,6 +568,8 @@ model Location {
   /// Serves ORDER BY fromPriceMinor and the maxPriceMinor filter (§44).
   @@index([fromPriceMinor])
   @@map("locations")
+
+  favourites Favourite[] @relation("LocationFavourites")
 }
 
 model LocationHours {
@@ -1911,4 +1914,34 @@ model District {
   @@unique([provinceId, name])
   @@index([provinceId])
   @@map("districts")
+}
+
+
+/// A place a customer saved to come back to (§120).
+///
+/// A LOCATION, not a business, for the same reason a search result is one
+/// (§43): a customer saves the branch they would actually walk into, and a
+/// chain's two branches are different answers to "where shall I go".
+///
+/// Deliberately NOT a cart. Nothing here is reserved, nothing is priced and
+/// nothing is paid for — a slot is held by booking it, and holding one by
+/// putting it in a basket would take it away from somebody who was ready.
+model Favourite {
+  id String @id @default(uuid())
+
+  customerId String
+  customer   User   @relation("CustomerFavourites", fields: [customerId], references: [id], onDelete: Cascade)
+
+  locationId String
+  location   Location @relation("LocationFavourites", fields: [locationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  /// Saving twice is the same as saving once. The unique index is what makes
+  /// that true under a double tap, rather than a read-then-write that both
+  /// requests pass.
+  @@unique([customerId, locationId])
+  /// The only query there is: this customer's saved places, newest first.
+  @@index([customerId, createdAt])
+  @@map("favourites")
 }

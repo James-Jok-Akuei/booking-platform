@@ -4,6 +4,8 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BusinessStatus } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { DiscoveryService } from '../src/discovery/discovery.service';
+// Discovery marks each result saved-or-not since §120, so it needs this.
+import { FavouritesService } from '../src/favourites/favourites.service';
 import { DiscoverySort } from '../src/discovery/dto/discover-locations.dto';
 import { isOpenAt } from '../src/discovery/open-now';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
@@ -30,7 +32,7 @@ describe('Discovery (§43)', () => {
   let settings: PlatformSettingsService;
 
   beforeAll(async () => {
-    moduleRef = await createTestModule([DiscoveryService]);
+    moduleRef = await createTestModule([DiscoveryService, FavouritesService]);
     prisma = moduleRef.get(PrismaService);
     discovery = moduleRef.get(DiscoveryService);
     settings = moduleRef.get(PlatformSettingsService);
