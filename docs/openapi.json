@@ -762,6 +762,86 @@
         ]
       }
     },
+    "/business/service-drafts": {
+      "get": {
+        "operationId": "BusinessController_listServiceDrafts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      },
+      "post": {
+        "operationId": "BusinessController_createServiceDraft",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/service-drafts/{id}": {
+      "patch": {
+        "operationId": "BusinessController_updateServiceDraft",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceDraftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      },
+      "delete": {
+        "operationId": "BusinessController_discardServiceDraft",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
     "/business/locations": {
       "post": {
         "operationId": "BusinessController_createLocation",
@@ -4884,6 +4964,57 @@
           "coverImageUrl": {
             "type": "string",
             "maxLength": 500
+          }
+        }
+      },
+      "DraftOfferDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "priceMinor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000000
+          }
+        },
+        "required": [
+          "locationId",
+          "priceMinor"
+        ]
+      },
+      "UpdateServiceDraftDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 2000
+          },
+          "durationMinutes": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 1440
+          },
+          "depositPercentage": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 100
+          },
+          "offers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftOfferDto"
+            }
           }
         }
       },

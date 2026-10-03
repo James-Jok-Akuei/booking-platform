@@ -494,6 +494,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/business/service-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BusinessController_listServiceDrafts"];
+        put?: never;
+        post: operations["BusinessController_createServiceDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/business/service-drafts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["BusinessController_discardServiceDraft"];
+        options?: never;
+        head?: never;
+        patch: operations["BusinessController_updateServiceDraft"];
+        trace?: never;
+    };
     "/business/locations": {
         parameters: {
             query?: never;
@@ -2377,6 +2409,18 @@ export interface components {
             logoUrl?: string;
             coverImageUrl?: string;
         };
+        DraftOfferDto: {
+            /** Format: uuid */
+            locationId: string;
+            priceMinor: number;
+        };
+        UpdateServiceDraftDto: {
+            name?: string | null;
+            description?: string | null;
+            durationMinutes?: number | null;
+            depositPercentage?: number | null;
+            offers?: components["schemas"]["DraftOfferDto"][];
+        };
         CreateLocationDto: {
             /**
              * Format: uuid
@@ -3477,6 +3521,82 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BusinessController_listServiceDrafts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BusinessController_createServiceDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BusinessController_discardServiceDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    BusinessController_updateServiceDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateServiceDraftDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {

@@ -974,3 +974,41 @@ export const acceptLegal = (documentId: string) =>
     method: 'POST',
     body: { documentId },
   });
+
+// ---------------------------------------------------------------------------
+// Service drafts (§123)
+// ---------------------------------------------------------------------------
+
+export interface ServiceDraft {
+  id: string;
+  name: string | null;
+  description: string | null;
+  durationMinutes: number | null;
+  depositPercentage: string | null;
+  offers: Array<{ locationId: string; priceMinor: number }>;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: { id: string; email: string };
+}
+
+/** The shop's unfinished services, newest first. Shared, not per person (§123). */
+export const listServiceDrafts = () => api<ServiceDraft[]>('/business/service-drafts');
+
+export const startServiceDraft = () =>
+  api<ServiceDraft>('/business/service-drafts', { method: 'POST' });
+
+/** Saves whatever has been typed. Nothing here is validated — that is the point. */
+export const saveServiceDraft = (
+  id: string,
+  body: {
+    name?: string | null;
+    description?: string | null;
+    durationMinutes?: number | null;
+    depositPercentage?: number | null;
+    offers?: Array<{ locationId: string; priceMinor: number }>;
+  },
+) => api<ServiceDraft>(`/business/service-drafts/${id}`, { method: 'PATCH', body });
+
+/** A real delete, unlike almost everything else here: a draft is nobody's record. */
+export const discardServiceDraft = (id: string) =>
+  api<{ message: string }>(`/business/service-drafts/${id}`, { method: 'DELETE' });

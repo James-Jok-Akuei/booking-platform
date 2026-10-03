@@ -10803,3 +10803,63 @@ paste markup that two apps then have to agree about rendering, and one of them i
 a phone.
 
 **1202 across 45.**
+
+## 123. Services you have not finished writing (2026-10-03)
+
+Asked for as "drafts when adding services that auto save".
+
+### 123.1 A separate table, not a flag on `Service`
+
+The whole design, and the reason is one section back. A draft living in
+`services` would be one forgotten `where` away from a customer seeing a
+half-written service with no price — and §119 had just finished widening
+`isPubliclyBookable` because exactly that kind of filter was missed in **two**
+places at once.
+
+A draft cannot leak out of a query it is not in. That is worth a table.
+
+Nothing on it is validated, and nothing on it is required. A draft exists
+*because* it is incomplete, so applying the service rules to it would defeat the
+point — they apply when it becomes a service, through the endpoint that already
+enforces them. The only rules kept are the ones that stop it being unstorable: a
+length cap so a runaway paste cannot fill the table, and the right type so a
+number field holds a number.
+
+The per-branch prices are **JSON**, not rows. A draft's offers point at a service
+that does not exist, and a relational shape would need its own table, its own
+cascade and its own cleanup for data thrown away the moment the service is real.
+
+### 123.2 The shop's, not one person's
+
+Per business. A shop is a shared workspace (§21.3) — an owner starting something
+and a manager finishing it is normal, and two people each holding invisible
+half-finished services is how the same service gets written twice. Who started it
+is recorded and shown, so it is still obvious whose work it is.
+
+### 123.3 Where the debounce lives
+
+In the **page**, not in the form. The form unmounts the moment it closes, and
+that is exactly when the last keystroke still needs saving — a timer inside it
+would be cancelled by the unmount that made saving urgent.
+
+1200ms: long enough that typing a name is one save rather than eleven, short
+enough that closing a laptop lid loses a sentence and not a service.
+
+A failed auto-save is **silent**. An error box interrupting somebody mid-sentence
+is worse than a quiet retry on the next keystroke, and nothing is lost either way
+— the form still holds the text.
+
+The draft is created **before** the form opens, so the first keystroke has
+somewhere to go rather than being the one that gets lost. Closing the form keeps
+it; creating the service discards it, because a draft that outlived its service
+would sit in Unfinished describing something that already exists.
+
+### 123.4 The one real delete in this codebase
+
+§75 and §101 both ended with the same correction: things are retired here, never
+deleted. Discarding a draft is the exception, and it is worth saying why rather
+than letting it look like a lapse — no customer saw it, no money moved because of
+it, and keeping every abandoned half-sentence forever would turn the Unfinished
+list into the mess it exists to prevent.
+
+**1208 across 46.**

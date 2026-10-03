@@ -327,6 +327,7 @@ model User {
   createdAdjustments BillingAdjustment[] @relation("CreatedAdjustments")
 
   favourites      Favourite[] @relation("CustomerFavourites")
+  createdServiceDrafts    ServiceDraft[]    @relation("CreatedServiceDrafts")
   legalAcceptances       LegalAcceptance[] @relation("LegalAcceptances")
   publishedLegalDocuments LegalDocument[]  @relation("PublishedLegalDocuments")
   reviews         Review[] @relation("CustomerReviews")
@@ -417,6 +418,8 @@ model BusinessProfile {
   @@index([categoryId])
   @@index([status])
   @@map("business_profiles")
+
+  serviceDrafts ServiceDraft[]
 }
 
 // ---------- Taxonomy ----------
@@ -2026,4 +2029,48 @@ model LegalAcceptance {
   @@unique([userId, documentId])
   @@index([userId])
   @@map("legal_acceptances")
+}
+
+
+/// A service somebody started writing and has not finished (§123).
+///
+/// A SEPARATE table, not a flag on `Service`, and that is the whole design. A
+/// draft living in `services` would be one forgotten `where` away from a
+/// customer seeing a half-written service with no price — and §119 had just
+/// finished widening a predicate because exactly that kind of filter was missed
+/// in two places. A draft cannot leak out of a query it is not in.
+///
+/// Per BUSINESS, not per person. A shop is a shared workspace (§21.3): an owner
+/// starting something and a manager finishing it is normal, and two people each
+/// holding invisible half-finished services is not. Who started it is recorded
+/// so the shop knows whose work it is.
+model ServiceDraft {
+  id String @id @default(uuid())
+
+  businessId      String
+  businessProfile BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation("CreatedServiceDrafts", fields: [createdById], references: [id], onDelete: Cascade)
+
+  /// Everything is optional. A draft exists precisely because it is incomplete,
+  /// so validating it would defeat the point — the rules apply when it is turned
+  /// into a real service, and not before.
+  name              String?
+  description       String?
+  durationMinutes   Int?
+  depositPercentage Decimal? @db.Decimal(5, 2)
+
+  /// The per-branch prices, as written so far: `[{ locationId, priceMinor }]`.
+  ///
+  /// JSON rather than rows, because a draft's offers point at nothing yet and a
+  /// relational shape would need its own table, its own cascade and its own
+  /// cleanup for data that is thrown away the moment the service is created.
+  offers Json @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId, updatedAt])
+  @@map("service_drafts")
 }

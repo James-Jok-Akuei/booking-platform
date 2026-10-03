@@ -32,6 +32,8 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { BusinessProfileService } from './business-profile.service';
 import { AccountService } from '../users/account.service';
+import { ServiceDraftsService } from './service-drafts.service';
+import { UpdateServiceDraftDto } from './dto/service-draft.dto';
 import { LocationsService } from './locations.service';
 import { ServicesService } from './services.service';
 import { GalleryService } from './gallery.service';
@@ -81,6 +83,7 @@ export class BusinessController {
     private readonly services: ServicesService,
     private readonly gallery: GalleryService,
     private readonly account: AccountService,
+    private readonly drafts: ServiceDraftsService,
   ) {}
 
   // ---------- Profile ----------
@@ -124,6 +127,42 @@ export class BusinessController {
   @BusinessRoles(BusinessMemberRole.OWNER)
   resume(@CurrentBusiness() business: BusinessContext) {
     return this.account.setPaused(business.businessId, false);
+  }
+
+  // ---------- Service drafts (§123) ----------
+  //
+  // Open to everyone who can create a service. A draft is a half-written one, so
+  // the same people who may finish it may start it.
+
+  @Get('service-drafts')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  listServiceDrafts(@CurrentUser() user: AuthenticatedUser) {
+    return this.drafts.list(user.userId);
+  }
+
+  @Post('service-drafts')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  createServiceDraft(@CurrentUser() user: AuthenticatedUser) {
+    return this.drafts.create(user.userId);
+  }
+
+  @Patch('service-drafts/:id')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  updateServiceDraft(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateServiceDraftDto,
+  ) {
+    return this.drafts.update(user.userId, id, dto);
+  }
+
+  @Delete('service-drafts/:id')
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  discardServiceDraft(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.drafts.discard(user.userId, id);
   }
 
   // ---------- Locations ----------

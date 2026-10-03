@@ -1,8 +1,13 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import {
   createService,
+  discardServiceDraft,
+  listServiceDrafts,
+  saveServiceDraft,
+  startServiceDraft,
+  type ServiceDraft,
   listLocations,
   listServices,
   setServiceOfferedAt,
@@ -29,6 +34,73 @@ export function ServicesPage() {
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['services'] });
 
+  /**
+   * The draft behind the "add a service" form (§123).
+   *
+   * One draft per open form, created when it opens and thrown away when the
+   * service is actually created — a draft that outlived its service would sit in
+   * the Unfinished list forever, describing something that already exists.
+   *
+   * The debounce lives HERE rather than in the form, because the form unmounts
+   * the moment it closes and that is exactly when the last keystroke still needs
+   * saving. A ref holds the timer so a re-render does not start a second one.
+   */
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [resumed, setResumed] = useState<Service | undefined>(undefined);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const drafts = useQuery({ queryKey: ['service-drafts'], queryFn: listServiceDrafts });
+  const refreshDrafts = () =>
+    queryClient.invalidateQueries({ queryKey: ['service-drafts'] });
+
+  const discard = useMutation({
+    mutationFn: discardServiceDraft,
+    onSuccess: refreshDrafts,
+  });
+
+  const queueDraftSave = (values: {
+    name: string;
+    durationMinutes: number | null;
+    depositPercentage: number | null;
+    offers: Array<{ locationId: string; priceMinor: number }>;
+  }) => {
+    if (!draftId) return;
+    if (timer.current) clearTimeout(timer.current);
+    // Long enough that typing a name is one save rather than eleven, short
+    // enough that closing the laptop lid loses a sentence and not a service.
+    timer.current = setTimeout(() => {
+      saveServiceDraft(draftId, {
+        name: values.name || null,
+        durationMinutes: values.durationMinutes,
+        depositPercentage: values.depositPercentage,
+        offers: values.offers,
+      })
+        .then(refreshDrafts)
+        // Silent on purpose: an auto-save that interrupts with an error box
+        // while somebody is typing is worse than one that quietly retries on the
+        // next keystroke. Nothing is lost — the form still holds the text.
+        .catch(() => undefined);
+    }, 1200);
+  };
+
+  /** Reopens the form with a draft's contents, and keeps saving into it. */
+  const resume = (draft: ServiceDraft) => {
+    setDraftId(draft.id);
+    setResumed({
+      id: draft.id,
+      name: draft.name ?? '',
+      description: draft.description,
+      durationMinutes: draft.durationMinutes ?? 30,
+      depositPercentage: draft.depositPercentage ?? '20',
+      isActive: true,
+      locations: draft.offers.map((offer) => ({
+        locationId: offer.locationId,
+        priceMinor: offer.priceMinor,
+      })),
+    } as unknown as Service);
+    setAdding(true);
+  };
+
   const save = useMutation({
     mutationFn: (input: { id?: string; body: Record<string, unknown> }) =>
       input.id
@@ -36,6 +108,11 @@ export function ServicesPage() {
         : createService(input.body as never),
     onSuccess: () => {
       setAdding(false);
+      // The draft became a service. Keeping it would leave the Unfinished list
+      // describing something that already exists.
+      if (draftId) discard.mutate(draftId);
+      setDraftId(null);
+      setResumed(undefined);
       refresh();
     },
   });
@@ -93,8 +170,28 @@ export function ServicesPage() {
     <section>
       <header className="page-head">
         <h1>Services</h1>
-        <button type="button" className="primary" onClick={() => setAdding((v) => !v)}>
-          {adding ? 'Cancel' : 'Add a service'}
+        <button
+          type="button"
+          className="primary"
+          onClick={async () => {
+            if (adding) {
+              // Closing keeps the draft. That is the whole point: the text is
+              // still there under Unfinished when they come back.
+              setAdding(false);
+              setDraftId(null);
+              setResumed(undefined);
+              return;
+            }
+            setResumed(undefined);
+            // Started BEFORE the form opens, so the first keystroke has
+            // somewhere to go rather than being the one that gets lost.
+            const draft = await startServiceDraft().catch(() => null);
+            setDraftId(draft?.id ?? null);
+            setAdding(true);
+            refreshDrafts();
+          }}
+        >
+          {adding ? 'Close' : 'Add a service'}
         </button>
       </header>
 
@@ -115,12 +212,54 @@ export function ServicesPage() {
         </p>
       )}
 
+      {/* Unfinished services, shared by the shop (§123). Above the form, because
+          the question "did I already start this?" comes before writing it again. */}
+      {!adding && (drafts.data?.length ?? 0) > 0 && (
+        <div className="card">
+          <h2>Unfinished</h2>
+          <ul className="card-list">
+            {drafts.data?.map((item) => (
+              <li key={item.id}>
+                <div className="card-row" style={{ cursor: 'default' }}>
+                  <div>
+                    <strong>{item.name || 'Untitled service'}</strong>
+                    <div className="muted small">
+                      Last saved {new Date(item.updatedAt).toLocaleString()} ·
+                      started by {item.createdBy.email}
+                    </div>
+                  </div>
+                  <div className="row-end">
+                    <button type="button" onClick={() => resume(item)}>
+                      Carry on
+                    </button>
+                    <button
+                      type="button"
+                      className="link"
+                      onClick={() => {
+                        if (window.confirm('Throw this draft away?')) {
+                          discard.mutate(item.id);
+                        }
+                      }}
+                    >
+                      Discard
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {adding && (
         <ServiceForm
+          key={draftId ?? 'new'}
           money={money}
           locations={locations.data ?? []}
           busy={save.isPending}
+          initial={resumed}
           onSubmit={(body) => save.mutate({ body })}
+          onChange={queueDraftSave}
         />
       )}
 
@@ -225,6 +364,7 @@ function ServiceForm({
   initial,
   onSubmit,
   onCancel,
+  onChange,
 }: {
   money: ReturnType<typeof useMoney>;
   locations: Location[];
@@ -232,6 +372,17 @@ function ServiceForm({
   initial?: Service;
   onSubmit: (body: Record<string, unknown>) => void;
   onCancel?: () => void;
+  /**
+   * Called whenever anything in the form changes, so a NEW service can be kept
+   * as a draft while it is being written (§123). Absent when editing an existing
+   * service, which is already saved and needs no draft.
+   */
+  onChange?: (values: {
+    name: string;
+    durationMinutes: number | null;
+    depositPercentage: number | null;
+    offers: Array<{ locationId: string; priceMinor: number }>;
+  }) => void;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
   const [duration, setDuration] = useState(String(initial?.durationMinutes ?? 30));
@@ -259,6 +410,21 @@ function ServiceForm({
   const offers = locations
     .filter((l) => prices[l.id]?.trim() !== '' && prices[l.id] !== undefined)
     .map((l) => ({ locationId: l.id, priceMinor: money.toMinor(prices[l.id]) }));
+
+  // Reported on every change; the PAGE decides how often to actually save.
+  // Debouncing here would put the timer in the component that unmounts when the
+  // form closes, which is exactly when the last keystroke still needs saving.
+  useEffect(() => {
+    onChange?.({
+      name,
+      durationMinutes: Number(duration) || null,
+      depositPercentage: deposit === '' ? null : Number(deposit),
+      offers,
+    });
+    // `offers` is derived from `prices` and rebuilt each render, so watching it
+    // directly would fire this on every render rather than on every change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, duration, deposit, prices]);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
