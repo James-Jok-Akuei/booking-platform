@@ -16,6 +16,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { InviteMemberDto } from './dto/invite-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  BUSINESS_INVITATION_SELECT,
+  BusinessInvitationDto,
+  BusinessMemberDto,
+  RemovedMemberDto,
+} from './dto/members-response.dto';
 
 /** How long an invitation stays acceptable. */
 export const INVITATION_TTL_DAYS = 7;
@@ -111,6 +118,9 @@ export class MembersService {
         invitedByUserId: inviterUserId,
         expiresAt: new Date(Date.now() + INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000),
       },
+      // The listing's select, so one DTO describes both and an owner is not
+      // handed two different shapes for one invitation (§128.18).
+      select: BUSINESS_INVITATION_SELECT,
     });
 
     // The invitee is emailed. Note the recipient may have no account yet —
@@ -148,22 +158,16 @@ export class MembersService {
   }
 
   async listInvitations(businessId: string) {
+    // Not declared: these rows carry Dates, which BusinessInvitationDto
+    // describes as strings. It is bound to the select instead (§128.11).
     return this.prisma.businessInvitation.findMany({
       where: { businessProfileId: businessId, status: InvitationStatus.PENDING },
       orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        status: true,
-        createdAt: true,
-        expiresAt: true,
-        invitedBy: { select: { id: true, email: true } },
-      },
+      select: BUSINESS_INVITATION_SELECT,
     });
   }
 
-  async revokeInvitation(businessId: string, invitationId: string) {
+  async revokeInvitation(businessId: string, invitationId: string): Promise<ActionMessageDto> {
     // Scoped by businessId so an invitation belonging to another business can
     // never be revoked through this route.
     const invitation = await this.prisma.businessInvitation.findFirst({
@@ -190,7 +194,7 @@ export class MembersService {
   // ---------- Members ----------
 
   /** Visible to any active member — everyone can see who they work with. */
-  async listMembers(businessId: string) {
+  async listMembers(businessId: string): Promise<BusinessMemberDto[]> {
     const members = await this.prisma.businessMembership.findMany({
       where: { businessProfileId: businessId },
       orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
@@ -209,7 +213,7 @@ export class MembersService {
       email: member.user.email,
       role: member.role,
       status: member.status,
-      createdAt: member.createdAt,
+      createdAt: member.createdAt.toISOString(),
     }));
   }
 
@@ -224,7 +228,7 @@ export class MembersService {
     businessId: string,
     membershipId: string,
     dto: UpdateMemberRoleDto,
-  ) {
+  ): Promise<BusinessMemberDto> {
     const membership = await this.requireMembership(businessId, membershipId);
 
     if (membership.role === BusinessMemberRole.OWNER) {
@@ -245,6 +249,9 @@ export class MembersService {
         id: true,
         role: true,
         status: true,
+        // Returned so this answers with the SAME shape the listing does. It
+        // did not, and the console typed both as one member (§128.18).
+        createdAt: true,
         user: { select: { id: true, email: true } },
       },
     });
@@ -255,6 +262,7 @@ export class MembersService {
       email: updated.user.email,
       role: updated.role,
       status: updated.status,
+      createdAt: updated.createdAt.toISOString(),
     };
   }
 
@@ -264,7 +272,7 @@ export class MembersService {
    * Never a hard delete — the row is the record that this person had access,
    * and (once appointments exist) the thing their past actions will reference.
    */
-  async removeMember(businessId: string, membershipId: string, actingUserId: string) {
+  async removeMember(businessId: string, membershipId: string, actingUserId: string): Promise<RemovedMemberDto> {
     const membership = await this.requireMembership(businessId, membershipId);
 
     if (membership.role === BusinessMemberRole.OWNER) {

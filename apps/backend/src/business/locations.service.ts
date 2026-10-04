@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AppointmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
 import { BusinessAccessService } from './business-access.service';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
@@ -36,7 +37,7 @@ export class LocationsService {
     return this.prisma.$transaction(async (tx) => {
       const location = await tx.location.create({
         data: { businessId, ...dto },
-        include: { hours: { orderBy: { dayOfWeek: 'asc' } } },
+        include: LOCATION_INCLUDE,
       });
       // A new branch inherits the business's existing catalogue immediately —
       // it opens with a headline price, not with a blank that fills in when
@@ -44,7 +45,7 @@ export class LocationsService {
       await recalculateFromPrice(tx, businessId);
       return tx.location.findUniqueOrThrow({
         where: { id: location.id },
-        include: { hours: { orderBy: { dayOfWeek: 'asc' } } },
+        include: LOCATION_INCLUDE,
       });
     });
   }
@@ -88,7 +89,7 @@ export class LocationsService {
     return this.prisma.location.update({
       where: { id: locationId },
       data: dto,
-      include: { hours: { orderBy: { dayOfWeek: 'asc' } } },
+      include: LOCATION_INCLUDE,
     });
   }
 
@@ -107,7 +108,7 @@ export class LocationsService {
    * happened there stays readable. `Appointment.locationId` is `Restrict` as
    * well, so the destructive path is impossible rather than merely unused.
    */
-  async close(userId: string, locationId: string) {
+  async close(userId: string, locationId: string): Promise<ActionMessageDto> {
     const businessId = await this.access.requireBusinessId(userId);
     const existing = await this.access.requireOwnedLocation(businessId, locationId);
 
@@ -140,7 +141,7 @@ export class LocationsService {
   }
 
   /** Puts a closed branch back into service. */
-  async reopen(userId: string, locationId: string) {
+  async reopen(userId: string, locationId: string): Promise<ActionMessageDto> {
     const businessId = await this.access.requireBusinessId(userId);
     const existing = await this.access.requireOwnedLocation(businessId, locationId);
 
@@ -218,7 +219,11 @@ export class LocationsService {
    * slot is allowed and does NOT cancel anything — those bookings stand, and
    * the slot simply offers nothing further until they clear.
    */
-  async setCapacity(userId: string, locationId: string, capacity: number) {
+  async setCapacity(
+    userId: string,
+    locationId: string,
+    capacity: number,
+  ) {
     const businessId = await this.access.requireBusinessId(userId);
     await this.access.requireOwnedLocation(businessId, locationId);
 

@@ -23,7 +23,7 @@ import { ClearDisplayNameDto } from './dto/clear-display-name.dto';
 import { ListUsersDto } from './dto/list-users.dto';
 import { InviteAdminDto } from './dto/invite-admin.dto';
 import { AdminInvitationsService } from './admin-invitations.service';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import {
   AdminInvitationDto,
@@ -63,7 +63,7 @@ export class AdminUsersController {
   // 'invitations' would otherwise be read as a user id and fail the UUID pipe.
 
   @Post('invite')
-  @ApiOkResponse({ type: AdminInvitationDto })
+  @ApiCreatedResponse({ type: AdminInvitationDto })
   invite(@CurrentUser() user: AuthenticatedUser, @Body() dto: InviteAdminDto) {
     return this.invitations.invite(user, dto);
   }

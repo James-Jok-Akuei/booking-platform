@@ -34,12 +34,23 @@ import { BusinessProfileService } from './business-profile.service';
 import { AccountService } from '../users/account.service';
 import { ServiceDraftsService } from './service-drafts.service';
 import { UpdateServiceDraftDto } from './dto/service-draft.dto';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import {
   BusinessLocationDto,
   BusinessProfileDto,
   BusinessServiceDto,
+  LocationHoursDto,
 } from './dto/business-response.dto';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  BusinessPauseStateDto,
+  DeactivatedServiceDto,
+  GalleryDto,
+  GalleryPhotoDto,
+  LocationCapacityDto,
+  ServiceDraftDto,
+  ServiceOfferedResultDto,
+} from './dto/business-write-response.dto';
 import { LocationsService } from './locations.service';
 import { ServicesService } from './services.service';
 import { GalleryService } from './gallery.service';
@@ -124,6 +135,7 @@ export class BusinessController {
    * not look the same in an admin listing.
    */
   @Post('pause')
+  @ApiOkResponse({ type: BusinessPauseStateDto })
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(BusinessMemberRole.OWNER)
   pause(@CurrentBusiness() business: BusinessContext) {
@@ -131,6 +143,7 @@ export class BusinessController {
   }
 
   @Post('resume')
+  @ApiOkResponse({ type: BusinessPauseStateDto })
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(BusinessMemberRole.OWNER)
   resume(@CurrentBusiness() business: BusinessContext) {
@@ -143,18 +156,21 @@ export class BusinessController {
   // the same people who may finish it may start it.
 
   @Get('service-drafts')
+  @ApiOkResponse({ type: ServiceDraftDto, isArray: true })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   listServiceDrafts(@CurrentUser() user: AuthenticatedUser) {
     return this.drafts.list(user.userId);
   }
 
   @Post('service-drafts')
+  @ApiCreatedResponse({ type: ServiceDraftDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   createServiceDraft(@CurrentUser() user: AuthenticatedUser) {
     return this.drafts.create(user.userId);
   }
 
   @Patch('service-drafts/:id')
+  @ApiOkResponse({ type: ServiceDraftDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   updateServiceDraft(
     @CurrentUser() user: AuthenticatedUser,
@@ -165,6 +181,7 @@ export class BusinessController {
   }
 
   @Delete('service-drafts/:id')
+  @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   discardServiceDraft(
     @CurrentUser() user: AuthenticatedUser,
@@ -176,6 +193,7 @@ export class BusinessController {
   // ---------- Locations ----------
 
   @Post('locations')
+  @ApiCreatedResponse({ type: BusinessLocationDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   createLocation(
     @CurrentUser() user: AuthenticatedUser,
@@ -196,6 +214,7 @@ export class BusinessController {
   }
 
   @Patch('locations/:id')
+  @ApiOkResponse({ type: BusinessLocationDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   updateLocation(
     @CurrentUser() user: AuthenticatedUser,
@@ -211,6 +230,7 @@ export class BusinessController {
    * and `reopen` puts it back.
    */
   @Delete('locations/:id')
+  @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   closeLocation(
     @CurrentUser() user: AuthenticatedUser,
@@ -220,6 +240,7 @@ export class BusinessController {
   }
 
   @Patch('locations/:id/reopen')
+  @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   reopenLocation(
     @CurrentUser() user: AuthenticatedUser,
@@ -230,6 +251,7 @@ export class BusinessController {
 
   /** Sets concurrent-appointment capacity. See LocationsService.setCapacity. */
   @Patch('locations/:id/capacity')
+  @ApiOkResponse({ type: LocationCapacityDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   updateLocationCapacity(
     @CurrentUser() user: AuthenticatedUser,
@@ -241,6 +263,7 @@ export class BusinessController {
 
   /** Replaces the location's whole week of operating hours in one call. */
   @Post('locations/:id/hours')
+  @ApiOkResponse({ type: LocationHoursDto, isArray: true })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   @HttpCode(HttpStatus.OK)
   setLocationHours(
@@ -260,6 +283,7 @@ export class BusinessController {
    * deliberately not the wider ticket list from §81.
    */
   @Post('profile/image/:kind')
+  @ApiCreatedResponse({ type: BusinessProfileDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
   @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'image' }))
@@ -279,6 +303,7 @@ export class BusinessController {
   // the full path so `locations/:id/gallery` and `locations/:id` never collide.
 
   @Post('locations/:id/gallery')
+  @ApiCreatedResponse({ type: GalleryPhotoDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
   // renders the 15MB trip as a clear 400. An instance, not the class: a
@@ -294,6 +319,7 @@ export class BusinessController {
   }
 
   @Get('locations/:id/gallery')
+  @ApiOkResponse({ type: GalleryDto })
   @BusinessRoles(
     BusinessMemberRole.OWNER,
     BusinessMemberRole.MANAGER,
@@ -307,6 +333,7 @@ export class BusinessController {
   }
 
   @Delete('locations/:id/gallery/:mediaId')
+  @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   deletePhoto(
     @CurrentUser() user: AuthenticatedUser,
@@ -319,7 +346,7 @@ export class BusinessController {
   // ---------- Services ----------
 
   @Post('services')
-  @ApiOkResponse({ type: BusinessServiceDto })
+  @ApiCreatedResponse({ type: BusinessServiceDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   createService(
     @CurrentUser() user: AuthenticatedUser,
@@ -358,6 +385,7 @@ export class BusinessController {
    * "we have stopped doing this at all".
    */
   @Patch('services/:id/locations/:locationId')
+  @ApiOkResponse({ type: ServiceOfferedResultDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   setServiceOfferedAtLocation(
     @CurrentUser() user: AuthenticatedUser,
@@ -375,6 +403,7 @@ export class BusinessController {
    * more specific path wins.
    */
   @Patch('services/:id/offered')
+  @ApiOkResponse({ type: ServiceOfferedResultDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   setServiceOfferedEverywhere(
     @CurrentUser() user: AuthenticatedUser,
@@ -389,6 +418,7 @@ export class BusinessController {
    * appointments still resolve.
    */
   @Delete('services/:id')
+  @ApiOkResponse({ type: DeactivatedServiceDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   deleteService(
     @CurrentUser() user: AuthenticatedUser,

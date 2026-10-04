@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { MediaType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
 import { StorageService } from '../storage/storage.service';
 import { BusinessAccessService } from './business-access.service';
 
@@ -68,6 +69,8 @@ export class GalleryService {
   }
 
   async list(userId: string, locationId: string) {
+    // Not declared: the photo rows carry Dates, which GalleryPhotoDto describes
+    // as strings. The DTO is bound to the LocationMedia model instead (§128.11).
     const businessId = await this.access.requireBusinessId(userId);
     await this.access.requireOwnedLocation(businessId, locationId);
 
@@ -86,7 +89,7 @@ export class GalleryService {
     };
   }
 
-  async remove(userId: string, locationId: string, mediaId: string) {
+  async remove(userId: string, locationId: string, mediaId: string): Promise<ActionMessageDto> {
     const businessId = await this.access.requireBusinessId(userId);
     await this.access.requireOwnedLocation(businessId, locationId);
 

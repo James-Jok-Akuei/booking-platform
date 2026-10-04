@@ -26,6 +26,13 @@ import { BusinessRolesGuard } from './guards/business-roles.guard';
 import { MembersService } from './members.service';
 import { InviteMemberDto } from './dto/invite-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
+import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  BusinessInvitationDto,
+  BusinessMemberDto,
+  RemovedMemberDto,
+} from './dto/members-response.dto';
 
 /**
  * Managing who works in a business.
@@ -42,6 +49,7 @@ export class MembersController {
   constructor(private readonly members: MembersService) {}
 
   @Post('members/invite')
+  @ApiCreatedResponse({ type: BusinessInvitationDto })
   @BusinessRoles(BusinessMemberRole.OWNER)
   invite(
     @CurrentBusiness() business: BusinessContext,
@@ -52,6 +60,7 @@ export class MembersController {
   }
 
   @Get('members')
+  @ApiOkResponse({ type: BusinessMemberDto, isArray: true })
   @BusinessRoles(
     BusinessMemberRole.OWNER,
     BusinessMemberRole.MANAGER,
@@ -62,6 +71,7 @@ export class MembersController {
   }
 
   @Patch('members/:membershipId/role')
+  @ApiOkResponse({ type: BusinessMemberDto })
   @BusinessRoles(BusinessMemberRole.OWNER)
   updateMemberRole(
     @CurrentBusiness() business: BusinessContext,
@@ -73,6 +83,7 @@ export class MembersController {
 
   /** Soft delete — sets status REMOVED, never drops the row. */
   @Delete('members/:membershipId')
+  @ApiOkResponse({ type: RemovedMemberDto })
   @BusinessRoles(BusinessMemberRole.OWNER)
   removeMember(
     @CurrentBusiness() business: BusinessContext,
@@ -83,12 +94,14 @@ export class MembersController {
   }
 
   @Get('invitations')
+  @ApiOkResponse({ type: BusinessInvitationDto, isArray: true })
   @BusinessRoles(BusinessMemberRole.OWNER)
   listInvitations(@CurrentBusiness() business: BusinessContext) {
     return this.members.listInvitations(business.businessId);
   }
 
   @Delete('invitations/:invitationId')
+  @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER)
   revokeInvitation(
     @CurrentBusiness() business: BusinessContext,

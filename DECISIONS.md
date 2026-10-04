@@ -11605,20 +11605,77 @@ Now two derived types, `HeldCurrencyTotal` and `FilteredCurrencyTotal`, each
 honest about its own fields. Nothing in the console read the optional ones, so
 again a bug prevented rather than fixed.
 
-### 128.23 Where this stands
+### 128.24 One include, not three — again
 
-**65 of 156 operations**, up from 52. Thirty-eight client types derived rather
-than declared.
+`GET /business/locations` used the shared `LOCATION_INCLUDE`. `POST` and `PATCH`
+each carried their own inline `{ hours: ... }`, so creating or editing a branch
+answered WITHOUT the district and without the media count that the listing
+returns and that `BusinessLocationDto` declares.
 
-Done: appointments, discovery, business locations, services and profile,
-favourites, legal, payouts and balances, admin businesses, users and accounts,
-platform settings, the ledger and billing adjustments.
+The §128.5 finding, three more times in one file. All three now use the one
+constant, which is also why the ratchet's allowlist lost two more entries.
 
-Remaining: `/business` (25 — now the biggest single block), threads, tickets and
-admin tickets, admin categories, places and legal, notifications, auth. 70
-undescribed, plus the 21 hollow ones held by the §128.14 ratchet.
+Not reachable: `NewBranchForm` and the hours page both discard the response and
+refetch. A bug prevented, not fixed — but the next screen to read that response
+would have found a missing address.
 
-Ten real findings so far, none of which a reader would have caught. The pattern
-in nearly all of them is the same: a hand-written client type that was slightly
-more generous than the server, in a direction nobody had tested, waiting for the
-first screen to be built on it.
+### 128.25 Capacity answers with four fields, not a location
+
+`PATCH /business/locations/{id}/capacity` returns `{id, name, capacity,
+updatedAt}`. The business app typed it as a full `Location`, promising hours, a
+district and a media count the route has never sent. Its own DTO now.
+
+### 128.26 A POST documented as 200 that answers 201
+
+The mistake of this slice, and it was mine.
+
+Nest answers a POST with **201** unless `@HttpCode` says otherwise.
+`@ApiOkResponse` writes a **200** into the contract, and the 201 vanishes from
+it. A generated client then holds a type for a status the server never sends and
+none for the status it does — so the response reads as `undefined` at the call
+site, for a reason nothing in the client explains.
+
+**Eight routes had it**, and one of them — `POST /appointments` — since the very
+first §128 commit. It is invisible in the finished document, where a 200 entry
+looks exactly like a deliberate one, so a fourth generator guard reads the
+source instead, as the duplicate-name guard does. Proved to fire.
+
+The lesson is the §128.16 lesson again: the contract was wrong in a way that
+only showed up when something was generated from it and USED. Describing a
+response is not the same as describing it correctly, and only a check that runs
+tells the two apart.
+
+### 128.27 Two response decorators on one route
+
+Found by the guard above, not by me. Annotating routes in bulk re-annotated six
+that an earlier slice had already done. The generator keeps one and discards the
+other, silently, exactly as it does for duplicate schema names (§128.7).
+
+Five pairs were identical and harmless. One was not: `isArray: true` against
+`type: [Dto]` for the same DTO, where which one survived decided whether the
+contract said "a location" or "a list of locations". A fifth guard now refuses
+adjacent response decorators, also proved to fire.
+
+### 128.28 Where this stands
+
+**90 of 156 operations**, up from 65 — the largest single jump, because
+`/business` was the largest block. Forty-six client types derived rather than
+declared, across all three apps.
+
+Done: appointments, discovery, business locations, services, profile, drafts,
+gallery, members and invitations, favourites, legal, payouts and balances, admin
+businesses, users and accounts, platform settings, ledger and adjustments.
+
+Remaining: threads, tickets and admin tickets, admin categories, places and
+legal, notifications, auth, and a few singletons. 47 undescribed, plus 19 hollow
+ones held by the §128.14 ratchet.
+
+**Five generator guards now**, each one written after the thing it catches had
+already happened: empty named schemas (§60), duplicate DTO names (§128.7),
+hollow inline responses (§128.14), POSTs documented as 200 (§128.26), and
+doubled response decorators (§128.27). Every one of them was proved to fail
+before being trusted.
+
+Thirteen real findings. The shape of nearly all of them is the same: something
+that generated cleanly, read plausibly, and was wrong in a direction nobody had
+run yet.

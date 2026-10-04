@@ -2747,6 +2747,37 @@ export interface components {
             logoUrl?: string;
             coverImageUrl?: string;
         };
+        BusinessPauseStateDto: {
+            id: string;
+            name: string | null;
+            /** @description Null when open. Set when paused — bookings already made still happen. */
+            pausedAt: string | null;
+        };
+        ServiceDraftOfferDto: {
+            locationId: string;
+            priceMinor: number;
+        };
+        ServiceDraftAuthorDto: {
+            id: string;
+            email: string;
+        };
+        ServiceDraftDto: {
+            /**
+             * @description Stored as JSON rather than rows, because a half-filled price list has no
+             *     referential integrity to keep: a draft may name a branch that is closed by
+             *     the time anybody finishes it.
+             */
+            offers: components["schemas"]["ServiceDraftOfferDto"][];
+            id: string;
+            name: string | null;
+            description: string | null;
+            durationMinutes: number | null;
+            /** @description A decimal string, like every other percentage here (§128.20). */
+            depositPercentage: string | null;
+            createdBy: components["schemas"]["ServiceDraftAuthorDto"];
+            createdAt: string;
+            updatedAt: string;
+        };
         DraftOfferDto: {
             /** Format: uuid */
             locationId: string;
@@ -2878,6 +2909,12 @@ export interface components {
              */
             capacity: number;
         };
+        LocationCapacityDto: {
+            id: string;
+            name: string;
+            capacity: number;
+            updatedAt: string;
+        };
         LocationHoursEntryDto: {
             dayOfWeek: number;
             openTime: string;
@@ -2889,6 +2926,23 @@ export interface components {
         };
         UploadMediaDto: {
             displayOrder?: number;
+        };
+        GalleryPhotoDto: {
+            id: string;
+            locationId: string;
+            /** @enum {string} */
+            type: "PHOTO";
+            url: string;
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+            displayOrder: number;
+            createdAt: string;
+        };
+        GalleryDto: {
+            photos: components["schemas"]["GalleryPhotoDto"][];
+            count: number;
+            limit: number;
+            remaining: number;
         };
         ServiceOfferDto: {
             /** Format: uuid */
@@ -2971,6 +3025,30 @@ export interface components {
         };
         SetServiceOfferedDto: {
             isOffered: boolean;
+        };
+        ServiceOfferedResultDto: {
+            message: string;
+            isOffered: boolean;
+            offeredAtCount: number;
+            service: components["schemas"]["BusinessServiceDto"];
+        };
+        ServiceDto: {
+            id: string;
+            businessId: string;
+            name: string;
+            description: string | null;
+            durationMinutes: number;
+            currency: string;
+            /** @description A decimal string (§128.20). */
+            depositPercentage: string;
+            /** @description False once retired. The row is kept so past appointments still resolve. */
+            isActive: boolean;
+            createdAt: string;
+            updatedAt: string;
+        };
+        DeactivatedServiceDto: {
+            message: string;
+            service: components["schemas"]["ServiceDto"];
         };
         AdminBusinessCategoryDto: {
             id: string;
@@ -3072,9 +3150,50 @@ export interface components {
             /** @enum {string} */
             role: "MANAGER" | "STAFF";
         };
+        InvitedByDto: {
+            id: string;
+            email: string;
+        };
+        BusinessInvitationDto: {
+            id: string;
+            email: string;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            /** @enum {string} */
+            status: "PENDING" | "ACCEPTED" | "REVOKED";
+            createdAt: string;
+            expiresAt: string;
+            invitedBy: components["schemas"]["InvitedByDto"];
+        };
+        BusinessMemberDto: {
+            /** @description The MEMBERSHIP id, which is what the role and remove routes take. */
+            id: string;
+            /** @description The person. A different id, and not interchangeable with the one above. */
+            userId: string;
+            email: string;
+            /** @enum {string} */
+            role: "OWNER" | "MANAGER" | "STAFF";
+            /** @enum {string} */
+            status: "ACTIVE" | "REMOVED";
+            /** @description When they joined. */
+            createdAt: string;
+        };
         UpdateMemberRoleDto: {
             /** @enum {string} */
             role: "MANAGER" | "STAFF";
+        };
+        RemovedMembershipDto: {
+            id: string;
+            /**
+             * @description REMOVED. The row is never dropped — it is the record that they were here.
+             * @enum {string}
+             */
+            status: "ACTIVE" | "REMOVED";
+        };
+        RemovedMemberDto: {
+            /** @description Names the person, so the screen can say who was removed. */
+            message: string;
+            membership: components["schemas"]["RemovedMembershipDto"];
         };
         CreateScheduleExceptionDto: {
             date: string;
@@ -4418,7 +4537,7 @@ export interface operations {
             };
         };
         responses: {
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4844,7 +4963,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessPauseStateDto"];
+                };
             };
         };
     };
@@ -4861,7 +4982,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessPauseStateDto"];
+                };
             };
         };
     };
@@ -4878,7 +5001,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServiceDraftDto"][];
+                };
             };
         };
     };
@@ -4895,7 +5020,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServiceDraftDto"];
+                };
             };
         };
     };
@@ -4914,7 +5041,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -4937,7 +5066,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServiceDraftDto"];
+                };
             };
         };
     };
@@ -4978,7 +5109,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["BusinessLocationDto"];
                 };
             };
         };
@@ -4998,7 +5129,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -5022,7 +5155,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["BusinessLocationDto"];
                 };
             };
         };
@@ -5042,7 +5175,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -5065,7 +5200,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LocationCapacityDto"];
+                };
             };
         };
     };
@@ -5088,7 +5225,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LocationHoursDto"][];
+                };
             };
         };
     };
@@ -5107,7 +5246,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessProfileDto"];
+                };
             };
         };
     };
@@ -5126,7 +5267,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GalleryDto"];
+                };
             };
         };
     };
@@ -5149,7 +5292,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GalleryPhotoDto"];
+                };
             };
         };
     };
@@ -5169,7 +5314,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -5205,7 +5352,7 @@ export interface operations {
             };
         };
         responses: {
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5230,7 +5377,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeactivatedServiceDto"];
+                };
             };
         };
     };
@@ -5279,7 +5428,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServiceOfferedResultDto"];
+                };
             };
         };
     };
@@ -5302,7 +5453,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServiceOfferedResultDto"];
+                };
             };
         };
     };
@@ -5460,7 +5613,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessInvitationDto"];
+                };
             };
         };
     };
@@ -5477,7 +5632,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessMemberDto"][];
+                };
             };
         };
     };
@@ -5500,7 +5657,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessMemberDto"];
+                };
             };
         };
     };
@@ -5519,7 +5678,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RemovedMemberDto"];
+                };
             };
         };
     };
@@ -5536,7 +5697,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessInvitationDto"][];
+                };
             };
         };
     };
@@ -5555,7 +5718,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -5950,7 +6115,7 @@ export interface operations {
             };
         };
         responses: {
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

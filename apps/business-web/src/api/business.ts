@@ -137,6 +137,10 @@ export interface Hours {
  * the class fails this one.
  */
 export type Location = components['schemas']['BusinessLocationDto'];
+/** Changing capacity answers with its own narrow shape, not a whole location (§128.25). */
+export type LocationCapacity = components['schemas']['LocationCapacityDto'];
+export type ActionMessage = components['schemas']['ActionMessageDto'];
+export type BusinessPauseState = components['schemas']['BusinessPauseStateDto'];
 
 
 export interface Category {
@@ -223,7 +227,7 @@ export const setHours = (
   });
 
 export const setCapacity = (locationId: string, capacity: number) =>
-  api<Location>(`/business/locations/${locationId}/capacity`, {
+  api<LocationCapacity>(`/business/locations/${locationId}/capacity`, {
     method: 'PATCH',
     body: { capacity },
   });
@@ -459,18 +463,13 @@ export const reopenMyTicket = (id: string) =>
 // Shop-window images and per-location gallery (§88)
 // ---------------------------------------------------------------------------
 
-export interface GalleryPhoto {
-  id: string;
-  url: string;
-  displayOrder: number;
-}
-
-export interface Gallery {
-  photos: GalleryPhoto[];
-  count: number;
-  limit: number;
-  remaining: number;
-}
+/**
+ * Derived from the contract (§128). The hand-written version carried only id,
+ * url and displayOrder — so the owner's own management view could not show
+ * whether a photo was still PENDING moderation.
+ */
+export type GalleryPhoto = components['schemas']['GalleryPhotoDto'];
+export type Gallery = components['schemas']['GalleryDto'];
 
 /**
  * The logo and cover are uploaded, not linked.
@@ -561,24 +560,9 @@ export type StaffRole = 'MANAGER' | 'STAFF';
 
 export type MemberStatus = 'ACTIVE' | 'REMOVED';
 
-export interface Member {
-  id: string;
-  userId: string;
-  email: string;
-  role: 'OWNER' | StaffRole;
-  status: MemberStatus;
-  createdAt: string;
-}
-
-export interface Invitation {
-  id: string;
-  email: string;
-  role: StaffRole;
-  status: 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
-  createdAt: string;
-  expiresAt: string;
-  invitedBy: { id: string; email: string } | null;
-}
+export type Member = components['schemas']['BusinessMemberDto'];
+export type Invitation = components['schemas']['BusinessInvitationDto'];
+export type RemovedMember = components['schemas']['RemovedMemberDto'];
 
 /** Any active member may look; everything else here is OWNER-only. */
 export const listMembers = () => api<Member[]>('/business/members');
@@ -592,7 +576,7 @@ export const inviteMember = (email: string, role: StaffRole) =>
   });
 
 export const revokeInvitation = (id: string) =>
-  api<{ message: string }>(`/business/invitations/${id}`, { method: 'DELETE' });
+  api<ActionMessage>(`/business/invitations/${id}`, { method: 'DELETE' });
 
 export const setMemberRole = (membershipId: string, role: StaffRole) =>
   api<Member>(`/business/members/${membershipId}/role`, {
@@ -912,17 +896,7 @@ export const acceptLegal = (documentId: string) =>
 // Service drafts (§123)
 // ---------------------------------------------------------------------------
 
-export interface ServiceDraft {
-  id: string;
-  name: string | null;
-  description: string | null;
-  durationMinutes: number | null;
-  depositPercentage: string | null;
-  offers: Array<{ locationId: string; priceMinor: number }>;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: { id: string; email: string };
-}
+export type ServiceDraft = components['schemas']['ServiceDraftDto'];
 
 /** The shop's unfinished services, newest first. Shared, not per person (§123). */
 export const listServiceDrafts = () => api<ServiceDraft[]>('/business/service-drafts');

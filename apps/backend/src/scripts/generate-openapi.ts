@@ -126,13 +126,11 @@ async function main() {
   'PATCH /admin/payout-destinations/{id}/verify',
   'PATCH /admin/reviews/{id}/hide',
   'PATCH /admin/reviews/{id}/unhide',
-  'PATCH /business/locations/{id}',
   'PATCH /reviews/{id}',
   'PATCH /reviews/{id}/response',
   'POST /appointments/{id}/reviews',
   'POST /auth/otp/verify',
   'POST /auth/refresh',
-  'POST /business/locations',
   'POST /business/locations/{id}/schedule-exceptions',
   'POST /business/locations/{id}/time-blocks',
   'POST /business/payout-destination',
@@ -191,6 +189,53 @@ async function main() {
     );
   }
 
+
+  /**
+   * A POST documented as 200 that actually answers 201 (§128.26).
+   *
+   * Nest answers a POST with 201 unless `@HttpCode` says otherwise, but
+   * `@ApiOkResponse` writes a 200 into the contract and the 201 disappears
+   * from it. The generated client then has a type for a status the server never
+   * sends, and none for the status it does — so the response reads as `undefined`
+   * at the call site, for a reason nothing in the client explains.
+   *
+   * Eight routes had it before this guard existed, one of them since the first
+   * §128 commit. It cannot be seen in the finished document — a 200 entry looks
+   * exactly like a deliberate one — so this reads the source, as the duplicate
+   * guard above does.
+   */
+  const wrongCreated = findPostsDocumentedAsOk(resolve(process.cwd(), 'src'));
+  if (wrongCreated.length > 0) {
+    throw new Error(
+      `${wrongCreated.length} POST route(s) use @ApiOkResponse but answer 201:\n` +
+        wrongCreated.map((r) => `  ${r.file}  ${r.route}`).join('\n') +
+        '\n\nUse @ApiCreatedResponse, or add @HttpCode(HttpStatus.OK) if the ' +
+        'route really does answer 200. As written, the contract documents a ' +
+        'status the server never sends.',
+    );
+  }
+
+
+  /**
+   * Two response decorators on one route (§128.27).
+   *
+   * Annotating a route that was already annotated is easy to do and invisible
+   * afterwards: the generator keeps one and discards the other, exactly as it
+   * does for duplicate schema names (§128.7). Six routes picked up a second
+   * decorator while this module was being described, and one pair disagreed
+   * — `isArray: true` against `type: [Dto]` — so which one survived decided
+   * whether the contract said "a location" or "a list of locations".
+   */
+  const doubled = findDoubledResponseDecorators(resolve(process.cwd(), 'src'));
+  if (doubled.length > 0) {
+    throw new Error(
+      `${doubled.length} route(s) carry two response decorators:\n` +
+        doubled.map((d) => `  ${d.file}:${d.line}\n    ${d.first}\n    ${d.second}`).join('\n') +
+        '\n\nOnly one survives into the contract, and nothing says which. ' +
+        'Delete the one you do not want.',
+    );
+  }
+
   mkdirSync(dirname(OUTPUT), { recursive: true });
   writeFileSync(OUTPUT, `${JSON.stringify(document, null, 2)}\n`);
 
@@ -235,4 +280,104 @@ function findDuplicateDtoNames(root: string): Array<{ name: string; files: strin
   return [...byName.entries()]
     .filter(([, files]) => files.length > 1)
     .map(([name, files]) => ({ name, files }));
+}
+
+/**
+ * Every `@Post` whose decorator run has `@ApiOkResponse` but no `@HttpCode`
+ * setting 200 — i.e. documented as 200 while Nest answers 201 (§128.26).
+ */
+function findPostsDocumentedAsOk(
+  root: string,
+): Array<{ file: string; route: string }> {
+  const found: Array<{ file: string; route: string }> = [];
+
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const full = resolve(dir, entry);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!full.endsWith('.controller.ts')) continue;
+      const lines = readFileSync(full, 'utf8').split('\n');
+
+      for (let i = 0; i < lines.length; i += 1) {
+        const post = /^\s*@Post\(([^)]*)\)/.exec(lines[i]);
+        if (!post) continue;
+
+        // The decorator run: upwards over decorators and comments, downwards
+        // to the method signature. @HttpCode may sit on either side of @Post.
+        let start = i;
+        while (start > 0) {
+          const line = lines[start - 1].trim();
+          if (
+            line.startsWith('@') ||
+            line.startsWith('*') ||
+            line.startsWith('/*') ||
+            line.startsWith('//') ||
+            line === ''
+          ) {
+            start -= 1;
+          } else break;
+        }
+        let end = i;
+        while (end < lines.length - 1) {
+          const line = lines[end].trim();
+          if (end > i && !line.startsWith('@') && /\w+\s*\(/.test(line)) break;
+          end += 1;
+        }
+
+        const block = lines.slice(start, end + 1).join('\n');
+        if (
+          block.includes('@ApiOkResponse') &&
+          !block.includes('HttpStatus.OK') &&
+          !block.includes('HttpCode(200)')
+        ) {
+          found.push({
+            file: full.replace(`${root}/`, 'src/'),
+            route: `@Post(${post[1]})`,
+          });
+        }
+      }
+    }
+  };
+  walk(root);
+
+  return found;
+}
+
+/** Adjacent @ApiOkResponse / @ApiCreatedResponse decorators on one route (§128.27). */
+function findDoubledResponseDecorators(
+  root: string,
+): Array<{ file: string; line: number; first: string; second: string }> {
+  const found: Array<{ file: string; line: number; first: string; second: string }> = [];
+  const isResponse = (line: string) =>
+    line.startsWith('@ApiOkResponse') || line.startsWith('@ApiCreatedResponse');
+
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const full = resolve(dir, entry);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!full.endsWith('.controller.ts')) continue;
+      const lines = readFileSync(full, 'utf8').split('\n');
+      for (let i = 0; i < lines.length - 1; i += 1) {
+        const first = lines[i].trim();
+        const second = lines[i + 1].trim();
+        if (isResponse(first) && isResponse(second)) {
+          found.push({
+            file: full.replace(`${root}/`, 'src/'),
+            line: i + 1,
+            first,
+            second,
+          });
+        }
+      }
+    }
+  };
+  walk(root);
+
+  return found;
 }

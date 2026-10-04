@@ -10,7 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { BusinessMemberRole, UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -52,7 +52,7 @@ export class AppointmentsCustomerController {
   constructor(private readonly appointments: AppointmentsService) {}
 
   @Post()
-  @ApiOkResponse({ type: AppointmentDto })
+  @ApiCreatedResponse({ type: AppointmentDto })
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateAppointmentDto,

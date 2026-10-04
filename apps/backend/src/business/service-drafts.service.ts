@@ -2,18 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BusinessAccessService } from './business-access.service';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { SERVICE_DRAFT_SELECT } from './dto/business-write-response.dto';
 
-const SELECT = {
-  id: true,
-  name: true,
-  description: true,
-  durationMinutes: true,
-  depositPercentage: true,
-  offers: true,
-  createdAt: true,
-  updatedAt: true,
-  createdBy: { select: { id: true, email: true } },
-} as const;
+// One select, shared with the DTO that describes its result (§128.5).
+const SELECT = SERVICE_DRAFT_SELECT;
 
 /**
  * Services somebody started and has not finished (§123).
@@ -96,7 +89,7 @@ export class ServiceDraftsService {
    * it, and keeping an abandoned half-sentence forever would turn the drafts
    * list into the thing it exists to prevent.
    */
-  async discard(userId: string, id: string) {
+  async discard(userId: string, id: string): Promise<ActionMessageDto> {
     const businessId = await this.access.requireBusinessId(userId);
     const { count } = await this.prisma.serviceDraft.deleteMany({
       where: { id, businessId },
