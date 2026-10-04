@@ -39,6 +39,8 @@ export class DiscoveredBusinessDto {
   id!: string;
   name!: string | null;
   logoUrl!: string | null;
+  /** What a card leads with (§133). Null until the business uploads one. */
+  coverImageUrl!: string | null;
   category!: { id: string; name: string; icon: string | null } | null;
   subcategory!: { id: string; name: string } | null;
 }

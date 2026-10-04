@@ -76,6 +76,7 @@ export class FavouritesService {
                 status: true,
                 pausedAt: true,
                 logoUrl: true,
+                coverImageUrl: true,
               },
             },
           },
@@ -108,6 +109,7 @@ export class FavouritesService {
           id: location.business.id,
           name: location.business.name,
           logoUrl: location.business.logoUrl,
+          coverImageUrl: location.business.coverImageUrl,
         },
         /**
          * Whether this can be booked right now. One field rather than three,

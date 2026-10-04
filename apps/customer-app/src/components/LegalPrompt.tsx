@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { acceptLegal, myLegalStatus } from '../api/auth';
-import { tokens } from '../api/client';
-import { theme } from '../theme';
+import { useSignedIn } from '../api/client';
+import { font, radius, shadow, theme, type } from '../theme';
+import { Button } from '../ui/Button';
+import { Icon } from '../ui/Icon';
+import { PressableScale } from '../ui/PressableScale';
 
 /**
  * Shown when something somebody already agreed to has been replaced (§126.3).
@@ -26,11 +29,12 @@ export function LegalPrompt() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [dismissed, setDismissed] = useState(false);
+  const signedIn = useSignedIn();
 
   const documents = useQuery({
     queryKey: ['legal-status'],
     queryFn: myLegalStatus,
-    enabled: Boolean(tokens.access),
+    enabled: signedIn,
     // The answer changes only when an admin publishes, which is rare. Asking on
     // every screen would be a request per navigation for a notice that is almost
     // always "nothing to say".
@@ -56,50 +60,50 @@ export function LegalPrompt() {
   if (!document || dismissed) return null;
 
   return (
-    <Modal transparent animationType="fade" visible>
+    <Modal transparent animationType="fade" visible statusBarTranslucent>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
-          <Text style={styles.title}>{document.title} has changed</Text>
-          <Text style={styles.meta}>
+          <View style={styles.disc}>
+            <Icon name="document-text-outline" size={24} color={theme.accent} />
+          </View>
+          <Text style={type.heading}>{document.title} has changed</Text>
+          <Text style={type.small}>
             You agreed to version {document.acceptedVersion}. This is version{' '}
             {document.version}.
           </Text>
 
           {document.changeNote && (
             <View style={styles.noteBox}>
-              <Text style={styles.noteLabel}>What changed</Text>
-              <Text style={styles.note}>{document.changeNote}</Text>
+              <Text style={type.label}>What changed</Text>
+              <Text style={type.body}>{document.changeNote}</Text>
             </View>
           )}
 
-          <ScrollView style={styles.bodyScroll}>
+          <ScrollView style={styles.bodyScroll} showsVerticalScrollIndicator={false}>
             <Text style={styles.body}>{document.body}</Text>
           </ScrollView>
 
-          <Pressable
-            style={styles.cta}
-            disabled={accept.isPending}
+          <Button
+            busy={accept.isPending}
+            label={accept.isPending ? 'Saving…' : 'I agree'}
             onPress={() => accept.mutate(document.id)}
-          >
-            <Text style={styles.ctaText}>
-              {accept.isPending ? 'Saving…' : 'I agree'}
-            </Text>
-          </Pressable>
+          />
 
           <View style={styles.footRow}>
-            <Pressable
+            <PressableScale
+              hitSlop={8}
               onPress={() => {
                 setDismissed(true);
                 router.push('/legal');
               }}
             >
               <Text style={styles.link}>Read all the documents</Text>
-            </Pressable>
+            </PressableScale>
             {/* Leaving it for later is allowed, and it comes back next time the
                 app opens. Nothing here is blocked by not agreeing. */}
-            <Pressable onPress={() => setDismissed(true)}>
+            <PressableScale hitSlop={8} onPress={() => setDismissed(true)}>
               <Text style={styles.later}>Not now</Text>
-            </Pressable>
+            </PressableScale>
           </View>
         </View>
       </View>
@@ -110,39 +114,40 @@ export function LegalPrompt() {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(16,25,29,0.5)',
+    backgroundColor: 'rgba(18,20,26,0.55)',
     justifyContent: 'center',
     padding: 20,
   },
   sheet: {
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
     backgroundColor: theme.panel,
-    borderRadius: 14,
-    padding: 20,
-    gap: 8,
+    borderRadius: radius.xl,
+    padding: 22,
+    gap: 10,
     maxHeight: '85%',
+    ...shadow.float,
   },
-  title: { fontSize: 19, fontWeight: '700', color: theme.ink },
-  meta: { color: theme.muted, fontSize: 13 },
-  noteBox: {
-    backgroundColor: theme.bg,
-    borderRadius: theme.radius,
-    padding: 12,
-    gap: 2,
-    marginTop: 4,
-  },
-  noteLabel: { color: theme.muted, fontSize: 12, fontWeight: '700' },
-  note: { color: theme.ink, fontSize: 14, lineHeight: 20 },
-  bodyScroll: { marginTop: 6, maxHeight: 260 },
-  body: { color: theme.ink, fontSize: 14, lineHeight: 21 },
-  cta: {
-    backgroundColor: theme.accent,
-    borderRadius: theme.radius,
-    paddingVertical: 14,
+  disc: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: theme.accentSoft,
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
+    marginBottom: 4,
   },
-  ctaText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  footRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 },
-  link: { color: theme.accent, fontWeight: '600', fontSize: 13 },
-  later: { color: theme.muted, fontSize: 13 },
+  noteBox: {
+    backgroundColor: theme.sunken,
+    borderRadius: radius.md,
+    padding: 13,
+    gap: 4,
+    marginTop: 2,
+  },
+  bodyScroll: { maxHeight: 240 },
+  body: { fontFamily: font.regular, color: theme.ink2, fontSize: 14, lineHeight: 21.5 },
+  footRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  link: { fontFamily: font.bold, color: theme.accent, fontSize: 13.5 },
+  later: { fontFamily: font.semibold, color: theme.muted, fontSize: 13.5 },
 });

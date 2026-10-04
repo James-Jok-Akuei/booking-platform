@@ -19239,6 +19239,11 @@
             "type": "string",
             "nullable": true
           },
+          "coverImageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "What a card leads with (§133). Null until the business uploads one."
+          },
           "category": {
             "type": "object",
             "properties": {
@@ -19279,6 +19284,7 @@
           "id",
           "name",
           "logoUrl",
+          "coverImageUrl",
           "category",
           "subcategory"
         ]
@@ -19829,12 +19835,18 @@
           "logoUrl": {
             "type": "string",
             "nullable": true
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "The same picture the search card leads with (§133)."
           }
         },
         "required": [
           "id",
           "name",
-          "logoUrl"
+          "logoUrl",
+          "coverImageUrl"
         ]
       },
       "SavedPlaceDto": {

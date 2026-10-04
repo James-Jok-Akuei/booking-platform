@@ -1,41 +1,84 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
-import { theme } from '../theme';
+import { useEffect, useRef } from 'react';
+import { Animated, Pressable, StyleSheet } from 'react-native';
+import { shadow, theme } from '../theme';
+import { thump } from '../ui/haptic';
+import { Icon } from '../ui/Icon';
 
 /**
- * The heart. One component so the two places it appears cannot drift.
+ * The heart. One component so the places it appears cannot drift.
  *
  * Renders nothing when `saved` is undefined, which is what the server sends to a
  * signed-out reader (§120): an empty heart that does nothing when tapped is
  * worse than no heart at all.
+ *
+ * It POPS when it fills (§133) — a quick overshoot and settle. The save is
+ * optimistic, so the heart has already changed by the time the request leaves;
+ * the pop is what makes that feel like a response to the tap rather than a
+ * colour that happened to change.
  */
 export function SaveButton({
   saved,
   onPress,
   large,
+  onPhoto,
 }: {
   saved: boolean | undefined;
   onPress: () => void;
   large?: boolean;
+  /** A white disc behind it, so it reads on top of any photograph. */
+  onPhoto?: boolean;
 }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const first = useRef(true);
+
+  useEffect(() => {
+    // Not on mount: a list of saved places should not all pop as it appears.
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    if (!saved) return;
+    scale.setValue(0.6);
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 14,
+      bounciness: 16,
+    }).start();
+  }, [saved, scale]);
+
   if (saved === undefined) return null;
+
+  const size = large ? 44 : 38;
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        thump();
+        onPress();
+      }}
       hitSlop={10}
       accessibilityRole="button"
       accessibilityLabel={saved ? 'Remove from saved' : 'Save this place'}
-      style={styles.tap}
+      style={[
+        styles.tap,
+        { width: size, height: size, borderRadius: size / 2 },
+        onPhoto ? [styles.disc, shadow.card] : styles.plain,
+      ]}
     >
-      <Text style={[large ? styles.large : styles.small, saved && styles.on]}>
-        {saved ? '♥' : '♡'}
-      </Text>
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Icon
+          name={saved ? 'heart' : 'heart-outline'}
+          size={large ? 23 : 20}
+          color={saved ? theme.accent : theme.ink}
+        />
+      </Animated.View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  tap: { paddingHorizontal: 4 },
-  small: { fontSize: 20, color: theme.muted },
-  large: { fontSize: 26, color: theme.muted },
-  on: { color: theme.danger },
+  tap: { alignItems: 'center', justifyContent: 'center' },
+  disc: { backgroundColor: 'rgba(255,255,255,0.96)' },
+  plain: { backgroundColor: theme.panel, borderWidth: 1.5, borderColor: theme.line },
 });

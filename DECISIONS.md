@@ -12164,3 +12164,122 @@ three of them.
 Those tests are declared LAST in `discovery.spec.ts` on purpose: they create
 extra shops, and several tests above assert on the full set of locations the
 database holds. Declared earlier, they silently broke five.
+
+## 133. The customer app is redesigned (2026-10-05)
+
+The phone app worked and looked like a form: one grey border, one blue, system
+type, and four text links crammed into the header of one screen as its only
+navigation. The owner supplied twenty-eight reference designs from other
+booking apps and asked for the same standard, using what the app already has.
+
+**No screen, link, button or sentence was added or renamed.** Every label is the
+one it was. What changed is the design system under it, the navigation around
+it, and a handful of bugs that only became visible once the app could be looked
+at.
+
+### 133.1 What the references agree on, and what was taken from them
+
+Read together, the twenty-eight share five things, and those are what was built:
+
+- a **floating tab bar** with the current tab opened into a labelled pill
+- **picture-first cards** — photo on top, state and rating ON the photo, price below
+- a **hero photo** the page rides up over as a rounded sheet
+- **day pills and an even grid of times**, with one button pinned to the bottom
+- one accent colour, generous corners, soft shadows, one strong typeface
+
+Not copied: any one app's palette or layout. Coral on warm paper with near-black
+ink, Plus Jakarta Sans, and a 4-point spacing scale — tokens in `src/theme.ts`,
+whose original seven keys keep their names so nothing that read them broke.
+
+### 133.2 A kit, because fourteen screens had fourteen buttons
+
+`src/ui/` holds the pieces: `Button`, `Chip`, `IconButton`, `Pill`, `Cover`,
+`Avatar`, `Segmented`, `Sheet`, `TopBar`, `EmptyState`, `Skeleton`, `Stars`,
+`TabBar`, and the motion helpers. The same four style blocks had been pasted into
+every screen and had already drifted — the Saved row showed no district where
+the search row did. Both are now one `PlaceCard`.
+
+### 133.3 The empty picture is the common case, so it is designed
+
+Most shops will have uploaded no photo on the day they join. `Cover` draws a
+gradient in the CATEGORY's colour with its icon on it, and fades the real photo
+in over that when there is one. Ten shops with no photos look like ten different
+shops, not ten grey boxes.
+
+`coverImageUrl` was added to the discovery list and to saved places for this —
+it was on the shop page only, so a card had no picture to lead with.
+
+### 133.4 Motion, on the built-in driver
+
+Press-scale on everything tappable, staggered fade-in for lists, a sliding
+segmented control, a heart that pops, parallax on the shop photo, a pulse while
+a payment waits on the customer's handset, skeletons instead of spinners.
+
+All on React Native's own `Animated`, deliberately not Reanimated: it needs no
+Babel plugin and no native configuration, and the app is tested in Expo Go on a
+real phone where a mis-versioned worklet runtime is a red screen.
+
+### 133.5 Tabs — and what staying mounted changes
+
+Home, Bookings, Saved, Messages and Account are a `(tabs)` group. A group, so no
+address changed: `/bookings` is still `/bookings`.
+
+`Tabs` is imported from `expo-router/js-tabs`. The SDK 57 router marks the old
+export deprecated and vendors react-navigation itself; this was read from the
+installed package, not remembered — `AGENTS.md` warns that Expo's APIs move
+between releases, and `StyleSheet.absoluteFillObject` had also gone.
+
+### 133.6 Three things that broke because tabs stay alive
+
+A stack screen is built fresh each time. A tab is built once. Three behaviours
+depended on the first without saying so:
+
+- **Signed-in state.** Screens read `tokens.access` during render, which React
+  cannot see change. A Bookings tab that rendered "Sign in to see your
+  bookings" would have gone on saying it after sign-in. `useSignedIn()` is a
+  real subscription, and sign-in now invalidates every query.
+- **The category hand-off.** Home took `categoryId` from the route in a
+  `useState` initialiser, which runs once. It now follows the params.
+- **Stacking.** `router.push('/')` from the category list put a SECOND Home on
+  top of the first. `dismissTo` returns to the one already there. Verified by
+  driving the app: one copy of Home in the page, filtered to "1 place".
+
+### 133.7 The heart had never appeared
+
+Found by looking at a signed-in screenshot and seeing no hearts. Search and the
+shop page were requested with `anonymous: true`, which strips the token — so the
+server never said which places were saved, and `SaveButton` hides itself when it
+does not know. **Nobody could save a place from the app.** §120 shipped a
+feature whose only entry point was invisible.
+
+`optionalAuth` sends the token when there is one and never ends the session over
+it. A stale token is refreshed first, because the server treats a bad one as no
+one — the hearts would otherwise vanish every fifteen minutes.
+
+### 133.8 Yesterday was offered as a day to book
+
+The booking screen built its fourteen days with `toISOString()`, which is UTC.
+Kigali is two hours ahead, so between midnight and 2am the first day offered was
+yesterday. Found because the screenshots were taken at half past midnight. Built
+from local date parts now.
+
+### 133.9 The app can be looked at in a browser
+
+`expo-secure-store` has no web implementation — its web module is an empty
+object — so the app could not sign in under `expo start --web`. On the web only,
+tokens fall back to `localStorage`, as the two web apps already do. The phone
+build is unchanged.
+
+This is what made the rest of the section possible: every screen was rendered in
+headless Chrome at 320, 390 and 820 points and LOOKED at. §133.7 and §133.8 were
+both found that way, and neither would have been found by a typecheck.
+
+### 133.10 What was checked, and what was not
+
+Checked: typecheck; the Android bundle builds; every screen rendered and viewed
+at three widths, signed in and out; the category flow driven end to end; 1235
+backend tests.
+
+**Not checked: a real phone.** The web preview renders the same components, but
+shadows, the keyboard, haptics, safe areas and the feel of the animations are
+the phone's own. That is for the owner's Tecno.

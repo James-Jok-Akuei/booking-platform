@@ -171,6 +171,9 @@ export class DiscoveryService {
               id: true,
               name: true,
               logoUrl: true,
+              // The picture a card leads with (§133). Null is normal, and a
+              // client falls back to a tinted tile rather than a hole.
+              coverImageUrl: true,
               category: { select: { id: true, name: true, icon: true } },
               subcategory: { select: { id: true, name: true } },
             },

@@ -59,9 +59,11 @@ export type DiscoverySort = NonNullable<
 >;
 
 /**
- * Browse and search. Anonymous on purpose — someone should be able to look
+ * Browse and search. Open to anyone on purpose — someone should be able to look
  * before they have an account, which is also why the backend guards this with
- * OptionalJwtAuthGuard rather than requiring a token.
+ * OptionalJwtAuthGuard rather than requiring a token. The token still GOES when
+ * there is one (§133.7), because that is how the server knows which hearts to
+ * fill.
  */
 export const discoverLocations = (params: {
   q?: string;
@@ -79,7 +81,7 @@ export const discoverLocations = (params: {
   radiusKm?: number;
   limit?: number;
   offset?: number;
-}) => api<DiscoveryPage>('/discover/locations', { query: params, anonymous: true });
+}) => api<DiscoveryPage>('/discover/locations', { query: params, optionalAuth: true });
 
 export type ShopService = components['schemas']['ShopfrontServiceDto'];
 
@@ -89,7 +91,7 @@ export type ShopDetail = components['schemas']['ShopfrontDto'];
 
 /** A closed branch 404s here, the same as it is absent from search (§89). */
 export const getShop = (id: string) =>
-  api<ShopDetail>(`/discover/locations/${id}`, { anonymous: true });
+  api<ShopDetail>(`/discover/locations/${id}`, { optionalAuth: true });
 
 export type PublicReview = components['schemas']['ReviewDto'];
 

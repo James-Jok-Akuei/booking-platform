@@ -1,28 +1,38 @@
 import { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getAvailability, getShop } from '../../src/api/discovery';
 import { createAppointment } from '../../src/api/booking';
 import { ApiError, tokens } from '../../src/api/client';
 import { useMoney } from '../../src/money';
-import { theme } from '../../src/theme';
+import { font, radius, shadow, theme, type } from '../../src/theme';
+import { Button } from '../../src/ui/Button';
+import { EmptyState } from '../../src/ui/EmptyState';
+import { FadeIn } from '../../src/ui/FadeIn';
+import { cheer } from '../../src/ui/haptic';
+import { Icon } from '../../src/ui/Icon';
+import { useLayout } from '../../src/ui/layout';
+import { PressableScale } from '../../src/ui/PressableScale';
+import { Skeleton } from '../../src/ui/Skeleton';
+import { TopBar } from '../../src/ui/TopBar';
 
-/** The next 14 days, as the YYYY-MM-DD the endpoint takes. */
+/**
+ * The next 14 days, as the YYYY-MM-DD the endpoint takes.
+ *
+ * Built from the phone's LOCAL date parts (§133.8). It used `toISOString()`,
+ * which is UTC — and Kigali is two hours ahead of UTC, so between midnight and
+ * 2am the first day offered was YESTERDAY, a day nobody can book and the server
+ * can only refuse.
+ */
 const nextDays = (count: number) =>
   Array.from({ length: count }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() + i);
-    return date.toISOString().slice(0, 10);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
   });
 
 const dayLabel = (ymd: string) => {
@@ -30,6 +40,7 @@ const dayLabel = (ymd: string) => {
   return {
     weekday: date.toLocaleDateString(undefined, { weekday: 'short' }),
     day: date.toLocaleDateString(undefined, { day: 'numeric' }),
+    month: date.toLocaleDateString(undefined, { month: 'short' }),
   };
 };
 
@@ -44,11 +55,18 @@ const dayLabel = (ymd: string) => {
  * back as the same wall-clock time rather than converted through the phone's
  * zone — a customer in Kigali and a phone set to London must mean 10:00 at the
  * shop when they tap 10:00.
+ *
+ * Laid out as the two questions it asks (§133): a row of days to swipe through,
+ * then a grid of times in even columns. The button at the bottom never moves
+ * and always says what it will do next — "Pick a time" until there is one, then
+ * the time and what it costs to hold it.
  */
 export default function Book() {
   const { id, serviceId } = useLocalSearchParams<{ id: string; serviceId: string }>();
   const router = useRouter();
   const money = useMoney();
+  const insets = useSafeAreaInsets();
+  const layout = useLayout();
 
   const days = useMemo(() => nextDays(14), []);
   const [date, setDate] = useState(days[0]);
@@ -72,7 +90,10 @@ export default function Book() {
         // zone and resolves it; converting here would shift the booking.
         startTime: `${date}T${slot}:00`,
       }),
-    onSuccess: (appointment) => router.replace(`/booking/${appointment.id}`),
+    onSuccess: (appointment) => {
+      cheer();
+      router.replace(`/booking/${appointment.id}`);
+    },
     onError: (error) =>
       Alert.alert(
         'Could not book that',
@@ -82,20 +103,24 @@ export default function Book() {
 
   if (shop.isLoading) {
     return (
-      <>
-        <Stack.Screen options={{ title: 'Book' }} />
-        <ActivityIndicator style={styles.spinner} color={theme.accent} />
-      </>
+      <View style={styles.screen}>
+        <TopBar title="Book" />
+        <View style={styles.content}>
+          <Skeleton height={150} round={radius.lg} />
+          <Skeleton width="40%" height={18} />
+          <Skeleton height={84} round={radius.lg} />
+          <Skeleton width="40%" height={18} />
+          <Skeleton height={120} round={radius.lg} />
+        </View>
+      </View>
     );
   }
   if (!service) {
     return (
-      <>
-        <Stack.Screen options={{ title: 'Book' }} />
-        <View style={styles.screen}>
-          <Text style={styles.empty}>That service is no longer offered here.</Text>
-        </View>
-      </>
+      <View style={styles.screen}>
+        <TopBar title="Book" />
+        <EmptyState icon="calendar-outline" title="That service is no longer offered here." />
+      </View>
     );
   }
 
@@ -104,200 +129,249 @@ export default function Book() {
   );
   const slots = availability.data?.slots ?? [];
 
+  // Even columns that fill the row: four on a normal phone, three on a narrow
+  // one, more on a tablet. A ragged wrap of different-width times is hard to
+  // scan for "the one after lunch".
+  const inner = layout.contentWidth - 40;
+  const perRow = layout.wide ? 6 : inner < 330 ? 3 : 4;
+  const slotWidth = (inner - 10 * (perRow - 1)) / perRow;
+
   return (
-    <>
-      <Stack.Screen options={{ title: service.name }} />
-      <View style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.content}>
-          {/* Every photo of this service (§132), not just the cover: by this
-              screen the customer has chosen it and is deciding whether to pay,
-              which is the moment the pictures are worth most. Horizontal so a
-              long list does not push the price and the slots off the screen. */}
-          {service.images.length > 0 && (
+    <View style={styles.screen}>
+      <TopBar title={service.name} subtitle={shop.data?.business.name ?? shop.data?.name} />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.content,
+          { width: layout.contentWidth, alignSelf: 'center' },
+        ]}
+      >
+        {/* Every photo of this service (§132), not just the cover: by this
+            screen the customer has chosen it and is deciding whether to pay,
+            which is the moment the pictures are worth most. Horizontal so a
+            long list does not push the price and the slots off the screen. */}
+        {service.images.length > 0 && (
+          <FadeIn>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
+              style={styles.bleed}
               contentContainerStyle={styles.photoStrip}
             >
               {service.images.map((photo) => (
-                <Image
-                  key={photo.id}
-                  source={{ uri: photo.url }}
-                  style={styles.photo}
-                />
+                <Image key={photo.id} source={{ uri: photo.url }} style={styles.photo} />
               ))}
             </ScrollView>
-          )}
+          </FadeIn>
+        )}
 
-          <View style={styles.block}>
-            <Text style={styles.title}>{service.name}</Text>
-            <Text style={styles.muted}>
+        <FadeIn delay={40} style={styles.card}>
+          <Text style={type.heading}>{service.name}</Text>
+          <View style={styles.line}>
+            <Icon name="time-outline" size={15} color={theme.muted} />
+            <Text style={type.small}>
               {service.durationMinutes} minutes at {shop.data?.name}
             </Text>
-            <View style={styles.priceRow}>
-              <Text style={styles.price}>
-                {money.format(service.priceMinor, service.currency)}
-              </Text>
-              <Text style={styles.muted}>total</Text>
-            </View>
-            {/* The split is stated before anything is chosen. It is the part
-                people get wrong about a deposit. */}
-            <Text style={styles.depositNote}>
+          </View>
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>{money.format(service.priceMinor, service.currency)}</Text>
+            <Text style={type.small}>total</Text>
+          </View>
+          {/* The split is stated before anything is chosen. It is the part
+              people get wrong about a deposit. */}
+          <View style={styles.depositNote}>
+            <Icon name="shield-checkmark-outline" size={17} color={theme.accent} />
+            <Text style={styles.depositText}>
               You pay {money.format(depositMinor, service.currency)} now to hold the
               slot. The rest is paid at the shop.
             </Text>
           </View>
+        </FadeIn>
 
-          <Text style={styles.heading}>Which day?</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.days}>
+        <FadeIn delay={100} style={styles.group}>
+          <Text style={type.heading}>Which day?</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.bleed}
+            contentContainerStyle={styles.days}
+          >
             {days.map((ymd) => {
               const label = dayLabel(ymd);
               const active = ymd === date;
               return (
-                <Pressable
+                <PressableScale
                   key={ymd}
+                  haptic
+                  scaleTo={0.93}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
                   onPress={() => {
                     setDate(ymd);
                     setSlot(null);
                   }}
                   style={[styles.day, active && styles.dayActive]}
                 >
-                  <Text style={[styles.dayWeek, active && styles.dayTextActive]}>
-                    {label.weekday}
-                  </Text>
-                  <Text style={[styles.dayNum, active && styles.dayTextActive]}>
-                    {label.day}
-                  </Text>
-                </Pressable>
+                  <Text style={[styles.dayWeek, active && styles.onAccent]}>{label.weekday}</Text>
+                  <Text style={[styles.dayNum, active && styles.onAccent]}>{label.day}</Text>
+                  <Text style={[styles.dayMonth, active && styles.onAccentSoft]}>{label.month}</Text>
+                </PressableScale>
               );
             })}
           </ScrollView>
+        </FadeIn>
 
-          <Text style={styles.heading}>What time?</Text>
-          {availability.isLoading && <ActivityIndicator color={theme.accent} />}
+        <FadeIn delay={160} style={styles.group}>
+          <Text style={type.heading}>What time?</Text>
+
+          {availability.isLoading && (
+            <View style={styles.slots}>
+              {Array.from({ length: perRow * 2 }, (_, i) => (
+                <Skeleton key={i} width={slotWidth} height={46} round={radius.md} />
+              ))}
+            </View>
+          )}
 
           {availability.data && slots.length === 0 && (
-            <Text style={styles.closed}>
-              {/* The server says WHY, and it is more useful than "no slots". */}
-              {availability.data.reason ??
-                (availability.data.source.startsWith('CLOSED')
-                  ? 'Closed on this day.'
-                  : 'Nothing free on this day.')}
-            </Text>
+            <View style={styles.closed}>
+              <Icon name="moon-outline" size={20} color={theme.muted} />
+              <Text style={[type.body, styles.flex]}>
+                {/* The server says WHY, and it is more useful than "no slots". */}
+                {availability.data.reason ??
+                  (availability.data.source.startsWith('CLOSED')
+                    ? 'Closed on this day.'
+                    : 'Nothing free on this day.')}
+              </Text>
+            </View>
           )}
 
           <View style={styles.slots}>
-            {slots.map((time) => (
-              <Pressable
-                key={time}
-                onPress={() => setSlot(time)}
-                style={[styles.slot, slot === time && styles.slotActive]}
-              >
-                <Text style={[styles.slotText, slot === time && styles.dayTextActive]}>
-                  {time}
-                </Text>
-              </Pressable>
-            ))}
+            {slots.map((time) => {
+              const active = slot === time;
+              return (
+                <PressableScale
+                  key={time}
+                  haptic
+                  scaleTo={0.92}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  onPress={() => setSlot(time)}
+                  style={[styles.slot, { width: slotWidth }, active && styles.slotActive]}
+                >
+                  <Text style={[styles.slotText, active && styles.onAccent]}>{time}</Text>
+                </PressableScale>
+              );
+            })}
           </View>
 
           {availability.data?.timeZone && slots.length > 0 && (
-            <Text style={styles.muted}>Times are local to the shop ({availability.data.timeZone}).</Text>
-          )}
-        </ScrollView>
-
-        <View style={styles.footer}>
-          <Pressable
-            style={[styles.cta, (!slot || book.isPending) && styles.ctaOff]}
-            disabled={!slot || book.isPending}
-            onPress={() => {
-              // Signing in is required to hold a slot, but not to get here —
-              // asking earlier loses people who were only looking.
-              if (!tokens.access) {
-                router.push(`/sign-in?next=/book/${id}?serviceId=${serviceId}`);
-                return;
-              }
-              book.mutate();
-            }}
-          >
-            <Text style={styles.ctaText}>
-              {book.isPending
-                ? 'Holding your slot…'
-                : slot
-                  ? `Book ${slot} · pay ${money.format(depositMinor, service.currency)}`
-                  : 'Pick a time'}
+            <Text style={type.small}>
+              Times are local to the shop ({availability.data.timeZone}).
             </Text>
-          </Pressable>
-        </View>
+          )}
+        </FadeIn>
+      </ScrollView>
+
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 14 }]}>
+        <Button
+          style={{ width: Math.min(layout.contentWidth - 40, 520), alignSelf: 'center' }}
+          disabled={!slot}
+          busy={book.isPending}
+          label={
+            slot
+              ? `Book ${slot} · pay ${money.format(depositMinor, service.currency)}`
+              : 'Pick a time'
+          }
+          onPress={() => {
+            // Signing in is required to hold a slot, but not to get here —
+            // asking earlier loses people who were only looking.
+            if (!tokens.access) {
+              router.push(`/sign-in?next=/book/${id}?serviceId=${serviceId}`);
+              return;
+            }
+            book.mutate();
+          }}
+        />
       </View>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
-  content: { padding: 16, gap: 10, paddingBottom: 24 },
-  photoStrip: { gap: 8 },
+  flex: { flex: 1 },
+  content: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 28, gap: 22 },
+  bleed: { marginHorizontal: -20, flexGrow: 0 },
+  photoStrip: { paddingHorizontal: 20, gap: 10 },
   photo: {
-    width: 150,
-    height: 112,
-    borderRadius: theme.radius,
-    backgroundColor: theme.panel,
+    width: 220,
+    height: 160,
+    borderRadius: radius.lg,
+    backgroundColor: theme.line,
   },
-  spinner: { marginTop: 40 },
-  block: {
+  card: {
     backgroundColor: theme.panel,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: theme.radius,
-    padding: 14,
-    gap: 5,
+    borderRadius: radius.lg,
+    padding: 18,
+    gap: 6,
+    ...shadow.card,
   },
-  title: { fontSize: 18, fontWeight: '700', color: theme.ink },
-  muted: { color: theme.muted, fontSize: 13 },
-  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 7, marginTop: 3 },
-  price: { fontSize: 20, fontWeight: '700', color: theme.ink },
-  depositNote: { color: theme.accent, fontSize: 13, lineHeight: 19, marginTop: 4 },
-  heading: { fontWeight: '600', color: theme.ink, marginTop: 8 },
-  days: { flexGrow: 0 },
+  line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 7, marginTop: 6 },
+  price: { fontFamily: font.extrabold, fontSize: 26, color: theme.ink, letterSpacing: -0.5 },
+  depositNote: {
+    flexDirection: 'row',
+    gap: 9,
+    backgroundColor: theme.accentSoft,
+    borderRadius: radius.md,
+    padding: 12,
+    marginTop: 8,
+  },
+  depositText: { flex: 1, fontFamily: font.semibold, fontSize: 13, lineHeight: 19, color: theme.accentDeep },
+  group: { gap: 12 },
+  days: { paddingHorizontal: 20, gap: 10, paddingVertical: 4 },
   day: {
-    width: 56,
-    paddingVertical: 9,
-    marginRight: 8,
-    borderRadius: theme.radius,
-    borderWidth: 1,
-    borderColor: theme.line,
+    width: 64,
+    paddingVertical: 12,
+    borderRadius: radius.lg,
     backgroundColor: theme.panel,
     alignItems: 'center',
+    gap: 2,
+    ...shadow.card,
   },
-  dayActive: { backgroundColor: theme.ink, borderColor: theme.ink },
-  dayWeek: { fontSize: 12, color: theme.muted },
-  dayNum: { fontSize: 17, fontWeight: '600', color: theme.ink },
-  dayTextActive: { color: theme.panel },
-  slots: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  dayActive: { backgroundColor: theme.accent, ...shadow.raised },
+  dayWeek: { fontFamily: font.semibold, fontSize: 12, color: theme.muted },
+  dayNum: { fontFamily: font.extrabold, fontSize: 21, color: theme.ink },
+  dayMonth: { fontFamily: font.medium, fontSize: 11, color: theme.muted },
+  onAccent: { color: '#FFFFFF' },
+  onAccentSoft: { color: 'rgba(255,255,255,0.8)' },
+  slots: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   slot: {
-    paddingHorizontal: 15,
-    paddingVertical: 9,
-    borderRadius: theme.radius,
-    borderWidth: 1,
+    height: 46,
+    borderRadius: radius.md,
+    backgroundColor: theme.panel,
+    borderWidth: 1.5,
     borderColor: theme.line,
-    backgroundColor: theme.panel,
-  },
-  slotActive: { backgroundColor: theme.accent, borderColor: theme.accent },
-  slotText: { color: theme.ink, fontWeight: '500' },
-  closed: { color: theme.muted, paddingVertical: 10 },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: theme.line,
-    backgroundColor: theme.panel,
-  },
-  cta: {
-    backgroundColor: theme.accent,
-    borderRadius: theme.radius,
-    paddingVertical: 15,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  ctaOff: { backgroundColor: theme.line },
-  ctaText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  empty: { color: theme.muted, textAlign: 'center', padding: 28 },
+  slotActive: { backgroundColor: theme.accent, borderColor: theme.accent, ...shadow.raised },
+  slotText: { fontFamily: font.bold, fontSize: 14.5, color: theme.ink },
+  closed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    padding: 16,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    backgroundColor: theme.panel,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    ...shadow.float,
+  },
 });

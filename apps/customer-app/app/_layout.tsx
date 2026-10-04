@@ -1,8 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Link, Stack, router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Stack, router } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { onSessionEnded, tokens } from '../src/api/client';
 import { LegalPrompt } from '../src/components/LegalPrompt';
 import { theme } from '../src/theme';
@@ -20,6 +28,19 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
+
+  // The app's typeface (§133). Text drawn before it loads would be drawn in the
+  // system font and then jump, so nothing renders until it is in — the splash
+  // screen covers the wait, which is a few hundred milliseconds from the bundle.
+  // An ERROR counts as done: a phone that cannot load a font still gets an app,
+  // in the system face, rather than a splash screen forever.
+  const [fontsLoaded, fontError] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
 
   // SecureStore is async, so the token cache is filled once before anything
   // that depends on being signed in renders.
@@ -47,70 +68,37 @@ export default function RootLayout() {
     [],
   );
 
-  if (!ready) return null;
+  if (!ready || (!fontsLoaded && !fontError)) return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <StatusBar style="dark" />
-      {/* Above the navigator, so a replaced document is seen wherever somebody
-          happens to be (§126.3). It renders nothing when there is nothing to
-          say, which is almost always. */}
-      <LegalPrompt />
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: theme.panel },
-          headerTintColor: theme.ink,
-          headerTitleStyle: { fontWeight: '600' },
-          contentStyle: { backgroundColor: theme.bg },
-        }}
-      >
-        <Stack.Screen
-          name="index"
-          options={{
-            title: 'Find a place',
-            // On the left, because the right already holds the two places a
-            // customer goes often. An account is somewhere you go rarely and
-            // need to find instantly — mostly to get back out of it.
-            headerLeft: () => (
-              <Link href="/account" asChild>
-                <Pressable hitSlop={10}>
-                  <Text style={{ color: theme.accent, fontWeight: '600' }}>Account</Text>
-                </Pressable>
-              </Link>
-            ),
-            // The only way back to a booking once this screen has been left.
-            // Shown to everyone, signed in or not: the screen itself explains
-            // that signing in is what fills it, which is a better invitation
-            // than a button that is not there.
-            headerRight: () => (
-              <View style={{ flexDirection: 'row', gap: 16 }}>
-                <Link href="/saved" asChild>
-                  <Pressable hitSlop={10}>
-                    <Text style={{ color: theme.danger, fontSize: 18 }}>♥</Text>
-                  </Pressable>
-                </Link>
-                <Link href="/messages" asChild>
-                  <Pressable hitSlop={10}>
-                    <Text style={{ color: theme.accent, fontWeight: '600' }}>Messages</Text>
-                  </Pressable>
-                </Link>
-                <Link href="/bookings" asChild>
-                  <Pressable hitSlop={10}>
-                    <Text style={{ color: theme.accent, fontWeight: '600' }}>Bookings</Text>
-                  </Pressable>
-                </Link>
-              </View>
-            ),
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <StatusBar style="dark" />
+        {/* Above the navigator, so a replaced document is seen wherever somebody
+            happens to be (§126.3). It renders nothing when there is nothing to
+            say, which is almost always. */}
+        <LegalPrompt />
+        {/* No native headers anywhere (§133): every screen draws its own top
+            bar, so the back button, the title and the type are the app's and
+            are the same on every screen. */}
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: theme.bg },
+            animation: 'slide_from_right',
           }}
-        />
-        <Stack.Screen name="bookings" options={{ title: 'My bookings' }} />
-        <Stack.Screen name="messages" options={{ title: 'Messages' }} />
-        <Stack.Screen name="saved" options={{ title: 'Saved' }} />
-        <Stack.Screen name="categories" options={{ title: 'Categories' }} />
-        <Stack.Screen name="legal" options={{ title: 'Legal' }} />
-        <Stack.Screen name="account" options={{ title: 'Account' }} />
-        <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
-      </Stack>
-    </QueryClientProvider>
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="categories" />
+          <Stack.Screen name="legal" />
+          {/* Rises from the bottom: signing in is an interruption to whatever
+              was being done, and it should look like one that can be put away. */}
+          <Stack.Screen
+            name="sign-in"
+            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+          />
+        </Stack>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }

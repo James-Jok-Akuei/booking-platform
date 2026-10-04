@@ -8,7 +8,31 @@ import type { components } from './schema';
  */
 type ApiErrorBody = components['schemas']['ApiErrorDto'];
 
-import * as SecureStore from 'expo-secure-store';
+import { useSyncExternalStore } from 'react';
+import { Platform } from 'react-native';
+import * as ExpoSecureStore from 'expo-secure-store';
+
+/**
+ * Where tokens are kept (§133.9).
+ *
+ * SecureStore on a phone, always. It has NO web implementation — its web
+ * module is an empty object — so `expo start --web` could never sign in, and
+ * the app could not be looked at in a browser at all. On the web, and only
+ * there, this falls back to `localStorage`, which is exactly what the admin and
+ * business apps already use for the same tokens.
+ *
+ * Nothing about the phone build changes: `Platform.OS` is a constant there and
+ * this branch is never taken.
+ */
+const SecureStore =
+  Platform.OS === 'web'
+    ? {
+        getItemAsync: async (key: string) => globalThis.localStorage?.getItem(key) ?? null,
+        setItemAsync: async (key: string, value: string) =>
+          globalThis.localStorage?.setItem(key, value),
+        deleteItemAsync: async (key: string) => globalThis.localStorage?.removeItem(key),
+      }
+    : ExpoSecureStore;
 
 /**
  * The HTTP client, ported from the two web apps (§102).
@@ -53,6 +77,19 @@ const cache: { access: string | null; refresh: string | null; user: Authenticate
   user: null,
 };
 
+/**
+ * Told whenever the tokens change, so a screen can re-render (§133.6).
+ *
+ * `tokens.access` is a plain getter and React cannot see it move. That did not
+ * matter while every screen was built fresh on arrival — but the five tabs now
+ * stay mounted, so a Bookings tab that rendered "Sign in to see your bookings"
+ * would go on saying it after the person had signed in.
+ */
+const authListeners = new Set<() => void>();
+const authChanged = () => {
+  for (const listener of authListeners) listener();
+};
+
 export const tokens = {
   get access() {
     return cache.access;
@@ -80,12 +117,14 @@ export const tokens = {
       // sign in again.
       cache.user = null;
     }
+    authChanged();
     return cache.user;
   },
 
   async set(pair: TokenPair, user?: AuthenticatedUser) {
     cache.access = pair.accessToken;
     cache.refresh = pair.refreshToken;
+    authChanged();
     await Promise.all([
       SecureStore.setItemAsync(ACCESS_KEY, pair.accessToken),
       SecureStore.setItemAsync(REFRESH_KEY, pair.refreshToken),
@@ -100,6 +139,7 @@ export const tokens = {
     cache.access = null;
     cache.refresh = null;
     cache.user = null;
+    authChanged();
     await Promise.all([
       SecureStore.deleteItemAsync(ACCESS_KEY),
       SecureStore.deleteItemAsync(REFRESH_KEY),
@@ -107,6 +147,25 @@ export const tokens = {
     ]);
   },
 };
+
+/**
+ * Whether somebody is signed in, as something a component can depend on.
+ *
+ * Use this rather than reading `tokens.access` during render: this one
+ * re-renders the component when the answer changes.
+ */
+export function useSignedIn(): boolean {
+  return useSyncExternalStore(
+    (listener) => {
+      authListeners.add(listener);
+      return () => {
+        authListeners.delete(listener);
+      };
+    },
+    () => cache.access !== null,
+    () => false,
+  );
+}
 
 /** Fired when the session ends, so the UI can send the person to sign in. */
 type SessionListener = () => void;
@@ -166,8 +225,58 @@ interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
   query?: Record<string, string | number | boolean | undefined | null>;
-  /** Skip the bearer token — discovery and the auth endpoints need this. */
+  /** Skip the bearer token — the auth endpoints and public reference data. */
   anonymous?: boolean;
+  /**
+   * Works signed out, but says MORE when signed in (§133.7).
+   *
+   * Search and the shop page are behind `OptionalJwtAuthGuard`: anyone may
+   * read them, and a signed-in reader is also told which places they have
+   * saved. They were sent as `anonymous`, which strips the token — so `saved`
+   * never came back, the heart hides itself when it does not know, and nobody
+   * could save a place from the app at all.
+   *
+   * The token goes when there is one. A failure to prove who you are must not
+   * cost you the page, so this never ends the session and never retries: the
+   * server treats a bad token as no token and answers anyway.
+   */
+  optionalAuth?: boolean;
+}
+
+/** Whether an access token has run out, read from the token itself. */
+function isExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(
+      globalThis.atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')),
+    ) as { exp?: number };
+    // Thirty seconds early: a token that expires in transit is an expired token.
+    return typeof payload.exp === 'number' && payload.exp * 1000 < Date.now() + 30_000;
+  } catch {
+    // Unreadable is treated as usable. The server is the judge; this is only
+    // here to avoid a wasted request.
+    return false;
+  }
+}
+
+/**
+ * The token for an optional-auth request: a live one, or none.
+ *
+ * An access token lasts minutes. Sent stale, the server would treat the caller
+ * as a stranger and every heart on the screen would vanish until some OTHER
+ * request happened to refresh the session. So a stale one is refreshed first —
+ * and if that fails the request simply goes without, which is what a signed-out
+ * reader gets.
+ */
+async function liveTokenOrNone(): Promise<string | null> {
+  const access = tokens.access;
+  if (!access) return null;
+  if (!isExpired(access)) return access;
+  if (!tokens.refresh) return null;
+  try {
+    return (await refreshTokens()).accessToken;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -178,7 +287,10 @@ interface RequestOptions {
  * against a server that is answering correctly.
  */
 export async function api<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, query, anonymous } = options;
+  const { method = 'GET', body, query, optionalAuth } = options;
+  // Optional auth behaves as anonymous for every failure path below — no
+  // refresh-and-retry, no ending the session — and differs only in the token.
+  const anonymous = options.anonymous || optionalAuth;
 
   const url = new URL(`${BASE_URL}${path}`);
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -200,7 +312,9 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
         : {}),
     });
 
-  let response = await send(anonymous ? null : tokens.access);
+  let response = await send(
+    optionalAuth ? await liveTokenOrNone() : anonymous ? null : tokens.access,
+  );
 
   if (response.status === 401 && !anonymous && tokens.refresh) {
     try {

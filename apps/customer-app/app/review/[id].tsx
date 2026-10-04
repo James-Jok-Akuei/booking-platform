@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
-  ActivityIndicator,
   Alert,
+  Animated,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,7 +12,8 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAppointment } from '../../src/api/booking';
 import { getMe } from '../../src/api/auth';
@@ -22,7 +24,15 @@ import {
   updateReview,
 } from '../../src/api/reviews';
 import { ApiError } from '../../src/api/client';
-import { theme } from '../../src/theme';
+import { font, radius, shadow, theme, type } from '../../src/theme';
+import { Button } from '../../src/ui/Button';
+import { EmptyState } from '../../src/ui/EmptyState';
+import { FadeIn } from '../../src/ui/FadeIn';
+import { cheer, tick } from '../../src/ui/haptic';
+import { Icon } from '../../src/ui/Icon';
+import { useLayout } from '../../src/ui/layout';
+import { Skeleton } from '../../src/ui/Skeleton';
+import { TopBar } from '../../src/ui/TopBar';
 
 /** What each score means, so a tap is a sentence rather than a number. */
 const MEANING = [
@@ -45,6 +55,8 @@ export default function WriteReview() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
+  const layout = useLayout();
 
   const appointment = useQuery({
     queryKey: ['appointment', id],
@@ -86,6 +98,7 @@ export default function WriteReview() {
       // The shop page and the listing both carry a rating this just moved.
       queryClient.invalidateQueries({ queryKey: ['shop'] });
       queryClient.invalidateQueries({ queryKey: ['discover'] });
+      cheer();
       router.back();
     },
     onError: (error) =>
@@ -95,33 +108,29 @@ export default function WriteReview() {
       ),
   });
 
-  // Every early return needs its own <Stack.Screen>, including this one: until
-  // one renders, expo-router titles the header with the route's FILE name, so a
-  // slow request showed "review/[id]" at the top of the screen.
   if (appointment.isLoading) {
     return (
-      <>
-        <Stack.Screen options={{ title: 'Write a review' }} />
-        <ActivityIndicator style={styles.spinner} color={theme.accent} />
-      </>
+      <View style={styles.screen}>
+        <TopBar title="Write a review" />
+        <View style={styles.content}>
+          <Skeleton height={86} round={radius.lg} />
+          <Skeleton height={320} round={radius.xl} />
+        </View>
+      </View>
     );
   }
 
   const a = appointment.data;
   if (!a) {
     return (
-      <>
-        {/* The title has to be set on THIS branch too. Returning before the
-            <Stack.Screen> below leaves the header showing the route's file
-            name — "review/[id]" — which is what the simulator showed. */}
-        <Stack.Screen options={{ title: 'Write a review' }} />
-        <View style={styles.screen}>
-          <Text style={styles.empty}>
-            That booking could not be found. If you have signed out, sign in
-            again and open it from My bookings.
-          </Text>
-        </View>
-      </>
+      <View style={styles.screen}>
+        <TopBar title="Write a review" />
+        <EmptyState
+          icon="calendar-outline"
+          title="That booking could not be found."
+          text="If you have signed out, sign in again and open it from My bookings."
+        />
+      </View>
     );
   }
 
@@ -129,177 +138,224 @@ export default function WriteReview() {
   // can explain instead of offering a control and then showing an error.
   if (a.status !== 'COMPLETED') {
     return (
-      <>
-        <Stack.Screen options={{ title: 'Write a review' }} />
-        <View style={styles.centre}>
-          <Text style={styles.title}>Not yet</Text>
-          <Text style={styles.muted}>
-            A visit can be reviewed once the shop has marked it done. This one is
-            still {a.status === 'BOOKED' ? 'booked' : 'not finished'}.
-          </Text>
-        </View>
-      </>
+      <View style={styles.screen}>
+        <TopBar title="Write a review" />
+        <EmptyState
+          icon="hourglass-outline"
+          title="Not yet"
+          text={`A visit can be reviewed once the shop has marked it done. This one is still ${
+            a.status === 'BOOKED' ? 'booked' : 'not finished'
+          }.`}
+        />
+      </View>
     );
   }
 
   const locked = existing !== null && !canStillEdit(existing.createdAt);
 
   return (
-    <>
-      <Stack.Screen options={{ title: existing ? 'Your review' : 'Write a review' }} />
-      <KeyboardAvoidingView
-        style={styles.screen}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <TopBar title={existing ? 'Your review' : 'Write a review'} />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.content, { width: layout.contentWidth }]}
       >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.block}>
-            <Text style={styles.title}>{a.service.name}</Text>
-            <Text style={styles.muted}>
+        <FadeIn style={[styles.card, styles.about]}>
+          <View style={styles.aboutIcon}>
+            <Icon name="storefront-outline" size={20} color={theme.accent} />
+          </View>
+          <View style={styles.flex}>
+            <Text style={styles.aboutTitle}>{a.service.name}</Text>
+            <Text style={type.small}>
               {a.location.name} · {a.location.address}
             </Text>
           </View>
+        </FadeIn>
 
-          <View style={styles.block}>
-            <Text style={styles.heading}>How was it?</Text>
-            <View style={styles.stars}>
-              {[1, 2, 3, 4, 5].map((value) => (
-                <Pressable
-                  key={value}
-                  disabled={locked}
-                  onPress={() => setRating(value)}
-                  hitSlop={6}
-                >
-                  <Text style={[styles.star, value <= score && styles.starOn]}>★</Text>
-                </Pressable>
-              ))}
-            </View>
-            {score > 0 && <Text style={styles.meaning}>{MEANING[score - 1]}</Text>}
-
-            <TextInput
-              style={styles.input}
-              value={text}
-              onChangeText={setComment}
-              editable={!locked}
-              multiline
-              maxLength={2000}
-              placeholder="What happened? (optional)"
-              placeholderTextColor={theme.muted}
-            />
-
-            {!locked && (
-              <>
-                <Text style={styles.label}>The name to show</Text>
-                <TextInput
-                  style={styles.nameInput}
-                  value={name}
-                  onChangeText={setDisplayName}
-                  maxLength={40}
-                  autoCapitalize="words"
-                  placeholder="Anonymous"
-                  placeholderTextColor={theme.muted}
-                />
-                {/* The name lives on the account, not on the review. Saying so
-                    matters: filling this in rewrites the byline on every review
-                    this person has ever left, which is intended and surprising. */}
-                <Text style={styles.note}>
-                  {me.data?.displayName
-                    ? 'This is the name on all of your reviews. Changing it here changes it on every one of them.'
-                    : 'Leave this blank to stay Anonymous. Whatever you put here becomes the name on all of your reviews.'}
-                </Text>
-              </>
-            )}
+        <FadeIn delay={70} style={styles.card}>
+          <Text style={[type.title, styles.centre]}>How was it?</Text>
+          <View style={styles.stars}>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <StarButton
+                key={value}
+                on={value <= score}
+                disabled={locked}
+                label={`${value} out of 5 — ${MEANING[value - 1]}`}
+                onPress={() => setRating(value)}
+              />
+            ))}
           </View>
+          {/* Always takes a line, so the form below does not jump when the
+              first star is tapped. */}
+          <Text style={[styles.meaning, styles.centre]}>
+            {score > 0 ? MEANING[score - 1] : ' '}
+          </Text>
 
-          {existing && (
-            <Text style={styles.note}>
-              {locked
-                ? `A review can be changed for ${REVIEW_EDIT_WINDOW_DAYS} days after posting. That time has passed, so this one now stands as it is.`
-                : `You can change this for ${REVIEW_EDIT_WINDOW_DAYS} days after posting.`}
-            </Text>
-          )}
-        </ScrollView>
+          <TextInput
+            style={styles.input}
+            value={text}
+            onChangeText={setComment}
+            editable={!locked}
+            multiline
+            maxLength={2000}
+            placeholder="What happened? (optional)"
+            placeholderTextColor={theme.muted}
+          />
 
-        {!locked && (
-          <View style={styles.footer}>
-            <Pressable
-              style={[styles.cta, (score === 0 || save.isPending) && styles.ctaOff]}
-              disabled={score === 0 || save.isPending}
-              onPress={() => save.mutate()}
-            >
-              <Text style={styles.ctaText}>
-                {save.isPending
-                  ? 'Saving…'
-                  : existing
-                    ? 'Save changes'
-                    : score === 0
-                      ? 'Pick a rating'
-                      : 'Post review'}
+          {!locked && (
+            <>
+              <Text style={type.label}>The name to show</Text>
+              <TextInput
+                style={styles.nameInput}
+                value={name}
+                onChangeText={setDisplayName}
+                maxLength={40}
+                autoCapitalize="words"
+                placeholder="Anonymous"
+                placeholderTextColor={theme.muted}
+              />
+              {/* The name lives on the account, not on the review. Saying so
+                  matters: filling this in rewrites the byline on every review
+                  this person has ever left, which is intended and surprising. */}
+              <Text style={type.small}>
+                {me.data?.displayName
+                  ? 'This is the name on all of your reviews. Changing it here changes it on every one of them.'
+                  : 'Leave this blank to stay Anonymous. Whatever you put here becomes the name on all of your reviews.'}
               </Text>
-            </Pressable>
-          </View>
+            </>
+          )}
+        </FadeIn>
+
+        {existing && (
+          <Text style={[type.small, styles.centre]}>
+            {locked
+              ? `A review can be changed for ${REVIEW_EDIT_WINDOW_DAYS} days after posting. That time has passed, so this one now stands as it is.`
+              : `You can change this for ${REVIEW_EDIT_WINDOW_DAYS} days after posting.`}
+          </Text>
         )}
-      </KeyboardAvoidingView>
-    </>
+      </ScrollView>
+
+      {!locked && (
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 14 }]}>
+          <Button
+            disabled={score === 0}
+            busy={save.isPending}
+            label={existing ? 'Save changes' : score === 0 ? 'Pick a rating' : 'Post review'}
+            onPress={() => save.mutate()}
+            style={{ width: Math.min(layout.contentWidth - 40, 520), alignSelf: 'center' }}
+          />
+        </View>
+      )}
+    </KeyboardAvoidingView>
+  );
+}
+
+/**
+ * One star you can tap. It jumps when it lights (§133), so choosing four stars
+ * is four small jumps in a row rather than five shapes changing colour at once.
+ */
+function StarButton({
+  on,
+  disabled,
+  label,
+  onPress,
+}: {
+  on: boolean;
+  disabled: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const first = useRef(true);
+
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    if (!on) return;
+    scale.setValue(0.6);
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 14,
+      bounciness: 16,
+    }).start();
+  }, [on, scale]);
+
+  return (
+    <Pressable
+      disabled={disabled}
+      hitSlop={6}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={() => {
+        tick();
+        onPress();
+      }}
+    >
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Icon name={on ? 'star' : 'star-outline'} size={44} color={on ? theme.star : theme.line} />
+      </Animated.View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
-  content: { padding: 16, gap: 12 },
-  spinner: { marginTop: 40 },
-  block: {
+  flex: { flex: 1 },
+  centre: { textAlign: 'center' },
+  content: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 24, gap: 16, alignSelf: 'center' },
+  card: {
     backgroundColor: theme.panel,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: theme.radius,
-    padding: 16,
-    gap: 7,
+    borderRadius: radius.xl,
+    padding: 20,
+    gap: 12,
+    ...shadow.card,
   },
-  title: { fontSize: 18, fontWeight: '700', color: theme.ink },
-  heading: { fontWeight: '700', color: theme.ink, fontSize: 16 },
-  muted: { color: theme.muted, fontSize: 13, lineHeight: 19 },
-  stars: { flexDirection: 'row', gap: 8, marginTop: 2 },
-  star: { fontSize: 38, color: theme.line },
-  starOn: { color: '#f0a202' },
-  meaning: { color: theme.ink, fontWeight: '600' },
-  input: {
-    backgroundColor: theme.bg,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: theme.radius,
-    padding: 13,
-    fontSize: 15,
-    color: theme.ink,
-    minHeight: 110,
-    textAlignVertical: 'top',
-    marginTop: 6,
-  },
-  label: { color: theme.ink, fontWeight: '600', fontSize: 13, marginTop: 6 },
-  nameInput: {
-    backgroundColor: theme.bg,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: theme.radius,
-    paddingHorizontal: 13,
-    paddingVertical: 11,
-    fontSize: 15,
-    color: theme.ink,
-  },
-  note: { color: theme.muted, fontSize: 12, lineHeight: 18 },
-  centre: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30, gap: 8 },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: theme.line,
-    backgroundColor: theme.panel,
-  },
-  cta: {
-    backgroundColor: theme.accent,
-    borderRadius: theme.radius,
-    paddingVertical: 15,
+  about: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 16 },
+  aboutIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.accentSoft,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  ctaOff: { backgroundColor: theme.line },
-  ctaText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  empty: { color: theme.muted, textAlign: 'center', padding: 28 },
+  aboutTitle: { fontFamily: font.bold, fontSize: 16, color: theme.ink, marginBottom: 1 },
+  stars: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 2 },
+  meaning: { fontFamily: font.bold, fontSize: 15, color: theme.ink },
+  input: {
+    fontFamily: font.medium,
+    backgroundColor: theme.sunken,
+    borderRadius: radius.lg,
+    padding: 15,
+    fontSize: 15,
+    lineHeight: 21,
+    color: theme.ink,
+    minHeight: 120,
+    textAlignVertical: 'top',
+  },
+  nameInput: {
+    fontFamily: font.semibold,
+    backgroundColor: theme.sunken,
+    borderRadius: radius.pill,
+    paddingHorizontal: 18,
+    height: 50,
+    paddingVertical: 0,
+    fontSize: 15,
+    color: theme.ink,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    backgroundColor: theme.panel,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    ...shadow.float,
+  },
 });

@@ -1,15 +1,8 @@
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useRef } from 'react';
+import { Alert, Animated, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getShop, getShopReviews, type ShopService } from '../../src/api/discovery';
 import { openInquiry } from '../../src/api/chat';
 import { useSaved } from '../../src/useSaved';
@@ -17,9 +10,25 @@ import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
 import { ApiError, tokens } from '../../src/api/client';
 import { useMoney } from '../../src/money';
-import { theme } from '../../src/theme';
+import { font, radius, shadow, theme, type } from '../../src/theme';
+import { Avatar } from '../../src/ui/Avatar';
+import { Button } from '../../src/ui/Button';
+import { Cover } from '../../src/ui/Cover';
+import { EmptyState } from '../../src/ui/EmptyState';
+import { FadeIn } from '../../src/ui/FadeIn';
+import { Icon } from '../../src/ui/Icon';
+import { IconButton } from '../../src/ui/IconButton';
+import { useLayout } from '../../src/ui/layout';
+import { Pill } from '../../src/ui/Pill';
+import { PressableScale } from '../../src/ui/PressableScale';
+import { Skeleton } from '../../src/ui/Skeleton';
+import { Stars } from '../../src/ui/Stars';
+import { TopBar } from '../../src/ui/TopBar';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/** How tall the picture at the top is. The sheet below overlaps its last 28pt. */
+const HERO = 300;
 
 const niceDate = (ymd: string) =>
   new Date(`${ymd}T12:00:00Z`).toLocaleDateString(undefined, {
@@ -35,11 +44,19 @@ const niceDate = (ymd: string) =>
  * surprises people. The platform takes a percentage at booking and the rest is
  * paid at the shop (§2) — a price with no mention of that reads as the whole
  * amount being due now.
+ *
+ * The picture fills the top of the screen and the page rides up over it as a
+ * rounded sheet (§133). Scrolling moves the picture at half speed, and pulling
+ * down stretches it — small things, but they are what make a photograph feel
+ * like the place rather than a banner above some text.
  */
 export default function Shop() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const money = useMoney();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const layout = useLayout();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const reviews = useQuery({
@@ -47,13 +64,13 @@ export default function Shop() {
     queryFn: () => getShopReviews(id),
   });
 
+  const saved = useSaved();
+
   /**
    * Idempotent on the server (§21.1), so this is safe to tap repeatedly: a
    * customer asking a second question weeks later lands in the same thread
    * rather than starting a parallel one the shop has to notice separately.
    */
-  const saved = useSaved();
-
   const openChat = useMutation({
     mutationFn: () => openInquiry(shop.data!.business.id),
     onSuccess: (thread) => router.push(`/thread/${thread.id}`),
@@ -66,206 +83,318 @@ export default function Shop() {
 
   if (shop.isLoading) {
     return (
-      <>
-        <Stack.Screen options={{ title: 'Place' }} />
-        <ActivityIndicator style={styles.spinner} color={theme.accent} />
-      </>
+      <View style={styles.screen}>
+        <Skeleton height={HERO} round={0} />
+        <View style={[styles.sheet, styles.loading]}>
+          <Skeleton width="30%" height={22} round={11} />
+          <Skeleton width="70%" height={26} />
+          <Skeleton width="90%" />
+          <Skeleton width="50%" />
+          <Skeleton height={54} round={27} style={styles.loadingGap} />
+          <Skeleton height={92} round={radius.lg} />
+          <Skeleton height={92} round={radius.lg} />
+        </View>
+        <View style={[styles.floating, { top: insets.top + 8 }]}>
+          <IconButton icon="chevron-back" label="Go back" onPress={() => router.back()} />
+        </View>
+      </View>
     );
   }
 
   if (shop.isError || !shop.data) {
     return (
-      <>
-        <Stack.Screen options={{ title: 'Place' }} />
-        <View style={styles.screen}>
-          <Text style={styles.empty}>This place is not available right now.</Text>
-        </View>
-      </>
+      <View style={styles.screen}>
+        <TopBar title="Place" />
+        <EmptyState icon="storefront-outline" title="This place is not available right now." />
+      </View>
     );
   }
 
   const s = shop.data;
   const today = new Date().getDay();
+  const displayName = s.business.name ?? s.name;
+
+  const share = () =>
+    shareShop({
+      id: s.id,
+      name: s.name,
+      address: s.address,
+      businessName: s.business.name,
+      districtName: s.district?.name ?? null,
+      fromPrice:
+        s.services.length > 0
+          ? money.format(Math.min(...s.services.map((service) => service.priceMinor)))
+          : null,
+    });
+
+  // The picture moves at half the speed of the page, and stretches when the
+  // page is pulled down past its top.
+  const heroShift = scrollY.interpolate({
+    inputRange: [-HERO, 0, HERO],
+    outputRange: [0, 0, -HERO / 2],
+    extrapolate: 'clamp',
+  });
+  const heroScale = scrollY.interpolate({
+    inputRange: [-HERO, 0],
+    outputRange: [2, 1],
+    extrapolateRight: 'clamp',
+  });
+  // The bar behind the round buttons fades in as the title scrolls under it,
+  // so there is always a name on screen saying whose page this is.
+  const barOpacity = scrollY.interpolate({
+    inputRange: [HERO - 150, HERO - 90],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: s.business.name ?? s.name,
-          // In the header, so it is reachable without scrolling past the photos.
-          headerRight: () => (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Pressable
-                hitSlop={10}
-                accessibilityLabel="Share this place"
-                onPress={() =>
-                  shareShop({
-                    id: s.id,
-                    name: s.name,
-                    address: s.address,
-                    businessName: s.business.name,
-                    districtName: s.district?.name ?? null,
-                    fromPrice:
-                      s.services.length > 0
-                        ? money.format(
-                            Math.min(...s.services.map((service) => service.priceMinor)),
-                          )
-                        : null,
-                  })
-                }
-              >
-                <Text style={{ fontSize: 20, color: theme.accent }}>↗</Text>
-              </Pressable>
-              <SaveButton
-                saved={s.saved}
-                large
-                onPress={() => saved.toggle(s.id, s.saved ?? false, `/shop/${s.id}`)}
+    <View style={styles.screen}>
+      <Animated.View
+        style={[styles.hero, { transform: [{ translateY: heroShift }, { scale: heroScale }] }]}
+      >
+        <Cover
+          uri={s.business.coverImageUrl}
+          categoryIcon={s.business.category?.icon}
+          style={styles.heroCover}
+          iconSize={64}
+        />
+      </Animated.View>
+
+      <Animated.ScrollView
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: true,
+        })}
+        contentContainerStyle={{ paddingTop: HERO - 28, paddingBottom: insets.bottom + 36 }}
+      >
+        <View style={styles.sheet}>
+          <View style={[styles.column, { maxWidth: layout.contentWidth }]}>
+            <FadeIn>
+              <View style={styles.pills}>
+                {s.openNow ? (
+                  <Pill label="Open now" tone="ok" dot />
+                ) : (
+                  <Pill label="Closed" tone="neutral" />
+                )}
+                {s.business.subcategory && (
+                  <Pill label={s.business.subcategory.name} tone="accent" />
+                )}
+              </View>
+
+              <View style={styles.titleRow}>
+                <Text style={[type.title, styles.flex]}>{displayName}</Text>
+                {s.business.logoUrl && (
+                  <Avatar uri={s.business.logoUrl} name={displayName} size={52} />
+                )}
+              </View>
+
+              <View style={styles.line}>
+                <Icon name="location-outline" size={16} color={theme.muted} />
+                <Text style={[type.body, styles.flex]}>
+                  {s.name} · {s.address}
+                </Text>
+              </View>
+              {s.district && (
+                <Text style={[type.small, styles.indent]}>
+                  {s.district.name}, {s.district.provinceName}
+                </Text>
+              )}
+
+              <View style={[styles.line, styles.ratingLine]}>
+                {s.rating.count > 0 ? (
+                  <>
+                    <Icon name="star" size={16} color={theme.star} />
+                    <Text style={styles.ratingScore}>{s.rating.average?.toFixed(1)}</Text>
+                    <Text style={type.small}>from {s.rating.count} reviews</Text>
+                  </>
+                ) : (
+                  <Text style={type.small}>No reviews yet</Text>
+                )}
+              </View>
+
+              {s.business.description && (
+                <Text style={[type.body, styles.description]}>{s.business.description}</Text>
+              )}
+            </FadeIn>
+
+            {/* Before booking, not after. Most questions people have — do you take
+                card, is there parking, can you do this on a Sunday — are the reason
+                they do NOT book, and there was nowhere to ask them. */}
+            <FadeIn delay={80}>
+              <Button
+                kind="soft"
+                icon="chatbubble-ellipses-outline"
+                label={openChat.isPending ? 'Opening…' : 'Message the shop'}
+                disabled={openChat.isPending}
+                onPress={() => {
+                  if (!tokens.access) {
+                    router.push(`/sign-in?next=/shop/${s.id}`);
+                    return;
+                  }
+                  openChat.mutate();
+                }}
               />
-            </View>
-          ),
-        }}
-      />
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        {s.business.coverImageUrl && (
-          <Image source={{ uri: s.business.coverImageUrl }} style={styles.cover} />
-        )}
+            </FadeIn>
 
-        <View style={styles.block}>
-          <View style={styles.headRow}>
-            <Text style={styles.title}>{s.business.name ?? s.name}</Text>
-            {s.openNow ? (
-              <Text style={styles.open}>Open now</Text>
-            ) : (
-              <Text style={styles.shut}>Closed</Text>
+            {/* The branch's own photos. They were sent with every shop and
+                drawn by nothing; a customer could not see inside a place
+                before walking to it. */}
+            {s.gallery.length > 0 && (
+              <FadeIn delay={120}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.bleed}
+                  contentContainerStyle={styles.gallery}
+                >
+                  {s.gallery.map((photo) => (
+                    <Image key={photo.id} source={{ uri: photo.url }} style={styles.galleryPhoto} />
+                  ))}
+                </ScrollView>
+              </FadeIn>
             )}
-          </View>
 
-          <Text style={styles.sub}>
-            {s.name} · {s.address}
-          </Text>
-          {s.district && (
-            <Text style={styles.sub}>
-              {s.district.name}, {s.district.provinceName}
-            </Text>
-          )}
-
-          {s.rating.count > 0 ? (
-            <Text style={styles.rating}>
-              ★ {s.rating.average?.toFixed(1)}{' '}
-              <Text style={styles.muted}>from {s.rating.count} reviews</Text>
-            </Text>
-          ) : (
-            <Text style={styles.muted}>No reviews yet</Text>
-          )}
-
-          {s.business.description && (
-            <Text style={styles.description}>{s.business.description}</Text>
-          )}
-        </View>
-
-        {/* Before booking, not after. Most questions people have — do you take
-            card, is there parking, can you do this on a Sunday — are the reason
-            they do NOT book, and there was nowhere to ask them. */}
-        <Pressable
-          style={styles.message}
-          onPress={() => {
-            if (!tokens.access) {
-              router.push(`/sign-in?next=/shop/${s.id}`);
-              return;
-            }
-            openChat.mutate();
-          }}
-          disabled={openChat.isPending}
-        >
-          <Text style={styles.messageText}>
-            {openChat.isPending ? 'Opening…' : 'Message the shop'}
-          </Text>
-        </Pressable>
-
-        <View style={styles.block}>
-          <Text style={styles.heading}>What they do</Text>
-          {s.services.length === 0 && (
-            <Text style={styles.muted}>Nothing is bookable here yet.</Text>
-          )}
-          {s.services.map((service) => (
-            <ServiceRow
-              key={service.id}
-              service={service}
-              format={money.format}
-              onPress={() => router.push(`/book/${s.id}?serviceId=${service.id}`)}
-            />
-          ))}
-        </View>
-
-        <View style={styles.block}>
-          <Text style={styles.heading}>Opening hours</Text>
-          {s.hours.map((h) => (
-            <View key={h.dayOfWeek} style={styles.hourRow}>
-              <Text style={[styles.day, h.dayOfWeek === today && styles.dayToday]}>
-                {DAYS[h.dayOfWeek]}
-              </Text>
-              <Text style={h.isClosed ? styles.muted : styles.hourText}>
-                {h.isClosed ? 'Closed' : `${h.openTime} – ${h.closeTime}`}
-              </Text>
-            </View>
-          ))}
-
-          {/* Days that differ from the usual week (§91). Worth seeing before
-              choosing a date, not after. */}
-          {s.upcomingExceptions.length > 0 && (
-            <View style={styles.exceptions}>
-              <Text style={styles.heading}>Coming up</Text>
-              {s.upcomingExceptions.map((exception) => (
-                <View key={exception.date} style={styles.hourRow}>
-                  <Text style={styles.day}>{niceDate(exception.date)}</Text>
-                  <Text style={exception.isClosed ? styles.closedDay : styles.hourText}>
-                    {exception.isClosed
-                      ? 'Closed'
-                      : `${exception.customOpenTime} – ${exception.customCloseTime}`}
-                  </Text>
-                </View>
+            <FadeIn delay={160} style={styles.section}>
+              <Text style={type.heading}>What they do</Text>
+              {s.services.length === 0 && (
+                <Text style={type.small}>Nothing is bookable here yet.</Text>
+              )}
+              {s.services.map((service) => (
+                <ServiceRow
+                  key={service.id}
+                  service={service}
+                  categoryIcon={s.business.category?.icon}
+                  format={money.format}
+                  onPress={() => router.push(`/book/${s.id}?serviceId=${service.id}`)}
+                />
               ))}
-            </View>
-          )}
-        </View>
+            </FadeIn>
 
-        <View style={styles.block}>
-          <Text style={styles.heading}>
-            Reviews {reviews.data ? `(${reviews.data.total})` : ''}
-          </Text>
-          {reviews.data?.reviews.length === 0 && (
-            <Text style={styles.muted}>Nobody has reviewed this place yet.</Text>
-          )}
-          {reviews.data?.reviews.map((review) => (
-            <View key={review.id} style={styles.review}>
-              <Text style={styles.reviewHead}>
-                <Text style={styles.rating}>{'★'.repeat(review.rating)}</Text>
-                <Text style={styles.muted}>{'★'.repeat(5 - review.rating)}</Text>
-                {'  '}
-                {review.displayName}
+            <FadeIn delay={220} style={styles.section}>
+              <Text style={type.heading}>Opening hours</Text>
+              <View style={styles.card}>
+                {s.hours.map((h) => {
+                  const isToday = h.dayOfWeek === today;
+                  return (
+                    <View key={h.dayOfWeek} style={[styles.hourRow, isToday && styles.hourRowToday]}>
+                      <Text style={[styles.day, isToday && styles.dayToday]}>
+                        {DAYS[h.dayOfWeek]}
+                      </Text>
+                      <Text
+                        style={[
+                          h.isClosed ? styles.hourClosed : styles.hourText,
+                          isToday && !h.isClosed && styles.dayToday,
+                        ]}
+                      >
+                        {h.isClosed ? 'Closed' : `${h.openTime} – ${h.closeTime}`}
+                      </Text>
+                    </View>
+                  );
+                })}
+
+                {/* Days that differ from the usual week (§91). Worth seeing before
+                    choosing a date, not after. */}
+                {s.upcomingExceptions.length > 0 && (
+                  <View style={styles.exceptions}>
+                    <Text style={type.label}>Coming up</Text>
+                    {s.upcomingExceptions.map((exception) => (
+                      <View key={exception.date} style={styles.hourRow}>
+                        <Text style={styles.day}>{niceDate(exception.date)}</Text>
+                        <Text style={exception.isClosed ? styles.closedDay : styles.hourText}>
+                          {exception.isClosed
+                            ? 'Closed'
+                            : `${exception.customOpenTime} – ${exception.customCloseTime}`}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </FadeIn>
+
+            <FadeIn delay={280} style={styles.section}>
+              <Text style={type.heading}>
+                Reviews {reviews.data ? `(${reviews.data.total})` : ''}
               </Text>
-              {review.comment && <Text style={styles.reviewText}>{review.comment}</Text>}
-              {/* The shop's reply, which is often the more useful half. */}
-              {review.responseText && (
-                <View style={styles.reply}>
-                  <Text style={styles.muted}>They replied</Text>
-                  <Text style={styles.reviewText}>{review.responseText}</Text>
+
+              {s.rating.count > 0 && (
+                <View style={[styles.card, styles.summary]}>
+                  <Text style={styles.summaryScore}>{s.rating.average?.toFixed(1)}</Text>
+                  <View style={styles.summarySide}>
+                    <Stars rating={s.rating.average ?? 0} size={18} />
+                    <Text style={type.small}>from {s.rating.count} reviews</Text>
+                  </View>
                 </View>
               )}
-            </View>
-          ))}
+
+              {reviews.data?.reviews.length === 0 && (
+                <Text style={type.small}>Nobody has reviewed this place yet.</Text>
+              )}
+              {reviews.data?.reviews.map((review) => (
+                <View key={review.id} style={[styles.card, styles.review]}>
+                  <View style={styles.reviewHead}>
+                    <Avatar name={review.displayName} size={38} />
+                    <View style={styles.flex}>
+                      <Text style={styles.reviewName}>{review.displayName}</Text>
+                      <Stars rating={review.rating} size={13} />
+                    </View>
+                  </View>
+                  {review.comment && <Text style={type.body}>{review.comment}</Text>}
+                  {/* The shop's reply, which is often the more useful half. */}
+                  {review.responseText && (
+                    <View style={styles.reply}>
+                      <Text style={type.label}>They replied</Text>
+                      <Text style={type.body}>{review.responseText}</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </FadeIn>
+          </View>
         </View>
-      </ScrollView>
-    </>
+      </Animated.ScrollView>
+
+      {/* The bar that appears once the title has scrolled away. */}
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.bar, { height: insets.top + 60, opacity: barOpacity }]}
+      >
+        <Text style={[styles.barTitle, { marginTop: insets.top }]} numberOfLines={1}>
+          {displayName}
+        </Text>
+      </Animated.View>
+
+      {/* Floating over the picture, so they are reachable without scrolling
+          back to the top. */}
+      <View style={[styles.floating, { top: insets.top + 8 }]}>
+        <IconButton
+          icon="chevron-back"
+          label="Go back"
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+        />
+        <View style={styles.floatingRight}>
+          <IconButton icon="share-outline" label="Share this place" onPress={share} />
+          <SaveButton
+            saved={s.saved}
+            large
+            onPhoto
+            onPress={() => saved.toggle(s.id, s.saved ?? false, `/shop/${s.id}`)}
+          />
+        </View>
+      </View>
+    </View>
   );
 }
 
 function ServiceRow({
   service,
+  categoryIcon,
   format,
   onPress,
 }: {
   service: ShopService;
+  categoryIcon?: string | null;
   format: (minor: number | null | undefined, code?: string | null) => string;
   onPress: () => void;
 }) {
@@ -276,97 +405,154 @@ function ServiceRow({
   );
 
   return (
-    <Pressable style={styles.service} onPress={onPress}>
+    <PressableScale style={[styles.card, styles.service]} onPress={onPress} scaleTo={0.98}>
       {/* The cover photo (§132). A fixed box either way, so rows do not change
           height depending on whether a business has uploaded anything. */}
-      {service.images.length > 0 ? (
-        <Image source={{ uri: service.images[0].url }} style={styles.serviceThumb} />
-      ) : (
-        <View style={[styles.serviceThumb, styles.serviceThumbEmpty]} />
-      )}
+      <Cover
+        uri={service.images[0]?.url}
+        categoryIcon={categoryIcon}
+        style={styles.serviceThumb}
+        iconSize={24}
+      />
       <View style={styles.serviceMain}>
-        <Text style={styles.serviceName}>{service.name}</Text>
+        <Text style={styles.serviceName} numberOfLines={2}>
+          {service.name}
+        </Text>
         {service.description && (
-          <Text style={styles.muted} numberOfLines={2}>
+          <Text style={type.small} numberOfLines={2}>
             {service.description}
           </Text>
         )}
-        <Text style={styles.muted}>{service.durationMinutes} minutes</Text>
+        <View style={styles.line}>
+          <Icon name="time-outline" size={13} color={theme.muted} />
+          <Text style={type.small}>{service.durationMinutes} minutes</Text>
+        </View>
+        <View style={styles.servicePrice}>
+          <Text style={styles.price}>{format(service.priceMinor, service.currency)}</Text>
+          <Text style={styles.deposit}>pay {format(depositMinor, service.currency)} now</Text>
+        </View>
       </View>
-      <View style={styles.servicePrice}>
-        <Text style={styles.price}>{format(service.priceMinor, service.currency)}</Text>
-        <Text style={styles.deposit}>pay {format(depositMinor, service.currency)} now</Text>
+      <View style={styles.go}>
+        <Icon name="arrow-forward" size={17} color="#FFFFFF" />
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
 const styles = StyleSheet.create({
-  message: {
-    borderWidth: 1,
-    borderColor: theme.accent,
-    borderRadius: theme.radius,
-    paddingVertical: 13,
-    alignItems: 'center',
-    marginHorizontal: 16,
-  },
-  messageText: { color: theme.accent, fontWeight: '700', fontSize: 15 },
   screen: { flex: 1, backgroundColor: theme.bg },
-  content: { padding: 16, gap: 12, paddingBottom: 40 },
-  spinner: { marginTop: 40 },
-  cover: { width: '100%', height: 150, borderRadius: theme.radius },
-  serviceThumb: {
-    width: 54,
-    height: 54,
-    borderRadius: 8,
-    backgroundColor: theme.panel,
+  flex: { flex: 1 },
+  hero: { position: 'absolute', top: 0, left: 0, right: 0, height: HERO },
+  heroCover: { width: '100%', height: HERO },
+  sheet: {
+    backgroundColor: theme.bg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: 20,
+    paddingTop: 22,
+    minHeight: 500,
   },
-  serviceThumbEmpty: { borderWidth: 1, borderColor: theme.line },
-  block: {
+  column: { width: '100%', alignSelf: 'center', gap: 22 },
+  loading: { marginTop: -28, gap: 12, flex: 1 },
+  loadingGap: { marginVertical: 8 },
+  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
+  line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  indent: { marginLeft: 22, marginTop: 2 },
+  ratingLine: { marginTop: 10 },
+  ratingScore: { fontFamily: font.bold, fontSize: 14.5, color: theme.ink },
+  description: { marginTop: 14 },
+  bleed: { marginHorizontal: -20 },
+  gallery: { paddingHorizontal: 20, gap: 10 },
+  galleryPhoto: {
+    width: 150,
+    height: 112,
+    borderRadius: radius.md,
+    backgroundColor: theme.line,
+  },
+  section: { gap: 12 },
+  card: {
     backgroundColor: theme.panel,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: theme.radius,
+    borderRadius: radius.lg,
     padding: 14,
-    gap: 7,
+    ...shadow.card,
   },
-  headRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
-  title: { fontSize: 19, fontWeight: '700', color: theme.ink, flex: 1 },
-  sub: { color: theme.muted, fontSize: 13 },
-  description: { color: theme.ink, lineHeight: 20, marginTop: 4 },
-  heading: { fontWeight: '600', color: theme.ink, marginBottom: 2 },
-  muted: { color: theme.muted, fontSize: 13 },
-  rating: { color: theme.warn, fontWeight: '600' },
-  open: { color: theme.ok, fontWeight: '600', fontSize: 13 },
-  shut: { color: theme.muted, fontSize: 13 },
-  service: {
+  service: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 10 },
+  serviceThumb: { width: 84, height: 96, borderRadius: radius.md },
+  serviceMain: { flex: 1, gap: 4, paddingVertical: 2 },
+  serviceName: { fontFamily: font.bold, fontSize: 15.5, lineHeight: 20, color: theme.ink },
+  servicePrice: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 3 },
+  price: { fontFamily: font.extrabold, fontSize: 15.5, color: theme.ink },
+  deposit: {
+    fontFamily: font.bold,
+    fontSize: 11.5,
+    color: theme.accent,
+    backgroundColor: theme.accentSoft,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  go: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.night,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
+  },
+  hourRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 11,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: radius.sm,
+  },
+  hourRowToday: { backgroundColor: theme.accentSoft },
+  day: { fontFamily: font.medium, fontSize: 14, color: theme.ink2 },
+  dayToday: { fontFamily: font.bold, color: theme.accent },
+  hourText: { fontFamily: font.semibold, fontSize: 14, color: theme.ink },
+  hourClosed: { fontFamily: font.medium, fontSize: 14, color: theme.muted },
+  closedDay: { fontFamily: font.bold, fontSize: 14, color: theme.danger },
+  exceptions: {
+    marginTop: 10,
     borderTopWidth: 1,
     borderTopColor: theme.line,
-  },
-  serviceMain: { flex: 1, gap: 2 },
-  serviceName: { fontWeight: '600', color: theme.ink, fontSize: 15 },
-  servicePrice: { alignItems: 'flex-end', gap: 2 },
-  price: { fontWeight: '700', color: theme.ink },
-  deposit: { color: theme.accent, fontSize: 12, fontWeight: '500' },
-  hourRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
-  day: { color: theme.muted, fontSize: 13 },
-  dayToday: { color: theme.ink, fontWeight: '600' },
-  hourText: { color: theme.ink, fontSize: 13 },
-  closedDay: { color: theme.danger, fontSize: 13, fontWeight: '500' },
-  exceptions: { marginTop: 10, borderTopWidth: 1, borderTopColor: theme.line, paddingTop: 9 },
-  review: { borderTopWidth: 1, borderTopColor: theme.line, paddingTop: 10, marginTop: 8, gap: 3 },
-  reviewHead: { fontSize: 13, color: theme.ink },
-  reviewText: { color: theme.ink, lineHeight: 19 },
-  reply: {
-    marginTop: 5,
-    paddingLeft: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: theme.accent,
+    paddingTop: 12,
     gap: 2,
   },
-  empty: { color: theme.muted, textAlign: 'center', padding: 28 },
+  summary: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 18 },
+  summaryScore: { fontFamily: font.extrabold, fontSize: 44, lineHeight: 50, color: theme.ink, letterSpacing: -1 },
+  summarySide: { gap: 5 },
+  review: { gap: 10 },
+  reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  reviewName: { fontFamily: font.bold, fontSize: 14.5, color: theme.ink, marginBottom: 3 },
+  reply: {
+    backgroundColor: theme.sunken,
+    borderRadius: radius.md,
+    padding: 12,
+    gap: 4,
+  },
+  bar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: theme.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.line,
+  },
+  barTitle: { fontFamily: font.bold, fontSize: 16.5, color: theme.ink, maxWidth: '50%' },
+  floating: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  floatingRight: { flexDirection: 'row', gap: 10 },
 });

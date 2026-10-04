@@ -16,6 +16,8 @@ export class SavedPlaceBusinessDto {
   id!: string;
   name!: string | null;
   logoUrl!: string | null;
+  /** The same picture the search card leads with (§133). */
+  coverImageUrl!: string | null;
 }
 
 export class SavedPlaceDto {

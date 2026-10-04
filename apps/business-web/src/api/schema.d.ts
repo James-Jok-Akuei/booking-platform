@@ -4736,6 +4736,8 @@ export interface components {
             id: string;
             name: string | null;
             logoUrl: string | null;
+            /** @description What a card leads with (§133). Null until the business uploads one. */
+            coverImageUrl: string | null;
             category: {
                 id: string;
                 name: string;
@@ -4893,6 +4895,8 @@ export interface components {
             id: string;
             name: string | null;
             logoUrl: string | null;
+            /** @description The same picture the search card leads with (§133). */
+            coverImageUrl: string | null;
         };
         SavedPlaceDto: {
             savedAt: string;

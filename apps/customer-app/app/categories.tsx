@@ -1,152 +1,159 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { listCategories, type Category } from '../src/api/discovery';
-import { theme } from '../src/theme';
-
-/**
- * A rough picture for each category, since the admin names them and nothing
- * ships an image per category.
- *
- * Keyed on the `icon` the admin set, falling back on the name. A missing one
- * renders a neutral mark rather than nothing, so the list never has a hole in it
- * where a picture should be.
- */
-const GLYPH: Record<string, string> = {
-  car: '🚗',
-  scissors: '✂️',
-  spa: '💆',
-  dumbbell: '🏋️',
-  camera: '📷',
-  shirt: '👕',
-  wrench: '🔧',
-  sparkles: '✨',
-  calendar: '📅',
-  heart: '♥',
-};
-
-const glyphFor = (category: Category) =>
-  (category.icon && GLYPH[category.icon]) ??
-  GLYPH[category.name.toLowerCase().split(/[^a-z]/)[0] ?? ''] ??
-  '◆';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { listCategories } from '../src/api/discovery';
+import { font, radius, shadow, theme, type } from '../src/theme';
+import { EmptyState } from '../src/ui/EmptyState';
+import { FadeIn } from '../src/ui/FadeIn';
+import { Icon, lookFor } from '../src/ui/Icon';
+import { useLayout } from '../src/ui/layout';
+import { PressableScale } from '../src/ui/PressableScale';
+import { RowSkeleton } from '../src/ui/Skeleton';
+import { TopBar } from '../src/ui/TopBar';
 
 /**
  * Everything the platform is open for, in one list (§121).
  *
- * Discovery already filters by category, through chips that scroll sideways and
- * show about three of eight. That works for someone who knows what they want.
+ * Discovery already filters by category, through tiles that scroll sideways and
+ * show about four of eight. That works for someone who knows what they want.
  * This is for someone who does not: the whole list, what each one covers, and
  * the subcategories under it — which were reachable from nowhere at all.
+ *
+ * Each category keeps the colour and icon it has on the home screen (§133), so
+ * the rose sparkle there and the rose sparkle here are recognisably one thing.
  */
 export default function Categories() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const layout = useLayout();
   const [open, setOpen] = useState<string | null>(null);
   const categories = useQuery({ queryKey: ['categories'], queryFn: listCategories });
 
   return (
-    <>
-      <Stack.Screen options={{ title: 'Categories' }} />
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        {categories.isLoading && <ActivityIndicator color={theme.accent} />}
-
-        {categories.data?.length === 0 && (
-          <Text style={styles.empty}>Nothing is listed yet.</Text>
+    <View style={styles.screen}>
+      <TopBar title="Categories" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: insets.bottom + 28, width: layout.contentWidth },
+        ]}
+      >
+        {categories.isLoading && (
+          <>
+            <RowSkeleton />
+            <RowSkeleton />
+            <RowSkeleton />
+            <RowSkeleton />
+          </>
         )}
 
-        {categories.data?.map((category) => {
+        {categories.data?.length === 0 && (
+          <EmptyState icon="grid-outline" title="Nothing is listed yet." />
+        )}
+
+        {categories.data?.map((category, index) => {
           const expanded = open === category.id;
+          const look = lookFor(category.icon);
           return (
-            <View key={category.id} style={styles.card}>
-              <Pressable
+            <FadeIn key={category.id} index={index} style={styles.card}>
+              <PressableScale
                 style={styles.row}
-                onPress={() => router.push(`/?categoryId=${category.id}`)}
+                scaleTo={0.98}
+                // Back DOWN to the Home that is already there, not a second one
+                // pushed on top of it (§133.6). Home is a tab now and stays
+                // mounted; it follows the params it is handed.
+                onPress={() => router.dismissTo(`/?categoryId=${category.id}`)}
               >
-                <Text style={styles.glyph}>{glyphFor(category)}</Text>
+                <View style={[styles.disc, { backgroundColor: look.tint }]}>
+                  <Icon name={look.icon} size={26} color={look.ink} />
+                </View>
                 <View style={styles.rowText}>
                   <Text style={styles.name}>{category.name}</Text>
                   {category.description && (
-                    <Text style={styles.description}>{category.description}</Text>
+                    <Text style={type.small}>{category.description}</Text>
                   )}
                 </View>
-              </Pressable>
+                <Icon name="chevron-forward" size={18} color={theme.muted} />
+              </PressableScale>
 
               {/* Behind a tap rather than always open: eight categories with
                   every subcategory shown is a wall of words, and the names are
                   only useful once somebody has picked the area. */}
               {category.subcategories.length > 0 && (
                 <>
-                  <Pressable
+                  <PressableScale
                     onPress={() => setOpen(expanded ? null : category.id)}
                     hitSlop={8}
+                    haptic
+                    style={styles.moreRow}
                   >
                     <Text style={styles.more}>
                       {expanded
                         ? 'Hide'
                         : `${category.subcategories.length} kinds of ${category.name.toLowerCase()}`}
                     </Text>
-                  </Pressable>
+                    <Icon
+                      name={expanded ? 'chevron-up' : 'chevron-down'}
+                      size={15}
+                      color={theme.accent}
+                    />
+                  </PressableScale>
 
                   {expanded && (
-                    <View style={styles.subs}>
+                    <FadeIn distance={8} style={styles.subs}>
                       {category.subcategories.map((sub) => (
-                        <Pressable
+                        <PressableScale
                           key={sub.id}
-                          style={styles.sub}
+                          haptic
+                          scaleTo={0.94}
+                          style={[styles.sub, { backgroundColor: look.tint }]}
                           onPress={() =>
-                            router.push(
+                            router.dismissTo(
                               `/?categoryId=${category.id}&subcategoryId=${sub.id}`,
                             )
                           }
                         >
-                          <Text style={styles.subText}>{sub.name}</Text>
-                        </Pressable>
+                          <Text style={[styles.subText, { color: look.ink }]}>{sub.name}</Text>
+                        </PressableScale>
                       ))}
-                    </View>
+                    </FadeIn>
                   )}
                 </>
               )}
-            </View>
+            </FadeIn>
           );
         })}
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
-  content: { padding: 16, gap: 10, paddingBottom: 28 },
+  content: { paddingHorizontal: 20, paddingTop: 6, gap: 12, alignSelf: 'center' },
   card: {
     backgroundColor: theme.panel,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: theme.radius,
+    borderRadius: radius.lg,
     padding: 14,
-    gap: 6,
+    gap: 12,
+    ...shadow.card,
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 13 },
-  glyph: { fontSize: 28 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  disc: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   rowText: { flex: 1, gap: 2 },
-  name: { fontSize: 17, fontWeight: '700', color: theme.ink },
-  description: { color: theme.muted, fontSize: 13, lineHeight: 18 },
-  more: { color: theme.accent, fontWeight: '600', fontSize: 13 },
-  subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 2 },
-  sub: {
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: theme.radius,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: theme.bg,
-  },
-  subText: { color: theme.ink, fontSize: 13, fontWeight: '500' },
-  empty: { color: theme.muted, textAlign: 'center', padding: 28 },
+  name: { fontFamily: font.bold, fontSize: 16, color: theme.ink },
+  moreRow: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start' },
+  more: { fontFamily: font.bold, fontSize: 13, color: theme.accent },
+  subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  sub: { borderRadius: radius.pill, paddingHorizontal: 13, paddingVertical: 8 },
+  subText: { fontFamily: font.semibold, fontSize: 13 },
 });

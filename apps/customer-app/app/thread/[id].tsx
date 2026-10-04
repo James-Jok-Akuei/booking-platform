@@ -6,14 +6,14 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { pickImage } from '../../src/pickImage';
 import {
   getThread,
@@ -24,7 +24,14 @@ import {
 } from '../../src/api/chat';
 import { ApiError } from '../../src/api/client';
 import { useThreadSocket } from '../../src/useThreadSocket';
-import { theme } from '../../src/theme';
+import { font, radius, shadow, theme, type } from '../../src/theme';
+import { Avatar } from '../../src/ui/Avatar';
+import { EmptyState } from '../../src/ui/EmptyState';
+import { FadeIn } from '../../src/ui/FadeIn';
+import { Icon } from '../../src/ui/Icon';
+import { IconButton } from '../../src/ui/IconButton';
+import { useLayout } from '../../src/ui/layout';
+import { PressableScale } from '../../src/ui/PressableScale';
 
 const clock = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -41,7 +48,10 @@ type Picked = { uri: string; name: string; type: string };
  */
 export default function ThreadScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
+  const layout = useLayout();
   const [draft, setDraft] = useState('');
   const [photo, setPhoto] = useState<Picked | null>(null);
   const listRef = useRef<FlatList<Message>>(null);
@@ -117,173 +127,194 @@ export default function ThreadScreen() {
 
   const rows = messages.data?.messages ?? [];
   const canSend = (draft.trim().length > 0 || photo !== null) && !send.isPending;
+  const businessName = thread.data?.business.name ?? 'Messages';
 
   return (
-    <>
-      <Stack.Screen
-        options={{ title: thread.data?.business.name ?? 'Messages' }}
-      />
-      <KeyboardAvoidingView
-        style={styles.screen}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 92 : 0}
-      >
-        {thread.data?.appointment && (
-          <View style={styles.context}>
-            <Text style={styles.contextText}>
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      {/* Who you are talking to, and — for a booking's thread — what about.
+          The header is the app's own (§133), so the name sits beside a face
+          rather than alone in a system bar. */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <IconButton
+          icon="chevron-back"
+          label="Go back"
+          flat
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/messages'))}
+        />
+        <Avatar name={businessName} size={42} />
+        <View style={styles.flex}>
+          <Text style={styles.headerName} numberOfLines={1}>
+            {businessName}
+          </Text>
+          {thread.data?.appointment && (
+            <Text style={styles.headerSub} numberOfLines={1}>
               About {thread.data.appointment.serviceName} on{' '}
               {new Date(thread.data.appointment.startTime).toLocaleDateString(undefined, {
                 day: 'numeric',
                 month: 'short',
               })}
             </Text>
-          </View>
-        )}
-
-        {messages.isLoading && <ActivityIndicator style={styles.spinner} color={theme.accent} />}
-
-        <FlatList
-          ref={listRef}
-          data={rows}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
-          ListEmptyComponent={
-            messages.isLoading ? null : (
-              <Text style={styles.empty}>
-                Nothing here yet. Ask them anything — prices, parking, what to bring.
-              </Text>
-            )
-          }
-          renderItem={({ item }) => {
-            const mine = item.sender.role === 'CUSTOMER';
-            return (
-              <View style={[styles.bubbleRow, mine && styles.bubbleRowMine]}>
-                <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
-                  {item.photoUrl && (
-                    <Image source={{ uri: item.photoUrl }} style={styles.photo} />
-                  )}
-                  {item.body && (
-                    <Text style={[styles.body, mine && styles.bodyMine]}>{item.body}</Text>
-                  )}
-                  <Text style={[styles.time, mine && styles.timeMine]}>
-                    {clock(item.createdAt)}
-                  </Text>
-                </View>
-              </View>
-            );
-          }}
-        />
-
-        {photo && (
-          <View style={styles.attached}>
-            <Image source={{ uri: photo.uri }} style={styles.thumb} />
-            <Text style={styles.attachedText} numberOfLines={1}>
-              {photo.name}
-            </Text>
-            <Pressable onPress={() => setPhoto(null)} hitSlop={10}>
-              <Text style={styles.remove}>Remove</Text>
-            </Pressable>
-          </View>
-        )}
-
-        <View style={styles.composer}>
-          <Pressable onPress={attach} hitSlop={8} style={styles.attach}>
-            <Text style={styles.attachText}>＋</Text>
-          </Pressable>
-          <TextInput
-            style={styles.input}
-            value={draft}
-            onChangeText={setDraft}
-            placeholder="Write a message"
-            placeholderTextColor={theme.muted}
-            multiline
-            maxLength={2000}
-          />
-          <Pressable
-            style={[styles.send, !canSend && styles.sendOff]}
-            disabled={!canSend}
-            onPress={() => send.mutate()}
-          >
-            <Text style={styles.sendText}>{send.isPending ? '…' : 'Send'}</Text>
-          </Pressable>
+          )}
         </View>
-      </KeyboardAvoidingView>
-    </>
+      </View>
+
+      {messages.isLoading && <ActivityIndicator style={styles.spinner} color={theme.accent} />}
+
+      <FlatList
+        ref={listRef}
+        data={rows}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.list, { width: layout.contentWidth }]}
+        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+        ListEmptyComponent={
+          messages.isLoading ? null : (
+            <EmptyState
+              icon="chatbubble-ellipses-outline"
+              title="Nothing here yet."
+              text="Ask them anything — prices, parking, what to bring."
+            />
+          )
+        }
+        renderItem={({ item }) => {
+          const mine = item.sender.role === 'CUSTOMER';
+          return (
+            <FadeIn distance={8} style={[styles.bubbleRow, mine && styles.bubbleRowMine]}>
+              <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
+                {item.photoUrl && (
+                  <Image source={{ uri: item.photoUrl }} style={styles.photo} />
+                )}
+                {item.body && (
+                  <Text style={[styles.body, mine && styles.bodyMine]}>{item.body}</Text>
+                )}
+                <Text style={[styles.time, mine && styles.timeMine]}>
+                  {clock(item.createdAt)}
+                </Text>
+              </View>
+            </FadeIn>
+          );
+        }}
+      />
+
+      {photo && (
+        <View style={styles.attached}>
+          <Image source={{ uri: photo.uri }} style={styles.thumb} />
+          <Text style={[type.small, styles.flex]} numberOfLines={1}>
+            {photo.name}
+          </Text>
+          <PressableScale onPress={() => setPhoto(null)} hitSlop={10}>
+            <Text style={styles.remove}>Remove</Text>
+          </PressableScale>
+        </View>
+      )}
+
+      <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+        <IconButton icon="image-outline" label="Attach a photo" onPress={attach} flat size={46} />
+        <TextInput
+          style={styles.input}
+          value={draft}
+          onChangeText={setDraft}
+          placeholder="Write a message"
+          placeholderTextColor={theme.muted}
+          multiline
+          maxLength={2000}
+        />
+        <PressableScale
+          haptic
+          scaleTo={0.9}
+          disabled={!canSend}
+          accessibilityRole="button"
+          accessibilityLabel="Send"
+          onPress={() => send.mutate()}
+          style={[styles.send, !canSend && styles.sendOff]}
+        >
+          {send.isPending ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Icon name="arrow-up" size={21} color={canSend ? '#FFFFFF' : theme.muted} />
+          )}
+        </PressableScale>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
+  flex: { flex: 1 },
   spinner: { marginTop: 24 },
-  context: {
-    backgroundColor: theme.panel,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.line,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
     paddingHorizontal: 16,
-    paddingVertical: 9,
+    paddingBottom: 12,
+    backgroundColor: theme.panel,
+    borderBottomLeftRadius: radius.lg,
+    borderBottomRightRadius: radius.lg,
+    ...shadow.card,
   },
-  contextText: { color: theme.muted, fontSize: 13 },
-  list: { padding: 14, gap: 8 },
+  headerName: { fontFamily: font.bold, fontSize: 16.5, color: theme.ink },
+  headerSub: { fontFamily: font.semibold, fontSize: 12.5, color: theme.accent, marginTop: 1 },
+  list: { paddingHorizontal: 16, paddingVertical: 16, gap: 8, alignSelf: 'center' },
   bubbleRow: { flexDirection: 'row' },
   bubbleRowMine: { justifyContent: 'flex-end' },
-  bubble: { maxWidth: '82%', borderRadius: 14, padding: 11, gap: 4 },
-  mine: { backgroundColor: theme.accent, borderBottomRightRadius: 4 },
-  theirs: {
-    backgroundColor: theme.panel,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderBottomLeftRadius: 4,
-  },
-  body: { color: theme.ink, fontSize: 15, lineHeight: 21 },
-  bodyMine: { color: '#fff' },
-  time: { color: theme.muted, fontSize: 11, alignSelf: 'flex-end' },
-  timeMine: { color: 'rgba(255,255,255,0.75)' },
-  photo: { width: 210, height: 160, borderRadius: 9, backgroundColor: theme.line },
-  empty: { color: theme.muted, textAlign: 'center', padding: 28, lineHeight: 20 },
+  bubble: { maxWidth: '82%', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10, gap: 4 },
+  mine: { backgroundColor: theme.accent, borderBottomRightRadius: 6 },
+  theirs: { backgroundColor: theme.panel, borderBottomLeftRadius: 6, ...shadow.card },
+  body: { fontFamily: font.medium, color: theme.ink, fontSize: 15, lineHeight: 21 },
+  bodyMine: { color: '#FFFFFF' },
+  time: { fontFamily: font.medium, color: theme.muted, fontSize: 11, alignSelf: 'flex-end' },
+  timeMine: { color: 'rgba(255,255,255,0.78)' },
+  photo: { width: 220, height: 166, borderRadius: 14, backgroundColor: theme.line },
   attached: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    marginHorizontal: 12,
+    marginBottom: 6,
+    padding: 8,
+    paddingRight: 14,
     backgroundColor: theme.panel,
-    borderTopWidth: 1,
-    borderTopColor: theme.line,
+    borderRadius: radius.md,
+    ...shadow.card,
   },
-  thumb: { width: 36, height: 36, borderRadius: 6, backgroundColor: theme.line },
-  attachedText: { flex: 1, color: theme.muted, fontSize: 13 },
-  remove: { color: theme.danger, fontWeight: '600', fontSize: 13 },
+  thumb: { width: 40, height: 40, borderRadius: 9, backgroundColor: theme.line },
+  remove: { fontFamily: font.bold, color: theme.danger, fontSize: 13 },
   composer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: theme.line,
+    paddingHorizontal: 12,
+    paddingTop: 10,
     backgroundColor: theme.panel,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    ...shadow.float,
   },
-  attach: { paddingHorizontal: 6, paddingVertical: 9 },
-  attachText: { fontSize: 24, color: theme.accent, lineHeight: 26 },
   input: {
     flex: 1,
-    backgroundColor: theme.bg,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 10,
-    maxHeight: 110,
+    fontFamily: font.medium,
+    backgroundColor: theme.sunken,
+    borderRadius: 23,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
+    minHeight: 46,
+    maxHeight: 120,
     fontSize: 15,
     color: theme.ink,
   },
   send: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: theme.accent,
-    borderRadius: 18,
-    paddingHorizontal: 17,
-    paddingVertical: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sendOff: { backgroundColor: theme.line },
-  sendText: { color: '#fff', fontWeight: '700' },
+  sendOff: { backgroundColor: theme.sunken },
 });
