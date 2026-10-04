@@ -63,21 +63,6 @@ export default function Account() {
 
   const me = useQuery({ queryKey: ['me'], queryFn: getMe, enabled: signedIn });
 
-  if (!signedIn) {
-    return (
-      <View style={styles.screen}>
-        <BigTitle title="Account" />
-        <EmptyState
-          icon="person-outline"
-          title="You are not signed in"
-          text="Signing in keeps your bookings and messages with your account, so they follow you to any phone."
-          action="Sign in"
-          onAction={() => router.push('/sign-in?next=/account')}
-        />
-      </View>
-    );
-  }
-
   /**
    * A copy of everything, written to a file and handed to the share sheet
    * (§119.2) — which is the only way anything leaves a phone. Shown as JSON
@@ -219,6 +204,24 @@ export default function Account() {
         },
       ],
     );
+
+  // AFTER every hook, never before (§133.11). Signed-in state changes while this
+  // tab stays mounted, so an early return above the hooks ran a different
+  // number of them on the next render — which React refuses, loudly.
+  if (!signedIn) {
+    return (
+      <View style={styles.screen}>
+        <BigTitle title="Account" />
+        <EmptyState
+          icon="person-outline"
+          title="You are not signed in"
+          text="Signing in keeps your bookings and messages with your account, so they follow you to any phone."
+          action="Sign in"
+          onAction={() => router.push('/sign-in?next=/account')}
+        />
+      </View>
+    );
+  }
 
   const nameShown = me.data?.displayName ?? 'Anonymous';
 
