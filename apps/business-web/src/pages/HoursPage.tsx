@@ -87,6 +87,9 @@ function LocationCard({
       DAYS.map((_, day) =>
         byDay.get(day) ?? {
           id: `new-${day}`,
+          // Carried on the synthetic row too, so an unsaved day has the same
+          // shape as a saved one (§128.40).
+          locationId: location.id,
           dayOfWeek: day,
           openTime: '09:00',
           closeTime: '17:00',

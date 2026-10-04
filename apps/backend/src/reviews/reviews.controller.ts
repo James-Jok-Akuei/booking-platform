@@ -25,6 +25,8 @@ import { ReviewsService } from './reviews.service';
 import { CreateReviewDto, UpdateReviewDto } from './dto/create-review.dto';
 import { ReviewResponseDto } from './dto/review-response.dto';
 import { ListReviewsDto } from './dto/list-reviews.dto';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { LocationReviewsDto, ReviewDto } from './dto/review-read.dto';
 
 /**
  * Writing and editing a review. CUSTOMER only — a business cannot review
@@ -37,6 +39,7 @@ export class ReviewsCustomerController {
   constructor(private readonly reviews: ReviewsService) {}
 
   @Post('appointments/:id/reviews')
+  @ApiCreatedResponse({ type: ReviewDto })
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) appointmentId: string,
@@ -47,6 +50,7 @@ export class ReviewsCustomerController {
 
   /** Rating and comment only, within the 7-day window. There is no delete. */
   @Patch('reviews/:id')
+  @ApiOkResponse({ type: ReviewDto })
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -70,6 +74,7 @@ export class ReviewsBusinessController {
   constructor(private readonly reviews: ReviewsService) {}
 
   @Post(':id/response')
+  @ApiCreatedResponse({ type: ReviewDto })
   respond(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -79,6 +84,7 @@ export class ReviewsBusinessController {
   }
 
   @Patch(':id/response')
+  @ApiOkResponse({ type: ReviewDto })
   updateResponse(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -102,6 +108,7 @@ export class ReviewsPublicController {
   constructor(private readonly reviews: ReviewsService) {}
 
   @Get(':id/reviews')
+  @ApiOkResponse({ type: LocationReviewsDto })
   list(
     @Param('id', ParseUUIDPipe) locationId: string,
     @CurrentUser() user: AuthenticatedUser | undefined,

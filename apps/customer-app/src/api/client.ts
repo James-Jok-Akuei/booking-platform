@@ -1,3 +1,4 @@
+import type { components } from './schema';
 import * as SecureStore from 'expo-secure-store';
 
 /**
@@ -21,16 +22,9 @@ const ACCESS_KEY = 'booking.accessToken';
 const REFRESH_KEY = 'booking.refreshToken';
 const USER_KEY = 'booking.user';
 
-export interface TokenPair {
-  accessToken: string;
-  refreshToken: string;
-}
+export type TokenPair = components['schemas']['TokenPairDto'];
 
-export interface AuthenticatedUser {
-  id: string;
-  email: string;
-  role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
-}
+export type AuthenticatedUser = components['schemas']['AuthenticatedUserDto'];
 
 export class ApiError extends Error {
   constructor(

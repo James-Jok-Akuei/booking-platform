@@ -4,6 +4,11 @@ import { BusinessAccessService } from '../business/business-access.service';
 import { CreateScheduleExceptionDto } from './dto/create-schedule-exception.dto';
 import { CreateTimeBlockDto } from './dto/create-time-block.dto';
 import { formatCalendarDate, parseCalendarDate, parseHhMm } from './time.util';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  ScheduleExceptionDto,
+  TimeBlockDto,
+} from './dto/availability-response.dto';
 
 /**
  * Write side of availability: the date-specific exceptions and manual blocks
@@ -104,7 +109,7 @@ export class ScheduleManagementService {
     return exceptions.map((exception) => this.serializeException(exception));
   }
 
-  async deleteException(userId: string, locationId: string, exceptionId: string) {
+  async deleteException(userId: string, locationId: string, exceptionId: string): Promise<ActionMessageDto> {
     const businessId = await this.access.requireBusinessId(userId);
     await this.access.requireOwnedLocation(businessId, locationId);
 
@@ -164,7 +169,7 @@ export class ScheduleManagementService {
     return blocks.map((block) => this.serializeBlock(block));
   }
 
-  async deleteTimeBlock(userId: string, locationId: string, blockId: string) {
+  async deleteTimeBlock(userId: string, locationId: string, blockId: string): Promise<ActionMessageDto> {
     const businessId = await this.access.requireBusinessId(userId);
     await this.access.requireOwnedLocation(businessId, locationId);
 
@@ -192,11 +197,28 @@ export class ScheduleManagementService {
 
   // Prisma hands back a @db.Date as a Date at UTC midnight; the API speaks
   // "YYYY-MM-DD" so clients never see a spurious time or offset.
-  private serializeException<T extends { date: Date }>(exception: T) {
-    return { ...exception, date: formatCalendarDate(exception.date) };
+  private serializeException(
+    exception: Omit<ScheduleExceptionDto, 'date' | 'createdAt' | 'updatedAt'> & {
+      date: Date;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+  ): ScheduleExceptionDto {
+    return {
+      ...exception,
+      date: formatCalendarDate(exception.date),
+      createdAt: exception.createdAt.toISOString(),
+      updatedAt: exception.updatedAt.toISOString(),
+    };
   }
 
-  private serializeBlock<T extends { date: Date }>(block: T) {
-    return { ...block, date: formatCalendarDate(block.date) };
+  private serializeBlock(
+    block: Omit<TimeBlockDto, 'date' | 'createdAt'> & { date: Date; createdAt: Date },
+  ): TimeBlockDto {
+    return {
+      ...block,
+      date: formatCalendarDate(block.date),
+      createdAt: block.createdAt.toISOString(),
+    };
   }
 }

@@ -2,6 +2,11 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import { inferOperator } from './operator-routing';
 import { INTERNAL_CURRENCY, minorUnitExponent } from './currency';
+import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  CurrencyDto,
+  PaymentProvidersDto,
+} from './dto/payment-response.dto';
 
 /**
  * Which mobile money operators this platform can collect through (§58.2).
@@ -36,6 +41,7 @@ export class PaymentsController {
    * platform, needed before anyone signs in, and it reveals nothing.
    */
   @Get('currency')
+  @ApiOkResponse({ type: CurrencyDto })
   currency() {
     const exponent = minorUnitExponent(INTERNAL_CURRENCY);
     return {
@@ -51,6 +57,7 @@ export class PaymentsController {
   }
 
   @Get('providers')
+  @ApiOkResponse({ type: PaymentProvidersDto })
   providers(@Query('phoneNumber') phoneNumber?: string) {
     const available = this.registry.available();
 

@@ -19,6 +19,11 @@ import {
 import { AppointmentsService } from './appointments.service';
 import { ReclassifyCancellationDto } from './dto/cancel-appointment.dto';
 import { ListAdminAppointmentsDto } from './dto/list-admin-appointments.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  AdminAppointmentPageDto,
+  AppointmentDto,
+} from './dto/appointment.dto';
 
 /**
  * Dispute resolution. API-only, like every other admin surface here (§16.9).
@@ -39,6 +44,7 @@ export class AdminAppointmentsController {
    * the platform produced.
    */
   @Get()
+  @ApiOkResponse({ type: AdminAppointmentPageDto })
   list(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListAdminAppointmentsDto,
@@ -47,6 +53,7 @@ export class AdminAppointmentsController {
   }
 
   @Patch(':id/business-cancellation')
+  @ApiOkResponse({ type: AppointmentDto })
   reclassify(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

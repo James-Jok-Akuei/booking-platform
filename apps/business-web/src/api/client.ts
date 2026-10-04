@@ -1,3 +1,4 @@
+import type { components } from './schema';
 /**
  * The one place this app talks to the backend.
  *
@@ -36,16 +37,9 @@ const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const ACCESS_KEY = 'booking-business.accessToken';
 const REFRESH_KEY = 'booking-business.refreshToken';
 
-export interface TokenPair {
-  accessToken: string;
-  refreshToken: string;
-}
+export type TokenPair = components['schemas']['TokenPairDto'];
 
-export interface AuthenticatedUser {
-  id: string;
-  email: string;
-  role: 'ADMIN' | 'BUSINESS' | 'CUSTOMER';
-}
+export type AuthenticatedUser = components['schemas']['AuthenticatedUserDto'];
 
 export const tokens = {
   get access() {

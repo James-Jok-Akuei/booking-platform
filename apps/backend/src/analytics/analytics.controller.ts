@@ -9,6 +9,8 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { AnalyticsService } from './analytics.service';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { BusinessAnalyticsDto } from './dto/analytics-response.dto';
 
 /**
  * Business performance reporting.
@@ -28,6 +30,7 @@ export class AnalyticsController {
   constructor(private readonly analytics: AnalyticsService) {}
 
   @Get(':id/analytics')
+  @ApiOkResponse({ type: BusinessAnalyticsDto })
   get(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) businessId: string,

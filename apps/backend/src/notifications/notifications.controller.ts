@@ -14,6 +14,12 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from './notifications.service';
 import { ListNotificationsDto } from './dto/list-notifications.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  MarkAllReadDto,
+  MarkReadDto,
+  NotificationPageDto,
+} from './dto/notification-response.dto';
 
 /**
  * A person's own notification inbox.
@@ -28,6 +34,7 @@ export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
 
   @Get()
+  @ApiOkResponse({ type: NotificationPageDto })
   list(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListNotificationsDto,
@@ -41,11 +48,13 @@ export class NotificationsController {
   }
 
   @Patch('read-all')
+  @ApiOkResponse({ type: MarkAllReadDto })
   markAllRead(@CurrentUser() user: AuthenticatedUser) {
     return this.notifications.markAllRead(user.userId);
   }
 
   @Patch(':id/read')
+  @ApiOkResponse({ type: MarkReadDto })
   markRead(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

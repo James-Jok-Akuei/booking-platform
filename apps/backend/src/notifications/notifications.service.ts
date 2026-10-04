@@ -8,6 +8,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  MarkAllReadDto,
+  MarkReadDto,
+  NOTIFICATION_SELECT,
+} from './dto/notification-response.dto';
+import {
   NOTIFICATION_CHANNEL,
   NotificationChannelDriver,
 } from './notification-channel.interface';
@@ -204,18 +209,7 @@ export class NotificationsService {
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
-        select: {
-          id: true,
-          type: true,
-          channel: true,
-          status: true,
-          subject: true,
-          body: true,
-          appointmentId: true,
-          readAt: true,
-          sentAt: true,
-          createdAt: true,
-        },
+        select: NOTIFICATION_SELECT,
       }),
     ]);
 
@@ -228,7 +222,7 @@ export class NotificationsService {
    * Scoped by recipientId, so someone else's notification simply matches no
    * row — the same structural ownership rule used everywhere else.
    */
-  async markRead(recipientId: string, notificationId: string) {
+  async markRead(recipientId: string, notificationId: string): Promise<MarkReadDto> {
     const { count } = await this.prisma.notification.updateMany({
       where: { id: notificationId, recipientId, readAt: null },
       data: { readAt: new Date() },
@@ -247,7 +241,7 @@ export class NotificationsService {
     return { message: 'Notification marked as read.', updated: count > 0 };
   }
 
-  async markAllRead(recipientId: string) {
+  async markAllRead(recipientId: string): Promise<MarkAllReadDto> {
     const { count } = await this.prisma.notification.updateMany({
       where: { recipientId, readAt: null },
       data: { readAt: new Date() },

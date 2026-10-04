@@ -15,6 +15,8 @@ import {
 import { AvailabilityService } from './availability.service';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { SLOT_GRID_MINUTES, parseCalendarDate } from './time.util';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { AvailabilityDto } from './dto/availability-response.dto';
 
 /**
  * Availability lookup — reachable without a token, but not the same for
@@ -46,6 +48,7 @@ export class AvailabilityController {
   constructor(private readonly availability: AvailabilityService) {}
 
   @Get(':id/availability')
+  @ApiOkResponse({ type: AvailabilityDto })
   async getAvailability(
     @Param('id', ParseUUIDPipe) locationId: string,
     @Query() query: AvailabilityQueryDto,

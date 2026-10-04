@@ -11713,16 +11713,151 @@ the listing, and it stays that way. The attachments are stored after the
 message's transaction commits, so selecting them there would reliably return an
 empty list and read as a failed upload. It has its own DTO saying so.
 
-### 128.32 Where this stands
+### 128.33 Reference data, and a flag that is always true
 
-**106 of 156 operations**, up from 90. Fifty-eight client types derived rather
-than declared, across all three apps.
+The public category list publishes no `isLive`. Everything in it is live by
+construction, and a field saying so invites a client to filter again on
+something that cannot be false.
 
-Remaining: admin categories, places and legal, notifications, auth, and a
-handful of singletons. 31 undescribed, plus 19 hollow ones held by the §128.14
-ratchet.
+Its admin sibling publishes `effectivelyLive` — `isLive` ANDed with the parent's
+— rather than leaving a console to work it out. A live type under a hidden
+category is not reachable, and a screen showing it as "on" would be telling an
+administrator the opposite of the truth (§100).
 
-Fifteen real findings. Two of them were in the checking machinery itself, which
-is the part worth remembering: both times the check looked right, generated
-cleanly, and did nothing — and both times the only thing that revealed it was
-deleting a field on purpose to watch the build fail.
+### 128.34 Five responses that change shape by viewer, not by data
+
+By the end there were five, all the same pattern and all now published as
+optional fields with the reason written beside them:
+
+- a chat message's `sender.email` — hidden from a customer (§112.1)
+- a ticket message's `isInternal` — hidden from a reporter
+- a review's `customer` identity — only for the counterparty business and admins
+- a payout destination's full `msisdn` — only for the OWNER (§48.5)
+- a shopfront's `saved` — ABSENT for a signed-out reader, because there is no
+  answer to "have you saved this" without a "you" (§120)
+
+None is a `oneOf`, because in every case the discriminator is the caller's role,
+which is not in the payload. A client cannot tell the variants apart from the
+response alone, so a union would be a lie about what it can know.
+
+### 128.35 `*-response.dto.ts` already meant something else
+
+A near-miss worth recording. `src/reviews/dto/review-response.dto.ts` existed,
+and it is a REQUEST body: the business's public reply to a review. I read the
+filename as "HTTP response DTO" and overwrote it.
+
+TypeScript caught it on the next compile, and git had the original. The response
+DTOs live in `review-read.dto.ts` now. The lesson is small and general: a
+filename is not a convention until it is one everywhere, and this repo has
+exactly one file where `response` means something else.
+
+### 128.36 Every rate is null, never zero
+
+The analytics response has four of them — completion, cancellation, no-show, and
+the average rating — and all four are null on an empty period. "No appointments"
+and "0% completed" are different claims, and a dashboard that conflates them
+tells a brand-new business it is failing (§28.5).
+
+Both money totals that can be incomplete carry a `complete` flag AND a
+sentence. A partial figure that does not announce itself is the number a
+business acts on once and then stops trusting.
+
+### 128.37 One column, two formats, on two endpoints
+
+A schedule exception's `date` is a calendar day. The business's own endpoint
+formats it `YYYY-MM-DD`; the public shopfront passes the row through, so the
+same column arrives as a full ISO timestamp.
+
+Both are now in the contract and visibly different, with the discrepancy written
+on the DTO. **Left as it is deliberately** — either side is a breaking change
+for a client already parsing it, and this is the §128.12 rule again: describing
+a wart is not the same as having licence to fix it.
+
+### 128.38 Two flattened admin views, for the same reason
+
+`AdminReviewDto` and `AdminAppointmentDto` both lift names out of their
+relations and put them side by side, rather than reusing the customer-facing
+DTO. A moderation screen answers "who, about which branch of which business, and
+can I still act on it" — and a console that had to walk three nested objects to
+draw one row would be drawing it wrong.
+
+Both also publish a `can…` flag mirroring exactly what the corresponding PATCH
+would refuse, so the console can stop offering an action the server declines
+(§118).
+
+### 128.39 The ratchet reached zero
+
+`KNOWN_HOLLOW_RESPONSES` started at twenty-three and came down with each slice.
+Deleting the last entry broke the build — `new Set([])` infers `Set<never>` — in
+exactly the way the comment above it had predicted: "Deleting the last entry
+should be followed by deleting the list."
+
+So the ratchet became what it was always meant to become: a flat rule, nothing
+grandfathered, no list to go stale.
+
+### 128.40 Two findings from deriving the last client types
+
+Switching the remaining hand-written types over found two more:
+
+- **`AdminPayoutDestinationDto` was missing `businessProfile`.** Mine, written
+  the same day: the admin list joins the business's name and phone so an admin
+  can ring to verify a number without opening another screen, and the console's
+  page reads it. The DTO did not declare it. Four compile errors in a page I had
+  not touched.
+- **The hours form built synthetic rows without `locationId`.** Harmless, but it
+  meant an unsaved day had a different shape from a saved one. Now identical.
+
+### 128.41 "Has no properties" was the wrong test
+
+Probing the hollow guard to prove it still fired revealed it did NOT, for an
+annotation removed from `GET /notifications`: the plugin inferred the page shape
+INLINE, with real properties, which passed a no-properties test while still
+generating an anonymous type no client can name or re-use.
+
+The rule is now the stronger one: every JSON response must name a DTO. A
+`type: string` body — the one CSV export — is still allowed, being a real scalar
+rather than an unnamed object.
+
+### 128.42 The case every version of the guard had skipped
+
+Then the strengthened guard still did not fire, and the reason is the most
+instructive thing in this whole section.
+
+Removing `@ApiOkResponse` does not leave a hollow schema behind. It leaves **no
+schema at all** — a bare `200` with no content. And every version of this guard
+looked only at schemas that EXISTED, so it skipped the commonest case entirely.
+That is how 94 operations sat undescribed in a file a guard was watching.
+
+The guard now refuses a 2xx with no body, and both cases were proved to fire.
+
+Three times in this section a check looked right and did nothing: `implements`
+without `NoExtraFields` (§128.16), `NoExtraFields` without depth (§128.30), and
+this. Each time the only thing that found it was deliberately breaking something
+to watch the build fail.
+
+### 128.43 Done
+
+**156 of 156 operations describe their responses.** 155 name a DTO; the
+remaining one is the CSV export, a genuine `text/csv` string body.
+
+Every client type is derived. Across the three apps, 122 distinct schema
+references and **one** hand-written interface left — `Page<T>` in the console,
+a generic helper over the derived types rather than a shape of its own.
+
+**Six generator guards**, each written after the thing it catches had already
+happened, and each proved to fail before being trusted:
+
+1. §60 — named schemas with no properties (the plugin did not run)
+2. §128.7 — two DTO classes sharing one global schema name
+3. §128.14 → §128.41/42 — responses that do not name a DTO, including the ones
+   that describe nothing at all
+4. §128.26 — POSTs documented as 200 that answer 201
+5. §128.27 — two response decorators on one route
+
+**Twenty real findings**, not one of which a reader would have caught. The shape
+of nearly all of them was the same: something that generated cleanly, read
+plausibly, and was wrong in a direction nobody had run yet. Four were in the
+checking machinery itself.
+
+What is NOT done, and is deliberately left: request bodies and error responses
+are still undescribed, and `/docs` is still the only description of either.

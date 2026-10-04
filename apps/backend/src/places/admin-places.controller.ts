@@ -15,6 +15,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { PrismaService } from '../prisma/prisma.service';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  AdminProvinceDto,
+  DistrictRecordDto,
+} from './dto/place-response.dto';
 import {
   CreateDistrictDto,
   SetDistrictLiveDto,
@@ -44,6 +50,7 @@ export class AdminPlacesController {
 
   /** Everything, open or not — the one listing that shows retired districts. */
   @Get('provinces')
+  @ApiOkResponse({ type: AdminProvinceDto, isArray: true })
   async findAll() {
     const provinces = await this.prisma.province.findMany({
       orderBy: { name: 'asc' },
@@ -80,6 +87,7 @@ export class AdminPlacesController {
   }
 
   @Post('districts')
+  @ApiCreatedResponse({ type: DistrictRecordDto })
   async create(@Body() dto: CreateDistrictDto) {
     const province = await this.prisma.province.findUnique({
       where: { id: dto.provinceId },
@@ -104,6 +112,7 @@ export class AdminPlacesController {
   }
 
   @Patch('districts/:id')
+  @ApiOkResponse({ type: DistrictRecordDto })
   async rename(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateDistrictDto,
@@ -120,6 +129,7 @@ export class AdminPlacesController {
   }
 
   @Patch('districts/:id/live')
+  @ApiOkResponse({ type: ActionMessageDto })
   async setLive(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: SetDistrictLiveDto,

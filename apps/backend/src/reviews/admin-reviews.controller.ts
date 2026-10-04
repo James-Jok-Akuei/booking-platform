@@ -19,6 +19,8 @@ import {
 import { ReviewsService } from './reviews.service';
 import { HideReviewDto } from './dto/hide-review.dto';
 import { ListAdminReviewsDto } from './dto/list-admin-reviews.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { AdminReviewPageDto, ReviewDto } from './dto/review-read.dto';
 
 /**
  * Review moderation. API-only, like every other admin surface here (§16.9).
@@ -39,6 +41,7 @@ export class AdminReviewsController {
    * an admin which reviews existed, and a hidden one was invisible everywhere.
    */
   @Get()
+  @ApiOkResponse({ type: AdminReviewPageDto })
   list(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListAdminReviewsDto,
@@ -47,6 +50,7 @@ export class AdminReviewsController {
   }
 
   @Patch(':id/hide')
+  @ApiOkResponse({ type: ReviewDto })
   hide(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -56,6 +60,7 @@ export class AdminReviewsController {
   }
 
   @Patch(':id/unhide')
+  @ApiOkResponse({ type: ReviewDto })
   unhide(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

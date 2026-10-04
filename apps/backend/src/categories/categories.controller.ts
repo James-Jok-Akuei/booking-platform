@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { CategoryDto, PUBLIC_CATEGORY_SELECT } from './dto/category-response.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -14,6 +16,7 @@ export class CategoriesController {
    * Seeded by prisma/seed.ts.
    */
   @Get()
+  @ApiOkResponse({ type: CategoryDto, isArray: true })
   findAll() {
     return this.prisma.category.findMany({
       // Only what a business may choose (§98). Discovery is NOT filtered this
@@ -21,19 +24,8 @@ export class CategoriesController {
       // listing, because it did not make that decision.
       where: { isLive: true },
       orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        icon: true,
-        description: true,
-        subcategories: {
-          // ANDed with the parent by construction: a hidden category is not
-          // returned at all, so its live children never reach anyone (§100).
-          where: { isLive: true },
-          orderBy: { name: 'asc' },
-          select: { id: true, name: true },
-        },
-      },
+      // One select, shared with the DTO that describes it (§128.5).
+      select: PUBLIC_CATEGORY_SELECT,
     });
   }
 }

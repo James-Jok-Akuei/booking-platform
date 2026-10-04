@@ -15,6 +15,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { PrismaService } from '../prisma/prisma.service';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  AdminCategoryDto,
+  CategoryRecordDto,
+  SubcategoryRecordDto,
+} from './dto/category-response.dto';
 import { SetCategoryLiveDto } from './dto/set-category-live.dto';
 import {
   CreateCategoryDto,
@@ -46,6 +53,7 @@ export class AdminCategoriesController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get('categories')
+  @ApiOkResponse({ type: AdminCategoryDto, isArray: true })
   async findAll() {
     const categories = await this.prisma.category.findMany({
       orderBy: { name: 'asc' },
@@ -94,6 +102,7 @@ export class AdminCategoriesController {
   // ---------- Categories ----------
 
   @Post('categories')
+  @ApiCreatedResponse({ type: CategoryRecordDto })
   async create(@Body() dto: CreateCategoryDto) {
     try {
       return await this.prisma.category.create({
@@ -109,6 +118,7 @@ export class AdminCategoriesController {
   }
 
   @Patch('categories/:id')
+  @ApiOkResponse({ type: CategoryRecordDto })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCategoryDto,
@@ -131,6 +141,7 @@ export class AdminCategoriesController {
   }
 
   @Patch('categories/:id/live')
+  @ApiOkResponse({ type: ActionMessageDto })
   async setLive(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: SetCategoryLiveDto,
@@ -149,6 +160,7 @@ export class AdminCategoriesController {
   // ---------- Subcategories ----------
 
   @Post('categories/:id/subcategories')
+  @ApiCreatedResponse({ type: SubcategoryRecordDto })
   async createSubcategory(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateSubcategoryDto,
@@ -167,6 +179,7 @@ export class AdminCategoriesController {
   }
 
   @Patch('subcategories/:id')
+  @ApiOkResponse({ type: SubcategoryRecordDto })
   async updateSubcategory(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateSubcategoryDto,
@@ -183,6 +196,7 @@ export class AdminCategoriesController {
   }
 
   @Patch('subcategories/:id/live')
+  @ApiOkResponse({ type: ActionMessageDto })
   async setSubcategoryLive(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: SetCategoryLiveDto,

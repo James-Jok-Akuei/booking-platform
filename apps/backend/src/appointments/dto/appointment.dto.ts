@@ -167,3 +167,60 @@ export class AppointmentPageDto {
 export const __appointmentDtoIsExact: NoExtraFields<AppointmentDto, AppointmentPayload> = true;
 export const __customerAppointmentDtoIsExact: NoExtraFields<CustomerAppointmentDto, CustomerAppointmentPayload> = true;
 export const __customerAppointmentDetailDtoIsExact: NoExtraFields<CustomerAppointmentDetailDto, CustomerAppointmentDetailPayload> = true;
+
+// ---------------------------------------------------------------------------
+// The admin listing (§95, §128.38)
+// ---------------------------------------------------------------------------
+
+/**
+ * An appointment as a MODERATOR reads it — flattened, with the names lifted out
+ * of their relations and put beside each other.
+ *
+ * Deliberately not `AppointmentDto`: this view exists to answer "whose booking,
+ * at which branch of which business, and can I still reclassify it", so a
+ * console drawing one row should not have to walk three nested objects.
+ */
+export class AdminAppointmentDto {
+  id!: string;
+  status!: AppointmentStatus;
+  startTime!: string;
+  endTime!: string;
+
+  currency!: string;
+  depositAmountMinor!: number;
+  platformFeeAmountMinor!: number;
+  businessAmountMinor!: number;
+  /** Derived from `depositPaidAt`, so a console need not know the column. */
+  depositPaid!: boolean;
+
+  cancelledAt!: string | null;
+  cancelledBy!: CancelledBy | null;
+  cancellationReason!: string | null;
+  /** The support ticket a reclassification was recorded against, if any. */
+  cancellationTicketId!: string | null;
+
+  customerId!: string;
+  customerEmail!: string;
+  serviceName!: string;
+  locationId!: string;
+  locationName!: string;
+  businessId!: string;
+  businessName!: string | null;
+
+  /**
+   * Whether reclassifying would do anything at all.
+   *
+   * Mirrors the PATCH exactly: a COMPLETED appointment and one already blamed
+   * on the business are both refused, and with no deposit taken there is
+   * nothing to refund. Published so the console can stop offering an action the
+   * server will decline (§118).
+   */
+  canReclassify!: boolean;
+}
+
+export class AdminAppointmentPageDto {
+  total!: number;
+  limit!: number;
+  offset!: number;
+  appointments!: AdminAppointmentDto[];
+}

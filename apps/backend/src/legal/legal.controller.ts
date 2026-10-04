@@ -19,8 +19,12 @@ import {
   AuthenticatedUser,
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { LegalService } from './legal.service';
+import {
+  AdminLegalDocumentDto,
+  LegalDraftDto,
+} from './dto/legal-response.dto';
 import {
   LegalAcceptanceDto,
   LegalDocumentDto,
@@ -105,17 +109,20 @@ export class AdminLegalController {
   constructor(private readonly legal: LegalService) {}
 
   @Get()
+  @ApiOkResponse({ type: AdminLegalDocumentDto, isArray: true })
   list() {
     return this.legal.listForAdmin();
   }
 
   @Post('drafts')
+  @ApiCreatedResponse({ type: LegalDraftDto })
   @HttpCode(HttpStatus.OK)
   startDraft(@Body() dto: StartDraftDto) {
     return this.legal.startDraft(dto.kind);
   }
 
   @Patch('drafts/:id')
+  @ApiOkResponse({ type: LegalDraftDto })
   updateDraft(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateDraftDto,
@@ -124,6 +131,7 @@ export class AdminLegalController {
   }
 
   @Post('drafts/:id/publish')
+  @ApiOkResponse({ type: LegalDocumentDto })
   @HttpCode(HttpStatus.OK)
   publish(
     @CurrentUser() user: AuthenticatedUser,

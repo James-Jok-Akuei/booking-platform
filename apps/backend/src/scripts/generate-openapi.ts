@@ -102,53 +102,45 @@ async function main() {
    * This is what the plugin emits for a handler it cannot infer: no `$ref`, no
    * properties, just the word "object". It is WORSE than an undescribed
    * response, because the contract now asserts something — and a client
-   * deriving from it gets `Record<string, never>`, a type that permits no
-   * field and explains nothing.
+   * deriving from it gets `Record<string, never>`, a type that permits no field
+   * and explains nothing.
    *
-   * The §60 guard above never saw these: it inspects `components.schemas`, and
-   * these are inline on the operation, belonging to no named schema at all.
+   * The §60 guard never saw these: it inspects `components.schemas`, and these
+   * are inline on the operation, belonging to no named schema at all.
    * Twenty-three were found sitting in the contract the day this was written,
    * including `GET /users/me` — the endpoint whose missing `imageUrl` cost an
-   * hour of §125, and which a described response would have shown immediately.
+   * hour of §125.
    *
-   * A RATCHET, not a wall: the known ones are listed and the build fails on any
-   * operation NOT on the list. The list may only shrink. Deleting the last
-   * entry should be followed by deleting the list.
+   * It began as a RATCHET, with the known twenty-three listed and the build
+   * failing on any new one. The list reached zero in §128.39, so the ratchet
+   * became what it was always meant to become: a flat rule, with nothing
+   * grandfathered and no list to go stale.
    */
-  const KNOWN_HOLLOW_RESPONSES = new Set([
-  'GET /business/locations/{id}/schedule-exceptions',
-  'GET /business/locations/{id}/time-blocks',
-  'GET /business/payout-destination',
-  'GET /categories',
-  'GET /locations/{id}/availability',
-  'GET /places/provinces',
-  'PATCH /admin/payout-destinations/{id}/reject',
-  'PATCH /admin/payout-destinations/{id}/verify',
-  'PATCH /admin/reviews/{id}/hide',
-  'PATCH /admin/reviews/{id}/unhide',
-  'PATCH /reviews/{id}',
-  'PATCH /reviews/{id}/response',
-  'POST /appointments/{id}/reviews',
-  'POST /auth/otp/verify',
-  'POST /auth/refresh',
-  'POST /business/locations/{id}/schedule-exceptions',
-  'POST /business/locations/{id}/time-blocks',
-  'POST /business/payout-destination',
-  'POST /reviews/{id}/response',
-  ]);
-
-  const isHollow = (schema: unknown): boolean => {
+  /**
+   * Anything that is not a NAMED schema (§128.41).
+   *
+   * Started as "has no properties", which caught the `{"type": "object"}` case.
+   * But the plugin can also emit an inline object WITH properties when it
+   * manages to infer one — and that passes a no-properties test while still
+   * generating an anonymous type no client can name, import or re-use. Found by
+   * probing this very guard: removing an annotation from `GET /notifications`
+   * did NOT fail the build, because the plugin inferred the page shape inline.
+   *
+   * So the rule is the stronger one: every JSON response names a DTO. A
+   * `type: string` body — the one CSV export — is allowed, being a real scalar
+   * rather than an unnamed object.
+   */
+  const isUnnamed = (schema: unknown): boolean => {
     if (typeof schema !== 'object' || schema === null) return false;
     const s = schema as Record<string, unknown>;
-    if (s.type === 'array') return isHollow(s.items);
+    if (s.type === 'array') return isUnnamed(s.items);
     if (s.$ref || s.allOf || s.oneOf || s.anyOf) return false;
-    const hasProperties =
-      Object.keys((s.properties as object) ?? {}).length > 0;
-    return !hasProperties && (s.type === undefined || s.type === 'object');
+    // A genuine scalar body, not an anonymous object.
+    if (typeof s.type === 'string' && s.type !== 'object') return false;
+    return true;
   };
 
   const hollow: string[] = [];
-  const fixed = new Set(KNOWN_HOLLOW_RESPONSES);
 
   for (const [path, item] of Object.entries(document.paths)) {
     for (const [verb, operation] of Object.entries(item as object)) {
@@ -157,38 +149,40 @@ async function main() {
         .responses ?? {};
       for (const [status, response] of Object.entries(responses)) {
         if (!status.startsWith('2')) continue;
-        const schema = (
-          response as { content?: { 'application/json'?: { schema?: unknown } } }
-        ).content?.['application/json']?.schema;
-        if (schema === undefined || !isHollow(schema)) continue;
-        const id = `${verb.toUpperCase()} ${path}`;
-        fixed.delete(id);
-        if (!KNOWN_HOLLOW_RESPONSES.has(id)) hollow.push(id);
+        const content = (
+          response as { content?: Record<string, { schema?: unknown }> }
+        ).content;
+
+        // No body at all is the case that kept slipping through (§128.42).
+        // Removing an @ApiOkResponse does not leave a hollow schema behind — it
+        // leaves NO schema, which every version of this guard before this one
+        // skipped, because it only looked at schemas that existed. That is how
+        // 94 operations stayed undescribed while a guard watched the file.
+        if (!content || Object.keys(content).length === 0) {
+          hollow.push(`${verb.toUpperCase()} ${path}  (no body described)`);
+          continue;
+        }
+
+        const schema = content['application/json']?.schema;
+        if (schema === undefined) continue;
+        if (!isUnnamed(schema)) continue;
+        hollow.push(`${verb.toUpperCase()} ${path}`);
       }
     }
   }
 
   if (hollow.length > 0) {
     throw new Error(
-      `${hollow.length} response(s) describe themselves as a bare object:\n` +
+      `${hollow.length} response(s) do not name a schema:\n` +
         hollow.map((h) => `  ${h}`).join('\n') +
-        '\n\nThat is not an undescribed response — it is a WRONG one. A client ' +
-        'generated from it receives `Record<string, never>`.\n' +
-        'Give the handler an @ApiOkResponse({ type: SomeDto }), or add it to ' +
-        'KNOWN_HOLLOW_RESPONSES in this file if it genuinely cannot be described ' +
-        'yet. The list may only shrink.',
+        '\n\nAn inline schema is not a described response. At best a client ' +
+        'generates an anonymous type it cannot name or re-use; at worst — for ' +
+        '`{"type": "object"}` — it generates `Record<string, never>`, which ' +
+        'permits no field at all.\n' +
+        'Give the handler an @ApiOkResponse({ type: SomeDto }) describing what ' +
+        'it actually returns.',
     );
   }
-
-  if (fixed.size > 0) {
-    throw new Error(
-      `${fixed.size} entr(ies) in KNOWN_HOLLOW_RESPONSES now describe themselves ` +
-        `properly:\n${[...fixed].map((f) => `  ${f}`).join('\n')}\n\n` +
-        'Remove them from the list in this file. A stale allowlist is how a ' +
-        'ratchet stops ratcheting.',
-    );
-  }
-
 
   /**
    * A POST documented as 200 that actually answers 201 (§128.26).

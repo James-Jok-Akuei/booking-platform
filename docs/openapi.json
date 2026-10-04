@@ -17,7 +17,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpRequestedDto"
+                }
+              }
+            }
           }
         },
         "summary": "Five a minute from one address, against the global 120 (§116.2).\n\nThis endpoint sends an EMAIL to an address the caller picks. The existing\ncooldown is per recipient, so it stops one person being spammed and does\nnothing about one machine walking a list of thousands — which costs the\nplatform its sending reputation, not just its bandwidth.",
@@ -46,7 +53,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/SignedInDto"
                 }
               }
             }
@@ -78,7 +85,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/TokenPairDto"
                 }
               }
             }
@@ -105,7 +112,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -234,7 +248,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminLegalDocumentDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -257,8 +281,15 @@
           }
         },
         "responses": {
-          "200": {
-            "description": ""
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalDraftDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -291,7 +322,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalDraftDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -314,7 +352,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalDocumentDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -750,7 +795,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryDto"
+                  }
                 }
               }
             }
@@ -768,7 +816,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminCategoryDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -790,7 +848,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryRecordDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -823,7 +888,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryRecordDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -856,7 +928,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -889,7 +968,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubcategoryRecordDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -922,7 +1008,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubcategoryRecordDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -955,7 +1048,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -973,7 +1073,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProvinceDto"
+                  }
                 }
               }
             }
@@ -990,7 +1093,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminProvinceDto"
+                  }
+                }
+              }
+            }
           }
         },
         "summary": "Everything, open or not — the one listing that shows retired districts.",
@@ -1015,7 +1128,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DistrictRecordDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -1048,7 +1168,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DistrictRecordDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -1081,7 +1208,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2325,7 +2459,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/AvailabilityDto"
                 }
               }
             }
@@ -2365,7 +2499,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ScheduleExceptionDto"
                 }
               }
             }
@@ -2395,7 +2529,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object"
+                    "$ref": "#/components/schemas/ScheduleExceptionDto"
                   }
                 }
               }
@@ -2430,7 +2564,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2467,7 +2608,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/TimeBlockDto"
                 }
               }
             }
@@ -2497,7 +2638,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object"
+                    "$ref": "#/components/schemas/TimeBlockDto"
                   }
                 }
               }
@@ -2532,7 +2673,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2732,7 +2880,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyDto"
+                }
+              }
+            }
           }
         },
         "summary": "How to render money, so no client has to guess (§70.1).\n\nEvery amount this API returns is an integer in the MINOR units of\n`code`, and how many of those make one major unit is a property of the\ncurrency — two for dollars, none for francs. A client that hardcodes a\ndivision by 100 is correct in one country and wrong by a factor of a\nhundred in another, which is the §55.2 mistake moved to the front end\nwhere it is harder to see.\n\nServed unauthenticated, like the operator list: it is a fact about the\nplatform, needed before anyone signs in, and it reveals nothing.",
@@ -2756,7 +2911,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentProvidersDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3279,7 +3441,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentPageDto"
+                }
+              }
+            }
           }
         },
         "summary": "The listing (§95). Without it the PATCH below took an id that nothing in\nthe platform produced.",
@@ -3313,7 +3482,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3832,7 +4008,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3846,7 +4029,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkAllReadDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3869,7 +4059,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkReadDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4341,7 +4538,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReviewDto"
                 }
               }
             }
@@ -4381,7 +4578,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReviewDto"
                 }
               }
             }
@@ -4422,7 +4619,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReviewDto"
                 }
               }
             }
@@ -4460,7 +4657,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReviewDto"
                 }
               }
             }
@@ -4507,7 +4704,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationReviewsDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4574,7 +4778,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminReviewPageDto"
+                }
+              }
+            }
           }
         },
         "summary": "The moderation queue (§93) — the only listing that returns hidden reviews.\n\nWithout it `hide` and `unhide` were unreachable in practice: nothing told\nan admin which reviews existed, and a hidden one was invisible everywhere.",
@@ -4612,7 +4823,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReviewDto"
                 }
               }
             }
@@ -4642,7 +4853,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/ReviewDto"
                 }
               }
             }
@@ -4696,7 +4907,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessAnalyticsDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -5075,7 +5293,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPayoutDestinationPageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -5112,7 +5337,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/PayoutDestinationDto"
                 }
               }
             }
@@ -5152,7 +5377,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/PayoutDestinationDto"
                 }
               }
             }
@@ -5183,7 +5408,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/PayoutDestinationDto"
                 }
               }
             }
@@ -5202,7 +5427,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/BusinessPayoutDestinationDto"
                 }
               }
             }
@@ -5386,7 +5611,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopfrontDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -5513,6 +5745,17 @@
           "email"
         ]
       },
+      "OtpRequestedDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
       "VerifyOtpDto": {
         "type": "object",
         "properties": {
@@ -5531,6 +5774,49 @@
           "code"
         ]
       },
+      "AuthenticatedUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role"
+        ]
+      },
+      "SignedInDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AuthenticatedUserDto"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "accessToken",
+          "refreshToken"
+        ]
+      },
       "RefreshTokenDto": {
         "type": "object",
         "properties": {
@@ -5540,6 +5826,32 @@
         },
         "required": [
           "refreshToken"
+        ]
+      },
+      "TokenPairDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ]
+      },
+      "ActionMessageDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
         ]
       },
       "LegalStatusDto": {
@@ -5682,6 +5994,104 @@
           "changeNote"
         ]
       },
+      "LegalPublisherDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ]
+      },
+      "LegalAcceptanceCountDto": {
+        "type": "object",
+        "properties": {
+          "acceptances": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "acceptances"
+        ]
+      },
+      "AdminLegalDocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "TERMS_OF_USE",
+              "PRIVACY_POLICY",
+              "SELLER_AGREEMENT"
+            ]
+          },
+          "version": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null while it is a draft."
+          },
+          "changeNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "What changed, shown to people being asked to accept again."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "publishedBy": {
+            "nullable": true,
+            "description": "Null on a draft, and null if that administrator's account has since gone.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalPublisherDto"
+              }
+            ]
+          },
+          "_count": {
+            "description": "How many people have accepted this exact version.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalAcceptanceCountDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "version",
+          "title",
+          "body",
+          "publishedAt",
+          "changeNote",
+          "createdAt",
+          "updatedAt",
+          "publishedBy",
+          "_count"
+        ]
+      },
       "StartDraftDto": {
         "type": "object",
         "properties": {
@@ -5696,6 +6106,61 @@
         },
         "required": [
           "kind"
+        ]
+      },
+      "LegalDraftDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "TERMS_OF_USE",
+              "PRIVACY_POLICY",
+              "SELLER_AGREEMENT"
+            ],
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedById": {
+            "type": "string",
+            "nullable": true
+          },
+          "changeNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "version",
+          "title",
+          "body",
+          "publishedAt",
+          "publishedById",
+          "changeNote",
+          "createdAt",
+          "updatedAt"
         ]
       },
       "UpdateDraftDto": {
@@ -5904,17 +6369,6 @@
         },
         "required": [
           "phoneNumber"
-        ]
-      },
-      "ActionMessageDto": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "message"
         ]
       },
       "ExportedAccountDto": {
@@ -6457,6 +6911,123 @@
           "displayName"
         ]
       },
+      "SubcategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "CategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true,
+            "description": "An icon key or emoji for the apps. Never a URL."
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "subcategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubcategoryDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "description",
+          "subcategories"
+        ]
+      },
+      "AdminSubcategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isLive": {
+            "type": "boolean"
+          },
+          "businessCount": {
+            "type": "number",
+            "description": "Businesses already in it. Shown before anything is switched off."
+          },
+          "effectivelyLive": {
+            "type": "boolean",
+            "description": "`isLive` ANDed with the parent's.\n\nPublished rather than left for a client to work out, because a live type\nunder a hidden category is not reachable, and a console that showed it as\n\"on\" would be telling an administrator the opposite of the truth (§100)."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isLive",
+          "businessCount",
+          "effectivelyLive"
+        ]
+      },
+      "AdminCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "isLive": {
+            "type": "boolean"
+          },
+          "businessCount": {
+            "type": "number"
+          },
+          "subcategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminSubcategoryDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "description",
+          "isLive",
+          "businessCount",
+          "subcategories"
+        ]
+      },
       "CreateCategoryDto": {
         "type": "object",
         "properties": {
@@ -6477,6 +7048,35 @@
         },
         "required": [
           "name"
+        ]
+      },
+      "CategoryRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "isLive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "description",
+          "isLive"
         ]
       },
       "UpdateCategoryDto": {
@@ -6521,6 +7121,29 @@
           "name"
         ]
       },
+      "SubcategoryRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isLive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "categoryId",
+          "name",
+          "isLive"
+        ]
+      },
       "UpdateSubcategoryDto": {
         "type": "object",
         "properties": {
@@ -6532,6 +7155,111 @@
         },
         "required": [
           "name"
+        ]
+      },
+      "DistrictDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "A stable handle, so a seed or a support query need not carry a UUID."
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name"
+        ]
+      },
+      "ProvinceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isCity": {
+            "type": "boolean",
+            "description": "Kigali is both a province and a city, and addresses there read differently."
+          },
+          "districts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DistrictDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "isCity",
+          "districts"
+        ]
+      },
+      "AdminDistrictDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isLive": {
+            "type": "boolean"
+          },
+          "branchCount": {
+            "type": "number",
+            "description": "Branches already there. Shown before anything is retired."
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "isLive",
+          "branchCount"
+        ]
+      },
+      "AdminProvinceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "districts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminDistrictDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "districts"
         ]
       },
       "CreateDistrictDto": {
@@ -6556,6 +7284,33 @@
           "provinceId",
           "name",
           "code"
+        ]
+      },
+      "DistrictRecordDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provinceId": {
+            "type": "string"
+          },
+          "isLive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "provinceId",
+          "isLive"
         ]
       },
       "UpdateDistrictDto": {
@@ -8145,6 +8900,78 @@
           "membership"
         ]
       },
+      "AvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "description": "A calendar day, `YYYY-MM-DD`. Not an instant."
+          },
+          "dayOfWeek": {
+            "type": "number",
+            "description": "0 = Sunday, matching JavaScript rather than ISO (§12)."
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "The zone every time here is expressed in."
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "capacity": {
+            "type": "number",
+            "description": "Concurrent appointments this branch can run; a slot survives until this many overlap."
+          },
+          "source": {
+            "type": "string",
+            "description": "WHY the answer is what it is — which of the weekly template, a date-specific\nexception, or the absence of either decided it.\n\nPublished so a screen can say \"closed for a public holiday\" rather than\nshowing an empty list that reads as a bug.",
+            "enum": [
+              "TEMPLATE",
+              "EXCEPTION",
+              "CLOSED_TEMPLATE",
+              "CLOSED_EXCEPTION",
+              "NO_TEMPLATE"
+            ]
+          },
+          "openTime": {
+            "type": "string",
+            "nullable": true,
+            "description": "Both null when closed. Both set otherwise — never one without the other."
+          },
+          "closeTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "The words to show when closed, when there are any."
+          },
+          "slots": {
+            "description": "`HH:mm` start times. Empty when closed or fully booked.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "locationId",
+          "date",
+          "dayOfWeek",
+          "timeZone",
+          "durationMinutes",
+          "capacity",
+          "source",
+          "openTime",
+          "closeTime",
+          "reason",
+          "slots"
+        ]
+      },
       "CreateScheduleExceptionDto": {
         "type": "object",
         "properties": {
@@ -8170,6 +8997,54 @@
           "date"
         ]
       },
+      "ScheduleExceptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "description": "A calendar day, `YYYY-MM-DD`."
+          },
+          "isClosed": {
+            "type": "boolean"
+          },
+          "customOpenTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "customCloseTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "e.g. \"Public holiday\", \"Staff training\"."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "locationId",
+          "date",
+          "isClosed",
+          "customOpenTime",
+          "customCloseTime",
+          "reason",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
       "CreateTimeBlockDto": {
         "type": "object",
         "properties": {
@@ -8192,6 +9067,44 @@
           "date",
           "startTime",
           "endTime"
+        ]
+      },
+      "TimeBlockDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "description": "A calendar day, `YYYY-MM-DD`."
+          },
+          "startTime": {
+            "type": "string",
+            "description": "`HH:mm`, wall clock, same zone as availability."
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "locationId",
+          "date",
+          "startTime",
+          "endTime",
+          "reason",
+          "createdAt"
         ]
       },
       "PlatformFeeDto": {
@@ -8370,6 +9283,64 @@
         },
         "required": [
           "platformFeePercentage"
+        ]
+      },
+      "CurrencyDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "exponent": {
+            "type": "number",
+            "description": "Decimal places. Divide a minor-unit amount by 10^exponent to display it."
+          },
+          "minorUnitsPerMajor": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string",
+            "description": "The rule in words, including the no-minor-unit case."
+          }
+        },
+        "required": [
+          "code",
+          "exponent",
+          "minorUnitsPerMajor",
+          "note"
+        ]
+      },
+      "PaymentProvidersDto": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MTN_MOMO",
+                "AIRTEL_MONEY"
+              ]
+            }
+          },
+          "suggested": {
+            "type": "string",
+            "nullable": true,
+            "description": "A GUESS from the phone number, or null. Prefixes follow operators loosely\nand a ported number keeps its old one, so a client should pre-select this\nand still let the customer change it (§58.1).",
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          },
+          "choiceRequired": {
+            "type": "boolean",
+            "description": "True when the number looks like one the platform cannot route on its own."
+          }
+        },
+        "required": [
+          "providers",
+          "suggested",
+          "choiceRequired"
         ]
       },
       "CreateAppointmentDto": {
@@ -9017,6 +9988,144 @@
             "minimum": 0
           }
         }
+      },
+      "AdminAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ]
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "depositAmountMinor": {
+            "type": "number"
+          },
+          "platformFeeAmountMinor": {
+            "type": "number"
+          },
+          "businessAmountMinor": {
+            "type": "number"
+          },
+          "depositPaid": {
+            "type": "boolean",
+            "description": "Derived from `depositPaidAt`, so a console need not know the column."
+          },
+          "cancelledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledBy": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "SYSTEM_EXPIRY"
+            ]
+          },
+          "cancellationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationTicketId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The support ticket a reclassification was recorded against, if any."
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "customerEmail": {
+            "type": "string"
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "locationName": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true
+          },
+          "canReclassify": {
+            "type": "boolean",
+            "description": "Whether reclassifying would do anything at all.\n\nMirrors the PATCH exactly: a COMPLETED appointment and one already blamed\non the business are both refused, and with no deposit taken there is\nnothing to refund. Published so the console can stop offering an action the\nserver will decline (§118)."
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "startTime",
+          "endTime",
+          "currency",
+          "depositAmountMinor",
+          "platformFeeAmountMinor",
+          "businessAmountMinor",
+          "depositPaid",
+          "cancelledAt",
+          "cancelledBy",
+          "cancellationReason",
+          "cancellationTicketId",
+          "customerId",
+          "customerEmail",
+          "serviceName",
+          "locationId",
+          "locationName",
+          "businessId",
+          "businessName",
+          "canReclassify"
+        ]
+      },
+      "AdminAppointmentPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "appointments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAppointmentDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "appointments"
+        ]
       },
       "ReclassifyCancellationDto": {
         "type": "object",
@@ -9855,6 +10964,156 @@
           "entry"
         ]
       },
+      "NotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "APPOINTMENT_BOOKED",
+              "DEPOSIT_CONFIRMED",
+              "APPOINTMENT_CANCELLED",
+              "APPOINTMENT_NO_SHOW",
+              "DEPOSIT_FAILED",
+              "APPOINTMENT_REMINDER",
+              "BUSINESS_INVITATION",
+              "NEW_MESSAGE",
+              "TICKET_CREATED",
+              "TICKET_MESSAGE",
+              "TICKET_STATUS_CHANGED",
+              "REVIEW_CREATED",
+              "REVIEW_RESPONSE",
+              "REVIEW_HIDDEN",
+              "DISPLAY_NAME_CLEARED",
+              "EXCHANGE_RATE_STALE",
+              "BUSINESS_APPROVED",
+              "BUSINESS_REJECTED",
+              "BUSINESS_SUSPENDED",
+              "BUSINESS_REINSTATED",
+              "PAYOUT_DESTINATION_SUBMITTED",
+              "PAYOUT_DESTINATION_VERIFIED",
+              "PAYOUT_DESTINATION_REJECTED",
+              "PAYMENT_PROVIDER_MISCONFIGURED",
+              "APPOINTMENT_MANUALLY_VERIFIED"
+            ]
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "EMAIL",
+              "SMS"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "Whether the platform managed to deliver it, not whether it was read.",
+            "enum": [
+              "PENDING",
+              "SENT",
+              "FAILED"
+            ]
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "What it is about, when it is about a booking."
+          },
+          "readAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null until read. The only field this inbox lets anyone change."
+          },
+          "sentAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "channel",
+          "status",
+          "subject",
+          "body",
+          "appointmentId",
+          "readAt",
+          "sentAt",
+          "createdAt"
+        ]
+      },
+      "NotificationPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "unread": {
+            "type": "number",
+            "description": "Over the WHOLE inbox, not the page — it drives a badge, not a list."
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "notifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "unread",
+          "limit",
+          "offset",
+          "notifications"
+        ]
+      },
+      "MarkAllReadDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "updated": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "message",
+          "updated"
+        ]
+      },
+      "MarkReadDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "updated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "message",
+          "updated"
+        ]
+      },
       "CreateTicketDto": {
         "type": "object",
         "properties": {
@@ -10372,6 +11631,88 @@
           "rating"
         ]
       },
+      "ReviewAuthorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ]
+      },
+      "ReviewDto": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "description": "Present for the counterparty business and administrators only.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewAuthorDto"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "editedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null until edited. An edited review says so rather than changing silently."
+          },
+          "responseText": {
+            "type": "string",
+            "nullable": true,
+            "description": "The business's public reply, if it has made one."
+          },
+          "responseAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "responseEditedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The byline. \"Anonymous\" when no name is set — never null."
+          }
+        },
+        "required": [
+          "id",
+          "rating",
+          "comment",
+          "editedAt",
+          "responseText",
+          "responseAt",
+          "responseEditedAt",
+          "createdAt",
+          "locationId",
+          "businessId",
+          "displayName"
+        ]
+      },
       "UpdateReviewDto": {
         "type": "object",
         "properties": {
@@ -10402,6 +11743,163 @@
           "responseText"
         ]
       },
+      "LocationReviewsDto": {
+        "type": "object",
+        "properties": {
+          "locationId": {
+            "type": "string"
+          },
+          "ratingAvg": {
+            "type": "number",
+            "nullable": true,
+            "description": "Null when nothing has been reviewed yet. Not zero: zero is a rating."
+          },
+          "ratingCount": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewDto"
+            }
+          }
+        },
+        "required": [
+          "locationId",
+          "ratingAvg",
+          "ratingCount",
+          "total",
+          "limit",
+          "offset",
+          "reviews"
+        ]
+      },
+      "AdminReviewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "editedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "responseText": {
+            "type": "string",
+            "nullable": true
+          },
+          "responseAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "hiddenAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null when visible. Set together with the reason, never alone."
+          },
+          "hiddenReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "hiddenByEmail": {
+            "type": "string",
+            "nullable": true,
+            "description": "Which administrator hid it. Null when it is visible."
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "locationName": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "customerEmail": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "\"Anonymous\" when no name is set — never null."
+          }
+        },
+        "required": [
+          "id",
+          "rating",
+          "comment",
+          "editedAt",
+          "responseText",
+          "responseAt",
+          "createdAt",
+          "hiddenAt",
+          "hiddenReason",
+          "hiddenByEmail",
+          "locationId",
+          "locationName",
+          "businessId",
+          "businessName",
+          "customerId",
+          "customerEmail",
+          "displayName"
+        ]
+      },
+      "AdminReviewPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "hiddenCount": {
+            "type": "number",
+            "description": "Across the whole platform, not this page — the number worth watching."
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminReviewDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "hiddenCount",
+          "reviews"
+        ]
+      },
       "HideReviewDto": {
         "type": "object",
         "properties": {
@@ -10414,6 +11912,269 @@
         },
         "required": [
           "hiddenReason"
+        ]
+      },
+      "AnalyticsRangeDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "days": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "days"
+        ]
+      },
+      "AppointmentAnalyticsDto": {
+        "type": "object",
+        "properties": {
+          "byStatus": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "completionRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Null on an empty period, never 0."
+          },
+          "cancellationRate": {
+            "type": "number",
+            "nullable": true
+          },
+          "noShowRate": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "byStatus",
+          "total",
+          "completionRate",
+          "cancellationRate",
+          "noShowRate"
+        ]
+      },
+      "CollectedThroughPlatformDto": {
+        "type": "object",
+        "properties": {
+          "depositsMinor": {
+            "type": "number"
+          },
+          "businessShareOfDepositsMinor": {
+            "type": "number",
+            "description": "What the business actually received of those deposits, after the fee."
+          },
+          "appointmentCount": {
+            "type": "number"
+          },
+          "cancelledWithUnknownPaymentState": {
+            "type": "number",
+            "description": "Cancellations from before payment state was recorded, whose deposits may or\nmay not have been taken. Counted rather than guessed at."
+          },
+          "complete": {
+            "type": "boolean",
+            "description": "False when the figure above is non-zero. Branch on this, not on the note."
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "depositsMinor",
+          "businessShareOfDepositsMinor",
+          "appointmentCount",
+          "cancelledWithUnknownPaymentState",
+          "complete",
+          "note"
+        ]
+      },
+      "BalanceOwedDto": {
+        "type": "object",
+        "properties": {
+          "amountMinor": {
+            "type": "number"
+          },
+          "fromAppointments": {
+            "type": "number"
+          },
+          "appointmentsMissingSnapshot": {
+            "type": "number"
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "amountMinor",
+          "fromAppointments",
+          "appointmentsMissingSnapshot",
+          "complete",
+          "note"
+        ]
+      },
+      "MoneyAnalyticsDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "The unit of account every figure here is in (§96). Never hardcoded."
+          },
+          "collectedThroughPlatform": {
+            "$ref": "#/components/schemas/CollectedThroughPlatformDto"
+          },
+          "platformFeesPaidMinor": {
+            "type": "number"
+          },
+          "balanceOwedToBusiness": {
+            "$ref": "#/components/schemas/BalanceOwedDto"
+          }
+        },
+        "required": [
+          "currency",
+          "collectedThroughPlatform",
+          "platformFeesPaidMinor",
+          "balanceOwedToBusiness"
+        ]
+      },
+      "ReviewAnalyticsDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "averageRating": {
+            "type": "number",
+            "nullable": true,
+            "description": "Null when nothing has been reviewed. Two decimal places otherwise."
+          }
+        },
+        "required": [
+          "count",
+          "averageRating"
+        ]
+      },
+      "BusiestDayDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "number",
+            "description": "0 = Sunday, matching `LocationHours.dayOfWeek` (§10.4)."
+          },
+          "appointments": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "day",
+          "appointments"
+        ]
+      },
+      "BusiestHourDto": {
+        "type": "object",
+        "properties": {
+          "hour": {
+            "type": "number"
+          },
+          "appointments": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "hour",
+          "appointments"
+        ]
+      },
+      "BusiestPeriodsDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BusiestDayDto"
+              }
+            ]
+          },
+          "hour": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BusiestHourDto"
+              }
+            ]
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "The zone the day and hour are expressed in (§103)."
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "hour",
+          "timeZone"
+        ]
+      },
+      "BusinessAnalyticsDto": {
+        "type": "object",
+        "properties": {
+          "businessId": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null when the figures cover the whole business rather than one branch."
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "BUSINESS",
+              "LOCATION"
+            ]
+          },
+          "range": {
+            "$ref": "#/components/schemas/AnalyticsRangeDto"
+          },
+          "appointments": {
+            "$ref": "#/components/schemas/AppointmentAnalyticsDto"
+          },
+          "money": {
+            "$ref": "#/components/schemas/MoneyAnalyticsDto"
+          },
+          "reviews": {
+            "$ref": "#/components/schemas/ReviewAnalyticsDto"
+          },
+          "busiest": {
+            "$ref": "#/components/schemas/BusiestPeriodsDto"
+          }
+        },
+        "required": [
+          "businessId",
+          "locationId",
+          "scope",
+          "range",
+          "appointments",
+          "money",
+          "reviews",
+          "busiest"
         ]
       },
       "PausedBusinessDto": {
@@ -10922,6 +12683,180 @@
           "payouts"
         ]
       },
+      "DestinationBusinessDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "phone"
+        ]
+      },
+      "ReplacedByDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "msisdn": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "REJECTED",
+              "UNVERIFIED",
+              "VERIFIED",
+              "SUPERSEDED"
+            ]
+          },
+          "submittedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "msisdn",
+          "status",
+          "submittedAt"
+        ]
+      },
+      "AdminPayoutDestinationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "businessProfile": {
+            "description": "Who is being paid, by name and number.\n\nOn the row because verifying a destination means phoning the business to\ncheck the number, and an admin should not have to look the business up in\nanother screen to do it.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DestinationBusinessDto"
+              }
+            ]
+          },
+          "msisdn": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "REJECTED",
+              "UNVERIFIED",
+              "VERIFIED",
+              "SUPERSEDED"
+            ]
+          },
+          "submittedById": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "type": "string"
+          },
+          "verifiedById": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "verificationMethod": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "ADMIN",
+              "OTP"
+            ]
+          },
+          "verificationNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "rejectionReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "replacedBy": {
+            "nullable": true,
+            "description": "Null when this is the latest one for its business.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReplacedByDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "businessId",
+          "businessProfile",
+          "msisdn",
+          "provider",
+          "status",
+          "submittedById",
+          "submittedAt",
+          "verifiedById",
+          "verifiedAt",
+          "verificationMethod",
+          "verificationNote",
+          "rejectionReason",
+          "createdAt",
+          "replacedBy"
+        ]
+      },
+      "AdminPayoutDestinationPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPayoutDestinationDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "destinations"
+        ]
+      },
       "VerifyPayoutDestinationDto": {
         "type": "object",
         "properties": {
@@ -10934,6 +12869,90 @@
         },
         "required": [
           "verificationNote"
+        ]
+      },
+      "PayoutDestinationDto": {
+        "type": "object",
+        "properties": {
+          "msisdn": {
+            "type": "string",
+            "description": "The full number. Present for the OWNER only."
+          },
+          "id": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "provider": {
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "REJECTED",
+              "UNVERIFIED",
+              "VERIFIED",
+              "SUPERSEDED"
+            ],
+            "type": "string"
+          },
+          "submittedById": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "type": "string"
+          },
+          "verifiedById": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null until an administrator has checked it."
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "verificationMethod": {
+            "nullable": true,
+            "enum": [
+              "ADMIN",
+              "OTP"
+            ],
+            "type": "string"
+          },
+          "verificationNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "rejectionReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "msisdnLast3": {
+            "type": "string",
+            "description": "The last three digits. Always present."
+          }
+        },
+        "required": [
+          "id",
+          "businessId",
+          "provider",
+          "status",
+          "submittedById",
+          "submittedAt",
+          "verifiedById",
+          "verifiedAt",
+          "verificationMethod",
+          "verificationNote",
+          "rejectionReason",
+          "createdAt",
+          "msisdnLast3"
         ]
       },
       "RejectPayoutDestinationDto": {
@@ -10967,6 +12986,32 @@
         },
         "required": [
           "msisdn"
+        ]
+      },
+      "BusinessPayoutDestinationDto": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "nullable": true,
+            "description": "Null when nothing has ever been submitted.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayoutDestinationDto"
+              }
+            ]
+          },
+          "payoutsPaused": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "destination",
+          "payoutsPaused",
+          "note"
         ]
       },
       "DiscoveryCentreDto": {
@@ -11216,6 +13261,362 @@
           "limit",
           "offset",
           "locations"
+        ]
+      },
+      "ShopfrontCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true,
+            "description": "An icon key or emoji. Never a URL."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ]
+      },
+      "ShopfrontSubcategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ShopfrontBusinessDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShopfrontCategoryDto"
+              }
+            ]
+          },
+          "subcategory": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShopfrontSubcategoryDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "phone",
+          "logoUrl",
+          "coverImageUrl",
+          "category",
+          "subcategory"
+        ]
+      },
+      "ShopfrontRatingDto": {
+        "type": "object",
+        "properties": {
+          "average": {
+            "type": "number",
+            "nullable": true,
+            "description": "Null when nothing has been reviewed. Not zero — zero is a rating."
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "average",
+          "count"
+        ]
+      },
+      "ShopfrontServiceDto": {
+        "type": "object",
+        "properties": {
+          "approxSettlement": {
+            "description": "Indicative only, and absent when no rate is configured (§66.2).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApproxSettlementDto"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "description": "The unit of account the price below is in."
+          },
+          "depositPercentage": {
+            "type": "string",
+            "description": "A decimal string, like every percentage here (§128.20)."
+          },
+          "priceMinor": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "durationMinutes",
+          "currency",
+          "depositPercentage",
+          "priceMinor"
+        ]
+      },
+      "ShopfrontDistrictDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provinceId": {
+            "type": "string"
+          },
+          "provinceName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provinceId",
+          "provinceName"
+        ]
+      },
+      "ShopfrontHoursDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "number",
+            "description": "0 = Sunday, matching JavaScript rather than ISO (§12)."
+          },
+          "openTime": {
+            "type": "string"
+          },
+          "closeTime": {
+            "type": "string"
+          },
+          "isClosed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "openTime",
+          "closeTime",
+          "isClosed"
+        ]
+      },
+      "ShopfrontExceptionDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "isClosed": {
+            "type": "boolean"
+          },
+          "customOpenTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "customCloseTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "date",
+          "isClosed",
+          "customOpenTime",
+          "customCloseTime",
+          "reason"
+        ]
+      },
+      "ShopfrontMediaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PHOTO"
+            ]
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "type",
+          "displayOrder"
+        ]
+      },
+      "ShopfrontDto": {
+        "type": "object",
+        "properties": {
+          "saved": {
+            "type": "boolean",
+            "description": "Absent entirely for a signed-out reader."
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "capacity": {
+            "type": "number",
+            "description": "Concurrent appointments this branch can run."
+          },
+          "business": {
+            "$ref": "#/components/schemas/ShopfrontBusinessDto"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/ShopfrontRatingDto"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopfrontServiceDto"
+            }
+          },
+          "district": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShopfrontDistrictDto"
+              }
+            ]
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopfrontHoursDto"
+            }
+          },
+          "upcomingExceptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopfrontExceptionDto"
+            }
+          },
+          "gallery": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopfrontMediaDto"
+            }
+          },
+          "openNow": {
+            "type": "boolean",
+            "description": "Computed against `timeZone`, not the reader's clock (§103)."
+          },
+          "timeZone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "address",
+          "latitude",
+          "longitude",
+          "phone",
+          "capacity",
+          "business",
+          "rating",
+          "services",
+          "district",
+          "hours",
+          "upcomingExceptions",
+          "gallery",
+          "openNow",
+          "timeZone"
         ]
       },
       "SavedPlaceDistrictDto": {

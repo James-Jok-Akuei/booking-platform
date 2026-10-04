@@ -21,6 +21,12 @@ import {
 import { ScheduleManagementService } from './schedule-management.service';
 import { CreateScheduleExceptionDto } from './dto/create-schedule-exception.dto';
 import { CreateTimeBlockDto } from './dto/create-time-block.dto';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  ScheduleExceptionDto,
+  TimeBlockDto,
+} from './dto/availability-response.dto';
 
 /**
  * Business-side schedule overrides. Same four-layer guarding as
@@ -38,6 +44,7 @@ export class ScheduleManagementController {
 
   /** Creates or replaces the exception for the given date. */
   @Post(':id/schedule-exceptions')
+  @ApiCreatedResponse({ type: ScheduleExceptionDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   createException(
     @CurrentUser() user: AuthenticatedUser,
@@ -48,6 +55,7 @@ export class ScheduleManagementController {
   }
 
   @Get(':id/schedule-exceptions')
+  @ApiOkResponse({ type: ScheduleExceptionDto, isArray: true })
   @BusinessRoles(
     BusinessMemberRole.OWNER,
     BusinessMemberRole.MANAGER,
@@ -61,6 +69,7 @@ export class ScheduleManagementController {
   }
 
   @Delete(':id/schedule-exceptions/:exceptionId')
+  @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   deleteException(
     @CurrentUser() user: AuthenticatedUser,
@@ -73,6 +82,7 @@ export class ScheduleManagementController {
   // ---------- Time blocks (partial-day) ----------
 
   @Post(':id/time-blocks')
+  @ApiCreatedResponse({ type: TimeBlockDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   createTimeBlock(
     @CurrentUser() user: AuthenticatedUser,
@@ -83,6 +93,7 @@ export class ScheduleManagementController {
   }
 
   @Get(':id/time-blocks')
+  @ApiOkResponse({ type: TimeBlockDto, isArray: true })
   @BusinessRoles(
     BusinessMemberRole.OWNER,
     BusinessMemberRole.MANAGER,
@@ -96,6 +107,7 @@ export class ScheduleManagementController {
   }
 
   @Delete(':id/time-blocks/:blockId')
+  @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   deleteTimeBlock(
     @CurrentUser() user: AuthenticatedUser,

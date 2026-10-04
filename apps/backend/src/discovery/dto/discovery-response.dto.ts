@@ -1,3 +1,5 @@
+import { MediaType } from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import type { ApproxSettlement } from '../../payments/approx-settlement';
 
@@ -88,3 +90,135 @@ export class DiscoveryPageDto {
  * providing (§128.17). These close that side.
  */
 export const __approxSettlementDtoIsExact: NoExtraFields<ApproxSettlementDto, Serialised<ApproxSettlement>> = true;
+
+// ---------------------------------------------------------------------------
+// One shopfront, in full (§128.37)
+// ---------------------------------------------------------------------------
+
+export class ShopfrontCategoryDto {
+  id!: string;
+  name!: string;
+  /** An icon key or emoji. Never a URL. */
+  icon!: string | null;
+}
+
+export class ShopfrontSubcategoryDto {
+  id!: string;
+  name!: string;
+}
+
+export class ShopfrontBusinessDto {
+  id!: string;
+  name!: string | null;
+  description!: string | null;
+  phone!: string | null;
+  logoUrl!: string | null;
+  coverImageUrl!: string | null;
+  category!: ShopfrontCategoryDto | null;
+  subcategory!: ShopfrontSubcategoryDto | null;
+}
+
+export class ShopfrontRatingDto {
+  /** Null when nothing has been reviewed. Not zero — zero is a rating. */
+  average!: number | null;
+  count!: number;
+}
+
+/**
+ * A service with its price AT THIS BRANCH.
+ *
+ * Flattened on purpose: the per-branch join is how a price is STORED, not a
+ * shape a customer should have to understand (§72).
+ */
+export class ShopfrontServiceDto {
+  id!: string;
+  name!: string;
+  description!: string | null;
+  durationMinutes!: number;
+  /** The unit of account the price below is in. */
+  currency!: string;
+  /** A decimal string, like every percentage here (§128.20). */
+  depositPercentage!: string;
+  priceMinor!: number;
+
+  /** Indicative only, and absent when no rate is configured (§66.2). */
+  @ApiProperty({ required: false, type: () => ApproxSettlementDto })
+  approxSettlement?: ApproxSettlementDto;
+}
+
+export class ShopfrontDistrictDto {
+  id!: string;
+  name!: string;
+  provinceId!: string;
+  provinceName!: string;
+}
+
+export class ShopfrontHoursDto {
+  /** 0 = Sunday, matching JavaScript rather than ISO (§12). */
+  dayOfWeek!: number;
+  openTime!: string;
+  closeTime!: string;
+  isClosed!: boolean;
+}
+
+/**
+ * A date that does not follow the weekly template.
+ *
+ * NOTE the format: `date` here is a full ISO TIMESTAMP, because the row is
+ * passed through unformatted — whereas the business's own
+ * `/business/locations/{id}/schedule-exceptions` formats the same column to
+ * `YYYY-MM-DD`. Two formats for one column, now both in the contract and
+ * visibly different (§128.37). Left as it is deliberately: changing either is a
+ * breaking change for a client already parsing it.
+ */
+export class ShopfrontExceptionDto {
+  date!: string;
+  isClosed!: boolean;
+  customOpenTime!: string | null;
+  customCloseTime!: string | null;
+  reason!: string | null;
+}
+
+export class ShopfrontMediaDto {
+  id!: string;
+  url!: string;
+  type!: MediaType;
+  displayOrder!: number;
+}
+
+/**
+ * Everything a customer sees about one branch.
+ *
+ * `saved` is ABSENT for a signed-out reader rather than false: there is no
+ * answer to "have you saved this" without a "you" (§120). That makes this the
+ * fifth per-viewer response in the API (§128.29, §128.34).
+ */
+export class ShopfrontDto {
+  @ApiProperty({
+    required: false,
+    description: 'Absent entirely for a signed-out reader.',
+  })
+  saved?: boolean;
+
+  id!: string;
+  name!: string;
+  address!: string;
+  latitude!: number | null;
+  longitude!: number | null;
+  phone!: string | null;
+  /** Concurrent appointments this branch can run. */
+  capacity!: number;
+
+  business!: ShopfrontBusinessDto;
+  rating!: ShopfrontRatingDto;
+  services!: ShopfrontServiceDto[];
+  district!: ShopfrontDistrictDto | null;
+
+  hours!: ShopfrontHoursDto[];
+  upcomingExceptions!: ShopfrontExceptionDto[];
+  gallery!: ShopfrontMediaDto[];
+
+  /** Computed against `timeZone`, not the reader's clock (§103). */
+  openNow!: boolean;
+  timeZone!: string;
+}

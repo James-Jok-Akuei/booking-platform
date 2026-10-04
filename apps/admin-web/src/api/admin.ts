@@ -74,49 +74,9 @@ export type PayoutDestinationStatus =
   | 'REJECTED'
   | 'SUPERSEDED';
 
-export interface PayoutDestination {
-  id: string;
-  businessId: string;
-  /**
-   * The FULL number, not the masked `msisdnLast3` other callers get.
-   *
-   * Deliberate: verification means contacting the holder and confirming the
-   * number is theirs, which cannot be done against the last three digits. Every
-   * other reader — including the business's own staff — sees the mask (§48.4).
-   */
-  msisdn: string;
-  provider: 'MTN_MOMO' | 'AIRTEL_MONEY';
-  status: PayoutDestinationStatus;
-  submittedById: string;
-  submittedAt: string;
-  verifiedById: string | null;
-  verifiedAt: string | null;
-  verificationMethod: 'ADMIN' | 'OTP' | null;
-  verificationNote: string | null;
-  rejectionReason: string | null;
-  createdAt: string;
-  businessProfile: { id: string; name: string | null; phone: string | null };
-  /**
-   * What took over, on a SUPERSEDED row (§78). Null on a live one.
-   *
-   * Resolved by the server because a status filter usually leaves the successor
-   * off this page, and because the history is read during a dispute — when
-   * inferring it from timestamps is exactly the wrong thing to ask of someone.
-   */
-  replacedBy: {
-    id: string;
-    msisdn: string;
-    status: PayoutDestinationStatus;
-    submittedAt: string;
-  } | null;
-}
+export type PayoutDestination = components['schemas']['AdminPayoutDestinationDto'];
 
-export interface DestinationPage {
-  total: number;
-  limit: number;
-  offset: number;
-  destinations: PayoutDestination[];
-}
+export type DestinationPage = components['schemas']['AdminPayoutDestinationPageDto'];
 
 export const listPayoutDestinations = (params: {
   status?: PayoutDestinationStatus;
@@ -303,12 +263,7 @@ export const setTicketStatus = (
 // Ledger and billing adjustments (§84)
 // ---------------------------------------------------------------------------
 
-export interface Currency {
-  code: string;
-  exponent: number;
-  minorUnitsPerMajor: number;
-  note: string;
-}
+export type Currency = components['schemas']['CurrencyDto'];
 
 /** Unauthenticated: the exponent is a property of the currency, not the caller. */
 export const getCurrency = () =>
@@ -385,35 +340,9 @@ export const getReconciliation = () =>
 // Review moderation (§93)
 // ---------------------------------------------------------------------------
 
-export interface ModeratedReview {
-  id: string;
-  rating: number;
-  comment: string | null;
-  editedAt: string | null;
-  responseText: string | null;
-  responseAt: string | null;
-  createdAt: string;
-  hiddenAt: string | null;
-  hiddenReason: string | null;
-  hiddenByEmail: string | null;
-  locationId: string;
-  locationName: string;
-  businessId: string;
-  businessName: string | null;
-  /** Identity, which only an admin and the counterparty business receive. */
-  customerId: string;
-  customerEmail: string;
-  displayName: string;
-}
+export type ModeratedReview = components['schemas']['AdminReviewDto'];
 
-export interface ModeratedReviewPage {
-  total: number;
-  limit: number;
-  offset: number;
-  /** Across the whole platform, not this page. */
-  hiddenCount: number;
-  reviews: ModeratedReview[];
-}
+export type ModeratedReviewPage = components['schemas']['AdminReviewPageDto'];
 
 /** The only listing that returns hidden reviews. */
 export const listReviewsForModeration = (params: {
@@ -481,37 +410,9 @@ export type AppointmentStatus =
   | 'CANCELLED'
   | 'NO_SHOW';
 
-export interface AdminAppointment {
-  id: string;
-  status: AppointmentStatus;
-  startTime: string;
-  endTime: string;
-  currency: string;
-  depositAmountMinor: number;
-  platformFeeAmountMinor: number;
-  businessAmountMinor: number;
-  depositPaid: boolean;
-  cancelledAt: string | null;
-  cancelledBy: CancelledBy | null;
-  cancellationReason: string | null;
-  cancellationTicketId: string | null;
-  customerId: string;
-  customerEmail: string;
-  serviceName: string;
-  locationId: string;
-  locationName: string;
-  businessId: string;
-  businessName: string | null;
-  /** Computed by the server, so it cannot disagree with what the PATCH accepts. */
-  canReclassify: boolean;
-}
+export type AdminAppointment = components['schemas']['AdminAppointmentDto'];
 
-export interface AdminAppointmentPage {
-  total: number;
-  limit: number;
-  offset: number;
-  appointments: AdminAppointment[];
-}
+export type AdminAppointmentPage = components['schemas']['AdminAppointmentPageDto'];
 
 export const listAdminAppointments = (params: {
   status?: AppointmentStatus;
@@ -543,27 +444,9 @@ export const reclassifyAsBusinessCancellation = (
 // JWT alone and scopes every query to the caller's own id.
 // ---------------------------------------------------------------------------
 
-export interface Notification {
-  id: string;
-  type: string;
-  channel: string;
-  status: string;
-  subject: string | null;
-  body: string | null;
-  appointmentId: string | null;
-  readAt: string | null;
-  sentAt: string | null;
-  createdAt: string;
-}
+export type Notification = components['schemas']['NotificationDto'];
 
-export interface NotificationPage {
-  total: number;
-  /** Unread across the whole inbox, not this page. */
-  unread: number;
-  limit: number;
-  offset: number;
-  notifications: Notification[];
-}
+export type NotificationPage = components['schemas']['NotificationPageDto'];
 
 export const listNotifications = (params: { unreadOnly?: boolean; limit?: number } = {}) =>
   api<NotificationPage>('/notifications', { query: params });
@@ -588,25 +471,9 @@ export const getPaymentProviders = () =>
 // Categories a business may choose (§98)
 // ---------------------------------------------------------------------------
 
-export interface AdminSubcategory {
-  id: string;
-  name: string;
-  isLive: boolean;
-  businessCount: number;
-  /** False when its own flag is on but the parent category is off (§100). */
-  effectivelyLive: boolean;
-}
+export type AdminSubcategory = components['schemas']['AdminSubcategoryDto'];
 
-export interface AdminCategory {
-  id: string;
-  name: string;
-  icon: string | null;
-  description: string | null;
-  isLive: boolean;
-  /** Already in it. Shown before switching it off. */
-  businessCount: number;
-  subcategories: AdminSubcategory[];
-}
+export type AdminCategory = components['schemas']['AdminCategoryDto'];
 
 export const listAdminCategories = () => api<AdminCategory[]>('/admin/categories');
 
@@ -668,21 +535,9 @@ export const revokeAdminAccess = (userId: string) =>
 // Where the platform is open (§105)
 // ---------------------------------------------------------------------------
 
-export interface AdminDistrict {
-  id: string;
-  code: string;
-  name: string;
-  isLive: boolean;
-  /** Branches already there. Shown before anything is retired. */
-  branchCount: number;
-}
+export type AdminDistrict = components['schemas']['AdminDistrictDto'];
 
-export interface AdminProvince {
-  id: string;
-  code: string;
-  name: string;
-  districts: AdminDistrict[];
-}
+export type AdminProvince = components['schemas']['AdminProvinceDto'];
 
 /** The only listing that shows retired districts. */
 export const listAdminPlaces = () => api<AdminProvince[]>('/admin/places/provinces');
@@ -708,20 +563,7 @@ export const setDistrictLive = (id: string, isLive: boolean) =>
 
 export type LegalKind = 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
 
-export interface LegalDocument {
-  id: string;
-  kind: LegalKind;
-  version: number;
-  title: string;
-  body: string;
-  /** Null while it is a draft, which is the only state it can be edited in. */
-  publishedAt: string | null;
-  changeNote: string | null;
-  createdAt: string;
-  updatedAt: string;
-  publishedBy: { id: string; email: string } | null;
-  _count: { acceptances: number };
-}
+export type LegalDocument = components['schemas']['AdminLegalDocumentDto'];
 
 export const listLegalDocuments = () => api<LegalDocument[]>('/admin/legal');
 

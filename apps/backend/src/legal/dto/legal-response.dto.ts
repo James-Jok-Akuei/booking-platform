@@ -35,3 +35,58 @@ export class LegalAcceptanceDto {
   kind!: LegalDocumentKind;
   version!: number;
 }
+
+// ---------------------------------------------------------------------------
+// The admin side (§128.35)
+// ---------------------------------------------------------------------------
+
+export class LegalPublisherDto {
+  id!: string;
+  email!: string;
+}
+
+export class LegalAcceptanceCountDto {
+  acceptances!: number;
+}
+
+/**
+ * Every version of every document, draft and published, newest first per kind.
+ *
+ * `publishedAt` null means DRAFT — the one state in which the body may still be
+ * edited. Once published it is frozen: what people agreed to has to stay as
+ * they read it, so a correction is a new version, never an edit (§122.3).
+ */
+export class AdminLegalDocumentDto {
+  id!: string;
+  kind!: LegalDocumentKind;
+  version!: number;
+  title!: string;
+  body!: string;
+  /** Null while it is a draft. */
+  publishedAt!: string | null;
+  /** What changed, shown to people being asked to accept again. */
+  changeNote!: string | null;
+
+  createdAt!: string;
+  updatedAt!: string;
+
+  /** Null on a draft, and null if that administrator's account has since gone. */
+  publishedBy!: LegalPublisherDto | null;
+
+  /** How many people have accepted this exact version. */
+  _count!: LegalAcceptanceCountDto;
+}
+
+/** A draft, as starting or editing one answers. The whole row, body included. */
+export class LegalDraftDto {
+  id!: string;
+  kind!: LegalDocumentKind;
+  version!: number;
+  title!: string;
+  body!: string;
+  publishedAt!: string | null;
+  publishedById!: string | null;
+  changeNote!: string | null;
+  createdAt!: string;
+  updatedAt!: string;
+}

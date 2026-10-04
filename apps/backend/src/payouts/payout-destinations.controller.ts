@@ -24,6 +24,12 @@ import {
   VerifyPayoutDestinationDto,
 } from './dto/verify-payout-destination.dto';
 import { ListPayoutDestinationsDto } from './dto/list-payout-destinations.dto';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+  AdminPayoutDestinationPageDto,
+  BusinessPayoutDestinationDto,
+  PayoutDestinationDto,
+} from './dto/payout-destination-response.dto';
 
 /**
  * The business's own payout number.
@@ -41,6 +47,7 @@ export class BusinessPayoutDestinationController {
   constructor(private readonly destinations: PayoutDestinationsService) {}
 
   @Post()
+  @ApiCreatedResponse({ type: PayoutDestinationDto })
   submit(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreatePayoutDestinationDto,
@@ -49,6 +56,7 @@ export class BusinessPayoutDestinationController {
   }
 
   @Get()
+  @ApiOkResponse({ type: BusinessPayoutDestinationDto })
   find(@CurrentUser() user: AuthenticatedUser) {
     return this.destinations.findForBusiness(user.userId);
   }
@@ -65,6 +73,7 @@ export class AdminPayoutDestinationsController {
   constructor(private readonly destinations: PayoutDestinationsService) {}
 
   @Get()
+  @ApiOkResponse({ type: AdminPayoutDestinationPageDto })
   list(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListPayoutDestinationsDto,
@@ -73,6 +82,7 @@ export class AdminPayoutDestinationsController {
   }
 
   @Patch(':id/verify')
+  @ApiOkResponse({ type: PayoutDestinationDto })
   verify(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -82,6 +92,7 @@ export class AdminPayoutDestinationsController {
   }
 
   @Patch(':id/reject')
+  @ApiOkResponse({ type: PayoutDestinationDto })
   reject(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

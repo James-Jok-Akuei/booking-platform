@@ -25,12 +25,7 @@ export type AppointmentStatus =
 export type Appointment = components['schemas']['AppointmentDto'];
 
 
-export interface AppointmentPage {
-  total: number;
-  limit: number;
-  offset: number;
-  appointments: Appointment[];
-}
+export type AppointmentPage = components['schemas']['AppointmentPageDto'];
 
 /** Derived from the contract (§128). */
 export type Me = components['schemas']['MeDto'];
@@ -43,12 +38,7 @@ export type BusinessMembership = NonNullable<Me['businessMembership']>;
  * and wrong by a factor of a hundred in a currency with no minor unit — the
  * §55.2 mistake, moved to the front end where it is harder to see.
  */
-export interface Currency {
-  code: string;
-  exponent: number;
-  minorUnitsPerMajor: number;
-  note: string;
-}
+export type Currency = components['schemas']['CurrencyDto'];
 
 export const getMe = () => api<Me>('/users/me');
 
@@ -122,13 +112,7 @@ export type ServiceOffer = components['schemas']['ServiceOfferedAtDto'];
 export type Service = components['schemas']['BusinessServiceDto'];
 
 
-export interface Hours {
-  id: string;
-  dayOfWeek: number;
-  openTime: string;
-  closeTime: string;
-  isClosed: boolean;
-}
+export type Hours = components['schemas']['LocationHoursDto'];
 
 /**
  * From the contract (§128.5). The include it describes is the one the query
@@ -143,12 +127,7 @@ export type ActionMessage = components['schemas']['ActionMessageDto'];
 export type BusinessPauseState = components['schemas']['BusinessPauseStateDto'];
 
 
-export interface Category {
-  id: string;
-  name: string;
-  icon: string | null;
-  subcategories: Array<{ id: string; name: string }>;
-}
+export type Category = components['schemas']['CategoryDto'];
 
 export const getProfile = () => api<BusinessProfile>('/business/profile');
 
@@ -257,47 +236,11 @@ export type PayoutDestinationStatus =
   | 'REJECTED'
   | 'SUPERSEDED';
 
-export interface PayoutDestination {
-  id: string;
-  provider: 'MTN_MOMO' | 'AIRTEL_MONEY';
-  status: PayoutDestinationStatus;
-  submittedAt: string;
-  verifiedAt: string | null;
-  verificationMethod: 'ADMIN' | 'OTP' | null;
-  rejectionReason: string | null;
-  /** Masked for everyone; the full number only for the OWNER who submitted it. */
-  msisdnLast3: string;
-  msisdn?: string;
-}
+export type PayoutDestination = components['schemas']['PayoutDestinationDto'];
 
-export interface Balance {
-  payoutsPaused: boolean;
-  /** Which of the two reasons a run would skip this business (§77). */
-  payoutsPausedReason: 'BUSINESS_SUSPENDED' | 'DESTINATION_NOT_VERIFIED' | null;
-  currency: string;
-  availableBySettlementCurrency: Array<{ currency: string; amountMinor: number }>;
-  /** Matured and ready for the next run. */
-  availableNowMinor: number;
-  /** Earned, still inside the hold period. */
-  pendingMinor: number;
-  /** Appointments with no outcome yet — not yours until they resolve. */
-  unresolvedMinor: number;
-  lifetimePaidMinor: number;
-  payoutCount: number;
-  pendingPayouts: { count: number; reportingInternalMinor: number };
-  note: string;
-}
+export type Balance = components['schemas']['BusinessBalanceDto'];
 
-export interface Payout {
-  id: string;
-  settlementCurrency: string;
-  settlementAmountMinor: number;
-  status: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED';
-  reference: string | null;
-  failureReason: string | null;
-  runAt: string;
-  paidAt: string | null;
-}
+export type Payout = components['schemas']['PayoutDto'];
 
 export const getPayoutDestination = () =>
   api<{ destination: PayoutDestination | null }>('/business/payout-destination');
@@ -568,25 +511,9 @@ export const removeMember = (membershipId: string) =>
 // A time block takes a slice OUT of a normal day: a lunch break, a meeting.
 // ---------------------------------------------------------------------------
 
-export interface ScheduleException {
-  id: string;
-  locationId: string;
-  /** YYYY-MM-DD, serialised as a calendar date, never a timestamp. */
-  date: string;
-  isClosed: boolean;
-  customOpenTime: string | null;
-  customCloseTime: string | null;
-  reason: string | null;
-}
+export type ScheduleException = components['schemas']['ScheduleExceptionDto'];
 
-export interface TimeBlock {
-  id: string;
-  locationId: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  reason: string | null;
-}
+export type TimeBlock = components['schemas']['TimeBlockDto'];
 
 export const listExceptions = (locationId: string) =>
   api<ScheduleException[]>(`/business/locations/${locationId}/schedule-exceptions`);
@@ -638,30 +565,9 @@ export const deleteTimeBlock = (locationId: string, blockId: string) =>
 // Reviews, and the one reply a business gets (§92)
 // ---------------------------------------------------------------------------
 
-export interface Review {
-  id: string;
-  rating: number;
-  comment: string | null;
-  /** Set when the customer changed their review — context a reply needs. */
-  editedAt: string | null;
-  responseText: string | null;
-  responseAt: string | null;
-  responseEditedAt: string | null;
-  createdAt: string;
-  locationId: string;
-  /** Never the customer's id or email: only the name they chose to show. */
-  displayName: string;
-}
+export type Review = components['schemas']['ReviewDto'];
 
-export interface ReviewPage {
-  locationId: string;
-  ratingAvg: number | null;
-  ratingCount: number;
-  total: number;
-  limit: number;
-  offset: number;
-  reviews: Review[];
-}
+export type ReviewPage = components['schemas']['LocationReviewsDto'];
 
 /** How long a reply stays editable after it is posted. */
 export const REVIEW_EDIT_WINDOW_DAYS = 7;
@@ -693,27 +599,9 @@ export const updateReviewResponse = (reviewId: string, responseText: string) =>
 // JWT alone and scopes every query to the caller's own id.
 // ---------------------------------------------------------------------------
 
-export interface Notification {
-  id: string;
-  type: string;
-  channel: string;
-  status: string;
-  subject: string | null;
-  body: string | null;
-  appointmentId: string | null;
-  readAt: string | null;
-  sentAt: string | null;
-  createdAt: string;
-}
+export type Notification = components['schemas']['NotificationDto'];
 
-export interface NotificationPage {
-  total: number;
-  /** Unread across the whole inbox, not this page. */
-  unread: number;
-  limit: number;
-  offset: number;
-  notifications: Notification[];
-}
+export type NotificationPage = components['schemas']['NotificationPageDto'];
 
 export const listNotifications = (params: { unreadOnly?: boolean; limit?: number } = {}) =>
   api<NotificationPage>('/notifications', { query: params });
@@ -728,46 +616,7 @@ export const markAllNotificationsRead = () =>
 // Analytics (§96)
 // ---------------------------------------------------------------------------
 
-export interface Analytics {
-  businessId: string;
-  locationId: string | null;
-  scope: 'BUSINESS' | 'LOCATION';
-  range: { from: string; to: string; days: number };
-  appointments: {
-    total: number;
-    byStatus: Record<string, number>;
-    completionRate: number;
-    cancellationRate: number;
-    noShowRate: number;
-  };
-  money: {
-    /** The unit every amount below is in. Reported by the server (§96). */
-    currency: string;
-    collectedThroughPlatform: {
-      depositsMinor: number;
-      businessShareOfDepositsMinor: number;
-      appointmentCount: number;
-      cancelledWithUnknownPaymentState: number;
-      /** False means the figure is partial, and says so rather than rounding. */
-      complete: boolean;
-      note: string;
-    };
-    platformFeesPaidMinor: number;
-    balanceOwedToBusiness: {
-      amountMinor: number;
-      fromAppointments: number;
-      appointmentsMissingSnapshot: number;
-      complete: boolean;
-      note: string;
-    };
-  };
-  reviews: { count: number; averageRating: number | null };
-  busiest: {
-    dayOfWeek: { day: number; appointments: number } | null;
-    hour: { hour: number; appointments: number } | null;
-    timeZone: string;
-  };
-}
+export type Analytics = components['schemas']['BusinessAnalyticsDto'];
 
 export const getAnalytics = (
   businessId: string,
@@ -806,18 +655,9 @@ export const getAppointment = (id: string) =>
 // Where a branch is (§104)
 // ---------------------------------------------------------------------------
 
-export interface District {
-  id: string;
-  code: string;
-  name: string;
-}
+export type District = components['schemas']['DistrictDto'];
 
-export interface Province {
-  id: string;
-  code: string;
-  name: string;
-  districts: District[];
-}
+export type Province = components['schemas']['ProvinceDto'];
 
 export const listProvinces = () =>
   api<Province[]>('/places/provinces', { anonymous: true });

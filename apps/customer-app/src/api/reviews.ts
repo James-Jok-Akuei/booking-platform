@@ -5,20 +5,7 @@ import type { components } from './schema';
 export type NewReview = components['schemas']['CreateReviewDto'];
 export type ReviewEdit = components['schemas']['UpdateReviewDto'];
 
-export interface Review {
-  id: string;
-  rating: number;
-  comment: string | null;
-  editedAt: string | null;
-  responseText: string | null;
-  responseAt: string | null;
-  responseEditedAt: string | null;
-  createdAt: string;
-  locationId: string;
-  businessId: string;
-  /** The byline. "Anonymous" when the customer has never set a name (§31). */
-  displayName: string;
-}
+export type Review = components['schemas']['ReviewDto'];
 
 /**
  * How long a review stays editable, and the server is the one that enforces it.

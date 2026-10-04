@@ -2394,13 +2394,34 @@ export interface components {
              */
             role?: "BUSINESS" | "CUSTOMER";
         };
+        OtpRequestedDto: {
+            message: string;
+        };
         VerifyOtpDto: {
             /** Format: email */
             email: string;
             code: string;
         };
+        AuthenticatedUserDto: {
+            id: string;
+            email: string;
+            /** @enum {string} */
+            role: "BUSINESS" | "CUSTOMER" | "ADMIN";
+        };
+        SignedInDto: {
+            user: components["schemas"]["AuthenticatedUserDto"];
+            accessToken: string;
+            refreshToken: string;
+        };
         RefreshTokenDto: {
             refreshToken: string;
+        };
+        TokenPairDto: {
+            accessToken: string;
+            refreshToken: string;
+        };
+        ActionMessageDto: {
+            message: string;
         };
         LegalStatusDto: {
             /** @description The HIGHEST version they ever agreed to, not the most recent tap (§122.3). */
@@ -2443,9 +2464,47 @@ export interface components {
             /** @description One line on what moved, so nobody rereads four thousand words (§122.3). */
             changeNote: string | null;
         };
+        LegalPublisherDto: {
+            id: string;
+            email: string;
+        };
+        LegalAcceptanceCountDto: {
+            acceptances: number;
+        };
+        AdminLegalDocumentDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
+            version: number;
+            title: string;
+            body: string;
+            /** @description Null while it is a draft. */
+            publishedAt: string | null;
+            /** @description What changed, shown to people being asked to accept again. */
+            changeNote: string | null;
+            createdAt: string;
+            updatedAt: string;
+            /** @description Null on a draft, and null if that administrator's account has since gone. */
+            publishedBy: components["schemas"]["LegalPublisherDto"] | null;
+            /** @description How many people have accepted this exact version. */
+            _count: components["schemas"]["LegalAcceptanceCountDto"];
+        };
         StartDraftDto: {
             /** @enum {string} */
             kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
+        };
+        LegalDraftDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
+            version: number;
+            title: string;
+            body: string;
+            publishedAt: string | null;
+            publishedById: string | null;
+            changeNote: string | null;
+            createdAt: string;
+            updatedAt: string;
         };
         UpdateDraftDto: {
             title?: string;
@@ -2510,9 +2569,6 @@ export interface components {
             label?: string;
             /** @enum {string} */
             provider?: "MTN_MOMO" | "AIRTEL_MONEY";
-        };
-        ActionMessageDto: {
-            message: string;
         };
         ExportedAccountDto: {
             id: string;
@@ -2662,11 +2718,54 @@ export interface components {
             email: string;
             displayName: string | null;
         };
+        SubcategoryDto: {
+            id: string;
+            name: string;
+        };
+        CategoryDto: {
+            id: string;
+            name: string;
+            /** @description An icon key or emoji for the apps. Never a URL. */
+            icon: string | null;
+            description: string | null;
+            subcategories: components["schemas"]["SubcategoryDto"][];
+        };
+        AdminSubcategoryDto: {
+            id: string;
+            name: string;
+            isLive: boolean;
+            /** @description Businesses already in it. Shown before anything is switched off. */
+            businessCount: number;
+            /**
+             * @description `isLive` ANDed with the parent's.
+             *
+             *     Published rather than left for a client to work out, because a live type
+             *     under a hidden category is not reachable, and a console that showed it as
+             *     "on" would be telling an administrator the opposite of the truth (§100).
+             */
+            effectivelyLive: boolean;
+        };
+        AdminCategoryDto: {
+            id: string;
+            name: string;
+            icon: string | null;
+            description: string | null;
+            isLive: boolean;
+            businessCount: number;
+            subcategories: components["schemas"]["AdminSubcategoryDto"][];
+        };
         CreateCategoryDto: {
             name: string;
             /** @description An icon key or emoji for the frontends, never a URL. */
             icon?: string;
             description?: string;
+        };
+        CategoryRecordDto: {
+            id: string;
+            name: string;
+            icon: string | null;
+            description: string | null;
+            isLive: boolean;
         };
         UpdateCategoryDto: {
             name?: string;
@@ -2679,8 +2778,42 @@ export interface components {
         CreateSubcategoryDto: {
             name: string;
         };
+        SubcategoryRecordDto: {
+            id: string;
+            categoryId: string;
+            name: string;
+            isLive: boolean;
+        };
         UpdateSubcategoryDto: {
             name: string;
+        };
+        DistrictDto: {
+            id: string;
+            /** @description A stable handle, so a seed or a support query need not carry a UUID. */
+            code: string;
+            name: string;
+        };
+        ProvinceDto: {
+            id: string;
+            code: string;
+            name: string;
+            /** @description Kigali is both a province and a city, and addresses there read differently. */
+            isCity: boolean;
+            districts: components["schemas"]["DistrictDto"][];
+        };
+        AdminDistrictDto: {
+            id: string;
+            code: string;
+            name: string;
+            isLive: boolean;
+            /** @description Branches already there. Shown before anything is retired. */
+            branchCount: number;
+        };
+        AdminProvinceDto: {
+            id: string;
+            code: string;
+            name: string;
+            districts: components["schemas"]["AdminDistrictDto"][];
         };
         CreateDistrictDto: {
             /** Format: uuid */
@@ -2691,6 +2824,13 @@ export interface components {
              *     cannot be confused with the display name, which may be reworded.
              */
             code: string;
+        };
+        DistrictRecordDto: {
+            id: string;
+            code: string;
+            name: string;
+            provinceId: string;
+            isLive: boolean;
         };
         UpdateDistrictDto: {
             name: string;
@@ -3191,6 +3331,34 @@ export interface components {
             message: string;
             membership: components["schemas"]["RemovedMembershipDto"];
         };
+        AvailabilityDto: {
+            locationId: string;
+            /** @description A calendar day, `YYYY-MM-DD`. Not an instant. */
+            date: string;
+            /** @description 0 = Sunday, matching JavaScript rather than ISO (§12). */
+            dayOfWeek: number;
+            /** @description The zone every time here is expressed in. */
+            timeZone: string;
+            durationMinutes: number;
+            /** @description Concurrent appointments this branch can run; a slot survives until this many overlap. */
+            capacity: number;
+            /**
+             * @description WHY the answer is what it is — which of the weekly template, a date-specific
+             *     exception, or the absence of either decided it.
+             *
+             *     Published so a screen can say "closed for a public holiday" rather than
+             *     showing an empty list that reads as a bug.
+             * @enum {string}
+             */
+            source: "TEMPLATE" | "EXCEPTION" | "CLOSED_TEMPLATE" | "CLOSED_EXCEPTION" | "NO_TEMPLATE";
+            /** @description Both null when closed. Both set otherwise — never one without the other. */
+            openTime: string | null;
+            closeTime: string | null;
+            /** @description The words to show when closed, when there are any. */
+            reason: string | null;
+            /** @description `HH:mm` start times. Empty when closed or fully booked. */
+            slots: string[];
+        };
         CreateScheduleExceptionDto: {
             date: string;
             isClosed?: boolean;
@@ -3198,11 +3366,35 @@ export interface components {
             customCloseTime?: string;
             reason?: string;
         };
+        ScheduleExceptionDto: {
+            id: string;
+            locationId: string;
+            /** @description A calendar day, `YYYY-MM-DD`. */
+            date: string;
+            isClosed: boolean;
+            customOpenTime: string | null;
+            customCloseTime: string | null;
+            /** @description e.g. "Public holiday", "Staff training". */
+            reason: string | null;
+            createdAt: string;
+            updatedAt: string;
+        };
         CreateTimeBlockDto: {
             date: string;
             startTime: string;
             endTime: string;
             reason?: string;
+        };
+        TimeBlockDto: {
+            id: string;
+            locationId: string;
+            /** @description A calendar day, `YYYY-MM-DD`. */
+            date: string;
+            /** @description `HH:mm`, wall clock, same zone as availability. */
+            startTime: string;
+            endTime: string;
+            reason: string | null;
+            createdAt: string;
         };
         PlatformFeeDto: {
             /**
@@ -3298,6 +3490,26 @@ export interface components {
              *     make existing services unsaveable.
              */
             platformFeePercentage: number;
+        };
+        CurrencyDto: {
+            code: string;
+            /** @description Decimal places. Divide a minor-unit amount by 10^exponent to display it. */
+            exponent: number;
+            minorUnitsPerMajor: number;
+            /** @description The rule in words, including the no-minor-unit case. */
+            note: string;
+        };
+        PaymentProvidersDto: {
+            providers: ("MTN_MOMO" | "AIRTEL_MONEY")[];
+            /**
+             * @description A GUESS from the phone number, or null. Prefixes follow operators loosely
+             *     and a ported number keeps its old one, so a client should pre-select this
+             *     and still let the customer change it (§58.1).
+             * @enum {string|null}
+             */
+            suggested: "MTN_MOMO" | "AIRTEL_MONEY" | null;
+            /** @description True when the number looks like one the platform cannot route on its own. */
+            choiceRequired: boolean;
         };
         CreateAppointmentDto: {
             /** Format: uuid */
@@ -3544,6 +3756,47 @@ export interface components {
              */
             gatewayChargeMinor?: number;
         };
+        AdminAppointmentDto: {
+            id: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            startTime: string;
+            endTime: string;
+            currency: string;
+            depositAmountMinor: number;
+            platformFeeAmountMinor: number;
+            businessAmountMinor: number;
+            /** @description Derived from `depositPaidAt`, so a console need not know the column. */
+            depositPaid: boolean;
+            cancelledAt: string | null;
+            /** @enum {string|null} */
+            cancelledBy: "BUSINESS" | "CUSTOMER" | "SYSTEM_EXPIRY" | null;
+            cancellationReason: string | null;
+            /** @description The support ticket a reclassification was recorded against, if any. */
+            cancellationTicketId: string | null;
+            customerId: string;
+            customerEmail: string;
+            serviceName: string;
+            locationId: string;
+            locationName: string;
+            businessId: string;
+            businessName: string | null;
+            /**
+             * @description Whether reclassifying would do anything at all.
+             *
+             *     Mirrors the PATCH exactly: a COMPLETED appointment and one already blamed
+             *     on the business are both refused, and with no deposit taken there is
+             *     nothing to refund. Published so the console can stop offering an action the
+             *     server will decline (§118).
+             */
+            canReclassify: boolean;
+        };
+        AdminAppointmentPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            appointments: components["schemas"]["AdminAppointmentDto"][];
+        };
         ReclassifyCancellationDto: {
             reason: string;
             /**
@@ -3785,6 +4038,42 @@ export interface components {
             adjustment: components["schemas"]["SettledAdjustmentDto"];
             entry: components["schemas"]["LedgerEntryDto"];
         };
+        NotificationDto: {
+            id: string;
+            /** @enum {string} */
+            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED";
+            /** @enum {string} */
+            channel: "EMAIL" | "SMS";
+            /**
+             * @description Whether the platform managed to deliver it, not whether it was read.
+             * @enum {string}
+             */
+            status: "PENDING" | "SENT" | "FAILED";
+            subject: string;
+            body: string;
+            /** @description What it is about, when it is about a booking. */
+            appointmentId: string | null;
+            /** @description Null until read. The only field this inbox lets anyone change. */
+            readAt: string | null;
+            sentAt: string | null;
+            createdAt: string;
+        };
+        NotificationPageDto: {
+            total: number;
+            /** @description Over the WHOLE inbox, not the page — it drives a badge, not a list. */
+            unread: number;
+            limit: number;
+            offset: number;
+            notifications: components["schemas"]["NotificationDto"][];
+        };
+        MarkAllReadDto: {
+            message: string;
+            updated: number;
+        };
+        MarkReadDto: {
+            message: string;
+            updated: boolean;
+        };
         CreateTicketDto: {
             /** @enum {string} */
             category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
@@ -3934,6 +4223,28 @@ export interface components {
             comment?: string;
             displayName?: string;
         };
+        ReviewAuthorDto: {
+            id: string;
+            email: string;
+        };
+        ReviewDto: {
+            /** @description Present for the counterparty business and administrators only. */
+            customer?: components["schemas"]["ReviewAuthorDto"];
+            id: string;
+            rating: number;
+            comment: string | null;
+            /** @description Null until edited. An edited review says so rather than changing silently. */
+            editedAt: string | null;
+            /** @description The business's public reply, if it has made one. */
+            responseText: string | null;
+            responseAt: string | null;
+            responseEditedAt: string | null;
+            createdAt: string;
+            locationId: string;
+            businessId: string;
+            /** @description The byline. "Anonymous" when no name is set — never null. */
+            displayName: string;
+        };
         UpdateReviewDto: {
             rating?: number;
             comment?: string;
@@ -3942,12 +4253,127 @@ export interface components {
         ReviewResponseDto: {
             responseText: string;
         };
+        LocationReviewsDto: {
+            locationId: string;
+            /** @description Null when nothing has been reviewed yet. Not zero: zero is a rating. */
+            ratingAvg: number | null;
+            ratingCount: number;
+            total: number;
+            limit: number;
+            offset: number;
+            reviews: components["schemas"]["ReviewDto"][];
+        };
+        AdminReviewDto: {
+            id: string;
+            rating: number;
+            comment: string | null;
+            editedAt: string | null;
+            responseText: string | null;
+            responseAt: string | null;
+            createdAt: string;
+            /** @description Null when visible. Set together with the reason, never alone. */
+            hiddenAt: string | null;
+            hiddenReason: string | null;
+            /** @description Which administrator hid it. Null when it is visible. */
+            hiddenByEmail: string | null;
+            locationId: string;
+            locationName: string;
+            businessId: string;
+            businessName: string | null;
+            customerId: string;
+            customerEmail: string;
+            /** @description "Anonymous" when no name is set — never null. */
+            displayName: string;
+        };
+        AdminReviewPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            /** @description Across the whole platform, not this page — the number worth watching. */
+            hiddenCount: number;
+            reviews: components["schemas"]["AdminReviewDto"][];
+        };
         HideReviewDto: {
             /**
              * @description Required. Hiding customer feedback without recording why is the kind of
              *     moderation that cannot be reviewed later or explained in a dispute.
              */
             hiddenReason: string;
+        };
+        AnalyticsRangeDto: {
+            from: string;
+            to: string;
+            days: number;
+        };
+        AppointmentAnalyticsDto: {
+            byStatus: {
+                [key: string]: number;
+            };
+            total: number;
+            /** @description Null on an empty period, never 0. */
+            completionRate: number | null;
+            cancellationRate: number | null;
+            noShowRate: number | null;
+        };
+        CollectedThroughPlatformDto: {
+            depositsMinor: number;
+            /** @description What the business actually received of those deposits, after the fee. */
+            businessShareOfDepositsMinor: number;
+            appointmentCount: number;
+            /**
+             * @description Cancellations from before payment state was recorded, whose deposits may or
+             *     may not have been taken. Counted rather than guessed at.
+             */
+            cancelledWithUnknownPaymentState: number;
+            /** @description False when the figure above is non-zero. Branch on this, not on the note. */
+            complete: boolean;
+            note: string;
+        };
+        BalanceOwedDto: {
+            amountMinor: number;
+            fromAppointments: number;
+            appointmentsMissingSnapshot: number;
+            complete: boolean;
+            note: string;
+        };
+        MoneyAnalyticsDto: {
+            /** @description The unit of account every figure here is in (§96). Never hardcoded. */
+            currency: string;
+            collectedThroughPlatform: components["schemas"]["CollectedThroughPlatformDto"];
+            platformFeesPaidMinor: number;
+            balanceOwedToBusiness: components["schemas"]["BalanceOwedDto"];
+        };
+        ReviewAnalyticsDto: {
+            count: number;
+            /** @description Null when nothing has been reviewed. Two decimal places otherwise. */
+            averageRating: number | null;
+        };
+        BusiestDayDto: {
+            /** @description 0 = Sunday, matching `LocationHours.dayOfWeek` (§10.4). */
+            day: number;
+            appointments: number;
+        };
+        BusiestHourDto: {
+            hour: number;
+            appointments: number;
+        };
+        BusiestPeriodsDto: {
+            dayOfWeek: components["schemas"]["BusiestDayDto"] | null;
+            hour: components["schemas"]["BusiestHourDto"] | null;
+            /** @description The zone the day and hour are expressed in (§103). */
+            timeZone: string;
+        };
+        BusinessAnalyticsDto: {
+            businessId: string;
+            /** @description Null when the figures cover the whole business rather than one branch. */
+            locationId: string | null;
+            /** @enum {string} */
+            scope: "BUSINESS" | "LOCATION";
+            range: components["schemas"]["AnalyticsRangeDto"];
+            appointments: components["schemas"]["AppointmentAnalyticsDto"];
+            money: components["schemas"]["MoneyAnalyticsDto"];
+            reviews: components["schemas"]["ReviewAnalyticsDto"];
+            busiest: components["schemas"]["BusiestPeriodsDto"];
         };
         PausedBusinessDto: {
             businessId: string;
@@ -4105,6 +4531,52 @@ export interface components {
             offset: number;
             payouts: components["schemas"]["PayoutDto"][];
         };
+        DestinationBusinessDto: {
+            id: string;
+            name: string | null;
+            phone: string | null;
+        };
+        ReplacedByDto: {
+            id: string;
+            msisdn: string;
+            /** @enum {string} */
+            status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+            submittedAt: string;
+        };
+        AdminPayoutDestinationDto: {
+            id: string;
+            businessId: string;
+            /**
+             * @description Who is being paid, by name and number.
+             *
+             *     On the row because verifying a destination means phoning the business to
+             *     check the number, and an admin should not have to look the business up in
+             *     another screen to do it.
+             */
+            businessProfile: components["schemas"]["DestinationBusinessDto"];
+            msisdn: string;
+            /** @enum {string} */
+            provider: "MTN_MOMO" | "AIRTEL_MONEY";
+            /** @enum {string} */
+            status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+            submittedById: string;
+            submittedAt: string;
+            verifiedById: string | null;
+            verifiedAt: string | null;
+            /** @enum {string|null} */
+            verificationMethod: "ADMIN" | "OTP" | null;
+            verificationNote: string | null;
+            rejectionReason: string | null;
+            createdAt: string;
+            /** @description Null when this is the latest one for its business. */
+            replacedBy: components["schemas"]["ReplacedByDto"] | null;
+        };
+        AdminPayoutDestinationPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            destinations: components["schemas"]["AdminPayoutDestinationDto"][];
+        };
         VerifyPayoutDestinationDto: {
             /**
              * @description How the admin confirmed the number belongs to this business.
@@ -4114,6 +4586,28 @@ export interface components {
              *     after money has gone to the wrong place.
              */
             verificationNote: string;
+        };
+        PayoutDestinationDto: {
+            /** @description The full number. Present for the OWNER only. */
+            msisdn?: string;
+            id: string;
+            businessId: string;
+            /** @enum {string} */
+            provider: "MTN_MOMO" | "AIRTEL_MONEY";
+            /** @enum {string} */
+            status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+            submittedById: string;
+            submittedAt: string;
+            /** @description Null until an administrator has checked it. */
+            verifiedById: string | null;
+            verifiedAt: string | null;
+            /** @enum {string|null} */
+            verificationMethod: "ADMIN" | "OTP" | null;
+            verificationNote: string | null;
+            rejectionReason: string | null;
+            createdAt: string;
+            /** @description The last three digits. Always present. */
+            msisdnLast3: string;
         };
         RejectPayoutDestinationDto: {
             /** @description Required: the business has to be told what to fix. */
@@ -4129,6 +4623,12 @@ export interface components {
             msisdn: string;
             /** @enum {string} */
             provider?: "MTN_MOMO" | "AIRTEL_MONEY";
+        };
+        BusinessPayoutDestinationDto: {
+            /** @description Null when nothing has ever been submitted. */
+            destination: components["schemas"]["PayoutDestinationDto"] | null;
+            payoutsPaused: boolean;
+            note: string;
         };
         DiscoveryCentreDto: {
             lat: number;
@@ -4200,6 +4700,93 @@ export interface components {
             radiusKm?: number;
             locations: components["schemas"]["DiscoveredLocationDto"][];
         };
+        ShopfrontCategoryDto: {
+            id: string;
+            name: string;
+            /** @description An icon key or emoji. Never a URL. */
+            icon: string | null;
+        };
+        ShopfrontSubcategoryDto: {
+            id: string;
+            name: string;
+        };
+        ShopfrontBusinessDto: {
+            id: string;
+            name: string | null;
+            description: string | null;
+            phone: string | null;
+            logoUrl: string | null;
+            coverImageUrl: string | null;
+            category: components["schemas"]["ShopfrontCategoryDto"] | null;
+            subcategory: components["schemas"]["ShopfrontSubcategoryDto"] | null;
+        };
+        ShopfrontRatingDto: {
+            /** @description Null when nothing has been reviewed. Not zero — zero is a rating. */
+            average: number | null;
+            count: number;
+        };
+        ShopfrontServiceDto: {
+            /** @description Indicative only, and absent when no rate is configured (§66.2). */
+            approxSettlement?: components["schemas"]["ApproxSettlementDto"];
+            id: string;
+            name: string;
+            description: string | null;
+            durationMinutes: number;
+            /** @description The unit of account the price below is in. */
+            currency: string;
+            /** @description A decimal string, like every percentage here (§128.20). */
+            depositPercentage: string;
+            priceMinor: number;
+        };
+        ShopfrontDistrictDto: {
+            id: string;
+            name: string;
+            provinceId: string;
+            provinceName: string;
+        };
+        ShopfrontHoursDto: {
+            /** @description 0 = Sunday, matching JavaScript rather than ISO (§12). */
+            dayOfWeek: number;
+            openTime: string;
+            closeTime: string;
+            isClosed: boolean;
+        };
+        ShopfrontExceptionDto: {
+            date: string;
+            isClosed: boolean;
+            customOpenTime: string | null;
+            customCloseTime: string | null;
+            reason: string | null;
+        };
+        ShopfrontMediaDto: {
+            id: string;
+            url: string;
+            /** @enum {string} */
+            type: "PHOTO";
+            displayOrder: number;
+        };
+        ShopfrontDto: {
+            /** @description Absent entirely for a signed-out reader. */
+            saved?: boolean;
+            id: string;
+            name: string;
+            address: string;
+            latitude: number | null;
+            longitude: number | null;
+            phone: string | null;
+            /** @description Concurrent appointments this branch can run. */
+            capacity: number;
+            business: components["schemas"]["ShopfrontBusinessDto"];
+            rating: components["schemas"]["ShopfrontRatingDto"];
+            services: components["schemas"]["ShopfrontServiceDto"][];
+            district: components["schemas"]["ShopfrontDistrictDto"] | null;
+            hours: components["schemas"]["ShopfrontHoursDto"][];
+            upcomingExceptions: components["schemas"]["ShopfrontExceptionDto"][];
+            gallery: components["schemas"]["ShopfrontMediaDto"][];
+            /** @description Computed against `timeZone`, not the reader's clock (§103). */
+            openNow: boolean;
+            timeZone: string;
+        };
         SavedPlaceDistrictDto: {
             id: string;
             name: string;
@@ -4265,7 +4852,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OtpRequestedDto"];
+                };
             };
         };
     };
@@ -4287,7 +4876,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["SignedInDto"];
                 };
             };
         };
@@ -4310,7 +4899,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["TokenPairDto"];
                 };
             };
         };
@@ -4332,7 +4921,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -4431,7 +5022,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminLegalDocumentDto"][];
+                };
             };
         };
     };
@@ -4448,11 +5041,13 @@ export interface operations {
             };
         };
         responses: {
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LegalDraftDto"];
+                };
             };
         };
     };
@@ -4475,7 +5070,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LegalDraftDto"];
+                };
             };
         };
     };
@@ -4494,7 +5091,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LegalDocumentDto"];
+                };
             };
         };
     };
@@ -4811,7 +5410,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["CategoryDto"][];
                 };
             };
         };
@@ -4829,7 +5428,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminCategoryDto"][];
+                };
             };
         };
     };
@@ -4850,7 +5451,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CategoryRecordDto"];
+                };
             };
         };
     };
@@ -4873,7 +5476,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CategoryRecordDto"];
+                };
             };
         };
     };
@@ -4896,7 +5501,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -4919,7 +5526,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SubcategoryRecordDto"];
+                };
             };
         };
     };
@@ -4942,7 +5551,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SubcategoryRecordDto"];
+                };
             };
         };
     };
@@ -4965,7 +5576,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -4983,7 +5596,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ProvinceDto"][];
                 };
             };
         };
@@ -5001,7 +5614,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminProvinceDto"][];
+                };
             };
         };
     };
@@ -5022,7 +5637,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DistrictRecordDto"];
+                };
             };
         };
     };
@@ -5045,7 +5662,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DistrictRecordDto"];
+                };
             };
         };
     };
@@ -5068,7 +5687,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -5916,7 +6537,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["AvailabilityDto"];
                 };
             };
         };
@@ -5937,7 +6558,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>[];
+                    "application/json": components["schemas"]["ScheduleExceptionDto"][];
                 };
             };
         };
@@ -5962,7 +6583,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ScheduleExceptionDto"];
                 };
             };
         };
@@ -5983,7 +6604,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -6003,7 +6626,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>[];
+                    "application/json": components["schemas"]["TimeBlockDto"][];
                 };
             };
         };
@@ -6028,7 +6651,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["TimeBlockDto"];
                 };
             };
         };
@@ -6049,7 +6672,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
             };
         };
     };
@@ -6215,7 +6840,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CurrencyDto"];
+                };
             };
         };
     };
@@ -6234,7 +6861,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PaymentProvidersDto"];
+                };
             };
         };
     };
@@ -6516,7 +7145,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminAppointmentPageDto"];
+                };
             };
         };
     };
@@ -6539,7 +7170,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppointmentDto"];
+                };
             };
         };
     };
@@ -6823,7 +7456,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["NotificationPageDto"];
+                };
             };
         };
     };
@@ -6840,7 +7475,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MarkAllReadDto"];
+                };
             };
         };
     };
@@ -6859,7 +7496,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MarkReadDto"];
+                };
             };
         };
     };
@@ -7118,7 +7757,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
         };
@@ -7143,7 +7782,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
         };
@@ -7168,7 +7807,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
         };
@@ -7193,7 +7832,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
         };
@@ -7216,7 +7855,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["LocationReviewsDto"];
+                };
             };
         };
     };
@@ -7240,7 +7881,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminReviewPageDto"];
+                };
             };
         };
     };
@@ -7264,7 +7907,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
         };
@@ -7285,7 +7928,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
         };
@@ -7312,7 +7955,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BusinessAnalyticsDto"];
+                };
             };
         };
     };
@@ -7517,7 +8162,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminPayoutDestinationPageDto"];
+                };
             };
         };
     };
@@ -7541,7 +8188,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["PayoutDestinationDto"];
                 };
             };
         };
@@ -7566,7 +8213,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["PayoutDestinationDto"];
                 };
             };
         };
@@ -7585,7 +8232,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["BusinessPayoutDestinationDto"];
                 };
             };
         };
@@ -7608,7 +8255,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["PayoutDestinationDto"];
                 };
             };
         };
@@ -7669,7 +8316,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ShopfrontDto"];
+                };
             };
         };
     };

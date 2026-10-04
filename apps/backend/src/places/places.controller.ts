@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { ProvinceDto, PUBLIC_PROVINCE_SELECT } from './dto/place-response.dto';
 
 /**
  * Where a business can be, and what a customer can filter by (§104).
@@ -17,27 +19,14 @@ export class PlacesController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get('provinces')
+  @ApiOkResponse({ type: ProvinceDto, isArray: true })
   findAll() {
     return this.prisma.province.findMany({
       // A province with nothing open in it is noise in a filter row.
       where: { districts: { some: { isLive: true } } },
       orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        // A city is one place with neighbourhoods; a province is a region of
-        // separate towns. The clients present the two differently (§106).
-        isCity: true,
-        districts: {
-          // Only where the platform is open (§105). A retired district is not
-          // offered to a new branch and not shown as a filter — the customer
-          // would otherwise pick a place with nothing in it.
-          where: { isLive: true },
-          orderBy: { name: 'asc' },
-          select: { id: true, code: true, name: true },
-        },
-      },
+      // One select, shared with the DTO that describes it (§128.5).
+      select: PUBLIC_PROVINCE_SELECT,
     });
   }
 }

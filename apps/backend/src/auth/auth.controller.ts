@@ -4,6 +4,13 @@ import { AuthService } from './auth.service';
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { ActionMessageDto } from '../common/dto/action-message.dto';
+import {
+  OtpRequestedDto,
+  SignedInDto,
+  TokenPairDto,
+} from './dto/auth-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,6 +25,7 @@ export class AuthController {
    * platform its sending reputation, not just its bandwidth.
    */
   @Post('otp/request')
+  @ApiOkResponse({ type: OtpRequestedDto })
   @HttpCode(HttpStatus.OK)
   requestOtp(@Body() dto: RequestOtpDto) {
     return this.authService.requestOtp(dto.email, dto.role as UserRole | undefined);
@@ -29,18 +37,21 @@ export class AuthController {
    * for DIFFERENT addresses, which per-code counting cannot see.
    */
   @Post('otp/verify')
+  @ApiOkResponse({ type: SignedInDto })
   @HttpCode(HttpStatus.OK)
   verifyOtp(@Body() dto: VerifyOtpDto) {
     return this.authService.verifyOtp(dto.email, dto.code);
   }
 
   @Post('refresh')
+  @ApiOkResponse({ type: TokenPairDto })
   @HttpCode(HttpStatus.OK)
   refresh(@Body() dto: RefreshTokenDto) {
     return this.authService.refreshTokens(dto.refreshToken);
   }
 
   @Post('logout')
+  @ApiOkResponse({ type: ActionMessageDto })
   @HttpCode(HttpStatus.OK)
   logout(@Body() dto: RefreshTokenDto) {
     return this.authService.logout(dto.refreshToken);

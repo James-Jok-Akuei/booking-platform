@@ -8,6 +8,7 @@ import { DiscoveryService } from './discovery.service';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { DiscoveryPageDto } from './dto/discovery-response.dto';
 import { DiscoverLocationsDto } from './dto/discover-locations.dto';
+import { ShopfrontDto } from './dto/discovery-response.dto';
 
 /**
  * The customer front door.
@@ -39,6 +40,7 @@ export class DiscoveryController {
   }
 
   @Get('locations/:id')
+  @ApiOkResponse({ type: ShopfrontDto })
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user?: AuthenticatedUser,
