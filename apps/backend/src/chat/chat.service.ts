@@ -13,6 +13,12 @@ import {
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  MESSAGE_SELECT,
+  ThreadDto,
+  ThreadPageDto,
+  ThreadReadDto,
+} from './dto/chat-response.dto';
 import { StorageService } from '../storage/storage.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ChatRealtimePublisher, NOOP_CHAT_REALTIME } from './chat-realtime.interface';
@@ -193,7 +199,7 @@ export class ChatService {
     limit: number,
     offset: number,
     appointmentId?: string,
-  ) {
+  ): Promise<ThreadPageDto> {
     const scope = await this.participantScope(userId, role);
     // Narrowed INSIDE the caller's scope, never instead of it: an appointment
     // id belonging to someone else matches nothing rather than reaching their
@@ -220,7 +226,11 @@ export class ChatService {
     return { total, limit, offset, threads: decorated };
   }
 
-  async getThread(userId: string, threadId: string, role: UserRole) {
+  async getThread(
+    userId: string,
+    threadId: string,
+    role: UserRole,
+  ): Promise<ThreadDto> {
     await this.requireParticipant(userId, threadId, role);
     return this.loadThread(threadId, userId);
   }
@@ -244,13 +254,7 @@ export class ChatService {
         orderBy: { createdAt: 'asc' },
         take: limit,
         skip: offset,
-        select: {
-          id: true,
-          body: true,
-          photoUrl: true,
-          createdAt: true,
-          sender: { select: { id: true, email: true, role: true } },
-        },
+        select: MESSAGE_SELECT,
       }),
     ]);
 
@@ -299,13 +303,7 @@ export class ChatService {
     const message = await this.prisma.$transaction(async (tx) => {
       const created = await tx.message.create({
         data: { threadId: params.threadId, senderId: params.userId, body, photoUrl },
-        select: {
-          id: true,
-          body: true,
-          photoUrl: true,
-          createdAt: true,
-          sender: { select: { id: true, email: true, role: true } },
-        },
+        select: MESSAGE_SELECT,
       });
 
       // Denormalised ordering key, updated in the same transaction so the
@@ -433,7 +431,11 @@ export class ChatService {
 
   // ---------- Read state ----------
 
-  async markRead(userId: string, threadId: string, role: UserRole) {
+  async markRead(
+    userId: string,
+    threadId: string,
+    role: UserRole,
+  ): Promise<ThreadReadDto> {
     await this.requireParticipant(userId, threadId, role);
 
     const now = new Date();
@@ -443,7 +445,7 @@ export class ChatService {
       create: { threadId, userId, lastReadAt: now },
     });
 
-    return { message: 'Thread marked as read.', lastReadAt: now };
+    return { message: 'Thread marked as read.', lastReadAt: now.toISOString() };
   }
 
   // ---------- Access ----------
@@ -517,7 +519,10 @@ export class ChatService {
   }
 
   /** Adds the viewer's own unread count and a last-message preview. */
-  private async decorate(thread: ThreadRecord, viewerId: string) {
+  private async decorate(
+    thread: ThreadRecord,
+    viewerId: string,
+  ): Promise<ThreadDto> {
     const readState = await this.prisma.threadReadState.findUnique({
       where: { threadId_userId: { threadId: thread.id, userId: viewerId } },
       select: { lastReadAt: true },
@@ -551,7 +556,7 @@ export class ChatService {
         ? {
             id: thread.appointment.id,
             status: thread.appointment.status,
-            startTime: thread.appointment.startTime,
+            startTime: thread.appointment.startTime.toISOString(),
             serviceName: thread.appointment.service.name,
           }
         : null,
@@ -561,11 +566,11 @@ export class ChatService {
             preview: lastMessage.body ?? (lastMessage.photoUrl ? '[photo]' : ''),
             hasPhoto: Boolean(lastMessage.photoUrl),
             senderId: lastMessage.senderId,
-            createdAt: lastMessage.createdAt,
+            createdAt: lastMessage.createdAt.toISOString(),
           }
         : null,
-      lastMessageAt: thread.lastMessageAt,
-      createdAt: thread.createdAt,
+      lastMessageAt: thread.lastMessageAt?.toISOString() ?? null,
+      createdAt: thread.createdAt.toISOString(),
     };
   }
 }

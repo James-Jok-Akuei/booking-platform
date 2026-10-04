@@ -2826,8 +2826,6 @@ export interface components {
             name: string;
             provinceId: string;
             isLive: boolean;
-            createdAt: string;
-            updatedAt: string;
             province: components["schemas"]["LocationProvinceDto"];
         };
         LocationHoursDto: {
@@ -2838,8 +2836,6 @@ export interface components {
             openTime: string;
             closeTime: string;
             isClosed: boolean;
-            createdAt: string;
-            updatedAt: string;
         };
         LocationMediaCountDto: {
             media: number;
@@ -3561,6 +3557,72 @@ export interface components {
             /** Format: uuid */
             businessProfileId: string;
         };
+        ThreadBusinessDto: {
+            id: string;
+            name: string | null;
+        };
+        ThreadCustomerDto: {
+            id: string;
+            email: string;
+        };
+        ThreadAppointmentDto: {
+            id: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            startTime: string;
+            serviceName: string;
+        };
+        ThreadLastMessageDto: {
+            preview: string;
+            hasPhoto: boolean;
+            senderId: string;
+            createdAt: string;
+        };
+        ThreadDto: {
+            id: string;
+            /**
+             * @description Whether it started from a booking or from a cold enquiry (§21.4).
+             * @enum {string}
+             */
+            kind: "APPOINTMENT" | "INQUIRY";
+            business: components["schemas"]["ThreadBusinessDto"];
+            customer: components["schemas"]["ThreadCustomerDto"];
+            appointment: components["schemas"]["ThreadAppointmentDto"] | null;
+            unreadCount: number;
+            /** @description Null on a thread nobody has written in yet. */
+            lastMessage: components["schemas"]["ThreadLastMessageDto"] | null;
+            /** @description Null until the first message. Threads with none sort last. */
+            lastMessageAt: string | null;
+            createdAt: string;
+        };
+        ThreadPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            threads: components["schemas"]["ThreadDto"][];
+        };
+        MessageSenderDto: {
+            /** @description Absent for a customer viewer. Present for business and admin viewers. */
+            email?: string;
+            id: string;
+            /** @enum {string} */
+            role: "BUSINESS" | "CUSTOMER" | "ADMIN";
+        };
+        ThreadMessageDto: {
+            id: string;
+            /** @description Null when the message is a photo with no caption. */
+            body: string | null;
+            photoUrl: string | null;
+            createdAt: string;
+            sender: components["schemas"]["MessageSenderDto"];
+        };
+        ThreadMessagePageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            /** @description Chronological: a conversation reads forwards. */
+            messages: components["schemas"]["ThreadMessageDto"][];
+        };
         SendMessageDto: {
             /**
              * @description Optional, because a photo alone is a valid message. The service rejects
@@ -3570,6 +3632,10 @@ export interface components {
              *     Arrives as a multipart text field.
              */
             body?: string;
+        };
+        ThreadReadDto: {
+            message: string;
+            lastReadAt: string;
         };
         WalletBalanceOkDto: {
             /** @enum {string} */
@@ -3735,6 +3801,96 @@ export interface components {
              */
             appointmentId?: string;
         };
+        TicketDto: {
+            id: string;
+            /** @description The human-quotable handle. What a reporter reads out on the phone. */
+            reference: string;
+            reporterId: string;
+            /**
+             * @description Derived from the authenticated role, never from the request body.
+             * @enum {string}
+             */
+            reporterType: "BUSINESS" | "CUSTOMER";
+            businessId: string | null;
+            appointmentId: string | null;
+            /** @enum {string} */
+            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            subject: string;
+            /** @enum {string} */
+            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            assignedAdminId: string | null;
+            resolutionNote: string | null;
+            resolvedAt: string | null;
+            closedAt: string | null;
+            reopenedAt: string | null;
+            /** @description How many times it has come back. A reopened ticket is a signal, not a retry. */
+            reopenCount: number;
+            /** @description Non-null: set at creation, bumped by every message. */
+            lastMessageAt: string;
+            createdAt: string;
+            updatedAt: string;
+        };
+        TicketPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            tickets: components["schemas"]["TicketDto"][];
+        };
+        TicketMessageAuthorDto: {
+            id: string;
+            email: string;
+            /** @enum {string} */
+            role: "BUSINESS" | "CUSTOMER" | "ADMIN";
+        };
+        TicketAttachmentDto: {
+            id: string;
+            url: string;
+            mimeType: string;
+            sizeBytes: number;
+        };
+        TicketMessageDto: {
+            /** @description Present for an administrator only. A reporter never sees one at all. */
+            isInternal?: boolean;
+            id: string;
+            body: string;
+            /** @enum {string} */
+            authorType: "ADMIN" | "REPORTER";
+            createdAt: string;
+            author: components["schemas"]["TicketMessageAuthorDto"];
+            attachments: components["schemas"]["TicketAttachmentDto"][];
+        };
+        TicketDetailDto: {
+            id: string;
+            /** @description The human-quotable handle. What a reporter reads out on the phone. */
+            reference: string;
+            reporterId: string;
+            /**
+             * @description Derived from the authenticated role, never from the request body.
+             * @enum {string}
+             */
+            reporterType: "BUSINESS" | "CUSTOMER";
+            businessId: string | null;
+            appointmentId: string | null;
+            /** @enum {string} */
+            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            subject: string;
+            /** @enum {string} */
+            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            assignedAdminId: string | null;
+            resolutionNote: string | null;
+            resolvedAt: string | null;
+            closedAt: string | null;
+            reopenedAt: string | null;
+            /** @description How many times it has come back. A reopened ticket is a signal, not a retry. */
+            reopenCount: number;
+            /** @description Non-null: set at creation, bumped by every message. */
+            lastMessageAt: string;
+            createdAt: string;
+            updatedAt: string;
+            messages: components["schemas"]["TicketMessageDto"][];
+            /** @description Files attached to the ticket itself rather than to any one message. */
+            attachments: components["schemas"]["TicketAttachmentDto"][];
+        };
         CreateTicketMessageDto: {
             body: string;
             /**
@@ -3745,6 +3901,14 @@ export interface components {
              *     Arrives as a multipart text field, hence the explicit transform.
              */
             isInternal?: boolean;
+        };
+        PostedTicketMessageDto: {
+            id: string;
+            body: string;
+            /** @enum {string} */
+            authorType: "ADMIN" | "REPORTER";
+            isInternal: boolean;
+            createdAt: string;
         };
         AssignTicketDto: {
             /** Format: uuid */
@@ -6396,7 +6560,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ThreadDto"];
+                };
             };
         };
     };
@@ -6428,7 +6594,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ThreadPageDto"];
+                };
             };
         };
     };
@@ -6447,7 +6615,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ThreadDto"];
+                };
             };
         };
     };
@@ -6469,7 +6639,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ThreadMessagePageDto"];
+                };
             };
         };
     };
@@ -6492,7 +6664,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ThreadMessageDto"];
+                };
             };
         };
     };
@@ -6511,7 +6685,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ThreadReadDto"];
+                };
             };
         };
     };
@@ -6705,7 +6881,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TicketPageDto"];
+                };
             };
         };
     };
@@ -6726,7 +6904,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TicketDto"];
+                };
             };
         };
     };
@@ -6745,7 +6925,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TicketDetailDto"];
+                };
             };
         };
     };
@@ -6768,7 +6950,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PostedTicketMessageDto"];
+                };
             };
         };
     };
@@ -6787,7 +6971,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TicketDto"];
+                };
             };
         };
     };
@@ -6810,7 +6996,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TicketPageDto"];
+                };
             };
         };
     };
@@ -6829,7 +7017,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TicketDetailDto"];
+                };
             };
         };
     };
@@ -6852,7 +7042,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TicketDto"];
+                };
             };
         };
     };
@@ -6875,7 +7067,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TicketDto"];
+                };
             };
         };
     };
@@ -6898,7 +7092,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PostedTicketMessageDto"];
+                };
             };
         };
     };

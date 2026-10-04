@@ -3337,7 +3337,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadDto"
+                }
+              }
+            }
           }
         },
         "summary": "Opens (or returns) the inquiry thread with a business.\n\nCUSTOMER-only: a business does not cold-open a conversation with someone\nwho has not contacted them, which would make this an outbound-marketing\ntool rather than a support channel.",
@@ -3384,7 +3391,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadPageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3407,7 +3421,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3451,7 +3472,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadMessagePageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3482,7 +3510,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadMessageDto"
+                }
+              }
+            }
           }
         },
         "summary": "Sends a message: text, a photo, or both.\n\nmultipart/form-data so a photo can ride along with the text, the same shape\nas the gallery upload, and reusing its exact limits — 15MB, jpg/png/webp —\nplus MulterExceptionFilter so an oversized file gets the same clear error\nrather than a bare 500.",
@@ -3506,7 +3541,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadReadDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3851,7 +3893,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDto"
+                }
+              }
+            }
           }
         },
         "summary": "multipart, so an optional screenshot can accompany the report.",
@@ -3915,7 +3964,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketPageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3938,7 +3994,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDetailDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3971,7 +4034,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostedTicketMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3994,7 +4064,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4068,7 +4145,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketPageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4091,7 +4175,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDetailDto"
+                }
+              }
+            }
           }
         },
         "summary": "Includes internal notes — the one view that does.",
@@ -4125,7 +4216,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -4158,7 +4256,14 @@
         },
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDto"
+                }
+              }
+            }
           }
         },
         "summary": "Moves the ticket through its lifecycle. `resolutionNote` is required for\nRESOLVED, and an optional billing adjustment may ride along — see\nTicketsService.recordBillingAdjustment for what that does, and does not, do.",
@@ -4192,7 +4297,14 @@
         },
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostedTicketMessageDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -6863,12 +6975,6 @@
           "isLive": {
             "type": "boolean"
           },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          },
           "province": {
             "$ref": "#/components/schemas/LocationProvinceDto"
           }
@@ -6879,8 +6985,6 @@
           "name",
           "provinceId",
           "isLive",
-          "createdAt",
-          "updatedAt",
           "province"
         ]
       },
@@ -6905,12 +7009,6 @@
           },
           "isClosed": {
             "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
           }
         },
         "required": [
@@ -6919,9 +7017,7 @@
           "dayOfWeek",
           "openTime",
           "closeTime",
-          "isClosed",
-          "createdAt",
-          "updatedAt"
+          "isClosed"
         ]
       },
       "LocationMediaCountDto": {
@@ -8957,6 +9053,261 @@
           "businessProfileId"
         ]
       },
+      "ThreadBusinessDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ThreadCustomerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ]
+      },
+      "ThreadAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ]
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "serviceName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "startTime",
+          "serviceName"
+        ]
+      },
+      "ThreadLastMessageDto": {
+        "type": "object",
+        "properties": {
+          "preview": {
+            "type": "string"
+          },
+          "hasPhoto": {
+            "type": "boolean"
+          },
+          "senderId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "preview",
+          "hasPhoto",
+          "senderId",
+          "createdAt"
+        ]
+      },
+      "ThreadDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "description": "Whether it started from a booking or from a cold enquiry (§21.4).",
+            "enum": [
+              "APPOINTMENT",
+              "INQUIRY"
+            ],
+            "type": "string"
+          },
+          "business": {
+            "$ref": "#/components/schemas/ThreadBusinessDto"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/ThreadCustomerDto"
+          },
+          "appointment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ThreadAppointmentDto"
+              }
+            ]
+          },
+          "unreadCount": {
+            "type": "number"
+          },
+          "lastMessage": {
+            "nullable": true,
+            "description": "Null on a thread nobody has written in yet.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ThreadLastMessageDto"
+              }
+            ]
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null until the first message. Threads with none sort last."
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "business",
+          "customer",
+          "appointment",
+          "unreadCount",
+          "lastMessage",
+          "lastMessageAt",
+          "createdAt"
+        ]
+      },
+      "ThreadPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "threads": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ThreadDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "threads"
+        ]
+      },
+      "MessageSenderDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Absent for a customer viewer. Present for business and admin viewers."
+          },
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "role"
+        ]
+      },
+      "ThreadMessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null when the message is a photo with no caption."
+          },
+          "photoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/MessageSenderDto"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "photoUrl",
+          "createdAt",
+          "sender"
+        ]
+      },
+      "ThreadMessagePageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "messages": {
+            "description": "Chronological: a conversation reads forwards.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ThreadMessageDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "messages"
+        ]
+      },
       "SendMessageDto": {
         "type": "object",
         "properties": {
@@ -8966,6 +9317,21 @@
             "maxLength": 2000
           }
         }
+      },
+      "ThreadReadDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "lastReadAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "lastReadAt"
+        ]
       },
       "WalletBalanceOkDto": {
         "type": "object",
@@ -9525,6 +9891,350 @@
           "body"
         ]
       },
+      "TicketDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "description": "The human-quotable handle. What a reporter reads out on the phone."
+          },
+          "reporterId": {
+            "type": "string"
+          },
+          "reporterType": {
+            "description": "Derived from the authenticated role, never from the request body.",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER"
+            ],
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "enum": [
+              "PAYMENT_ISSUE",
+              "APPOINTMENT_DISPUTE",
+              "ACCOUNT_ISSUE",
+              "TECHNICAL_ISSUE",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "IN_PROGRESS",
+              "OPEN",
+              "RESOLVED",
+              "CLOSED"
+            ],
+            "type": "string"
+          },
+          "assignedAdminId": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolutionNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolvedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "closedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenCount": {
+            "type": "number",
+            "description": "How many times it has come back. A reopened ticket is a signal, not a retry."
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "description": "Non-null: set at creation, bumped by every message."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "reporterId",
+          "reporterType",
+          "businessId",
+          "appointmentId",
+          "category",
+          "subject",
+          "status",
+          "assignedAdminId",
+          "resolutionNote",
+          "resolvedAt",
+          "closedAt",
+          "reopenedAt",
+          "reopenCount",
+          "lastMessageAt",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TicketPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "tickets"
+        ]
+      },
+      "TicketMessageAuthorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role"
+        ]
+      },
+      "TicketAttachmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "mimeType",
+          "sizeBytes"
+        ]
+      },
+      "TicketMessageDto": {
+        "type": "object",
+        "properties": {
+          "isInternal": {
+            "type": "boolean",
+            "description": "Present for an administrator only. A reporter never sees one at all."
+          },
+          "id": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "authorType": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "REPORTER"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "author": {
+            "$ref": "#/components/schemas/TicketMessageAuthorDto"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketAttachmentDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "authorType",
+          "createdAt",
+          "author",
+          "attachments"
+        ]
+      },
+      "TicketDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "description": "The human-quotable handle. What a reporter reads out on the phone."
+          },
+          "reporterId": {
+            "type": "string"
+          },
+          "reporterType": {
+            "description": "Derived from the authenticated role, never from the request body.",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER"
+            ],
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "enum": [
+              "PAYMENT_ISSUE",
+              "APPOINTMENT_DISPUTE",
+              "ACCOUNT_ISSUE",
+              "TECHNICAL_ISSUE",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "IN_PROGRESS",
+              "OPEN",
+              "RESOLVED",
+              "CLOSED"
+            ],
+            "type": "string"
+          },
+          "assignedAdminId": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolutionNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolvedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "closedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenCount": {
+            "type": "number",
+            "description": "How many times it has come back. A reopened ticket is a signal, not a retry."
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "description": "Non-null: set at creation, bumped by every message."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketMessageDto"
+            }
+          },
+          "attachments": {
+            "description": "Files attached to the ticket itself rather than to any one message.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketAttachmentDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "reporterId",
+          "reporterType",
+          "businessId",
+          "appointmentId",
+          "category",
+          "subject",
+          "status",
+          "assignedAdminId",
+          "resolutionNote",
+          "resolvedAt",
+          "closedAt",
+          "reopenedAt",
+          "reopenCount",
+          "lastMessageAt",
+          "createdAt",
+          "updatedAt",
+          "messages",
+          "attachments"
+        ]
+      },
       "CreateTicketMessageDto": {
         "type": "object",
         "properties": {
@@ -9540,6 +10250,37 @@
         },
         "required": [
           "body"
+        ]
+      },
+      "PostedTicketMessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "authorType": {
+            "enum": [
+              "ADMIN",
+              "REPORTER"
+            ],
+            "type": "string"
+          },
+          "isInternal": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "authorType",
+          "isInternal",
+          "createdAt"
         ]
       },
       "AssignTicketDto": {

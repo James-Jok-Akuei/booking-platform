@@ -11656,26 +11656,73 @@ Five pairs were identical and harmless. One was not: `isArray: true` against
 contract said "a location" or "a list of locations". A fifth guard now refuses
 adjacent response decorators, also proved to fire.
 
-### 128.28 Where this stands
+### 128.29 Two responses whose shape depends on who is asking
 
-**90 of 156 operations**, up from 65 — the largest single jump, because
-`/business` was the largest block. Forty-six client types derived rather than
-declared, across all three apps.
+Chat messages hide the sender's email from a CUSTOMER viewer (§112.1). Ticket
+messages hide `isInternal` from a REPORTER, and filter internal notes out
+entirely. In both cases the SAME endpoint returns a different shape depending on
+the caller's role.
 
-Done: appointments, discovery, business locations, services, profile, drafts,
-gallery, members and invitations, favourites, legal, payouts and balances, admin
-businesses, users and accounts, platform settings, ledger and adjustments.
+Published as an OPTIONAL field with the reason written beside it, rather than
+two schemas under a `oneOf`. A `oneOf` needs a discriminator, and here the
+discriminator is the viewer's role, which is not in the payload — a client could
+not tell the two variants apart from the response alone.
 
-Remaining: threads, tickets and admin tickets, admin categories, places and
-legal, notifications, auth, and a few singletons. 47 undescribed, plus 19 hollow
-ones held by the §128.14 ratchet.
+The business app genuinely is always the business viewer, so it narrows
+`email` back to required in ONE place, with a comment, rather than making every
+screen handle an `undefined` that cannot occur there. The customer app simply
+never reads the field.
 
-**Five generator guards now**, each one written after the thing it catches had
-already happened: empty named schemas (§60), duplicate DTO names (§128.7),
-hollow inline responses (§128.14), POSTs documented as 200 (§128.26), and
-doubled response decorators (§128.27). Every one of them was proved to fail
-before being trusted.
+### 128.30 `implements` was half a check; the fix was half a fix
 
-Thirteen real findings. The shape of nearly all of them is the same: something
-that generated cleanly, read plausibly, and was wrong in a direction nobody had
-run yet.
+§128.16 added `NoExtraFields` to catch a DTO declaring a field its `select` no
+longer provides. It compared **top-level keys only** — which left nested DTOs
+open to the very bug it was written to stop, because a class with an extra
+property is still assignable to an interface without it.
+
+Going deep found it immediately: **`LocationHoursDto` and `LocationDistrictDto`
+published four timestamp fields that exist on NEITHER model.** `LocationHours`
+has no `createdAt`; `District` has no `updatedAt`. The contract has been
+promising them, and all three clients typing them, since §104.
+
+`ExtraFieldPaths<Dto, Wire>` now recurses through objects and arrays and
+compares nullable fields by their underlying shape. Proved by deleting a NESTED
+field — `location.address` from `APPOINTMENT_SELECT` — and watching three DTOs
+fail at once, naming it.
+
+The shallow version was deleted rather than kept beside the deep one. Two ways
+to make the same assertion is an invitation to reach for the weaker one.
+
+### 128.31 `attachments` on the list that never carried it
+
+Both the business and admin consoles declared `attachments` on the ticket LIST
+type. `TICKET_SELECT` does not select attachments — only the detail read does.
+The comment above the field in one client even said "verified against the
+running server", which it had been: against the DETAIL endpoint.
+
+It is on `TicketDetailDto` only now. Nothing read it off a list row, so once
+again a bug prevented rather than fixed — but a support queue that tried to show
+a paperclip would have found nothing there.
+
+Also aligned: the ticket list's message select is shared with the DTO that
+describes it, and the chat message select — identical in `listMessages` and
+`sendMessage` — is now one constant (§128.5, for the fifth time).
+
+Deliberately NOT aligned: posting a ticket message echoes a narrower shape than
+the listing, and it stays that way. The attachments are stored after the
+message's transaction commits, so selecting them there would reliably return an
+empty list and read as a failed upload. It has its own DTO saying so.
+
+### 128.32 Where this stands
+
+**106 of 156 operations**, up from 90. Fifty-eight client types derived rather
+than declared, across all three apps.
+
+Remaining: admin categories, places and legal, notifications, auth, and a
+handful of singletons. 31 undescribed, plus 19 hollow ones held by the §128.14
+ratchet.
+
+Fifteen real findings. Two of them were in the checking machinery itself, which
+is the part worth remembering: both times the check looked right, generated
+cleanly, and did nothing — and both times the only thing that revealed it was
+deleting a field on purpose to watch the build fail.

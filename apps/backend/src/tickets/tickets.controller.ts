@@ -26,6 +26,13 @@ import { MulterExceptionFilter } from '../business/filters/multer-exception.filt
 import { TicketsService } from './tickets.service';
 import { ticketUploadOptions } from './ticket-upload.options';
 import { MAX_TICKET_ATTACHMENTS } from '../storage/storage.service';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+  PostedTicketMessageDto,
+  TicketDetailDto,
+  TicketDto,
+  TicketPageDto,
+} from './dto/ticket-response.dto';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { CreateTicketMessageDto } from './dto/create-ticket-message.dto';
 import { ListTicketsDto } from './dto/list-tickets.dto';
@@ -49,6 +56,7 @@ export class TicketsController {
 
   /** multipart, so an optional screenshot can accompany the report. */
   @Post()
+  @ApiCreatedResponse({ type: TicketDto })
   @UseInterceptors(FilesInterceptor('attachments', MAX_TICKET_ATTACHMENTS, ticketUploadOptions))
   @UseFilters(
     new MulterExceptionFilter({
@@ -66,11 +74,13 @@ export class TicketsController {
   }
 
   @Get()
+  @ApiOkResponse({ type: TicketPageDto })
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListTicketsDto) {
     return this.tickets.list(user, query);
   }
 
   @Get(':id')
+  @ApiOkResponse({ type: TicketDetailDto })
   findOne(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -79,6 +89,7 @@ export class TicketsController {
   }
 
   @Post(':id/messages')
+  @ApiCreatedResponse({ type: PostedTicketMessageDto })
   @UseInterceptors(FilesInterceptor('attachments', MAX_TICKET_ATTACHMENTS, ticketUploadOptions))
   @UseFilters(
     new MulterExceptionFilter({
@@ -97,6 +108,7 @@ export class TicketsController {
   }
 
   @Post(':id/reopen')
+  @ApiOkResponse({ type: TicketDto })
   @HttpCode(HttpStatus.OK)
   reopen(
     @CurrentUser() user: AuthenticatedUser,

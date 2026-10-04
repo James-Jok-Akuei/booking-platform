@@ -2,65 +2,22 @@ import { api } from './client';
 import { uploadFile } from '../upload';
 import type { components } from './schema';
 
-export type ThreadKind = 'INQUIRY' | 'APPOINTMENT';
-
 /**
- * One conversation. Confirmed field by field against the live endpoint rather
- * than read off the service — §109 is what happens when a client guesses.
+ * Derived from the contract (§128).
  *
- * `kind` is the only thing separating the two shapes (§21.1): an APPOINTMENT
- * thread is created with the booking and carries it, an INQUIRY thread is
- * opened on demand and there is exactly one per shop, forever.
- */
-export interface Thread {
-  id: string;
-  kind: ThreadKind;
-  business: { id: string; name: string };
-  customer: { id: string; email: string };
-  appointment: {
-    id: string;
-    status: string;
-    startTime: string;
-    serviceName: string;
-  } | null;
-  unreadCount: number;
-  lastMessage: {
-    preview: string | null;
-    hasPhoto: boolean;
-    senderId: string;
-    createdAt: string;
-  } | null;
-  lastMessageAt: string | null;
-  createdAt: string;
-}
-
-/**
- * A message as the CUSTOMER sees it: no email on the sender (§112.1).
+ * Hand-written, this file had `business.name` as a non-null string — it is
+ * nullable, because a profile exists from registration and is named at the
+ * first save (§128.18).
  *
- * `id` and `role` are everything this side needs — whether it is mine, and
- * which side it came from. Who at the shop typed it is deliberately not here.
+ * `sender.email` is OPTIONAL in the contract and absent for a customer viewer
+ * (§112.1): who at the shop typed it is deliberately not sent to this side.
  */
-export interface Message {
-  id: string;
-  body: string | null;
-  photoUrl: string | null;
-  createdAt: string;
-  sender: { id: string; role: 'CUSTOMER' | 'BUSINESS' | 'ADMIN' };
-}
-
-export interface ThreadPage {
-  total: number;
-  limit: number;
-  offset: number;
-  threads: Thread[];
-}
-
-export interface MessagePage {
-  total: number;
-  limit: number;
-  offset: number;
-  messages: Message[];
-}
+export type Thread = components['schemas']['ThreadDto'];
+export type ThreadKind = Thread['kind'];
+export type Message = components['schemas']['ThreadMessageDto'];
+export type ThreadPage = components['schemas']['ThreadPageDto'];
+export type MessagePage = components['schemas']['ThreadMessagePageDto'];
+export type ThreadRead = components['schemas']['ThreadReadDto'];
 
 /**
  * `appointmentId` narrows to the one thread created with that booking (§21.1),

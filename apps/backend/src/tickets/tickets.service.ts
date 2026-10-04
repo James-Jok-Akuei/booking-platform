@@ -15,6 +15,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TICKET_SELECT } from './dto/ticket-response.dto';
 import { StorageService } from '../storage/storage.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -29,26 +30,8 @@ import {
 } from './ticket-status';
 
 /** Fields a reporter is allowed to see. Internal notes are excluded by query. */
-const REPORTER_TICKET_SELECT = {
-  id: true,
-  reference: true,
-  reporterId: true,
-  reporterType: true,
-  businessId: true,
-  appointmentId: true,
-  category: true,
-  subject: true,
-  status: true,
-  assignedAdminId: true,
-  resolutionNote: true,
-  resolvedAt: true,
-  closedAt: true,
-  reopenedAt: true,
-  reopenCount: true,
-  lastMessageAt: true,
-  createdAt: true,
-  updatedAt: true,
-} as const;
+// One select, shared with the DTO that describes its result (§128.5).
+const REPORTER_TICKET_SELECT = TICKET_SELECT;
 
 @Injectable()
 export class TicketsService {
@@ -230,6 +213,8 @@ export class TicketsService {
   }
 
   async list(user: { userId: string; role: string }, query: ListTicketsDto) {
+    // Not declared: the rows carry Dates, which TicketDto describes as strings.
+    // The DTO is bound to TICKET_SELECT instead (§128.11).
     const scope = await this.visibilityScope(user);
     const where: Prisma.TicketWhereInput = {
       AND: [
@@ -269,6 +254,8 @@ export class TicketsService {
    * the decorator fails closed rather than leaking the table.
    */
   async listForAdmin(actor: { userId: string; role: string }, query: ListAdminTicketsDto) {
+    // Not declared: the rows carry Dates, which TicketDto describes as strings.
+    // The DTO is bound to TICKET_SELECT instead (§128.11).
     if (actor.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only administrators can list all tickets.');
     }

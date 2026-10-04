@@ -327,14 +327,8 @@ export const listMyPayouts = (businessId: string) =>
 // admin notes are excluded by the server's query, so nothing here can leak one.
 // ---------------------------------------------------------------------------
 
-export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
-
-export type TicketCategory =
-  | 'APPOINTMENT_DISPUTE'
-  | 'PAYMENT_ISSUE'
-  | 'TECHNICAL_ISSUE'
-  | 'ACCOUNT_ISSUE'
-  | 'OTHER';
+export type TicketStatus = Ticket['status'];
+export type TicketCategory = Ticket['category'];
 
 /** The wording a business sees. The enum is shared; these labels are not. */
 export const TICKET_CATEGORIES: Array<{ value: TicketCategory; label: string }> = [
@@ -345,43 +339,19 @@ export const TICKET_CATEGORIES: Array<{ value: TicketCategory; label: string }> 
   { value: 'OTHER', label: 'Something else' },
 ];
 
-export interface TicketAttachment {
-  id: string;
-  url: string;
-  mimeType: string;
-  sizeBytes: number;
-}
-
-export interface TicketMessage {
-  id: string;
-  body: string;
-  authorType: 'REPORTER' | 'ADMIN' | 'SYSTEM';
-  createdAt: string;
-  attachments: TicketAttachment[];
-}
-
-export interface Ticket {
-  id: string;
-  reference: string;
-  category: TicketCategory;
-  subject: string;
-  status: TicketStatus;
-  resolutionNote: string | null;
-  resolvedAt: string | null;
-  reopenCount: number;
-  lastMessageAt: string | null;
-  createdAt: string;
-  /**
-   * A file sent when the ticket was RAISED hangs off the ticket, not off the
-   * opening message — verified against the running server. A reply's file
-   * hangs off that message instead, so both places have to be rendered.
-   */
-  attachments: TicketAttachment[];
-}
-
-export interface TicketDetail extends Ticket {
-  messages: TicketMessage[];
-}
+/**
+ * Derived from the contract (§128).
+ *
+ * `attachments` is on the DETAIL type only. It used to be on `Ticket` as well,
+ * which the listing has never sent — its select carries no attachments at all
+ * (§128.31).
+ */
+export type TicketAttachment = components['schemas']['TicketAttachmentDto'];
+export type TicketMessage = components['schemas']['TicketMessageDto'];
+export type Ticket = components['schemas']['TicketDto'];
+export type TicketDetail = components['schemas']['TicketDetailDto'];
+export type TicketPage = components['schemas']['TicketPageDto'];
+export type PostedTicketMessage = components['schemas']['PostedTicketMessageDto'];
 
 /**
  * What the server will actually take, mirrored from storage.service.ts

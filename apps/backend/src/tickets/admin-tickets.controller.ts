@@ -25,6 +25,13 @@ import { MulterExceptionFilter } from '../business/filters/multer-exception.filt
 import { TicketsService } from './tickets.service';
 import { ticketUploadOptions } from './ticket-upload.options';
 import { MAX_TICKET_ATTACHMENTS } from '../storage/storage.service';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+  PostedTicketMessageDto,
+  TicketDetailDto,
+  TicketDto,
+  TicketPageDto,
+} from './dto/ticket-response.dto';
 import { CreateTicketMessageDto } from './dto/create-ticket-message.dto';
 import { ListAdminTicketsDto } from './dto/list-tickets.dto';
 import { AssignTicketDto } from './dto/assign-ticket.dto';
@@ -45,6 +52,7 @@ export class AdminTicketsController {
   constructor(private readonly tickets: TicketsService) {}
 
   @Get()
+  @ApiOkResponse({ type: TicketPageDto })
   list(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListAdminTicketsDto,
@@ -54,6 +62,7 @@ export class AdminTicketsController {
 
   /** Includes internal notes — the one view that does. */
   @Get(':id')
+  @ApiOkResponse({ type: TicketDetailDto })
   findOne(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -62,6 +71,7 @@ export class AdminTicketsController {
   }
 
   @Patch(':id/assign')
+  @ApiOkResponse({ type: TicketDto })
   assign(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -76,6 +86,7 @@ export class AdminTicketsController {
    * TicketsService.recordBillingAdjustment for what that does, and does not, do.
    */
   @Patch(':id/status')
+  @ApiOkResponse({ type: TicketDto })
   updateStatus(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -94,6 +105,7 @@ export class AdminTicketsController {
   }
 
   @Post(':id/messages')
+  @ApiCreatedResponse({ type: PostedTicketMessageDto })
   @UseInterceptors(FilesInterceptor('attachments', MAX_TICKET_ATTACHMENTS, ticketUploadOptions))
   @UseFilters(
     new MulterExceptionFilter({

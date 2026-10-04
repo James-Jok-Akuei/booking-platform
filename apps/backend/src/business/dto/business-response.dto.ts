@@ -28,8 +28,6 @@ export class LocationHoursDto {
   openTime!: string;
   closeTime!: string;
   isClosed!: boolean;
-  createdAt!: string;
-  updatedAt!: string;
 }
 
 export class LocationProvinceDto {
@@ -43,8 +41,6 @@ export class LocationDistrictDto {
   name!: string;
   provinceId!: string;
   isLive!: boolean;
-  createdAt!: string;
-  updatedAt!: string;
   province!: LocationProvinceDto;
 }
 

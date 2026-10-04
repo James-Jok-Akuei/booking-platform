@@ -25,6 +25,14 @@ import {
 import { MulterExceptionFilter } from '../business/filters/multer-exception.filter';
 import { ChatService } from './chat.service';
 import { chatUploadOptions } from './chat-upload.options';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ThreadDto,
+  ThreadMessageDto,
+  ThreadMessagePageDto,
+  ThreadPageDto,
+  ThreadReadDto,
+} from './dto/chat-response.dto';
 import { CreateInquiryThreadDto } from './dto/create-inquiry.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ListThreadsDto } from './dto/list-threads.dto';
@@ -59,6 +67,7 @@ export class ChatController {
    * still costs a query here.
    */
   @Post('inquiry')
+  @ApiOkResponse({ type: ThreadDto })
   @UseGuards(RolesGuard)
   @Roles(UserRole.CUSTOMER)
   @HttpCode(HttpStatus.OK)
@@ -70,6 +79,7 @@ export class ChatController {
   }
 
   @Get()
+  @ApiOkResponse({ type: ThreadPageDto })
   listThreads(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListThreadsDto,
@@ -84,6 +94,7 @@ export class ChatController {
   }
 
   @Get(':id')
+  @ApiOkResponse({ type: ThreadDto })
   getThread(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -92,6 +103,7 @@ export class ChatController {
   }
 
   @Get(':id/messages')
+  @ApiOkResponse({ type: ThreadMessagePageDto })
   listMessages(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -115,6 +127,7 @@ export class ChatController {
    * rather than a bare 500.
    */
   @Post(':id/messages')
+  @ApiCreatedResponse({ type: ThreadMessageDto })
   @UseInterceptors(FileInterceptor('photo', chatUploadOptions))
   @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'image' }))
   sendMessage(
@@ -133,6 +146,7 @@ export class ChatController {
   }
 
   @Post(':id/read')
+  @ApiOkResponse({ type: ThreadReadDto })
   @HttpCode(HttpStatus.OK)
   markRead(
     @CurrentUser() user: AuthenticatedUser,

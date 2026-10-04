@@ -1,61 +1,45 @@
 import { api } from './client';
 
-export type ThreadKind = 'INQUIRY' | 'APPOINTMENT';
+import type { components } from './schema';
+
+/** Derived from the contract (§128). `business.name` is nullable, as the model is. */
+export type Thread = components['schemas']['ThreadDto'];
+export type ThreadKind = Thread['kind'];
+export type ThreadPage = components['schemas']['ThreadPageDto'];
+export type MessagePage = components['schemas']['ThreadMessagePageDto'];
+export type ThreadRead = components['schemas']['ThreadReadDto'];
+
+type WireMessage = components['schemas']['ThreadMessageDto'];
 
 /**
- * One conversation with a customer.
- *
- * Confirmed field by field against the live endpoint, not read off the service.
- */
-export interface Thread {
-  id: string;
-  kind: ThreadKind;
-  business: { id: string; name: string };
-  customer: { id: string; email: string };
-  appointment: {
-    id: string;
-    status: string;
-    startTime: string;
-    serviceName: string;
-  } | null;
-  unreadCount: number;
-  lastMessage: {
-    preview: string | null;
-    hasPhoto: boolean;
-    senderId: string;
-    createdAt: string;
-  } | null;
-  lastMessageAt: string | null;
-  createdAt: string;
-}
-
-/**
- * A message as the BUSINESS sees it — with the sender's email, which the
+ * A message as the BUSINESS sees it — WITH the sender's email, which the
  * customer's side does not get (§112.1).
  *
- * Kept here for a reason that only applies on this side: a business has several
- * people in it (§14), and in a thread three of them have replied to, the email
- * is how you tell who said what.
+ * The contract has `email` as optional, because whether it is sent depends on
+ * the VIEWER'S ROLE and that is not in the payload. This app is always the
+ * business viewer, so it is always present here — narrowed once, in this one
+ * place, rather than making every screen handle an `undefined` that cannot
+ * actually occur.
+ *
+ * It is kept for a reason that applies only on this side: a business has
+ * several people in it (§14), and in a thread three of them have replied to,
+ * the address is how you tell who said what.
  */
-export interface Message {
-  id: string;
-  body: string | null;
-  photoUrl: string | null;
-  createdAt: string;
-  sender: { id: string; email: string; role: 'CUSTOMER' | 'BUSINESS' | 'ADMIN' };
-}
+export type Message = Omit<WireMessage, 'sender'> & {
+  sender: WireMessage['sender'] & { email: string };
+};
 
 export const listThreads = (
   params: { limit?: number; offset?: number; appointmentId?: string } = {},
 ) =>
-  api<{ total: number; limit: number; offset: number; threads: Thread[] }>('/threads', {
+  api<ThreadPage>('/threads', {
     query: params,
   });
 
 export const getThread = (id: string) => api<Thread>(`/threads/${id}`);
 
 export const listMessages = (id: string, params: { limit?: number } = {}) =>
-  api<{ total: number; limit: number; offset: number; messages: Message[] }>(
+  api<Omit<MessagePage, 'messages'> & { messages: Message[] }>(
     `/threads/${id}/messages`,
     { query: params },
   );

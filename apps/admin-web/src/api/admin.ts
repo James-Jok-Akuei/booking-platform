@@ -244,58 +244,21 @@ export const setPayoutHold = (payoutHoldDays: number) =>
 // Support tickets (§24)
 // ---------------------------------------------------------------------------
 
-export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+export type TicketStatus = Ticket['status'];
+export type TicketCategory = Ticket['category'];
 
-export type TicketCategory =
-  | 'APPOINTMENT_DISPUTE'
-  | 'PAYMENT_ISSUE'
-  | 'TECHNICAL_ISSUE'
-  | 'ACCOUNT_ISSUE'
-  | 'OTHER';
-
-export interface TicketAttachment {
-  id: string;
-  url: string;
-  mimeType: string;
-  sizeBytes: number;
-}
-
-export interface TicketMessage {
-  id: string;
-  body: string;
-  authorType: 'REPORTER' | 'ADMIN' | 'SYSTEM';
-  createdAt: string;
-  /** An internal note. Never shown to the reporter — excluded by their query. */
-  isInternal: boolean;
-  author: { id: string; email: string; role: string } | null;
-  attachments: TicketAttachment[];
-}
-
-export interface Ticket {
-  id: string;
-  reference: string;
-  reporterId: string;
-  reporterType: 'CUSTOMER' | 'BUSINESS';
-  businessId: string | null;
-  appointmentId: string | null;
-  category: TicketCategory;
-  subject: string;
-  status: TicketStatus;
-  assignedAdminId: string | null;
-  resolutionNote: string | null;
-  resolvedAt: string | null;
-  closedAt: string | null;
-  reopenCount: number;
-  lastMessageAt: string | null;
-  createdAt: string;
-  /** A file sent when the ticket was raised hangs off the ticket, not off the
-   *  opening message; a reply's file hangs off that message. Both get shown. */
-  attachments: TicketAttachment[];
-}
-
-export interface TicketDetail extends Ticket {
-  messages: TicketMessage[];
-}
+/**
+ * Derived from the contract (§128).
+ *
+ * `attachments` is on the DETAIL type only — the listing's select carries none
+ * (§128.31). `TicketMessage.author` was typed nullable here and is not.
+ */
+export type TicketAttachment = components['schemas']['TicketAttachmentDto'];
+export type TicketMessage = components['schemas']['TicketMessageDto'];
+export type Ticket = components['schemas']['TicketDto'];
+export type TicketDetail = components['schemas']['TicketDetailDto'];
+export type TicketPage = components['schemas']['TicketPageDto'];
+export type PostedTicketMessage = components['schemas']['PostedTicketMessageDto'];
 
 export const listTickets = (params: { status?: TicketStatus; limit?: number }) =>
   api<{ total: number; tickets: Ticket[] }>('/admin/tickets', { query: params });
