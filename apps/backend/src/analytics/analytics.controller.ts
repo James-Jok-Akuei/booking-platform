@@ -11,6 +11,7 @@ import { AnalyticsService } from './analytics.service';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { BusinessAnalyticsDto } from './dto/analytics-response.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * Business performance reporting.
@@ -26,6 +27,7 @@ import { BusinessAnalyticsDto } from './dto/analytics-response.dto';
 @Controller('businesses')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.BUSINESS, UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AnalyticsController {
   constructor(private readonly analytics: AnalyticsService) {}
 

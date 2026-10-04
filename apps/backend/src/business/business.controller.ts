@@ -65,6 +65,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { SetServiceOfferedDto } from './dto/set-service-offered.dto';
 import { UploadMediaDto } from './dto/upload-media.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * Everything a business manages about itself: profile, locations, opening
@@ -93,6 +94,7 @@ import { UploadMediaDto } from './dto/upload-media.dto';
 @Controller('business')
 @UseGuards(JwtAuthGuard, RolesGuard, BusinessRolesGuard)
 @Roles(UserRole.BUSINESS)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class BusinessController {
   constructor(
     private readonly profiles: BusinessProfileService,

@@ -6,6 +6,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   OtpRequestedDto,
   SignedInDto,
@@ -13,6 +14,7 @@ import {
 } from './dto/auth-response.dto';
 
 @Controller('auth')
+@ApiErrors({ validation: true, rateLimited: true })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

@@ -9,6 +9,7 @@ import { UpdateExchangeRateDto } from './dto/update-exchange-rate.dto';
 import { UpdateStalenessDto } from './dto/update-staleness.dto';
 import { UpdatePayoutHoldDto } from './dto/update-payout-hold.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   ExchangeRateSettingsDto,
   PayoutHoldDto,
@@ -34,6 +35,7 @@ import {
 @Controller('admin/settings')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true })
 export class AdminSettingsController {
   constructor(private readonly settings: PlatformSettingsService) {}
 

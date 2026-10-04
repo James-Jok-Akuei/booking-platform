@@ -36,6 +36,7 @@ import {
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { CreateTicketMessageDto } from './dto/create-ticket-message.dto';
 import { ListTicketsDto } from './dto/list-tickets.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * Reporter-facing support tickets.
@@ -51,6 +52,7 @@ import { ListTicketsDto } from './dto/list-tickets.dto';
 @Controller('tickets')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.CUSTOMER, UserRole.BUSINESS)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class TicketsController {
   constructor(private readonly tickets: TicketsService) {}
 

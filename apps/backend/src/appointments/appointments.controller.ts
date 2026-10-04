@@ -28,6 +28,7 @@ import { VerifyAppointmentDto } from './dto/verify-appointment.dto';
 import { ManualVerifyAppointmentDto } from './dto/manual-verify-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
 import { CancelAppointmentDto } from './dto/cancel-appointment.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   InitiateDepositPaymentResponseDto,
   PaymentStatusResponseDto,
@@ -48,6 +49,7 @@ import {
 @Controller('appointments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.CUSTOMER)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true, rateLimited: true })
 export class AppointmentsCustomerController {
   constructor(private readonly appointments: AppointmentsService) {}
 
@@ -120,6 +122,7 @@ export class AppointmentsCustomerController {
 @Controller('business/appointments')
 @UseGuards(JwtAuthGuard, RolesGuard, BusinessRolesGuard)
 @Roles(UserRole.BUSINESS)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AppointmentsBusinessController {
   constructor(private readonly appointments: AppointmentsService) {}
 
@@ -205,6 +208,7 @@ export class AppointmentsBusinessController {
 // — the same fall-through already fixed in Chat (§23.1) and appointments'
 // own findAll (§27). The service check below stays as the second layer (§41).
 @Roles(UserRole.CUSTOMER, UserRole.BUSINESS)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AppointmentsSharedController {
   constructor(private readonly appointments: AppointmentsService) {}
 

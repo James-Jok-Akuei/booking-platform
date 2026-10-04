@@ -11861,3 +11861,98 @@ checking machinery itself.
 
 What is NOT done, and is deliberately left: request bodies and error responses
 are still undescribed, and `/docs` is still the only description of either.
+
+## 129. Failures are part of the contract too
+
+§128 described what success looks like for all 156 operations and left failure
+entirely undocumented — **not one 4xx between them**. That is the larger half
+missing: a generated client has a type for the happy path and nothing at all for
+the case it will handle most often.
+
+### 129.1 The error shape is NOT uniform, and the docs would have said it was
+
+Established by probing the booted application, because reading Nest's
+documentation would have given the wrong answer:
+
+| status | body |
+|---|---|
+| 401 | `{ statusCode, message }` — **no `error` field** |
+| 403 | `{ statusCode, message, error }` |
+| 404 | `{ statusCode, message, error }` |
+| 400 | `{ statusCode, message: string[], error }` — an **array**, one per rule |
+| 409 | `{ statusCode, message, error }` |
+
+Two things follow, and both are now in the contract. `error` is **optional**,
+because a 401 has never carried it — Nest omits it when the exception's
+description equals the status text, and the guard throws
+`UnauthorizedException` with no description. And `message` is
+**`string | string[]`**: a sentence for a domain failure, an array for a
+validation failure. A malformed UUID is a 400 with a *string*; a bad body is a
+400 with an *array*. Same status, two shapes.
+
+All three clients were already narrowing `message` correctly, and none read
+`error`, so nothing was broken — but nothing was describing it either.
+
+The probe was throwaway. `test/error-contract.spec.ts` is not: seven tests over
+HTTP, pinning every shape above, because the thing that cost an hour in §125 was
+a shape everybody *believed* they knew.
+
+### 129.2 Decorate the controller, not the route
+
+`@ApiErrors({ ... })` goes on the controller CLASS, which Swagger propagates to
+every operation in it. Per-route would have meant roughly six hundred
+decorators, and six hundred chances to forget one.
+
+Every flag is opt-IN, because a documented failure that cannot happen is as
+misleading as an undocumented one: no 404 on a route that takes no id, no 403
+where there is no role guard. The flags were derived from each controller's
+actual decorators — and getting that list right took **three attempts**:
+
+1. The first scan searched the whole file, so a controller inherited the guards
+   of its neighbours. `CategoriesController`, which is public, came out needing
+   a 401.
+2. The second walked upwards from the class and **stopped at a comment**, so
+   `AppointmentsSharedController` — which has a comment between `@Controller`
+   and `@UseGuards` — came out unguarded.
+3. The third read the exact decorator block per class. That table was printed
+   and checked by eye, and the flags written out explicitly rather than
+   inferred, because by then the inference had been wrong twice.
+
+`OptionalJwtAuthGuard` is the distinction that matters most: discovery,
+availability and public reviews attach a user when there is one and allow
+anonymous callers, so they document **no 401**. Two routes carry their guard on
+the METHOD rather than the class — `GET /users/me` and `POST /threads/inquiry` —
+and carry their own `@ApiErrors` beside it.
+
+### 129.3 Four rules the document can check about itself
+
+The guards added here need no knowledge of the controllers, only of the
+generated document, which is what makes them enforceable rather than reviewable:
+
+1. a path parameter implies a **404** — the id may not exist, or may not be
+   yours, and §27.2 makes those deliberately indistinguishable
+2. a request body implies a **400** — the ValidationPipe is global
+3. a **403 implies a 401** — you cannot be forbidden without first being
+   authenticated, so one without the other is incoherent
+4. **no operation documents zero failures**, except `GET /categories` and
+   `GET /places/provinces`, which are public, take no parameter and no body, and
+   genuinely cannot fail with a 4xx
+
+All four were proved to fire, separately: stripping the decorator from a
+guarded controller, and removing `validation` from one that takes bodies.
+
+### 129.4 Where this leaves the contract
+
+- **156 of 156** operations describe their success response; 155 name a DTO and
+  the last is a genuine CSV string body
+- **577 documented failures** across those 156 operations — 400, 401, 403, 404,
+  409 and 429, each pointing at a schema rather than at nothing
+- **65 request bodies** all name a DTO; the other 20 write operations take no
+  body, being actions on a path (`approve`, `resume`, `run`, `send`)
+- **254 schemas**, every one reachable from an operation
+- **ten generator guards**, each written after the thing it catches had already
+  happened, and each proved to fail before being trusted
+
+Still not described: 5xx. Deliberately — a 500 means something unforeseen
+happened, and a contract that promises a shape for it is promising something the
+code does not know how to keep.

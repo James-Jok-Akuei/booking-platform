@@ -26,6 +26,7 @@ import { galleryUploadOptions } from '../business/gallery-upload.options';
 import { MulterExceptionFilter } from '../business/filters/multer-exception.filter';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AccountExportDto,
   SavedPaymentNumberDto,
@@ -42,6 +43,7 @@ import {
  */
 @Controller('users/me')
 @UseGuards(JwtAuthGuard)
+@ApiErrors({ auth: true, validation: true, notFound: true })
 export class AccountController {
   constructor(
     private readonly account: AccountService,

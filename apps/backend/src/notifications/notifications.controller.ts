@@ -15,6 +15,7 @@ import {
 import { NotificationsService } from './notifications.service';
 import { ListNotificationsDto } from './dto/list-notifications.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   MarkAllReadDto,
   MarkReadDto,
@@ -30,6 +31,7 @@ import {
  */
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
+@ApiErrors({ auth: true, validation: true, notFound: true })
 export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
 

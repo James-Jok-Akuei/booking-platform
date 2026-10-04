@@ -4,6 +4,7 @@ import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-use
 import { PrismaService } from '../prisma/prisma.service';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { ME_SELECT, MeDto } from './dto/user-response.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -13,6 +14,9 @@ export class UsersController {
   // to fetch their own account. Role-specific endpoints will use
   // @Roles(...) + RolesGuard on top of this same JwtAuthGuard.
   @UseGuards(JwtAuthGuard)
+  // The guard is on the METHOD here, not the class, so the 401 is declared
+  // here too — the only place in the API where that is true.
+  @ApiErrors({ auth: true })
   @Get('me')
   @ApiOkResponse({ type: MeDto })
   // No declared return type: `createdAt` is a Date here and a string on the

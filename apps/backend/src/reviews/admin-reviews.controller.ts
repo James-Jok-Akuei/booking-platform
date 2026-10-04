@@ -21,6 +21,7 @@ import { HideReviewDto } from './dto/hide-review.dto';
 import { ListAdminReviewsDto } from './dto/list-admin-reviews.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { AdminReviewPageDto, ReviewDto } from './dto/review-read.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * Review moderation. API-only, like every other admin surface here (§16.9).
@@ -31,6 +32,7 @@ import { AdminReviewPageDto, ReviewDto } from './dto/review-read.dto';
 @Controller('admin/reviews')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminReviewsController {
   constructor(private readonly reviews: ReviewsService) {}
 

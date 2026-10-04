@@ -28,6 +28,7 @@ import { InviteMemberDto } from './dto/invite-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   BusinessInvitationDto,
   BusinessMemberDto,
@@ -45,6 +46,7 @@ import {
 @Controller('business')
 @UseGuards(JwtAuthGuard, RolesGuard, BusinessRolesGuard)
 @Roles(UserRole.BUSINESS)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class MembersController {
   constructor(private readonly members: MembersService) {}
 

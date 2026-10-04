@@ -1,6 +1,9 @@
 import { api, tokens, type AuthenticatedUser, type TokenPair } from './client';
 import { uploadFile } from '../upload';
 import type { components } from './schema';
+/** Derived from the contract (§128). The same message whether or not the address has an account (§3.2). */
+type OtpRequested = components['schemas']['OtpRequestedDto'];
+
 
 /**
  * The signed-in account.
@@ -25,7 +28,7 @@ export const getMe = () => api<Me>('/users/me');
  * A customer with no account yet registers by sending CUSTOMER explicitly.
  */
 export const requestOtp = (email: string, role?: 'CUSTOMER') =>
-  api<{ message?: string }>('/auth/otp/request', {
+  api<OtpRequested>('/auth/otp/request', {
     method: 'POST',
     body: role ? { email, role } : { email },
     anonymous: true,

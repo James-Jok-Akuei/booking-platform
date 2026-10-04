@@ -26,6 +26,7 @@ import { PayoutsService } from './payouts.service';
 import { ListPayoutsDto } from './dto/list-payouts.dto';
 import { MarkFailedDto, MarkPaidDto } from './dto/mark-payout.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdminPayoutPageDto,
   BusinessBalanceDto,
@@ -45,6 +46,7 @@ import {
 @Controller('admin/payouts')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminPayoutsController {
   constructor(private readonly payouts: PayoutsService) {}
 
@@ -125,6 +127,7 @@ export class AdminPayoutsController {
 @Controller('businesses')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.BUSINESS, UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class BusinessPayoutsController {
   constructor(private readonly payouts: PayoutsService) {}
 

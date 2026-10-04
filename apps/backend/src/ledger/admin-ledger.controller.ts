@@ -25,6 +25,7 @@ import {
   ListLedgerEntriesDto,
 } from './dto/list-ledger.dto';
 import { ApiExtraModels, ApiOkResponse } from '@nestjs/swagger';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdjustmentPageDto,
   ExecutedAdjustmentDto,
@@ -46,6 +47,7 @@ import {
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminLedgerController {
   constructor(
     private readonly ledger: LedgerService,

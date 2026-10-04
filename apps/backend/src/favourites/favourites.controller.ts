@@ -25,6 +25,7 @@ import {
   SavedPlacePageDto,
 } from './dto/favourite-response.dto';
 import { SaveFavouriteDto } from './dto/save-favourite.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * Places a customer saved to come back to (§120).
@@ -35,6 +36,7 @@ import { SaveFavouriteDto } from './dto/save-favourite.dto';
 @Controller('favourites')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.CUSTOMER)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class FavouritesController {
   constructor(private readonly favourites: FavouritesService) {}
 

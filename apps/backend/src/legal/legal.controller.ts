@@ -21,6 +21,7 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { LegalService } from './legal.service';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdminLegalDocumentDto,
   LegalDraftDto,
@@ -45,6 +46,7 @@ import {
  * agreement worth nothing.
  */
 @Controller('legal')
+@ApiErrors({ notFound: true })
 export class LegalController {
   constructor(private readonly legal: LegalService) {}
 
@@ -76,6 +78,7 @@ export class LegalController {
 /** What this person has agreed to, and agreeing to it. */
 @Controller('legal/me')
 @UseGuards(JwtAuthGuard)
+@ApiErrors({ auth: true, validation: true })
 export class LegalAcceptanceController {
   constructor(private readonly legal: LegalService) {}
 
@@ -105,6 +108,7 @@ export class LegalAcceptanceController {
 @Controller('admin/legal')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminLegalController {
   constructor(private readonly legal: LegalService) {}
 

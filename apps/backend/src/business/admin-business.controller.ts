@@ -25,6 +25,7 @@ import {
 } from './dto/admin-business-response.dto';
 import { ChangeBusinessStatusDto } from './dto/change-business-status.dto';
 import { ListBusinessesDto } from './dto/list-businesses.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * The approval queue. API-only, like every other admin surface here (§16.9).
@@ -36,6 +37,7 @@ import { ListBusinessesDto } from './dto/list-businesses.dto';
 @Controller('admin/businesses')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminBusinessController {
   constructor(private readonly moderation: BusinessModerationService) {}
 

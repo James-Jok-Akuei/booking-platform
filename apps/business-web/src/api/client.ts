@@ -1,4 +1,16 @@
 import type { components } from './schema';
+/** Derived from the contract (§128). The same message whether or not the address has an account (§3.2). */
+type OtpRequested = components['schemas']['OtpRequestedDto'];
+
+/**
+ * The failure shape, derived from the contract (§129).
+ *
+ * `message` really is `string | string[]` — an array for a validation failure,
+ * one entry per broken rule — which is why it is narrowed below rather than
+ * rendered directly. `error` is absent on a 401.
+ */
+type ApiErrorBody = components['schemas']['ApiErrorDto'];
+
 /**
  * The one place this app talks to the backend.
  *
@@ -184,7 +196,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     const payload = await response.json().catch(() => null);
     // Nest puts the useful sentence in `message`, which is a string for most
     // errors and an array for validation failures.
-    const raw = (payload as { message?: string | string[] } | null)?.message;
+    const raw = (payload as ApiErrorBody | null)?.message;
     const message = Array.isArray(raw) ? raw.join(' ') : (raw ?? response.statusText);
     throw new ApiError(response.status, message, payload);
   }
@@ -210,7 +222,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
  * the registration case the server asks for by name when no account exists.
  */
 export const requestOtp = (email: string, role?: 'BUSINESS') =>
-  api<{ message?: string }>('/auth/otp/request', {
+  api<OtpRequested>('/auth/otp/request', {
     method: 'POST',
     body: role ? { email, role } : { email },
     anonymous: true,

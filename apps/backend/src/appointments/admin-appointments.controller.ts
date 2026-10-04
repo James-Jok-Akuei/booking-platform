@@ -20,6 +20,7 @@ import { AppointmentsService } from './appointments.service';
 import { ReclassifyCancellationDto } from './dto/cancel-appointment.dto';
 import { ListAdminAppointmentsDto } from './dto/list-admin-appointments.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdminAppointmentPageDto,
   AppointmentDto,
@@ -36,6 +37,7 @@ import {
 @Controller('admin/appointments')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminAppointmentsController {
   constructor(private readonly appointments: AppointmentsService) {}
 

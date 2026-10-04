@@ -17,6 +17,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdminProvinceDto,
   DistrictRecordDto,
@@ -45,6 +46,7 @@ import {
 @Controller('admin/places')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true, conflict: true })
 export class AdminPlacesController {
   constructor(private readonly prisma: PrismaService) {}
 

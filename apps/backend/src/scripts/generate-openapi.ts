@@ -230,6 +230,70 @@ async function main() {
     );
   }
 
+
+  /**
+   * Errors, checked against facts the document already states (§129.3).
+   *
+   * The response work (§128) described what SUCCESS looks like and left failure
+   * entirely undocumented — 156 operations, not one 4xx between them. A client
+   * generated from that contract has no type for the thing it will handle most
+   * often.
+   *
+   * These four rules need no knowledge of the controllers, only of the
+   * document, which is what makes them worth enforcing rather than reviewing:
+   *
+   *   1. a path parameter implies a 404 — the id may not exist, or may not be
+   *      yours, and §27.2 makes those deliberately indistinguishable
+   *   2. a request body implies a 400 — the ValidationPipe is global
+   *   3. a 403 implies a 401 — you cannot be forbidden without first being
+   *      authenticated, so documenting one without the other is incoherent
+   *   4. no operation documents zero failures, except the two public reads that
+   *      take no parameter and no body and genuinely cannot fail with a 4xx
+   */
+  const PUBLIC_INFALLIBLE = new Set([
+    'GET /categories',
+    'GET /places/provinces',
+  ]);
+
+  const errorProblems: string[] = [];
+
+  for (const [path, item] of Object.entries(document.paths)) {
+    for (const [verb, operation] of Object.entries(item as object)) {
+      if (!['get', 'post', 'patch', 'put', 'delete'].includes(verb)) continue;
+      const op = operation as {
+        responses?: Record<string, unknown>;
+        requestBody?: unknown;
+      };
+      const codes = Object.keys(op.responses ?? {});
+      const has = (code: string) => codes.includes(code);
+      const id = `${verb.toUpperCase()} ${path}`;
+
+      if (path.includes('{') && !has('404')) {
+        errorProblems.push(`${id} takes a path parameter but documents no 404`);
+      }
+      if (op.requestBody && !has('400')) {
+        errorProblems.push(`${id} takes a body but documents no 400`);
+      }
+      if (has('403') && !has('401')) {
+        errorProblems.push(`${id} documents a 403 but no 401`);
+      }
+      if (!codes.some((c) => c.startsWith('4')) && !PUBLIC_INFALLIBLE.has(id)) {
+        errorProblems.push(`${id} documents no failure at all`);
+      }
+    }
+  }
+
+  if (errorProblems.length > 0) {
+    throw new Error(
+      `${errorProblems.length} operation(s) describe their failures wrongly:\n` +
+        errorProblems.map((e) => `  ${e}`).join('\n') +
+        '\n\nPut @ApiErrors({ ... }) on the controller with the flags its ' +
+        'guards and parameters actually imply. A contract that documents only ' +
+        'success leaves a client untyped for the case it meets most often.',
+    );
+  }
+
+
   mkdirSync(dirname(OUTPUT), { recursive: true });
   writeFileSync(OUTPUT, `${JSON.stringify(document, null, 2)}\n`);
 

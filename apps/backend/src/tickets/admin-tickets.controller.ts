@@ -36,6 +36,7 @@ import { CreateTicketMessageDto } from './dto/create-ticket-message.dto';
 import { ListAdminTicketsDto } from './dto/list-tickets.dto';
 import { AssignTicketDto } from './dto/assign-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * The admin ticket queue.
@@ -48,6 +49,7 @@ import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 @Controller('admin/tickets')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminTicketsController {
   constructor(private readonly tickets: TicketsService) {}
 

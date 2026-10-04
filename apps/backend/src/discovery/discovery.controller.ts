@@ -9,6 +9,7 @@ import { ApiOkResponse } from '@nestjs/swagger';
 import { DiscoveryPageDto } from './dto/discovery-response.dto';
 import { DiscoverLocationsDto } from './dto/discover-locations.dto';
 import { ShopfrontDto } from './dto/discovery-response.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * The customer front door.
@@ -27,6 +28,7 @@ import { ShopfrontDto } from './dto/discovery-response.dto';
  */
 @Controller('discover')
 @UseGuards(OptionalJwtAuthGuard)
+@ApiErrors({ validation: true, notFound: true })
 export class DiscoveryController {
   constructor(private readonly discovery: DiscoveryService) {}
 

@@ -25,6 +25,7 @@ import { InviteAdminDto } from './dto/invite-admin.dto';
 import { AdminInvitationsService } from './admin-invitations.service';
 import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdminInvitationDto,
   AdminUserPageDto,
@@ -41,6 +42,7 @@ import {
 @Controller('admin/users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminUsersController {
   constructor(
     private readonly users: UsersService,

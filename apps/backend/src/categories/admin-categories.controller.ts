@@ -23,6 +23,7 @@ import {
   SubcategoryRecordDto,
 } from './dto/category-response.dto';
 import { SetCategoryLiveDto } from './dto/set-category-live.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   CreateCategoryDto,
   CreateSubcategoryDto,
@@ -49,6 +50,7 @@ import {
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true, conflict: true })
 export class AdminCategoriesController {
   constructor(private readonly prisma: PrismaService) {}
 

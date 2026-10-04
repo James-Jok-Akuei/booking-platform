@@ -27,6 +27,7 @@ import { ReviewResponseDto } from './dto/review-response.dto';
 import { ListReviewsDto } from './dto/list-reviews.dto';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { LocationReviewsDto, ReviewDto } from './dto/review-read.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * Writing and editing a review. CUSTOMER only — a business cannot review
@@ -35,6 +36,7 @@ import { LocationReviewsDto, ReviewDto } from './dto/review-read.dto';
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.CUSTOMER)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class ReviewsCustomerController {
   constructor(private readonly reviews: ReviewsService) {}
 
@@ -70,6 +72,7 @@ export class ReviewsCustomerController {
 @Controller('reviews')
 @UseGuards(JwtAuthGuard, RolesGuard, BusinessRolesGuard)
 @Roles(UserRole.BUSINESS)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class ReviewsBusinessController {
   constructor(private readonly reviews: ReviewsService) {}
 
@@ -104,6 +107,7 @@ export class ReviewsBusinessController {
  */
 @Controller('locations')
 @UseGuards(OptionalJwtAuthGuard)
+@ApiErrors({ validation: true, notFound: true })
 export class ReviewsPublicController {
   constructor(private readonly reviews: ReviewsService) {}
 

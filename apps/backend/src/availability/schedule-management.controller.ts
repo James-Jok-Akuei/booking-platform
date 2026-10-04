@@ -23,6 +23,7 @@ import { CreateScheduleExceptionDto } from './dto/create-schedule-exception.dto'
 import { CreateTimeBlockDto } from './dto/create-time-block.dto';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   ScheduleExceptionDto,
   TimeBlockDto,
@@ -37,6 +38,7 @@ import {
 @Controller('business/locations')
 @UseGuards(JwtAuthGuard, RolesGuard, BusinessRolesGuard)
 @Roles(UserRole.BUSINESS)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class ScheduleManagementController {
   constructor(private readonly schedule: ScheduleManagementService) {}
 

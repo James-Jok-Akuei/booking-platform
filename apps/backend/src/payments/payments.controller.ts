@@ -3,6 +3,7 @@ import { PaymentProviderRegistry } from './payment-provider.registry';
 import { inferOperator } from './operator-routing';
 import { INTERNAL_CURRENCY, minorUnitExponent } from './currency';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   CurrencyDto,
   PaymentProvidersDto,
@@ -24,6 +25,7 @@ import {
  * to have an account, and it says nothing about anybody's money.
  */
 @Controller('payments')
+@ApiErrors({ validation: true })
 export class PaymentsController {
   constructor(private readonly registry: PaymentProviderRegistry) {}
 

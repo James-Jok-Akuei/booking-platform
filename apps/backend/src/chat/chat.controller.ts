@@ -37,6 +37,7 @@ import { CreateInquiryThreadDto } from './dto/create-inquiry.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ListThreadsDto } from './dto/list-threads.dto';
 import { ListMessagesDto } from './dto/list-messages.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * Chat between a customer and a business.
@@ -49,6 +50,7 @@ import { ListMessagesDto } from './dto/list-messages.dto';
  */
 @Controller('threads')
 @UseGuards(JwtAuthGuard)
+@ApiErrors({ auth: true, validation: true, notFound: true, rateLimited: true })
 export class ChatController {
   constructor(private readonly chat: ChatService) {}
 
@@ -67,6 +69,8 @@ export class ChatController {
    * still costs a query here.
    */
   @Post('inquiry')
+  // CUSTOMER-only, unlike the rest of this controller.
+  @ApiErrors({ roles: true })
   @ApiOkResponse({ type: ThreadDto })
   @UseGuards(RolesGuard)
   @Roles(UserRole.CUSTOMER)

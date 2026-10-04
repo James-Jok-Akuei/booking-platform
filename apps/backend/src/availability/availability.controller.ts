@@ -17,6 +17,7 @@ import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { SLOT_GRID_MINUTES, parseCalendarDate } from './time.util';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { AvailabilityDto } from './dto/availability-response.dto';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
  * Availability lookup — reachable without a token, but not the same for
@@ -44,6 +45,7 @@ import { AvailabilityDto } from './dto/availability-response.dto';
  */
 @Controller('locations')
 @UseGuards(OptionalJwtAuthGuard)
+@ApiErrors({ validation: true, notFound: true })
 export class AvailabilityController {
   constructor(private readonly availability: AvailabilityService) {}
 

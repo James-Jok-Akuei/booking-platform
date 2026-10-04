@@ -25,6 +25,7 @@ import {
 } from './dto/verify-payout-destination.dto';
 import { ListPayoutDestinationsDto } from './dto/list-payout-destinations.dto';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdminPayoutDestinationPageDto,
   BusinessPayoutDestinationDto,
@@ -43,6 +44,7 @@ import {
 @Controller('business/payout-destination')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.BUSINESS)
+@ApiErrors({ auth: true, roles: true, validation: true })
 export class BusinessPayoutDestinationController {
   constructor(private readonly destinations: PayoutDestinationsService) {}
 
@@ -69,6 +71,7 @@ export class BusinessPayoutDestinationController {
 @Controller('admin/payout-destinations')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
+@ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminPayoutDestinationsController {
   constructor(private readonly destinations: PayoutDestinationsService) {}
 
