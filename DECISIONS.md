@@ -11956,3 +11956,86 @@ guarded controller, and removing `validation` from one that takes bodies.
 Still not described: 5xx. Deliberately — a 500 means something unforeseen
 happened, and a contract that promises a shape for it is promising something the
 code does not know how to keep.
+
+## 130. A social layer for buyers — designed, costed, and NOT built (2026-10-04)
+
+Asked for: buyers add each other as friends, see each other's favourites, chat
+one-to-one and in groups, make voice and video calls, and **pin a shop or a
+service to a conversation** so a group talking about a salon has that salon —
+or one exact service in it, with its price — sitting at the top of the chat.
+
+**Deferred out of the MVP by the owner, to be reconsidered after launch if it
+turns out to matter.** Nothing was built. This section exists so the design work
+is not repeated, and because three of the findings below outlive the feature.
+
+### 130.1 The pin is a pattern this codebase already has
+
+A customer↔business thread can be attached to a booking: `Thread.appointmentId`,
+with `kind` derived as `APPOINTMENT` or `INQUIRY` (§21.1). The app shows that
+booking at the top of the conversation. The requested pin is the same idea
+aimed at a `Location` or a `ServiceLocation` instead of an `Appointment`.
+
+One change it would need: **many pins per conversation, not one.** The booking
+version allows exactly one, which is right for a booking — a thread is about a
+booking or it is not. But a group comparing two salons needs both pinned, and
+one-per-conversation forces a new conversation per shop, which is worse than no
+pin at all.
+
+Shape it would take: `ConversationPin` carrying `conversationId`, exactly one of
+`locationId` / `serviceLocationId` (nullable pair plus a CHECK, the
+`BillingAdjustment` pattern from §25.2), who pinned it, and when. Creating a
+conversation *from* a shop makes the conversation and its first pin together.
+
+### 130.2 Friend chat cannot reuse `Thread`
+
+`Thread` is `businessProfileId` + `customerId` — one business, one customer, as
+a pair. A friend chat has no business; a group has N members. Neither fits, and
+widening `Thread` would break the tenant scoping and the per-viewer projection
+(§112.1) that the business chat depends on.
+
+The precedent is already set and already written down: support tickets
+"deliberately NOT built on Chat's Thread/Message ... the participants are
+different ... these tables borrow Chat's proven shapes without sharing its
+models" (schema comment above `model Ticket`). A social layer would follow it —
+its own `Conversation` / `ConversationMember` / `ConversationMessage`, reusing
+the existing socket.io gateway and its rooms rather than its tables.
+
+### 130.3 Sharing favourites must be opt-in, and off by default
+
+Favourites are private today. Making them friend-visible would change the
+meaning of rows people created under a different promise — the §119 reasoning
+about what a person agreed to, applied to data rather than to terms. So: a
+per-user setting, defaulting to **off**, and existing favourites stay private
+until their owner says otherwise.
+
+### 130.4 Friend DISCOVERY is the privacy problem, not friendship
+
+Searching for a friend by email address would let any caller type any address
+and learn whether that person has an account. That is exactly the leak
+`POST /auth/otp/request` is written to avoid, by returning the same message
+whether or not the address is registered (§3.2). Building a searchable directory
+beside it would undo that.
+
+So friends would be added by **share link or invite code** — the sender passes a
+link, the recipient opens it, and that creates the request. No search, no
+enumeration.
+
+### 130.5 Calls are a project, not a feature — and Expo Go is the blocker
+
+Signalling is the easy part: the existing `/chat` gateway already has
+authenticated connections and rooms, and relaying offer/answer/ICE through them
+is small work. The cost is everywhere else:
+
+- **No WebRTC implementation runs in Expo Go.** `react-native-webrtc`, LiveKit,
+  Daily and Agora all need a native build. The customer app is currently tested
+  on a real phone *through Expo Go*, and there is no `eas.json`. Calls cannot be
+  tried at all until the app is built properly, so the first step is not code.
+- **One-to-one still needs a TURN relay.** A meaningful share of mobile-network
+  pairs cannot connect directly. TURN is a hosted, monthly cost.
+- **Group video needs an SFU.** Three or more participants cannot mesh —
+  it exhausts uplink and battery. That is a media server, and the sane answer is
+  to buy one rather than run it.
+
+Recommended order if this is ever picked up: friends, then favourite sharing,
+then conversations, then pins — all of which need nothing new — and calls as a
+separate piece beginning with making the app installable.
