@@ -277,6 +277,13 @@ function ServiceRow({
 
   return (
     <Pressable style={styles.service} onPress={onPress}>
+      {/* The cover photo (§132). A fixed box either way, so rows do not change
+          height depending on whether a business has uploaded anything. */}
+      {service.images.length > 0 ? (
+        <Image source={{ uri: service.images[0].url }} style={styles.serviceThumb} />
+      ) : (
+        <View style={[styles.serviceThumb, styles.serviceThumbEmpty]} />
+      )}
       <View style={styles.serviceMain}>
         <Text style={styles.serviceName}>{service.name}</Text>
         {service.description && (
@@ -308,6 +315,13 @@ const styles = StyleSheet.create({
   content: { padding: 16, gap: 12, paddingBottom: 40 },
   spinner: { marginTop: 40 },
   cover: { width: '100%', height: 150, borderRadius: theme.radius },
+  serviceThumb: {
+    width: 54,
+    height: 54,
+    borderRadius: 8,
+    backgroundColor: theme.panel,
+  },
+  serviceThumbEmpty: { borderWidth: 1, borderColor: theme.line },
   block: {
     backgroundColor: theme.panel,
     borderWidth: 1,

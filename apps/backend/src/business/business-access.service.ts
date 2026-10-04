@@ -81,4 +81,25 @@ export class BusinessAccessService {
 
     return location;
   }
+
+  /**
+   * The same check for a service, and for the same reason (§132.1).
+   *
+   * Lived privately on `ServicesService` until service photos needed it too.
+   * Two copies of an ownership check is the §128.5 mistake applied to a
+   * predicate rather than to a `select` — and the one that leaks is always the
+   * copy nobody remembered to change.
+   */
+  async requireOwnedService(businessId: string, serviceId: string) {
+    const service = await this.prisma.service.findFirst({
+      where: { id: serviceId, businessId },
+      select: { id: true },
+    });
+
+    if (!service) {
+      throw new NotFoundException('Service not found.');
+    }
+
+    return service;
+  }
 }

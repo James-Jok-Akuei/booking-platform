@@ -102,6 +102,12 @@ export const SERVICE_INCLUDE = {
       location: { select: { id: true, name: true } },
     },
   },
+  // Ordered here rather than in the client, so all three read them the same way
+  // and the first one is the cover everywhere (§132).
+  images: {
+    orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+    select: { id: true, url: true, displayOrder: true },
+  },
 } as const satisfies Prisma.ServiceInclude;
 
 type ServicePayload = Serialised<
@@ -133,6 +139,13 @@ export class ServiceOfferedAtDto {
   location!: ServiceOfferLocationDto;
 }
 
+/** Just enough of a photo to draw it. The full row is on `ServiceImageDto`. */
+export class ServiceImageRefDto {
+  id!: string;
+  url!: string;
+  displayOrder!: number;
+}
+
 export class BusinessServiceDto implements ServicePayload {
   id!: string;
   businessId!: string;
@@ -147,6 +160,13 @@ export class BusinessServiceDto implements ServicePayload {
   createdAt!: string;
   updatedAt!: string;
   locations!: ServiceOfferedAtDto[];
+
+  /**
+   * Photos, lowest `displayOrder` first, so the first is the cover (§132).
+   * Empty until the business uploads any — a service without photos is normal,
+   * not broken.
+   */
+  images!: ServiceImageRefDto[];
 }
 
 

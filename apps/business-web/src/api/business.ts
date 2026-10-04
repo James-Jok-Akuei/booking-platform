@@ -418,6 +418,34 @@ export const removeGalleryPhoto = (locationId: string, mediaId: string) =>
     method: 'DELETE',
   });
 
+// ---------------------------------------------------------------------------
+// Photos of a service (§132)
+// ---------------------------------------------------------------------------
+
+export type ServiceImage = components['schemas']['ServiceImageDto'];
+export type ServiceImages = components['schemas']['ServiceImagesDto'];
+
+/**
+ * Up to eleven per service. The limit and how much room is left come from the
+ * server (`getServiceImages`), so this app never hardcodes the number.
+ */
+export const getServiceImages = (serviceId: string) =>
+  api<ServiceImages>(`/business/services/${serviceId}/images`);
+
+export const addServiceImage = (serviceId: string, file: File) => {
+  const form = new FormData();
+  form.set('file', file);
+  return api<ServiceImage>(`/business/services/${serviceId}/images`, {
+    method: 'POST',
+    body: form,
+  });
+};
+
+export const removeServiceImage = (serviceId: string, imageId: string) =>
+  api<ActionMessage>(`/business/services/${serviceId}/images/${imageId}`, {
+    method: 'DELETE',
+  });
+
 /** Edits a branch. Coordinates cannot be removed once set (§43.2). */
 /**
  * Opens a branch. OWNER and MANAGER only, like every other change to how the

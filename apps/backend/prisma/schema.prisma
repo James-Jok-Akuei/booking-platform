@@ -705,6 +705,9 @@ model Service {
 
   locations ServiceLocation[]
 
+  /// Photos of the service itself (§132), capped in ServiceImagesService.
+  images ServiceMedia[]
+
   @@index([businessId])
   @@map("services")
 }
@@ -726,6 +729,38 @@ model LocationMedia {
 
   @@index([locationId])
   @@map("location_media")
+}
+
+/// Photos of ONE SERVICE, shown to a customer choosing between services (§132).
+///
+/// Hangs off `Service`, not off `ServiceLocation`: a haircut looks the same at
+/// every branch and only its PRICE differs, so putting photos on the per-branch
+/// join would make a business upload the same eleven pictures once per branch.
+///
+/// A separate table from `location_media` for the reason tickets are separate
+/// from chat: the columns are alike, the subject is not, and one shared table
+/// would put a "which kind is this" predicate in every query.
+model ServiceMedia {
+  id        String  @id @default(uuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  type MediaType @default(PHOTO)
+  url  String
+
+  /// Same unmoderated reality as `location_media` (§132.2): nothing sets this
+  /// and nothing reads it, so a photo is visible as soon as it is uploaded. The
+  /// column exists so that if moderation is ever built it is built once, for
+  /// both tables, rather than bolted onto one.
+  status MediaStatus @default(PENDING)
+
+  /// Lowest first. The first photo is the one a customer sees in a list.
+  displayOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([serviceId, displayOrder])
+  @@map("service_media")
 }
 
 // ---------- Availability ----------

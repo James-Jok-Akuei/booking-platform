@@ -12084,3 +12084,83 @@ nothing, and there are no tests on either web app. So the check was mechanical:
 every nav link resolves to a declared route, every declared route except
 `/login` has a nav link, and nothing is listed twice — in both apps. Both also
 typecheck and build.
+
+## 132. Photos of a service (2026-10-05)
+
+A business can now upload up to **eleven photos per service**, and a customer
+sees them when choosing between services and again on the booking screen.
+
+Hung off `Service`, not off `ServiceLocation`: a haircut looks the same at every
+branch and only its PRICE differs, so photos on the per-branch join would make a
+business upload the same eleven pictures once per branch.
+
+A separate table from `location_media`, for the reason tickets are separate from
+chat: the columns are alike, the subject is not, and one shared table would put a
+"which kind is this" predicate in every query — which §123 had just finished
+paying for.
+
+### 132.1 Ownership is proved before the count is read
+
+`upload` checks that the caller owns the service BEFORE counting its photos.
+Reversed, a full service would answer "already has the maximum of 11 photos" to
+a stranger probing its id, which tells a competitor exactly how full it is.
+
+The ordering is now a test, and the test was proved: swapping the two lines fails
+exactly one assertion — the one that uploads to a FULL foreign service and
+requires a 404 rather than "full". The obvious test (upload to a foreign service,
+expect 404) passes either way, which is why it was not enough.
+
+The ownership check itself moved to `BusinessAccessService.requireOwnedService`,
+beside `requireOwnedLocation`. It had been private on `ServicesService`, and
+service photos needed the same predicate — two copies of an ownership check being
+the §128.5 mistake applied to a `where` rather than to a `select`, where the one
+that leaks is always the copy nobody remembered to change.
+
+### 132.2 Photo moderation was never built, and a comment claimed it was
+
+`MediaStatus` exists on `location_media` with a schema comment saying photos land
+`PENDING` and an admin approves them. **Nothing in the codebase ever sets or
+reads that column.** There is no approval route, no admin screen, and no
+customer-facing filter — so every shop photo has always gone straight to
+customers.
+
+Worse, §128.31's `GalleryPhotoDto` carried a comment of mine asserting that
+"customer-facing endpoints filter to APPROVED". They do not, and never did; I
+took it from a comment in `GalleryService` instead of reading the query. The
+comment is corrected rather than deleted, because the field is still published
+and a reader deserves to know it means nothing yet.
+
+`service_media` carries the same column for the same reason: if moderation is
+ever built it should be built once, for both tables, rather than bolted onto one.
+Service photos are therefore visible the moment they are uploaded — which is what
+was asked for, and what shop photos already did.
+
+### 132.3 Where the limit lives, and where it does not
+
+Eleven is a constant in `ServiceImagesService`, published through the listing as
+`limit` and `remaining`, and named in the refusal message. The business app shows
+"3 of 11" and disables its button by reading those fields — it never hardcodes
+the number, because a number duplicated in a client is a number that disagrees
+with the server the first time either changes.
+
+The file picker moved to `components/ImageButton` for the same reason: its
+`accept` list mirrors the server's allow-list, and a second copy would be a
+second thing to keep in step.
+
+### 132.4 Two steps, not one
+
+Creating a service is one JSON request; a photo is multipart. Rather than make
+one endpoint be both, the business app creates the service and then uploads —
+the same two steps the branch gallery already uses.
+
+### 132.5 The test that matters is the cross-module one
+
+A business can upload a photo, the row can exist, and the customer can still see
+nothing because the customer-facing `select` never asked for it. That is §109
+exactly. So the ordering and the visibility are asserted through
+`DiscoveryService.findOne`, and deleting `images` from the shopfront select fails
+three of them.
+
+Those tests are declared LAST in `discovery.spec.ts` on purpose: they create
+extra shops, and several tests above assert on the full set of locations the
+database holds. Declared earlier, they silently broke five.

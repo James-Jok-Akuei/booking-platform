@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
+import { ImageButton } from '../components/ImageButton';
 import {
   addGalleryPhoto,
   getCategories,
@@ -127,36 +128,6 @@ function ShopWindow({ profile }: { profile: BusinessProfile }) {
  * wrapping re-dispatches the click and makes a selection look ignored. The
  * input is cleared after each pick so choosing the same file twice still fires.
  */
-function ImageButton({
-  id,
-  label,
-  busy,
-  onPick,
-}: {
-  id: string;
-  label: string;
-  busy: boolean;
-  onPick: (file: File | null) => void;
-}) {
-  return (
-    <>
-      <input
-        id={id}
-        type="file"
-        className="visually-hidden"
-        accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
-        disabled={busy}
-        onChange={(event) => {
-          onPick(event.target.files?.[0] ?? null);
-          event.target.value = '';
-        }}
-      />
-      <label htmlFor={id} className={busy ? 'file-trigger disabled' : 'file-trigger'}>
-        {busy ? 'Uploading…' : label}
-      </label>
-    </>
-  );
-}
 
 function Details({ profile }: { profile: BusinessProfile }) {
   const queryClient = useQueryClient();

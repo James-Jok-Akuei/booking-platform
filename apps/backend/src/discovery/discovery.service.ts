@@ -342,6 +342,12 @@ export class DiscoveryService {
               durationMinutes: true,
               depositPercentage: true,
               currency: true,
+              // What the service actually looks like (§132). Ordered here, so
+              // the first one is the cover on every client.
+              images: {
+                orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+                select: { id: true, url: true, displayOrder: true },
+              },
             },
           },
         },

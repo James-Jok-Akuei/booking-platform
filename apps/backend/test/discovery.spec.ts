@@ -1093,4 +1093,76 @@ describe('Discovery (§43)', () => {
       expect(hours).toHaveBeenCalledTimes(1);
     });
   });
+
+  // ------------------------------------------------------------------
+  // LAST in the file on purpose: these create extra shops, and several tests
+  // above assert on the FULL set of locations the database holds. Declared
+  // earlier, they silently broke five of them.
+  describe('service photos (§132)', () => {
+    /**
+     * The cross-module link, which is where §109 happened: the business can
+     * upload a photo and the row exists, and the customer still sees nothing
+     * because the customer-facing SELECT never asked for it.
+     */
+    it('reaches the shopfront, cover first', async () => {
+      const business = await shop({});
+
+      // Inserted out of order on purpose: the ordering must come from
+      // displayOrder, not from insertion order or from the id.
+      await prisma.serviceMedia.createMany({
+        data: [
+          { serviceId: business.serviceId, url: 'https://x.test/third.jpg', displayOrder: 2 },
+          { serviceId: business.serviceId, url: 'https://x.test/first.jpg', displayOrder: 0 },
+          { serviceId: business.serviceId, url: 'https://x.test/second.jpg', displayOrder: 1 },
+        ],
+      });
+
+      const detail: any = await discovery.findOne(business.locationId);
+
+      expect(detail.services[0].images.map((i: any) => i.url)).toEqual([
+        'https://x.test/first.jpg',
+        'https://x.test/second.jpg',
+        'https://x.test/third.jpg',
+      ]);
+    });
+
+    it('is an empty list when nothing is uploaded, not missing', async () => {
+      const business = await shop({});
+
+      const detail: any = await discovery.findOne(business.locationId);
+
+      // A service with no photos is normal. The key must still be there, or a
+      // client reading `images.length` crashes on the common case.
+      expect(detail.services[0].images).toEqual([]);
+    });
+
+    it("carries photos of one service only, never another service's", async () => {
+      const business = await shop({});
+      const second = await prisma.service.create({
+        data: {
+          businessId: business.businessId,
+          name: 'Beard trim',
+          durationMinutes: 15,
+          currency: 'RWF',
+          locations: {
+            create: { locationId: business.locationId, priceMinor: 2000 },
+          },
+        },
+        select: { id: true },
+      });
+      await prisma.serviceMedia.create({
+        data: { serviceId: second.id, url: 'https://x.test/beard.jpg' },
+      });
+
+      const detail: any = await discovery.findOne(business.locationId);
+      const byName = Object.fromEntries(
+        detail.services.map((svc: any) => [svc.name, svc.images.map((i: any) => i.url)]),
+      );
+
+      expect(byName['Beard trim']).toEqual(['https://x.test/beard.jpg']);
+      expect(byName['Test Service'] ?? []).toEqual([]);
+    });
+  });
+
+
 });

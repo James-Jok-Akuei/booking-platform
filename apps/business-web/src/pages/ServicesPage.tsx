@@ -18,6 +18,12 @@ import {
   type Service,
 } from '../api/business';
 import { useMoney } from '../money';
+import { ImageButton } from '../components/ImageButton';
+import {
+  addServiceImage,
+  getServiceImages,
+  removeServiceImage,
+} from '../api/business';
 
 /**
  * What the business sells, and for how much.
@@ -554,6 +560,7 @@ function ServiceRow({
   retireIsRestore?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
+  const [photos, setPhotos] = useState(false);
 
   if (editing) {
     return (
@@ -588,9 +595,26 @@ function ServiceRow({
       : Math.round((cheapest * Number(service.depositPercentage)) / 100);
 
   return (
+    <>
     <tr>
       <td>
-        <strong>{service.name}</strong>
+        <div className="service-name">
+          {/* The cover, so a glance down the list shows which services have a
+              photo and which do not. */}
+          {service.images.length > 0 ? (
+            <img className="service-thumb" src={service.images[0].url} alt="" />
+          ) : (
+            <span className="service-thumb empty" aria-hidden="true" />
+          )}
+          <span>
+            <strong>{service.name}</strong>
+            <div className="muted small">
+              {service.images.length === 0
+                ? 'No photos'
+                : `${service.images.length} photo${service.images.length === 1 ? '' : 's'}`}
+            </div>
+          </span>
+        </div>
       </td>
       <td>
         {onSale.length === 0 ? (
@@ -656,6 +680,14 @@ function ServiceRow({
         <button type="button" className="link" onClick={() => setEditing(true)}>
           Edit
         </button>
+        <button
+          type="button"
+          className="link"
+          aria-expanded={photos}
+          onClick={() => setPhotos((open) => !open)}
+        >
+          {photos ? 'Hide photos' : 'Photos'}
+        </button>
         {/* Only shown where it means something: a service already off sale
             everywhere has nothing left to retire. */}
         {retireIsRestore ? (
@@ -676,5 +708,128 @@ function ServiceRow({
         )}
       </td>
     </tr>
+    {/* A full-width row beneath, the same way editing expands: the five
+        columns are too narrow for a photo grid. */}
+    {photos && (
+      <tr>
+        <td colSpan={5}>
+          <ServicePhotos serviceId={service.id} />
+        </td>
+      </tr>
+    )}
+    </>
+  );
+}
+
+/**
+ * Photos of one service (§132).
+ *
+ * Mirrors the branch gallery on the shopfront page — same grid, same picker,
+ * same confirm — because they are the same job on a different subject, and a
+ * business should not have to learn two of them.
+ *
+ * The limit and the room left come from the SERVER, never from a constant
+ * here: a number hardcoded in a client is a number that disagrees with the
+ * server the first time either changes (§132.3).
+ */
+function ServicePhotos({ serviceId }: { serviceId: string }) {
+  const queryClient = useQueryClient();
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const photos = useQuery({
+    queryKey: ['service-images', serviceId],
+    queryFn: () => getServiceImages(serviceId),
+  });
+
+  // Both lists change: this one, and the service list that carries the cover.
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['service-images', serviceId] });
+    queryClient.invalidateQueries({ queryKey: ['services'] });
+  };
+
+  const add = useMutation({
+    mutationFn: (file: File) => addServiceImage(serviceId, file),
+    onSuccess: refresh,
+    onError: (error) =>
+      setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
+  });
+
+  const drop = useMutation({
+    mutationFn: (imageId: string) => removeServiceImage(serviceId, imageId),
+    onSuccess: refresh,
+    onError: (error) =>
+      setProblem(error instanceof ApiError ? error.message : 'That did not delete.'),
+  });
+
+  const full = (photos.data?.remaining ?? 1) <= 0;
+
+  return (
+    <div className="branch-gallery">
+      <div className="branch-head">
+        <strong>Photos of this service</strong>
+        {photos.data && (
+          <span className="muted small">
+            {photos.data.count} of {photos.data.limit}
+          </span>
+        )}
+      </div>
+
+      <p className="muted small">
+        Customers see these when they pick this service. The first one is the
+        cover, so upload the best one first.
+      </p>
+
+      <div className="photo-grid">
+        {photos.data?.images.map((photo, index) => (
+          <figure key={photo.id}>
+            <img src={photo.url} alt="" />
+            {index === 0 && <span className="muted small">Cover</span>}
+            <button
+              type="button"
+              className="link danger-link"
+              disabled={drop.isPending}
+              onClick={() => {
+                if (window.confirm('Remove this photo? It cannot be brought back.')) {
+                  setProblem(null);
+                  drop.mutate(photo.id);
+                }
+              }}
+            >
+              Remove
+            </button>
+          </figure>
+        ))}
+      </div>
+
+      {photos.data?.count === 0 && (
+        <p className="muted small">
+          No photos yet. A service with a photo is easier to choose than one
+          without.
+        </p>
+      )}
+
+      {full ? (
+        <p className="muted small">
+          This service is at its {photos.data?.limit} photo limit. Remove one to
+          add another.
+        </p>
+      ) : (
+        <ImageButton
+          id={`service-photo-${serviceId}`}
+          label="Add a photo"
+          busy={add.isPending}
+          onPick={(file) => {
+            setProblem(null);
+            if (file) add.mutate(file);
+          }}
+        />
+      )}
+
+      {problem && (
+        <p className="error small" role="alert">
+          {problem}
+        </p>
+      )}
+    </div>
   );
 }

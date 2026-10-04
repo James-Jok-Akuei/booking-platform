@@ -43,6 +43,8 @@ import {
 } from './dto/business-response.dto';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import {
+  ServiceImageDto,
+  ServiceImagesDto,
   BusinessPauseStateDto,
   DeactivatedServiceDto,
   GalleryDto,
@@ -54,6 +56,7 @@ import {
 import { LocationsService } from './locations.service';
 import { ServicesService } from './services.service';
 import { GalleryService } from './gallery.service';
+import { ServiceImagesService } from './service-images.service';
 import { galleryUploadOptions } from './gallery-upload.options';
 import { MulterExceptionFilter } from './filters/multer-exception.filter';
 import { UpdateBusinessProfileDto } from './dto/update-profile.dto';
@@ -101,6 +104,7 @@ export class BusinessController {
     private readonly locations: LocationsService,
     private readonly services: ServicesService,
     private readonly gallery: GalleryService,
+    private readonly serviceImages: ServiceImagesService,
     private readonly account: AccountService,
     private readonly drafts: ServiceDraftsService,
   ) {}
@@ -427,5 +431,57 @@ export class BusinessController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.services.deactivate(user.userId, id);
+  }
+  // ---------- Photos of a service (§132) ----------
+  //
+  // Separate from service creation, not part of it: creating a service is one
+  // JSON request and a photo is multipart, so one endpoint would have to be
+  // both. The business app creates the service, then uploads — the same two
+  // steps the location gallery already uses.
+
+  /**
+   * One photo, up to eleven per service.
+   *
+   * `galleryUploadOptions` because these ARE shop-window images — the same
+   * allow-list a branch photo gets, and deliberately not §81's wider
+   * ticket-attachment list.
+   */
+  @Post('services/:id/images')
+  @ApiCreatedResponse({ type: ServiceImageDto })
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
+  @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'image' }))
+  uploadServiceImage(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: UploadMediaDto,
+  ) {
+    return this.serviceImages.upload(user.userId, id, file, dto.displayOrder);
+  }
+
+  @Get('services/:id/images')
+  @ApiOkResponse({ type: ServiceImagesDto })
+  @BusinessRoles(
+    BusinessMemberRole.OWNER,
+    BusinessMemberRole.MANAGER,
+    BusinessMemberRole.STAFF,
+  )
+  listServiceImages(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.serviceImages.list(user.userId, id);
+  }
+
+  @Delete('services/:id/images/:imageId')
+  @ApiOkResponse({ type: ActionMessageDto })
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  deleteServiceImage(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('imageId', ParseUUIDPipe) imageId: string,
+  ) {
+    return this.serviceImages.remove(user.userId, id, imageId);
   }
 }

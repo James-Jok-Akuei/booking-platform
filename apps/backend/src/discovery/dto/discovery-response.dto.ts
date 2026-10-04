@@ -1,4 +1,5 @@
 import { MediaType } from '@prisma/client';
+import { ServiceImageRefDto } from '../../business/dto/business-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import type { ApproxSettlement } from '../../payments/approx-settlement';
@@ -140,6 +141,13 @@ export class ShopfrontServiceDto {
   /** A decimal string, like every percentage here (§128.20). */
   depositPercentage!: string;
   priceMinor!: number;
+
+  /**
+   * Photos of the service, cover first (§132). Empty is normal — a service
+   * without photos is one nobody has photographed yet, not a broken one, and a
+   * client should fall back to the shop's own picture rather than a gap.
+   */
+  images!: ServiceImageRefDto[];
 
   /** Indicative only, and absent when no rate is configured (§66.2). */
   @ApiProperty({ required: false, type: () => ApproxSettlementDto })

@@ -7,6 +7,7 @@ import { BusinessProfileService } from './business-profile.service';
 import { LocationsService } from './locations.service';
 import { ServicesService } from './services.service';
 import { GalleryService } from './gallery.service';
+import { ServiceImagesService } from './service-images.service';
 import { ServiceDraftsService } from './service-drafts.service';
 // Pausing a shop is the business-side half of §119, and the rule lives with
 // account closure rather than being written twice.
@@ -29,6 +30,7 @@ import { BusinessRolesGuard } from './guards/business-roles.guard';
     LocationsService,
     ServicesService,
     GalleryService,
+    ServiceImagesService,
     ServiceDraftsService,
     MembersService,
     BusinessRolesGuard,

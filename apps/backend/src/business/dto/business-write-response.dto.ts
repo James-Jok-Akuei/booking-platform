@@ -76,9 +76,15 @@ type LocationMediaRow = Serialised<Prisma.LocationMediaGetPayload<object>>;
 /**
  * One photo, as its OWNER sees it.
  *
- * `status` is on the row because this is the management view: the owner sees
- * PENDING and REJECTED photos too. Customer-facing endpoints filter to
- * APPROVED, which is why the field has to be published rather than assumed.
+ * `status` is on the row because it is on the table — but NOTHING SETS OR
+ * READS IT (§132.2). There is no approval route and no customer-facing filter,
+ * so every photo is visible the moment it is uploaded.
+ *
+ * An earlier version of this comment claimed customer endpoints filtered to
+ * APPROVED. They do not, and never did; the claim was taken from a comment in
+ * `GalleryService` rather than from the query. Corrected here rather than
+ * deleted, because the field is still published and a reader deserves to know
+ * it means nothing yet.
  */
 export class GalleryPhotoDto implements LocationMediaRow {
   id!: string;
@@ -170,4 +176,40 @@ export class ServiceOfferedResultDto {
   isOffered!: boolean;
   offeredAtCount!: number;
   service!: BusinessServiceDto;
+}
+
+// ---------------------------------------------------------------------------
+// Photos of a service (§132)
+// ---------------------------------------------------------------------------
+
+type ServiceMediaRow = Serialised<Prisma.ServiceMediaGetPayload<object>>;
+
+/**
+ * One photo of a service.
+ *
+ * Same columns as `GalleryPhotoDto` and the same unmoderated `status` — see
+ * that class for why the field is published despite meaning nothing yet.
+ */
+export class ServiceImageDto implements ServiceMediaRow {
+  id!: string;
+  serviceId!: string;
+  type!: MediaType;
+  url!: string;
+  status!: MediaStatus;
+  /** Lowest first. The first photo is the one a customer sees in a list. */
+  displayOrder!: number;
+  createdAt!: string;
+}
+
+export const __serviceImageDtoIsExact: NoExtraFields<
+  ServiceImageDto,
+  ServiceMediaRow
+> = true;
+
+/** The photos, with the room left in them — so a screen can disable its button. */
+export class ServiceImagesDto {
+  images!: ServiceImageDto[];
+  count!: number;
+  limit!: number;
+  remaining!: number;
 }

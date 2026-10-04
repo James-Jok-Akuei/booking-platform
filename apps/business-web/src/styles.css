@@ -401,3 +401,16 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
    a shop opening its appointments on a Monday should not meet a modal. */
 .legal-banner { background: #fef0c7; border: 1px solid var(--warn); color: #7a4b00; border-radius: 9px; padding: 11px 14px; margin-bottom: 16px; font-size: 14px; }
 .legal-banner a { color: inherit; font-weight: 650; }
+
+/* Service photos (§132). The thumbnail is a fixed box whether or not there is
+   an image, so rows do not jump height as photos are added. */
+.service-name { display: flex; align-items: center; gap: 10px; }
+.service-thumb {
+  width: 46px;
+  height: 34px;
+  flex: 0 0 46px;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+}
+.service-thumb.empty { background: var(--bg); display: inline-block; }

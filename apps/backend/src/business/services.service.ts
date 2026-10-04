@@ -325,16 +325,8 @@ export class ServicesService {
     };
   }
 
+  /** One ownership check, shared with service photos (§132.1). */
   private async requireOwned(businessId: string, serviceId: string) {
-    const service = await this.prisma.service.findFirst({
-      where: { id: serviceId, businessId },
-      select: { id: true },
-    });
-
-    if (!service) {
-      throw new NotFoundException('Service not found.');
-    }
-
-    return service;
+    return this.access.requireOwnedService(businessId, serviceId);
   }
 }

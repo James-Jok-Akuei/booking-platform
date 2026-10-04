@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -108,6 +109,26 @@ export default function Book() {
       <Stack.Screen options={{ title: service.name }} />
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.content}>
+          {/* Every photo of this service (§132), not just the cover: by this
+              screen the customer has chosen it and is deciding whether to pay,
+              which is the moment the pictures are worth most. Horizontal so a
+              long list does not push the price and the slots off the screen. */}
+          {service.images.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.photoStrip}
+            >
+              {service.images.map((photo) => (
+                <Image
+                  key={photo.id}
+                  source={{ uri: photo.url }}
+                  style={styles.photo}
+                />
+              ))}
+            </ScrollView>
+          )}
+
           <View style={styles.block}>
             <Text style={styles.title}>{service.name}</Text>
             <Text style={styles.muted}>
@@ -215,6 +236,13 @@ export default function Book() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
   content: { padding: 16, gap: 10, paddingBottom: 24 },
+  photoStrip: { gap: 8 },
+  photo: {
+    width: 150,
+    height: 112,
+    borderRadius: theme.radius,
+    backgroundColor: theme.panel,
+  },
   spinner: { marginTop: 40 },
   block: {
     backgroundColor: theme.panel,
