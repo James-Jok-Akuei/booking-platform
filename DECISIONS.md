@@ -12039,3 +12039,48 @@ is small work. The cost is everywhere else:
 Recommended order if this is ever picked up: friends, then favourite sharing,
 then conversations, then pins — all of which need nothing new — and calls as a
 separate piece beginning with making the app installable.
+
+## 131. The sidebars are grouped (2026-10-04)
+
+Both consoles had **twelve flat links** in one list. Finding one meant reading
+all twelve, and in the admin sidebar the three screens that have to be read
+together to answer "did the money actually move" — Payouts, Payout destinations
+and the ledger — were not even next to each other.
+
+Now four or five named groups each. **No address changed.** The same twelve
+links point at the same twelve routes, so a bookmark, or a link somebody was
+sent, still works. Only the menu changed.
+
+| Business | Admin |
+|---|---|
+| *Appointments* (ungrouped) | **Moderation** — Businesses, Reviews, Appointments |
+| **Your shop** — Shopfront, Services, Branches & hours, Closures & breaks | **People** — Users, Support |
+| **Customers** — Messages, Reviews | **Money** — Payouts, Payout destinations, Money |
+| **Money** — Getting paid, How it is going | **Platform** — Categories, Places, Legal, Settings |
+| **Manage account** — People, Legal, Help | |
+
+### 131.1 Appointments sits above the headings
+
+In the business sidebar it is the landing page — the first thing an owner sees
+every morning. A heading above the first thing you look at is a heading nobody
+reads, so that one link has no group. The admin sidebar has no such link:
+Businesses is its landing page and belongs in Moderation on merit.
+
+### 131.2 "Manage account", not "Settings"
+
+Everything in the business app's last group is about the ACCOUNT rather than
+about the shop — adding a colleague, reading the terms, asking for help. Calling
+it "Settings" would have put it beside "Your shop", which is where an owner
+would then look for opening hours.
+
+The grouping is also the one place a long menu can carry meaning for free: the
+three money screens being adjacent in the admin sidebar is itself the hint that
+they are read together.
+
+### 131.3 Verified by matching the menu against the routes
+
+Regrouping twelve links by hand is exactly how a link gets dropped or pointed at
+nothing, and there are no tests on either web app. So the check was mechanical:
+every nav link resolves to a declared route, every declared route except
+`/login` has a nav link, and nothing is listed twice — in both apps. Both also
+typecheck and build.

@@ -51,6 +51,22 @@ nav a {
 nav a:hover { background: var(--bg); }
 nav a.active { border-left-color: var(--accent); color: var(--accent); font-weight: 550; }
 
+/* Grouped sidebar (§131). The heading is a label, not a link — it is smaller,
+   quieter and spaced above its group, so the eye lands on the group first and
+   reads four labels instead of twelve. */
+.nav-group { display: flex; flex-direction: column; }
+.nav-group + .nav-group { margin-top: 14px; }
+.nav-group-title {
+  margin: 0;
+  padding: 0 20px 5px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+
 .who {
   padding: 14px 20px 0;
   border-top: 1px solid var(--line);
