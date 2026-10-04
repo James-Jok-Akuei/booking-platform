@@ -12283,3 +12283,56 @@ backend tests.
 **Not checked: a real phone.** The web preview renders the same components, but
 shadows, the keyboard, haptics, safe areas and the feel of the animations are
 the phone's own. That is for the owner's Tecno.
+
+### 133.11 Account returned before its hooks
+
+The first thing the redesign did on a real phone was crash. Account's signed-out
+early return sat above seven hooks — survivable while signed-in state was read
+once per mount, fatal once §133.6 made it a live subscription: signing in or out
+re-rendered the same component with a different number of hooks.
+
+The previews never caught it, because each one started signed in or signed out
+and never CHANGED while a screen was open. The return now comes after every
+hook, and no other screen has the pattern.
+
+## 134. The bell, the message count, and the MoMo mark (2026-10-05)
+
+### 134.1 Notifications the phone had never shown
+
+Every email the platform sends is also a stored row, with a read state and three
+endpoints — and the customer app called none of them. A customer whose booking
+was cancelled by the shop learned of it from their email or not at all.
+
+Now a bell on the home screen with the unread count, and a screen behind it.
+The text was written to be an email, so a row shows the subject and two folded
+lines and opens to the full message on a tap. Tapping marks it read,
+optimistically (the §120.2 reasoning); one about a booking offers the way to it.
+
+A kind the app does not recognise gets the bell icon rather than nothing: the
+server adds kinds, and an unknown one must still be readable.
+
+### 134.2 Two counts, kept apart
+
+Unread MESSAGES are a number on the Messages tab — it was a dot, which says
+"something" where "3" says how much. Unread NOTIFICATIONS are the number on the
+bell. One combined figure would send people to the wrong screen half the time,
+so each number sits on the thing that clears it.
+
+Both come from `useUnread`, which reuses the query keys the two screens already
+read: opening either costs no second request, and a badge cannot disagree with
+its list. Refreshed once a minute while the app is open.
+
+### 134.3 The MTN mark is a file, not a drawing
+
+A phone-number field on its own does not say whose mobile money it wants. The
+payment card and "Numbers you pay from" now lead with the MTN logo.
+
+It is the genuine current logo, from Wikimedia Commons (a public-domain file;
+the mark itself remains MTN's trademark, used as a shop window shows the cards
+it takes). Deliberately not redrawn in code: a hand-made lookalike of a payment
+brand is exactly what a customer is right to distrust at the moment they are
+asked for their number.
+
+**Not found:** MTN's dedicated "MoMo" artwork, from any source that could be
+verified. Replacing `assets/mtn-logo.jpg` with the file from MTN's brand kit
+swaps it everywhere.

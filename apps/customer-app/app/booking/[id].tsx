@@ -26,6 +26,7 @@ import { FadeIn } from '../../src/ui/FadeIn';
 import { cheer } from '../../src/ui/haptic';
 import { Icon } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
+import { MomoBanner, MomoLogo } from '../../src/ui/Momo';
 import { PopIn, Pulse } from '../../src/ui/Motion';
 import { Pill } from '../../src/ui/Pill';
 import { Skeleton } from '../../src/ui/Skeleton';
@@ -265,6 +266,11 @@ export default function Booking() {
               )}
             </View>
 
+            {/* WHOSE mobile money, said with the logo before a word is read
+                (§134.3). A bare phone-number field does not say, and this is
+                the moment somebody decides whether to type theirs in. */}
+            <MomoBanner note="You approve the payment on your own phone." />
+
             {/* Saved numbers first, so the usual one is a tap rather than ten
                 digits typed at the least patient moment there is (§124.2). */}
             {(saved.data?.length ?? 0) > 0 && (
@@ -283,7 +289,7 @@ export default function Booking() {
             )}
 
             <View style={styles.field}>
-              <Icon name="phone-portrait-outline" size={19} color={theme.muted} />
+              <MomoLogo size={30} />
               <TextInput
                 style={styles.input}
                 value={phone}
@@ -515,7 +521,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     height: 54,
-    paddingHorizontal: 18,
+    paddingLeft: 12,
+    paddingRight: 18,
     borderRadius: radius.pill,
     backgroundColor: theme.sunken,
   },

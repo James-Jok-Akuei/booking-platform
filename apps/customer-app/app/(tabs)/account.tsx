@@ -35,6 +35,7 @@ import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon, type IconName } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
+import { MomoBanner, MomoLogo } from '../../src/ui/Momo';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { BigTitle } from '../../src/ui/TopBar';
@@ -323,6 +324,8 @@ export default function Account() {
             so — nothing kept here can be charged without the handset (§124.2). */}
         <FadeIn delay={120} style={styles.card}>
           <Text style={type.heading}>Numbers you pay from</Text>
+          {/* Says which mobile money this is before anyone reads a word (§134.3). */}
+          <MomoBanner note="Deposits are paid with MoMo." />
           <Text style={type.small}>
             Saved so you do not retype them. Nothing can be charged without the
             prompt on your phone, so saving one is safe.
@@ -330,9 +333,7 @@ export default function Account() {
 
           {numbers.data?.map((number) => (
             <View key={number.id} style={styles.numberRow}>
-              <View style={styles.rowIcon}>
-                <Icon name="phone-portrait-outline" size={18} color={theme.accent} />
-              </View>
+              <MomoLogo size={40} />
               <View style={styles.flex}>
                 <Text style={styles.value}>{number.phoneNumber}</Text>
                 {number.lastUsedAt && (

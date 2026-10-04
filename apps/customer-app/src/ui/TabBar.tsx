@@ -11,9 +11,8 @@ import {
   View,
 } from 'react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
-import { useQuery } from '@tanstack/react-query';
-import { listThreads } from '../api/chat';
-import { useSignedIn } from '../api/client';
+import { useUnread } from '../useUnread';
+import { CountBadge } from './CountBadge';
 import { font, radius, shadow, theme } from '../theme';
 import { tick } from './haptic';
 import { Icon, type IconName } from './Icon';
@@ -46,7 +45,6 @@ const ICONS: Record<string, { idle: IconName; on: IconName }> = {
  */
 export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
   const [keyboardUp, setKeyboardUp] = useState(false);
-  const signedIn = useSignedIn();
   // On the narrowest phones the bar sits closer to the edges, or the fifth tab
   // would be pushed off the end of it.
   const narrow = useWindowDimensions().width < 360;
@@ -66,16 +64,9 @@ export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarP
     };
   }, []);
 
-  // The same query the Messages screen reads, so the two can never disagree and
-  // opening that screen costs no second request. Only asked for when signed in.
-  const threads = useQuery({
-    queryKey: ['threads'],
-    queryFn: () => listThreads({ limit: 50 }),
-    enabled: signedIn,
-    staleTime: 60_000,
-  });
-  const unread =
-    !signedIn ? 0 : threads.data?.threads.reduce((sum, thread) => sum + thread.unreadCount, 0) ?? 0;
+  // Unread MESSAGES only (§134): the bell on the home screen carries the
+  // notifications, so each number points at the screen that clears it.
+  const unread = useUnread().messages;
 
   if (keyboardUp) return null;
 
@@ -176,7 +167,14 @@ function Tab({
             size={21}
             color={focused ? '#FFFFFF' : 'rgba(255,255,255,0.62)'}
           />
-          {badge > 0 && !focused && <View style={styles.badge} />}
+          {/* The NUMBER, not a dot (§134): "3" says how much is waiting, and
+              it stays while the tab is open, until the messages are read. */}
+          <CountBadge
+            count={badge}
+            ring={focused ? theme.accent : theme.night}
+            inverse={focused}
+            style={styles.badge}
+          />
         </View>
         <Animated.View
           style={{
@@ -229,15 +227,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     paddingLeft: 7,
   },
-  badge: {
-    position: 'absolute',
-    top: -2,
-    right: -3,
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: theme.accent,
-    borderWidth: 1.5,
-    borderColor: theme.night,
-  },
+  badge: { position: 'absolute', top: -8, right: -11 },
 });

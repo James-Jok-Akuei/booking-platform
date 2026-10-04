@@ -91,6 +91,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="categories" />
           <Stack.Screen name="legal" />
+          <Stack.Screen name="notifications" />
           {/* Rises from the bottom: signing in is an interruption to whatever
               was being done, and it should look like one that can be put away. */}
           <Stack.Screen

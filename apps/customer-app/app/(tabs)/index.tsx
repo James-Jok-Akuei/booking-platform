@@ -23,9 +23,12 @@ import {
 import { useMoney } from '../../src/money';
 import { useNearMe } from '../../src/useNearMe';
 import { useSaved } from '../../src/useSaved';
+import { useUnread } from '../../src/useUnread';
 import { PlaceCard } from '../../src/components/PlaceCard';
 import { font, radius, shadow, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
 import { Chip } from '../../src/ui/Chip';
+import { CountBadge } from '../../src/ui/CountBadge';
+import { IconButton } from '../../src/ui/IconButton';
 import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon, lookFor } from '../../src/ui/Icon';
@@ -69,6 +72,7 @@ export default function Discover() {
   const router = useRouter();
   const nearMe = useNearMe();
   const saved = useSaved();
+  const unread = useUnread();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
   const [query, setQuery] = useState('');
@@ -204,6 +208,7 @@ export default function Discover() {
           default and stays until someone picks a place — a customer in Gasabo
           sees every listing until they say otherwise (§106.2). */}
       <FadeIn>
+        <View style={styles.topRow}>
         <PressableScale
           onPress={() => setPlaceSheet(true)}
           haptic
@@ -216,6 +221,23 @@ export default function Discover() {
           <Text style={styles.placeText}>{placeLabel}</Text>
           <Icon name="chevron-down" size={14} color={theme.ink2} />
         </PressableScale>
+
+          {/* The bell (§134). Shown to everyone: signed out, the screen behind
+              it says that signing in is what fills it — the same invitation
+              the Bookings tab makes. */}
+          <View>
+            <IconButton
+              icon="notifications-outline"
+              label={
+                unread.notifications > 0
+                  ? `Notifications, ${unread.notifications} unread`
+                  : 'Notifications'
+              }
+              onPress={() => router.push('/notifications')}
+            />
+            <CountBadge count={unread.notifications} ring={theme.bg} style={styles.bellBadge} />
+          </View>
+        </View>
 
         <Text style={[type.display, layout.compact && styles.displayCompact, styles.title]}>
           Find a place
@@ -559,10 +581,11 @@ const styles = StyleSheet.create({
   list: { gap: 16, alignSelf: 'center' },
   columns: { gap: 14 },
   header: { gap: 16, paddingBottom: 2 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  bellBadge: { position: 'absolute', top: -4, right: -4 },
   placePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
     gap: 6,
     height: 36,
     paddingHorizontal: 13,
