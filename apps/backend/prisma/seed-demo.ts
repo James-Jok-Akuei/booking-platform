@@ -321,6 +321,18 @@ async function main() {
   // -------------------------------------------------------------------------
   const seeded: SeededBusiness[] = [];
 
+  /**
+   * A district's id, by the name people call it (§135.8).
+   *
+   * Every demo branch is given one. Without it a branch is "not findable by
+   * place" (§104.2) — and the demo had NONE, so choosing Kigali on the customer
+   * app emptied the screen and looked like the filter was broken.
+   */
+  async function districtIdOf(name: string): Promise<string> {
+    const district = await prisma.district.findFirstOrThrow({ where: { name } });
+    return district.id;
+  }
+
   /** Creates the owner, the profile, and one location, through the services. */
   async function makeBusiness(options: {
     label: string;
@@ -329,6 +341,7 @@ async function main() {
     lat: number;
     lng: number;
     address: string;
+    district: string;
     locationName: string;
     category: string;
     subcategory: string;
@@ -377,6 +390,7 @@ async function main() {
     const location = await locations.create(owner.id, {
       name: options.locationName,
       address: options.address,
+      districtId: await districtIdOf(options.district),
       latitude: options.lat,
       longitude: options.lng,
     });
@@ -420,6 +434,7 @@ async function main() {
     lat: -1.9441,
     lng: 30.0619,
     address: 'KN 4 Ave, Nyarugenge',
+    district: 'Nyarugenge',
     locationName: 'Nyarugenge Branch',
     category: 'Beauty & Personal Care',
     subcategory: 'Barbershop',
@@ -428,6 +443,7 @@ async function main() {
   const nileSecond = await locations.create(nile.userId, {
     name: 'Kimironko Branch',
     address: 'KG 11 Ave, Kimironko',
+    districtId: await districtIdOf('Gasabo'),
     latitude: -1.9403,
     longitude: 30.1274,
   });
@@ -443,6 +459,7 @@ async function main() {
     lat: -1.9403,
     lng: 30.1274,
     address: 'KG 9 Ave, Kimironko',
+    district: 'Gasabo',
     locationName: 'Kimironko',
     category: 'Health & Wellness',
     subcategory: 'Massage Therapy',
@@ -458,6 +475,7 @@ async function main() {
     lat: -1.9536,
     lng: 30.1130,
     address: 'KG 17 Ave, Remera',
+    district: 'Gasabo',
     locationName: 'Remera Studio',
     category: 'Beauty & Personal Care',
     subcategory: 'Nail Salon',
@@ -473,6 +491,7 @@ async function main() {
     lat: -1.9700,
     lng: 30.0580,
     address: 'Airport Road',
+    district: 'Kicukiro',
     locationName: 'Airport Road Workshop',
     category: 'Automotive',
     subcategory: 'Car Repair & Mechanic',
@@ -488,6 +507,7 @@ async function main() {
     lat: -1.9770,
     lng: 30.0430,
     address: 'KN 2 Ave, Nyamirambo',
+    district: 'Nyarugenge',
     locationName: 'Nyamirambo Salon',
     category: 'Beauty & Personal Care',
     subcategory: 'Hair Salon',
@@ -503,6 +523,7 @@ async function main() {
     lat: -1.9890,
     lng: 30.1030,
     address: 'KK 15 Rd, Kicukiro',
+    district: 'Kicukiro',
     locationName: 'Kicukiro Workshop',
     category: 'Home Services',
     subcategory: 'Carpentry & Furniture Repair',
@@ -518,6 +539,7 @@ async function main() {
     lat: -1.9840,
     lng: 30.0740,
     address: 'KK 3 Ave, Gikondo',
+    district: 'Kicukiro',
     locationName: 'Gikondo Gym',
     category: 'Health & Wellness',
     subcategory: 'Personal Training',
@@ -533,6 +555,7 @@ async function main() {
     lat: -1.9380,
     lng: 30.0890,
     address: 'KG 7 Ave, Kacyiru',
+    district: 'Gasabo',
     locationName: 'Kacyiru Studio',
     category: 'Photography & Creative Services',
     subcategory: 'Portrait Photography',

@@ -152,6 +152,9 @@ export function NewBranchForm({ onCreated }: { onCreated: () => void }) {
   const ready =
     name.trim().length >= 2 &&
     address.trim().length >= 3 &&
+    // Required for a NEW branch (§135.8). Without it the branch disappears the
+    // moment a customer picks their area, and nothing tells them it exists.
+    districtId !== '' &&
     coordinates !== null &&
     !('error' in coordinates);
 
@@ -256,8 +259,8 @@ export function NewBranchForm({ onCreated }: { onCreated: () => void }) {
           ))}
         </select>
         <span className="muted small">
-          Customers filter by this. Without it, this branch does not appear when
-          someone searches their area.
+          Customers filter by this. It is how this branch appears when someone
+          searches their area, so it has to be chosen.
         </span>
       </label>
 

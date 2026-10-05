@@ -12447,3 +12447,24 @@ wrong origin silently cancelled the whole movement.
 Built on the built-in `Animated` with the native driver, like the rest of the
 app; no new package. **Not built:** pinch-to-zoom, which needs a gesture
 library the app does not have.
+
+### 135.8 Choosing Kigali showed nothing: the demo branches had no district
+
+The place filter was working. A branch is matched to a place through its
+district (§104.2), and **none of the nine demo branches had one** — `seed-demo`
+never set it, although §104.2 describes Kigali Barbers as being in two
+districts. So "Kigali" correctly matched zero branches and looked broken.
+
+- `seed-demo.ts` now gives every branch its district (Gasabo, Kicukiro or
+  Nyarugenge, by its address).
+- The existing dev rows were given the same districts with one `UPDATE`,
+  rather than re-running the seed, which wipes and recreates the demo
+  businesses along with any photos and bookings added since.
+- Verified against the running server: Kigali 7 branches / 16 services,
+  Gasabo 4 / 8, Kicukiro 1 / 2, Nyarugenge 2 / 6; Northern and Western 0.
+
+**The new-branch form now requires a district.** §104.2 left it optional
+because branches that predate districts had to stay saveable; that reason does
+not cover a branch being created today, and an optional field is exactly how a
+real business would end up invisible the way the demo did. The API still
+accepts a branch without one, and editing an old branch is unchanged.
