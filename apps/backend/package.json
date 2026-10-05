@@ -17,6 +17,7 @@
     "seed:demo": "ts-node --project tsconfig.seed.json prisma/seed-demo.ts",
     "dev:confirm-deposit": "ts-node --project tsconfig.seed.json scripts/confirm-deposit.ts",
     "dev:send-offers": "ts-node --project tsconfig.seed.json scripts/send-offers.ts",
+    "legal:publish": "ts-node --project tsconfig.seed.json scripts/publish-legal.ts",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "pretest": "npm run typecheck",
     "openapi:generate": "nest build && node dist/scripts/generate-openapi.js"

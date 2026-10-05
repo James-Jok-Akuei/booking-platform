@@ -1,0 +1,168 @@
+PRIVACY POLICY
+
+Last updated: 5 October 2026
+
+This Privacy Policy explains what personal data [COMPANY LEGAL NAME] ("we", "us") collects when you use the [PLATFORM NAME] app, why we collect it, who we share it with, and the rights you have.
+
+We follow Law n° 058/2021 of 13/10/2021 relating to the protection of personal data and privacy ("the Data Protection Law"). The authority that supervises this law in Rwanda is the National Cyber Security Authority (NCSA), through its Data Protection and Privacy Office.
+
+
+1. WHO IS RESPONSIBLE FOR YOUR DATA
+
+[COMPANY LEGAL NAME] is the data controller for the personal data described here.
+
+- Address: [PHYSICAL ADDRESS IN RWANDA]
+- Email for privacy questions: [PRIVACY EMAIL]
+- Data protection officer: [NAME], [EMAIL]
+- NCSA registration certificate: [CERTIFICATE NUMBER, ONCE ISSUED]
+
+When you book with a business, that business also receives some of your data so that it can serve you. The business is responsible for how it uses the data once it has it.
+
+
+2. THE DATA WE COLLECT
+
+2.1 Data you give us
+
+- Your email address, which is how you sign in.
+- A display name and a profile picture, if you choose to add them.
+- The mobile money numbers you use to pay, and any you save for next time.
+- Your bookings: the business, the service, how many, the date and time.
+- Messages you send to businesses, and photos you attach to them.
+- Requests you send to our support team, and files you attach.
+- Reviews and ratings you write.
+- The businesses you save as favourites.
+- Your district, if you choose one for "Offers near me".
+
+2.2 Data created when you use the app
+
+- Payment records: the amount, the time, the mobile money number used, and the reference given by the payment provider. We never receive your mobile money PIN.
+- Your acceptance of our Terms of Use and this Privacy Policy, with the date and the version.
+- Notifications we have sent you and whether you have opened them.
+- Technical records kept by our servers, such as the time of a request and error reports, used to keep the service secure and working.
+
+2.3 Your location
+
+If you allow it, the app uses your phone's location to show how far businesses are from you and to sort them by distance. Your position is used at that moment to answer the search. We do not save it to your account and we do not track where you go.
+
+The district you choose for "Offers near me" is different: you pick it from a list, and we save it until you change or remove it.
+
+2.4 What we do not collect
+
+We do not collect your national ID number, your contacts, or your mobile money PIN. We do not use advertising trackers and we do not sell your data.
+
+
+3. WHY WE USE YOUR DATA, AND OUR LEGAL BASIS
+
+The Data Protection Law allows us to use personal data only where there is a lawful basis. Ours are:
+
+- To perform our contract with you. Creating your account, taking bookings, handling deposits and refunds, sending confirmations and arrival codes, letting you message a business, and answering your support requests.
+- To comply with the law. Keeping accounting and tax records, answering lawful requests from authorities, and handling consumer complaints.
+- For our legitimate interests, where these do not override your rights. Keeping the Platform secure, preventing fraud and abuse, fixing faults, showing reviews, and understanding in general terms how the Platform is used so we can improve it.
+- With your consent. Using your phone's location, sending you "Offers near me" emails, and showing your profile picture. You can withdraw consent at any time, and it will not affect what was done before.
+
+
+4. WHO WE SHARE YOUR DATA WITH
+
+4.1 The business you book with. It sees your email address and your display name if you have set one, what you booked and when, whether your deposit is paid, your messages to it, and any review you leave. It does not see your mobile money number or your other bookings.
+
+4.2 Other users. Your reviews are public, shown with your display name. If you have not chosen a display name, your review is shown as "Anonymous".
+
+4.3 Service providers who work for us. They may use your data only on our instructions:
+
+- MTN Mobile Money Rwanda, to collect deposits and pay refunds.
+- [EMAIL DELIVERY PROVIDER], to deliver emails.
+- [HOSTING AND STORAGE PROVIDER], to host the Platform and store files.
+
+4.4 Authorities. We share data with a public authority or a court where the law requires it.
+
+4.5 A new owner. If our business is sold or merged, your data may pass to the new owner, who must continue to protect it as this policy describes. We will tell you beforehand.
+
+We do not sell your personal data, and we do not share it with advertisers.
+
+
+5. WHERE YOUR DATA IS STORED
+
+The Data Protection Law requires personal data to be stored in Rwanda, unless the organisation holds a registration certificate from the NCSA that authorises storage outside Rwanda.
+
+Your data is stored [IN RWANDA / IN (COUNTRY), UNDER NCSA AUTHORISATION NUMBER ...]. Where a service provider we use is located outside Rwanda, we transfer data only as the Data Protection Law allows: with the authorisation of the NCSA and appropriate safeguards such as the standard contractual clauses it has issued, or with your consent.
+
+
+6. HOW LONG WE KEEP YOUR DATA
+
+We keep personal data only for as long as we need it for the purposes above.
+
+- Your account details: for as long as your account is open.
+- Bookings and payment records: for the period the law requires for accounting and tax records, currently [10 YEARS, TO BE CONFIRMED], even if you close your account. After you close your account these records no longer carry your name or email address.
+- Messages and support requests: for as long as your account is open, and afterwards only as long as needed to deal with disputes.
+- Reviews: for as long as the business is listed. After you close your account they are shown as "Anonymous".
+- Your district and marketing consent: until you turn off "Offers near me" or close your account.
+- Technical records: for a short period, normally no more than [90 DAYS].
+
+
+7. HOW WE PROTECT YOUR DATA
+
+- Data travels between the app and our servers over encrypted connections.
+- We sign you in with one-time codes sent to your email, so there is no password of yours for anyone to steal from us.
+- Sign-in codes are stored in protected form, not as readable text.
+- Only staff who need your data to do their work can access it.
+- Payments are approved on your own phone. A saved mobile money number cannot be charged without that approval.
+
+No system is perfectly secure. If a breach of personal data happens that is likely to put your rights at risk, we will report it to the NCSA within 48 hours of becoming aware of it, as the Data Protection Law requires, and we will tell you without delay where the law requires that too.
+
+
+8. YOUR RIGHTS
+
+Under the Data Protection Law you have the right to:
+
+- be informed about how your data is used, which is the purpose of this policy;
+- access your data and get a copy of it;
+- have data corrected if it is wrong or out of date;
+- have data erased, where we no longer have a lawful reason to keep it;
+- object to our use of your data, including for marketing;
+- ask us to restrict how we use your data while a question about it is resolved;
+- receive your data in a form you can move to another service (portability);
+- not be subject to a decision made only by automated means that seriously affects you. We do not make such decisions;
+- withdraw your consent at any time;
+- name a person who may exercise these rights for you, including after your death.
+
+How to use these rights in the app:
+
+- Get a copy of your data: Account, then "Get a copy of my data".
+- Correct your name or picture: Account.
+- Stop marketing emails: turn off "Offers near me" in Account, or use the unsubscribe link in any such email.
+- Stop location use: turn off location for the app in your phone's settings.
+- Close your account and remove your identity: Account, then "Close my account".
+
+For anything else, write to [PRIVACY EMAIL]. We do not charge for this. We will answer within 30 days. We may ask you to confirm that you are the owner of the account before we act.
+
+
+9. CHILDREN
+
+The Platform is for people aged 18 and over. We do not knowingly collect personal data from anyone under 16 without the consent of a parent or guardian. If you believe a child has given us data, tell us and we will remove it.
+
+
+10. MARKETING
+
+We send marketing emails only to people who have turned on "Offers near me". These emails are sent at most once a week, are marked as offers, and each one has a link to unsubscribe with one tap. Emails about your own bookings are not marketing and are always sent.
+
+
+11. COOKIES AND SIMILAR TOOLS
+
+The mobile app does not use advertising cookies or trackers. It stores a sign-in token securely on your phone so you stay signed in; signing out removes it.
+
+
+12. CHANGES TO THIS POLICY
+
+When we change this policy we will show you what changed in the app and ask you to accept the new version. The date at the top shows when it was last updated.
+
+
+13. QUESTIONS AND COMPLAINTS
+
+Contact us first, so we can put things right:
+
+[COMPANY LEGAL NAME]
+[PHYSICAL ADDRESS IN RWANDA]
+[PRIVACY EMAIL]
+[SUPPORT MOBILE NUMBER]
+
+If you are not satisfied with our answer, you have the right to complain to the National Cyber Security Authority (NCSA), Data Protection and Privacy Office, which supervises the Data Protection Law in Rwanda.

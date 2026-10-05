@@ -9,6 +9,7 @@ import {
   type LegalStatus,
 } from '../src/api/auth';
 import { useSignedIn } from '../src/api/client';
+import { LegalText } from '../src/components/LegalText';
 import { font, radius, shadow, theme, type } from '../src/theme';
 import { Button } from '../src/ui/Button';
 import { EmptyState } from '../src/ui/EmptyState';
@@ -135,7 +136,7 @@ export default function Legal() {
 
               {expanded && (
                 <FadeIn distance={8}>
-                  <Text style={styles.body}>{document.body}</Text>
+                  <LegalText body={document.body} />
                 </FadeIn>
               )}
 
@@ -183,6 +184,5 @@ const styles = StyleSheet.create({
   noteBox: { backgroundColor: theme.sunken, borderRadius: radius.md, padding: 12 },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start' },
   toggle: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
-  body: { fontFamily: font.regular, color: theme.ink2, fontSize: 14.5, lineHeight: 22.5 },
   foot: { textAlign: 'center', paddingHorizontal: 10 },
 });

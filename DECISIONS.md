@@ -12715,3 +12715,64 @@ production.
 - The privacy policy text does not yet mention the district or these emails.
 - Mailhog's header list does not show `List-Unsubscribe` (it drops folded
   headers); the raw message has it.
+
+## 141. Terms of Use and Privacy Policy, written for Rwanda (2026-10-05)
+
+The Terms were a 56-character placeholder and there was no Privacy Policy at
+all. Both are now full drafts in `apps/backend/prisma/legal/`, published with
+`npm run legal:publish` through the same draft-then-publish path the admin
+screen uses (§122), so nothing is edited in place and everyone is asked to
+accept the new version (§126). **They are drafts for a Rwandan lawyer to
+review, not legal advice.**
+
+### 141.1 What they were written against
+
+- **Law n° 058/2021 of 13/10/2021** (personal data and privacy), supervised by
+  the NCSA: lawful bases, the data subject rights, the 48-hour breach report,
+  storage in Rwanda unless a registration certificate allows otherwise.
+- **Law n° 011/2026 of 26/02/2026** (competition and consumer protection),
+  gazetted 04/03/2026, which REPLACED Law n° 36/2012. Read from the Official
+  Gazette text: Art. 42–43 (what an e-commerce enterprise and an online
+  intermediary must disclose; complaints acknowledged within 72 hours and
+  answered within 15 days; proof of purchase; marked advertising with a free
+  unsubscribe), Art. 44 (a licence from the Regulatory Authority), Art. 47
+  (cancel a distance contract within seven days of receiving the good or
+  service; refund within 15 days), Art. 48 (30 days' notice before ceasing).
+- Age of majority 18.
+
+Every statement about what the product DOES was checked against the code
+(the 5-minute hold, the deposit and fee, who sees what, what closing an account
+removes). Two claims were removed because they were not true: that arrival
+codes are stored protected (the customer's copy is kept readable, §54.2), and
+that staff access is logged.
+
+### 141.2 Things the research raised that are NOT solved by text
+
+1. **The seven-day right to cancel (Art. 47) sits against the non-refundable
+   deposit (§25.1).** The Terms keep the deposit rule and add that nothing in
+   them removes a right the law gives. Whether Art. 47 reaches a booked
+   appointment, and from when the seven days run, is a question for a lawyer —
+   and the answer may mean changing the refund rule in the product.
+2. **Art. 44: an e-commerce / online-intermediary licence** from RICA. Existing
+   operators had six months from 04/03/2026.
+3. **Registration with the NCSA** as a data controller, and **where the data is
+   hosted**: outside Rwanda needs the certificate to say so.
+4. **The platform holds customers' deposits before paying businesses**, which
+   may need a view from the National Bank of Rwanda.
+
+### 141.3 Placeholders
+
+Company name, RDB code, address, contacts, complaints officer, licence and
+certificate numbers, hosting and email providers, and two retention periods are
+in `[SQUARE BRACKETS]`. The customer app highlights them, and the publish
+script refuses to publish a text that still has one when
+`NODE_ENV=production`.
+
+### 141.4 How the text is drawn
+
+Stored as plain text, as before. The customer app's `LegalText` reads the
+conventions a plainly typed document already follows — numbered headings in
+capitals, `4.2` clauses, `- ` bullets — and sets each properly. The web apps
+still show it as typed.
+
+**Not written:** the Seller Agreement, which is still a placeholder.
