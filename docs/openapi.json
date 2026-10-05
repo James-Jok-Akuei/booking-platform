@@ -11904,6 +11904,116 @@
           "Favourites"
         ]
       }
+    },
+    "/users/me/offers": {
+      "get": {
+        "operationId": "OffersPreferenceController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OffersPreferenceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OffersPreference"
+        ]
+      },
+      "patch": {
+        "operationId": "OffersPreferenceController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOffersPreferenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OffersPreferenceDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "OffersPreference"
+        ]
+      }
     }
   },
   "info": {
@@ -12646,6 +12756,17 @@
           "phoneNumber"
         ]
       },
+      "ExportedHomeDistrictDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
       "ExportedAccountDto": {
         "type": "object",
         "properties": {
@@ -12673,6 +12794,20 @@
           "closedAt": {
             "type": "string",
             "nullable": true
+          },
+          "offersOptInAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When they agreed to emails about services near them; null if they have not."
+          },
+          "homeDistrict": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExportedHomeDistrictDto"
+              }
+            ]
           }
         },
         "required": [
@@ -12681,7 +12816,9 @@
           "role",
           "displayName",
           "createdAt",
-          "closedAt"
+          "closedAt",
+          "offersOptInAt",
+          "homeDistrict"
         ]
       },
       "ExportedServiceDto": {
@@ -20398,6 +20535,72 @@
         "required": [
           "locationId",
           "saved"
+        ]
+      },
+      "OffersDistrictDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provinceName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provinceName"
+        ]
+      },
+      "OffersPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "optedIn": {
+            "type": "boolean",
+            "description": "True only after they turned it on themselves."
+          },
+          "optedInAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When they agreed; null when they have not."
+          },
+          "district": {
+            "nullable": true,
+            "description": "Where \"near\" is measured from. Kept when they opt out, so opting back in is one tap.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OffersDistrictDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "optedIn",
+          "optedInAt",
+          "district"
+        ]
+      },
+      "UpdateOffersPreferenceDto": {
+        "type": "object",
+        "properties": {
+          "optedIn": {
+            "type": "boolean",
+            "description": "Turning it on needs a district, here or already saved."
+          },
+          "districtId": {
+            "type": "string",
+            "nullable": true,
+            "description": "A live district. Send `null` to forget it.",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "optedIn"
         ]
       }
     }

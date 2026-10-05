@@ -135,3 +135,15 @@ export const saveNumber = (body: { phoneNumber: string; label?: string }) =>
 
 export const removeSavedNumber = (id: string) =>
   api<ActionMessage>(`/users/me/payment-numbers/${id}`, { method: 'DELETE' });
+
+/** The caller's choice about emails near them (§140). */
+export type OffersPreference = components['schemas']['OffersPreferenceDto'];
+
+export const getOffersPreference = () => api<OffersPreference>('/users/me/offers');
+
+/**
+ * `districtId` left out keeps the saved one. Turning it on with no district,
+ * here or saved, is refused — there would be nothing to measure "near" from.
+ */
+export const setOffersPreference = (body: { optedIn: boolean; districtId?: string }) =>
+  api<OffersPreference>('/users/me/offers', { method: 'PATCH', body });

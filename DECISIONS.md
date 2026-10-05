@@ -12657,3 +12657,61 @@ redesign (§135) stopped showing it anywhere.
 
 Nothing is stored: the position lives in the app while it is open. Where a
 customer lives, for emails, is a separate thing they choose (§140).
+
+## 140. Emails about services near a customer (2026-10-05)
+
+One email a week, "Popular near you in Gasabo": the five most popular services
+in the customer's own district, with photos and prices.
+
+### 140.1 Nobody is sent one who did not ask
+
+`users.offersOptInAt` is null for every account until its owner turns on
+"Offers near me" in Account. It is a timestamp, not a flag, because "when did
+this person agree" is the question a regulator asks (Rwanda's Law 058/2021
+requires consent for marketing). The sentence beside the switch says how often,
+about what, and that it can be undone — that sentence is the consent.
+
+The weekly job reads only customers who are opted in, have a district, and are
+not closed. Closing an account clears all of it.
+
+### 140.2 "Near" is a district the customer names
+
+`users.homeDistrictId`, chosen from the same list the place filter uses. **Not
+a position taken from the phone** (§139 keeps that in the app and stores
+nothing): a district is enough to choose the right shops and is not a record of
+where somebody was. It is kept when they opt out, so coming back is one tap.
+
+### 140.3 Leaving is one tap, with no password
+
+Every email carries a link with a random token (`users.offersToken`):
+`GET /offers/unsubscribe/:token` answers with a small page, and a POST to the
+same address serves a mail app's own Unsubscribe button (the `List-Unsubscribe`
+headers). It answers the same whether or not the token matched, so it reveals
+nothing about who is subscribed. Opting in again makes a new token, so an old
+email's link cannot undo a later choice. These two routes are deliberately not
+in the API contract: a person opens them from an email.
+
+### 140.4 What is sent, and when
+
+- **Friday 09:00, Kigali time** (`OffersScheduler`). Never more than once in
+  six days per person, whatever the schedule does (`offersLastSentAt`).
+- Worked out once per district, through the PUBLIC service search — so an email
+  can only show what a customer could find and book (§135.2).
+- Fewer than three services in the district: the whole province, and the email
+  says "Kigali" rather than "Gasabo".
+- Nothing to show: nothing is sent, and nobody is marked as sent.
+- A failed send is not marked either, so it is retried next run.
+
+`npm run dev:send-offers` sends now, by the same rules, and refuses in
+production.
+
+### 140.5 Not done
+
+- **No button into the app.** The app has no web address to link to, and mail
+  apps strip links that open an app directly. The email says "Open the app".
+  This wants a universal link once there is a domain.
+- **Real delivery waits for deployment**: until then email goes to the local
+  test inbox.
+- The privacy policy text does not yet mention the district or these emails.
+- Mailhog's header list does not show `List-Unsubscribe` (it drops folded
+  headers); the raw message has it.

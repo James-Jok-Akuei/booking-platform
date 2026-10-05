@@ -336,14 +336,14 @@ model User {
   ticketAttachments  TicketAttachment[]  @relation("TicketAttachments")
   createdAdjustments BillingAdjustment[] @relation("CreatedAdjustments")
 
-  favourites      Favourite[] @relation("CustomerFavourites")
-  savedPaymentNumbers SavedPaymentNumber[] @relation("SavedPaymentNumbers")
-  createdServiceDrafts    ServiceDraft[]    @relation("CreatedServiceDrafts")
-  legalAcceptances       LegalAcceptance[] @relation("LegalAcceptances")
-  publishedLegalDocuments LegalDocument[]  @relation("PublishedLegalDocuments")
-  reviews         Review[] @relation("CustomerReviews")
-  hiddenReviews   Review[] @relation("HiddenReviews")
-  reviewResponses Review[] @relation("ReviewResponses")
+  favourites              Favourite[]          @relation("CustomerFavourites")
+  savedPaymentNumbers     SavedPaymentNumber[] @relation("SavedPaymentNumbers")
+  createdServiceDrafts    ServiceDraft[]       @relation("CreatedServiceDrafts")
+  legalAcceptances        LegalAcceptance[]    @relation("LegalAcceptances")
+  publishedLegalDocuments LegalDocument[]      @relation("PublishedLegalDocuments")
+  reviews                 Review[]             @relation("CustomerReviews")
+  hiddenReviews           Review[]             @relation("HiddenReviews")
+  reviewResponses         Review[]             @relation("ReviewResponses")
 
   /// The platform settings row, when this user was the last to set its
   /// exchange rate. A list because Prisma models it as one, but there is a
@@ -359,6 +359,17 @@ model User {
   refreshTokens RefreshToken[]
   otpCodes      OtpCode[]
 
+  // ---- Emails about services nearby (§140). All null until they say yes. ----
+  /// WHEN the customer agreed to marketing email. Null means they have not.
+  offersOptInAt    DateTime?
+  /// Where "near" is measured from: a district they chose, never a GPS fix.
+  homeDistrictId   String?
+  homeDistrict     District? @relation("HomeDistrict", fields: [homeDistrictId], references: [id], onDelete: SetNull)
+  /// Carried by the unsubscribe link, so it works without signing in.
+  offersToken      String?   @unique
+  offersLastSentAt DateTime?
+
+  @@index([homeDistrictId, offersOptInAt])
   @@map("users")
 }
 
@@ -426,11 +437,11 @@ model BusinessProfile {
   payouts            Payout[]
   payoutDestinations PayoutDestination[]
 
+  serviceDrafts ServiceDraft[]
+
   @@index([categoryId])
   @@index([status])
   @@map("business_profiles")
-
-  serviceDrafts ServiceDraft[]
 }
 
 // ---------- Taxonomy ----------
@@ -573,6 +584,8 @@ model Location {
   /// Which services this branch offers, and at what price (§72).
   services ServiceLocation[]
 
+  favourites Favourite[] @relation("LocationFavourites")
+
   @@index([businessId])
   /// Branch lists and discovery filter on this constantly (§89).
   @@index([businessId, isActive])
@@ -584,8 +597,6 @@ model Location {
   /// Serves ORDER BY fromPriceMinor and the maxPriceMinor filter (§44).
   @@index([fromPriceMinor])
   @@map("locations")
-
-  favourites Favourite[] @relation("LocationFavourites")
 }
 
 model LocationHours {
@@ -1081,16 +1092,16 @@ model Appointment {
   /// Nullable with no backfill: appointments booked before this existed
   /// genuinely do not have the information, and inventing it would be worse
   /// than admitting it. Every reader must treat null as "not recorded".
-  servicePriceMinor     Int?
+  servicePriceMinor Int?
 
   // ---- How many (§136), snapshotted with the money ----
   //
   // servicePriceMinor above is the price of the WHOLE booking; unitPriceMinor
   // is the price of one. capacityUnits is how many of the branch's places the
   // booking occupies at once, which is what availability counts.
-  quantity       Int  @default(1)
-  capacityUnits  Int  @default(1)
-  unitPriceMinor Int?
+  quantity              Int      @default(1)
+  capacityUnits         Int      @default(1)
+  unitPriceMinor        Int?
   depositPercentage     Decimal? @db.Decimal(5, 2)
   platformFeePercentage Decimal? @db.Decimal(5, 2)
 
@@ -1986,12 +1997,12 @@ model District {
   province   Province @relation(fields: [provinceId], references: [id], onDelete: Restrict)
 
   locations Location[]
+  residents User[]     @relation("HomeDistrict")
 
   @@unique([provinceId, name])
   @@index([provinceId])
   @@map("districts")
 }
-
 
 /// A place a customer saved to come back to (§120).
 ///
@@ -2021,7 +2032,6 @@ model Favourite {
   @@index([customerId, createdAt])
   @@map("favourites")
 }
-
 
 /// Which document this is. Fixed, not admin-defined: each one is referred to by
 /// name in the apps and in law, and a free-text kind would let two "Privacy
@@ -2102,7 +2112,6 @@ model LegalAcceptance {
   @@map("legal_acceptances")
 }
 
-
 /// A service somebody started writing and has not finished (§123).
 ///
 /// A SEPARATE table, not a flag on `Service`, and that is the whole design. A
@@ -2145,7 +2154,6 @@ model ServiceDraft {
   @@index([businessId, updatedAt])
   @@map("service_drafts")
 }
-
 
 /// A mobile money number somebody has used before (§124.2).
 ///

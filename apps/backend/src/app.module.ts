@@ -24,6 +24,7 @@ import { PayoutsModule } from './payouts/payouts.module';
 import { DiscoveryModule } from './discovery/discovery.module';
 import { FavouritesModule } from './favourites/favourites.module';
 import { LegalModule } from './legal/legal.module';
+import { OffersModule } from './offers/offers.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { LegalModule } from './legal/legal.module';
     DiscoveryModule,
     FavouritesModule,
     LegalModule,
+    OffersModule,
   ],
 })
 export class AppModule {}

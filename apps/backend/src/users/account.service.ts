@@ -272,6 +272,10 @@ export class AccountService {
         data: {
           closedAt,
           displayName: null,
+          // A closed account asked for nothing and lives nowhere (§140).
+          offersOptInAt: null,
+          offersToken: null,
+          homeDistrictId: null,
           // Unique, unreachable, and it releases the real address so the same
           // person can sign up again later as somebody new.
           email: `closed-${crypto.randomUUID()}@${CLOSED_EMAIL_DOMAIN}`,

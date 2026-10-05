@@ -216,6 +216,9 @@ export const EXPORT_ACCOUNT_SELECT = {
   displayName: true,
   createdAt: true,
   closedAt: true,
+  // What they chose about emails near them, and where "near" is (§140).
+  offersOptInAt: true,
+  homeDistrict: { select: { name: true } },
 } as const satisfies Prisma.UserSelect;
 
 export const EXPORT_BOOKING_SELECT = {
@@ -243,6 +246,10 @@ export const EXPORT_REVIEW_SELECT = {
   location: { select: { name: true } },
 } as const satisfies Prisma.ReviewSelect;
 
+export class ExportedHomeDistrictDto {
+  name!: string;
+}
+
 export class ExportedAccountDto
   implements Serialised<Prisma.UserGetPayload<{ select: typeof EXPORT_ACCOUNT_SELECT }>>
 {
@@ -252,6 +259,9 @@ export class ExportedAccountDto
   displayName!: string | null;
   createdAt!: string;
   closedAt!: string | null;
+  /** When they agreed to emails about services near them; null if they have not. */
+  offersOptInAt!: string | null;
+  homeDistrict!: ExportedHomeDistrictDto | null;
 }
 
 export class ExportedServiceDto {

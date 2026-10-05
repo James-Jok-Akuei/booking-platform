@@ -25,6 +25,7 @@ import {
   setMyImage,
   signOut,
 } from '../../src/api/auth';
+import { OffersCard } from '../../src/components/OffersCard';
 import { pickImage } from '../../src/pickImage';
 import { ApiError, useSignedIn } from '../../src/api/client';
 import { shareApp } from '../../src/share';
@@ -381,6 +382,11 @@ export default function Account() {
             label="Tell a friend about this app"
             onPress={shareApp}
           />
+        </FadeIn>
+
+        {/* Emails about services nearby, for those who want them (§140). */}
+        <FadeIn delay={210}>
+          <OffersCard />
         </FadeIn>
 
         {/* Offered BEFORE the close, and said so in the closing dialogue: the
