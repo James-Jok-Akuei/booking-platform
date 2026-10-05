@@ -594,12 +594,19 @@ async function main() {
     priceMinor: number | number[],
     durationMinutes: number,
     depositPercentage: number,
+    /**
+     * Whether one booking may be for several (§136), and what "several" means.
+     * Set on every demo service where it is natural — a salon, a spa — so the
+     * quantity picker is not something only one haircut happens to show.
+     */
+    several?: { mode: 'PEOPLE' | 'UNITS'; max: number },
   ) {
     const prices = Array.isArray(priceMinor) ? priceMinor : null;
     const service = await services.create(business.userId, {
       name,
       durationMinutes,
       depositPercentage,
+      ...(several ? { quantityMode: several.mode, maxQuantity: several.max } : {}),
       offers: business.locationIds.map((locationId, index) => ({
         locationId,
         priceMinor: prices ? (prices[index] ?? prices[prices.length - 1]) : priceMinor as number,
@@ -611,9 +618,9 @@ async function main() {
 
   // Nyarugenge is the city-centre shop and charges more than Kimironko for the
   // same cut — the thing §72 exists to let a chain express.
-  await addService(nile, 'Haircut', [7000, 5000], 30, 20);
-  await addService(nile, 'Hot-towel shave', 8000, 45, 20);
-  await addService(nile, 'Cut and beard', 12000, 60, 25);
+  await addService(nile, 'Haircut', [7000, 5000], 30, 20, { mode: 'PEOPLE', max: 5 });
+  await addService(nile, 'Hot-towel shave', 8000, 45, 20, { mode: 'PEOPLE', max: 5 });
+  await addService(nile, 'Cut and beard', 12000, 60, 25, { mode: 'PEOPLE', max: 5 });
   const retired = await addService(nile, 'Retired: dye', 3000, 60, 20);
   // Soft-deleted, so it must NOT set the headline price even though it is the
   // cheapest thing the business ever offered.
@@ -621,18 +628,20 @@ async function main() {
 
   // Deposit exactly at the 10% floor: the platform takes the whole deposit and
   // the business's ledger share of it is exactly zero (§40.4).
-  await addService(konyo, 'Full-body massage', 30000, 90, 10);
-  await addService(konyo, 'Steam room', 8000, 30, 10);
+  await addService(konyo, 'Full-body massage', 30000, 90, 10, { mode: 'PEOPLE', max: 5 });
+  await addService(konyo, 'Steam room', 8000, 30, 10, { mode: 'PEOPLE', max: 5 });
 
-  await addService(thongpiny, 'Manicure', 6000, 45, 20);
-  await addService(thongpiny, 'Pedicure', 8000, 60, 20);
+  await addService(thongpiny, 'Manicure', 6000, 45, 20, { mode: 'PEOPLE', max: 5 });
+  await addService(thongpiny, 'Pedicure', 8000, 60, 20, { mode: 'PEOPLE', max: 5 });
 
+  // One per booking, deliberately: several CARS each need a bay, which is what
+  // the several-people rule does, but that picker asks "How many people?".
   await addService(autocare, 'Oil change', 20000, 60, 15);
   await addService(autocare, 'Full service', 60000, 180, 15);
 
-  await addService(haicinema, 'Braiding', 15000, 120, 20);
-  await addService(gudele, 'Suit fitting', 40000, 60, 20);
-  await addService(munuki, 'Personal training', 12000, 60, 20);
+  await addService(haicinema, 'Braiding', 15000, 120, 20, { mode: 'PEOPLE', max: 5 });
+  await addService(gudele, 'Suit fitting', 40000, 60, 20, { mode: 'PEOPLE', max: 5 });
+  await addService(munuki, 'Personal training', 12000, 60, 20, { mode: 'PEOPLE', max: 5 });
   // `atlabara` deliberately has none.
 
   // -------------------------------------------------------------------------

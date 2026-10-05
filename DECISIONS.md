@@ -12625,3 +12625,13 @@ one at a time; "What they do" is first. The review count sits on its tab.
 
 Everything above the tabs — photo, name, address, rating, Message the shop,
 the gallery — is unchanged and stays on screen for all three.
+
+### 136.7 The demo services that suit it allow several people
+
+Quantity is a choice each business makes per service, so after §136 exactly one
+service showed the picker — the one switched on by hand to try it. `seed-demo`
+now sets "several people, up to 5" on every demo service where that is natural
+(barber, spa, nails, braiding, tailoring, training), and the dev rows were
+updated to match. The garage's services stay one per booking: several cars each
+need a bay, which is what the several-people rule does, but its picker asks
+"How many people?".
