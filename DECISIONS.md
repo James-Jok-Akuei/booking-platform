@@ -12859,3 +12859,25 @@ go BACK to Anonymous short of asking an admin.
 - In the app it is a sheet with two plain choices: save a name, or "Show me as
   Anonymous". The sheet says that shops they book with still see their email,
   because "Anonymous" must not be mistaken for hidden from the shop.
+
+## 145. "Browse all categories" is a wall of colour (2026-10-05)
+
+It was a list of white rows, each with a small disc, a name and a "6 kinds"
+link. It is now built to be looked at:
+
+- **A staggered wall of tiles**, two heights in two columns (three or four on
+  wider screens). Each tile is the category's own gradient (the colours it
+  already wears on Home, §133) with its icon drawn twice — small in a white
+  disc as a label, and very large, faint and tipped off the corner as the
+  picture. They pop in one after another.
+- **Each tile says what is in it**: "5 places · 6 kinds", or "Coming soon"
+  where no shop has opened yet. The count is of branches, from one small
+  search, and is shown only when that search returned every branch.
+- **Tapping a tile lifts a sheet**: what the category covers, "See everything
+  in …", and its kinds as chips. The wall stays clean and every subcategory is
+  two taps away.
+- **A search box** narrows the wall, and finds a KIND by name: typing "bar"
+  offers "Barbershop — in Beauty & Personal Care" as a direct shortcut.
+
+Where it leads is unchanged: back down to Home with the category (and kind)
+applied (§133.6).
