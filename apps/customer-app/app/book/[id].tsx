@@ -133,6 +133,16 @@ export default function Book() {
   // one, more on a tablet. A ragged wrap of different-width times is hard to
   // scan for "the one after lunch".
   const inner = layout.contentWidth - 40;
+  /**
+   * The photos share the width between them, and never go narrower than 220
+   * (§135.4). So ONE photo is as wide as the screen's content, two fill a
+   * tablet side by side, and a set too long to fit stays at 220 each and
+   * scrolls — with the next one peeking in at the edge. A fixed 220 left a
+   * lone photo sitting beside an empty half of the screen.
+   */
+  const photoCount = service?.images.length ?? 0;
+  const photoWidth = Math.max(220, Math.floor((inner - 10 * (photoCount - 1)) / (photoCount || 1)));
+  const photoHeight = Math.max(160, Math.min(280, Math.round(photoWidth * 0.58)));
   const perRow = layout.wide ? 6 : inner < 330 ? 3 : 4;
   const slotWidth = (inner - 10 * (perRow - 1)) / perRow;
 
@@ -160,7 +170,11 @@ export default function Book() {
               contentContainerStyle={styles.photoStrip}
             >
               {service.images.map((photo) => (
-                <Image key={photo.id} source={{ uri: photo.url }} style={styles.photo} />
+                <Image
+                  key={photo.id}
+                  source={{ uri: photo.url }}
+                  style={[styles.photo, { width: photoWidth, height: photoHeight }]}
+                />
               ))}
             </ScrollView>
           </FadeIn>
@@ -305,8 +319,6 @@ const styles = StyleSheet.create({
   bleed: { marginHorizontal: -20, flexGrow: 0 },
   photoStrip: { paddingHorizontal: 20, gap: 10 },
   photo: {
-    width: 220,
-    height: 160,
     borderRadius: radius.lg,
     backgroundColor: theme.line,
   },

@@ -12398,3 +12398,10 @@ Tapping a service goes straight to booking it. Tapping a circle opens the shop.
 
 **Gone from Home:** the heart on each place. Saving is on the shop's page and
 the Saved tab, both unchanged; `PlaceCard` stays for Saved.
+
+### 135.4 A service's photos fill the width
+
+On the booking screen each photo was a fixed 220 wide, so a service with ONE
+photo showed it beside an empty half of the screen. The photos now share the
+width between them and never go below 220: one photo spans the screen, two fill
+a tablet side by side, and a longer set stays at 220 each and scrolls.
