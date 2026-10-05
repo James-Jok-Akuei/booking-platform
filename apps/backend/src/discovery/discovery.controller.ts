@@ -8,7 +8,7 @@ import { DiscoveryService } from './discovery.service';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { DiscoveryPageDto } from './dto/discovery-response.dto';
 import { DiscoverLocationsDto } from './dto/discover-locations.dto';
-import { ShopfrontDto } from './dto/discovery-response.dto';
+import { DiscoveredServicePageDto, ShopfrontDto } from './dto/discovery-response.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
@@ -39,6 +39,16 @@ export class DiscoveryController {
     @CurrentUser() user?: AuthenticatedUser,
   ) {
     return this.discovery.search(query, user?.userId);
+  }
+
+  /**
+   * Services across every shop (§135.2). The same query as the place search,
+   * so the two narrow by the same rules and cannot disagree about what is open.
+   */
+  @Get('services')
+  @ApiOkResponse({ type: DiscoveredServicePageDto })
+  searchServices(@Query() query: DiscoverLocationsDto) {
+    return this.discovery.searchServices(query);
   }
 
   @Get('locations/:id')

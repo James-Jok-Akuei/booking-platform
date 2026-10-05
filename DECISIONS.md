@@ -12336,3 +12336,65 @@ asked for their number.
 **Not found:** MTN's dedicated "MoMo" artwork, from any source that could be
 verified. Replacing `assets/mtn-logo.jpg` with the file from MTN's brand kit
 swaps it everywhere.
+
+## 135. Home is a shop window: popular places as circles, services on shelves (2026-10-05)
+
+Home was a column of tall place cards — one and a half shops per screen, and no
+service or price until a shop was opened. It now shows who is here in one line
+and spends the rest of the screen on what can be booked.
+
+### 135.1 What "popular" means
+
+`score = bookings × (rating ÷ 5)`, in `discovery/popularity.ts`, used for places
+and services alike.
+
+- **Bookings counted:** `BOOKED`, `IN_PROGRESS`, `COMPLETED`. Not cancelled, not
+  no-shows, not unpaid holds — none of those is somebody choosing the shop.
+- **No ratings yet counts as 3.5**, not as 0 and not as 5. Zero would bury every
+  new shop under any shop with one bad review; five would put it above shops
+  that earned theirs.
+- **Ties:** rating, then number of ratings, then name — so the order never
+  shuffles between two requests.
+
+A service has no rating of its own (reviews are of a visit to a branch), so a
+service is scored with ITS OWN bookings and its BRANCH's rating.
+
+`sort=popular` is a new value of the existing sort, and every place now carries
+`bookingCount`.
+
+**Sorted in memory**, like the distance sort: the score is computed from a
+count and an average that Postgres would need a hand-written query to order by.
+Fine at hundreds of branches; the day it is not, the score becomes a stored
+column refreshed when a booking or a review lands.
+
+### 135.2 `GET /discover/services`
+
+Services across every shop, one row per service-at-a-branch. It takes the SAME
+query as `/discover/locations` and narrows branches through the same
+`buildWhere`, so a branch that search hides (closed, suspended, unverified) can
+never surface through one of its services. `q` and `maxPriceMinor` apply to the
+service itself. Default order is popular.
+
+### 135.3 The screen
+
+- **Places** are a row of circles, most popular first: logo (else cover, else
+  the category's tile), rating on the circle's edge, a green dot when open now,
+  and the branch name underneath when two circles share a business.
+- **Services** are small cards, two and a half across a phone — the half card
+  at the edge is the "this scrolls" signal. Picture, duration, name, shop,
+  price on its own line (a price is never cut short), then rating and
+  "N booked".
+- **Nothing narrowed:** one shelf of the whole catalogue in the chosen order,
+  medals on the first three (only when the order is popularity and the service
+  has been booked), then one shelf per category. A category with a single
+  service gets no shelf. "See all" on a shelf does what its category tile does.
+- **Searching or a category chosen:** the shelves give way to a grid of exactly
+  that — two columns on a phone, three or four on wider screens.
+
+One set of filters drives both lists. The sort chips are now switches: off
+again is back to most popular, which is the default (~~was Best rated~~).
+
+Tapping a service goes straight to booking it. Tapping a circle opens the shop.
+
+**Gone from Home:** the heart on each place. Saving is on the shop's page and
+the Saved tab, both unchanged; `PlaceCard` stays for Saved.

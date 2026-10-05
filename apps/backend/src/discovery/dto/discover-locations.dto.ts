@@ -23,6 +23,8 @@ export enum DiscoverySort {
    * sort type listed a value the enum never had (§110).
    */
   NEWEST = 'newest',
+  /** Bookings weighted by rating (§135.1). */
+  POPULAR = 'popular',
 }
 
 /** Widest search the platform will run in one request. */

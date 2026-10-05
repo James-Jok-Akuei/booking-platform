@@ -83,6 +83,20 @@ export const discoverLocations = (params: {
   offset?: number;
 }) => api<DiscoveryPage>('/discover/locations', { query: params, optionalAuth: true });
 
+/** A service at a branch, as the home screen's shelves show it (§135.2). */
+export type DiscoveredService = components['schemas']['DiscoveredServiceDto'];
+
+export type DiscoveredServicePage = components['schemas']['DiscoveredServicePageDto'];
+
+/**
+ * Services across every shop. Takes the same filters as the place search, on
+ * purpose: one set of chips drives both, and the server narrows both by the
+ * same rules, so the circles and the shelves can never disagree about which
+ * shops are open for business.
+ */
+export const discoverServices = (params: Parameters<typeof discoverLocations>[0]) =>
+  api<DiscoveredServicePage>('/discover/services', { query: params, anonymous: true });
+
 export type ShopService = components['schemas']['ShopfrontServiceDto'];
 
 export type ShopHours = components['schemas']['ShopfrontHoursDto'];

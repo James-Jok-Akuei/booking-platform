@@ -13,7 +13,8 @@ import { FavouritesService } from '../favourites/favourites.service';
 import { dayOfWeekUtc, instantToZonedParts } from '../availability/time.util';
 import { isOpenAt } from './open-now';
 import { DiscoverLocationsDto, DiscoverySort } from './dto/discover-locations.dto';
-import { DiscoveryPageDto } from './dto/discovery-response.dto';
+import { DiscoveredServicePageDto, DiscoveryPageDto } from './dto/discovery-response.dto';
+import { COUNTED_BOOKING_STATUSES, byPopularity } from './popularity';
 
 /** Rows the bounding-box + haversine query returns. */
 interface DistanceRow {
@@ -66,8 +67,8 @@ export class DiscoveryService {
    * so a branch is the unit a customer actually chooses between.
    *
    * Query budget for a page of any size, stated because it is easy to regress:
-   * **four queries, plus one when distance is used**, and none of them per-row.
-   * Down from five since §44 made the cheapest price a column.
+   * **five queries, plus one when distance is used**, and none of them per-row.
+   * The fifth is the booking count (§135.1), one grouped query for the page.
    */
   async search(
     query: DiscoverLocationsDto,
@@ -133,6 +134,15 @@ export class DiscoveryService {
 
     const where = this.buildWhere(query, intersectIds(restrictTo, openIds));
 
+    // Two orders cannot be expressed as a column Prisma can sort by: distance
+    // lives in raw SQL, and popularity is a count from another table weighted by
+    // a rating (§135.1). Both take every candidate and order them here. That is
+    // bounded by the number of bookable branches on the platform, which is
+    // small; the day it is not, popularity becomes a maintained column the way
+    // the cheapest price did (§44).
+    const sortedInMemory =
+      query.sort === DiscoverySort.DISTANCE || query.sort === DiscoverySort.POPULAR;
+
     // (2) and (3): the count and the page.
     const [total, locations] = await Promise.all([
       this.prisma.location.count({ where }),
@@ -144,9 +154,7 @@ export class DiscoveryService {
         orderBy: this.orderBy(query),
         // A distance sort needs every candidate before it can order them; the
         // radius and MAX_RADIUS_KM are what bound that set.
-        ...(query.sort === DiscoverySort.DISTANCE
-          ? {}
-          : { take: limit, skip: offset }),
+        ...(sortedInMemory ? {} : { take: limit, skip: offset }),
         select: {
           id: true,
           name: true,
@@ -193,12 +201,29 @@ export class DiscoveryService {
         .slice(offset, offset + limit);
     }
 
+    // Counted for every candidate when it decides the order, and reused for the
+    // page below so it is never asked for twice.
+    let bookingsByCandidate: Map<string, number> | null = null;
+    if (query.sort === DiscoverySort.POPULAR) {
+      bookingsByCandidate = await this.bookingsByLocation(locations.map((l) => l.id));
+      const counts = bookingsByCandidate;
+      const rank = (l: (typeof locations)[number]) => ({
+        bookings: counts.get(l.id) ?? 0,
+        ratingAvg: l.ratingAvg ? Number(l.ratingAvg) : null,
+        ratingCount: l.ratingCount,
+        name: l.name,
+      });
+      rows = [...locations]
+        .sort((a, b) => byPopularity(rank(a), rank(b)))
+        .slice(offset, offset + limit);
+    }
+
     // (4) and (5): the open-now inputs for the whole page. Never per row.
     //
     // The cheapest price no longer needs a query at all — it is a column on the
     // location now (§44), maintained on write. That is one fewer query per page
     // AND the reason `sort=price` can order rows this page never fetched.
-    const [pageOpenNow, rate, saved] = await Promise.all([
+    const [pageOpenNow, rate, saved, bookings] = await Promise.all([
       // Already known when the filter was applied, and every row on this page is
       // one of those candidates.
       openNowByCandidate ?? this.openNowByLocation(rows.map((l) => l.id)),
@@ -207,11 +232,12 @@ export class DiscoveryService {
       // One query for the page, never one per row — and none at all for a
       // signed-out caller, which is most of them (§120).
       this.favourites.savedAmong(viewerId, rows.map((l) => l.id)),
+      bookingsByCandidate ?? this.bookingsByLocation(rows.map((l) => l.id)),
     ]);
     const openNow = pageOpenNow;
 
     return {
-      total: query.sort === DiscoverySort.DISTANCE ? locations.length : total,
+      total: sortedInMemory ? locations.length : total,
       limit,
       offset,
       ...(distance
@@ -241,6 +267,7 @@ export class DiscoveryService {
             ratingCount: location.ratingCount,
             fromPriceMinor,
             ...this.priceSettlement(fromPriceMinor, rate),
+            bookingCount: bookings.get(location.id) ?? 0,
             openNow: openNow.get(location.id) ?? false,
             // Absent rather than false when nobody is signed in: there is no
             // answer to "have you saved this" without a "you", and false would
@@ -254,6 +281,217 @@ export class DiscoveryService {
       // No post-filter any more. maxPriceMinor and openNow are both resolved in
       // the QUERY, so `total`, the page and every filter agree (§114.2).
     };
+  }
+
+  // ---------- Services, across every shop ----------
+
+  /**
+   * Every bookable service on the platform, as one list (§135.2).
+   *
+   * Until now a service could only be seen from inside its shop: a customer who
+   * wanted "a manicure" had to open each salon in turn to find who offers one
+   * and for how much. This is the shop window — the thing itself, with its
+   * price, wherever it is sold.
+   *
+   * A row is a service AT A BRANCH, because that is what is booked (§72).
+   *
+   * It takes the SAME query as the place search and narrows by the same rules,
+   * through `buildWhere`, so a branch that is closed, paused or not approved is
+   * absent from both and the two cannot drift. Two filters mean something
+   * narrower here and are applied to the offer instead of the branch:
+   *
+   * - `q` matches the SERVICE's own name as well as its shop's. Searching
+   *   "manicure" returns manicures, not every service at a salon that happens
+   *   to do them.
+   * - `maxPriceMinor` caps THIS service's price, not the shop's cheapest.
+   *
+   * Ordered in memory, for every sort. The interesting one — popularity — is a
+   * count from another table weighted by a rating, which no index orders by;
+   * and having ordered one in memory, doing the rest the same way means one
+   * code path instead of five. Bounded by the number of live offers on the
+   * platform. The same note as the place search: when that hurts, the count
+   * becomes a maintained column (§44).
+   *
+   * Five queries regardless of page size, six with a position. None per row.
+   */
+  async searchServices(query: DiscoverLocationsDto): Promise<DiscoveredServicePageDto> {
+    const limit = query.limit ?? DEFAULT_LIMIT;
+    const offset = query.offset ?? 0;
+    const distance = this.resolveDistance(query);
+
+    if (query.sort === DiscoverySort.DISTANCE && !distance) {
+      throw new BadRequestException('sort=distance requires lat and lng.');
+    }
+
+    const nearby = distance ? await this.locationIdsWithin(distance) : null;
+    const restrictTo =
+      distance?.radiusKm !== undefined ? (nearby?.map((r) => r.id) ?? null) : null;
+
+    // The branch rules, minus the two filters that belong to the offer.
+    const { q, maxPriceMinor, ...branchQuery } = query;
+    const locationWhere = this.buildWhere(branchQuery as DiscoverLocationsDto, restrictTo);
+    const contains = q ? { contains: q, mode: 'insensitive' as const } : null;
+
+    const offers = await this.prisma.serviceLocation.findMany({
+      where: {
+        isOffered: true,
+        ...(maxPriceMinor !== undefined ? { priceMinor: { lte: maxPriceMinor } } : {}),
+        service: { isActive: true },
+        location: locationWhere,
+        ...(contains
+          ? {
+              OR: [
+                { service: { name: contains } },
+                { location: { name: contains } },
+                { location: { business: { name: contains } } },
+              ],
+            }
+          : {}),
+      },
+      select: {
+        priceMinor: true,
+        locationId: true,
+        serviceId: true,
+        service: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            durationMinutes: true,
+            currency: true,
+            depositPercentage: true,
+            createdAt: true,
+            // Only the cover. The rest are on the booking screen (§132).
+            images: {
+              orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+              take: 1,
+              select: { url: true },
+            },
+          },
+        },
+        location: {
+          select: {
+            id: true,
+            name: true,
+            ratingAvg: true,
+            ratingCount: true,
+            district: { select: { id: true, name: true } },
+            business: {
+              select: {
+                id: true,
+                name: true,
+                logoUrl: true,
+                coverImageUrl: true,
+                category: { select: { id: true, name: true, icon: true } },
+                subcategory: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const locationIds = [...new Set(offers.map((o) => o.locationId))];
+    const [openNow, grouped] = await Promise.all([
+      this.openNowByLocation(locationIds),
+      // One grouped count for every candidate offer at once.
+      offers.length === 0
+        ? Promise.resolve([])
+        : this.prisma.appointment.groupBy({
+            by: ['serviceId', 'locationId'],
+            where: {
+              serviceId: { in: [...new Set(offers.map((o) => o.serviceId))] },
+              locationId: { in: locationIds },
+              status: { in: COUNTED_BOOKING_STATUSES },
+            },
+            _count: { _all: true },
+          }),
+    ]);
+
+    const key = (serviceId: string, locationId: string) => `${serviceId}:${locationId}`;
+    const bookings = new Map(
+      grouped.map((g) => [key(g.serviceId, g.locationId), g._count._all]),
+    );
+    const distanceById = new Map(nearby?.map((r) => [r.id, r.distance_km]) ?? []);
+
+    // `openNow` is a filter on the BRANCH, resolved the way the place search
+    // resolves it: from the one function that knows the rule (§114.2).
+    const candidates = query.openNow
+      ? offers.filter((o) => openNow.get(o.locationId))
+      : offers;
+
+    const rating = (o: (typeof offers)[number]) =>
+      o.location.ratingAvg ? Number(o.location.ratingAvg) : null;
+    const rank = (o: (typeof offers)[number]) => ({
+      bookings: bookings.get(key(o.serviceId, o.locationId)) ?? 0,
+      ratingAvg: rating(o),
+      ratingCount: o.location.ratingCount,
+      // The service's name, then the branch's: stable when one service is sold
+      // at two branches with the same score.
+      name: `${o.service.name} ${o.location.name}`,
+    });
+    const popular = (a: (typeof offers)[number], b: (typeof offers)[number]) =>
+      byPopularity(rank(a), rank(b));
+
+    const sorted = [...candidates].sort((a, b) => {
+      switch (query.sort) {
+        case DiscoverySort.PRICE:
+          return a.priceMinor - b.priceMinor || popular(a, b);
+        case DiscoverySort.RATING:
+          return (rating(b) ?? -1) - (rating(a) ?? -1) || popular(a, b);
+        case DiscoverySort.NEWEST:
+          return b.service.createdAt.getTime() - a.service.createdAt.getTime() || popular(a, b);
+        case DiscoverySort.DISTANCE:
+          return (
+            (distanceById.get(a.locationId) ?? Infinity) -
+              (distanceById.get(b.locationId) ?? Infinity) || popular(a, b)
+          );
+        default:
+          // Popular is the default here, unlike the place search: a shelf of
+          // services in alphabetical order would be a shelf nobody arranged.
+          return popular(a, b);
+      }
+    });
+
+    return {
+      total: sorted.length,
+      limit,
+      offset,
+      services: sorted.slice(offset, offset + limit).map((o) => ({
+        id: o.service.id,
+        name: o.service.name,
+        description: o.service.description,
+        durationMinutes: o.service.durationMinutes,
+        currency: o.service.currency,
+        priceMinor: o.priceMinor,
+        depositPercentage: o.service.depositPercentage.toFixed(2),
+        imageUrl: o.service.images[0]?.url ?? null,
+        bookingCount: bookings.get(key(o.serviceId, o.locationId)) ?? 0,
+        location: {
+          id: o.location.id,
+          name: o.location.name,
+          district: o.location.district,
+          ratingAvg: rating(o),
+          ratingCount: o.location.ratingCount,
+          openNow: openNow.get(o.locationId) ?? false,
+          ...(distanceById.has(o.locationId)
+            ? { distanceKm: round2(distanceById.get(o.locationId)!) }
+            : {}),
+        },
+        business: o.location.business,
+      })),
+    };
+  }
+
+  /** Paid, not-called-off bookings per branch — one grouped query (§135.1). */
+  private async bookingsByLocation(locationIds: string[]): Promise<Map<string, number>> {
+    if (locationIds.length === 0) return new Map();
+    const grouped = await this.prisma.appointment.groupBy({
+      by: ['locationId'],
+      where: { locationId: { in: locationIds }, status: { in: COUNTED_BOOKING_STATUSES } },
+      _count: { _all: true },
+    });
+    return new Map(grouped.map((g) => [g.locationId, g._count._all]));
   }
 
   // ---------- Detail ----------

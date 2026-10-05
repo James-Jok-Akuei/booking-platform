@@ -58,6 +58,11 @@ export class DiscoveredLocationDto {
   ratingCount!: number;
   /** The cheapest service here, in minor units. Null when nothing is on sale. */
   fromPriceMinor!: number | null;
+  /**
+   * Bookings that were paid for and not called off (§135.1). What `sort=popular`
+   * ranks by, published so a client can SAY why a place is first.
+   */
+  bookingCount!: number;
   /** Computed from today's hours — the one field that answers "can I go now". */
   openNow!: boolean;
   /**
@@ -86,6 +91,54 @@ export class DiscoveryPageDto {
   center?: DiscoveryCentreDto;
   radiusKm?: number;
   locations!: DiscoveredLocationDto[];
+}
+
+// ---------------------------------------------------------------------------
+// Services, across every shop (§135.2)
+// ---------------------------------------------------------------------------
+
+export class DiscoveredServiceLocationDto {
+  id!: string;
+  name!: string;
+  district!: { id: string; name: string } | null;
+  ratingAvg!: number | null;
+  ratingCount!: number;
+  openNow!: boolean;
+  /** Only when a position was sent. */
+  distanceKm?: number;
+}
+
+/**
+ * One service AT one branch — the thing a customer actually books.
+ *
+ * Not "a service": the same haircut at two branches is two rows, because it has
+ * two prices, two diaries and two places to walk to (§72). `id` is the
+ * service's and `location.id` the branch's; the pair is what the booking screen
+ * takes, and the pair is what makes a row unique.
+ */
+export class DiscoveredServiceDto {
+  id!: string;
+  name!: string;
+  description!: string | null;
+  durationMinutes!: number;
+  currency!: string;
+  /** This branch's price. */
+  priceMinor!: number;
+  /** A decimal string, like every percentage here (§128.20). */
+  depositPercentage!: string;
+  /** The cover photo (§132), or null — a client falls back to a category tile. */
+  imageUrl!: string | null;
+  /** Paid, not-called-off bookings of this service at this branch (§135.1). */
+  bookingCount!: number;
+  location!: DiscoveredServiceLocationDto;
+  business!: DiscoveredBusinessDto;
+}
+
+export class DiscoveredServicePageDto {
+  total!: number;
+  limit!: number;
+  offset!: number;
+  services!: DiscoveredServiceDto[];
 }
 
 /**

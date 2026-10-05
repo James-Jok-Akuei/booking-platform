@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  FlatList,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -13,18 +12,19 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   discoverLocations,
+  discoverServices,
   listCategories,
   listProvinces,
   type Category,
   type Province,
-  type DiscoveredLocation,
+  type DiscoveredService,
   type DiscoverySort,
 } from '../../src/api/discovery';
 import { useMoney } from '../../src/money';
 import { useNearMe } from '../../src/useNearMe';
-import { useSaved } from '../../src/useSaved';
 import { useUnread } from '../../src/useUnread';
-import { PlaceCard } from '../../src/components/PlaceCard';
+import { PlaceBubble } from '../../src/components/PlaceBubble';
+import { ServiceCard } from '../../src/components/ServiceCard';
 import { font, radius, shadow, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
 import { Chip } from '../../src/ui/Chip';
 import { CountBadge } from '../../src/ui/CountBadge';
@@ -35,7 +35,7 @@ import { Icon, lookFor } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Sheet } from '../../src/ui/Sheet';
-import { PlaceCardSkeleton } from '../../src/ui/Skeleton';
+import { Skeleton } from '../../src/ui/Skeleton';
 
 /** "City of Kigali" is what the state calls it; "Kigali" is what people say. */
 const shortName = (name: string) =>
@@ -47,13 +47,21 @@ const SORTS: Array<{ value: DiscoverySort; label: string }> = [
   { value: 'newest', label: 'Newest' },
 ];
 
-/** Under a kilometre reads as "600 m" — nobody says "0.6 km". */
-const distanceLabel = (km: number | null | undefined) =>
-  km === undefined || km === null
-    ? null
-    : km < 1
-      ? `${Math.round(km * 1000)} m away`
-      : `${km.toFixed(1)} km away`;
+/**
+ * What the first shelf is called. It is the whole catalogue in the chosen
+ * order, so its name is the order — "Most popular" over a list sorted by price
+ * would be a lie told in a heading.
+ */
+const SHELF_TITLE: Record<DiscoverySort, string> = {
+  popular: 'Most popular',
+  rating: 'Best rated',
+  price: 'Cheapest',
+  newest: 'Newest',
+  distance: 'Nearest',
+};
+
+/** How many cards a shelf holds before "more" is the category itself. */
+const SHELF_SIZE = 10;
 
 /**
  * Browse and search.
@@ -63,15 +71,22 @@ const distanceLabel = (km: number | null | undefined) =>
  * people before they ever saw a price.
  *
  * Laid out top to bottom in the order a person narrows things down (§133):
- * WHERE, then WHAT by name, then what KIND, then in what ORDER — and then the
- * places themselves, each leading with its picture. Everything above the list
- * scrolls away with it, so the controls never cost the list its room.
+ * WHERE, then WHAT by name, then what KIND, then in what ORDER.
+ *
+ * Below that, the screen is a shop window rather than a list (§135). The shops
+ * are one row of circles, most popular first — who is here, in the height of
+ * one line. The room the tall place cards used to take goes to the SERVICES,
+ * in small cards on shelves that scroll sideways: the thing a person actually
+ * came to buy, with its price, three shelves to a screen.
+ *
+ * With nothing narrowed, the shelves are the whole catalogue and then one per
+ * category. Once someone searches or picks a category they have said what they
+ * want, so the shelves give way to a grid of exactly that.
  */
 export default function Discover() {
   const money = useMoney();
   const router = useRouter();
   const nearMe = useNearMe();
-  const saved = useSaved();
   const unread = useUnread();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
@@ -86,7 +101,7 @@ export default function Discover() {
   const [subcategoryId, setSubcategoryId] = useState<string | null>(
     params.subcategoryId ?? null,
   );
-  const [sort, setSort] = useState<DiscoverySort>('rating');
+  const [sort, setSort] = useState<DiscoverySort>('popular');
   const [openNow, setOpenNow] = useState(false);
   const [provinceId, setProvinceId] = useState<string | null>(null);
   const [districtId, setDistrictId] = useState<string | null>(null);
@@ -166,34 +181,94 @@ export default function Discover() {
   const position = nearMe.state.status === 'on' ? nearMe.state : null;
   const sortingByDistance = sort === 'distance' && position !== null;
 
+  /**
+   * ONE set of filters for both lists. The circles and the shelves are two
+   * views of the same search, so a shop can never be in one and missing from
+   * the other.
+   *
+   * Popular is the order until someone asks for another; the sort chips are
+   * switches, and switching one off comes back here.
+   */
+  const filters = {
+    limit: 50,
+    // Falls back to popular when there is no position — asking the server
+    // to sort by distance without one is a 400, and a refused request is
+    // not what declining a permission should produce.
+    sort: sortingByDistance ? 'distance' : sort === 'distance' ? 'popular' : sort,
+    ...(sortingByDistance ? { lat: position.lat, lng: position.lng } : {}),
+    ...(query.trim() ? { q: query.trim() } : {}),
+    ...(categoryId ? { categoryId } : {}),
+    ...(subcategoryId ? { subcategoryId } : {}),
+    ...(openNow ? { openNow: true } : {}),
+    ...(districtId ? { districtId } : provinceId ? { provinceId } : {}),
+  } satisfies Parameters<typeof discoverLocations>[0];
+
+  const filterKey = [
+    query,
+    categoryId,
+    subcategoryId,
+    sort,
+    openNow,
+    provinceId,
+    districtId,
+    position?.lat,
+    position?.lng,
+  ];
+
   const results = useQuery({
-    queryKey: [
-      'discover',
-      query,
-      categoryId,
-      subcategoryId,
-      sort,
-      openNow,
-      provinceId,
-      districtId,
-      position?.lat,
-      position?.lng,
-    ],
-    queryFn: () =>
-      discoverLocations({
-        limit: 50,
-        // Falls back to rating when there is no position — asking the server
-        // to sort by distance without one is a 400, and a refused request is
-        // not what declining a permission should produce.
-        sort: sortingByDistance ? 'distance' : sort === 'distance' ? 'rating' : sort,
-        ...(sortingByDistance ? { lat: position.lat, lng: position.lng } : {}),
-        ...(query.trim() ? { q: query.trim() } : {}),
-        ...(categoryId ? { categoryId } : {}),
-        ...(subcategoryId ? { subcategoryId } : {}),
-        ...(openNow ? { openNow: true } : {}),
-        ...(districtId ? { districtId } : provinceId ? { provinceId } : {}),
-      }),
+    queryKey: ['discover', ...filterKey],
+    queryFn: () => discoverLocations(filters),
   });
+
+  const services = useQuery({
+    queryKey: ['discover-services', ...filterKey],
+    queryFn: () => discoverServices(filters),
+  });
+
+  const shops = results.data?.locations ?? [];
+  const offers = services.data?.services ?? [];
+
+  /** Nothing narrowed by word or by kind: show the shop window, not a list. */
+  const browsing = !query.trim() && !categoryId && !subcategoryId;
+
+  /**
+   * One shelf per category, in the order the categories are listed everywhere
+   * else. Built from the page already fetched — the cards arrive in the chosen
+   * order, and filtering keeps it, so each shelf is that category's own
+   * "most popular first" without another request.
+   *
+   * A category with a single service gets no shelf: one card under a heading
+   * is a row of empty space, and that card is already on the shelf above.
+   */
+  const shelves = browsing
+    ? (categories.data ?? [])
+        .map((category) => ({
+          category,
+          items: offers.filter((o) => o.business.category?.id === category.id),
+        }))
+        .filter((shelf) => shelf.items.length > 1)
+    : [];
+
+  /**
+   * Two and a half cards across a phone. The half is deliberate: a card cut
+   * off by the edge is the clearest "this scrolls" there is, and it needs no
+   * arrow. Capped so a tablet shows more cards rather than bigger ones.
+   */
+  const inner = layout.contentWidth - layout.gutter * 2;
+  const shelfCard = Math.max(124, Math.min(168, Math.round((inner - 20) / 2.45)));
+  const gridColumns = inner >= 640 ? 4 : inner >= 440 ? 3 : 2;
+  const gridCard = Math.floor((inner - 10 * (gridColumns - 1)) / gridColumns);
+
+  const openService = (service: DiscoveredService) =>
+    router.push(`/book/${service.location.id}?serviceId=${service.id}`);
+
+  const refreshing = results.isRefetching || services.isRefetching;
+  const failed = results.isError && services.isError;
+  const settled = results.isSuccess && services.isSuccess;
+
+  /** Rows that run to the screen's edge and start at the gutter. */
+  const bleed = { marginHorizontal: -layout.gutter, flexGrow: 0 };
+  const bleedPad = { paddingHorizontal: layout.gutter };
 
   const pickCategory = (id: string | null) => {
     setCategoryId((was) => (id === null || was === id ? null : id));
@@ -282,8 +357,8 @@ export default function Discover() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={styles.bleed}
-            contentContainerStyle={styles.tiles}
+            style={bleed}
+            contentContainerStyle={[styles.tiles, bleedPad]}
           >
             <CategoryTile label="All" active={categoryId === null} onPress={() => pickCategory(null)} />
             {categories.data?.map((category) => (
@@ -303,8 +378,8 @@ export default function Discover() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={styles.bleed}
-          contentContainerStyle={styles.chips}
+          style={bleed}
+          contentContainerStyle={[styles.chips, bleedPad]}
         >
           <Chip
             label="Open now"
@@ -321,7 +396,7 @@ export default function Discover() {
             active={sort === 'distance' && nearMe.state.status === 'on'}
             onPress={async () => {
               if (sort === 'distance') {
-                setSort('rating');
+                setSort('popular');
                 nearMe.disable();
                 return;
               }
@@ -334,7 +409,8 @@ export default function Discover() {
               key={option.value}
               label={option.label}
               active={sort === option.value}
-              onPress={() => setSort(option.value)}
+              // A switch: off again is back to most popular.
+              onPress={() => setSort((was) => (was === option.value ? 'popular' : option.value))}
             />
           ))}
         </ScrollView>
@@ -351,30 +427,12 @@ export default function Discover() {
         </View>
       )}
 
-      {results.data && (
-        <Text style={[type.label, styles.count]}>
-          {results.data.total} {results.data.total === 1 ? 'place' : 'places'}
-        </Text>
-      )}
-
-      {results.isLoading && (
-        <View style={styles.skeletons}>
-          <PlaceCardSkeleton />
-          <PlaceCardSkeleton />
-        </View>
-      )}
     </View>
   );
 
   return (
     <View style={styles.screen}>
-      <FlatList
-        // Re-keyed when the column count changes: FlatList cannot change
-        // `numColumns` on the fly, and a rotated tablet should re-flow.
-        key={layout.columns}
-        numColumns={layout.columns}
-        data={results.data?.locations ?? []}
-        keyExtractor={(item) => item.id}
+      <ScrollView
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
@@ -387,44 +445,165 @@ export default function Discover() {
             paddingHorizontal: layout.gutter,
           },
         ]}
-        columnWrapperStyle={layout.columns > 1 ? styles.columns : undefined}
         refreshControl={
           <RefreshControl
-            refreshing={results.isRefetching}
-            onRefresh={() => results.refetch()}
+            refreshing={refreshing}
+            onRefresh={() => {
+              results.refetch();
+              services.refetch();
+            }}
             tintColor={theme.accent}
             colors={[theme.accent]}
             progressViewOffset={insets.top}
           />
         }
-        ListHeaderComponent={header}
-        ListEmptyComponent={
-          results.isError ? (
-            <EmptyState
-              icon="cloud-offline-outline"
-              title="Could not reach the server."
-              text="Pull down to try again."
+      >
+        {header}
+
+        {/* WHO IS HERE. One line tall, most popular first. */}
+        {results.isLoading && (
+          <View>
+            <SectionHead title="Places" />
+            <View style={styles.bubbles}>
+              {[0, 1, 2, 3, 4].map((n) => (
+                <View key={n} style={styles.bubbleGhost}>
+                  <Skeleton width={74} height={74} round={37} />
+                  <Skeleton width={56} height={10} />
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {shops.length > 0 && (
+          <FadeIn>
+            <SectionHead
+              title="Places"
+              note={`${results.data?.total} ${results.data?.total === 1 ? 'place' : 'places'}`}
             />
-          ) : results.isSuccess ? (
-            <EmptyState
-              icon="search"
-              title="Nothing matches that yet."
-              text="Try a different word, or clear the filters."
-            />
-          ) : null
-        }
-        renderItem={({ item, index }) => (
-          <FadeIn index={index}>
-            <LocationCard
-              location={item}
-              format={money.format}
-              width={layout.columns > 1 ? layout.cardWidth : undefined}
-              onPress={() => router.push(`/shop/${item.id}`)}
-              onSave={() => saved.toggle(item.id, item.saved ?? false, '/')}
-            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={bleed}
+              contentContainerStyle={[styles.bubbles, bleedPad]}
+            >
+              {shops.map((shop) => (
+                <PlaceBubble
+                  key={shop.id}
+                  place={shop}
+                  onPress={() => router.push(`/shop/${shop.id}`)}
+                />
+              ))}
+            </ScrollView>
           </FadeIn>
         )}
-      />
+
+        {/* WHAT YOU CAN BOOK. */}
+        {services.isLoading && (
+          <View>
+            <SectionHead title={SHELF_TITLE[filters.sort]} />
+            <View style={styles.shelf}>
+              {[0, 1, 2].map((n) => (
+                <View key={n} style={[styles.cardGhost, { width: shelfCard }]}>
+                  <Skeleton height={Math.round(shelfCard * 0.72)} round={radius.md} />
+                  <Skeleton width="85%" height={12} />
+                  <Skeleton width="55%" height={10} />
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {browsing && offers.length > 0 && (
+          <FadeIn delay={60}>
+            <SectionHead title={SHELF_TITLE[filters.sort]} />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={bleed}
+              contentContainerStyle={[styles.shelf, bleedPad]}
+            >
+              {offers.slice(0, SHELF_SIZE).map((service, index) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  price={money.format(service.priceMinor)}
+                  width={shelfCard}
+                  // A medal only when the order IS popularity, and only for
+                  // something somebody has actually booked.
+                  rank={
+                    filters.sort === 'popular' && service.bookingCount > 0 ? index + 1 : undefined
+                  }
+                  onPress={() => openService(service)}
+                />
+              ))}
+            </ScrollView>
+          </FadeIn>
+        )}
+
+        {shelves.map((shelf, index) => (
+          <FadeIn key={shelf.category.id} delay={120 + index * 50}>
+            <SectionHead
+              title={shelf.category.name}
+              icon={shelf.category.icon}
+              // The same thing the category tile above does — a shortcut to
+              // it from where the eye already is, not a new place to go.
+              action="See all"
+              onAction={() => pickCategory(shelf.category.id)}
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={bleed}
+              contentContainerStyle={[styles.shelf, bleedPad]}
+            >
+              {shelf.items.slice(0, SHELF_SIZE).map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  price={money.format(service.priceMinor)}
+                  width={shelfCard}
+                  onPress={() => openService(service)}
+                />
+              ))}
+            </ScrollView>
+          </FadeIn>
+        ))}
+
+        {!browsing && offers.length > 0 && (
+          <FadeIn delay={60}>
+            <SectionHead
+              title="Services"
+              note={`${services.data?.total} ${services.data?.total === 1 ? 'service' : 'services'}`}
+            />
+            <View style={styles.grid}>
+              {offers.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  price={money.format(service.priceMinor)}
+                  width={gridCard}
+                  onPress={() => openService(service)}
+                />
+              ))}
+            </View>
+          </FadeIn>
+        )}
+
+        {failed ? (
+          <EmptyState
+            icon="cloud-offline-outline"
+            title="Could not reach the server."
+            text="Pull down to try again."
+          />
+        ) : settled && shops.length === 0 && offers.length === 0 ? (
+          <EmptyState
+            icon="search"
+            title="Nothing matches that yet."
+            text="Try a different word, or clear the filters."
+          />
+        ) : null}
+      </ScrollView>
 
       <Sheet open={placeSheet} title="Where" onClose={() => setPlaceSheet(false)}>
         <ScrollView contentContainerStyle={styles.sheetBody} showsVerticalScrollIndicator={false}>
@@ -537,50 +716,51 @@ function CategoryTile({
   );
 }
 
-function LocationCard({
-  location,
-  format,
-  onPress,
-  onSave,
-  width,
+/**
+ * The line above a row: what it is, and at most one quiet thing on the right.
+ */
+function SectionHead({
+  title,
+  icon,
+  note,
+  action,
+  onAction,
 }: {
-  location: DiscoveredLocation;
-  format: (minor: number | null | undefined) => string;
-  onPress: () => void;
-  onSave: () => void;
-  width?: number;
+  title: string;
+  /** A category's `icon` word: a small disc in its colour before the title. */
+  icon?: string | null;
+  note?: string;
+  action?: string;
+  onAction?: () => void;
 }) {
+  const look = icon !== undefined ? lookFor(icon) : null;
   return (
-    <PlaceCard
-      name={location.business.name ?? location.name}
-      // The district first: "Remera" places a shop for someone in Kigali in
-      // a way a street name does not.
-      where={`${location.district ? `${location.district.name} · ` : ''}${location.address}`}
-      coverUrl={location.business.coverImageUrl}
-      logoUrl={location.business.logoUrl}
-      categoryIcon={location.business.category?.icon}
-      tag={location.business.subcategory?.name}
-      ratingAvg={location.ratingAvg}
-      ratingCount={location.ratingCount}
-      price={
-        location.fromPriceMinor !== null ? `from ${format(location.fromPriceMinor)}` : null
-      }
-      distance={distanceLabel(location.distanceKm)}
-      openNow={location.openNow}
-      saved={location.saved}
-      onSave={onSave}
-      onPress={onPress}
-      width={width}
-    />
+    <View style={styles.sectionHead}>
+      <View style={styles.sectionTitle}>
+        {look && (
+          <View style={[styles.sectionDisc, { backgroundColor: look.tint }]}>
+            <Icon name={look.icon} size={13} color={look.ink} />
+          </View>
+        )}
+        <Text style={[type.heading, styles.sectionText]} numberOfLines={1}>
+          {title}
+        </Text>
+      </View>
+      {note !== undefined && <Text style={type.label}>{note}</Text>}
+      {action !== undefined && (
+        <PressableScale onPress={onAction} hitSlop={10} haptic accessibilityRole="button">
+          <Text style={styles.link}>{action} →</Text>
+        </PressableScale>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
   listOuter: { flex: 1 },
-  list: { gap: 16, alignSelf: 'center' },
-  columns: { gap: 14 },
-  header: { gap: 16, paddingBottom: 2 },
+  list: { gap: 22, alignSelf: 'center' },
+  header: { gap: 16 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   bellBadge: { position: 'absolute', top: -4, right: -4 },
   placePill: {
@@ -623,15 +803,22 @@ const styles = StyleSheet.create({
   },
   sectionHead: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
     marginBottom: 12,
   },
+  sectionTitle: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  sectionDisc: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionText: { flexShrink: 1 },
   link: { fontFamily: font.bold, fontSize: 13, color: theme.accent },
-  // The rows run to the screen's edge and start at the gutter, so a half-seen
-  // tile at the right says "there is more" without an arrow.
-  bleed: { marginHorizontal: -20, flexGrow: 0 },
-  tiles: { paddingHorizontal: 20, gap: 14 },
+  tiles: { gap: 14 },
   tile: { width: 72, alignItems: 'center', gap: 7 },
   tileDisc: {
     width: 62,
@@ -649,7 +836,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   tileLabelOn: { color: theme.accent, fontFamily: font.bold },
-  chips: { paddingHorizontal: 20, gap: 8 },
+  chips: { gap: 8 },
   notice: {
     flexDirection: 'row',
     gap: 9,
@@ -658,8 +845,18 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   noticeText: { flex: 1, fontFamily: font.medium, fontSize: 13, lineHeight: 18.5, color: theme.ink2 },
-  count: { marginTop: 2 },
-  skeletons: { gap: 16 },
+  // Padded top and bottom so the cards' shadows are not cut by the scroller.
+  bubbles: { flexDirection: 'row', gap: 10, paddingTop: 2, paddingBottom: 6 },
+  bubbleGhost: { width: 76, alignItems: 'center', gap: 8 },
+  shelf: { flexDirection: 'row', gap: 10, paddingTop: 2, paddingBottom: 10 },
+  cardGhost: {
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    padding: 6,
+    paddingBottom: 14,
+    gap: 9,
+  },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   sheetBody: { gap: 18, paddingBottom: 8 },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

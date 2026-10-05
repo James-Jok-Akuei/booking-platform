@@ -11391,7 +11391,8 @@
                 "rating",
                 "price",
                 "distance",
-                "newest"
+                "newest",
+                "popular"
               ]
             }
           },
@@ -11447,6 +11448,186 @@
             }
           }
         },
+        "tags": [
+          "Discovery"
+        ]
+      }
+    },
+    "/discover/services": {
+      "get": {
+        "operationId": "DiscoveryController_searchServices",
+        "parameters": [
+          {
+            "name": "provinceId",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to one province (§104). Matched through the district, so a branch\nwith no district set is simply not returned — it has not said where it is.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "districtId",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to one district. The useful unit inside Kigali.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Case-insensitive substring over business name, location name, service name.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "subcategoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "minRating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPriceMinor",
+            "required": false,
+            "in": "query",
+            "description": "Against the location's CHEAPEST active service.",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "openNow",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "lat",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "radiusKm",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0.1,
+              "maximum": 200,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rating",
+                "price",
+                "distance",
+                "newest",
+                "popular"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveredServicePageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Services across every shop (§135.2). The same query as the place search,\nso the two narrow by the same rules and cannot disagree about what is open.",
         "tags": [
           "Discovery"
         ]
@@ -19364,6 +19545,10 @@
             "nullable": true,
             "description": "The cheapest service here, in minor units. Null when nothing is on sale."
           },
+          "bookingCount": {
+            "type": "number",
+            "description": "Bookings that were paid for and not called off (§135.1). What `sort=popular`\nranks by, published so a client can SAY why a place is first."
+          },
           "openNow": {
             "type": "boolean",
             "description": "Computed from today's hours — the one field that answers \"can I go now\"."
@@ -19399,6 +19584,7 @@
           "ratingAvg",
           "ratingCount",
           "fromPriceMinor",
+          "bookingCount",
           "openNow"
         ]
       },
@@ -19437,6 +19623,137 @@
           "limit",
           "offset",
           "locations"
+        ]
+      },
+      "DiscoveredServiceLocationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "district": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ]
+          },
+          "ratingAvg": {
+            "type": "number",
+            "nullable": true
+          },
+          "ratingCount": {
+            "type": "number"
+          },
+          "openNow": {
+            "type": "boolean"
+          },
+          "distanceKm": {
+            "type": "number",
+            "description": "Only when a position was sent."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "district",
+          "ratingAvg",
+          "ratingCount",
+          "openNow"
+        ]
+      },
+      "DiscoveredServiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "priceMinor": {
+            "type": "number",
+            "description": "This branch's price."
+          },
+          "depositPercentage": {
+            "type": "string",
+            "description": "A decimal string, like every percentage here (§128.20)."
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "The cover photo (§132), or null — a client falls back to a category tile."
+          },
+          "bookingCount": {
+            "type": "number",
+            "description": "Paid, not-called-off bookings of this service at this branch (§135.1)."
+          },
+          "location": {
+            "$ref": "#/components/schemas/DiscoveredServiceLocationDto"
+          },
+          "business": {
+            "$ref": "#/components/schemas/DiscoveredBusinessDto"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "durationMinutes",
+          "currency",
+          "priceMinor",
+          "depositPercentage",
+          "imageUrl",
+          "bookingCount",
+          "location",
+          "business"
+        ]
+      },
+      "DiscoveredServicePageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscoveredServiceDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "services"
         ]
       },
       "ShopfrontCategoryDto": {

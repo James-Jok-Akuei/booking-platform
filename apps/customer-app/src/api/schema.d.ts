@@ -2352,6 +2352,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/discover/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Services across every shop (§135.2). The same query as the place search,
+         *     so the two narrow by the same rules and cannot disagree about what is open.
+         */
+        get: operations["DiscoveryController_searchServices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/discover/locations/{id}": {
         parameters: {
             query?: never;
@@ -4770,6 +4790,11 @@ export interface components {
             ratingCount: number;
             /** @description The cheapest service here, in minor units. Null when nothing is on sale. */
             fromPriceMinor: number | null;
+            /**
+             * @description Bookings that were paid for and not called off (§135.1). What `sort=popular`
+             *     ranks by, published so a client can SAY why a place is first.
+             */
+            bookingCount: number;
             /** @description Computed from today's hours — the one field that answers "can I go now". */
             openNow: boolean;
             /**
@@ -4792,6 +4817,42 @@ export interface components {
             center?: components["schemas"]["DiscoveryCentreDto"];
             radiusKm?: number;
             locations: components["schemas"]["DiscoveredLocationDto"][];
+        };
+        DiscoveredServiceLocationDto: {
+            id: string;
+            name: string;
+            district: {
+                id: string;
+                name: string;
+            };
+            ratingAvg: number | null;
+            ratingCount: number;
+            openNow: boolean;
+            /** @description Only when a position was sent. */
+            distanceKm?: number;
+        };
+        DiscoveredServiceDto: {
+            id: string;
+            name: string;
+            description: string | null;
+            durationMinutes: number;
+            currency: string;
+            /** @description This branch's price. */
+            priceMinor: number;
+            /** @description A decimal string, like every percentage here (§128.20). */
+            depositPercentage: string;
+            /** @description The cover photo (§132), or null — a client falls back to a category tile. */
+            imageUrl: string | null;
+            /** @description Paid, not-called-off bookings of this service at this branch (§135.1). */
+            bookingCount: number;
+            location: components["schemas"]["DiscoveredServiceLocationDto"];
+            business: components["schemas"]["DiscoveredBusinessDto"];
+        };
+        DiscoveredServicePageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            services: components["schemas"]["DiscoveredServiceDto"][];
         };
         ShopfrontCategoryDto: {
             id: string;
@@ -13607,7 +13668,7 @@ export interface operations {
                 lat?: number;
                 lng?: number;
                 radiusKm?: number;
-                sort?: "rating" | "price" | "distance" | "newest";
+                sort?: "rating" | "price" | "distance" | "newest" | "popular";
                 limit?: number;
                 offset?: number;
             };
@@ -13623,6 +13684,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DiscoveryPageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    DiscoveryController_searchServices: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Narrow to one province (§104). Matched through the district, so a branch
+                 *     with no district set is simply not returned — it has not said where it is.
+                 */
+                provinceId?: string;
+                /** @description Narrow to one district. The useful unit inside Kigali. */
+                districtId?: string;
+                /** @description Case-insensitive substring over business name, location name, service name. */
+                q?: string;
+                categoryId?: string;
+                subcategoryId?: string;
+                minRating?: number;
+                /** @description Against the location's CHEAPEST active service. */
+                maxPriceMinor?: number;
+                openNow?: boolean;
+                lat?: number;
+                lng?: number;
+                radiusKm?: number;
+                sort?: "rating" | "price" | "distance" | "newest" | "popular";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiscoveredServicePageDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
