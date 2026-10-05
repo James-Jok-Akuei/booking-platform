@@ -12881,3 +12881,11 @@ link. It is now built to be looked at:
 
 Where it leads is unchanged: back down to Home with the category (and kind)
 applied (§133.6).
+
+## 146. Service cards say where (2026-10-05)
+
+A service card on Home named the business and not where it is, and the same
+"Haircut · Kigali Barbers" is sold at two branches at two prices. Each card now
+has a line with a pin: the branch's own name ("Kimironko", with a trailing
+"Branch" dropped to fit), or its district when the branch is only named after
+the business. The distance (§139) moved onto the same line, on the right.

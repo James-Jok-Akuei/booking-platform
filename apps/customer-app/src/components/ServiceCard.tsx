@@ -37,6 +37,16 @@ export function ServiceCard({
   onPress: () => void;
 }) {
   const away = distanceLabel(service.location.distanceKm);
+  // "Kimironko Branch" says more than "Gasabo" to someone who knows the city,
+  // so the branch's own name is used when it has one; a branch that only
+  // repeats the business's name falls back to its district.
+  const shopName = service.business.name ?? service.location.name;
+  // "Branch" is dropped: on a card this narrow it is the word that pushes the
+  // actual place name off the end.
+  const place =
+    service.location.name !== shopName
+      ? service.location.name.replace(/\s+branch$/i, '')
+      : (service.location.district?.name ?? service.location.name);
   const rated = service.location.ratingCount > 0 && service.location.ratingAvg !== null;
 
   return (
@@ -73,11 +83,18 @@ export function ServiceCard({
         <Text style={styles.name} numberOfLines={2}>
           {service.name}
         </Text>
-        {/* Whose it is, and how far (§139) — the name gives way first, because
-            a distance cut short is not a distance. */}
-        <View style={styles.shopRow}>
-          <Text style={[styles.shop, styles.shopName]} numberOfLines={1}>
-            {service.business.name ?? service.location.name}
+        <Text style={styles.shop} numberOfLines={1}>
+          {service.business.name ?? service.location.name}
+        </Text>
+
+        {/* WHERE (§146): the branch, or its district when the branch is simply
+            named after the business — and how far, once that is known (§139).
+            The place gives way first, because a distance cut short is not a
+            distance. */}
+        <View style={styles.whereRow}>
+          <Icon name="location" size={11} color={theme.accent} />
+          <Text style={[styles.where, styles.whereName]} numberOfLines={1}>
+            {place}
           </Text>
           {away && (
             <Text style={styles.away} numberOfLines={1}>
@@ -154,8 +171,9 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 5, paddingTop: 8, paddingBottom: 5, gap: 2 },
   name: { fontFamily: font.bold, fontSize: 13.5, lineHeight: 17.5, color: theme.ink, minHeight: 35 },
   shop: { fontFamily: font.medium, fontSize: 11.5, color: theme.muted },
-  shopRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  shopName: { flexShrink: 1 },
+  whereRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  where: { fontFamily: font.semibold, fontSize: 11, color: theme.ink2 },
+  whereName: { flex: 1 },
   away: { flexShrink: 0, fontFamily: font.bold, fontSize: 11, color: theme.ink2 },
   price: { fontFamily: font.extrabold, fontSize: 14, color: theme.ink, marginTop: 4 },
   proof: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 16 },
