@@ -12426,3 +12426,24 @@ page of branches already fetched; the count beside "Places" is shown only when
 that page holds every branch, because otherwise the number of businesses is not
 known. Services are untouched: the same service at two branches is two
 different things to book.
+
+### 135.7 Tapping a service photo opens it properly
+
+`src/ui/PhotoViewer.tsx`. The photo does not appear, it travels: it lifts out of
+the thumbnail that was tapped and grows to the middle of a dimmed screen, and
+goes back to the same spot on closing. The thumbnail's position is measured
+from the thumbnail itself (`measureInWindow`), not worked out from the touch —
+the touch's offsets are not reported the same way on every platform, and a
+wrong origin silently cancelled the whole movement.
+
+- The photo is shown whole, at its own shape, as large as the screen allows.
+- Sideways moves between photos; a counter and a strip of small thumbnails say
+  where you are, and the strip jumps to any photo.
+- Three ways out: the cross, a tap on the dark, and dragging the photo down —
+  it shrinks and the page shows through as it goes.
+- After swiping to another photo there is no "right" thumbnail to return to, so
+  it settles back and fades instead.
+
+Built on the built-in `Animated` with the native driver, like the rest of the
+app; no new package. **Not built:** pinch-to-zoom, which needs a gesture
+library the app does not have.

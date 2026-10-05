@@ -15,6 +15,7 @@ import { FadeIn } from '../../src/ui/FadeIn';
 import { cheer } from '../../src/ui/haptic';
 import { Icon } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
+import { PhotoViewer, type ViewerOrigin } from '../../src/ui/PhotoViewer';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
@@ -68,6 +69,7 @@ export default function Book() {
   const money = useMoney();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
+  const [viewer, setViewer] = useState<{ index: number; origin: ViewerOrigin | null } | null>(null);
 
   const days = useMemo(() => nextDays(14), []);
   const [date, setDate] = useState(days[0]);
@@ -149,6 +151,12 @@ export default function Book() {
 
   return (
     <View style={styles.screen}>
+      <PhotoViewer
+        photos={service.images}
+        openAt={viewer?.index ?? null}
+        origin={viewer?.origin}
+        onClose={() => setViewer(null)}
+      />
       <TopBar title={service.name} subtitle={shop.data?.business.name ?? shop.data?.name} />
 
       <ScrollView
@@ -170,12 +178,41 @@ export default function Book() {
               style={styles.bleed}
               contentContainerStyle={styles.photoStrip}
             >
-              {service.images.map((photo) => (
-                <Image
+              {service.images.map((photo, index) => (
+                // Tapping a photo opens it properly (§135.7). Where the
+                // thumbnail sits on screen is measured at the tap, so the
+                // photo can grow out of exactly that spot.
+                <PressableScale
                   key={photo.id}
-                  source={{ uri: photo.url }}
-                  style={[styles.photo, { width: photoWidth, height: photoHeight }]}
-                />
+                  scaleTo={0.98}
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel={`Photo ${index + 1} of ${service.images.length}`}
+                  onPress={(e) => {
+                    // Asked of the thumbnail itself rather than worked out
+                    // from the touch: the touch's own offsets are not reported
+                    // the same way everywhere, and a wrong origin is worse
+                    // than none.
+                    const target = e.currentTarget as unknown as {
+                      measureInWindow?: (
+                        done: (x: number, y: number, w: number, h: number) => void,
+                      ) => void;
+                    };
+                    if (!target?.measureInWindow) return setViewer({ index, origin: null });
+                    target.measureInWindow((x, y, width, height) =>
+                      setViewer({
+                        index,
+                        origin: [x, y, width, height].every(Number.isFinite)
+                          ? { x, y, width, height }
+                          : null,
+                      }),
+                    );
+                  }}
+                >
+                  <Image
+                    source={{ uri: photo.url }}
+                    style={[styles.photo, { width: photoWidth, height: photoHeight }]}
+                  />
+                </PressableScale>
               ))}
             </ScrollView>
           </FadeIn>
