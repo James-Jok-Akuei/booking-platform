@@ -153,6 +153,9 @@ export const createService = (body: {
   description?: string;
   durationMinutes: number;
   depositPercentage: number;
+  /** §136. Left out, a service is booked one at a time. */
+  quantityMode?: Service['quantityMode'];
+  maxQuantity?: number;
   offers: Array<{ locationId: string; priceMinor: number }>;
 }) => api<Service>('/business/services', { method: 'POST', body });
 
@@ -163,6 +166,8 @@ export const updateService = (
     description: string;
     durationMinutes: number;
     depositPercentage: number;
+    quantityMode: Service['quantityMode'];
+    maxQuantity: number;
     isActive: boolean;
     /** REPLACES the branch list wholesale, like the week of hours. */
     offers: Array<{ locationId: string; priceMinor: number }>;

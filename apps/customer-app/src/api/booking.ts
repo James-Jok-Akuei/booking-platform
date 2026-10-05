@@ -21,6 +21,8 @@ export const createAppointment = (input: {
   locationId: string;
   serviceId: string;
   startTime: string;
+  /** How many (§136). Left out, it is one. */
+  quantity?: number;
 }) => api<Appointment>('/appointments', { method: 'POST', body: input });
 
 /**

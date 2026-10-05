@@ -130,9 +130,13 @@ export type Availability = components['schemas']['AvailabilityDto'];
 export const getAvailability = (
   locationId: string,
   date: string,
-  durationMinutes: number,
+  /**
+   * WHAT is being booked and how many (§136). The server works out how long
+   * that takes and how many places it needs; this screen never does.
+   */
+  what: { serviceId: string; quantity: number },
 ) =>
   api<Availability>(`/locations/${locationId}/availability`, {
-    query: { date, durationMinutes },
+    query: { date, ...what },
     anonymous: true,
   });

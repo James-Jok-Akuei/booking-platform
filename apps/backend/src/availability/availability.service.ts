@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import {
   MinuteInterval,
+  WeightedInterval,
   MINUTES_PER_DAY,
   SLOT_GRID_MINUTES,
   alignUpToGrid,
@@ -19,6 +20,11 @@ import {
   parseHhMm,
   zonedWallTimeToInstant,
 } from './time.util';
+import {
+  assertFitsInADay,
+  assertQuantityAllowed,
+  planQuantity,
+} from '../appointments/quantity';
 
 /**
  * Statuses that occupy a unit of a location's capacity.
@@ -105,6 +111,8 @@ export class AvailabilityService {
     date: Date,
     durationMinutes: number,
     viewerUserId?: string | null,
+    /** How many of the branch's places the booking needs at once (§136). */
+    unitsNeeded = 1,
   ): Promise<AvailabilityResult> {
     if (durationMinutes <= 0 || durationMinutes > MINUTES_PER_DAY) {
       throw new BadRequestException(
@@ -247,6 +255,7 @@ export class AvailabilityService {
       unavailability,
       location.capacity,
       date,
+      unitsNeeded,
     );
 
     return {
@@ -257,6 +266,63 @@ export class AvailabilityService {
       reason,
       slots: slots.map(formatHhMm),
     };
+  }
+
+  /**
+   * The same answer, asked the way a customer asks it: "when can I have THREE
+   * of this service?" (§136).
+   *
+   * The length and the number of places are worked out HERE, from the service's
+   * own rule and the branch's capacity, rather than sent by the client — a
+   * client that computed them itself would be a second implementation of
+   * `planQuantity`, and the slots it showed could differ from the ones booking
+   * accepts. The answer's `durationMinutes` is the whole booking's length, so
+   * the screen can say "90 minutes" without knowing why.
+   */
+  async getAvailabilityForService(
+    locationId: string,
+    date: Date,
+    serviceId: string,
+    quantity: number,
+    viewerUserId?: string | null,
+  ): Promise<AvailabilityResult> {
+    const [service, location] = await Promise.all([
+      this.prisma.service.findUnique({
+        where: { id: serviceId },
+        select: {
+          businessId: true,
+          durationMinutes: true,
+          quantityMode: true,
+          maxQuantity: true,
+        },
+      }),
+      this.prisma.location.findUnique({
+        where: { id: locationId },
+        select: { businessId: true, capacity: true },
+      }),
+    ]);
+    // One message for every way the pair can be wrong: a service id from
+    // another business is, to this caller, a service that does not exist.
+    if (!service || !location || service.businessId !== location.businessId) {
+      throw new NotFoundException('Service not found.');
+    }
+
+    assertQuantityAllowed(service, quantity);
+    const plan = planQuantity(
+      service.quantityMode,
+      quantity,
+      location.capacity,
+      service.durationMinutes,
+    );
+    assertFitsInADay(plan);
+
+    return this.getAvailability(
+      locationId,
+      date,
+      plan.durationMinutes,
+      viewerUserId,
+      plan.capacityUnits,
+    );
   }
 
   /**
@@ -277,13 +343,20 @@ export class AvailabilityService {
     locationId: string,
     startInstant: Date,
     durationMinutes: number,
+    unitsNeeded = 1,
   ): Promise<{ slots: string[]; localStart: string; date: string }> {
     const { date, minutesSinceMidnight } = instantToZonedParts(
       startInstant,
       this.timeZone,
     );
 
-    const availability = await this.getAvailability(locationId, date, durationMinutes);
+    const availability = await this.getAvailability(
+      locationId,
+      date,
+      durationMinutes,
+      undefined,
+      unitsNeeded,
+    );
 
     return {
       slots: availability.slots,
@@ -299,15 +372,16 @@ export class AvailabilityService {
    *   service for a period, regardless of capacity: "the owner is away
    *   2pm-4pm" does not mean one of four chairs is busy, it means the place is
    *   shut. One closure removes the time no matter how large capacity is.
-   * - **appointments** — each consumes ONE unit of capacity. A slot survives
-   *   while fewer than `capacity` of them overlap it.
+   * - **appointments** — each consumes its own `capacityUnits` (one, unless it
+   *   is for several people, §136). A slot survives while the places taken by
+   *   everything overlapping it leave room for the booking being asked about.
    *
    * Both are reduced to minutes since local midnight before being compared.
    */
   private async collectUnavailability(
     locationId: string,
     date: Date,
-  ): Promise<{ closures: MinuteInterval[]; appointments: MinuteInterval[] }> {
+  ): Promise<{ closures: MinuteInterval[]; appointments: WeightedInterval[] }> {
     const dayStart = zonedWallTimeToInstant(date, 0, this.timeZone);
     const dayEnd = zonedWallTimeToInstant(date, MINUTES_PER_DAY, this.timeZone);
 
@@ -322,7 +396,7 @@ export class AvailabilityService {
           startTime: { lt: dayEnd },
           endTime: { gt: dayStart },
         },
-        select: { startTime: true, endTime: true },
+        select: { startTime: true, endTime: true, capacityUnits: true },
       }),
     ]);
 
@@ -335,7 +409,7 @@ export class AvailabilityService {
       }
     }
 
-    const booked: MinuteInterval[] = [];
+    const booked: WeightedInterval[] = [];
     for (const appointment of appointments) {
       // Offset from local midnight, then clamped to the day. An appointment
       // spilling over either edge occupies only the part on this date.
@@ -344,6 +418,7 @@ export class AvailabilityService {
       booked.push({
         start: Math.max(0, start),
         end: Math.min(MINUTES_PER_DAY, end),
+        units: appointment.capacityUnits,
       });
     }
 
@@ -357,9 +432,10 @@ export class AvailabilityService {
     openMinutes: number,
     closeMinutes: number,
     durationMinutes: number,
-    unavailability: { closures: MinuteInterval[]; appointments: MinuteInterval[] },
+    unavailability: { closures: MinuteInterval[]; appointments: WeightedInterval[] },
     capacity: number,
     date: Date,
+    unitsNeeded = 1,
   ): number[] {
     // A slot may only start in the past-cutoff future. Computed once per call
     // so every slot is judged against the same instant.
@@ -388,12 +464,15 @@ export class AvailabilityService {
         continue;
       }
 
-      // Appointments each take one unit. The slot survives while strictly
-      // fewer than `capacity` of them overlap the window being offered.
-      const concurrent = unavailability.appointments.filter((interval) =>
-        overlaps(candidate, interval),
-      ).length;
-      if (concurrent >= capacity) {
+      // Each appointment takes its own number of places (§136) — one, unless
+      // it is for several people. The slot survives while the places already
+      // taken by everything overlapping the window leave room for the places
+      // this booking needs. With one needed and one each, this is exactly the
+      // old "fewer than capacity overlap" rule.
+      const taken = unavailability.appointments
+        .filter((interval) => overlaps(candidate, interval))
+        .reduce((sum, interval) => sum + interval.units, 0);
+      if (taken + unitsNeeded > capacity) {
         continue;
       }
 

@@ -226,6 +226,11 @@ export default function Booking() {
         <FadeIn style={styles.ticket}>
           <Pill label={status.label} tone={status.tone} dot={a.status === 'BOOKED'} />
           <Text style={[type.title, styles.ticketTitle]}>{a.service.name}</Text>
+          {a.quantity > 1 && (
+            <Text style={type.body}>
+              {a.service.quantityMode === 'PEOPLE' ? `For ${a.quantity} people` : `× ${a.quantity}`}
+            </Text>
+          )}
 
           <View style={styles.fact}>
             <View style={styles.factIcon}>

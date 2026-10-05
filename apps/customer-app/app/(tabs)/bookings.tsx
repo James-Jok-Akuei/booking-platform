@@ -177,6 +177,7 @@ function BookingRow({
         <View style={styles.rowTop}>
           <Text style={styles.service} numberOfLines={1}>
             {item.service.name}
+            {item.quantity > 1 ? ` × ${item.quantity}` : ''}
           </Text>
           <Icon name="chevron-forward" size={16} color={theme.muted} />
         </View>

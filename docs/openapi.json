@@ -5467,6 +5467,27 @@
               "default": 15,
               "type": "number"
             }
+          },
+          {
+            "name": "serviceId",
+            "required": false,
+            "in": "query",
+            "description": "Ask about a SERVICE instead of a length (§136). When sent, the server works\nout how long the booking is and how many places it needs from the service\nand `quantity`, and `durationMinutes` above is ignored.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "quantity",
+            "required": false,
+            "in": "query",
+            "description": "How many of `serviceId`. Only read alongside it.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 20,
+              "type": "number"
+            }
           }
         ],
         "responses": {
@@ -14380,6 +14401,21 @@
             "minimum": 0,
             "maximum": 100
           },
+          "quantityMode": {
+            "type": "string",
+            "description": "Whether one booking may be for more than one, and what \"more\" means (§136).\nLeft out, a service is booked one at a time — what every service was.",
+            "enum": [
+              "SINGLE",
+              "PEOPLE",
+              "UNITS"
+            ]
+          },
+          "maxQuantity": {
+            "type": "number",
+            "description": "The most one booking may ask for. Ignored (stored as 1) when SINGLE.",
+            "minimum": 1,
+            "maximum": 20
+          },
           "isActive": {
             "type": "boolean"
           }
@@ -14475,6 +14511,19 @@
             "type": "string",
             "description": "A decimal STRING — \"20\", not 20 (§56)."
           },
+          "quantityMode": {
+            "description": "Whether a booking may be for more than one, and what \"more\" means (§136).",
+            "enum": [
+              "SINGLE",
+              "PEOPLE",
+              "UNITS"
+            ],
+            "type": "string"
+          },
+          "maxQuantity": {
+            "type": "number",
+            "description": "The most one booking may ask for; 1 when `SINGLE`."
+          },
           "isActive": {
             "type": "boolean",
             "description": "False means RETIRED, never deleted (§74, §101)."
@@ -14507,6 +14556,8 @@
           "durationMinutes",
           "currency",
           "depositPercentage",
+          "quantityMode",
+          "maxQuantity",
           "isActive",
           "createdAt",
           "updatedAt",
@@ -14544,6 +14595,21 @@
             "description": "Share of the price the customer pays up front to hold the slot.\n\nThe lower bound is NOT expressed here: it is the live platform fee from\nPlatformSetting, which an admin can change at runtime, so validating it\nneeds a database read and happens in ServicesService.",
             "minimum": 0,
             "maximum": 100
+          },
+          "quantityMode": {
+            "description": "Whether one booking may be for more than one, and what \"more\" means (§136).\nLeft out, a service is booked one at a time — what every service was.",
+            "enum": [
+              "SINGLE",
+              "PEOPLE",
+              "UNITS"
+            ],
+            "type": "string"
+          },
+          "maxQuantity": {
+            "type": "number",
+            "description": "The most one booking may ask for. Ignored (stored as 1) when SINGLE.",
+            "minimum": 1,
+            "maximum": 20
           },
           "isActive": {
             "type": "boolean"
@@ -14610,6 +14676,19 @@
             "type": "string",
             "description": "A decimal string (§128.20)."
           },
+          "quantityMode": {
+            "type": "string",
+            "description": "Whether a booking may be for more than one, and what \"more\" means (§136).",
+            "enum": [
+              "SINGLE",
+              "PEOPLE",
+              "UNITS"
+            ]
+          },
+          "maxQuantity": {
+            "type": "number",
+            "description": "The most one booking may ask for; 1 when `SINGLE`."
+          },
           "isActive": {
             "type": "boolean",
             "description": "False once retired. The row is kept so past appointments still resolve."
@@ -14629,6 +14708,8 @@
           "durationMinutes",
           "currency",
           "depositPercentage",
+          "quantityMode",
+          "maxQuantity",
           "isActive",
           "createdAt",
           "updatedAt"
@@ -15708,6 +15789,12 @@
           "startTime": {
             "type": "string",
             "description": "Requested start, as an ISO-8601 instant (e.g. \"2026-09-15T07:00:00.000Z\").\n\nOnly the start is accepted. endTime is derived server-side from the\nservice's durationMinutes — letting a client send it would let them book a\n15-minute slot for a 4-hour service."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "How many (§136). Left out, it is one — what every booking was.\n\nWhat it MEANS is the service's to say: people, or units of the thing. The\nservice's own maximum is checked in the service, where the row is loaded;\nthe 20 here only bounds the type.",
+            "minimum": 1,
+            "maximum": 20
           }
         },
         "required": [
@@ -15751,12 +15838,22 @@
           "durationMinutes": {
             "type": "number",
             "description": "The NAME only. The live price is deliberately not joined here (§30)."
+          },
+          "quantityMode": {
+            "type": "string",
+            "description": "What `quantity` on the appointment counts: people, or units (§136).",
+            "enum": [
+              "SINGLE",
+              "PEOPLE",
+              "UNITS"
+            ]
           }
         },
         "required": [
           "id",
           "name",
-          "durationMinutes"
+          "durationMinutes",
+          "quantityMode"
         ]
       },
       "AppointmentCustomerDto": {
@@ -15814,6 +15911,14 @@
             "type": "number",
             "nullable": true,
             "description": "The price agreed at booking, not today's. Null on appointments made before\nthat snapshot existed — and null is the honest answer there, because the\nlive price is a different number (§30)."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "How many were booked (§136). `servicePriceMinor` above is the price of ALL\nof them; `unitPriceMinor` is the price of one, null on the same old rows."
+          },
+          "unitPriceMinor": {
+            "type": "number",
+            "nullable": true
           },
           "depositPercentage": {
             "type": "string",
@@ -15914,6 +16019,8 @@
           "businessAmountMinor",
           "currency",
           "servicePriceMinor",
+          "quantity",
+          "unitPriceMinor",
           "depositPercentage",
           "platformFeePercentage",
           "paymentProviderReferenceId",
@@ -16006,6 +16113,14 @@
             "type": "number",
             "nullable": true,
             "description": "The price agreed at booking, not today's. Null on appointments made before\nthat snapshot existed — and null is the honest answer there, because the\nlive price is a different number (§30)."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "How many were booked (§136). `servicePriceMinor` above is the price of ALL\nof them; `unitPriceMinor` is the price of one, null on the same old rows."
+          },
+          "unitPriceMinor": {
+            "type": "number",
+            "nullable": true
           },
           "depositPercentage": {
             "type": "string",
@@ -16120,6 +16235,8 @@
           "businessAmountMinor",
           "currency",
           "servicePriceMinor",
+          "quantity",
+          "unitPriceMinor",
           "depositPercentage",
           "platformFeePercentage",
           "paymentProviderReferenceId",
@@ -19898,7 +20015,21 @@
             "description": "A decimal string, like every percentage here (§128.20)."
           },
           "priceMinor": {
-            "type": "number"
+            "type": "number",
+            "description": "The price of ONE. A booking of several costs this times how many (§136)."
+          },
+          "quantityMode": {
+            "type": "string",
+            "description": "Whether a booking may be for more than one, and what \"more\" means (§136):\n`PEOPLE` asks \"how many people?\", `UNITS` asks \"how many?\", and `SINGLE`\nasks nothing.",
+            "enum": [
+              "SINGLE",
+              "PEOPLE",
+              "UNITS"
+            ]
+          },
+          "maxQuantity": {
+            "type": "number",
+            "description": "The most one booking may ask for; 1 when `SINGLE`."
           },
           "images": {
             "description": "Photos of the service, cover first (§132). Empty is normal — a service\nwithout photos is one nobody has photographed yet, not a broken one, and a\nclient should fall back to the shop's own picture rather than a gap.",
@@ -19916,6 +20047,8 @@
           "currency",
           "depositPercentage",
           "priceMinor",
+          "quantityMode",
+          "maxQuantity",
           "images"
         ]
       },

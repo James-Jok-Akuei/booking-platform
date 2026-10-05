@@ -18,6 +18,9 @@ export const APPOINTMENT_SELECT = {
   businessAmountMinor: true,
   currency: true,
   servicePriceMinor: true,
+  // How many, and the price of one (§136).
+  quantity: true,
+  unitPriceMinor: true,
   depositPercentage: true,
   platformFeePercentage: true,
   paymentProviderReferenceId: true,
@@ -51,7 +54,7 @@ export const APPOINTMENT_SELECT = {
   //
   // The NAME stays joined deliberately: a renamed service makes the label drift,
   // which is cosmetic. A reprice makes the number wrong, which is not.
-  service: { select: { id: true, name: true, durationMinutes: true } },
+  service: { select: { id: true, name: true, durationMinutes: true, quantityMode: true } },
   customer: { select: { id: true, email: true } },
 } as const;
 

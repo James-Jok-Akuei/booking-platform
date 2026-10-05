@@ -12468,3 +12468,84 @@ because branches that predate districts had to stay saveable; that reason does
 not cover a branch being created today, and an optional field is exactly how a
 real business would end up invisible the way the demo did. The API still
 accepts a branch without one, and editing an old branch is unchanged.
+
+## 136. Booking more than one (2026-10-05)
+
+A booking was always one person, one service, one slot: a mother wanting
+haircuts for herself and two children booked three times and paid three
+deposits. A booking now carries a QUANTITY.
+
+### 136.1 The service says what "three" means
+
+`Service.quantityMode`, chosen by the business, because the same number means
+different things:
+
+| Mode | Example | Price | Time | Places in the shop |
+|---|---|---|---|---|
+| `SINGLE` (default) | every service before this | × 1 | as set | 1 |
+| `PEOPLE` | 3 haircuts | × how many | see 136.2 | see 136.2 |
+| `UNITS` | 3 passport photos | × how many | as set | 1 |
+
+`Service.maxQuantity` is the most one booking may ask for: 1 for `SINGLE`,
+2–20 otherwise. A CHECK constraint holds the two columns together and
+`normaliseQuantityRule` makes them agree before a write. Every existing
+service is `SINGLE`, so nothing changes until a business opts in.
+
+### 136.2 People are served side by side, then in rounds
+
+`planQuantity`, in `appointments/quantity.ts`:
+
+    places taken = min(people, branch capacity)
+    rounds       = ceil(people / places taken)
+    time         = rounds × the service's length
+
+Three 30-minute haircuts are 30 minutes in a four-chair salon (3 places), 60
+across two chairs, and 90 back to back in a one-chair barbershop. No business
+configures which; it follows from the capacity they already set (§16.4).
+
+**Rejected: refusing a group larger than the capacity.** Simpler, and it would
+make every one-chair shop — most of them — unable to take a parent and a child
+in one booking, which is the case that prompted this.
+
+**Not built: quantity that lengthens a UNITS booking** ("2 hours of massage").
+A business sells that today as a second, longer service.
+
+### 136.3 Availability counts places
+
+An appointment stores `capacityUnits`, the places it occupies. A slot is
+offered while `places already taken + places needed ≤ capacity`; with one each
+that is exactly the old rule. `GET /locations/:id/availability` takes
+`serviceId` and `quantity` and works out length and places ITSELF, with the
+same function booking uses, so a client never computes them and the times
+offered are the times accepted. The answer's `durationMinutes` is the whole
+booking's length.
+
+### 136.4 The money is the total
+
+`servicePriceMinor` on an appointment is now the price of the WHOLE booking,
+and the new `unitPriceMinor` is the price of one. Chosen that way round so
+everything that already reads `servicePriceMinor` — the balance due at the
+shop, the analytics sums — stays right without being touched. The deposit and
+the platform fee are taken on the total, multiplied before the percentages so
+three is never three separately rounded deposits.
+
+`quantity`, `capacityUnits` and `unitPriceMinor` are snapshots, like the money:
+a business changing its rule later does not rewrite a booking already made.
+
+### 136.5 Screens
+
+- **Business:** the service form asks "Can a customer book more than one?" with
+  the three answers in plain words, and "Most in one booking". Bookings show
+  "· 3 people" or "× 3", and their real length.
+- **Customer:** the booking screen shows a − / + picker only where the service
+  allows more than one, worded "How many people?" or "How many?". The total,
+  the deposit, the length and the free times all follow it; changing it clears
+  a chosen time, because a time free for two may not be free for three.
+
+### 136.6 Left out, knowingly
+
+- A half-written service saved as a DRAFT (§123) does not keep the quantity
+  choice; it comes back as "one per booking".
+- Emails and notifications do not mention the quantity.
+- The demo "Haircut" was switched to several-people (max 5) in the dev
+  database by hand, to have something to try; `seed-demo` is unchanged.

@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
@@ -14,6 +15,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { QuantityMode } from '@prisma/client';
 import { MaxDecimalPlaces } from '../../common/validators/max-decimal-places.validator';
 
 /** One branch's offer of a service, at that branch's price (§72). */
@@ -77,6 +79,21 @@ export class CreateServiceDto {
   @Min(0)
   @Max(100)
   depositPercentage?: number;
+
+  /**
+   * Whether one booking may be for more than one, and what "more" means (§136).
+   * Left out, a service is booked one at a time — what every service was.
+   */
+  @IsOptional()
+  @IsEnum(QuantityMode)
+  quantityMode?: QuantityMode;
+
+  /** The most one booking may ask for. Ignored (stored as 1) when SINGLE. */
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(20)
+  maxQuantity?: number;
 
   @IsOptional()
   @IsBoolean()

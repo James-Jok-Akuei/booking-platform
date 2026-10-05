@@ -1,4 +1,4 @@
-import { MediaStatus, MediaType, Prisma } from '@prisma/client';
+import { MediaStatus, MediaType, Prisma, QuantityMode } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import { BusinessServiceDto } from './business-response.dto';
@@ -151,6 +151,10 @@ export class ServiceDto implements ServiceRow {
   currency!: string;
   /** A decimal string (§128.20). */
   depositPercentage!: string;
+  /** Whether a booking may be for more than one, and what "more" means (§136). */
+  quantityMode!: QuantityMode;
+  /** The most one booking may ask for; 1 when `SINGLE`. */
+  maxQuantity!: number;
   /** False once retired. The row is kept so past appointments still resolve. */
   isActive!: boolean;
   createdAt!: string;

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Matches, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsUUID, Matches, Max, Min } from 'class-validator';
 import { MINUTES_PER_DAY, SLOT_GRID_MINUTES } from '../time.util';
 
 export class AvailabilityQueryDto {
@@ -23,4 +23,21 @@ export class AvailabilityQueryDto {
   @Min(1)
   @Max(MINUTES_PER_DAY)
   durationMinutes?: number = SLOT_GRID_MINUTES;
+
+  /**
+   * Ask about a SERVICE instead of a length (§136). When sent, the server works
+   * out how long the booking is and how many places it needs from the service
+   * and `quantity`, and `durationMinutes` above is ignored.
+   */
+  @IsOptional()
+  @IsUUID()
+  serviceId?: string;
+
+  /** How many of `serviceId`. Only read alongside it. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(20)
+  quantity?: number;
 }

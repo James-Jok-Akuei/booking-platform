@@ -63,6 +63,16 @@ export class AvailabilityController {
       throw new BadRequestException(`"${query.date}" is not a valid calendar date.`);
     }
 
+    if (query.serviceId) {
+      return this.availability.getAvailabilityForService(
+        locationId,
+        date,
+        query.serviceId,
+        query.quantity ?? 1,
+        user?.userId,
+      );
+    }
+
     return this.availability.getAvailability(
       locationId,
       date,

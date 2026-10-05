@@ -1,4 +1,4 @@
-import { MediaType } from '@prisma/client';
+import { MediaType, QuantityMode } from '@prisma/client';
 import { ServiceImageRefDto } from '../../business/dto/business-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
@@ -195,7 +195,17 @@ export class ShopfrontServiceDto {
   currency!: string;
   /** A decimal string, like every percentage here (§128.20). */
   depositPercentage!: string;
+  /** The price of ONE. A booking of several costs this times how many (§136). */
   priceMinor!: number;
+
+  /**
+   * Whether a booking may be for more than one, and what "more" means (§136):
+   * `PEOPLE` asks "how many people?", `UNITS` asks "how many?", and `SINGLE`
+   * asks nothing.
+   */
+  quantityMode!: QuantityMode;
+  /** The most one booking may ask for; 1 when `SINGLE`. */
+  maxQuantity!: number;
 
   /**
    * Photos of the service, cover first (§132). Empty is normal — a service

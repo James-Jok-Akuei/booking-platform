@@ -18,6 +18,7 @@ import { useLayout } from '../../src/ui/layout';
 import { PhotoViewer, type ViewerOrigin } from '../../src/ui/PhotoViewer';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
+import { Stepper } from '../../src/ui/Stepper';
 import { TopBar } from '../../src/ui/TopBar';
 
 /**
@@ -74,13 +75,16 @@ export default function Book() {
   const days = useMemo(() => nextDays(14), []);
   const [date, setDate] = useState(days[0]);
   const [slot, setSlot] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const service = shop.data?.services.find((s) => s.id === serviceId);
 
   const availability = useQuery({
-    queryKey: ['availability', id, date, service?.durationMinutes],
-    queryFn: () => getAvailability(id, date, service!.durationMinutes),
+    // Asked again for every quantity: three people need three places, or
+    // three turns, and the free times are different either way (§136).
+    queryKey: ['availability', id, date, serviceId, quantity],
+    queryFn: () => getAvailability(id, date, { serviceId, quantity }),
     enabled: Boolean(service),
   });
 
@@ -92,6 +96,7 @@ export default function Book() {
         // The shop's wall clock, sent as-is. The server knows the location's
         // zone and resolves it; converting here would shift the booking.
         startTime: `${date}T${slot}:00`,
+        ...(quantity > 1 ? { quantity } : {}),
       }),
     onSuccess: (appointment) => {
       cheer();
@@ -127,9 +132,15 @@ export default function Book() {
     );
   }
 
-  const depositMinor = Math.round(
-    (service.priceMinor * Number(service.depositPercentage)) / 100,
-  );
+  // Everything is for the WHOLE booking (§136): the price is one times how
+  // many, and the deposit is its share of that total.
+  const several = service.quantityMode !== 'SINGLE';
+  const people = service.quantityMode === 'PEOPLE';
+  const totalMinor = service.priceMinor * quantity;
+  const depositMinor = Math.round((totalMinor * Number(service.depositPercentage)) / 100);
+  // How long the whole booking takes comes from the server, which knows how
+  // many places the shop has. Until it answers, one sitting is the best guess.
+  const minutes = availability.data?.durationMinutes ?? service.durationMinutes;
   const slots = availability.data?.slots ?? [];
 
   // Even columns that fill the row: four on a normal phone, three on a narrow
@@ -258,13 +269,18 @@ export default function Book() {
           <View style={styles.line}>
             <Icon name="time-outline" size={15} color={theme.muted} />
             <Text style={type.small}>
-              {service.durationMinutes} minutes at {shop.data?.name}
+              {minutes} minutes at {shop.data?.name}
             </Text>
           </View>
           <View style={styles.priceRow}>
-            <Text style={styles.price}>{money.format(service.priceMinor, service.currency)}</Text>
+            <Text style={styles.price}>{money.format(totalMinor, service.currency)}</Text>
             <Text style={type.small}>total</Text>
           </View>
+          {quantity > 1 && (
+            <Text style={type.small}>
+              {quantity} × {money.format(service.priceMinor, service.currency)}
+            </Text>
+          )}
           {/* The split is stated before anything is chosen. It is the part
               people get wrong about a deposit. */}
           <View style={styles.depositNote}>
@@ -275,6 +291,29 @@ export default function Book() {
             </Text>
           </View>
         </FadeIn>
+
+        {/* HOW MANY, asked only where the shop allows more than one, and in
+            the shop's own sense of it (§136): people for a haircut, just a
+            number for passport photos. Before the day and the time, because
+            the answer changes which times are free. */}
+        {several && (
+          <FadeIn delay={70} style={[styles.card, styles.howMany]}>
+            <View style={styles.flex}>
+              <Text style={type.subheading}>{people ? 'How many people?' : 'How many?'}</Text>
+              <Text style={type.small}>Up to {service.maxQuantity} in one booking</Text>
+            </View>
+            <Stepper
+              value={quantity}
+              max={service.maxQuantity}
+              label={people ? 'people' : 'items'}
+              onChange={(next) => {
+                setQuantity(next);
+                // A time that was free for two may not be free for three.
+                setSlot(null);
+              }}
+            />
+          </FadeIn>
+        )}
 
         <FadeIn delay={100} style={styles.group}>
           <Text style={type.heading}>Which day?</Text>
@@ -414,6 +453,7 @@ const styles = StyleSheet.create({
   },
   shopText: { flex: 1, gap: 1 },
   shopLink: { fontFamily: font.bold, fontSize: 13, color: theme.accent },
+  howMany: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 7, marginTop: 6 },
   price: { fontFamily: font.extrabold, fontSize: 26, color: theme.ink, letterSpacing: -0.5 },

@@ -415,6 +415,9 @@ describe('Money invariant: platformFee + business === deposit', () => {
           where: { id: legacyId },
           data: {
             servicePriceMinor: null,
+            // The price of ONE is a snapshot too (§136), and equally absent on
+            // a row this old — the migration copies it from the column above.
+            unitPriceMinor: null,
             depositPercentage: null,
             platformFeePercentage: null,
           },
@@ -440,6 +443,8 @@ describe('Money invariant: platformFee + business === deposit', () => {
           'durationMinutes',
           'id',
           'name',
+          // What the quantity counts (§136). A rule, not a price.
+          'quantityMode',
         ]);
         expect(JSON.stringify(list)).not.toContain('9999');
       });

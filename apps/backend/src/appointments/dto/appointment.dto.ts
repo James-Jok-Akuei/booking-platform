@@ -1,4 +1,4 @@
-import { AppointmentStatus, CancelledBy, Prisma } from '@prisma/client';
+import { AppointmentStatus, CancelledBy, Prisma, QuantityMode } from '@prisma/client';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import {
   APPOINTMENT_SELECT,
@@ -43,6 +43,8 @@ export class AppointmentServiceDto {
   name!: string;
   /** The NAME only. The live price is deliberately not joined here (§30). */
   durationMinutes!: number;
+  /** What `quantity` on the appointment counts: people, or units (§136). */
+  quantityMode!: QuantityMode;
 }
 
 export class AppointmentCustomerDto {
@@ -77,6 +79,12 @@ export class AppointmentDto implements AppointmentPayload {
    * live price is a different number (§30).
    */
   servicePriceMinor!: number | null;
+  /**
+   * How many were booked (§136). `servicePriceMinor` above is the price of ALL
+   * of them; `unitPriceMinor` is the price of one, null on the same old rows.
+   */
+  quantity!: number;
+  unitPriceMinor!: number | null;
   depositPercentage!: string | null;
   platformFeePercentage!: string | null;
 

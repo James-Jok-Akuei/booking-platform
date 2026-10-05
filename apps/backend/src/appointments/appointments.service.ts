@@ -35,6 +35,7 @@ import {
 import { zonedWallTimeToInstant } from '../availability/time.util';
 import { AvailabilityService } from '../availability/availability.service';
 import { computeAppointmentAmounts } from './appointment-pricing';
+import { assertFitsInADay, assertQuantityAllowed, planQuantity } from './quantity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ChatService } from '../chat/chat.service';
 import { LedgerService } from '../ledger/ledger.service';
@@ -233,6 +234,8 @@ export class AppointmentsService {
         isActive: true,
         durationMinutes: true,
         depositPercentage: true,
+        quantityMode: true,
+        maxQuantity: true,
         name: true,
         // The offer AT THIS BRANCH, which is where the price lives (§72). A
         // service with no row here is not sold at this location, however much
@@ -253,6 +256,7 @@ export class AppointmentsService {
         name: true,
         address: true,
         isActive: true,
+        capacity: true,
         business: { select: { status: true, pausedAt: true } },
       },
     });
@@ -293,14 +297,31 @@ export class AppointmentsService {
       throw new BadRequestException('That service is no longer available.');
     }
 
+    // How many, and what that costs the branch in time and places (§136).
+    // Worked out by the same function availability used to offer the slot.
+    const quantity = dto.quantity ?? 1;
+    assertQuantityAllowed(service, quantity);
+    const plan = planQuantity(
+      service.quantityMode,
+      quantity,
+      location.capacity,
+      service.durationMinutes,
+    );
+    assertFitsInADay(plan);
+
     // endTime is derived, never taken from the client.
-    const endTime = new Date(startTime.getTime() + service.durationMinutes * 60_000);
+    const endTime = new Date(startTime.getTime() + plan.durationMinutes * 60_000);
+
+    // The price of the whole booking. Multiplied BEFORE the percentages are
+    // applied, so the deposit of three is the deposit on the total rather than
+    // three separately rounded deposits that can differ from it by a unit.
+    const totalPriceMinor = offer.priceMinor * quantity;
 
     // Read live, at this instant: the fee an admin sets later must not change
     // what this customer agreed to.
     const platformFeePercentage = await this.settings.getPlatformFeePercentage();
     const amounts = computeAppointmentAmounts(
-      offer.priceMinor,
+      totalPriceMinor,
       service.depositPercentage,
       platformFeePercentage,
     );
@@ -315,7 +336,12 @@ export class AppointmentsService {
 
       // Re-check availability inside the lock. The client's view may be stale
       // or fabricated, so the server never trusts it.
-      await this.assertSlotBookable(dto.locationId, startTime, service.durationMinutes);
+      await this.assertSlotBookable(
+        dto.locationId,
+        startTime,
+        plan.durationMinutes,
+        plan.capacityUnits,
+      );
 
       return tx.appointment.create({
         data: {
@@ -328,7 +354,11 @@ export class AppointmentsService {
           ...amounts,
           // The inputs those amounts came from, recorded alongside them. Same
           // values, same transaction — this changes no arithmetic.
-          servicePriceMinor: offer.priceMinor,
+          // The WHOLE booking's price (§136); one unit's is beside it.
+          servicePriceMinor: totalPriceMinor,
+          unitPriceMinor: offer.priceMinor,
+          quantity,
+          capacityUnits: plan.capacityUnits,
           depositPercentage: service.depositPercentage,
           platformFeePercentage,
           // Both written from the same generated value, in the same statement:
@@ -411,11 +441,13 @@ export class AppointmentsService {
     locationId: string,
     startTime: Date,
     durationMinutes: number,
+    capacityUnits = 1,
   ) {
     const { slots, localStart } = await this.availability.getBookableStartTimes(
       locationId,
       startTime,
       durationMinutes,
+      capacityUnits,
     );
 
     if (!slots.includes(localStart)) {

@@ -137,6 +137,11 @@ export function zonedWallTimeToInstant(
 }
 
 /** A half-open interval [start, end) in minutes since local midnight. */
+/** An interval that occupies some of a branch's places (§136). */
+export interface WeightedInterval extends MinuteInterval {
+  units: number;
+}
+
 export interface MinuteInterval {
   start: number;
   end: number;

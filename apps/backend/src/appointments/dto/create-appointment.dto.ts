@@ -1,4 +1,4 @@
-import { IsDateString, IsUUID } from 'class-validator';
+import { IsDateString, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateAppointmentDto {
   @IsUUID()
@@ -16,4 +16,17 @@ export class CreateAppointmentDto {
    */
   @IsDateString({}, { message: 'startTime must be an ISO-8601 date-time string.' })
   startTime!: string;
+
+  /**
+   * How many (§136). Left out, it is one — what every booking was.
+   *
+   * What it MEANS is the service's to say: people, or units of the thing. The
+   * service's own maximum is checked in the service, where the row is loaded;
+   * the 20 here only bounds the type.
+   */
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(20)
+  quantity?: number;
 }

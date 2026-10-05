@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, QuantityMode } from '@prisma/client';
+import { normaliseQuantityRule } from '../appointments/quantity';
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
@@ -96,7 +97,11 @@ export class ServicesService {
       dto.offers.map((offer) => offer.locationId),
     );
 
-    const { offers, ...fields } = dto;
+    const { offers, quantityMode, maxQuantity, ...fields } = dto;
+    const quantityRule = normaliseQuantityRule(
+      quantityMode ?? QuantityMode.SINGLE,
+      maxQuantity,
+    );
 
     // The service, its branch offers and every affected location's headline
     // price commit together (§44). A catalogue that has changed while the
@@ -111,6 +116,7 @@ export class ServicesService {
           businessId,
           currency: INTERNAL_CURRENCY,
           ...fields,
+          ...quantityRule,
           locations: {
             create: offers.map((offer) => ({
               locationId: offer.locationId,
@@ -145,7 +151,25 @@ export class ServicesService {
     // patch: an update can also flip `isActive` back on, which changes the
     // cheapest price without touching a price field. Checking which fields
     // moved would be a second place to get the rule right.
-    const { offers, ...fields } = dto;
+    const { offers, quantityMode, maxQuantity, ...rest } = dto;
+
+    // The rule is two columns that must agree (§136), so a patch naming either
+    // is completed from the stored row before it is checked — sending only a
+    // new maximum must not need the mode repeated, and must not slip past it.
+    let fields: typeof rest & Partial<ReturnType<typeof normaliseQuantityRule>> = rest;
+    if (quantityMode !== undefined || maxQuantity !== undefined) {
+      const current = await this.prisma.service.findUniqueOrThrow({
+        where: { id: serviceId },
+        select: { quantityMode: true, maxQuantity: true },
+      });
+      fields = {
+        ...rest,
+        ...normaliseQuantityRule(
+          quantityMode ?? current.quantityMode,
+          maxQuantity ?? current.maxQuantity,
+        ),
+      };
+    }
 
     if (offers) {
       await this.assertOwnsLocations(
