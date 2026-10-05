@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Animated, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -21,6 +21,7 @@ import { IconButton } from '../../src/ui/IconButton';
 import { useLayout } from '../../src/ui/layout';
 import { Pill } from '../../src/ui/Pill';
 import { PressableScale } from '../../src/ui/PressableScale';
+import { Segmented } from '../../src/ui/Segmented';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { Stars } from '../../src/ui/Stars';
 import { TopBar } from '../../src/ui/TopBar';
@@ -57,6 +58,7 @@ export default function Shop() {
   const insets = useSafeAreaInsets();
   const layout = useLayout();
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [tab, setTab] = useState<'services' | 'hours' | 'reviews'>('services');
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const reviews = useQuery({
@@ -255,8 +257,26 @@ export default function Shop() {
               </FadeIn>
             )}
 
-            <FadeIn delay={160} style={styles.section}>
-              <Text style={type.heading}>What they do</Text>
+            {/* Three views of one shop, switched rather than stacked (§138). A
+                shop with a long list of services pushed its hours and reviews
+                a long scroll down, where most people never reached them. */}
+            <FadeIn delay={160}>
+              <Segmented
+                value={tab}
+                onChange={setTab}
+                options={[
+                  { value: 'services', label: 'What they do' },
+                  { value: 'hours', label: 'Open hours' },
+                  {
+                    value: 'reviews',
+                    label: reviews.data?.total ? `Reviews (${reviews.data.total})` : 'Reviews',
+                  },
+                ]}
+              />
+            </FadeIn>
+
+            {tab === 'services' && (
+            <FadeIn key="services" style={styles.section}>
               {s.services.length === 0 && (
                 <Text style={type.small}>Nothing is bookable here yet.</Text>
               )}
@@ -270,9 +290,10 @@ export default function Shop() {
                 />
               ))}
             </FadeIn>
+            )}
 
-            <FadeIn delay={220} style={styles.section}>
-              <Text style={type.heading}>Opening hours</Text>
+            {tab === 'hours' && (
+            <FadeIn key="hours" style={styles.section}>
               <View style={styles.card}>
                 {s.hours.map((h) => {
                   const isToday = h.dayOfWeek === today;
@@ -312,11 +333,10 @@ export default function Shop() {
                 )}
               </View>
             </FadeIn>
+            )}
 
-            <FadeIn delay={280} style={styles.section}>
-              <Text style={type.heading}>
-                Reviews {reviews.data ? `(${reviews.data.total})` : ''}
-              </Text>
+            {tab === 'reviews' && (
+            <FadeIn key="reviews" style={styles.section}>
 
               {s.rating.count > 0 && (
                 <View style={[styles.card, styles.summary]}>
@@ -351,6 +371,7 @@ export default function Shop() {
                 </View>
               ))}
             </FadeIn>
+            )}
           </View>
         </View>
       </Animated.ScrollView>

@@ -12615,3 +12615,13 @@ people.
 
 **Left out:** attaching photos to a ticket (the API takes them), and a list of
 all of a customer's tickets outside a booking.
+
+## 138. The shop page's sections are tabs (2026-10-05)
+
+"What they do", "Open hours" and "Reviews" were stacked, so a shop with a long
+list of services pushed its hours and reviews a long scroll down. They are now
+three tabs under the shop's header (the existing `Segmented` control), showing
+one at a time; "What they do" is first. The review count sits on its tab.
+
+Everything above the tabs — photo, name, address, rating, Message the shop,
+the gallery — is unchanged and stays on screen for all three.
