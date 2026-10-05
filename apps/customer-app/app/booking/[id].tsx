@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,29 +14,23 @@ import {
   type PaymentStatus,
 } from '../../src/api/booking';
 import { threadForAppointment } from '../../src/api/chat';
+import { getShop } from '../../src/api/discovery';
 import { listSavedNumbers, saveNumber } from '../../src/api/auth';
 import { ApiError } from '../../src/api/client';
-import { BOOKING_STATUS } from '../../src/bookingStatus';
+import { Checkout } from '../../src/booking/Checkout';
+import type { Bought } from '../../src/booking/format';
+import { PaidCelebration } from '../../src/booking/PaidCelebration';
+import { Reservation } from '../../src/booking/Reservation';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, theme, type } from '../../src/theme';
 import { Button } from '../../src/ui/Button';
-import { Chip } from '../../src/ui/Chip';
 import { EmptyState } from '../../src/ui/EmptyState';
-import { FadeIn } from '../../src/ui/FadeIn';
 import { cheer } from '../../src/ui/haptic';
 import { Icon } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
-import { MomoBanner, MomoLogo } from '../../src/ui/Momo';
-import { PopIn, Pulse } from '../../src/ui/Motion';
-import { Pill } from '../../src/ui/Pill';
+import { PhotoViewer } from '../../src/ui/PhotoViewer';
 import { Skeleton } from '../../src/ui/Skeleton';
-import { Stars } from '../../src/ui/Stars';
 import { TopBar } from '../../src/ui/TopBar';
-
-const whenDate = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { dateStyle: 'full' });
-const whenTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString(undefined, { timeStyle: 'short' });
 
 /**
  * One booking: pay the deposit, then show the arrival code.
@@ -46,9 +40,14 @@ const whenTime = (iso: string) =>
  * know is to poll — which is why `paymentStatus` refetches while the booking
  * is still PENDING_PAYMENT and stops the moment it is not.
  *
- * Drawn as a ticket (§133): what, when and where on the stub at the top, and
- * below it whichever one thing matters now — the amount to pay, or the code to
- * read out at the counter, set large enough to read at arm's length.
+ * One route, three faces (§137), because they are three moments of the same
+ * booking and every link to a booking should land on whichever is true now:
+ *
+ *   - not paid      → `Checkout`, a payment screen and nothing else
+ *   - just paid     → `PaidCelebration`, once, when the money is seen to land
+ *   - everything else → `Reservation`, the page you come back to
+ *
+ * This file holds the data and the actions; the faces only draw.
  */
 export default function Booking() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -58,6 +57,9 @@ export default function Booking() {
   const insets = useSafeAreaInsets();
   const layout = useLayout();
   const [phone, setPhone] = useState('');
+  /** True from the moment the payment is SEEN to succeed until it is dismissed. */
+  const [celebrating, setCelebrating] = useState(false);
+  const [photo, setPhoto] = useState<number | null>(null);
 
   const appointment = useQuery({
     queryKey: ['appointment', id],
@@ -70,6 +72,17 @@ export default function Booking() {
     queryKey: ['thread-for', id],
     queryFn: () => threadForAppointment(id),
     enabled: Boolean(appointment.data),
+  });
+
+  // What is being bought, to look at (§137). Read from the shop, because the
+  // appointment carries the service's name and no picture. Allowed to fail: a
+  // shop that has closed since answers 404, and the booking is still shown.
+  const locationId = appointment.data?.location.id;
+  const shop = useQuery({
+    queryKey: ['shop', locationId],
+    queryFn: () => getShop(locationId!),
+    enabled: Boolean(locationId),
+    retry: false,
   });
 
   const awaitingPayment = appointment.data?.status === 'PENDING_PAYMENT';
@@ -96,7 +109,10 @@ export default function Booking() {
    */
   useEffect(() => {
     if (stage === 'SUCCESSFUL' || payment.data?.appointmentStatus === 'CANCELLED') {
-      if (stage === 'SUCCESSFUL') cheer();
+      if (stage === 'SUCCESSFUL') {
+        cheer();
+        setCelebrating(true);
+      }
       queryClient.invalidateQueries({ queryKey: ['appointment', id] });
     }
   }, [stage, payment.data?.appointmentStatus, id, queryClient]);
@@ -202,7 +218,17 @@ export default function Booking() {
 
   const a = appointment.data;
   const paid = a.depositPaidAt !== null;
-  const status = BOOKING_STATUS[a.status];
+
+  const listed = shop.data?.services.find((s) => s.id === a.service.id);
+  const bought: Bought = {
+    images: listed?.images ?? [],
+    cover: listed?.images[0]?.url ?? shop.data?.business.coverImageUrl ?? null,
+    categoryIcon: shop.data?.business.category?.icon ?? null,
+    logoUrl: shop.data?.business.logoUrl ?? null,
+    businessName: shop.data?.business.name ?? a.location.name,
+    latitude: shop.data?.latitude ?? null,
+    longitude: shop.data?.longitude ?? null,
+  };
 
   // Digits only, because that is what is sent. Counting the typed string let
   // "07 88" through as four characters and "0788 123 456" through as twelve.
@@ -211,271 +237,175 @@ export default function Booking() {
   // the operator to charge the same handset twice.
   const payBusy = pay.isPending || stage === 'PENDING';
 
+  const explore = () => router.dismissTo('/');
+
+  const askToCancel = () =>
+    Alert.alert(
+      'Cancel this booking?',
+      paid
+        ? 'Your deposit is not refunded when you cancel. That is what holds the slot.'
+        : 'Nothing has been paid, so nothing is lost.',
+      [
+        { text: 'Keep it', style: 'cancel' },
+        {
+          text: 'Cancel booking',
+          style: 'destructive',
+          onPress: () => cancel.mutate('Cancelled by the customer.'),
+        },
+      ],
+    );
+
+  /**
+   * Hands the place to the phone's own maps app, which is where people already
+   * have their routes, their traffic and their way of getting about. The pin
+   * when the shop has one; its written address when it does not.
+   */
+  const directions = () => {
+    const pin =
+      bought.latitude !== null && bought.longitude !== null
+        ? `${bought.latitude},${bought.longitude}`
+        : null;
+    const label = encodeURIComponent(`${a.location.name}, ${a.location.address}`);
+    const url =
+      Platform.OS === 'ios'
+        ? `http://maps.apple.com/?daddr=${pin ?? label}`
+        : `https://www.google.com/maps/dir/?api=1&destination=${pin ?? label}`;
+    Linking.openURL(url).catch(() =>
+      Alert.alert('Could not open maps', `${a.location.name}\n${a.location.address}`),
+    );
+  };
+
+  const viewer = (
+    <PhotoViewer photos={bought.images} openAt={photo} onClose={() => setPhoto(null)} />
+  );
+
+  // ---- just paid ----
+  if (celebrating) {
+    return (
+      <PaidCelebration
+        a={a}
+        bought={bought}
+        format={money.format}
+        onView={() => setCelebrating(false)}
+        onExplore={explore}
+      />
+    );
+  }
+
+  // ---- not paid: a checkout ----
+  if (awaitingPayment && !paid) {
+    return (
+      <View style={styles.screen}>
+        <TopBar title="Checkout" />
+        {viewer}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: 24, width: layout.contentWidth, alignSelf: 'center' },
+          ]}
+        >
+          <Checkout
+            a={a}
+            bought={bought}
+            format={money.format}
+            phone={phone}
+            onPhone={setPhone}
+            savedNumbers={saved.data ?? []}
+            stage={stage}
+            failureReason={payment.data?.failureReason}
+            onOpenPhoto={setPhoto}
+          />
+          <Button kind="quietDanger" label="Cancel this booking" onPress={askToCancel} />
+        </ScrollView>
+
+        {/* The amount and the button, fixed where the thumb is. The total is
+            repeated beside the button on purpose: it is the last thing read
+            before the tap, and it should be the number being agreed to. */}
+        <View style={[styles.payBar, { paddingBottom: insets.bottom + 12 }]}>
+          <View style={[styles.payInner, { width: Math.min(layout.contentWidth, 560) }]}>
+            <View style={styles.payRow}>
+              <View>
+                <Text style={type.small}>Pay now</Text>
+                <Text style={styles.payAmount}>
+                  {money.format(a.depositAmountMinor, a.currency)}
+                </Text>
+              </View>
+              <View style={styles.flex}>
+                {/* The operator takes digits only. The field invites spaces, so
+                    they are stripped on the way out rather than refused. */}
+                <Button
+                  icon={payBusy ? undefined : 'lock-closed'}
+                  disabled={payBusy || !phoneLooksUsable}
+                  onPress={() => pay.mutate()}
+                  label={
+                    pay.isPending
+                      ? 'Asking your phone…'
+                      : stage === 'PENDING'
+                        ? 'Waiting for approval…'
+                        : stage === 'FAILED'
+                          ? 'Try again'
+                          : 'Pay now'
+                  }
+                />
+              </View>
+            </View>
+            <View style={styles.secure}>
+              <Icon name="shield-checkmark-outline" size={13} color={theme.muted} />
+              <Text style={type.tiny}>
+                {phoneLooksUsable
+                  ? 'You approve the payment with your MoMo PIN, on your phone.'
+                  : 'Enter your MoMo number above to pay.'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // ---- the reservation ----
   return (
     <View style={styles.screen}>
-      <TopBar title="Your booking" />
+      <TopBar title="Reservation" />
+      {viewer}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
           styles.content,
           { paddingBottom: insets.bottom + 32, width: layout.contentWidth, alignSelf: 'center' },
         ]}
       >
-        {/* The stub: what, when, where. */}
-        <FadeIn style={styles.ticket}>
-          <Pill label={status.label} tone={status.tone} dot={a.status === 'BOOKED'} />
-          <Text style={[type.title, styles.ticketTitle]}>{a.service.name}</Text>
-          {a.quantity > 1 && (
-            <Text style={type.body}>
-              {a.service.quantityMode === 'PEOPLE' ? `For ${a.quantity} people` : `× ${a.quantity}`}
-            </Text>
-          )}
-
-          <View style={styles.fact}>
-            <View style={styles.factIcon}>
-              <Icon name="calendar-outline" size={18} color={theme.accent} />
-            </View>
-            <View style={styles.flex}>
-              <Text style={styles.factMain}>{whenDate(a.startTime)}</Text>
-              <Text style={type.small}>{whenTime(a.startTime)}</Text>
-            </View>
-          </View>
-
-          <View style={styles.fact}>
-            <View style={styles.factIcon}>
-              <Icon name="location-outline" size={18} color={theme.accent} />
-            </View>
-            <View style={styles.flex}>
-              <Text style={styles.factMain}>{a.location.name}</Text>
-              <Text style={type.small}>{a.location.address}</Text>
-            </View>
-          </View>
-        </FadeIn>
-
-        {awaitingPayment && !paid && (
-          <FadeIn delay={80} style={styles.card}>
-            <Text style={type.heading}>Pay the deposit to confirm</Text>
-            <Text style={type.small}>
-              Your slot is held, not booked, until this is paid.
-            </Text>
-
-            <View style={styles.amountBox}>
-              <Text style={styles.amount}>
-                {money.format(a.depositAmountMinor, a.currency)}
-              </Text>
-              {a.servicePriceMinor !== null && (
-                <Text style={[type.small, styles.centre]}>
-                  of {money.format(a.servicePriceMinor, a.currency)} — the rest at the shop
-                </Text>
-              )}
-            </View>
-
-            {/* WHOSE mobile money, said with the logo before a word is read
-                (§134.3). A bare phone-number field does not say, and this is
-                the moment somebody decides whether to type theirs in. */}
-            <MomoBanner note="You approve the payment on your own phone." />
-
-            {/* Saved numbers first, so the usual one is a tap rather than ten
-                digits typed at the least patient moment there is (§124.2). */}
-            {(saved.data?.length ?? 0) > 0 && (
-              <View style={styles.savedRow}>
-                {saved.data?.map((number) => (
-                  <Chip
-                    key={number.id}
-                    tone="accent"
-                    icon="phone-portrait-outline"
-                    label={number.label ?? number.phoneNumber}
-                    active={toMsisdn(phone) === number.phoneNumber}
-                    onPress={() => setPhone(number.phoneNumber)}
-                  />
-                ))}
-              </View>
-            )}
-
-            <View style={styles.field}>
-              <MomoLogo size={30} />
-              <TextInput
-                style={styles.input}
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="07xx xxx xxx"
-                placeholderTextColor={theme.muted}
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            {/* The operator takes digits only. The field invites spaces, so they
-                are stripped on the way out rather than refused here — nobody
-                should be told off for typing a phone number the readable way. */}
-            <Button
-              disabled={payBusy || !phoneLooksUsable}
-              onPress={() => pay.mutate()}
-              label={
-                pay.isPending
-                  ? 'Asking your phone…'
-                  : stage === 'PENDING'
-                    ? 'Waiting for your approval…'
-                    : stage === 'FAILED'
-                      ? 'Try again'
-                      : 'Pay with mobile money'
-              }
-            />
-
-            {/* Approval happens on the handset, not here. Saying so stops the
-                screen looking stuck while someone types their PIN. */}
-            {stage === 'PENDING' && (
-              <View style={styles.waiting}>
-                <Pulse />
-                <Text style={[type.body, styles.flex]}>
-                  Check your phone and approve the payment. This updates on its own.
-                </Text>
-              </View>
-            )}
-
-            {/* A failure clears the reference server-side precisely so another
-                attempt is possible, so this is an invitation, not an error. */}
-            {stage === 'FAILED' && (
-              <View style={styles.failedBox}>
-                <Icon name="alert-circle-outline" size={19} color={theme.danger} />
-                <View style={styles.flex}>
-                  <Text style={styles.failed}>
-                    {explainFailedDeposit(payment.data?.failureReason)} You can try again.
-                  </Text>
-                  {/* The operator's own code, kept small. It is unreadable as copy
-                      and essential on a support ticket. */}
-                  {payment.data?.failureReason && (
-                    <Text style={styles.failedCode}>{payment.data.failureReason}</Text>
-                  )}
-                </View>
-              </View>
-            )}
-          </FadeIn>
-        )}
-
-        {paid && (
-          <FadeIn delay={80} style={styles.card}>
-            <View style={styles.confirmedHead}>
-              <PopIn>
-                <View style={styles.tick}>
-                  <Icon name="checkmark" size={26} color="#FFFFFF" />
-                </View>
-              </PopIn>
-              <View style={styles.flex}>
-                <Text style={type.heading}>Confirmed</Text>
-                <Text style={type.small}>
-                  Deposit of {money.format(a.depositAmountMinor, a.currency)} received.
-                </Text>
-              </View>
-            </View>
-
-            {/* Read out at the shop. It is in the email too, so this screen is
-                a convenience rather than the only copy (§54). */}
-            {a.verificationCode && (
-              <View style={styles.codeBox}>
-                <Text style={type.label}>Show this when you arrive</Text>
-                <Text
-                  style={[styles.code, layout.compact && styles.codeCompact]}
-                  selectable
-                  adjustsFontSizeToFit
-                  numberOfLines={1}
-                >
-                  {a.verificationCode}
-                </Text>
-              </View>
-            )}
-
-            {/* Until now there was no way back to a code that had been deleted
-                (§117.3). It is in the email, and an email is exactly what gets
-                lost — the endpoint has existed since §53.2 with nothing calling
-                it. Sending again replaces the code, so the one above changes. */}
-            {a.verificationCode && (
-              <>
-                <Button
-                  kind="outline"
-                  icon="mail-outline"
-                  disabled={resend.isPending || resendCooling}
-                  onPress={() => resend.mutate()}
-                  label={
-                    resend.isPending
-                      ? 'Sending…'
-                      : resendCooling
-                        ? 'Just sent — check your email'
-                        : 'Email me this code again'
-                  }
-                />
-                <Text style={type.small}>
-                  Sending a new one replaces the number above. Check your spam
-                  folder before asking for another.
-                </Text>
-              </>
-            )}
-          </FadeIn>
-        )}
-
-        {/* Every booking is created with a conversation attached (§21.1), which
-            until now nothing could open. It is the right place for "running
-            late" and "can I bring my son too". */}
-        <FadeIn delay={140}>
-          <Button
-            kind="soft"
-            icon="chatbubble-ellipses-outline"
-            disabled={thread.isLoading}
-            label={thread.isLoading ? 'Opening…' : `Message ${a.location.name}`}
-            onPress={() => {
-              if (thread.data) router.push(`/thread/${thread.data.id}`);
-              else router.push('/messages');
-            }}
-          />
-        </FadeIn>
-
-        {/* The visit is over, so the useful thing on this screen is no longer the
-            arrival code but what the customer thought (§111). */}
-        {a.status === 'COMPLETED' && (
-          <FadeIn delay={180} style={styles.card}>
-            <Text style={type.heading}>{a.review ? 'Your review' : 'How was it?'}</Text>
-            {a.review ? (
-              <>
-                <Stars rating={a.review.rating} size={22} />
-                {a.review.comment && <Text style={type.body}>{a.review.comment}</Text>}
-              </>
-            ) : (
-              <Text style={type.small}>
-                A few words help the next person decide. It takes a moment.
-              </Text>
-            )}
-            <Button
-              kind="outline"
-              icon="star-outline"
-              label={a.review ? 'See or change it' : 'Write a review'}
-              onPress={() => router.push(`/review/${id}`)}
-            />
-          </FadeIn>
-        )}
-
-        {(a.status === 'PENDING_PAYMENT' || a.status === 'BOOKED') && (
-          <Button
-            kind="quietDanger"
-            label="Cancel this booking"
-            style={styles.cancel}
-            onPress={() =>
-              Alert.alert(
-                'Cancel this booking?',
-                paid
-                  ? 'Your deposit is not refunded when you cancel. That is what holds the slot.'
-                  : 'Nothing has been paid, so nothing is lost.',
-                [
-                  { text: 'Keep it', style: 'cancel' },
-                  {
-                    text: 'Cancel booking',
-                    style: 'destructive',
-                    onPress: () => cancel.mutate('Cancelled by the customer.'),
-                  },
-                ],
-              )
-            }
-          />
-        )}
+        <Reservation
+          a={a}
+          bought={bought}
+          format={money.format}
+          onOpenPhoto={setPhoto}
+          onShop={() => router.push(`/shop/${a.location.id}`)}
+          // Every booking is created with a conversation attached (§21.1). It
+          // is the right place for "running late" and "can I bring my son too".
+          messageBusy={thread.isLoading}
+          onMessage={() => {
+            if (thread.data) router.push(`/thread/${thread.data.id}`);
+            else router.push('/messages');
+          }}
+          onDirections={directions}
+          onHelp={() => router.push(`/help/${id}`)}
+          onCancel={askToCancel}
+          onReview={() => router.push(`/review/${id}`)}
+          // Sending again replaces the code, so the one shown changes (§117.3).
+          onResend={() => resend.mutate()}
+          resendOff={resend.isPending || resendCooling}
+          resendLabel={
+            resend.isPending
+              ? 'Sending…'
+              : resendCooling
+                ? 'Just sent — check your email'
+                : 'Email me this code again'
+          }
+          onExplore={explore}
+        />
       </ScrollView>
     </View>
   );
@@ -484,107 +414,18 @@ export default function Booking() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
   flex: { flex: 1 },
-  centre: { textAlign: 'center' },
   content: { paddingHorizontal: 20, paddingTop: 6, gap: 16 },
-  ticket: {
+  payBar: {
     backgroundColor: theme.panel,
-    borderRadius: radius.xl,
-    padding: 20,
-    gap: 14,
-    ...shadow.card,
-  },
-  ticketTitle: { marginTop: -2 },
-  fact: { flexDirection: 'row', alignItems: 'center', gap: 13 },
-  factIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: theme.accentSoft,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingTop: 14,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    justifyContent: 'center',
+    ...shadow.float,
   },
-  factMain: { fontFamily: font.bold, fontSize: 14.5, color: theme.ink, marginBottom: 1 },
-  card: {
-    backgroundColor: theme.panel,
-    borderRadius: radius.xl,
-    padding: 20,
-    gap: 12,
-    ...shadow.card,
-  },
-  amountBox: {
-    backgroundColor: theme.sunken,
-    borderRadius: radius.lg,
-    paddingVertical: 18,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    gap: 4,
-  },
-  amount: { fontFamily: font.extrabold, fontSize: 34, color: theme.ink, letterSpacing: -0.8 },
-  savedRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  field: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    height: 54,
-    paddingLeft: 12,
-    paddingRight: 18,
-    borderRadius: radius.pill,
-    backgroundColor: theme.sunken,
-  },
-  input: {
-    flex: 1,
-    fontFamily: font.semibold,
-    fontSize: 16,
-    color: theme.ink,
-    paddingVertical: 0,
-  },
-  waiting: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: theme.accentSoft,
-    borderRadius: radius.lg,
-    padding: 10,
-    paddingRight: 14,
-  },
-  failedBox: {
-    flexDirection: 'row',
-    gap: 9,
-    backgroundColor: theme.dangerSoft,
-    borderRadius: radius.lg,
-    padding: 13,
-  },
-  failed: { fontFamily: font.semibold, fontSize: 13, lineHeight: 19, color: theme.danger },
-  failedCode: { fontFamily: font.medium, fontSize: 11, color: theme.muted, marginTop: 3 },
-  confirmedHead: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  tick: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: theme.ok,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  codeBox: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: theme.line,
-    backgroundColor: theme.sunken,
-    borderRadius: radius.lg,
-    paddingVertical: 20,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    gap: 8,
-  },
-  code: {
-    fontFamily: font.extrabold,
-    fontSize: 42,
-    letterSpacing: 9,
-    color: theme.ink,
-    // The tracking adds space after the LAST digit too; this puts it back in
-    // the middle.
-    paddingLeft: 9,
-  },
-  codeCompact: { fontSize: 34, letterSpacing: 6 },
-  cancel: { marginTop: 2 },
+  payInner: { maxWidth: '100%', gap: 8 },
+  payRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  payAmount: { fontFamily: font.extrabold, fontSize: 21, color: theme.ink, letterSpacing: -0.4 },
+  secure: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 },
 });

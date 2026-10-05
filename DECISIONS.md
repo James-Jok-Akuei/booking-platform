@@ -12549,3 +12549,69 @@ a business changing its rule later does not rewrite a booking already made.
 - Emails and notifications do not mention the quantity.
 - The demo "Haircut" was switched to several-people (max 5) in the dev
   database by hand, to have something to try; `seed-demo` is unchanged.
+
+## 137. Checkout, a paid moment, and the reservation page (2026-10-05)
+
+`/booking/:id` was one screen doing three jobs: the payment form, a small
+"Confirmed" row that appeared inside it, and the booking's details, all stacked.
+It is still ONE route — every link to a booking should land on whatever is true
+of it now — with three faces (`src/booking/`):
+
+| The booking is… | Face |
+|---|---|
+| not paid | `Checkout` |
+| seen to be paid, just now | `PaidCelebration`, once |
+| anything else | `Reservation` |
+
+### 137.1 Checkout
+
+Laid out as a checkout is everywhere, because familiarity is most of what makes
+paying feel safe: what is being bought **with its photos** (tap to open them),
+the sum line by line (total, what is left for the shop, what is paid now and
+the percentage it is), the method shown as a chosen one, and the amount beside
+the Pay button fixed at the bottom.
+
+- **The photos** come from the shop, since an appointment carries a name and no
+  picture. That read is allowed to fail: a shop closed since still has its
+  bookings shown, with the category tile.
+- **A real countdown.** An unpaid slot is released after five minutes
+  (`PENDING_PAYMENT_TTL_MS`). The screen shows the clock rather than letting
+  someone pay for a slot that has gone. The five minutes is repeated in the
+  app (`HOLD_MS`); if the server's value changes, that constant must too.
+- **The refund rule is stated before the money moves** (§25.1): no refund if
+  the customer cancels, all of it back if the shop does.
+
+### 137.2 The paid moment
+
+A full screen with a growing tick, the amount, a short receipt and two ways on:
+the reservation, or back to browsing. Shown only when the payment is SEEN to
+succeed in this sitting; opening a booking paid last week goes straight to the
+reservation.
+
+### 137.3 The reservation page
+
+Photo and status, the shop (tap to open it), the arrival code, then four round
+actions — **Message, Directions, Get help, Cancel** (Review once the visit is
+done) — then the details, the payment, and the cancelling rules in words.
+
+- **Reservation number** is the first eight characters of the booking's own id,
+  shown as `0440-A141`. Not a second identifier: support can find the booking
+  from it and there is nothing to keep in step.
+- **Directions** hands the shop's pin (or its address, without one) to the
+  phone's own maps app.
+- **"Balance at the shop"**, never "paid at the shop": nothing here records
+  what happens at the till.
+
+### 137.4 Help is a support ticket the customer can read
+
+The ticket API (§17) had no customer screen. `/help/:appointmentId` writes one
+tied to the booking, in three plain categories; `/ticket/:id` shows it as a
+conversation, with support's replies and a box to say more. A ticket nobody can
+read the answer to is a suggestion box.
+
+It says on the form that this reaches the PLATFORM's support, and that the shop
+is reached through Message — the two are easy to confuse and go to different
+people.
+
+**Left out:** attaching photos to a ticket (the API takes them), and a list of
+all of a customer's tickets outside a booking.
