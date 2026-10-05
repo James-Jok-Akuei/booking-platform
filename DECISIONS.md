@@ -12405,3 +12405,10 @@ On the booking screen each photo was a fixed 220 wide, so a service with ONE
 photo showed it beside an empty half of the screen. The photos now share the
 width between them and never go below 220: one photo spans the screen, two fill
 a tablet side by side, and a longer set stays at 220 each and scrolls.
+
+### 135.5 The booking screen links to the shop
+
+The home shelves (§135.3) take a customer straight to booking a service, past
+the shop's own page — and the booking screen had no way to reach it. It now
+always shows a row with the business's logo (its initial where there is no
+logo), its name and the branch; tapping it opens the shop's page.

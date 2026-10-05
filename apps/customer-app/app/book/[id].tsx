@@ -8,6 +8,7 @@ import { createAppointment } from '../../src/api/booking';
 import { ApiError, tokens } from '../../src/api/client';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, theme, type } from '../../src/theme';
+import { Avatar } from '../../src/ui/Avatar';
 import { Button } from '../../src/ui/Button';
 import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
@@ -180,6 +181,41 @@ export default function Book() {
           </FadeIn>
         )}
 
+        {/* WHOSE service this is, and the way to their page (§135.5). The home
+            shelves bring people straight here, past the shop — so this screen
+            has to be able to send them there, or the only way to see the
+            shop's hours, photos and reviews was to go back and hunt for it.
+            Always shown, photo or no photo. */}
+        {shop.data && (
+          <FadeIn delay={20}>
+            <PressableScale
+              onPress={() => router.push(`/shop/${id}`)}
+              haptic
+              accessibilityRole="button"
+              accessibilityLabel={`${shop.data.business.name ?? shop.data.name}, view shop`}
+              style={styles.shopRow}
+            >
+              <Avatar
+                uri={shop.data.business.logoUrl}
+                name={shop.data.business.name ?? shop.data.name}
+                size={46}
+              />
+              <View style={styles.shopText}>
+                <Text style={type.subheading} numberOfLines={1}>
+                  {shop.data.business.name ?? shop.data.name}
+                </Text>
+                <Text style={type.small} numberOfLines={1}>
+                  {shop.data.name}
+                </Text>
+              </View>
+              {/* On a narrow phone the words would cut the shop's name short,
+                  and the name matters more; the arrow says the same thing. */}
+              {!layout.compact && <Text style={styles.shopLink}>View shop</Text>}
+              <Icon name="chevron-forward" size={16} color={theme.accent} />
+            </PressableScale>
+          </FadeIn>
+        )}
+
         <FadeIn delay={40} style={styles.card}>
           <Text style={type.heading}>{service.name}</Text>
           <View style={styles.line}>
@@ -329,6 +365,18 @@ const styles = StyleSheet.create({
     gap: 6,
     ...shadow.card,
   },
+  shopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    ...shadow.card,
+  },
+  shopText: { flex: 1, gap: 1 },
+  shopLink: { fontFamily: font.bold, fontSize: 13, color: theme.accent },
   line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 7, marginTop: 6 },
   price: { fontFamily: font.extrabold, fontSize: 26, color: theme.ink, letterSpacing: -0.5 },
