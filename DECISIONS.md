@@ -12798,3 +12798,26 @@ The two documents were cards stacked one above the other, each closed behind
 - After agreeing, the screen moves straight to the next document still waiting,
   so two documents are two taps.
 - "What changed" is shown only to someone who agreed to an earlier version.
+
+## 143. Account is a profile (2026-10-05)
+
+The Account tab was a column of white cards under the word "Account". It is now
+laid out the way a profile is.
+
+- **A dark header** carries the person: picture inside a coral-to-gold ring,
+  name, email, and "With us since". It stretches when pulled and moves slower
+  than the page; once it has scrolled away a small dark bar with the picture
+  and name takes its place. The status bar turns light while this tab is
+  showing and dark again on leaving it.
+- **Three numbers lap over the header's edge**: Bookings (ever), To come
+  (confirmed or happening, not unpaid holds or cancelled), Saved. Each counts
+  up when it arrives and opens the tab that holds it. No new endpoint: they are
+  the totals of lists the app already asks for.
+- **Labelled groups of rows** — Profile, Payment, Offers, About, Your data —
+  like a phone's own settings. "Add a number" opens its field only when
+  tapped; saved numbers read as `0788 123 456`.
+- Sign out is a red row; "Close my account" stays the quietest thing on the
+  screen, on purpose (§119). The app's version is at the foot.
+
+Nothing was removed and no wording about what things do was changed; the
+Android "Crop is what sends it" note (§125.6) is kept, on Android only.
