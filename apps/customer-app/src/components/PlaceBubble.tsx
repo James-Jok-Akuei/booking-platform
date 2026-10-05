@@ -27,7 +27,6 @@ export function PlaceBubble({
   onPress: () => void;
 }) {
   const name = place.business.name ?? place.name;
-  const where = place.name !== name ? place.name : place.district?.name;
   return (
     <PressableScale
       onPress={onPress}
@@ -57,14 +56,6 @@ export function PlaceBubble({
         {name}
       </Text>
 
-      {/* WHICH one. A business with two branches is two circles with the same
-          name and the same logo; the branch's own name is what tells them
-          apart, and the district does when the branch has no name of its own. */}
-      {where && (
-        <Text style={styles.where} numberOfLines={1}>
-          {where}
-        </Text>
-      )}
     </PressableScale>
   );
 }
@@ -99,7 +90,6 @@ const styles = StyleSheet.create({
     color: theme.ink,
     textAlign: 'center',
   },
-  where: { fontFamily: font.medium, fontSize: 10.5, color: theme.muted, marginTop: -3 },
   // Sits on the bottom edge of the circle, the way a "live" tag does.
   rating: {
     position: 'absolute',

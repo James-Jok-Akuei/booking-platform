@@ -225,7 +225,24 @@ export default function Discover() {
     queryFn: () => discoverServices(filters),
   });
 
-  const shops = results.data?.locations ?? [];
+  /**
+   * One circle per BUSINESS, not per branch (§135.6). The search returns
+   * branches, so a business with three of them was three identical circles in
+   * a row that is meant for telling businesses apart.
+   *
+   * The first branch seen is the one kept, and the list arrives in the chosen
+   * order — so the circle opens the business's most popular branch, or its
+   * nearest one when sorting by distance.
+   */
+  const branches = results.data?.locations ?? [];
+  const shops = branches.filter(
+    (branch, index) => branches.findIndex((b) => b.business.id === branch.business.id) === index,
+  );
+  // Only a true count is shown: with more branches on the server than on this
+  // page, the number of businesses is not known, and a guess is worse than
+  // no number.
+  const shopCount =
+    results.data && results.data.total <= branches.length ? shops.length : undefined;
   const offers = services.data?.services ?? [];
 
   /** Nothing narrowed by word or by kind: show the shop window, not a list. */
@@ -479,7 +496,11 @@ export default function Discover() {
           <FadeIn>
             <SectionHead
               title="Places"
-              note={`${results.data?.total} ${results.data?.total === 1 ? 'place' : 'places'}`}
+              note={
+                shopCount === undefined
+                  ? undefined
+                  : `${shopCount} ${shopCount === 1 ? 'place' : 'places'}`
+              }
             />
             <ScrollView
               horizontal

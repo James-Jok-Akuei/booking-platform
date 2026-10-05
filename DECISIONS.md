@@ -12412,3 +12412,17 @@ The home shelves (§135.3) take a customer straight to booking a service, past
 the shop's own page — and the booking screen had no way to reach it. It now
 always shows a row with the business's logo (its initial where there is no
 logo), its name and the branch; tapping it opens the shop's page.
+
+### 135.6 One circle per business
+
+The places row showed one circle per BRANCH, so a business with two branches
+appeared twice with the same name and logo. ~~The branch name under the circle
+told them apart (§135.3).~~ The row now shows each business once: it is where a
+customer browses businesses, and branches are a detail of one.
+
+The circle opens the business's first branch in the chosen order — its most
+popular, or its nearest when sorting by distance. Done in the app, over the
+page of branches already fetched; the count beside "Places" is shown only when
+that page holds every branch, because otherwise the number of businesses is not
+known. Services are untouched: the same service at two branches is two
+different things to book.
