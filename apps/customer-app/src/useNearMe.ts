@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import * as Location from 'expo-location';
 
 export type NearMeState =
@@ -50,6 +50,44 @@ export function useNearMe() {
       // goes back to how it was.
       setState({ status: 'failed' });
     }
+  }, []);
+
+  /**
+   * Someone who ALREADY said yes is not asked again and should not have to tap
+   * anything to get their distances back (§139). This only reads a permission
+   * that exists — it never raises the prompt, so rule 1 above still holds for
+   * everybody who has not been asked.
+   *
+   * The last known fix is used first because it is instant; the fresh one
+   * replaces it when it arrives.
+   */
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const { status } = await Location.getForegroundPermissionsAsync();
+        if (status !== 'granted' || !live) return;
+        const known = await Location.getLastKnownPositionAsync();
+        if (known && live) {
+          setState((was) =>
+            was.status === 'off'
+              ? { status: 'on', lat: known.coords.latitude, lng: known.coords.longitude }
+              : was,
+          );
+        }
+        const fresh = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        if (live) {
+          setState({ status: 'on', lat: fresh.coords.latitude, lng: fresh.coords.longitude });
+        }
+      } catch {
+        // Quietly nothing: this was a convenience nobody asked for.
+      }
+    })();
+    return () => {
+      live = false;
+    };
   }, []);
 
   const disable = useCallback(() => setState({ status: 'off' }), []);

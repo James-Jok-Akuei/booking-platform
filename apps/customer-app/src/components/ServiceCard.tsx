@@ -4,6 +4,7 @@ import { font, radius, shadow, theme } from '../theme';
 import { Cover } from '../ui/Cover';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { distanceLabel } from '../distance';
 
 /**
  * One service, small (§135.3).
@@ -35,6 +36,7 @@ export function ServiceCard({
   rank?: number;
   onPress: () => void;
 }) {
+  const away = distanceLabel(service.location.distanceKm);
   const rated = service.location.ratingCount > 0 && service.location.ratingAvg !== null;
 
   return (
@@ -71,9 +73,18 @@ export function ServiceCard({
         <Text style={styles.name} numberOfLines={2}>
           {service.name}
         </Text>
-        <Text style={styles.shop} numberOfLines={1}>
-          {service.business.name ?? service.location.name}
-        </Text>
+        {/* Whose it is, and how far (§139) — the name gives way first, because
+            a distance cut short is not a distance. */}
+        <View style={styles.shopRow}>
+          <Text style={[styles.shop, styles.shopName]} numberOfLines={1}>
+            {service.business.name ?? service.location.name}
+          </Text>
+          {away && (
+            <Text style={styles.away} numberOfLines={1}>
+              {away}
+            </Text>
+          )}
+        </View>
 
         {/* The price has a line to itself: it is the one thing on the card
             that must never be cut short, and "RWF 7,0…" is not a price. */}
@@ -143,6 +154,9 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 5, paddingTop: 8, paddingBottom: 5, gap: 2 },
   name: { fontFamily: font.bold, fontSize: 13.5, lineHeight: 17.5, color: theme.ink, minHeight: 35 },
   shop: { fontFamily: font.medium, fontSize: 11.5, color: theme.muted },
+  shopRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  shopName: { flexShrink: 1 },
+  away: { flexShrink: 0, fontFamily: font.bold, fontSize: 11, color: theme.ink2 },
   price: { fontFamily: font.extrabold, fontSize: 14, color: theme.ink, marginTop: 4 },
   proof: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 16 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 3 },

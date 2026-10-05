@@ -195,7 +195,10 @@ export default function Discover() {
     // to sort by distance without one is a 400, and a refused request is
     // not what declining a permission should produce.
     sort: sortingByDistance ? 'distance' : sort === 'distance' ? 'popular' : sort,
-    ...(sortingByDistance ? { lat: position.lat, lng: position.lng } : {}),
+    // The position goes with EVERY search once it is known (§139), so each
+    // card can say how far away it is. Still never with a radius: it measures
+    // and orders, it does not hide anything (§107).
+    ...(position ? { lat: position.lat, lng: position.lng } : {}),
     ...(query.trim() ? { q: query.trim() } : {}),
     ...(categoryId ? { categoryId } : {}),
     ...(subcategoryId ? { subcategoryId } : {}),
@@ -235,6 +238,22 @@ export default function Discover() {
    * nearest one when sorting by distance.
    */
   const branches = results.data?.locations ?? [];
+  /**
+   * "Near you": the closest services, as a shelf of its own (§139). Asked for
+   * separately, in distance order, because the nearest ten are not necessarily
+   * among the fifty most popular. Only once a position is known, and not when
+   * the whole screen is already in distance order — it would be the first
+   * shelf twice.
+   */
+  const nearby = useQuery({
+    queryKey: ['discover-services-near', ...filterKey],
+    queryFn: () => discoverServices({ ...filters, sort: 'distance', limit: SHELF_SIZE }),
+    enabled: position !== null && !sortingByDistance,
+  });
+  const nearOffers = (nearby.data?.services ?? []).filter(
+    (o) => o.location.distanceKm !== undefined && o.location.distanceKm !== null,
+  );
+
   const shops = branches.filter(
     (branch, index) => branches.findIndex((b) => b.business.id === branch.business.id) === index,
   );
@@ -413,8 +432,9 @@ export default function Discover() {
             active={sort === 'distance' && nearMe.state.status === 'on'}
             onPress={async () => {
               if (sort === 'distance') {
+                // Only the ORDER goes back. The position stays, because the
+                // distances on the cards are still wanted (§139).
                 setSort('popular');
-                nearMe.disable();
                 return;
               }
               if (nearMe.state.status !== 'on') await nearMe.enable();
@@ -560,6 +580,50 @@ export default function Discover() {
               ))}
             </ScrollView>
           </FadeIn>
+        )}
+
+        {browsing && position !== null && !sortingByDistance && nearOffers.length > 0 && (
+          <FadeIn delay={90}>
+            <SectionHead title="Near you" />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={bleed}
+              contentContainerStyle={[styles.shelf, bleedPad]}
+            >
+              {nearOffers.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  price={money.format(service.priceMinor)}
+                  width={shelfCard}
+                  onPress={() => openService(service)}
+                />
+              ))}
+            </ScrollView>
+          </FadeIn>
+        )}
+
+        {/* The invitation, for someone who has never been asked. One quiet
+            row, and tapping it is what raises the phone's own question — so
+            the permission is still asked for at the moment it explains
+            itself (§107.3). Gone for good once answered either way. */}
+        {browsing && nearMe.state.status === 'off' && offers.length > 0 && (
+          <PressableScale
+            onPress={() => nearMe.enable()}
+            haptic
+            accessibilityRole="button"
+            style={styles.nearInvite}
+          >
+            <View style={styles.nearIcon}>
+              <Icon name="navigate" size={18} color={theme.accent} />
+            </View>
+            <View style={styles.nearText}>
+              <Text style={type.subheading}>See what is near you</Text>
+              <Text style={type.small}>Shows how far each place is. Nothing is hidden.</Text>
+            </View>
+            <Icon name="chevron-forward" size={16} color={theme.muted} />
+          </PressableScale>
         )}
 
         {shelves.map((shelf, index) => (
@@ -878,6 +942,24 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  nearInvite: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    padding: 14,
+    ...shadow.card,
+  },
+  nearIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nearText: { flex: 1, gap: 1 },
   sheetBody: { gap: 18, paddingBottom: 8 },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

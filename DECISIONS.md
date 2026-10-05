@@ -12635,3 +12635,25 @@ now sets "several people, up to 5" on every demo service where that is natural
 updated to match. The garage's services stay one per booking: several cars each
 need a bay, which is what the several-people rule does, but its picker asks
 "How many people?".
+
+## 139. How far away, and what is near (2026-10-05)
+
+The server has measured the distance to every branch since §107, and the home
+redesign (§135) stopped showing it anywhere.
+
+- **Every card says how far.** Once a position is known it is sent with every
+  search, not only a distance sort, so each shop circle and service card
+  carries "1.2 km". Kilometres; under one reads as metres. Still never with a
+  radius — it measures and orders, it hides nothing (§107).
+- **"Near you"** is a shelf of the ten closest services, asked for in distance
+  order, since the nearest are not necessarily among the most popular.
+- **Not asked on open, still (§107.3).** Someone who has already allowed
+  location gets their distances back without tapping anything — the app reads
+  the permission that exists and never raises the prompt by itself. Someone who
+  has never been asked sees one quiet row, "See what is near you", and tapping
+  it is what asks.
+- Turning "Nearest" off now only changes the order back; the position is kept,
+  because the distances are still wanted.
+
+Nothing is stored: the position lives in the app while it is open. Where a
+customer lives, for emails, is a separate thing they choose (§140).

@@ -4,6 +4,7 @@ import { font, shadow, theme } from '../theme';
 import { Cover } from '../ui/Cover';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { distanceLabel } from '../distance';
 
 const SIZE = 66;
 
@@ -27,6 +28,7 @@ export function PlaceBubble({
   onPress: () => void;
 }) {
   const name = place.business.name ?? place.name;
+  const away = distanceLabel(place.distanceKm);
   return (
     <PressableScale
       onPress={onPress}
@@ -55,6 +57,7 @@ export function PlaceBubble({
       <Text style={styles.name} numberOfLines={2}>
         {name}
       </Text>
+      {away && <Text style={styles.away}>{away}</Text>}
 
     </PressableScale>
   );
@@ -90,6 +93,7 @@ const styles = StyleSheet.create({
     color: theme.ink,
     textAlign: 'center',
   },
+  away: { fontFamily: font.bold, fontSize: 10.5, color: theme.ink2, marginTop: -4 },
   // Sits on the bottom edge of the circle, the way a "live" tag does.
   rating: {
     position: 'absolute',
