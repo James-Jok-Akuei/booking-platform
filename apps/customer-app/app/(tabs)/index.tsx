@@ -295,6 +295,15 @@ export default function Discover() {
   const gridColumns = inner >= 640 ? 4 : inner >= 440 ? 3 : 2;
   const gridCard = Math.floor((inner - 10 * (gridColumns - 1)) / gridColumns);
 
+  /**
+   * What makes a card unique is the service AT a branch, not the service: the
+   * same "Haircut" is sold at two branches and is two cards. Keyed on the
+   * service alone, React was handed two children with one key in every shelf
+   * that held both, said so on every render, and could have dropped or doubled
+   * one of them.
+   */
+  const offerKey = (service: DiscoveredService) => `${service.id}:${service.location.id}`;
+
   const openService = (service: DiscoveredService) =>
     router.push(`/book/${service.location.id}?serviceId=${service.id}`);
 
@@ -566,7 +575,7 @@ export default function Discover() {
             >
               {offers.slice(0, SHELF_SIZE).map((service, index) => (
                 <ServiceCard
-                  key={service.id}
+                  key={offerKey(service)}
                   service={service}
                   price={money.format(service.priceMinor)}
                   width={shelfCard}
@@ -593,7 +602,7 @@ export default function Discover() {
             >
               {nearOffers.map((service) => (
                 <ServiceCard
-                  key={service.id}
+                  key={offerKey(service)}
                   service={service}
                   price={money.format(service.priceMinor)}
                   width={shelfCard}
@@ -644,7 +653,7 @@ export default function Discover() {
             >
               {shelf.items.slice(0, SHELF_SIZE).map((service) => (
                 <ServiceCard
-                  key={service.id}
+                  key={offerKey(service)}
                   service={service}
                   price={money.format(service.priceMinor)}
                   width={shelfCard}
@@ -664,7 +673,7 @@ export default function Discover() {
             <View style={styles.grid}>
               {offers.map((service) => (
                 <ServiceCard
-                  key={service.id}
+                  key={offerKey(service)}
                   service={service}
                   price={money.format(service.priceMinor)}
                   width={gridCard}
