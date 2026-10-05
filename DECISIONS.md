@@ -12776,3 +12776,25 @@ capitals, `4.2` clauses, `- ` bullets — and sets each properly. The web apps
 still show it as typed.
 
 **Not written:** the Seller Agreement, which is still a placeholder.
+
+## 142. The legal screen is a reader, and agreeing is a moment (2026-10-05)
+
+The two documents were cards stacked one above the other, each closed behind
+"Read it", each with an ordinary button at the very end of its text.
+
+- **Tabs on one line** (`Segmented`): Terms of Use | Privacy Policy. The chosen
+  one is open in full; nothing to expand. It opens on the first document still
+  waiting for an answer.
+- **A reading line** under the tabs fills as the text is scrolled. It informs,
+  it does not gate: the button works at any point, because forcing a scroll to
+  the end proves scrolling, not reading.
+- **The agreement is a bar fixed at the bottom**, naming the document and
+  version being agreed to.
+- **`AgreeButton`**: a light crosses it while it waits; pressed, it draws in to
+  a circle and spins while the answer is saved; saved, it turns green with a
+  tick and a ring, and the phone's success tap. A failed save opens it back
+  out, so failure never looks like agreement. One small lift when the reader
+  reaches the end.
+- After agreeing, the screen moves straight to the next document still waiting,
+  so two documents are two taps.
+- "What changed" is shown only to someone who agreed to an earlier version.

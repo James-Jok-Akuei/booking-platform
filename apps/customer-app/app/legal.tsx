@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -8,16 +8,15 @@ import {
   myLegalStatus,
   type LegalStatus,
 } from '../src/api/auth';
-import { useSignedIn } from '../src/api/client';
+import { ApiError, useSignedIn } from '../src/api/client';
 import { LegalText } from '../src/components/LegalText';
-import { font, radius, shadow, theme, type } from '../src/theme';
-import { Button } from '../src/ui/Button';
+import { radius, shadow, theme, type } from '../src/theme';
+import { AgreeButton } from '../src/ui/AgreeButton';
 import { EmptyState } from '../src/ui/EmptyState';
 import { FadeIn } from '../src/ui/FadeIn';
-import { Icon } from '../src/ui/Icon';
 import { useLayout } from '../src/ui/layout';
 import { Pill } from '../src/ui/Pill';
-import { PressableScale } from '../src/ui/PressableScale';
+import { Segmented } from '../src/ui/Segmented';
 import { RowSkeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
 
@@ -35,13 +34,24 @@ const when = (iso: string) =>
  * The Seller Agreement is filtered out: it binds businesses, it is shown in the
  * business app, and a customer reading it here would reasonably think it applied
  * to them.
+ *
+ * Laid out as a reader (§142): the documents are tabs on one line, the chosen
+ * one is open in full — nothing to expand — a thin line under the tabs fills
+ * as it is read, and the agreement is a bar fixed at the bottom, so the button
+ * is always where the thumb is and never three screens below the text.
  */
 export default function Legal() {
   const signedIn = useSignedIn();
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
-  const [open, setOpen] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<string | null>(null);
+  const scroller = useRef<ScrollView>(null);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const bar = useRef(new Animated.Value(0)).current;
+  /** How far the open document can scroll; what "read to the end" is measured against. */
+  const [sizes, setSizes] = useState({ content: 0, view: 0 });
+  const [atEnd, setAtEnd] = useState(false);
 
   // Signed in, the same list arrives with "and here is what you agreed to"
   // attached — one request rather than two that could disagree.
@@ -50,21 +60,102 @@ export default function Legal() {
     queryFn: () => (signedIn ? myLegalStatus() : listLegal()),
   });
 
-  const accept = useMutation({
-    mutationFn: acceptLegal,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['legal'] }),
-  });
+  const accept = useMutation({ mutationFn: acceptLegal });
 
   const rows = (documents.data ?? []).filter((d) => d.kind !== 'SELLER_AGREEMENT');
+  const waiting = (d: (typeof rows)[number]) =>
+    signedIn && (d as Partial<LegalStatus>).needsAcceptance === true;
+
+  // Opens on the first document still waiting for an answer, if there is one:
+  // that is what somebody sent here by a "the terms changed" banner came for.
+  const current =
+    rows.find((d) => d.id === chosen) ?? rows.find((d) => waiting(d)) ?? rows[0] ?? null;
+  const status = (current ?? {}) as Partial<LegalStatus>;
+  const asking = current !== null && waiting(current);
+
+  // The bar rises when there is something to agree to, and leaves when not.
+  useEffect(() => {
+    Animated.spring(bar, {
+      toValue: asking ? 1 : 0,
+      useNativeDriver: true,
+      speed: 12,
+      bounciness: 7,
+    }).start();
+  }, [asking, bar]);
+
+  // A different document starts from its top, unread.
+  useEffect(() => {
+    scroller.current?.scrollTo({ y: 0, animated: false });
+    scrollY.setValue(0);
+    setAtEnd(false);
+  }, [current?.id, scrollY]);
+
+  const reach = Math.max(1, sizes.content - sizes.view);
+  const fits = sizes.content > 0 && sizes.content <= sizes.view + 8;
+  const barWidth = Math.min(layout.width, layout.contentWidth);
 
   return (
     <View style={styles.screen}>
       <TopBar title="Legal" />
-      <ScrollView
+
+      {rows.length > 1 && current && (
+        <View style={[styles.tabs, { width: layout.contentWidth }]}>
+          <Segmented
+            value={current.id}
+            onChange={setChosen}
+            options={rows.map((d) => ({ value: d.id, label: d.title }))}
+          />
+        </View>
+      )}
+
+      {/* How much has been read. It fills, it never nags: the button below
+          works at any point, because making someone scroll four thousand
+          words to reach it proves they scrolled, not that they read. */}
+      {current && (
+        <View style={[styles.progressTrack, { width: barWidth }]}>
+          <Animated.View
+            style={[
+              styles.progress,
+              { width: barWidth },
+              {
+                transform: [
+                  {
+                    translateX: fits
+                      ? 0
+                      : scrollY.interpolate({
+                          inputRange: [0, reach],
+                          outputRange: [-barWidth, 0],
+                          extrapolate: 'clamp',
+                        }),
+                  },
+                ],
+              },
+            ]}
+          />
+        </View>
+      )}
+
+      <Animated.ScrollView
+        ref={scroller}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onLayout={(e) => {
+          const view = e.nativeEvent.layout.height;
+          setSizes((was) => ({ ...was, view }));
+        }}
+        onContentSizeChange={(_w, content) => setSizes((was) => ({ ...was, content }))}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: true,
+          listener: (e: { nativeEvent: { contentOffset: { y: number } } }) => {
+            if (!atEnd && e.nativeEvent.contentOffset.y >= reach - 24) setAtEnd(true);
+          },
+        })}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + 30, width: layout.contentWidth },
+          {
+            paddingBottom: insets.bottom + (asking ? 150 : 30),
+            width: layout.contentWidth,
+          },
         ]}
       >
         {documents.isLoading && (
@@ -78,111 +169,133 @@ export default function Legal() {
           <EmptyState icon="document-text-outline" title="Nothing has been published yet." />
         )}
 
-        {rows.map((document, index) => {
-          const status = document as Partial<LegalStatus>;
-          const expanded = open === document.id;
-          return (
-            <FadeIn key={document.id} index={index} style={styles.card}>
-              <PressableScale
-                scaleTo={0.99}
-                onPress={() => setOpen(expanded ? null : document.id)}
-                style={styles.head}
-              >
-                <View style={styles.disc}>
-                  <Icon name="document-text-outline" size={20} color={theme.accent} />
-                </View>
-                <View style={styles.flex}>
-                  <Text style={styles.title}>{document.title}</Text>
-                  <Text style={type.small}>
-                    Version {document.version} · {when(document.publishedAt)}
-                  </Text>
-                </View>
-              </PressableScale>
+        {current && (
+          <FadeIn key={current.id} distance={10} style={styles.card}>
+            <View style={styles.meta}>
+              <Text style={type.title}>{current.title}</Text>
+              <Text style={type.small}>
+                Version {current.version} · {when(current.publishedAt)}
+              </Text>
+            </View>
 
-              {signedIn && status.acceptedVersion !== undefined && (
-                <Pill
-                  tone={status.needsAcceptance ? 'warn' : 'ok'}
-                  icon={status.needsAcceptance ? 'alert-circle-outline' : 'checkmark-circle'}
-                  label={
-                    status.acceptedVersion === null
-                      ? 'You have not agreed to this yet'
-                      : status.needsAcceptance
-                        ? `You agreed to version ${status.acceptedVersion}. This one is newer.`
-                        : `Agreed ${status.acceptedAt ? when(status.acceptedAt) : ''}`
-                  }
-                />
-              )}
+            {signedIn && status.acceptedVersion !== undefined && (
+              <Pill
+                tone={status.needsAcceptance ? 'warn' : 'ok'}
+                icon={status.needsAcceptance ? 'alert-circle-outline' : 'checkmark-circle'}
+                label={
+                  status.acceptedVersion === null
+                    ? 'You have not agreed to this yet'
+                    : status.needsAcceptance
+                      ? `You agreed to version ${status.acceptedVersion}. This one is newer.`
+                      : `Agreed ${status.acceptedAt ? when(status.acceptedAt) : ''}`
+                }
+              />
+            )}
 
-              {/* The one line that says what moved. Nobody rereads four
-                  thousand words to find it. */}
-              {status.needsAcceptance && document.changeNote && (
-                <View style={styles.noteBox}>
-                  <Text style={type.body}>What changed: {document.changeNote}</Text>
-                </View>
-              )}
+            {/* The one line that says what moved. Nobody rereads four
+                thousand words to find it. Only for someone who agreed to an
+                earlier version — to anyone else nothing "changed". */}
+            {status.needsAcceptance && status.acceptedVersion !== null && current.changeNote && (
+              <View style={styles.noteBox}>
+                <Text style={type.body}>What changed: {current.changeNote}</Text>
+              </View>
+            )}
 
-              <PressableScale
-                hitSlop={8}
-                style={styles.toggleRow}
-                onPress={() => setOpen(expanded ? null : document.id)}
-              >
-                <Text style={styles.toggle}>{expanded ? 'Hide' : 'Read it'}</Text>
-                <Icon
-                  name={expanded ? 'chevron-up' : 'chevron-down'}
-                  size={15}
-                  color={theme.accent}
-                />
-              </PressableScale>
+            <View style={styles.rule} />
 
-              {expanded && (
-                <FadeIn distance={8}>
-                  <LegalText body={document.body} />
-                </FadeIn>
-              )}
+            <LegalText body={current.body} />
+          </FadeIn>
+        )}
 
-              {signedIn && status.needsAcceptance && (
-                <Button
-                  busy={accept.isPending}
-                  label={accept.isPending ? 'Saving…' : 'I agree to this'}
-                  onPress={() => accept.mutate(document.id)}
-                />
-              )}
-            </FadeIn>
-          );
-        })}
+        {current && (
+          <Text style={[type.small, styles.foot]}>
+            Older versions are kept. What you agreed to stays as you read it, even
+            after it is replaced.
+          </Text>
+        )}
+      </Animated.ScrollView>
 
-        <Text style={[type.small, styles.foot]}>
-          Older versions are kept. What you agreed to stays as you read it, even
-          after it is replaced.
-        </Text>
-      </ScrollView>
+      {/* The agreement, fixed at the bottom. It says WHICH document and WHICH
+          version in words, so the tap is to something named. */}
+      <Animated.View
+        pointerEvents={asking ? 'auto' : 'none'}
+        style={[
+          styles.bar,
+          { paddingBottom: insets.bottom + 14 },
+          {
+            opacity: bar,
+            transform: [{ translateY: bar.interpolate({ inputRange: [0, 1], outputRange: [140, 0] }) }],
+          },
+        ]}
+      >
+        {current && (
+          <View style={[styles.barInner, { width: Math.min(layout.contentWidth, 560) }]}>
+            <Text style={[type.small, styles.barText]}>
+              By tapping, you agree to version {current.version} of the {current.title}.
+            </Text>
+            <AgreeButton
+              // A fresh button per document: the one that just turned into a
+              // tick must not be the one offered for the next document.
+              key={current.id}
+              label="I agree to this"
+              wake={atEnd || fits}
+              onAgree={() => accept.mutateAsync(current.id).catch((error) => {
+                Alert.alert(
+                  'Not saved',
+                  error instanceof ApiError ? error.message : 'Please try again.',
+                );
+                throw error;
+              })}
+              onDone={() => {
+                // Straight on to the next one still waiting, if there is one —
+                // two documents to accept should be two taps, not a hunt.
+                const next = rows.find((d) => d.id !== current.id && waiting(d));
+                queryClient.invalidateQueries({ queryKey: ['legal'] });
+                if (next) setChosen(next.id);
+              }}
+            />
+          </View>
+        )}
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
-  flex: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 6, gap: 14, alignSelf: 'center' },
+  tabs: { alignSelf: 'center', paddingHorizontal: 20, paddingTop: 4, paddingBottom: 10 },
+  progressTrack: {
+    alignSelf: 'center',
+    height: 3,
+    backgroundColor: theme.line,
+    overflow: 'hidden',
+  },
+  progress: { height: 3, backgroundColor: theme.accent, borderRadius: 2 },
+  content: { paddingHorizontal: 20, paddingTop: 16, gap: 14, alignSelf: 'center' },
   card: {
     backgroundColor: theme.panel,
-    borderRadius: radius.lg,
-    padding: 16,
+    borderRadius: radius.xl,
+    padding: 20,
     gap: 12,
     ...shadow.card,
   },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 13 },
-  disc: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { fontFamily: font.bold, fontSize: 16.5, color: theme.ink, marginBottom: 1 },
+  meta: { gap: 2 },
   noteBox: { backgroundColor: theme.sunken, borderRadius: radius.md, padding: 12 },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start' },
-  toggle: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
+  rule: { height: 1, backgroundColor: theme.line, marginVertical: 2 },
   foot: { textAlign: 'center', paddingHorizontal: 10 },
+  bar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    backgroundColor: theme.panel,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingTop: 14,
+    paddingHorizontal: 20,
+    ...shadow.float,
+  },
+  barInner: { maxWidth: '100%', gap: 10 },
+  barText: { textAlign: 'center' },
 });
