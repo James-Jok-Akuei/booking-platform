@@ -3465,6 +3465,10 @@ cannot leak to an anonymous reader, because it was never fetched.
 
 ### 31.4 Set through the review endpoints; there is no profile endpoint
 
+> ~~"There is no profile endpoint … and none was invented for this."~~
+> **Superseded by §144:** the name can now also be set, or cleared to Anonymous,
+> from the account. Setting it through a review still works exactly as below.
+
 `POST /appointments/:id/reviews` and `PATCH /reviews/:id` both accept an
 optional `displayName` and write it to the `User` **in the same transaction** as
 the review. A review that posted while its byline failed to save would publish
@@ -12821,3 +12825,37 @@ laid out the way a profile is.
 
 Nothing was removed and no wording about what things do was changed; the
 Android "Crop is what sends it" note (§125.6) is kept, on Android only.
+
+## 144. A data copy people can read, and a review name they can change (2026-10-05)
+
+### 144.1 The export is a PDF
+
+"Get a copy of my data" handed over a JSON file — complete, and to most people
+who asked for it, indistinguishable from an error. It now hands over a PDF:
+the same export set out as pages (account, bookings, reviews, messages, support
+requests), built on the phone from the same response with `expo-print`.
+
+- **Nothing is summarised away.** Every row of the export is in the document.
+- **Built in the app, not on the server.** The server already answers with
+  everything; a second "pretty" endpoint would be a second place to forget a
+  field. Everything a customer typed is HTML-escaped on the way in.
+- **The JSON is kept** as "Technical copy", because moving your data to another
+  service (portability) wants a machine-readable file.
+
+### 144.2 The name on reviews is set from the account
+
+`PATCH /users/me/display-name` with `{ displayName: string | null }`.
+
+§31.4 allowed the name to be set only while writing or editing a review,
+because nothing wrote a User row then. That left a name that could not be
+changed at all once a review's seven-day edit window had closed, and no way to
+go BACK to Anonymous short of asking an admin.
+
+- A name obeys the same rules as one set through a review (§31.5): same field,
+  same validator.
+- `null` means Anonymous, and is what is stored — the word still never is
+  (§31.2).
+- It changes on every review at once (§31.1) and marks none of them as edited.
+- In the app it is a sheet with two plain choices: save a name, or "Show me as
+  Anonymous". The sheet says that shops they book with still see their email,
+  because "Anonymous" must not be mistaken for hidden from the shop.

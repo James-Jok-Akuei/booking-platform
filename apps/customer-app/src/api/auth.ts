@@ -147,3 +147,13 @@ export const getOffersPreference = () => api<OffersPreference>('/users/me/offers
  */
 export const setOffersPreference = (body: { optedIn: boolean; districtId?: string }) =>
   api<OffersPreference>('/users/me/offers', { method: 'PATCH', body });
+
+/**
+ * The name beside this person's reviews (§144). `null` shows them as
+ * Anonymous. It changes on every review they have left, at once.
+ */
+export const setMyDisplayName = (displayName: string | null) =>
+  api<components['schemas']['UserDisplayNameDto']>('/users/me/display-name', {
+    method: 'PATCH',
+    body: { displayName },
+  });

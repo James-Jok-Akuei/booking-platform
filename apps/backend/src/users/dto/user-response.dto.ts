@@ -96,6 +96,12 @@ export class UserImageDto {
   imageUrl!: string | null;
 }
 
+/** The name on this person's reviews after a change (§144). Null reads as Anonymous. */
+export class UserDisplayNameDto {
+  id!: string;
+  displayName!: string | null;
+}
+
 // ---------------------------------------------------------------------------
 // Numbers they pay from (§124.2)
 // ---------------------------------------------------------------------------

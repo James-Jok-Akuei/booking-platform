@@ -110,6 +110,21 @@ export class AccountService {
    * Scoped to the caller at every level. There is no id parameter at all, so
    * there is nothing to tamper with.
    */
+  /**
+   * Sets the byline, or clears it (§144). One write on the user, so it changes
+   * on every review they have left at once (§31.1) — and, like a rename
+   * through a review, it does not mark any review as edited: the words did
+   * not change.
+   */
+  async setDisplayName(userId: string, displayName: string | null) {
+    const { count } = await this.prisma.user.updateMany({
+      where: { id: userId, closedAt: null },
+      data: { displayName },
+    });
+    if (count === 0) throw new NotFoundException('Account not found.');
+    return { id: userId, displayName };
+  }
+
   async exportFor(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

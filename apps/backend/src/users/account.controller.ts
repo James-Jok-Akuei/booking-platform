@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   UploadedFile,
   UseFilters,
@@ -30,8 +31,10 @@ import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AccountExportDto,
   SavedPaymentNumberDto,
+  UserDisplayNameDto,
   UserImageDto,
 } from './dto/user-response.dto';
+import { SetDisplayNameDto } from './dto/set-display-name.dto';
 
 /**
  * What a person may do to their OWN account (§119).
@@ -103,6 +106,20 @@ export class AccountController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.numbers.remove(user.userId, id);
+  }
+
+  /**
+   * The name beside the caller's reviews, or `null` for Anonymous (§144).
+   *
+   * §31.4 set this only through the review endpoints because nothing wrote a
+   * User row then. Something does now — the picture, the saved numbers — and a
+   * name that can only be changed by editing a review cannot be changed at all
+   * once that review's edit window has closed.
+   */
+  @Patch('display-name')
+  @ApiOkResponse({ type: UserDisplayNameDto })
+  setDisplayName(@CurrentUser() user: AuthenticatedUser, @Body() dto: SetDisplayNameDto) {
+    return this.account.setDisplayName(user.userId, dto.displayName);
   }
 
   /** Everything the platform holds about the caller, as JSON (§119.2). */

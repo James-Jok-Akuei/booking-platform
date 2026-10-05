@@ -288,6 +288,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/me/display-name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * The name beside the caller's reviews, or `null` for Anonymous (§144).
+         *
+         *     §31.4 set this only through the review endpoints because nothing wrote a
+         *     User row then. Something does now — the picture, the saved numbers — and a
+         *     name that can only be changed by editing a review cannot be changed at all
+         *     once that review's edit window has closed.
+         */
+        patch: operations["AccountController_setDisplayName"];
+        trace?: never;
+    };
     "/users/me/export": {
         parameters: {
             query?: never;
@@ -2667,6 +2691,13 @@ export interface components {
             label?: string;
             /** @enum {string} */
             provider?: "MTN_MOMO" | "AIRTEL_MONEY";
+        };
+        SetDisplayNameDto: {
+            displayName: string | null;
+        };
+        UserDisplayNameDto: {
+            id: string;
+            displayName: string | null;
         };
         ExportedHomeDistrictDto: {
             name: string;
@@ -5871,6 +5902,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionMessageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AccountController_setDisplayName: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetDisplayNameDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDisplayNameDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

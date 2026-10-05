@@ -972,6 +972,68 @@
         ]
       }
     },
+    "/users/me/display-name": {
+      "patch": {
+        "operationId": "AccountController_setDisplayName",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDisplayNameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDisplayNameDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The name beside the caller's reviews, or `null` for Anonymous (§144).\n\n§31.4 set this only through the review endpoints because nothing wrote a\nUser row then. Something does now — the picture, the saved numbers — and a\nname that can only be changed by editing a review cannot be changed at all\nonce that review's edit window has closed.",
+        "tags": [
+          "Account"
+        ]
+      }
+    },
     "/users/me/export": {
       "get": {
         "operationId": "AccountController_export",
@@ -12754,6 +12816,36 @@
         },
         "required": [
           "phoneNumber"
+        ]
+      },
+      "SetDisplayNameDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 2,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "displayName"
+        ]
+      },
+      "UserDisplayNameDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "displayName"
         ]
       },
       "ExportedHomeDistrictDto": {

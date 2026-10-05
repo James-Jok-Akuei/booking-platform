@@ -24,6 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * memory is the mistake this app's AGENTS.md opens by warning about (§102.3).
  */
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -34,9 +35,14 @@ import {
   removeMyImage,
   removeSavedNumber,
   saveNumber,
+  setMyDisplayName,
   setMyImage,
   signOut,
+  type AccountExport,
 } from '../../src/api/auth';
+import { exportDocumentHtml } from '../../src/exportDocument';
+import { useMoney } from '../../src/money';
+import { Sheet } from '../../src/ui/Sheet';
 import { listMyAppointments } from '../../src/api/booking';
 import { listFavourites } from '../../src/api/discovery';
 import { OffersCard } from '../../src/components/OffersCard';
@@ -83,6 +89,7 @@ export default function Account() {
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
+  const money = useMoney();
   const signedIn = useSignedIn();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [adding, setAdding] = useState(false);
@@ -183,26 +190,67 @@ export default function Account() {
 
   const dropNumber = useMutation({ mutationFn: removeSavedNumber, onSuccess: refreshNumbers });
 
+  /**
+   * A copy of everything, handed to the share sheet (§119.2) — which is the
+   * only way anything leaves a phone.
+   *
+   * As a PDF a person can read (§144): the same complete export, set out as
+   * pages. The JSON it used to be is still there as the "technical copy", for
+   * the rare person who wants to MOVE their data rather than read it.
+   */
+  const share = async (uri: string, mimeType: string, kind: string) => {
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(uri, { mimeType, dialogTitle: 'Your data', UTI: kind });
+    } else {
+      Alert.alert('Saved', `Your data is in ${uri}. This device cannot open a share sheet.`);
+    }
+  };
+  const exportFailed = (error: unknown) =>
+    Alert.alert(
+      'Could not prepare that',
+      error instanceof ApiError ? error.message : 'Please try again.',
+    );
+
   const exportData = useMutation({
     mutationFn: exportMyData,
-    onSuccess: async (data) => {
+    onSuccess: async (data: AccountExport) => {
+      const { uri } = await Print.printToFileAsync({
+        html: exportDocumentHtml(data, money.format),
+      });
+      // The printer names the file with a random id; a name a person will
+      // recognise in their downloads a month from now is worth one move.
+      const named = `${FileSystem.cacheDirectory}my-data.pdf`;
+      await FileSystem.deleteAsync(named, { idempotent: true });
+      await FileSystem.moveAsync({ from: uri, to: named });
+      await share(named, 'application/pdf', 'com.adobe.pdf');
+    },
+    onError: exportFailed,
+  });
+
+  const exportJson = useMutation({
+    mutationFn: exportMyData,
+    onSuccess: async (data: AccountExport) => {
       const path = `${FileSystem.cacheDirectory}my-data.json`;
       await FileSystem.writeAsStringAsync(path, JSON.stringify(data, null, 2));
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(path, {
-          mimeType: 'application/json',
-          dialogTitle: 'Your data',
-        });
-      } else {
-        Alert.alert(
-          'Saved',
-          `Your data is in ${path}. This device cannot open a share sheet.`,
-        );
-      }
+      await share(path, 'application/json', 'public.json');
+    },
+    onError: exportFailed,
+  });
+
+  // ---- The name on their reviews (§144) ----
+  const [naming, setNaming] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const rename = useMutation({
+    mutationFn: setMyDisplayName,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      // Their byline is on reviews other screens have already fetched.
+      queryClient.invalidateQueries({ queryKey: ['shop-reviews'] });
+      setNaming(false);
     },
     onError: (error) =>
       Alert.alert(
-        'Could not prepare that',
+        'Not saved',
         error instanceof ApiError ? error.message : 'Please try again.',
       ),
   });
@@ -459,14 +507,18 @@ export default function Account() {
                   icon="create-outline"
                   label="The name on your reviews"
                   value={nameShown}
-                  // True, and worth saying: the name belongs to the account, so
-                  // there is no separate place to change it. Writing or editing
-                  // a review is where it is set (§31).
+                  // One name for the account, so it changes on every review
+                  // they have left at once (§31.1) — said in the sheet, where
+                  // the change is made.
                   note={
                     me.data.displayName
-                      ? 'Change it when you write or edit a review.'
-                      : 'You can give a name when you write a review.'
+                      ? 'Tap to change it, or to be shown as Anonymous.'
+                      : 'Tap to give a name.'
                   }
+                  onPress={() => {
+                    setNameDraft(me.data?.displayName ?? '');
+                    setNaming(true);
+                  }}
                 />
               </View>
             </FadeIn>
@@ -580,9 +632,18 @@ export default function Account() {
               <Row
                 icon="download-outline"
                 label={exportData.isPending ? 'Preparing…' : 'Get a copy of my data'}
-                note="Your bookings, reviews, messages and support tickets."
+                note="A PDF you can read: your bookings, reviews, messages and support tickets."
                 onPress={() => exportData.mutate()}
                 off={exportData.isPending}
+              />
+              <View style={styles.divider} />
+              <Row
+                icon="code-slash-outline"
+                label={exportJson.isPending ? 'Preparing…' : 'Technical copy'}
+                note="The same data as a JSON file, for moving it to another service."
+                onPress={() => exportJson.mutate()}
+                off={exportJson.isPending}
+                plain
               />
               <View style={styles.divider} />
               <Row icon="log-out-outline" label="Sign out" onPress={leave} danger />
@@ -610,6 +671,53 @@ export default function Account() {
           )}
         </View>
       </Animated.ScrollView>
+
+      {/* The name on their reviews (§144). Two choices, said as two choices:
+          a name, or Anonymous. Anonymous is not an empty box somebody has to
+          think to clear — it is a button. */}
+      <Sheet open={naming} title="The name on your reviews" onClose={() => setNaming(false)}>
+        <View style={styles.nameSheet}>
+          <Text style={type.small}>
+            Shown beside every review you have written and will write. Shops you
+            book with still see your email.
+          </Text>
+          <TextInput
+            style={styles.nameInput}
+            value={nameDraft}
+            onChangeText={setNameDraft}
+            placeholder="For example, Aline M."
+            placeholderTextColor={theme.muted}
+            maxLength={40}
+            autoCapitalize="words"
+            autoCorrect={false}
+            returnKeyType="done"
+          />
+          <Button
+            label={rename.isPending ? 'Saving…' : 'Save this name'}
+            busy={rename.isPending}
+            disabled={
+              nameDraft.trim().length < 2 || nameDraft.trim() === (me.data?.displayName ?? '')
+            }
+            onPress={() => rename.mutate(nameDraft.trim())}
+          />
+          {me.data?.displayName ? (
+            <Button
+              kind="outline"
+              icon="eye-off-outline"
+              label="Show me as Anonymous"
+              disabled={rename.isPending}
+              onPress={() => rename.mutate(null)}
+            />
+          ) : (
+            <View style={styles.anonNow}>
+              <Icon name="eye-off-outline" size={16} color={theme.ink2} />
+              <Text style={[type.small, styles.flex]}>
+                You are shown as Anonymous now.
+              </Text>
+            </View>
+          )}
+        </View>
+      </Sheet>
 
       {/* The bar that appears once the header has scrolled away. */}
       <Animated.View
@@ -936,6 +1044,25 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     fontSize: 15,
     color: theme.ink,
+  },
+  nameSheet: { gap: 12, paddingBottom: 8 },
+  nameInput: {
+    fontFamily: font.semibold,
+    backgroundColor: theme.sunken,
+    borderRadius: radius.md,
+    paddingHorizontal: 16,
+    height: 52,
+    paddingVertical: 0,
+    fontSize: 16,
+    color: theme.ink,
+  },
+  anonNow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: theme.sunken,
+    borderRadius: radius.md,
+    padding: 12,
   },
   closeAccount: { paddingVertical: 8, alignItems: 'center', marginTop: 18 },
   closeAccountText: { fontFamily: font.semibold, fontSize: 14, color: theme.muted },
