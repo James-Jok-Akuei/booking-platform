@@ -18,7 +18,8 @@ import { tick } from './haptic';
 import { Icon } from './Icon';
 import { PressableScale } from './PressableScale';
 
-export type ViewerPhoto = { id: string; url: string };
+/** `label` is what the photo is of — "Haircut" — shown beside the counter (§152). */
+export type ViewerPhoto = { id: string; url: string; label?: string };
 
 /** Where on the screen the tapped thumbnail was, so the photo can grow from it. */
 export type ViewerOrigin = { x: number; y: number; width: number; height: number };
@@ -244,15 +245,22 @@ export function PhotoViewer({
         style={[styles.top, { paddingTop: insets.top + 10, opacity: chrome }]}
         pointerEvents="box-none"
       >
-        {many ? (
-          <View style={styles.counter}>
-            <Text style={styles.counterText}>
-              {index + 1} / {photos.length}
-            </Text>
-          </View>
-        ) : (
-          <View />
-        )}
+        <View style={styles.topLeft}>
+          {many && (
+            <View style={styles.counter}>
+              <Text style={styles.counterText}>
+                {index + 1} / {photos.length}
+              </Text>
+            </View>
+          )}
+          {photos[index]?.label && (
+            <View style={styles.counter}>
+              <Text style={styles.counterText} numberOfLines={1}>
+                {photos[index].label}
+              </Text>
+            </View>
+          )}
+        </View>
         <PressableScale
           onPress={close}
           haptic
@@ -480,6 +488,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  topLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, paddingRight: 12 },
   counter: {
     height: 34,
     paddingHorizontal: 13,

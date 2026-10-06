@@ -12942,3 +12942,25 @@ in for it.
 The "Most popular" shelf put a 1, 2, 3 on its first three cards. Removed, at
 the user's request: the shelf's order already says it, and "4 booked" on the
 card is the honest number. The logo badge (§150) takes the corner.
+
+## 152. The gallery is a page (2026-10-06)
+
+"See all" on a shop opened the first photo in the viewer — one at a time is not
+all. `/gallery/:locationId` is the wall: the branch's own photos and every
+service's photos together.
+
+- **A lead photo**, large, with the shop's logo and name on it and what the
+  photo is of.
+- **A masonry** under it: two columns (three on wider screens), each tile at
+  the photo's own shape, dropped into whichever column is shorter — nothing
+  cropped square, no holes. Shapes are learnt as the images load
+  (`Image.getSize`), so the wall starts at 4:3 and settles. Tiles pop in in
+  order. Each carries a small tag saying which service it is.
+- **Chips narrow the wall** to the place or to one service: "Haircut · 11",
+  "Hair brading · 1".
+- **Every tile opens the viewer** at that photo, and the viewer now shows the
+  photo's label ("Oil change") beside its counter.
+- A dark button at the foot leads back to the shop to book, because looking is
+  for choosing.
+
+The strip on the shop page stays, as a taste; "See all" goes here.

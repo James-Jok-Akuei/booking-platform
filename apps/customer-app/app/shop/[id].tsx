@@ -244,16 +244,16 @@ export default function Shop() {
             {/* The branch's own photos. They were sent with every shop and
                 drawn by nothing; a customer could not see inside a place
                 before walking to it. */}
-            {/* A heading with the count and "See all", a strip of the first
-                six, and every photo opens the viewer (§148) — the same one a
-                service's photos open, so the two feel like one thing. */}
+            {/* A heading with the count, a strip of the first six that open
+                the viewer (§148), and "See all" to the gallery page — the wall
+                of every photo of the place and of its services (§152). */}
             {s.gallery.length > 0 && (
               <FadeIn delay={120} style={styles.section}>
                 <View style={styles.galleryHead}>
                   <Text style={type.heading}>
                     Photos <Text style={styles.galleryCount}>{s.gallery.length}</Text>
                   </Text>
-                  <PressableScale onPress={() => setPhoto(0)} hitSlop={8} haptic>
+                  <PressableScale onPress={() => router.push(`/gallery/${s.id}`)} hitSlop={8} haptic>
                     <Text style={styles.link}>See all →</Text>
                   </PressableScale>
                 </View>
