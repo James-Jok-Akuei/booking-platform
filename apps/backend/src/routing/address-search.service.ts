@@ -2,59 +2,88 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AddressDto, AddressSearchDto } from './dto/address.dto';
 
-/** A typed address is found the same way tomorrow: kept a day. */
+/** The same letters are answered the same way tomorrow: kept a day. */
 const CACHE_MS = 24 * 60 * 60 * 1000;
+/** Suggestions are asked for at every pause in typing; this many are remembered. */
+const CACHE_MAX = 5000;
 /** The map search gets this long; after it, the app is told to try another way. */
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 4000;
 /** How many matches to offer. Enough to find the right one, few enough to read. */
 const LIMIT = 6;
+/**
+ * Rwanda's box (west, south, east, north). It takes in a little of each
+ * neighbour, so what comes back is filtered to Rwanda as well.
+ */
+const RWANDA_BOX = '28.85,-2.85,30.9,-1.04';
+/** Map features nobody lives at or sends offers to: rivers, streams, hills. */
+const NOT_ADDRESSES = new Set(['waterway', 'natural']);
 
-/** What Nominatim's `jsonv2` answer holds, as far as this reads it. */
-type Place = {
-  lat?: string;
-  lon?: string;
+/** What Photon's answer holds for one place, as far as this reads it. */
+type PlaceProperties = {
   name?: string;
-  display_name?: string;
-  address?: Record<string, string | undefined>;
+  street?: string;
+  housenumber?: string;
+  district?: string;
+  locality?: string;
+  city?: string;
+  county?: string;
+  state?: string;
+  countrycode?: string;
+  osm_key?: string;
 };
+type Feature = { geometry?: { coordinates?: [number, number] }; properties?: PlaceProperties };
 
 /** Each value once, in order, empty ones dropped. */
 const unique = (parts: Array<string | undefined>) =>
   parts.filter((part, i, all): part is string => Boolean(part) && all.indexOf(part) === i);
 
-/**
- * A place as a person would say it (§172): "Kimironko Market, KG 11 Ave,
- * Kimironko", then "Gasabo, Kigali" underneath — not OpenStreetMap's full
- * "Kimironko Market, KG 11 Ave, Kimironko, Gasabo, Kigali City, Rwanda".
- */
-export function describePlace(place: Place): { label: string; detail: string } {
-  const a = place.address ?? {};
-  const street = a.road ? (a.house_number ? `${a.house_number} ${a.road}` : a.road) : undefined;
-  const area = a.suburb ?? a.neighbourhood ?? a.quarter ?? a.village ?? a.city_district;
-  const town = a.city ?? a.town ?? a.state;
+/** "Northern Province, Rwanda" is in Rwanda; every result is. */
+const local = (part: string | undefined) => part?.replace(/,\s*Rwanda$/, '').trim() || undefined;
 
-  let label = unique([place.name, street, area]).slice(0, 3);
-  if (label.length === 0) {
-    label = (place.display_name ?? '').split(', ').slice(0, 2);
-  }
-  const detail = unique([a.county, town]).filter((part) => !label.includes(part));
+/**
+ * A place as a person would say it (§172): "Kimironko Market, KG 153 Street,
+ * Kimironko", then "Kigali" underneath — and a town on its own as "Nyamirama",
+ * then "Kayonza District, Eastern Province", so the four Remeras in Rwanda can
+ * be told apart.
+ */
+export function describePlace(p: PlaceProperties): { label: string; detail: string } {
+  const street = p.street ? (p.housenumber ? `${p.housenumber} ${p.street}` : p.street) : undefined;
+  // "Gasabo District" is where something is, not what it is called.
+  const area = [p.district, p.locality].find((part) => part && !/ District$/.test(part));
+
+  let label = unique([local(p.name), street, area]).slice(0, 3);
+  if (label.length === 0) label = unique([local(p.city), local(p.county)]).slice(0, 1);
+
+  // Smallest first: "Ruheru, Nyaruguru District". Kigali is the exception —
+  // the one city with districts INSIDE it (§106.1) — so "Gasabo District,
+  // Kigali", the way it is said.
+  const city = local(p.city);
+  const inKigali = city === 'Kigali';
+  const detail = unique([
+    inKigali ? undefined : city,
+    ...[p.district, p.locality].filter((part) => part && / District$/.test(part)),
+    local(p.county),
+    inKigali ? city : undefined,
+    local(p.state),
+  ])
+    .filter((part) => !label.includes(part))
+    .slice(0, 2);
 
   return { label: label.join(', ').slice(0, 120), detail: detail.join(', ') };
 }
 
 /**
- * Finding a typed address on the map (§172), for the weekly offers email.
+ * Finding an address while it is typed (§172, §174), for the weekly offers
+ * email: "kimir" already offers Kimironko, Kimironko Market and the taxi park.
  *
- * Until now the only way to save a spot was to stand on it and press "Use
- * where I am now" (§169) — no use to someone at work who wants offers near
- * home. This turns what they type into places to pick from.
- *
- * The service is Nominatim, OpenStreetMap's search, the same open map the
- * road distances come from (§157). Its public server is free on three
- * conditions, all kept here: callers name themselves (`GEOCODING_USER_AGENT`),
- * ask at most once a second (searches wait their turn), and do not search as
- * people type (the app searches when "Find" is pressed). Only the typed words
- * are sent — never who typed them.
+ * The service is Photon, a search over OpenStreetMap — the same open map as
+ * the road distances (§157) — made for exactly this, suggesting as people
+ * type. (§172 used Nominatim, whose public server forbids search-as-you-type.)
+ * Its public server is free for fair use; `GEOCODING_BASE_URL` points at a
+ * self-hosted one, which for Rwanda alone is small, or at nothing to turn
+ * search off. Callers name themselves (`GEOCODING_USER_AGENT`), searches take
+ * turns a little apart (`GEOCODING_SPACING_MS`), and the same letters are
+ * answered from memory. Only the letters typed are sent — never who typed them.
  *
  * Never fails the caller: a slow or absent service answers `available: false`
  * and the app offers the other two ways.
@@ -73,13 +102,12 @@ export class AddressSearchService {
     const configured = config.get<string>('GEOCODING_BASE_URL');
     this.baseUrl =
       configured === undefined
-        ? 'https://nominatim.openstreetmap.org'
+        ? 'https://photon.komoot.io'
         : configured.trim().replace(/\/+$/, '') || null;
     this.userAgent =
       config.get<string>('GEOCODING_USER_AGENT')?.trim() ||
       'booking-platform/1.0 (service bookings in Rwanda)';
-    // One a second is the public server's rule; a self-hosted one can say less.
-    this.spacingMs = Number(config.get<string>('GEOCODING_SPACING_MS') ?? 1100);
+    this.spacingMs = Number(config.get<string>('GEOCODING_SPACING_MS') ?? 250);
   }
 
   async search(query: string): Promise<AddressSearchDto> {
@@ -90,8 +118,18 @@ export class AddressSearchService {
 
     const found = await this.inTurn(() => this.ask(query));
     if (found === null) return { results: [], available: false };
-    this.cache.set(key, { at: Date.now(), value: found });
+    this.remember(key, found);
     return { results: found, available: true };
+  }
+
+  /** Oldest first out, so a busy day of typing cannot fill the memory. */
+  private remember(key: string, value: AddressDto[]) {
+    this.cache.delete(key);
+    this.cache.set(key, { at: Date.now(), value });
+    if (this.cache.size > CACHE_MAX) {
+      const oldest = this.cache.keys().next().value;
+      if (oldest !== undefined) this.cache.delete(oldest);
+    }
   }
 
   /** One search at a time, each at least `spacingMs` after the last. */
@@ -109,15 +147,13 @@ export class AddressSearchService {
   private async ask(query: string): Promise<AddressDto[] | null> {
     const params = new URLSearchParams({
       q: query,
-      format: 'jsonv2',
-      addressdetails: '1',
-      // Rwanda only: "Kimironko" should not find a street in another country.
-      countrycodes: 'rw',
-      limit: String(LIMIT),
-      'accept-language': 'en',
+      // More than are shown: some will be outside Rwanda or be a river.
+      limit: String(LIMIT * 2),
+      lang: 'en',
+      bbox: RWANDA_BOX,
     });
     try {
-      const response = await fetch(`${this.baseUrl}/search?${params}`, {
+      const response = await fetch(`${this.baseUrl}/api/?${params}`, {
         headers: { 'User-Agent': this.userAgent, Accept: 'application/json' },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
@@ -125,18 +161,21 @@ export class AddressSearchService {
         this.logger.warn(`Address search answered ${response.status}.`);
         return null;
       }
-      const places = (await response.json()) as unknown;
-      if (!Array.isArray(places)) return null;
+      const body = (await response.json()) as { features?: unknown };
+      if (!Array.isArray(body?.features)) return null;
 
       const results: AddressDto[] = [];
-      for (const place of places as Place[]) {
-        const latitude = Number(place.lat);
-        const longitude = Number(place.lon);
+      for (const feature of body.features as Feature[]) {
+        const p = feature.properties ?? {};
+        if (p.countrycode !== 'RW' || (p.osm_key && NOT_ADDRESSES.has(p.osm_key))) continue;
+        const [longitude, latitude] = feature.geometry?.coordinates ?? [];
+        if (typeof latitude !== 'number' || typeof longitude !== 'number') continue;
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) continue;
-        const { label, detail } = describePlace(place);
-        // The same street found twice is one choice, not two.
+        const { label, detail } = describePlace(p);
+        // The same place found twice (a shop and its building) is one choice.
         if (!label || results.some((r) => r.label === label && r.detail === detail)) continue;
         results.push({ label, detail, latitude, longitude });
+        if (results.length === LIMIT) break;
       }
       return results;
     } catch (error) {

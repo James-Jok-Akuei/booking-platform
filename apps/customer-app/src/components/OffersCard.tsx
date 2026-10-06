@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import {
+  ActivityIndicator,
   Alert,
   Keyboard,
   ScrollView,
@@ -10,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getOffersPreference,
   searchAddresses,
@@ -51,7 +52,11 @@ export function OffersCard() {
   /** Opened from the switch: choosing an address is what finishes turning it on. */
   const [turningOn, setTurningOn] = useState(false);
   const [typed, setTyped] = useState('');
+  /** What is asked for: the typed words once typing pauses (§174). */
   const [asked, setAsked] = useState('');
+  /** Typing an address: the sheet shows only the field and what it finds. */
+  const [focused, setFocused] = useState(false);
+  const field = useRef<TextInput>(null);
 
   const preference = useQuery({ queryKey: ['offers-preference'], queryFn: getOffersPreference });
   const provinces = useQuery({
@@ -59,14 +64,29 @@ export function OffersCard() {
     queryFn: listProvinces,
     staleTime: Infinity,
   });
+  /**
+   * Suggestions as the address is typed (§174), asked for when typing pauses
+   * rather than on every letter: "kimironko" is one question, not nine. A
+   * question overtaken by more letters is dropped (the `signal`).
+   */
+  useEffect(() => {
+    const words = typed.trim().replace(/\s+/g, ' ');
+    const timer = setTimeout(() => setAsked(words), 350);
+    return () => clearTimeout(timer);
+  }, [typed]);
+
   const found = useQuery({
     queryKey: ['addresses', asked],
-    queryFn: () => searchAddresses(asked),
+    queryFn: ({ signal }) => searchAddresses(asked, signal),
     enabled: asked.length >= 3,
-    // A place does not move; the same words need not be asked twice.
+    // A place does not move; the same letters need not be asked twice.
     staleTime: Infinity,
     retry: false,
+    // The last suggestions stay while the next ones come, instead of the
+    // list blinking out at every letter.
+    placeholderData: keepPreviousData,
   });
+  const searching = focused || typed.length > 0;
 
   const save = useMutation({
     mutationFn: setOffersPreference,
@@ -103,13 +123,16 @@ export function OffersCard() {
     setTurningOn(false);
     setTyped('');
     setAsked('');
+    setFocused(false);
   };
 
-  const find = () => {
-    const words = typed.trim().replace(/\s+/g, ' ');
-    if (words.length < 3) return;
+  /** Out of typing, back to all three ways. */
+  const stopSearching = () => {
+    field.current?.blur();
     Keyboard.dismiss();
-    setAsked(words);
+    setTyped('');
+    setAsked('');
+    setFocused(false);
   };
 
   const pick = (place: FoundAddress) => {
@@ -243,7 +266,7 @@ export function OffersCard() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {spot && (
+          {spot && !searching && (
             <View style={styles.current}>
               <Icon name="home" size={16} color={theme.accent} />
               <View style={styles.flex}>
@@ -266,35 +289,59 @@ export function OffersCard() {
             </View>
           )}
 
-          {/* 1. Typed, and picked from what the map finds (§172). */}
+          {/* 1. Typed, with places suggested as it is typed (§172, §174). */}
           <View style={styles.block}>
-            <Text style={type.subheading}>Type the address</Text>
+            {!searching && <Text style={type.subheading}>Type the address</Text>}
             <View style={styles.searchRow}>
-              <View style={styles.search}>
-                <Icon name="search" size={17} color={theme.muted} />
+              <View style={[styles.search, focused && styles.searchOn]}>
+                <Icon name="search" size={17} color={focused ? theme.accent : theme.muted} />
                 <TextInput
+                  ref={field}
                   style={styles.searchInput}
                   value={typed}
                   onChangeText={setTyped}
-                  placeholder="A street, building or place"
+                  onFocus={() => setFocused(true)}
+                  onBlur={() => setFocused(false)}
+                  placeholder="Start typing a street or place"
                   placeholderTextColor={theme.muted}
                   returnKeyType="search"
-                  onSubmitEditing={find}
+                  // Return asks at once rather than waiting for the pause.
+                  onSubmitEditing={() => setAsked(typed.trim().replace(/\s+/g, ' '))}
                   autoCorrect={false}
                   accessibilityLabel="Address to search for"
                 />
+                {found.isFetching ? (
+                  <ActivityIndicator size="small" color={theme.accent} />
+                ) : typed.length > 0 ? (
+                  <PressableScale
+                    onPress={() => {
+                      setTyped('');
+                      setAsked('');
+                      field.current?.focus();
+                    }}
+                    hitSlop={10}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear the address"
+                    style={styles.clear}
+                  >
+                    <Icon name="close" size={13} color={theme.ink2} />
+                  </PressableScale>
+                ) : null}
               </View>
-              <Button
-                compact
-                label="Find"
-                disabled={typed.trim().length < 3}
-                busy={found.isFetching}
-                onPress={find}
-              />
+              {searching && (
+                <PressableScale onPress={stopSearching} hitSlop={8} accessibilityRole="button">
+                  <Text style={styles.cancel}>Cancel</Text>
+                </PressableScale>
+              )}
             </View>
-            <Text style={type.tiny}>For example "KG 11 Ave", "Kimironko Market" or "Kigali Heights".</Text>
 
-            {asked.length >= 3 && found.isFetching && (
+            {typed.trim().length < 3 ? (
+              <Text style={type.tiny}>
+                {typed.trim().length === 0
+                  ? 'Places appear as you type — "KG 11", "Kimironko", "Kigali Heights".'
+                  : 'Keep typing…'}
+              </Text>
+            ) : found.isPending && found.isFetching ? (
               <View style={styles.results}>
                 {[0, 1, 2].map((n) => (
                   <View key={n} style={styles.resultGhost}>
@@ -306,111 +353,136 @@ export function OffersCard() {
                   </View>
                 ))}
               </View>
-            )}
-
-            {asked.length >= 3 && !found.isFetching && found.data && (
-              <FadeIn key={asked}>
-                {!found.data.available ? (
-                  <Text style={styles.notice}>
-                    Address search is not working just now. Use where you are, or choose a
-                    district below.
-                  </Text>
-                ) : found.data.results.length === 0 ? (
-                  <Text style={styles.notice}>
-                    Nothing found for "{asked}". Try a street name, a building or a
-                    neighbourhood.
-                  </Text>
-                ) : (
-                  <View style={styles.results}>
-                    {found.data.results.map((place) => (
-                      <PressableScale
-                        key={`${place.latitude},${place.longitude}`}
-                        onPress={() => pick(place)}
-                        haptic
-                        accessibilityRole="button"
-                        accessibilityLabel={`Use ${place.label}${place.detail ? `, ${place.detail}` : ''}`}
-                        style={styles.result}
-                      >
-                        <View style={styles.resultIcon}>
-                          <Icon name="location" size={15} color={theme.accent} />
-                        </View>
-                        <View style={styles.flex}>
-                          <Text style={styles.resultLabel} numberOfLines={2}>
-                            {place.label}
-                          </Text>
-                          {place.detail ? <Text style={type.tiny}>{place.detail}</Text> : null}
-                        </View>
-                        <Icon name="chevron-forward" size={15} color={theme.muted} />
-                      </PressableScale>
-                    ))}
-                  </View>
-                )}
-              </FadeIn>
-            )}
-
-            {found.isError && !found.isFetching && (
+            ) : found.isError ? (
               <Text style={styles.notice}>
                 {found.error instanceof ApiError ? found.error.message : 'Could not search. Try again.'}
               </Text>
-            )}
-          </View>
-
-          {/* 2. Where the phone is now (§169). */}
-          <View style={styles.block}>
-            <View style={styles.exactHead}>
-              <View style={styles.exactIcon}>
-                <Icon name="navigate" size={18} color={theme.accent} />
-              </View>
-              <View style={styles.flex}>
-                <Text style={type.subheading}>At the address right now?</Text>
-                <Text style={type.small}>
-                  Save the exact spot your phone is at — your home, say.
-                </Text>
-              </View>
-            </View>
-            <Button
-              compact
-              kind="soft"
-              icon="locate"
-              label={locating ? 'Finding you…' : 'Use where I am now'}
-              busy={locating}
-              onPress={takeExactSpot}
-            />
-            <Text style={type.tiny}>
-              Kept only for these emails and never shown to shops. Forget it any time.
-            </Text>
-          </View>
-
-          {/* 3. A whole district, for someone who would rather not say more. */}
-          <Text style={type.label}>Or a whole district</Text>
-          {provinces.data?.map((province) => (
-            <View key={province.id} style={styles.group}>
-              <Text style={type.label}>{province.name}</Text>
-              <View style={styles.chips}>
-                {province.districts.map((option) => (
-                  <Chip
-                    key={option.id}
-                    tone="accent"
-                    label={option.name}
-                    active={!spot && district?.id === option.id}
-                    onPress={() => {
-                      // A district instead of an address: the address is
-                      // forgotten, or the email would go on using it.
-                      save.mutate({
-                        optedIn: optedIn || turningOn,
-                        districtId: option.id,
-                        ...(spot ? { spot: null } : {}),
-                      });
-                      close();
-                    }}
-                  />
+            ) : found.data && !found.data.available ? (
+              <Text style={styles.notice}>
+                Address search is not working just now. Use where you are, or choose a district.
+              </Text>
+            ) : found.data && found.data.results.length === 0 && !found.isPlaceholderData ? (
+              <Text style={styles.notice}>
+                Nothing found for "{asked}". Try a street name, a building or a neighbourhood.
+              </Text>
+            ) : found.data ? (
+              <View style={[styles.results, found.isPlaceholderData && styles.resultsStale]}>
+                {found.data.results.map((place) => (
+                  <PressableScale
+                    key={`${place.latitude},${place.longitude}`}
+                    onPress={() => pick(place)}
+                    haptic
+                    accessibilityRole="button"
+                    accessibilityLabel={`Use ${place.label}${place.detail ? `, ${place.detail}` : ''}`}
+                    style={styles.result}
+                  >
+                    <View style={styles.resultIcon}>
+                      <Icon name="location" size={15} color={theme.accent} />
+                    </View>
+                    <View style={styles.flex}>
+                      <Highlighted text={place.label} typed={asked} />
+                      {place.detail ? <Text style={type.tiny}>{place.detail}</Text> : null}
+                    </View>
+                    <Icon name="arrow-forward" size={15} color={theme.muted} />
+                  </PressableScale>
                 ))}
               </View>
-            </View>
-          ))}
+            ) : null}
+          </View>
+
+          {!searching && (
+            <>
+              {/* 2. Where the phone is now (§169). */}
+              <View style={styles.block}>
+                <View style={styles.exactHead}>
+                  <View style={styles.exactIcon}>
+                    <Icon name="navigate" size={18} color={theme.accent} />
+                  </View>
+                  <View style={styles.flex}>
+                    <Text style={type.subheading}>At the address right now?</Text>
+                    <Text style={type.small}>
+                      Save the exact spot your phone is at — your home, say.
+                    </Text>
+                  </View>
+                </View>
+                <Button
+                  compact
+                  kind="soft"
+                  icon="locate"
+                  label={locating ? 'Finding you…' : 'Use where I am now'}
+                  busy={locating}
+                  onPress={takeExactSpot}
+                />
+                <Text style={type.tiny}>
+                  Kept only for these emails and never shown to shops. Forget it any time.
+                </Text>
+              </View>
+
+              {/* 3. A whole district, for someone who would rather not say more. */}
+              <Text style={type.label}>Or a whole district</Text>
+              {provinces.data?.map((province) => (
+                <View key={province.id} style={styles.group}>
+                  <Text style={type.label}>{province.name}</Text>
+                  <View style={styles.chips}>
+                    {province.districts.map((option) => (
+                      <Chip
+                        key={option.id}
+                        tone="accent"
+                        label={option.name}
+                        active={!spot && district?.id === option.id}
+                        onPress={() => {
+                          // A district instead of an address: the address is
+                          // forgotten, or the email would go on using it.
+                          save.mutate({
+                            optedIn: optedIn || turningOn,
+                            districtId: option.id,
+                            ...(spot ? { spot: null } : {}),
+                          });
+                          close();
+                        }}
+                      />
+                    ))}
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
         </ScrollView>
       </Sheet>
     </View>
+  );
+}
+
+/**
+ * A suggestion with the letters already typed picked out, so the eye goes
+ * straight to why it matched: **Kimir**onko Market, KG 153 Street.
+ */
+function Highlighted({ text, typed }: { text: string; typed: string }) {
+  const words = typed
+    .toLowerCase()
+    .split(' ')
+    .filter((word) => word.length >= 2)
+    .map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  if (words.length === 0) {
+    return (
+      <Text style={styles.resultLabel} numberOfLines={2}>
+        {text}
+      </Text>
+    );
+  }
+  const parts = text.split(new RegExp(`(${words.join('|')})`, 'gi'));
+  return (
+    <Text style={styles.resultLabel} numberOfLines={2}>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <Text key={i} style={styles.match}>
+            {part}
+          </Text>
+        ) : (
+          part
+        ),
+      )}
+    </Text>
   );
 }
 
@@ -494,8 +566,11 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 12,
     borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     backgroundColor: theme.sunken,
   },
+  searchOn: { borderColor: theme.accent, backgroundColor: theme.panel },
   searchInput: {
     flex: 1,
     fontFamily: font.medium,
@@ -504,6 +579,16 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   results: { gap: 6 },
+  resultsStale: { opacity: 0.55 },
+  clear: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: theme.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancel: { fontFamily: font.semibold, fontSize: 14.5, color: theme.ink2, paddingHorizontal: 2 },
   result: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -523,7 +608,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  resultLabel: { fontFamily: font.bold, fontSize: 14, lineHeight: 19, color: theme.ink },
+  resultLabel: { fontFamily: font.semibold, fontSize: 14, lineHeight: 19, color: theme.ink2 },
+  match: { fontFamily: font.extrabold, color: theme.ink },
   notice: { fontFamily: font.medium, fontSize: 13, lineHeight: 18.5, color: theme.ink2 },
   exactHead: { flexDirection: 'row', gap: 12 },
   exactIcon: {

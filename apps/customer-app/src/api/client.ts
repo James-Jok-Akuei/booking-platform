@@ -244,6 +244,11 @@ interface RequestOptions {
    * server treats a bad token as no token and answers anyway.
    */
   optionalAuth?: boolean;
+  /**
+   * Lets a request be dropped when its answer is no longer wanted — a
+   * suggestion for letters the customer has already typed past (§174).
+   */
+  signal?: AbortSignal;
 }
 
 /** Whether an access token has run out, read from the token itself. */
@@ -290,7 +295,7 @@ async function liveTokenOrNone(): Promise<string | null> {
  * against a server that is answering correctly.
  */
 export async function api<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, query, optionalAuth } = options;
+  const { method = 'GET', body, query, optionalAuth, signal } = options;
   // Optional auth behaves as anonymous for every failure path below — no
   // refresh-and-retry, no ending the session — and differs only in the token.
   const anonymous = options.anonymous || optionalAuth;
@@ -306,6 +311,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
   const send = (token: string | null) =>
     fetch(url.toString(), {
       method,
+      signal,
       headers: {
         ...(body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

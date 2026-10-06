@@ -156,12 +156,11 @@ export const setOffersPreference = (body: {
 export type FoundAddress = components['schemas']['AddressDto'];
 
 /**
- * Places in Rwanda matching what was typed (§172), for the offers address.
- * Asked when "Find" is pressed, never as someone types: the map search allows
- * one request a second for the whole platform.
+ * Places in Rwanda matching what has been typed so far (§172, §174), for the
+ * offers address — suggestions while typing, so nobody has to type it all.
  */
-export const searchAddresses = (q: string) =>
-  api<components['schemas']['AddressSearchDto']>('/addresses', { query: { q } });
+export const searchAddresses = (q: string, signal?: AbortSignal) =>
+  api<components['schemas']['AddressSearchDto']>('/addresses', { query: { q }, signal });
 
 /**
  * The name beside this person's reviews (§144). `null` shows them as

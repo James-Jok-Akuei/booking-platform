@@ -13408,6 +13408,9 @@ corrected.
 
 ### 172.1 Finding a typed address
 
+*(The search service and its rules below are ~~Nominatim's~~ — replaced by
+Photon in §174, for suggestions while typing.)*
+
 `GET /addresses?q=` (`src/routing/address-search.*`), signed in only. It asks
 **Nominatim**, OpenStreetMap's search — the same open map as the road distances
 (§157) — for places in **Rwanda only**, and answers up to six
@@ -13447,3 +13450,49 @@ is nothing in it, with "Look up to 5 km" when nothing close is bookable. The
 "grow to five places" rule for an unchosen distance stays in `nearReach.ts`
 but no longer runs, since nothing is chosen for the customer; it is there if
 a default distance comes back.
+
+## 174. Addresses suggested while they are typed (2026-10-07)
+
+Asked: *"make autocompletion of address possible so that the user doesn't
+have to type everything."* Now three letters are enough: "kimir" offers
+Kimironko, Kimironko Market, the taxi park; "KG 11" offers KG 11 Avenue first.
+
+### 174.1 Photon, not Nominatim
+
+Nominatim's public server, used in §172, **forbids search-as-you-type** in its
+usage policy. Photon (photon.komoot.io) is the OpenStreetMap search built for
+it — the same map data, prefix matching — and its public server is free for
+fair use. Checked against Rwanda before switching: streets ("KG 11 Avenue"),
+neighbourhoods, markets, malls and sectors all come back.
+
+- Asked for Rwanda's box (`bbox`), then filtered to `countrycode: RW` — the box
+  takes in parts of every neighbour (a "Nyamirama" in Uganda came back).
+- Rivers, streams and hills (`waterway`, `natural`) are dropped; the same shop
+  found as a shop and as a building is one choice; at most six.
+- Said the way a person says it, the smallest place first — "Remera ·
+  Ruheru, Nyaruguru District" — except Kigali, the one city with districts
+  inside it: "Kigali Heights, KG 7 Avenue · Gasabo District, Kigali".
+- Searches are spaced at least 250 ms apart platform-wide
+  (`GEOCODING_SPACING_MS`), the same letters are answered from memory for a
+  day (at most 5,000 remembered, oldest out), and only the letters are sent.
+  **Before launch, self-host Photon for Rwanda** — one small server — and
+  point `GEOCODING_BASE_URL` at it; the public one promises nothing.
+
+### 174.2 In the app
+
+- Asked when typing pauses (350 ms), not on every letter; a question overtaken
+  by more letters is cancelled (`api()` now takes a `signal`). Return asks at
+  once.
+- The last suggestions stay, dimmed, while the next arrive — no blinking.
+- The typed letters are picked out in each suggestion: **Kimir**onko Market.
+- **While typing, the sheet shows only the field and its suggestions**, with
+  "Cancel" — the sheet can be 82% of the screen, and the field has to stay
+  above the keyboard. Clearing it or Cancel brings back "Use where I am now"
+  and the districts.
+- Under three letters: "Keep typing…"; nothing found, search down, and an
+  error each say so differently, as in §172.
+
+The Privacy Policy already says the address search receives "only the words
+you typed", which is still true, so it is not republished.
+
+Nine tests (one new: smallest-first). **1312 passing across 56 suites.**
