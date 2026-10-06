@@ -20,6 +20,7 @@ import {
   type DiscoveredService,
   type DiscoverySort,
 } from '../../src/api/discovery';
+import { useSignedIn } from '../../src/api/client';
 import { useMoney } from '../../src/money';
 import { useNearMe } from '../../src/useNearMe';
 import { useUnread } from '../../src/useUnread';
@@ -90,6 +91,7 @@ export default function Discover() {
   const router = useRouter();
   const nearMe = useNearMe();
   const unread = useUnread();
+  const signedIn = useSignedIn();
   const savedService = useSavedService();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
@@ -352,21 +354,23 @@ export default function Discover() {
           <Icon name="chevron-down" size={14} color={theme.ink2} />
         </PressableScale>
 
-          {/* The bell (§134). Shown to everyone: signed out, the screen behind
-              it says that signing in is what fills it — the same invitation
-              the Bookings tab makes. */}
-          <View>
-            <IconButton
-              icon="notifications-outline"
-              label={
-                unread.notifications > 0
-                  ? `Notifications, ${unread.notifications} unread`
-                  : 'Notifications'
-              }
-              onPress={() => router.push('/notifications')}
-            />
-            <CountBadge count={unread.notifications} ring={theme.bg} style={styles.bellBadge} />
-          </View>
+          {/* The bell (§134), for someone signed in (§170). It was shown to
+              everyone, but a visitor has no notifications, and a bell that only
+              ever says "sign in first" is an icon in the way. */}
+          {signedIn && (
+            <View>
+              <IconButton
+                icon="notifications-outline"
+                label={
+                  unread.notifications > 0
+                    ? `Notifications, ${unread.notifications} unread`
+                    : 'Notifications'
+                }
+                onPress={() => router.push('/notifications')}
+              />
+              <CountBadge count={unread.notifications} ring={theme.bg} style={styles.bellBadge} />
+            </View>
+          )}
         </View>
 
         <Text style={[type.display, layout.compact && styles.displayCompact, styles.title]}>

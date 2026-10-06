@@ -43,6 +43,7 @@ import { useLayout } from '../../src/ui/layout';
 import { PhotoViewer } from '../../src/ui/PhotoViewer';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
+import { requireSignIn } from '../../src/components/SignInWall';
 
 /**
  * One booking: pay the deposit, then show the arrival code.
@@ -61,7 +62,7 @@ import { TopBar } from '../../src/ui/TopBar';
  *
  * This file holds the data and the actions; the faces only draw.
  */
-export default function Booking() {
+function Booking() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const money = useMoney();
@@ -459,4 +460,10 @@ const styles = StyleSheet.create({
   payRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   payAmount: { fontFamily: font.extrabold, fontSize: 21, color: theme.ink, letterSpacing: -0.4 },
   secure: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 },
+});
+
+export default requireSignIn(Booking, {
+  icon: 'calendar-outline',
+  title: 'Sign in to see this booking',
+  text: 'Bookings are kept with your account, so only you can open them.',
 });

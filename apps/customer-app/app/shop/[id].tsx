@@ -11,7 +11,7 @@ import { useSaved } from '../../src/useSaved';
 import { useSavedService } from '../../src/useSavedService';
 import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
-import { ApiError, tokens } from '../../src/api/client';
+import { ApiError, useSignedIn } from '../../src/api/client';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, theme, type } from '../../src/theme';
@@ -73,6 +73,7 @@ export default function Shop() {
   });
 
   const saved = useSaved();
+  const signedIn = useSignedIn();
   const savedService = useSavedService();
 
   // The real road from here, once the phone has said where here is (§157).
@@ -246,21 +247,19 @@ export default function Shop() {
             {/* Before booking, not after. Most questions people have — do you take
                 card, is there parking, can you do this on a Sunday — are the reason
                 they do NOT book, and there was nowhere to ask them. */}
-            <FadeIn delay={80}>
-              <Button
-                kind="soft"
-                icon="chatbubble-ellipses-outline"
-                label={openChat.isPending ? 'Opening…' : 'Message the shop'}
-                disabled={openChat.isPending}
-                onPress={() => {
-                  if (!tokens.access) {
-                    router.push(`/sign-in?next=/shop/${s.id}`);
-                    return;
-                  }
-                  openChat.mutate();
-                }}
-              />
-            </FadeIn>
+            {/* For someone signed in (§170): a conversation needs a person to
+                belong to. */}
+            {signedIn && (
+              <FadeIn delay={80}>
+                <Button
+                  kind="soft"
+                  icon="chatbubble-ellipses-outline"
+                  label={openChat.isPending ? 'Opening…' : 'Message the shop'}
+                  disabled={openChat.isPending}
+                  onPress={() => openChat.mutate()}
+                />
+              </FadeIn>
+            )}
 
             {/* The branch's own photos. They were sent with every shop and
                 drawn by nothing; a customer could not see inside a place

@@ -25,6 +25,7 @@ import { useLayout } from '../../src/ui/layout';
 import { Pill } from '../../src/ui/Pill';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { TopBar } from '../../src/ui/TopBar';
+import { requireSignIn } from '../../src/components/SignInWall';
 
 /** The three things a customer with a booking actually needs help with. */
 const ABOUT: Array<{ value: TicketCategory; label: string; subject: string }> = [
@@ -45,7 +46,7 @@ const ABOUT: Array<{ value: TicketCategory; label: string; subject: string }> = 
  * Requests already made about this booking are listed underneath, so a second
  * visit continues a conversation instead of starting another.
  */
-export default function Help() {
+function Help() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -206,4 +207,10 @@ const styles = StyleSheet.create({
     padding: 14,
     ...shadow.card,
   },
+});
+
+export default requireSignIn(Help, {
+  icon: 'help-buoy-outline',
+  title: 'Sign in to get help',
+  text: 'Help is tied to your booking, so we need to know it is you.',
 });

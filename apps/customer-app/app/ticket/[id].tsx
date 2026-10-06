@@ -23,6 +23,7 @@ import { Pill } from '../../src/ui/Pill';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
+import { requireSignIn } from '../../src/components/SignInWall';
 
 const when = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -38,7 +39,7 @@ const when = (iso: string) =>
  * minutes or hours apart, and that is often enough to feel live without
  * hammering the server.
  */
-export default function TicketScreen() {
+function TicketScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
@@ -250,4 +251,10 @@ const styles = StyleSheet.create({
   },
   sendOff: { backgroundColor: theme.sunken },
   closed: { alignItems: 'center', paddingTop: 14, backgroundColor: theme.panel },
+});
+
+export default requireSignIn(TicketScreen, {
+  icon: 'help-buoy-outline',
+  title: 'Sign in to see this request',
+  text: 'Help requests are kept with your account, so only you can open them.',
 });

@@ -33,6 +33,7 @@ import { Icon } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
+import { requireSignIn } from '../../src/components/SignInWall';
 
 /** What each score means, so a tap is a sentence rather than a number. */
 const MEANING = [
@@ -51,7 +52,7 @@ const MEANING = [
  * to route by. Whether this is a first review or an edit is decided by what the
  * appointment carries (§111), never by posting and reading the 409.
  */
-export default function WriteReview() {
+function WriteReview() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -369,4 +370,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: radius.xl,
     ...shadow.float,
   },
+});
+
+export default requireSignIn(WriteReview, {
+  icon: 'star-outline',
+  title: 'Sign in to write a review',
+  text: 'Reviews come from people who booked, so we need to know it is you.',
 });

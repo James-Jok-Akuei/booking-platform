@@ -32,6 +32,7 @@ import { IconButton } from '../../src/ui/IconButton';
 import { useLayout } from '../../src/ui/layout';
 import { PhotoViewer } from '../../src/ui/PhotoViewer';
 import { PressableScale } from '../../src/ui/PressableScale';
+import { requireSignIn } from '../../src/components/SignInWall';
 
 const clock = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -75,7 +76,7 @@ type Picked = { uri: string; name: string; type: string };
  * that quietly died would otherwise leave the screen looking like nobody had
  * replied. The socket makes it instant; the poll makes it correct.
  */
-export default function ThreadScreen() {
+function ThreadScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -526,4 +527,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendOff: { backgroundColor: theme.sunken },
+});
+
+export default requireSignIn(ThreadScreen, {
+  icon: 'chatbubbles-outline',
+  title: 'Sign in to read this chat',
+  text: 'Messages are kept with your account, so only you and the shop can read them.',
 });

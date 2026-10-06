@@ -326,13 +326,16 @@ export default function Account() {
   if (!signedIn) {
     return (
       <View style={styles.screen}>
-        <BigTitle title="Account" />
+        <BigTitle title="Sign in" />
+        {/* What an account opens (§170): everything the visitor cannot see
+            yet is listed here, once, instead of being icons that lead to
+            "sign in first". */}
         <EmptyState
-          icon="person-outline"
-          title="You are not signed in"
-          text="Signing in keeps your bookings and messages with your account, so they follow you to any phone."
-          action="Sign in"
-          onAction={() => router.push('/sign-in?next=/account')}
+          icon="person-circle-outline"
+          title="One account for everything"
+          text="Sign in to book and pay, keep your bookings, save places and services, message shops and get your notifications. It follows you to any phone."
+          action="Sign in or create an account"
+          onAction={() => router.push('/sign-in?next=/')}
         />
       </View>
     );

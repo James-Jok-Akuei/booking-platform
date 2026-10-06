@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
+import { useSignedIn } from '../api/client';
 import { useUnread } from '../useUnread';
 import { CountBadge } from './CountBadge';
 import { font, radius, shadow, theme } from '../theme';
@@ -25,6 +26,15 @@ const ICONS: Record<string, { idle: IconName; on: IconName }> = {
   messages: { idle: 'chatbubble-ellipses-outline', on: 'chatbubble-ellipses' },
   account: { idle: 'person-outline', on: 'person' },
 };
+
+/**
+ * Tabs that are only somebody's (§170): a visitor has no bookings, nothing
+ * saved and nobody to message. Signed out they are not shown at all — an icon
+ * that only ever leads to "sign in first" is clutter — and they appear the
+ * moment the person signs in.
+ */
+const PRIVATE_TABS = new Set(['bookings', 'saved', 'messages']);
+const SIGN_IN_ICON = { idle: 'log-in-outline' as IconName, on: 'log-in' as IconName };
 
 /**
  * The floating tab bar (§133).
@@ -67,6 +77,14 @@ export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarP
   // Unread MESSAGES only (§134): the bell on the home screen carries the
   // notifications, so each number points at the screen that clears it.
   const unread = useUnread().messages;
+  const signedIn = useSignedIn();
+
+  // Signed out while on a private tab — the session ended, or they signed out
+  // from elsewhere — goes home rather than sitting on a screen they cannot use.
+  const current = state.routes[state.index]?.name;
+  useEffect(() => {
+    if (!signedIn && current && PRIVATE_TABS.has(current)) navigation.navigate('index');
+  }, [signedIn, current, navigation]);
 
   if (keyboardUp) return null;
 
@@ -81,15 +99,22 @@ export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarP
     >
       <View style={styles.bar}>
         {state.routes.map((route, index) => {
+          if (!signedIn && PRIVATE_TABS.has(route.name)) return null;
           const focused = state.index === index;
           const { options } = descriptors[route.key];
-          const label = typeof options.title === 'string' ? options.title : route.name;
+          // Signed out, the account tab is the way in, and says so.
+          const signIn = !signedIn && route.name === 'account';
+          const label = signIn
+            ? 'Sign in'
+            : typeof options.title === 'string'
+              ? options.title
+              : route.name;
 
           return (
             <Tab
               key={route.key}
               label={label}
-              icon={ICONS[route.name] ?? ICONS.index}
+              icon={signIn ? SIGN_IN_ICON : (ICONS[route.name] ?? ICONS.index)}
               focused={focused}
               badge={route.name === 'messages' ? unread : 0}
               onPress={() => {

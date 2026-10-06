@@ -13264,3 +13264,33 @@ guess. The user asked for the real distance from where the customer is.
 **Not changed:** Home's distances still come from the phone's live position.
 Using the saved spot there when location is off is possible but would show
 distances from home while the customer is elsewhere.
+
+## 170. Signed out, only what a visitor can use is shown (2026-10-07)
+
+The user asked that someone who is not signed in should not see the icons and
+buttons that only work with an account, and should get them after signing in.
+
+- **Tabs.** Signed out, the bar shows Home and "Sign in" (the account tab, with
+  a sign-in icon). Bookings, Saved and Messages are not drawn at all, and come
+  back the moment the person signs in. Being signed out while on one of them
+  (a session that ends) goes to Home.
+- **Hidden:** the notifications bell on Home — until now shown to everyone
+  (the code comment from §134 said so) and leading only to "sign in first" —
+  and "Message the shop". Hearts were already hidden signed out.
+- **Still shown:** browsing, shop pages, photos, times, distances. Booking a
+  time stays open, because seeing the times is what persuades people; the
+  button says "Sign in to book 10:00" with a sign-in icon, and signing in comes
+  back to the same slot. This was a judgement call; the user can change it.
+- **Account tab, signed out:** titled "Sign in", one card "One account for
+  everything" that lists what an account opens, instead of each feature
+  saying it separately.
+- **Private pages behind a link** — one booking, a chat, writing a review, help,
+  a help ticket — are wrapped in `requireSignIn` (`src/components/SignInWall`).
+  Nothing signed-out links to them now, but an email, a notification or an
+  expired session still can. Signed out they show what the page is and a
+  "Sign in" button that returns to the same address, instead of failing
+  requests. The check wraps the screen, so the screen's own hooks never run
+  without an account.
+
+Nothing changes on the server: every one of these was already refused
+without an account. This is about not showing a door that will not open.

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 import { getAvailability, getShop } from '../../src/api/discovery';
 import { createAppointment } from '../../src/api/booking';
-import { ApiError, tokens } from '../../src/api/client';
+import { ApiError, useSignedIn } from '../../src/api/client';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, theme, type } from '../../src/theme';
@@ -74,6 +74,7 @@ export default function Book() {
   // Keeps the field being typed into above the keyboard (§168).
   const keys = useKeyboardScroll({ pad: true });
   const layout = useLayout();
+  const signedIn = useSignedIn();
   const [viewer, setViewer] = useState<{ index: number; origin: ViewerOrigin | null } | null>(null);
 
   const days = useMemo(() => nextDays(14), []);
@@ -443,15 +444,20 @@ export default function Book() {
           style={{ width: Math.min(layout.contentWidth - 40, 520), alignSelf: 'center' }}
           disabled={!slot}
           busy={book.isPending}
+          // Signed out, the button says what tapping it will do (§170): the
+          // times are worth seeing first, the booking needs an account.
+          icon={slot && !signedIn ? 'log-in-outline' : undefined}
           label={
-            slot
-              ? `Book ${slot} · pay ${money.format(depositMinor, service.currency)}`
-              : 'Pick a time'
+            !slot
+              ? 'Pick a time'
+              : signedIn
+                ? `Book ${slot} · pay ${money.format(depositMinor, service.currency)}`
+                : `Sign in to book ${slot}`
           }
           onPress={() => {
             // Signing in is required to hold a slot, but not to get here —
             // asking earlier loses people who were only looking.
-            if (!tokens.access) {
+            if (!signedIn) {
               router.push(`/sign-in?next=/book/${id}?serviceId=${serviceId}`);
               return;
             }
