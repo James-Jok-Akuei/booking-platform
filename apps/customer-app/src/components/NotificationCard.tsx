@@ -61,9 +61,13 @@ const REMOVE_AT = 96;
  * One notification (§159).
  *
  * The card reads in one glance: a coloured disc says what KIND, the subject
- * says what, the first line says enough, the time sits top-right, and an
- * unread one is bolder with a coral dot — never a different card, so the list
- * does not jump when something is read.
+ * says what, the first line says enough, the time sits top-right.
+ *
+ * Unread and read are two different weights of card (§161): an unread one is
+ * white, raised, bold, with a coral dot and "New"; a read one is flat on the
+ * paper, with a thin line instead of a shadow, its disc and words faded. The
+ * eye sorts the list before a word is read — and the size does not change, so
+ * nothing jumps when one is opened.
  *
  * One that needs attention gets a coral edge down its left side and a word for
  * it ("Reminder"), so the eye lands on it first.
@@ -128,26 +132,35 @@ export function NotificationCard({
           accessibilityRole="button"
           accessibilityLabel={`${unread ? 'Unread. ' : ''}${look.label}: ${item.subject}`}
           accessibilityHint="Opens it. Swipe left to remove."
-          style={[styles.card, important && styles.cardImportant]}
+          style={[styles.card, !unread && styles.cardRead, important && styles.cardImportant]}
         >
-          <View style={[styles.disc, { backgroundColor: look.bg }]}>
+          <View style={[styles.disc, { backgroundColor: look.bg }, !unread && styles.faded]}>
             <Icon name={look.icon} size={20} color={look.fg} />
           </View>
 
           <View style={styles.main}>
             <View style={styles.top}>
-              <Text style={[styles.kind, { color: look.fg }]}>{look.label}</Text>
-              <Text style={[styles.when, unread && styles.whenUnread]}>{ago(item.createdAt)}</Text>
+              <Text style={[styles.kind, { color: look.fg }, !unread && styles.faded]}>
+                {look.label}
+              </Text>
+              <View style={styles.whenRow}>
+                {unread && (
+                  <View style={styles.newPill}>
+                    <Text style={styles.newText}>New</Text>
+                  </View>
+                )}
+                <Text style={[styles.when, unread && styles.whenUnread]}>{ago(item.createdAt)}</Text>
+              </View>
             </View>
             <Text style={[styles.subject, unread && styles.subjectUnread]} numberOfLines={2}>
               {item.subject}
             </Text>
-            <Text style={type.small} numberOfLines={1}>
+            <Text style={[type.small, !unread && styles.faded]} numberOfLines={1}>
               {item.body.replace(/\s*\n+\s*/g, ' · ')}
             </Text>
           </View>
 
-          {unread && <View style={styles.dot} />}
+          {unread ? <View style={styles.dot} /> : <View style={styles.readMark}><Icon name="checkmark-done" size={13} color={theme.muted} /></View>}
         </PressableScale>
       </Animated.View>
     </View>
@@ -178,7 +191,25 @@ const styles = StyleSheet.create({
     padding: 14,
     ...shadow.card,
   },
+  // Read: flat on the paper, a line for an edge, no shadow — it has been dealt with.
+  cardRead: {
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    borderWidth: 1,
+    borderColor: theme.line,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  faded: { opacity: 0.6 },
   cardImportant: { borderLeftWidth: 4, borderLeftColor: theme.accent, paddingLeft: 12 },
+  whenRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  newPill: {
+    backgroundColor: theme.accent,
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  newText: { fontFamily: font.extrabold, fontSize: 10, color: '#FFFFFF', letterSpacing: 0.4 },
+  readMark: { marginTop: 3 },
   disc: {
     width: 42,
     height: 42,
@@ -191,7 +222,7 @@ const styles = StyleSheet.create({
   kind: { fontFamily: font.bold, fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase' },
   when: { fontFamily: font.medium, fontSize: 12, color: theme.muted },
   whenUnread: { fontFamily: font.bold, color: theme.accent },
-  subject: { fontFamily: font.semibold, fontSize: 14.5, lineHeight: 20, color: theme.ink2 },
+  subject: { fontFamily: font.medium, fontSize: 14.5, lineHeight: 20, color: theme.ink2 },
   subjectUnread: { fontFamily: font.extrabold, color: theme.ink },
   dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: theme.accent, marginTop: 4 },
 });

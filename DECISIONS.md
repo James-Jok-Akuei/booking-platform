@@ -13116,3 +13116,11 @@ In the app a dark bar rises at the bottom — "Removed · Undo" — with a thin
 coral line that drains over five seconds, then sinks away. A second removal
 replaces the first: the bar is for the last thing done. Undo puts it back and
 refetches, so the server's answer decides what the list shows.
+
+## 161. Read and unread are two weights of card (2026-10-06)
+
+Unread was a bold subject and a dot on an otherwise identical card. Now an
+unread card is white, raised, bold, with a coral "New" pill and dot; a read one
+sits flat on the paper with a thin line for an edge, no shadow, its disc and
+words faded, and a small double tick where the dot was. Same size either way,
+so nothing jumps when one is opened.
