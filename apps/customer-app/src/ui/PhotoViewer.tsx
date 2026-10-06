@@ -64,10 +64,15 @@ export function PhotoViewer({
   /** Width ÷ height of each photo, learnt as they load. */
   const [shapes, setShapes] = useState<Record<string, number>>({});
   const closing = useRef(false);
+  /** True while a photo is zoomed in: the pager and the drag-to-close stand down. */
+  const [zoomed, setZoomed] = useState(false);
+  const zoomedRef = useRef(false);
+  zoomedRef.current = zoomed;
 
   useEffect(() => {
     if (openAt === null) return;
     closing.current = false;
+    setZoomed(false);
     setIndex(openAt);
     open.setValue(0);
     drag.setValue(0);
@@ -101,7 +106,13 @@ export function PhotoViewer({
     () =>
       PanResponder.create({
         // Only a clearly DOWNWARD drag: sideways belongs to the pager.
-        onMoveShouldSetPanResponder: (_e, g) => g.dy > 10 && g.dy > Math.abs(g.dx) * 1.5,
+        // One finger, straight down, on a photo that is not zoomed. Two
+        // fingers are a pinch and belong to the photo (§149).
+        onMoveShouldSetPanResponder: (e, g) =>
+          e.nativeEvent.touches.length < 2 &&
+          !zoomedRef.current &&
+          g.dy > 10 &&
+          g.dy > Math.abs(g.dx) * 1.5,
         onPanResponderTerminationRequest: () => false,
         onPanResponderMove: (_e, g) => drag.setValue(Math.max(0, g.dy)),
         onPanResponderRelease: (_e, g) => {
@@ -192,6 +203,9 @@ export function PhotoViewer({
           showsHorizontalScrollIndicator={false}
           scrollEventThrottle={16}
           contentOffset={{ x: (openAt ?? 0) * W, y: 0 }}
+          // A zoomed photo is panned with one finger; the pager must not take
+          // that finger for the next photo.
+          scrollEnabled={!zoomed}
           onLayout={() => goTo(openAt ?? 0, false)}
           onScroll={(e) => {
             const next = Math.round(e.nativeEvent.contentOffset.x / W);
@@ -209,18 +223,16 @@ export function PhotoViewer({
             const w = Math.min(boxW, boxH * shape);
             return (
               <Pressable key={photo.id} onPress={close} style={[styles.page, { width: W, height: H }]}>
-                <Pressable style={styles.lift}>
-                  <Image
-                    source={{ uri: photo.url }}
-                    style={[styles.photo, { width: w, height: w / shape }]}
-                    resizeMode="cover"
-                    onLoad={(e) => {
-                      const s = e.nativeEvent.source;
-                      if (s?.width && s?.height && !shapes[photo.id])
-                        setShapes((was) => ({ ...was, [photo.id]: s.width / s.height }));
-                    }}
-                  />
-                </Pressable>
+                <Zoomable
+                  uri={photo.url}
+                  width={w}
+                  height={w / shape}
+                  active={photos[index]?.id === photo.id}
+                  onZoom={setZoomed}
+                  onLoad={(ratio) => {
+                    if (!shapes[photo.id]) setShapes((was) => ({ ...was, [photo.id]: ratio }));
+                  }}
+                />
               </Pressable>
             );
           })}
@@ -284,6 +296,166 @@ export function PhotoViewer({
         </Animated.View>
       )}
     </Modal>
+  );
+}
+
+/**
+ * A photo you can zoom (§149).
+ *
+ * Three gestures, the ones every phone has taught: pinch to zoom, drag to
+ * move around once zoomed, and double-tap to jump in on the spot tapped — or
+ * back out. It never claims a touch it does not need: a single finger on an
+ * unzoomed photo is left for the pager and for the drag that closes, so those
+ * keep working exactly as before.
+ *
+ * Let go below full size and it settles back to fit; drag it past its edge
+ * and it springs back to the edge. Built on `PanResponder` and `Animated`,
+ * like the rest, so nothing new is installed.
+ */
+function Zoomable({
+  uri,
+  width,
+  height,
+  active,
+  onZoom,
+  onLoad,
+}: {
+  uri: string;
+  width: number;
+  height: number;
+  /** The photo on screen. Leaving it resets the zoom. */
+  active: boolean;
+  onZoom: (zoomed: boolean) => void;
+  onLoad: (ratio: number) => void;
+}) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const tx = useRef(new Animated.Value(0)).current;
+  const ty = useRef(new Animated.Value(0)).current;
+  // What the fingers started from, and where things are now. A ref, not
+  // state: it changes on every move and must never cause a render.
+  const g = useRef({
+    scale: 1,
+    tx: 0,
+    ty: 0,
+    startScale: 1,
+    startDist: 0,
+    startTx: 0,
+    startTy: 0,
+    lastTap: 0,
+  }).current;
+
+  const MAX = 4;
+  const fit = (s: number, x: number, y: number) => {
+    // How far the photo may move before its edge leaves the screen's edge.
+    const maxX = Math.max(0, (width * s - width) / 2);
+    const maxY = Math.max(0, (height * s - height) / 2);
+    return {
+      s: Math.min(MAX, Math.max(1, s)),
+      x: Math.min(maxX, Math.max(-maxX, x)),
+      y: Math.min(maxY, Math.max(-maxY, y)),
+    };
+  };
+  const settle = (to: { s: number; x: number; y: number }) => {
+    g.scale = to.s;
+    g.tx = to.x;
+    g.ty = to.y;
+    Animated.parallel([
+      Animated.spring(scale, { toValue: to.s, useNativeDriver: true, speed: 20, bounciness: 4 }),
+      Animated.spring(tx, { toValue: to.x, useNativeDriver: true, speed: 20, bounciness: 4 }),
+      Animated.spring(ty, { toValue: to.y, useNativeDriver: true, speed: 20, bounciness: 4 }),
+    ]).start();
+    onZoom(to.s > 1.02);
+  };
+  const reset = () => settle({ s: 1, x: 0, y: 0 });
+
+  useEffect(() => {
+    if (!active && g.scale !== 1) reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active]);
+
+  const distance = (touches: Array<{ pageX: number; pageY: number }>) =>
+    Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY);
+
+  const pan = useMemo(
+    () =>
+      PanResponder.create({
+        // Two fingers, or one finger on a zoomed photo. Nothing else is ours.
+        onStartShouldSetPanResponder: (e) => e.nativeEvent.touches.length >= 2,
+        onMoveShouldSetPanResponder: (e) => e.nativeEvent.touches.length >= 2 || g.scale > 1.02,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: (e) => {
+          g.startScale = g.scale;
+          g.startTx = g.tx;
+          g.startTy = g.ty;
+          g.startDist = e.nativeEvent.touches.length >= 2 ? distance(e.nativeEvent.touches) : 0;
+        },
+        onPanResponderMove: (e, gesture) => {
+          const touches = e.nativeEvent.touches;
+          if (touches.length >= 2) {
+            if (g.startDist === 0) {
+              // The second finger arrived mid-gesture: measure from here.
+              g.startDist = distance(touches);
+              g.startScale = g.scale;
+            }
+            const next = fit((g.startScale * distance(touches)) / g.startDist, g.tx, g.ty);
+            g.scale = next.s;
+            scale.setValue(next.s);
+            return;
+          }
+          if (g.scale > 1.02) {
+            // Not clamped while the finger is down: a little give past the
+            // edge, then the spring on release, is what feels like a thing.
+            g.tx = g.startTx + gesture.dx;
+            g.ty = g.startTy + gesture.dy;
+            tx.setValue(g.tx);
+            ty.setValue(g.ty);
+          }
+        },
+        onPanResponderRelease: () => {
+          if (g.scale < 1.08) reset();
+          else settle(fit(g.scale, g.tx, g.ty));
+        },
+        onPanResponderTerminate: () => settle(fit(g.scale, g.tx, g.ty)),
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [width, height],
+  );
+
+  // Double-tap: in on the spot tapped, or back out.
+  const tap = (e: { nativeEvent: { locationX: number; locationY: number } }) => {
+    const now = Date.now();
+    const twice = now - g.lastTap < 300;
+    g.lastTap = now;
+    if (!twice) return;
+    if (g.scale > 1.02) {
+      reset();
+      return;
+    }
+    const s = 2.5;
+    const { locationX, locationY } = e.nativeEvent;
+    // Move the tapped point to the middle, as far as the edges allow.
+    const x = Number.isFinite(locationX) ? (width / 2 - locationX) * (s - 1) : 0;
+    const y = Number.isFinite(locationY) ? (height / 2 - locationY) * (s - 1) : 0;
+    settle(fit(s, x, y));
+  };
+
+  return (
+    <Animated.View
+      {...pan.panHandlers}
+      style={[styles.lift, { transform: [{ translateX: tx }, { translateY: ty }, { scale }] }]}
+    >
+      <Pressable onPress={tap}>
+        <Image
+          source={{ uri }}
+          style={[styles.photo, { width, height }]}
+          resizeMode="cover"
+          onLoad={(e) => {
+            const s = e.nativeEvent.source;
+            if (s?.width && s?.height) onLoad(s.width / s.height);
+          }}
+        />
+      </Pressable>
+    </Animated.View>
   );
 }
 

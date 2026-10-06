@@ -12913,3 +12913,16 @@ tapped. It is now a "Photos" section with the count, "See all", the first six
 in the strip (the sixth carries "+N" when there are more), and every one opens
 the same viewer a service's photos open (§135.7) — so the two feel like one
 thing.
+
+## 149. Photos zoom (2026-10-06)
+
+§135.7 left pinch-to-zoom out for want of a gesture library. It is in now, on
+`PanResponder` and `Animated` like everything else: pinch to zoom (up to 4×),
+drag to move around once zoomed, double-tap to jump in on the spot tapped or
+back out. Let go below full size and it settles back; drag past an edge and it
+springs back to the edge.
+
+Nothing that worked before changed hands: a single finger on an unzoomed photo
+still pages sideways or drags down to close, and a tap on the dark still
+closes. Two fingers are never read as a drag, and while a photo is zoomed the
+pager and the drag-to-close stand down.
