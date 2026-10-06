@@ -34,6 +34,7 @@ import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon, lookFor } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
 import { PressableScale } from '../../src/ui/PressableScale';
+import { RwandaFlag } from '../../src/ui/RwandaFlag';
 import { Sheet } from '../../src/ui/Sheet';
 import { Skeleton } from '../../src/ui/Skeleton';
 
@@ -169,12 +170,19 @@ export default function Discover() {
 
   const chosenProvince = provinces.data?.find((p) => p.id === provinceId);
 
-  /** What the place pill reads: the narrowest thing chosen, or "Anywhere". */
+  /**
+   * What the place pill reads: the narrowest thing chosen, or the country.
+   *
+   * "Rwanda", with its flag, rather than "Anywhere" (§147): the pill is the
+   * first thing on the first screen, and it is where the app says where it
+   * operates — the way a shop puts its city on the sign. The flag stays when a
+   * district is chosen, so "Gasabo" is still visibly Gasabo, Rwanda.
+   */
   const placeLabel =
     (districtId &&
       provinces.data?.flatMap((p) => p.districts).find((d) => d.id === districtId)?.name) ||
     (chosenProvince && shortName(chosenProvince.name)) ||
-    'Anywhere';
+    'Rwanda';
 
   // Sent ONLY for a distance sort, and never with a radius: the position
   // orders the list, it does not narrow it (§107).
@@ -337,7 +345,7 @@ export default function Discover() {
           accessibilityLabel={`Place: ${placeLabel}`}
           style={styles.placePill}
         >
-          <Icon name="location" size={15} color={theme.accent} />
+          <RwandaFlag width={20} />
           <Text style={styles.placeText}>{placeLabel}</Text>
           <Icon name="chevron-down" size={14} color={theme.ink2} />
         </PressableScale>
@@ -699,11 +707,11 @@ export default function Discover() {
         ) : null}
       </ScrollView>
 
-      <Sheet open={placeSheet} title="Where" onClose={() => setPlaceSheet(false)}>
+      <Sheet open={placeSheet} title="Where in Rwanda" onClose={() => setPlaceSheet(false)}>
         <ScrollView contentContainerStyle={styles.sheetBody} showsVerticalScrollIndicator={false}>
           <View style={styles.wrapRow}>
             <Chip
-              label="Anywhere"
+              label="All of Rwanda"
               tone="accent"
               active={provinceId === null && districtId === null}
               onPress={() => {

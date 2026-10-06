@@ -12889,3 +12889,19 @@ A service card on Home named the business and not where it is, and the same
 has a line with a pin: the branch's own name ("Kimironko", with a trailing
 "Branch" dropped to fit), or its district when the branch is only named after
 the business. The distance (§139) moved onto the same line, on the right.
+
+## 147. The home screen says it is Rwanda (2026-10-06)
+
+Nothing on the first screen said where the platform operates. Now the place
+pill — the first thing on it — reads "Rwanda" beside the flag, and becomes
+"Kigali" or "Gasabo" with the flag kept when a place is chosen. The place sheet
+is titled "Where in Rwanda" and its first chip is "All of Rwanda" (~~was
+"Anywhere"~~).
+
+The flag is drawn (`src/ui/RwandaFlag.tsx`), not an emoji: the emoji is a
+different picture on every phone and on some Android phones it is the letters
+"RW". Official proportions, sun as a disc at this size.
+
+**Rejected:** a banner, a country name in the title, or a flag on every card.
+One quiet mark at the top, where a shop puts its city on the sign, says it
+without turning the screen into a poster.
