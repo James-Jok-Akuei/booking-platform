@@ -3,7 +3,9 @@ import { Alert, Animated, Image, ScrollView, StyleSheet, Text, View } from 'reac
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getShop, getShopReviews, type ShopService } from '../../src/api/discovery';
+import { getRoute, getShop, getShopReviews, type ShopService } from '../../src/api/discovery';
+import { routeLabel } from '../../src/routeLabel';
+import { useNearMe } from '../../src/useNearMe';
 import { openInquiry } from '../../src/api/chat';
 import { useSaved } from '../../src/useSaved';
 import { shareShop } from '../../src/share';
@@ -69,6 +71,18 @@ export default function Shop() {
   });
 
   const saved = useSaved();
+
+  // The real road from here, once the phone has said where here is (§157).
+  // Never asks for the permission itself (§107.3); it uses one already given.
+  const nearMe = useNearMe();
+  const position = nearMe.state.status === 'on' ? nearMe.state : null;
+  const route = useQuery({
+    queryKey: ['route', id, position?.lat.toFixed(3), position?.lng.toFixed(3)],
+    queryFn: () => getRoute(id, { lat: position!.lat, lng: position!.lng }),
+    enabled: position !== null,
+    staleTime: 10 * 60_000,
+  });
+  const way = routeLabel(route.data);
 
   /**
    * Idempotent on the server (§21.1), so this is safe to tap repeatedly: a
@@ -203,6 +217,12 @@ export default function Shop() {
                 <Text style={[type.small, styles.indent]}>
                   {s.district.name}, {s.district.provinceName}
                 </Text>
+              )}
+              {way && (
+                <View style={[styles.line, styles.wayLine]}>
+                  <Icon name="car-outline" size={16} color={theme.accent} />
+                  <Text style={[type.small, styles.flex, styles.way]}>{way}</Text>
+                </View>
               )}
 
               {/* Only once there is one. "No reviews yet" is not a fact about
@@ -510,6 +530,8 @@ const styles = StyleSheet.create({
   line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   indent: { marginLeft: 22, marginTop: 2 },
   ratingLine: { marginTop: 10 },
+  wayLine: { marginTop: 8 },
+  way: { fontFamily: font.bold, color: theme.ink2 },
   ratingScore: { fontFamily: font.bold, fontSize: 14.5, color: theme.ink },
   description: { marginTop: 14 },
   bleed: { marginHorizontal: -20 },

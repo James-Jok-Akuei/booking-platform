@@ -97,6 +97,16 @@ export type DiscoveredServicePage = components['schemas']['DiscoveredServicePage
 export const discoverServices = (params: Parameters<typeof discoverLocations>[0]) =>
   api<DiscoveredServicePage>('/discover/services', { query: params, anonymous: true });
 
+/**
+ * The real road to a branch, and how long it takes by car (§157). One branch
+ * at a time — the list measures as the crow flies (§107). `by: 'line'` means
+ * the routing service did not answer and this is the straight line.
+ */
+export type Route = components['schemas']['RouteDto'];
+
+export const getRoute = (locationId: string, position: { lat: number; lng: number }) =>
+  api<Route>(`/locations/${locationId}/route`, { query: position, anonymous: true });
+
 export type ShopService = components['schemas']['ShopfrontServiceDto'];
 
 export type ShopHours = components['schemas']['ShopfrontHoursDto'];

@@ -2464,6 +2464,22 @@ export interface paths {
         patch: operations["OffersPreferenceController_update"];
         trace?: never;
     };
+    "/locations/{id}/route": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RoutingController_route"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5127,6 +5143,12 @@ export interface components {
              * @description A live district. Send `null` to forget it.
              */
             districtId?: string | null;
+        };
+        RouteDto: {
+            /** @enum {string} */
+            by: "road" | "line";
+            distanceKm: number;
+            minutes: number | null;
         };
     };
     responses: never;
@@ -14256,6 +14278,49 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    RoutingController_route: {
+        parameters: {
+            query: {
+                /** @description Where the customer is. Used for this answer and not kept. */
+                lat: number;
+                lng: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouteDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
                 };
             };
             /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */

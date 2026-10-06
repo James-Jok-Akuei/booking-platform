@@ -12076,6 +12076,73 @@
           "OffersPreference"
         ]
       }
+    },
+    "/locations/{id}/route": {
+      "get": {
+        "operationId": "RoutingController_route",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "description": "Where the customer is. Used for this answer and not kept.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Routing"
+        ]
+      }
     }
   },
   "info": {
@@ -20693,6 +20760,30 @@
         },
         "required": [
           "optedIn"
+        ]
+      },
+      "RouteDto": {
+        "type": "object",
+        "properties": {
+          "by": {
+            "enum": [
+              "road",
+              "line"
+            ],
+            "type": "string"
+          },
+          "distanceKm": {
+            "type": "number"
+          },
+          "minutes": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "by",
+          "distanceKm",
+          "minutes"
         ]
       }
     }

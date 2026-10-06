@@ -13,7 +13,8 @@ import {
   type Location,
 } from '../api/business';
 import { useMoney } from '../money';
-import { NewBranchForm } from '../components/NewBranchForm';
+import { MapPin } from '../components/MapPin';
+import { NewBranchForm, parseCoordinates } from '../components/NewBranchForm';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -254,6 +255,34 @@ function BranchActions({ location }: { location: Location }) {
   const [phone, setPhone] = useState(location.phone ?? '');
   const [districtId, setDistrictId] = useState(location.district?.id ?? '');
   const [problem, setProblem] = useState<string | null>(null);
+  // The pin (§157). Shown as it is stored; changed by pasting a map link or
+  // by standing in the shop and pressing the button.
+  const [place, setPlace] = useState(
+    location.latitude !== null && location.longitude !== null
+      ? `${location.latitude}, ${location.longitude}`
+      : '',
+  );
+  const [locating, setLocating] = useState(false);
+  const coordinates = place.trim() ? parseCoordinates(place) : null;
+  const useMyPosition = () => {
+    if (!navigator.geolocation) {
+      setProblem('This browser cannot find your position. Paste a map link instead.');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setPlace(`${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`);
+        setProblem(null);
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+        setProblem('Could not get your position. Allow location for this site, or paste a map link.');
+      },
+      { enableHighAccuracy: true, timeout: 10_000 },
+    );
+  };
 
   // Reference data, so it is fetched once and kept.
   const provinces = useQuery({
@@ -273,6 +302,9 @@ function BranchActions({ location }: { location: Location }) {
         address: address.trim(),
         phone: phone.trim() === '' ? null : phone.trim(),
         ...(districtId ? { districtId } : {}),
+        ...(coordinates && !('error' in coordinates)
+          ? { latitude: coordinates.latitude, longitude: coordinates.longitude }
+          : {}),
       }),
     onSuccess: () => {
       setEditing(false);
@@ -321,6 +353,34 @@ function BranchActions({ location }: { location: Location }) {
           Phone for this branch <span className="muted small">(optional)</span>
           <input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
         </label>
+        <label>
+          Where it is
+          <input
+            value={place}
+            onChange={(e) => {
+              setPlace(e.target.value);
+              setProblem(null);
+            }}
+            placeholder="Paste a Google Maps link, or -1.9536, 30.0606"
+          />
+          <span className="muted small">
+            Customers' distances are measured from this pin. Paste the shop's Google Maps
+            link, or press the button if you are at the shop now.
+          </span>
+        </label>
+        <div className="row-end">
+          <button type="button" className="link" onClick={useMyPosition} disabled={locating}>
+            {locating ? 'Finding you…' : 'Use my current position'}
+          </button>
+        </div>
+        {coordinates && 'error' in coordinates && (
+          <p className="error small" role="alert">
+            {coordinates.error}
+          </p>
+        )}
+        {coordinates && !('error' in coordinates) && (
+          <MapPin latitude={coordinates.latitude} longitude={coordinates.longitude} />
+        )}
         <label>
           District
           <select value={districtId} onChange={(e) => setDistrictId(e.target.value)}>

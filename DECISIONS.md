@@ -13008,3 +13008,40 @@ slots were right (every one had passed); the words were wrong.
   shop does not open stays "Closed on this day."
 - When today is already done, the screen moves on to tomorrow by itself —
   once, and only if the customer has not chosen a day.
+
+## 157. Real roads, exact fixes, and the pin on a map (2026-10-06)
+
+The list measured every branch as the crow flies (§107), with a rough GPS fix.
+Right for sorting a list; wrong for "how long will it take me". Three changes:
+
+### 157.1 Road distance and driving time, one branch at a time
+
+`GET /locations/:id/route?lat&lng` (`src/routing/`) asks a routing service for
+the real road and answers `{ distanceKm, minutes, by: 'road' }`. The service is
+OSRM over HTTP (`ROUTING_BASE_URL`; the public instance by default, free and
+fine for development; a self-hosted one or `""` to turn it off). Google's
+Routes API would be a different URL and parser, not a different shape.
+
+It never fails the caller: a slow or absent service (four-second limit)
+answers with the straight line and `by: 'line'`, with no minutes — a time
+nobody measured is not a time. Answers are kept ten minutes per start (to
+about a hundred metres) and branch. Nothing about the customer is stored.
+
+Shown on the shop page under the address ("8.5 km by road · about 14 min by
+car") and on the reservation page as "Getting there", only once a position
+is known — neither screen asks for the permission (§107.3). The list keeps the
+straight line: a road route per card would be fifty requests per search.
+
+### 157.2 The best fix the phone can give
+
+`Accuracy.Highest` for the fresh position (the instant last-known one is used
+first). A second or two slower and a little battery; the rough fix put a shop
+across the street at "200 m".
+
+### 157.3 The pin on a map, before it is saved
+
+A seller who pastes the wrong link puts every distance on their branch out,
+and nothing can tell. The business app now shows the pin on an OpenStreetMap
+embed (no key) under the coordinates, on the new-branch form and when editing
+a branch — which can now change its pin, by pasting a link or pressing "Use my
+current position" (high accuracy) at the shop.

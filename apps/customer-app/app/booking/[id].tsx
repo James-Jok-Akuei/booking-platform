@@ -14,7 +14,9 @@ import {
   type PaymentStatus,
 } from '../../src/api/booking';
 import { threadForAppointment } from '../../src/api/chat';
-import { getShop } from '../../src/api/discovery';
+import { getRoute, getShop } from '../../src/api/discovery';
+import { routeLabel } from '../../src/routeLabel';
+import { useNearMe } from '../../src/useNearMe';
 import { listSavedNumbers, saveNumber } from '../../src/api/auth';
 import { ApiError } from '../../src/api/client';
 import { Checkout } from '../../src/booking/Checkout';
@@ -83,6 +85,18 @@ export default function Booking() {
     queryFn: () => getShop(locationId!),
     enabled: Boolean(locationId),
     retry: false,
+  });
+
+  // How far, by road, and how long by car (§157) — for the reservation, where
+  // "can I make it by 11?" is the question. Only with a position already
+  // allowed; this screen never asks.
+  const nearMe = useNearMe();
+  const position = nearMe.state.status === 'on' ? nearMe.state : null;
+  const route = useQuery({
+    queryKey: ['route', locationId, position?.lat.toFixed(3), position?.lng.toFixed(3)],
+    queryFn: () => getRoute(locationId!, { lat: position!.lat, lng: position!.lng }),
+    enabled: Boolean(locationId) && position !== null,
+    staleTime: 10 * 60_000,
   });
 
   const awaitingPayment = appointment.data?.status === 'PENDING_PAYMENT';
@@ -383,6 +397,7 @@ export default function Booking() {
           format={money.format}
           onOpenPhoto={setPhoto}
           onShop={() => router.push(`/shop/${a.location.id}`)}
+          way={routeLabel(route.data)}
           // Every booking is created with a conversation attached (§21.1). It
           // is the right place for "running late" and "can I bring my son too".
           messageBusy={thread.isLoading}

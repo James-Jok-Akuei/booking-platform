@@ -42,6 +42,7 @@ export function Reservation({
   format,
   onOpenPhoto,
   onShop,
+  way,
   onMessage,
   messageBusy,
   onDirections,
@@ -58,6 +59,8 @@ export function Reservation({
   format: (minor: number | null | undefined, currency?: string) => string;
   onOpenPhoto: (index: number) => void;
   onShop: () => void;
+  /** "4.1 km by road · about 12 min by car", once the phone's position is known. */
+  way: string | null;
   onMessage: () => void;
   messageBusy: boolean;
   onDirections: () => void;
@@ -181,6 +184,7 @@ export function Reservation({
           />
         )}
         <Row label="Place" value={`${a.location.name}\n${a.location.address}`} />
+        {way && <Row label="Getting there" value={way} />}
         <Row label="Booked on" value={`${dayOf(a.createdAt)}, ${timeOf(a.createdAt)}`} />
       </FadeIn>
 

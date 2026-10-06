@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MapPin } from './MapPin';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { createLocation, listProvinces } from '../api/business';
@@ -231,17 +232,14 @@ export function NewBranchForm({ onCreated }: { onCreated: () => void }) {
         </p>
       )}
       {coordinates && !('error' in coordinates) && (
-        <p className="muted small">
-          Found {coordinates.latitude.toFixed(5)}, {coordinates.longitude.toFixed(5)}.{' '}
-          <a
-            href={`https://www.google.com/maps/@${coordinates.latitude},${coordinates.longitude},17z`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Check it on a map
-          </a>{' '}
-          before saving.
-        </p>
+        <>
+          <p className="muted small">
+            Found {coordinates.latitude.toFixed(5)}, {coordinates.longitude.toFixed(5)}. Check
+            that the pin is on your shop before saving — customers' distances are measured
+            from it.
+          </p>
+          <MapPin latitude={coordinates.latitude} longitude={coordinates.longitude} />
+        </>
       )}
 
       <label>

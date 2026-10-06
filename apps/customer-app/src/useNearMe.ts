@@ -34,11 +34,12 @@ export function useNearMe() {
         setState({ status: 'denied' });
         return;
       }
-      // Balanced, not High: this sorts a list of shops. Street-level accuracy
-      // would cost battery and a visible delay to change nothing a customer
-      // would notice.
+      // The best fix the phone can give (§157). It is slower than a rough one
+      // by a second or two and costs a little battery, and the user asked for
+      // real distances; the rough one would put a shop across the street at
+      // "200 m".
       const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.Highest,
       });
       setState({
         status: 'on',
@@ -76,7 +77,7 @@ export function useNearMe() {
           );
         }
         const fresh = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
+          accuracy: Location.Accuracy.Highest,
         });
         if (live) {
           setState({ status: 'on', lat: fresh.coords.latitude, lng: fresh.coords.longitude });
