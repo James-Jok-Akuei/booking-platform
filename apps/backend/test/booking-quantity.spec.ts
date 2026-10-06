@@ -109,7 +109,7 @@ describe('Booking a quantity (§136)', () => {
         quantityMode: QuantityMode.SINGLE,
         maxQuantity: 1,
       });
-      expect(() => normaliseQuantityRule(QuantityMode.PEOPLE, 1)).toThrow(/between 2 and 20/);
+      expect(() => normaliseQuantityRule(QuantityMode.PEOPLE, 1)).toThrow(/between 2 and 1000/);
       expect(() => normaliseQuantityRule(QuantityMode.UNITS, undefined)).toThrow();
     });
   });

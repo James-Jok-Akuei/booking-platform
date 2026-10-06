@@ -38,6 +38,6 @@ export class AvailabilityQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(20)
+  @Max(1000)
   quantity?: number;
 }

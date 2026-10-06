@@ -92,7 +92,7 @@ export class CreateServiceDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  @Max(20)
+  @Max(1000)
   maxQuantity?: number;
 
   @IsOptional()

@@ -5547,7 +5547,7 @@
             "description": "How many of `serviceId`. Only read alongside it.",
             "schema": {
               "minimum": 1,
-              "maximum": 20,
+              "maximum": 1000,
               "type": "number"
             }
           }
@@ -14643,7 +14643,7 @@
             "type": "number",
             "description": "The most one booking may ask for. Ignored (stored as 1) when SINGLE.",
             "minimum": 1,
-            "maximum": 20
+            "maximum": 1000
           },
           "isActive": {
             "type": "boolean"
@@ -14838,7 +14838,7 @@
             "type": "number",
             "description": "The most one booking may ask for. Ignored (stored as 1) when SINGLE.",
             "minimum": 1,
-            "maximum": 20
+            "maximum": 1000
           },
           "isActive": {
             "type": "boolean"
@@ -16021,9 +16021,9 @@
           },
           "quantity": {
             "type": "number",
-            "description": "How many (§136). Left out, it is one — what every booking was.\n\nWhat it MEANS is the service's to say: people, or units of the thing. The\nservice's own maximum is checked in the service, where the row is loaded;\nthe 20 here only bounds the type.",
+            "description": "How many (§136). Left out, it is one — what every booking was.\n\nWhat it MEANS is the service's to say: people, or units of the thing. The\nservice's own maximum is checked in the service, where the row is loaded;\nthe 1000 here only bounds the type.",
             "minimum": 1,
-            "maximum": 20
+            "maximum": 1000
           }
         },
         "required": [

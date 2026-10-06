@@ -3,7 +3,7 @@ import { QuantityMode } from '@prisma/client';
 import { MINUTES_PER_DAY } from '../availability/time.util';
 
 /** The most any service may allow in one booking. */
-export const MAX_QUANTITY = 20;
+export const MAX_QUANTITY = 1000;
 
 export interface QuantityPlan {
   /** How long the whole booking takes. */

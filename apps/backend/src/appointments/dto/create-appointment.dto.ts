@@ -22,11 +22,11 @@ export class CreateAppointmentDto {
    *
    * What it MEANS is the service's to say: people, or units of the thing. The
    * service's own maximum is checked in the service, where the row is loaded;
-   * the 20 here only bounds the type.
+   * the 1000 here only bounds the type.
    */
   @IsOptional()
   @IsInt()
   @Min(1)
-  @Max(20)
+  @Max(1000)
   quantity?: number;
 }

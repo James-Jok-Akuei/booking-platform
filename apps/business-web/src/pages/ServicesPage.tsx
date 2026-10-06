@@ -538,12 +538,12 @@ function ServiceForm({
             id="smax"
             type="number"
             min="2"
-            max="20"
+            max="1000"
             value={maxQuantity}
             onChange={(e) => setMaxQuantity(e.target.value)}
             required
           />
-          <span className="muted small">The price above is for one.</span>
+          <span className="muted small">Any number from 2 to 1000. The price above is for one.</span>
         </div>
       )}
       <div className="branch-prices">

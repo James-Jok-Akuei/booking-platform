@@ -12984,3 +12984,14 @@ page that changes should say so.
 
 The one rule for a new sky: dark enough for white text. All ten were rendered
 side by side and checked.
+
+## 155. The quantity ceiling is 1000 (2026-10-06)
+
+"Most in one booking" was capped at 20 (§136.1). A business may sell a thing
+by the hundred — prints, tickets, seats — so the ceiling is 1000 everywhere it
+was 20: the CHECK constraint, `MAX_QUANTITY`, the service form, the booking
+and availability DTOs. The floor stays at 2.
+
+Past twenty the customer's − / + picker also lets the number be typed, clamped
+to the range when the field is left; below it, two buttons are still all it
+takes.
