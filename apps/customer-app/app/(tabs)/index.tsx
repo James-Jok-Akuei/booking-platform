@@ -450,7 +450,7 @@ export default function Discover() {
       </FadeIn>
 
       <FadeIn delay={60} style={styles.search}>
-        <Icon name="search" size={17} color={theme.muted} />
+        <Icon name="search" size={19} color={theme.muted} />
         <TextInput
           style={styles.searchInput}
           value={query}
@@ -955,9 +955,9 @@ const styles = StyleSheet.create({
   search: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 9,
-    height: 46,
-    paddingHorizontal: 16,
+    gap: 10,
+    height: 54,
+    paddingHorizontal: 18,
     borderRadius: radius.pill,
     backgroundColor: theme.panel,
     ...shadow.card,
@@ -965,7 +965,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontFamily: font.medium,
-    fontSize: 14.5,
+    fontSize: 15,
     color: theme.ink,
     paddingVertical: 0,
   },

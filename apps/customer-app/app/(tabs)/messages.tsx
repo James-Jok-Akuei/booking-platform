@@ -131,7 +131,7 @@ export default function Messages() {
       </View>
 
       <View style={styles.search}>
-        <Icon name="search" size={17} color={theme.muted} />
+        <Icon name="search" size={18} color={theme.muted} />
         <TextInput
           style={styles.searchInput}
           value={query}
@@ -312,14 +312,14 @@ const styles = StyleSheet.create({
   search: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 9,
-    height: 46,
+    gap: 10,
+    height: 48,
     paddingHorizontal: 16,
     borderRadius: radius.pill,
     backgroundColor: theme.panel,
     ...shadow.card,
   },
-  searchInput: { flex: 1, fontFamily: font.medium, fontSize: 14.5, color: theme.ink, paddingVertical: 0 },
+  searchInput: { flex: 1, fontFamily: font.medium, fontSize: 15, color: theme.ink, paddingVertical: 0 },
   clear: {
     width: 22,
     height: 22,
