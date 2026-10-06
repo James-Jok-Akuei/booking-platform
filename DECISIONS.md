@@ -13147,3 +13147,24 @@ Long-pressing a notification did nothing; "Clear read" had no undo.
 an hour stays as minutes. One formatter (`src/duration.ts`) used on every card,
 the shop page, the booking screen, checkout, the reservation, and the weekly
 offers email.
+
+## 164. Messages, as a chat app draws them (2026-10-06)
+
+The list was plain rows; the thread was bubbles with a time on every one.
+
+- **The list**: the shop's logo (added to `ThreadBusinessDto`) with a coral
+  ring when something is waiting; a bold name; what the thread is about with a
+  calendar glyph; the last line prefixed "You:" when it was the customer's, so
+  nobody opens a thread to find out who is waiting on whom; the time the way
+  chat lists say it (21:36, Yesterday, Thu, 6 Oct); an unread count, or a
+  double tick when the last word was theirs. A search over shop, service and
+  words said; an All | Unread filter; an unread total in the heading.
+- **The thread**: a pill between days (Today, Yesterday, Monday); a run from
+  one side within five minutes is one group — the corners square towards each
+  other, the time and ticks only on the last; a photo opens in the viewer
+  (§135.7); the booking it is about is a chip under the header, one tap to
+  the reservation; the logo opens the shop.
+
+**Left out:** read receipts (nothing records what the shop read), typing
+indicators, swipe actions on the list, and archiving — a conversation about
+a booking belongs where the booking is.

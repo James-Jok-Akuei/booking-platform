@@ -17497,11 +17497,16 @@
           "name": {
             "type": "string",
             "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
           "id",
-          "name"
+          "name",
+          "logoUrl"
         ]
       },
       "ThreadCustomerDto": {

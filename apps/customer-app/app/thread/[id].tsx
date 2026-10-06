@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -31,10 +31,40 @@ import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon } from '../../src/ui/Icon';
 import { IconButton } from '../../src/ui/IconButton';
 import { useLayout } from '../../src/ui/layout';
+import { PhotoViewer } from '../../src/ui/PhotoViewer';
 import { PressableScale } from '../../src/ui/PressableScale';
 
 const clock = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+/** "Today", "Yesterday", "Monday", "6 October" — the pill between days. */
+const dayLabel = (iso: string) => {
+  const d = new Date(iso);
+  const now = new Date();
+  const start = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const days = Math.round((start(now) - start(d)) / 86_400_000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return d.toLocaleDateString(undefined, { weekday: 'long' });
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+};
+const dayKey = (iso: string) => new Date(iso).toDateString();
+
+/**
+ * Messages as they are drawn (§164): grouped, the way every chat app groups
+ * them. A run of messages from one side within five minutes is one group —
+ * the tail and the time sit on the last bubble, the others are plain, and
+ * the gap inside a group is smaller than the gap between groups. A new day
+ * puts a pill between them.
+ */
+type Drawn = {
+  message: Message;
+  mine: boolean;
+  first: boolean;
+  last: boolean;
+  day: string | null;
+};
+const GROUP_MS = 5 * 60 * 1000;
 
 type Picked = { uri: string; name: string; type: string };
 
@@ -54,7 +84,7 @@ export default function ThreadScreen() {
   const layout = useLayout();
   const [draft, setDraft] = useState('');
   const [photo, setPhoto] = useState<Picked | null>(null);
-  const listRef = useRef<FlatList<Message>>(null);
+  const listRef = useRef<FlatList<Drawn>>(null);
 
   const thread = useQuery({ queryKey: ['thread', id], queryFn: () => getThread(id) });
 
@@ -126,6 +156,32 @@ export default function ThreadScreen() {
   };
 
   const rows = messages.data?.messages ?? [];
+  const drawn = useMemo<Drawn[]>(
+    () =>
+      rows.map((message, i) => {
+        const mine = message.sender.role === 'CUSTOMER';
+        const prev = rows[i - 1];
+        const next = rows[i + 1];
+        const joins = (other: Message | undefined) =>
+          other !== undefined &&
+          (other.sender.role === 'CUSTOMER') === mine &&
+          Math.abs(new Date(other.createdAt).getTime() - new Date(message.createdAt).getTime()) < GROUP_MS &&
+          dayKey(other.createdAt) === dayKey(message.createdAt);
+        return {
+          message,
+          mine,
+          first: !joins(prev),
+          last: !joins(next),
+          day: !prev || dayKey(prev.createdAt) !== dayKey(message.createdAt) ? dayLabel(message.createdAt) : null,
+        };
+      }),
+    [rows],
+  );
+  const photos = useMemo(
+    () => rows.filter((m) => m.photoUrl).map((m) => ({ id: m.id, url: m.photoUrl! })),
+    [rows],
+  );
+  const [openPhoto, setOpenPhoto] = useState<number | null>(null);
   const canSend = (draft.trim().length > 0 || photo !== null) && !send.isPending;
   const businessName = thread.data?.business.name ?? 'Messages';
 
@@ -144,29 +200,63 @@ export default function ThreadScreen() {
           flat
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/messages'))}
         />
-        <Avatar name={businessName} size={42} />
+        <PressableScale
+          onPress={() => thread.data && router.push(`/shop/${thread.data.business.id}`)}
+          scaleTo={0.95}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${businessName}`}
+        >
+          <Avatar uri={thread.data?.business.logoUrl} name={businessName} size={42} />
+        </PressableScale>
         <View style={styles.flex}>
           <Text style={styles.headerName} numberOfLines={1}>
             {businessName}
           </Text>
-          {thread.data?.appointment && (
-            <Text style={styles.headerSub} numberOfLines={1}>
-              About {thread.data.appointment.serviceName} on{' '}
-              {new Date(thread.data.appointment.startTime).toLocaleDateString(undefined, {
-                day: 'numeric',
-                month: 'short',
-              })}
-            </Text>
-          )}
+          <Text style={styles.headerSub} numberOfLines={1}>
+            {thread.data?.appointment ? 'About a booking' : 'Question'}
+          </Text>
         </View>
       </View>
+
+      {/* The booking this is about, as a chip under the header — one tap to
+          the reservation, which is nearly always what "wait, when was it?"
+          wants (§164). */}
+      {thread.data?.appointment && (
+        <PressableScale
+          onPress={() => router.push(`/booking/${thread.data!.appointment!.id}`)}
+          haptic
+          scaleTo={0.97}
+          accessibilityRole="button"
+          style={[styles.about, { width: Math.min(layout.contentWidth - 32, 520) }]}
+        >
+          <View style={styles.aboutIcon}>
+            <Icon name="calendar" size={15} color={theme.accent} />
+          </View>
+          <View style={styles.flex}>
+            <Text style={styles.aboutName} numberOfLines={1}>
+              {thread.data.appointment.serviceName}
+            </Text>
+            <Text style={type.tiny} numberOfLines={1}>
+              {new Date(thread.data.appointment.startTime).toLocaleString(undefined, {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Text>
+          </View>
+          <Text style={styles.aboutGo}>View</Text>
+          <Icon name="chevron-forward" size={14} color={theme.accent} />
+        </PressableScale>
+      )}
 
       {messages.isLoading && <ActivityIndicator style={styles.spinner} color={theme.accent} />}
 
       <FlatList
         ref={listRef}
-        data={rows}
-        keyExtractor={(item) => item.id}
+        data={drawn}
+        keyExtractor={(item) => item.message.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.list, { width: layout.contentWidth }]}
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
@@ -179,25 +269,50 @@ export default function ThreadScreen() {
             />
           )
         }
-        renderItem={({ item }) => {
-          const mine = item.sender.role === 'CUSTOMER';
-          return (
-            <FadeIn distance={8} style={[styles.bubbleRow, mine && styles.bubbleRowMine]}>
-              <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
+        renderItem={({ item: { message: item, mine, first, last, day } }) => (
+          <View style={[styles.bubbleRow, mine && styles.bubbleRowMine, !first && styles.bubbleRowJoined]}>
+            {day && (
+              <View style={styles.dayPill}>
+                <Text style={styles.dayText}>{day}</Text>
+              </View>
+            )}
+            <FadeIn distance={8} style={[styles.bubbleLine, mine && styles.bubbleLineMine]}>
+              <View
+                style={[
+                  styles.bubble,
+                  mine ? styles.mine : styles.theirs,
+                  // Corners: square towards the neighbour in a group, round
+                  // elsewhere — the shape that says "these go together".
+                  mine
+                    ? { borderTopRightRadius: first ? 20 : 6, borderBottomRightRadius: last ? 6 : 6 }
+                    : { borderTopLeftRadius: first ? 20 : 6, borderBottomLeftRadius: last ? 6 : 6 },
+                  item.photoUrl && !item.body && styles.bubblePhotoOnly,
+                ]}
+              >
                 {item.photoUrl && (
-                  <Image source={{ uri: item.photoUrl }} style={styles.photo} />
+                  <PressableScale
+                    scaleTo={0.97}
+                    accessibilityRole="imagebutton"
+                    accessibilityLabel="Photo, tap to open"
+                    onPress={() => setOpenPhoto(photos.findIndex((p) => p.id === item.id))}
+                  >
+                    <Image source={{ uri: item.photoUrl }} style={styles.photo} />
+                  </PressableScale>
                 )}
-                {item.body && (
-                  <Text style={[styles.body, mine && styles.bodyMine]}>{item.body}</Text>
+                {item.body && <Text style={[styles.body, mine && styles.bodyMine]}>{item.body}</Text>}
+                {last && (
+                  <View style={styles.timeRow}>
+                    <Text style={[styles.time, mine && styles.timeMine]}>{clock(item.createdAt)}</Text>
+                    {mine && <Icon name="checkmark-done" size={13} color="rgba(255,255,255,0.78)" />}
+                  </View>
                 )}
-                <Text style={[styles.time, mine && styles.timeMine]}>
-                  {clock(item.createdAt)}
-                </Text>
               </View>
             </FadeIn>
-          );
-        }}
+          </View>
+        )}
       />
+
+      <PhotoViewer photos={photos} openAt={openPhoto} onClose={() => setOpenPhoto(null)} />
 
       {photo && (
         <View style={styles.attached}>
@@ -259,10 +374,47 @@ const styles = StyleSheet.create({
   },
   headerName: { fontFamily: font.bold, fontSize: 16.5, color: theme.ink },
   headerSub: { fontFamily: font.semibold, fontSize: 12.5, color: theme.accent, marginTop: 1 },
-  list: { paddingHorizontal: 16, paddingVertical: 16, gap: 8, alignSelf: 'center' },
-  bubbleRow: { flexDirection: 'row' },
-  bubbleRowMine: { justifyContent: 'flex-end' },
+  about: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    alignSelf: 'center',
+    marginTop: 10,
+    backgroundColor: theme.panel,
+    borderRadius: radius.md,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    ...shadow.card,
+  },
+  aboutIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: theme.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aboutName: { fontFamily: font.bold, fontSize: 13.5, color: theme.ink },
+  aboutGo: { fontFamily: font.bold, fontSize: 12.5, color: theme.accent },
+  list: { paddingHorizontal: 16, paddingVertical: 16, gap: 10, alignSelf: 'center' },
+  bubbleRow: { gap: 10 },
+  bubbleRowMine: {},
+  // Inside a group the bubbles sit close; between groups the list's gap applies.
+  bubbleRowJoined: { marginTop: -7 },
+  bubbleLine: { flexDirection: 'row' },
+  bubbleLineMine: { justifyContent: 'flex-end' },
+  dayPill: {
+    alignSelf: 'center',
+    backgroundColor: theme.sunken,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    marginVertical: 6,
+  },
+  dayText: { fontFamily: font.bold, fontSize: 11.5, color: theme.muted },
   bubble: { maxWidth: '82%', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10, gap: 4 },
+  bubblePhotoOnly: { padding: 4 },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 3, alignSelf: 'flex-end' },
   mine: { backgroundColor: theme.accent, borderBottomRightRadius: 6 },
   theirs: { backgroundColor: theme.panel, borderBottomLeftRadius: 6, ...shadow.card },
   body: { fontFamily: font.medium, color: theme.ink, fontSize: 15, lineHeight: 21 },

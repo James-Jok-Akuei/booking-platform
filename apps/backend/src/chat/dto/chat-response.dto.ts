@@ -75,6 +75,7 @@ export class ThreadMessagePageDto {
 export class ThreadBusinessDto {
   id!: string;
   name!: string | null;
+  logoUrl!: string | null;
 }
 
 export class ThreadCustomerDto {

@@ -4162,6 +4162,7 @@ export interface components {
         ThreadBusinessDto: {
             id: string;
             name: string | null;
+            logoUrl: string | null;
         };
         ThreadCustomerDto: {
             id: string;
