@@ -3,8 +3,12 @@ import type { DiscoveryPage } from './api/discovery';
 /** The distances a customer can pick on Home, in kilometres (§171). */
 export const WITHIN_STEPS = [2, 5, 10, 25] as const;
 
-/** Where Home starts once it knows where the customer is. */
-export const DEFAULT_WITHIN = 10;
+/**
+ * Where Home starts once it knows where the customer is: any distance (§173).
+ * ~~10 km~~ at first (§171); every shop is shown, nearest measured, until the
+ * customer narrows it themselves.
+ */
+export const DEFAULT_WITHIN: number | null = null;
 
 /**
  * Fewer places than this inside the default, and the circle grows. Early on
@@ -27,8 +31,9 @@ export type Reach = {
  * How far Home searches (§171), from the nearest places for the current
  * filters — `nearest` is a page of branches in distance order.
  *
- * - **The default** (10 km, nobody chose it) grows to the next step until it
- *   holds {@link ENOUGH_PLACES} businesses, and to every distance if none does.
+ * - **A default distance** (one nobody chose — 10 km until §173) grows to the
+ *   next step until it holds {@link ENOUGH_PLACES} businesses, and to every
+ *   distance if none does.
  * - **A distance the customer picked** is kept exactly. It grows only when
  *   there is NOTHING in it — they asked for close, and one shop close by is an
  *   answer; an empty screen is not.

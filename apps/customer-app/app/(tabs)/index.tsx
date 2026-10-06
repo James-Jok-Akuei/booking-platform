@@ -405,11 +405,9 @@ export default function Discover() {
 
   const header = (
     <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-      {/* WHERE. A named place is never applied automatically: the pill says
-          "Rwanda" until someone picks one (§106.2). Distance from here is the
-          one thing that is — 10 km once the customer has shared where they
-          are, grown when that holds too few places, and changed in one tap
-          below (§171). */}
+      {/* WHERE. Nothing narrows on its own: the pill says "Rwanda" until
+          someone picks a place (§106.2), and the distance from here starts at
+          "Any" until someone picks one below (§171, §173). */}
       <FadeIn>
         <View style={styles.topRow}>
         <PressableScale

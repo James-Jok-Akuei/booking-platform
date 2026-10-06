@@ -13311,9 +13311,9 @@ their current location."* Proposed and agreed in three parts.
 ### 171.1 Within 2, 5, 10 or 25 km, or any distance
 
 Once the app knows where the customer is, Home shows a **Within** picker
-(sliding, like Upcoming/Past) and searches with `radiusKm`. It starts at
-**10 km**. The shelf says "within 10 km"; a green dot says "From where you are
-now".
+(sliding, like Upcoming/Past) and searches with `radiusKm`. ~~It starts at
+**10 km**.~~ It starts at **Any** (§173). The shelf says "within 10 km" once a
+distance is picked; a green dot says "From where you are now".
 
 - **It grows where shops are few.** A probe — the 50 nearest branches for the
   same filters, in distance order — says how far one has to go. The default
@@ -13434,3 +13434,16 @@ shown it when asked to accept again. It now takes the sentence:
 `npm run legal:publish -- "What changed."`, and refuses an update without one.
 
 **1311 passing across 56 suites.**
+
+## 173. Home's distance starts at "Any" (2026-10-07)
+
+Asked: *"make the default to be 'any' instead '10km' on the home screen."*
+`DEFAULT_WITHIN` is now `null`: once location is on, every shop is still
+shown, each with its distance, until the customer picks 2, 5, 10 or 25 km.
+That puts Home back in line with §106.2 — nothing narrows itself.
+
+Picking a distance behaves as in §171.1: kept exactly, grown only when there
+is nothing in it, with "Look up to 5 km" when nothing close is bookable. The
+"grow to five places" rule for an unchosen distance stays in `nearReach.ts`
+but no longer runs, since nothing is chosen for the customer; it is there if
+a default distance comes back.
