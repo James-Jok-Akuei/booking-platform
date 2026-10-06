@@ -12,6 +12,7 @@ import { useSavedService } from '../../src/useSavedService';
 import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
 import { ApiError, tokens } from '../../src/api/client';
+import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, theme, type } from '../../src/theme';
 import { Avatar } from '../../src/ui/Avatar';
@@ -502,7 +503,7 @@ function ServiceRow({
         )}
         <View style={styles.line}>
           <Icon name="time-outline" size={13} color={theme.muted} />
-          <Text style={type.small}>{service.durationMinutes} minutes</Text>
+          <Text style={type.small}>{duration(service.durationMinutes, true)}</Text>
         </View>
         <View style={styles.servicePrice}>
           <Text style={styles.price}>{format(service.priceMinor, service.currency)}</Text>

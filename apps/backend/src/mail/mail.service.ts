@@ -2,6 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 
+/** "45 min", "1 h 30 min" — as a person says it, the same as the app (§163). */
+const lengthOf = (minutes: number) => {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h} h` : `${h} h ${m} min`;
+};
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
@@ -132,7 +140,7 @@ export class MailService {
         const facts = [
           service.shop,
           service.where,
-          `${service.minutes} min`,
+          `${lengthOf(service.minutes)}`,
           service.rating !== null ? `★ ${service.rating.toFixed(1)}` : null,
         ]
           .filter((fact): fact is string => Boolean(fact))
@@ -177,7 +185,7 @@ export class MailService {
       digest.services
         .map(
           (service) =>
-            `${service.name} — ${service.price}\n${service.shop}${service.where ? `, ${service.where}` : ''} · ${service.minutes} min`,
+            `${service.name} — ${service.price}\n${service.shop}${service.where ? `, ${service.where}` : ''} · ${lengthOf(service.minutes)}`,
         )
         .join('\n\n') +
       '\n\nOpen the app to book any of these.\n\n' +

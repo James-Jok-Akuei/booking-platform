@@ -6,6 +6,7 @@ import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { SaveButton } from './SaveButton';
 import { distanceLabel } from '../distance';
+import { duration } from '../duration';
 
 /**
  * One service, small (§135.3).
@@ -89,7 +90,7 @@ export function ServiceCard({
             ask after the price, and it costs no row of its own here. */}
         <View style={styles.duration}>
           <Icon name="time-outline" size={11} color="#FFFFFF" />
-          <Text style={styles.durationText}>{service.durationMinutes} min</Text>
+          <Text style={styles.durationText}>{duration(service.durationMinutes)}</Text>
         </View>
       </View>
 

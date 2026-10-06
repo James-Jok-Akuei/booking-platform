@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import type { Appointment } from '../api/booking';
 import { BOOKING_STATUS } from '../bookingStatus';
+import { duration } from '../duration';
 import { font, radius, shadow, theme, type } from '../theme';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
@@ -176,7 +177,7 @@ export function Reservation({
         <Row label="Reservation no." value={reservationNo(a.id)} strong />
         <Row label="Date" value={dayOf(a.startTime)} />
         <Row label="Time" value={timeRange(a)} />
-        <Row label="Length" value={`${minutesOf(a)} minutes`} />
+        <Row label="Length" value={duration(minutesOf(a), true)} />
         {a.quantity > 1 && (
           <Row
             label={a.service.quantityMode === 'PEOPLE' ? 'People' : 'How many'}

@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getAvailability, getShop } from '../../src/api/discovery';
 import { createAppointment } from '../../src/api/booking';
 import { ApiError, tokens } from '../../src/api/client';
+import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, theme, type } from '../../src/theme';
 import { Avatar } from '../../src/ui/Avatar';
@@ -291,7 +292,7 @@ export default function Book() {
           <View style={styles.line}>
             <Icon name="time-outline" size={15} color={theme.muted} />
             <Text style={type.small}>
-              {minutes} minutes at {shop.data?.name}
+              {duration(minutes, true)} at {shop.data?.name}
             </Text>
           </View>
           <View style={styles.priceRow}>

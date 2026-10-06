@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { SavedService } from '../api/discovery';
+import { duration } from '../duration';
 import { font, radius, shadow, theme } from '../theme';
 import { Avatar } from '../ui/Avatar';
 import { Cover } from '../ui/Cover';
@@ -66,7 +67,7 @@ export function SavedServiceCard({
           <View style={styles.facts}>
             <View style={styles.fact}>
               <Icon name="time-outline" size={12} color="#FFFFFF" />
-              <Text style={styles.factText}>{service.durationMinutes} min</Text>
+              <Text style={styles.factText}>{duration(service.durationMinutes)}</Text>
             </View>
             {rated && (
               <View style={styles.fact}>

@@ -13140,3 +13140,10 @@ Long-pressing a notification did nothing; "Clear read" had no undo.
   it cleared.
 - **Undo covers everything that removes**: one swipe, a selection, or Clear
   read. The bar says "Removed" or "8 removed" and puts back exactly those ids.
+
+## 163. Lengths over an hour read as hours (2026-10-06)
+
+"90 minutes" became "1 h 30 min" ("1 hour 30 minutes" in a sentence); under
+an hour stays as minutes. One formatter (`src/duration.ts`) used on every card,
+the shop page, the booking screen, checkout, the reservation, and the weekly
+offers email.

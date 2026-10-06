@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Appointment, PaymentStatus } from '../api/booking';
 import { explainFailedDeposit, toMsisdn } from '../api/booking';
+import { duration } from '../duration';
 import { font, radius, shadow, theme, type } from '../theme';
 import { Chip } from '../ui/Chip';
 import { Cover } from '../ui/Cover';
@@ -94,7 +95,7 @@ export function Checkout({
                 </View>
               )}
               <View style={styles.tag}>
-                <Text style={styles.tagText}>{minutesOf(a)} min</Text>
+                <Text style={styles.tagText}>{duration(minutesOf(a))}</Text>
               </View>
             </View>
           </View>
