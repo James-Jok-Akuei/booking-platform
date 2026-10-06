@@ -13364,3 +13364,10 @@ still comes back to report the outcome if the customer later presses Nearest.
 They are sent while the app is closed, when the phone's position is not known
 — asking for "always" location to fill that gap is what phones make hardest
 and people trust least.
+
+### 171.4 Slimmer controls (2026-10-07)
+
+Asked for more room: the search field is 46 high instead of 54 (Messages'
+search matched, from 48), and the Within picker uses a new `compact` size of
+`Segmented` — 38 instead of 48, 13 px labels — with less space above it.
+Upcoming/Past and All/Unread keep the full size.

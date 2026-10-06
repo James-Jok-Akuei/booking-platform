@@ -35,7 +35,7 @@ export function WithinBar({
   return (
     <View style={styles.wrap}>
       <View style={styles.head}>
-        <Icon name="navigate" size={14} color={theme.accent} />
+        <Icon name="navigate" size={13} color={theme.accent} />
         <Text style={styles.title}>Within</Text>
         <View style={styles.live} accessibilityLabel="Distances are from where you are now">
           <Pulse color={theme.ok} size={6} />
@@ -43,6 +43,7 @@ export function WithinBar({
         </View>
       </View>
       <Segmented
+        compact
         options={OPTIONS}
         value={km === null ? ANY : String(km)}
         onChange={(value) => onChange(value === ANY ? null : Number(value))}
@@ -58,11 +59,11 @@ export function WithinBar({
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: 14, gap: 8 },
+  wrap: { gap: 6 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  title: { fontFamily: font.bold, fontSize: 14, color: theme.ink },
+  title: { fontFamily: font.bold, fontSize: 13, color: theme.ink },
   live: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 0 },
-  liveText: { fontFamily: font.semibold, fontSize: 12, color: theme.muted },
+  liveText: { fontFamily: font.semibold, fontSize: 11.5, color: theme.muted },
   note: { flexDirection: 'row', alignItems: 'flex-start', gap: 7, paddingHorizontal: 4 },
-  noteText: { flex: 1, fontFamily: font.medium, fontSize: 13, lineHeight: 18, color: theme.ink2 },
+  noteText: { flex: 1, fontFamily: font.medium, fontSize: 12.5, lineHeight: 17, color: theme.ink2 },
 });

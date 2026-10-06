@@ -14,10 +14,13 @@ export function Segmented<T extends string>({
   options,
   value,
   onChange,
+  compact,
 }: {
   options: Array<{ value: T; label: string }>;
   value: T;
   onChange: (value: T) => void;
+  /** Shorter, for a choice that sits among other controls rather than heading a screen. */
+  compact?: boolean;
 }) {
   const [width, setWidth] = useState(0);
   const index = Math.max(0, options.findIndex((o) => o.value === value));
@@ -32,15 +35,22 @@ export function Segmented<T extends string>({
     }).start();
   }, [index, slide]);
 
-  const segment = width > 0 ? (width - 8) / options.length : 0;
+  const pad = compact ? 3 : 4;
+  const segment = width > 0 ? (width - pad * 2) / options.length : 0;
 
   return (
-    <View style={styles.track} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+    <View
+      style={[styles.track, { padding: pad }]}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    >
       {segment > 0 && (
         <Animated.View
           style={[
             styles.thumb,
             {
+              top: pad,
+              left: pad,
+              bottom: pad,
               width: segment,
               transform: [{ translateX: Animated.multiply(slide, segment) }],
             },
@@ -52,7 +62,7 @@ export function Segmented<T extends string>({
         return (
           <Pressable
             key={option.value}
-            style={styles.option}
+            style={[styles.option, compact && styles.optionCompact]}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
             onPress={() => {
@@ -60,7 +70,9 @@ export function Segmented<T extends string>({
               onChange(option.value);
             }}
           >
-            <Text style={[styles.label, on && styles.labelOn]}>{option.label}</Text>
+            <Text style={[styles.label, compact && styles.labelCompact, on && styles.labelOn]}>
+              {option.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -73,18 +85,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#EBE8E1',
     borderRadius: radius.pill,
-    padding: 4,
   },
   thumb: {
     position: 'absolute',
-    top: 4,
-    left: 4,
-    bottom: 4,
     borderRadius: radius.pill,
     backgroundColor: theme.panel,
     ...shadow.card,
   },
   option: { flex: 1, height: 40, alignItems: 'center', justifyContent: 'center' },
+  optionCompact: { height: 32 },
   label: { fontFamily: font.semibold, fontSize: 14, color: theme.muted },
+  labelCompact: { fontSize: 13 },
   labelOn: { color: theme.ink, fontFamily: font.bold },
 });
