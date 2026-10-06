@@ -205,17 +205,15 @@ export default function Shop() {
                 </Text>
               )}
 
-              <View style={[styles.line, styles.ratingLine]}>
-                {s.rating.count > 0 ? (
-                  <>
-                    <Icon name="star" size={16} color={theme.star} />
-                    <Text style={styles.ratingScore}>{s.rating.average?.toFixed(1)}</Text>
-                    <Text style={type.small}>from {s.rating.count} reviews</Text>
-                  </>
-                ) : (
-                  <Text style={type.small}>No reviews yet</Text>
-                )}
-              </View>
+              {/* Only once there is one. "No reviews yet" is not a fact about
+                  the shop, and it read as a mark against it (§153). */}
+              {s.rating.count > 0 && (
+                <View style={[styles.line, styles.ratingLine]}>
+                  <Icon name="star" size={16} color={theme.star} />
+                  <Text style={styles.ratingScore}>{s.rating.average?.toFixed(1)}</Text>
+                  <Text style={type.small}>from {s.rating.count} reviews</Text>
+                </View>
+              )}
 
               {s.business.description && (
                 <Text style={[type.body, styles.description]}>{s.business.description}</Text>

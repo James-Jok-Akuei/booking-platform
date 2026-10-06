@@ -12964,3 +12964,9 @@ service's photos together.
   for choosing.
 
 The strip on the shop page stays, as a taste; "See all" goes here.
+
+## 153. "No reviews yet" is gone (2026-10-06)
+
+The shop page and the saved-places card said "No reviews yet" when a shop had
+none. Removed at the user's request: it is not a fact about the shop, and it
+read as a mark against it. The rating line simply appears once there is one.

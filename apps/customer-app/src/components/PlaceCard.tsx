@@ -119,9 +119,6 @@ export function PlaceCard({
                 {tag}
               </Text>
             )}
-            {ratingCount === 0 && !tag && !distance && (
-              <Text style={type.small}>No reviews yet</Text>
-            )}
           </View>
           {/* Null means nothing is on sale here, which is not the same as free. */}
           {price && <Text style={styles.price}>{price}</Text>}
