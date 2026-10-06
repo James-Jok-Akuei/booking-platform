@@ -13168,3 +13168,18 @@ The list was plain rows; the thread was bubbles with a time on every one.
 **Left out:** read receipts (nothing records what the shop read), typing
 indicators, swipe actions on the list, and archiving — a conversation about
 a booking belongs where the booking is.
+
+## 165. A new service is posted with its photos, in one go (2026-10-06)
+
+Creating a service was "Save", which quietly made it live, and photos could
+only be added afterwards from the list. Now the new-service form has a Photos
+section — up to eleven, chosen as files, the first the cover, removable before
+posting — and the button says **Post this service**, with "Goes live at 2
+branches with 3 photos" beside it. Posting creates the service, then uploads
+the photos in order while the button says which one is going. A photo that
+fails after the service exists is reported with the service kept; it can be
+added from Edit. Editing keeps its own button, "Save changes", and its own
+photo manager.
+
+Photos are not part of a DRAFT (§123): a draft is text, and a file needs a
+service to belong to.

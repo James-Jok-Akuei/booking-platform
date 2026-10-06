@@ -418,3 +418,7 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 /* The pin on a map, before it is saved (§157). */
 .map-pin { display: grid; gap: 6px; }
 .map-pin iframe { width: 100%; height: 220px; border: 1px solid var(--line, #e5e7eb); border-radius: 10px; }
+
+/* Photos chosen while writing a new service (§165). */
+.service-photos { flex-basis: 100%; border-top: 1px solid var(--line); padding-top: 12px; }
+.service-photos label.file-trigger { display: inline-block; width: auto; margin: 0; }

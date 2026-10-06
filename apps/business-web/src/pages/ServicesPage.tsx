@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { SellerAgreementGate, useOutstandingLegal } from '../components/LegalGate';
@@ -111,11 +111,39 @@ export function ServicesPage() {
   const { sellerAgreement } = useOutstandingLegal();
   const [gateOpen, setGateOpen] = useState(false);
 
+  /**
+   * Posting a NEW service is one act (§165): the service, then its photos, in
+   * the order they were chosen, with the button saying which photo is going.
+   * The service exists from the first step; a photo that fails after it is
+   * reported with the service kept, never a service that quietly vanished.
+   */
+  const [posting, setPosting] = useState<string | null>(null);
+  const [postProblem, setPostProblem] = useState<string | null>(null);
   const save = useMutation({
-    mutationFn: (input: { id?: string; body: Record<string, unknown> }) =>
-      input.id
-        ? updateService(input.id, input.body)
-        : createService(input.body as never),
+    mutationFn: async (input: { id?: string; body: Record<string, unknown>; files?: File[] }) => {
+      if (input.id) return updateService(input.id, input.body);
+      setPostProblem(null);
+      setPosting('Posting the service…');
+      const created = await createService(input.body as never);
+      const files = input.files ?? [];
+      const failed: string[] = [];
+      for (const [index, file] of files.entries()) {
+        setPosting(`Uploading photo ${index + 1} of ${files.length}…`);
+        try {
+          await addServiceImage(created.id, file);
+        } catch (error) {
+          failed.push(error instanceof ApiError ? error.message : file.name);
+        }
+      }
+      if (failed.length > 0) {
+        setPostProblem(
+          `The service is posted, but ${failed.length} of ${files.length} photo(s) did not upload: ` +
+            `${failed[0]}. Add them from Edit on the service below.`,
+        );
+      }
+      return created;
+    },
+    onSettled: () => setPosting(null),
     onSuccess: () => {
       setAdding(false);
       // The draft became a service. Keeping it would leave the Unfinished list
@@ -290,9 +318,16 @@ export function ServicesPage() {
           locations={locations.data ?? []}
           busy={save.isPending}
           initial={resumed}
-          onSubmit={(body) => save.mutate({ body })}
+          busyLabel={posting ?? undefined}
+          creating
+          onSubmit={(body, files) => save.mutate({ body, files })}
           onChange={queueDraftSave}
         />
+      )}
+      {postProblem && (
+        <p className="error small" role="alert">
+          {postProblem}
+        </p>
       )}
 
       {services.isLoading && <p className="muted">Loading…</p>}
@@ -393,6 +428,8 @@ function ServiceForm({
   money,
   locations,
   busy,
+  busyLabel,
+  creating = false,
   initial,
   onSubmit,
   onCancel,
@@ -401,8 +438,13 @@ function ServiceForm({
   money: ReturnType<typeof useMoney>;
   locations: Location[];
   busy: boolean;
+  /** What the button says while busy, e.g. "Uploading photo 2 of 5…". */
+  busyLabel?: string;
+  /** A NEW service (or a draft of one): photos are chosen here and the button posts. */
+  creating?: boolean;
   initial?: Service;
-  onSubmit: (body: Record<string, unknown>) => void;
+  /** `files` are the photos chosen for a NEW service, cover first (§165). */
+  onSubmit: (body: Record<string, unknown>, files: File[]) => void;
   onCancel?: () => void;
   /**
    * Called whenever anything in the form changes, so a NEW service can be kept
@@ -426,6 +468,13 @@ function ServiceForm({
   const [maxQuantity, setMaxQuantity] = useState(
     String(initial && initial.maxQuantity > 1 ? initial.maxQuantity : 5),
   );
+  // Photos chosen while writing a NEW service (§165). Held as files until
+  // "Post", because a photo needs a service to belong to and there is none
+  // yet; an existing service has ServicePhotos below it instead.
+  const [files, setFiles] = useState<File[]>([]);
+  const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
+  useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
+  const PHOTO_LIMIT = 11;
 
   /**
    * One price box per branch, empty meaning "not offered here".
@@ -471,7 +520,8 @@ function ServiceForm({
       window.alert('Give a price at a least one branch, or nobody can book it.');
       return;
     }
-    onSubmit({
+    onSubmit(
+      {
       name: name.trim(),
       durationMinutes: Number(duration),
       depositPercentage: Number(deposit),
@@ -479,7 +529,9 @@ function ServiceForm({
       // Sent only when it means something; the server stores 1 for SINGLE.
       ...(quantityMode === 'SINGLE' ? {} : { maxQuantity: Number(maxQuantity) }),
       offers,
-    });
+      },
+      files,
+    );
   };
 
   return (
@@ -566,10 +618,70 @@ function ServiceForm({
         <span className="muted small">Leave a branch blank to stop offering it there.</span>
       </div>
 
+      {creating && (
+        <div className="service-photos">
+          <div className="branch-head">
+            <strong>Photos</strong>
+            <span className="muted small">
+              {files.length} of {PHOTO_LIMIT} · the first one is the cover
+            </span>
+          </div>
+          <p className="muted small">
+            Customers see these when they pick this service. Add them now and they go up
+            with it; you can change them later from Edit.
+          </p>
+          <div className="photo-grid">
+            {previews.map((url, index) => (
+              <figure key={url}>
+                <img src={url} alt="" />
+                {index === 0 && <span className="muted small">Cover</span>}
+                <button
+                  type="button"
+                  className="link danger-link"
+                  onClick={() => setFiles((was) => was.filter((_, i) => i !== index))}
+                >
+                  Remove
+                </button>
+              </figure>
+            ))}
+          </div>
+          {files.length < PHOTO_LIMIT && (
+            <>
+              <input
+                id="new-service-photos"
+                type="file"
+                multiple
+                className="visually-hidden"
+                accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                disabled={busy}
+                onChange={(event) => {
+                  const picked = Array.from(event.target.files ?? []);
+                  setFiles((was) => [...was, ...picked].slice(0, PHOTO_LIMIT));
+                  event.target.value = '';
+                }}
+              />
+              <label htmlFor="new-service-photos" className={busy ? 'file-trigger disabled' : 'file-trigger'}>
+                {files.length === 0 ? 'Add photos' : 'Add more photos'}
+              </label>
+            </>
+          )}
+        </div>
+      )}
+
       <div className="form-actions">
         <button type="submit" className="primary" disabled={busy}>
-          {busy ? 'Saving…' : 'Save'}
+          {busy
+            ? (busyLabel ?? 'Saving…')
+            : creating
+              ? 'Post this service'
+              : 'Save changes'}
         </button>
+        {creating && !busy && offers.length > 0 && (
+          <span className="muted small">
+            Goes live at {offers.length} {offers.length === 1 ? 'branch' : 'branches'}
+            {files.length > 0 ? ` with ${files.length} ${files.length === 1 ? 'photo' : 'photos'}` : ''}.
+          </span>
+        )}
         {onCancel && (
           <button type="button" className="link" onClick={onCancel}>
             Cancel
@@ -620,6 +732,7 @@ function ServiceRow({
               onSave(body);
               setEditing(false);
             }}
+            busyLabel={undefined}
           />
         </td>
       </tr>
