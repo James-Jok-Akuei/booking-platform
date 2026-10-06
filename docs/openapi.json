@@ -17501,12 +17501,18 @@
           "logoUrl": {
             "type": "string",
             "nullable": true
+          },
+          "locationId": {
+            "type": "string",
+            "nullable": true,
+            "description": "A branch to open from the conversation, or null if none is open (§167)."
           }
         },
         "required": [
           "id",
           "name",
-          "logoUrl"
+          "logoUrl",
+          "locationId"
         ]
       },
       "ThreadCustomerDto": {

@@ -41,6 +41,9 @@ export const theme = {
   danger: '#D92D20',
   dangerSoft: '#FDECEA',
   star: '#FFB020',
+  /** Questions asked before booking (§167): a calm blue, apart from the coral of bookings. */
+  ask: '#2456C7',
+  askSoft: '#EAF1FF',
 
   // ---- kept for the screens that still read them ----
   radius: 16,

@@ -76,6 +76,8 @@ export class ThreadBusinessDto {
   id!: string;
   name!: string | null;
   logoUrl!: string | null;
+  /** A branch to open from the conversation, or null if none is open (§167). */
+  locationId!: string | null;
 }
 
 export class ThreadCustomerDto {

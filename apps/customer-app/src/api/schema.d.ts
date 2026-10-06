@@ -4163,6 +4163,8 @@ export interface components {
             id: string;
             name: string | null;
             logoUrl: string | null;
+            /** @description A branch to open from the conversation, or null if none is open (§167). */
+            locationId: string | null;
         };
         ThreadCustomerDto: {
             id: string;

@@ -43,7 +43,7 @@ const subject = (thread: Thread) =>
         undefined,
         { day: 'numeric', month: 'short' },
       )}`
-    : 'Question';
+    : 'Asking before booking';
 
 /**
  * Every conversation this customer has, newest activity first (§164).
@@ -240,13 +240,23 @@ export default function Messages() {
                       <Text style={[styles.when, unread && styles.whenUnread]}>{when(item.lastMessageAt)}</Text>
                     )}
                   </View>
+                  {/* Two kinds of conversation, told apart at a glance (§167):
+                      a coral booking tag, or a blue "Question" one. */}
                   <View style={styles.subjectRow}>
-                    <Icon
-                      name={item.appointment ? 'calendar-outline' : 'help-circle-outline'}
-                      size={12}
-                      color={theme.accent}
-                    />
-                    <Text style={styles.subject} numberOfLines={1}>
+                    <View style={[styles.kind, item.appointment ? styles.kindBooking : styles.kindAsk]}>
+                      <Icon
+                        name={item.appointment ? 'calendar' : 'help-circle'}
+                        size={11}
+                        color={item.appointment ? theme.accent : theme.ask}
+                      />
+                      <Text style={[styles.kindText, { color: item.appointment ? theme.accent : theme.ask }]}>
+                        {item.appointment ? 'Booking' : 'Question'}
+                      </Text>
+                    </View>
+                    <Text
+                      style={[styles.subject, !item.appointment && { color: theme.ask }]}
+                      numberOfLines={1}
+                    >
                       {subject(item)}
                     </Text>
                   </View>
@@ -337,7 +347,18 @@ const styles = StyleSheet.create({
   nameUnread: { fontFamily: font.extrabold },
   when: { fontFamily: font.medium, fontSize: 12, color: theme.muted },
   whenUnread: { fontFamily: font.bold, color: theme.accent },
-  subjectRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  subjectRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 1 },
+  kind: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  kindBooking: { backgroundColor: theme.accentSoft },
+  kindAsk: { backgroundColor: theme.askSoft },
+  kindText: { fontFamily: font.extrabold, fontSize: 10, letterSpacing: 0.3, textTransform: 'uppercase' },
   subject: { flexShrink: 1, fontFamily: font.bold, fontSize: 12, color: theme.accent },
   previewRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   preview: { fontFamily: font.medium, fontSize: 13.5, color: theme.muted },

@@ -551,6 +551,7 @@ export class ChatService {
         id: thread.businessProfile.id,
         name: thread.businessProfile.name,
         logoUrl: thread.businessProfile.logoUrl,
+        locationId: thread.businessProfile.locations[0]?.id ?? null,
       },
       customer: thread.customer,
       appointment: thread.appointment
@@ -584,7 +585,21 @@ const THREAD_SELECT = {
   lastMessageAt: true,
   createdAt: true,
   // The logo too (§164): a list of conversations is a list of faces.
-  businessProfile: { select: { id: true, name: true, logoUrl: true } },
+  businessProfile: {
+    select: {
+      id: true,
+      name: true,
+      logoUrl: true,
+      // A branch to open from the conversation (§167). A question is to the
+      // business, not a branch, and the shop page is per branch.
+      locations: {
+        where: { isActive: true },
+        orderBy: { createdAt: 'asc' },
+        take: 1,
+        select: { id: true },
+      },
+    },
+  },
   customer: { select: { id: true, email: true } },
   appointment: {
     select: {

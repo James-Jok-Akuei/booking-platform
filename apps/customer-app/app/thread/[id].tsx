@@ -204,7 +204,10 @@ export default function ThreadScreen() {
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/messages'))}
         />
         <PressableScale
-          onPress={() => thread.data && router.push(`/shop/${thread.data.business.id}`)}
+          disabled={!thread.data?.business.locationId}
+          onPress={() =>
+            thread.data?.business.locationId && router.push(`/shop/${thread.data.business.locationId}`)
+          }
           scaleTo={0.95}
           accessibilityRole="button"
           accessibilityLabel={`Open ${businessName}`}
@@ -215,11 +218,39 @@ export default function ThreadScreen() {
           <Text style={styles.headerName} numberOfLines={1}>
             {businessName}
           </Text>
-          <Text style={styles.headerSub} numberOfLines={1}>
-            {thread.data?.appointment ? 'About a booking' : 'Question'}
+          <Text
+            style={[styles.headerSub, thread.data && !thread.data.appointment && { color: theme.ask }]}
+            numberOfLines={1}
+          >
+            {thread.data?.appointment ? 'About a booking' : 'Asking before booking'}
           </Text>
         </View>
       </View>
+
+      {/* A question, said as one (§167): blue where bookings are coral, a
+          line saying what this conversation is for, and the way to book once
+          the answer is in. */}
+      {thread.data && !thread.data.appointment && (
+        <View style={[styles.ask, { width: Math.min(layout.contentWidth - 32, 520) }]}>
+          <View style={styles.askIcon}>
+            <Icon name="help-circle" size={17} color={theme.ask} />
+          </View>
+          <Text style={[styles.askText, styles.flex]}>
+            Ask anything before you book — prices, timing, what to bring.
+          </Text>
+          {thread.data.business.locationId && (
+            <PressableScale
+              onPress={() => router.push(`/shop/${thread.data!.business.locationId}`)}
+              haptic
+              scaleTo={0.95}
+              accessibilityRole="button"
+              style={styles.askBook}
+            >
+              <Text style={styles.askBookText}>Book</Text>
+            </PressableScale>
+          )}
+        </View>
+      )}
 
       {/* The booking this is about, as a chip under the header — one tap to
           the reservation, which is nearly always what "wait, when was it?"
@@ -398,6 +429,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   aboutName: { fontFamily: font.bold, fontSize: 13.5, color: theme.ink },
+  ask: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    alignSelf: 'center',
+    marginTop: 10,
+    backgroundColor: theme.askSoft,
+    borderRadius: radius.md,
+    paddingVertical: 9,
+    paddingLeft: 10,
+    paddingRight: 8,
+  },
+  askIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: theme.panel,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  askText: { fontFamily: font.semibold, fontSize: 12.5, lineHeight: 17, color: theme.ask },
+  askBook: { backgroundColor: theme.ask, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 14 },
+  askBookText: { fontFamily: font.bold, fontSize: 12.5, color: '#FFFFFF' },
   aboutGo: { fontFamily: font.bold, fontSize: 12.5, color: theme.accent },
   list: { paddingHorizontal: 16, paddingVertical: 16, gap: 10, alignSelf: 'center' },
   bubbleRow: { gap: 10 },

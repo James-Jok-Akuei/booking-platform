@@ -13196,3 +13196,19 @@ review box and the sign-in code all sat under the keyboard.
 (the MoMo number field and the Pay bar) wrapped the same way; and the bottom
 `Sheet` rises with the keyboard, which covers the review-name editor, the
 "Offers near me" district picker and anything else that opens in one.
+
+## 167. A question and a booking conversation look different (2026-10-06)
+
+Both kinds of conversation (§21) looked alike. Now:
+
+- **In the list** each carries a tag: coral **BOOKING** with the service and
+  date, or blue **QUESTION** with "Asking before booking". Blue is new to the
+  palette (`theme.ask`) and used only for this, so it stays a signal.
+- **In a question thread** the header says "Asking before booking" in blue,
+  and a blue banner under it says what the conversation is for — "Ask
+  anything before you book" — with a **Book** button to the shop.
+- **In a booking thread** nothing changed: the coral chip to the reservation.
+
+`ThreadBusinessDto.locationId` (the business's first open branch) is what the
+Book button and the logo open. The logo used to open `/shop/<business id>`,
+which is not a branch and showed "not available" — fixed by the same field.
