@@ -36,3 +36,19 @@ export const dismissReadNotifications = () =>
 /** Puts a removed one back (§160): the undo. */
 export const restoreNotification = (id: string) =>
   api<components['schemas']['DismissedDto']>(`/notifications/${id}/restore`, { method: 'PATCH' });
+
+/** Several at once, from a selection (§162). */
+export const dismissNotifications = (ids: string[]) =>
+  api<components['schemas']['DismissedManyDto']>('/notifications', { method: 'DELETE', body: { ids } });
+
+export const restoreNotifications = (ids: string[]) =>
+  api<components['schemas']['RestoredManyDto']>('/notifications/restore', {
+    method: 'PATCH',
+    body: { ids },
+  });
+
+export const markNotificationsRead = (ids: string[]) =>
+  api<components['schemas']['ReadManyDto']>('/notifications/read-many', {
+    method: 'PATCH',
+    body: { ids },
+  });

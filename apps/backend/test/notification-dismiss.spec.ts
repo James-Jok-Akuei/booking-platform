@@ -86,12 +86,31 @@ describe('Dismissing notifications (§159)', () => {
     await row(me.userId, true);
     const unread = await row(me.userId);
 
-    expect(await notifications.dismissRead(me.userId)).toEqual({ dismissed: 2 });
+    const cleared = await notifications.dismissRead(me.userId);
+    expect(cleared.dismissed).toBe(2);
+    expect(cleared.ids).toHaveLength(2);
 
     const page = await notifications.list(me.userId, false, 25, 0);
     expect(page.notifications.map((x) => x.id)).toEqual([unread.id]);
     // Twice is nothing.
-    expect(await notifications.dismissRead(me.userId)).toEqual({ dismissed: 0 });
+    expect((await notifications.dismissRead(me.userId)).dismissed).toBe(0);
+
+    // And the undo for a clear puts exactly those back.
+    expect(await notifications.restoreMany(me.userId, cleared.ids)).toEqual({ restored: 2 });
+    expect((await notifications.list(me.userId, false, 25, 0)).total).toBe(3);
+  });
+
+  it('acts on a selection, and only on the caller\'s own rows', async () => {
+    const a = await row(me.userId);
+    const b = await row(me.userId);
+    const theirs = await row(other.userId);
+
+    expect(await notifications.markReadMany(me.userId, [a.id, theirs.id])).toEqual({ updated: 1 });
+    const removed = await notifications.dismissMany(me.userId, [a.id, b.id, theirs.id]);
+    expect(removed).toEqual({ dismissed: 2, ids: expect.arrayContaining([a.id, b.id]) });
+    expect((await notifications.list(other.userId, false, 25, 0)).total).toBe(1);
+
+    expect(await notifications.restoreMany(me.userId, [a.id, b.id, theirs.id])).toEqual({ restored: 2 });
   });
 
   it('mark-all-read does not touch dismissed ones', async () => {

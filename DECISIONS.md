@@ -13124,3 +13124,19 @@ unread card is white, raised, bold, with a coral "New" pill and dot; a read one
 sits flat on the paper with a thin line for an edge, no shadow, its disc and
 words faded, and a small double tick where the dot was. Same size either way,
 so nothing jumps when one is opened.
+
+## 162. Select several, and undo a clear (2026-10-06)
+
+Long-pressing a notification did nothing; "Clear read" had no undo.
+
+- **Long press starts selecting**, the way mail apps do it: the discs become
+  tick circles, a tap selects or unselects, the header becomes a select bar —
+  "3 selected", Select all / None, a cross to stop — with two actions: Mark
+  read, Remove N. Swipe-to-remove is off while selecting, so a thumb cannot
+  do two things at once. Selecting ends when an action is taken.
+- **Bulk endpoints**: `DELETE /notifications` `{ids}`, `PATCH /notifications/restore`
+  `{ids}`, `PATCH /notifications/read-many` `{ids}` — at most a hundred, only
+  the caller's own rows move. `DELETE /notifications/read` now returns the ids
+  it cleared.
+- **Undo covers everything that removes**: one swipe, a selection, or Clear
+  read. The bar says "Removed" or "8 removed" and puts back exactly those ids.

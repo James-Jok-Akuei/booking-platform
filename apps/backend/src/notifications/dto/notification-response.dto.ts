@@ -92,4 +92,14 @@ export class DismissedDto {
 
 export class DismissedManyDto {
   dismissed!: number;
+  /** Which ones, so an undo can put exactly these back (§162). */
+  ids!: string[];
+}
+
+export class RestoredManyDto {
+  restored!: number;
+}
+
+export class ReadManyDto {
+  updated!: number;
 }

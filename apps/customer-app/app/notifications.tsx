@@ -6,7 +6,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSignedIn } from '../src/api/client';
 import {
   dismissNotification,
+  dismissNotifications,
   dismissReadNotifications,
+  markNotificationsRead,
+  restoreNotifications,
   listNotifications,
   markAllNotificationsRead,
   markNotificationRead,
@@ -76,8 +79,10 @@ export default function Notifications() {
   const signedIn = useSignedIn();
   const [filter, setFilter] = useState<Filter>('all');
   const [openId, setOpenId] = useState<string | null>(null);
-  /** The last thing removed, while it can still be put back (§160). */
-  const [undo, setUndo] = useState<{ id: string; subject: string; token: number } | null>(null);
+  /** The last thing removed, while it can still be put back (§160, §162). */
+  const [undo, setUndo] = useState<{ ids: string[]; token: number } | null>(null);
+  /** Chosen by long press (§162). Empty set means not selecting. */
+  const [selected, setSelected] = useState<Set<string> | null>(null);
 
   const inbox = useQuery({
     queryKey: ['notifications'],
@@ -129,7 +134,7 @@ export default function Notifications() {
     onMutate: (id) =>
       patch((page) => {
         const target = page.notifications.find((n) => n.id === id);
-        if (target) setUndo({ id, subject: target.subject, token: Date.now() });
+        if (target) setUndo({ ids: [id], token: Date.now() });
         return {
           ...page,
           total: Math.max(0, page.total - 1),
@@ -143,10 +148,14 @@ export default function Notifications() {
   // Put back, and only then refetch: the server's answer decides what the
   // list shows, so a restore that failed cannot leave a ghost row.
   const restore = useMutation({
-    mutationFn: restoreNotification,
+    mutationFn: async (ids: string[]) => {
+      if (ids.length === 1) await restoreNotification(ids[0]);
+      else await restoreNotifications(ids);
+    },
     onSettled: settle,
   });
 
+  // The server says which ones went, so the undo puts back exactly those.
   const clearRead = useMutation({
     mutationFn: dismissReadNotifications,
     onMutate: () =>
@@ -154,11 +163,64 @@ export default function Notifications() {
         const kept = page.notifications.filter((n) => !n.readAt);
         return { ...page, total: kept.length, notifications: kept };
       }),
+    onSuccess: (result) => {
+      if (result.ids.length > 0) setUndo({ ids: result.ids, token: Date.now() });
+    },
     onSettled: settle,
   });
 
+  // ---- A selection (§162) ----
+  const removeMany = useMutation({
+    mutationFn: dismissNotifications,
+    onMutate: (ids) => {
+      const set = new Set(ids);
+      setUndo({ ids, token: Date.now() });
+      patch((page) => {
+        const kept = page.notifications.filter((n) => !set.has(n.id));
+        const unreadGone = page.notifications.filter((n) => set.has(n.id) && !n.readAt).length;
+        return {
+          ...page,
+          total: Math.max(0, page.total - ids.length),
+          unread: Math.max(0, page.unread - unreadGone),
+          notifications: kept,
+        };
+      });
+    },
+    onSettled: settle,
+  });
+  const readMany = useMutation({
+    mutationFn: markNotificationsRead,
+    onMutate: (ids) => {
+      const set = new Set(ids);
+      patch((page) => {
+        const now = new Date().toISOString();
+        const newlyRead = page.notifications.filter((n) => set.has(n.id) && !n.readAt).length;
+        return {
+          ...page,
+          unread: Math.max(0, page.unread - newlyRead),
+          notifications: page.notifications.map((n) =>
+            set.has(n.id) && !n.readAt ? { ...n, readAt: now } : n,
+          ),
+        };
+      });
+    },
+    onSettled: settle,
+  });
+
+  const selecting = selected !== null;
+  const toggleSelect = (id: string) =>
+    setSelected((was) => {
+      const next = new Set(was ?? []);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   const rows = inbox.data?.notifications ?? [];
   const unread = inbox.data?.unread ?? 0;
+  const shownIds = useMemo(() => new Set(rows.map((n) => n.id)), [rows]);
+  const chosen = selected ? [...selected].filter((id) => shownIds.has(id)) : [];
+  const allChosen = selecting && rows.length > 0 && chosen.length === rows.length;
   const readCount = rows.filter((n) => n.readAt).length;
 
   const sections = useMemo<Section[]>(() => {
@@ -194,7 +256,63 @@ export default function Notifications() {
     );
   }
 
-  const header = (
+  const header = selecting ? (
+    /* The select bar (§162), in the header's place, the way mail apps do it:
+       how many, all or none, and the two things worth doing to several. */
+    <View style={styles.header}>
+      <View style={styles.selectBar}>
+        <PressableScale
+          onPress={() => setSelected(null)}
+          hitSlop={10}
+          haptic
+          accessibilityRole="button"
+          accessibilityLabel="Stop selecting"
+          style={styles.selectClose}
+        >
+          <Icon name="close" size={18} color={theme.ink} />
+        </PressableScale>
+        <Text style={[type.heading, styles.flex]}>
+          {chosen.length === 0 ? 'Select' : `${chosen.length} selected`}
+        </Text>
+        <PressableScale
+          onPress={() => setSelected(allChosen ? new Set() : new Set(rows.map((n) => n.id)))}
+          hitSlop={8}
+          haptic
+          accessibilityRole="button"
+          style={styles.action}
+        >
+          <Icon name={allChosen ? 'square-outline' : 'checkbox'} size={17} color={theme.accent} />
+          <Text style={styles.actionText}>{allChosen ? 'None' : 'Select all'}</Text>
+        </PressableScale>
+      </View>
+      <View style={styles.selectActions}>
+        <Button
+          kind="soft"
+          compact
+          icon="checkmark-done"
+          label="Mark read"
+          disabled={chosen.length === 0 || !rows.some((n) => chosen.includes(n.id) && !n.readAt)}
+          onPress={() => {
+            readMany.mutate(chosen);
+            setSelected(null);
+          }}
+          style={styles.flex}
+        />
+        <Button
+          kind="danger"
+          compact
+          icon="trash-outline"
+          label={chosen.length > 0 ? `Remove ${chosen.length}` : 'Remove'}
+          disabled={chosen.length === 0}
+          onPress={() => {
+            removeMany.mutate(chosen);
+            setSelected(null);
+          }}
+          style={styles.flex}
+        />
+      </View>
+    </View>
+  ) : (
     <View style={styles.header}>
       <View style={styles.headRow}>
         <View style={styles.flex}>
@@ -310,7 +428,16 @@ export default function Notifications() {
             <NotificationCard
               item={item}
               important={Boolean(section.important)}
+              selecting={selecting}
+              selected={selected?.has(item.id) ?? false}
+              onLongPress={() => {
+                if (!selecting) setSelected(new Set([item.id]));
+              }}
               onPress={() => {
+                if (selecting) {
+                  toggleSelect(item.id);
+                  return;
+                }
                 if (item.readAt === null) read.mutate(item.id);
                 setOpenId(item.id);
               }}
@@ -321,11 +448,11 @@ export default function Notifications() {
       />
 
       <Undo
-        message={undo ? 'Removed' : null}
+        message={undo ? (undo.ids.length === 1 ? 'Removed' : `${undo.ids.length} removed`) : null}
         token={undo?.token ?? 0}
         onUndo={() => {
           if (!undo) return;
-          restore.mutate(undo.id);
+          restore.mutate(undo.ids);
           setUndo(null);
         }}
         onExpire={() => setUndo(null)}
@@ -390,6 +517,17 @@ const styles = StyleSheet.create({
   },
   badgeText: { fontFamily: font.extrabold, fontSize: 14, color: '#FFFFFF' },
   actions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  selectBar: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  selectClose: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.panel,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.card,
+  },
+  selectActions: { flexDirection: 'row', gap: 10 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 },
   actionText: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
   actionMuted: { color: theme.ink2 },

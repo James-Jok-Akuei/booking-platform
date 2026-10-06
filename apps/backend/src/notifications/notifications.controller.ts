@@ -7,6 +7,7 @@ import {
   Query,
   UseGuards,
   Delete,
+  Body,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
@@ -15,6 +16,7 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from './notifications.service';
 import { ListNotificationsDto } from './dto/list-notifications.dto';
+import { NotificationIdsDto } from './dto/notification-ids.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
@@ -23,6 +25,8 @@ import {
   NotificationPageDto,
   DismissedDto,
   DismissedManyDto,
+  ReadManyDto,
+  RestoredManyDto,
 } from './dto/notification-response.dto';
 
 /**
@@ -63,6 +67,25 @@ export class NotificationsController {
   @ApiOkResponse({ type: DismissedManyDto })
   dismissRead(@CurrentUser() user: AuthenticatedUser) {
     return this.notifications.dismissRead(user.userId);
+  }
+
+  /** Several at once, from a selection (§162). */
+  @Delete()
+  @ApiOkResponse({ type: DismissedManyDto })
+  dismissMany(@CurrentUser() user: AuthenticatedUser, @Body() dto: NotificationIdsDto) {
+    return this.notifications.dismissMany(user.userId, dto.ids);
+  }
+
+  @Patch('restore')
+  @ApiOkResponse({ type: RestoredManyDto })
+  restoreMany(@CurrentUser() user: AuthenticatedUser, @Body() dto: NotificationIdsDto) {
+    return this.notifications.restoreMany(user.userId, dto.ids);
+  }
+
+  @Patch('read-many')
+  @ApiOkResponse({ type: ReadManyDto })
+  markReadMany(@CurrentUser() user: AuthenticatedUser, @Body() dto: NotificationIdsDto) {
+    return this.notifications.markReadMany(user.userId, dto.ids);
   }
 
   @Delete(':id')

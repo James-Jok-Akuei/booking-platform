@@ -13,6 +13,8 @@ import {
   NOTIFICATION_SELECT,
   DismissedDto,
   DismissedManyDto,
+  ReadManyDto,
+  RestoredManyDto,
 } from './dto/notification-response.dto';
 import {
   NOTIFICATION_CHANNEL,
@@ -283,12 +285,49 @@ export class NotificationsService {
     return { id: notificationId, dismissed: false };
   }
 
-  /** Clears every notification already read: what "tidy up" means (§159). */
+  /**
+   * Clears every notification already read: what "tidy up" means (§159). The
+   * ids come back so an undo can put exactly these back (§162).
+   */
   async dismissRead(recipientId: string): Promise<DismissedManyDto> {
-    const { count } = await this.prisma.notification.updateMany({
+    const rows = await this.prisma.notification.findMany({
       where: { recipientId, readAt: { not: null }, dismissedAt: null },
-      data: { dismissedAt: new Date() },
+      select: { id: true },
     });
-    return { dismissed: count };
+    return this.dismissMany(recipientId, rows.map((r) => r.id));
+  }
+
+  /** Several at once, from a selection (§162). Only the caller's own rows move. */
+  async dismissMany(recipientId: string, ids: string[]): Promise<DismissedManyDto> {
+    if (ids.length === 0) return { dismissed: 0, ids: [] };
+    const mine = await this.prisma.notification.findMany({
+      where: { id: { in: ids }, recipientId, dismissedAt: null },
+      select: { id: true },
+    });
+    const now = new Date();
+    const { count } = await this.prisma.notification.updateMany({
+      where: { id: { in: mine.map((r) => r.id) } },
+      data: { dismissedAt: now, readAt: now },
+    });
+    return { dismissed: count, ids: mine.map((r) => r.id) };
+  }
+
+  /** The undo for a selection or a clear (§162). */
+  async restoreMany(recipientId: string, ids: string[]): Promise<RestoredManyDto> {
+    if (ids.length === 0) return { restored: 0 };
+    const { count } = await this.prisma.notification.updateMany({
+      where: { id: { in: ids }, recipientId, dismissedAt: { not: null } },
+      data: { dismissedAt: null },
+    });
+    return { restored: count };
+  }
+
+  async markReadMany(recipientId: string, ids: string[]): Promise<ReadManyDto> {
+    if (ids.length === 0) return { updated: 0 };
+    const { count } = await this.prisma.notification.updateMany({
+      where: { id: { in: ids }, recipientId, readAt: null, dismissedAt: null },
+      data: { readAt: new Date() },
+    });
+    return { updated: count };
   }
 }

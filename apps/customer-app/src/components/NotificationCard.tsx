@@ -81,21 +81,32 @@ export function NotificationCard({
   item,
   important,
   onPress,
+  onLongPress,
   onRemove,
+  selecting,
+  selected,
 }: {
   item: Notification;
   important: boolean;
   onPress: () => void;
+  /** Starts selecting (§162). */
+  onLongPress: () => void;
   onRemove: () => void;
+  /** While a selection is on, a tap selects instead of opening, and no swipe. */
+  selecting: boolean;
+  selected: boolean;
 }) {
   const look = LOOKS[item.type] ?? FALLBACK;
   const unread = item.readAt === null;
   const x = useRef(new Animated.Value(0)).current;
   const gone = useRef(false);
+  const selectingRef = useRef(selecting);
+  selectingRef.current = selecting;
 
   const pan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_e, g) => g.dx < -8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.6,
+      onMoveShouldSetPanResponder: (_e, g) =>
+        !selectingRef.current && g.dx < -8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.6,
       onPanResponderTerminationRequest: () => false,
       onPanResponderMove: (_e, g) => x.setValue(Math.min(0, g.dx)),
       onPanResponderRelease: (_e, g) => {
@@ -129,14 +140,30 @@ export function NotificationCard({
         <PressableScale
           scaleTo={0.985}
           onPress={onPress}
+          onLongPress={onLongPress}
+          delayLongPress={320}
           accessibilityRole="button"
+          accessibilityState={selecting ? { selected } : undefined}
           accessibilityLabel={`${unread ? 'Unread. ' : ''}${look.label}: ${item.subject}`}
           accessibilityHint="Opens it. Swipe left to remove."
-          style={[styles.card, !unread && styles.cardRead, important && styles.cardImportant]}
+          style={[
+            styles.card,
+            !unread && styles.cardRead,
+            important && styles.cardImportant,
+            selected && styles.cardSelected,
+          ]}
         >
-          <View style={[styles.disc, { backgroundColor: look.bg }, !unread && styles.faded]}>
-            <Icon name={look.icon} size={20} color={look.fg} />
-          </View>
+          {/* Selecting, the disc becomes the tick: the thing you tap is the
+              thing that shows it is chosen. */}
+          {selecting ? (
+            <View style={[styles.disc, selected ? styles.tickOn : styles.tickOff]}>
+              {selected && <Icon name="checkmark" size={22} color="#FFFFFF" />}
+            </View>
+          ) : (
+            <View style={[styles.disc, { backgroundColor: look.bg }, !unread && styles.faded]}>
+              <Icon name={look.icon} size={20} color={look.fg} />
+            </View>
+          )}
 
           <View style={styles.main}>
             <View style={styles.top}>
@@ -200,6 +227,9 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   faded: { opacity: 0.6 },
+  cardSelected: { borderWidth: 1.5, borderColor: theme.accent, backgroundColor: theme.accentSoft },
+  tickOn: { backgroundColor: theme.accent },
+  tickOff: { borderWidth: 2, borderColor: theme.line, backgroundColor: 'transparent' },
   cardImportant: { borderLeftWidth: 4, borderLeftColor: theme.accent, paddingLeft: 12 },
   whenRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   newPill: {
