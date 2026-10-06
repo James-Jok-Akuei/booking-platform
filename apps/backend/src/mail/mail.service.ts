@@ -134,6 +134,9 @@ export class MailService {
         : `near ${digest.place}`
       : `in ${digest.place}`;
     const subject = digest.nearSpot ? 'Popular near you' : `Popular near you in ${digest.place}`;
+    // The footer says which address this is for (§172), so a wrong one is
+    // noticed — and says where to change it.
+    const sentFor = digest.nearSpot && digest.place === 'you' ? 'your saved address' : digest.place;
 
     if (this.config.get<string>('NODE_ENV') !== 'production') {
       this.logger.log(`[DEV] Offers email to ${email}: ${subject}`);
@@ -187,7 +190,8 @@ export class MailService {
       '<tr><td align="center" style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:10px 4px 0">' +
       '<div style="font-size:15px;font-weight:700;color:#15171C">Open the app to book any of these.</div>' +
       '<div style="font-size:12px;line-height:1.6;color:#8B909B;padding-top:18px">' +
-      'You get this because you turned on "Offers near me" in the app.<br>' +
+      `You get this because you turned on "Weekly offers by email" in the app, for ${esc(sentFor)}. ` +
+      'To change the address, open Account in the app.<br>' +
       `<a href="${esc(digest.unsubscribeUrl)}" style="color:#8B909B">Unsubscribe</a>` +
       '</div></td></tr></table></td></tr></table></body></html>';
 
@@ -200,7 +204,8 @@ export class MailService {
         )
         .join('\n\n') +
       '\n\nOpen the app to book any of these.\n\n' +
-      `You get this because you turned on "Offers near me" in the app. Unsubscribe: ${digest.unsubscribeUrl}`;
+      `You get this because you turned on "Weekly offers by email" in the app, for ${sentFor}. ` +
+      `To change the address, open Account in the app. Unsubscribe: ${digest.unsubscribeUrl}`;
 
     await this.transporter.sendMail({
       from,

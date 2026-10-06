@@ -12705,6 +12705,59 @@
           "Routing"
         ]
       }
+    },
+    "/addresses": {
+      "get": {
+        "operationId": "AddressSearchController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "What the customer typed: a street, a building, a place people know.",
+            "schema": {
+              "minLength": 3,
+              "maxLength": 120,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressSearchDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AddressSearch"
+        ]
+      }
     }
   },
   "info": {
@@ -21644,6 +21697,47 @@
           "by",
           "distanceKm",
           "minutes"
+        ]
+      },
+      "AddressDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "label",
+          "detail",
+          "latitude",
+          "longitude"
+        ]
+      },
+      "AddressSearchDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressDto"
+            }
+          },
+          "available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "results",
+          "available"
         ]
       }
     }

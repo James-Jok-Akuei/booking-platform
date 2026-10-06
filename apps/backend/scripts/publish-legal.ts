@@ -9,7 +9,11 @@ import { PrismaService } from '../src/prisma/prisma.service';
 /**
  * Publishes the legal texts kept in `prisma/legal/` (§141).
  *
- *   npm run legal:publish
+ *   npm run legal:publish -- "What changed, in a sentence a customer will read."
+ *
+ * The sentence is shown to everyone asked to accept the new version (§126), so
+ * it is required whenever there is an earlier one (§172) — it used to be fixed
+ * to "Rewritten in full…", true once and wrong for every update after.
  *
  * The texts live in the repository so they can be read, reviewed and changed
  * like anything else, and this puts them through the SAME path the admin screen
@@ -29,6 +33,7 @@ const DOCUMENTS: Array<{ kind: LegalDocumentKind; file: string; title: string }>
 ];
 
 async function main() {
+  const changeNote = process.argv.slice(2).join(' ').trim();
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
   try {
     const prisma = app.get(PrismaService);
@@ -62,13 +67,18 @@ async function main() {
         continue;
       }
 
+      if (current && !changeNote) {
+        throw new Error(
+          `${document.title} has changed since v${current.version}. Say what changed, in a ` +
+            'sentence the customer will read: npm run legal:publish -- "…"',
+        );
+      }
+
       const draft = await legal.startDraft(document.kind);
       await legal.updateDraft(draft.id, {
         title: document.title,
         body,
-        changeNote: current
-          ? 'Rewritten in full for Rwandan law: who we are, deposits and refunds, your data and your rights.'
-          : 'First version.',
+        changeNote: current ? changeNote : 'First version.',
       });
       const published = await legal.publish(draft.id, admin.id);
       console.log(

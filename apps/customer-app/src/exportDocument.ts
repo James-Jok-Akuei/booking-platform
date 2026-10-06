@@ -46,13 +46,13 @@ export function exportDocumentHtml(
     ['With us since', day(account.createdAt)],
     ['Your district', account.homeDistrict ? esc(account.homeDistrict.name) : 'Not chosen'],
     [
-      'Your exact location',
+      'Address for weekly offers',
       account.homeLatitude !== null && account.homeLongitude !== null
         ? `${account.homeLabel ? `${esc(account.homeLabel)} — ` : ''}${account.homeLatitude.toFixed(5)}, ${account.homeLongitude.toFixed(5)}`
         : 'Not saved',
     ],
     [
-      'Offers near me',
+      'Weekly offers by email',
       account.offersOptInAt ? `On, since ${day(account.offersOptInAt)}` : 'Off',
     ],
   ]

@@ -2594,6 +2594,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AddressSearchController_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5358,6 +5374,16 @@ export interface components {
             by: "road" | "line";
             distanceKm: number;
             minutes: number | null;
+        };
+        AddressDto: {
+            label: string;
+            detail: string;
+            latitude: number;
+            longitude: number;
+        };
+        AddressSearchDto: {
+            results: components["schemas"]["AddressDto"][];
+            available: boolean;
         };
     };
     responses: never;
@@ -15003,6 +15029,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AddressSearchController_search: {
+        parameters: {
+            query: {
+                /** @description What the customer typed: a street, a building, a place people know. */
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressSearchDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
                 };
             };
         };

@@ -1,6 +1,6 @@
 TERMS OF USE
 
-Last updated: 5 October 2026
+Last updated: 7 October 2026
 
 These Terms of Use are the agreement between you and [COMPANY LEGAL NAME] ("we", "us", "the Platform") when you use the [PLATFORM NAME] mobile app and related services. Please read them before you book. By creating an account or making a booking you agree to them.
 
@@ -151,7 +151,7 @@ We handle your personal data as described in our Privacy Policy, in line with La
 
 14.1 Emails about your bookings. We send emails you need: sign-in codes, confirmations, arrival codes and updates about your bookings.
 
-14.2 Offers near you. We send marketing emails only if you turn on "Offers near me" in your account. Every such email is marked as an offer and has an unsubscribe link, and you can turn it off at any time.
+14.2 Weekly offers. We send marketing emails only if you turn on "Weekly offers by email" in your account. Every such email is marked as an offer and has an unsubscribe link, and you can turn it off at any time.
 
 
 15. CLOSING YOUR ACCOUNT

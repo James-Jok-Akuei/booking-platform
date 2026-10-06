@@ -12671,6 +12671,9 @@ customer lives, for emails, is a separate thing they choose (§140).
 One email a week, "Popular near you in Gasabo": the five most popular services
 in the customer's own district, with photos and prices.
 
+*(The setting was called ~~"Offers near me"~~; it is "Weekly offers by email"
+since §172.)*
+
 ### 140.1 Nobody is sent one who did not ask
 
 `users.offersOptInAt` is null for every account until its owner turns on
@@ -13373,3 +13376,61 @@ search matched, from 48), and the Within picker uses a new `compact` size of
 
 Tried and reverted at the user's request: *"revert the previous sizes they
 were great."* Search 54 (Messages 48) and the full-size picker stand.
+
+## 172. "Weekly offers by email", for an address the customer can type (2026-10-07)
+
+Asked whether the setting was still needed now that Home uses where the phone
+is (§171). Yes — it is an email, sent on Friday while the app is closed, when
+nothing knows where the phone is. But its name, "Offers near me", now sounded
+like the live location, so it was renamed, and the user asked that the address
+it uses be stated right after the name, so a wrong one can be picked or
+corrected.
+
+- **Renamed** "Weekly offers by email" — on the card, in the email's footer, in
+  the data export, and in the Terms (v5) and Privacy Policy (v3), published
+  with the note *""Offers near me" is now called "Weekly offers by email", and
+  you can type the address it is sent for."*
+- **The address under the name.** "SENT FOR · KG 11 Ave, Kimironko", with
+  "Change" beside the label so the address has the full width on a small phone,
+  and "Saved address · measured by road" or "Whole district" under it. With
+  none: a dashed "Add the address to send offers for".
+- **Three ways to set it**, in one sheet, saved one shown at the top with
+  "Forget it":
+  1. **Type it and pick** from what the map finds — new.
+  2. **Use where I am now** — the exact spot (§169), for someone standing at it.
+  3. **A whole district** — choosing one now forgets a saved address, or the
+     email would go on using the address.
+- **The email footer says which address** it was sent for, and where to change
+  it.
+- **Consent stays explicit.** Choosing an address turns the emails on only when
+  the sheet was opened from the switch; changing it otherwise leaves the switch
+  as it was. (§169's "Use where I am now" used to turn it on regardless.)
+
+### 172.1 Finding a typed address
+
+`GET /addresses?q=` (`src/routing/address-search.*`), signed in only. It asks
+**Nominatim**, OpenStreetMap's search — the same open map as the road distances
+(§157) — for places in **Rwanda only**, and answers up to six
+`{ label, detail, latitude, longitude }`, labelled the way a person says them
+("Kimironko Market, KG 161 Street, Kimironko" · "City of Kigali").
+
+The public server is free on conditions, all kept: callers name themselves
+(`GEOCODING_USER_AGENT`), **one request a second** for the whole platform
+(searches queue and wait their turn), and **no search-as-you-type** (the app
+searches on "Find"). Same words are answered from memory for a day. Only the
+typed words are sent, never who typed them; the Privacy Policy lists it as
+[ADDRESS SEARCH SERVICE]. `GEOCODING_BASE_URL=""` turns it off.
+
+It never fails the customer: a slow, refusing or absent service answers
+`available: false`, and the app says search is not working and offers the
+other two ways — different from "Nothing found for …". Eight tests, including
+Rwanda-only and the spacing, both proven by breaking them.
+
+### 172.2 The publish script asks what changed
+
+`npm run legal:publish` always wrote "Rewritten in full for Rwandan law" as the
+change note — right for v2, wrong for every update after, and customers are
+shown it when asked to accept again. It now takes the sentence:
+`npm run legal:publish -- "What changed."`, and refuses an update without one.
+
+**1311 passing across 56 suites.**

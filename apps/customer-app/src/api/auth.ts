@@ -153,6 +153,16 @@ export const setOffersPreference = (body: {
 }) =>
   api<OffersPreference>('/users/me/offers', { method: 'PATCH', body });
 
+export type FoundAddress = components['schemas']['AddressDto'];
+
+/**
+ * Places in Rwanda matching what was typed (§172), for the offers address.
+ * Asked when "Find" is pressed, never as someone types: the map search allows
+ * one request a second for the whole platform.
+ */
+export const searchAddresses = (q: string) =>
+  api<components['schemas']['AddressSearchDto']>('/addresses', { query: { q } });
+
 /**
  * The name beside this person's reviews (§144). `null` shows them as
  * Anonymous. It changes on every review they have left, at once.
