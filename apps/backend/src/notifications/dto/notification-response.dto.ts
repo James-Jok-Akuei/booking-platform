@@ -83,3 +83,13 @@ export class MarkReadDto {
   message!: string;
   updated!: boolean;
 }
+
+/** One notification taken off the list (§159). */
+export class DismissedDto {
+  id!: string;
+  dismissed!: boolean;
+}
+
+export class DismissedManyDto {
+  dismissed!: number;
+}

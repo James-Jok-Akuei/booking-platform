@@ -6,6 +6,7 @@ import {
   Patch,
   Query,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
@@ -20,6 +21,8 @@ import {
   MarkAllReadDto,
   MarkReadDto,
   NotificationPageDto,
+  DismissedDto,
+  DismissedManyDto,
 } from './dto/notification-response.dto';
 
 /**
@@ -53,6 +56,19 @@ export class NotificationsController {
   @ApiOkResponse({ type: MarkAllReadDto })
   markAllRead(@CurrentUser() user: AuthenticatedUser) {
     return this.notifications.markAllRead(user.userId);
+  }
+
+  /** Declared before ':id', so the word "read" is never read as an id. */
+  @Delete('read')
+  @ApiOkResponse({ type: DismissedManyDto })
+  dismissRead(@CurrentUser() user: AuthenticatedUser) {
+    return this.notifications.dismissRead(user.userId);
+  }
+
+  @Delete(':id')
+  @ApiOkResponse({ type: DismissedDto })
+  dismiss(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.notifications.dismiss(user.userId, id);
   }
 
   @Patch(':id/read')

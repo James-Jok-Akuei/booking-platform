@@ -13077,3 +13077,30 @@ needs the distinction):
 
 A branch or service hard-deleted (which the app never does) cascades the save
 away at the database.
+
+## 159. Notifications, as an inbox (2026-10-06)
+
+The list (§134) was rows that expanded in place, with no way to remove one.
+
+- **Needs your attention** first: unread reminders, failed payments,
+  cancellations and messages, each with a coral edge and the kind in a word
+  ("Reminder", "Message"). Then everything by day — Today, Yesterday, This
+  week, Earlier.
+- **A card** is a coloured disc for the kind, the kind's word, the subject,
+  the first line, the time, and a coral dot when unread. Tapping opens a sheet
+  with the whole message, "Open the reservation" where there is one, and
+  "Remove this notification".
+- **Swipe left to remove**: the card slides, red with a bin shows behind, past
+  a third of the way it goes; short of that it springs back. On
+  `PanResponder`, like the photo zoom.
+- **Removing marks, never deletes.** `notifications.dismissedAt`: the row is
+  also the record of the email that was sent and the retry sweep reads it.
+  `DELETE /notifications/:id`; `DELETE /notifications/read` clears every read
+  one. A dismissed one leaves the inbox and the badge. Removing one someone
+  else owns is "not found" without saying which.
+- A filter (All | Unread · n), "Mark all as read" and "Clear read", each shown
+  only while it would do something; an unread count badge in the heading.
+
+**Left out on purpose:** undo (the server keeps the row, but a toast with an
+undo was more than this list needs), per-kind settings, and grouping by
+booking.

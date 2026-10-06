@@ -24,3 +24,11 @@ export const markAllNotificationsRead = () =>
   api<components['schemas']['MarkAllReadDto']>('/notifications/read-all', {
     method: 'PATCH',
   });
+
+/** Takes one off the list (§159). It stays read-and-gone; it is not deleted on the server. */
+export const dismissNotification = (id: string) =>
+  api<components['schemas']['DismissedDto']>(`/notifications/${id}`, { method: 'DELETE' });
+
+/** Clears every notification already read. */
+export const dismissReadNotifications = () =>
+  api<components['schemas']['DismissedManyDto']>('/notifications/read', { method: 'DELETE' });

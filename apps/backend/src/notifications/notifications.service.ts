@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   NotificationStatus,
   NotificationType,
@@ -11,6 +11,8 @@ import {
   MarkAllReadDto,
   MarkReadDto,
   NOTIFICATION_SELECT,
+  DismissedDto,
+  DismissedManyDto,
 } from './dto/notification-response.dto';
 import {
   NOTIFICATION_CHANNEL,
@@ -196,14 +198,16 @@ export class NotificationsService {
   // ---------- Inbox ----------
 
   async list(recipientId: string, unreadOnly: boolean, limit: number, offset: number) {
+    // A dismissed one is gone from the inbox and from the badge (§159).
     const where: Prisma.NotificationWhereInput = {
       recipientId,
+      dismissedAt: null,
       ...(unreadOnly ? { readAt: null } : {}),
     };
 
     const [total, unread, notifications] = await Promise.all([
       this.prisma.notification.count({ where }),
-      this.prisma.notification.count({ where: { recipientId, readAt: null } }),
+      this.prisma.notification.count({ where: { recipientId, readAt: null, dismissedAt: null } }),
       this.prisma.notification.findMany({
         where,
         orderBy: { createdAt: 'desc' },
@@ -243,9 +247,34 @@ export class NotificationsService {
 
   async markAllRead(recipientId: string): Promise<MarkAllReadDto> {
     const { count } = await this.prisma.notification.updateMany({
-      where: { recipientId, readAt: null },
+      where: { recipientId, readAt: null, dismissedAt: null },
       data: { readAt: new Date() },
     });
     return { message: `${count} notification(s) marked as read.`, updated: count };
+  }
+
+  /**
+   * Takes one off the list (§159). Marked, never deleted — the row is also the
+   * record of the email that was sent. Someone else's, or one already gone,
+   * matches no row and is reported as not found without saying which.
+   */
+  async dismiss(recipientId: string, notificationId: string): Promise<DismissedDto> {
+    const now = new Date();
+    const { count } = await this.prisma.notification.updateMany({
+      where: { id: notificationId, recipientId, dismissedAt: null },
+      // Taking it off the list is also having seen it.
+      data: { dismissedAt: now, readAt: now },
+    });
+    if (count === 0) throw new NotFoundException('Notification not found.');
+    return { id: notificationId, dismissed: true };
+  }
+
+  /** Clears every notification already read: what "tidy up" means (§159). */
+  async dismissRead(recipientId: string): Promise<DismissedManyDto> {
+    const { count } = await this.prisma.notification.updateMany({
+      where: { recipientId, readAt: { not: null }, dismissedAt: null },
+      data: { dismissedAt: new Date() },
+    });
+    return { dismissed: count };
   }
 }

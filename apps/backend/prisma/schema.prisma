@@ -1336,7 +1336,9 @@ model Notification {
 
   /// Null until the recipient marks it read. Not a boolean, so "when" is
   /// answerable later without another column.
-  readAt DateTime?
+  readAt      DateTime?
+  /// Taken off the list by its recipient (§159). Kept: the row is also the delivery record.
+  dismissedAt DateTime?
 
   sentAt       DateTime?
   failureCount Int       @default(0)
@@ -1347,6 +1349,7 @@ model Notification {
 
   /// The inbox query: one recipient, newest first.
   @@index([recipientId, createdAt])
+  @@index([recipientId, dismissedAt, readAt])
   /// The retry sweep: everything not yet delivered.
   @@index([status])
   @@map("notifications")
