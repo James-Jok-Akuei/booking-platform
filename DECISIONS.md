@@ -13310,7 +13310,7 @@ their current location."* Proposed and agreed in three parts.
 
 ### 171.1 Within 2, 5, 10 or 25 km, or any distance
 
-Once the app knows where the customer is, Home shows a **Within** picker
+~~Once the app knows where the customer is,~~ Once "Nearest" is on (§175), Home shows a **Within** picker
 (sliding, like Upcoming/Past) and searches with `radiusKm`. ~~It starts at
 **10 km**.~~ It starts at **Any** (§173). The shelf says "within 10 km" once a
 distance is picked; a green dot says "From where you are now".
@@ -13496,3 +13496,17 @@ The Privacy Policy already says the address search receives "only the words
 you typed", which is still true, so it is not republished.
 
 Nine tests (one new: smallest-first). **1312 passing across 56 suites.**
+
+## 175. The distance picker belongs to "Nearest" (2026-10-07)
+
+Asked: *"display 'within from where you are now' only if the user clicks on
+nearest filter so that we can use the space for something else."*
+
+- The **Within** picker shows only while **Nearest** is on, fading in under
+  the chips when it is tapped. The rest of the time that room is Home's.
+- A distance narrows the lists **only while Nearest is on**. Turning Nearest
+  off, or choosing Best rated, Cheapest or Newest, puts it back to Any — at
+  once for the lists (it is derived, not waited for), and for next time. A
+  list is never cut short by a control that is not on the screen.
+- Distances on every card are unchanged: they still show whenever location is
+  on, Nearest or not (§139).

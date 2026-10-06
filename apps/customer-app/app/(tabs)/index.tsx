@@ -203,6 +203,17 @@ export default function Discover() {
   const sortingByDistance = sort === 'distance' && position !== null;
 
   /**
+   * The distance belongs to "Nearest" (§175). Its picker shows only while
+   * Nearest is on, and only then does a distance narrow anything — so a list
+   * is never cut short by a control that is not on the screen. Turning Nearest
+   * off, or choosing another order, puts it back to Any for next time.
+   */
+  const near: Within = sortingByDistance ? within : { km: null, chosen: false };
+  useEffect(() => {
+    if (!sortingByDistance) setWithin({ km: DEFAULT_WITHIN, chosen: false });
+  }, [sortingByDistance]);
+
+  /**
    * Everything that narrows the search except distance. The position goes
    * with every search once it is known (§139), so each card can say how far
    * away it is.
@@ -243,11 +254,11 @@ export default function Discover() {
   const probe = useQuery({
     queryKey: ['discover-reach', narrowKey, [position?.lat, position?.lng]],
     queryFn: () => discoverLocations({ ...narrowing, sort: 'distance', limit: 50 }),
-    enabled: position !== null && within.km !== null,
+    enabled: position !== null && near.km !== null,
     placeholderData: steady(narrowKey),
   });
-  const area = position ? reach(within, probe.data) : { km: null };
-  const areaKnown = position === null || within.km === null || !probe.isPending;
+  const area = position ? reach(near, probe.data) : { km: null };
+  const areaKnown = position === null || near.km === null || !probe.isPending;
 
   /**
    * ONE set of filters for both lists. The circles and the shelves are two
@@ -554,8 +565,11 @@ export default function Discover() {
         </ScrollView>
       </FadeIn>
 
-      {position !== null && (
-        <WithinBar km={area.km} onChange={pickWithin} note={widenedNote(area)} />
+      {/* Only with Nearest on (§175): the room is Home's the rest of the time. */}
+      {sortingByDistance && (
+        <FadeIn>
+          <WithinBar km={area.km} onChange={pickWithin} note={widenedNote(area)} />
+        </FadeIn>
       )}
     </View>
   );
