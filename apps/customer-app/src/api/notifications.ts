@@ -32,3 +32,7 @@ export const dismissNotification = (id: string) =>
 /** Clears every notification already read. */
 export const dismissReadNotifications = () =>
   api<components['schemas']['DismissedManyDto']>('/notifications/read', { method: 'DELETE' });
+
+/** Puts a removed one back (§160): the undo. */
+export const restoreNotification = (id: string) =>
+  api<components['schemas']['DismissedDto']>(`/notifications/${id}/restore`, { method: 'PATCH' });

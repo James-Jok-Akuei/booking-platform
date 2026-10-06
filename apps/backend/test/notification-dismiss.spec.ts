@@ -67,6 +67,20 @@ describe('Dismissing notifications (§159)', () => {
     expect((await notifications.list(other.userId, false, 25, 0)).total).toBe(1);
   });
 
+  it('puts one back after an undo, and only one that was removed', async () => {
+    const n = await row(me.userId);
+    await notifications.dismiss(me.userId, n.id);
+
+    expect(await notifications.restore(me.userId, n.id)).toEqual({ id: n.id, dismissed: false });
+    const page = await notifications.list(me.userId, false, 25, 0);
+    expect(page.notifications.map((x) => x.id)).toContain(n.id);
+    // Back as read: it was seen, or it would not have been swiped.
+    expect(page.unread).toBe(0);
+
+    await expect(notifications.restore(me.userId, n.id)).rejects.toThrow(/not found/);
+    await expect(notifications.restore(other.userId, n.id)).rejects.toThrow(/not found/);
+  });
+
   it('clears the read ones and leaves the unread', async () => {
     await row(me.userId, true);
     await row(me.userId, true);

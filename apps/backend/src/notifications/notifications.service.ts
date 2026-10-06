@@ -269,6 +269,20 @@ export class NotificationsService {
     return { id: notificationId, dismissed: true };
   }
 
+  /**
+   * Puts one back (§160). The one thing removing by swipe needs: a thumb that
+   * slipped. It comes back as read — it was seen, or it would not have been
+   * swiped — and in its old place, since nothing about it changed.
+   */
+  async restore(recipientId: string, notificationId: string): Promise<DismissedDto> {
+    const { count } = await this.prisma.notification.updateMany({
+      where: { id: notificationId, recipientId, dismissedAt: { not: null } },
+      data: { dismissedAt: null },
+    });
+    if (count === 0) throw new NotFoundException('Notification not found.');
+    return { id: notificationId, dismissed: false };
+  }
+
   /** Clears every notification already read: what "tidy up" means (§159). */
   async dismissRead(recipientId: string): Promise<DismissedManyDto> {
     const { count } = await this.prisma.notification.updateMany({

@@ -13104,3 +13104,15 @@ The list (§134) was rows that expanded in place, with no way to remove one.
 **Left out on purpose:** undo (the server keeps the row, but a toast with an
 undo was more than this list needs), per-kind settings, and grouping by
 booking.
+
+## 160. Undo after removing a notification (2026-10-06)
+
+§159 left undo out; the user asked for it. `PATCH /notifications/:id/restore`
+clears `dismissedAt` — the row was never deleted, so there is nothing to
+recreate. It comes back as read (it was seen, or it would not have been swiped)
+and in its old place.
+
+In the app a dark bar rises at the bottom — "Removed · Undo" — with a thin
+coral line that drains over five seconds, then sinks away. A second removal
+replaces the first: the bar is for the last thing done. Undo puts it back and
+refetches, so the server's answer decides what the list shows.

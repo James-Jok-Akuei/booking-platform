@@ -71,6 +71,12 @@ export class NotificationsController {
     return this.notifications.dismiss(user.userId, id);
   }
 
+  @Patch(':id/restore')
+  @ApiOkResponse({ type: DismissedDto })
+  restore(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.notifications.restore(user.userId, id);
+  }
+
   @Patch(':id/read')
   @ApiOkResponse({ type: MarkReadDto })
   markRead(

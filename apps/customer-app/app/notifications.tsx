@@ -10,6 +10,7 @@ import {
   listNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  restoreNotification,
   type Notification,
   type NotificationPage,
 } from '../src/api/notifications';
@@ -30,6 +31,7 @@ import { Segmented } from '../src/ui/Segmented';
 import { Sheet } from '../src/ui/Sheet';
 import { RowSkeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
+import { Undo } from '../src/ui/Undo';
 
 type Filter = 'all' | 'unread';
 type Section = { title: string; data: Notification[]; important?: boolean };
@@ -74,6 +76,8 @@ export default function Notifications() {
   const signedIn = useSignedIn();
   const [filter, setFilter] = useState<Filter>('all');
   const [openId, setOpenId] = useState<string | null>(null);
+  /** The last thing removed, while it can still be put back (§160). */
+  const [undo, setUndo] = useState<{ id: string; subject: string; token: number } | null>(null);
 
   const inbox = useQuery({
     queryKey: ['notifications'],
@@ -125,6 +129,7 @@ export default function Notifications() {
     onMutate: (id) =>
       patch((page) => {
         const target = page.notifications.find((n) => n.id === id);
+        if (target) setUndo({ id, subject: target.subject, token: Date.now() });
         return {
           ...page,
           total: Math.max(0, page.total - 1),
@@ -132,6 +137,13 @@ export default function Notifications() {
           notifications: page.notifications.filter((n) => n.id !== id),
         };
       }),
+    onSettled: settle,
+  });
+
+  // Put back, and only then refetch: the server's answer decides what the
+  // list shows, so a restore that failed cannot leave a ghost row.
+  const restore = useMutation({
+    mutationFn: restoreNotification,
     onSettled: settle,
   });
 
@@ -306,6 +318,17 @@ export default function Notifications() {
             />
           </FadeIn>
         )}
+      />
+
+      <Undo
+        message={undo ? 'Removed' : null}
+        token={undo?.token ?? 0}
+        onUndo={() => {
+          if (!undo) return;
+          restore.mutate(undo.id);
+          setUndo(null);
+        }}
+        onExpire={() => setUndo(null)}
       />
 
       {/* The whole message, with the way to what it is about. */}
