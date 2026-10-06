@@ -12905,3 +12905,11 @@ different picture on every phone and on some Android phones it is the letters
 **Rejected:** a banner, a country name in the title, or a flag on every card.
 One quiet mark at the top, where a shop puts its city on the sign, says it
 without turning the screen into a poster.
+
+## 148. The shop's photos are a section, and they open (2026-10-06)
+
+The branch's gallery was a strip of small pictures that did nothing when
+tapped. It is now a "Photos" section with the count, "See all", the first six
+in the strip (the sixth carries "+N" when there are more), and every one opens
+the same viewer a service's photos open (§135.7) — so the two feel like one
+thing.

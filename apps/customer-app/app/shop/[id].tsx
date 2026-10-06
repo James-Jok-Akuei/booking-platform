@@ -19,6 +19,7 @@ import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon } from '../../src/ui/Icon';
 import { IconButton } from '../../src/ui/IconButton';
 import { useLayout } from '../../src/ui/layout';
+import { PhotoViewer } from '../../src/ui/PhotoViewer';
 import { Pill } from '../../src/ui/Pill';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Segmented } from '../../src/ui/Segmented';
@@ -59,6 +60,7 @@ export default function Shop() {
   const layout = useLayout();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [tab, setTab] = useState<'services' | 'hours' | 'reviews'>('services');
+  const [photo, setPhoto] = useState<number | null>(null);
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const reviews = useQuery({
@@ -242,17 +244,44 @@ export default function Shop() {
             {/* The branch's own photos. They were sent with every shop and
                 drawn by nothing; a customer could not see inside a place
                 before walking to it. */}
+            {/* A heading with the count and "See all", a strip of the first
+                six, and every photo opens the viewer (§148) — the same one a
+                service's photos open, so the two feel like one thing. */}
             {s.gallery.length > 0 && (
-              <FadeIn delay={120}>
+              <FadeIn delay={120} style={styles.section}>
+                <View style={styles.galleryHead}>
+                  <Text style={type.heading}>
+                    Photos <Text style={styles.galleryCount}>{s.gallery.length}</Text>
+                  </Text>
+                  <PressableScale onPress={() => setPhoto(0)} hitSlop={8} haptic>
+                    <Text style={styles.link}>See all →</Text>
+                  </PressableScale>
+                </View>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={styles.bleed}
                   contentContainerStyle={styles.gallery}
                 >
-                  {s.gallery.map((photo) => (
-                    <Image key={photo.id} source={{ uri: photo.url }} style={styles.galleryPhoto} />
-                  ))}
+                  {s.gallery.slice(0, 6).map((photo, index) => {
+                    const last = index === 5 && s.gallery.length > 6;
+                    return (
+                      <PressableScale
+                        key={photo.id}
+                        scaleTo={0.96}
+                        accessibilityRole="imagebutton"
+                        accessibilityLabel={`Photo ${index + 1} of ${s.gallery.length}`}
+                        onPress={() => setPhoto(index)}
+                      >
+                        <Image source={{ uri: photo.url }} style={styles.galleryPhoto} />
+                        {last && (
+                          <View style={styles.galleryMore}>
+                            <Text style={styles.galleryMoreText}>+{s.gallery.length - 6}</Text>
+                          </View>
+                        )}
+                      </PressableScale>
+                    );
+                  })}
                 </ScrollView>
               </FadeIn>
             )}
@@ -376,6 +405,8 @@ export default function Shop() {
         </View>
       </Animated.ScrollView>
 
+      <PhotoViewer photos={s.gallery} openAt={photo} onClose={() => setPhoto(null)} />
+
       {/* The bar that appears once the title has scrolled away. */}
       <Animated.View
         pointerEvents="none"
@@ -484,7 +515,22 @@ const styles = StyleSheet.create({
   ratingScore: { fontFamily: font.bold, fontSize: 14.5, color: theme.ink },
   description: { marginTop: 14 },
   bleed: { marginHorizontal: -20 },
+  galleryHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  galleryCount: { color: theme.muted, fontFamily: font.semibold },
+  link: { fontFamily: font.bold, fontSize: 13, color: theme.accent },
   gallery: { paddingHorizontal: 20, gap: 10 },
+  galleryMore: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: radius.md,
+    backgroundColor: 'rgba(21,23,28,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  galleryMoreText: { fontFamily: font.extrabold, fontSize: 20, color: '#FFFFFF' },
   galleryPhoto: {
     width: 150,
     height: 112,
