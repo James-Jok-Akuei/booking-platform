@@ -9323,6 +9323,8 @@ selected on open, and it is the only state a customer has not asked for.
 
 Recorded because it is the kind of thing a later "helpful" change breaks:
 **place is a filter a customer applies, never one applied to them.**
+*(Still true of a NAMED place. Distance from where the customer is now is
+applied by default once they share it — the user asked for that in §171.)*
 
 ### 106.3 Twenty-four retired, none deleted
 
@@ -9382,8 +9384,9 @@ Three rules in the app, all consequences of §106.2:
 - **Declining costs nothing.** The sort falls back to rating and every listing
   is still there. The screen says so in one line rather than leaving a tapped
   control doing nothing.
-- **It orders, it never excludes.** The app sends the position **without a
-  radius**, so the far shop stays on the list.
+- ~~**It orders, it never excludes.** The app sends the position **without a
+  radius**, so the far shop stays on the list.~~ Superseded by §171: Home
+  narrows to 10 km by default, growing where that holds too few places.
 
 `Accuracy.Balanced`, not `High`: this sorts a list of shops, and street-level
 precision would cost battery and a visible delay to change nothing anybody would
@@ -12647,15 +12650,16 @@ redesign (§135) stopped showing it anywhere.
 
 - **Every card says how far.** Once a position is known it is sent with every
   search, not only a distance sort, so each shop circle and service card
-  carries "1.2 km". Kilometres; under one reads as metres. Still never with a
-  radius — it measures and orders, it hides nothing (§107).
+  carries "1.2 km". Kilometres; under one reads as metres. ~~Still never with
+  a radius — it measures and orders, it hides nothing (§107).~~ Superseded by
+  §171.
 - **"Near you"** is a shelf of the ten closest services, asked for in distance
   order, since the nearest are not necessarily among the most popular.
 - **Not asked on open, still (§107.3).** Someone who has already allowed
   location gets their distances back without tapping anything — the app reads
-  the permission that exists and never raises the prompt by itself. Someone who
-  has never been asked sees one quiet row, "See what is near you", and tapping
-  it is what asks.
+  the permission that exists and never raises the prompt by itself. ~~Someone
+  who has never been asked sees one quiet row, "See what is near you", and
+  tapping it is what asks.~~ Superseded by §171: a card at the top of Home.
 - Turning "Nearest" off now only changes the order back; the position is kept,
   because the distances are still wanted.
 
@@ -13294,3 +13298,69 @@ buttons that only work with an account, and should get them after signing in.
 
 Nothing changes on the server: every one of these was already refused
 without an account. This is about not showing a door that will not open.
+
+## 171. Home narrows to where the customer is right now (2026-10-07)
+
+The user: *"focus on using the distance that comes from the phone's own
+location at that moment, not from the account … filter services according to
+their current location."* Proposed and agreed in three parts.
+
+### 171.1 Within 2, 5, 10 or 25 km, or any distance
+
+Once the app knows where the customer is, Home shows a **Within** picker
+(sliding, like Upcoming/Past) and searches with `radiusKm`. It starts at
+**10 km**. The shelf says "within 10 km"; a green dot says "From where you are
+now".
+
+- **It grows where shops are few.** A probe — the 50 nearest branches for the
+  same filters, in distance order — says how far one has to go. The default
+  grows to the next step until it holds **5 businesses**, and to every distance
+  if none does, and says so under the picker: "Only 3 places within 10 km, so
+  this shows up to 25 km." Checked from 17 km outside Kigali (grew to 25 km)
+  and from Musanze (every distance). Early on, a strict 10 km would leave most
+  of the country looking at an empty screen.
+- **A distance the customer picks is kept exactly**, and grows only when there
+  is nothing at all in it. Places close by with nothing to book get "Nothing to
+  book within 2 km yet" and a "Look up to 5 km" button.
+- **A named place and a distance replace each other.** Picking Musanze (or "All
+  of Rwanda") sets the distance to any; picking a distance clears the place.
+  Together they would match nothing.
+- Branches with no pin cannot be inside a distance; they show under "Any".
+- `nearReach.ts` holds the rule, apart from the screen.
+
+### 171.2 Followed while the app is open
+
+`useNearMe` is now one store for the whole app instead of one per screen, so
+Home's cards and the shop page's road distance are measured from the same
+fix. Once allowed:
+
+- a new position every **~200 m** of movement (`watchPositionAsync`, High
+  accuracy, at most every 20 s on Android), and a fresh Highest fix each time
+  the app comes back to the front — which is also how turning location on in
+  Settings takes effect without a tap;
+- a new fix replaces the one in use only past **150 m**, or when it is at least
+  twice as sharp, because each replacement re-asks the server for every list;
+- following **stops** when the app goes to the background;
+- while the lists re-ask after a move, the old answer stays on screen
+  (`placeholderData`) and the pull-to-refresh spinner does not turn — moving is
+  not refreshing. A change of filter still shows the grey placeholders.
+
+Nothing is stored, here or on the server; the position goes only with a
+search, as before. The phone's permission sentence now says "while the app is
+open … never saved" (needs a new native build to show on iOS).
+
+### 171.3 The question is asked where it is seen
+
+The quiet row near the bottom of Home (§139) is now a card under the search
+bar: a pin sending out rings, "See what is near you", **Use my location** and
+**Not now**. Still never asked on open — the phone's prompt appears only when
+the button (or "Nearest") is pressed. It also says what happened on every
+answer: "Try again" after a no, **Open Settings** when the phone will not ask
+again (`canAskAgain`), "Try again" when there was no signal. That replaces the
+yellow notice under the chips. "Not now" is remembered on the phone; the card
+still comes back to report the outcome if the customer later presses Nearest.
+
+**Not changed:** "Offers near me" emails still use the saved home spot (§169).
+They are sent while the app is closed, when the phone's position is not known
+— asking for "always" location to fill that gap is what phones make hardest
+and people trust least.

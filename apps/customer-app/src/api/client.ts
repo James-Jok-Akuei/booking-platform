@@ -34,6 +34,9 @@ const SecureStore =
       }
     : ExpoSecureStore;
 
+/** The same store, for small things a phone remembers that are not secrets (§171). */
+export const deviceStore = SecureStore;
+
 /**
  * The HTTP client, ported from the two web apps (§102).
  *

@@ -25,8 +25,17 @@ import { useMoney } from '../../src/money';
 import { useNearMe } from '../../src/useNearMe';
 import { useUnread } from '../../src/useUnread';
 import { useSavedService } from '../../src/useSavedService';
+import { NearMeCard } from '../../src/components/NearMeCard';
 import { PlaceBubble } from '../../src/components/PlaceBubble';
 import { ServiceCard } from '../../src/components/ServiceCard';
+import { WithinBar } from '../../src/components/WithinBar';
+import {
+  DEFAULT_WITHIN,
+  reach,
+  widenedNote,
+  WITHIN_STEPS,
+  type Within,
+} from '../../src/nearReach';
 import { font, radius, shadow, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
 import { Chip } from '../../src/ui/Chip';
 import { CountBadge } from '../../src/ui/CountBadge';
@@ -110,6 +119,8 @@ export default function Discover() {
   const [openNow, setOpenNow] = useState(false);
   const [provinceId, setProvinceId] = useState<string | null>(null);
   const [districtId, setDistrictId] = useState<string | null>(null);
+  /** How far from here (§171). Applies only once the app knows where here is. */
+  const [within, setWithin] = useState<Within>({ km: DEFAULT_WITHIN, chosen: false });
 
   /**
    * As a tab, this screen is mounted ONCE and stays mounted (§133). When it was
@@ -188,10 +199,55 @@ export default function Discover() {
     (chosenProvince && shortName(chosenProvince.name)) ||
     'Rwanda';
 
-  // Sent ONLY for a distance sort, and never with a radius: the position
-  // orders the list, it does not narrow it (§107).
   const position = nearMe.state.status === 'on' ? nearMe.state : null;
   const sortingByDistance = sort === 'distance' && position !== null;
+
+  /**
+   * Everything that narrows the search except distance. The position goes
+   * with every search once it is known (§139), so each card can say how far
+   * away it is.
+   */
+  const narrowing = {
+    ...(position ? { lat: position.lat, lng: position.lng } : {}),
+    ...(query.trim() ? { q: query.trim() } : {}),
+    ...(categoryId ? { categoryId } : {}),
+    ...(subcategoryId ? { subcategoryId } : {}),
+    ...(openNow ? { openNow: true } : {}),
+    ...(districtId ? { districtId } : provinceId ? { provinceId } : {}),
+  };
+
+  const narrowKey = [query, categoryId, subcategoryId, openNow, provinceId, districtId];
+
+  /**
+   * Moving re-asks the server every couple of hundred metres (§171). What is
+   * on screen stays until the new answer lands, rather than the screen
+   * blanking to grey placeholders as the customer walks. A change of FILTER
+   * still clears it: that is a different question, and the old answer would
+   * be wrong rather than a little out of date.
+   */
+  const steady =
+    (filterKey: unknown[]) =>
+    <T,>(previous: T | undefined, previousQuery?: { queryKey: readonly unknown[] }) =>
+      previousQuery && JSON.stringify(previousQuery.queryKey[1]) === JSON.stringify(filterKey)
+        ? previous
+        : undefined;
+
+  /**
+   * How far to look (§171). The nearest places for these filters, in order,
+   * say how far one has to go to find enough of them — so the default 10 km
+   * can grow where shops are few, and the customer is told when it did.
+   * ~~The position orders the list, it does not narrow it (§107)~~: it narrows
+   * now, because the customer asked for exactly that; nobody is left with an
+   * empty screen because of it.
+   */
+  const probe = useQuery({
+    queryKey: ['discover-reach', narrowKey, [position?.lat, position?.lng]],
+    queryFn: () => discoverLocations({ ...narrowing, sort: 'distance', limit: 50 }),
+    enabled: position !== null && within.km !== null,
+    placeholderData: steady(narrowKey),
+  });
+  const area = position ? reach(within, probe.data) : { km: null };
+  const areaKnown = position === null || within.km === null || !probe.isPending;
 
   /**
    * ONE set of filters for both lists. The circles and the shelves are two
@@ -207,37 +263,25 @@ export default function Discover() {
     // to sort by distance without one is a 400, and a refused request is
     // not what declining a permission should produce.
     sort: sortingByDistance ? 'distance' : sort === 'distance' ? 'popular' : sort,
-    // The position goes with EVERY search once it is known (§139), so each
-    // card can say how far away it is. Still never with a radius: it measures
-    // and orders, it does not hide anything (§107).
-    ...(position ? { lat: position.lat, lng: position.lng } : {}),
-    ...(query.trim() ? { q: query.trim() } : {}),
-    ...(categoryId ? { categoryId } : {}),
-    ...(subcategoryId ? { subcategoryId } : {}),
-    ...(openNow ? { openNow: true } : {}),
-    ...(districtId ? { districtId } : provinceId ? { provinceId } : {}),
+    ...narrowing,
+    ...(area.km !== null ? { radiusKm: area.km } : {}),
   } satisfies Parameters<typeof discoverLocations>[0];
 
-  const filterKey = [
-    query,
-    categoryId,
-    subcategoryId,
-    sort,
-    openNow,
-    provinceId,
-    districtId,
-    position?.lat,
-    position?.lng,
-  ];
+  const filterKey = [...narrowKey, sort];
+  const hereKey = [position?.lat, position?.lng, area.km];
 
   const results = useQuery({
-    queryKey: ['discover', ...filterKey],
+    queryKey: ['discover', filterKey, hereKey],
     queryFn: () => discoverLocations(filters),
+    enabled: areaKnown,
+    placeholderData: steady(filterKey),
   });
 
   const services = useQuery({
-    queryKey: ['discover-services', ...filterKey],
+    queryKey: ['discover-services', filterKey, hereKey],
     queryFn: () => discoverServices(filters),
+    enabled: areaKnown,
+    placeholderData: steady(filterKey),
   });
 
   /**
@@ -258,9 +302,10 @@ export default function Discover() {
    * shelf twice.
    */
   const nearby = useQuery({
-    queryKey: ['discover-services-near', ...filterKey],
+    queryKey: ['discover-services-near', filterKey, hereKey],
     queryFn: () => discoverServices({ ...filters, sort: 'distance', limit: SHELF_SIZE }),
-    enabled: position !== null && !sortingByDistance,
+    enabled: position !== null && !sortingByDistance && areaKnown,
+    placeholderData: steady(filterKey),
   });
   const nearOffers = (nearby.data?.services ?? []).filter(
     (o) => o.location.distanceKm !== undefined && o.location.distanceKm !== null,
@@ -319,9 +364,33 @@ export default function Discover() {
   const openService = (service: DiscoveredService) =>
     router.push(`/book/${service.location.id}?serviceId=${service.id}`);
 
-  const refreshing = results.isRefetching || services.isRefetching;
+  // A list being re-asked because the customer moved is not a pull to
+  // refresh, and should not spin like one.
+  const refreshing =
+    (results.isRefetching && !results.isPlaceholderData) ||
+    (services.isRefetching && !services.isPlaceholderData);
   const failed = results.isError && services.isError;
   const settled = results.isSuccess && services.isSuccess;
+  // Waiting on how far to look is loading too, the first time.
+  const placesLoading = results.isLoading || (!areaKnown && !results.data);
+  const servicesLoading = services.isLoading || (!areaKnown && !services.data);
+
+  /** Signed or not, the card shows until answered — or until "Not now". */
+  const showNearCard =
+    nearMe.state.status !== 'on' && (nearMe.asked || (!nearMe.dismissed && browsing));
+
+  const nextStep =
+    area.km === null ? null : (WITHIN_STEPS.find((step) => step > area.km!) ?? null);
+
+  const pickWithin = (km: number | null) => {
+    setWithin({ km, chosen: true });
+    // A distance from here and a named place are two ways of saying where;
+    // the newest one wins, or "2 km" and "Musanze" would match nothing.
+    if (km !== null) {
+      setProvinceId(null);
+      setDistrictId(null);
+    }
+  };
 
   /** Rows that run to the screen's edge and start at the gutter. */
   const bleed = { marginHorizontal: -layout.gutter, flexGrow: 0 };
@@ -336,9 +405,11 @@ export default function Discover() {
 
   const header = (
     <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-      {/* WHERE. Nothing here is applied automatically: "Anywhere" is the
-          default and stays until someone picks a place — a customer in Gasabo
-          sees every listing until they say otherwise (§106.2). */}
+      {/* WHERE. A named place is never applied automatically: the pill says
+          "Rwanda" until someone picks one (§106.2). Distance from here is the
+          one thing that is — 10 km once the customer has shared where they
+          are, grown when that holds too few places, and changed in one tap
+          below (§171). */}
       <FadeIn>
         <View style={styles.topRow}>
         <PressableScale
@@ -401,6 +472,15 @@ export default function Discover() {
           </PressableScale>
         )}
       </FadeIn>
+
+      {showNearCard && (
+        <NearMeCard
+          state={nearMe.state}
+          onUse={() => void nearMe.enable()}
+          onSettings={nearMe.openSettings}
+          onNotNow={nearMe.notNow}
+        />
+      )}
 
       {(categories.data?.length ?? 0) > 0 && (
         <FadeIn delay={120}>
@@ -476,17 +556,9 @@ export default function Discover() {
         </ScrollView>
       </FadeIn>
 
-      {(nearMe.state.status === 'denied' || nearMe.state.status === 'failed') && (
-        <View style={styles.notice}>
-          <Icon name="information-circle-outline" size={17} color={theme.warn} />
-          <Text style={styles.noticeText}>
-            {nearMe.state.status === 'denied'
-              ? 'Without your location we cannot sort by nearest. Everything else still works.'
-              : 'Could not get a position just now. Everything else still works.'}
-          </Text>
-        </View>
+      {position !== null && (
+        <WithinBar km={area.km} onChange={pickWithin} note={widenedNote(area)} />
       )}
-
     </View>
   );
 
@@ -521,7 +593,7 @@ export default function Discover() {
         {header}
 
         {/* WHO IS HERE. One line tall, most popular first. */}
-        {results.isLoading && (
+        {placesLoading && (
           <View>
             <SectionHead title="Places" />
             <View style={styles.bubbles}>
@@ -563,7 +635,7 @@ export default function Discover() {
         )}
 
         {/* WHAT YOU CAN BOOK. */}
-        {services.isLoading && (
+        {servicesLoading && (
           <View>
             <SectionHead title={SHELF_TITLE[filters.sort]} />
             <View style={styles.shelf}>
@@ -580,7 +652,10 @@ export default function Discover() {
 
         {browsing && offers.length > 0 && (
           <FadeIn delay={60}>
-            <SectionHead title={SHELF_TITLE[filters.sort]} />
+            <SectionHead
+              title={SHELF_TITLE[filters.sort]}
+              note={area.km !== null ? `within ${area.km} km` : undefined}
+            />
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -622,28 +697,6 @@ export default function Discover() {
               ))}
             </ScrollView>
           </FadeIn>
-        )}
-
-        {/* The invitation, for someone who has never been asked. One quiet
-            row, and tapping it is what raises the phone's own question — so
-            the permission is still asked for at the moment it explains
-            itself (§107.3). Gone for good once answered either way. */}
-        {browsing && nearMe.state.status === 'off' && offers.length > 0 && (
-          <PressableScale
-            onPress={() => nearMe.enable()}
-            haptic
-            accessibilityRole="button"
-            style={styles.nearInvite}
-          >
-            <View style={styles.nearIcon}>
-              <Icon name="navigate" size={18} color={theme.accent} />
-            </View>
-            <View style={styles.nearText}>
-              <Text style={type.subheading}>See what is near you</Text>
-              <Text style={type.small}>Shows how far each place is. Nothing is hidden.</Text>
-            </View>
-            <Icon name="chevron-forward" size={16} color={theme.muted} />
-          </PressableScale>
         )}
 
         {shelves.map((shelf, index) => (
@@ -709,6 +762,17 @@ export default function Discover() {
             title="Nothing matches that yet."
             text="Try a different word, or clear the filters."
           />
+        ) : settled && offers.length === 0 && area.km !== null ? (
+          // Places close by, but none of them has anything to book yet (§171):
+          // say so, and offer the next distance in one tap rather than leaving
+          // a row of circles above an empty screen.
+          <EmptyState
+            icon="navigate-outline"
+            title={`Nothing to book within ${area.km} km yet`}
+            text="The places this close have not put up their services."
+            action={nextStep === null ? 'Look at every distance' : `Look up to ${nextStep} km`}
+            onAction={() => pickWithin(nextStep)}
+          />
         ) : null}
       </ScrollView>
 
@@ -722,6 +786,8 @@ export default function Discover() {
               onPress={() => {
                 setProvinceId(null);
                 setDistrictId(null);
+                // All of Rwanda is every distance (§171).
+                setWithin({ km: null, chosen: true });
               }}
             />
             {places.map((place) => (
@@ -735,6 +801,8 @@ export default function Discover() {
                     : districtId === place.id
                 }
                 onPress={() => {
+                  // A named place replaces a distance from here (§171).
+                  setWithin({ km: null, chosen: true });
                   if (place.kind === 'city') {
                     const same = provinceId === place.province.id;
                     setProvinceId(same ? null : place.province.id);
@@ -761,9 +829,10 @@ export default function Discover() {
                   key={district.id}
                   label={district.name}
                   active={districtId === district.id}
-                  onPress={() =>
-                    setDistrictId((was) => (was === district.id ? null : district.id))
-                  }
+                  onPress={() => {
+                    setWithin({ km: null, chosen: true });
+                    setDistrictId((was) => (was === district.id ? null : district.id));
+                  }}
                 />
               ))}
             </View>
@@ -944,14 +1013,6 @@ const styles = StyleSheet.create({
   },
   tileLabelOn: { color: theme.accent, fontFamily: font.bold },
   chips: { gap: 8 },
-  notice: {
-    flexDirection: 'row',
-    gap: 9,
-    backgroundColor: theme.warnSoft,
-    borderRadius: radius.md,
-    padding: 12,
-  },
-  noticeText: { flex: 1, fontFamily: font.medium, fontSize: 13, lineHeight: 18.5, color: theme.ink2 },
   // Padded top and bottom so the cards' shadows are not cut by the scroller.
   bubbles: { flexDirection: 'row', gap: 10, paddingTop: 2, paddingBottom: 6 },
   bubbleGhost: { width: 76, alignItems: 'center', gap: 8 },
@@ -964,24 +1025,6 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  nearInvite: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: theme.panel,
-    borderRadius: radius.lg,
-    padding: 14,
-    ...shadow.card,
-  },
-  nearIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nearText: { flex: 1, gap: 1 },
   sheetBody: { gap: 18, paddingBottom: 8 },
   wrapRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });
