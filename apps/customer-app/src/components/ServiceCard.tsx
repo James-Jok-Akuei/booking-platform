@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import type { DiscoveredService } from '../api/discovery';
 import { font, radius, shadow, theme } from '../theme';
 import { Cover } from '../ui/Cover';
@@ -64,6 +64,15 @@ export function ServiceCard({
           style={[styles.cover, { height: Math.round(width * 0.72) }]}
           iconSize={30}
         />
+
+        {/* The business's logo, on the photo's corner — only when the
+            business uploaded one (§150). Nothing stands in for it: a card
+            with no logo badge is a business that has not added one. */}
+        {service.business.logoUrl && (
+          <View style={[styles.logo, rank !== undefined && rank <= 3 && styles.logoBelowRank]}>
+            <Image source={{ uri: service.business.logoUrl }} style={styles.logoImage} />
+          </View>
+        )}
 
         {rank !== undefined && rank <= 3 && (
           <View style={[styles.rank, rank === 1 && styles.rankFirst]}>
@@ -153,6 +162,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rankFirst: { backgroundColor: theme.accent },
+  logo: {
+    position: 'absolute',
+    top: 7,
+    left: 7,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    padding: 2,
+    backgroundColor: 'rgba(255,255,255,0.96)',
+  },
+  // The medal has the top-left corner; a logo moves down beside it.
+  logoBelowRank: { top: 36 },
+  logoImage: { width: '100%', height: '100%', borderRadius: 13 },
   rankText: { fontFamily: font.extrabold, fontSize: 12, color: theme.ink },
   rankTextFirst: { color: '#FFFFFF' },
   duration: {

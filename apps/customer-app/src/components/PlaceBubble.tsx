@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import type { DiscoveredLocation } from '../api/discovery';
 import { font, shadow, theme } from '../theme';
-import { Cover } from '../ui/Cover';
+import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { distanceLabel } from '../distance';
@@ -39,12 +39,16 @@ export function PlaceBubble({
       style={styles.wrap}
     >
       <View style={styles.ring}>
-        <Cover
-          uri={place.business.logoUrl ?? place.business.coverImageUrl}
-          categoryIcon={place.business.category?.icon}
-          style={styles.picture}
-          iconSize={26}
-        />
+        {/* The LOGO, and only the logo (§150). A circle used to fall back to
+            the cover photo and then to the category's icon, and both read as
+            a logo the business never chose. With none, the initial — which
+            reads as "no logo yet", the way every messaging app's blank
+            contact does. */}
+        {place.business.logoUrl ? (
+          <Image source={{ uri: place.business.logoUrl }} style={styles.picture} />
+        ) : (
+          <Avatar name={name} size={SIZE} />
+        )}
         {place.openNow && <View style={styles.open} />}
         {place.ratingCount > 0 && place.ratingAvg !== null && (
           <View style={styles.rating}>
@@ -74,7 +78,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...shadow.card,
   },
-  picture: { width: SIZE, height: SIZE, borderRadius: SIZE / 2 },
+  picture: { width: SIZE, height: SIZE, borderRadius: SIZE / 2, backgroundColor: theme.sunken },
   open: {
     position: 'absolute',
     right: 3,

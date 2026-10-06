@@ -12926,3 +12926,13 @@ Nothing that worked before changed hands: a single finger on an unzoomed photo
 still pages sideways or drags down to close, and a tap on the dark still
 closes. Two fingers are never read as a drag, and while a photo is zoomed the
 pager and the drag-to-close stand down.
+
+## 150. A logo is shown only when the business added one (2026-10-06)
+
+The shop circles on Home fell back from the logo to the cover photo and then
+to the category's icon, so every circle looked as if it had a logo — including
+businesses that had never uploaded one. Now a circle shows the logo, or the
+business's initial on a plain disc (the `Avatar` the rest of the app uses),
+which reads as "no logo yet". Service cards gained a small round logo badge on
+the photo's corner, present only when the business has a logo; nothing stands
+in for it.
