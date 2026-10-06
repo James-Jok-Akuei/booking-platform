@@ -366,6 +366,11 @@ model User {
   /// Where "near" is measured from: a district they chose, never a GPS fix.
   homeDistrictId   String?
   homeDistrict     District? @relation("HomeDistrict", fields: [homeDistrictId], references: [id], onDelete: SetNull)
+  /// The customer's exact spot, if they chose to give it (§169). Both or neither.
+  homeLatitude     Float?
+  homeLongitude    Float?
+  /// What the phone called that spot — a street or an area — shown back to them.
+  homeLabel        String?
   /// Carried by the unsubscribe link, so it works without signing in.
   offersToken      String?   @unique
   offersLastSentAt DateTime?

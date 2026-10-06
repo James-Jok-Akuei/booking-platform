@@ -225,6 +225,10 @@ export const EXPORT_ACCOUNT_SELECT = {
   // What they chose about emails near them, and where "near" is (§140).
   offersOptInAt: true,
   homeDistrict: { select: { name: true } },
+  // The exact spot, if they gave one (§169): theirs to see.
+  homeLatitude: true,
+  homeLongitude: true,
+  homeLabel: true,
 } as const satisfies Prisma.UserSelect;
 
 export const EXPORT_BOOKING_SELECT = {
@@ -268,6 +272,9 @@ export class ExportedAccountDto
   /** When they agreed to emails about services near them; null if they have not. */
   offersOptInAt!: string | null;
   homeDistrict!: ExportedHomeDistrictDto | null;
+  homeLatitude!: number | null;
+  homeLongitude!: number | null;
+  homeLabel!: string | null;
 }
 
 export class ExportedServiceDto {

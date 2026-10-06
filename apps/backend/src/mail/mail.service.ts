@@ -109,6 +109,8 @@ export class MailService {
     email: string,
     digest: {
       place: string;
+      /** Measured from the customer's exact spot rather than a district (§169). */
+      nearSpot?: boolean;
       unsubscribeUrl: string;
       services: Array<{
         name: string;
@@ -118,11 +120,20 @@ export class MailService {
         minutes: number;
         imageUrl: string | null;
         rating: number | null;
+        /** "3.4 km by road" from the customer's own spot, when they gave one (§169). */
+        away: string | null;
       }>;
     },
   ): Promise<void> {
     const from = this.config.get<string>('SMTP_FROM');
-    const subject = `Popular near you in ${digest.place}`;
+    // From a district: "in Gasabo". From an exact spot: "near KG 11 Ave", or
+    // just "near you" when the phone gave the place no name (§169).
+    const around = digest.nearSpot
+      ? digest.place === 'you'
+        ? 'around you'
+        : `near ${digest.place}`
+      : `in ${digest.place}`;
+    const subject = digest.nearSpot ? 'Popular near you' : `Popular near you in ${digest.place}`;
 
     if (this.config.get<string>('NODE_ENV') !== 'production') {
       this.logger.log(`[DEV] Offers email to ${email}: ${subject}`);
@@ -139,7 +150,7 @@ export class MailService {
       .map((service) => {
         const facts = [
           service.shop,
-          service.where,
+          service.away ?? service.where,
           `${lengthOf(service.minutes)}`,
           service.rating !== null ? `★ ${service.rating.toFixed(1)}` : null,
         ]
@@ -170,7 +181,7 @@ export class MailService {
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px">' +
       '<tr><td style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:0 4px 18px">' +
       `<div style="font-size:24px;font-weight:800;color:#15171C;letter-spacing:-0.4px">Popular near you</div>` +
-      `<div style="font-size:15px;color:#4B505B;padding-top:6px">What people in ${esc(digest.place)} are booking this week.</div>` +
+      `<div style="font-size:15px;color:#4B505B;padding-top:6px">What people ${esc(around)} are booking this week.</div>` +
       '</td></tr>' +
       rows +
       '<tr><td align="center" style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:10px 4px 0">' +
@@ -181,11 +192,11 @@ export class MailService {
       '</div></td></tr></table></td></tr></table></body></html>';
 
     const text =
-      `Popular near you — what people in ${digest.place} are booking this week.\n\n` +
+      `Popular near you — what people ${around} are booking this week.\n\n` +
       digest.services
         .map(
           (service) =>
-            `${service.name} — ${service.price}\n${service.shop}${service.where ? `, ${service.where}` : ''} · ${lengthOf(service.minutes)}`,
+            `${service.name} — ${service.price}\n${service.shop}${service.away ? `, ${service.away}` : service.where ? `, ${service.where}` : ''} · ${lengthOf(service.minutes)}`,
         )
         .join('\n\n') +
       '\n\nOpen the app to book any of these.\n\n' +

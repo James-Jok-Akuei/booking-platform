@@ -145,7 +145,12 @@ export const getOffersPreference = () => api<OffersPreference>('/users/me/offers
  * `districtId` left out keeps the saved one. Turning it on with no district,
  * here or saved, is refused — there would be nothing to measure "near" from.
  */
-export const setOffersPreference = (body: { optedIn: boolean; districtId?: string }) =>
+export const setOffersPreference = (body: {
+  optedIn: boolean;
+  districtId?: string;
+  /** The exact spot (§169); `null` forgets it, leaving it out keeps it. */
+  spot?: { latitude: number; longitude: number; label?: string } | null;
+}) =>
   api<OffersPreference>('/users/me/offers', { method: 'PATCH', body });
 
 /**

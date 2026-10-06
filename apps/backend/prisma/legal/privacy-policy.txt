@@ -31,7 +31,7 @@ When you book with a business, that business also receives some of your data so 
 - Requests you send to our support team, and files you attach.
 - Reviews and ratings you write.
 - The businesses you save as favourites.
-- Your district, if you choose one for "Offers near me".
+- Your district, or your exact location, if you choose one for "Offers near me".
 
 2.2 Data created when you use the app
 
@@ -42,9 +42,9 @@ When you book with a business, that business also receives some of your data so 
 
 2.3 Your location
 
-If you allow it, the app uses your phone's location to show how far businesses are from you and to sort them by distance. Your position is used at that moment to answer the search. We do not save it to your account and we do not track where you go.
+If you allow it, the app uses your phone's location to show how far businesses are from you, by straight line and by road, and to sort them by distance. Your position is used at that moment to answer the search. We do not save it to your account and we do not track where you go. To work out road distances, your position and the business's are sent to a route-finding service, which does not receive your name or email.
 
-The district you choose for "Offers near me" is different: you pick it from a list, and we save it until you change or remove it.
+"Offers near me" is different. You can choose a district from a list, or press "Use my exact location", which saves the single point where your phone is at that moment (for example your home) together with the street name your phone gives for it. We use that point only to choose services near you for the weekly email and to measure their distance by road. It is never shown to businesses. You can update it or press "Forget it" at any time, and it is deleted when you close your account.
 
 2.4 What we do not collect
 
@@ -72,6 +72,7 @@ The Data Protection Law allows us to use personal data only where there is a law
 - MTN Mobile Money Rwanda, to collect deposits and pay refunds.
 - [EMAIL DELIVERY PROVIDER], to deliver emails.
 - [HOSTING AND STORAGE PROVIDER], to host the Platform and store files.
+- [ROUTE-FINDING SERVICE], to measure distances by road. It receives points on a map only, never your name or email.
 
 4.4 Authorities. We share data with a public authority or a court where the law requires it.
 
@@ -95,7 +96,7 @@ We keep personal data only for as long as we need it for the purposes above.
 - Bookings and payment records: for the period the law requires for accounting and tax records, currently [10 YEARS, TO BE CONFIRMED], even if you close your account. After you close your account these records no longer carry your name or email address.
 - Messages and support requests: for as long as your account is open, and afterwards only as long as needed to deal with disputes.
 - Reviews: for as long as the business is listed. After you close your account they are shown as "Anonymous".
-- Your district and marketing consent: until you turn off "Offers near me" or close your account.
+- Your district, your saved exact location and your marketing consent: until you change or forget them, or close your account. Turning off "Offers near me" keeps them, so that turning it back on is one tap; "Forget it" removes the exact location.
 - Technical records: for a short period, normally no more than [90 DAYS].
 
 

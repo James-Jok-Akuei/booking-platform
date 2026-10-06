@@ -291,6 +291,9 @@ export class AccountService {
           offersOptInAt: null,
           offersToken: null,
           homeDistrictId: null,
+          homeLatitude: null,
+          homeLongitude: null,
+          homeLabel: null,
           // Unique, unreachable, and it releases the real address so the same
           // person can sign up again later as somebody new.
           email: `closed-${crypto.randomUUID()}@${CLOSED_EMAIL_DOMAIN}`,

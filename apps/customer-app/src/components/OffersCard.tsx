@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import * as Location from 'expo-location';
 import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -8,7 +9,8 @@ import {
 } from '../api/auth';
 import { ApiError } from '../api/client';
 import { listProvinces } from '../api/discovery';
-import { radius, shadow, theme, type } from '../theme';
+import { font, radius, shadow, theme, type } from '../theme';
+import { Button } from '../ui/Button';
 import { Chip } from '../ui/Chip';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
@@ -62,8 +64,48 @@ export function OffersCard() {
     },
   });
 
+  /**
+   * The exact spot (§169): the phone's best fix, named by the phone's own
+   * address lookup so the customer sees a street rather than numbers. Asked
+   * for only here, when they press the button — never on its own (§107.3).
+   */
+  const [locating, setLocating] = useState(false);
+  const takeExactSpot = async () => {
+    setLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Location is off',
+          'Allow location for this app to use your exact spot, or choose a district instead.',
+        );
+        return;
+      }
+      const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
+      const { latitude, longitude } = fix.coords;
+      let label: string | undefined;
+      try {
+        const [place] = await Location.reverseGeocodeAsync({ latitude, longitude });
+        const parts = [place?.street ?? place?.name, place?.district ?? place?.subregion ?? place?.city]
+          .filter((part): part is string => Boolean(part))
+          // "KG 11 Ave, KG 11 Ave" when the phone names a place twice.
+          .filter((part, i, all) => all.indexOf(part) === i);
+        if (parts.length > 0) label = parts.join(', ').slice(0, 120);
+      } catch {
+        // A spot with no name is still a spot; the email says "near you".
+      }
+      save.mutate({ optedIn: true, spot: { latitude, longitude, ...(label ? { label } : {}) } });
+      setChoosing(false);
+    } catch {
+      Alert.alert('Could not find you', 'Try again outdoors, or choose a district instead.');
+    } finally {
+      setLocating(false);
+    }
+  };
+
   if (!preference.data) return null;
-  const { optedIn, district } = preference.data;
+  const { optedIn, district, spot } = preference.data;
+  const hasPlace = Boolean(district || spot);
 
   return (
     <View style={styles.card}>
@@ -80,7 +122,7 @@ export function OffersCard() {
           trackColor={{ true: theme.accent, false: theme.line }}
           thumbColor="#FFFFFF"
           onValueChange={(on) => {
-            if (on && !district) setChoosing(true);
+            if (on && !hasPlace) setChoosing(true);
             else save.mutate({ optedIn: on });
           }}
         />
@@ -97,18 +139,79 @@ export function OffersCard() {
         accessibilityRole="button"
         style={styles.district}
       >
-        <Icon name="location-outline" size={17} color={theme.ink2} />
-        <Text style={[type.subheading, styles.flex]} numberOfLines={1}>
-          {district ? `${district.name}, ${district.provinceName}` : 'Choose your district'}
-        </Text>
+        <Icon
+          name={spot ? 'navigate' : 'location-outline'}
+          size={17}
+          color={spot ? theme.accent : theme.ink2}
+        />
+        <View style={styles.flex}>
+          <Text style={type.subheading} numberOfLines={1}>
+            {spot
+              ? (spot.label ?? 'Your exact location')
+              : district
+                ? `${district.name}, ${district.provinceName}`
+                : 'Choose where you are'}
+          </Text>
+          {/* Said, because the two give different answers: an exact spot is
+              measured by road; a district is the whole district. */}
+          {(spot || district) && (
+            <Text style={type.tiny}>
+              {spot ? 'Exact spot · distances by road' : 'Whole district'}
+            </Text>
+          )}
+        </View>
         <Icon name="chevron-forward" size={16} color={theme.muted} />
       </PressableScale>
 
       <Sheet open={choosing} title="Where are you?" onClose={() => setChoosing(false)}>
         <ScrollView contentContainerStyle={styles.sheet} showsVerticalScrollIndicator={false}>
-          <Text style={type.small}>
-            Used only to pick services near you for the weekly email.
-          </Text>
+          {/* Most exact first (§169): a district can be ten kilometres across. */}
+          <View style={styles.exact}>
+            <View style={styles.exactHead}>
+              <View style={styles.exactIcon}>
+                <Icon name="navigate" size={18} color={theme.accent} />
+              </View>
+              <View style={styles.flex}>
+                <Text style={type.subheading}>Use my exact location</Text>
+                <Text style={type.small}>
+                  Services are picked by real road distance from where you are now — your
+                  home, say.
+                </Text>
+              </View>
+            </View>
+            {spot && (
+              <Text style={styles.saved} numberOfLines={2}>
+                Saved: {spot.label ?? `${spot.latitude.toFixed(4)}, ${spot.longitude.toFixed(4)}`}
+              </Text>
+            )}
+            <View style={styles.exactActions}>
+              <Button
+                compact
+                icon="locate"
+                label={locating ? 'Finding you…' : spot ? 'Update to here' : 'Use where I am now'}
+                busy={locating}
+                onPress={takeExactSpot}
+                style={styles.flex}
+              />
+              {spot && (
+                <Button
+                  compact
+                  kind="ghost"
+                  label="Forget it"
+                  onPress={() => {
+                    // Forgetting the spot with no district left would leave
+                    // nothing to measure from, so the emails stop too.
+                    save.mutate({ optedIn: optedIn && Boolean(district), spot: null });
+                  }}
+                />
+              )}
+            </View>
+            <Text style={type.tiny}>
+              Kept only for these emails and never shown to shops. Forget it any time.
+            </Text>
+          </View>
+
+          <Text style={type.label}>Or choose a district</Text>
           {provinces.data?.map((province) => (
             <View key={province.id} style={styles.group}>
               <Text style={type.label}>{province.name}</Text>
@@ -122,7 +225,7 @@ export function OffersCard() {
                     onPress={() => {
                       // Choosing a district from the switch is what turns it
                       // on; choosing one otherwise leaves the switch alone.
-                      save.mutate({ optedIn: optedIn || !district, districtId: option.id });
+                      save.mutate({ optedIn: optedIn || !hasPlace, districtId: option.id });
                       setChoosing(false);
                     }}
                   />
@@ -164,6 +267,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   sheet: { gap: 16, paddingBottom: 8 },
+  exact: {
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    padding: 14,
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: theme.accentSoft,
+  },
+  exactHead: { flexDirection: 'row', gap: 12 },
+  exactIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: theme.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saved: { fontFamily: font.bold, fontSize: 13, color: theme.ink },
+  exactActions: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   group: { gap: 9 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

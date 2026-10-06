@@ -12680,6 +12680,10 @@ not closed. Closing an account clears all of it.
 
 ### 140.2 "Near" is a district the customer names
 
+> ~~"Not a position taken from the phone."~~ **Superseded in part by §169:** a
+> customer may now also save an exact spot; the district stays as the
+> alternative and the fallback.
+
 `users.homeDistrictId`, chosen from the same list the place filter uses. **Not
 a position taken from the phone** (§139 keeps that in the app and stores
 nothing): a district is enough to choose the right shops and is not a record of
@@ -13232,3 +13236,31 @@ not two other cases, and the user found them:
   the page can scroll that far.
 
 Fields at the top of a screen (the searches) need neither.
+
+## 169. "Offers near me" can use an exact spot, measured by road (2026-10-07)
+
+A district can be ten kilometres across, so "near you" from a district was a
+guess. The user asked for the real distance from where the customer is.
+
+- **"Use my exact location"** in the Offers sheet, above the district list:
+  the phone's best GPS fix, named by the phone's own address lookup ("KG 11
+  Ave, Kimironko") so the customer sees a street rather than numbers. Asked
+  for only when pressed. "Update to here" and "Forget it". The row on Account
+  says which is in use: "Exact spot · distances by road" or "Whole district".
+- **Stored** as `users.homeLatitude/homeLongitude/homeLabel` (both or neither,
+  by CHECK). Opt-in needs a district or a spot. Cleared on account close,
+  included in the data export. Never shown to shops.
+- **The email**, for someone with a spot: the most popular services within
+  10 km, then 25 km, then their district's pick. Each line says how far by
+  ROAD from the spot — one routing-table request per customer for all five
+  shops (`RoutingService.fromPoint`), the straight line if the service does
+  not answer. Subject "Popular near you", headline "near KG 11 Ave, Kimironko".
+  Customers with only a district are picked per district, as before.
+- **Privacy policy** rewritten for it (2.1, 2.3, 4.3, 6) and published as
+  version 2, so signed-in customers are asked to accept it again. It also now
+  says that road distances send map points — never a name or email — to a
+  route-finding service.
+
+**Not changed:** Home's distances still come from the phone's live position.
+Using the saved spot there when location is off is possible but would show
+distances from home while the customer is elsewhere.

@@ -13529,6 +13529,18 @@
                 "$ref": "#/components/schemas/ExportedHomeDistrictDto"
               }
             ]
+          },
+          "homeLatitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "homeLongitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "homeLabel": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -13539,7 +13551,10 @@
           "createdAt",
           "closedAt",
           "offersOptInAt",
-          "homeDistrict"
+          "homeDistrict",
+          "homeLatitude",
+          "homeLongitude",
+          "homeLabel"
         ]
       },
       "ExportedServiceDto": {
@@ -21499,6 +21514,27 @@
           "provinceName"
         ]
       },
+      "OffersSpotDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the phone called the place, e.g. \"KG 11 Ave, Kimironko\"."
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "label"
+        ]
+      },
       "OffersPreferenceDto": {
         "type": "object",
         "properties": {
@@ -21513,11 +21549,21 @@
           },
           "district": {
             "nullable": true,
-            "description": "Where \"near\" is measured from. Kept when they opt out, so opting back in is one tap.",
+            "description": "Their district. Kept when they opt out, so opting back in is one tap.",
             "type": "object",
             "allOf": [
               {
                 "$ref": "#/components/schemas/OffersDistrictDto"
+              }
+            ]
+          },
+          "spot": {
+            "nullable": true,
+            "description": "Their exact spot, if they gave one (§169). Measured from before the district.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OffersSpotDto"
               }
             ]
           }
@@ -21525,15 +21571,45 @@
         "required": [
           "optedIn",
           "optedInAt",
-          "district"
+          "district",
+          "spot"
+        ]
+      },
+      "SetSpotDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
         ]
       },
       "UpdateOffersPreferenceDto": {
         "type": "object",
         "properties": {
+          "spot": {
+            "nullable": true,
+            "description": "An exact spot. Send `null` to forget it; leave it out to keep it (§169).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SetSpotDto"
+              }
+            ]
+          },
           "optedIn": {
             "type": "boolean",
-            "description": "Turning it on needs a district, here or already saved."
+            "description": "Turning it on needs a district or a spot, here or already saved."
           },
           "districtId": {
             "type": "string",

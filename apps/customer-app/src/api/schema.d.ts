@@ -2843,6 +2843,9 @@ export interface components {
             /** @description When they agreed to emails about services near them; null if they have not. */
             offersOptInAt: string | null;
             homeDistrict: components["schemas"]["ExportedHomeDistrictDto"] | null;
+            homeLatitude: number | null;
+            homeLongitude: number | null;
+            homeLabel: string | null;
         };
         ExportedServiceDto: {
             name: string;
@@ -5318,16 +5321,31 @@ export interface components {
             name: string;
             provinceName: string;
         };
+        OffersSpotDto: {
+            latitude: number;
+            longitude: number;
+            /** @description What the phone called the place, e.g. "KG 11 Ave, Kimironko". */
+            label: string | null;
+        };
         OffersPreferenceDto: {
             /** @description True only after they turned it on themselves. */
             optedIn: boolean;
             /** @description When they agreed; null when they have not. */
             optedInAt: string | null;
-            /** @description Where "near" is measured from. Kept when they opt out, so opting back in is one tap. */
+            /** @description Their district. Kept when they opt out, so opting back in is one tap. */
             district: components["schemas"]["OffersDistrictDto"] | null;
+            /** @description Their exact spot, if they gave one (§169). Measured from before the district. */
+            spot: components["schemas"]["OffersSpotDto"] | null;
+        };
+        SetSpotDto: {
+            latitude: number;
+            longitude: number;
+            label?: string;
         };
         UpdateOffersPreferenceDto: {
-            /** @description Turning it on needs a district, here or already saved. */
+            /** @description An exact spot. Send `null` to forget it; leave it out to keep it (§169). */
+            spot?: components["schemas"]["SetSpotDto"] | null;
+            /** @description Turning it on needs a district or a spot, here or already saved. */
             optedIn: boolean;
             /**
              * Format: uuid

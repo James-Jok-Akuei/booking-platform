@@ -6,6 +6,7 @@ import { FavouritesService } from '../src/favourites/favourites.service';
 import { MailService } from '../src/mail/mail.service';
 import { OffersService, formatMoney } from '../src/offers/offers.service';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { RoutingService, straightLineKm } from '../src/routing/routing.service';
 import { createTestModule, resetDatabase } from './setup/test-module';
 import { createBusiness, createCustomer } from './setup/factories';
 
@@ -31,6 +32,15 @@ describe('Offers near you (§140)', () => {
       DiscoveryService,
       FavouritesService,
       { provide: MailService, useValue: { sendOffersDigest } },
+      // Road distances answered as the straight line, the way the real one
+      // answers when the routing service is down — no network in tests.
+      {
+        provide: RoutingService,
+        useValue: {
+          fromPoint: async (from: { lat: number; lng: number }, to: Array<{ lat: number; lng: number }>) =>
+            to.map((t) => ({ distanceKm: Math.round(straightLineKm(from, t) * 100) / 100, by: 'road' as const })),
+        },
+      },
     ]);
     prisma = moduleRef.get(PrismaService);
     offers = moduleRef.get(OffersService);
@@ -79,13 +89,14 @@ describe('Offers near you (§140)', () => {
         optedIn: false,
         optedInAt: null,
         district: null,
+        spot: null,
       });
     });
 
     it('cannot be turned on without a district', async () => {
       const customer = await createCustomer(prisma);
       await expect(offers.update(customer.userId, { optedIn: true })).rejects.toThrow(
-        /Choose your district first/,
+        /Choose your district or use your exact location first/,
       );
     });
 
@@ -224,6 +235,69 @@ describe('Offers near you (§140)', () => {
       expect(await offers.sendDue()).toEqual({ sent: 0, skipped: 1 });
       expect(await offers.sendDue()).toEqual({ sent: 1, skipped: 0 });
       expect(sentTo()).toEqual([customer.email, customer.email]);
+    });
+  });
+
+  describe('an exact spot (§169)', () => {
+    // Kimironko, and two shops: one a short drive away, one in Musanze.
+    const kimironko = { latitude: -1.9497, longitude: 30.1259 };
+    const pinned = async (districtId: string, name: string, lat: number, lng: number) => {
+      const business = await shopIn(districtId, name);
+      await prisma.location.update({
+        where: { id: business.locationId },
+        data: { latitude: lat, longitude: lng },
+      });
+      return business;
+    };
+
+    it('can be turned on with a spot alone, and the spot is shown back', async () => {
+      const customer = await createCustomer(prisma);
+      const on = await offers.update(customer.userId, {
+        optedIn: true,
+        spot: { ...kimironko, label: 'KG 11 Ave, Kimironko' },
+      });
+      expect(on.optedIn).toBe(true);
+      expect(on.district).toBeNull();
+      expect(on.spot).toEqual({ ...kimironko, label: 'KG 11 Ave, Kimironko' });
+
+      const cleared = await offers.update(customer.userId, { optedIn: false, spot: null });
+      expect(cleared.spot).toBeNull();
+    });
+
+    it('picks what is near the spot, with how far, and leaves out what is far', async () => {
+      await pinned(gasabo.id, 'Round the corner', -1.9480, 30.1270);
+      await pinned(gasabo.id, 'Down the road', -1.9550, 30.1100);
+      await pinned(gasabo.id, 'Across Remera', -1.9590, 30.1050);
+      await pinned(musanze.id, 'Far away in Musanze', -1.4990, 29.6340);
+      const customer = await createCustomer(prisma);
+      await offers.update(customer.userId, { optedIn: true, spot: { ...kimironko, label: 'Kimironko' } });
+
+      await offers.sendDue();
+
+      const digest = sendOffersDigest.mock.calls[0][1];
+      expect(digest.nearSpot).toBe(true);
+      expect(digest.place).toBe('Kimironko');
+      expect(digest.services.map((s) => s.name)).not.toContain('Far away in Musanze');
+      expect(digest.services).toHaveLength(3);
+      for (const service of digest.services) expect(service.away).toMatch(/(m|km) by road$/);
+    });
+
+    it('falls back to the district when nothing is near the spot', async () => {
+      await shopIn(musanze.id, 'A');
+      await shopIn(musanze.id, 'B');
+      await shopIn(musanze.id, 'C');
+      const customer = await createCustomer(prisma);
+      await offers.update(customer.userId, {
+        optedIn: true,
+        districtId: musanze.id,
+        spot: { ...kimironko },
+      });
+
+      await offers.sendDue();
+
+      const digest = sendOffersDigest.mock.calls[0][1];
+      expect(digest.place).toBe('Musanze');
+      expect(digest.nearSpot).toBe(false);
     });
   });
 

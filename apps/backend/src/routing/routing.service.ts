@@ -74,6 +74,43 @@ export class RoutingService {
     return value;
   }
 
+  /**
+   * Road distances from one point to several (§169), in ONE request — the
+   * routing service's table, not a route per destination. For the weekly
+   * email, which measures five shops from each customer's spot. Any the
+   * service cannot answer come back as the straight line, marked so.
+   */
+  async fromPoint(
+    from: { lat: number; lng: number },
+    to: Array<{ lat: number; lng: number }>,
+  ): Promise<Array<{ distanceKm: number; by: 'road' | 'line' }>> {
+    const line = to.map((t) => ({
+      distanceKm: Math.round(straightLineKm(from, t) * 100) / 100,
+      by: 'line' as const,
+    }));
+    if (!this.baseUrl || to.length === 0) return line;
+    const points = [from, ...to].map((p) => `${p.lng},${p.lat}`).join(';');
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/table/v1/driving/${points}?sources=0&annotations=distance`,
+        { signal: AbortSignal.timeout(TIMEOUT_MS) },
+      );
+      if (!response.ok) return line;
+      const body = (await response.json()) as { code?: string; distances?: Array<Array<number | null>> };
+      const row = body.code === 'Ok' ? body.distances?.[0] : undefined;
+      if (!row) return line;
+      return to.map((_, i) => {
+        const metres = row[i + 1];
+        return typeof metres === 'number'
+          ? { distanceKm: Math.round((metres / 1000) * 100) / 100, by: 'road' as const }
+          : line[i];
+      });
+    } catch (error) {
+      this.logger.warn(`Routing table did not answer: ${(error as Error).message}`);
+      return line;
+    }
+  }
+
   private async road(
     from: { lat: number; lng: number },
     to: { lat: number; lng: number },
