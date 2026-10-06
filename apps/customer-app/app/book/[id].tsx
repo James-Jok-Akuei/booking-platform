@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -80,6 +80,12 @@ export default function Book() {
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const service = shop.data?.services.find((s) => s.id === serviceId);
 
+  /**
+   * Opened after closing time, today is done. Rather than open on a day that
+   * says so, move on to tomorrow — once, and only when the customer has not
+   * chosen a day themselves (§156).
+   */
+  const movedOn = useRef(false);
   const availability = useQuery({
     // Asked again for every quantity: three people need three places, or
     // three turns, and the free times are different either way (§136).
@@ -87,6 +93,22 @@ export default function Book() {
     queryFn: () => getAvailability(id, date, { serviceId, quantity }),
     enabled: Boolean(service),
   });
+
+  useEffect(() => {
+    const today = availability.data;
+    if (
+      movedOn.current ||
+      !today ||
+      date !== days[0] ||
+      today.slots.length > 0 ||
+      today.source.startsWith('CLOSED') ||
+      days.length < 2
+    ) {
+      return;
+    }
+    movedOn.current = true;
+    setDate(days[1]);
+  }, [availability.data, date, days]);
 
   const book = useMutation({
     mutationFn: () =>
@@ -363,11 +385,18 @@ export default function Book() {
             <View style={styles.closed}>
               <Icon name="moon-outline" size={20} color={theme.muted} />
               <Text style={[type.body, styles.flex]}>
-                {/* The server says WHY, and it is more useful than "no slots". */}
+                {/* The server says WHY, and it is more useful than "no slots".
+                    An empty TODAY is almost always the clock, not the shop
+                    (§156): the shop has closed, or its last slot has gone, and
+                    "nothing free" read as "I never get a day off". */}
                 {availability.data.reason ??
                   (availability.data.source.startsWith('CLOSED')
                     ? 'Closed on this day.'
-                    : 'Nothing free on this day.')}
+                    : date === days[0]
+                      ? availability.data.closeTime
+                        ? `Closed for today — the shop shuts at ${availability.data.closeTime}. Pick another day.`
+                        : 'No times left today. Pick another day.'
+                      : 'Fully booked on this day.')}
               </Text>
             </View>
           )}

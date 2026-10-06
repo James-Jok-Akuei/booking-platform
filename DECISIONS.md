@@ -12995,3 +12995,16 @@ and availability DTOs. The floor stays at 2.
 Past twenty the customer's − / + picker also lets the number be typed, clamped
 to the range when the field is left; below it, two buttons are still all it
 takes.
+
+## 156. An empty today is the clock, not the shop (2026-10-06)
+
+Opened after closing time, the booking screen showed today with "Nothing free
+on this day" — which the owner read as the app giving the shop a day off. The
+slots were right (every one had passed); the words were wrong.
+
+- Today, with the shop closed by the clock: "Closed for today — the shop shuts
+  at 17:00. Pick another day." Today, open but no slot left: "No times left
+  today." Any other day with no slot: "Fully booked on this day." A day the
+  shop does not open stays "Closed on this day."
+- When today is already done, the screen moves on to tomorrow by itself —
+  once, and only if the customer has not chosen a day.
