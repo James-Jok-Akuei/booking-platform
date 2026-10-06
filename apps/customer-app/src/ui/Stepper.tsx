@@ -22,6 +22,7 @@ export function Stepper({
   max,
   onChange,
   label,
+  onFocus,
 }: {
   value: number;
   min?: number;
@@ -29,6 +30,8 @@ export function Stepper({
   onChange: (next: number) => void;
   /** What is being counted, for a screen reader: "people". */
   label: string;
+  /** For a screen keeping the typed number above the keyboard (§168). */
+  onFocus?: () => void;
 }) {
   const down = value > min;
   const up = value < max;
@@ -60,6 +63,7 @@ export function Stepper({
           style={[styles.value, styles.input]}
           value={draft}
           onChangeText={(t) => setDraft(t.replace(/\D/g, ''))}
+          onFocus={onFocus}
           onBlur={commit}
           onSubmitEditing={commit}
           keyboardType="number-pad"

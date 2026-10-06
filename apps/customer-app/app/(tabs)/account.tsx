@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 /**
  * The LEGACY entry point, deliberately.
  *
@@ -89,6 +90,8 @@ export default function Account() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
+  // Keeps the field being typed into above the keyboard (§168).
+  const keys = useKeyboardScroll({ pad: true });
   const layout = useLayout();
   const money = useMoney();
   const signedIn = useSignedIn();
@@ -361,13 +364,17 @@ export default function Account() {
   return (
     <View style={styles.screen}>
       <Animated.ScrollView
+        ref={keys.ref}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         scrollEventThrottle={16}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
           useNativeDriver: true,
+          listener: keys.track,
         })}
-        contentContainerStyle={{ paddingBottom: TAB_BAR_CLEARANCE + insets.bottom }}
+        contentContainerStyle={{
+          paddingBottom: TAB_BAR_CLEARANCE + insets.bottom + keys.padding,
+        }}
       >
         {/* WHO. */}
         <View style={[styles.hero, { height: heroHeight }]}>
@@ -583,6 +590,7 @@ export default function Account() {
               {adding ? (
                 <View style={styles.numberAdd}>
                   <TextInput
+                    onFocus={keys.reveal}
                     style={styles.numberInput}
                     value={newNumber}
                     onChangeText={setNewNumber}

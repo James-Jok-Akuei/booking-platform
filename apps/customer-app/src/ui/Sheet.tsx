@@ -102,11 +102,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(18,20,26,0.5)',
   },
   keyboard: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'flex-end' },
+  // In the flow at the bottom of the keyboard-avoiding view, NOT absolutely
+  // positioned: an absolute child ignores its parent's padding, so the sheet
+  // stayed under the keyboard however far the view rose (§168).
   sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    width: '100%',
     maxHeight: '82%',
     backgroundColor: theme.bg,
     borderTopLeftRadius: radius.xl,

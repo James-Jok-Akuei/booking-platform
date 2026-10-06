@@ -13212,3 +13212,23 @@ Both kinds of conversation (§21) looked alike. Now:
 `ThreadBusinessDto.locationId` (the business's first open branch) is what the
 Book button and the logo open. The logo used to open `/shop/<business id>`,
 which is not a branch and showed "not available" — fixed by the same field.
+
+## 168. Every typing field stays above the keyboard (2026-10-07)
+
+§166 fixed the screens whose field sits at the BOTTOM (the chat composer) but
+not two other cases, and the user found them:
+
+- **Bottom sheets** (the review-name editor). The sheet was absolutely
+  positioned at the bottom, and an absolute child ignores its parent's
+  padding — so the keyboard-avoiding view rose and the sheet stayed put. It is
+  now laid out in the flow at the bottom of that view, and rises with it.
+- **Fields in the middle of a scrolling page** (the MoMo number on Account and
+  at checkout, the review and its name, the help form, the sign-in email and
+  code, a typed quantity). Nothing scrolled them into view. `useKeyboardScroll`
+  does what Android used to do by itself: when the keyboard opens, or a field
+  is focused while it is open, it measures the focused field and scrolls the
+  page by exactly the overlap. On a page not already inside a
+  keyboard-avoiding view it also pads the bottom by the keyboard's height, so
+  the page can scroll that far.
+
+Fields at the top of a screen (the searches) need neither.

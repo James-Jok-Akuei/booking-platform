@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardScroll } from '../src/useKeyboardScroll';
 import { requestOtp, verifyOtp } from '../src/api/auth';
 import { ApiError } from '../src/api/client';
 import { font, radius, theme, type } from '../src/theme';
@@ -39,6 +40,8 @@ export default function SignIn() {
   const { next } = useLocalSearchParams<{ next?: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  // Keeps the field being typed into above the keyboard (§168).
+  const keys = useKeyboardScroll();
   const queryClient = useQueryClient();
   const codeInput = useRef<TextInput>(null);
 
@@ -124,6 +127,9 @@ export default function SignIn() {
       </View>
 
       <ScrollView
+        ref={keys.ref}
+        onScroll={keys.track}
+        scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 28 }]}
@@ -146,6 +152,7 @@ export default function SignIn() {
               <View style={styles.field}>
                 <Icon name="mail-outline" size={19} color={theme.muted} />
                 <TextInput
+                  onFocus={keys.reveal}
                   style={styles.input}
                   value={email}
                   onChangeText={setEmail}
@@ -237,6 +244,7 @@ export default function SignIn() {
                   );
                 })}
                 <TextInput
+                  onFocus={keys.reveal}
                   ref={codeInput}
                   style={styles.codeHidden}
                   value={code}

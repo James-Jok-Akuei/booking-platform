@@ -12,6 +12,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 import {
   cancelAppointment,
   explainFailedDeposit,
@@ -66,6 +67,8 @@ export default function Booking() {
   const money = useMoney();
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
+  // Keeps the field being typed into above the keyboard (§168).
+  const keys = useKeyboardScroll();
   const layout = useLayout();
   const [phone, setPhone] = useState('');
   /** True from the moment the payment is SEEN to succeed until it is dismissed. */
@@ -322,6 +325,9 @@ export default function Booking() {
         <TopBar title="Checkout" />
         {viewer}
         <ScrollView
+          ref={keys.ref}
+          onScroll={keys.track}
+          scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={[
@@ -339,6 +345,7 @@ export default function Booking() {
             stage={stage}
             failureReason={payment.data?.failureReason}
             onOpenPhoto={setPhoto}
+            onFieldFocus={keys.reveal}
           />
           <Button kind="quietDanger" label="Cancel this booking" onPress={askToCancel} />
         </ScrollView>

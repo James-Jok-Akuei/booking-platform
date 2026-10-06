@@ -3,6 +3,7 @@ import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 import { getAvailability, getShop } from '../../src/api/discovery';
 import { createAppointment } from '../../src/api/booking';
 import { ApiError, tokens } from '../../src/api/client';
@@ -70,6 +71,8 @@ export default function Book() {
   const router = useRouter();
   const money = useMoney();
   const insets = useSafeAreaInsets();
+  // Keeps the field being typed into above the keyboard (§168).
+  const keys = useKeyboardScroll({ pad: true });
   const layout = useLayout();
   const [viewer, setViewer] = useState<{ index: number; origin: ViewerOrigin | null } | null>(null);
 
@@ -194,10 +197,15 @@ export default function Book() {
       <TopBar title={service.name} subtitle={shop.data?.business.name ?? shop.data?.name} />
 
       <ScrollView
+        ref={keys.ref}
+        onScroll={keys.track}
+        scrollEventThrottle={16}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.content,
           { width: layout.contentWidth, alignSelf: 'center' },
+          keys.padding > 0 && { paddingBottom: keys.padding + 28 },
         ]}
       >
         {/* Every photo of this service (§132), not just the cover: by this
@@ -329,6 +337,7 @@ export default function Book() {
               value={quantity}
               max={service.maxQuantity}
               label={people ? 'people' : 'items'}
+              onFocus={keys.reveal}
               onChange={(next) => {
                 setQuantity(next);
                 // A time that was free for two may not be free for three.

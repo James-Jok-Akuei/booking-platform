@@ -38,6 +38,7 @@ export function Checkout({
   stage,
   failureReason,
   onOpenPhoto,
+  onFieldFocus,
 }: {
   a: Appointment;
   bought: Bought;
@@ -48,6 +49,8 @@ export function Checkout({
   stage: PaymentStatus['paymentStatus'] | undefined;
   failureReason?: string;
   onOpenPhoto: (index: number) => void;
+  /** Keeps the number field above the keyboard (§168). */
+  onFieldFocus?: () => void;
 }) {
   const many = howMany(a);
   const balance = balanceMinor(a);
@@ -205,6 +208,7 @@ export function Checkout({
             style={styles.input}
             value={phone}
             onChangeText={onPhone}
+            onFocus={onFieldFocus}
             placeholder="07xx xxx xxx"
             placeholderTextColor={theme.muted}
             keyboardType="phone-pad"

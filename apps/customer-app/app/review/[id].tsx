@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAppointment } from '../../src/api/booking';
 import { getMe } from '../../src/api/auth';
@@ -55,6 +56,8 @@ export default function WriteReview() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
+  // Keeps the field being typed into above the keyboard (§168).
+  const keys = useKeyboardScroll();
   const layout = useLayout();
 
   const appointment = useQuery({
@@ -163,6 +166,9 @@ export default function WriteReview() {
     >
       <TopBar title={existing ? 'Your review' : 'Write a review'} />
       <ScrollView
+        ref={keys.ref}
+        onScroll={keys.track}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.content, { width: layout.contentWidth }]}
@@ -199,6 +205,7 @@ export default function WriteReview() {
           </Text>
 
           <TextInput
+            onFocus={keys.reveal}
             style={styles.input}
             value={text}
             onChangeText={setComment}
@@ -213,6 +220,7 @@ export default function WriteReview() {
             <>
               <Text style={type.label}>The name to show</Text>
               <TextInput
+                onFocus={keys.reveal}
                 style={styles.nameInput}
                 value={name}
                 onChangeText={setDisplayName}

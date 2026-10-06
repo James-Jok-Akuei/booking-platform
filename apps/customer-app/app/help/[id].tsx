@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 import { ApiError } from '../../src/api/client';
 import { createTicket, listTickets, type TicketCategory } from '../../src/api/tickets';
 import { reservationNo } from '../../src/booking/format';
@@ -48,6 +49,8 @@ export default function Help() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  // Keeps the field being typed into above the keyboard (§168).
+  const keys = useKeyboardScroll();
   const layout = useLayout();
   const queryClient = useQueryClient();
   const [about, setAbout] = useState(ABOUT[1]);
@@ -84,6 +87,9 @@ export default function Help() {
     >
       <TopBar title="Get help" subtitle={`Reservation ${reservationNo(id)}`} />
       <ScrollView
+        ref={keys.ref}
+        onScroll={keys.track}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
@@ -107,6 +113,7 @@ export default function Help() {
 
           <Text style={type.label}>Tell us what happened</Text>
           <TextInput
+            onFocus={keys.reveal}
             style={styles.input}
             value={body}
             onChangeText={setBody}
