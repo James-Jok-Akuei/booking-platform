@@ -25,6 +25,11 @@ import {
   SavedPlacePageDto,
 } from './dto/favourite-response.dto';
 import { SaveFavouriteDto } from './dto/save-favourite.dto';
+import {
+  SaveServiceFavouriteDto,
+  SavedServicePageDto,
+  ServiceFavouriteStateDto,
+} from './dto/service-favourite.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
@@ -44,6 +49,33 @@ export class FavouritesController {
   @ApiOkResponse({ type: SavedPlacePageDto })
   list(@CurrentUser() user: AuthenticatedUser) {
     return this.favourites.list(user.userId);
+  }
+
+  // ---- Saved services (§158). Declared before ':locationId' so the word
+  // "services" is never read as an id. ----
+
+  @Get('services')
+  @ApiOkResponse({ type: SavedServicePageDto })
+  listServices(@CurrentUser() user: AuthenticatedUser) {
+    return this.favourites.listServices(user.userId);
+  }
+
+  @Post('services')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: ServiceFavouriteStateDto })
+  addService(@CurrentUser() user: AuthenticatedUser, @Body() dto: SaveServiceFavouriteDto) {
+    return this.favourites.addService(user.userId, dto.serviceId, dto.locationId);
+  }
+
+  @Delete('services/:serviceId/:locationId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: ServiceFavouriteStateDto })
+  removeService(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('serviceId', ParseUUIDPipe) serviceId: string,
+    @Param('locationId', ParseUUIDPipe) locationId: string,
+  ) {
+    return this.favourites.removeService(user.userId, serviceId, locationId);
   }
 
   @Post()

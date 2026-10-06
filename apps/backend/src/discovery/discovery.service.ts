@@ -314,7 +314,10 @@ export class DiscoveryService {
    *
    * Five queries regardless of page size, six with a position. None per row.
    */
-  async searchServices(query: DiscoverLocationsDto): Promise<DiscoveredServicePageDto> {
+  async searchServices(
+    query: DiscoverLocationsDto,
+    viewerId?: string,
+  ): Promise<DiscoveredServicePageDto> {
     const limit = query.limit ?? DEFAULT_LIMIT;
     const offset = query.offset ?? 0;
     const distance = this.resolveDistance(query);
@@ -453,11 +456,17 @@ export class DiscoveryService {
       }
     });
 
+    const page = sorted.slice(offset, offset + limit);
+    const savedServices = await this.favourites.savedServicesAmong(
+      viewerId,
+      page.map((o) => ({ serviceId: o.serviceId, locationId: o.locationId })),
+    );
+
     return {
       total: sorted.length,
       limit,
       offset,
-      services: sorted.slice(offset, offset + limit).map((o) => ({
+      services: page.map((o) => ({
         id: o.service.id,
         name: o.service.name,
         description: o.service.description,
@@ -479,6 +488,7 @@ export class DiscoveryService {
             : {}),
         },
         business: o.location.business,
+        ...(viewerId ? { saved: savedServices.has(key(o.serviceId, o.locationId)) } : {}),
       })),
     };
   }
@@ -616,6 +626,10 @@ export class DiscoveryService {
     const template = location.hours.find((h) => h.dayOfWeek === today.dayOfWeek) ?? null;
 
     const saved = await this.favourites.savedAmong(viewerId, [location.id]);
+    const savedServices = await this.favourites.savedServicesAmong(
+      viewerId,
+      services.map((offer) => ({ serviceId: offer.service.id, locationId })),
+    );
 
     return {
       // Absent for a signed-out reader: there is no answer to "have you saved
@@ -651,6 +665,7 @@ export class DiscoveryService {
         depositPercentage: offer.service.depositPercentage.toFixed(2),
         quantityMode: offer.service.quantityMode,
         maxQuantity: offer.service.maxQuantity,
+        ...(viewerId ? { saved: savedServices.has(`${offer.service.id}:${locationId}`) } : {}),
         ...(rate
           ? {
               approxSettlement: {

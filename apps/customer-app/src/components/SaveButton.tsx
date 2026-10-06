@@ -20,11 +20,14 @@ export function SaveButton({
   saved,
   onPress,
   large,
+  small,
   onPhoto,
 }: {
   saved: boolean | undefined;
   onPress: () => void;
   large?: boolean;
+  /** For a small card's corner. */
+  small?: boolean;
   /** A white disc behind it, so it reads on top of any photograph. */
   onPhoto?: boolean;
 }) {
@@ -49,7 +52,7 @@ export function SaveButton({
 
   if (saved === undefined) return null;
 
-  const size = large ? 44 : 38;
+  const size = large ? 44 : small ? 30 : 38;
 
   return (
     <Pressable
@@ -59,7 +62,7 @@ export function SaveButton({
       }}
       hitSlop={10}
       accessibilityRole="button"
-      accessibilityLabel={saved ? 'Remove from saved' : 'Save this place'}
+      accessibilityLabel={saved ? 'Remove from saved' : 'Save this'}
       style={[
         styles.tap,
         { width: size, height: size, borderRadius: size / 2 },
@@ -69,7 +72,7 @@ export function SaveButton({
       <Animated.View style={{ transform: [{ scale }] }}>
         <Icon
           name={saved ? 'heart' : 'heart-outline'}
-          size={large ? 23 : 20}
+          size={large ? 23 : small ? 16 : 20}
           color={saved ? theme.accent : theme.ink}
         />
       </Animated.View>

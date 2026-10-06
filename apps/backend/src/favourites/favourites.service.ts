@@ -1,5 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BusinessStatus, Prisma } from '@prisma/client';
+import { isPubliclyBookable } from '../business/business-status';
+import { COUNTED_BOOKING_STATUSES } from '../discovery/popularity';
+import {
+  SavedServiceDto,
+  SavedServicePageDto,
+  ServiceFavouriteStateDto,
+} from './dto/service-favourite.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   FavouriteStateDto,
@@ -123,6 +130,184 @@ export class FavouritesService {
           location.business.pausedAt === null,
       })),
     };
+  }
+
+  // ---------------------------------------------------------------------
+  // Saved services (§158)
+  // ---------------------------------------------------------------------
+
+  /**
+   * Saves a service at a branch. Only one a customer could book right now: a
+   * service that is retired, not sold at that branch, or at a branch the
+   * public cannot see is, to this caller, not there (§42.1).
+   */
+  async addService(
+    customerId: string,
+    serviceId: string,
+    locationId: string,
+  ): Promise<ServiceFavouriteStateDto> {
+    const offer = await this.prisma.serviceLocation.findFirst({
+      where: {
+        serviceId,
+        locationId,
+        isOffered: true,
+        service: { isActive: true },
+        location: { isActive: true },
+      },
+      select: { location: { select: { business: { select: { status: true, pausedAt: true } } } } },
+    });
+    if (!offer || !isPubliclyBookable(offer.location.business)) {
+      throw new NotFoundException('Service not found.');
+    }
+    await this.prisma.serviceFavourite.upsert({
+      where: { customerId_serviceId_locationId: { customerId, serviceId, locationId } },
+      create: { customerId, serviceId, locationId },
+      update: {},
+    });
+    return { serviceId, locationId, saved: true };
+  }
+
+  async removeService(
+    customerId: string,
+    serviceId: string,
+    locationId: string,
+  ): Promise<ServiceFavouriteStateDto> {
+    await this.prisma.serviceFavourite.deleteMany({ where: { customerId, serviceId, locationId } });
+    return { serviceId, locationId, saved: false };
+  }
+
+  /**
+   * The saved services, newest first, as the cards the home screen shows.
+   *
+   * Two kinds of "not now" (§158). TEMPORARY — the branch closed, the business
+   * paused or not approved, the service paused at that branch — is kept and
+   * marked `bookable: false`, like a saved place. GONE — the service retired by
+   * the business, or its offer at that branch deleted — is taken off the list
+   * here and now and counted in `removed`, so the list is never a row that
+   * leads nowhere and the customer is told once why it is shorter.
+   */
+  async listServices(customerId: string): Promise<SavedServicePageDto> {
+    const rows = await this.prisma.serviceFavourite.findMany({
+      where: { customerId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        serviceId: true,
+        locationId: true,
+        createdAt: true,
+        service: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            durationMinutes: true,
+            currency: true,
+            depositPercentage: true,
+            isActive: true,
+            images: {
+              orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+              take: 1,
+              select: { url: true },
+            },
+            locations: { select: { locationId: true, priceMinor: true, isOffered: true } },
+          },
+        },
+        location: {
+          select: {
+            id: true,
+            name: true,
+            isActive: true,
+            ratingAvg: true,
+            ratingCount: true,
+            district: { select: { id: true, name: true } },
+            business: {
+              select: {
+                id: true,
+                name: true,
+                logoUrl: true,
+                coverImageUrl: true,
+                status: true,
+                pausedAt: true,
+                category: { select: { id: true, name: true, icon: true } },
+                subcategory: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const gone = rows.filter(
+      (r) => !r.service.isActive || !r.service.locations.some((o) => o.locationId === r.locationId),
+    );
+    if (gone.length > 0) {
+      await this.prisma.serviceFavourite.deleteMany({ where: { id: { in: gone.map((g) => g.id) } } });
+    }
+    const kept = rows.filter((r) => !gone.includes(r));
+
+    // Bookings per branch, for the "N booked" line, one grouped query.
+    const locationIds = [...new Set(kept.map((r) => r.locationId))];
+    const grouped =
+      locationIds.length === 0
+        ? []
+        : await this.prisma.appointment.groupBy({
+            by: ['locationId', 'serviceId'],
+            where: { locationId: { in: locationIds }, status: { in: COUNTED_BOOKING_STATUSES } },
+            _count: { _all: true },
+          });
+    const bookings = new Map(grouped.map((g) => [`${g.serviceId}:${g.locationId}`, g._count._all]));
+
+    const services: SavedServiceDto[] = kept.map((r) => {
+      const offer = r.service.locations.find((o) => o.locationId === r.locationId)!;
+      const { status, pausedAt, ...business } = r.location.business;
+      return {
+        id: r.service.id,
+        name: r.service.name,
+        description: r.service.description,
+        durationMinutes: r.service.durationMinutes,
+        currency: r.service.currency,
+        priceMinor: offer.priceMinor,
+        depositPercentage: r.service.depositPercentage.toFixed(2),
+        imageUrl: r.service.images[0]?.url ?? null,
+        bookingCount: bookings.get(`${r.serviceId}:${r.locationId}`) ?? 0,
+        location: {
+          id: r.location.id,
+          name: r.location.name,
+          district: r.location.district,
+          ratingAvg: r.location.ratingAvg ? Number(r.location.ratingAvg) : null,
+          ratingCount: r.location.ratingCount,
+          // Not computed here: the saved list is not a search, and a wrong
+          // "open now" is worse than none. The card does not show it.
+          openNow: false,
+        },
+        business,
+        saved: true,
+        savedAt: r.createdAt.toISOString(),
+        bookable:
+          offer.isOffered && r.location.isActive && isPubliclyBookable({ status, pausedAt }),
+      };
+    });
+
+    return { total: services.length, services, removed: gone.length };
+  }
+
+  /**
+   * Which of these service-at-branch pairs this customer has saved, as
+   * "serviceId:locationId" keys. One query per page, like `savedAmong`.
+   */
+  async savedServicesAmong(
+    customerId: string | undefined,
+    pairs: Array<{ serviceId: string; locationId: string }>,
+  ) {
+    if (!customerId || pairs.length === 0) return new Set<string>();
+    const rows = await this.prisma.serviceFavourite.findMany({
+      where: {
+        customerId,
+        OR: pairs.map((p) => ({ serviceId: p.serviceId, locationId: p.locationId })),
+      },
+      select: { serviceId: true, locationId: true },
+    });
+    return new Set(rows.map((r) => `${r.serviceId}:${r.locationId}`));
   }
 
   /**

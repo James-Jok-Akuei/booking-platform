@@ -13045,3 +13045,35 @@ and nothing can tell. The business app now shows the pin on an OpenStreetMap
 embed (no key) under the coordinates, on the new-branch form and when editing
 a branch — which can now change its pin, by pasting a link or pressing "Use my
 current position" (high accuracy) at the shop.
+
+## 158. Saved services, beside saved places (2026-10-06)
+
+A customer could save a shop (§120) but not the thing they actually wanted
+from it. `service_favourites` keys on the service AT a branch — the same
+"Haircut" is two prices at two branches, and the one saved is the one they can
+walk to.
+
+- `GET/POST /favourites/services`, `DELETE /favourites/services/:serviceId/:locationId`.
+  Saving is refused (404) for anything the customer could not book right now.
+- Every service card on Home and every service row on a shop page carries a
+  heart, for a signed-in reader only (`saved` is absent otherwise, §120.2).
+  Optimistic, put back on failure, patched across every list that shows it.
+- The Saved tab has a Places | Services switch, each with its count. A saved
+  service is a wide photo-first card: price and length on the picture, the
+  shop's logo and name beneath, one dark "Book".
+
+### 158.1 Gone for good, or just not now
+
+Two kinds of "cannot book" (§120 kept everything and marked it; a service
+needs the distinction):
+
+- **Temporary** — branch closed, business paused or not approved, service
+  paused at that branch — is kept, dimmed, and says "Not taking bookings right
+  now" across its picture. It comes back on its own.
+- **Gone** — the service retired by the business, or no longer sold at that
+  branch at all — is taken off the list on the read that finds it, and the
+  customer is told once: "One saved service is no longer offered and was taken
+  off your list." A row that leads nowhere is worse than a shorter list.
+
+A branch or service hard-deleted (which the app never does) cascades the save
+away at the database.

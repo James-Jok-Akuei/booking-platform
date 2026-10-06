@@ -132,6 +132,9 @@ export class DiscoveredServiceDto {
   bookingCount!: number;
   location!: DiscoveredServiceLocationDto;
   business!: DiscoveredBusinessDto;
+  /** Whether this customer saved it (§158). Absent entirely for a signed-out reader. */
+  @ApiProperty({ required: false, description: 'Absent entirely for a signed-out reader.' })
+  saved?: boolean;
 }
 
 export class DiscoveredServicePageDto {
@@ -206,6 +209,10 @@ export class ShopfrontServiceDto {
   quantityMode!: QuantityMode;
   /** The most one booking may ask for; 1 when `SINGLE`. */
   maxQuantity!: number;
+
+  /** Whether this customer saved it at this branch (§158). Absent for a signed-out reader. */
+  @ApiProperty({ required: false, description: 'Absent entirely for a signed-out reader.' })
+  saved?: boolean;
 
   /**
    * Photos of the service, cover first (§132). Empty is normal — a service

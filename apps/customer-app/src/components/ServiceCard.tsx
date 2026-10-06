@@ -4,6 +4,7 @@ import { font, radius, shadow, theme } from '../theme';
 import { Cover } from '../ui/Cover';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { SaveButton } from './SaveButton';
 import { distanceLabel } from '../distance';
 
 /**
@@ -27,12 +28,15 @@ export function ServiceCard({
   price,
   width,
   onPress,
+  onSave,
 }: {
   service: DiscoveredService;
   /** Already formatted. */
   price: string;
   width: number;
   onPress: () => void;
+  /** Toggles the heart. The heart shows only when `service.saved` is known (signed in). */
+  onSave?: () => void;
 }) {
   const away = distanceLabel(service.location.distanceKm);
   // "Kimironko Branch" says more than "Gasabo" to someone who knows the city,
@@ -72,6 +76,14 @@ export function ServiceCard({
           </View>
         )}
 
+
+        {/* The heart (§158), only for a signed-in reader — `saved` is absent
+            otherwise, and the button draws nothing for undefined. */}
+        {onSave && (
+          <View style={styles.heart}>
+            <SaveButton saved={service.saved} onPress={onSave} onPhoto small />
+          </View>
+        )}
 
         {/* How long it takes, on the picture: it is the second thing people
             ask after the price, and it costs no row of its own here. */}
@@ -142,6 +154,7 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   cover: { borderRadius: radius.md, width: '100%' },
+  heart: { position: 'absolute', top: 7, right: 7 },
   logo: {
     position: 'absolute',
     top: 7,

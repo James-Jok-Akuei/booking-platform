@@ -83,6 +83,24 @@ export const discoverLocations = (params: {
   offset?: number;
 }) => api<DiscoveryPage>('/discover/locations', { query: params, optionalAuth: true });
 
+/** Saved services (§158): the service AT a branch, since prices differ per branch. */
+export type SavedService = components['schemas']['SavedServiceDto'];
+export type SavedServicePage = components['schemas']['SavedServicePageDto'];
+
+export const listSavedServices = () => api<SavedServicePage>('/favourites/services');
+
+export const saveService = (serviceId: string, locationId: string) =>
+  api<components['schemas']['ServiceFavouriteStateDto']>('/favourites/services', {
+    method: 'POST',
+    body: { serviceId, locationId },
+  });
+
+export const unsaveService = (serviceId: string, locationId: string) =>
+  api<components['schemas']['ServiceFavouriteStateDto']>(
+    `/favourites/services/${serviceId}/${locationId}`,
+    { method: 'DELETE' },
+  );
+
 /** A service at a branch, as the home screen's shelves show it (§135.2). */
 export type DiscoveredService = components['schemas']['DiscoveredServiceDto'];
 
@@ -95,7 +113,9 @@ export type DiscoveredServicePage = components['schemas']['DiscoveredServicePage
  * shops are open for business.
  */
 export const discoverServices = (params: Parameters<typeof discoverLocations>[0]) =>
-  api<DiscoveredServicePage>('/discover/services', { query: params, anonymous: true });
+  // The token goes when there is one (§133.7): it is how the server knows
+  // which hearts to fill.
+  api<DiscoveredServicePage>('/discover/services', { query: params, optionalAuth: true });
 
 /**
  * The real road to a branch, and how long it takes by car (§157). One branch

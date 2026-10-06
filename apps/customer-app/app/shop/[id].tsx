@@ -8,6 +8,7 @@ import { routeLabel } from '../../src/routeLabel';
 import { useNearMe } from '../../src/useNearMe';
 import { openInquiry } from '../../src/api/chat';
 import { useSaved } from '../../src/useSaved';
+import { useSavedService } from '../../src/useSavedService';
 import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
 import { ApiError, tokens } from '../../src/api/client';
@@ -71,6 +72,7 @@ export default function Shop() {
   });
 
   const saved = useSaved();
+  const savedService = useSavedService();
 
   // The real road from here, once the phone has said where here is (§157).
   // Never asks for the permission itself (§107.3); it uses one already given.
@@ -334,6 +336,9 @@ export default function Shop() {
                   categoryIcon={s.business.category?.icon}
                   format={money.format}
                   onPress={() => router.push(`/book/${s.id}?serviceId=${service.id}`)}
+                  onSave={() =>
+                    savedService.toggle(service.id, s.id, service.saved ?? false, `/shop/${s.id}`)
+                  }
                 />
               ))}
             </FadeIn>
@@ -462,11 +467,13 @@ function ServiceRow({
   categoryIcon,
   format,
   onPress,
+  onSave,
 }: {
   service: ShopService;
   categoryIcon?: string | null;
   format: (minor: number | null | undefined, code?: string | null) => string;
   onPress: () => void;
+  onSave: () => void;
 }) {
   // Rounded the way the server does it, so the figure shown is the figure
   // charged — the deposit is a percentage of the price, taken at booking.
@@ -502,8 +509,12 @@ function ServiceRow({
           <Text style={styles.deposit}>pay {format(depositMinor, service.currency)} now</Text>
         </View>
       </View>
-      <View style={styles.go}>
-        <Icon name="arrow-forward" size={17} color="#FFFFFF" />
+      <View style={styles.serviceSide}>
+        {/* Draws nothing signed out: `saved` is absent then (§120.2). */}
+        <SaveButton saved={service.saved} onPress={onSave} small />
+        <View style={styles.go}>
+          <Icon name="arrow-forward" size={17} color="#FFFFFF" />
+        </View>
       </View>
     </PressableScale>
   );
@@ -558,6 +569,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.line,
   },
   section: { gap: 12 },
+  serviceSide: { alignItems: 'center', justifyContent: 'space-between', alignSelf: 'stretch' },
   card: {
     backgroundColor: theme.panel,
     borderRadius: radius.lg,

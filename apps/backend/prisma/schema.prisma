@@ -337,6 +337,7 @@ model User {
   createdAdjustments BillingAdjustment[] @relation("CreatedAdjustments")
 
   favourites              Favourite[]          @relation("CustomerFavourites")
+  serviceFavourites       ServiceFavourite[]   @relation("CustomerServiceFavourites")
   savedPaymentNumbers     SavedPaymentNumber[] @relation("SavedPaymentNumbers")
   createdServiceDrafts    ServiceDraft[]       @relation("CreatedServiceDrafts")
   legalAcceptances        LegalAcceptance[]    @relation("LegalAcceptances")
@@ -584,7 +585,8 @@ model Location {
   /// Which services this branch offers, and at what price (§72).
   services ServiceLocation[]
 
-  favourites Favourite[] @relation("LocationFavourites")
+  favourites        Favourite[]        @relation("LocationFavourites")
+  serviceFavourites ServiceFavourite[] @relation("LocationServiceFavourites")
 
   @@index([businessId])
   /// Branch lists and discovery filter on this constantly (§89).
@@ -733,7 +735,8 @@ model Service {
   locations ServiceLocation[]
 
   /// Photos of the service itself (§132), capped in ServiceImagesService.
-  images ServiceMedia[]
+  images     ServiceMedia[]
+  favourites ServiceFavourite[] @relation("ServiceFavourites")
 
   @@index([businessId])
   @@map("services")
@@ -2013,6 +2016,26 @@ model District {
 /// Deliberately NOT a cart. Nothing here is reserved, nothing is priced and
 /// nothing is paid for — a slot is held by booking it, and holding one by
 /// putting it in a basket would take it away from somebody who was ready.
+/// A saved SERVICE at a branch (§158), beside the saved places below.
+model ServiceFavourite {
+  id String @id @default(uuid())
+
+  customerId String
+  customer   User   @relation("CustomerServiceFavourites", fields: [customerId], references: [id], onDelete: Cascade)
+
+  serviceId String
+  service   Service @relation("ServiceFavourites", fields: [serviceId], references: [id], onDelete: Cascade)
+
+  locationId String
+  location   Location @relation("LocationServiceFavourites", fields: [locationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([customerId, serviceId, locationId])
+  @@index([customerId, createdAt])
+  @@map("service_favourites")
+}
+
 model Favourite {
   id String @id @default(uuid())
 

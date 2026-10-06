@@ -2428,6 +2428,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/favourites/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["FavouritesController_listServices"];
+        put?: never;
+        post: operations["FavouritesController_addService"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/favourites/services/{serviceId}/{locationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["FavouritesController_removeService"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/favourites/{locationId}": {
         parameters: {
             query?: never;
@@ -4956,6 +4988,8 @@ export interface components {
             distanceKm?: number;
         };
         DiscoveredServiceDto: {
+            /** @description Absent entirely for a signed-out reader. */
+            saved?: boolean;
             id: string;
             name: string;
             description: string | null;
@@ -5004,6 +5038,8 @@ export interface components {
             count: number;
         };
         ShopfrontServiceDto: {
+            /** @description Absent entirely for a signed-out reader. */
+            saved?: boolean;
             /** @description Indicative only, and absent when no rate is configured (§66.2). */
             approxSettlement?: components["schemas"]["ApproxSettlementDto"];
             id: string;
@@ -5113,6 +5149,58 @@ export interface components {
         SavedPlacePageDto: {
             total: number;
             favourites: components["schemas"]["SavedPlaceDto"][];
+        };
+        SavedServiceDto: {
+            /** @description Absent entirely for a signed-out reader. */
+            saved?: boolean;
+            id: string;
+            name: string;
+            description: string | null;
+            durationMinutes: number;
+            currency: string;
+            /** @description This branch's price. */
+            priceMinor: number;
+            /** @description A decimal string, like every percentage here (§128.20). */
+            depositPercentage: string;
+            /** @description The cover photo (§132), or null — a client falls back to a category tile. */
+            imageUrl: string | null;
+            /** @description Paid, not-called-off bookings of this service at this branch (§135.1). */
+            bookingCount: number;
+            location: components["schemas"]["DiscoveredServiceLocationDto"];
+            business: components["schemas"]["DiscoveredBusinessDto"];
+            savedAt: string;
+            /**
+             * @description False while the branch is closed, the business paused or not approved, or
+             *     the service paused at this branch — all temporary, all kept and marked
+             *     (§120). A service RETIRED by the business is not kept at all: see
+             *     `SavedServicePageDto.removed`.
+             */
+            bookable: boolean;
+        };
+        SavedServicePageDto: {
+            total: number;
+            services: components["schemas"]["SavedServiceDto"][];
+            /**
+             * @description How many saved services were found to be gone for good on this read —
+             *     retired by the business, or no longer sold at that branch at all — and
+             *     were taken off the list. Said once, so the customer knows why it is
+             *     shorter; zero the next time.
+             */
+            removed: number;
+        };
+        SaveServiceFavouriteDto: {
+            /** Format: uuid */
+            serviceId: string;
+            /**
+             * Format: uuid
+             * @description The branch it was saved at: the same service costs differently per branch.
+             */
+            locationId: string;
+        };
+        ServiceFavouriteStateDto: {
+            serviceId: string;
+            locationId: string;
+            saved: boolean;
         };
         SaveFavouriteDto: {
             /** Format: uuid */
@@ -14098,6 +14186,178 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FavouriteStateDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    FavouritesController_listServices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedServicePageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    FavouritesController_addService: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveServiceFavouriteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceFavouriteStateDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    FavouritesController_removeService: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                serviceId: string;
+                locationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceFavouriteStateDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

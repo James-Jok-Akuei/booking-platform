@@ -47,8 +47,11 @@ export class DiscoveryController {
    */
   @Get('services')
   @ApiOkResponse({ type: DiscoveredServicePageDto })
-  searchServices(@Query() query: DiscoverLocationsDto) {
-    return this.discovery.searchServices(query);
+  searchServices(
+    @Query() query: DiscoverLocationsDto,
+    @CurrentUser() user: AuthenticatedUser | undefined,
+  ) {
+    return this.discovery.searchServices(query, user?.userId);
   }
 
   @Get('locations/:id')

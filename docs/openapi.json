@@ -11896,6 +11896,214 @@
         ]
       }
     },
+    "/favourites/services": {
+      "get": {
+        "operationId": "FavouritesController_listServices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedServicePageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Favourites"
+        ]
+      },
+      "post": {
+        "operationId": "FavouritesController_addService",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveServiceFavouriteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceFavouriteStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Favourites"
+        ]
+      }
+    },
+    "/favourites/services/{serviceId}/{locationId}": {
+      "delete": {
+        "operationId": "FavouritesController_removeService",
+        "parameters": [
+          {
+            "name": "serviceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceFavouriteStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Favourites"
+        ]
+      }
+    },
     "/favourites/{locationId}": {
       "delete": {
         "operationId": "FavouritesController_remove",
@@ -20089,6 +20297,10 @@
       "DiscoveredServiceDto": {
         "type": "object",
         "properties": {
+          "saved": {
+            "type": "boolean",
+            "description": "Absent entirely for a signed-out reader."
+          },
           "id": {
             "type": "string"
           },
@@ -20281,6 +20493,10 @@
       "ShopfrontServiceDto": {
         "type": "object",
         "properties": {
+          "saved": {
+            "type": "boolean",
+            "description": "Absent entirely for a signed-out reader."
+          },
           "approxSettlement": {
             "description": "Indicative only, and absent when no rate is configured (§66.2).",
             "allOf": [
@@ -20667,6 +20883,136 @@
         "required": [
           "total",
           "favourites"
+        ]
+      },
+      "SavedServiceDto": {
+        "type": "object",
+        "properties": {
+          "saved": {
+            "type": "boolean",
+            "description": "Absent entirely for a signed-out reader."
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "priceMinor": {
+            "type": "number",
+            "description": "This branch's price."
+          },
+          "depositPercentage": {
+            "type": "string",
+            "description": "A decimal string, like every percentage here (§128.20)."
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "The cover photo (§132), or null — a client falls back to a category tile."
+          },
+          "bookingCount": {
+            "type": "number",
+            "description": "Paid, not-called-off bookings of this service at this branch (§135.1)."
+          },
+          "location": {
+            "$ref": "#/components/schemas/DiscoveredServiceLocationDto"
+          },
+          "business": {
+            "$ref": "#/components/schemas/DiscoveredBusinessDto"
+          },
+          "savedAt": {
+            "type": "string"
+          },
+          "bookable": {
+            "type": "boolean",
+            "description": "False while the branch is closed, the business paused or not approved, or\nthe service paused at this branch — all temporary, all kept and marked\n(§120). A service RETIRED by the business is not kept at all: see\n`SavedServicePageDto.removed`."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "durationMinutes",
+          "currency",
+          "priceMinor",
+          "depositPercentage",
+          "imageUrl",
+          "bookingCount",
+          "location",
+          "business",
+          "savedAt",
+          "bookable"
+        ]
+      },
+      "SavedServicePageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SavedServiceDto"
+            }
+          },
+          "removed": {
+            "type": "number",
+            "description": "How many saved services were found to be gone for good on this read —\nretired by the business, or no longer sold at that branch at all — and\nwere taken off the list. Said once, so the customer knows why it is\nshorter; zero the next time."
+          }
+        },
+        "required": [
+          "total",
+          "services",
+          "removed"
+        ]
+      },
+      "SaveServiceFavouriteDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "description": "The branch it was saved at: the same service costs differently per branch.",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "serviceId",
+          "locationId"
+        ]
+      },
+      "ServiceFavouriteStateDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string"
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "saved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "serviceId",
+          "locationId",
+          "saved"
         ]
       },
       "SaveFavouriteDto": {

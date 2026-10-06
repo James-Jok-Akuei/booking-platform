@@ -23,6 +23,7 @@ import {
 import { useMoney } from '../../src/money';
 import { useNearMe } from '../../src/useNearMe';
 import { useUnread } from '../../src/useUnread';
+import { useSavedService } from '../../src/useSavedService';
 import { PlaceBubble } from '../../src/components/PlaceBubble';
 import { ServiceCard } from '../../src/components/ServiceCard';
 import { font, radius, shadow, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
@@ -89,6 +90,7 @@ export default function Discover() {
   const router = useRouter();
   const nearMe = useNearMe();
   const unread = useUnread();
+  const savedService = useSavedService();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
   const [query, setQuery] = useState('');
@@ -588,6 +590,7 @@ export default function Discover() {
                   price={money.format(service.priceMinor)}
                   width={shelfCard}
                   onPress={() => openService(service)}
+                  onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
                 />
               ))}
             </ScrollView>
@@ -610,6 +613,7 @@ export default function Discover() {
                   price={money.format(service.priceMinor)}
                   width={shelfCard}
                   onPress={() => openService(service)}
+                  onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
                 />
               ))}
             </ScrollView>
@@ -661,6 +665,7 @@ export default function Discover() {
                   price={money.format(service.priceMinor)}
                   width={shelfCard}
                   onPress={() => openService(service)}
+                  onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
                 />
               ))}
             </ScrollView>
@@ -681,6 +686,7 @@ export default function Discover() {
                   price={money.format(service.priceMinor)}
                   width={gridCard}
                   onPress={() => openService(service)}
+                  onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
                 />
               ))}
             </View>
