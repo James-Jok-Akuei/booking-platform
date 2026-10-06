@@ -12936,3 +12936,9 @@ business's initial on a plain disc (the `Avatar` the rest of the app uses),
 which reads as "no logo yet". Service cards gained a small round logo badge on
 the photo's corner, present only when the business has a logo; nothing stands
 in for it.
+
+## 151. No medals on the popular shelf (2026-10-06)
+
+The "Most popular" shelf put a 1, 2, 3 on its first three cards. Removed, at
+the user's request: the shelf's order already says it, and "4 booked" on the
+card is the honest number. The logo badge (§150) takes the corner.

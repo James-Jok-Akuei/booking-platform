@@ -18,22 +18,20 @@ import { distanceLabel } from '../distance';
  * shop's name is there because the same "Haircut" is sold by six shops and the
  * card has to say whose this is.
  *
- * `rank` puts a numbered medal on the first three of a "most popular" shelf.
- * Only there: a "1" on a card in a price-sorted grid would be claiming
- * something that is not true.
+ * ~~A numbered medal on the first three of the "most popular" shelf~~ — gone
+ * (§151): the shelf's order already says it, and "N booked" is the honest
+ * number.
  */
 export function ServiceCard({
   service,
   price,
   width,
-  rank,
   onPress,
 }: {
   service: DiscoveredService;
   /** Already formatted. */
   price: string;
   width: number;
-  rank?: number;
   onPress: () => void;
 }) {
   const away = distanceLabel(service.location.distanceKm);
@@ -69,16 +67,11 @@ export function ServiceCard({
             business uploaded one (§150). Nothing stands in for it: a card
             with no logo badge is a business that has not added one. */}
         {service.business.logoUrl && (
-          <View style={[styles.logo, rank !== undefined && rank <= 3 && styles.logoBelowRank]}>
+          <View style={styles.logo}>
             <Image source={{ uri: service.business.logoUrl }} style={styles.logoImage} />
           </View>
         )}
 
-        {rank !== undefined && rank <= 3 && (
-          <View style={[styles.rank, rank === 1 && styles.rankFirst]}>
-            <Text style={[styles.rankText, rank === 1 && styles.rankTextFirst]}>{rank}</Text>
-          </View>
-        )}
 
         {/* How long it takes, on the picture: it is the second thing people
             ask after the price, and it costs no row of its own here. */}
@@ -149,19 +142,6 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   cover: { borderRadius: radius.md, width: '100%' },
-  rank: {
-    position: 'absolute',
-    top: 7,
-    left: 7,
-    minWidth: 24,
-    height: 24,
-    borderRadius: 12,
-    paddingHorizontal: 6,
-    backgroundColor: 'rgba(255,255,255,0.96)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rankFirst: { backgroundColor: theme.accent },
   logo: {
     position: 'absolute',
     top: 7,
@@ -172,11 +152,7 @@ const styles = StyleSheet.create({
     padding: 2,
     backgroundColor: 'rgba(255,255,255,0.96)',
   },
-  // The medal has the top-left corner; a logo moves down beside it.
-  logoBelowRank: { top: 36 },
   logoImage: { width: '100%', height: '100%', borderRadius: 13 },
-  rankText: { fontFamily: font.extrabold, fontSize: 12, color: theme.ink },
-  rankTextFirst: { color: '#FFFFFF' },
   duration: {
     position: 'absolute',
     right: 7,

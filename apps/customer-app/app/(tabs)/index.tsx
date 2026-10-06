@@ -581,17 +581,12 @@ export default function Discover() {
               style={bleed}
               contentContainerStyle={[styles.shelf, bleedPad]}
             >
-              {offers.slice(0, SHELF_SIZE).map((service, index) => (
+              {offers.slice(0, SHELF_SIZE).map((service) => (
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}
                   price={money.format(service.priceMinor)}
                   width={shelfCard}
-                  // A medal only when the order IS popularity, and only for
-                  // something somebody has actually booked.
-                  rank={
-                    filters.sort === 'popular' && service.bookingCount > 0 ? index + 1 : undefined
-                  }
                   onPress={() => openService(service)}
                 />
               ))}
