@@ -49,6 +49,7 @@ import { OffersCard } from '../../src/components/OffersCard';
 import { pickImage } from '../../src/pickImage';
 import { ApiError, useSignedIn } from '../../src/api/client';
 import { shareApp } from '../../src/share';
+import { skyForToday } from '../../src/skies';
 import { font, radius, shadow, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
 import { Avatar } from '../../src/ui/Avatar';
 import { Button } from '../../src/ui/Button';
@@ -335,6 +336,7 @@ export default function Account() {
   }
 
   const nameShown = me.data?.displayName ?? 'Anonymous';
+  const sky = skyForToday();
   const heroHeight = HERO + insets.top;
 
   // The small bar that takes over once the header has scrolled away, so the
@@ -375,16 +377,17 @@ export default function Account() {
               { transform: [{ translateY: heroShift }, { scale: heroScale }] },
             ]}
           >
+            {/* Today's sky (§154): one of ten, a new one each day. */}
             <LinearGradient
-              colors={['#23252E', theme.night, '#2E1A14']}
+              colors={sky.colors}
               locations={[0, 0.55, 1]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
             {/* Two soft lights, so the dark is a surface and not a void. */}
-            <View style={[styles.glow, styles.glowA]} />
-            <View style={[styles.glow, styles.glowB]} />
+            <View style={[styles.glow, styles.glowA, { backgroundColor: sky.glows[0] }]} />
+            <View style={[styles.glow, styles.glowB, { backgroundColor: sky.glows[1] }]} />
           </Animated.View>
 
           <View style={[styles.heroBody, { paddingTop: insets.top + 18 }]}>
@@ -434,6 +437,10 @@ export default function Account() {
                   <View style={styles.since}>
                     <Icon name="sparkles" size={12} color={theme.star} />
                     <Text style={styles.sinceText}>With us since {joined(me.data.createdAt)}</Text>
+                  </View>
+                  {/* The sky's name, small: a page that changes should say so. */}
+                  <View style={styles.since}>
+                    <Text style={styles.sinceText}>{sky.name}</Text>
                   </View>
                 </View>
               </FadeIn>
@@ -875,20 +882,8 @@ const styles = StyleSheet.create({
   // Clipped, so the soft lights stop at its edge instead of spilling onto the page.
   hero: { overflow: 'hidden' },
   glow: { position: 'absolute', borderRadius: 999 },
-  glowA: {
-    width: 260,
-    height: 260,
-    top: -90,
-    right: -70,
-    backgroundColor: 'rgba(240,83,45,0.22)',
-  },
-  glowB: {
-    width: 200,
-    height: 200,
-    bottom: -60,
-    left: -60,
-    backgroundColor: 'rgba(255,176,32,0.10)',
-  },
+  glowA: { width: 260, height: 260, top: -90, right: -70 },
+  glowB: { width: 200, height: 200, bottom: -60, left: -60 },
   heroBody: { flex: 1, alignItems: 'center', paddingHorizontal: 24 },
   heroLabel: {
     alignSelf: 'flex-start',

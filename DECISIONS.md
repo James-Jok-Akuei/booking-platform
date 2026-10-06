@@ -12970,3 +12970,17 @@ The strip on the shop page stays, as a taste; "See all" goes here.
 The shop page and the saved-places card said "No reviews yet" when a shop had
 none. Removed at the user's request: it is not a fact about the shop, and it
 read as a mark against it. The rating line simply appears once there is one.
+
+## 154. The profile header changes sky every day (2026-10-06)
+
+The dark header (§143) was the same gradient forever. `src/skies.ts` holds ten
+— three gradient colours and two soft lights each, named for something in
+Rwanda they are painted after (Lake Kivu, Volcanoes, Nyungwe, Savannah,
+Coffee, Thousand hills, Imigongo, Akagera, Night market, Kigali at dusk). The
+day of the phone's clock picks one, so it is the same for everyone that day
+and new at local midnight; day eleven is day one again. No server, no setting,
+no download. The sky's name sits in a small pill under the email, because a
+page that changes should say so.
+
+The one rule for a new sky: dark enough for white text. All ten were rendered
+side by side and checked.
