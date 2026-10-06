@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Alert, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -309,7 +318,7 @@ export default function Booking() {
   // ---- not paid: a checkout ----
   if (awaitingPayment && !paid) {
     return (
-      <View style={styles.screen}>
+      <KeyboardAvoidingView style={styles.screen} behavior="padding">
         <TopBar title="Checkout" />
         {viewer}
         <ScrollView
@@ -375,7 +384,7 @@ export default function Booking() {
             </View>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 

@@ -13183,3 +13183,16 @@ photo manager.
 
 Photos are not part of a DRAFT (§123): a draft is text, and a file needs a
 service to belong to.
+
+## 166. The keyboard no longer covers what is being typed (2026-10-06)
+
+Every keyboard-avoiding view padded on iOS only; on Android it was left to
+the system, which used to shrink the window for the keyboard. Android apps
+from this Expo version draw edge-to-edge, and under that the window no longer
+shrinks — so the message composer, the help form, the support reply, the
+review box and the sign-in code all sat under the keyboard.
+
+`behavior="padding"` on both platforms, in those five screens; the checkout
+(the MoMo number field and the Pay bar) wrapped the same way; and the bottom
+`Sheet` rises with the keyboard, which covers the review-name editor, the
+"Offers near me" district picker and anything else that opens in one.

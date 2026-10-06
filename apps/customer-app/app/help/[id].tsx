@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -77,7 +76,11 @@ export default function Help() {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      // Padding on BOTH platforms (§166). Android used to resize the window
+      // for the keyboard by itself, which is why this was left undefined
+      // there; with edge-to-edge screens that resize no longer happens, and
+      // the composer sat under the keyboard.
+      behavior="padding"
     >
       <TopBar title="Get help" subtitle={`Reservation ${reservationNo(id)}`} />
       <ScrollView

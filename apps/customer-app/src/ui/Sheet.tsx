@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { radius, theme, type } from '../theme';
@@ -60,6 +61,9 @@ export function Sheet({
       <Animated.View style={[styles.backdrop, { opacity: progress }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel="Close" />
       </Animated.View>
+      {/* The sheet rises with the keyboard (§166), so a field in it is never
+          typed into blind. */}
+      <KeyboardAvoidingView behavior="padding" style={styles.keyboard} pointerEvents="box-none">
       <Animated.View
         style={[
           styles.sheet,
@@ -83,6 +87,7 @@ export function Sheet({
         </View>
         {children}
       </Animated.View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -96,6 +101,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'rgba(18,20,26,0.5)',
   },
+  keyboard: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'flex-end' },
   sheet: {
     position: 'absolute',
     left: 0,

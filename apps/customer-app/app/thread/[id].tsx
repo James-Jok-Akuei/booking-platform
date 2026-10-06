@@ -5,7 +5,6 @@ import {
   FlatList,
   Image,
   KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -188,7 +187,11 @@ export default function ThreadScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      // Padding on BOTH platforms (§166). Android used to resize the window
+      // for the keyboard by itself, which is why this was left undefined
+      // there; with edge-to-edge screens that resize no longer happens, and
+      // the composer sat under the keyboard.
+      behavior="padding"
     >
       {/* Who you are talking to, and — for a booking's thread — what about.
           The header is the app's own (§133), so the name sits beside a face
