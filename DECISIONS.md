@@ -13510,3 +13510,65 @@ nearest filter so that we can use the space for something else."*
   list is never cut short by a control that is not on the screen.
 - Distances on every card are unchanged: they still show whenever location is
   on, Nearest or not (§139).
+
+## 176. Spotlights: a banner at the top of Home (2026-10-07)
+
+Asked for an advertising-style banner at the top of Home showing different
+things — most rated, near you, cheapest, newest, the best business — each in
+its own colours and design, that disappears after a while and comes back.
+
+### 176.1 What it shows
+
+Up to six spotlights, from the same discovery search as the rest of Home, so
+every one is a real service bookable now (`src/components/Spotlights.tsx`):
+
+| Spotlight | Colours | Reason shown on the photo |
+|---|---|---|
+| Most booked | rose → coral, flame | "3 booked" |
+| Top rated | plum → violet, star | "★ 5.0" |
+| Near you (with location) | forest → emerald, rings | "2.6 km" |
+| Best price | rust → amber, price tag | "RWF 5,000" |
+| Just added | navy → blue, sparkles | "New" |
+| Top business | black → slate, gold trophy | "★ 5.0", "Visit" |
+
+**Labels stay true.** Most booked, best price, nearest and top business are
+exactly the first answer. If that is something already shown — the most
+booked haircut is also the cheapest — the spotlight is left out, not swapped
+for something it is not. Only "Top rated" (anything 4.5★ and up) and "Just
+added" may choose, and they prefer a business not shown yet. None is paid for.
+
+### 176.2 How it looks and moves
+
+A gradient card the width of the content, 172 high on a phone: kicker pill,
+two-line title, one line of where, a white "Book now" in the deepest shade of
+its colour; on the right the photo in a white frame tilted 5° over a tinted
+card tilted the other way, the business's logo at its corner and the reason
+on a chip. Behind it, two soft discs and the kind's own icon, huge and faint,
+turning slowly ("Near you" has rings going out instead).
+
+Arriving, the words rise in, the photo settles and drifts slowly closer, and
+a light passes over it once. Under the card, the active dot is a small bar
+that fills in the spotlight's colour while it is on screen. All transform
+and opacity animation is native; "reduce motion" turns off the drift, sweep
+and turning. On a tablet the photo turns landscape and the title grows.
+
+### 176.3 When it shows
+
+- Each spotlight for 5.2 s, once round, then the banner **folds away** (height
+  and fade, giving back the row gap so no band is left) and **comes back two
+  minutes later** from the first. A banner that never leaves is wallpaper.
+- Touching it holds it still; swiping moves through it; letting go starts the
+  count again.
+- Only while browsing: a search or a category is someone saying what they
+  want, and the banner would push it down.
+- The set is fixed for a whole round, taken once every search has answered
+  and renewed only while folded: the searches land one by one, and a slide
+  inserted ahead of the one being read moved it out from under the reader on
+  the web.
+
+`PressableScale` now passes `onPressIn`/`onPressOut` on as well as using them,
+which the banner needs to hold still under a finger.
+
+**Open question:** the user also listed "with commission". There is no
+per-business commission or paid placement in the platform today — every
+business pays the same platform fee — so it is not built; asked what it means.

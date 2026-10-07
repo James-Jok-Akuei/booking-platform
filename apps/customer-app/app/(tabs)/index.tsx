@@ -27,6 +27,7 @@ import { useUnread } from '../../src/useUnread';
 import { useSavedService } from '../../src/useSavedService';
 import { NearMeCard } from '../../src/components/NearMeCard';
 import { PlaceBubble } from '../../src/components/PlaceBubble';
+import { Spotlights } from '../../src/components/Spotlights';
 import { ServiceCard } from '../../src/components/ServiceCard';
 import { WithinBar } from '../../src/components/WithinBar';
 import {
@@ -71,6 +72,9 @@ const SHELF_TITLE: Record<DiscoverySort, string> = {
   newest: 'Newest',
   distance: 'Nearest',
 };
+
+/** Space between the rows at the top of Home. */
+const HEADER_GAP = 16;
 
 /** How many cards a shelf holds before "more" is the category itself. */
 const SHELF_SIZE = 10;
@@ -481,6 +485,17 @@ export default function Discover() {
           </PressableScale>
         )}
       </FadeIn>
+
+      {/* The spotlights (§176): only while browsing — someone who has typed
+          or picked a category has said what they want, and a banner would
+          push it down. */}
+      {browsing && (
+        <Spotlights
+          width={layout.contentWidth - layout.gutter * 2}
+          position={position}
+          gap={HEADER_GAP}
+        />
+      )}
 
       {showNearCard && (
         <NearMeCard
@@ -948,7 +963,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
   listOuter: { flex: 1 },
   list: { gap: 22, alignSelf: 'center' },
-  header: { gap: 16 },
+  header: { gap: HEADER_GAP },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   bellBadge: { position: 'absolute', top: -4, right: -4 },
   placePill: {

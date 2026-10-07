@@ -23,6 +23,8 @@ export function PressableScale({
   children,
   style,
   onPress,
+  onPressIn,
+  onPressOut,
   disabled,
   scaleTo = 0.97,
   haptic = false,
@@ -48,8 +50,14 @@ export function PressableScale({
     <Pressable
       {...rest}
       disabled={disabled}
-      onPressIn={() => to(scaleTo)}
-      onPressOut={() => to(1)}
+      onPressIn={(event: GestureResponderEvent) => {
+        to(scaleTo);
+        onPressIn?.(event);
+      }}
+      onPressOut={(event: GestureResponderEvent) => {
+        to(1);
+        onPressOut?.(event);
+      }}
       onPress={(event: GestureResponderEvent) => {
         if (haptic) tick();
         onPress?.(event);
