@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
+  AppState,
   Animated,
   Easing,
   ScrollView,
@@ -24,13 +25,23 @@ import { duration } from '../duration';
 import { useMoney } from '../money';
 import { font, radius, theme } from '../theme';
 import { Icon, lookFor, type IconName } from '../ui/Icon';
+import { tick } from '../ui/haptic';
 import { PressableScale } from '../ui/PressableScale';
 
 /** How long each spotlight is on screen. */
 const SLIDE_MS = 5200;
-/** Once round every spotlight, the banner folds away for this long, then comes back. */
-const REST_MS = 2 * 60 * 1000;
+/**
+ * Away from the app this long counts as a new visit: a closed banner comes
+ * back, with a fresh set, and goes round once more.
+ */
+const NEW_VISIT_MS = 30 * 60 * 1000;
 const DOTS_H = 22;
+
+/**
+ * Closed with the × until the next visit. Kept outside the component so
+ * leaving Home and coming back within the visit does not reopen it.
+ */
+let closedThisVisit = false;
 
 /**
  * Each spotlight's own look (§176): a colour of its own, an icon and a large
@@ -93,9 +104,11 @@ const areaOf = (s: DiscoveredService) => s.location.district?.name ?? s.location
  * real service someone can book now; none is paid for. Each service is in one
  * spotlight at most, so the six are six different things.
  *
- * It shows each spotlight once, then folds itself away and comes back two
- * minutes later — a banner that never leaves becomes wallpaper. Touching it
- * holds it still; letting go starts the round again.
+ * It goes round each spotlight once and then STOPS, back on the first, where
+ * it stays (§178): a banner that keeps moving is a distraction, and one that
+ * folds itself away moves everything under the reader's finger. Swiping still
+ * works. The × puts it away until the next visit, when it returns with a
+ * fresh set and goes round once more. Touching it holds it still.
  */
 export function Spotlights({
   width,
@@ -279,7 +292,7 @@ export function Spotlights({
    * The set on show is fixed for a whole round (§176). The six searches land
    * one by one, and a slide slipped in ahead of the one being looked at would
    * move it out from under the reader — so nothing shows until all have
-   * answered, and a new set is taken only while the banner is folded away.
+   * answered, and a new set is taken only at the start of a new visit.
    */
   const settled =
     [booked, rated, cheap, newest, business].every((q) => !q.isPending) &&
@@ -295,7 +308,9 @@ export function Spotlights({
   const count = round.length;
 
   const [index, setIndex] = useState(0);
-  const [resting, setResting] = useState(false);
+  /** Round done: back on the first spotlight and still. */
+  const [finished, setFinished] = useState(false);
+  const [closed, setClosed] = useState(closedThisVisit);
   const [held, setHeld] = useState(false);
   const scroller = useRef<ScrollView>(null);
 
@@ -317,7 +332,7 @@ export function Spotlights({
    * away first, THEN the room closes, so the rows below never slide under a
    * banner that is still there.
    */
-  const open = count > 0 && !resting;
+  const open = count > 0 && !closed;
   useEffect(() => {
     const motion = open
       ? Animated.parallel([
@@ -365,8 +380,12 @@ export function Spotlights({
     return () => loop.stop();
   }, [reduced, spin]);
 
-  // The round: each spotlight for SLIDE_MS, then fold away, then come back.
+  // The round: each spotlight for SLIDE_MS, once, then back to the first.
   useEffect(() => {
+    if (finished) {
+      progress.setValue(1);
+      return;
+    }
     if (!open || held || count === 0) return;
     progress.setValue(0);
     const fill = Animated.timing(progress, {
@@ -381,27 +400,46 @@ export function Spotlights({
         setIndex(index + 1);
         scroller.current?.scrollTo({ x: (index + 1) * width, animated: true });
       } else {
-        setResting(true);
+        setFinished(true);
+        setIndex(0);
+        scroller.current?.scrollTo({ x: 0, animated: true });
       }
     }, SLIDE_MS);
     return () => {
       clearTimeout(timer);
       fill.stop();
     };
-  }, [open, held, index, count, width, progress]);
+  }, [open, held, index, count, width, progress, finished]);
 
-  // Back after the rest, from the first spotlight.
+  /**
+   * A new visit (§178): back from half an hour or more away, the banner
+   * returns if it was closed, takes a fresh set, and goes round once more.
+   */
+  const awaySince = useRef<number | null>(null);
   useEffect(() => {
-    if (!resting) return;
-    const timer = setTimeout(() => {
-      // A fresh set for the new round, taken while nobody can see it change.
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') {
+        awaySince.current ??= Date.now();
+        return;
+      }
+      const since = awaySince.current;
+      awaySince.current = null;
+      if (since === null || Date.now() - since < NEW_VISIT_MS) return;
+      closedThisVisit = false;
       if (latest.current.length > 0) setRound(latest.current);
       setIndex(0);
       scroller.current?.scrollTo({ x: 0, animated: false });
-      setResting(false);
-    }, REST_MS);
-    return () => clearTimeout(timer);
-  }, [resting]);
+      setFinished(false);
+      setClosed(false);
+    });
+    return () => sub.remove();
+  }, []);
+
+  const close = () => {
+    tick();
+    closedThisVisit = true;
+    setClosed(true);
+  };
 
   // A spotlight that disappears (the nearest needs a position) cannot leave
   // the index pointing past the end.
@@ -467,6 +505,21 @@ export function Spotlights({
             />
           ))}
         </ScrollView>
+
+        {/* Put it away until the next visit (§178). Over the card, not in a
+            slide, so it stays put while the slides move under it. */}
+        <View style={styles.closeSpot} pointerEvents="box-none">
+          <PressableScale
+            onPress={close}
+            hitSlop={12}
+            scaleTo={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Hide spotlights"
+            style={styles.close}
+          >
+            <Icon name="close" size={14} color="#FFFFFF" />
+          </PressableScale>
+        </View>
 
         {count > 1 && (
           <View style={styles.dots}>
@@ -873,6 +926,19 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   statText: { fontFamily: font.extrabold, fontSize: 12.5 },
+  // The press wrapper styles its inner view, so the corner is held by a plain
+  // view around it.
+  closeSpot: { position: 'absolute', top: 10, right: 10 },
+  close: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(10,12,18,0.38)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+  },
   dots: {
     height: DOTS_H,
     flexDirection: 'row',

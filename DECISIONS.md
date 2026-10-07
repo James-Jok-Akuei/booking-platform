@@ -13554,9 +13554,10 @@ and turning. On a tablet the photo turns landscape and the title grows.
 
 ### 176.3 When it shows
 
-- Each spotlight for 5.2 s, once round, then the banner **folds away** (height
+- ~~Each spotlight for 5.2 s, once round, then the banner **folds away** (height
   and fade, giving back the row gap so no band is left) and **comes back two
-  minutes later** from the first. A banner that never leaves is wallpaper.
+  minutes later** from the first. A banner that never leaves is wallpaper.~~
+  Superseded by §178: once round, then it stops on the first and stays.
 - Touching it holds it still; swiping moves through it; letting go starts the
   count again.
 - Only while browsing: a search or a category is someone saying what they
@@ -13591,4 +13592,23 @@ Asked for a better transition when the spotlights appear and disappear.
 given: the large marketplaces keep a promotional banner in place, stop it
 moving after a round, let the customer close it, and refresh it on the next
 visit — content shifting on its own causes mis-taps (the "layout shift"
-browsers score pages down for). The timer stays until the user chooses.
+browsers score pages down for). ~~The timer stays until the user chooses.~~
+The user chose that (§178).
+
+## 178. The banner stays, stops, and can be closed (2026-10-07)
+
+Offered the choice after §177, the user picked the recommended behaviour:
+
+- **Stays in place.** No folding away on a timer, so nothing on Home moves on
+  its own under a finger.
+- **Stops after one round.** Each spotlight for 5.2 s, then it glides back to
+  the first and stays still, its bar full. Swiping still moves through it.
+- **× to close**, top-right over the card (not in a slide, so it stays put),
+  dark glass with a white edge so it reads on any photo. Closing uses §177's
+  leave transition. It stays closed for the rest of the visit, even leaving
+  Home and coming back.
+- **Fresh on the next visit.** A cold start, or coming back after 30 minutes
+  or more in the background, counts as a new visit: a closed banner returns,
+  the set is taken afresh, and it goes round once more.
+
+The two-minute rest timer is gone.
