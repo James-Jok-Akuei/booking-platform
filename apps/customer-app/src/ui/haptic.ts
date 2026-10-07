@@ -24,3 +24,9 @@ export const cheer = () => {
   if (Platform.OS === 'web') return;
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
 };
+
+/** A warning, for a question about something that cannot be undone, or a thing that failed. */
+export const caution = () => {
+  if (Platform.OS === 'web') return;
+  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => undefined);
+};

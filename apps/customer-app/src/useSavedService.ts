@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveService, unsaveService } from './api/discovery';
-import { ApiError, tokens } from './api/client';
+import { tokens } from './api/client';
+import { showProblem } from './ui/Dialog';
 
 type Keyed = { id: string; location?: { id: string }; saved?: boolean };
 
@@ -43,7 +43,7 @@ export function useSavedService() {
     },
     onError: (error, _variables, context) => {
       if (context) patch(context.serviceId, context.locationId, context.saved);
-      Alert.alert('Not saved', error instanceof ApiError ? error.message : 'Please try again.');
+      showProblem('Not saved', error);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['saved-services'] }),
   });

@@ -1,18 +1,9 @@
 import { useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboardScroll } from '../../src/useKeyboardScroll';
-import { ApiError } from '../../src/api/client';
 import { createTicket, listTickets, type TicketCategory } from '../../src/api/tickets';
 import { reservationNo } from '../../src/booking/format';
 import { TICKET_STATUS } from '../../src/ticketStatus';
@@ -26,6 +17,7 @@ import { Pill } from '../../src/ui/Pill';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
+import { showProblem } from '../../src/ui/Dialog';
 
 /** The three things a customer with a booking actually needs help with. */
 const ABOUT: Array<{ value: TicketCategory; label: string; subject: string }> = [
@@ -74,7 +66,7 @@ function Help() {
       router.push(`/ticket/${ticket.id}`);
     },
     onError: (error) =>
-      Alert.alert('Not sent', error instanceof ApiError ? error.message : 'Please try again.'),
+      showProblem('Not sent', error),
   });
 
   return (

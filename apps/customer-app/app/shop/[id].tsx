@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Alert, Animated, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +11,7 @@ import { useSaved } from '../../src/useSaved';
 import { useSavedService } from '../../src/useSavedService';
 import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
-import { ApiError, useSignedIn } from '../../src/api/client';
+import { useSignedIn } from '../../src/api/client';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, theme, type } from '../../src/theme';
@@ -30,6 +30,7 @@ import { Segmented } from '../../src/ui/Segmented';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { Stars } from '../../src/ui/Stars';
 import { TopBar } from '../../src/ui/TopBar';
+import { showProblem } from '../../src/ui/Dialog';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -100,10 +101,7 @@ export default function Shop() {
     mutationFn: () => openInquiry(shop.data!.business.id),
     onSuccess: (thread) => router.push(`/thread/${thread.id}`),
     onError: (error) =>
-      Alert.alert(
-        'Could not open that',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Could not open that', error),
   });
 
   if (shop.isLoading) {

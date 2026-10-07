@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveFavourite, unsaveFavourite } from './api/discovery';
-import { ApiError, tokens } from './api/client';
+import { tokens } from './api/client';
+import { showProblem } from './ui/Dialog';
 
 /**
  * Saving and unsaving a place, with the heart filling before the request returns
@@ -52,10 +52,7 @@ export function useSaved() {
       // Put it back. A heart that stayed filled after a failure is a lie the
       // customer only discovers on the Saved screen.
       if (context) patch(context.locationId, context.saved);
-      Alert.alert(
-        'Not saved',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      );
+      showProblem('Not saved', error);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['favourites'] }),
   });

@@ -13856,3 +13856,60 @@ anyone who did not ask. The code is also in the subject — "Your sign-in code:
 Verified end to end in the preview with real codes read from the dev log: the
 email step, the "gmial" hint, the new-account step, "Welcome back", a wrong
 code, and a right one ("You are in!"). **1315 passing across 57 suites.**
+
+## 184. One dialog for every question and message (2026-10-07)
+
+Asked: *"redesign the popup messages like the sign out popup looks default
+instead of custom design of our app … same for the popups like location turn
+on request etc, make them have similar ui look to keep consistency."*
+
+The customer app called the phone's own `Alert.alert` 29 times in 13 files —
+a grey system box that looked like a different app each time. All 29 are gone.
+
+### 184.1 `src/ui/Dialog.tsx`
+
+One `DialogHost`, mounted once at the root beside `LegalPrompt`, and three
+calls usable from anywhere — a screen, a hook, a mutation's `onError` — the way
+`Alert.alert` was:
+
+- `showDialog({ title, message, tone, icon, actions })`
+- `showProblem(title, error)` — the server's own sentence when it sent one,
+  "Please try again." otherwise (18 of the 29 were exactly this)
+- `confirmDialog({ … }) → Promise<boolean>`
+
+The look: a white card, 28-point corners, over a dimmed screen. At the top, a
+coloured disc in a soft halo saying what kind of message it is — **red**
+(danger) for what cannot be undone and for failures, **coral** (accent) for
+the app's own questions, **green** (ok) for done, **blue** (info), **amber**
+(warn). Then the title in the app's heavy face, the words centred, and
+full-width pill buttons: the filled one in the tone's colour, the quiet one
+grey. Two short labels sit side by side; longer ones stack, the primary on
+top. It rises with a small spring and fades out; a warning or success
+vibration matches the tone. The quiet button, Android's back and a tap
+outside all mean "no". A button whose work takes a moment (Sign out) spins
+until it is done, so it cannot be pressed twice. Dialogs queue, one at a time.
+
+### 184.2 Where
+
+Sign out (coral), Close your account (red), Cancel this booking (red),
+"Sent" after a new arrival code (green), Account closed (green), Could not
+open maps (amber), Photos are not allowed (amber), every "Not saved / Not sent
+/ Could not …" (red).
+
+### 184.3 Location
+
+The phone's own "Allow location?" box is drawn by Android and iOS; **no app
+can restyle it**. So the app now asks in its own dialog FIRST wherever the
+tap does not already explain itself: **Nearest** on Home shows "See what is
+near you?" — what location is for, only while the app is open, never saved —
+and only "Use my location" goes on to the phone's box. When the phone will
+not ask again, the same dialog offers **Open Settings** instead.
+(`useNearMe().enable({ explain: true })`, which now resolves whether location
+came on.) Home's "See what is near you" card does not repeat the question: the
+card already says all of it.
+
+In the offers sheet, "Use where I am now" no longer opens a pop-up over the
+sheet: a problem is said in the sheet, under the button, with **Open
+Settings** when only Settings can help.
+
+The share sheet and the photo picker are the phone's own, on purpose.

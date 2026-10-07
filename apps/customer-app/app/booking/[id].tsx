@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -28,7 +27,6 @@ import { getRoute, getShop } from '../../src/api/discovery';
 import { routeLabel } from '../../src/routeLabel';
 import { useNearMe } from '../../src/useNearMe';
 import { listSavedNumbers, saveNumber } from '../../src/api/auth';
-import { ApiError } from '../../src/api/client';
 import { Checkout } from '../../src/booking/Checkout';
 import type { Bought } from '../../src/booking/format';
 import { PaidCelebration } from '../../src/booking/PaidCelebration';
@@ -44,6 +42,7 @@ import { PhotoViewer } from '../../src/ui/PhotoViewer';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
+import { showDialog, showProblem } from '../../src/ui/Dialog';
 
 /**
  * One booking: pay the deposit, then show the arrival code.
@@ -171,10 +170,7 @@ function Booking() {
         .catch(() => undefined);
     },
     onError: (error) =>
-      Alert.alert(
-        'Could not start the payment',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Could not start the payment', error),
   });
 
   /**
@@ -195,13 +191,15 @@ function Booking() {
       // The code CHANGED. Showing the old one next to "sent" would have the
       // customer read out a number that no longer verifies.
       queryClient.invalidateQueries({ queryKey: ['appointment', id] });
-      Alert.alert('Sent', 'A new code is on its way to your email.');
+      showDialog({
+        tone: 'ok',
+        icon: 'mail',
+        title: 'Sent',
+        message: 'A new code is on its way to your email.',
+      });
     },
     onError: (error) =>
-      Alert.alert(
-        'Not sent',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Not sent', error),
   });
 
   const cancel = useMutation({
@@ -212,10 +210,7 @@ function Booking() {
       router.dismissTo('/');
     },
     onError: (error) =>
-      Alert.alert(
-        'Could not cancel',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Could not cancel', error),
   });
 
   if (appointment.isLoading) {
@@ -267,20 +262,22 @@ function Booking() {
   const explore = () => router.dismissTo('/');
 
   const askToCancel = () =>
-    Alert.alert(
-      'Cancel this booking?',
-      paid
+    showDialog({
+      tone: 'danger',
+      icon: 'close',
+      title: 'Cancel this booking?',
+      message: paid
         ? 'Your deposit is not refunded when you cancel. That is what holds the slot.'
         : 'Nothing has been paid, so nothing is lost.',
-      [
-        { text: 'Keep it', style: 'cancel' },
+      actions: [
+        { label: 'Keep it', role: 'cancel' },
         {
-          text: 'Cancel booking',
-          style: 'destructive',
+          label: 'Cancel booking',
+          role: 'primary',
           onPress: () => cancel.mutate('Cancelled by the customer.'),
         },
       ],
-    );
+    });
 
   /**
    * Hands the place to the phone's own maps app, which is where people already
@@ -298,7 +295,12 @@ function Booking() {
         ? `http://maps.apple.com/?daddr=${pin ?? label}`
         : `https://www.google.com/maps/dir/?api=1&destination=${pin ?? label}`;
     Linking.openURL(url).catch(() =>
-      Alert.alert('Could not open maps', `${a.location.name}\n${a.location.address}`),
+      showDialog({
+        tone: 'warn',
+        icon: 'map',
+        title: 'Could not open maps',
+        message: `${a.location.name}\n${a.location.address}`,
+      }),
     );
   };
 

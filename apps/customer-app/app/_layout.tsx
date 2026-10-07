@@ -13,6 +13,7 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { onSessionEnded, tokens } from '../src/api/client';
 import { LegalPrompt } from '../src/components/LegalPrompt';
+import { DialogHost } from '../src/ui/Dialog';
 import { theme } from '../src/theme';
 
 const queryClient = new QueryClient({
@@ -99,6 +100,9 @@ export default function RootLayout() {
             options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
           />
         </Stack>
+        {/* Every question and message the app asks (§184), in its own design
+            rather than the phone's grey alert. One host, so they queue. */}
+        <DialogHost />
       </QueryClientProvider>
     </SafeAreaProvider>
   );

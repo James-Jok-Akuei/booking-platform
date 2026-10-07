@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import {
   ActivityIndicator,
-  Alert,
   Keyboard,
+  Linking,
   ScrollView,
   StyleSheet,
   Switch,
@@ -29,6 +29,7 @@ import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { Sheet } from '../ui/Sheet';
 import { Skeleton } from '../ui/Skeleton';
+import { showProblem } from '../ui/Dialog';
 
 /**
  * "Weekly offers by email" (§140, §172): one email a week about popular
@@ -105,10 +106,7 @@ export function OffersCard() {
     onSuccess: (saved) => queryClient.setQueryData(['offers-preference'], saved),
     onError: (error, _next, context) => {
       if (context?.before) queryClient.setQueryData(['offers-preference'], context.before);
-      Alert.alert(
-        'Not saved',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      );
+      showProblem('Not saved', error);
     },
   });
 
@@ -150,16 +148,27 @@ export function OffersCard() {
    * for only here, when they press the button — never on its own (§107.3).
    */
   const [locating, setLocating] = useState(false);
+  /**
+   * What went wrong finding the phone, said in the sheet beside the button
+   * (§184) — not in a pop-up over a sheet that is already open. `settings`
+   * when only the phone's Settings can turn location back on.
+   */
+  const [spotProblem, setSpotProblem] = useState<{ text: string; settings?: boolean } | null>(null);
   const takeExactSpot = async () => {
+    setSpotProblem(null);
     if (!preference.data) return;
     const optedIn = preference.data.optedIn || turningOn;
     setLocating(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const { status, canAskAgain } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
-          'Location is off',
-          'Allow location for this app to use where you are, or type the address instead.',
+        setSpotProblem(
+          canAskAgain
+            ? { text: 'Location is off. Allow it to use where you are, or type the address above.' }
+            : {
+                text: 'Location is off for this app. Turn it on in Settings, or type the address above.',
+                settings: true,
+              },
         );
         return;
       }
@@ -179,7 +188,7 @@ export function OffersCard() {
       save.mutate({ optedIn, spot: { latitude, longitude, ...(label ? { label } : {}) } });
       close();
     } catch {
-      Alert.alert('Could not find you', 'Try again outdoors, or type the address instead.');
+      setSpotProblem({ text: 'Your phone could not find where you are. Try again outdoors, or type the address above.' });
     } finally {
       setLocating(false);
     }
@@ -413,6 +422,23 @@ export function OffersCard() {
                   busy={locating}
                   onPress={takeExactSpot}
                 />
+                {spotProblem && (
+                  <FadeIn style={styles.spotProblem}>
+                    <Icon name="location" size={16} color={theme.warn} />
+                    <View style={styles.flex}>
+                      <Text style={styles.spotProblemText}>{spotProblem.text}</Text>
+                      {spotProblem.settings && (
+                        <PressableScale
+                          onPress={() => void Linking.openSettings()}
+                          hitSlop={8}
+                          accessibilityRole="button"
+                        >
+                          <Text style={styles.spotProblemLink}>Open Settings</Text>
+                        </PressableScale>
+                      )}
+                    </View>
+                  </FadeIn>
+                )}
                 <Text style={type.tiny}>
                   Kept only for these emails and never shown to shops. Forget it any time.
                 </Text>
@@ -621,5 +647,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   group: { gap: 9 },
+  spotProblem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: theme.warnSoft,
+    borderRadius: radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  spotProblemText: { fontFamily: font.semibold, fontSize: 13, lineHeight: 18.5, color: theme.ink2 },
+  spotProblemLink: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent, marginTop: 4 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

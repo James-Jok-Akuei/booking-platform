@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   ScrollView,
   StyleSheet,
@@ -12,7 +11,6 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ApiError } from '../../src/api/client';
 import { getTicket, replyToTicket } from '../../src/api/tickets';
 import { TICKET_STATUS } from '../../src/ticketStatus';
 import { font, radius, shadow, theme, type } from '../../src/theme';
@@ -24,6 +22,7 @@ import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
+import { showProblem } from '../../src/ui/Dialog';
 
 const when = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -60,7 +59,7 @@ function TicketScreen() {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
     },
     onError: (error) =>
-      Alert.alert('Not sent', error instanceof ApiError ? error.message : 'Please try again.'),
+      showProblem('Not sent', error),
   });
 
   if (ticket.isLoading) {

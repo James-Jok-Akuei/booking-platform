@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import {
-  Alert,
   Animated,
   KeyboardAvoidingView,
   Pressable,
@@ -23,7 +22,6 @@ import {
   createReview,
   updateReview,
 } from '../../src/api/reviews';
-import { ApiError } from '../../src/api/client';
 import { font, radius, shadow, theme, type } from '../../src/theme';
 import { Button } from '../../src/ui/Button';
 import { EmptyState } from '../../src/ui/EmptyState';
@@ -34,6 +32,7 @@ import { useLayout } from '../../src/ui/layout';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
+import { showProblem } from '../../src/ui/Dialog';
 
 /** What each score means, so a tap is a sentence rather than a number. */
 const MEANING = [
@@ -105,10 +104,7 @@ function WriteReview() {
       router.back();
     },
     onError: (error) =>
-      Alert.alert(
-        'Could not save that',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Could not save that', error),
   });
 
   if (appointment.isLoading) {

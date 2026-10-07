@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,7 +14,7 @@ import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 import { getAvailability, getRoute, getShop } from '../../src/api/discovery';
 import { createAppointment } from '../../src/api/booking';
 import { openInquiry } from '../../src/api/chat';
-import { ApiError, useSignedIn } from '../../src/api/client';
+import { useSignedIn } from '../../src/api/client';
 import { BeforeYouCome } from '../../src/booking/BeforeYouCome';
 import { endOf, groupByPeriod } from '../../src/booking/periods';
 import { PhotoMosaic } from '../../src/components/PhotoMosaic';
@@ -44,6 +43,7 @@ import { Skeleton } from '../../src/ui/Skeleton';
 import { Stepper } from '../../src/ui/Stepper';
 import { Ticker } from '../../src/ui/Ticker';
 import { TopBar } from '../../src/ui/TopBar';
+import { showProblem } from '../../src/ui/Dialog';
 
 /**
  * The next 14 days, as the YYYY-MM-DD the endpoint takes.
@@ -191,10 +191,7 @@ export default function Book() {
       router.replace(`/booking/${appointment.id}`);
     },
     onError: (error) =>
-      Alert.alert(
-        'Could not book that',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Could not book that', error),
   });
 
   // A question before booking (§167): the thing most people have, and the
@@ -203,10 +200,7 @@ export default function Book() {
     mutationFn: () => openInquiry(shop.data!.business.id),
     onSuccess: (thread) => router.push(`/thread/${thread.id}`),
     onError: (error) =>
-      Alert.alert(
-        'Could not open that',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Could not open that', error),
   });
 
   if (shop.isLoading) {

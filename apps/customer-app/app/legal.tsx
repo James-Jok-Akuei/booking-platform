@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -8,7 +8,7 @@ import {
   myLegalStatus,
   type LegalStatus,
 } from '../src/api/auth';
-import { ApiError, useSignedIn } from '../src/api/client';
+import { useSignedIn } from '../src/api/client';
 import { LegalText } from '../src/components/LegalText';
 import { radius, shadow, theme, type } from '../src/theme';
 import { AgreeButton } from '../src/ui/AgreeButton';
@@ -19,6 +19,7 @@ import { Pill } from '../src/ui/Pill';
 import { Segmented } from '../src/ui/Segmented';
 import { RowSkeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
+import { showProblem } from '../src/ui/Dialog';
 
 const when = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
@@ -240,10 +241,7 @@ export default function Legal() {
               label="I agree to this"
               wake={atEnd || fits}
               onAgree={() => accept.mutateAsync(current.id).catch((error) => {
-                Alert.alert(
-                  'Not saved',
-                  error instanceof ApiError ? error.message : 'Please try again.',
-                );
+                showProblem('Not saved', error);
                 throw error;
               })}
               onDone={() => {

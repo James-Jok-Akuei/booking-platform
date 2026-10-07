@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -21,7 +20,6 @@ import {
   sendMessage,
   type Message,
 } from '../../src/api/chat';
-import { ApiError } from '../../src/api/client';
 import { useThreadSocket } from '../../src/useThreadSocket';
 import { font, radius, shadow, theme, type } from '../../src/theme';
 import { Avatar } from '../../src/ui/Avatar';
@@ -33,6 +31,7 @@ import { useLayout } from '../../src/ui/layout';
 import { PhotoViewer } from '../../src/ui/PhotoViewer';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { requireSignIn } from '../../src/components/SignInWall';
+import { showDialog, showProblem } from '../../src/ui/Dialog';
 
 const clock = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -132,10 +131,7 @@ function ThreadScreen() {
       queryClient.invalidateQueries({ queryKey: ['threads'] });
     },
     onError: (error) =>
-      Alert.alert(
-        'Not sent',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Not sent', error),
   });
 
   /**
@@ -151,7 +147,12 @@ function ThreadScreen() {
       const picked = await pickImage();
       if (picked) setPhoto(picked);
     } catch (error) {
-      Alert.alert('Photos are not allowed', (error as Error).message);
+      showDialog({
+        tone: 'warn',
+        icon: 'images',
+        title: 'Photos are not allowed',
+        message: (error as Error).message,
+      });
     }
   };
 

@@ -564,7 +564,11 @@ export default function Discover() {
                 setSort('popular');
                 return;
               }
-              if (nearMe.state.status !== 'on') await nearMe.enable();
+              // Asked in the app's own words first (§184): this chip, unlike
+              // the card, says nothing about what location is for.
+              if (nearMe.state.status !== 'on' && !(await nearMe.enable({ explain: true }))) {
+                return;
+              }
               setSort('distance');
             }}
           />

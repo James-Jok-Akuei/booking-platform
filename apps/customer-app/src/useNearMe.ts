@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { AppState, Linking, type NativeEventSubscription } from 'react-native';
 import * as Location from 'expo-location';
 import { deviceStore } from './api/client';
+import { confirmDialog } from './ui/Dialog';
 
 export type NearMeState =
   | { status: 'off' }
@@ -195,15 +196,59 @@ const subscribe = (listener: () => void) => {
   };
 };
 
-/** The customer pressed something that asks. The only place the prompt is raised. */
-const enable = async () => {
+/**
+ * The customer pressed something that asks. The only place the phone's own
+ * question is raised (§107.3). Resolves `true` once the position is known.
+ *
+ * The phone's question is drawn by the phone, and no app can restyle it. With
+ * `explain`, the app first asks in its own dialog (§184) — what location is
+ * for, and that it is never saved — so the phone's box arrives as the second
+ * half of a question already understood, not out of nowhere. Not needed where
+ * the button pressed already says all that (Home's card). When the phone will
+ * not ask again, the dialog offers Settings instead, the only way back.
+ */
+const enable = async (options?: { explain?: boolean }): Promise<boolean> => {
+  if (options?.explain) {
+    let permission: Location.LocationPermissionResponse | null = null;
+    try {
+      permission = await Location.getForegroundPermissionsAsync();
+    } catch {
+      permission = null;
+    }
+    if (permission && permission.status !== 'granted') {
+      if (!permission.canAskAgain) {
+        const go = await confirmDialog({
+          tone: 'info',
+          icon: 'location',
+          title: 'Location is off',
+          message:
+            'Your phone has location turned off for this app. Turn it on in Settings to see the nearest places first. Everything else works without it.',
+          confirm: 'Open Settings',
+          cancel: 'Not now',
+        });
+        if (go) openSettings();
+        return false;
+      }
+      const yes = await confirmDialog({
+        tone: 'accent',
+        icon: 'navigate',
+        title: 'See what is near you?',
+        message:
+          'We use where your phone is right now to put the nearest places first and show how far each one is. Only while the app is open, and never saved.',
+        confirm: 'Use my location',
+        cancel: 'Not now',
+      });
+      if (!yes) return false;
+    }
+  }
+
   store.asked = true;
   set({ status: 'asking' });
   try {
     const permission = await Location.requestForegroundPermissionsAsync();
     if (permission.status !== 'granted') {
       set({ status: 'denied', canAskAgain: permission.canAskAgain });
-      return;
+      return false;
     }
     const fix = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Highest });
     set({
@@ -213,8 +258,10 @@ const enable = async () => {
       accuracy: fix.coords.accuracy ?? null,
     });
     void follow();
+    return true;
   } catch {
     set({ status: 'failed' });
+    return false;
   }
 };
 

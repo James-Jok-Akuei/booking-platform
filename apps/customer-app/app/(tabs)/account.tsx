@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  Animated,
-  Easing,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Animated, Easing, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -48,7 +39,7 @@ import { listMyAppointments } from '../../src/api/booking';
 import { listFavourites } from '../../src/api/discovery';
 import { OffersCard } from '../../src/components/OffersCard';
 import { pickImage } from '../../src/pickImage';
-import { ApiError, useSignedIn } from '../../src/api/client';
+import { useSignedIn } from '../../src/api/client';
 import { shareApp } from '../../src/share';
 import { skyForToday } from '../../src/skies';
 import { font, radius, shadow, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
@@ -62,6 +53,7 @@ import { MomoLogo } from '../../src/ui/Momo';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { BigTitle } from '../../src/ui/TopBar';
+import { showDialog, showProblem } from '../../src/ui/Dialog';
 
 /** How tall the dark header is before the safe area is added. */
 const HERO = 318;
@@ -131,11 +123,7 @@ export default function Account() {
       if (!result) return;
       queryClient.invalidateQueries({ queryKey: ['me'] });
     },
-    onError: (error) =>
-      Alert.alert(
-        'Could not add that',
-        error instanceof ApiError ? error.message : (error as Error).message,
-      ),
+    onError: (error) => showProblem('Could not add that', error, (error as Error).message),
   });
 
   const clearPicture = useMutation({
@@ -161,10 +149,7 @@ export default function Account() {
       refreshNumbers();
     },
     onError: (error) =>
-      Alert.alert(
-        'Not saved',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Not saved', error),
   });
 
   // ---- The three numbers under the header (§143) ----
@@ -206,14 +191,16 @@ export default function Account() {
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(uri, { mimeType, dialogTitle: 'Your data', UTI: kind });
     } else {
-      Alert.alert('Saved', `Your data is in ${uri}. This device cannot open a share sheet.`);
+      showDialog({
+        tone: 'ok',
+        icon: 'document-text',
+        title: 'Saved',
+        message: `Your data is in ${uri}. This device cannot open a share sheet.`,
+      });
     }
   };
   const exportFailed = (error: unknown) =>
-    Alert.alert(
-      'Could not prepare that',
-      error instanceof ApiError ? error.message : 'Please try again.',
-    );
+    showProblem('Could not prepare that', error);
 
   const exportData = useMutation({
     mutationFn: exportMyData,
@@ -253,10 +240,7 @@ export default function Account() {
       setNaming(false);
     },
     onError: (error) =>
-      Alert.alert(
-        'Not saved',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Not saved', error),
   });
 
   /**
@@ -272,42 +256,42 @@ export default function Account() {
       await signOut();
       queryClient.clear();
       router.replace('/');
-      Alert.alert('Account closed', result.message);
+      showDialog({ tone: 'ok', icon: 'checkmark', title: 'Account closed', message: result.message });
     },
     onError: (error) =>
-      Alert.alert(
-        'Not closed',
-        error instanceof ApiError ? error.message : 'Please try again.',
-      ),
+      showProblem('Not closed', error),
   });
 
   const confirmClose = () =>
-    Alert.alert(
-      'Close your account?',
-      'This cannot be undone.\n\nYour bookings and reviews stay with the shops ' +
+    showDialog({
+      tone: 'danger',
+      icon: 'person-remove',
+      title: 'Close your account?',
+      message:
+        'This cannot be undone.\n\nYour bookings and reviews stay with the shops ' +
         'they belong to, with your name taken off them — a shop still has its ' +
         'record of what it did and was paid for.\n\nYour email is released, so ' +
         'you can sign up again later, but it would be a new account with none of ' +
         'this.\n\nTake a copy of your data first if you want one.',
-      [
-        { text: 'Keep my account', style: 'cancel' },
-        {
-          text: 'Close it',
-          style: 'destructive',
-          onPress: () => close.mutate(),
-        },
+      actions: [
+        { label: 'Keep my account', role: 'cancel' },
+        { label: 'Close it', role: 'primary', onPress: () => close.mutate() },
       ],
-    );
+    });
 
   const leave = () =>
-    Alert.alert(
-      'Sign out?',
-      'Your bookings and messages stay with your account. You will need a new code to get back in.',
-      [
-        { text: 'Stay signed in', style: 'cancel' },
+    showDialog({
+      tone: 'accent',
+      icon: 'log-out',
+      title: 'Sign out?',
+      message:
+        'Your bookings and messages stay with your account. You will need a new code to get back in.',
+      actions: [
+        { label: 'Stay signed in', role: 'cancel' },
         {
-          text: 'Sign out',
-          style: 'destructive',
+          label: 'Sign out',
+          role: 'primary',
+          // The button spins while this runs, so it cannot be pressed twice.
           onPress: async () => {
             await signOut();
             // Everything cached was fetched AS that person. Left in place, the
@@ -318,7 +302,7 @@ export default function Account() {
           },
         },
       ],
-    );
+    });
 
   // AFTER every hook, never before (§133.11). Signed-in state changes while this
   // tab stays mounted, so an early return above the hooks ran a different
