@@ -12,9 +12,18 @@ import { Icon } from '../ui/Icon';
  * the same note in both: on the service before booking, where it helps decide,
  * and on the reservation after, where it is needed the day before.
  */
-export function BeforeYouCome({ text, delay = 0 }: { text: string; delay?: number }) {
+export function BeforeYouCome({
+  text,
+  delay = 0,
+  inset,
+}: {
+  text: string;
+  delay?: number;
+  /** Inside a larger card already (§181): the note without a card of its own. */
+  inset?: boolean;
+}) {
   return (
-    <FadeIn delay={delay} style={styles.card}>
+    <FadeIn delay={delay} style={inset ? styles.inset : styles.card}>
       <View style={styles.head}>
         <View style={styles.disc}>
           <Icon name="clipboard-outline" size={17} color={theme.accent} />
@@ -37,6 +46,7 @@ const styles = StyleSheet.create({
     borderColor: '#FBDCD2',
     ...shadow.card,
   },
+  inset: { gap: 10 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   disc: {
     width: 34,

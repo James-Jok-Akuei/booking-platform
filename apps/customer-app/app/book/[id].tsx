@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Animated,
   ScrollView,
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
@@ -26,11 +24,11 @@ import { openInquiry } from '../../src/api/chat';
 import { ApiError, useSignedIn } from '../../src/api/client';
 import { BeforeYouCome } from '../../src/booking/BeforeYouCome';
 import { endOf, groupByPeriod } from '../../src/booking/periods';
-import { PhotoPager } from '../../src/components/PhotoPager';
+import { PhotoMosaic } from '../../src/components/PhotoMosaic';
 import { SaveButton } from '../../src/components/SaveButton';
+import { distanceLabel } from '../../src/distance';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
-import { distanceLabel } from '../../src/distance';
 import { shareService } from '../../src/share';
 import { font, radius, shadow, theme, type } from '../../src/theme';
 import { useNearMe } from '../../src/useNearMe';
@@ -89,20 +87,25 @@ const niceDate = (ymd: string) =>
 const monthOf = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
 
-/** Room the sticky bar takes at the foot of the page. */
-const FOOTER = 112;
+/** The deal card's own padding; rows that bleed to its edge subtract it. */
+const CARD_PAD = 18;
 
 /**
- * One service, as the page that decides whether it is booked (§179).
+ * One service, as the page that decides whether it is booked (§179, §181).
  *
- * Laid out the way the pages that sell best are laid out, top to bottom in the
- * order a person decides: the PHOTOS, edge to edge and swiped through; what it
- * IS and how long it takes; what it COSTS, with the deposit drawn as a share of
- * it rather than described; why it is SAFE to pay; WHO is doing it, with their
- * rating and how far they are; what they SAY about it; what OTHERS said; and
- * only then the booking itself — how many, which day, what time, grouped into
- * morning, afternoon and evening — ending in a card that reads the booking
- * back before the button is pressed.
+ * Four things, in the order the user asked for so a buyer is never confused
+ * about what belongs to what:
+ *
+ * 1. **The photos**, several at once — one large and a grid of small ones.
+ * 2. **The deal, in ONE card**: what it is, what it costs (the deposit drawn
+ *    as a share of it), choosing how many, which day and what time — grouped
+ *    into morning, afternoon and evening — the booking read back the moment a
+ *    time is chosen, then the shop's "Before you come" note and its
+ *    description.
+ * 3. **The place**: who is doing it, with their rating and how far they are,
+ *    and what other people said.
+ * 4. **The assurances**, last: paid with MoMo, confirmed the moment you pay,
+ *    refunded if the shop cancels.
  *
  * The bar at the bottom is the running answer to "what will this cost me":
  * the total rolls as "how many" changes, the deposit sits under it, and the
@@ -116,15 +119,12 @@ export default function Book() {
   const router = useRouter();
   const money = useMoney();
   const insets = useSafeAreaInsets();
-  const window = useWindowDimensions();
   const layout = useLayout();
   const signedIn = useSignedIn();
   const savedService = useSavedService();
   const nearMe = useNearMe();
   // Keeps the typed number above the keyboard (§168).
   const keys = useKeyboardScroll({ pad: true });
-
-  const HERO = layout.wide ? 420 : layout.compact ? 300 : 340;
 
   const [viewer, setViewer] = useState<{ index: number; origin: ViewerOrigin | null } | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -133,15 +133,14 @@ export default function Book() {
   const [slot, setSlot] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
-  const scrollY = useRef(new Animated.Value(0)).current;
   const offset = useRef(0);
+  const frameRef = useRef<View>(null);
   const timesRef = useRef<View>(null);
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const service = shop.data?.services.find((s) => s.id === serviceId);
 
-  // What others said, for the page that has to persuade (§179). Three is
-  // enough to show; the shop page has them all.
+  // What others said, for the page that has to persuade (§179).
   const reviews = useQuery({
     queryKey: ['shop-reviews', id, 'few'],
     queryFn: () => getShopReviews(id, 6),
@@ -225,42 +224,14 @@ export default function Book() {
       ),
   });
 
-  // The photo moves at half the speed of the page, and stretches when the
-  // page is pulled down past its top — pinned to the top edge as it grows.
-  const heroShift = scrollY.interpolate({
-    inputRange: [-HERO, 0, HERO],
-    outputRange: [-HERO / 2, 0, HERO / 2],
-    extrapolate: 'clamp',
-  });
-  const heroScale = scrollY.interpolate({
-    inputRange: [-HERO, 0],
-    outputRange: [2, 1],
-    extrapolateRight: 'clamp',
-  });
-  // The bar behind the round buttons fades in as the title scrolls under it,
-  // so there is always a name on screen saying what this is.
-  const barOpacity = scrollY.interpolate({
-    inputRange: [HERO - 150, HERO - 90],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-
-  const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
-
   if (shop.isLoading) {
     return (
       <View style={styles.screen}>
-        <Skeleton height={HERO} round={0} />
-        <View style={[styles.sheet, styles.loading]}>
-          <Skeleton width="34%" height={22} round={11} />
-          <Skeleton width="72%" height={28} />
-          <Skeleton width="55%" />
-          <Skeleton height={132} round={radius.lg} style={styles.loadingGap} />
-          <Skeleton height={76} round={radius.lg} />
+        <TopBar title="Book" />
+        <View style={[styles.content, { width: layout.contentWidth, alignSelf: 'center' }]}>
+          <Skeleton height={200} round={radius.lg} />
+          <Skeleton height={420} round={radius.lg} />
           <Skeleton height={84} round={radius.lg} />
-        </View>
-        <View style={[styles.floating, { top: insets.top + 8 }]}>
-          <IconButton icon="chevron-back" label="Go back" onPress={back} />
         </View>
       </View>
     );
@@ -298,36 +269,41 @@ export default function Book() {
   const slots = availability.data?.slots ?? [];
   const periods = groupByPeriod(slots);
 
-  // Even columns that fill the row: four on a normal phone, three on a narrow
-  // one, more on a tablet. A ragged wrap of different-width times is hard to
-  // scan for "the one after lunch".
-  const inner = Math.min(layout.contentWidth, window.width) - 40;
-  const perRow = layout.wide ? 6 : inner < 330 ? 3 : 4;
-  const slotWidth = (inner - 10 * (perRow - 1)) / perRow;
+  // The page's inner width, and the width inside the deal card. Even columns
+  // of times that fill the row: four on a normal phone, three on a narrow one,
+  // more on a tablet.
+  const inner = layout.contentWidth - 40;
+  const inCard = inner - CARD_PAD * 2;
+  const perRow = layout.wide ? 6 : inCard < 300 ? 3 : 4;
+  const slotWidth = (inCard - 10 * (perRow - 1)) / perRow;
 
   const withWords = (reviews.data?.reviews ?? []).filter((r) => r.comment);
   const shownReviews = (withWords.length > 0 ? withWords : (reviews.data?.reviews ?? [])).slice(0, 2);
 
   /**
-   * A time chosen is read back in the card at the foot of the page (§179),
-   * which is below the times — so the page glides down to it, after the
-   * card has had a moment to pop in.
+   * A time chosen is read back in the card under the times (§179), so the
+   * page glides down a little to show it after it has popped in.
    */
   const choose = (time: string) => {
     setSlot(time);
-    setTimeout(() => keys.ref.current?.scrollToEnd({ animated: true }), 140);
+    setTimeout(() => keys.ref.current?.scrollTo({ y: offset.current + 180, animated: true }), 140);
   };
 
   /** With no time chosen, the button takes you to the times instead of doing nothing. */
   const goToTimes = () => {
     tick();
-    timesRef.current?.measureInWindow((_x, y) => {
-      if (!Number.isFinite(y)) return;
-      keys.ref.current?.scrollTo({
-        y: Math.max(0, y + offset.current - insets.top - 64),
-        animated: true,
-      });
-    });
+    const section = timesRef.current;
+    const frame = frameRef.current;
+    if (!section || !frame) return;
+    frame.measureInWindow((_fx, frameY) =>
+      section.measureInWindow((_x, y) => {
+        if (!Number.isFinite(y) || !Number.isFinite(frameY)) return;
+        keys.ref.current?.scrollTo({
+          y: Math.max(0, y - frameY + offset.current - 12),
+          animated: true,
+        });
+      }),
+    );
   };
 
   const share = () =>
@@ -352,75 +328,83 @@ export default function Book() {
         onClose={() => setViewer(null)}
       />
 
-      <Animated.ScrollView
-        ref={keys.ref}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
-          useNativeDriver: true,
-          listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      <TopBar
+        title={service.name}
+        subtitle={businessName}
+        right={
+          <View style={styles.topRight}>
+            <IconButton icon="share-outline" label="Share this service" onPress={share} flat />
+            <SaveButton
+              saved={service.saved}
+              onPress={() => savedService.toggle(service.id, id, service.saved ?? false, here)}
+            />
+          </View>
+        }
+      />
+
+      <View ref={frameRef} collapsable={false} style={styles.flex}>
+        <ScrollView
+          ref={keys.ref}
+          onScroll={(event: NativeSyntheticEvent<NativeScrollEvent>) => {
             offset.current = event.nativeEvent.contentOffset.y;
             keys.track(event);
-          },
-        })}
-        scrollEventThrottle={16}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 + keys.padding }}
-      >
-        {/* THE PHOTOS. Edge to edge, a page at a time (§179). */}
-        <Animated.View
-          style={{ height: HERO, transform: [{ translateY: heroShift }, { scale: heroScale }] }}
+          }}
+          scrollEventThrottle={16}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            styles.content,
+            { width: layout.contentWidth, alignSelf: 'center' },
+            keys.padding > 0 && { paddingBottom: keys.padding + 28 },
+          ]}
         >
-          <PhotoPager
-            photos={service.images}
-            fallbackUri={s.business.coverImageUrl}
-            categoryIcon={category?.icon}
-            width={window.width}
-            height={HERO}
-            onOpen={(index, origin) => setViewer({ index, origin })}
-          />
-        </Animated.View>
+          {/* 1. THE PHOTOS, several at once (§181). */}
+          <FadeIn style={styles.photos}>
+            <PhotoMosaic
+              photos={service.images}
+              fallbackUri={s.business.coverImageUrl}
+              categoryIcon={category?.icon}
+              width={inner - 12}
+              wide={layout.wide}
+              onOpen={(index, origin) => setViewer({ index, origin })}
+            />
+          </FadeIn>
 
-        <View style={styles.sheet}>
-          <View style={[styles.column, { maxWidth: layout.contentWidth }]}>
-            {/* WHAT IT IS. */}
-            <FadeIn>
-              <View style={styles.pills}>
-                {category && (
-                  <Pill label={s.business.subcategory?.name ?? category.name} tone="accent" />
-                )}
-                {s.openNow && <Pill label="Open now" tone="ok" dot />}
-                {people && (
-                  <Pill
-                    label={`Up to ${service.maxQuantity} people`}
-                    tone="neutral"
-                    icon="people-outline"
-                  />
-                )}
-              </View>
-              <Text style={type.title}>{service.name}</Text>
-              <View style={styles.meta}>
-                <Icon name="time-outline" size={15} color={theme.muted} />
-                <Text style={type.small}>{duration(service.durationMinutes, true)}</Text>
-                <Text style={styles.metaDot}>·</Text>
-                <Icon name="location-outline" size={15} color={theme.muted} />
-                <Text style={[type.small, styles.flex]} numberOfLines={1}>
-                  {s.name}
-                  {district ? `, ${district}` : ''}
-                </Text>
-              </View>
-            </FadeIn>
+          {/* 2. THE DEAL, in one card. */}
+          <FadeIn delay={40} style={styles.deal}>
+            <View style={styles.pills}>
+              {category && (
+                <Pill label={s.business.subcategory?.name ?? category.name} tone="accent" />
+              )}
+              {s.openNow && <Pill label="Open now" tone="ok" dot />}
+              {people && (
+                <Pill label={`Up to ${service.maxQuantity} people`} tone="neutral" icon="people-outline" />
+              )}
+            </View>
+            <Text style={type.title}>{service.name}</Text>
+            <View style={styles.meta}>
+              <Icon name="time-outline" size={15} color={theme.muted} />
+              <Text style={type.small}>{duration(service.durationMinutes, true)}</Text>
+              <Text style={styles.metaDot}>·</Text>
+              <Icon name="location-outline" size={15} color={theme.muted} />
+              <Text style={[type.small, styles.flex]} numberOfLines={1}>
+                {s.name}
+                {district ? `, ${district}` : ''}
+              </Text>
+            </View>
+
+            <View style={styles.rule} />
 
             {/* WHAT IT COSTS. The deposit is DRAWN as a share of the price,
                 not only said: it is the part of paying a deposit people get
                 wrong, and a bar is read faster than a sentence. */}
-            <FadeIn delay={40} style={styles.card}>
+            <View style={styles.section}>
               <View style={styles.priceRow}>
                 <Text style={[styles.price, layout.compact && styles.priceCompact]}>
                   {format(service.priceMinor)}
                 </Text>
                 {unitWord && <Text style={styles.priceUnit}>{unitWord}</Text>}
               </View>
-
               {split ? (
                 <>
                   <View style={styles.track}>
@@ -441,8 +425,7 @@ export default function Book() {
                   <View style={styles.holdLine}>
                     <Icon name="shield-checkmark" size={15} color={theme.ok} />
                     <Text style={styles.holdText}>
-                      A {depositPct}% deposit holds the time for you. The rest is paid at
-                      the shop.
+                      A {depositPct}% deposit holds the time for you. The rest is paid at the shop.
                     </Text>
                   </View>
                 </>
@@ -452,149 +435,19 @@ export default function Book() {
                   <Text style={styles.holdText}>Paid in full now, and the time is yours.</Text>
                 </View>
               )}
-            </FadeIn>
+            </View>
 
-            {/* WHY IT IS SAFE. Three facts, each true of every booking here. */}
-            <FadeIn delay={70} style={styles.trust}>
-              <Trust icon="phone-portrait-outline" title="MTN MoMo" text="secure payment" />
-              <Trust icon="flash-outline" title="Confirmed" text="the moment you pay" />
-              <Trust icon="refresh-circle-outline" title="Refunded" text="if the shop cancels" />
-            </FadeIn>
+            <View style={styles.rule} />
 
-            {/* WHO. The way to their page (§135.5), with the two things that
-                decide whether to trust them: what others rate them, and how
-                far they are. */}
-            <FadeIn delay={100} style={styles.who}>
-              <PressableScale
-                onPress={() => router.push(`/shop/${id}`)}
-                haptic
-                scaleTo={0.98}
-                accessibilityRole="button"
-                accessibilityLabel={`${businessName}, view shop`}
-                style={styles.shop}
-              >
-                <Avatar uri={s.business.logoUrl} name={businessName} size={50} />
-                <View style={styles.flex}>
-                  <Text style={type.subheading} numberOfLines={1}>
-                    {businessName}
-                  </Text>
-                  <Text style={type.small} numberOfLines={1}>
-                    {s.name}
-                    {district ? ` · ${district}` : ''}
-                  </Text>
-                  {(s.rating.count > 0 || way) && (
-                    <View style={styles.shopFacts}>
-                      {s.rating.count > 0 && (
-                        <View style={styles.fact}>
-                          <Icon name="star" size={13} color={theme.star} />
-                          <Text style={styles.factStrong}>{s.rating.average?.toFixed(1)}</Text>
-                          <Text style={type.tiny}>({s.rating.count})</Text>
-                        </View>
-                      )}
-                      {way && (
-                        <View style={styles.fact}>
-                          <Icon name="car-outline" size={13} color={theme.accent} />
-                          <Text style={styles.way} numberOfLines={1}>
-                            {way}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                  )}
-                </View>
-                <View style={styles.shopGo}>
-                  <Icon name="chevron-forward" size={16} color={theme.accent} />
-                </View>
-              </PressableScale>
-
-              {signedIn && (
-                <PressableScale
-                  onPress={() => openChat.mutate()}
-                  disabled={openChat.isPending}
-                  haptic
-                  scaleTo={0.98}
-                  accessibilityRole="button"
-                  accessibilityLabel="Message the shop with a question"
-                  style={styles.ask}
-                >
-                  <Icon name="chatbubble-ellipses-outline" size={16} color={theme.ask} />
-                  <Text style={styles.askText} numberOfLines={1}>
-                    {openChat.isPending
-                      ? 'Opening…'
-                      : layout.compact
-                        ? 'Ask the shop a question'
-                        : 'Have a question? Message the shop'}
-                  </Text>
-                  <Icon name="chevron-forward" size={14} color={theme.ask} />
-                </PressableScale>
-              )}
-            </FadeIn>
-
-            {/* WHAT THEY SAY ABOUT IT. */}
-            {service.description && (
-              <FadeIn delay={130} style={styles.group}>
-                <Text style={type.heading}>About this service</Text>
-                <Text style={type.body} numberOfLines={expanded ? undefined : 3}>
-                  {service.description}
-                </Text>
-                {service.description.length > 150 && (
-                  <PressableScale
-                    onPress={() => setExpanded((was) => !was)}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                  >
-                    <Text style={styles.link}>{expanded ? 'Show less' : 'Read more'}</Text>
-                  </PressableScale>
-                )}
-              </FadeIn>
-            )}
-
-            {/* WHAT TO KNOW BEFORE COMING (§180): the shop's own note, shown
-                again on the reservation once booked. */}
-            {service.instructions && <BeforeYouCome text={service.instructions} delay={145} />}
-
-            {/* WHAT OTHERS SAID. Only once somebody has (§153). */}
-            {s.rating.count > 0 && s.rating.average !== null && (
-              <FadeIn delay={160} style={styles.group}>
-                <View style={styles.rowBetween}>
-                  <Text style={type.heading}>What people say</Text>
-                  {s.rating.count > shownReviews.length && (
-                    <PressableScale
-                      onPress={() => router.push(`/shop/${id}?tab=reviews`)}
-                      hitSlop={8}
-                      accessibilityRole="button"
-                    >
-                      <Text style={styles.link}>See all {s.rating.count} →</Text>
-                    </PressableScale>
-                  )}
-                </View>
-                <View style={styles.ratingRow}>
-                  <Text style={styles.ratingBig}>{s.rating.average.toFixed(1)}</Text>
-                  <View style={styles.ratingWords}>
-                    <Stars rating={s.rating.average} size={16} />
-                    <Text style={type.small}>
-                      from {s.rating.count} {s.rating.count === 1 ? 'review' : 'reviews'}
-                    </Text>
-                  </View>
-                </View>
-                {reviews.isLoading && <Skeleton height={96} round={radius.lg} />}
-                {shownReviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-              </FadeIn>
-            )}
-
-            {/* THE BOOKING. How many, which day, what time. */}
-            <View ref={timesRef} collapsable={false} style={styles.group}>
-              <FadeIn delay={190}>
-                <Text style={type.heading}>Choose a time</Text>
-              </FadeIn>
+            {/* CHOOSE A TIME: how many, which day, what time. */}
+            <View ref={timesRef} collapsable={false} style={styles.section}>
+              <Text style={type.heading}>Choose a time</Text>
 
               {/* Asked only where the shop allows more than one, in the
                   shop's own sense of it (§136). Before the day and the time,
                   because the answer changes which times are free. */}
               {several && (
-                <FadeIn delay={200} style={[styles.card, styles.howMany]}>
+                <View style={styles.howMany}>
                   <View style={styles.flex}>
                     <Text style={type.subheading}>{people ? 'How many people?' : 'How many?'}</Text>
                     <Text style={type.small}>Up to {service.maxQuantity} in one booking</Text>
@@ -610,179 +463,286 @@ export default function Book() {
                       setSlot(null);
                     }}
                   />
-                </FadeIn>
+                </View>
               )}
 
-              <FadeIn delay={220} style={styles.subgroup}>
-                <Text style={type.label}>Day</Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.bleed}
-                  contentContainerStyle={styles.days}
-                >
-                  {days.map((ymd, i) => {
-                    const label = dayLabel(ymd);
-                    const active = ymd === date;
-                    return (
-                      <PressableScale
-                        key={ymd}
-                        haptic
-                        scaleTo={0.93}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected: active }}
-                        accessibilityLabel={`${i === 0 ? 'Today, ' : ''}${label.weekday} ${label.day} ${label.month}`}
-                        onPress={() => {
-                          setDate(ymd);
-                          setSlot(null);
-                        }}
-                        style={[styles.day, active && styles.dayActive]}
-                      >
-                        <Text style={[styles.dayWeek, active && styles.onAccent]}>
-                          {i === 0 ? 'Today' : label.weekday}
-                        </Text>
-                        <Text style={[styles.dayNum, active && styles.onAccent]}>{label.day}</Text>
-                        <Text style={[styles.dayMonth, active && styles.onAccentSoft]}>
-                          {label.month}
-                        </Text>
-                      </PressableScale>
-                    );
-                  })}
-                </ScrollView>
-              </FadeIn>
+              <Text style={type.label}>Day</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.bleed}
+                contentContainerStyle={styles.days}
+              >
+                {days.map((ymd, i) => {
+                  const label = dayLabel(ymd);
+                  const active = ymd === date;
+                  return (
+                    <PressableScale
+                      key={ymd}
+                      haptic
+                      scaleTo={0.93}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      accessibilityLabel={`${i === 0 ? 'Today, ' : ''}${label.weekday} ${label.day} ${label.month}`}
+                      onPress={() => {
+                        setDate(ymd);
+                        setSlot(null);
+                      }}
+                      style={[styles.day, active && styles.dayActive]}
+                    >
+                      <Text style={[styles.dayWeek, active && styles.onAccent]}>
+                        {i === 0 ? 'Today' : label.weekday}
+                      </Text>
+                      <Text style={[styles.dayNum, active && styles.onAccent]}>{label.day}</Text>
+                      <Text style={[styles.dayMonth, active && styles.onAccentSoft]}>
+                        {label.month}
+                      </Text>
+                    </PressableScale>
+                  );
+                })}
+              </ScrollView>
 
-              <FadeIn delay={250} style={styles.subgroup}>
-                <Text style={type.label}>Time</Text>
+              <Text style={type.label}>Time</Text>
 
-                {availability.isLoading && (
-                  <View style={styles.slots}>
-                    {Array.from({ length: perRow * 2 }, (_, i) => (
-                      <Skeleton key={i} width={slotWidth} height={46} round={radius.md} />
-                    ))}
+              {availability.isLoading && (
+                <View style={styles.slots}>
+                  {Array.from({ length: perRow * 2 }, (_, i) => (
+                    <Skeleton key={i} width={slotWidth} height={46} round={radius.md} />
+                  ))}
+                </View>
+              )}
+
+              {availability.data && slots.length === 0 && (
+                <View style={styles.closed}>
+                  <View style={styles.closedIcon}>
+                    <Icon name="moon-outline" size={18} color={theme.ink2} />
                   </View>
-                )}
-
-                {availability.data && slots.length === 0 && (
-                  <View style={styles.closed}>
-                    <View style={styles.closedIcon}>
-                      <Icon name="moon-outline" size={18} color={theme.ink2} />
-                    </View>
-                    <Text style={[type.body, styles.flex]}>
-                      {/* The server says WHY, and it is more useful than "no
-                          slots". An empty TODAY is almost always the clock,
-                          not the shop (§156). */}
-                      {availability.data.reason ??
-                        (availability.data.source.startsWith('CLOSED')
-                          ? 'Closed on this day.'
-                          : date === days[0]
-                            ? availability.data.closeTime
-                              ? `Closed for today — the shop shuts at ${availability.data.closeTime}. Pick another day.`
-                              : 'No times left today. Pick another day.'
-                            : 'Fully booked on this day.')}
-                    </Text>
-                  </View>
-                )}
-
-                {/* Morning, afternoon, evening (§179): the parts of a day a
-                    person thinks in, so "the one after lunch" is found by
-                    looking in one place. */}
-                {periods.map((period) => (
-                  <View key={period.key} style={styles.period}>
-                    <View style={styles.periodHead}>
-                      <Icon name={period.icon} size={15} color={theme.ink2} />
-                      <Text style={styles.periodLabel}>{period.label}</Text>
-                      <Text style={type.tiny}>{period.slots.length} free</Text>
-                    </View>
-                    <View style={styles.slots}>
-                      {period.slots.map((time) => {
-                        const active = slot === time;
-                        return (
-                          <PressableScale
-                            key={time}
-                            haptic
-                            scaleTo={0.92}
-                            accessibilityRole="button"
-                            accessibilityState={{ selected: active }}
-                            onPress={() => choose(time)}
-                            style={[styles.slot, { width: slotWidth }, active && styles.slotActive]}
-                          >
-                            <Text style={[styles.slotText, active && styles.onAccent]}>{time}</Text>
-                          </PressableScale>
-                        );
-                      })}
-                    </View>
-                  </View>
-                ))}
-
-                {availability.data?.timeZone && slots.length > 0 && (
-                  <Text style={type.small}>
-                    Times are local to the shop ({availability.data.timeZone}).
+                  <Text style={[type.body, styles.flex]}>
+                    {/* The server says WHY, and it is more useful than "no
+                        slots". An empty TODAY is almost always the clock, not
+                        the shop (§156). */}
+                    {availability.data.reason ??
+                      (availability.data.source.startsWith('CLOSED')
+                        ? 'Closed on this day.'
+                        : date === days[0]
+                          ? availability.data.closeTime
+                            ? `Closed for today — the shop shuts at ${availability.data.closeTime}. Pick another day.`
+                            : 'No times left today. Pick another day.'
+                          : 'Fully booked on this day.')}
                   </Text>
-                )}
-              </FadeIn>
+                </View>
+              )}
+
+              {/* Morning, afternoon, evening (§179): the parts of a day a
+                  person thinks in. */}
+              {periods.map((period) => (
+                <View key={period.key} style={styles.period}>
+                  <View style={styles.periodHead}>
+                    <Icon name={period.icon} size={15} color={theme.ink2} />
+                    <Text style={styles.periodLabel}>{period.label}</Text>
+                    <Text style={type.tiny}>{period.slots.length} free</Text>
+                  </View>
+                  <View style={styles.slots}>
+                    {period.slots.map((time) => {
+                      const active = slot === time;
+                      return (
+                        <PressableScale
+                          key={time}
+                          haptic
+                          scaleTo={0.92}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected: active }}
+                          onPress={() => choose(time)}
+                          style={[styles.slot, { width: slotWidth }, active && styles.slotActive]}
+                        >
+                          <Text style={[styles.slotText, active && styles.onAccent]}>{time}</Text>
+                        </PressableScale>
+                      );
+                    })}
+                  </View>
+                </View>
+              ))}
+
+              {availability.data?.timeZone && slots.length > 0 && (
+                <Text style={type.small}>
+                  Times are local to the shop ({availability.data.timeZone}).
+                </Text>
+              )}
+
+              {/* READ BACK. The booking in one card the moment a time is
+                  chosen: where the customer checks they have what they meant. */}
+              {slot && (
+                <PopIn key={`${date}-${slot}-${quantity}`} style={styles.summary}>
+                  <View style={styles.summaryGlow} />
+                  <View style={styles.summaryHead}>
+                    <View style={styles.summaryTick}>
+                      <Icon name="checkmark" size={15} color="#FFFFFF" />
+                    </View>
+                    <Text style={styles.summaryTitle}>Your booking</Text>
+                  </View>
+                  <Text style={styles.summaryWhen}>
+                    {niceDate(date)} · {slot} – {endOf(slot, minutes)}
+                  </Text>
+                  <Text style={styles.summaryWhat} numberOfLines={2}>
+                    {service.name}
+                    {quantity > 1 ? ` · ${countWord(quantity)}` : ''} · {duration(minutes)} ·{' '}
+                    {businessName}
+                  </Text>
+                  <View style={styles.summaryRule} />
+                  <View style={styles.summaryMoney}>
+                    <View style={styles.flex}>
+                      <Text style={styles.summaryLabel}>Total</Text>
+                      <Text style={styles.summaryValue}>{format(totalMinor)}</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.summaryLabel}>Pay now</Text>
+                      <Text style={[styles.summaryValue, styles.summaryNow]}>
+                        {format(depositMinor)}
+                      </Text>
+                    </View>
+                  </View>
+                </PopIn>
+              )}
             </View>
 
-            {/* READ BACK. The booking in one card before the button: the
-                moment the customer checks they have what they meant. */}
-            {slot && (
-              <PopIn key={`${date}-${slot}-${quantity}`} style={styles.summary}>
-                <View style={styles.summaryGlow} />
-                <View style={styles.summaryHead}>
-                  <View style={styles.summaryTick}>
-                    <Icon name="checkmark" size={15} color="#FFFFFF" />
-                  </View>
-                  <Text style={styles.summaryTitle}>Your booking</Text>
+            {/* WHAT TO KNOW BEFORE COMING (§180), the shop's own note. */}
+            {service.instructions && (
+              <>
+                <View style={styles.rule} />
+                <BeforeYouCome text={service.instructions} inset />
+              </>
+            )}
+
+            {/* WHAT THEY SAY ABOUT IT. */}
+            {service.description && (
+              <>
+                <View style={styles.rule} />
+                <View style={styles.section}>
+                  <Text style={type.heading}>About this service</Text>
+                  <Text style={type.body} numberOfLines={expanded ? undefined : 3}>
+                    {service.description}
+                  </Text>
+                  {service.description.length > 150 && (
+                    <PressableScale
+                      onPress={() => setExpanded((was) => !was)}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.link}>{expanded ? 'Show less' : 'Read more'}</Text>
+                    </PressableScale>
+                  )}
                 </View>
-                <Text style={styles.summaryWhen}>
-                  {niceDate(date)} · {slot} – {endOf(slot, minutes)}
-                </Text>
-                <Text style={styles.summaryWhat} numberOfLines={2}>
-                  {service.name}
-                  {quantity > 1 ? ` · ${countWord(quantity)}` : ''} · {duration(minutes)} ·{' '}
+              </>
+            )}
+          </FadeIn>
+
+          {/* 3. THE PLACE. The way to their page (§135.5), with the two things
+              that decide whether to trust them: what others rate them, and
+              how far they are. */}
+          <FadeIn delay={100} style={styles.who}>
+            <PressableScale
+              onPress={() => router.push(`/shop/${id}`)}
+              haptic
+              scaleTo={0.98}
+              accessibilityRole="button"
+              accessibilityLabel={`${businessName}, view shop`}
+              style={styles.shop}
+            >
+              <Avatar uri={s.business.logoUrl} name={businessName} size={50} />
+              <View style={styles.flex}>
+                <Text style={type.subheading} numberOfLines={1}>
                   {businessName}
                 </Text>
-                <View style={styles.summaryRule} />
-                <View style={styles.summaryMoney}>
-                  <View style={styles.flex}>
-                    <Text style={styles.summaryLabel}>Total</Text>
-                    <Text style={styles.summaryValue}>{format(totalMinor)}</Text>
+                <Text style={type.small} numberOfLines={1}>
+                  {s.name}
+                  {district ? ` · ${district}` : ''}
+                </Text>
+                {(s.rating.count > 0 || way) && (
+                  <View style={styles.shopFacts}>
+                    {s.rating.count > 0 && (
+                      <View style={styles.fact}>
+                        <Icon name="star" size={13} color={theme.star} />
+                        <Text style={styles.factStrong}>{s.rating.average?.toFixed(1)}</Text>
+                        <Text style={type.tiny}>({s.rating.count})</Text>
+                      </View>
+                    )}
+                    {way && (
+                      <View style={styles.fact}>
+                        <Icon name="car-outline" size={13} color={theme.accent} />
+                        <Text style={styles.way} numberOfLines={1}>
+                          {way}
+                        </Text>
+                      </View>
+                    )}
                   </View>
-                  <View>
-                    <Text style={styles.summaryLabel}>Pay now</Text>
-                    <Text style={[styles.summaryValue, styles.summaryNow]}>
-                      {format(depositMinor)}
-                    </Text>
-                  </View>
-                </View>
-              </PopIn>
+                )}
+              </View>
+              <View style={styles.shopGo}>
+                <Icon name="chevron-forward" size={16} color={theme.accent} />
+              </View>
+            </PressableScale>
+
+            {signedIn && (
+              <PressableScale
+                onPress={() => openChat.mutate()}
+                disabled={openChat.isPending}
+                haptic
+                scaleTo={0.98}
+                accessibilityRole="button"
+                accessibilityLabel="Message the shop with a question"
+                style={styles.ask}
+              >
+                <Icon name="chatbubble-ellipses-outline" size={16} color={theme.ask} />
+                <Text style={styles.askText} numberOfLines={1}>
+                  {openChat.isPending
+                    ? 'Opening…'
+                    : layout.compact
+                      ? 'Ask the shop a question'
+                      : 'Have a question? Message the shop'}
+                </Text>
+                <Icon name="chevron-forward" size={14} color={theme.ask} />
+              </PressableScale>
             )}
-          </View>
-        </View>
-      </Animated.ScrollView>
+          </FadeIn>
 
-      {/* The bar that appears once the title has scrolled away. */}
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.bar, { height: insets.top + 60, opacity: barOpacity }]}
-      >
-        <Text style={[styles.barTitle, { marginTop: insets.top }]} numberOfLines={1}>
-          {service.name}
-        </Text>
-      </Animated.View>
+          {/* WHAT OTHERS SAID about the place. Only once somebody has (§153). */}
+          {s.rating.count > 0 && s.rating.average !== null && (
+            <FadeIn delay={140} style={styles.group}>
+              <View style={styles.rowBetween}>
+                <Text style={type.heading}>What people say</Text>
+                {s.rating.count > shownReviews.length && (
+                  <PressableScale
+                    onPress={() => router.push(`/shop/${id}?tab=reviews`)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.link}>See all {s.rating.count} →</Text>
+                  </PressableScale>
+                )}
+              </View>
+              <View style={styles.ratingRow}>
+                <Text style={styles.ratingBig}>{s.rating.average.toFixed(1)}</Text>
+                <View style={styles.ratingWords}>
+                  <Stars rating={s.rating.average} size={16} />
+                  <Text style={type.small}>
+                    from {s.rating.count} {s.rating.count === 1 ? 'review' : 'reviews'}
+                  </Text>
+                </View>
+              </View>
+              {reviews.isLoading && <Skeleton height={96} round={radius.lg} />}
+              {shownReviews.map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))}
+            </FadeIn>
+          )}
 
-      {/* Floating over the picture, so they are reachable without scrolling
-          back to the top. */}
-      <View style={[styles.floating, { top: insets.top + 8 }]}>
-        <IconButton icon="chevron-back" label="Go back" onPress={back} />
-        <View style={styles.floatingRight}>
-          <IconButton icon="share-outline" label="Share this service" onPress={share} />
-          <SaveButton
-            saved={service.saved}
-            large
-            onPhoto
-            onPress={() => savedService.toggle(service.id, id, service.saved ?? false, here)}
-          />
-        </View>
+          {/* 4. THE ASSURANCES, last. Three facts, each true of every booking. */}
+          <FadeIn delay={180} style={styles.trust}>
+            <Trust icon="phone-portrait-outline" title="MTN MoMo" text="secure payment" />
+            <Trust icon="flash-outline" title="Confirmed" text="the moment you pay" />
+            <Trust icon="refresh-circle-outline" title="Refunded" text="if the shop cancels" />
+          </FadeIn>
+        </ScrollView>
       </View>
 
       {/* The running answer to "what will this cost me", and the one button. */}
@@ -842,7 +802,7 @@ export default function Book() {
   );
 }
 
-/** One of the three facts under the price: an icon, a word, and why it matters. */
+/** One of the three assurances: an icon, a word, and why it matters. */
 function Trust({ icon, title, text }: { icon: IconName; title: string; text: string }) {
   return (
     <View style={styles.trustTile}>
@@ -893,34 +853,31 @@ function ReviewCard({ review }: { review: PublicReview }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
   flex: { flex: 1 },
-  sheet: {
-    backgroundColor: theme.bg,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    marginTop: -28,
-    paddingHorizontal: 20,
-    paddingTop: 22,
-    paddingBottom: FOOTER,
-    minHeight: 500,
-  },
-  column: { width: '100%', alignSelf: 'center', gap: 22 },
-  loading: { marginTop: -28, gap: 12, flex: 1 },
-  loadingGap: { marginVertical: 8 },
-  bleed: { marginHorizontal: -20, flexGrow: 0 },
+  topRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  content: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 28, gap: 18 },
+  bleed: { marginHorizontal: -CARD_PAD, flexGrow: 0 },
 
-  // ---- what ----
-  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
-  metaDot: { fontFamily: font.bold, color: theme.muted, marginHorizontal: 2 },
-
-  // ---- price ----
-  card: {
+  // ---- 1. photos ----
+  photos: {
     backgroundColor: theme.panel,
     borderRadius: radius.lg,
-    padding: 18,
-    gap: 12,
+    padding: 6,
     ...shadow.card,
   },
+
+  // ---- 2. the deal ----
+  deal: {
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    padding: CARD_PAD,
+    gap: 16,
+    ...shadow.card,
+  },
+  rule: { height: 1, backgroundColor: theme.line },
+  section: { gap: 12 },
+  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  metaDot: { fontFamily: font.bold, color: theme.muted, marginHorizontal: 2 },
   priceRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 8 },
   price: { fontFamily: font.extrabold, fontSize: 30, color: theme.ink, letterSpacing: -0.7 },
   priceCompact: { fontSize: 26 },
@@ -949,101 +906,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   holdText: { flex: 1, fontFamily: font.semibold, fontSize: 12.5, lineHeight: 18, color: '#0B6B3A' },
-
-  // ---- trust ----
-  trust: { flexDirection: 'row', gap: 10 },
-  trustTile: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.panel,
-    borderRadius: radius.lg,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderWidth: 1.5,
-    borderColor: theme.line,
-  },
-  trustIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 2,
-  },
-  trustTitle: { fontFamily: font.bold, fontSize: 12.5, color: theme.ink },
-  trustText: {
-    fontFamily: font.medium,
-    fontSize: 11,
-    lineHeight: 14,
-    color: theme.muted,
-    textAlign: 'center',
-  },
-
-  // ---- who ----
-  who: { gap: 8 },
-  shop: {
+  howMany: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: theme.panel,
-    borderRadius: radius.lg,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    ...shadow.card,
-  },
-  shopFacts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 4 },
-  fact: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  factStrong: { fontFamily: font.bold, fontSize: 13, color: theme.ink },
-  way: { fontFamily: font.semibold, fontSize: 12, color: theme.accent },
-  shopGo: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: theme.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ask: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: theme.askSoft,
-    borderRadius: radius.md,
-    paddingVertical: 11,
-    paddingHorizontal: 14,
-  },
-  askText: { flex: 1, fontFamily: font.semibold, fontSize: 13, color: theme.ask },
-
-  // ---- words ----
-  group: { gap: 12 },
-  subgroup: { gap: 10 },
-  link: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  ratingBig: { fontFamily: font.extrabold, fontSize: 40, color: theme.ink, letterSpacing: -1 },
-  ratingWords: { gap: 3 },
-  review: {
-    backgroundColor: theme.panel,
-    borderRadius: radius.lg,
-    padding: 14,
-    gap: 10,
-    ...shadow.card,
-  },
-  reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  reviewName: { fontFamily: font.bold, fontSize: 14, color: theme.ink },
-  reply: {
-    gap: 3,
     backgroundColor: theme.sunken,
     borderRadius: radius.md,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
+    padding: 12,
   },
-
-  // ---- booking ----
-  howMany: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  days: { paddingHorizontal: 20, gap: 10, paddingVertical: 4 },
+  days: { paddingHorizontal: CARD_PAD, gap: 10, paddingVertical: 4 },
   day: {
     width: 64,
     paddingVertical: 12,
@@ -1051,15 +922,16 @@ const styles = StyleSheet.create({
     backgroundColor: theme.panel,
     alignItems: 'center',
     gap: 2,
-    ...shadow.card,
+    borderWidth: 1.5,
+    borderColor: theme.line,
   },
-  dayActive: { backgroundColor: theme.accent, ...shadow.raised },
+  dayActive: { backgroundColor: theme.accent, borderColor: theme.accent, ...shadow.raised },
   dayWeek: { fontFamily: font.semibold, fontSize: 12, color: theme.muted },
   dayNum: { fontFamily: font.extrabold, fontSize: 21, color: theme.ink },
   dayMonth: { fontFamily: font.medium, fontSize: 11, color: theme.muted },
   onAccent: { color: '#FFFFFF' },
   onAccentSoft: { color: 'rgba(255,255,255,0.8)' },
-  period: { gap: 8, marginTop: 4 },
+  period: { gap: 8, marginTop: 2 },
   periodHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   periodLabel: { flex: 1, fontFamily: font.bold, fontSize: 14, color: theme.ink },
   slots: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
@@ -1078,27 +950,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 11,
-    backgroundColor: theme.panel,
-    borderRadius: radius.lg,
+    backgroundColor: theme.sunken,
+    borderRadius: radius.md,
     padding: 14,
   },
   closedIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: theme.sunken,
+    backgroundColor: theme.panel,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // ---- read back ----
   summary: {
     backgroundColor: theme.night,
     borderRadius: radius.lg,
     padding: 18,
     gap: 6,
     overflow: 'hidden',
-    ...shadow.raised,
+    marginTop: 4,
   },
   summaryGlow: {
     position: 'absolute',
@@ -1134,29 +1004,96 @@ const styles = StyleSheet.create({
   },
   summaryValue: { fontFamily: font.extrabold, fontSize: 17, color: '#FFFFFF' },
   summaryNow: { color: '#FFB59E' },
+  link: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
 
-  // ---- chrome ----
-  bar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: theme.bg,
+  // ---- 3. the place ----
+  who: { gap: 8 },
+  shop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    ...shadow.card,
+  },
+  shopFacts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 4 },
+  fact: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  factStrong: { fontFamily: font.bold, fontSize: 13, color: theme.ink },
+  way: { fontFamily: font.semibold, fontSize: 12, color: theme.accent },
+  shopGo: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: theme.accentSoft,
     alignItems: 'center',
     justifyContent: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: theme.line,
   },
-  barTitle: { fontFamily: font.bold, fontSize: 16.5, color: theme.ink, maxWidth: '50%' },
-  floating: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
+  ask: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 8,
+    backgroundColor: theme.askSoft,
+    borderRadius: radius.md,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
   },
-  floatingRight: { flexDirection: 'row', gap: 10 },
+  askText: { flex: 1, fontFamily: font.semibold, fontSize: 13, color: theme.ask },
+  group: { gap: 12 },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  ratingBig: { fontFamily: font.extrabold, fontSize: 40, color: theme.ink, letterSpacing: -1 },
+  ratingWords: { gap: 3 },
+  review: {
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    padding: 14,
+    gap: 10,
+    ...shadow.card,
+  },
+  reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  reviewName: { fontFamily: font.bold, fontSize: 14, color: theme.ink },
+  reply: {
+    gap: 3,
+    backgroundColor: theme.sunken,
+    borderRadius: radius.md,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+  },
+
+  // ---- 4. the assurances ----
+  trust: { flexDirection: 'row', gap: 10 },
+  trustTile: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    borderWidth: 1.5,
+    borderColor: theme.line,
+  },
+  trustIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  trustTitle: { fontFamily: font.bold, fontSize: 12.5, color: theme.ink },
+  trustText: {
+    fontFamily: font.medium,
+    fontSize: 11,
+    lineHeight: 14,
+    color: theme.muted,
+    textAlign: 'center',
+  },
+
+  // ---- the bar ----
   footer: {
     paddingHorizontal: 20,
     paddingTop: 12,

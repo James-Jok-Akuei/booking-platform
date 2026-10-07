@@ -13623,12 +13623,14 @@ that sell best — a listing on Airbnb, a service on Fresha or Booksy, an item
 on a food app — and built `app/book/[id].tsx` again from the top, in the
 order a person decides:
 
-1. **The photos**, edge to edge and a page at a time (`PhotoPager`), with
+1. ~~**The photos**, edge to edge and a page at a time (`PhotoPager`), with
    dots and "2 / 5"; parallax at half speed and a stretch when pulled past
-   the top, pinned to the top edge. No photos: the shop's cover, then the
-   category's tile. Back, share and the heart float over it; a title bar
-   fades in once the name has scrolled under it. ~~A single photo fills the
-   width (§135.4)~~ — superseded; there is no strip now.
+   the top, pinned to the top edge.~~ Superseded by §181: a mosaic, several
+   at once. No photos: the shop's cover, then the category's tile. ~~Back,
+   share and the heart float over it; a title bar fades in once the name has
+   scrolled under it.~~ §181: a normal top bar, share and heart on its right.
+   ~~A single photo fills the width (§135.4)~~ — superseded; there is no
+   strip now.
 2. **What it is**: category pill, "Open now", "Up to 5 people"; the name;
    how long and where.
 3. **What it costs**, with the deposit DRAWN: the price per person, a bar
@@ -13658,6 +13660,9 @@ Total (rolling), "RWF 3,000 now", and ONE button that is never dead — with
 no time chosen it is "Choose a time" and takes you to the times; then
 "Book 11:00"; signed out, "Sign in to book" (§170). On a narrow phone the
 price shrinks and the button shortens rather than anything wrapping.
+
+*(The ORDER of sections 2–9 above is superseded by §181, which groups them
+into one card and moves the place and the assurances after it.)*
 
 Checked at 320, 390 and 820, with 2 and 11 photos and with none, signed in
 and out, with a time chosen and with "how many" changed. Two demo services
@@ -13696,3 +13701,39 @@ app."* A "deal" here is a service.
 
 Three new tests (`service-instructions.spec.ts`). **1315 passing across 57
 suites.** Demo: Full-body massage, Haircut and Hot-towel shave given notes.
+
+## 181. The service page in four blocks, photos as a mosaic (2026-10-07)
+
+The user, with a screenshot of the arrangement wanted: *"first attached
+screenshot is how i need the images arranged … price, choose time, special
+instructions, description should be on the same container and then link to
+the place and assurance three boxes should follow last … to avoid confusing
+the buyer."* §179's page re-ordered into four blocks, top to bottom:
+
+1. **The photos as a mosaic** (`src/components/PhotoMosaic.tsx`, replacing
+   `PhotoPager`): one large photo and beside it up to four small ones in a
+   grid, the way the screenshot shows — so a buyer sees what there is without
+   swiping. Two photos is big + one tall; three is big + two stacked; five or
+   more is big + 2×2, the last tile saying "+6". Every tile opens the viewer
+   at that photo (§135.7). On a tablet the big one takes half; on a phone 60%.
+   Every tile is given its exact size: `PressableScale` draws its style on an
+   inner view, so `flex` on a tile sized the inside and not the tile, and the
+   grid rendered empty until it was done by arithmetic.
+2. **The deal, in ONE card**, separated by thin rules: the pills, name, length
+   and place; the price with the deposit drawn as a bar; **Choose a time**
+   (how many, day, morning/afternoon/evening times, the dark "Your booking"
+   read-back under them); **Before you come** (§180); **About this service**.
+   Everything a buyer decides on, with nothing from anyone else in between.
+3. **The place**: the business card (logo, rating, road distance, →) and
+   "Have a question? Message the shop", then **What people say**.
+4. **The three assurances** last: MTN MoMo · Confirmed · Refunded if the shop
+   cancels.
+
+The hero's parallax and the floating buttons went with the edge-to-edge
+photo; the page has an ordinary top bar again, with share and the heart on
+its right, which also means the name is always visible. "Choose a time" in
+the bar scrolls to that section inside the card, measured against the scroll
+view's frame rather than the window, so the top bar's height is not
+mis-counted.
+
+Checked at 320, 390 and 820, with 2, 3 and 11 photos and with none.
