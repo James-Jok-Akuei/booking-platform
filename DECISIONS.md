@@ -13572,3 +13572,23 @@ which the banner needs to hold still under a finger.
 **Open question:** the user also listed "with commission". There is no
 per-business commission or paid placement in the platform today — every
 business pays the same platform fee — so it is not built; asked what it means.
+
+## 177. The banner comes and goes in two steps (2026-10-07)
+
+Asked for a better transition when the spotlights appear and disappear.
+
+- **Arriving:** the room opens first (460 ms, ease-out) so the rows below ease
+  down, and 170 ms later the banner rises 14 px into it, from 95% size and
+  transparent, with a light spring.
+- **Leaving:** the banner fades, shrinks and drops back first (260 ms, ease-in),
+  THEN the room closes (420 ms, ease-in-out). Before, both happened at once,
+  and the rows below slid up under a banner that was still visible.
+- The room is height, so JS-driven; the banner is a separate inner view whose
+  fade, rise and scale run natively. "Reduce motion" keeps the room's easing
+  but drops the spring and the delay.
+
+**Asked alongside:** whether folding away on a timer is professional. Answer
+given: the large marketplaces keep a promotional banner in place, stop it
+moving after a round, let the customer close it, and refresh it on the next
+visit — content shifting on its own causes mis-taps (the "layout shift"
+browsers score pages down for). The timer stays until the user chooses.

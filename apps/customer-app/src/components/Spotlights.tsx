@@ -301,20 +301,59 @@ export function Spotlights({
 
   // Shown: 0 folded away, 1 open. Height can only be animated off the native
   // thread, so this one is JS-driven; everything inside the slides is native.
-  const shown = useRef(new Animated.Value(0)).current;
+  /** The room the banner takes: 0 none, 1 all. JS-driven, because it is height. */
+  const room = useRef(new Animated.Value(0)).current;
+  /** The banner itself: fade, rise and scale. Native-driven. */
+  const card = useRef(new Animated.Value(0)).current;
   const progress = useRef(new Animated.Value(0)).current;
   const spin = useRef(new Animated.Value(0)).current;
 
-  // Opens once there is something to show; folds while resting.
+  /**
+   * Coming and going in two steps, so nothing jumps (§177).
+   *
+   * Arriving: the room opens first — the rows below ease down — and the
+   * banner rises into it a moment later, fading in from a little small, with
+   * a slight settle. Leaving is the same backwards: the banner fades and lifts
+   * away first, THEN the room closes, so the rows below never slide under a
+   * banner that is still there.
+   */
   const open = count > 0 && !resting;
   useEffect(() => {
-    Animated.timing(shown, {
-      toValue: open ? 1 : 0,
-      duration: open ? 620 : 520,
-      easing: open ? Easing.out(Easing.back(1.1)) : Easing.inOut(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
-  }, [open, shown]);
+    const motion = open
+      ? Animated.parallel([
+          Animated.timing(room, {
+            toValue: 1,
+            duration: 460,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: false,
+          }),
+          Animated.sequence([
+            Animated.delay(reduced ? 0 : 170),
+            Animated.spring(card, {
+              toValue: 1,
+              speed: 11,
+              bounciness: reduced ? 0 : 5,
+              useNativeDriver: true,
+            }),
+          ]),
+        ])
+      : Animated.sequence([
+          Animated.timing(card, {
+            toValue: 0,
+            duration: reduced ? 1 : 260,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(room, {
+            toValue: 0,
+            duration: 420,
+            easing: Easing.inOut(Easing.cubic),
+            useNativeDriver: false,
+          }),
+        ]);
+    motion.start();
+    return () => motion.stop();
+  }, [open, room, card, reduced]);
 
   // One slow turn shared by every slide's motif, rather than six loops.
   useEffect(() => {
@@ -384,72 +423,80 @@ export function Spotlights({
   return (
     <Animated.View
       style={{
-        height: shown.interpolate({ inputRange: [0, 1], outputRange: [0, height + DOTS_H] }),
-        marginBottom: shown.interpolate({ inputRange: [0, 1], outputRange: [-gap, 0] }),
-        opacity: shown.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0.6, 1] }),
-        transform: [{ scale: shown.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1] }) }],
+        height: room.interpolate({ inputRange: [0, 1], outputRange: [0, height + DOTS_H] }),
+        marginBottom: room.interpolate({ inputRange: [0, 1], outputRange: [-gap, 0] }),
         overflow: 'hidden',
       }}
     >
-      <ScrollView
-        ref={scroller}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        style={{ width, height, borderRadius: radius.xl }}
-        onScrollBeginDrag={() => setHeld(true)}
-        onMomentumScrollEnd={settle}
-        // Web and a gentle drag that does not fling still have to land.
-        onScrollEndDrag={(event) => {
-          if (!event.nativeEvent.velocity || Math.abs(event.nativeEvent.velocity.x) < 0.05) {
-            settle(event);
-          }
+      <Animated.View
+        style={{
+          opacity: card.interpolate({ inputRange: [0, 0.6, 1], outputRange: [0, 0.9, 1] }),
+          transform: [
+            { translateY: card.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) },
+            { scale: card.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) },
+          ],
         }}
-        scrollEventThrottle={16}
       >
-        {round.map((spot, i) => (
-          <Slide
-            key={spot.key}
-            spot={spot}
-            width={width}
-            height={height}
-            active={i === index && open}
-            reduced={reduced}
-            spin={spin}
-            onPressIn={() => setHeld(true)}
-            onPressOut={() => setHeld(false)}
-          />
-        ))}
-      </ScrollView>
+        <ScrollView
+          ref={scroller}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          style={{ width, height, borderRadius: radius.xl }}
+          onScrollBeginDrag={() => setHeld(true)}
+          onMomentumScrollEnd={settle}
+          // Web and a gentle drag that does not fling still have to land.
+          onScrollEndDrag={(event) => {
+            if (!event.nativeEvent.velocity || Math.abs(event.nativeEvent.velocity.x) < 0.05) {
+              settle(event);
+            }
+          }}
+          scrollEventThrottle={16}
+        >
+          {round.map((spot, i) => (
+            <Slide
+              key={spot.key}
+              spot={spot}
+              width={width}
+              height={height}
+              active={i === index && open}
+              reduced={reduced}
+              spin={spin}
+              onPressIn={() => setHeld(true)}
+              onPressOut={() => setHeld(false)}
+            />
+          ))}
+        </ScrollView>
 
-      {count > 1 && (
-        <View style={styles.dots}>
-          {round.map((spot, i) =>
-            i === index ? (
-              <View key={spot.key} style={styles.dotOn}>
-                <Animated.View
-                  style={[
-                    styles.dotFill,
-                    {
-                      backgroundColor: LOOKS[spot.kind].to,
-                      transform: [
-                        {
-                          translateX: progress.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [-24, 0],
-                          }),
-                        },
-                      ],
-                    },
-                  ]}
-                />
-              </View>
-            ) : (
-              <View key={spot.key} style={styles.dot} />
-            ),
-          )}
-        </View>
-      )}
+        {count > 1 && (
+          <View style={styles.dots}>
+            {round.map((spot, i) =>
+              i === index ? (
+                <View key={spot.key} style={styles.dotOn}>
+                  <Animated.View
+                    style={[
+                      styles.dotFill,
+                      {
+                        backgroundColor: LOOKS[spot.kind].to,
+                        transform: [
+                          {
+                            translateX: progress.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-24, 0],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                </View>
+              ) : (
+                <View key={spot.key} style={styles.dot} />
+              ),
+            )}
+          </View>
+        )}
+      </Animated.View>
     </Animated.View>
   );
 }
