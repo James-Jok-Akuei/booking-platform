@@ -356,12 +356,7 @@ export default function Book() {
               what it is first, then what to know before coming. */}
           {service.description && (
             <FadeIn delay={30} style={styles.words}>
-              <View style={styles.wordsHead}>
-                <View style={styles.wordsDisc}>
-                  <Icon name="reader-outline" size={17} color={theme.accent} />
-                </View>
-                <Text style={type.heading}>About this service</Text>
-              </View>
+              <Text style={type.heading}>About this service</Text>
               <Text style={styles.wordsText} numberOfLines={expanded ? undefined : 4}>
                 {service.description}
               </Text>
@@ -834,15 +829,6 @@ const styles = StyleSheet.create({
 
   // ---- 2. the shop's words, on the page ----
   words: { gap: 10, paddingHorizontal: 2 },
-  wordsHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  wordsDisc: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: theme.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   wordsText: { fontFamily: font.medium, fontSize: 14.5, lineHeight: 22, color: theme.ink },
 
   // ---- 3. the deal ----

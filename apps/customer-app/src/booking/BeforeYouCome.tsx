@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { font, radius, shadow, theme, type } from '../theme';
 import { FadeIn } from '../ui/FadeIn';
-import { Icon } from '../ui/Icon';
 
 /**
  * What the shop asks a customer to know before they come (§180): "arrive ten
@@ -24,12 +23,7 @@ export function BeforeYouCome({
 }) {
   return (
     <FadeIn delay={delay} style={inset ? styles.inset : styles.card}>
-      <View style={styles.head}>
-        <View style={styles.disc}>
-          <Icon name="clipboard-outline" size={17} color={theme.accent} />
-        </View>
-        <Text style={type.heading}>Before you come</Text>
-      </View>
+      <Text style={type.heading}>Before you come</Text>
       <Text style={styles.text}>{text}</Text>
       <Text style={type.tiny}>From the shop</Text>
     </FadeIn>
@@ -47,14 +41,5 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   inset: { gap: 10 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  disc: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: theme.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   text: { fontFamily: font.medium, fontSize: 14.5, lineHeight: 22, color: theme.ink },
 });

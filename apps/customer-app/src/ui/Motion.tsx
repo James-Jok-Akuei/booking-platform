@@ -1,6 +1,34 @@
-import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Easing, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  AccessibilityInfo,
+  Animated,
+  Easing,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { theme } from '../theme';
+
+/**
+ * The phone's "reduce motion" setting (§176, §183). Anything that drifts,
+ * sweeps or turns on its own stops when it is on.
+ */
+export function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    let live = true;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((on) => live && setReduced(on))
+      .catch(() => undefined);
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
+    return () => {
+      live = false;
+      sub.remove();
+    };
+  }, []);
+  return reduced;
+}
 
 /**
  * Something that lands with a little bounce (§133) — the tick when a booking is

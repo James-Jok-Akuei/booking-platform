@@ -13751,8 +13751,8 @@ The service page now reads, top to bottom:
 
 1. The photo mosaic (§181).
 2. **About this service**, then **Before you come** — on the page itself, no
-   card, each with a small coral icon disc beside its heading so the two read
-   as a pair. The description shows four lines and "Read more" past 200
+   card, ~~each with a small coral icon disc beside its heading so the two read
+   as a pair~~ (the icons removed at the user's request, §183). The description shows four lines and "Read more" past 200
    characters. Either is simply absent when the shop wrote nothing.
 3. The deal card: name, price and deposit, how many, day, time, read-back.
 4. The place: the shop card and "Have a question? Message the shop".
@@ -13777,3 +13777,82 @@ colour and a full sentence:
 
 The row component is `Assurance`; it was first written as `Promise`, which
 would have hidden JavaScript's own `Promise` in that file.
+
+## 183. Signing in, redesigned (2026-10-07)
+
+Asked, with five reference designs: *"think deeper about how our
+authentication screens should look … great convincing and colored writings
+… remember we just add email and verify with otp for both registered and
+registering users … when users add their emails you check if it exist or
+not … make the most prettiest ui out of this section."* Also: remove the
+icons before "About this service" and "Before you come" — done, in both
+places "Before you come" appears (service page and reservation), so it stays
+one recognisable note.
+
+### 183.1 The flow is the one the server already had
+
+Nothing changed underneath (§50, §90.3, §126.2): one email box for everyone;
+the code is asked for with no role; an address with an account gets a code at
+once ("Welcome back"); an address without one is answered "no account yet",
+which the screen treats as somebody new — a welcome, why an account is worth
+having, an explicit tick for the Terms and Privacy Policy, and "Create my
+account", which asks again with `CUSTOMER`. The same 6-digit code then signs
+in or creates the account.
+
+Two rough edges in it, fixed on the way:
+
+- **"Please wait 47s"** after asking twice is no longer an error. A code sent
+  under a minute ago still works, so the screen moves to the code step, says
+  "We sent you a code a moment ago. Enter that one.", and counts the 47
+  seconds down before offering a new one.
+- **A business or admin account** signing in here used to be shown an error
+  while its tokens stayed on the phone — the app was quietly signed in as a
+  shop. It is now signed straight back out, and told to use another email.
+
+### 183.2 How it looks (`app/sign-in.tsx`, `src/auth/`)
+
+- **A living wall** (`AuthWall`): real service photos from the shops — the
+  service's own photo, not the shop's cover, which is often a logo — in three
+  columns (five on a tablet), drifting past each other, turned −10°, under
+  night rising from the bottom and the app's coral from the top corner. Until
+  six photos are known, the categories' own colour tiles stand in.
+- **The headline**: "Book your next **haircut.**" in white, the last word in
+  gold changing every 2.3 s — haircut, massage, braids, car service, photo
+  shoot, workout — rising out and springing in (`RotatingWord`). "Real shops
+  near you, booked in a few taps." under it; a glass "Made for Rwanda" pill
+  with the flag and a glass close button above.
+- **A white sheet** overlapping it with 32-point corners, one question per
+  step, each title with its coloured words: **"One email. No password."**,
+  **"Nice to meet you."**, **"Check your inbox."**, then **"You are in!"** or
+  **"Welcome aboard!"** with a green tick popping in, before closing back to
+  where the customer was (`next`).
+- **The email field** lights coral when focused, ticks green when the address
+  looks right, and offers **"Did you mean …@gmail.com?"** for the usual slips
+  (`src/auth/email.ts`) — offered, never applied.
+- **The new-account step** lists three reasons, each in its own colour (coral
+  calendar, the real MTN mark, blue heart), above the tick card.
+- **The code** (`CodeBoxes`): six boxes over one hidden field (paste and the
+  phone's code suggestion still work); a digit pops in, the next box waits with
+  a blinking coral caret, the row breathes while checking, shakes red when
+  wrong (then clears for another try), turns green when right. Six digits
+  verify by themselves; "Verify" stays for a slow connection. The email shows
+  as a chip with "Change"; "Send a new one in 0:58" counts down the server's
+  60 seconds; "each code works for 10 minutes".
+- Errors in plain words, right under the thing they are about.
+- **When the keyboard opens the wall folds** to a strip under the status bar
+  and the headline fades, so the question and its button always fit;
+  `KeyboardAvoidingView` padding as everywhere (§166). "Reduce motion" holds
+  the wall and the word still (`useReducedMotion`, now shared in `Motion.tsx`).
+
+### 183.3 The code email matches
+
+`sendOtpEmail` was one plain sentence. It is now the app's paper and coral: a
+coral band, "Here is your code", **the six digits in six coral boxes** like
+the screen, "It works for 10 minutes, and only once", and a calm line for
+anyone who did not ask. The code is also in the subject — "Your sign-in code:
+481982" — so the notification alone is enough. Checked in Mailhog at 390 and
+320 wide; the boxes were narrowed to fit a 320 phone.
+
+Verified end to end in the preview with real codes read from the dev log: the
+email step, the "gmial" hint, the new-account step, "Welcome back", a wrong
+code, and a right one ("You are in!"). **1315 passing across 57 suites.**

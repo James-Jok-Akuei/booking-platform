@@ -63,8 +63,21 @@ export class MailService {
     });
   }
 
+  /**
+   * The code, as an email that looks like the app it opens (§183).
+   *
+   * The six digits are drawn as six boxes, the way the app asks for them, so
+   * the email and the screen read as two halves of one step. The code is in
+   * the SUBJECT too: on most phones the notification alone is then enough,
+   * and the app need not be left at all.
+   *
+   * Tables and inline styles, because that is what email clients draw; boxes
+   * fall back to squares where rounded corners are not supported, and the
+   * plain-text part says the same thing for clients that draw nothing.
+   */
   async sendOtpEmail(email: string, code: string): Promise<void> {
     const from = this.config.get<string>('SMTP_FROM');
+    const minutes = this.config.get<string>('OTP_EXPIRES_IN_MINUTES') ?? '10';
 
     // In development, don't hard-fail the signup/login flow if SMTP isn't
     // configured yet — log the code so you can keep testing the flow locally.
@@ -72,17 +85,49 @@ export class MailService {
       this.logger.warn(`[DEV ONLY] OTP for ${email}: ${code}`);
     }
 
+    const font = 'font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+    const boxes = code
+      .split('')
+      .map(
+        (digit) =>
+          // 40 wide with the border inside it, 3 a side: six fit a 320 phone.
+          '<td style="padding:0 3px"><div style="box-sizing:border-box;width:40px;height:52px;line-height:48px;' +
+          'border-radius:12px;background:#FFEEE8;border:2px solid #FBDCD2;text-align:center;' +
+          `${font};font-size:24px;font-weight:800;color:#15171C">${digit}</div></td>`,
+      )
+      .join('');
+
+    const html =
+      '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
+      '<body style="margin:0;background:#F6F4F0">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F4F0"><tr><td align="center" style="padding:32px 14px">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:#FFFFFF;border-radius:24px">' +
+      '<tr><td style="height:8px;background:#F0532D;border-radius:24px 24px 0 0;font-size:0;line-height:0">&nbsp;</td></tr>' +
+      `<tr><td style="padding:30px 28px 8px;${font}">` +
+      '<div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#F0532D">Sign-in code</div>' +
+      '<div style="font-size:26px;font-weight:800;color:#15171C;letter-spacing:-0.4px;padding-top:6px">Here is your code</div>' +
+      '<div style="font-size:15px;line-height:22px;color:#4B505B;padding-top:8px">Enter it in the app to sign in. If you are new, the same code creates your account.</div>' +
+      '</td></tr>' +
+      `<tr><td align="center" style="padding:22px 8px"><table role="presentation" cellpadding="0" cellspacing="0"><tr>${boxes}</tr></table></td></tr>` +
+      `<tr><td style="padding:0 28px 28px;${font}">` +
+      `<div style="font-size:14px;line-height:21px;color:#4B505B">It works for <strong style="color:#15171C">${minutes} minutes</strong>, and only once.</div>` +
+      '<div style="font-size:13px;line-height:20px;color:#8B909B;padding-top:14px;border-top:1px solid #ECE9E3;margin-top:18px">' +
+      'Did not ask for this? You can ignore this email. Nobody can sign in without the code, and we will never ask you for it.' +
+      '</div></td></tr></table></td></tr></table></body></html>';
+
     try {
       await this.transporter.sendMail({
         from,
         to: email,
-        subject: 'Your verification code',
-        text: `Your verification code is ${code}. It expires in ${this.config.get(
-          'OTP_EXPIRES_IN_MINUTES',
-        )} minutes. Do not share this code with anyone.`,
-        html: `<p>Your verification code is <strong>${code}</strong>.</p><p>It expires in ${this.config.get(
-          'OTP_EXPIRES_IN_MINUTES',
-        )} minutes. Do not share this code with anyone.</p>`,
+        subject: `Your sign-in code: ${code}`,
+        text:
+          `Your sign-in code is ${code}.\n\n` +
+          `Enter it in the app to sign in. If you are new, the same code creates your account. ` +
+          `It works for ${minutes} minutes, and only once.\n\n` +
+          'Did not ask for this? You can ignore this email. Nobody can sign in without the code, ' +
+          'and we will never ask you for it.',
+        html,
       });
     } catch (err) {
       this.logger.error(`Failed to send OTP email to ${email}`, err as Error);

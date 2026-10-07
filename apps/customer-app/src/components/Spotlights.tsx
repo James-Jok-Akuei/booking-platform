@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  AccessibilityInfo,
   AppState,
   Animated,
   Easing,
@@ -26,6 +25,7 @@ import { useMoney } from '../money';
 import { font, radius, theme } from '../theme';
 import { Icon, lookFor, type IconName } from '../ui/Icon';
 import { tick } from '../ui/haptic';
+import { useReducedMotion } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
 
 /** How long each spotlight is on screen. */
@@ -74,23 +74,6 @@ type Spot = {
   label: string;
   open: () => void;
 };
-
-/** Respects the phone's "reduce motion": no drifting, sweeping or spinning. */
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    let live = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((on) => live && setReduced(on))
-      .catch(() => undefined);
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
-    return () => {
-      live = false;
-      sub.remove();
-    };
-  }, []);
-  return reduced;
-}
 
 const shopOf = (s: DiscoveredService) => s.business.name ?? s.location.name;
 const areaOf = (s: DiscoveredService) => s.location.district?.name ?? s.location.name;
