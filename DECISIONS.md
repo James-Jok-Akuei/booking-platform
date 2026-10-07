@@ -13722,12 +13722,13 @@ the buyer."* §179's page re-ordered into four blocks, top to bottom:
 2. **The deal, in ONE card**, separated by thin rules: the pills, name, length
    and place; the price with the deposit drawn as a bar; **Choose a time**
    (how many, day, morning/afternoon/evening times, the dark "Your booking"
-   read-back under them); **Before you come** (§180); **About this service**.
-   Everything a buyer decides on, with nothing from anyone else in between.
+   read-back under them); ~~**Before you come** (§180); **About this
+   service**~~ — moved out of the card, above it (§182).
 3. **The place**: the business card (logo, rating, road distance, →) and
-   "Have a question? Message the shop", then **What people say**.
-4. **The three assurances** last: MTN MoMo · Confirmed · Refunded if the shop
-   cancels.
+   "Have a question? Message the shop", ~~then **What people say**~~ —
+   removed (§182).
+4. ~~**The three assurances** last: MTN MoMo · Confirmed · Refunded if the shop
+   cancels.~~ Redesigned as one "Safe to book" card (§182).
 
 The hero's parallax and the floating buttons went with the edge-to-edge
 photo; the page has an ordinary top bar again, with share and the heart on
@@ -13737,3 +13738,42 @@ view's frame rather than the window, so the top bar's height is not
 mis-counted.
 
 Checked at 320, 390 and 820, with 2, 3 and 11 photos and with none.
+
+## 182. The shop's words first, reviews off, "Safe to book" (2026-10-07)
+
+The user: *"add the description as the first item and special instruction as
+second just between the photos and the following container (not in the same
+container as the price and the rest but just outside the containers), and
+find a better way to design the three items … lastly remove the reviews from
+that page too."*
+
+The service page now reads, top to bottom:
+
+1. The photo mosaic (§181).
+2. **About this service**, then **Before you come** — on the page itself, no
+   card, each with a small coral icon disc beside its heading so the two read
+   as a pair. The description shows four lines and "Read more" past 200
+   characters. Either is simply absent when the shop wrote nothing.
+3. The deal card: name, price and deposit, how many, day, time, read-back.
+4. The place: the shop card and "Have a question? Message the shop".
+5. **Safe to book**, last.
+
+**Reviews are gone from this page** — the section, its request and its
+components. The shop card keeps its one-line "★ 5.0 (1)" as a fact about the
+place; the full reviews are a tap away on the shop's page, which still opens
+on its Reviews tab with `?tab=reviews` (§179) for any link that wants it.
+
+**"Safe to book"** replaces the three narrow tiles, whose words wrapped into
+fragments ("the moment you / pay"). One card, a green shield and "Every
+booking here comes with these", then three rows, each with its own mark and
+colour and a full sentence:
+
+- the real **MTN** mark (§134.3) — *Pay with MTN MoMo: you approve the deposit
+  on your own phone; this app never asks for your PIN* (the PIN is typed into
+  MoMo's own prompt, as checkout says);
+- green lightning — *Confirmed the moment you pay*;
+- blue arrow — *Refunded if the shop cancels: your whole deposit goes back to
+  the number that paid* (Terms 6.1 and 6.6).
+
+The row component is `Assurance`; it was first written as `Promise`, which
+would have hidden JavaScript's own `Promise` in that file.

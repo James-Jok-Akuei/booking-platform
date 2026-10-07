@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Alert,
   ScrollView,
@@ -12,13 +12,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboardScroll } from '../../src/useKeyboardScroll';
-import {
-  getAvailability,
-  getRoute,
-  getShop,
-  getShopReviews,
-  type PublicReview,
-} from '../../src/api/discovery';
+import { getAvailability, getRoute, getShop } from '../../src/api/discovery';
 import { createAppointment } from '../../src/api/booking';
 import { openInquiry } from '../../src/api/chat';
 import { ApiError, useSignedIn } from '../../src/api/client';
@@ -41,12 +35,12 @@ import { cheer, tick } from '../../src/ui/haptic';
 import { Icon, type IconName } from '../../src/ui/Icon';
 import { IconButton } from '../../src/ui/IconButton';
 import { useLayout } from '../../src/ui/layout';
+import { MomoLogo } from '../../src/ui/Momo';
 import { PopIn } from '../../src/ui/Motion';
 import { PhotoViewer, type ViewerOrigin } from '../../src/ui/PhotoViewer';
 import { Pill } from '../../src/ui/Pill';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
-import { Stars } from '../../src/ui/Stars';
 import { Stepper } from '../../src/ui/Stepper';
 import { Ticker } from '../../src/ui/Ticker';
 import { TopBar } from '../../src/ui/TopBar';
@@ -84,28 +78,26 @@ const niceDate = (ymd: string) =>
     month: 'short',
   });
 
-const monthOf = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
-
 /** The deal card's own padding; rows that bleed to its edge subtract it. */
 const CARD_PAD = 18;
 
 /**
- * One service, as the page that decides whether it is booked (§179, §181).
+ * One service, as the page that decides whether it is booked (§179, §181, §182).
  *
- * Four things, in the order the user asked for so a buyer is never confused
- * about what belongs to what:
+ * In the order the user asked for, so a buyer is never confused about what
+ * belongs to what:
  *
  * 1. **The photos**, several at once — one large and a grid of small ones.
- * 2. **The deal, in ONE card**: what it is, what it costs (the deposit drawn
- *    as a share of it), choosing how many, which day and what time — grouped
- *    into morning, afternoon and evening — the booking read back the moment a
- *    time is chosen, then the shop's "Before you come" note and its
- *    description.
- * 3. **The place**: who is doing it, with their rating and how far they are,
- *    and what other people said.
- * 4. **The assurances**, last: paid with MoMo, confirmed the moment you pay,
- *    refunded if the shop cancels.
+ * 2. **About this service**, then **Before you come** — the shop's own words,
+ *    on the page itself rather than in a card, read before anything is chosen.
+ * 3. **The deal, in ONE card**: what it is, what it costs (the deposit drawn
+ *    as a share of it), how many, which day and what time — grouped into
+ *    morning, afternoon and evening — and the booking read back the moment a
+ *    time is chosen.
+ * 4. **The place**: who is doing it, with their rating and how far they are.
+ * 5. **Safe to book**, last: three promises, each true of every booking.
+ *
+ * Reviews are on the shop's page, not here (§182).
  *
  * The bar at the bottom is the running answer to "what will this cost me":
  * the total rolls as "how many" changes, the deposit sits under it, and the
@@ -139,13 +131,6 @@ export default function Book() {
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const service = shop.data?.services.find((s) => s.id === serviceId);
-
-  // What others said, for the page that has to persuade (§179).
-  const reviews = useQuery({
-    queryKey: ['shop-reviews', id, 'few'],
-    queryFn: () => getShopReviews(id, 6),
-    enabled: (shop.data?.rating.count ?? 0) > 0,
-  });
 
   // The real road from here, once the phone has said where here is (§157).
   const position = nearMe.state.status === 'on' ? nearMe.state : null;
@@ -277,9 +262,6 @@ export default function Book() {
   const perRow = layout.wide ? 6 : inCard < 300 ? 3 : 4;
   const slotWidth = (inCard - 10 * (perRow - 1)) / perRow;
 
-  const withWords = (reviews.data?.reviews ?? []).filter((r) => r.comment);
-  const shownReviews = (withWords.length > 0 ? withWords : (reviews.data?.reviews ?? [])).slice(0, 2);
-
   /**
    * A time chosen is read back in the card under the times (§179), so the
    * page glides down a little to show it after it has popped in.
@@ -370,8 +352,38 @@ export default function Book() {
             />
           </FadeIn>
 
-          {/* 2. THE DEAL, in one card. */}
-          <FadeIn delay={40} style={styles.deal}>
+          {/* 2. THE SHOP'S OWN WORDS, on the page and not in a card (§182):
+              what it is first, then what to know before coming. */}
+          {service.description && (
+            <FadeIn delay={30} style={styles.words}>
+              <View style={styles.wordsHead}>
+                <View style={styles.wordsDisc}>
+                  <Icon name="reader-outline" size={17} color={theme.accent} />
+                </View>
+                <Text style={type.heading}>About this service</Text>
+              </View>
+              <Text style={styles.wordsText} numberOfLines={expanded ? undefined : 4}>
+                {service.description}
+              </Text>
+              {service.description.length > 200 && (
+                <PressableScale
+                  onPress={() => setExpanded((was) => !was)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.link}>{expanded ? 'Show less' : 'Read more'}</Text>
+                </PressableScale>
+              )}
+            </FadeIn>
+          )}
+          {service.instructions && (
+            <View style={styles.words}>
+              <BeforeYouCome text={service.instructions} inset delay={60} />
+            </View>
+          )}
+
+          {/* 3. THE DEAL, in one card. */}
+          <FadeIn delay={90} style={styles.deal}>
             <View style={styles.pills}>
               {category && (
                 <Pill label={s.business.subcategory?.name ?? category.name} tone="accent" />
@@ -605,41 +617,12 @@ export default function Book() {
               )}
             </View>
 
-            {/* WHAT TO KNOW BEFORE COMING (§180), the shop's own note. */}
-            {service.instructions && (
-              <>
-                <View style={styles.rule} />
-                <BeforeYouCome text={service.instructions} inset />
-              </>
-            )}
-
-            {/* WHAT THEY SAY ABOUT IT. */}
-            {service.description && (
-              <>
-                <View style={styles.rule} />
-                <View style={styles.section}>
-                  <Text style={type.heading}>About this service</Text>
-                  <Text style={type.body} numberOfLines={expanded ? undefined : 3}>
-                    {service.description}
-                  </Text>
-                  {service.description.length > 150 && (
-                    <PressableScale
-                      onPress={() => setExpanded((was) => !was)}
-                      hitSlop={8}
-                      accessibilityRole="button"
-                    >
-                      <Text style={styles.link}>{expanded ? 'Show less' : 'Read more'}</Text>
-                    </PressableScale>
-                  )}
-                </View>
-              </>
-            )}
           </FadeIn>
 
-          {/* 3. THE PLACE. The way to their page (§135.5), with the two things
+          {/* 4. THE PLACE. The way to their page (§135.5), with the two things
               that decide whether to trust them: what others rate them, and
-              how far they are. */}
-          <FadeIn delay={100} style={styles.who}>
+              how far they are. Their reviews are one tap away, on that page. */}
+          <FadeIn delay={120} style={styles.who}>
             <PressableScale
               onPress={() => router.push(`/shop/${id}`)}
               haptic
@@ -705,42 +688,39 @@ export default function Book() {
             )}
           </FadeIn>
 
-          {/* WHAT OTHERS SAID about the place. Only once somebody has (§153). */}
-          {s.rating.count > 0 && s.rating.average !== null && (
-            <FadeIn delay={140} style={styles.group}>
-              <View style={styles.rowBetween}>
-                <Text style={type.heading}>What people say</Text>
-                {s.rating.count > shownReviews.length && (
-                  <PressableScale
-                    onPress={() => router.push(`/shop/${id}?tab=reviews`)}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                  >
-                    <Text style={styles.link}>See all {s.rating.count} →</Text>
-                  </PressableScale>
-                )}
+          {/* 5. SAFE TO BOOK, last (§182). Three promises, each true of every
+              booking, in one card read top to bottom — each with room for
+              its own sentence, and its own colour so the three are told
+              apart at a glance. */}
+          <FadeIn delay={150} style={styles.promises}>
+            <View style={styles.promisesHead}>
+              <View style={styles.promisesShield}>
+                <Icon name="shield-checkmark" size={18} color="#FFFFFF" />
               </View>
-              <View style={styles.ratingRow}>
-                <Text style={styles.ratingBig}>{s.rating.average.toFixed(1)}</Text>
-                <View style={styles.ratingWords}>
-                  <Stars rating={s.rating.average} size={16} />
-                  <Text style={type.small}>
-                    from {s.rating.count} {s.rating.count === 1 ? 'review' : 'reviews'}
-                  </Text>
-                </View>
+              <View style={styles.flex}>
+                <Text style={type.heading}>Safe to book</Text>
+                <Text style={type.small}>Every booking here comes with these</Text>
               </View>
-              {reviews.isLoading && <Skeleton height={96} round={radius.lg} />}
-              {shownReviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
-              ))}
-            </FadeIn>
-          )}
-
-          {/* 4. THE ASSURANCES, last. Three facts, each true of every booking. */}
-          <FadeIn delay={180} style={styles.trust}>
-            <Trust icon="phone-portrait-outline" title="MTN MoMo" text="secure payment" />
-            <Trust icon="flash-outline" title="Confirmed" text="the moment you pay" />
-            <Trust icon="refresh-circle-outline" title="Refunded" text="if the shop cancels" />
+            </View>
+            <Assurance
+              mark={<MomoLogo size={40} />}
+              title="Pay with MTN MoMo"
+              text="You approve the deposit on your own phone. This app never asks for your PIN."
+            />
+            <Assurance
+              icon="flash"
+              color={theme.ok}
+              tint={theme.okSoft}
+              title="Confirmed the moment you pay"
+              text="The time is yours as soon as the deposit goes through."
+            />
+            <Assurance
+              icon="refresh"
+              color={theme.ask}
+              tint={theme.askSoft}
+              title="Refunded if the shop cancels"
+              text="Your whole deposit goes back to the number that paid."
+            />
           </FadeIn>
         </ScrollView>
       </View>
@@ -802,50 +782,37 @@ export default function Book() {
   );
 }
 
-/** One of the three assurances: an icon, a word, and why it matters. */
-function Trust({ icon, title, text }: { icon: IconName; title: string; text: string }) {
+/**
+ * One assurance (§182): its mark in its own colour, what it is, and what it
+ * means for the customer in one sentence.
+ */
+function Assurance({
+  mark,
+  icon,
+  color,
+  tint,
+  title,
+  text,
+}: {
+  /** A ready-made mark, such as the MoMo logo, in place of an icon. */
+  mark?: ReactNode;
+  icon?: IconName;
+  color?: string;
+  tint?: string;
+  title: string;
+  text: string;
+}) {
   return (
-    <View style={styles.trustTile}>
-      <View style={styles.trustIcon}>
-        <Icon name={icon} size={17} color={theme.accent} />
-      </View>
-      <Text style={styles.trustTitle} numberOfLines={1}>
-        {title}
-      </Text>
-      <Text style={styles.trustText} numberOfLines={2}>
-        {text}
-      </Text>
-    </View>
-  );
-}
-
-/** One review, short: who, when, the stars, and what they said. */
-function ReviewCard({ review }: { review: PublicReview }) {
-  return (
-    <View style={styles.review}>
-      <View style={styles.reviewHead}>
-        <Avatar name={review.displayName} size={34} />
-        <View style={styles.flex}>
-          <Text style={styles.reviewName} numberOfLines={1}>
-            {review.displayName}
-          </Text>
-          <Text style={type.tiny}>{monthOf(review.createdAt)}</Text>
-        </View>
-        <Stars rating={review.rating} size={12} />
-      </View>
-      {review.comment && (
-        <Text style={type.body} numberOfLines={4}>
-          {review.comment}
-        </Text>
-      )}
-      {review.responseText && (
-        <View style={styles.reply}>
-          <Text style={type.label}>Reply from the shop</Text>
-          <Text style={type.small} numberOfLines={3}>
-            {review.responseText}
-          </Text>
+    <View style={styles.promise}>
+      {mark ?? (
+        <View style={[styles.promiseMark, { backgroundColor: tint }]}>
+          <Icon name={icon!} size={20} color={color} />
         </View>
       )}
+      <View style={styles.flex}>
+        <Text style={styles.promiseTitle}>{title}</Text>
+        <Text style={styles.promiseText}>{text}</Text>
+      </View>
     </View>
   );
 }
@@ -865,7 +832,20 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
 
-  // ---- 2. the deal ----
+  // ---- 2. the shop's words, on the page ----
+  words: { gap: 10, paddingHorizontal: 2 },
+  wordsHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  wordsDisc: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: theme.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wordsText: { fontFamily: font.medium, fontSize: 14.5, lineHeight: 22, color: theme.ink },
+
+  // ---- 3. the deal ----
   deal: {
     backgroundColor: theme.panel,
     borderRadius: radius.lg,
@@ -1006,7 +986,7 @@ const styles = StyleSheet.create({
   summaryNow: { color: '#FFB59E' },
   link: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
 
-  // ---- 3. the place ----
+  // ---- 4. the place ----
   who: { gap: 8 },
   shop: {
     flexDirection: 'row',
@@ -1040,57 +1020,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   askText: { flex: 1, fontFamily: font.semibold, fontSize: 13, color: theme.ask },
-  group: { gap: 12 },
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  ratingBig: { fontFamily: font.extrabold, fontSize: 40, color: theme.ink, letterSpacing: -1 },
-  ratingWords: { gap: 3 },
-  review: {
+
+  // ---- 5. safe to book ----
+  promises: {
     backgroundColor: theme.panel,
     borderRadius: radius.lg,
-    padding: 14,
-    gap: 10,
+    padding: CARD_PAD,
+    gap: 16,
     ...shadow.card,
   },
-  reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  reviewName: { fontFamily: font.bold, fontSize: 14, color: theme.ink },
-  reply: {
-    gap: 3,
-    backgroundColor: theme.sunken,
-    borderRadius: radius.md,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-  },
-
-  // ---- 4. the assurances ----
-  trust: { flexDirection: 'row', gap: 10 },
-  trustTile: {
-    flex: 1,
+  promisesHead: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.panel,
-    borderRadius: radius.lg,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderWidth: 1.5,
-    borderColor: theme.line,
+    gap: 12,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.line,
   },
-  trustIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.accentSoft,
+  promisesShield: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.ok,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
   },
-  trustTitle: { fontFamily: font.bold, fontSize: 12.5, color: theme.ink },
-  trustText: {
+  promise: { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
+  promiseMark: {
+    width: 40,
+    height: 40,
+    borderRadius: 10.4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  promiseTitle: { fontFamily: font.bold, fontSize: 15, lineHeight: 20, color: theme.ink },
+  promiseText: {
     fontFamily: font.medium,
-    fontSize: 11,
-    lineHeight: 14,
-    color: theme.muted,
-    textAlign: 'center',
+    fontSize: 13,
+    lineHeight: 18.5,
+    color: theme.ink2,
+    marginTop: 2,
   },
 
   // ---- the bar ----
