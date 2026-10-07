@@ -150,7 +150,9 @@ export const listServices = () => api<Service[]>('/business/services');
  */
 export const createService = (body: {
   name: string;
-  description?: string;
+  description?: string | null;
+  /** What to know before coming (§180). Blank is stored as nothing. */
+  instructions?: string | null;
   durationMinutes: number;
   depositPercentage: number;
   /** §136. Left out, a service is booked one at a time. */
@@ -163,7 +165,8 @@ export const updateService = (
   id: string,
   body: Partial<{
     name: string;
-    description: string;
+    description: string | null;
+    instructions: string | null;
     durationMinutes: number;
     depositPercentage: number;
     quantityMode: Service['quantityMode'];
@@ -753,6 +756,7 @@ export const saveServiceDraft = (
   body: {
     name?: string | null;
     description?: string | null;
+    instructions?: string | null;
     durationMinutes?: number | null;
     depositPercentage?: number | null;
     offers?: Array<{ locationId: string; priceMinor: number }>;

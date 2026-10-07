@@ -13663,3 +13663,36 @@ Checked at 320, 390 and 820, with 2 and 11 photos and with none, signed in
 and out, with a time chosen and with "how many" changed. Two demo services
 were given descriptions so the About section could be seen. Nothing on the
 server changed.
+
+## 180. A description and "Before you come" on every service (2026-10-07)
+
+Asked: *"allow sellers to add special instructions on a deal and also add
+description for each service too and all should show up on the customer
+app."* A "deal" here is a service.
+
+- **The field.** `Service.instructions` (text, up to 600 characters — read on
+  a phone the day before) beside the `description` that existed (2,000) and
+  was never asked for in the seller's form. Both are trimmed, and a blank is
+  stored as **nothing**, not "": in the DTO (`@Transform`) and again in
+  `ServicesService` (`tidyWords`) for every caller that is not HTTP — a test
+  caught the service path storing "". `ServiceDraft` carries both too, so a
+  draft keeps what was written.
+- **The seller writes them** in the service form (new and Edit), as two
+  full-width text boxes under the prices with counters and a line saying
+  where each appears; the list says "No description" / "No instructions" per
+  service, so the gaps are seen at a glance. Both autosave into the draft.
+- **The customer reads them** in three places: the description under "About
+  this service" on the service page (§179, already built for it);
+  instructions as a **"Before you come"** card — one component,
+  `src/booking/BeforeYouCome.tsx`, so it is the same note in both places — on
+  the service page between About and the reviews, and on the **reservation**,
+  between the action buttons and the details, while the booking is still
+  ahead (booked, in progress, or awaiting payment). The reservation reads it
+  live from the service, so a change at the shop reaches bookings already
+  made; `AppointmentServiceDto` gained the field, and the §32 test that pins
+  that object's keys (so the live price can never leak) now lists it.
+- Shopfront, seller list and bare-row DTOs declare it; the exactness guards
+  caught the one that was missed. OpenAPI and the three `schema.d.ts` regenerated.
+
+Three new tests (`service-instructions.spec.ts`). **1315 passing across 57
+suites.** Demo: Full-body massage, Haircut and Hot-towel shave given notes.

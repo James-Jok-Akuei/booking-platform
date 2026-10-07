@@ -52,6 +52,7 @@ export class ServiceDraftsService {
     data: {
       name?: string | null;
       description?: string | null;
+      instructions?: string | null;
       durationMinutes?: number | null;
       depositPercentage?: number | null;
       offers?: Array<{ locationId: string; priceMinor: number }>;
@@ -63,6 +64,7 @@ export class ServiceDraftsService {
       data: {
         ...(data.name !== undefined ? { name: data.name } : {}),
         ...(data.description !== undefined ? { description: data.description } : {}),
+        ...(data.instructions !== undefined ? { instructions: data.instructions } : {}),
         ...(data.durationMinutes !== undefined
           ? { durationMinutes: data.durationMinutes }
           : {}),

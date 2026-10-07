@@ -442,6 +442,8 @@ describe('Money invariant: platformFee + business === deposit', () => {
         expect(Object.keys(found.service).sort()).toEqual([
           'durationMinutes',
           'id',
+          // What to know before coming (§180). Words, not a price.
+          'instructions',
           'name',
           // What the quantity counts (§136). A rule, not a price.
           'quantityMode',

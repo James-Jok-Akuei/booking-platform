@@ -42,6 +42,11 @@ export class UpdateServiceDraftDto {
   description?: string | null;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(600)
+  instructions?: string | null;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)

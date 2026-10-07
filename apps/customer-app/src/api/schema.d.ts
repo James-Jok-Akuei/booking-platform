@@ -3195,6 +3195,7 @@ export interface components {
             id: string;
             name: string | null;
             description: string | null;
+            instructions: string | null;
             durationMinutes: number | null;
             /** @description A decimal string, like every other percentage here (§128.20). */
             depositPercentage: string | null;
@@ -3210,6 +3211,7 @@ export interface components {
         UpdateServiceDraftDto: {
             name?: string | null;
             description?: string | null;
+            instructions?: string | null;
             durationMinutes?: number | null;
             depositPercentage?: number | null;
             offers?: components["schemas"]["DraftOfferDto"][];
@@ -3371,7 +3373,13 @@ export interface components {
         };
         CreateServiceDto: {
             name: string;
-            description?: string;
+            /** @description What it is, in the shop's own words. Shown under "About this service". */
+            description?: string | null;
+            /**
+             * @description What to know before coming (§180): arrive early, bring a towel, park at
+             *     the back. Short on purpose — it is read on a phone, the day before.
+             */
+            instructions?: string | null;
             /**
              * @description Where this service is offered, and for how much at each branch (§72).
              *
@@ -3424,6 +3432,8 @@ export interface components {
             businessId: string;
             name: string;
             description: string | null;
+            /** @description What to know before coming (§180). */
+            instructions: string | null;
             durationMinutes: number;
             currency: string;
             /** @description A decimal STRING — "20", not 20 (§56). */
@@ -3449,7 +3459,13 @@ export interface components {
         };
         UpdateServiceDto: {
             name?: string;
-            description?: string;
+            /** @description What it is, in the shop's own words. Shown under "About this service". */
+            description?: string | null;
+            /**
+             * @description What to know before coming (§180): arrive early, bring a towel, park at
+             *     the back. Short on purpose — it is read on a phone, the day before.
+             */
+            instructions?: string | null;
             /**
              * @description Where this service is offered, and for how much at each branch (§72).
              *
@@ -3491,6 +3507,8 @@ export interface components {
             businessId: string;
             name: string;
             description: string | null;
+            /** @description What to know before coming (§180). */
+            instructions: string | null;
             durationMinutes: number;
             currency: string;
             /** @description A decimal string (§128.20). */
@@ -3892,6 +3910,8 @@ export interface components {
              * @enum {string}
              */
             quantityMode: "SINGLE" | "PEOPLE" | "UNITS";
+            /** @description What to know before coming (§180) — live from the service, for the reservation. */
+            instructions: string | null;
         };
         AppointmentCustomerDto: {
             id: string;
@@ -5167,6 +5187,8 @@ export interface components {
             id: string;
             name: string;
             description: string | null;
+            /** @description What to know before coming (§180): shown before booking, and again on the reservation. */
+            instructions: string | null;
             durationMinutes: number;
             /** @description The unit of account the price below is in. */
             currency: string;

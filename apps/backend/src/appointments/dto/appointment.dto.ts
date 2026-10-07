@@ -45,6 +45,8 @@ export class AppointmentServiceDto {
   durationMinutes!: number;
   /** What `quantity` on the appointment counts: people, or units (§136). */
   quantityMode!: QuantityMode;
+  /** What to know before coming (§180) — live from the service, for the reservation. */
+  instructions!: string | null;
 }
 
 export class AppointmentCustomerDto {

@@ -684,6 +684,10 @@ model Service {
 
   name        String
   description String?
+  /// What a customer should know before they come — arrive ten minutes early,
+  /// bring something, where to park (§180). Shown on the service before booking
+  /// and on the reservation after. Null when the shop has nothing to say.
+  instructions String?
 
   // Money is stored as integer cents, never a float. Binary floating point
   // cannot represent most decimal money values exactly, and the deposit /
@@ -2169,6 +2173,7 @@ model ServiceDraft {
   /// into a real service, and not before.
   name              String?
   description       String?
+  instructions      String?
   durationMinutes   Int?
   depositPercentage Decimal? @db.Decimal(5, 2)
 

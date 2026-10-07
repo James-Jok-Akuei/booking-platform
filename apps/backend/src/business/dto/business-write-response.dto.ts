@@ -12,6 +12,7 @@ export const SERVICE_DRAFT_SELECT = {
   id: true,
   name: true,
   description: true,
+  instructions: true,
   durationMinutes: true,
   depositPercentage: true,
   offers: true,
@@ -45,6 +46,7 @@ export class ServiceDraftDto implements ServiceDraftRow {
   id!: string;
   name!: string | null;
   description!: string | null;
+  instructions!: string | null;
   durationMinutes!: number | null;
   /** A decimal string, like every other percentage here (§128.20). */
   depositPercentage!: string | null;
@@ -147,6 +149,8 @@ export class ServiceDto implements ServiceRow {
   businessId!: string;
   name!: string;
   description!: string | null;
+  /** What to know before coming (§180). */
+  instructions!: string | null;
   durationMinutes!: number;
   currency!: string;
   /** A decimal string (§128.20). */

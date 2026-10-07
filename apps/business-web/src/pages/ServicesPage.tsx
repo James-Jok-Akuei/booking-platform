@@ -67,6 +67,8 @@ export function ServicesPage() {
 
   const queueDraftSave = (values: {
     name: string;
+    description: string;
+    instructions: string;
     durationMinutes: number | null;
     depositPercentage: number | null;
     offers: Array<{ locationId: string; priceMinor: number }>;
@@ -78,6 +80,8 @@ export function ServicesPage() {
     timer.current = setTimeout(() => {
       saveServiceDraft(draftId, {
         name: values.name || null,
+        description: values.description.trim() || null,
+        instructions: values.instructions.trim() || null,
         durationMinutes: values.durationMinutes,
         depositPercentage: values.depositPercentage,
         offers: values.offers,
@@ -97,6 +101,7 @@ export function ServicesPage() {
       id: draft.id,
       name: draft.name ?? '',
       description: draft.description,
+      instructions: draft.instructions,
       durationMinutes: draft.durationMinutes ?? 30,
       depositPercentage: draft.depositPercentage ?? '20',
       isActive: true,
@@ -453,12 +458,18 @@ function ServiceForm({
    */
   onChange?: (values: {
     name: string;
+    description: string;
+    instructions: string;
     durationMinutes: number | null;
     depositPercentage: number | null;
     offers: Array<{ locationId: string; priceMinor: number }>;
   }) => void;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
+  // What it is, and what to know before coming (§180). Both reach the
+  // customer: under "About this service", and on the reservation.
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [instructions, setInstructions] = useState(initial?.instructions ?? '');
   const [duration, setDuration] = useState(String(initial?.durationMinutes ?? 30));
   const [deposit, setDeposit] = useState(initial?.depositPercentage ?? '20');
   // Whether one booking may be for more than one, and what "more" means (§136).
@@ -505,6 +516,8 @@ function ServiceForm({
   useEffect(() => {
     onChange?.({
       name,
+      description,
+      instructions,
       durationMinutes: Number(duration) || null,
       depositPercentage: deposit === '' ? null : Number(deposit),
       offers,
@@ -512,7 +525,7 @@ function ServiceForm({
     // `offers` is derived from `prices` and rebuilt each render, so watching it
     // directly would fire this on every render rather than on every change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, duration, deposit, prices]);
+  }, [name, description, instructions, duration, deposit, prices]);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -523,6 +536,9 @@ function ServiceForm({
     onSubmit(
       {
       name: name.trim(),
+      // Blank is "nothing to say": sent as null so the server stores nothing.
+      description: description.trim() || null,
+      instructions: instructions.trim() || null,
       durationMinutes: Number(duration),
       depositPercentage: Number(deposit),
       quantityMode,
@@ -616,6 +632,38 @@ function ServiceForm({
           </label>
         ))}
         <span className="muted small">Leave a branch blank to stop offering it there.</span>
+      </div>
+
+      {/* The words a customer reads (§180). Full width, because they are
+          sentences, not numbers. */}
+      <div className="service-words">
+        <label htmlFor="sdesc">Description</label>
+        <textarea
+          id="sdesc"
+          rows={3}
+          maxLength={2000}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="What it is and what is included — a customer reads this before choosing it."
+        />
+        <span className="muted small">
+          Shown under “About this service”. {description.length}/2000
+        </span>
+      </div>
+      <div className="service-words">
+        <label htmlFor="sinstr">Special instructions</label>
+        <textarea
+          id="sinstr"
+          rows={3}
+          maxLength={600}
+          value={instructions}
+          onChange={(e) => setInstructions(e.target.value)}
+          placeholder="What to know before coming: arrive ten minutes early, bring a towel, park at the back…"
+        />
+        <span className="muted small">
+          Shown as “Before you come” — on the service, and again on the customer’s reservation.{' '}
+          {instructions.length}/600
+        </span>
       </div>
 
       {creating && (
@@ -769,6 +817,14 @@ function ServiceRow({
               {service.images.length === 0
                 ? 'No photos'
                 : `${service.images.length} photo${service.images.length === 1 ? '' : 's'}`}
+            </div>
+            {/* The words (§180), one line each: a glance down the list shows
+                which services still have nothing to say for themselves. */}
+            <div className="muted small">
+              {service.description ? 'Description' : 'No description'}
+            </div>
+            <div className="muted small">
+              {service.instructions ? 'Instructions' : 'No instructions'}
             </div>
           </span>
         </div>

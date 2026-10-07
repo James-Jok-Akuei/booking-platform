@@ -24,6 +24,7 @@ import {
 import { createAppointment } from '../../src/api/booking';
 import { openInquiry } from '../../src/api/chat';
 import { ApiError, useSignedIn } from '../../src/api/client';
+import { BeforeYouCome } from '../../src/booking/BeforeYouCome';
 import { endOf, groupByPeriod } from '../../src/booking/periods';
 import { PhotoPager } from '../../src/components/PhotoPager';
 import { SaveButton } from '../../src/components/SaveButton';
@@ -547,6 +548,10 @@ export default function Book() {
                 )}
               </FadeIn>
             )}
+
+            {/* WHAT TO KNOW BEFORE COMING (§180): the shop's own note, shown
+                again on the reservation once booked. */}
+            {service.instructions && <BeforeYouCome text={service.instructions} delay={145} />}
 
             {/* WHAT OTHERS SAID. Only once somebody has (§153). */}
             {s.rating.count > 0 && s.rating.average !== null && (

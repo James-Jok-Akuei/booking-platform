@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -35,15 +35,34 @@ export class ServiceOfferDto {
   priceMinor!: number;
 }
 
+/**
+ * Words a shop may leave blank: an empty box is "nothing to say", stored as
+ * null, so no client has to tell "" from nothing (§180).
+ */
+const blankToNull = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim() || null : value;
+
 export class CreateServiceDto {
   @IsString()
   @Length(2, 120)
   name!: string;
 
+  /** What it is, in the shop's own words. Shown under "About this service". */
   @IsOptional()
+  @Transform(blankToNull)
   @IsString()
   @MaxLength(2000)
-  description?: string;
+  description?: string | null;
+
+  /**
+   * What to know before coming (§180): arrive early, bring a towel, park at
+   * the back. Short on purpose — it is read on a phone, the day before.
+   */
+  @IsOptional()
+  @Transform(blankToNull)
+  @IsString()
+  @MaxLength(600)
+  instructions?: string | null;
 
   /**
    * Where this service is offered, and for how much at each branch (§72).

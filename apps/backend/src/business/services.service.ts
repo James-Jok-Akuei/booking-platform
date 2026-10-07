@@ -1,6 +1,24 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, QuantityMode } from '@prisma/client';
 import { normaliseQuantityRule } from '../appointments/quantity';
+
+/**
+ * The sentences a shop writes about a service (§180), tidied: trimmed, and a
+ * blank stored as NOTHING rather than as "". The DTO does the same on the way
+ * in; this is for every caller that is not the HTTP layer, so no client ever
+ * has to tell an empty description from a missing one.
+ */
+const tidyWords = <T extends { description?: string | null; instructions?: string | null }>(
+  fields: T,
+): T => ({
+  ...fields,
+  ...(fields.description !== undefined
+    ? { description: fields.description?.trim() || null }
+    : {}),
+  ...(fields.instructions !== undefined
+    ? { instructions: fields.instructions?.trim() || null }
+    : {}),
+});
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
@@ -97,7 +115,8 @@ export class ServicesService {
       dto.offers.map((offer) => offer.locationId),
     );
 
-    const { offers, quantityMode, maxQuantity, ...fields } = dto;
+    const { offers, quantityMode, maxQuantity, ...words } = dto;
+    const fields = tidyWords(words);
     const quantityRule = normaliseQuantityRule(
       quantityMode ?? QuantityMode.SINGLE,
       maxQuantity,
@@ -151,7 +170,8 @@ export class ServicesService {
     // patch: an update can also flip `isActive` back on, which changes the
     // cheapest price without touching a price field. Checking which fields
     // moved would be a second place to get the rule right.
-    const { offers, quantityMode, maxQuantity, ...rest } = dto;
+    const { offers, quantityMode, maxQuantity, ...patch } = dto;
+    const rest = tidyWords(patch);
 
     // The rule is two columns that must agree (§136), so a patch naming either
     // is completed from the stored row before it is checked — sending only a

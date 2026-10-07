@@ -54,7 +54,9 @@ export const APPOINTMENT_SELECT = {
   //
   // The NAME stays joined deliberately: a renamed service makes the label drift,
   // which is cosmetic. A reprice makes the number wrong, which is not.
-  service: { select: { id: true, name: true, durationMinutes: true, quantityMode: true } },
+  service: {
+    select: { id: true, name: true, durationMinutes: true, quantityMode: true, instructions: true },
+  },
   customer: { select: { id: true, email: true } },
 } as const;
 

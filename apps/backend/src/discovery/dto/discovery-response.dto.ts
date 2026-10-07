@@ -193,6 +193,8 @@ export class ShopfrontServiceDto {
   id!: string;
   name!: string;
   description!: string | null;
+  /** What to know before coming (§180): shown before booking, and again on the reservation. */
+  instructions!: string | null;
   durationMinutes!: number;
   /** The unit of account the price below is in. */
   currency!: string;

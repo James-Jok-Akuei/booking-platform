@@ -22,6 +22,7 @@ import {
   timeRange,
   type Bought,
 } from './format';
+import { BeforeYouCome } from './BeforeYouCome';
 
 const WHO_CANCELLED: Record<string, string> = {
   CUSTOMER: 'You cancelled this',
@@ -170,6 +171,13 @@ export function Reservation({
           canCancel && <Action icon="close-circle-outline" label="Cancel" onPress={onCancel} danger />
         )}
       </FadeIn>
+
+      {/* WHAT TO KNOW BEFORE COMING (§180), live from the service: the day
+          before the visit is when "come ten minutes early" matters most, so
+          it is here until the visit is over. */}
+      {a.service.instructions && (live || canCancel) && (
+        <BeforeYouCome text={a.service.instructions} delay={120} />
+      )}
 
       {/* THE FACTS. */}
       <FadeIn delay={140} style={styles.card}>

@@ -590,6 +590,7 @@ export class DiscoveryService {
               id: true,
               name: true,
               description: true,
+              instructions: true,
               durationMinutes: true,
               depositPercentage: true,
               currency: true,

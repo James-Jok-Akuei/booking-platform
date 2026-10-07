@@ -14774,6 +14774,10 @@
             "type": "string",
             "nullable": true
           },
+          "instructions": {
+            "type": "string",
+            "nullable": true
+          },
           "durationMinutes": {
             "type": "number",
             "nullable": true
@@ -14798,6 +14802,7 @@
           "id",
           "name",
           "description",
+          "instructions",
           "durationMinutes",
           "depositPercentage",
           "createdBy",
@@ -14835,6 +14840,11 @@
             "type": "string",
             "nullable": true,
             "maxLength": 2000
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 600
           },
           "durationMinutes": {
             "type": "number",
@@ -15306,7 +15316,15 @@
           },
           "description": {
             "type": "string",
+            "nullable": true,
+            "description": "What it is, in the shop's own words. Shown under \"About this service\".",
             "maxLength": 2000
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true,
+            "description": "What to know before coming (§180): arrive early, bring a towel, park at\nthe back. Short on purpose — it is read on a phone, the day before.",
+            "maxLength": 600
           },
           "offers": {
             "description": "Where this service is offered, and for how much at each branch (§72).\n\nAt least one: a service offered nowhere cannot be booked by anybody, and\ncreating one is almost always a mistake rather than an intention. A branch\ncan be removed later, which is the honest way to stop offering it there.",
@@ -15427,6 +15445,11 @@
             "type": "string",
             "nullable": true
           },
+          "instructions": {
+            "type": "string",
+            "nullable": true,
+            "description": "What to know before coming (§180)."
+          },
           "durationMinutes": {
             "type": "number"
           },
@@ -15479,6 +15502,7 @@
           "businessId",
           "name",
           "description",
+          "instructions",
           "durationMinutes",
           "currency",
           "depositPercentage",
@@ -15501,7 +15525,15 @@
           },
           "description": {
             "type": "string",
+            "nullable": true,
+            "description": "What it is, in the shop's own words. Shown under \"About this service\".",
             "maxLength": 2000
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true,
+            "description": "What to know before coming (§180): arrive early, bring a towel, park at\nthe back. Short on purpose — it is read on a phone, the day before.",
+            "maxLength": 600
           },
           "offers": {
             "description": "Where this service is offered, and for how much at each branch (§72).\n\nAt least one: a service offered nowhere cannot be booked by anybody, and\ncreating one is almost always a mistake rather than an intention. A branch\ncan be removed later, which is the honest way to stop offering it there.",
@@ -15592,6 +15624,11 @@
             "type": "string",
             "nullable": true
           },
+          "instructions": {
+            "type": "string",
+            "nullable": true,
+            "description": "What to know before coming (§180)."
+          },
           "durationMinutes": {
             "type": "number"
           },
@@ -15631,6 +15668,7 @@
           "businessId",
           "name",
           "description",
+          "instructions",
           "durationMinutes",
           "currency",
           "depositPercentage",
@@ -16773,13 +16811,19 @@
               "PEOPLE",
               "UNITS"
             ]
+          },
+          "instructions": {
+            "type": "string",
+            "nullable": true,
+            "description": "What to know before coming (§180) — live from the service, for the reservation."
           }
         },
         "required": [
           "id",
           "name",
           "durationMinutes",
-          "quantityMode"
+          "quantityMode",
+          "instructions"
         ]
       },
       "AppointmentCustomerDto": {
@@ -21021,6 +21065,11 @@
             "type": "string",
             "nullable": true
           },
+          "instructions": {
+            "type": "string",
+            "nullable": true,
+            "description": "What to know before coming (§180): shown before booking, and again on the reservation."
+          },
           "durationMinutes": {
             "type": "number"
           },
@@ -21061,6 +21110,7 @@
           "id",
           "name",
           "description",
+          "instructions",
           "durationMinutes",
           "currency",
           "depositPercentage",

@@ -151,6 +151,8 @@ export class BusinessServiceDto implements ServicePayload {
   businessId!: string;
   name!: string;
   description!: string | null;
+  /** What to know before coming (§180). */
+  instructions!: string | null;
   durationMinutes!: number;
   currency!: string;
   /** A decimal STRING — "20", not 20 (§56). */
