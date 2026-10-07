@@ -57,13 +57,16 @@ const niceDate = (ymd: string) =>
  * like the place rather than a banner above some text.
  */
 export default function Shop() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, tab: openOn } = useLocalSearchParams<{ id: string; tab?: string }>();
   const money = useMoney();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [tab, setTab] = useState<'services' | 'hours' | 'reviews'>('services');
+  // A link can open straight on a tab — "See all reviews" on a service (§179).
+  const [tab, setTab] = useState<'services' | 'hours' | 'reviews'>(
+    openOn === 'reviews' || openOn === 'hours' ? openOn : 'services',
+  );
   const [photo, setPhoto] = useState<number | null>(null);
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });

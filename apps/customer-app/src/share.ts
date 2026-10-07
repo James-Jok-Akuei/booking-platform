@@ -34,6 +34,27 @@ export async function shareShop(shop: {
   });
 }
 
+/** Passes one service to somebody: what, where, what it costs, how long (§179). */
+export async function shareService(service: {
+  locationId: string;
+  serviceId: string;
+  name: string;
+  businessName: string;
+  branchName?: string | null;
+  price: string;
+  length: string;
+}) {
+  const where =
+    service.branchName && service.branchName !== service.businessName
+      ? `${service.businessName}, ${service.branchName}`
+      : service.businessName;
+  await Share.share({
+    message:
+      `${service.name} at ${where}\n${service.price} · ${service.length}` +
+      linkFor(`/book/${service.locationId}?serviceId=${service.serviceId}`),
+  });
+}
+
 /** Passes the app itself on. */
 export async function shareApp() {
   await Share.share({

@@ -1,26 +1,55 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Animated,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboardScroll } from '../../src/useKeyboardScroll';
-import { getAvailability, getShop } from '../../src/api/discovery';
+import {
+  getAvailability,
+  getRoute,
+  getShop,
+  getShopReviews,
+  type PublicReview,
+} from '../../src/api/discovery';
 import { createAppointment } from '../../src/api/booking';
+import { openInquiry } from '../../src/api/chat';
 import { ApiError, useSignedIn } from '../../src/api/client';
+import { endOf, groupByPeriod } from '../../src/booking/periods';
+import { PhotoPager } from '../../src/components/PhotoPager';
+import { SaveButton } from '../../src/components/SaveButton';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
+import { distanceLabel } from '../../src/distance';
+import { shareService } from '../../src/share';
 import { font, radius, shadow, theme, type } from '../../src/theme';
+import { useNearMe } from '../../src/useNearMe';
+import { useSavedService } from '../../src/useSavedService';
 import { Avatar } from '../../src/ui/Avatar';
 import { Button } from '../../src/ui/Button';
 import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
-import { cheer } from '../../src/ui/haptic';
-import { Icon } from '../../src/ui/Icon';
+import { cheer, tick } from '../../src/ui/haptic';
+import { Icon, type IconName } from '../../src/ui/Icon';
+import { IconButton } from '../../src/ui/IconButton';
 import { useLayout } from '../../src/ui/layout';
+import { PopIn } from '../../src/ui/Motion';
 import { PhotoViewer, type ViewerOrigin } from '../../src/ui/PhotoViewer';
+import { Pill } from '../../src/ui/Pill';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
+import { Stars } from '../../src/ui/Stars';
 import { Stepper } from '../../src/ui/Stepper';
+import { Ticker } from '../../src/ui/Ticker';
 import { TopBar } from '../../src/ui/TopBar';
 
 /**
@@ -49,41 +78,88 @@ const dayLabel = (ymd: string) => {
   };
 };
 
+const niceDate = (ymd: string) =>
+  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+
+const monthOf = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+
+/** Room the sticky bar takes at the foot of the page. */
+const FOOTER = 112;
+
 /**
- * Pick a day, pick a time, hold the slot.
+ * One service, as the page that decides whether it is booked (§179).
  *
- * Availability is asked for with the SERVICE's duration, not the default grid:
- * a 60-minute service cannot start 45 minutes before closing, and the default
- * would offer starts that booking then refuses.
+ * Laid out the way the pages that sell best are laid out, top to bottom in the
+ * order a person decides: the PHOTOS, edge to edge and swiped through; what it
+ * IS and how long it takes; what it COSTS, with the deposit drawn as a share of
+ * it rather than described; why it is SAFE to pay; WHO is doing it, with their
+ * rating and how far they are; what they SAY about it; what OTHERS said; and
+ * only then the booking itself — how many, which day, what time, grouped into
+ * morning, afternoon and evening — ending in a card that reads the booking
+ * back before the button is pressed.
  *
- * The slots come back as local times in the SHOP's time zone. They are sent
- * back as the same wall-clock time rather than converted through the phone's
- * zone — a customer in Kigali and a phone set to London must mean 10:00 at the
- * shop when they tap 10:00.
+ * The bar at the bottom is the running answer to "what will this cost me":
+ * the total rolls as "how many" changes, the deposit sits under it, and the
+ * button never goes dead — with no time chosen it takes you to the times.
  *
- * Laid out as the two questions it asks (§133): a row of days to swipe through,
- * then a grid of times in even columns. The button at the bottom never moves
- * and always says what it will do next — "Pick a time" until there is one, then
- * the time and what it costs to hold it.
+ * Availability is asked for with the SERVICE's duration, and the chosen slot
+ * is sent back as the shop's own wall-clock time (§133.8), as before.
  */
 export default function Book() {
   const { id, serviceId } = useLocalSearchParams<{ id: string; serviceId: string }>();
   const router = useRouter();
   const money = useMoney();
   const insets = useSafeAreaInsets();
-  // Keeps the field being typed into above the keyboard (§168).
-  const keys = useKeyboardScroll({ pad: true });
+  const window = useWindowDimensions();
   const layout = useLayout();
   const signedIn = useSignedIn();
-  const [viewer, setViewer] = useState<{ index: number; origin: ViewerOrigin | null } | null>(null);
+  const savedService = useSavedService();
+  const nearMe = useNearMe();
+  // Keeps the typed number above the keyboard (§168).
+  const keys = useKeyboardScroll({ pad: true });
 
+  const HERO = layout.wide ? 420 : layout.compact ? 300 : 340;
+
+  const [viewer, setViewer] = useState<{ index: number; origin: ViewerOrigin | null } | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const days = useMemo(() => nextDays(14), []);
   const [date, setDate] = useState(days[0]);
   const [slot, setSlot] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const offset = useRef(0);
+  const timesRef = useRef<View>(null);
+
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const service = shop.data?.services.find((s) => s.id === serviceId);
+
+  // What others said, for the page that has to persuade (§179). Three is
+  // enough to show; the shop page has them all.
+  const reviews = useQuery({
+    queryKey: ['shop-reviews', id, 'few'],
+    queryFn: () => getShopReviews(id, 6),
+    enabled: (shop.data?.rating.count ?? 0) > 0,
+  });
+
+  // The real road from here, once the phone has said where here is (§157).
+  const position = nearMe.state.status === 'on' ? nearMe.state : null;
+  const route = useQuery({
+    queryKey: ['route', id, position?.lat, position?.lng],
+    queryFn: () => getRoute(id, { lat: position!.lat, lng: position!.lng }),
+    enabled: position !== null && shop.data?.latitude !== null && shop.data !== undefined,
+  });
+  // Short, for a card: "8.5 km · 14 min by car", or the straight line as such.
+  const way = route.data
+    ? route.data.by === 'road' && route.data.minutes !== null
+      ? `${distanceLabel(route.data.distanceKm)} · ${route.data.minutes} min by car`
+      : `${distanceLabel(route.data.distanceKm)} in a straight line`
+    : null;
 
   /**
    * Opened after closing time, today is done. Rather than open on a day that
@@ -136,21 +212,59 @@ export default function Book() {
       ),
   });
 
+  // A question before booking (§167): the thing most people have, and the
+  // reason they do not book when there is nowhere to ask it.
+  const openChat = useMutation({
+    mutationFn: () => openInquiry(shop.data!.business.id),
+    onSuccess: (thread) => router.push(`/thread/${thread.id}`),
+    onError: (error) =>
+      Alert.alert(
+        'Could not open that',
+        error instanceof ApiError ? error.message : 'Please try again.',
+      ),
+  });
+
+  // The photo moves at half the speed of the page, and stretches when the
+  // page is pulled down past its top — pinned to the top edge as it grows.
+  const heroShift = scrollY.interpolate({
+    inputRange: [-HERO, 0, HERO],
+    outputRange: [-HERO / 2, 0, HERO / 2],
+    extrapolate: 'clamp',
+  });
+  const heroScale = scrollY.interpolate({
+    inputRange: [-HERO, 0],
+    outputRange: [2, 1],
+    extrapolateRight: 'clamp',
+  });
+  // The bar behind the round buttons fades in as the title scrolls under it,
+  // so there is always a name on screen saying what this is.
+  const barOpacity = scrollY.interpolate({
+    inputRange: [HERO - 150, HERO - 90],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
+
   if (shop.isLoading) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Book" />
-        <View style={styles.content}>
-          <Skeleton height={150} round={radius.lg} />
-          <Skeleton width="40%" height={18} />
+        <Skeleton height={HERO} round={0} />
+        <View style={[styles.sheet, styles.loading]}>
+          <Skeleton width="34%" height={22} round={11} />
+          <Skeleton width="72%" height={28} />
+          <Skeleton width="55%" />
+          <Skeleton height={132} round={radius.lg} style={styles.loadingGap} />
+          <Skeleton height={76} round={radius.lg} />
           <Skeleton height={84} round={radius.lg} />
-          <Skeleton width="40%" height={18} />
-          <Skeleton height={120} round={radius.lg} />
+        </View>
+        <View style={[styles.floating, { top: insets.top + 8 }]}>
+          <IconButton icon="chevron-back" label="Go back" onPress={back} />
         </View>
       </View>
     );
   }
-  if (!service) {
+  if (!shop.data || !service) {
     return (
       <View style={styles.screen}>
         <TopBar title="Book" />
@@ -159,33 +273,74 @@ export default function Book() {
     );
   }
 
+  const s = shop.data;
+  const businessName = s.business.name ?? s.name;
+  const district = s.district?.name ?? null;
+  const category = s.business.category;
+
   // Everything is for the WHOLE booking (§136): the price is one times how
   // many, and the deposit is its share of that total.
   const several = service.quantityMode !== 'SINGLE';
   const people = service.quantityMode === 'PEOPLE';
+  const unitWord = people ? 'per person' : several ? 'each' : null;
+  const countWord = (n: number) => (people ? `${n} ${n === 1 ? 'person' : 'people'}` : `× ${n}`);
   const totalMinor = service.priceMinor * quantity;
+  const depositPct = Math.max(0, Math.min(100, Math.round(Number(service.depositPercentage))));
   const depositMinor = Math.round((totalMinor * Number(service.depositPercentage)) / 100);
+  const restMinor = Math.max(0, totalMinor - depositMinor);
+  const split = depositMinor < totalMinor;
+  const format = (minor: number) => money.format(minor, service.currency);
+
   // How long the whole booking takes comes from the server, which knows how
   // many places the shop has. Until it answers, one sitting is the best guess.
   const minutes = availability.data?.durationMinutes ?? service.durationMinutes;
   const slots = availability.data?.slots ?? [];
+  const periods = groupByPeriod(slots);
 
   // Even columns that fill the row: four on a normal phone, three on a narrow
   // one, more on a tablet. A ragged wrap of different-width times is hard to
   // scan for "the one after lunch".
-  const inner = layout.contentWidth - 40;
-  /**
-   * The photos share the width between them, and never go narrower than 220
-   * (§135.4). So ONE photo is as wide as the screen's content, two fill a
-   * tablet side by side, and a set too long to fit stays at 220 each and
-   * scrolls — with the next one peeking in at the edge. A fixed 220 left a
-   * lone photo sitting beside an empty half of the screen.
-   */
-  const photoCount = service?.images.length ?? 0;
-  const photoWidth = Math.max(220, Math.floor((inner - 10 * (photoCount - 1)) / (photoCount || 1)));
-  const photoHeight = Math.max(160, Math.min(280, Math.round(photoWidth * 0.58)));
+  const inner = Math.min(layout.contentWidth, window.width) - 40;
   const perRow = layout.wide ? 6 : inner < 330 ? 3 : 4;
   const slotWidth = (inner - 10 * (perRow - 1)) / perRow;
+
+  const withWords = (reviews.data?.reviews ?? []).filter((r) => r.comment);
+  const shownReviews = (withWords.length > 0 ? withWords : (reviews.data?.reviews ?? [])).slice(0, 2);
+
+  /**
+   * A time chosen is read back in the card at the foot of the page (§179),
+   * which is below the times — so the page glides down to it, after the
+   * card has had a moment to pop in.
+   */
+  const choose = (time: string) => {
+    setSlot(time);
+    setTimeout(() => keys.ref.current?.scrollToEnd({ animated: true }), 140);
+  };
+
+  /** With no time chosen, the button takes you to the times instead of doing nothing. */
+  const goToTimes = () => {
+    tick();
+    timesRef.current?.measureInWindow((_x, y) => {
+      if (!Number.isFinite(y)) return;
+      keys.ref.current?.scrollTo({
+        y: Math.max(0, y + offset.current - insets.top - 64),
+        animated: true,
+      });
+    });
+  };
+
+  const share = () =>
+    shareService({
+      locationId: id,
+      serviceId,
+      name: service.name,
+      businessName,
+      branchName: s.name,
+      price: format(service.priceMinor),
+      length: duration(service.durationMinutes),
+    });
+
+  const here = `/book/${id}?serviceId=${serviceId}`;
 
   return (
     <View style={styles.screen}>
@@ -195,276 +350,537 @@ export default function Book() {
         origin={viewer?.origin}
         onClose={() => setViewer(null)}
       />
-      <TopBar title={service.name} subtitle={shop.data?.business.name ?? shop.data?.name} />
 
-      <ScrollView
+      <Animated.ScrollView
         ref={keys.ref}
-        onScroll={keys.track}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: true,
+          listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            offset.current = event.nativeEvent.contentOffset.y;
+            keys.track(event);
+          },
+        })}
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.content,
-          { width: layout.contentWidth, alignSelf: 'center' },
-          keys.padding > 0 && { paddingBottom: keys.padding + 28 },
-        ]}
+        contentContainerStyle={{ paddingBottom: 24 + keys.padding }}
       >
-        {/* Every photo of this service (§132), not just the cover: by this
-            screen the customer has chosen it and is deciding whether to pay,
-            which is the moment the pictures are worth most. Horizontal so a
-            long list does not push the price and the slots off the screen. */}
-        {service.images.length > 0 && (
-          <FadeIn>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.bleed}
-              contentContainerStyle={styles.photoStrip}
-            >
-              {service.images.map((photo, index) => (
-                // Tapping a photo opens it properly (§135.7). Where the
-                // thumbnail sits on screen is measured at the tap, so the
-                // photo can grow out of exactly that spot.
-                <PressableScale
-                  key={photo.id}
-                  scaleTo={0.98}
-                  accessibilityRole="imagebutton"
-                  accessibilityLabel={`Photo ${index + 1} of ${service.images.length}`}
-                  onPress={(e) => {
-                    // Asked of the thumbnail itself rather than worked out
-                    // from the touch: the touch's own offsets are not reported
-                    // the same way everywhere, and a wrong origin is worse
-                    // than none.
-                    const target = e.currentTarget as unknown as {
-                      measureInWindow?: (
-                        done: (x: number, y: number, w: number, h: number) => void,
-                      ) => void;
-                    };
-                    if (!target?.measureInWindow) return setViewer({ index, origin: null });
-                    target.measureInWindow((x, y, width, height) =>
-                      setViewer({
-                        index,
-                        origin: [x, y, width, height].every(Number.isFinite)
-                          ? { x, y, width, height }
-                          : null,
-                      }),
-                    );
-                  }}
-                >
-                  <Image
-                    source={{ uri: photo.url }}
-                    style={[styles.photo, { width: photoWidth, height: photoHeight }]}
-                  />
-                </PressableScale>
-              ))}
-            </ScrollView>
-          </FadeIn>
-        )}
+        {/* THE PHOTOS. Edge to edge, a page at a time (§179). */}
+        <Animated.View
+          style={{ height: HERO, transform: [{ translateY: heroShift }, { scale: heroScale }] }}
+        >
+          <PhotoPager
+            photos={service.images}
+            fallbackUri={s.business.coverImageUrl}
+            categoryIcon={category?.icon}
+            width={window.width}
+            height={HERO}
+            onOpen={(index, origin) => setViewer({ index, origin })}
+          />
+        </Animated.View>
 
-        {/* WHOSE service this is, and the way to their page (§135.5). The home
-            shelves bring people straight here, past the shop — so this screen
-            has to be able to send them there, or the only way to see the
-            shop's hours, photos and reviews was to go back and hunt for it.
-            Always shown, photo or no photo. */}
-        {shop.data && (
-          <FadeIn delay={20}>
-            <PressableScale
-              onPress={() => router.push(`/shop/${id}`)}
-              haptic
-              accessibilityRole="button"
-              accessibilityLabel={`${shop.data.business.name ?? shop.data.name}, view shop`}
-              style={styles.shopRow}
-            >
-              <Avatar
-                uri={shop.data.business.logoUrl}
-                name={shop.data.business.name ?? shop.data.name}
-                size={46}
-              />
-              <View style={styles.shopText}>
-                <Text style={type.subheading} numberOfLines={1}>
-                  {shop.data.business.name ?? shop.data.name}
-                </Text>
-                <Text style={type.small} numberOfLines={1}>
-                  {shop.data.name}
+        <View style={styles.sheet}>
+          <View style={[styles.column, { maxWidth: layout.contentWidth }]}>
+            {/* WHAT IT IS. */}
+            <FadeIn>
+              <View style={styles.pills}>
+                {category && (
+                  <Pill label={s.business.subcategory?.name ?? category.name} tone="accent" />
+                )}
+                {s.openNow && <Pill label="Open now" tone="ok" dot />}
+                {people && (
+                  <Pill
+                    label={`Up to ${service.maxQuantity} people`}
+                    tone="neutral"
+                    icon="people-outline"
+                  />
+                )}
+              </View>
+              <Text style={type.title}>{service.name}</Text>
+              <View style={styles.meta}>
+                <Icon name="time-outline" size={15} color={theme.muted} />
+                <Text style={type.small}>{duration(service.durationMinutes, true)}</Text>
+                <Text style={styles.metaDot}>·</Text>
+                <Icon name="location-outline" size={15} color={theme.muted} />
+                <Text style={[type.small, styles.flex]} numberOfLines={1}>
+                  {s.name}
+                  {district ? `, ${district}` : ''}
                 </Text>
               </View>
-              {/* On a narrow phone the words would cut the shop's name short,
-                  and the name matters more; the arrow says the same thing. */}
-              {!layout.compact && <Text style={styles.shopLink}>View shop</Text>}
-              <Icon name="chevron-forward" size={16} color={theme.accent} />
-            </PressableScale>
-          </FadeIn>
-        )}
+            </FadeIn>
 
-        <FadeIn delay={40} style={styles.card}>
-          <Text style={type.heading}>{service.name}</Text>
-          <View style={styles.line}>
-            <Icon name="time-outline" size={15} color={theme.muted} />
-            <Text style={type.small}>
-              {duration(minutes, true)} at {shop.data?.name}
-            </Text>
-          </View>
-          <View style={styles.priceRow}>
-            <Text style={styles.price}>{money.format(totalMinor, service.currency)}</Text>
-            <Text style={type.small}>total</Text>
-          </View>
-          {quantity > 1 && (
-            <Text style={type.small}>
-              {quantity} × {money.format(service.priceMinor, service.currency)}
-            </Text>
-          )}
-          {/* The split is stated before anything is chosen. It is the part
-              people get wrong about a deposit. */}
-          <View style={styles.depositNote}>
-            <Icon name="shield-checkmark-outline" size={17} color={theme.accent} />
-            <Text style={styles.depositText}>
-              You pay {money.format(depositMinor, service.currency)} now to hold the
-              slot. The rest is paid at the shop.
-            </Text>
-          </View>
-        </FadeIn>
+            {/* WHAT IT COSTS. The deposit is DRAWN as a share of the price,
+                not only said: it is the part of paying a deposit people get
+                wrong, and a bar is read faster than a sentence. */}
+            <FadeIn delay={40} style={styles.card}>
+              <View style={styles.priceRow}>
+                <Text style={[styles.price, layout.compact && styles.priceCompact]}>
+                  {format(service.priceMinor)}
+                </Text>
+                {unitWord && <Text style={styles.priceUnit}>{unitWord}</Text>}
+              </View>
 
-        {/* HOW MANY, asked only where the shop allows more than one, and in
-            the shop's own sense of it (§136): people for a haircut, just a
-            number for passport photos. Before the day and the time, because
-            the answer changes which times are free. */}
-        {several && (
-          <FadeIn delay={70} style={[styles.card, styles.howMany]}>
-            <View style={styles.flex}>
-              <Text style={type.subheading}>{people ? 'How many people?' : 'How many?'}</Text>
-              <Text style={type.small}>Up to {service.maxQuantity} in one booking</Text>
-            </View>
-            <Stepper
-              value={quantity}
-              max={service.maxQuantity}
-              label={people ? 'people' : 'items'}
-              onFocus={keys.reveal}
-              onChange={(next) => {
-                setQuantity(next);
-                // A time that was free for two may not be free for three.
-                setSlot(null);
-              }}
-            />
-          </FadeIn>
-        )}
+              {split ? (
+                <>
+                  <View style={styles.track}>
+                    <View style={[styles.fill, { width: `${Math.max(4, depositPct)}%` }]} />
+                  </View>
+                  <View style={styles.split}>
+                    <View style={styles.flex}>
+                      <Text style={styles.splitLabel}>
+                        Pay now{quantity > 1 ? ` · ${countWord(quantity)}` : ''}
+                      </Text>
+                      <Ticker value={depositMinor} render={format} style={styles.splitNow} />
+                    </View>
+                    <View style={styles.splitRight}>
+                      <Text style={styles.splitLabel}>At the shop</Text>
+                      <Ticker value={restMinor} render={format} style={styles.splitLater} />
+                    </View>
+                  </View>
+                  <View style={styles.holdLine}>
+                    <Icon name="shield-checkmark" size={15} color={theme.ok} />
+                    <Text style={styles.holdText}>
+                      A {depositPct}% deposit holds the time for you. The rest is paid at
+                      the shop.
+                    </Text>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.holdLine}>
+                  <Icon name="shield-checkmark" size={15} color={theme.ok} />
+                  <Text style={styles.holdText}>Paid in full now, and the time is yours.</Text>
+                </View>
+              )}
+            </FadeIn>
 
-        <FadeIn delay={100} style={styles.group}>
-          <Text style={type.heading}>Which day?</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.bleed}
-            contentContainerStyle={styles.days}
-          >
-            {days.map((ymd) => {
-              const label = dayLabel(ymd);
-              const active = ymd === date;
-              return (
+            {/* WHY IT IS SAFE. Three facts, each true of every booking here. */}
+            <FadeIn delay={70} style={styles.trust}>
+              <Trust icon="phone-portrait-outline" title="MTN MoMo" text="secure payment" />
+              <Trust icon="flash-outline" title="Confirmed" text="the moment you pay" />
+              <Trust icon="refresh-circle-outline" title="Refunded" text="if the shop cancels" />
+            </FadeIn>
+
+            {/* WHO. The way to their page (§135.5), with the two things that
+                decide whether to trust them: what others rate them, and how
+                far they are. */}
+            <FadeIn delay={100} style={styles.who}>
+              <PressableScale
+                onPress={() => router.push(`/shop/${id}`)}
+                haptic
+                scaleTo={0.98}
+                accessibilityRole="button"
+                accessibilityLabel={`${businessName}, view shop`}
+                style={styles.shop}
+              >
+                <Avatar uri={s.business.logoUrl} name={businessName} size={50} />
+                <View style={styles.flex}>
+                  <Text style={type.subheading} numberOfLines={1}>
+                    {businessName}
+                  </Text>
+                  <Text style={type.small} numberOfLines={1}>
+                    {s.name}
+                    {district ? ` · ${district}` : ''}
+                  </Text>
+                  {(s.rating.count > 0 || way) && (
+                    <View style={styles.shopFacts}>
+                      {s.rating.count > 0 && (
+                        <View style={styles.fact}>
+                          <Icon name="star" size={13} color={theme.star} />
+                          <Text style={styles.factStrong}>{s.rating.average?.toFixed(1)}</Text>
+                          <Text style={type.tiny}>({s.rating.count})</Text>
+                        </View>
+                      )}
+                      {way && (
+                        <View style={styles.fact}>
+                          <Icon name="car-outline" size={13} color={theme.accent} />
+                          <Text style={styles.way} numberOfLines={1}>
+                            {way}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+                <View style={styles.shopGo}>
+                  <Icon name="chevron-forward" size={16} color={theme.accent} />
+                </View>
+              </PressableScale>
+
+              {signedIn && (
                 <PressableScale
-                  key={ymd}
+                  onPress={() => openChat.mutate()}
+                  disabled={openChat.isPending}
                   haptic
-                  scaleTo={0.93}
+                  scaleTo={0.98}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => {
-                    setDate(ymd);
-                    setSlot(null);
-                  }}
-                  style={[styles.day, active && styles.dayActive]}
+                  accessibilityLabel="Message the shop with a question"
+                  style={styles.ask}
                 >
-                  <Text style={[styles.dayWeek, active && styles.onAccent]}>{label.weekday}</Text>
-                  <Text style={[styles.dayNum, active && styles.onAccent]}>{label.day}</Text>
-                  <Text style={[styles.dayMonth, active && styles.onAccentSoft]}>{label.month}</Text>
+                  <Icon name="chatbubble-ellipses-outline" size={16} color={theme.ask} />
+                  <Text style={styles.askText} numberOfLines={1}>
+                    {openChat.isPending
+                      ? 'Opening…'
+                      : layout.compact
+                        ? 'Ask the shop a question'
+                        : 'Have a question? Message the shop'}
+                  </Text>
+                  <Icon name="chevron-forward" size={14} color={theme.ask} />
                 </PressableScale>
-              );
-            })}
-          </ScrollView>
-        </FadeIn>
+              )}
+            </FadeIn>
 
-        <FadeIn delay={160} style={styles.group}>
-          <Text style={type.heading}>What time?</Text>
+            {/* WHAT THEY SAY ABOUT IT. */}
+            {service.description && (
+              <FadeIn delay={130} style={styles.group}>
+                <Text style={type.heading}>About this service</Text>
+                <Text style={type.body} numberOfLines={expanded ? undefined : 3}>
+                  {service.description}
+                </Text>
+                {service.description.length > 150 && (
+                  <PressableScale
+                    onPress={() => setExpanded((was) => !was)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.link}>{expanded ? 'Show less' : 'Read more'}</Text>
+                  </PressableScale>
+                )}
+              </FadeIn>
+            )}
 
-          {availability.isLoading && (
-            <View style={styles.slots}>
-              {Array.from({ length: perRow * 2 }, (_, i) => (
-                <Skeleton key={i} width={slotWidth} height={46} round={radius.md} />
-              ))}
-            </View>
-          )}
+            {/* WHAT OTHERS SAID. Only once somebody has (§153). */}
+            {s.rating.count > 0 && s.rating.average !== null && (
+              <FadeIn delay={160} style={styles.group}>
+                <View style={styles.rowBetween}>
+                  <Text style={type.heading}>What people say</Text>
+                  {s.rating.count > shownReviews.length && (
+                    <PressableScale
+                      onPress={() => router.push(`/shop/${id}?tab=reviews`)}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.link}>See all {s.rating.count} →</Text>
+                    </PressableScale>
+                  )}
+                </View>
+                <View style={styles.ratingRow}>
+                  <Text style={styles.ratingBig}>{s.rating.average.toFixed(1)}</Text>
+                  <View style={styles.ratingWords}>
+                    <Stars rating={s.rating.average} size={16} />
+                    <Text style={type.small}>
+                      from {s.rating.count} {s.rating.count === 1 ? 'review' : 'reviews'}
+                    </Text>
+                  </View>
+                </View>
+                {reviews.isLoading && <Skeleton height={96} round={radius.lg} />}
+                {shownReviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </FadeIn>
+            )}
 
-          {availability.data && slots.length === 0 && (
-            <View style={styles.closed}>
-              <Icon name="moon-outline" size={20} color={theme.muted} />
-              <Text style={[type.body, styles.flex]}>
-                {/* The server says WHY, and it is more useful than "no slots".
-                    An empty TODAY is almost always the clock, not the shop
-                    (§156): the shop has closed, or its last slot has gone, and
-                    "nothing free" read as "I never get a day off". */}
-                {availability.data.reason ??
-                  (availability.data.source.startsWith('CLOSED')
-                    ? 'Closed on this day.'
-                    : date === days[0]
-                      ? availability.data.closeTime
-                        ? `Closed for today — the shop shuts at ${availability.data.closeTime}. Pick another day.`
-                        : 'No times left today. Pick another day.'
-                      : 'Fully booked on this day.')}
-              </Text>
-            </View>
-          )}
+            {/* THE BOOKING. How many, which day, what time. */}
+            <View ref={timesRef} collapsable={false} style={styles.group}>
+              <FadeIn delay={190}>
+                <Text style={type.heading}>Choose a time</Text>
+              </FadeIn>
 
-          <View style={styles.slots}>
-            {slots.map((time) => {
-              const active = slot === time;
-              return (
-                <PressableScale
-                  key={time}
-                  haptic
-                  scaleTo={0.92}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => setSlot(time)}
-                  style={[styles.slot, { width: slotWidth }, active && styles.slotActive]}
+              {/* Asked only where the shop allows more than one, in the
+                  shop's own sense of it (§136). Before the day and the time,
+                  because the answer changes which times are free. */}
+              {several && (
+                <FadeIn delay={200} style={[styles.card, styles.howMany]}>
+                  <View style={styles.flex}>
+                    <Text style={type.subheading}>{people ? 'How many people?' : 'How many?'}</Text>
+                    <Text style={type.small}>Up to {service.maxQuantity} in one booking</Text>
+                  </View>
+                  <Stepper
+                    value={quantity}
+                    max={service.maxQuantity}
+                    label={people ? 'people' : 'items'}
+                    onFocus={keys.reveal}
+                    onChange={(next) => {
+                      setQuantity(next);
+                      // A time that was free for two may not be free for three.
+                      setSlot(null);
+                    }}
+                  />
+                </FadeIn>
+              )}
+
+              <FadeIn delay={220} style={styles.subgroup}>
+                <Text style={type.label}>Day</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.bleed}
+                  contentContainerStyle={styles.days}
                 >
-                  <Text style={[styles.slotText, active && styles.onAccent]}>{time}</Text>
-                </PressableScale>
-              );
-            })}
+                  {days.map((ymd, i) => {
+                    const label = dayLabel(ymd);
+                    const active = ymd === date;
+                    return (
+                      <PressableScale
+                        key={ymd}
+                        haptic
+                        scaleTo={0.93}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: active }}
+                        accessibilityLabel={`${i === 0 ? 'Today, ' : ''}${label.weekday} ${label.day} ${label.month}`}
+                        onPress={() => {
+                          setDate(ymd);
+                          setSlot(null);
+                        }}
+                        style={[styles.day, active && styles.dayActive]}
+                      >
+                        <Text style={[styles.dayWeek, active && styles.onAccent]}>
+                          {i === 0 ? 'Today' : label.weekday}
+                        </Text>
+                        <Text style={[styles.dayNum, active && styles.onAccent]}>{label.day}</Text>
+                        <Text style={[styles.dayMonth, active && styles.onAccentSoft]}>
+                          {label.month}
+                        </Text>
+                      </PressableScale>
+                    );
+                  })}
+                </ScrollView>
+              </FadeIn>
+
+              <FadeIn delay={250} style={styles.subgroup}>
+                <Text style={type.label}>Time</Text>
+
+                {availability.isLoading && (
+                  <View style={styles.slots}>
+                    {Array.from({ length: perRow * 2 }, (_, i) => (
+                      <Skeleton key={i} width={slotWidth} height={46} round={radius.md} />
+                    ))}
+                  </View>
+                )}
+
+                {availability.data && slots.length === 0 && (
+                  <View style={styles.closed}>
+                    <View style={styles.closedIcon}>
+                      <Icon name="moon-outline" size={18} color={theme.ink2} />
+                    </View>
+                    <Text style={[type.body, styles.flex]}>
+                      {/* The server says WHY, and it is more useful than "no
+                          slots". An empty TODAY is almost always the clock,
+                          not the shop (§156). */}
+                      {availability.data.reason ??
+                        (availability.data.source.startsWith('CLOSED')
+                          ? 'Closed on this day.'
+                          : date === days[0]
+                            ? availability.data.closeTime
+                              ? `Closed for today — the shop shuts at ${availability.data.closeTime}. Pick another day.`
+                              : 'No times left today. Pick another day.'
+                            : 'Fully booked on this day.')}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Morning, afternoon, evening (§179): the parts of a day a
+                    person thinks in, so "the one after lunch" is found by
+                    looking in one place. */}
+                {periods.map((period) => (
+                  <View key={period.key} style={styles.period}>
+                    <View style={styles.periodHead}>
+                      <Icon name={period.icon} size={15} color={theme.ink2} />
+                      <Text style={styles.periodLabel}>{period.label}</Text>
+                      <Text style={type.tiny}>{period.slots.length} free</Text>
+                    </View>
+                    <View style={styles.slots}>
+                      {period.slots.map((time) => {
+                        const active = slot === time;
+                        return (
+                          <PressableScale
+                            key={time}
+                            haptic
+                            scaleTo={0.92}
+                            accessibilityRole="button"
+                            accessibilityState={{ selected: active }}
+                            onPress={() => choose(time)}
+                            style={[styles.slot, { width: slotWidth }, active && styles.slotActive]}
+                          >
+                            <Text style={[styles.slotText, active && styles.onAccent]}>{time}</Text>
+                          </PressableScale>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ))}
+
+                {availability.data?.timeZone && slots.length > 0 && (
+                  <Text style={type.small}>
+                    Times are local to the shop ({availability.data.timeZone}).
+                  </Text>
+                )}
+              </FadeIn>
+            </View>
+
+            {/* READ BACK. The booking in one card before the button: the
+                moment the customer checks they have what they meant. */}
+            {slot && (
+              <PopIn key={`${date}-${slot}-${quantity}`} style={styles.summary}>
+                <View style={styles.summaryGlow} />
+                <View style={styles.summaryHead}>
+                  <View style={styles.summaryTick}>
+                    <Icon name="checkmark" size={15} color="#FFFFFF" />
+                  </View>
+                  <Text style={styles.summaryTitle}>Your booking</Text>
+                </View>
+                <Text style={styles.summaryWhen}>
+                  {niceDate(date)} · {slot} – {endOf(slot, minutes)}
+                </Text>
+                <Text style={styles.summaryWhat} numberOfLines={2}>
+                  {service.name}
+                  {quantity > 1 ? ` · ${countWord(quantity)}` : ''} · {duration(minutes)} ·{' '}
+                  {businessName}
+                </Text>
+                <View style={styles.summaryRule} />
+                <View style={styles.summaryMoney}>
+                  <View style={styles.flex}>
+                    <Text style={styles.summaryLabel}>Total</Text>
+                    <Text style={styles.summaryValue}>{format(totalMinor)}</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.summaryLabel}>Pay now</Text>
+                    <Text style={[styles.summaryValue, styles.summaryNow]}>
+                      {format(depositMinor)}
+                    </Text>
+                  </View>
+                </View>
+              </PopIn>
+            )}
           </View>
+        </View>
+      </Animated.ScrollView>
 
-          {availability.data?.timeZone && slots.length > 0 && (
-            <Text style={type.small}>
-              Times are local to the shop ({availability.data.timeZone}).
-            </Text>
-          )}
-        </FadeIn>
-      </ScrollView>
+      {/* The bar that appears once the title has scrolled away. */}
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.bar, { height: insets.top + 60, opacity: barOpacity }]}
+      >
+        <Text style={[styles.barTitle, { marginTop: insets.top }]} numberOfLines={1}>
+          {service.name}
+        </Text>
+      </Animated.View>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 14 }]}>
-        <Button
-          style={{ width: Math.min(layout.contentWidth - 40, 520), alignSelf: 'center' }}
-          disabled={!slot}
-          busy={book.isPending}
-          // Signed out, the button says what tapping it will do (§170): the
-          // times are worth seeing first, the booking needs an account.
-          icon={slot && !signedIn ? 'log-in-outline' : undefined}
-          label={
-            !slot
-              ? 'Pick a time'
-              : signedIn
-                ? `Book ${slot} · pay ${money.format(depositMinor, service.currency)}`
-                : `Sign in to book ${slot}`
-          }
-          onPress={() => {
-            // Signing in is required to hold a slot, but not to get here —
-            // asking earlier loses people who were only looking.
-            if (!signedIn) {
-              router.push(`/sign-in?next=/book/${id}?serviceId=${serviceId}`);
-              return;
-            }
-            book.mutate();
-          }}
-        />
+      {/* Floating over the picture, so they are reachable without scrolling
+          back to the top. */}
+      <View style={[styles.floating, { top: insets.top + 8 }]}>
+        <IconButton icon="chevron-back" label="Go back" onPress={back} />
+        <View style={styles.floatingRight}>
+          <IconButton icon="share-outline" label="Share this service" onPress={share} />
+          <SaveButton
+            saved={service.saved}
+            large
+            onPhoto
+            onPress={() => savedService.toggle(service.id, id, service.saved ?? false, here)}
+          />
+        </View>
       </View>
+
+      {/* The running answer to "what will this cost me", and the one button. */}
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
+        <View style={styles.footerInner}>
+          <View style={styles.flex}>
+            <Text style={styles.footerLabel} numberOfLines={1}>
+              {quantity > 1 ? `Total for ${countWord(quantity)}` : 'Total'}
+            </Text>
+            <Ticker
+              value={totalMinor}
+              render={format}
+              style={[styles.footerPrice, layout.compact && styles.footerPriceCompact]}
+            />
+            {split && (
+              <Text style={styles.footerNow} numberOfLines={1}>
+                {format(depositMinor)} now
+              </Text>
+            )}
+          </View>
+          <Button
+            style={[styles.cta, layout.compact && styles.ctaCompact]}
+            kind={slot ? 'primary' : 'dark'}
+            busy={book.isPending}
+            icon={
+              layout.compact
+                ? undefined
+                : !slot
+                  ? 'calendar-outline'
+                  : signedIn
+                    ? undefined
+                    : 'log-in-outline'
+            }
+            label={
+              !slot
+                ? layout.compact
+                  ? 'Pick a time'
+                  : 'Choose a time'
+                : signedIn
+                  ? `Book ${slot}`
+                  : 'Sign in to book'
+            }
+            onPress={() => {
+              if (!slot) return goToTimes();
+              // Signing in is required to hold a slot, but not to get here —
+              // asking earlier loses people who were only looking (§170).
+              if (!signedIn) {
+                router.push(`/sign-in?next=${here}`);
+                return;
+              }
+              book.mutate();
+            }}
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/** One of the three facts under the price: an icon, a word, and why it matters. */
+function Trust({ icon, title, text }: { icon: IconName; title: string; text: string }) {
+  return (
+    <View style={styles.trustTile}>
+      <View style={styles.trustIcon}>
+        <Icon name={icon} size={17} color={theme.accent} />
+      </View>
+      <Text style={styles.trustTitle} numberOfLines={1}>
+        {title}
+      </Text>
+      <Text style={styles.trustText} numberOfLines={2}>
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+/** One review, short: who, when, the stars, and what they said. */
+function ReviewCard({ review }: { review: PublicReview }) {
+  return (
+    <View style={styles.review}>
+      <View style={styles.reviewHead}>
+        <Avatar name={review.displayName} size={34} />
+        <View style={styles.flex}>
+          <Text style={styles.reviewName} numberOfLines={1}>
+            {review.displayName}
+          </Text>
+          <Text style={type.tiny}>{monthOf(review.createdAt)}</Text>
+        </View>
+        <Stars rating={review.rating} size={12} />
+      </View>
+      {review.comment && (
+        <Text style={type.body} numberOfLines={4}>
+          {review.comment}
+        </Text>
+      )}
+      {review.responseText && (
+        <View style={styles.reply}>
+          <Text style={type.label}>Reply from the shop</Text>
+          <Text style={type.small} numberOfLines={3}>
+            {review.responseText}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -472,46 +888,156 @@ export default function Book() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg },
   flex: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 28, gap: 22 },
-  bleed: { marginHorizontal: -20, flexGrow: 0 },
-  photoStrip: { paddingHorizontal: 20, gap: 10 },
-  photo: {
-    borderRadius: radius.lg,
-    backgroundColor: theme.line,
+  sheet: {
+    backgroundColor: theme.bg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    marginTop: -28,
+    paddingHorizontal: 20,
+    paddingTop: 22,
+    paddingBottom: FOOTER,
+    minHeight: 500,
   },
+  column: { width: '100%', alignSelf: 'center', gap: 22 },
+  loading: { marginTop: -28, gap: 12, flex: 1 },
+  loadingGap: { marginVertical: 8 },
+  bleed: { marginHorizontal: -20, flexGrow: 0 },
+
+  // ---- what ----
+  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
+  metaDot: { fontFamily: font.bold, color: theme.muted, marginHorizontal: 2 },
+
+  // ---- price ----
   card: {
     backgroundColor: theme.panel,
     borderRadius: radius.lg,
     padding: 18,
-    gap: 6,
+    gap: 12,
     ...shadow.card,
   },
-  shopRow: {
+  priceRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 8 },
+  price: { fontFamily: font.extrabold, fontSize: 30, color: theme.ink, letterSpacing: -0.7 },
+  priceCompact: { fontSize: 26 },
+  priceUnit: { fontFamily: font.semibold, fontSize: 13.5, color: theme.muted },
+  track: { height: 8, borderRadius: 4, backgroundColor: theme.sunken, overflow: 'hidden' },
+  fill: { height: 8, borderRadius: 4, backgroundColor: theme.accent },
+  split: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
+  splitRight: { alignItems: 'flex-end' },
+  splitLabel: {
+    fontFamily: font.bold,
+    fontSize: 10.5,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: theme.muted,
+    marginBottom: 2,
+  },
+  splitNow: { fontFamily: font.extrabold, fontSize: 18, color: theme.accent, letterSpacing: -0.3 },
+  splitLater: { fontFamily: font.bold, fontSize: 15, color: theme.ink2 },
+  holdLine: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: theme.okSoft,
+    borderRadius: radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  holdText: { flex: 1, fontFamily: font.semibold, fontSize: 12.5, lineHeight: 18, color: '#0B6B3A' },
+
+  // ---- trust ----
+  trust: { flexDirection: 'row', gap: 10 },
+  trustTile: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    borderWidth: 1.5,
+    borderColor: theme.line,
+  },
+  trustIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+  },
+  trustTitle: { fontFamily: font.bold, fontSize: 12.5, color: theme.ink },
+  trustText: {
+    fontFamily: font.medium,
+    fontSize: 11,
+    lineHeight: 14,
+    color: theme.muted,
+    textAlign: 'center',
+  },
+
+  // ---- who ----
+  who: { gap: 8 },
+  shop: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     backgroundColor: theme.panel,
     borderRadius: radius.lg,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 14,
     ...shadow.card,
   },
-  shopText: { flex: 1, gap: 1 },
-  shopLink: { fontFamily: font.bold, fontSize: 13, color: theme.accent },
-  howMany: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 7, marginTop: 6 },
-  price: { fontFamily: font.extrabold, fontSize: 26, color: theme.ink, letterSpacing: -0.5 },
-  depositNote: {
-    flexDirection: 'row',
-    gap: 9,
+  shopFacts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 4 },
+  fact: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  factStrong: { fontFamily: font.bold, fontSize: 13, color: theme.ink },
+  way: { fontFamily: font.semibold, fontSize: 12, color: theme.accent },
+  shopGo: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: theme.accentSoft,
-    borderRadius: radius.md,
-    padding: 12,
-    marginTop: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  depositText: { flex: 1, fontFamily: font.semibold, fontSize: 13, lineHeight: 19, color: theme.accentDeep },
+  ask: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: theme.askSoft,
+    borderRadius: radius.md,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+  },
+  askText: { flex: 1, fontFamily: font.semibold, fontSize: 13, color: theme.ask },
+
+  // ---- words ----
   group: { gap: 12 },
+  subgroup: { gap: 10 },
+  link: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  ratingBig: { fontFamily: font.extrabold, fontSize: 40, color: theme.ink, letterSpacing: -1 },
+  ratingWords: { gap: 3 },
+  review: {
+    backgroundColor: theme.panel,
+    borderRadius: radius.lg,
+    padding: 14,
+    gap: 10,
+    ...shadow.card,
+  },
+  reviewHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  reviewName: { fontFamily: font.bold, fontSize: 14, color: theme.ink },
+  reply: {
+    gap: 3,
+    backgroundColor: theme.sunken,
+    borderRadius: radius.md,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+  },
+
+  // ---- booking ----
+  howMany: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   days: { paddingHorizontal: 20, gap: 10, paddingVertical: 4 },
   day: {
     width: 64,
@@ -528,6 +1054,9 @@ const styles = StyleSheet.create({
   dayMonth: { fontFamily: font.medium, fontSize: 11, color: theme.muted },
   onAccent: { color: '#FFFFFF' },
   onAccentSoft: { color: 'rgba(255,255,255,0.8)' },
+  period: { gap: 8, marginTop: 4 },
+  periodHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  periodLabel: { flex: 1, fontFamily: font.bold, fontSize: 14, color: theme.ink },
   slots: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   slot: {
     height: 46,
@@ -546,14 +1075,109 @@ const styles = StyleSheet.create({
     gap: 11,
     backgroundColor: theme.panel,
     borderRadius: radius.lg,
-    padding: 16,
+    padding: 14,
   },
+  closedIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.sunken,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // ---- read back ----
+  summary: {
+    backgroundColor: theme.night,
+    borderRadius: radius.lg,
+    padding: 18,
+    gap: 6,
+    overflow: 'hidden',
+    ...shadow.raised,
+  },
+  summaryGlow: {
+    position: 'absolute',
+    top: -70,
+    right: -50,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: theme.accent,
+    opacity: 0.22,
+  },
+  summaryHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
+  summaryTick: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: theme.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  summaryTitle: { fontFamily: font.bold, fontSize: 13, color: 'rgba(255,255,255,0.75)' },
+  summaryWhen: { fontFamily: font.extrabold, fontSize: 19, color: '#FFFFFF', letterSpacing: -0.3 },
+  summaryWhat: { fontFamily: font.medium, fontSize: 13, lineHeight: 18, color: 'rgba(255,255,255,0.72)' },
+  summaryRule: { height: 1, backgroundColor: 'rgba(255,255,255,0.12)', marginVertical: 8 },
+  summaryMoney: { flexDirection: 'row', alignItems: 'flex-end', gap: 16 },
+  summaryLabel: {
+    fontFamily: font.bold,
+    fontSize: 10.5,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: 'rgba(255,255,255,0.55)',
+    marginBottom: 2,
+  },
+  summaryValue: { fontFamily: font.extrabold, fontSize: 17, color: '#FFFFFF' },
+  summaryNow: { color: '#FFB59E' },
+
+  // ---- chrome ----
+  bar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: theme.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.line,
+  },
+  barTitle: { fontFamily: font.bold, fontSize: 16.5, color: theme.ink, maxWidth: '50%' },
+  floating: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  floatingRight: { flexDirection: 'row', gap: 10 },
   footer: {
     paddingHorizontal: 20,
-    paddingTop: 14,
+    paddingTop: 12,
     backgroundColor: theme.panel,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     ...shadow.float,
   },
+  footerInner: {
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  footerLabel: {
+    fontFamily: font.bold,
+    fontSize: 10.5,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: theme.muted,
+  },
+  footerPrice: { fontFamily: font.extrabold, fontSize: 21, color: theme.ink, letterSpacing: -0.4 },
+  footerPriceCompact: { fontSize: 18 },
+  footerNow: { fontFamily: font.semibold, fontSize: 12, color: theme.accent, marginTop: 1 },
+  cta: { minWidth: 156, flexShrink: 0 },
+  ctaCompact: { minWidth: 120, paddingHorizontal: 16 },
 });

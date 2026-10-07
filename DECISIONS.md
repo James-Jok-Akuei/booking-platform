@@ -13612,3 +13612,54 @@ Offered the choice after §177, the user picked the recommended behaviour:
   the set is taken afresh, and it goes round once more.
 
 The two-minute rest timer is gone.
+
+## 179. The service page, rebuilt as the page that sells (2026-10-07)
+
+The user: *"the service detail page … doesn't look really great like how
+many card's detail page should look … this is the page that convinces the
+user to purchase or not … look at how top professional pages design this
+page and do better."* Studied the reference designs (§133) and the pages
+that sell best — a listing on Airbnb, a service on Fresha or Booksy, an item
+on a food app — and built `app/book/[id].tsx` again from the top, in the
+order a person decides:
+
+1. **The photos**, edge to edge and a page at a time (`PhotoPager`), with
+   dots and "2 / 5"; parallax at half speed and a stretch when pulled past
+   the top, pinned to the top edge. No photos: the shop's cover, then the
+   category's tile. Back, share and the heart float over it; a title bar
+   fades in once the name has scrolled under it. ~~A single photo fills the
+   width (§135.4)~~ — superseded; there is no strip now.
+2. **What it is**: category pill, "Open now", "Up to 5 people"; the name;
+   how long and where.
+3. **What it costs**, with the deposit DRAWN: the price per person, a bar
+   showing the deposit's share, "Pay now" in coral and "At the shop" beside
+   it, and a green line saying a 10% deposit holds the time. The two sums
+   roll (`Ticker`) when "how many" changes.
+4. **Why it is safe**: three tiles, each true of every booking — MTN MoMo,
+   confirmed the moment you pay, refunded if the shop cancels (Terms 6.1).
+   Nothing about free cancellation, which is not true (6.2).
+5. **Who**: the business card — logo, name, branch, rating, "8.5 km · 14 min
+   by car" from where the phone is (§157) — and, signed in, "Have a question?
+   Message the shop" (§167).
+6. **About this service**: the description, three lines and "Read more".
+   It existed on the service and was never shown.
+7. **What people say**: the rating large, the stars, up to two reviews with
+   words (most recent, never cherry-picked), "See all N" to the shop's
+   Reviews tab — which a link can now open directly (`?tab=reviews`).
+8. **Choose a time**: how many (§136), the days with "Today", and the times
+   grouped **Morning / Afternoon / Evening** with how many are free
+   (`src/booking/periods.ts`) — thirty-five identical buttons were a wall.
+9. **Your booking**, read back in a dark card the moment a time is chosen:
+   day, start – end, how many, how long, the shop, total and pay-now. The
+   page glides down to it.
+
+**The bar at the bottom** is the running answer to "what will this cost me":
+Total (rolling), "RWF 3,000 now", and ONE button that is never dead — with
+no time chosen it is "Choose a time" and takes you to the times; then
+"Book 11:00"; signed out, "Sign in to book" (§170). On a narrow phone the
+price shrinks and the button shortens rather than anything wrapping.
+
+Checked at 320, 390 and 820, with 2 and 11 photos and with none, signed in
+and out, with a time chosen and with "how many" changed. Two demo services
+were given descriptions so the About section could be seen. Nothing on the
+server changed.
