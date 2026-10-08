@@ -51,6 +51,7 @@ export class ServiceDraftsService {
     id: string,
     data: {
       name?: string | null;
+      title?: string | null;
       description?: string | null;
       instructions?: string | null;
       durationMinutes?: number | null;
@@ -63,6 +64,7 @@ export class ServiceDraftsService {
       where: { id, businessId },
       data: {
         ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.title !== undefined ? { title: data.title } : {}),
         ...(data.description !== undefined ? { description: data.description } : {}),
         ...(data.instructions !== undefined ? { instructions: data.instructions } : {}),
         ...(data.durationMinutes !== undefined

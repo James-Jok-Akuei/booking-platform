@@ -683,6 +683,10 @@ model Service {
   business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   name        String
+  /// The headline on the service's own page, under its photos (§185) —
+  /// "Ninety minutes to melt the week away". The NAME stays the short label
+  /// cards and bookings use. Null when the shop has not written one.
+  title       String?
   description String?
   /// What a customer should know before they come — arrive ten minutes early,
   /// bring something, where to park (§180). Shown on the service before booking
@@ -2172,6 +2176,7 @@ model ServiceDraft {
   /// so validating it would defeat the point — the rules apply when it is turned
   /// into a real service, and not before.
   name              String?
+  title             String?
   description       String?
   instructions      String?
   durationMinutes   Int?

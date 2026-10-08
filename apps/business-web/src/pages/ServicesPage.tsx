@@ -67,6 +67,7 @@ export function ServicesPage() {
 
   const queueDraftSave = (values: {
     name: string;
+    title: string;
     description: string;
     instructions: string;
     durationMinutes: number | null;
@@ -80,6 +81,7 @@ export function ServicesPage() {
     timer.current = setTimeout(() => {
       saveServiceDraft(draftId, {
         name: values.name || null,
+        title: values.title.trim() || null,
         description: values.description.trim() || null,
         instructions: values.instructions.trim() || null,
         durationMinutes: values.durationMinutes,
@@ -100,6 +102,7 @@ export function ServicesPage() {
     setResumed({
       id: draft.id,
       name: draft.name ?? '',
+      title: draft.title,
       description: draft.description,
       instructions: draft.instructions,
       durationMinutes: draft.durationMinutes ?? 30,
@@ -458,6 +461,7 @@ function ServiceForm({
    */
   onChange?: (values: {
     name: string;
+    title: string;
     description: string;
     instructions: string;
     durationMinutes: number | null;
@@ -466,6 +470,8 @@ function ServiceForm({
   }) => void;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
+  // The headline under the photos on the customer's page (§185).
+  const [title, setTitle] = useState(initial?.title ?? '');
   // What it is, and what to know before coming (§180). Both reach the
   // customer: under "About this service", and on the reservation.
   const [description, setDescription] = useState(initial?.description ?? '');
@@ -516,6 +522,7 @@ function ServiceForm({
   useEffect(() => {
     onChange?.({
       name,
+      title,
       description,
       instructions,
       durationMinutes: Number(duration) || null,
@@ -525,7 +532,7 @@ function ServiceForm({
     // `offers` is derived from `prices` and rebuilt each render, so watching it
     // directly would fire this on every render rather than on every change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, description, instructions, duration, deposit, prices]);
+  }, [name, title, description, instructions, duration, deposit, prices]);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -537,6 +544,7 @@ function ServiceForm({
       {
       name: name.trim(),
       // Blank is "nothing to say": sent as null so the server stores nothing.
+      title: title.trim() || null,
       description: description.trim() || null,
       instructions: instructions.trim() || null,
       durationMinutes: Number(duration),
@@ -634,8 +642,22 @@ function ServiceForm({
         <span className="muted small">Leave a branch blank to stop offering it there.</span>
       </div>
 
-      {/* The words a customer reads (§180). Full width, because they are
-          sentences, not numbers. */}
+      {/* The words a customer reads (§180, §185), in the order the service's
+          page shows them. Full width, because they are sentences, not numbers. */}
+      <div className="service-words">
+        <label htmlFor="stitle">Title</label>
+        <input
+          id="stitle"
+          maxLength={100}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
+        />
+        <span className="muted small">
+          The headline right under the photos. The name above stays the short label on cards.{' '}
+          {title.length}/100
+        </span>
+      </div>
       <div className="service-words">
         <label htmlFor="sdesc">Description</label>
         <textarea
@@ -818,8 +840,9 @@ function ServiceRow({
                 ? 'No photos'
                 : `${service.images.length} photo${service.images.length === 1 ? '' : 's'}`}
             </div>
-            {/* The words (§180), one line each: a glance down the list shows
-                which services still have nothing to say for themselves. */}
+            {/* The words (§180, §185), one line each: a glance down the list
+                shows which services still have nothing to say for themselves. */}
+            <div className="muted small">{service.title ? 'Title' : 'No title'}</div>
             <div className="muted small">
               {service.description ? 'Description' : 'No description'}
             </div>

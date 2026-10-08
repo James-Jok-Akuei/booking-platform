@@ -22,7 +22,7 @@ import { TestBusiness, createAppointment, createBusiness, createCustomer } from 
  * the shopfront before booking and the reservation after — a blank box is
  * stored as nothing rather than as "", and a runaway paste is refused.
  */
-describe('Service description and instructions (§180)', () => {
+describe('Service title, description and instructions (§180, §185)', () => {
   let moduleRef: TestingModule;
   let prisma: PrismaService;
   let services: ServicesService;
@@ -56,6 +56,7 @@ describe('Service description and instructions (§180)', () => {
   it('stores a blank as nothing, and trims what is written', async () => {
     const tidy = dto({
       name: 'Haircut',
+      title: '  Sharp fades, clean line-ups  ',
       description: '   ',
       instructions: '  Come ten minutes early.  ',
       durationMinutes: 30,
@@ -63,8 +64,20 @@ describe('Service description and instructions (§180)', () => {
       offers: [{ locationId: business.locationId, priceMinor: 7000 }],
     });
     expect(await validate(tidy)).toHaveLength(0);
+    expect(tidy.title).toBe('Sharp fades, clean line-ups');
     expect(tidy.description).toBeNull();
     expect(tidy.instructions).toBe('Come ten minutes early.');
+  });
+
+  it('keeps a title to one line on a phone: 100 characters', async () => {
+    const base = { name: 'Haircut', durationMinutes: 30, depositPercentage: 20, offers: [] };
+    expect((await validate(dto({ ...base, title: 'x'.repeat(101) }))).some((e) => e.property === 'title')).toBe(true);
+    expect((await validate(dto({ ...base, title: 'x'.repeat(100) }))).some((e) => e.property === 'title')).toBe(false);
+    expect(
+      (await validate(plainToInstance(UpdateServiceDto, { title: 'x'.repeat(101) }))).some(
+        (e) => e.property === 'title',
+      ),
+    ).toBe(true);
   });
 
   it('refuses instructions longer than a phone screen wants, and keeps a description longer', async () => {
@@ -81,12 +94,14 @@ describe('Service description and instructions (§180)', () => {
   it('reaches the shopfront, and the reservation that books it', async () => {
     const created = await services.create(business.userId, {
       name: 'Hot-towel shave',
+      title: 'The closest shave in Kigali',
       description: 'A straight-razor shave with hot towels.',
       instructions: 'Come with a clean face and ten minutes to spare.',
       durationMinutes: 30,
       depositPercentage: 20,
       offers: [{ locationId: business.locationId, priceMinor: 7000 }],
     });
+    expect(created.title).toBe('The closest shave in Kigali');
     expect(created.description).toBe('A straight-razor shave with hot towels.');
     expect(created.instructions).toBe('Come with a clean face and ten minutes to spare.');
 
@@ -94,6 +109,7 @@ describe('Service description and instructions (§180)', () => {
     // shop reaches a booking already made, because the reservation reads
     // the service live.
     await services.update(business.userId, business.serviceId, {
+      title: '  Sharp fades, clean line-ups ',
       description: 'A classic cut.',
       instructions: 'Parking is at the back.\nAsk for Jean at the desk.',
     });
@@ -101,6 +117,7 @@ describe('Service description and instructions (§180)', () => {
     // Before booking: the customer's view of the shop.
     const shop: any = await discovery.findOne(business.locationId);
     const listed = shop.services.find((s: any) => s.id === business.serviceId);
+    expect(listed.title).toBe('Sharp fades, clean line-ups');
     expect(listed.description).toBe('A classic cut.');
     expect(listed.instructions).toBe('Parking is at the back.\nAsk for Jean at the desk.');
 

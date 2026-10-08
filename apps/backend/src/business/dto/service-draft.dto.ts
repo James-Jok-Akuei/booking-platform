@@ -38,6 +38,11 @@ export class UpdateServiceDraftDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
+  title?: string | null;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(2000)
   description?: string | null;
 

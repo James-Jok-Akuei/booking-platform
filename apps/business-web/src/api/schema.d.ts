@@ -3194,6 +3194,7 @@ export interface components {
             offers: components["schemas"]["ServiceDraftOfferDto"][];
             id: string;
             name: string | null;
+            title: string | null;
             description: string | null;
             instructions: string | null;
             durationMinutes: number | null;
@@ -3210,6 +3211,7 @@ export interface components {
         };
         UpdateServiceDraftDto: {
             name?: string | null;
+            title?: string | null;
             description?: string | null;
             instructions?: string | null;
             durationMinutes?: number | null;
@@ -3373,6 +3375,11 @@ export interface components {
         };
         CreateServiceDto: {
             name: string;
+            /**
+             * @description The headline under the photos on the service's page (§185) — what makes
+             *     someone want it, in one line. The name above stays the short label.
+             */
+            title?: string | null;
             /** @description What it is, in the shop's own words. Shown under "About this service". */
             description?: string | null;
             /**
@@ -3431,6 +3438,8 @@ export interface components {
             id: string;
             businessId: string;
             name: string;
+            /** @description The headline on the service's page (§185). */
+            title: string | null;
             description: string | null;
             /** @description What to know before coming (§180). */
             instructions: string | null;
@@ -3459,6 +3468,11 @@ export interface components {
         };
         UpdateServiceDto: {
             name?: string;
+            /**
+             * @description The headline under the photos on the service's page (§185) — what makes
+             *     someone want it, in one line. The name above stays the short label.
+             */
+            title?: string | null;
             /** @description What it is, in the shop's own words. Shown under "About this service". */
             description?: string | null;
             /**
@@ -3506,6 +3520,8 @@ export interface components {
             id: string;
             businessId: string;
             name: string;
+            /** @description The headline on the service's page (§185). */
+            title: string | null;
             description: string | null;
             /** @description What to know before coming (§180). */
             instructions: string | null;
@@ -5186,6 +5202,8 @@ export interface components {
             approxSettlement?: components["schemas"]["ApproxSettlementDto"];
             id: string;
             name: string;
+            /** @description The headline under the photos on the service's page (§185). */
+            title: string | null;
             description: string | null;
             /** @description What to know before coming (§180): shown before booking, and again on the reservation. */
             instructions: string | null;

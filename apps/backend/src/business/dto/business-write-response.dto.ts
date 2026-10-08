@@ -11,6 +11,7 @@ import { BusinessServiceDto } from './business-response.dto';
 export const SERVICE_DRAFT_SELECT = {
   id: true,
   name: true,
+  title: true,
   description: true,
   instructions: true,
   durationMinutes: true,
@@ -45,6 +46,7 @@ export class ServiceDraftOfferDto {
 export class ServiceDraftDto implements ServiceDraftRow {
   id!: string;
   name!: string | null;
+  title!: string | null;
   description!: string | null;
   instructions!: string | null;
   durationMinutes!: number | null;
@@ -148,6 +150,8 @@ export class ServiceDto implements ServiceRow {
   id!: string;
   businessId!: string;
   name!: string;
+  /** The headline on the service's page (§185). */
+  title!: string | null;
   description!: string | null;
   /** What to know before coming (§180). */
   instructions!: string | null;

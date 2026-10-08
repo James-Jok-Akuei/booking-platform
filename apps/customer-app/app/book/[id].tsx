@@ -88,8 +88,9 @@ const CARD_PAD = 18;
  * belongs to what:
  *
  * 1. **The photos**, several at once — one large and a grid of small ones.
- * 2. **About this service**, then **Before you come** — the shop's own words,
- *    on the page itself rather than in a card, read before anything is chosen.
+ * 2. **The title** the shop wrote (§185), then **About this service** and
+ *    **Before you come** — the shop's own words, on the page itself rather
+ *    than in a card, read before anything is chosen.
  * 3. **The deal, in ONE card**: what it is, what it costs (the deposit drawn
  *    as a share of it), how many, which day and what time — grouped into
  *    morning, afternoon and evening — and the booking read back the moment a
@@ -347,7 +348,15 @@ export default function Book() {
           </FadeIn>
 
           {/* 2. THE SHOP'S OWN WORDS, on the page and not in a card (§182):
-              what it is first, then what to know before coming. */}
+              the headline first (§185), then what it is, then what to know
+              before coming. */}
+          {service.title && (
+            <FadeIn delay={20} style={styles.words}>
+              <Text style={[styles.headline, layout.compact && styles.headlineCompact]}>
+                {service.title}
+              </Text>
+            </FadeIn>
+          )}
           {service.description && (
             <FadeIn delay={30} style={styles.words}>
               <Text style={type.heading}>About this service</Text>
@@ -824,6 +833,14 @@ const styles = StyleSheet.create({
   // ---- 2. the shop's words, on the page ----
   words: { gap: 10, paddingHorizontal: 2 },
   wordsText: { fontFamily: font.medium, fontSize: 14.5, lineHeight: 22, color: theme.ink },
+  headline: {
+    fontFamily: font.extrabold,
+    fontSize: 27,
+    lineHeight: 33,
+    letterSpacing: -0.6,
+    color: theme.ink,
+  },
+  headlineCompact: { fontSize: 24, lineHeight: 30 },
 
   // ---- 3. the deal ----
   deal: {

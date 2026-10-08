@@ -13913,3 +13913,32 @@ sheet: a problem is said in the sheet, under the button, with **Open
 Settings** when only Settings can help.
 
 The share sheet and the photo picker are the phone's own, on purpose.
+
+## 185. A title for every service, under its photos (2026-10-08)
+
+Asked: *"when creating a service, can you also add a title for the service
+that will display first after the images in the customer app."*
+
+A service already has a NAME ("Haircut") — the short label on cards, shelves,
+bookings and receipts, which must stay short. The title is a separate,
+optional headline for the service's own page: "Sharp fades and clean
+line-ups".
+
+- **`Service.title`** (and on `ServiceDraft`, so a draft keeps it), up to 100
+  characters — one or two lines on a phone. Trimmed, and a blank stored as
+  nothing, like the description and instructions (§180): `@Transform` in the
+  DTO and `tidyWords` in `ServicesService`. On the seller's, bare-row,
+  draft and shopfront DTOs; not on search cards or bookings.
+- **The seller** writes it in the service form (new and Edit), the first of
+  the three full-width word boxes — Title, Description, Special instructions —
+  in the order the page shows them, with a line saying the name above stays
+  the short label on cards. Autosaved into the draft. The list says
+  "Title" / "No title" per service.
+- **The customer** sees it right under the photo mosaic, before "About this
+  service": 27-point extra-bold (24 on a narrow phone), on the page, no card.
+  With no title, the page is as before.
+
+A fourth test in `service-instructions.spec.ts` (the 100-character limit),
+and the existing ones extended to trim the title and carry it to the
+shopfront. **1316 passing across 57 suites.** Demo: Full-body massage and
+Haircut given titles.

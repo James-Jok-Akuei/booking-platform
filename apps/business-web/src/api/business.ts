@@ -150,6 +150,8 @@ export const listServices = () => api<Service[]>('/business/services');
  */
 export const createService = (body: {
   name: string;
+  /** The headline under the photos on the service's page (§185). */
+  title?: string | null;
   description?: string | null;
   /** What to know before coming (§180). Blank is stored as nothing. */
   instructions?: string | null;
@@ -165,6 +167,7 @@ export const updateService = (
   id: string,
   body: Partial<{
     name: string;
+    title: string | null;
     description: string | null;
     instructions: string | null;
     durationMinutes: number;
@@ -755,6 +758,7 @@ export const saveServiceDraft = (
   id: string,
   body: {
     name?: string | null;
+    title?: string | null;
     description?: string | null;
     instructions?: string | null;
     durationMinutes?: number | null;

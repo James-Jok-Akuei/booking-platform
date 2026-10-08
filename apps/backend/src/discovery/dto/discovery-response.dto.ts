@@ -192,6 +192,8 @@ export class ShopfrontRatingDto {
 export class ShopfrontServiceDto {
   id!: string;
   name!: string;
+  /** The headline under the photos on the service's page (§185). */
+  title!: string | null;
   description!: string | null;
   /** What to know before coming (§180): shown before booking, and again on the reservation. */
   instructions!: string | null;

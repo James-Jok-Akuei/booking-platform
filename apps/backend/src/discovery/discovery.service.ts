@@ -589,6 +589,7 @@ export class DiscoveryService {
             select: {
               id: true,
               name: true,
+              title: true,
               description: true,
               instructions: true,
               durationMinutes: true,

@@ -8,10 +8,13 @@ import { normaliseQuantityRule } from '../appointments/quantity';
  * in; this is for every caller that is not the HTTP layer, so no client ever
  * has to tell an empty description from a missing one.
  */
-const tidyWords = <T extends { description?: string | null; instructions?: string | null }>(
+const tidyWords = <
+  T extends { title?: string | null; description?: string | null; instructions?: string | null },
+>(
   fields: T,
 ): T => ({
   ...fields,
+  ...(fields.title !== undefined ? { title: fields.title?.trim() || null } : {}),
   ...(fields.description !== undefined
     ? { description: fields.description?.trim() || null }
     : {}),

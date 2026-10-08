@@ -47,6 +47,16 @@ export class CreateServiceDto {
   @Length(2, 120)
   name!: string;
 
+  /**
+   * The headline under the photos on the service's page (§185) — what makes
+   * someone want it, in one line. The name above stays the short label.
+   */
+  @IsOptional()
+  @Transform(blankToNull)
+  @IsString()
+  @MaxLength(100)
+  title?: string | null;
+
   /** What it is, in the shop's own words. Shown under "About this service". */
   @IsOptional()
   @Transform(blankToNull)

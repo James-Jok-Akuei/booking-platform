@@ -14770,6 +14770,10 @@
             "type": "string",
             "nullable": true
           },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
           "description": {
             "type": "string",
             "nullable": true
@@ -14801,6 +14805,7 @@
           "offers",
           "id",
           "name",
+          "title",
           "description",
           "instructions",
           "durationMinutes",
@@ -14835,6 +14840,11 @@
             "type": "string",
             "nullable": true,
             "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100
           },
           "description": {
             "type": "string",
@@ -15314,6 +15324,12 @@
             "minLength": 2,
             "maxLength": 120
           },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "description": "The headline under the photos on the service's page (§185) — what makes\nsomeone want it, in one line. The name above stays the short label.",
+            "maxLength": 100
+          },
           "description": {
             "type": "string",
             "nullable": true,
@@ -15441,6 +15457,11 @@
           "name": {
             "type": "string"
           },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "description": "The headline on the service's page (§185)."
+          },
           "description": {
             "type": "string",
             "nullable": true
@@ -15501,6 +15522,7 @@
           "id",
           "businessId",
           "name",
+          "title",
           "description",
           "instructions",
           "durationMinutes",
@@ -15522,6 +15544,12 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "description": "The headline under the photos on the service's page (§185) — what makes\nsomeone want it, in one line. The name above stays the short label.",
+            "maxLength": 100
           },
           "description": {
             "type": "string",
@@ -15620,6 +15648,11 @@
           "name": {
             "type": "string"
           },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "description": "The headline on the service's page (§185)."
+          },
           "description": {
             "type": "string",
             "nullable": true
@@ -15667,6 +15700,7 @@
           "id",
           "businessId",
           "name",
+          "title",
           "description",
           "instructions",
           "durationMinutes",
@@ -21061,6 +21095,11 @@
           "name": {
             "type": "string"
           },
+          "title": {
+            "type": "string",
+            "nullable": true,
+            "description": "The headline under the photos on the service's page (§185)."
+          },
           "description": {
             "type": "string",
             "nullable": true
@@ -21109,6 +21148,7 @@
         "required": [
           "id",
           "name",
+          "title",
           "description",
           "instructions",
           "durationMinutes",

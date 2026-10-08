@@ -150,6 +150,8 @@ export class BusinessServiceDto implements ServicePayload {
   id!: string;
   businessId!: string;
   name!: string;
+  /** The headline on the service's page (§185). */
+  title!: string | null;
   description!: string | null;
   /** What to know before coming (§180). */
   instructions!: string | null;
