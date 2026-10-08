@@ -52,7 +52,7 @@ export function Sidebar({
   return (
     <aside className={`sidebar ${rail ? 'is-rail' : ''} ${variant === 'drawer' ? 'is-drawer' : ''}`}>
       <div className="sb-top">
-        <Link to="/appointments" className="sb-brand" onClick={onNavigate} title={name}>
+        <Link to="/" className="sb-brand" onClick={onNavigate} title={name}>
           <span className="sb-logo">
             {data.logoUrl ? <img src={data.logoUrl} alt="" /> : <span>{initialsOf(name)}</span>}
             {!live && business && <i className="sb-logo-flag" aria-hidden="true" />}
@@ -88,6 +88,7 @@ export function Sidebar({
                 <NavLink
                   key={item.to}
                   to={item.to}
+                  end={item.to === '/'}
                   onClick={onNavigate}
                   className={({ isActive }) => `sb-link${isActive ? ' active' : ''}`}
                   aria-label={rail ? item.label : undefined}

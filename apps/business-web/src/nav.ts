@@ -22,9 +22,16 @@ export type NavGroup = { group: string | null; items: NavItem[] };
 
 export const SECTIONS: NavGroup[] = [
   {
-    // Above the headings: the first thing seen every morning (§131.1).
+    // Above the headings: the first things seen every morning (§131.1, §192).
     group: null,
     items: [
+      {
+        to: '/',
+        label: 'Overview',
+        icon: 'overview',
+        keywords: 'home today dashboard summary schedule next',
+        hint: 'Your day at a glance',
+      },
       {
         to: '/appointments',
         label: 'Appointments',

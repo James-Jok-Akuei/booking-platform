@@ -22,7 +22,7 @@ export function TabBar({
   onOpenMenu: () => void;
 }) {
   const tab = (to: string, label: string, icon: IconName, badge = 0) => (
-    <NavLink to={to} className={({ isActive }) => `tab-item${isActive ? ' active' : ''}`}>
+    <NavLink to={to} end={to === '/'} className={({ isActive }) => `tab-item${isActive ? ' active' : ''}`}>
       <span className="tab-icon">
         <Icon name={icon} size={21} />
         {badge > 0 && <span className="tab-badge">{badge > 9 ? '9+' : badge}</span>}
@@ -33,8 +33,8 @@ export function TabBar({
 
   return (
     <nav className="tabbar" aria-label="Main">
+      {tab('/', 'Today', 'overview')}
       {tab('/appointments', 'Bookings', 'calendarCheck', data.expectedToday)}
-      {tab('/services', 'Services', 'tag')}
       <button type="button" className="tab-checkin" onClick={onCheckIn} aria-label="Check in a customer">
         <Icon name="ticket" size={24} />
       </button>

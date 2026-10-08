@@ -79,7 +79,7 @@ export function CommandPalette({
         hint: item.hint,
         icon: item.icon,
         section: 'Pages',
-        tag: item.group ?? 'Today',
+        tag: item.group ?? 'Your day',
         words: `${item.keywords} ${item.group ?? ''}`,
         run: go(item.to),
       })),

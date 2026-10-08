@@ -14290,3 +14290,57 @@ browser so no real booking changed: a wrong code (red, shaken, attempts
 left) and a right one (tick, receipt, RWF 5,440 still to pay). The
 Appointments rows keep their own code boxes until that page is rebuilt.
 
+## 192. "Overview" — the seller's day on one page (2026-10-08)
+
+The business app had no home: it opened on the Appointments table (§70.2). It
+now opens on **Overview** (`/`, `src/pages/OverviewPage.tsx`), first in the
+menu above Appointments (§131.1's ungrouped top now holds both). Unknown
+addresses go to `/`; every old address still works. On the phone the tab bar
+reads Today, Bookings, [Check in], Messages, Menu — Services moved into the
+menu.
+
+Laid out in the order the day is worked:
+
+1. **Greeting** — "Good evening, *Kigali Barbers*" with the date and a live
+   clock, and one plain sentence for the day ("1 customer still expected
+   today, and 1 with you now"). Take time off and Add a service beside it.
+2. **Four numbers**, each counting up when shown, each a link: **Still
+   expected today** (the coral card, with "1 running late" / "next at 16:00"
+   and its own Check in), **With you now**, **Bookings, last 7 days** (with
+   a green/red trend chip against the 7 days before), **Your rating** (the
+   branches' ratings weighted by their review counts, with half stars).
+3. **Today's schedule** as a timeline: every booking today in time order,
+   a coloured dot per state, a pulsing coral **Now** line at the current
+   time, and the next action on the row itself — **Check in** (opens §191
+   with that customer chosen) or **Mark done**. Late customers say "2 h 45
+   min late" in amber.
+4. **Next up**, a night card: today's first customer not yet checked in —
+   late ones included, since a late customer can still walk in — or else
+   the next booked; a countdown, when, where, what they still pay at the
+   shop, and Check them in.
+5. **Messages**: unread count and the three latest conversations.
+6. **Bookings** chart: the last 14 days (night bars), today (coral), and the
+   week ahead (hatched — booked, not yet happened), with hover counts.
+7. **Busiest times**: the busiest weekday and hour in plain words, a week of
+   bars and a 06:00–22:00 hour strip. Counted on the page from the last four
+   weeks of real bookings (the analytics endpoint reports only the single
+   peak, §96); the headline hour is read from the same working-day hours the
+   strip shows.
+8. **Money**: ready for the next payout, still settling, paid so far (the
+   balance endpoint, §77), with a paused notice when payouts are paused. Not
+   shown to someone the endpoint refuses.
+9. **Latest reviews**: the three newest across branches, stars, words, and
+   "Not replied yet" where the shop has not answered.
+
+Every figure is the server's or counted from its list of bookings (four weeks
+back to a week ahead, paged 100 at a time). "Real" bookings for the counts
+are Booked, In progress, Done and No-show — not cancelled, not unpaid.
+
+On a laptop two columns that end level (today, chart, money | next up,
+messages, busiest) with reviews across the foot; on a tablet and phone one
+flow, re-ordered so **Next up comes straight after the numbers**.
+
+`src/lib/time.ts` holds the time words every screen shares; `src/ui/Stars.tsx`
+draws ratings with halves. The status pill no longer capitalises every word
+("2 h 45 min late", not "2 H 45 Min Late").
+

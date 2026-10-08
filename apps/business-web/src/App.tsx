@@ -14,6 +14,7 @@ import { StaffPage } from './pages/StaffPage';
 import { SupportPage } from './pages/SupportPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { LegalPage } from './pages/LegalPage';
+import { OverviewPage } from './pages/OverviewPage';
 
 export function App() {
   return (
@@ -26,6 +27,7 @@ export function App() {
           </RequireAuth>
         }
       >
+        <Route path="/" element={<OverviewPage />} />
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/hours" element={<HoursPage />} />
@@ -39,7 +41,7 @@ export function App() {
         <Route path="/help" element={<SupportPage />} />
         <Route path="/legal" element={<LegalPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/appointments" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

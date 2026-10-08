@@ -47,7 +47,7 @@ export function Topbar({
         </button>
         <div className="tb-where">
           <span className="tb-crumbs">
-            <span>{item?.group ?? 'Today'}</span>
+            <span>{item?.group ?? 'Your day'}</span>
             <Icon name="chevronRight" size={13} stroke={2.2} />
             <strong>{item?.label ?? 'Business'}</strong>
           </span>
