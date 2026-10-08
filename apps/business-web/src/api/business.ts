@@ -764,6 +764,35 @@ export const acceptLegal = (documentId: string) =>
     body: { documentId },
   });
 
+/**
+ * The published documents, read before there is an account (§126.2, §238):
+ * somebody registering a business opens them from the sign-in screen, before
+ * ticking that they agree. The endpoint has no guard, by design (§122).
+ */
+export type LegalDocument = components['schemas']['LegalDocumentDto'];
+
+export const publishedLegal = () => api<LegalDocument[]>('/legal', { anonymous: true });
+
+// ---------------------------------------------------------------------------
+// The sign-in wall (§238)
+// ---------------------------------------------------------------------------
+
+export type DiscoveredServicePage = components['schemas']['DiscoveredServicePageDto'];
+
+/**
+ * The services shops have put up, most booked first — the photos behind the
+ * sign-in screen, as in the customer app (§183). Public: nobody is signed in
+ * yet, and these are exactly what any visitor can already see.
+ */
+export const wallServices = () =>
+  api<DiscoveredServicePage>('/discover/services', { query: { sort: 'popular', limit: 50 }, anonymous: true });
+
+export type DiscoveryPage = components['schemas']['DiscoveryPageDto'];
+
+/** The places taking bookings — how many, and a few shops' logos, under the headline (§238). */
+export const wallPlaces = () =>
+  api<DiscoveryPage>('/discover/locations', { query: { sort: 'popular', limit: 12 }, anonymous: true });
+
 // ---------------------------------------------------------------------------
 // Service drafts (§123)
 // ---------------------------------------------------------------------------

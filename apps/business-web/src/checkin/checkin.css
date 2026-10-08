@@ -229,6 +229,10 @@
   80% { transform: translateX(3px); }
 }
 .codeboxes .codebox:nth-child(3) { margin-right: 10px; }
+/* The row answering back (§238): breathing while the code is checked, green when it is right. */
+.codeboxes.is-busy { animation: codes-breathe 840ms ease-in-out infinite; }
+.codeboxes.is-ok .codebox { border-color: var(--ok); background: var(--ok-soft); color: var(--ok-deep); }
+@keyframes codes-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
 .ci-error {
   min-height: 22px;

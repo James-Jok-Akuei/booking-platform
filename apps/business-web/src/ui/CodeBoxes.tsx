@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
 
+/** Where a code stands (§238): being typed, being checked, wrong, or right. */
+export type CodeState = 'idle' | 'busy' | 'error' | 'ok';
+
 /**
  * Six boxes for a six-digit code (§191) — the same shape the customer sees the
  * code in, in their email and their app (§183), so what they read out and
@@ -20,6 +23,7 @@ export function CodeBoxes({
   disabled = false,
   autoFocus = false,
   length = 6,
+  state = 'idle',
 }: {
   value: string;
   onChange: (code: string) => void;
@@ -31,6 +35,8 @@ export function CodeBoxes({
   disabled?: boolean;
   autoFocus?: boolean;
   length?: number;
+  /** The row answers back (§238): it breathes while checked, turns green when right. */
+  state?: CodeState;
 }) {
   const boxes = useRef<Array<HTMLInputElement | null>>([]);
   const digits = Array.from({ length }, (_, i) => value[i] ?? '');
@@ -77,8 +83,11 @@ export function CodeBoxes({
 
   return (
     <div
-      className={`codeboxes${invalid ? ' is-invalid' : ''}${shake ? ' is-shaking' : ''}`}
-      onAnimationEnd={onShakeEnd}
+      className={`codeboxes${invalid || state === 'error' ? ' is-invalid' : ''}${shake ? ' is-shaking' : ''}${
+        state === 'busy' ? ' is-busy' : ''
+      }${state === 'ok' ? ' is-ok' : ''}`}
+      // Only the row's own shake: a digit's pop ending inside it bubbles here too.
+      onAnimationEnd={(event) => event.target === event.currentTarget && onShakeEnd?.()}
       role="group"
       aria-label={`${length}-digit code`}
     >

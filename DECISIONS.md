@@ -15879,3 +15879,103 @@ Kigali Barbers" sat too close to the bar.
 Checked at 1440 (Overview, Appointments at rest and scrolled — the step
 scroll test found no jumps and one header height) and 1024 (Services with
 the banner).
+
+## 238. Signing in, the customer app's screen made for the web (2026-10-09)
+
+The user: replicate the mobile app's sign-in (§183) as the web version for
+the business app, "a million dollar UI/UX" — and on the moving images, never
+pick one image twice.
+
+### 238.1 The layout
+
+- **A computer (1000px and up)**: the wall of shops' photos fills the left,
+  the headline at its foot; a white sheet on the right (40% of the width,
+  460–620px) with big rounded left corners, the wall running under them —
+  the mobile hero and sheet, turned on their side. The wall stays put while
+  a tall step scrolls the sheet.
+- **A phone or a tablet standing up**: the customer app's screen — the wall
+  on top (44% of the height), the sheet rising over it with rounded top
+  corners, "Made for Rwanda" and "For businesses" as glass pills at the top.
+  While typing on a phone (keyboard up), the wall folds to a strip so the
+  question and its button fit, as in the app.
+
+### 238.2 The wall — every photo once
+
+- The photos are the services shops have put up, most booked first (the
+  public `GET /discover/services`), the service's own photo only (§183), each
+  address once. Today that is 17 different photos.
+- **No photo is ever shown twice.** The app loops each column (drawn twice
+  end to end) and repeats photos to fill columns, so the same picture could be
+  in view twice. Here each column **glides one way and back**, never wrapping,
+  so it only needs to be longer than the window it is seen through. A small
+  planner picks the most columns that still cover the turned frame and have at
+  least 140px to move (4 columns on a computer, 3 on a phone, today); with too
+  few photos even for that, the wall holds still and each photo slowly
+  breathes in place instead. Tiles go round the columns in order, so the most
+  booked are across the top.
+- As in the app: turned 10°, heights in a rhythm, neighbours moving opposite
+  ways, under the coral-to-night shade. New on the web: each photo fades in as
+  it arrives, a whisper of grain, and the wall leans a little away from the
+  mouse. Fewer than six photos: the kinds of place stand in, in colour.
+  "Reduce motion" holds it all still.
+
+### 238.3 On the wall
+
+- **"Grow your / barbershop."** — the last word changing every 2.3 s
+  (barbershop, salon, spa, garage, nail studio, photo studio) in the app's
+  gold, rising in with a small overshoot; under it "Customers book and pay a
+  deposit. You check them in with a code."
+- **Real shops, counted by the server**: "11 places already take bookings
+  here" with four shops' logos (`GET /discover/locations`); left out under
+  three. Wide screens only.
+- **A seller's day, as notices**: New booking → Deposit paid (MTN mark) →
+  Checked in → New review → Ready to send, one every 3.6 s, settling on a soft
+  stack. Wide screens only; top right, or under the brand on a narrower one.
+
+### 238.4 One question at a time (the app's steps and words, for a business)
+
+- **Email**: "One email. No password." — a well that lights up, its icon
+  tile turning coral; a green tick once the address looks right; "Did you mean
+  …@gmail.com?" for the common slips, offered, never applied (the app's own
+  list); Continue stays grey until the address looks right.
+- **New here** (no account yet — or a colleague a business invited, §90.3):
+  "Nice to meet you.", three reasons (get booked online; deposits to MTN
+  MoMo; check in with a code), a line for invited colleagues, and **the tick**
+  — "I have read and agree to the Terms of Use, the Privacy Policy and the
+  Seller Agreement", each opening right there in a reading panel (the public
+  `GET /legal`) before ticking. This was missing from the business screen:
+  §126.2 asks for it, and the server records all three as the account is made
+  (§126.1). The button stays grey until ticked.
+- **Code**: "Welcome back" or "Creating your account"; "Check your inbox."
+  with the address as a chip that goes back to change it; the six boxes
+  answer back (a digit pops in, the waiting box glows with a coral caret, the
+  row breathes while checked, shakes red when wrong, turns green when right);
+  "Send a new one in 0:59" counting down with the server's own wait; "We sent
+  you a code a moment ago. Enter that one." when asked again too soon; the
+  server's sentences said plainly.
+- **In**: a green ring and tick drawing itself, "You are in!" / "Welcome
+  aboard!", a thin bar while it opens — then back to the page they were going
+  to, or their day.
+- The three documents are also at the foot of the sheet on every step.
+
+### 238.5 Fixed on the way
+
+- **A customer's code no longer leaves a session here.** Signing in with a
+  customer's email kept their session in the business app under the error;
+  now it is signed straight back out, and the error says whose account it is
+  and to use the business email. A stray non-business session found on
+  opening the page is closed too.
+- Already signed in, `/login` goes straight to the dashboard.
+- The code boxes (shared with check-in) take a `state`, and a digit's pop
+  ending no longer cuts the "wrong code" shake short.
+
+Files: `auth/LoginPage.tsx`, `AuthWall.tsx` (with the planner), `Moments.tsx`,
+`RotatingWord.tsx`, `email.ts`, `login.css` (`au-` names); `api/business.ts`
+(`wallServices`, `wallPlaces`, `publishedLegal`); `ui/CodeBoxes.tsx`; two
+icons (lock, bulb).
+
+Checked at 1920, 1440, 1280×720, 1024, 820, 390 and 360 wide: every photo on
+the wall once (17 of 17); the new-business step with the reading panel; the
+code step and "You are in!" with a real code from the local mail catcher; a
+customer's email refused and signed out; the phone fold while typing. Codes
+went only to the local mail catcher; no account was created.
