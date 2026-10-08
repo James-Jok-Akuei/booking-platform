@@ -15833,3 +15833,27 @@ No other page repeats today's date: Closures & breaks shows the day picked,
 and the calendar the day or week shown.
 
 Checked at 1440, 1024 and 390 wide.
+
+## 236. Trial: the top bar as dark, see-through glass on a wide screen (2026-10-09)
+
+The user asked to try a black, blurry, see-through background at the top on
+a large screen — "if bad we revert it". So this is a trial, kept in one
+block at the end of `shell/shell.css` and in one commit, so it comes out
+whole.
+
+- **Wide screens (860px and up)**: the top bar is charcoal glass — the
+  app's `--night` at 74% with a 22px blur — so the page shows through it as a
+  soft dark smear as it scrolls under. Its bottom corners are rounded (24px)
+  like the cards beside it, with a faint light line along the edge.
+- Everything in it turns light to read on it: crumbs and date in soft white,
+  page name and clock in white, the search box and round buttons (messages,
+  bell, your shop) as faint glass with white icons. **Check in** keeps its
+  orange; the flag and the shop logo get a thin light edge.
+- **Phones are unchanged** (the light bar, as before).
+- The pinned page headers under it (§209) stay light glass.
+
+If it is reverted: delete the block marked §236 in `shell/shell.css`
+(or revert this commit) and mark this section ~~superseded~~.
+
+Checked at 1920, 1440 and 1024 wide, at the top of a page and scrolled; 390
+unchanged.
