@@ -14187,8 +14187,9 @@ it lands.
 
 `styles.css` is now a design system rather than "a deliberately plain internal
 tool" (§70): the customer app's tokens (§133) — warm canvas `#F4F2ED`, white
-panels, coral `#F0532D` with a three-stop coral gradient for the one main
-action on a screen, night `#15171C` for "selected" and the darkest buttons,
+panels, coral `#F0532D` ~~with a three-stop coral gradient for the one main
+action on a screen, night `#15171C` for "selected" and the darkest buttons~~
+(superseded by §218: flat `#D4401C` buttons, charcoal `#2C3039`),
 ok/warn/danger/ask with their soft tints — and Plus Jakarta Sans, loaded from
 Google Fonts. Radii 8–26, four shadow levels, one easing curve, and
 `prefers-reduced-motion` honoured everywhere.
@@ -14209,10 +14210,12 @@ the same customer is the same colour everywhere.
 
 - **Sidebar** (`src/shell/Sidebar.tsx`): a floating white panel. The shop's
   logo (or its initials on the coral gradient), name, role and a live dot at
-  the top; §131's groups with an icon per link; the page you are on is a night
-  pill with a coral icon. Badges: **customers still expected today** on
+  the top; §131's groups with an icon per link; the page you are on is ~~a night
+  pill with a coral icon~~ (superseded by §218: a light highlight with an
+  orange bar and icon). Badges: **customers still expected today** on
   Appointments, **unread messages** on Messages. At the foot, the shop's
-  state — "Your shop is live" (night card, pulsing green), "paused", or
+  state — ~~"Your shop is live" (night card, pulsing green),~~ (removed by §218;
+  shown only when not live) "paused", or
   §70.3's not-approved sentence word for word on amber — and who is signed
   in, with sign-out. It **folds to a rail of icons** (remembered per browser);
   a tablet (860–1199px) always gets the rail, with each label shown on hover
@@ -15315,3 +15318,34 @@ foot of the sidebar.
 - **Sidebar foot**: the logo replaces the person's initials beside their
   email and role.
 - Phones show the logo alone in the top bar.
+
+## 218. Calmer colour: charcoal, one flat orange, no "live" card (2026-10-08)
+
+The user: the "Your shop is live" card is a gradient they do not like (and
+the logo's dot already says it); full black buttons and the orange should be
+softer — what is professional?
+
+- **"Your shop is live" is gone.** A live shop needs no card: the green dot
+  on its logo, top right (§217), says it. The card stays only when customers
+  **cannot** see the shop (paused, or not approved), because then an empty
+  bookings list is correct and would otherwise look broken.
+- **Charcoal instead of black.** `--night` is `#2C3039` (was `#15171C`), with
+  `#373C46` for hover. Everything dark — buttons, chosen pills, dark cards,
+  tab bar — is still clearly dark (white words on it 13 : 1) but no longer
+  heavy. Text stays near-black for reading.
+- **One flat orange for actions.** Buttons and filled marks use `--primary`
+  `#D4401C`, flat, darkening on hover (`#C13917`) and press (`#AC3214`), with
+  a thin highlight and a small soft shadow instead of a three-colour gradient
+  and a big orange glow. It is a little deeper than the brand orange so white
+  words on it pass the 4.5 : 1 reading standard (4.62; the brand orange is
+  3.51). The bright brand orange `#F0532D` stays for icons, dots, lines and
+  the current-page bar. `--accent-grad` now points at the flat colour, so
+  every button that used it changed at once; the "For you" adverts keep their
+  own colours.
+- **The page you are on**, in the sidebar: a light warm highlight, a short
+  orange bar at its left edge and an orange icon, instead of a black pill.
+- The greeting's shop name is solid orange, not gradient text.
+
+The rule this sets: one strong colour, used only for what to press; dark
+grey rather than black; gradients and glows saved for the few places meant
+to stand out (the advert cards), not everyday buttons.

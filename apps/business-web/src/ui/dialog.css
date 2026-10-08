@@ -60,7 +60,7 @@
 .dlg-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 .dlg-actions button { min-height: 46px; padding: 0 20px; border-radius: 14px; }
 .dlg-confirm { border: none; color: #fff; background: var(--accent-grad); box-shadow: var(--shadow-accent); }
-.dlg-confirm:hover:not(:disabled) { background: var(--accent-grad); border: none; filter: brightness(1.06); }
+.dlg-confirm:hover:not(:disabled) { background: var(--primary-hover); border: none; }
 .dlg-confirm.tone-danger { background: var(--danger); box-shadow: 0 10px 22px -10px rgba(217, 45, 32, 0.7); }
 .dlg-confirm.tone-danger:hover:not(:disabled) { background: #c2261a; }
 .dlg-confirm.tone-ok { background: var(--ok); box-shadow: 0 10px 22px -10px rgba(14, 159, 84, 0.7); }

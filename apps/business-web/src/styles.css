@@ -15,9 +15,11 @@
   --panel: #ffffff;
   --sunken: #f6f4f0;
   --sunken-2: #efece6;
-  --night: #15171c;
-  --night-2: #23262e;
-  --night-3: #30343d;
+  /* Charcoal rather than black (§218): dark buttons, chosen pills and dark
+     cards read as solid without the weight of pure black. */
+  --night: #2c3039;
+  --night-2: #373c46;
+  --night-3: #424854;
 
   /* ---- text ---- */
   --ink: #15171c;
@@ -32,7 +34,13 @@
   --accent-deep: #d7421e;
   --accent-soft: #ffeee8;
   --accent-tint: #fff6f2;
-  --accent-grad: linear-gradient(135deg, #ff8a4c 0%, #f0532d 52%, #d7421e 100%);
+  /* Buttons and filled marks (§218): one flat, slightly deeper orange, so
+     white words on it pass the 4.5 : 1 reading standard (4.62; the brand
+     orange is 3.51). The bright brand orange stays for icons, dots, lines. */
+  --primary: #d4401c;
+  --primary-hover: #c13917;
+  --primary-press: #ac3214;
+  --accent-grad: var(--primary);
 
   /* ---- states, each with the tint it sits on ---- */
   --ok: #0e9f54;
@@ -57,7 +65,7 @@
   --shadow-sm: 0 1px 2px rgba(21, 23, 28, 0.04), 0 6px 18px -6px rgba(21, 23, 28, 0.08);
   --shadow-md: 0 2px 6px rgba(21, 23, 28, 0.04), 0 18px 40px -12px rgba(21, 23, 28, 0.16);
   --shadow-lg: 0 30px 80px -20px rgba(21, 23, 28, 0.32);
-  --shadow-accent: 0 10px 24px -8px rgba(240, 83, 45, 0.55);
+  --shadow-accent: 0 1px 2px rgba(140, 40, 12, 0.2), 0 4px 12px -6px rgba(212, 64, 28, 0.4);
   --ring: 0 0 0 4px rgba(240, 83, 45, 0.16);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -168,12 +176,13 @@ button:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 button.primary {
-  background: var(--accent-grad);
+  background: var(--primary);
   border-color: transparent;
   color: #fff;
-  box-shadow: var(--shadow-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), var(--shadow-accent);
 }
-button.primary:hover:not(:disabled) { background: var(--accent-grad); filter: brightness(1.06) saturate(1.05); box-shadow: 0 14px 30px -10px rgba(240, 83, 45, 0.65); }
+button.primary:hover:not(:disabled) { background: var(--primary-hover); border-color: transparent; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 2px 4px rgba(140, 40, 12, 0.2), 0 8px 18px -8px rgba(212, 64, 28, 0.45); }
+button.primary:active:not(:disabled) { background: var(--primary-press); }
 button.primary:disabled { box-shadow: none; }
 
 button.dark { background: var(--night); border-color: var(--night); color: #fff; }

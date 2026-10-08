@@ -121,11 +121,12 @@ export function Sidebar({
       )}
 
       <div className="sb-foot">
-        {/* Whether customers can see the shop at all (§10.8, §119). A business
-            that is not APPROVED is invisible and unbookable, so its empty
-            appointment list is correct — and looks like a bug unless
-            something here says so. */}
-        {business && (
+        {/* Only when customers CANNOT see the shop (§10.8, §119, §218): a
+            business that is not APPROVED, or is paused, is invisible and
+            unbookable, so its empty appointment list is correct — and looks
+            like a bug unless something says so. A live shop needs no card:
+            the green dot on its logo, top right, says it. */}
+        {business && !live && (
           <Link to="/profile" className={`sb-status ${live ? 'is-live' : 'is-off'}`} onClick={onNavigate}>
             <span className="sb-status-head">
               <i className="sb-pulse" aria-hidden="true" />
