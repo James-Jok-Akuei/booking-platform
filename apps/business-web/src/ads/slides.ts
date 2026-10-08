@@ -290,7 +290,7 @@ function justInSlide(j: JustIn): Slide {
       eyebrow: `Just in · ${t.lastMessageAt ? ago(t.lastMessageAt) : 'now'}`,
       title: `${t.customer.email} wrote to you`,
       text: `“${t.lastMessage?.preview ?? 'Sent a photo'}” — a quick reply is the chance to win the booking.`,
-      cta: { label: 'Reply', to: '/messages' },
+      cta: { label: 'Reply', to: `/messages?thread=${encodeURIComponent(t.id)}` },
     };
   }
   const n = j.notification;

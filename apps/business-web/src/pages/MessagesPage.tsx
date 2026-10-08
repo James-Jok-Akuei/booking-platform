@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { listMessages, listThreads, markThreadRead, sendMessage, type Message, type Thread } from '../api/chat';
@@ -34,9 +35,25 @@ const preview = (thread: Thread) =>
  * There is no "new message" button, and that is deliberate: a shop does not
  * cold-open a conversation with someone who has not contacted it. The server
  * has no endpoint for it either.
+ *
+ * The open conversation is in the address (`/messages?thread=…`, §230), so a
+ * message pressed on Overview opens that very chat, and a reload keeps it.
  */
 export function MessagesPage() {
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const openId = params.get('thread');
+  // Moving between chats replaces the address rather than stacking it, so
+  // Back leaves Messages instead of stepping through every chat read.
+  const setOpenId = (id: string | null) =>
+    setParams(
+      (now) => {
+        const next = new URLSearchParams(now);
+        if (id) next.set('thread', id);
+        else next.delete('thread');
+        return next;
+      },
+      { replace: true },
+    );
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [search, setSearch] = useState('');
 
@@ -65,6 +82,14 @@ export function MessagesPage() {
     return !q || `${t.customer.email} ${subject(t)} ${preview(t)}`.toLowerCase().includes(q);
   });
   const open = rows.find((t) => t.id === openId) ?? null;
+
+  // Arriving with a chat named, its row is brought into view in the list.
+  const shownOnArrival = useRef(false);
+  useEffect(() => {
+    if (shownOnArrival.current || !openId || !threads.data) return;
+    shownOnArrival.current = true;
+    document.querySelector('.ms-thread.is-open')?.scrollIntoView({ block: 'nearest' });
+  }, [openId, threads.data]);
   // On a phone the open conversation is the whole screen, drawn at the top of
   // the page so nothing around it can clip or trap it.
   const phone = useMediaQuery('(max-width: 860px)');

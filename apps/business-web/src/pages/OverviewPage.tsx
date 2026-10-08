@@ -642,7 +642,10 @@ function Inbox({ threads, loading }: { threads: Thread[]; loading: boolean }) {
         <ul className="ov-threads">
           {recent.map((t) => (
             <li key={t.id}>
-              <Link to="/messages" className={`ov-thread${t.unreadCount > 0 ? ' is-unread' : ''}`}>
+              <Link
+                to={`/messages?thread=${encodeURIComponent(t.id)}`}
+                className={`ov-thread${t.unreadCount > 0 ? ' is-unread' : ''}`}
+              >
                 <Avatar label={t.customer?.email ?? 'Customer'} size={38} />
                 <span className="ov-thread-text">
                   <strong>{t.customer?.email ?? 'Customer'}</strong>

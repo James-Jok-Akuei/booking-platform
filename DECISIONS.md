@@ -15693,3 +15693,24 @@ branch, and a column per branch), month, the hover fan (3 bookings,
 opening its details with Check in, No-show and Cancel. The demo data has no
 bookings at the same time, so the stacks were checked with made-up ones in
 the test browser only; nothing was saved.
+
+## 230. A message pressed on Overview opens that very chat (2026-10-09)
+
+The user: pressing a message on the dashboard went to Messages but not to
+the conversation pressed.
+
+- The open conversation is now in the address: `/messages?thread=<id>`.
+  Messages opens whichever chat it names — beside the list on a computer
+  (its row highlighted and scrolled into view), full screen on a phone — and
+  a reload keeps it open.
+- Overview's three latest messages, and the "Just in" advert's **Reply**
+  for a new message, link to their own chat.
+- Moving between chats inside Messages replaces the address rather than
+  adding to the history, so Back returns to where the seller came from, not
+  through every chat they read. Closing a chat removes it from the address.
+- The bell's message notifications do not open the chat yet: they carry the
+  booking, not the conversation, and a question asked before booking has no
+  booking at all. The bell rows do not lead anywhere today.
+
+Checked at 1440 and 390 wide: pressing the third and second messages on
+Overview opened those chats; switching chats in Messages updates the address.
