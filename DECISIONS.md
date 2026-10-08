@@ -14642,3 +14642,28 @@ The last three pages, rules and words unchanged.
 **No browser pop-up is left in the business app** — every confirm, prompt and
 alert is the designed dialog (§193).
 
+## 203. Signing in to the business app, redesigned (2026-10-08)
+
+`src/auth/LoginPage.tsx`. The rules are §50's and §90.3's, unchanged: no role
+is sent to sign in; a missing account becomes the offer to create a business
+account (the only place a role is sent); a non-business account is told so.
+
+- **Two halves.** On the left, a night panel showing what the app is for:
+  four floating cards of the kind a seller sees inside (next customer, money
+  ready to send, a new review, a check-in) — illustrations, not anyone's
+  data — and "Your bookings, your customers and your money — in one place"
+  with three plain points. On the right, the form, one step at a time, with
+  two step marks.
+- **Email** in a large field with an envelope; **Send code**.
+- **New here?** — §90.3's words, Create a business account, Use a different
+  email.
+- **Check your inbox** — the same six code boxes as checking a customer in
+  (§191), so **the sixth digit signs in**; a wrong code shakes the boxes and
+  shows the server's words. **Send a new code** added (it asks the same way
+  the first request did, with the role only when registering), and Use a
+  different address.
+- Server messages (wrong code, "Please wait 15s before requesting another
+  code") sit in a red strip under the form.
+- After signing in it opens **Overview** (§192), the new home.
+- On a phone the left panel shrinks to its words above the form.
+
