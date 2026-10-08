@@ -14481,16 +14481,19 @@ What is new is being able to SEE them:
   different hours amber, each break a blue dot (up to three), and the days the
   branch is **usually closed** (its weekly hours, or no hours saved) hatched.
   Today is a coral circle. Hovering a marked day says what it is.
-  **Clicking a day fills in the date in both forms**, so "close the 20th" is
-  a click on the 20th and Add this day. Previous / Today / Next months.
+  ~~**Clicking a day fills in the date in both forms**, so "close the 20th" is
+  a click on the 20th and Add this day.~~ — superseded by §207 (the day
+  picked is the day the panel beside it changes; the forms have no date
+  field). Previous / Today / Next months.
 - Branches are pills at the top, not a dropdown.
 - Each form sits on a tinted panel. "What happens" is two pill choices
   (Closed all day / Open, but different hours) — still one or the other, so
   the server's two refusals stay unreachable. The foot reads the choice back
   ("Thu, 8 Oct 2026 · 13:00 to 14:00") beside the button.
-- **What is already taken out** is listed under each form, coming up first,
+- ~~**What is already taken out** is listed under each form, coming up first,
   each with a coloured date block (clicking it shows that month on the
-  calendar) and Remove; **past ones fold away** under "Past (n)".
+  calendar) and Remove;~~ — superseded by §207 (one "Coming up" list for
+  both, each opening its day) — **past ones fold away** under "Past (n)".
 - "Today" is now the seller's local date, not UTC's — the old default date
   could read as yesterday or tomorrow near midnight.
 
@@ -14513,9 +14516,10 @@ branch, all three removed afterwards.
   at every open branch (from each branch's photo count). It counts only what
   a customer sees; nothing is required by it.
 - **Details beside "How customers see you"**: the form on the left, and on
-  the right a phone showing the shop as the customer's app does — cover,
+  the right ~~a phone showing the shop as the customer's app does — cover,
   logo, name, category, first branch with its rating, the tabs, the
-  description — **changing as it is typed**. Save is enabled only when
+  description~~ (superseded by §208: the app's real shop page, at its real
+  size) — **changing as it is typed**. Save is enabled only when
   something changed, and the foot says the preview shows unsaved changes.
 - **Photos per branch**: a fill bar of "n of 30", larger tiles that zoom on
   hover with a remove button (now the dialog), and an "Add a photo" tile in
@@ -14881,3 +14885,73 @@ topic saying a seller can add branches, even in other places.
   price (§72); a new branch starts closed and offers nothing until its hours
   and services are set; one team, one payout number and one money page cover
   every branch (memberships and payout numbers belong to the business).
+
+## 207. Closures & breaks: pick a day, then change that day (2026-10-08)
+
+The user: the month calendar sat above the two forms and "looks like it has
+its own function", not like the way to choose the date the forms below act
+on.
+
+- **One planner card.** The month on the left (**1 · Pick a day**) and, beside
+  it in the same card, **the day picked (2 · Change that day)** with a chip
+  pointing back at the calendar ("← The day you picked"; "↑" when stacked).
+  Under ~700px of room the day sits directly under the month, still in the
+  same card, and picking a day brings it into view.
+- **The day panel** shows a coral date tile matching the coral ring on the
+  picked day, what the branch usually does that weekday ("Usually open
+  08:00 – 19:00" / "Usually closed on Saturdays"), what is already changed on
+  it (a closure or the day's breaks, each with Remove, or "Nothing changed"),
+  then the two ways to change it as tabs — **The whole day** (closed, or
+  different hours) and **Part of the day** (a break). **Neither form has a
+  date field any more**: the date is the calendar's.
+- A day that already has a closure says "This replaces what is set for this
+  day now" and the button reads **Change this day** — the server keeps one
+  exception per date and saving again replaces it (upsert, §102). A past day
+  cannot be changed from here.
+- **Coming up at <branch>**: closures and breaks in one list under the
+  planner, by date; clicking one opens its day above (the calendar turns to
+  its month), Remove beside it, past ones folded.
+
+Checked by closing a test day (20 Oct, "Staff training"), opening it from the
+list and removing it. A closure on 20 Oct with no reason, added from the
+user's own browser while this was being built, was left as it is.
+
+## 208. "How customers see you" is the customer app's real shop page (2026-10-08)
+
+The user asked for the preview on Your shopfront to look exactly like the
+customer app.
+
+- `src/shopfront/CustomerPhone.tsx` draws `app/shop/[id].tsx` at its **real
+  size, a 390 × 844 phone**, with the app's own numbers (theme.ts, Pill,
+  Segmented, Button "soft", IconButton, SaveButton, SaleBadge, Stars, Avatar
+  tints, Cover's category colours), then scales the whole phone with CSS
+  `zoom` (0.8) so nothing drifts. The **icons are the app's Ionicons**, their
+  outlines taken from the font the app ships (`src/shopfront/ionicons.ts`, 23
+  glyphs, MIT licence). A change to the app's shop page should be made here
+  too.
+- It reads the branch from the **same public address the app reads**
+  (`GET /discover/locations/:id` and its reviews, anonymously): open now,
+  the subcategory pill, address and district, rating, photos strip, services
+  at that branch's prices with sale badge, struck-out price and "pay … now",
+  open hours with "Coming up", and reviews with replies. The name,
+  description, type and category picture being edited are laid over it, so
+  unsaved words show where customers will read them; an empty description
+  shows a dashed hint (the app shows nothing).
+- It behaves like the app: the inside scrolls, the cover moves at half speed,
+  the name bar fades in, the three tabs switch with the sliding thumb. With
+  more than one branch, pills above the phone pick which one.
+- When customers cannot see the shop (paused, not approved — the public
+  address 404s), it is drawn from the shop's own records instead — services
+  offered at that branch, cheapest first, sale price worked out as the server
+  does (rounded half up), approved photos — and says so under the phone.
+- Its classes are `csp-*`: the command palette already owns `cp-*`, and the
+  first version picked up its white panel.
+
+### 208.1 Fixed while comparing: "Invalid Date" in the customer app
+
+The shop page's "Coming up" closures read **Invalid Date** in the real app.
+The public shop answer sent each closure's date as UTC midnight
+(`2026-10-20T00:00:00.000Z`) while the app — and the business API —
+treat it as a calendar day. `DiscoveryService.findOne` now sends
+`YYYY-MM-DD` (`formatCalendarDate`), as the business API always has; a test
+pins it.

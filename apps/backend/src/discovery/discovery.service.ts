@@ -10,7 +10,7 @@ import {
 } from '../payments/approx-settlement';
 import { isPubliclyBookable } from '../business/business-status';
 import { FavouritesService } from '../favourites/favourites.service';
-import { dayOfWeekUtc, instantToZonedParts } from '../availability/time.util';
+import { dayOfWeekUtc, formatCalendarDate, instantToZonedParts } from '../availability/time.util';
 import { liveDiscount, priceFor } from '../business/discount';
 import { isOpenAt } from './open-now';
 import { DiscoverLocationsDto, DiscoverySort } from './dto/discover-locations.dto';
@@ -707,7 +707,10 @@ export class DiscoveryService {
           }
         : null,
       hours: location.hours,
-      upcomingExceptions: exceptions,
+      // "YYYY-MM-DD", as the business API sends them (§208): Prisma hands a
+      // @db.Date back as UTC midnight, and a client that reads it as a day
+      // and adds a time of its own got "Invalid Date".
+      upcomingExceptions: exceptions.map((e) => ({ ...e, date: formatCalendarDate(e.date) })),
       gallery: location.media,
       openNow: isOpenAt(
         this.windowFor(template, todayException),

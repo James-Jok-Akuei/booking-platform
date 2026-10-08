@@ -945,6 +945,8 @@ describe('Discovery (§43)', () => {
 
       expect(detail.upcomingExceptions).toHaveLength(1);
       expect(detail.upcomingExceptions[0].reason).toBe('Future');
+      // A calendar day, as the business API sends it — not UTC midnight (§208).
+      expect(detail.upcomingExceptions[0].date).toBe(tomorrow);
     });
   });
 

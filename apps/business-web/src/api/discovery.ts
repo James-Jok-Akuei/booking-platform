@@ -17,3 +17,20 @@ export const discoverServices = (params: {
   onSale?: boolean;
   limit?: number;
 }) => api<DiscoveredServicePage>('/discover/services', { query: params, anonymous: true });
+
+/** One branch exactly as the customer app's shop page reads it (§208). */
+export type Shopfront = components['schemas']['ShopfrontDto'];
+export type ShopfrontService = components['schemas']['ShopfrontServiceDto'];
+
+/**
+ * Asked anonymously, as a signed-out customer would: no hearts filled in. A
+ * paused shop or a closed branch 404s here, as it is absent from search (§89).
+ */
+export const getShopfront = (locationId: string) =>
+  api<Shopfront>(`/discover/locations/${locationId}`, { anonymous: true });
+
+export type PublicReviewPage = components['schemas']['LocationReviewsDto'];
+
+/** The branch's reviews as customers read them — hidden ones left out (§92). */
+export const getShopReviews = (locationId: string, limit = 20) =>
+  api<PublicReviewPage>(`/locations/${locationId}/reviews`, { query: { limit }, anonymous: true });

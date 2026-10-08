@@ -16,6 +16,7 @@ import {
   type Location,
 } from '../api/business';
 import { initialsOf } from '../ui/Avatar';
+import { CustomerPhone } from '../shopfront/CustomerPhone';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 import { Stars } from '../ui/Stars';
@@ -286,8 +287,6 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
     save.mutate();
   };
 
-  const branch = locations.find((l) => l.isActive) ?? locations[0];
-
   return (
     <div className="pf-details">
       <form className="pf-form" onSubmit={submit}>
@@ -381,52 +380,22 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
         </footer>
       </form>
 
-      {/* The shop as the customer's app shows it, as it is being written. */}
+      {/* The shop as the customer's app shows it, as it is being written (§208). */}
       <aside className="pf-preview" aria-label="How customers see your shop">
         <p className="pf-preview-label">
           <Icon name="eye" size={15} /> How customers see you
         </p>
-        <div className="phone">
-          <div className="phone-screen">
-            <div
-              className="phone-cover"
-              style={profile.coverImageUrl ? { backgroundImage: `url(${profile.coverImageUrl})` } : undefined}
-            >
-              <span className="phone-back">
-                <Icon name="chevronLeft" size={16} />
-              </span>
-            </div>
-            <div className="phone-body">
-              <div className="phone-logo">
-                {profile.logoUrl ? <img src={profile.logoUrl} alt="" /> : <span>{initialsOf(name || 'B')}</span>}
-              </div>
-              <h3>{name.trim() || 'Your business name'}</h3>
-              <p className="phone-cat">
-                {[chosen?.name, sub?.name].filter(Boolean).join(' · ') || 'Category'}
-              </p>
-              {branch && (
-                <p className="phone-where">
-                  <Icon name="pin" size={12} /> {branch.name}
-                  {branch.ratingCount > 0 && (
-                    <>
-                      {' '}
-                      · <Icon name="star" size={12} filled /> {branch.ratingAvg}
-                    </>
-                  )}
-                </p>
-              )}
-              <div className="phone-tabs">
-                <span className="is-on">What they do</span>
-                <span>Reviews</span>
-                <span>About</span>
-              </div>
-              <p className={`phone-desc${description.trim() ? '' : ' is-empty'}`}>
-                {description.trim() || 'Say what you offer and what makes you worth the trip.'}
-              </p>
-              <div className="phone-cta">Message the shop</div>
-            </div>
-          </div>
-        </div>
+        <CustomerPhone
+          locations={locations}
+          live={{
+            name,
+            description,
+            subcategory: sub?.name ?? null,
+            categoryIcon: chosen?.icon ?? null,
+            logoUrl: profile.logoUrl,
+            coverImageUrl: profile.coverImageUrl,
+          }}
+        />
       </aside>
     </div>
   );
