@@ -12,32 +12,26 @@
 /* ---- the pinned head ---- */
 
 .app .content .ap-top { padding-bottom: 0; margin-bottom: 0; gap: 16px; }
-.app.is-condensed .content .ap-top { padding-bottom: 0; gap: 12px; }
-.ap-head { align-items: center; }
 .ap-head p { margin: 4px 0 0; }
-/* Folded, the title keeps its width and the search takes the rest. */
-.app.is-condensed .content .ap-head > div:first-child { flex: none; }
-.app.is-condensed .content .ap-head .ap-find { flex: 1 1 auto; justify-content: flex-end; }
-.app.is-condensed .content .ap-head .ap-search { flex: 0 1 380px; height: 42px; }
-.app.is-condensed .content .ap-head .ap-branch { height: 42px; }
 
-.ap-find { display: flex; align-items: center; gap: 8px; flex: 0 1 520px; min-width: 0; }
+/* Find, filter and download: the first row of the pinned card (§214). */
+.ap-toolbar { display: flex; align-items: center; gap: 8px; padding: 12px 12px 12px 14px; border-bottom: 1px solid var(--line); }
+.ap-find { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; }
 .ap-search {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1 1 260px;
+  flex: 1 1 240px;
   min-width: 0;
-  height: 46px;
-  padding: 0 12px 0 16px;
-  border-radius: 99px;
-  background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.07);
-  box-shadow: var(--shadow-xs);
+  height: 42px;
+  padding: 0 12px 0 14px;
+  border-radius: 13px;
+  background: var(--sunken);
+  border: 1px solid transparent;
   color: var(--muted);
   transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
 }
-.ap-search:focus-within { border-color: var(--accent); box-shadow: var(--ring); }
+.ap-search:focus-within { background: var(--panel); border-color: var(--accent); box-shadow: var(--ring); }
 .ap-search input { flex: 1; min-width: 0; min-height: 0; padding: 0; border: none; background: transparent; box-shadow: none; }
 .ap-search input:focus, .ap-search input:hover { border: none; box-shadow: none; }
 .ap-search-clear { width: 26px; height: 26px; min-height: 0; padding: 0; border-radius: 50%; border: none; background: var(--sunken-2); color: var(--ink-2); }
@@ -48,12 +42,11 @@
   align-items: center;
   flex: 0 1 210px;
   min-width: 0;
-  height: 46px;
-  padding-left: 14px;
-  border-radius: 99px;
-  background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.07);
-  box-shadow: var(--shadow-xs);
+  height: 42px;
+  padding-left: 13px;
+  border-radius: 13px;
+  background: var(--sunken);
+  border: 1px solid transparent;
   color: var(--muted);
 }
 .ap-branch.is-on { background: var(--night); border-color: var(--night); color: #ff8a5c; }
@@ -69,7 +62,7 @@
   background: transparent;
   box-shadow: none;
   font-weight: 650;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--ink);
   text-overflow: ellipsis;
   cursor: pointer;
@@ -86,13 +79,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  max-height: 220px;
-  overflow: hidden;
-  padding: 2px;
-  margin: -2px;
-  transition: max-height 300ms var(--ease), opacity 220ms var(--ease), margin 300ms var(--ease);
 }
-.app.is-condensed .ap-today { max-height: 0; opacity: 0; margin-top: -14px; margin-bottom: -2px; }
 .ap-today-tile {
   display: flex;
   flex-direction: column;
@@ -143,7 +130,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.6) inset;
   overflow: hidden;
 }
-.ap-tabs-row { display: flex; align-items: center; gap: 10px; padding: 6px 12px 0 14px; border-bottom: 1px solid var(--line); }
+.ap-tabs-row { display: flex; align-items: center; gap: 10px; padding: 2px 12px 0 14px; border-bottom: 1px solid var(--line); }
 .ap-tabs { display: flex; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .ap-tabs::-webkit-scrollbar { display: none; }
 .ap-tab {
@@ -181,7 +168,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 }
 .ap-tab.is-active .ap-tab-count { background: var(--night); color: #fff; }
 
-.ap-export { flex: none; min-height: 34px; padding: 0 12px; gap: 6px; border-radius: 11px; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+.ap-export { flex: none; min-height: 42px; padding: 0 14px; gap: 6px; border-radius: 13px; font-size: 13.5px; color: var(--ink-2); }
 .ap-export-icon { transform: rotate(180deg); }
 
 .ap-cols {
@@ -401,13 +388,12 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 }
 
 @container page (max-width: 1000px) {
-  .ap-export span { display: none; }
-  .ap-export { width: 34px; padding: 0; }
   .ap-tab { padding: 0 10px; }
 }
 
-@container page (max-width: 880px) {
-  .ap-find { flex-basis: 100%; }
+@container page (max-width: 760px) {
+  .ap-export span { display: none; }
+  .ap-export { width: 42px; padding: 0; }
 }
 
 @container page (max-width: 620px) {
@@ -419,7 +405,11 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
   .ap-tab { padding: 0 9px; font-size: 13.5px; }
   .ap-cols { display: none; }
   .ap-card-top { border-radius: 22px; border-bottom: 1px solid rgba(21, 23, 28, 0.06); }
-  .ap-tabs-row { border-bottom: none; padding: 4px 8px 0 8px; }
+  .ap-toolbar { flex-wrap: wrap; padding: 10px; }
+  .ap-find { display: contents; }
+  .ap-search { flex: 1 1 100%; }
+  .ap-branch { flex: 1 1 0; }
+  .ap-tabs-row { border-bottom: none; padding: 0 8px; }
   .ap-board { margin-top: 12px; padding: 0; border: none; background: transparent; box-shadow: none; border-radius: 0; }
   .ap-group-title { padding: 10px 4px 8px; }
   .ap-group + .ap-group { border-top: none; }

@@ -14978,14 +14978,16 @@ moving beneath it — "for all headers".
   booking tabs on Appointments, the branch pills on Reviews, Closures and How
   it is going (kept to one sliding row there, never wrapping taller), the
   period pills, the search, and the page's main button.
-- **Folding.** Once the page has moved (24px), the header folds: the title
+- ~~**Folding.** Once the page has moved (24px), the header folds: the title
   drops to 22px, the line under it is put away, title and buttons share one
   line, branch pills slim to 36px. Back near the top (8px) it unfolds. It only
   folds on a page with enough to scroll (more than 180px), so the fold
-  shortening the page can never unfold it again — no flicker.
+  shortening the page can never unfold it again — no flicker.~~ — superseded
+  by §214 (a header never changes size; a tall one partly scrolls away).
 - **On a phone** (under 860px) the bar already shows the page's name once the
-  page moves (§190), and height is scarce, so the folded header keeps only its
-  tabs or branch pills; title, search and buttons return at the top.
+  page moves (§190), and height is scarce, so ~~the folded header keeps only its
+  tabs or branch pills; title, search and buttons return at the top~~ only the
+  tabs or branch pills stay pinned — the rest scrolls away (§214).
 - **Help** keeps its dark "How can we help?" card (§202) as the page's first
   block — now an h2 under a slim pinned "Help" header like every other page;
   pinning the whole card would cover half the screen.
@@ -15141,7 +15143,44 @@ them. Tested in `appointment-filters.spec.ts`.
 
 ### 213.3 Smaller
 
-- The header fold in the frame needs 280px of scroll (was 180px) so the
-  tallest folding header — this one — cannot unfold itself.
+- ~~The header fold in the frame needs 280px of scroll (was 180px) so the
+  tallest folding header — this one — cannot unfold itself.~~ — superseded by
+  §214 (no fold).
 - "Awaiting payment" shows as an **Unpaid** pill in the list (the tab keeps
   its name).
+
+## 214. Pinned headers no longer fight the scroll (2026-10-08)
+
+The user: scrolling — especially near the pinned headers — "blinks", pulling
+the page back up and down against the scroll.
+
+**Cause.** The headers folded as the page scrolled (§209): smaller title,
+hidden line, and on Appointments the whole today strip collapsing. A pinned
+header that shrinks makes the page shorter under the reader's eye, so the
+browser moves the scroll position to keep the content in place; near the
+top that moved it back above the fold line, the header unfolded, the page
+grew, and round again — a loop the reader feels as the page jumping against
+them, worst on Appointments, whose fold was ~200px.
+
+**Fix: a header never changes size while the page scrolls.** Instead, a tall
+header is pinned from a chosen row down, and the part above simply scrolls
+away under the top bar like ordinary content:
+
+- `.page-top`'s sticky offset is `top bar height − --pt-fold`. The frame
+  measures `--pt-fold` (the distance from the header's top to its
+  `.pin-from` row, less 10px of glass) with a ResizeObserver — on resize and
+  on page change, never on scroll.
+- **Appointments**: the title and the today tiles scroll away; the card with
+  **search, branch and Export**, the **tabs** and the **column headings**
+  stays pinned (search, branch and Export moved from beside the title into
+  that card's first row).
+- **Other pages**: the header is short and stays whole, as before, with its
+  edge shadow once the page has moved (`.app.is-scrolled`).
+- **On a phone**: only the row marked `.pin-phone` (Appointments' tabs), or
+  else the first row after the title (tabs or branch pills), stays pinned;
+  the page's name is in the top bar.
+- The fold rules and the `is-condensed` state are gone.
+
+Checked by scrolling four pages (Appointments, Overview, Reviews, Branches &
+hours) down and back up in 30px steps at 1440, 1024 and 390 wide: the scroll
+position never moved by itself, and each header kept one height throughout.

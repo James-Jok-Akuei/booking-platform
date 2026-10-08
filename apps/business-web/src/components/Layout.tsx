@@ -81,37 +81,58 @@ function Frame() {
   // Once the page moves under the top bar, the bar gets an edge — and on a
   // phone, the page's name, which has scrolled out of view.
   const [scrolled, setScrolled] = useState(false);
-  // Each page's header stays pinned under the bar (§209) and, once the page
-  // moves, folds to a slim strip. Only on a page long enough to scroll well
-  // past the fold: on a short one, the fold itself would shorten the page
-  // enough to unfold it again, and it would flicker (280px covers the tallest
-  // fold, Appointments' with its today strip). Folding at 24px and
-  // unfolding only back near the top keeps it from see-sawing.
-  const [condensed, setCondensed] = useState(false);
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 24);
-      setCondensed((was) =>
-        was ? y > 8 : y > 24 && document.documentElement.scrollHeight - window.innerHeight > 280,
-      );
-    };
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [location.pathname]);
 
-  // The pinned headers sit right under the top bar, however tall it is.
+  // The pinned headers sit right under the top bar, however tall it is
+  // (§209, §214). A header never changes size as the page scrolls — that
+  // made the browser shift the page to make up for it, which unfolded the
+  // header again, and the two fought the scroll. Instead, the part of a
+  // header above its `.pin-from` row (on a phone: above its `.pin-phone`
+  // row, or its first row after the title) simply scrolls away under the
+  // bar, and the rest stays.
   const main = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const box = main.current;
     const bar = box?.querySelector<HTMLElement>('.topbar');
-    if (!box || !bar) return;
-    const measure = () => box.style.setProperty('--tb-h', `${bar.offsetHeight}px`);
-    measure();
+    const content = box?.querySelector<HTMLElement>('.content');
+    if (!box || !bar || !content) return;
+    const phone = window.matchMedia('(max-width: 859px)');
+    let watched: HTMLElement | null = null;
+    const measure = () => {
+      box.style.setProperty('--tb-h', `${bar.offsetHeight}px`);
+      const top = content.querySelector<HTMLElement>('.page-top');
+      if (top && top !== watched) {
+        watched = top;
+        watch.observe(top);
+      }
+      if (!top) return;
+      const pin = phone.matches
+        ? top.querySelector<HTMLElement>('.pin-phone') ??
+          top.querySelector<HTMLElement>(':scope > .pin-from') ??
+          top.querySelector<HTMLElement>(':scope > :nth-child(2)')
+        : top.querySelector<HTMLElement>(':scope > .pin-from');
+      // A little glass is left above the pinned row.
+      const fold = pin
+        ? Math.max(0, pin.getBoundingClientRect().top - top.getBoundingClientRect().top - 10)
+        : phone.matches
+          ? top.offsetHeight
+          : 0;
+      top.style.setProperty('--pt-fold', `${Math.round(fold)}px`);
+    };
     const watch = new ResizeObserver(measure);
     watch.observe(bar);
-    return () => watch.disconnect();
+    watch.observe(content);
+    phone.addEventListener('change', measure);
+    measure();
+    return () => {
+      watch.disconnect();
+      phone.removeEventListener('change', measure);
+    };
   }, []);
 
   const toggleRail = () =>
@@ -154,7 +175,7 @@ function Frame() {
 
   return (
     <div
-      className={`app${folded ? ' has-rail' : ''}${wide ? ' has-ads' : ''}${wide && adsFolded ? ' ads-folded' : ''}${condensed ? ' is-condensed' : ''}`}
+      className={`app${folded ? ' has-rail' : ''}${wide ? ' has-ads' : ''}${wide && adsFolded ? ' ads-folded' : ''}${scrolled ? ' is-scrolled' : ''}`}
     >
       <div className="app-side">
         <Sidebar

@@ -678,11 +678,8 @@ body {
   .content { --pad-l: 16px; --pad-r: 16px; padding: 4px var(--pad-r) 128px var(--pad-l); }
   .page-head h1 { font-size: 27px; }
   /* A phone has little height to spare, and its bar already takes the page's
-     name once the page moves (§209): pinned, the header keeps only its tabs
-     or branch pills. Title, search and buttons come back at the top. */
-  .app.is-condensed .page-top > .page-head,
-  .app.is-condensed .ov-top > .ov-head { display: none; }
-  .app.is-condensed .page-top { padding-top: 0; }
+     name once the page moves (§209, §214): the title scrolls away, and only
+     the tabs or branch pills under it stay pinned. */
   .content table { display: block; overflow-x: auto; }
   /* Tabs slide sideways rather than wrapping onto a second line. */
   .content .tabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; }

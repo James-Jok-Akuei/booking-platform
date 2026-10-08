@@ -286,36 +286,6 @@ export function AppointmentsPage() {
             <h1>Appointments</h1>
             <p className="muted">Who is coming, checking them in, and what they still owe you.</p>
           </div>
-          <div className="ap-find">
-            <label className="ap-search">
-              <Icon name="search" size={18} />
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Email, service, branch or No."
-                aria-label="Find a booking"
-              />
-              {search && (
-                <button type="button" className="ap-search-clear" onClick={() => setSearch('')} aria-label="Clear">
-                  <Icon name="close" size={14} stroke={2.2} />
-                </button>
-              )}
-            </label>
-            {branches.length > 1 && (
-              <label className={`ap-branch${branch ? ' is-on' : ''}`}>
-                <Icon name="pin" size={16} />
-                <select value={branch} onChange={(event) => setBranch(event.target.value)} aria-label="Branch">
-                  <option value="">All branches</option>
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-                <Icon name="chevronDown" size={15} className="ap-branch-chev" />
-              </label>
-            )}
-          </div>
         </header>
 
         <TodayStrip
@@ -327,8 +297,50 @@ export function AppointmentsPage() {
           onTab={setTab}
         />
 
-        <div className="ap-card-top">
-          <div className="ap-tabs-row">
+        <div className="ap-card-top pin-from">
+          <div className="ap-toolbar">
+            <div className="ap-find">
+              <label className="ap-search">
+                <Icon name="search" size={18} />
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Email, service, branch or No."
+                  aria-label="Find a booking"
+                />
+                {search && (
+                  <button type="button" className="ap-search-clear" onClick={() => setSearch('')} aria-label="Clear">
+                    <Icon name="close" size={14} stroke={2.2} />
+                  </button>
+                )}
+              </label>
+              {branches.length > 1 && (
+                <label className={`ap-branch${branch ? ' is-on' : ''}`}>
+                  <Icon name="pin" size={16} />
+                  <select value={branch} onChange={(event) => setBranch(event.target.value)} aria-label="Branch">
+                    <option value="">All branches</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                  <Icon name="chevronDown" size={15} className="ap-branch-chev" />
+                </label>
+              )}
+            </div>
+            <button
+              type="button"
+              className="ap-export"
+              onClick={download}
+              disabled={shown.length === 0}
+              title="Download what is shown, for a spreadsheet"
+            >
+              <Icon name="upload" size={15} className="ap-export-icon" />
+              <span>Export</span>
+            </button>
+          </div>
+          <div className="ap-tabs-row pin-phone">
             <div className="ap-tabs" role="tablist">
               {TABS.map((t, i) => {
                 const count = counts[i].data?.total;
@@ -348,16 +360,6 @@ export function AppointmentsPage() {
                 );
               })}
             </div>
-            <button
-              type="button"
-              className="ap-export"
-              onClick={download}
-              disabled={shown.length === 0}
-              title="Download what is shown, for a spreadsheet"
-            >
-              <Icon name="upload" size={15} className="ap-export-icon" />
-              <span>Export</span>
-            </button>
           </div>
           <div className="ap-cols" aria-hidden="true">
             <span>Time</span>
