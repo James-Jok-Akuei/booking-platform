@@ -14249,3 +14249,44 @@ Checked at 1440×900, 1024×768 and 390×844 against the live backend, with the
 search, the account menu, the bell and the phone drawer each opened. Type-checks
 and builds.
 
+## 191. Checking a customer in, its own flow (2026-10-08)
+
+The most frequent thing a seller does (§70.2) was a code box in a table row.
+It is now a window of its own (`src/checkin/CheckIn.tsx`), opened from the
+top bar's **Check in**, the phone's raised button, and the ⌘K search — from
+any page, without leaving it.
+
+1. **Who has arrived?** Every booking still expected (`BOOKED`), in three
+   groups: **Today** (in time order, each with "Due now" pulsing coral, "in
+   25 min" blue, or "10 min late" amber), **Coming up**, and **Earlier, not
+   checked in**. A search box filters by email, service or branch. **With
+   exactly one customer expected today, they are already chosen** and the
+   window opens on the code; "Change" goes back to the list.
+2. **Their code**: six boxes, the same shape as the code in the customer's
+   email and app (§183). Typing moves on, Backspace steps back, a pasted or
+   auto-filled code spreads across all six, and **the sixth digit checks them
+   in** — no button needed, though there is one. A wrong code shakes the
+   boxes red and shows the server's own message ("Incorrect verification
+   code. 4 attempt(s) remaining."). **No code?** stays OWNER/MANAGER only
+   (§54.3) and is now a written form in the window, with §70's words, the
+   10-character minimum, and "recorded against your name and every
+   administrator is told" — no more browser prompt.
+3. **Checked in**: a drawn green tick, the service and time, the deposit paid,
+   and **"Still to pay you at the shop"** (the price minus the deposit) — the
+   one number the seller needs next. "Check in someone else" goes straight
+   back to the list.
+
+The booking must be chosen before the code is typed: the code is stored
+hashed (§54.2), so there is no finding a booking from its code — and trying
+it against each booking would spend the customers' attempts.
+
+`src/ui/CodeBoxes.tsx` is the reusable six-box input. On a phone the window is
+a sheet from the bottom. Every query it refreshes sits under `appointments`,
+so the badges and lists update behind it.
+
+Checked against the live list (one customer today, one coming up, one
+earlier), with the server's replies to the check-in itself faked in the test
+browser so no real booking changed: a wrong code (red, shaken, attempts
+left) and a right one (tick, receipt, RWF 5,440 still to pay). The
+Appointments rows keep their own code boxes until that page is rebuilt.
+

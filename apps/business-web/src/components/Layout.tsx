@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
+import { CheckInProvider, useCheckIn } from '../checkin/CheckIn';
 import { CommandPalette } from '../shell/CommandPalette';
 import { MenuDrawer, TabBar } from '../shell/MobileNav';
 import { Sidebar } from '../shell/Sidebar';
@@ -33,6 +34,14 @@ const typing = (target: EventTarget | null) => {
  * agreeing to (§126.3).
  */
 export function Layout() {
+  return (
+    <CheckInProvider>
+      <Frame />
+    </CheckInProvider>
+  );
+}
+
+function Frame() {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -69,9 +78,9 @@ export function Layout() {
     navigate('/login', { replace: true });
   }, [navigate, signOut]);
 
-  // Checking a customer in happens on Appointments, where each expected
-  // customer has their code box.
-  const checkIn = useCallback(() => navigate('/appointments'), [navigate]);
+  // Checking someone in has its own window (§191), from anywhere.
+  const openCheckIn = useCheckIn();
+  const checkIn = useCallback(() => openCheckIn(), [openCheckIn]);
   const closePalette = useCallback(() => setPalette(false), []);
 
   // A new page closes the phone's menu.
