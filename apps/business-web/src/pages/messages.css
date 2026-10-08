@@ -1,3 +1,5 @@
+/* The page is a column whose inbox takes the rest of the height (§216). */
+.ms { display: flex; flex-direction: column; }
 /* Messages (§198). */
 
 .ms-head { margin-bottom: 18px; }
@@ -5,7 +7,10 @@
 .ms-inbox {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
-  height: max(540px, calc(100vh - 250px));
+  /* Fills the page down to the line the sidebar ends on (§216). */
+  flex: 1 1 0;
+  height: auto;
+  min-height: 540px;
   border-radius: 28px;
   background: var(--panel);
   border: 1px solid rgba(21, 23, 28, 0.05);

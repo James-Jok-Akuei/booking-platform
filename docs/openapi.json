@@ -10392,6 +10392,50 @@
               "default": 0,
               "type": "number"
             }
+          },
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "description": "Only reviews of this many stars (§215).",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "replied",
+            "required": false,
+            "in": "query",
+            "description": "Only reviews the business has (true) or has not (false) replied to — the\nshop's \"waiting for a reply\" (§215).",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Part of the words of a review, or of the reviewer's name (§215).",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "oldest",
+                "lowest",
+                "highest"
+              ]
+            }
           }
         ],
         "responses": {
@@ -19380,6 +19424,11 @@
               }
             ]
           },
+          "serviceName": {
+            "type": "string",
+            "nullable": true,
+            "description": "What was booked, on the location listing (§215)."
+          },
           "id": {
             "type": "string"
           },
@@ -19466,6 +19515,29 @@
           "responseText"
         ]
       },
+      "ReviewBreakdownDto": {
+        "type": "object",
+        "properties": {
+          "stars": {
+            "description": "Five numbers: one-star first, five-star last.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "replied": {
+            "type": "number"
+          },
+          "waiting": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "stars",
+          "replied",
+          "waiting"
+        ]
+      },
       "LocationReviewsDto": {
         "type": "object",
         "properties": {
@@ -19494,6 +19566,9 @@
             "items": {
               "$ref": "#/components/schemas/ReviewDto"
             }
+          },
+          "breakdown": {
+            "$ref": "#/components/schemas/ReviewBreakdownDto"
           }
         },
         "required": [
@@ -19503,7 +19578,8 @@
           "total",
           "limit",
           "offset",
-          "reviews"
+          "reviews",
+          "breakdown"
         ]
       },
       "AdminReviewDto": {

@@ -225,3 +225,8 @@
   .cl-day-tile { width: 56px; height: 64px; }
   .cl-day-head h2 { font-size: 17px; }
 }
+
+/* "Coming up" runs down to the page's bottom line (§216). */
+.cl { display: flex; flex-direction: column; gap: 20px; }
+.cl > .page-top { margin-bottom: -12px; }
+.cl-list { flex: 1 0 auto; }

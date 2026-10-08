@@ -147,16 +147,23 @@ export function SupportPage() {
         </div>
       </header>
 
-      {tickets.isLoading && <div className="skeleton hp-skeleton" />}
+      {/* One card down to the bottom line, like every page (§216). */}
+      <div className="hp-board">
+        <header className="hp-board-head">
+          <h2>Your questions</h2>
+          <span>{rows.length ? `${live.length} open · ${done.length} finished` : 'Replies arrive here and by email.'}</span>
+        </header>
+        {tickets.isLoading && <div className="skeleton hp-skeleton" />}
 
-      {tickets.data && rows.length === 0 && (
-        <p className="hp-none">
-          <Icon name="checkCircle" size={18} /> You have not asked us anything yet. That is a good sign.
-        </p>
-      )}
+        {tickets.data && rows.length === 0 && (
+          <p className="hp-none">
+            <Icon name="checkCircle" size={18} /> You have not asked us anything yet. That is a good sign.
+          </p>
+        )}
 
-      {live.length > 0 && <TicketGroup title="Open" rows={live} onOpen={setOpenId} />}
-      {done.length > 0 && <TicketGroup title="Finished" rows={done} onOpen={setOpenId} />}
+        {live.length > 0 && <TicketGroup title="Open" rows={live} onOpen={setOpenId} />}
+        {done.length > 0 && <TicketGroup title="Finished" rows={done} onOpen={setOpenId} />}
+      </div>
 
       {composing && (
         <NewTicket

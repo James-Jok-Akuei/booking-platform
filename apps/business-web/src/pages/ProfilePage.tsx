@@ -302,7 +302,7 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
           <input value={name} onChange={(event) => setName(event.target.value)} maxLength={120} />
         </label>
 
-        <label className="pf-field">
+        <label className="pf-field pf-grow">
           <span>
             What you do <em>{description.length}/2000</em>
           </span>

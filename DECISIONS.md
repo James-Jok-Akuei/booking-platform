@@ -15125,9 +15125,11 @@ headings hidden, cells wrapping onto a second line at different offsets.
   View) and "⋯" in every row (open details, copy the number, check in
   without a code, no-show, cancel).
 - A **"Now" line** runs through today's list on the waiting tabs.
-- **Export** downloads what is shown as a spreadsheet (CSV): number, date,
+- ~~**Export** downloads what is shown as a spreadsheet (CSV): number, date,
   times, customer, service, people, branch, status, deposit and when paid,
-  share, fee, full price, balance at the shop, who cancelled and why.
+  share, fee, full price, balance at the shop, who cancelled and why.~~ —
+  superseded by §216.1 (it missed bookings not yet loaded, and showed a share
+  on deposits never paid).
 - The booking panel shows the service photo with the customer's initials,
   the status, and the reservation number to copy.
 
@@ -15184,3 +15186,93 @@ away under the top bar like ordinary content:
 Checked by scrolling four pages (Appointments, Overview, Reviews, Branches &
 hours) down and back up in 30px steps at 1440, 1024 and 390 wide: the scroll
 position never moved by itself, and each header kept one height throughout.
+
+## 215. Reviews, built for a thousand (2026-10-08)
+
+The user: every review is simply listed — what happens at 1,000?
+
+**Before:** the page loaded the latest 50 and filtered and counted them in
+the browser, so the star split and "waiting for a reply" were only ever
+right up to 50, and nothing past them could be reached.
+
+### 215.1 On the server
+
+`GET /locations/:id/reviews` now takes **`rating`** (1–5), **`replied`**
+(true/false), **`q`** (part of the words or of the reviewer's name, any
+case) and **`sort`** (`newest` — the default — `oldest`, `lowest`,
+`highest`; ties broken by date then id so pages never repeat or skip). Every
+answer carries **`breakdown`**: how many visible reviews of each star, how
+many replied and how many waiting — over the whole branch, whatever the
+filter. Each review also says **`serviceName`** (what was booked). Hidden
+reviews stay excluded everywhere. Tested in `review-filters.spec.ts`.
+
+### 215.2 The page
+
+- **Summary**: the rating, the split by star with counts and percentages
+  (each a filter), and a dark card with the reply rate ring, "n waiting for a
+  reply" and **Answer them**.
+- **One card**, its top pinned (§214): **search** (the words or a name) and
+  **order**; tabs **All · Waiting for a reply · Replied · 5★ … 1★**, each with
+  its true count.
+- **The list**: 20 at a time, the next 20 loading as the end comes near, and
+  "Showing 40 of 1,000". Each review in one compact row — avatar, name, what
+  was booked, date, stars; long words cut at four lines with **Read all**;
+  search words marked. Your reply under it with **Edit** while the 7 days
+  last ("Final" after). Without a reply, a small **Reply** button opens the
+  composer with **two suggested starts** fitted to the rating (thanks for
+  4–5, an invitation to do better for 3, an apology and an offer to put it
+  right for 1–2), to edit before posting.
+- "For you" (§204) counts reviews waiting for a reply from `breakdown`, so
+  the number is true for any number of reviews.
+
+Checked with the real branch and with a pretend 1,000-review answer.
+
+## 216. Bottoms line up; the spreadsheet is exact; codes explained (2026-10-08)
+
+### 216.1 The spreadsheet
+
+The user asked whether the exported file was accurate. Compared row by row
+with the ledger, it was not:
+
+1. It held **25 of 33** bookings — only those loaded on the page.
+2. On **12 bookings cancelled because the deposit was never paid**, it showed
+   a share and a fee (RWF 500–1,800 each) that were never earned or charged.
+
+Now Export fetches **every booking** in the tab, branch and search, a hundred
+at a time. **Your share** and **Platform fee** are what was actually earned
+and charged: nothing when the deposit was never paid, nothing when the shop
+cancelled and refunded it (`earned()`), and a **Deposit refunded** column
+says so. Dates are `YYYY-MM-DD`, times `HH:MM`, money plain numbers in major
+units with a **Currency** column, so a spreadsheet can sort and add them.
+"Balance at the shop" only for bookings still to happen. Re-checked: 33 of
+33 rows, every share, fee, deposit and price equal to the ledger, shares
+totalling RWF 22,580 both ways.
+
+### 216.2 One bottom line
+
+The page area ended 64px above the window while the sidebar and "For you"
+end 14px above it, so at the end of every page the middle sat higher. Now:
+
+- `.content` ends 14px above the window (phones keep their room for the tab
+  bar), and fills the height on a short page.
+- Where a page is short, its last card grows to the same line: the list on
+  Appointments, Reviews, Closures' "Coming up", both columns on People, the
+  documents on Legal (their "Read it" at the foot), the inbox on Messages,
+  and on Help a new **Your questions** card that holds the tickets.
+- **Shopfront**: the details form stretches to the phone preview's height,
+  the room going to "What you do"; the two end on one line.
+- **Branches & hours**: the week and "People served at once" are one height,
+  and their Save buttons sit on one line.
+
+Checked at the end of every page at 1440 and 1728 wide: content, sidebar and
+"For you" all end on the same line.
+
+### 216.3 The two codes
+
+- `B785-525E` is the **booking number** — the first eight characters of the
+  booking's id, the same number the customer's app shows them (now labelled
+  "Booking no." in the panel, with a hint in the list).
+- `demo-ref-b785525e` is the **mobile money reference** — the payment's own
+  number at the operator. Real payments carry MTN's; the demo data's are made
+  up by the seed script from the booking id, which is why the two look alike.
+  The panel now says what it is and when to quote it.

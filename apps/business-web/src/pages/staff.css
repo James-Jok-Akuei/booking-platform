@@ -1,6 +1,9 @@
 /* People (§202). */
 
-.st-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
+/* Both columns end on the page's bottom line, their last cards growing to it (§216). */
+.st { display: flex; flex-direction: column; }
+.st-layout { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: stretch; }
+.st-main > :last-child, .st-side > :last-child { flex: 1 0 auto; }
 .st-main, .st-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
 
 .st-skeleton { height: 240px; border-radius: 26px; }

@@ -19,7 +19,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateReviewDto, UpdateReviewDto } from './dto/create-review.dto';
 import { ReviewResponseDto } from './dto/review-response.dto';
 import { HideReviewDto } from './dto/hide-review.dto';
-import { ListReviewsDto } from './dto/list-reviews.dto';
+import { ListReviewsDto, ReviewOrder } from './dto/list-reviews.dto';
 import { ListAdminReviewsDto } from './dto/list-admin-reviews.dto';
 import { REVIEW_EDIT_WINDOW_DAYS, isPastEditWindow } from './review-window';
 
@@ -457,17 +457,43 @@ export class ReviewsService {
     const limit = query.limit ?? 25;
     const offset = query.offset ?? 0;
     // Hidden reviews are excluded in the QUERY, not filtered afterwards.
-    const where: Prisma.ReviewWhereInput = { locationId, hiddenAt: null };
+    const visible: Prisma.ReviewWhereInput = { locationId, hiddenAt: null };
+    const find = query.q?.trim();
+    const where: Prisma.ReviewWhereInput = {
+      ...visible,
+      ...(query.rating ? { rating: query.rating } : {}),
+      ...(query.replied === true ? { responseText: { not: null } } : {}),
+      ...(query.replied === false ? { responseText: null } : {}),
+      ...(find
+        ? {
+            OR: [
+              { comment: { contains: find, mode: Prisma.QueryMode.insensitive } },
+              { customer: { displayName: { contains: find, mode: Prisma.QueryMode.insensitive } } },
+            ],
+          }
+        : {}),
+    };
+    // Newest first unless asked otherwise; ties broken by date, so a page
+    // boundary never repeats or skips a review (§215).
+    const orderBy: Prisma.ReviewOrderByWithRelationInput[] =
+      query.sort === ReviewOrder.OLDEST
+        ? [{ createdAt: 'asc' }, { id: 'asc' }]
+        : query.sort === ReviewOrder.LOWEST
+          ? [{ rating: 'asc' }, { createdAt: 'desc' }, { id: 'asc' }]
+          : query.sort === ReviewOrder.HIGHEST
+            ? [{ rating: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }]
+            : [{ createdAt: 'desc' }, { id: 'asc' }];
 
-    const [total, reviews] = await Promise.all([
+    const [total, reviews, byStars, waiting] = await Promise.all([
       this.prisma.review.count({ where }),
       this.prisma.review.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         take: limit,
         skip: offset,
         select: {
           ...REVIEW_SELECT,
+          appointment: { select: { service: { select: { name: true } } } },
           // The public gets the byline and nothing else. id and email are
           // selected only for viewers entitled to identity — the counterparty
           // business and admins — so an anonymous reader cannot be handed them
@@ -480,7 +506,13 @@ export class ReviewsService {
           },
         },
       }),
+      // Counted over every visible review, whatever the filter (§215).
+      this.prisma.review.groupBy({ by: ['rating'], where: visible, _count: { _all: true } }),
+      this.prisma.review.count({ where: { ...visible, responseText: null } }),
     ]);
+
+    const stars = [1, 2, 3, 4, 5].map((n) => byStars.find((g) => g.rating === n)?._count._all ?? 0);
+    const all = stars.reduce((sum, n) => sum + n, 0);
 
     return {
       locationId,
@@ -490,7 +522,11 @@ export class ReviewsService {
       total,
       limit,
       offset,
-      reviews: reviews.map(withByline),
+      reviews: reviews.map(({ appointment, ...review }) => ({
+        ...withByline(review),
+        serviceName: appointment?.service.name ?? null,
+      })),
+      breakdown: { stars, replied: all - waiting, waiting },
     };
   }
 

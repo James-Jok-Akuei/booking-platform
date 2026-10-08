@@ -170,6 +170,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 
 .ap-export { flex: none; min-height: 42px; padding: 0 14px; gap: 6px; border-radius: 13px; font-size: 13.5px; color: var(--ink-2); }
 .ap-export-icon { transform: rotate(180deg); }
+.ap-export-spin { animation: spin 900ms linear infinite; }
 
 .ap-cols {
   display: grid;
@@ -357,6 +358,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 
 .ap-money .ap-due dt { color: var(--ink); font-weight: 750; }
 .ap-money .ap-due dd { color: var(--accent-deep); font-size: 17px; font-weight: 800; }
+.ap-dt-hint { display: block; margin-top: 3px; font-size: 11.5px; font-weight: 500; color: var(--faint); line-height: 1.4; max-width: 30ch; }
 .ap-ref { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ap-copy { min-height: 30px; padding: 0 10px; border-radius: 10px; font-size: 12.5px; gap: 5px; }
 
@@ -454,3 +456,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
   .ap-drawer-hero { grid-template-columns: 1fr; }
   .ap-drawer-actions { margin: 20px -18px -24px; padding: 14px 18px 18px; bottom: -24px; }
 }
+
+/* The list's card runs down to the page's bottom line, however few rows (§216). */
+.ap { display: flex; flex-direction: column; }
+.ap-board { flex: 1 0 auto; }

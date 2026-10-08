@@ -73,8 +73,9 @@ export function useAdData() {
   const reviews = useQuery({
     queryKey: ['ads-reviews', branchIds.join(',')],
     queryFn: async () => {
-      const pages = await Promise.all(branchIds.map((id) => listLocationReviews(id, 50)));
-      return pages.flatMap((p) => p.reviews);
+      // One review is enough: the counts come with every page (§215).
+      const pages = await Promise.all(branchIds.map((id) => listLocationReviews(id, 1)));
+      return pages.reduce((sum, p) => sum + p.breakdown.waiting, 0);
     },
     enabled: branchIds.length > 0,
     staleTime: 5 * 60_000,
@@ -221,7 +222,7 @@ export function useAdData() {
     const same = (trendingSame.data?.services ?? []).filter(notMine).filter(dedupe).slice(0, 4);
     const everywhere = (trendingAll.data?.services ?? []).filter(notMine).filter(dedupe).slice(0, 4);
 
-    const unanswered = (reviews.data ?? []).filter((r) => !r.responseText).length;
+    const unanswered = reviews.data ?? 0;
 
     // ---- just in ----
     // ONE thing, the newest of the last day: a notification of any kind, or a

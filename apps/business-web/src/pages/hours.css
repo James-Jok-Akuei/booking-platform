@@ -71,7 +71,7 @@
 .hr-facts svg { color: var(--muted); }
 .hr-problem { margin: 14px 24px 0; }
 
-.hr-body { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr); gap: 18px; padding: 18px 24px 24px; }
+.hr-body { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr); align-items: stretch; gap: 18px; padding: 18px 24px 24px; }
 
 /* ---- the week ---- */
 
@@ -127,7 +127,8 @@
 
 .hr-places { display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 22px; border: 1px solid var(--line); }
 .hr-places p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
-.hr-places > button { align-self: flex-start; min-height: 42px; border-radius: 13px; padding: 0 22px; }
+/* Its Save sits on the same line as the week's (§216). */
+.hr-places > button { align-self: flex-start; margin-top: auto; min-height: 42px; border-radius: 13px; padding: 0 22px; }
 .hr-stepper { display: flex; align-items: center; gap: 8px; }
 .hr-stepper button { width: 46px; height: 46px; min-height: 0; padding: 0; border-radius: 15px; }
 .hr-stepper input {

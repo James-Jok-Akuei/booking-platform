@@ -271,12 +271,20 @@ export function AppointmentsPage() {
     open: (a) => setDetail(a.id),
   };
 
-  const download = () =>
-    downloadCsv(
-      `appointments-${tab.key}-${new Date().toISOString().slice(0, 10)}.csv`,
-      shown,
-      money.format,
-    );
+  const [exporting, setExporting] = useState(false);
+  const download = async () => {
+    setExporting(true);
+    try {
+      await downloadCsv(
+        `appointments-${tab.key}-${new Date().toISOString().slice(0, 10)}.csv`,
+        tab.status,
+        filters,
+        money.toMajor,
+      );
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <section className="ap">
@@ -333,11 +341,11 @@ export function AppointmentsPage() {
               type="button"
               className="ap-export"
               onClick={download}
-              disabled={shown.length === 0}
-              title="Download what is shown, for a spreadsheet"
+              disabled={shown.length === 0 || exporting}
+              title={`Download all ${total} bookings in this list, for a spreadsheet`}
             >
-              <Icon name="upload" size={15} className="ap-export-icon" />
-              <span>Export</span>
+              <Icon name={exporting ? 'refresh' : 'upload'} size={15} className={exporting ? 'ap-export-spin' : 'ap-export-icon'} />
+              <span>{exporting ? 'Exporting…' : 'Export'}</span>
             </button>
           </div>
           <div className="ap-tabs-row pin-phone">
@@ -716,7 +724,9 @@ function Row({
         <Avatar label={a.customer.email} size={36} />
         <div className="ap-two">
           <strong title={a.customer.email}>{a.customer.email}</strong>
-          <span className="ap-no">No. {number}</span>
+          <span className="ap-no" title="Booking number — the customer sees the same one in their app">
+            No. {number}
+          </span>
         </div>
       </div>
 
@@ -778,8 +788,40 @@ function Row({
   );
 }
 
-/** What is shown, as a spreadsheet: one row per booking, the money in words a bookkeeper reads. */
-function downloadCsv(name: string, rows: Appointment[], money: Money) {
+/** What the shop actually earned and paid on a booking — as its ledger records it (§25, §213). */
+export function earned(a: Appointment) {
+  const paid = Boolean(a.depositPaidAt);
+  // A deposit never paid was never earned; one the shop cancelled was refunded in full, fee and all.
+  const kept = paid && !(a.status === 'CANCELLED' && a.cancelledBy === 'BUSINESS');
+  return { share: kept ? a.businessAmountMinor : 0, fee: kept ? a.platformFeeAmountMinor : 0, paid, refunded: paid && !kept };
+}
+
+const isoDay = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+/**
+ * Every booking matching the tab, branch and search — not only the rows on
+ * screen — as a spreadsheet (§213, §216). Dates are written YYYY-MM-DD and
+ * amounts as plain numbers in major units, with the currency in its own
+ * column, so a spreadsheet reads them as dates and numbers it can add up.
+ * Your share and the platform fee are what was actually earned and charged:
+ * nothing on a deposit never paid, nothing on one the shop refunded.
+ */
+async function downloadCsv(
+  name: string,
+  status: AppointmentStatus | 'ALL',
+  filters: Filters,
+  major: (minor: number) => string,
+) {
+  const rows: Appointment[] = [];
+  for (let offset = 0; offset < 20_000; offset += 100) {
+    const page = await listAppointments({ ...(status === 'ALL' ? {} : { status }), ...filters, limit: 100, offset });
+    rows.push(...page.appointments);
+    if (rows.length >= page.total || page.appointments.length < 100) break;
+  }
+  rows.sort((x, y) => y.startTime.localeCompare(x.startTime));
+
   const head = [
     'Reservation no.',
     'Date',
@@ -790,11 +832,13 @@ function downloadCsv(name: string, rows: Appointment[], money: Money) {
     'People',
     'Branch',
     'Status',
+    'Currency',
+    'Full price',
     'Deposit',
-    'Deposit paid',
+    'Deposit paid on',
+    'Deposit refunded',
     'Your share',
     'Platform fee',
-    'Full price',
     'Balance at the shop',
     'Cancelled by',
     'Reason',
@@ -803,38 +847,45 @@ function downloadCsv(name: string, rows: Appointment[], money: Money) {
     const s = v === null || v === undefined ? '' : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const lines = rows.map((a) =>
-    [
+  const lines = rows.map((a) => {
+    const start = new Date(a.startTime);
+    const money = earned(a);
+    const due = dueAtShop(a);
+    const open = a.status === 'BOOKED' || a.status === 'IN_PROGRESS';
+    return [
       reservationNo(a.id),
-      new Date(a.startTime).toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' }),
-      clock(a.startTime),
-      clock(a.endTime),
+      isoDay(start),
+      hhmm(start),
+      hhmm(new Date(a.endTime)),
       a.customer.email,
       a.service.name,
       a.quantity,
       a.location.name,
       STATUS[a.status].label,
-      money(a.depositAmountMinor, a.currency),
-      a.depositPaidAt ? when(a.depositPaidAt) : '',
-      money(a.businessAmountMinor, a.currency),
-      money(a.platformFeeAmountMinor, a.currency),
-      a.servicePriceMinor === null ? '' : money(a.servicePriceMinor, a.currency),
-      // Nothing is owed on a booking that did not happen.
-      a.status === 'CANCELLED' || a.status === 'NO_SHOW' || dueAtShop(a) === null ? '' : money(dueAtShop(a), a.currency),
+      a.currency,
+      a.servicePriceMinor === null ? '' : major(a.servicePriceMinor),
+      major(a.depositAmountMinor),
+      a.depositPaidAt ? `${isoDay(new Date(a.depositPaidAt))} ${hhmm(new Date(a.depositPaidAt))}` : 'Not paid',
+      money.refunded ? 'Yes' : '',
+      major(money.share),
+      major(money.fee),
+      // Only a booking still to happen has anything left to pay at the shop.
+      open && due !== null ? major(due) : '',
       a.cancelledBy === 'BUSINESS' ? 'Shop' : a.cancelledBy === 'CUSTOMER' ? 'Customer' : a.cancelledBy ? 'Not paid in time' : '',
       a.cancellationReason ?? '',
     ]
       .map(cell)
-      .join(','),
-  );
+      .join(',');
+  });
   // A byte-order mark, so a spreadsheet opens it as UTF-8 (names, "—").
-  const blob = new Blob(['﻿' + [head.join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const blob = new Blob(['\ufeff' + [head.join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = name;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return rows.length;
 }
 
 function EmptyTab({ tab, searching }: { tab: TabKey; searching: boolean }) {
@@ -966,14 +1017,14 @@ function AppointmentDetail({
                   <button
                     type="button"
                     className="ap-no-chip"
-                    title="The number the customer's app shows them. Click to copy."
+                    title="The booking's number — the customer sees the same one in their app and on their receipt. Click to copy."
                     onClick={() => {
                       navigator.clipboard?.writeText(reservationNo(d.id));
                       setNumberCopied(true);
                       setTimeout(() => setNumberCopied(false), 1600);
                     }}
                   >
-                    No. {reservationNo(d.id)}
+                    Booking no. {reservationNo(d.id)}
                     <Icon name={numberCopied ? 'check' : 'copy'} size={13} />
                   </button>
                 </div>
@@ -1056,7 +1107,10 @@ function AppointmentDetail({
                 <dl className="detail">
                   {d.paymentProviderReferenceId && (
                     <div>
-                      <dt>Operator reference</dt>
+                      <dt>
+                        Mobile money reference
+                        <span className="ap-dt-hint">The payment's own number at the mobile money operator — quote it if a customer says the money left their phone.</span>
+                      </dt>
                       <dd className="ap-ref">
                         <code>{d.paymentProviderReferenceId}</code>
                         <button

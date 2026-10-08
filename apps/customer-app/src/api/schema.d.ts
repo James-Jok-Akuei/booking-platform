@@ -4702,6 +4702,8 @@ export interface components {
         ReviewDto: {
             /** @description Present for the counterparty business and administrators only. */
             customer?: components["schemas"]["ReviewAuthorDto"];
+            /** @description What was booked, on the location listing (§215). */
+            serviceName?: string | null;
             id: string;
             rating: number;
             comment: string | null;
@@ -4725,6 +4727,12 @@ export interface components {
         ReviewResponseDto: {
             responseText: string;
         };
+        ReviewBreakdownDto: {
+            /** @description Five numbers: one-star first, five-star last. */
+            stars: number[];
+            replied: number;
+            waiting: number;
+        };
         LocationReviewsDto: {
             locationId: string;
             /** @description Null when nothing has been reviewed yet. Not zero: zero is a rating. */
@@ -4734,6 +4742,7 @@ export interface components {
             limit: number;
             offset: number;
             reviews: components["schemas"]["ReviewDto"][];
+            breakdown: components["schemas"]["ReviewBreakdownDto"];
         };
         AdminReviewDto: {
             id: string;
@@ -13529,6 +13538,16 @@ export interface operations {
             query?: {
                 limit?: number;
                 offset?: number;
+                /** @description Only reviews of this many stars (§215). */
+                rating?: number;
+                /**
+                 * @description Only reviews the business has (true) or has not (false) replied to — the
+                 *     shop's "waiting for a reply" (§215).
+                 */
+                replied?: boolean;
+                /** @description Part of the words of a review, or of the reviewer's name (§215). */
+                q?: string;
+                sort?: "newest" | "oldest" | "lowest" | "highest";
             };
             header?: never;
             path: {

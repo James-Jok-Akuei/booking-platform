@@ -38,6 +38,13 @@
 .hp-topic-go { margin-left: auto; opacity: 0.4; transition: transform 200ms var(--ease), opacity 160ms var(--ease); }
 .hp-topic:hover .hp-topic-go { opacity: 1; transform: translateX(3px); }
 
+/* Your questions: one card that runs down to the page's bottom line (§216). */
+.hp-board { flex: 1 0 auto; display: flex; flex-direction: column; gap: 18px; padding: 20px 22px 22px; border-radius: 28px; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.05); box-shadow: var(--shadow-sm); }
+.hp-board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hp-board-head h2 { margin: 0; font-size: 18px; }
+.hp-board-head span { font-size: 13px; color: var(--muted); font-weight: 600; }
+.hp-board .hp-ticket { box-shadow: none; background: var(--sunken); border-color: transparent; }
+.hp-board .hp-ticket:hover:not(:disabled) { background: var(--panel); border-color: rgba(240, 83, 45, 0.3); box-shadow: var(--shadow-sm); }
 .hp-none { display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px 18px; border-radius: 18px; background: var(--ok-soft); color: var(--ok-deep); font-weight: 600; }
 
 .hp-group h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 17px; }

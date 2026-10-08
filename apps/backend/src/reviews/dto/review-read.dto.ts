@@ -42,6 +42,23 @@ export class ReviewDto {
   /** Present for the counterparty business and administrators only. */
   @ApiProperty({ required: false, type: () => ReviewAuthorDto })
   customer?: ReviewAuthorDto;
+
+  /** What was booked, on the location listing (§215). */
+  @ApiProperty({ required: false, nullable: true, type: String })
+  serviceName?: string | null;
+}
+
+/**
+ * Every review of a location counted at once, whatever is being filtered
+ * (§215): how many of each star, and how many have a reply — so a shop with
+ * a thousand reviews sees true totals while reading one page.
+ */
+export class ReviewBreakdownDto {
+  /** Five numbers: one-star first, five-star last. */
+  @ApiProperty({ type: [Number] })
+  stars!: number[];
+  replied!: number;
+  waiting!: number;
 }
 
 /**
@@ -60,6 +77,8 @@ export class LocationReviewsDto {
   limit!: number;
   offset!: number;
   reviews!: ReviewDto[];
+
+  breakdown!: ReviewBreakdownDto;
 }
 
 // ---------------------------------------------------------------------------

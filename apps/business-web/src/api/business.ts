@@ -625,8 +625,17 @@ export const REVIEW_EDIT_WINDOW_DAYS = 7;
  * Hidden reviews are excluded by the server for everyone, the business
  * included — so this is what the public sees, which is the point.
  */
-export const listLocationReviews = (locationId: string, limit = 50) =>
-  api<ReviewPage>(`/locations/${locationId}/reviews`, { query: { limit } });
+export const listLocationReviews = (
+  locationId: string,
+  limit = 50,
+  options: {
+    offset?: number;
+    rating?: number;
+    replied?: boolean;
+    q?: string;
+    sort?: 'newest' | 'oldest' | 'lowest' | 'highest';
+  } = {},
+) => api<ReviewPage>(`/locations/${locationId}/reviews`, { query: { limit, ...options } });
 
 /** One reply per review. A second is refused; edit the first instead. */
 export const respondToReview = (reviewId: string, responseText: string) =>
