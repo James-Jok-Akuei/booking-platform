@@ -210,6 +210,45 @@ describe('Service images (§132)', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  describe('the cover (§187)', () => {
+    it('puts the chosen photo first and keeps the rest in their order behind it', async () => {
+      const service = await makeService(shop);
+      const a = await images.upload(shop.userId, service, file('a.jpg'));
+      const b = await images.upload(shop.userId, service, file('b.jpg'));
+      const c = await images.upload(shop.userId, service, file('c.jpg'));
+
+      const listing = await images.setCover(shop.userId, service, c.id);
+      expect(listing.images.map((i) => i.id)).toEqual([c.id, a.id, b.id]);
+      expect(listing.images.map((i) => i.displayOrder)).toEqual([0, 1, 2]);
+
+      // Back again, and the order is still the order that was there.
+      const again = await images.setCover(shop.userId, service, a.id);
+      expect(again.images.map((i) => i.id)).toEqual([a.id, c.id, b.id]);
+    });
+
+    it('changes nothing when the cover is chosen again', async () => {
+      const service = await makeService(shop);
+      const a = await images.upload(shop.userId, service, file('a.jpg'));
+      const b = await images.upload(shop.userId, service, file('b.jpg'));
+
+      const listing = await images.setCover(shop.userId, service, a.id);
+      expect(listing.images.map((i) => i.id)).toEqual([a.id, b.id]);
+    });
+
+    it("will not touch another shop's photos, nor one from a different service", async () => {
+      const foreign = await images.upload(other.userId, otherServiceId, file('theirs.jpg'));
+      await expect(images.setCover(shop.userId, otherServiceId, foreign.id)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(images.setCover(shop.userId, serviceId, foreign.id)).rejects.toThrow(
+        NotFoundException,
+      );
+      // Their photo is exactly where it was.
+      const theirs = await prisma.serviceMedia.findUniqueOrThrow({ where: { id: foreign.id } });
+      expect(theirs.displayOrder).toBe(foreign.displayOrder);
+    });
+  });
+
   it('drops photos when the service is deleted', async () => {
     const temporary = await makeService(shop);
     await images.upload(shop.userId, temporary, file('bye.jpg'));

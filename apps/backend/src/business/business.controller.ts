@@ -474,6 +474,21 @@ export class BusinessController {
     return this.serviceImages.list(user.userId, id);
   }
 
+  /**
+   * Makes this photo the cover — the one customers see on the service's card
+   * (§187). The rest keep their order behind it.
+   */
+  @Patch('services/:id/images/:imageId/cover')
+  @ApiOkResponse({ type: ServiceImagesDto })
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  setServiceImageCover(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('imageId', ParseUUIDPipe) imageId: string,
+  ) {
+    return this.serviceImages.setCover(user.userId, id, imageId);
+  }
+
   @Delete('services/:id/images/:imageId')
   @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)

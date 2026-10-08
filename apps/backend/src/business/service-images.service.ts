@@ -99,6 +99,38 @@ export class ServiceImagesService {
     };
   }
 
+  /**
+   * Makes one photo the cover (§187): first in the order, which is what every
+   * customer screen leads with — the card on Home, the shop's row, the big
+   * photo on the service's page, the saved list. The others keep their order
+   * behind it, renumbered 1, 2, 3… so the order has no gaps or ties left to
+   * break by upload time.
+   *
+   * Answers with the new listing, so a screen can redraw from what is stored.
+   */
+  async setCover(userId: string, serviceId: string, imageId: string) {
+    const businessId = await this.access.requireBusinessId(userId);
+    await this.access.requireOwnedService(businessId, serviceId);
+
+    const images = await this.prisma.serviceMedia.findMany({
+      where: { serviceId },
+      orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+      select: { id: true },
+    });
+    // An id from another service matches nothing here — the same 404 as remove.
+    if (!images.some((image) => image.id === imageId)) {
+      throw new NotFoundException('Photo not found.');
+    }
+
+    const order = [imageId, ...images.map((image) => image.id).filter((id) => id !== imageId)];
+    await this.prisma.$transaction(
+      order.map((id, displayOrder) =>
+        this.prisma.serviceMedia.update({ where: { id }, data: { displayOrder } }),
+      ),
+    );
+    return this.list(userId, serviceId);
+  }
+
   async remove(
     userId: string,
     serviceId: string,

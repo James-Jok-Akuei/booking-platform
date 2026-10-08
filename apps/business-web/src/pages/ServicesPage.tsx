@@ -23,6 +23,7 @@ import {
   addServiceImage,
   getServiceImages,
   removeServiceImage,
+  setServiceImageCover,
 } from '../api/business';
 
 /**
@@ -790,7 +791,7 @@ function ServiceForm({
           <div className="branch-head">
             <strong>Photos</strong>
             <span className="muted small">
-              {files.length} of {PHOTO_LIMIT} · the first one is the cover
+              {files.length} of {PHOTO_LIMIT} · choose the cover with “Make cover”
             </span>
           </div>
           <p className="muted small">
@@ -799,17 +800,17 @@ function ServiceForm({
           </p>
           <div className="photo-grid">
             {previews.map((url, index) => (
-              <figure key={url}>
-                <img src={url} alt="" />
-                {index === 0 && <span className="muted small">Cover</span>}
-                <button
-                  type="button"
-                  className="link danger-link"
-                  onClick={() => setFiles((was) => was.filter((_, i) => i !== index))}
-                >
-                  Remove
-                </button>
-              </figure>
+              <PhotoTile
+                key={url}
+                url={url}
+                cover={index === 0}
+                // The cover is simply the first: choosing one moves it there,
+                // and it goes up first when the service is posted (§187).
+                onCover={() =>
+                  setFiles((was) => [was[index], ...was.filter((_, i) => i !== index)])
+                }
+                onRemove={() => setFiles((was) => was.filter((_, i) => i !== index))}
+              />
             ))}
           </div>
           {files.length < PHOTO_LIMIT && (
@@ -1101,6 +1102,18 @@ function ServicePhotos({ serviceId }: { serviceId: string }) {
       setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
   });
 
+  // The cover (§187): the listing that comes back is drawn at once, and the
+  // services list is refreshed for its thumbnail.
+  const cover = useMutation({
+    mutationFn: (imageId: string) => setServiceImageCover(serviceId, imageId),
+    onSuccess: (listing) => {
+      queryClient.setQueryData(['service-images', serviceId], listing);
+      queryClient.invalidateQueries({ queryKey: ['services'] });
+    },
+    onError: (error) =>
+      setProblem(error instanceof ApiError ? error.message : 'That did not change the cover.'),
+  });
+
   const drop = useMutation({
     mutationFn: (imageId: string) => removeServiceImage(serviceId, imageId),
     onSuccess: refresh,
@@ -1122,29 +1135,28 @@ function ServicePhotos({ serviceId }: { serviceId: string }) {
       </div>
 
       <p className="muted small">
-        Customers see these when they pick this service. The first one is the
-        cover, so upload the best one first.
+        Customers see these when they pick this service. The <strong>cover</strong> is the
+        one on the service’s card in the app — choose it with “Make cover”.
       </p>
 
       <div className="photo-grid">
         {photos.data?.images.map((photo, index) => (
-          <figure key={photo.id}>
-            <img src={photo.url} alt="" />
-            {index === 0 && <span className="muted small">Cover</span>}
-            <button
-              type="button"
-              className="link danger-link"
-              disabled={drop.isPending}
-              onClick={() => {
-                if (window.confirm('Remove this photo? It cannot be brought back.')) {
-                  setProblem(null);
-                  drop.mutate(photo.id);
-                }
-              }}
-            >
-              Remove
-            </button>
-          </figure>
+          <PhotoTile
+            key={photo.id}
+            url={photo.url}
+            cover={index === 0}
+            busy={cover.isPending || drop.isPending}
+            onCover={() => {
+              setProblem(null);
+              cover.mutate(photo.id);
+            }}
+            onRemove={() => {
+              if (window.confirm('Remove this photo? It cannot be brought back.')) {
+                setProblem(null);
+                drop.mutate(photo.id);
+              }
+            }}
+          />
         ))}
       </div>
 
@@ -1204,4 +1216,41 @@ function niceDay(ymd: string) {
 /** The same rounding the server uses: half up, to a whole unit (§186). */
 function salePrice(priceMinor: number, percent: number) {
   return Math.round((priceMinor * (100 - percent)) / 100);
+}
+
+/**
+ * One photo of a service (§187): the cover marked on the picture itself and
+ * framed in coral; every other photo offers "Make cover".
+ */
+function PhotoTile({
+  url,
+  cover,
+  busy,
+  onCover,
+  onRemove,
+}: {
+  url: string;
+  cover: boolean;
+  busy?: boolean;
+  onCover: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <figure className={cover ? 'photo-tile is-cover' : 'photo-tile'}>
+      <img src={url} alt="" />
+      {cover && <span className="cover-badge">★ Cover</span>}
+      <div className="photo-actions">
+        {cover ? (
+          <span className="muted small">On the card</span>
+        ) : (
+          <button type="button" className="link" disabled={busy} onClick={onCover}>
+            Make cover
+          </button>
+        )}
+        <button type="button" className="link danger-link" disabled={busy} onClick={onRemove}>
+          Remove
+        </button>
+      </div>
+    </figure>
+  );
 }

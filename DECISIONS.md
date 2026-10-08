@@ -14017,3 +14017,27 @@ on-sale filter and order, sorting by price paid, and the seller's limits.
 Breaking the sale price on purpose fails five of them. **1327 passing across
 58 suites.** Demo: Full-body massage 20% off for four days, Hot-towel shave
 15% off with no end.
+
+## 187. The seller chooses a service's cover photo (2026-10-08)
+
+Asked: *"when adding images as well, there should be switching of cover
+images for the service — the image that displays on the card in the buyer
+app."* The cover was whichever photo was uploaded first, and the only way to
+change it was to delete photos and upload them again in a different order.
+
+- **`PATCH /business/services/:id/images/:imageId/cover`** (owner or manager)
+  puts that photo first and renumbers the rest 1, 2, 3… in the order they
+  already had, in one transaction, and answers with the new listing. Another
+  shop's photo, or one from a different service, is a 404 and moves nothing.
+- Every customer screen already leads with the first photo by
+  `displayOrder` — the card on Home, the shop's row, the big photo of the
+  service's page (§181), saved services, the spotlights — so they all follow.
+  Checked live: making Haircut's second photo the cover changed its Home card;
+  making the first the cover again put it back.
+- **The seller**: each photo is a tile; the cover is framed in coral with
+  "★ Cover" on the picture and "On the card" under it; every other photo
+  offers **Make cover** and Remove. The same tile when creating a service,
+  where "Make cover" moves the chosen file to the front, so it is uploaded
+  first and becomes the cover when the service is posted.
+
+Three tests in `service-images.spec.ts`. **1330 passing across 58 suites.**

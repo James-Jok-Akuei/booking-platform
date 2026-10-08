@@ -335,6 +335,12 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .photo-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 9px; }
 .photo-grid figure { margin: 0; width: 118px; display: flex; flex-direction: column; gap: 3px; }
 .photo-grid img { width: 118px; height: 88px; object-fit: cover; border-radius: 7px; border: 1px solid var(--line); }
+/* The cover (§187): framed in coral and marked on the picture. */
+.photo-tile { position: relative; }
+.photo-tile.is-cover img { border: 2px solid #f0532d; }
+.cover-badge { position: absolute; top: 6px; left: 6px; padding: 2px 7px; border-radius: 999px; background: #f0532d; color: #fff; font-size: 11px; font-weight: 700; }
+.photo-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; font-size: 12px; white-space: nowrap; }
+.photo-actions .link { font-size: 13px; padding: 0; }
 @media (max-width: 620px) { .two-up { grid-template-columns: 1fr; } }
 
 .card.location.closed { opacity: 0.72; }

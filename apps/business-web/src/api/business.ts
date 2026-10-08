@@ -458,6 +458,15 @@ export const addServiceImage = (serviceId: string, file: File) => {
   });
 };
 
+/**
+ * Makes a photo the cover (§187) — the one customers see on the service's
+ * card. The others keep their order behind it. Answers with the new listing.
+ */
+export const setServiceImageCover = (serviceId: string, imageId: string) =>
+  api<ServiceImages>(`/business/services/${serviceId}/images/${imageId}/cover`, {
+    method: 'PATCH',
+  });
+
 export const removeServiceImage = (serviceId: string, imageId: string) =>
   api<ActionMessage>(`/business/services/${serviceId}/images/${imageId}`, {
     method: 'DELETE',
