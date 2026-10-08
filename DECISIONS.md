@@ -13601,15 +13601,17 @@ Offered the choice after §177, the user picked the recommended behaviour:
 
 - **Stays in place.** No folding away on a timer, so nothing on Home moves on
   its own under a finger.
-- **Stops after one round.** Each spotlight for 5.2 s, then it glides back to
-  the first and stays still, its bar full. Swiping still moves through it.
+- ~~**Stops after one round.** Each spotlight for 5.2 s, then it glides back to
+  the first and stays still, its bar full. Swiping still moves through it.~~
+  *Superseded by §188: it keeps going round, slower.*
 - **× to close**, top-right over the card (not in a slide, so it stays put),
   dark glass with a white edge so it reads on any photo. Closing uses §177's
   leave transition. It stays closed for the rest of the visit, even leaving
   Home and coming back.
 - **Fresh on the next visit.** A cold start, or coming back after 30 minutes
   or more in the background, counts as a new visit: a closed banner returns,
-  the set is taken afresh, and it goes round once more.
+  the set is taken afresh, and it ~~goes round once more~~ starts again from
+  the first (§188).
 
 The two-minute rest timer is gone.
 
@@ -14041,3 +14043,31 @@ change it was to delete photos and upload them again in a different order.
   first and becomes the cover when the service is posted.
 
 Three tests in `service-images.spec.ts`. **1330 passing across 58 suites.**
+
+## 188. The banner keeps sliding, slower (2026-10-08)
+
+The user asked for the Home banner to **always** slide, at a slower pace.
+This reverses §178's "stops after one round".
+
+- **8 seconds a spotlight** (was 5.2 s): long enough to read the headline,
+  the line under it and the button before it moves. The photo's slow drift
+  and the dot's filling bar follow the same 8 s.
+- **Round and round.** After the last spotlight it slides **forward** on to
+  the first, not backwards across all the others. To do that the first
+  spotlight is drawn once more at the end of the strip; the banner slides on
+  to that copy like any other, then (0.52 s later, once the slide has
+  landed) jumps back to the real first without animation. Both are showing
+  the same thing in the same state, so the jump cannot be seen. The dots
+  count only the real spotlights; on the copy the first dot is the lit one.
+  A swipe from the last on to the copy wraps the same way.
+- **Kept from §178:** the set is fixed for the visit (nothing is inserted
+  while it is being read), touching or dragging holds it still and letting
+  go starts the 8 s again, × puts it away for the visit, a new visit brings
+  it back with a fresh set.
+- **Reduce motion on: it does not move by itself.** The phone's
+  accessibility setting asks for no movement on its own, so the banner
+  waits on the first spotlight with its bar full and is moved by swiping.
+- One spotlight only: nothing to go round to, so it stays.
+
+Checked in the web build over 62 s: six spotlights, a move every 8 s,
+6th → 1st forwards at 47 s, then on to the 2nd at 55 s.

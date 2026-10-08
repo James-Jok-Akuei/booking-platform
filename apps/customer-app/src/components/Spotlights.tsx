@@ -28,11 +28,13 @@ import { tick } from '../ui/haptic';
 import { useReducedMotion } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
 
-/** How long each spotlight is on screen. */
-const SLIDE_MS = 5200;
+/** How long each spotlight is on screen (§188): long enough to read it all. */
+const SLIDE_MS = 8000;
+/** How long the slide to the next one takes, before the loop quietly wraps. */
+const WRAP_MS = 520;
 /**
  * Away from the app this long counts as a new visit: a closed banner comes
- * back, with a fresh set, and goes round once more.
+ * back, with a fresh set.
  */
 const NEW_VISIT_MS = 30 * 60 * 1000;
 const DOTS_H = 22;
@@ -88,11 +90,12 @@ const areaOf = (s: DiscoveredService) => s.location.district?.name ?? s.location
  * real service someone can book now; none is paid for. Each service is in one
  * spotlight at most, so the six are six different things.
  *
- * It goes round each spotlight once and then STOPS, back on the first, where
- * it stays (§178): a banner that keeps moving is a distraction, and one that
- * folds itself away moves everything under the reader's finger. Swiping still
- * works. The × puts it away until the next visit, when it returns with a
- * fresh set and goes round once more. Touching it holds it still.
+ * It keeps going round (§188) — one spotlight every eight seconds, and from
+ * the last straight on to the first, never rewinding back across the others.
+ * (Until §188 it went round once and stopped.) Touching or swiping holds it
+ * still; letting go starts it again. The × puts it away until the next visit,
+ * when it returns with a fresh set. With "reduce motion" on, it does not move
+ * by itself.
  */
 export function Spotlights({
   width,
@@ -310,9 +313,13 @@ export function Spotlights({
   const height = width < 320 ? 156 : width > 600 ? 196 : 172;
   const count = round.length;
 
+  /**
+   * Which slide is showing. The first spotlight is drawn once more at the end,
+   * so the last one slides on to it like any other; `index === count` is that
+   * copy, and the banner then jumps back to the real first one unseen (§188).
+   */
   const [index, setIndex] = useState(0);
-  /** Round done: back on the first spotlight and still. */
-  const [finished, setFinished] = useState(false);
+  const shown = count > 0 ? index % count : 0;
   const [closed, setClosed] = useState(closedThisVisit);
   const [held, setHeld] = useState(false);
   const scroller = useRef<ScrollView>(null);
@@ -383,13 +390,18 @@ export function Spotlights({
     return () => loop.stop();
   }, [reduced, spin]);
 
-  // The round: each spotlight for SLIDE_MS, once, then back to the first.
+  // Round and round (§188): each spotlight for SLIDE_MS, then on to the next.
   useEffect(() => {
-    if (finished) {
+    if (reduced || count < 2) {
       progress.setValue(1);
       return;
     }
-    if (!open || held || count === 0) return;
+    // On the copy of the first: the jump back below is about to happen.
+    if (index === count) {
+      progress.setValue(0);
+      return;
+    }
+    if (!open || held) return;
     progress.setValue(0);
     const fill = Animated.timing(progress, {
       toValue: 1,
@@ -399,24 +411,29 @@ export function Spotlights({
     });
     fill.start();
     const timer = setTimeout(() => {
-      if (index + 1 < count) {
-        setIndex(index + 1);
-        scroller.current?.scrollTo({ x: (index + 1) * width, animated: true });
-      } else {
-        setFinished(true);
-        setIndex(0);
-        scroller.current?.scrollTo({ x: 0, animated: true });
-      }
+      setIndex(index + 1);
+      scroller.current?.scrollTo({ x: (index + 1) * width, animated: true });
     }, SLIDE_MS);
     return () => {
       clearTimeout(timer);
       fill.stop();
     };
-  }, [open, held, index, count, width, progress, finished]);
+  }, [open, held, index, count, width, progress, reduced]);
+
+  // Arrived on the copy of the first: back to the real one, without a slide.
+  // They look the same, so nobody sees the jump.
+  useEffect(() => {
+    if (count < 2 || index !== count) return;
+    const timer = setTimeout(() => {
+      scroller.current?.scrollTo({ x: 0, animated: false });
+      setIndex(0);
+    }, WRAP_MS);
+    return () => clearTimeout(timer);
+  }, [index, count]);
 
   /**
    * A new visit (§178): back from half an hour or more away, the banner
-   * returns if it was closed, takes a fresh set, and goes round once more.
+   * returns if it was closed, takes a fresh set, and starts from its first.
    */
   const awaySince = useRef<number | null>(null);
   useEffect(() => {
@@ -432,7 +449,6 @@ export function Spotlights({
       if (latest.current.length > 0) setRound(latest.current);
       setIndex(0);
       scroller.current?.scrollTo({ x: 0, animated: false });
-      setFinished(false);
       setClosed(false);
     });
     return () => sub.remove();
@@ -447,7 +463,8 @@ export function Spotlights({
   // A spotlight that disappears (the nearest needs a position) cannot leave
   // the index pointing past the end.
   useEffect(() => {
-    if (index >= count && count > 0) {
+    // Past the copy, or on a copy that is no longer drawn (one spotlight left).
+    if (count > 0 && (index > count || (count < 2 && index >= count))) {
       setIndex(0);
       scroller.current?.scrollTo({ x: 0, animated: false });
     }
@@ -455,7 +472,8 @@ export function Spotlights({
 
   const settle = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const next = Math.round(event.nativeEvent.contentOffset.x / width);
-    setIndex(Math.max(0, Math.min(count - 1, next)));
+    // The copy at the end counts: landing on it wraps like the timer does.
+    setIndex(Math.max(0, Math.min(count > 1 ? count : 0, next)));
     setHeld(false);
   };
 
@@ -494,13 +512,15 @@ export function Spotlights({
           }}
           scrollEventThrottle={16}
         >
-          {round.map((spot, i) => (
+          {(count > 1 ? [...round, round[0]] : round).map((spot, i) => (
             <Slide
-              key={spot.key}
+              key={i === count ? `${spot.key}#again` : spot.key}
               spot={spot}
               width={width}
               height={height}
-              active={i === index && open}
+              // The real first is active alongside its copy, so it is already
+              // in place, words and all, when the banner jumps back to it.
+              active={(i === index || (index === count && i === 0)) && open}
               reduced={reduced}
               spin={spin}
               onPressIn={() => setHeld(true)}
@@ -527,7 +547,7 @@ export function Spotlights({
         {count > 1 && (
           <View style={styles.dots}>
             {round.map((spot, i) =>
-              i === index ? (
+              i === shown ? (
                 <View key={spot.key} style={styles.dotOn}>
                   <Animated.View
                     style={[
