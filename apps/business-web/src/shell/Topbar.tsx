@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Notifications } from '../components/Notifications';
 import { navItemFor } from '../nav';
+import { RwandaFlag } from '../ui/RwandaFlag';
 import { ShopLogo } from '../ui/ShopLogo';
 import { Icon } from '../ui/Icon';
 import { useDismiss } from '../ui/useDismiss';
@@ -46,6 +47,11 @@ export function Topbar({
         <button type="button" className="tb-icon tb-menu" onClick={onOpenMenu} aria-label="Open the menu">
           <Icon name="menu" size={20} />
         </button>
+        {/* Rwanda's flag before where you are, on every page (§234); on a
+            phone the bar has no room, and Overview's first chip carries it. */}
+        <span className="tb-flag" title="Made for Rwanda">
+          <RwandaFlag width={32} />
+        </span>
         <div className="tb-where">
           <span className="tb-crumbs">
             <span>{item?.group ?? 'Your day'}</span>

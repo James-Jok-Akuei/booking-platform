@@ -15788,10 +15788,29 @@ The user asked for the Rwandan flag "just like we did for the customer app"
   dark card.
 - **Overview**, the first chip on the page: **[flag] Rwanda** | ☀ Friday 9
   October | 00:47 — the place first, as the customer app's home starts with
-  its place pill.
+  its place pill. (Since §234, on a phone only.)
 - **Sign-in**: a glass pill **[flag] Made for Rwanda** on the dark panel
   beside "For businesses", as on the customer app's sign-in. On a phone both
   stay on one line (checked at 390 and 360 wide).
 
-Not added, as §147 decided for the customer app: a banner, the flag on every
-page or in the top bar, or on cards.
+~~Not added, as §147 decided for the customer app: a banner, the flag on every
+page or in the top bar, or on cards.~~ Superseded in part by §234: the user
+wants it in the top bar on every page on a wide screen. Still no banner, and
+none on cards.
+
+## 234. The flag in the top bar, on every page, on a wide screen (2026-10-09)
+
+The user preferred the flag at the very top, just before "Your day ›
+Overview / Friday 9 October", where it is on every page on a large screen —
+and §233's design (the Overview chip) for the phone.
+
+- **Wide screens (860px and up)**: the flag (32px wide, a hairline and a soft
+  shadow) sits before the top bar's crumbs and date on every page, centred
+  on their two lines. Hovering it says "Made for Rwanda". Overview's chip
+  drops its "Rwanda" part there, so the flag is not shown twice.
+- **Phones (under 860px)**: the top bar shows only the page title once it
+  has scrolled, with no room for more — so the flag is not in the bar, and
+  Overview's first chip keeps **[flag] Rwanda** (§233).
+- Sign-in keeps "Made for Rwanda" (§233).
+
+Checked at 1440 (Overview), 1024 (Appointments) and 390 (Overview).

@@ -318,6 +318,8 @@ body {
 .topbar.is-scrolled { box-shadow: 0 1px 0 rgba(21, 23, 28, 0.06), 0 14px 30px -24px rgba(21, 23, 28, 0.35); }
 
 .tb-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.tb-flag { flex: none; display: grid; place-items: center; }
+.tb-flag .rw-flag { box-shadow: 0 0 0 1px rgba(21, 23, 28, 0.1), 0 4px 10px -5px rgba(21, 23, 28, 0.4); }
 .tb-where { display: flex; flex-direction: column; min-width: 0; }
 .tb-crumbs { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
 .tb-crumbs strong { color: var(--ink); font-weight: 750; font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
@@ -734,7 +736,7 @@ body {
 
   .topbar { padding: 10px 14px; gap: 10px; }
   .tb-menu { display: inline-grid; width: 42px; height: 42px; }
-  .tb-crumbs > span, .tb-crumbs > svg, .tb-date { display: none; }
+  .tb-crumbs > span, .tb-crumbs > svg, .tb-date, .tb-flag { display: none; }
   .tb-crumbs strong { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
   /* The page's own big title says where you are; the bar repeats it only
      once that title has scrolled away. */
