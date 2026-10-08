@@ -14,6 +14,7 @@ import {
   verifyOtp,
   type AuthenticatedUser,
 } from '../api/client';
+import { showStripAgain } from '../ads/stripHidden';
 
 interface AuthState {
   user: AuthenticatedUser | null;
@@ -47,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const onEnded = () => {
       localStorage.removeItem(USER_KEY);
+      showStripAgain();
       setUser(null);
     };
     window.addEventListener(SESSION_ENDED, onEnded);
@@ -57,6 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await verifyOtp(email, code);
     tokens.save(result);
     localStorage.setItem(USER_KEY, JSON.stringify(result.user));
+    // A new sign-in brings back the "For you" banner a seller closed (§223).
+    showStripAgain();
     setUser(result.user);
     return result.user;
   }, []);
@@ -64,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     await apiLogout();
     localStorage.removeItem(USER_KEY);
+    showStripAgain();
     setUser(null);
   }, []);
 

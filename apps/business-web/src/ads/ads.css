@@ -384,7 +384,32 @@
 
 /* ---- slim, at the top of every other page without the column (§221) ---- */
 
-.ad-strip { margin: 0 0 18px; }
+.ad-strip { position: relative; margin: 0 0 18px; }
+/* Its ✕, on the corner (§223): clear of the card's own round button. */
+.ad-strip-close {
+  position: absolute;
+  z-index: 6;
+  top: -7px;
+  right: -7px;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--ink-2);
+  box-shadow: 0 0 0 1px rgba(21, 23, 28, 0.08), 0 4px 12px -4px rgba(21, 23, 28, 0.4);
+}
+.ad-strip-close::before { content: ''; position: absolute; inset: -9px; border-radius: 50%; }
+.ad-strip-close:hover:not(:disabled) { background: var(--panel); border: none; color: var(--ink); }
+.ad-strip.is-closing { overflow: hidden; animation: ad-strip-out 320ms var(--ease) forwards; }
+.ad-strip.is-closing .ad-strip-close { display: none; }
+@keyframes ad-strip-out { from { opacity: 1; max-height: 170px; } to { opacity: 0; max-height: 0; margin-bottom: 0; transform: scale(0.98); } }
+.ad-strip-note { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 9px 10px 9px 12px; border-radius: 14px; background: var(--sunken); color: var(--ink-2); font-size: 12.5px; font-weight: 600; animation: fade-in 240ms var(--ease); }
+.ad-strip-note svg { flex: none; color: var(--muted); }
+.ad-strip-note span { flex: 1; min-width: 0; }
+.ad-strip-note button { min-height: 30px; padding: 0 12px; border-radius: 10px; font-size: 12.5px; color: var(--accent-deep); background: var(--panel); }
 .ad-strip-skel { height: 130px; margin: 0 0 18px; border-radius: 22px; }
 .adc.is-slim .adc-frame { border-radius: 22px; }
 .adc.is-slim .adc-window { border-radius: 20.5px; }

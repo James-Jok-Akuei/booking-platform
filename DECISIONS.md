@@ -15440,3 +15440,24 @@ The user: make the background of both apps lighter, more professional.
   preview in the business app (§208) follows it.
 - Inside cards nothing changed: inputs, chips and quiet tiles keep their warm
   greys (`--sunken`, `theme.sunken`).
+
+## 223. The slim banner can be closed until the next sign-in (2026-10-08)
+
+The user: on mobile, give the advert on the pages other than Overview an ✕,
+so a seller can remove it; it comes back at the next log-in. Not on Overview.
+
+- The slim banner (§221) has a round **✕** on its top-right corner, clear of
+  the card's own arrow button, with a larger invisible tap area.
+- Pressing it folds the banner away and closes it **on every page** — not
+  just the one it was pressed on — until the seller next signs in. A short
+  note takes its place for five seconds: "Adverts hidden until you next sign
+  in", with **Undo**.
+- Remembered in the browser (`ads/stripHidden.ts`), so a reload keeps it
+  closed; **signing in, signing out, or the session ending** clears it
+  (`auth-context`).
+- Overview's own "For you" block has no ✕; wide screens keep the column
+  (which already folds, §204).
+
+Checked on a phone: the ✕ shows; closing shows the note; Services and other
+pages then open without it; a reload keeps it closed; Overview's block is
+unaffected.
