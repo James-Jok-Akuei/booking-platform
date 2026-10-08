@@ -1,0 +1,172 @@
+/* Closures & breaks (§196). */
+
+.cl-skeleton { height: 460px; border-radius: 28px; }
+.cl-empty { display: flex; align-items: center; gap: 12px; padding: 22px; border-radius: 22px; background: var(--panel); color: var(--muted); }
+.cl-empty p { margin: 0; }
+
+.cl-branches { display: flex; gap: 8px; flex-wrap: wrap; margin: -6px 0 20px; }
+.cl-branch {
+  min-height: 42px;
+  padding: 0 16px;
+  gap: 8px;
+  border-radius: 99px;
+  background: var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.06);
+  box-shadow: var(--shadow-xs);
+  font-size: 14px;
+}
+.cl-branch svg { color: var(--muted); }
+.cl-branch em { font-style: normal; font-size: 11.5px; color: var(--muted); font-weight: 700; }
+.cl-branch.is-active, .cl-branch.is-active:hover:not(:disabled) { background: var(--night); color: #fff; border-color: var(--night); }
+.cl-branch.is-active svg { color: #ff8a5c; }
+
+.cl-layout { display: grid; grid-template-columns: minmax(340px, 440px) minmax(0, 1fr); gap: 20px; align-items: start; }
+
+/* ---- the month ---- */
+
+.cal {
+  position: sticky;
+  top: 92px;
+  padding: 20px 20px 16px;
+  border-radius: 28px;
+  background: var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-sm);
+  animation: rise-in 460ms var(--ease) both;
+}
+.cal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
+.cal-head h2 { margin: 0; font-size: 20px; letter-spacing: -0.02em; }
+.cal-head p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.cal-nav { display: flex; gap: 4px; }
+.cal-nav button { width: 36px; height: 36px; min-height: 0; padding: 0; border-radius: 11px; }
+.cal-nav .cal-today { width: auto; padding: 0 11px; font-size: 12.5px; }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-wd { text-align: center; font-size: 11.5px; font-weight: 750; color: var(--faint); padding: 4px 0 6px; }
+.cal-day {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 0;
+  border-radius: 13px;
+  border: 1.5px solid transparent;
+  background: var(--sunken);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  flex-direction: column;
+  gap: 2px;
+}
+.cal-day:hover:not(:disabled) { border-color: var(--line-strong); background: var(--sunken); }
+.cal-day.is-other { opacity: 0.35; }
+.cal-day.is-past { color: var(--faint); }
+.cal-day.is-weekly-off {
+  background: repeating-linear-gradient(135deg, var(--sunken) 0 5px, #ece8e0 5px 10px);
+  color: var(--muted);
+}
+.cal-day.is-closed { background: var(--danger-soft); color: var(--danger); }
+.cal-day.is-closed:hover:not(:disabled) { background: var(--danger-soft); }
+.cal-day.is-special { background: var(--warn-soft); color: #9a5d00; }
+.cal-day.is-special:hover:not(:disabled) { background: var(--warn-soft); }
+.cal-day.is-today span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+}
+.cal-day.is-selected { border-color: var(--night); box-shadow: 0 0 0 3px rgba(21, 23, 28, 0.08); }
+.cal-breaks { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; font-style: normal; }
+.cal-breaks b { width: 5px; height: 5px; border-radius: 50%; background: var(--ask); }
+
+.cal-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; font-weight: 650; color: var(--ink-2); }
+.cal-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cal-legend i { width: 13px; height: 13px; border-radius: 4px; }
+.lg-closed { background: var(--danger-soft); box-shadow: inset 0 0 0 1.5px var(--danger); }
+.lg-special { background: var(--warn-soft); box-shadow: inset 0 0 0 1.5px var(--warn); }
+.lg-break { background: var(--ask); border-radius: 50% !important; width: 8px !important; height: 8px !important; }
+.lg-off { background: repeating-linear-gradient(135deg, var(--sunken) 0 3px, #d9d4ca 3px 6px); }
+
+/* ---- the two cards ---- */
+
+.cl-forms { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.cl-card {
+  padding: 22px 24px 20px;
+  border-radius: 28px;
+  background: var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-sm);
+  animation: rise-in 500ms var(--ease) both;
+  animation-delay: 80ms;
+}
+.cl-card-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; }
+.cl-card-head h2 { margin: 0; font-size: 18px; }
+.cl-card-head p { margin: 3px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.cl-card-icon { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 14px; }
+.cl-card-icon.is-red { background: var(--danger-soft); color: var(--danger); }
+.cl-card-icon.is-blue { background: var(--ask-soft); color: var(--ask); }
+
+.cl-form { display: flex; flex-direction: column; gap: 14px; padding: 16px; border-radius: 20px; background: var(--sunken); }
+.cl-row { display: grid; grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.4fr); gap: 12px; }
+.cl-row.cl-times { grid-template-columns: 1fr 1fr; }
+.cl-row.cl-three { grid-template-columns: 1.2fr 1fr 1fr; }
+.cl-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-weight: 600; }
+.cl-field > span { font-size: 13px; color: var(--ink-2); }
+.cl-field em { font-style: normal; font-weight: 600; color: var(--faint); font-size: 12px; margin-left: 4px; }
+.cl .cl-field input { width: 100%; }
+
+.cl-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line-strong); }
+.cl-choice button { min-height: 34px; padding: 0 10px; border: none; border-radius: 10px; background: transparent; font-size: 13px; white-space: normal; line-height: 1.2; }
+.cl-choice button:hover:not(:disabled) { background: var(--sunken); border: none; }
+.cl-choice button.is-on, .cl-choice button.is-on:hover:not(:disabled) { background: var(--night); color: #fff; }
+
+.cl-submit { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cl-submit span { font-size: 13px; font-weight: 650; color: var(--ink-2); }
+.cl-submit button { min-height: 44px; border-radius: 14px; }
+
+.cl-entries { margin-top: 14px; }
+.cl-entries ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.cl-entry { display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 8px; border-radius: 18px; border: 1px solid var(--line); animation: rise-in 360ms var(--ease) both; }
+.cl-entry.is-past { opacity: 0.55; }
+.cl-date {
+  width: 52px;
+  height: 52px;
+  min-height: 0;
+  padding: 0;
+  flex: none;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 14px;
+  border: none;
+  line-height: 1.05;
+}
+.cl-date strong { font-size: 19px; font-weight: 800; }
+.cl-date span { font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: 0.04em; }
+.cl-entry.tone-red .cl-date { background: var(--danger-soft); color: var(--danger); }
+.cl-entry.tone-amber .cl-date { background: var(--warn-soft); color: #9a5d00; }
+.cl-entry.tone-blue .cl-date { background: var(--ask-soft); color: var(--ask); }
+.cl-entry-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cl-entry-text strong { font-size: 14px; }
+.cl-entry-text span { font-size: 12.5px; color: var(--muted); }
+.cl-remove { min-height: 34px; padding: 0 12px; border-radius: 11px; font-size: 12.5px; color: var(--danger); border-color: #f3c6c1; }
+.cl-remove:hover:not(:disabled) { background: var(--danger-soft); border-color: #eeb4ae; }
+.cl-none { margin: 4px 2px 0; font-size: 13px; color: var(--muted); }
+.cl-past-toggle { margin-top: 10px; min-height: 32px; padding: 0 10px; border: none; background: none; color: var(--muted); font-size: 13px; gap: 4px; }
+.cl-past-toggle:hover:not(:disabled) { background: var(--sunken); border: none; }
+.cl-past-toggle + ul { margin-top: 8px; }
+
+@media (max-width: 1180px) {
+  .cl-layout { grid-template-columns: minmax(0, 1fr); }
+  .cal { position: static; max-width: 560px; }
+}
+
+@media (max-width: 720px) {
+  .cal { padding: 16px 12px 14px; border-radius: 24px; }
+  .cal-day { border-radius: 10px; font-size: 13px; }
+  .cl-card { padding: 18px 14px 16px; border-radius: 24px; }
+  .cl-form { padding: 12px; }
+  .cl-row, .cl-row.cl-times, .cl-row.cl-three { grid-template-columns: 1fr; }
+  .cl-submit button { width: 100%; }
+}

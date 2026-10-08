@@ -14471,3 +14471,29 @@ were left as they were.
 add and edit panels both use, and `NewBranchPanel`. On a phone the map is a
 strip above the branch, and each day stacks its switch and times.
 
+## 196. Closures & breaks, with a month calendar (2026-10-08)
+
+`src/pages/ClosuresPage.tsx`. The two mechanisms stay apart (§102): **Whole
+days** (closed, or open at different hours) and **Part of a day** (a break).
+What is new is being able to SEE them:
+
+- **A month calendar** for the chosen branch: a closed day is red, a day with
+  different hours amber, each break a blue dot (up to three), and the days the
+  branch is **usually closed** (its weekly hours, or no hours saved) hatched.
+  Today is a coral circle. Hovering a marked day says what it is.
+  **Clicking a day fills in the date in both forms**, so "close the 20th" is
+  a click on the 20th and Add this day. Previous / Today / Next months.
+- Branches are pills at the top, not a dropdown.
+- Each form sits on a tinted panel. "What happens" is two pill choices
+  (Closed all day / Open, but different hours) — still one or the other, so
+  the server's two refusals stay unreachable. The foot reads the choice back
+  ("Thu, 8 Oct 2026 · 13:00 to 14:00") beside the button.
+- **What is already taken out** is listed under each form, coming up first,
+  each with a coloured date block (clicking it shows that month on the
+  calendar) and Remove; **past ones fold away** under "Past (n)".
+- "Today" is now the seller's local date, not UTC's — the old default date
+  could read as yesterday or tomorrow near midnight.
+
+Checked with a test closure, a test short day and a test break on the demo
+branch, all three removed afterwards.
+
