@@ -19,6 +19,7 @@ import { useCheckIn } from '../checkin/CheckIn';
 import { useMoney } from '../money';
 import { Avatar } from '../ui/Avatar';
 import { Icon, type IconName } from '../ui/Icon';
+import { RwandaFlag } from '../ui/RwandaFlag';
 import { Stars } from '../ui/Stars';
 import {
   addDays,
@@ -214,6 +215,11 @@ export function OverviewPage() {
         <header className="ov-head">
           <div>
             <p className="ov-eyebrow">
+              {/* Where the shop is, as the customer app's home says it (§147, §233). */}
+              <span className="ov-country">
+                <RwandaFlag width={20} />
+                Rwanda
+              </span>
               <Icon name={now.getHours() < 17 ? 'sun' : 'moon'} size={16} />
               {now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
               <span className="ov-clock">{clock(now)}</span>

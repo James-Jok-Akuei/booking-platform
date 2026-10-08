@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, requestOtp } from '../api/client';
 import { CodeBoxes } from '../ui/CodeBoxes';
+import { RwandaFlag } from '../ui/RwandaFlag';
 import { Icon, type IconName } from '../ui/Icon';
 import { useAuth } from './auth-context';
 import './login.css';
@@ -118,6 +119,10 @@ export function LoginPage() {
             <Icon name="calendarCheck" size={20} />
           </span>
           For businesses
+          <span className="lgn-made">
+            <RwandaFlag width={18} />
+            Made for Rwanda
+          </span>
         </div>
 
         <div className="lgn-stage">

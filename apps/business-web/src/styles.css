@@ -741,6 +741,10 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 }
 
 
+/* Rwanda's flag (§233): a hairline round it, so its blue and green do not
+   melt into a white or dark card. */
+.rw-flag { flex: none; display: block; overflow: hidden; box-shadow: 0 0 0 1px rgba(21, 23, 28, 0.1); }
+
 /* The shop's own logo (§217): filling a white tile as it does at the top of
    the sidebar, initials on the brand colour when there is none, and a dot for
    live or not. */

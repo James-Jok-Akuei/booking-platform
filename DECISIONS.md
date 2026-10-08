@@ -15774,3 +15774,24 @@ shop with several branches does not mix them up.
 
 Checked at 1440 (Overview) and 390 (Appointments, as a sheet from the
 bottom), with a made-up booking in the test browser; nothing was marked done.
+
+## 233. Rwanda's flag in the business app, as in the customer app (2026-10-09)
+
+The user asked for the Rwandan flag "just like we did for the customer app"
+(§147): one quiet mark at the top of home, and "Made for Rwanda" on sign-in.
+
+- **`ui/RwandaFlag`** — drawn as a small picture (SVG), never an emoji (a
+  different picture on every device, the letters "RW" on some). Official
+  proportions, 3 by 2: blue the upper half, yellow and green a quarter each,
+  the golden sun in the blue towards the fly with its 24 rays drawn as a
+  star round a disc. A hairline edge keeps it from melting into a white or
+  dark card.
+- **Overview**, the first chip on the page: **[flag] Rwanda** | ☀ Friday 9
+  October | 00:47 — the place first, as the customer app's home starts with
+  its place pill.
+- **Sign-in**: a glass pill **[flag] Made for Rwanda** on the dark panel
+  beside "For businesses", as on the customer app's sign-in. On a phone both
+  stay on one line (checked at 390 and 360 wide).
+
+Not added, as §147 decided for the customer app: a banner, the flag on every
+page or in the top bar, or on cards.
