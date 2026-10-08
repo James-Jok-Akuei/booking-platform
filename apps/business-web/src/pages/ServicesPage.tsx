@@ -31,6 +31,7 @@ import { Avatar } from '../ui/Avatar';
 import { alertDialog, confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 import { MoreMenu } from '../ui/MoreMenu';
+import { Portal } from '../ui/Portal';
 import { Switch } from '../ui/Switch';
 import './services.css';
 
@@ -528,6 +529,7 @@ function EditorPanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
   return (
+    <Portal>
     <div className="drawer-backdrop" onMouseDown={onClose}>
       <aside
         className="drawer sv-panel"
@@ -548,6 +550,7 @@ function EditorPanel({
         {children}
       </aside>
     </div>
+    </Portal>
   );
 }
 

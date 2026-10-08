@@ -1,0 +1,250 @@
+/* "For you" — adverts, ideas and tips (§204). */
+
+/* ---- the column ---- */
+
+.ads {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 28px;
+  background: var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fade-in 400ms var(--ease) both;
+}
+.ads-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 18px 16px 10px 18px; }
+.ads-head h2 { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 17px; letter-spacing: -0.02em; }
+.ads-head h2 svg { color: var(--accent); }
+.ads-head p { margin: 2px 0 0; font-size: 12px; color: var(--muted); font-weight: 600; }
+.ads-fold { width: 34px; height: 34px; min-height: 0; padding: 0; flex: none; border-radius: 11px; border: none; background: var(--sunken); color: var(--ink-2); }
+.ads-fold:hover:not(:disabled) { background: var(--sunken-2); border: none; }
+
+.ads-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scrollbar-width: none;
+}
+.ads-scroll::-webkit-scrollbar { display: none; }
+.ads-skel { height: 360px; border-radius: 24px; flex: none; }
+.ads-label { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+
+/* Folded: a slim strip that says what is waiting. */
+.ads.is-folded { align-items: center; padding: 14px 0; }
+.ads-unfold {
+  flex-direction: column;
+  gap: 14px;
+  width: 44px;
+  min-height: 0;
+  padding: 12px 0 18px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+}
+.ads-unfold:hover:not(:disabled) { background: var(--accent-tint); border: none; }
+.ads-unfold-icon { position: relative; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; background: var(--accent-grad); color: #fff; box-shadow: var(--shadow-accent); }
+.ads-unfold-icon i { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--night); color: #fff; font-size: 10.5px; font-style: normal; font-weight: 800; border: 2px solid var(--panel); }
+.ads-unfold-label { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 13px; font-weight: 750; letter-spacing: 0.04em; color: var(--ink-2); }
+
+/* ---- the banner ---- */
+
+.adc { flex: none; }
+.adc-window { border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px -24px rgba(21, 23, 28, 0.7); }
+.adc-strip { display: flex; will-change: transform; }
+.adc-slide {
+  position: relative;
+  flex: 0 0 100%;
+  height: 380px;
+  overflow: hidden;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  isolation: isolate;
+}
+.adc.is-compact .adc-slide { height: 230px; }
+
+.adc-slide.look-coral { background: linear-gradient(150deg, #ff9a5c 0%, #f0532d 50%, #b8311a 100%); }
+.adc-slide.look-night { background: radial-gradient(320px 240px at 100% 0%, rgba(240, 83, 45, 0.55), transparent 65%), linear-gradient(160deg, #262a33, #15171c); }
+.adc-slide.look-green { background: radial-gradient(300px 220px at 100% 0%, rgba(52, 210, 123, 0.5), transparent 65%), linear-gradient(160deg, #0f8a4a, #0a4f2c); }
+.adc-slide.look-gold { background: radial-gradient(300px 220px at 100% 0%, rgba(255, 230, 150, 0.55), transparent 65%), linear-gradient(160deg, #f0a20b, #a35f00); }
+.adc-slide.look-blue { background: radial-gradient(300px 220px at 100% 0%, rgba(120, 170, 255, 0.5), transparent 65%), linear-gradient(160deg, #2d63db, #142e6e); }
+.adc-slide.look-violet { background: radial-gradient(300px 220px at 100% 0%, rgba(200, 160, 255, 0.5), transparent 65%), linear-gradient(160deg, #7a4cf0, #3a1a8f); }
+.adc-slide.look-amber { background: radial-gradient(300px 220px at 100% 0%, rgba(255, 220, 140, 0.55), transparent 65%), linear-gradient(160deg, #f59e0b, #9a4a06); }
+
+/* A photo fills the slide and drifts slowly closer while it is on screen. */
+.adc-photo { position: absolute; inset: 0; z-index: -2; background: center / cover no-repeat; transform: scale(1.04); transition: transform 8s linear; }
+.adc-slide.is-active .adc-photo { transform: scale(1.14); }
+.adc-shade { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.adc-slide.has-image .adc-shade { background: linear-gradient(0deg, rgba(15, 16, 20, 0.92) 0%, rgba(15, 16, 20, 0.55) 45%, rgba(15, 16, 20, 0.05) 75%); }
+.adc-slide.has-image.look-coral .adc-shade { background: linear-gradient(0deg, rgba(120, 30, 10, 0.94) 0%, rgba(160, 45, 20, 0.55) 45%, rgba(0, 0, 0, 0.02) 78%); }
+.adc-slide.has-image.look-violet .adc-shade { background: linear-gradient(0deg, rgba(40, 14, 100, 0.94) 0%, rgba(60, 26, 140, 0.55) 45%, rgba(0, 0, 0, 0.02) 78%); }
+
+/* Without a photo: a big faint icon and two slow rings. */
+.adc-art { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.adc-art svg { position: absolute; top: -10px; right: -34px; color: #fff; opacity: 0.14; transform: rotate(-10deg); transition: transform 8s linear; }
+.adc-slide.is-active .adc-art svg { transform: rotate(-2deg) scale(1.06); }
+.adc-art i { position: absolute; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.16); }
+.adc-art .r1 { width: 260px; height: 260px; top: -90px; right: -90px; animation: ring-spin 18s linear infinite; border-style: dashed; }
+.adc-art .r2 { width: 160px; height: 160px; top: -30px; right: -30px; }
+@keyframes ring-spin { to { transform: rotate(360deg); } }
+
+.adc-stat {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+  padding: 8px 12px 9px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+.adc-stat strong { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+.adc-stat span { font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, 0.82); }
+
+.adc-body { padding: 18px 18px 18px; }
+.adc-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 11.5px;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+}
+.adc-body h3 { margin: 10px 0 6px; color: #fff; font-size: 22px; line-height: 1.2; letter-spacing: -0.025em; }
+.adc-body p { margin: 0; font-size: 13.5px; line-height: 1.5; color: rgba(255, 255, 255, 0.84); }
+.adc-cta {
+  margin-top: 14px;
+  min-height: 40px;
+  padding: 0 16px;
+  gap: 7px;
+  border: none;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 13.5px;
+  box-shadow: 0 10px 20px -12px rgba(0, 0, 0, 0.6);
+}
+.adc-cta:hover:not(:disabled) { background: #fff; border: none; transform: translateY(-1px); }
+.adc-cta svg { transition: transform 200ms var(--ease); }
+.adc-cta:hover svg { transform: translateX(3px); }
+
+/* Words rise in each time a slide arrives. */
+.adc-slide .adc-body > * { opacity: 0; transform: translateY(10px); transition: opacity 420ms var(--ease), transform 520ms var(--ease); }
+.adc-slide.is-active .adc-body > * { opacity: 1; transform: none; }
+.adc-slide.is-active .adc-body > *:nth-child(2) { transition-delay: 70ms; }
+.adc-slide.is-active .adc-body > *:nth-child(3) { transition-delay: 140ms; }
+.adc-slide.is-active .adc-body > *:nth-child(4) { transition-delay: 210ms; }
+.adc-slide .adc-stat { opacity: 0; transform: scale(0.85); transition: opacity 400ms var(--ease) 200ms, transform 500ms var(--spring) 200ms; }
+.adc-slide.is-active .adc-stat { opacity: 1; transform: none; }
+
+.adc.is-compact .adc-body { padding: 16px 18px; max-width: 70%; }
+.adc.is-compact .adc-body h3 { font-size: 20px; margin: 8px 0 4px; }
+.adc.is-compact .adc-cta { margin-top: 10px; }
+
+.adc-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.adc-dot { width: 7px; height: 7px; min-height: 0; padding: 0; border: none; border-radius: 99px; background: var(--line-strong); overflow: hidden; position: relative; transition: width 300ms var(--ease), background 200ms var(--ease); }
+.adc-dot:hover:not(:disabled) { background: var(--faint); border: none; }
+.adc-dot.is-on, .adc-dot.is-on:hover:not(:disabled) { width: 28px; background: var(--sunken-2); }
+.adc-dot i { position: absolute; inset: 0; transform-origin: left; background: var(--accent); border-radius: 99px; animation: dot-fill linear both; }
+@keyframes dot-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---- your shop ---- */
+
+.ads-health { flex: none; padding: 16px; border-radius: 22px; background: var(--sunken); }
+.ads-health-top { display: flex; align-items: center; gap: 12px; }
+.ads-health-top > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ads-health-top strong { font-size: 15px; }
+.ads-health-top span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.ads-ring { position: relative; width: 64px; height: 64px; flex: none; }
+.ads-ring svg { transform: rotate(-90deg); }
+.ads-ring circle { fill: none; stroke-width: 7; }
+.ads-ring .t { stroke: var(--sunken-2); }
+.ads-ring .f { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 900ms var(--ease); }
+.ads-health.is-complete .ads-ring .f { stroke: var(--ok); }
+.ads-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 14px; font-weight: 800; }
+.ads-missing { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ads-missing a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+.ads-missing a:hover { transform: translateX(2px); box-shadow: var(--shadow-xs); }
+.ads-missing-icon { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--accent-soft); color: var(--accent-deep); }
+.ads-missing-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ads-missing-text strong { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ads-missing-text em { font-style: normal; font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ads-go { color: var(--faint); flex: none; }
+.ads-more { width: 100%; margin-top: 8px; min-height: 34px; border: none; border-radius: 11px; background: transparent; font-size: 12.5px; color: var(--ink-2); }
+.ads-more:hover:not(:disabled) { background: rgba(255, 255, 255, 0.7); border: none; }
+
+/* ---- trending ---- */
+
+.ads-trend { flex: none; padding: 16px; border-radius: 22px; border: 1px solid var(--line); }
+.ads-trend > header strong { display: block; margin-top: 2px; font-size: 15px; }
+.ads-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 12px 0 4px; padding: 3px; border-radius: 12px; background: var(--sunken); }
+.ads-tabs button { min-height: 30px; padding: 0 8px; border: none; border-radius: 9px; background: transparent; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.ads-tabs button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.7); border: none; }
+.ads-tabs button.is-on, .ads-tabs button.is-on:hover:not(:disabled) { background: var(--panel); box-shadow: var(--shadow-xs); }
+.ads-trend-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; }
+.ads-trend-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--line); animation: rise-in 360ms var(--ease) both; }
+.ads-trend-row:last-child { border-bottom: none; }
+.ads-rank { width: 18px; flex: none; text-align: center; font-size: 13px; font-weight: 800; color: var(--faint); }
+.ads-trend-row:first-child .ads-rank { color: var(--accent); }
+.ads-thumb { position: relative; width: 52px; height: 52px; flex: none; display: grid; place-items: center; border-radius: 14px; background: var(--sunken) center / cover no-repeat; color: var(--faint); }
+.ads-thumb em { position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); padding: 1px 6px; border-radius: 99px; background: var(--accent-deep); color: #fff; font-size: 10px; font-style: normal; font-weight: 800; white-space: nowrap; }
+.ads-trend-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ads-trend-text strong { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ads-trend-text > span { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ads-trend-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0 4px; margin-top: 1px; color: var(--ink-2) !important; font-weight: 600; white-space: normal !important; }
+.ads-trend-meta b { color: var(--ink); }
+.ads-trend-meta i { font-style: normal; color: var(--faint); }
+.ads-trend-meta svg { color: var(--star); }
+.ads-trend-why { margin: 10px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.ads-trend-why a { font-weight: 700; }
+
+/* ---- tip ---- */
+
+.ads-tip {
+  flex: none;
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 22px;
+  background: linear-gradient(140deg, var(--ask-soft), #f5f8ff);
+  animation: rise-in 420ms var(--ease) both;
+}
+.ads-tip-icon { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 12px; background: var(--ask); color: #fff; }
+.ads-tip > div { display: flex; flex-direction: column; gap: 2px; }
+.ads-tip .ads-label { color: var(--ask); opacity: 0.75; }
+.ads-tip strong { font-size: 14px; }
+.ads-tip span { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+
+.ads-foot { display: flex; align-items: center; gap: 6px; margin: 2px 2px 0; font-size: 11px; color: var(--faint); font-weight: 600; }
+
+/* ---- on Overview, when there is no room for the column ---- */
+
+.ads-strip { margin-bottom: 4px; }
+.ads-strip > .ads-label { margin: 0 0 8px 4px; display: flex; align-items: center; gap: 6px; }
+.ads-strip > .ads-label svg { color: var(--accent); }

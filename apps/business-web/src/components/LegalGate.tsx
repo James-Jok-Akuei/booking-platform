@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { acceptLegal, myLegalStatus, type LegalStatus } from '../api/business';
 import { Icon } from '../ui/Icon';
+import { Portal } from '../ui/Portal';
 
 /**
  * What this business still has to agree to (§126).
@@ -59,6 +60,7 @@ export function SellerAgreementGate({
   });
 
   return (
+    <Portal>
     <div className="drawer-backdrop" onClick={onCancel}>
       <aside
         className="drawer"
@@ -108,6 +110,7 @@ export function SellerAgreementGate({
         </div>
       </aside>
     </div>
+    </Portal>
   );
 }
 

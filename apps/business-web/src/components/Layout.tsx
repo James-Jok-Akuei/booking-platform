@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { AdRail } from '../ads/AdRail';
 import { useAuth } from '../auth/auth-context';
 import { CheckInProvider, useCheckIn } from '../checkin/CheckIn';
 import { CommandPalette } from '../shell/CommandPalette';
@@ -12,6 +13,22 @@ import { LegalBanner } from './LegalGate';
 import '../shell/shell.css';
 
 const RAIL_KEY = 'booking-business.sidebar-rail';
+const ADS_KEY = 'booking-business.ads-folded';
+
+const readFlag = (key: string) => {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+};
+const writeFlag = (key: string, on: boolean) => {
+  try {
+    localStorage.setItem(key, on ? '1' : '0');
+  } catch {
+    // Private mode: the choice just is not remembered.
+  }
+};
 
 const readRail = () => {
   try {
@@ -51,6 +68,14 @@ function Frame() {
   // A tablet is always the rail: a full sidebar would leave the page too narrow.
   const tablet = useMediaQuery('(min-width: 860px) and (max-width: 1199px)');
   const folded = rail || tablet;
+  // "For you" down the right (§204), where there is room for a third column.
+  const wide = useMediaQuery('(min-width: 1280px)');
+  const [adsFolded, setAdsFolded] = useState(() => readFlag(ADS_KEY));
+  const toggleAds = () =>
+    setAdsFolded((was) => {
+      writeFlag(ADS_KEY, !was);
+      return !was;
+    });
   const [drawer, setDrawer] = useState(false);
   const [palette, setPalette] = useState(false);
   // Once the page moves under the top bar, the bar gets an edge — and on a
@@ -102,7 +127,7 @@ function Frame() {
   }, []);
 
   return (
-    <div className={`app ${folded ? 'has-rail' : ''}`}>
+    <div className={`app${folded ? ' has-rail' : ''}${wide ? ' has-ads' : ''}${wide && adsFolded ? ' ads-folded' : ''}`}>
       <div className="app-side">
         <Sidebar
           data={data}
@@ -126,6 +151,12 @@ function Frame() {
           <Outlet />
         </main>
       </div>
+
+      {wide && (
+        <div className="app-ads">
+          <AdRail folded={adsFolded} onFold={toggleAds} />
+        </div>
+      )}
 
       <TabBar data={data} onCheckIn={checkIn} onOpenMenu={() => setDrawer(true)} />
 

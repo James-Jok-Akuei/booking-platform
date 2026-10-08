@@ -155,13 +155,13 @@
 }
 .hr-seats em { font-style: normal; font-size: 12.5px; font-weight: 800; color: var(--ok-deep); padding-left: 2px; }
 
-@media (max-width: 1280px) {
+@container page (max-width: 960px) {
   .hr-body { grid-template-columns: minmax(0, 1fr); }
   .hr-places { flex-direction: row; flex-wrap: wrap; align-items: center; }
   .hr-places p { flex-basis: 100%; }
 }
 
-@media (max-width: 880px) {
+@container page (max-width: 760px) {
   /* On a phone the map is a strip above the branch, not behind its name. */
   .hr-hero { height: auto; background: var(--night); }
   .hr-map { position: relative; height: 150px; }

@@ -236,7 +236,7 @@
 
 /* ---- narrower ---- */
 
-@media (max-width: 1280px) {
+@container page (max-width: 1000px) {
   .ap-cols { display: none; }
   .ap-row {
     grid-template-columns: 68px minmax(0, 1.4fr) minmax(0, 1fr) auto;
@@ -251,7 +251,7 @@
   .ap-actions { grid-area: actions; min-width: 0; }
 }
 
-@media (max-width: 720px) {
+@container page (max-width: 640px) {
   .ap-search { width: 100%; }
   .ap-tab { padding: 0 13px; font-size: 13.5px; }
   .ap-board { padding: 4px 6px 10px; border-radius: 22px; }
@@ -264,6 +264,11 @@
   .ap-earn { padding-left: 0; }
   .ap-actions { justify-content: flex-start; padding-left: 64px; flex-wrap: wrap; }
   .ap-waiting { text-align: left; max-width: none; }
+}
+
+/* The panel is drawn over the whole screen, outside the page area, so it
+   follows the window (§204). */
+@media (max-width: 720px) {
   .drawer.ap-drawer { padding: 18px 18px 24px; border-radius: 0; }
   .ap-drawer-hero { grid-template-columns: 1fr; }
   .ap-drawer-actions { margin: 20px -18px -24px; padding: 14px 18px 18px; bottom: -24px; }

@@ -437,7 +437,7 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 
 .two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .three-up { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-@media (max-width: 680px) { .two-up, .three-up { grid-template-columns: 1fr; } }
+@container page (max-width: 600px) { .two-up, .three-up { grid-template-columns: 1fr; } }
 
 .branch-gallery { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
 .branch-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }

@@ -14667,3 +14667,83 @@ account (the only place a role is sent); a non-business account is told so.
 - After signing in it opens **Overview** (§192), the new home.
 - On a phone the left panel shrinks to its words above the form.
 
+## 204. "For you" — adverts, ideas and tips down the right (2026-10-08)
+
+The user asked for room on the right of the whole business app for adverts,
+"as beautiful as the customer app's": the business's own best performers,
+the platform's own adverts ("you can become a buyer — get our app"), nudges
+to finish the profile (detecting what is missing), what is trending at other
+businesses, and teaching the app's features.
+
+### 204.1 Where it sits
+
+- **Wide screens (1280px and up)**: a third column, "For you", beside every
+  page (`src/ads/AdRail.tsx`); the page moves left to make room. It **folds**
+  to a slim strip with a coral spark and a count of things left to add
+  (remembered per browser); unfolding gives it back.
+- **Narrower (tablet, phone)**: no column; the banner sits at the top of
+  Overview instead, under the greeting.
+- Beside the column, the top bar's search shrinks to its icon until the
+  screen is 1680px wide or the column is folded.
+
+### 204.2 What is in it
+
+1. **The banner** (`AdCarousel.tsx`): one advert at a time, **8 seconds each,
+   round and round, forward from the last to the first** (the customer app's
+   §188), paused while the mouse is over it, dots with a filling bar to jump
+   to any one, nothing moving with "reduce motion" on. Each advert has its
+   own colour, a photo where there is one (drifting slowly closer) or a large
+   faint icon with slow rings, a corner number, and one button. In priority
+   order (`slides.ts`), each only when it applies:
+   - **Get paid** (owner only, §48): no payout number, refused, or being
+     checked.
+   - **Your best seller**: the most booked service of the last 30 days, with
+     its cover photo and count — "Put it on sale" if it is not.
+   - **Trending in [your type] / on the app**: the most popular service at
+     another business, its photo and bookings.
+   - **Make your shop stand out**: how complete the shop is, and the first
+     missing thing, with a button straight to where it is added.
+   - **Customers are waiting**: reviews without a reply.
+   - **From us · You can book too**: the customer app. A business account
+     cannot book (bookings are CUSTOMER-only, one email is one kind of
+     account, §50), so it says to sign up there with a personal email. There
+     is no store or web link yet, so it says it is "coming to the app
+     stores"; setting **`VITE_CUSTOMER_APP_URL`** turns it into a "Get the
+     app" button.
+   - **How customers find you**: popular shops are shown first, ranked by
+     bookings weighted by rating (§135.1) — true, and the reason the rest of
+     the column matters.
+   - **Run a sale this week** (when nothing is on sale): what a sale shows
+     customers (§186).
+   - **Press ⌘K to jump anywhere**.
+2. **Your shop** (`useAdData.ts`): a score ring and what is missing, each a
+   link to where it is fixed — cover, logo, a description of 40+ characters,
+   category and type, phone; per open branch: gallery photos, opening hours,
+   district and pin; services on sale without a photo or a description; a
+   confirmed payout number; at least one service.
+3. **Trending on the app — what customers are booking**: the top four from
+   the public popular list (§135), in the shop's own type and "Everywhere",
+   never its own, and only ones actually booked — photo, sale badge, price,
+   rating, bookings, with how the list is ranked.
+4. **Did you know?** — a tip about the page being looked at (`tips.ts`).
+
+Nothing in it is paid for, and it says so at its foot. Every figure is the
+server's or counted from the shop's own bookings; no claim is made that the
+app cannot back.
+
+### 204.3 Pages size by their own room
+
+With a third column, the same page is narrower on the same screen, so page
+layouts now switch on **the width of the page area** (a CSS container,
+`.content`) instead of the window. Each page's thresholds were re-chosen
+(Overview goes to one column under 980px of room, Appointments' rows go
+compact under 1000px, and so on). A container holds fixed-position layers
+inside it, so every panel and drawer a page opens is now drawn at the end of
+`<body>` (`src/ui/Portal.tsx`); their own phone rules stay window-based.
+
+### 204.4 Not built
+
+- Adverts managed by an administrator (the platform's own campaigns) — today
+  they are written in `slides.ts`.
+- Paid placement for businesses.
+

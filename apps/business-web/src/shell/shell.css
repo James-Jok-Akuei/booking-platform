@@ -12,12 +12,26 @@ body {
 }
 
 .app {
+  --side: 286px;
+  --ads: 0px;
   display: grid;
-  grid-template-columns: 286px minmax(0, 1fr);
+  grid-template-columns: var(--side) minmax(0, 1fr) var(--ads);
   min-height: 100vh;
   transition: grid-template-columns 320ms var(--ease);
 }
-.app.has-rail { grid-template-columns: 98px minmax(0, 1fr); }
+.app.has-rail { --side: 98px; }
+/* "For you" down the right (§204): a column of its own, or a slim strip. */
+.app.has-ads { --ads: 344px; }
+.app.has-ads.ads-folded { --ads: 82px; }
+.app-ads {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 14px 14px 14px 0;
+  z-index: 44;
+  min-width: 0;
+}
+.app.has-ads .content { padding-right: 20px; }
 
 .app-side {
   position: sticky;
@@ -30,6 +44,11 @@ body {
 .app-main { min-width: 0; display: flex; flex-direction: column; }
 
 .content {
+  /* Pages size themselves by the room they are given, not by the window
+     (§204): the same page is narrower beside "For you" or a full sidebar.
+     Anything a page draws over the screen (panels, drawers) is portalled to
+     <body>, because this containment would otherwise hold it inside. */
+  container: page / inline-size;
   width: 100%;
   max-width: 1440px;
   padding: 6px 30px 64px 24px;
@@ -275,7 +294,7 @@ body {
   top: 0;
   z-index: 40;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 16px;
   padding: 14px 30px 14px 24px;
@@ -294,7 +313,7 @@ body {
 .tb-date { font-size: 12.5px; color: var(--muted); font-weight: 500; }
 
 .tb-search {
-  width: clamp(240px, 30vw, 460px);
+  width: clamp(220px, 26vw, 440px);
   height: 46px;
   min-height: 0;
   padding: 0 8px 0 16px;
@@ -618,6 +637,14 @@ body {
 
 /* ---------- smaller screens ---------- */
 
+/* Beside "For you" (§204) the bar is narrower: the search shrinks to its icon
+   until the screen is wide enough for both — or the column is folded. */
+@media (max-width: 1679px) {
+  .app.has-ads:not(.ads-folded) .tb-search { display: none; }
+  .app.has-ads:not(.ads-folded) .tb-search-small { display: inline-grid; }
+  .app.has-ads:not(.ads-folded) .topbar { grid-template-columns: minmax(0, 1fr) auto; }
+}
+
 @media (max-width: 1199px) {
   .tb-search { display: none; }
   .tb-search-small { display: inline-grid; }
@@ -625,7 +652,7 @@ body {
 }
 
 @media (max-width: 859px) {
-  .app, .app.has-rail { grid-template-columns: minmax(0, 1fr); }
+  .app, .app.has-rail, .app.has-ads { grid-template-columns: minmax(0, 1fr); }
   .app-side { display: none; }
 
   .topbar { padding: 10px 14px; gap: 10px; }

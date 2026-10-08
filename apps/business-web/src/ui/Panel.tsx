@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { Icon } from './Icon';
+import { Portal } from './Portal';
 
 /**
  * The panel from the right that a form opens in (§194, §195): a little
@@ -28,6 +29,7 @@ export function Panel({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
   return (
+    <Portal>
     <div className="drawer-backdrop" onMouseDown={onClose}>
       <aside
         className="drawer panel"
@@ -50,5 +52,6 @@ export function Panel({
         {footer && <footer className="panel-foot">{footer}</footer>}
       </aside>
     </div>
+    </Portal>
   );
 }

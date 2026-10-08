@@ -115,12 +115,12 @@
 .rv-compose-foot > div { display: flex; gap: 8px; margin-left: auto; }
 .rv-compose-foot button { min-height: 40px; border-radius: 13px; }
 
-@media (max-width: 1180px) {
+@container page (max-width: 860px) {
   .rv-summary { grid-template-columns: 180px minmax(0, 1fr); }
   .rv-reply-card { grid-column: 1 / -1; }
 }
 
-@media (max-width: 720px) {
+@container page (max-width: 640px) {
   .rv-summary { grid-template-columns: minmax(0, 1fr); padding: 18px; }
   .rv-score { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 10px; }
   .rv-score > strong { font-size: 44px; }

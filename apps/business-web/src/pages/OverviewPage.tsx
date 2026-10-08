@@ -34,6 +34,11 @@ import {
   useNow,
 } from '../lib/time';
 import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
+import { AdCarousel } from '../ads/AdCarousel';
+import { buildSlides } from '../ads/slides';
+import { useAdData } from '../ads/useAdData';
+import { useMediaQuery } from '../shell/useMediaQuery';
+import '../ads/ads.css';
 import './overview.css';
 
 /**
@@ -88,6 +93,7 @@ function useCountUp(target: number, ms = 900) {
 
 export function OverviewPage() {
   const now = useNow(30_000);
+  const wide = useMediaQuery('(min-width: 1280px)');
   const queryClient = useQueryClient();
   const money = useMoney();
   const openCheckIn = useCheckIn();
@@ -227,6 +233,9 @@ export function OverviewPage() {
           </Link>
         </div>
       </header>
+
+      {/* No room for the "For you" column (§204): its banner sits here instead. */}
+      {!wide && <ForYouStrip />}
 
       {complete.error && (
         <p className="notice" role="alert">
@@ -864,5 +873,19 @@ function Empty({ icon, title, text, small = false }: { icon: IconName; title: st
       <strong>{title}</strong>
       <p>{text}</p>
     </div>
+  );
+}
+
+/** The "For you" banner, for screens without room for its column (§204). */
+function ForYouStrip() {
+  const data = useAdData();
+  if (!data.ready) return null;
+  return (
+    <section className="ads-strip">
+      <p className="ads-label">
+        <Icon name="sparkles" size={14} /> For you
+      </p>
+      <AdCarousel slides={buildSlides(data)} compact />
+    </section>
   );
 }

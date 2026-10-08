@@ -17,6 +17,7 @@ import {
 import { Avatar } from '../ui/Avatar';
 import { confirmDialog, promptDialog } from '../ui/Dialog';
 import { MoreMenu } from '../ui/MoreMenu';
+import { Portal } from '../ui/Portal';
 import { Icon, type IconName } from '../ui/Icon';
 import { clock, minutesBetween, relativeDay, sameDay, span, startOfDay } from '../lib/time';
 import './appointments.css';
@@ -536,6 +537,7 @@ function AppointmentDetail({
     d && d.servicePriceMinor !== null ? Math.max(0, d.servicePriceMinor - d.depositAmountMinor) : null;
 
   return (
+    <Portal>
     <div className="drawer-backdrop" onClick={onClose}>
       <aside
         className="drawer ap-drawer"
@@ -725,5 +727,6 @@ function AppointmentDetail({
         )}
       </aside>
     </div>
+    </Portal>
   );
 }

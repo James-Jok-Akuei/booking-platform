@@ -86,13 +86,18 @@
 .hp-cats button.is-on, .hp-cats button.is-on:hover:not(:disabled) { background: var(--night); border-color: var(--night); color: #fff; }
 .hp-cats button.is-on svg { color: #ff8a5c; }
 
-@media (max-width: 980px) {
+@container page (max-width: 760px) {
   .hp-hero { grid-template-columns: minmax(0, 1fr); padding: 22px 18px; }
 }
-@media (max-width: 720px) {
+@container page (max-width: 640px) {
   .hp-hero h1 { font-size: 26px; }
   .hp-ticket { flex-wrap: wrap; }
   .hp-ticket-state { align-items: flex-start; text-align: left; width: 100%; padding-left: 56px; }
   .hp-ticket-go { display: none; }
+}
+
+/* The panel is drawn over the whole screen, outside the page area, so it
+   follows the window (§204). */
+@media (max-width: 720px) {
   .hp-cats { grid-template-columns: 1fr; }
 }

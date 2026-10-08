@@ -349,10 +349,15 @@
 .sv-form-actions { display: flex; gap: 10px; margin-left: auto; }
 .sv-form-actions button { min-height: 48px; padding: 0 20px; border-radius: 15px; }
 
-@media (max-width: 720px) {
+@container page (max-width: 640px) {
   .sv-head { flex-direction: column; }
   .sv-add { width: 100%; }
   .sv-grid { grid-template-columns: 1fr; }
+}
+
+/* The panel is drawn over the whole screen, outside the page area, so it
+   follows the window (§204). */
+@media (max-width: 720px) {
   .drawer.sv-panel { border-radius: 0; }
   .sv-panel-head { padding: 18px 18px 14px; }
   .sv-form-body { padding: 4px 18px 20px; }
