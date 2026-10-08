@@ -442,3 +442,24 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 /* The list's card runs down to the page's bottom line, however few rows (§216). */
 .ap { display: flex; flex-direction: column; }
 .ap-board { flex: 1 0 auto; }
+
+/* List or calendar (§229). */
+.ap-mode { flex: none; display: flex; padding: 3px; border-radius: 13px; background: var(--sunken); }
+.ap-mode button { min-height: 36px; padding: 0 12px; gap: 6px; border: none; border-radius: 10px; background: transparent; font-size: 13.5px; color: var(--muted); }
+.ap-mode button svg { color: var(--faint); }
+.ap-mode button:hover:not(:disabled) { background: transparent; border: none; color: var(--ink); }
+.ap-mode button:active:not(:disabled) { transform: none; }
+.ap-mode button.is-on, .ap-mode button.is-on:hover:not(:disabled) { background: var(--panel); color: var(--ink); box-shadow: var(--shadow-xs); }
+.ap-mode button.is-on svg { color: var(--accent); }
+/* In calendar mode the card's top continues into the calendar's head. */
+.ap-card-top.is-cal { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; border-bottom: none !important; }
+.ap-board.is-cal { min-height: 0; }
+@container page (max-width: 760px) {
+  .ap-mode button span { display: none; }
+  .ap-mode button { padding: 0 10px; }
+}
+@container page (max-width: 680px) {
+  .ap-board.is-cal { margin-top: 12px; padding: 0; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.06); border-radius: 22px; box-shadow: var(--shadow-sm); overflow: hidden; }
+}
+
+.ap-drawer-skel .skeleton { height: 96px; border-radius: 16px; }

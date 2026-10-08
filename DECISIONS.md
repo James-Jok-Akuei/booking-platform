@@ -15577,3 +15577,119 @@ Checked: typing "kigali heights" offered three places; choosing "Kigali
 Heights, KG 7 Avenue" filled the address, put the pin at -1.952708,
 30.092776 and chose Gasabo; "kimir" in Edit details on a phone offered six.
 Nothing was saved.
+
+## 229. Appointments as a calendar too (2026-10-09)
+
+The user: a calendar view of appointments beside the list, showing bookings
+and free time, every status told apart; bookings at the same time drawn as a
+**stack** that opens when hovered so each can be read without clicking; a
+click on any opens its details as the flyout. "Make it better than I expected."
+
+### 229.1 Where it lives
+
+- A **List / Calendar** switch in the Appointments head. The choice is kept
+  (`?view=calendar`, and remembered on the device); the search box and the
+  branch filter work in both. Export stays with the list. Choosing a tab
+  (Today, Coming up…) goes back to the list.
+- The calendar's own state is in the address too — `?cal=day|week|month`
+  and `?date=YYYY-MM-DD` — so a view can be shared or reloaded. Week is the
+  default; a phone starts on Day and has no Week (seven columns do not fit).
+- The page's pinned head (§209) carries the calendar's head instead of the
+  list's tabs and column headings, so the dates stay on screen while the
+  hours slide under them.
+
+### 229.2 The head
+
+- **‹ Today ›** and the date shown as a button that opens a small month
+  to jump to any day; each day in it dotted by how busy it is.
+- **How full** the time shown is ("62% booked") — booked place-minutes
+  against open place-minutes, counting every place a branch has (its
+  capacity) and leaving out breaks.
+- **Day · Week · Month**.
+- **Status chips** that are also the key: Expected, In progress, Unpaid,
+  Done, No-show, Cancelled — each with its colour and count in the time
+  shown; a press hides or shows that status (remembered). No-show and
+  Cancelled start hidden so the calendar shows the day as it really runs.
+  A key for Free, Closed and Break.
+- Keys: ← → move, T today, D W M switch views — not while typing or with a
+  panel open.
+- On a phone, a **week strip** under the head (M T W T F S S, each with its
+  booking count) to move between days with one tap; the date reads short
+  ("Fri 9 Oct") so arrows, date and views share one row.
+
+### 229.3 The time grid (Day and Week)
+
+- Hours from the earliest opening or booking to the latest (8–18 when there
+  is nothing), at least six hours; a red **now** line on today; the past
+  greyed.
+- **Closed time is hatched** — before opening, after closing, a whole day
+  closed — with why ("Usually closed", "Closed — Public holiday"); a
+  closure with its own hours shows those hours. **Breaks** (Closures &
+  breaks) are their own band. These come from the same branch hours,
+  closures and breaks the server uses to offer times.
+- **Free time** — open, nothing booked, from now on, on the 15-minute grid
+  customers book on, at least 30 minutes — is a dashed green block
+  ("+ Free · 3 h"). Partly-full time is not called free; its stack says how
+  many places are left.
+- **One booking** is a card coloured by status: blue expected, amber late
+  (expected but its time has passed) or in progress, grey dashed unpaid,
+  green done, red striped no-show, crossed-out cancelled. Time, service
+  ("×2" for a group), customer; in Day view, the service photo (§212).
+- **Bookings that touch in time are one stack**: paper cards under the top
+  one, the count, the time it spans, what is in it, a dot per booking in its
+  status colour, and **"42 of 45 free" / "Full"** — the most places taken at
+  once against the branch's capacity. In a wide Day column the stack lists
+  each booking as a small chip ("09:30 Retired: dye").
+- **Hover a stack and it fans open** beside it: a panel with every booking
+  in it as a readable card — time, status, service photo and name,
+  customer, reservation number, when it starts ("In 2 h"), what is due at
+  the shop or the deposit — the cards flying out of the stack one after
+  another. Moving into the panel keeps it open; it waits a moment before
+  opening and closing so passing over does not flicker. A click pins it
+  open. **Check in** and **Mark done** are on the cards for the bookings
+  that can take them. **A click on any card opens that booking's details**
+  as the flyout from the side, the same one the list opens.
+- On a phone or tablet (no hover) a tap opens the stack as a **sheet from
+  the bottom**.
+- **Day view with All branches** on a computer: one column per branch, side
+  by side, each with its own hours, breaks, free time and capacity. Week
+  view with All branches merges them (open when any is open).
+- Search on the calendar dims what does not match and rings what does.
+- Narrow week columns drop what does not fit: "09:00" not "09:00–11:00",
+  "42 free" not "42 of 45 free".
+
+### 229.4 Month
+
+Six weeks; each day with up to three bookings ("09:00 Haircut"), "+4
+more", closed days hatched, today marked; dots in place of names on a
+phone. A day opens in Day view.
+
+### 229.5 On a wide screen
+
+A side column: the small month, and **this week at a glance** — a ring of
+how full it is, bookings, hours booked, open hours, and the busiest day.
+
+### 229.6 How it is built
+
+- `lib/bookingLook.tsx` — the status names and colours, reservation number,
+  payment line, "In 2 h / Late", service photos — now shared by the list
+  and the calendar, so they always agree.
+- `pages/calendar/model.ts` — the sums, apart from the drawing: a branch's
+  plan for a day (hours, closure, breaks), stacks, places taken minute by
+  minute, free stretches, how full. The statuses that take a place are the
+  server's (`CAPACITY_CONSUMING_STATUSES`: unpaid, expected, in progress,
+  done), and a group booking takes one place per person.
+- `pages/calendar/AppointmentCalendar.tsx` + `calendar.css` (`acal-`
+  names — the plain `cal-` names were already taken by Closures & breaks).
+- Bookings for the time shown come from the list endpoint (`from`, `to`,
+  and now `locationId`), a hundred at a time, up to a thousand, refreshed
+  every minute. Closures and breaks reuse the Closures page's queries.
+- A booking that cannot be opened (deleted meanwhile) now says so in the
+  flyout instead of showing an empty panel.
+
+Checked at 1440, 1024 and 390 wide: week (one branch and all), day (one
+branch, and a column per branch), month, the hover fan (3 bookings,
+"3/45 places"), the phone sheet (4 bookings), search, and a real booking
+opening its details with Check in, No-show and Cancel. The demo data has no
+bookings at the same time, so the stacks were checked with made-up ones in
+the test browser only; nothing was saved.

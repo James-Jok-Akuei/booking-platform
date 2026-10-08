@@ -4,12 +4,13 @@ import { listAppointments, type Appointment, type AppointmentStatus } from '../a
 export const REAL_STATUSES: AppointmentStatus[] = ['BOOKED', 'IN_PROGRESS', 'COMPLETED', 'NO_SHOW'];
 
 /** Every booking between two instants, a hundred at a time (the list's page size), up to a thousand. */
-export async function bookingsBetween(from: Date, to: Date) {
+export async function bookingsBetween(from: Date, to: Date, locationId?: string) {
   const rows: Appointment[] = [];
   for (let offset = 0; offset < 1000; offset += 100) {
     const page = await listAppointments({
       from: from.toISOString(),
       to: to.toISOString(),
+      ...(locationId ? { locationId } : {}),
       limit: 100,
       offset,
     });

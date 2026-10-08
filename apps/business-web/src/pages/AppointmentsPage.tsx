@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { useMoney } from '../money';
-import { dueLabel, useCheckIn } from '../checkin/CheckIn';
+import { useCheckIn } from '../checkin/CheckIn';
 import {
   getAppointment,
   cancelAppointment,
@@ -11,7 +11,6 @@ import {
   getMe,
   listAppointments,
   listLocations,
-  listServices,
   markNoShow,
   type Appointment,
   type AppointmentStatus,
@@ -24,7 +23,11 @@ import { Portal } from '../ui/Portal';
 import { Select } from '../ui/Select';
 import { Icon, type IconName } from '../ui/Icon';
 import { addDays, clock, minutesBetween, relativeDay, sameDay, startOfDay, useNow } from '../lib/time';
+import { STATUS, Thumb, dueAtShop, payment, reservationNo, standing, useServiceCovers, type Actions, type Money } from '../lib/bookingLook';
+import { CalendarBody, CalendarHead, useCalendar } from './calendar/AppointmentCalendar';
 import './appointments.css';
+
+export { reservationNo };
 
 type TabKey = 'expected' | 'in-progress' | 'awaiting-payment' | 'done' | 'all';
 
@@ -39,33 +42,19 @@ const TABS: Array<{ key: TabKey; status: AppointmentStatus | 'ALL'; label: strin
 /** The tabs where the next thing to do is still ahead: read soonest first. */
 const ACTIVE: Array<AppointmentStatus | 'ALL'> = ['BOOKED', 'IN_PROGRESS', 'PENDING_PAYMENT'];
 
-const STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
-  BOOKED: { label: 'Expected', cls: 'booked' },
-  IN_PROGRESS: { label: 'In progress', cls: 'in-progress' },
-  COMPLETED: { label: 'Done', cls: 'completed' },
-  NO_SHOW: { label: 'No-show', cls: 'no-show' },
-  CANCELLED: { label: 'Cancelled', cls: 'cancelled' },
-  PENDING_PAYMENT: { label: 'Unpaid', cls: 'pending-payment' },
-};
-
 const PAGE = 25;
+
+const MODE_KEY = 'booking-business.appointments-view';
+const readMode = (): 'list' | 'calendar' => {
+  try {
+    return localStorage.getItem(MODE_KEY) === 'calendar' ? 'calendar' : 'list';
+  } catch {
+    return 'list';
+  }
+};
 
 const when = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-
-/**
- * The number the customer's app shows them (§213): the first eight
- * characters of the booking's id, "3F2A-1C9B" — so the two screens can be
- * matched at a glance, and it can be searched for.
- */
-export const reservationNo = (id: string) => {
-  const s = id.replace(/-/g, '').slice(0, 8).toUpperCase();
-  return `${s.slice(0, 4)}-${s.slice(4)}`;
-};
-
-/** What is still to be paid at the shop; null on bookings older than the price snapshot. */
-const dueAtShop = (a: Appointment) =>
-  a.servicePriceMinor === null ? null : Math.max(0, a.servicePriceMinor - a.depositAmountMinor);
 
 type Filters = { locationId?: string; q?: string };
 
@@ -111,7 +100,35 @@ function useSettled<T>(value: T, ms = 280) {
 export function AppointmentsPage() {
   const [params, setParams] = useSearchParams();
   const tab = TABS.find((t) => t.key === params.get('tab')) ?? TABS[0];
-  const setTab = (key: TabKey) => setParams(key === 'expected' ? {} : { tab: key }, { replace: true });
+  // Changes some of the address's settings, keeping the rest.
+  const patch = (next: Record<string, string | null>) =>
+    setParams(
+      (was) => {
+        const out = new URLSearchParams(was);
+        for (const [key, value] of Object.entries(next)) {
+          if (value === null) out.delete(key);
+          else out.set(key, value);
+        }
+        return out;
+      },
+      { replace: true },
+    );
+  // A list or a calendar (§229), remembered for next time.
+  const [savedMode] = useState(readMode);
+  const mode: 'list' | 'calendar' =
+    params.get('view') === 'calendar' ? 'calendar' : params.get('view') === 'list' ? 'list' : savedMode;
+  const setMode = (next: 'list' | 'calendar') => {
+    patch({ view: next });
+    try {
+      localStorage.setItem(MODE_KEY, next);
+    } catch {
+      // Private mode: it is remembered for this visit only.
+    }
+  };
+  const setTab = (key: TabKey) => {
+    patch({ tab: key === 'expected' ? null : key });
+    if (mode === 'calendar') setMode('list');
+  };
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
   const [detail, setDetail] = useState<string | null>(null);
@@ -127,6 +144,7 @@ export function AppointmentsPage() {
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
   const branches = (locations.data ?? []).filter((l) => l.isActive);
 
+  const cal = useCalendar({ active: mode === 'calendar', params, patch, branch, branches, search: search.trim(), now });
   const q = useSettled(search.trim());
   const filters: Filters = { ...(branch ? { locationId: branch } : {}), ...(q ? { q } : {}) };
   const filterKey = [branch, q];
@@ -306,15 +324,25 @@ export function AppointmentsPage() {
           onTab={setTab}
         />
 
-        <div className="ap-card-top pin-from">
+        <div className={`ap-card-top${mode === 'calendar' ? ' is-cal' : ' pin-from'}`}>
           <div className="ap-toolbar">
+            <div className="ap-mode" role="tablist" aria-label="Show as">
+              <button type="button" role="tab" aria-selected={mode === 'list'} className={mode === 'list' ? 'is-on' : ''} onClick={() => setMode('list')} title="As a list">
+                <Icon name="list" size={16} />
+                <span>List</span>
+              </button>
+              <button type="button" role="tab" aria-selected={mode === 'calendar'} className={mode === 'calendar' ? 'is-on' : ''} onClick={() => setMode('calendar')} title="On a calendar">
+                <Icon name="calendar" size={16} />
+                <span>Calendar</span>
+              </button>
+            </div>
             <div className="ap-find">
               <label className="ap-search">
                 <Icon name="search" size={18} />
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Email, service, branch or No."
+                  placeholder={mode === 'calendar' ? 'Find on the calendar' : 'Email, service, branch or No.'}
                   aria-label="Find a booking"
                 />
                 {search && (
@@ -336,6 +364,7 @@ export function AppointmentsPage() {
                 </div>
               )}
             </div>
+            {mode === 'list' && (
             <button
               type="button"
               className="ap-export"
@@ -346,7 +375,10 @@ export function AppointmentsPage() {
               <Icon name={exporting ? 'refresh' : 'upload'} size={15} className={exporting ? 'ap-export-spin' : 'ap-export-icon'} />
               <span>{exporting ? 'Exporting…' : 'Export'}</span>
             </button>
+            )}
           </div>
+          {mode === 'list' && (
+          <>
           <div className="ap-tabs-row pin-phone">
             <div className="ap-tabs" role="tablist">
               {TABS.map((t, i) => {
@@ -377,7 +409,14 @@ export function AppointmentsPage() {
             <span>Status</span>
             <span className="col-action">Action</span>
           </div>
+          </>
+          )}
         </div>
+        {mode === 'calendar' && (
+          <div className="acal-head-card pin-from">
+            <CalendarHead cal={cal} />
+          </div>
+        )}
       </div>
 
       {act.error && (
@@ -386,6 +425,11 @@ export function AppointmentsPage() {
         </p>
       )}
 
+      {mode === 'calendar' ? (
+        <div className="ap-board is-cal">
+          <CalendarBody cal={cal} actions={actions} covers={covers} money={money.format} />
+        </div>
+      ) : (
       <div className="ap-board">
         {loading && (
           <div className="ap-skeletons" aria-hidden="true">
@@ -448,6 +492,7 @@ export function AppointmentsPage() {
           </footer>
         )}
       </div>
+      )}
 
       {detail && (
         <AppointmentDetail
@@ -460,17 +505,6 @@ export function AppointmentsPage() {
     </section>
   );
 }
-
-type Actions = {
-  checkIn: (a: Appointment) => void;
-  noCode: (a: Appointment) => void;
-  complete: (a: Appointment) => void;
-  noShow: (a: Appointment) => void;
-  cancel: (a: Appointment) => void;
-  open: (a: Appointment) => void;
-};
-
-type Money = (minor: number | null | undefined, code?: string | null) => string;
 
 /** Today at a glance: still to come, with you, done, and the money still to collect. */
 function TodayStrip({
@@ -570,92 +604,6 @@ function NowLine({ now }: { now: Date }) {
       <i />
     </div>
   );
-}
-
-/**
- * Each service's cover photo, by service (§211): a booking carries the
- * service's name, not its pictures, and the services list — shared with the
- * Services page, so usually already loaded — has them. The first photo is
- * the cover, as everywhere (§132).
- */
-function useServiceCovers() {
-  const services = useQuery({ queryKey: ['services'], queryFn: listServices, staleTime: 5 * 60_000 });
-  return useMemo(
-    () => new Map((services.data ?? []).map((s) => [s.id, s.images[0]?.url ?? null] as const)),
-    [services.data],
-  );
-}
-
-/** The service's photo, or a soft tile when it has none. */
-function Thumb({ cover, size }: { cover: string | null; size: number }) {
-  return (
-    <span className={`ap-thumb${cover ? '' : ' is-empty'}`} style={{ width: size, height: size }}>
-      {cover ? <img src={cover} alt="" loading="lazy" /> : <Icon name="tag" size={Math.round(size * 0.4)} />}
-    </span>
-  );
-}
-
-/** What the money looks like for this booking, in two lines. */
-function payment(a: Appointment, money: Money) {
-  const paid = Boolean(a.depositPaidAt);
-  const due = dueAtShop(a);
-  switch (a.status) {
-    case 'PENDING_PAYMENT':
-      return { amount: money(a.depositAmountMinor, a.currency), unit: 'deposit', note: 'Not paid yet', tone: 'warn', icon: 'hourglass' as IconName };
-    case 'BOOKED':
-    case 'IN_PROGRESS':
-      return {
-        amount: due === null ? '—' : money(due, a.currency),
-        unit: due === null ? '' : 'due',
-        note: paid ? 'Deposit paid' : 'No deposit',
-        tone: paid ? 'ok' : 'muted',
-        icon: (paid ? 'checkCircle' : 'info') as IconName,
-      };
-    case 'COMPLETED':
-      return {
-        amount: a.servicePriceMinor === null ? money(a.businessAmountMinor, a.currency) : money(a.servicePriceMinor, a.currency),
-        unit: a.servicePriceMinor === null ? 'yours' : 'total',
-        note: 'Deposit paid',
-        tone: 'ok',
-        icon: 'checkCircle' as IconName,
-      };
-    case 'NO_SHOW':
-      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: 'Deposit kept', tone: 'muted', icon: 'wallet' as IconName };
-    case 'CANCELLED':
-      if (!paid) return { amount: '—', unit: '', note: 'No deposit', tone: 'muted', icon: 'info' as IconName };
-      if (a.cancelledBy === 'BUSINESS')
-        return { amount: '—', unit: '', note: 'Deposit refunded', tone: 'muted', icon: 'refresh' as IconName };
-      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: 'Deposit kept', tone: 'muted', icon: 'wallet' as IconName };
-  }
-}
-
-/** The status, and one line about where it stands in time. */
-function standing(a: Appointment, now: Date): { text: string; tone: string } {
-  switch (a.status) {
-    case 'BOOKED': {
-      const start = new Date(a.startTime);
-      if (start < startOfDay(now)) return { text: 'Not checked in', tone: 'late' };
-      if (!sameDay(start, now)) {
-        const days = Math.round((startOfDay(start).getTime() - startOfDay(now).getTime()) / 86_400_000);
-        return { text: days === 1 ? 'Tomorrow' : `In ${days} days`, tone: 'muted' };
-      }
-      const due = dueLabel(a.startTime, now.getTime());
-      return { text: due.text.charAt(0).toUpperCase() + due.text.slice(1), tone: due.tone };
-    }
-    case 'IN_PROGRESS':
-      return { text: a.verifiedAt ? `Arrived ${clock(a.verifiedAt)}` : 'With you', tone: 'muted' };
-    case 'COMPLETED':
-      return { text: a.completedAt ? `Finished ${clock(a.completedAt)}` : 'Finished', tone: 'muted' };
-    case 'NO_SHOW':
-      return { text: a.noShowAt ? `Marked ${clock(a.noShowAt)}` : 'Did not come', tone: 'muted' };
-    case 'CANCELLED':
-      return {
-        text: a.cancelledBy === 'BUSINESS' ? 'By you' : a.cancelledBy === 'CUSTOMER' ? 'By the customer' : 'Not paid in time',
-        tone: 'muted',
-      };
-    case 'PENDING_PAYMENT':
-      return { text: 'Paying on their phone', tone: 'muted' };
-  }
 }
 
 function Row({
@@ -997,8 +945,16 @@ function AppointmentDetail({
           </button>
         </header>
 
-        {!d ? (
-          <div className="ap-skeletons">
+        {detail.isError ? (
+          <div className="ap-empty">
+            <span>
+              <Icon name="alert" size={26} />
+            </span>
+            <strong>This booking could not be opened</strong>
+            <p>{detail.error instanceof ApiError ? detail.error.message : 'Check your connection and try again.'}</p>
+          </div>
+        ) : !d ? (
+          <div className="ap-skeletons ap-drawer-skel">
             <div className="skeleton" />
             <div className="skeleton" />
           </div>

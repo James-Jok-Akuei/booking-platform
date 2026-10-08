@@ -48,6 +48,10 @@ export const listAppointments = (params: {
   status?: AppointmentStatus;
   from?: string;
   to?: string;
+  /** One branch only (§213). */
+  locationId?: string;
+  /** Email, service, branch or booking number (§213). */
+  q?: string;
   limit?: number;
   offset?: number;
 }) => api<AppointmentPage>('/appointments', { query: params });
