@@ -10,6 +10,7 @@ import {
   completeAppointment,
   getMe,
   listAppointments,
+  listServices,
   markNoShow,
   type Appointment,
   type AppointmentStatus,
@@ -83,6 +84,7 @@ export function AppointmentsPage() {
   const [detail, setDetail] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const money = useMoney();
+  const covers = useServiceCovers();
   const openCheckIn = useCheckIn();
 
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
@@ -300,6 +302,7 @@ export function AppointmentsPage() {
               <Row
                 key={a.id}
                 appointment={a}
+                cover={covers.get(a.service.id) ?? null}
                 money={money.format}
                 busy={act.isPending && act.variables?.id === a.id}
                 canVerifyManually={canVerifyManually}
@@ -345,14 +348,40 @@ type Actions = {
   open: (a: Appointment) => void;
 };
 
+/**
+ * Each service's cover photo, by service (§211): a booking carries the
+ * service's name, not its pictures, and the services list — shared with the
+ * Services page, so usually already loaded — has them. The first photo is
+ * the cover, as everywhere (§132).
+ */
+function useServiceCovers() {
+  const services = useQuery({ queryKey: ['services'], queryFn: listServices, staleTime: 5 * 60_000 });
+  return useMemo(
+    () => new Map((services.data ?? []).map((s) => [s.id, s.images[0]?.url ?? null] as const)),
+    [services.data],
+  );
+}
+
+/** The service's photo, with the customer's initials pinned to its corner. */
+function OrderCover({ cover, email, size }: { cover: string | null; email: string; size: number }) {
+  return (
+    <span className={`ap-cover${cover ? '' : ' is-empty'}`} style={{ width: size, height: size }}>
+      {cover ? <img src={cover} alt="" loading="lazy" /> : <Icon name="tag" size={Math.round(size * 0.38)} />}
+      <Avatar label={email} size={Math.round(size * 0.44)} className="ap-cover-who" />
+    </span>
+  );
+}
+
 function Row({
   appointment: a,
+  cover,
   money,
   busy,
   canVerifyManually,
   actions,
 }: {
   appointment: Appointment;
+  cover: string | null;
   money: (minor: number | null | undefined, code?: string | null) => string;
   busy: boolean;
   canVerifyManually: boolean;
@@ -377,7 +406,7 @@ function Row({
       </div>
 
       <div className="ap-who">
-        <Avatar label={a.customer.email} size={40} />
+        <OrderCover cover={cover} email={a.customer.email} size={54} />
         <div>
           <strong>{a.customer.email}</strong>
           {/* The deposit is the platform's evidence the customer is serious. */}
@@ -503,6 +532,7 @@ function AppointmentDetail({
   actions: Actions;
 }) {
   const money = useMoney();
+  const covers = useServiceCovers();
   const detail = useQuery({ queryKey: ['appointment', id], queryFn: () => getAppointment(id) });
   const d = detail.data;
   const [copied, setCopied] = useState(false);
@@ -563,7 +593,7 @@ function AppointmentDetail({
         ) : (
           <>
             <div className="ap-drawer-who">
-              <Avatar label={d.customer.email} size={58} />
+              <OrderCover cover={covers.get(d.service.id) ?? null} email={d.customer.email} size={72} />
               <div>
                 <h2>{d.customer.email}</h2>
                 <span className={`pill ${STATUS[d.status].cls}`}>{STATUS[d.status].label}</span>

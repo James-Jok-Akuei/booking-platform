@@ -1,4 +1,5 @@
 import type { IconName } from '../ui/Icon';
+import type { SlideEffect } from './Effects';
 import { lookFor, type Tone } from '../lib/notificationLook';
 import { ago } from '../lib/time';
 import { guideTopics } from './guide';
@@ -28,6 +29,8 @@ export type Slide = {
   /** A number worth putting big in the corner. */
   stat?: { value: string; label: string };
   cta?: { label: string; to?: string; href?: string; scrollTo?: string };
+  /** The card's own moving effect (§212), chosen for what it is about. */
+  effect?: SlideEffect;
 };
 
 /** A link to the customer app, when there is one to give (VITE_CUSTOMER_APP_URL). */
@@ -45,6 +48,7 @@ export function buildSlides(d: AdData): Slide[] {
   if (d.role === 'OWNER' && d.payoutStatus && d.payoutStatus !== 'VERIFIED' && d.payoutStatus !== 'SUPERSEDED') {
     slides.push({
       key: 'payout',
+      effect: 'coins',
       look: 'amber',
       icon: 'wallet',
       eyebrow: 'Get paid',
@@ -65,6 +69,7 @@ export function buildSlides(d: AdData): Slide[] {
   if (d.best) {
     slides.push({
       key: 'best',
+      effect: 'confetti',
       look: 'coral',
       icon: 'trendUp',
       eyebrow: 'Your best seller',
@@ -83,6 +88,7 @@ export function buildSlides(d: AdData): Slide[] {
     const inKind = d.trendingSame[0] === trend && d.subcategoryName;
     slides.push({
       key: 'trending',
+      effect: 'streaks',
       look: 'violet',
       icon: 'zap',
       eyebrow: inKind ? `Trending in ${d.subcategoryName}` : 'Trending on the app',
@@ -97,6 +103,7 @@ export function buildSlides(d: AdData): Slide[] {
   if (d.missing.length > 0) {
     slides.push({
       key: 'health',
+      effect: 'constellation',
       look: 'night',
       icon: 'sparkles',
       eyebrow: 'Make your shop stand out',
@@ -110,6 +117,7 @@ export function buildSlides(d: AdData): Slide[] {
   if (d.unanswered > 0) {
     slides.push({
       key: 'reviews',
+      effect: 'stars',
       look: 'gold',
       icon: 'star',
       eyebrow: 'Customers are waiting',
@@ -123,6 +131,7 @@ export function buildSlides(d: AdData): Slide[] {
   if (d.role === 'OWNER' || d.role === 'MANAGER') {
     slides.push({
       key: 'branches',
+      effect: 'waves',
       look: 'green',
       icon: 'store',
       eyebrow: 'Grow · Branches',
@@ -138,6 +147,7 @@ export function buildSlides(d: AdData): Slide[] {
 
   slides.push({
     key: 'buyer',
+    effect: 'bubbles',
     look: 'blue',
     icon: 'phone',
     eyebrow: 'From us · You can book too',
@@ -152,6 +162,7 @@ export function buildSlides(d: AdData): Slide[] {
 
   slides.push({
     key: 'rank',
+    effect: 'rays',
     look: 'green',
     icon: 'chart',
     eyebrow: 'How customers find you',
@@ -163,6 +174,7 @@ export function buildSlides(d: AdData): Slide[] {
   if (d.hasServices && !d.saleRunning) {
     slides.push({
       key: 'sale',
+      effect: 'glitter',
       look: 'coral',
       icon: 'percent',
       eyebrow: 'Idea',
@@ -176,6 +188,7 @@ export function buildSlides(d: AdData): Slide[] {
   for (const topic of guideTopics(d.feePercent).filter((t) => t.key === 'cancel' || t.key === 'photos')) {
     slides.push({
       key: `learn-${topic.key}`,
+      effect: topic.key === 'cancel' ? 'aurora' : 'bokeh',
       look: topic.key === 'cancel' ? 'night' : 'blue',
       icon: topic.icon,
       eyebrow: `How it works · ${topic.title}`,
@@ -187,6 +200,7 @@ export function buildSlides(d: AdData): Slide[] {
 
   slides.push({
     key: 'tip-search',
+    effect: 'meteors',
     look: 'night',
     icon: 'search',
     eyebrow: 'Tip',
@@ -247,6 +261,7 @@ function justInSlide(j: JustIn): Slide {
     const t = j.thread;
     return {
       key: 'just-in',
+      effect: 'ripples',
       look: 'coral',
       icon: 'message',
       eyebrow: `Just in · ${t.lastMessageAt ? ago(t.lastMessageAt) : 'now'}`,
@@ -259,6 +274,7 @@ function justInSlide(j: JustIn): Slide {
   const look = lookFor(n.type);
   return {
     key: 'just-in',
+    effect: 'ripples',
     look: LOOK_BY_TONE[look.tone],
     icon: look.icon,
     eyebrow: `Just in · ${ago(n.createdAt)}`,

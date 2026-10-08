@@ -216,16 +216,41 @@
 .adc-glass svg { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25)); }
 @keyframes adc-float { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-10px) rotate(-1deg); } }
 
-/* Waves rolling along the foot. */
-.adc-waves { position: absolute; left: 0; right: 0; bottom: 0; z-index: -2; height: 28%; overflow: hidden; pointer-events: none; }
-.adc-waves svg { position: absolute; left: 0; bottom: 0; width: 200%; height: 100%; animation: adc-wave linear infinite; mix-blend-mode: screen; }
-/* Tinted by the card's own light, so they glow rather than fog. */
-.adc-waves .w0 { fill: var(--b2); opacity: 0.11; animation-duration: 16s; }
-.adc-waves .w1 { fill: var(--b3); opacity: 0.14; animation-duration: 11s; animation-direction: reverse; }
-.adc-waves .w2 { fill: color-mix(in srgb, var(--b1) 70%, #fff); opacity: 0.18; animation-duration: 7.5s; }
+/* ---- each card's own effect (§212) ----
+   The canvas ones (confetti, coins, bubbles, stars, glitter, bokeh, shooting
+   stars, a network, streaks) share one layer; four are drawn here. The art's
+   centre (--ax from the right, --ay from the top) is where pings and rays
+   start, so they come from the glass tile. */
+
+.adc-slide { --ax: 89px; --ay: 111px; }
+.fx-canvas { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; animation: fade-in 700ms ease both; }
+
+/* Waves rolling along the foot, tinted by the card's own lights. */
+.fx-waves { position: absolute; left: 0; right: 0; bottom: 0; z-index: -2; height: 30%; overflow: hidden; pointer-events: none; }
+.fx-waves svg { position: absolute; left: 0; bottom: 0; width: 200%; height: 100%; animation: adc-wave linear infinite; mix-blend-mode: screen; }
+.fx-waves .w0 { fill: var(--b2); opacity: 0.14; animation-duration: 16s; }
+.fx-waves .w1 { fill: var(--b3); opacity: 0.18; animation-duration: 11s; animation-direction: reverse; }
+.fx-waves .w2 { fill: color-mix(in srgb, var(--b1) 70%, #fff); opacity: 0.22; animation-duration: 7.5s; }
 @keyframes adc-wave { to { transform: translateX(-50%); } }
 
-.adc-sparkles { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; animation: fade-in 700ms ease both; }
+/* A ping: rounded rings pulsing out of the glass tile — something arrived. */
+.fx-ripples { position: absolute; z-index: -3; top: var(--ay); right: var(--ax); width: 0; height: 0; pointer-events: none; }
+.fx-ripples i { position: absolute; left: -50px; top: -50px; width: 100px; height: 100px; border-radius: 30px; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 18px rgba(255, 255, 255, 0.35), inset 0 0 14px rgba(255, 255, 255, 0.18); opacity: 0; animation: fx-ping 3.3s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; }
+.fx-ripples i:nth-child(2) { animation-delay: 1.1s; }
+.fx-ripples i:nth-child(3) { animation-delay: 2.2s; }
+@keyframes fx-ping { 0% { opacity: 0.85; transform: scale(1) rotate(-6deg); border-radius: 30px; } 100% { opacity: 0; transform: scale(2.6) rotate(-6deg); border-radius: 50%; } }
+
+/* Sun rays turning slowly behind the art. */
+.fx-rays { position: absolute; z-index: -5; top: calc(var(--ay) - 300px); right: calc(var(--ax) - 300px); width: 600px; height: 600px; pointer-events: none; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.24) 0deg 3.5deg, transparent 3.5deg 9deg, rgba(255, 246, 200, 0.12) 9deg 11deg, transparent 11deg 15deg); -webkit-mask-image: radial-gradient(circle, #000 6%, rgba(0, 0, 0, 0.6) 30%, transparent 62%); mask-image: radial-gradient(circle, #000 6%, rgba(0, 0, 0, 0.6) 30%, transparent 62%); animation: adc-turn 46s linear infinite; }
+
+/* Aurora: ribbons of the card's lights rippling across the sky. */
+.fx-aurora { position: absolute; z-index: -5; inset: 0; overflow: hidden; pointer-events: none; }
+.fx-aurora i { position: absolute; left: -30%; width: 160%; height: 34%; border-radius: 50%; filter: blur(16px); mix-blend-mode: screen; opacity: 0.75; }
+.fx-aurora i:nth-child(1) { top: -2%; background: linear-gradient(90deg, transparent 5%, color-mix(in srgb, var(--b3) 80%, transparent) 30%, color-mix(in srgb, var(--b1) 70%, transparent) 55%, transparent 85%); animation: fx-ribbon-a 11s ease-in-out infinite alternate; }
+.fx-aurora i:nth-child(2) { top: 16%; height: 26%; background: linear-gradient(90deg, transparent 10%, color-mix(in srgb, var(--b2) 75%, transparent) 40%, color-mix(in srgb, var(--b3) 60%, transparent) 70%, transparent 95%); animation: fx-ribbon-b 15s ease-in-out infinite alternate; }
+.fx-aurora i:nth-child(3) { top: 30%; height: 18%; opacity: 0.5; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55) 50%, transparent); animation: fx-ribbon-a 19s ease-in-out infinite alternate-reverse; }
+@keyframes fx-ribbon-a { 0% { transform: translateX(-8%) skewY(-7deg) scaleY(0.9); } 100% { transform: translateX(10%) skewY(5deg) scaleY(1.25); } }
+@keyframes fx-ribbon-b { 0% { transform: translateX(9%) skewY(6deg) scaleY(1.2); } 100% { transform: translateX(-11%) skewY(-6deg) scaleY(0.85); } }
 
 /* A sheen that sweeps across now and then. */
 .adc-shine { position: absolute; z-index: -1; top: -50%; bottom: -50%; left: -50%; width: 42%; pointer-events: none; opacity: 0; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.3) 45%, rgba(255, 255, 255, 0.06) 56%, transparent); transform: skewX(-18deg); }
@@ -331,19 +356,16 @@
 .adc-slide.is-active .adc-stat { opacity: 1; transform: none; }
 
 /* Only the card on screen moves. */
-.adc-slide:not(.is-active):not(.is-leaving) :is(.adc-bg i, .adc-blob, .adc-orbit, .adc-glass, .adc-waves svg) { animation-play-state: paused; }
+.adc-slide:not(.is-active):not(.is-leaving) :is(.adc-bg i, .adc-blob, .adc-orbit, .adc-glass, .fx-waves svg, .fx-ripples i, .fx-rays, .fx-aurora i) { animation-play-state: paused; }
 .adc-slide:not(.is-active) .adc-cta::after { animation-play-state: paused; }
 
-/* ---- story bars: time left on this card; any one jumps there ---- */
+/* ---- the dots under the card: time left on this one; any one jumps there ---- */
 
-.adc-progress { position: absolute; z-index: 5; top: 9px; left: 14px; right: 14px; display: flex; gap: 5px; }
-.adc-progress button,
-.adc-progress button:hover:not(:disabled),
-.adc-progress button:active:not(:disabled) { flex: 1; min-width: 0; min-height: 0; height: 14px; padding: 0; border: none; border-radius: 0; background: none; box-shadow: none; transform: none; }
-.adc-progress i { position: relative; display: block; flex: 1; width: 100%; height: 3px; border-radius: 3px; overflow: hidden; background: rgba(255, 255, 255, 0.32); transition: height 180ms var(--ease), background 180ms var(--ease); }
-.adc-progress button:hover i { height: 5px; background: rgba(255, 255, 255, 0.5); }
-.adc-progress .is-done i { background: rgba(255, 255, 255, 0.85); }
-.adc-progress b { position: absolute; inset: 0; border-radius: inherit; background: #fff; box-shadow: 0 0 10px rgba(255, 255, 255, 0.9); transform-origin: left; animation: dot-fill linear both; }
+.adc-dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+.adc-dot { position: relative; width: 7px; height: 7px; min-height: 0; padding: 0; border: none; border-radius: 99px; background: var(--line-strong); overflow: hidden; transition: width 300ms var(--ease), background 200ms var(--ease); }
+.adc-dot:hover:not(:disabled) { background: var(--faint); border: none; }
+.adc-dot.is-on, .adc-dot.is-on:hover:not(:disabled) { width: 28px; background: var(--sunken-2); }
+.adc-dot i { position: absolute; inset: 0; border-radius: 99px; background: var(--accent-grad); transform-origin: left; animation: dot-fill linear both; }
 @keyframes dot-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 /* ---- smaller, at the top of a phone's home page ---- */
@@ -356,7 +378,9 @@
 .adc.is-compact .adc-art { transform: scale(0.8); transform-origin: 100% 0; }
 .adc.is-compact .adc-slide.has-art.has-stat .adc-stat { top: 46px; right: 28px; width: 84px; height: 84px; border-radius: 26px; }
 .adc.is-compact .adc-stat strong { font-size: 23px; }
-.adc.is-compact .adc-waves { height: 34%; }
+.adc.is-compact .fx-waves { height: 34%; }
+.adc.is-compact .adc-slide { --ax: 71px; --ay: 89px; }
+.adc.is-compact .fx-ripples i { left: -40px; top: -40px; width: 80px; height: 80px; border-radius: 24px; }
 
 /* With "reduce motion": the same card, standing still. */
 .adc.is-still .adc-frame,
@@ -364,7 +388,10 @@
 .adc.is-still .adc-blob,
 .adc.is-still .adc-orbit,
 .adc.is-still .adc-glass,
-.adc.is-still .adc-waves svg,
+.adc.is-still .fx-waves svg,
+.adc.is-still .fx-ripples i,
+.adc.is-still .fx-rays,
+.adc.is-still .fx-aurora i,
 .adc.is-still .adc-shine,
 .adc.is-still .adc-cta::after,
 .adc.is-still .adc-stat { animation: none !important; }

@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon, type IconName } from '../ui/Icon';
-import { Sparkles } from './Sparkles';
+import { Effect } from './Effects';
 import type { Slide } from './slides';
 
 /** How long each advert is on screen — the customer app's pace (§188). */
@@ -20,13 +20,14 @@ const finePointer = () =>
  *
  * Each card is built in layers (§210): a deep gradient with slow aurora light
  * drifting through it and a fine grain, the photo easing closer or — without
- * one — a floating glass tile with its own orbit, waves rolling along the
- * foot, glitter, and a sheen sweeping across. Cards hand over cinematically
- * (the new one sharpens out of a blur as the old one recedes), the frame's
- * edge shimmers, and on a computer the card tilts towards the pointer with a
- * light that follows it. Story bars along the top show the time left and jump
- * to any card; on a phone, swipe. With "reduce motion" on, none of it moves
- * and nothing advances by itself.
+ * one — a floating glass tile with its own orbit, and a sheen sweeping
+ * across — and each card its own moving effect, chosen for what it is about
+ * (§212): confetti, coins, a ping, rising stars, bubbles, shooting stars and
+ * more. Cards hand over cinematically (the new one sharpens out of a blur as
+ * the old one recedes), the frame's edge shimmers, and on a computer the card
+ * tilts towards the pointer with a light that follows it. The dots below show
+ * the time left and jump to any card; on a phone, swipe. With "reduce motion"
+ * on, none of it moves and nothing advances by itself.
  */
 export function AdCarousel({
   slides,
@@ -188,38 +189,34 @@ export function AdCarousel({
           </div>
           <i className="adc-glare" aria-hidden="true" />
 
-          {count > 1 && (
-            <div className="adc-progress" role="tablist" aria-label="Choose an advert">
-              {slides.map((slide, i) => (
-                <button
-                  key={slide.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === shown}
-                  aria-label={`${i + 1} of ${count}: ${slide.eyebrow}`}
-                  className={i < shown ? 'is-done' : i === shown ? 'is-on' : ''}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    go(i, i > shown ? 1 : -1);
-                  }}
-                >
-                  <i>
-                    {i === shown && (
-                      <b
-                        key={`${shown}-${held}`}
-                        style={{
-                          animationDuration: `${SLIDE_MS}ms`,
-                          animationPlayState: held || still || !onScreen ? 'paused' : 'running',
-                        }}
-                      />
-                    )}
-                  </i>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </div>
+
+      {count > 1 && (
+        <div className="adc-dots" role="tablist" aria-label="Choose an advert">
+          {slides.map((slide, i) => (
+            <button
+              key={slide.key}
+              type="button"
+              role="tab"
+              aria-selected={i === shown}
+              aria-label={`${i + 1} of ${count}: ${slide.eyebrow}`}
+              className={`adc-dot${i === shown ? ' is-on' : ''}`}
+              onClick={() => go(i, i > shown ? 1 : -1)}
+            >
+              {i === shown && (
+                <i
+                  key={`${shown}-${held}`}
+                  style={{
+                    animationDuration: `${SLIDE_MS}ms`,
+                    animationPlayState: held || still || !onScreen ? 'paused' : 'running',
+                  }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -272,8 +269,7 @@ function Card({
         <Art icon={slide.icon} compact={compact} />
       )}
       <div className="adc-shade" />
-      <Waves />
-      {active && lively && <Sparkles density={compact ? 0.8 : 1} />}
+      <Effect kind={slide.effect ?? 'bokeh'} running={active && lively} />
       <i className="adc-shine" aria-hidden="true" />
 
       {slide.stat && (
@@ -324,24 +320,6 @@ function Art({ icon, compact }: { icon: IconName; compact: boolean }) {
       <span className="adc-glass">
         <Icon name={icon} size={compact ? 28 : 36} stroke={1.8} />
       </span>
-    </div>
-  );
-}
-
-/** Three waves rolling along the foot, each its own height and pace. Each path is two whole waves wide, so sliding it by half loops seamlessly. */
-const WAVES = [
-  'M0,70 Q180,38 360,70 T720,70 T1080,70 T1440,70 V160 H0 Z',
-  'M0,82 Q180,50 360,82 T720,82 T1080,82 T1440,82 V160 H0 Z',
-  'M0,96 Q180,72 360,96 T720,96 T1080,96 T1440,96 V160 H0 Z',
-];
-function Waves() {
-  return (
-    <div className="adc-waves" aria-hidden="true">
-      {WAVES.map((d, i) => (
-        <svg key={i} className={`w${i}`} viewBox="0 0 1440 160" preserveAspectRatio="none">
-          <path d={d} />
-        </svg>
-      ))}
     </div>
   );
 }

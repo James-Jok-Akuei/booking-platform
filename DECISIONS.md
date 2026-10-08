@@ -15012,12 +15012,14 @@ front:
    with a glowing dot going round, and the icon drawn huge and faint behind.
    A card's big number (bookings, % complete) takes the glass tile's place,
    and **counts up** as the card arrives.
-3. **Waves** — three layered waves along the foot, each its own height and
-   pace, tinted by the card's own lights (they glow rather than fog).
-4. **Glitter** — a canvas of twinkling four-pointed stars and specks rising
+3. ~~**Waves** — three layered waves along the foot, each its own height and
+   pace, tinted by the card's own lights (they glow rather than fog).~~
+4. ~~**Glitter** — a canvas of twinkling four-pointed stars and specks rising
    slowly, drawn with additive light, and every couple of seconds a **glint**
    that flares and fades by the art. Quieter over the words. Only on the card
-   being shown, only while it can be seen, asleep in a hidden tab.
+   being shown, only while it can be seen, asleep in a hidden tab.~~ — 3 and 4
+   superseded by §212 (each card has its own effect; waves and glitter are
+   two of them).
 5. **Sheen** — a band of light sweeps across now and then; the white button
    carries its own small glint, in the card's colour.
 6. **The words** — label as a glass pill; the **title rises word by word out
@@ -15027,7 +15029,54 @@ Around it: the frame's **edge has light running round it** (a rotating conic
 gradient); on a computer the card **tilts towards the pointer** with a
 **glare that follows it**. Cards **hand over cinematically** — the next
 sharpens out of a blur from the side it comes from while the last recedes —
-instead of sliding as a strip. **Story bars** inside the top replace the
-dots: time left on this card, the ones seen filled, any one a jump. On a
+instead of sliding as a strip. ~~**Story bars** inside the top replace the
+dots: time left on this card, the ones seen filled, any one a jump.~~ —
+superseded by §212 (the dots are back under the card). On a
 phone, **swipe**; with a keyboard, the arrow keys. Everything stops with
 "reduce motion" on, and nothing advances by itself then (as before).
+
+## 211. Each booking shows its service's photo (2026-10-08)
+
+The user asked for each order on Appointments to show its cover image, so the
+seller can tell bookings apart.
+
+Each row now leads with the **service's cover photo** (54px, rounded), with
+the customer's initials pinned to its corner where the avatar used to be;
+the booking panel shows the same at 72px. A booking carries the service's
+id but not its pictures, so the photo comes from the services list (shared
+with the Services page under `['services']`, usually already loaded),
+first photo = cover (§132). A service without photos shows a soft coral tile
+with a tag. Nothing changed on the server.
+
+## 212. Each "For you" card has its own effect, and the dots are back (2026-10-08)
+
+The user: not every card should glitter — glitter was only an example — be
+creative with other beautiful effects; and put the steps back below the card
+as before.
+
+`src/ads/Effects.tsx` holds thirteen effects; each slide names one in
+`slides.ts` (`effect`), chosen for what it says:
+
+| Card | Effect |
+|---|---|
+| Just in | **ping** — rounded rings pulse out of the glass tile |
+| Get paid | **coins** — gold coins tumbling down, flashing as they turn |
+| Your best seller | **confetti** — paper confetti fluttering and flipping |
+| Trending | **streaks** — light shooting upward |
+| Make your shop stand out | **constellation** — points of light joined into a network |
+| Reviews waiting | **rising stars** — gold and white five-pointed stars |
+| Grow · Branches | **waves** along the foot |
+| You can book too | **bubbles** with a glint on each |
+| How customers find you | **sun rays** turning behind the art |
+| Run a sale | **glitter** with glints |
+| How it works · Cancellations | **aurora** ribbons rippling across |
+| How it works · Photos | **bokeh** — soft out-of-focus lights |
+| Tip | **shooting stars** over a faint star field |
+
+The canvas ones run only on the card being shown, while it can be seen, and
+sleep in a hidden tab; the CSS ones pause off-screen. All of them are quieter
+over the words. The layers of §210 stay (aurora colour, glass art, sheen,
+shimmering edge, tilt, blur hand-over, swipe).
+
+**The dots are back under the card**, as in §204: the one shown is wider and
+fills with coral over its eight seconds; any dot jumps there.
