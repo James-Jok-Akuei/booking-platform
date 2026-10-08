@@ -99,16 +99,23 @@ function Frame() {
   useEffect(() => {
     const box = main.current;
     const bar = box?.querySelector<HTMLElement>('.topbar');
-    const content = box?.querySelector<HTMLElement>('.content');
-    if (!box || !bar || !content) return;
+    if (!box || !bar) return;
     const phone = window.matchMedia('(max-width: 859px)');
-    let watched: HTMLElement | null = null;
-    const measure = () => {
-      box.style.setProperty('--tb-h', `${bar.offsetHeight}px`);
-      const top = content.querySelector<HTMLElement>('.page-top');
-      if (top && top !== watched) {
-        watched = top;
-        watch.observe(top);
+    // Found afresh each time: the page area is replaced on every page change,
+    // and a page draws its header only once its data has come (§217).
+    const watched = new Set<Element>();
+    const set = (el: HTMLElement, name: string, value: string) => {
+      if (el.style.getPropertyValue(name) !== value) el.style.setProperty(name, value);
+    };
+    const measureNow = () => {
+      set(box, '--tb-h', `${bar.offsetHeight}px`);
+      const content = box.querySelector<HTMLElement>('.content');
+      const top = content?.querySelector<HTMLElement>('.page-top');
+      for (const el of [content, top]) {
+        if (el && !watched.has(el)) {
+          watched.add(el);
+          watch.observe(el);
+        }
       }
       if (!top) return;
       const pin = phone.matches
@@ -122,15 +129,28 @@ function Frame() {
         : phone.matches
           ? top.offsetHeight
           : 0;
-      top.style.setProperty('--pt-fold', `${Math.round(fold)}px`);
+      set(top, '--pt-fold', `${Math.round(fold)}px`);
+    };
+    // At most once a frame, however many changes arrive together.
+    let frame = 0;
+    const measure = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        measureNow();
+      });
     };
     const watch = new ResizeObserver(measure);
     watch.observe(bar);
-    watch.observe(content);
+    // A new page area, or a header that appears inside it.
+    const swap = new MutationObserver(measure);
+    swap.observe(box, { childList: true, subtree: true });
     phone.addEventListener('change', measure);
-    measure();
+    measureNow();
     return () => {
+      cancelAnimationFrame(frame);
       watch.disconnect();
+      swap.disconnect();
       phone.removeEventListener('change', measure);
     };
   }, []);

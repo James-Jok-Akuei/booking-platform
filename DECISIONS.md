@@ -15276,3 +15276,42 @@ Checked at the end of every page at 1440 and 1728 wide: content, sidebar and
   number at the operator. Real payments carry MTN's; the demo data's are made
   up by the seed script from the booking id, which is why the two look alike.
   The panel now says what it is and when to quote it.
+
+## 217. Headers measured on every page; the shop's logo top right (2026-10-08)
+
+### 217.1 The fix behind "too little room for reviews"
+
+The user: on Reviews, the pinned area left only a sliver for the reviews,
+and the summary should not be pinned.
+
+The cause was a bug in §214: the frame measured how much of a header scrolls
+away (`--pt-fold`) only for the page it first loaded. The page area is
+replaced on every page change, so a page opened from the menu kept a fold of
+zero and pinned its **whole** header — on Reviews the summary, the search
+and the tabs together, 653px of a 900px window. (Checks that loaded each
+page fresh did not see it.)
+
+The frame now finds the page area and its header afresh: a MutationObserver
+on the frame notices a new page or a header that appears once data arrives,
+a ResizeObserver a header that changes height, and both are batched to one
+measurement a frame and only write when the value changes. Opened from the
+menu, Reviews now pins only its search and tabs (bottom at 191px), with the
+summary scrolling away; scrolling down and up still never moves by itself.
+
+### 217.2 Your shop, top right
+
+The user asked for the business's logo at the top, designed so it is plain
+this is their own business, and the same logo instead of the initials at the
+foot of the sidebar.
+
+- **`ui/ShopLogo`**: the logo filling a white tile (as at the top of the
+  sidebar), the shop's initials on the brand colour when it has none, and a
+  green dot when customers can book (grey when not).
+- **Top bar**: the account button is now the shop — its logo, and where
+  there is room (from 1600px, or 1920px beside "For you") its name and "Your
+  shop · live". It opens a menu headed by a card with the logo, the name and
+  "Live · taking bookings" (to Your shopfront), then who is signed in and
+  their role, then the account's pages and Sign out.
+- **Sidebar foot**: the logo replaces the person's initials beside their
+  email and role.
+- Phones show the logo alone in the top bar.

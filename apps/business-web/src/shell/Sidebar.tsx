@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { SECTIONS } from '../nav';
-import { Avatar, initialsOf } from '../ui/Avatar';
+import { initialsOf } from '../ui/Avatar';
+import { ShopLogo } from '../ui/ShopLogo';
 import { Icon } from '../ui/Icon';
 import { roleLabel, type ShellData } from './useShellData';
 
@@ -146,7 +147,7 @@ export function Sidebar({
         )}
 
         <div className="sb-user">
-          <Avatar label={data.email || name} size={36} />
+          <ShopLogo logoUrl={data.logoUrl} name={name} size={36} className="sb-user-logo" />
           <span className="sb-user-text">
             <strong title={data.email}>{data.email}</strong>
             <span>{roleLabel(data.role) || 'Signed in'}</span>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Notifications } from '../components/Notifications';
 import { navItemFor } from '../nav';
-import { Avatar } from '../ui/Avatar';
+import { ShopLogo } from '../ui/ShopLogo';
 import { Icon } from '../ui/Icon';
 import { roleLabel, type ShellData } from './useShellData';
 
@@ -108,6 +108,9 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
     };
   }, [open]);
 
+  const name = data.business?.name ?? 'Your business';
+  const live = data.business?.status === 'APPROVED' && !data.paused;
+
   const links = [
     { to: '/profile', label: 'Your shopfront', icon: 'store' as const },
     { to: '/people', label: 'People', icon: 'users' as const },
@@ -119,24 +122,37 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
     <div className="tb-account" ref={ref}>
       <button
         type="button"
-        className={`tb-avatar ${open ? 'is-open' : ''}`}
+        className={`tb-avatar tb-shop ${open ? 'is-open' : ''}`}
         onClick={() => setOpen((was) => !was)}
-        aria-label="Your account"
+        aria-label={`${name} — your shop and account`}
         aria-expanded={open}
+        title={name}
       >
-        <Avatar label={data.email || 'You'} size={36} />
+        <ShopLogo logoUrl={data.logoUrl} name={name} size={38} state={live ? 'live' : 'off'} />
+        <span className="tb-shop-text">
+          <strong>{name}</strong>
+          <span>
+            {live ? 'Your shop · live' : data.paused ? 'Your shop · paused' : 'Your shop · not live'}
+          </span>
+        </span>
         <Icon name="chevronDown" size={15} stroke={2.2} />
       </button>
       {open && (
-        <div className="menu" role="menu">
-          <div className="menu-head">
-            <Avatar label={data.email || 'You'} size={42} />
-            <div>
-              <strong>{data.email}</strong>
-              <span>
-                {[roleLabel(data.role), data.business?.name].filter(Boolean).join(' · ')}
+        <div className="menu tb-shop-menu" role="menu">
+          <Link to="/profile" className="tb-shop-card" onClick={() => setOpen(false)}>
+            <ShopLogo logoUrl={data.logoUrl} name={name} size={54} state={live ? 'live' : 'off'} />
+            <span className="tb-shop-card-text">
+              <strong>{name}</strong>
+              <span className={`tb-shop-state ${live ? 'is-live' : 'is-off'}`}>
+                <i /> {live ? 'Live · taking bookings' : data.paused ? 'Paused' : 'Not live yet'}
               </span>
-            </div>
+            </span>
+            <Icon name="chevronRight" size={16} className="tb-shop-go" />
+          </Link>
+          <div className="tb-shop-who">
+            <span>Signed in as</span>
+            <strong title={data.email}>{data.email}</strong>
+            <em>{roleLabel(data.role)}</em>
           </div>
           {links.map((link) => (
             <Link key={link.to} to={link.to} className="menu-item" role="menuitem" onClick={() => setOpen(false)}>

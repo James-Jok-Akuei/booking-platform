@@ -401,6 +401,46 @@ body {
 }
 .tb-avatar:hover:not(:disabled), .tb-avatar.is-open { background: var(--panel); border-color: rgba(21, 23, 28, 0.1); box-shadow: var(--shadow-sm); color: var(--ink); }
 
+/* Your shop, top right on every page (§217): its logo and name, live or not. */
+.tb-shop { height: 50px; padding: 5px 12px 5px 5px; gap: 10px; max-width: 250px; }
+.tb-shop-text { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.2; text-align: left; }
+.tb-shop-text strong { max-width: 150px; font-size: 13.5px; font-weight: 750; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-shop-text span { font-size: 11.5px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.tb-shop-menu { width: 300px; }
+.tb-shop-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: radial-gradient(180px 100px at 100% 0%, rgba(240, 83, 45, 0.14), transparent 70%), var(--sunken);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background 160ms var(--ease);
+}
+.tb-shop-card:hover { background: radial-gradient(180px 100px at 100% 0%, rgba(240, 83, 45, 0.22), transparent 70%), var(--sunken-2); }
+.tb-shop-card-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tb-shop-card-text strong { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-shop-state { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; color: var(--muted); }
+.tb-shop-state i { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+.tb-shop-state.is-live { color: var(--ok-deep); }
+.tb-shop-state.is-live i { background: var(--ok); box-shadow: 0 0 0 3px rgba(14, 159, 84, 0.18); }
+.tb-shop-go { color: var(--faint); flex: none; }
+.tb-shop-who { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; align-items: baseline; margin: 6px 4px 6px; padding: 8px 8px 10px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.tb-shop-who span { grid-column: 1 / -1; font-size: 11px; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+.tb-shop-who strong { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-shop-who em { font-style: normal; font-size: 12px; font-weight: 650; color: var(--muted); }
+/* The name only where the bar has room for it beside the page's title and
+   the search; otherwise the logo alone. */
+@media (max-width: 1919px) {
+  .app.has-ads:not(.ads-folded) .tb-shop-text { display: none; }
+  .app.has-ads:not(.ads-folded) .tb-shop { padding-right: 10px; }
+}
+@media (max-width: 1599px) {
+  .tb-shop-text { display: none; }
+  .tb-shop { padding-right: 10px; }
+}
+
 /* ---------- dropdown menus ---------- */
 
 .menu {
@@ -677,6 +717,7 @@ body {
   .tb-icon { width: 42px; height: 42px; }
   .tb-checkin { display: none; }
   .tb-avatar { padding: 0; border: none; background: none; box-shadow: none; height: 42px; }
+  .tb-shop .shop-logo { width: 40px !important; height: 40px !important; }
   .tb-avatar > svg { display: none; }
   .tb-avatar:hover:not(:disabled), .tb-avatar.is-open { background: none; box-shadow: none; }
 
