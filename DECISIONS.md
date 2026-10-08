@@ -14590,3 +14590,27 @@ seven-day edit window and its explanation (§92) are unchanged.
   is one.
 - The paused notice (§48.3) sits above everything when payouts are paused.
 
+## 201. How it is going, as charts (2026-10-08)
+
+`src/pages/AnalyticsPage.tsx`; every figure is still the server's (§96), and
+partial totals still say so.
+
+- **Period** as three pills (7 / 30 / 90 days) and **branches** as pills with
+  "All branches" first.
+- **Bookings**: the total large, with a green/red chip comparing it to the
+  same length of time just before (a second call to the same endpoint), and
+  **a bar for each day** — customers who came or were expected, counted from
+  the bookings list, today in night. A caption says what the bars count,
+  since the total above includes cancelled ones.
+- **How bookings ended**: a ring split into turned up, did not turn up,
+  cancelled, and still to come or unpaid, with the turned-up rate in the
+  middle and each rate and count listed. A rate the server leaves empty
+  (nothing to divide by) shows "—".
+- **Money**: deposits taken with a bar splitting your share from platform
+  fees, and "Owed by customers — paid to you directly, not through us" in a
+  night card.
+- Rating (half stars), busiest day and busiest hour as three tiles.
+
+`src/lib/bookings.ts` now holds the paged bookings fetch that Overview and
+this page share.
+

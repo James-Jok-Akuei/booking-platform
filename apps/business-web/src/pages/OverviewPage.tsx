@@ -7,7 +7,6 @@ import {
   getBalance,
   getMe,
   getProfile,
-  listAppointments,
   listLocationReviews,
   listLocations,
   type Appointment,
@@ -34,6 +33,7 @@ import {
   startOfDay,
   useNow,
 } from '../lib/time';
+import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
 import './overview.css';
 
 /**
@@ -47,8 +47,7 @@ import './overview.css';
  * counted from the server's list of bookings; nothing here is decoration.
  */
 
-/** Statuses that are a customer actually coming — the ones a busy day is made of. */
-const REAL: AppointmentStatus[] = ['BOOKED', 'IN_PROGRESS', 'COMPLETED', 'NO_SHOW'];
+const REAL = REAL_STATUSES;
 
 const STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
   BOOKED: { label: 'Expected', cls: 'booked' },
@@ -61,22 +60,6 @@ const STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const WEEKDAY_NAMES = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
-
-/** Every booking between two instants, a hundred at a time (the list's page size). */
-async function bookingsBetween(from: Date, to: Date) {
-  const rows: Appointment[] = [];
-  for (let offset = 0; offset < 1000; offset += 100) {
-    const page = await listAppointments({
-      from: from.toISOString(),
-      to: to.toISOString(),
-      limit: 100,
-      offset,
-    });
-    rows.push(...page.appointments);
-    if (rows.length >= page.total || page.appointments.length < 100) break;
-  }
-  return rows;
-}
 
 const reduceMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
