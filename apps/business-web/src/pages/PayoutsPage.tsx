@@ -11,6 +11,7 @@ import {
 } from '../api/business';
 import { useMoney } from '../money';
 import { Icon, type IconName } from '../ui/Icon';
+import { NETWORK_NAME, NetworkMark, networkOf } from '../ui/NetworkMark';
 import './payouts.css';
 
 const when = (iso: string | null) =>
@@ -52,6 +53,8 @@ export function GettingPaidPage() {
   const isOwner = me.data?.businessMembership?.role === 'OWNER';
   const b = balance.data;
   const number = destination.data?.destination ?? null;
+  // Payouts go out through MTN MoMo (the one network the platform sends with, §219).
+  const network = number?.provider ?? 'MTN_MOMO';
 
   return (
     <section className="gp">
@@ -84,7 +87,8 @@ export function GettingPaidPage() {
             <span className="gp-wallet-label">
               <Icon name="wallet" size={16} /> Ready to send
             </span>
-            <span className="gp-chip" aria-hidden="true" />
+            {/* Where it goes, as a card shows its network (§219). */}
+            <NetworkMark network={network} shape="wide" size={34} className="gp-brand" />
           </div>
           <strong className="gp-wallet-amount">{b ? money.format(b.availableNowMinor) : '–'}</strong>
           <p className="gp-wallet-note">Goes out on the next payout run.</p>
@@ -98,7 +102,7 @@ export function GettingPaidPage() {
               <strong>{b ? b.payoutCount : '–'}</strong>
             </div>
             <div className="gp-wallet-to">
-              <span>To</span>
+              <span>To {NETWORK_NAME[network]}</span>
               <strong>
                 {number ? `•••• ${(number.msisdn ?? number.msisdnLast3 ?? '').slice(-3)}` : 'No number yet'}
               </strong>
@@ -245,6 +249,8 @@ function Destination({
 }) {
   const [msisdn, setMsisdn] = useState('');
   const [changing, setChanging] = useState(false);
+  // The network the typed number belongs to, as the server would read it (§58.1).
+  const typed = networkOf(msisdn);
 
   const submit = useMutation({
     mutationFn: (value: string) => submitPayoutDestination(value),
@@ -266,15 +272,13 @@ function Destination({
   return (
     <article className={`gp-dest tone-${tone}`}>
       <header>
-        <span className="gp-dest-icon">
-          <Icon name="phone" size={20} />
-        </span>
+        <NetworkMark network={destination?.provider ?? 'MTN_MOMO'} size={46} className="gp-dest-mark" />
         <div>
           <h2>Where your money goes</h2>
           <p>
-            The mobile money number payouts are sent to. Changing it <strong>pauses payouts</strong> until an
-            administrator confirms the new one — that check is what stops money going to a number nobody
-            verified.
+            Payouts are sent by <strong>MTN MoMo</strong> to this number. Changing it <strong>pauses payouts</strong>{' '}
+            until an administrator confirms the new one — that check is what stops money going to a number
+            nobody verified.
           </p>
         </div>
       </header>
@@ -282,7 +286,9 @@ function Destination({
       {destination ? (
         <div className="gp-number">
           <div>
-            <span className="gp-number-label">Mobile money</span>
+            <span className="gp-number-label">
+              <NetworkMark network={destination.provider} size={16} /> {NETWORK_NAME[destination.provider]} number
+            </span>
             <code>{destination.msisdn ?? destination.msisdnLast3}</code>
           </div>
           <span className={`pill ${destination.status.toLowerCase()}`}>{destination.status.toLowerCase()}</span>
@@ -326,6 +332,14 @@ function Destination({
               {submit.isPending ? 'Sending…' : 'Submit for checking'}
             </button>
           </div>
+          {typed && (
+            <p className={`gp-typed ${typed === 'MTN_MOMO' ? 'is-ok' : 'is-warn'}`}>
+              <NetworkMark network={typed} size={22} />
+              {typed === 'MTN_MOMO'
+                ? 'An MTN MoMo number — payouts can be sent to it.'
+                : 'An Airtel number. Payouts are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079).'}
+            </p>
+          )}
           {destination && (
             <button type="button" className="link" onClick={() => setChanging(false)}>
               Cancel

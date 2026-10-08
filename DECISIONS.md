@@ -15349,3 +15349,26 @@ softer — what is professional?
 The rule this sets: one strong colour, used only for what to press; dark
 grey rather than black; gradients and glows saved for the few places meant
 to stand out (the advert cards), not everyday buttons.
+
+## 219. The mobile money network's own mark on Getting paid (2026-10-08)
+
+The user asked for the MTN logo where the page shows where money goes —
+logos give trust and say at a glance what a part means.
+
+- `ui/NetworkMark.tsx` draws the network's mark as a vector: the MTN oval on
+  MTN yellow, and Airtel's wordmark on Airtel red — sharp at any size, no
+  file. They identify the network the money moves through, nothing more.
+- **Wallet card**: the MTN mark sits where a bank card shows its network,
+  replacing the gold chip; the foot reads "To MTN MoMo •••• 001".
+- **Where your money goes**: the mark replaces the phone icon; the text says
+  payouts are sent by MTN MoMo; the number box is labelled "MTN MoMo number"
+  with a small mark. All follow the stored number's `provider`.
+- **Typing a new number**: the form shows its network as it is typed, by the
+  same prefixes as the server's `operator-routing.ts` (§58.1). An MTN number
+  is confirmed; an **Airtel** number is warned against, because payouts are
+  sent by MTN MoMo only — it is the one disbursement provider built — so an
+  Airtel number could not receive them.
+
+Noted, not changed: the business app sends only the number when saving it,
+so the server stores every payout number as MTN MoMo (its default), Airtel
+or not. The warning covers it until an Airtel payout provider exists.
