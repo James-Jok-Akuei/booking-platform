@@ -32,17 +32,23 @@ const finePointer = () =>
 export function AdCarousel({
   slides,
   compact = false,
+  slim = false,
+  start = 0,
   onElsewhere,
 }: {
   slides: Slide[];
   compact?: boolean;
+  /** About half the height: label, title and a round button (§221). */
+  slim?: boolean;
+  /** Which advert to open on (wrapped), so different pages open on different ones. */
+  start?: number;
   /** For a button pointing at part of the column when the column is not on
    *  screen (a phone): the place that shows that part instead. */
   onElsewhere?: (id: string) => void;
 }) {
   const navigate = useNavigate();
   const count = slides.length;
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => (slides.length ? start % slides.length : 0));
   const [leaving, setLeaving] = useState<number | null>(null);
   const [dir, setDir] = useState(1);
   const [held, setHeld] = useState(false);
@@ -148,7 +154,7 @@ export function AdCarousel({
   return (
     <div
       ref={root}
-      className={`adc${compact ? ' is-compact' : ''}${still ? ' is-still' : ''}`}
+      className={`adc${compact ? ' is-compact' : ''}${slim ? ' is-slim' : ''}${still ? ' is-still' : ''}`}
       style={{ '--dir': dir } as CSSProperties}
       onMouseEnter={() => setHeld(true)}
       onMouseLeave={() => setHeld(false)}

@@ -14845,7 +14845,8 @@ there is no column to scroll to.
 
 ### 205.6 Not built
 
-- "For you" on phones appears on Overview only, not on every page.
+- ~~"For you" on phones appears on Overview only, not on every page.~~ —
+  superseded by §221 (a slim banner on every other page).
 - The guide is written in the app; an administrator cannot edit it.
 
 ## 206. "For you" shows the one thing that just came in; more than one shop (2026-10-08)
@@ -15397,3 +15398,26 @@ on large screens, notifications should be a flyout rather than a dropdown.
 
 Checked by script at 1440 and 390 wide: opens, closes on a click on the
 page, closes on Esc; the account menu likewise.
+
+## 221. The "For you" banner, slim, on every page without the column (2026-10-08)
+
+The user: on phones, show the advert on the other pages too (Appointments
+and the rest), shorter than Overview's.
+
+- **`ads/AdStrip`**: wherever the "For you" column is not shown (under
+  1280px — phones and tablets), every page but Overview opens with the banner
+  in a **slim** size: 108px against Overview's 240px. Just the label and the
+  title (two lines at most), the button as a round arrow on the right (its
+  words kept for screen readers); no art, number or text paragraph. Each
+  card's own effect (§212), colours, swipe and dots stay.
+- It sits above the page's title and scrolls away with the page; the pinned
+  tabs and filters (§214) are unaffected — checked by step-scrolling on a
+  phone: nothing moved by itself.
+- **Each page opens on its own advert** — by its place in the menu, so
+  Appointments, Services, Branches & hours, Reviews… each start somewhere
+  different instead of always on the first.
+- Overview keeps its full block (banner, "How it works" chips, "See all");
+  wide screens keep the column, with no strip.
+- The "Read more" / "See what is trending" buttons open their topic or the
+  "See all" panel from any page — that logic moved to
+  `ads/useForYouPanels`, shared with Overview's block.

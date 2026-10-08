@@ -382,6 +382,28 @@
 .adc.is-compact .adc-slide { --ax: 71px; --ay: 89px; }
 .adc.is-compact .fx-ripples i { left: -40px; top: -40px; width: 80px; height: 80px; border-radius: 24px; }
 
+/* ---- slim, at the top of every other page without the column (§221) ---- */
+
+.ad-strip { margin: 0 0 18px; }
+.ad-strip-skel { height: 130px; margin: 0 0 18px; border-radius: 22px; }
+.adc.is-slim .adc-frame { border-radius: 22px; }
+.adc.is-slim .adc-window { border-radius: 20.5px; }
+.adc.is-slim .adc-slide { min-height: 108px; justify-content: center; --ax: 38px; --ay: 54px; }
+.adc.is-slim .adc-art,
+.adc.is-slim .adc-stat,
+.adc.is-slim .adc-body p { display: none; }
+.adc.is-slim .adc-body { padding: 14px 74px 14px 16px; }
+.adc.is-slim .adc-eyebrow { padding: 3px 9px 3px 7px; font-size: 11px; }
+.adc.is-slim .adc-body h3 { margin: 7px 0 0; font-size: 16.5px; line-height: 1.22; -webkit-line-clamp: 2; }
+/* The button becomes a round arrow at the right; its words stay for screen readers. */
+.adc.is-slim .adc-cta { position: absolute; right: 16px; top: calc(50% - 22px); width: 44px; height: 44px; min-height: 0; margin: 0; padding: 0; justify-content: center; border-radius: 50%; }
+.adc.is-slim .adc-cta > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.adc.is-slim .fx-waves { height: 42%; }
+.adc.is-slim .fx-ripples i { left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%; }
+.adc.is-slim .adc-dots { margin-top: 8px; }
+.adc.is-slim .adc-dot { width: 6px; height: 6px; }
+.adc.is-slim .adc-dot.is-on { width: 22px; }
+
 /* With "reduce motion": the same card, standing still. */
 .adc.is-still .adc-frame,
 .adc.is-still .adc-bg i,

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AdRail } from '../ads/AdRail';
+import { AdStrip } from '../ads/AdStrip';
 import { useAuth } from '../auth/auth-context';
 import { CheckInProvider, useCheckIn } from '../checkin/CheckIn';
 import { CommandPalette } from '../shell/CommandPalette';
@@ -217,6 +218,9 @@ function Frame() {
         />
         <main className="content" key={location.pathname}>
           <LegalBanner />
+          {/* No room for the "For you" column: a slim banner opens every page
+              but Overview, which has its own (§221). */}
+          {!wide && location.pathname !== '/' && <AdStrip />}
           <Outlet />
         </main>
       </div>
