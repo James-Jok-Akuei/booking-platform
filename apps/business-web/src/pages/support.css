@@ -19,7 +19,7 @@
   animation: rise-in 480ms var(--ease) both;
 }
 .hp-hero-icon { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 16px; background: var(--accent-grad); box-shadow: var(--shadow-accent); }
-.hp-hero h1 { margin: 16px 0 6px; color: #fff; font-size: 32px; letter-spacing: -0.03em; }
+.hp-hero h2 { margin: 16px 0 6px; color: #fff; font-size: 32px; letter-spacing: -0.03em; }
 .hp-hero p { margin: 0; color: rgba(255, 255, 255, 0.7); font-size: 14.5px; line-height: 1.55; max-width: 48ch; }
 .hp-topics { display: flex; flex-direction: column; gap: 8px; }
 .hp-topic {
@@ -90,7 +90,7 @@
   .hp-hero { grid-template-columns: minmax(0, 1fr); padding: 22px 18px; }
 }
 @container page (max-width: 640px) {
-  .hp-hero h1 { font-size: 26px; }
+  .hp-hero h2 { font-size: 26px; }
   .hp-ticket { flex-wrap: wrap; }
   .hp-ticket-state { align-items: flex-start; text-align: left; width: 100%; padding-left: 56px; }
   .hp-ticket-go { display: none; }

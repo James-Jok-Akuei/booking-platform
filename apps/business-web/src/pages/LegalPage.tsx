@@ -48,15 +48,17 @@ export function LegalPage() {
 
   return (
     <section className="lg">
-      <header className="page-head">
-        <div>
-          <h1>Legal</h1>
-          <p className="muted">
-            What you have agreed to. Older versions are kept — what you agreed to stays as you read it, even
-            after it is replaced.
-          </p>
-        </div>
-      </header>
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>Legal</h1>
+            <p className="muted">
+              What you have agreed to. Older versions are kept — what you agreed to stays as you read it, even
+              after it is replaced.
+            </p>
+          </div>
+        </header>
+      </div>
 
       {outstanding > 0 && (
         <p className="lg-banner">

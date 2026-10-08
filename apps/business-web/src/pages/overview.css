@@ -6,7 +6,10 @@
 
 .ov-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding-top: 4px; }
 .ov-eyebrow {
-  display: inline-flex;
+  /* A block that hugs its content, not inline: folded to nothing (§209), an
+     inline box would still hold its line open. */
+  display: flex;
+  width: fit-content;
   align-items: center;
   gap: 8px;
   margin: 0 0 8px;
@@ -30,6 +33,14 @@
 }
 .ov-sentence { margin: 10px 0 0; font-size: 15.5px; color: var(--ink-2); font-weight: 500; }
 .ov-head-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+/* Pinned (§209): folded, the greeting is one line and the actions stay. */
+.ov-top .ov-head h1 { transition: font-size 260ms var(--ease); }
+.ov-top .ov-eyebrow, .ov-top .ov-sentence { max-height: 4em; overflow: hidden; transition: max-height 280ms var(--ease), opacity 200ms var(--ease), margin 280ms var(--ease), padding 280ms var(--ease); }
+.app.is-condensed .ov-top .ov-head { align-items: center; flex-wrap: nowrap; padding-top: 0; }
+.app.is-condensed .ov-top .ov-head > div:first-child { flex: 1 1 0; min-width: 0; }
+.app.is-condensed .ov-top .ov-head h1 { font-size: 22px; }
+.app.is-condensed .ov-top .ov-eyebrow { max-height: 0; margin: 0; padding-block: 0; border-width: 0; opacity: 0; }
+.app.is-condensed .ov-top .ov-sentence { max-height: 0; margin: 0; opacity: 0; }
 
 /* Links that look like buttons. */
 .btn-quiet, .btn-dark {

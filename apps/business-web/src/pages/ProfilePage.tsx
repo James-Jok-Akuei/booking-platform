@@ -40,12 +40,14 @@ export function ProfilePage() {
 
   return (
     <section className="pf">
-      <header className="page-head">
-        <div>
-          <h1>Your shopfront</h1>
-          <p className="muted">What a customer sees before they book. The photos do most of the work.</p>
-        </div>
-      </header>
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>Your shopfront</h1>
+            <p className="muted">What a customer sees before they book. The photos do most of the work.</p>
+          </div>
+        </header>
+      </div>
 
       {profile.isLoading && <div className="skeleton pf-skeleton" />}
       {profile.data && (

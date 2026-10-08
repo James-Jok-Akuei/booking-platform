@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AdRail } from '../ads/AdRail';
 import { useAuth } from '../auth/auth-context';
@@ -81,11 +81,36 @@ function Frame() {
   // Once the page moves under the top bar, the bar gets an edge — and on a
   // phone, the page's name, which has scrolled out of view.
   const [scrolled, setScrolled] = useState(false);
+  // Each page's header stays pinned under the bar (§209) and, once the page
+  // moves, folds to a slim strip. Only on a page long enough to scroll well
+  // past the fold: on a short one, the fold itself would shorten the page
+  // enough to unfold it again, and it would flicker. Folding at 24px and
+  // unfolding only back near the top keeps it from see-sawing.
+  const [condensed, setCondensed] = useState(false);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 24);
+      setCondensed((was) =>
+        was ? y > 8 : y > 24 && document.documentElement.scrollHeight - window.innerHeight > 180,
+      );
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, [location.pathname]);
+
+  // The pinned headers sit right under the top bar, however tall it is.
+  const main = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const box = main.current;
+    const bar = box?.querySelector<HTMLElement>('.topbar');
+    if (!box || !bar) return;
+    const measure = () => box.style.setProperty('--tb-h', `${bar.offsetHeight}px`);
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(bar);
+    return () => watch.disconnect();
   }, []);
 
   const toggleRail = () =>
@@ -127,7 +152,9 @@ function Frame() {
   }, []);
 
   return (
-    <div className={`app${folded ? ' has-rail' : ''}${wide ? ' has-ads' : ''}${wide && adsFolded ? ' ads-folded' : ''}`}>
+    <div
+      className={`app${folded ? ' has-rail' : ''}${wide ? ' has-ads' : ''}${wide && adsFolded ? ' ads-folded' : ''}${condensed ? ' is-condensed' : ''}`}
+    >
       <div className="app-side">
         <Sidebar
           data={data}
@@ -137,7 +164,7 @@ function Frame() {
         />
       </div>
 
-      <div className="app-main">
+      <div className="app-main" ref={main}>
         <Topbar
           data={data}
           scrolled={scrolled}

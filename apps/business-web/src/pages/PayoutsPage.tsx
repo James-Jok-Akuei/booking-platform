@@ -55,12 +55,14 @@ export function GettingPaidPage() {
 
   return (
     <section className="gp">
-      <header className="page-head">
-        <div>
-          <h1>Getting paid</h1>
-          <p className="muted">Your share of every deposit, sent to your mobile money.</p>
-        </div>
-      </header>
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>Getting paid</h1>
+            <p className="muted">Your share of every deposit, sent to your mobile money.</p>
+          </div>
+        </header>
+      </div>
 
       {b?.payoutsPaused && (
         <div className="gp-paused" role="status">

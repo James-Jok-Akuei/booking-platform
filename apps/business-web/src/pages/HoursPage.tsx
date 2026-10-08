@@ -64,17 +64,19 @@ export function HoursPage() {
 
   return (
     <section className="hr">
-      <header className="page-head">
-        <div>
-          <h1>Branches &amp; hours</h1>
-          <p className="muted">
-            Every place you work from, when it is open, and how many people it can take at once.
-          </p>
-        </div>
-        <button type="button" className="primary hr-add" onClick={() => setAdding(true)}>
-          <Icon name="plus" size={18} stroke={2.4} /> Add a branch
-        </button>
-      </header>
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>Branches &amp; hours</h1>
+            <p className="muted">
+              Every place you work from, when it is open, and how many people it can take at once.
+            </p>
+          </div>
+          <button type="button" className="primary hr-add" onClick={() => setAdding(true)}>
+            <Icon name="plus" size={18} stroke={2.4} /> Add a branch
+          </button>
+        </header>
+      </div>
 
       {locations.isLoading && <div className="skeleton hr-skeleton" />}
 

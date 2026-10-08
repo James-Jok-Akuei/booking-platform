@@ -81,52 +81,54 @@ export function AnalyticsPage() {
 
   return (
     <section className="an">
-      <header className="page-head">
-        <div>
-          <h1>How it is going</h1>
-          <p className="muted">Your bookings, your money and your ratings.</p>
-        </div>
-        <div className="an-period" role="tablist" aria-label="Period">
-          {PERIODS.map((p) => (
-            <button
-              key={p.days}
-              type="button"
-              role="tab"
-              aria-selected={days === p.days}
-              className={days === p.days ? 'is-on' : ''}
-              onClick={() => setDays(p.days)}
-            >
-              Last {p.label}
-            </button>
-          ))}
-        </div>
-      </header>
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>How it is going</h1>
+            <p className="muted">Your bookings, your money and your ratings.</p>
+          </div>
+          <div className="an-period" role="tablist" aria-label="Period">
+            {PERIODS.map((p) => (
+              <button
+                key={p.days}
+                type="button"
+                role="tab"
+                aria-selected={days === p.days}
+                className={days === p.days ? 'is-on' : ''}
+                onClick={() => setDays(p.days)}
+              >
+                Last {p.label}
+              </button>
+            ))}
+          </div>
+        </header>
 
-      {branches.length > 1 && (
-        <div className="bpills" role="tablist" aria-label="Branch">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={locationId === ''}
-            className={`bpill${locationId === '' ? ' is-active' : ''}`}
-            onClick={() => setLocationId('')}
-          >
-            <Icon name="layers" size={16} /> All branches
-          </button>
-          {branches.map((b) => (
+        {branches.length > 1 && (
+          <div className="bpills" role="tablist" aria-label="Branch">
             <button
-              key={b.id}
               type="button"
               role="tab"
-              aria-selected={locationId === b.id}
-              className={`bpill${locationId === b.id ? ' is-active' : ''}`}
-              onClick={() => setLocationId(b.id)}
+              aria-selected={locationId === ''}
+              className={`bpill${locationId === '' ? ' is-active' : ''}`}
+              onClick={() => setLocationId('')}
             >
-              <Icon name="pin" size={16} /> {b.name}
+              <Icon name="layers" size={16} /> All branches
             </button>
-          ))}
-        </div>
-      )}
+            {branches.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                role="tab"
+                aria-selected={locationId === b.id}
+                className={`bpill${locationId === b.id ? ' is-active' : ''}`}
+                onClick={() => setLocationId(b.id)}
+              >
+                <Icon name="pin" size={16} /> {b.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {stats.isLoading && <div className="skeleton an-skeleton" />}
 

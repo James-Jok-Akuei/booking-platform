@@ -220,45 +220,47 @@ export function AppointmentsPage() {
 
   return (
     <section className="ap">
-      <header className="page-head ap-head">
-        <div>
-          <h1>Appointments</h1>
-          <p className="muted">Who is coming, and checking them in.</p>
-        </div>
-        <label className="ap-search">
-          <Icon name="search" size={18} />
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Find by email, service or branch"
-            aria-label="Find a booking"
-          />
-          {search && (
-            <button type="button" className="ap-search-clear" onClick={() => setSearch('')} aria-label="Clear">
-              <Icon name="close" size={14} stroke={2.2} />
-            </button>
-          )}
-        </label>
-      </header>
+      <div className="page-top">
+        <header className="page-head ap-head">
+          <div>
+            <h1>Appointments</h1>
+            <p className="muted">Who is coming, and checking them in.</p>
+          </div>
+          <label className="ap-search">
+            <Icon name="search" size={18} />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Find by email, service or branch"
+              aria-label="Find a booking"
+            />
+            {search && (
+              <button type="button" className="ap-search-clear" onClick={() => setSearch('')} aria-label="Clear">
+                <Icon name="close" size={14} stroke={2.2} />
+              </button>
+            )}
+          </label>
+        </header>
 
-      <div className="ap-tabs" role="tablist">
-        {TABS.map((t, i) => {
-          const count = counts[i].data?.total;
-          return (
-            <button
-              key={t.key}
-              type="button"
-              role="tab"
-              aria-selected={t.key === tab.key}
-              className={`ap-tab${t.key === tab.key ? ' is-active' : ''}`}
-              onClick={() => setTab(t.key)}
-            >
-              <Icon name={t.icon} size={17} />
-              {t.label}
-              {count !== undefined && <span className="ap-tab-count">{count}</span>}
-            </button>
-          );
-        })}
+        <div className="ap-tabs" role="tablist">
+          {TABS.map((t, i) => {
+            const count = counts[i].data?.total;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={t.key === tab.key}
+                className={`ap-tab${t.key === tab.key ? ' is-active' : ''}`}
+                onClick={() => setTab(t.key)}
+              >
+                <Icon name={t.icon} size={17} />
+                {t.label}
+                {count !== undefined && <span className="ap-tab-count">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {act.error && (

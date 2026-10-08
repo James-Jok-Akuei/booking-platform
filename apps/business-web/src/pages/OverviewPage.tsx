@@ -208,29 +208,31 @@ export function OverviewPage() {
 
   return (
     <section className="ov">
-      <header className="ov-head">
-        <div>
-          <p className="ov-eyebrow">
-            <Icon name={now.getHours() < 17 ? 'sun' : 'moon'} size={16} />
-            {now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
-            <span className="ov-clock">{clock(now)}</span>
-          </p>
-          <h1>
-            {greeting(now)}, <span>{businessName}</span>
-          </h1>
-          <p className="ov-sentence">{sentence}</p>
-        </div>
-        <div className="ov-head-actions">
-          <Link to="/closures" className="btn-quiet">
-            <Icon name="calendarX" size={18} />
-            Take time off
-          </Link>
-          <Link to="/services" className="btn-dark">
-            <Icon name="plus" size={18} stroke={2.2} />
-            Add a service
-          </Link>
-        </div>
-      </header>
+      <div className="page-top ov-top">
+        <header className="ov-head">
+          <div>
+            <p className="ov-eyebrow">
+              <Icon name={now.getHours() < 17 ? 'sun' : 'moon'} size={16} />
+              {now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+              <span className="ov-clock">{clock(now)}</span>
+            </p>
+            <h1>
+              {greeting(now)}, <span>{businessName}</span>
+            </h1>
+            <p className="ov-sentence">{sentence}</p>
+          </div>
+          <div className="ov-head-actions">
+            <Link to="/closures" className="btn-quiet">
+              <Icon name="calendarX" size={18} />
+              Take time off
+            </Link>
+            <Link to="/services" className="btn-dark">
+              <Icon name="plus" size={18} stroke={2.2} />
+              Add a service
+            </Link>
+          </div>
+        </header>
+      </div>
 
       {/* No room for the "For you" column (§204): on a phone or tablet it sits
           at the top of the home page instead, like the customer app's (§205). */}

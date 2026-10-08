@@ -253,6 +253,60 @@ button.link.danger-link { color: var(--danger); }
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 22px; }
 .page-head h1 { margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -0.03em; }
 .page-head p { margin: 6px 0 0; }
+
+/* The page's header, pinned under the top bar (§209): the same frosted glass,
+   so the page is seen sliding underneath. It runs edge to edge of the page
+   area, and once the page moves it folds — the title smaller, the line under
+   it put away — leaving its tabs, branch pills and buttons where they are. */
+.page-top {
+  position: sticky;
+  top: calc(var(--tb-h, 74px) - 1px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: -6px calc(-1 * var(--pad-r, 30px)) 8px calc(-1 * var(--pad-l, 24px));
+  padding: 6px var(--pad-r, 30px) 14px var(--pad-l, 24px);
+  background: rgba(244, 242, 237, 0.8);
+  backdrop-filter: saturate(1.5) blur(18px);
+  -webkit-backdrop-filter: saturate(1.5) blur(18px);
+  transition: padding 260ms var(--ease), gap 260ms var(--ease), box-shadow 240ms var(--ease);
+}
+.app .content .page-top > * { margin-top: 0; margin-bottom: 0; }
+:is(.ov, .an, .pf, .gp, .hp) > .page-top { margin-bottom: -6px; }
+.page-top .page-head h1 { transition: font-size 260ms var(--ease); }
+.page-top .page-head > div:first-child > p {
+  max-height: 6em;
+  overflow: hidden;
+  transition: max-height 280ms var(--ease), opacity 200ms var(--ease), margin 280ms var(--ease);
+}
+/* Bar and header read as one sheet of glass: the edge moves to the header. */
+.app-main:has(.page-top) .topbar.is-scrolled { box-shadow: none; }
+
+.app.is-condensed .page-top {
+  gap: 10px;
+  padding-bottom: 12px;
+  box-shadow: 0 1px 0 rgba(21, 23, 28, 0.06), 0 14px 30px -24px rgba(21, 23, 28, 0.35);
+}
+/* Folded, the title and the page's buttons share one line, however long the
+   line under the title was. */
+.app.is-condensed .page-top .page-head { align-items: center; flex-wrap: nowrap; }
+.app.is-condensed .page-top .page-head > div:first-child { flex: 1 1 0; min-width: 0; }
+.app.is-condensed .page-top .page-head h1 { font-size: 22px; }
+.app.is-condensed .page-top .page-head > div:first-child > p { max-height: 0; margin-top: 0; opacity: 0; }
+/* Branch pills stay one row in the pinned header, sliding sideways to the
+   page's edges rather than wrapping it taller; folded, they slim down. */
+.app .content .page-top > .bpills {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-inline: calc(-1 * var(--pad-l, 24px)) calc(-1 * var(--pad-r, 30px));
+  padding: 2px var(--pad-r, 30px) 2px var(--pad-l, 24px);
+  scroll-padding-inline: var(--pad-l, 24px);
+}
+.page-top > .bpills::-webkit-scrollbar { display: none; }
+.page-top > .bpills .bpill { flex: none; transition: min-height 260ms var(--ease), padding 260ms var(--ease); }
+.app.is-condensed .page-top > .bpills .bpill { min-height: 36px; padding: 0 14px; }
 .filters { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* Segmented tabs: a white track, the chosen one a night pill. */

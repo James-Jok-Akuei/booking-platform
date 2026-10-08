@@ -287,21 +287,23 @@ export function ServicesPage() {
         />
       )}
 
-      <header className="page-head sv-head">
-        <div>
-          <h1>Services</h1>
-          <p className="muted sv-lead">
-            Each service is offered at the branches you choose, at <strong>that branch's price</strong> —
-            a city-centre shop can charge more than a quieter one for the same work. The deposit
-            percentage is what a customer pays up front to hold the slot; the rest is settled with you
-            directly.
-          </p>
-        </div>
-        <button type="button" className="primary sv-add" onClick={startNew}>
-          <Icon name="plus" size={18} stroke={2.4} />
-          Add a service
-        </button>
-      </header>
+      <div className="page-top">
+        <header className="page-head sv-head">
+          <div>
+            <h1>Services</h1>
+            <p className="muted sv-lead">
+              Each service is offered at the branches you choose, at <strong>that branch's price</strong> —
+              a city-centre shop can charge more than a quieter one for the same work. The deposit
+              percentage is what a customer pays up front to hold the slot; the rest is settled with you
+              directly.
+            </p>
+          </div>
+          <button type="button" className="primary sv-add" onClick={startNew}>
+            <Icon name="plus" size={18} stroke={2.4} />
+            Add a service
+          </button>
+        </header>
+      </div>
 
       {services.data && services.data.length > 0 && (
         <div className="sv-chips">

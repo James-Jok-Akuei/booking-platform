@@ -70,17 +70,19 @@ export function ClosuresPage() {
 
   return (
     <section className="cl">
-      <header className="page-head">
-        <div>
-          <h1>Closures &amp; breaks</h1>
-          <p className="muted">
-            Days that do not follow your usual week. Pick a day, then close it, change its hours or take a
-            break out of it — customers cannot book the times you take out.
-          </p>
-        </div>
-      </header>
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>Closures &amp; breaks</h1>
+            <p className="muted">
+              Days that do not follow your usual week. Pick a day, then close it, change its hours or take a
+              break out of it — customers cannot book the times you take out.
+            </p>
+          </div>
+        </header>
 
-      <BranchPills branches={branches} value={locationId} onChange={setSelected} />
+        <BranchPills branches={branches} value={locationId} onChange={setSelected} />
+      </div>
 
       {locations.isLoading && <div className="skeleton cl-skeleton" />}
       {branches.length === 0 && !locations.isLoading && (

@@ -14955,3 +14955,35 @@ The public shop answer sent each closure's date as UTC midnight
 treat it as a calendar day. `DiscoveryService.findOne` now sends
 `YYYY-MM-DD` (`formatCalendarDate`), as the business API always has; a test
 pins it.
+
+## 209. Page headers stay pinned, frosted, under the top bar (2026-10-08)
+
+The user: make every page's header fixed and translucent, so the page is seen
+moving beneath it — "for all headers".
+
+- **Every page** wraps its header in `.page-top` (styles.css): Overview,
+  Appointments, Services, Branches & hours, Closures & breaks, Your
+  shopfront, Messages, Reviews, Getting paid, How it is going, People, Legal,
+  Help. It is `position: sticky` right under the top bar (whose height the
+  frame measures into `--tb-h`), runs edge to edge of the page area, and is
+  the **same frosted glass as the bar** (warm canvas at 80%, blur 18px —
+  both nudged up from 72%/16px so dark cards sliding under stay readable).
+  Bar and header read as one sheet: the edge shadow moves from the bar to the
+  header.
+- **What is pinned with the title** is the row that controls the page: the
+  booking tabs on Appointments, the branch pills on Reviews, Closures and How
+  it is going (kept to one sliding row there, never wrapping taller), the
+  period pills, the search, and the page's main button.
+- **Folding.** Once the page has moved (24px), the header folds: the title
+  drops to 22px, the line under it is put away, title and buttons share one
+  line, branch pills slim to 36px. Back near the top (8px) it unfolds. It only
+  folds on a page with enough to scroll (more than 180px), so the fold
+  shortening the page can never unfold it again — no flicker.
+- **On a phone** (under 860px) the bar already shows the page's name once the
+  page moves (§190), and height is scarce, so the folded header keeps only its
+  tabs or branch pills; title, search and buttons return at the top.
+- **Help** keeps its dark "How can we help?" card (§202) as the page's first
+  block — now an h2 under a slim pinned "Help" header like every other page;
+  pinning the whole card would cover half the screen.
+- Content padding became `--pad-l` / `--pad-r` on `.content` so the pinned
+  glass can reach the page area's edges at every width.

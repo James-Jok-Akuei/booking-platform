@@ -63,12 +63,14 @@ export function StaffPage() {
 
   return (
     <section className="st">
-      <header className="page-head">
-        <div>
-          <h1>People</h1>
-          <p className="muted">Who works here, and what each of them can do.</p>
-        </div>
-      </header>
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>People</h1>
+            <p className="muted">Who works here, and what each of them can do.</p>
+          </div>
+        </header>
+      </div>
 
       <div className="st-layout">
         <div className="st-main">

@@ -114,12 +114,21 @@ export function SupportPage() {
 
   return (
     <section className="hp">
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>Help</h1>
+            <p className="muted">Ask us about anything — we reply on this page and by email.</p>
+          </div>
+        </header>
+      </div>
+
       <header className="hp-hero">
         <div className="hp-hero-text">
           <span className="hp-hero-icon">
             <Icon name="help" size={24} />
           </span>
-          <h1>How can we help?</h1>
+          <h2>How can we help?</h2>
           <p>
             Something wrong with a payout, a booking or your profile? Tell us here and you will get a reply in
             this page and by email.

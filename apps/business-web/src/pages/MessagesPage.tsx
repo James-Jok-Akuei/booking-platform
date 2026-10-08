@@ -71,15 +71,17 @@ export function MessagesPage() {
 
   return (
     <section className="ms">
-      <header className="page-head ms-head">
-        <div>
-          <h1>Messages</h1>
-          <p className="muted">
-            Questions from customers, and anything said about a booking.
-            {waiting > 0 && ` ${waiting} waiting for you.`}
-          </p>
-        </div>
-      </header>
+      <div className="page-top">
+        <header className="page-head ms-head">
+          <div>
+            <h1>Messages</h1>
+            <p className="muted">
+              Questions from customers, and anything said about a booking.
+              {waiting > 0 && ` ${waiting} waiting for you.`}
+            </p>
+          </div>
+        </header>
+      </div>
 
       <div className={`ms-inbox${openId ? ' has-open' : ''}`}>
         <aside className="ms-list">

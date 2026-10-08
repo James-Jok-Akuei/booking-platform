@@ -31,7 +31,7 @@ body {
   z-index: 44;
   min-width: 0;
 }
-.app.has-ads .content { padding-right: 20px; }
+.app.has-ads .content { --pad-r: 20px; }
 
 .app-side {
   position: sticky;
@@ -49,9 +49,11 @@ body {
      Anything a page draws over the screen (panels, drawers) is portalled to
      <body>, because this containment would otherwise hold it inside. */
   container: page / inline-size;
+  --pad-l: 24px;
+  --pad-r: 30px;
   width: 100%;
   max-width: 1440px;
-  padding: 6px 30px 64px 24px;
+  padding: 6px var(--pad-r) 64px var(--pad-l);
   animation: rise-in 420ms var(--ease);
 }
 
@@ -298,9 +300,9 @@ body {
   align-items: center;
   gap: 16px;
   padding: 14px 30px 14px 24px;
-  background: rgba(244, 242, 237, 0.72);
-  backdrop-filter: saturate(1.5) blur(16px);
-  -webkit-backdrop-filter: saturate(1.5) blur(16px);
+  background: rgba(244, 242, 237, 0.8);
+  backdrop-filter: saturate(1.5) blur(18px);
+  -webkit-backdrop-filter: saturate(1.5) blur(18px);
   transition: box-shadow 240ms var(--ease);
 }
 .topbar.is-scrolled { box-shadow: 0 1px 0 rgba(21, 23, 28, 0.06), 0 14px 30px -24px rgba(21, 23, 28, 0.35); }
@@ -673,8 +675,14 @@ body {
   .menu { position: fixed; top: 64px; right: 12px; width: min(300px, calc(100vw - 24px)); }
   .bell-panel { position: fixed; top: 64px; left: 12px; right: 12px; width: auto; }
 
-  .content { padding: 4px 16px 128px; }
+  .content { --pad-l: 16px; --pad-r: 16px; padding: 4px var(--pad-r) 128px var(--pad-l); }
   .page-head h1 { font-size: 27px; }
+  /* A phone has little height to spare, and its bar already takes the page's
+     name once the page moves (§209): pinned, the header keeps only its tabs
+     or branch pills. Title, search and buttons come back at the top. */
+  .app.is-condensed .page-top > .page-head,
+  .app.is-condensed .ov-top > .ov-head { display: none; }
+  .app.is-condensed .page-top { padding-top: 0; }
   .content table { display: block; overflow-x: auto; }
   /* Tabs slide sideways rather than wrapping onto a second line. */
   .content .tabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; }

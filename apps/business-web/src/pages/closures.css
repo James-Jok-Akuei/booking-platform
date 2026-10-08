@@ -79,7 +79,7 @@
 
 /* ---- the day ---- */
 
-.cl-day { min-width: 0; padding: 22px 24px 22px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(180deg, rgba(240, 83, 45, 0.035), transparent 160px); scroll-margin-top: 96px; }
+.cl-day { min-width: 0; padding: 22px 24px 22px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(180deg, rgba(240, 83, 45, 0.035), transparent 160px); scroll-margin-top: 150px; }
 .cl-day > .cl-step { margin: 0; }
 
 .cl-day-head { display: flex; align-items: center; gap: 14px; animation: rise-in 320ms var(--ease) both; }

@@ -44,19 +44,21 @@ export function ReviewsPage() {
 
   return (
     <section className="rv">
-      <header className="page-head">
-        <div>
-          <h1>Reviews</h1>
-          <p className="muted">What customers said, and your reply. Everyone can see both.</p>
-        </div>
-      </header>
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>Reviews</h1>
+            <p className="muted">What customers said, and your reply. Everyone can see both.</p>
+          </div>
+        </header>
 
-      <BranchPills
-        branches={branches}
-        value={locationId}
-        onChange={setSelected}
-        extra={(b) => (b.ratingCount > 0 ? `★ ${b.ratingAvg}` : null)}
-      />
+        <BranchPills
+          branches={branches}
+          value={locationId}
+          onChange={setSelected}
+          extra={(b) => (b.ratingCount > 0 ? `★ ${b.ratingAvg}` : null)}
+        />
+      </div>
 
       {locations.isLoading && <div className="skeleton rv-skeleton" />}
       {branches.length === 0 && !locations.isLoading && (
