@@ -14696,10 +14696,11 @@ businesses, and teaching the app's features.
 
 1. **The banner** (`AdCarousel.tsx`): one advert at a time, **8 seconds each,
    round and round, forward from the last to the first** (the customer app's
-   §188), paused while the mouse is over it, dots with a filling bar to jump
-   to any one, nothing moving with "reduce motion" on. Each advert has its
-   own colour, a photo where there is one (drifting slowly closer) or a large
-   faint icon with slow rings, a corner number, and one button. In priority
+   §188), paused while the mouse is over it, ~~dots with a filling bar to jump
+   to any one~~, nothing moving with "reduce motion" on. Each advert has its
+   own colour, a photo where there is one (drifting slowly closer) ~~or a large
+   faint icon with slow rings~~, a corner number, and one button — the look
+   superseded by §210 (layered, animated cards with story bars). In priority
    order (`slides.ts`), each only when it applies:
    - **Get paid** (owner only, §48): no payout number, refused, or being
      checked.
@@ -14987,3 +14988,46 @@ moving beneath it — "for all headers".
   pinning the whole card would cover half the screen.
 - Content padding became `--pad-l` / `--pad-r` on `.content` so the pinned
   glass can reach the page area's edges at every width.
+
+## 210. The "For you" cards, rebuilt to be the best thing on the screen (2026-10-08)
+
+The user: the advert cards still lacked proper animation and design — they
+asked for waves, glitter, better colours and transitions, "a million dollar
+card", better than the customer app's. Built in code (CSS, SVG and a canvas)
+rather than with generated pictures: it moves, stays sharp at any size, and
+adds only about 5 KB to download once compressed.
+
+Each card (`AdCarousel.tsx`, `Sparkles.tsx`, `ads.css`) is layers, back to
+front:
+
+1. **Colour with depth** — each look is three stops (light, main, deep) and
+   three lights, richer than before (coral into magenta, night as an indigo
+   aurora with violet, coral and cyan, emerald with lime, gold into burnt
+   orange, cobalt with cyan and lilac, violet with pink and aqua, amber with
+   rose). The three lights are blurred glows drifting slowly through the card
+   (13–21 s), over a fine film grain.
+2. **The picture** — a photo eases closer (Ken Burns) washed in the card's
+   colour; without one, a **frosted glass tile** with the icon floats (bobbing
+   and turning slightly) in front of a **morphing glow**, on a dashed **orbit**
+   with a glowing dot going round, and the icon drawn huge and faint behind.
+   A card's big number (bookings, % complete) takes the glass tile's place,
+   and **counts up** as the card arrives.
+3. **Waves** — three layered waves along the foot, each its own height and
+   pace, tinted by the card's own lights (they glow rather than fog).
+4. **Glitter** — a canvas of twinkling four-pointed stars and specks rising
+   slowly, drawn with additive light, and every couple of seconds a **glint**
+   that flares and fades by the art. Quieter over the words. Only on the card
+   being shown, only while it can be seen, asleep in a hidden tab.
+5. **Sheen** — a band of light sweeps across now and then; the white button
+   carries its own small glint, in the card's colour.
+6. **The words** — label as a glass pill; the **title rises word by word out
+   of a blur**; text and button follow.
+
+Around it: the frame's **edge has light running round it** (a rotating conic
+gradient); on a computer the card **tilts towards the pointer** with a
+**glare that follows it**. Cards **hand over cinematically** — the next
+sharpens out of a blur from the side it comes from while the last recedes —
+instead of sliding as a strip. **Story bars** inside the top replace the
+dots: time left on this card, the ones seen filled, any one a jump. On a
+phone, **swipe**; with a keyboard, the arrow keys. Everything stops with
+"reduce motion" on, and nothing advances by itself then (as before).

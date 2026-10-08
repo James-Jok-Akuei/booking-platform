@@ -51,121 +51,328 @@
 .ads-unfold-icon i { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--night); color: #fff; font-size: 10.5px; font-style: normal; font-weight: 800; border: 2px solid var(--panel); }
 .ads-unfold-label { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 13px; font-weight: 750; letter-spacing: 0.04em; color: var(--ink-2); }
 
-/* ---- the banner ---- */
+/* ---- the banner (§204, §210) ----
+   Built in layers, back to front: gradient + drifting aurora + grain, the
+   photo or the glass art, the shade that keeps words readable, waves,
+   glitter (a canvas), a sweeping sheen, then the words. Only the card on
+   screen animates. */
 
-.adc { flex: none; }
-.adc-window { border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px -24px rgba(21, 23, 28, 0.7); }
-.adc-strip { display: flex; will-change: transform; }
-.adc-slide {
+@property --adc-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+
+.adc { flex: none; --dir: 1; }
+
+/* The frame: a hairline edge with light running round it, and a tilt towards
+   the pointer with a glare that follows it. */
+.adc-frame {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 0%;
   position: relative;
-  flex: 0 0 100%;
-  /* At least this tall; a long title grows the whole strip (every slide
-     stretches to the tallest) rather than pushing its label out of view. */
-  min-height: 380px;
+  padding: 1.5px;
+  border-radius: 26px;
+  background: conic-gradient(
+    from var(--adc-angle),
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.95) 7%,
+    rgba(255, 186, 140, 0.8) 12%,
+    rgba(255, 255, 255, 0.3) 20%,
+    rgba(255, 255, 255, 0.3) 52%,
+    rgba(196, 176, 255, 0.85) 60%,
+    rgba(130, 228, 255, 0.65) 66%,
+    rgba(255, 255, 255, 0.3) 74%
+  );
+  box-shadow: 0 30px 54px -30px rgba(21, 23, 28, 0.8), 0 12px 26px -18px rgba(240, 83, 45, 0.45);
+  transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 520ms var(--ease);
+  animation: adc-edge 7s linear infinite;
+  touch-action: pan-y;
+}
+.adc-frame:hover { transition: transform 140ms linear; }
+@keyframes adc-edge { to { --adc-angle: 360deg; } }
+.adc-window { position: relative; overflow: hidden; isolation: isolate; border-radius: 24.5px; background: #15171c; }
+.adc-stage { display: grid; }
+
+.adc-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(300px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.34), transparent 62%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 320ms var(--ease);
+}
+.adc-frame:hover .adc-glare { opacity: 1; }
+
+/* ---- one card ---- */
+
+.adc-slide {
+  --c1: #ff9a52;
+  --c2: #f0532d;
+  --c3: #a8173f;
+  --b1: #ffd28a;
+  --b2: #ff3d7f;
+  --b3: #ff8a3d;
+  grid-area: 1 / 1;
+  position: relative;
+  /* At least this tall; a long title grows every card (they share one grid
+     cell) rather than pushing its label out of view. */
+  min-height: 384px;
   overflow: hidden;
-  color: #fff;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  isolation: isolate;
+  color: #fff;
+  /* Cinematic hand-over: the next card sharpens out of a blur, a little
+     larger, from the side it comes from; the last one recedes. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(calc(var(--dir) * 36px)) scale(1.05);
+  filter: blur(10px) saturate(1.3);
+  transition: opacity 650ms var(--ease), transform 950ms cubic-bezier(0.22, 1, 0.36, 1), filter 700ms var(--ease), visibility 0s linear 950ms;
 }
-.adc.is-compact .adc-slide { min-height: 230px; }
+.adc-slide.is-active { z-index: 2; opacity: 1; visibility: visible; transform: none; filter: none; transition-delay: 0s; }
+.adc-slide.is-leaving { z-index: 1; visibility: visible; opacity: 0; transform: translateX(calc(var(--dir) * -36px)) scale(0.96); filter: blur(8px); }
 
-.adc-slide.look-coral { background: linear-gradient(150deg, #ff9a5c 0%, #f0532d 50%, #b8311a 100%); }
-.adc-slide.look-night { background: radial-gradient(320px 240px at 100% 0%, rgba(240, 83, 45, 0.55), transparent 65%), linear-gradient(160deg, #262a33, #15171c); }
-.adc-slide.look-green { background: radial-gradient(300px 220px at 100% 0%, rgba(52, 210, 123, 0.5), transparent 65%), linear-gradient(160deg, #0f8a4a, #0a4f2c); }
-.adc-slide.look-gold { background: radial-gradient(300px 220px at 100% 0%, rgba(255, 230, 150, 0.55), transparent 65%), linear-gradient(160deg, #f0a20b, #a35f00); }
-.adc-slide.look-blue { background: radial-gradient(300px 220px at 100% 0%, rgba(120, 170, 255, 0.5), transparent 65%), linear-gradient(160deg, #2d63db, #142e6e); }
-.adc-slide.look-violet { background: radial-gradient(300px 220px at 100% 0%, rgba(200, 160, 255, 0.5), transparent 65%), linear-gradient(160deg, #7a4cf0, #3a1a8f); }
-.adc-slide.look-amber { background: radial-gradient(300px 220px at 100% 0%, rgba(255, 220, 140, 0.55), transparent 65%), linear-gradient(160deg, #f59e0b, #9a4a06); }
+/* Each colour is three stops of depth and three lights that drift through. */
+.adc-slide.look-coral { --c1: #ff9a52; --c2: #f0532d; --c3: #a8173f; --b1: #ffd28a; --b2: #ff3d7f; --b3: #ff8a3d; }
+.adc-slide.look-night { --c1: #2e3366; --c2: #161a3a; --c3: #080a17; --b1: #7c5cff; --b2: #f0532d; --b3: #22d3ee; }
+.adc-slide.look-green { --c1: #22d38f; --c2: #0b8f5a; --c3: #053f31; --b1: #d9f99d; --b2: #2dd4bf; --b3: #4ade80; }
+.adc-slide.look-gold { --c1: #ffc94d; --c2: #ef8a00; --c3: #8f3805; --b1: #fff3b0; --b2: #ff6a3d; --b3: #ffd166; }
+.adc-slide.look-blue { --c1: #5b9bff; --c2: #2a55e0; --c3: #0f1b66; --b1: #67e8f9; --b2: #a78bfa; --b3: #7dd3fc; }
+.adc-slide.look-violet { --c1: #b28cff; --c2: #6d3bea; --c3: #260a5a; --b1: #f472b6; --b2: #67e8f9; --b3: #c4b5fd; }
+.adc-slide.look-amber { --c1: #ffc25a; --c2: #ea7a0c; --c3: #86260d; --b1: #fde68a; --b2: #fb7185; --b3: #fbbf24; }
 
-/* A photo fills the slide and drifts slowly closer while it is on screen. */
-.adc-photo { position: absolute; inset: 0; z-index: -2; background: center / cover no-repeat; transform: scale(1.04); transition: transform 8s linear; }
-.adc-slide.is-active .adc-photo { transform: scale(1.14); }
-.adc-shade { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
-.adc-slide.has-image .adc-shade { background: linear-gradient(0deg, rgba(15, 16, 20, 0.92) 0%, rgba(15, 16, 20, 0.55) 45%, rgba(15, 16, 20, 0.05) 75%); }
-.adc-slide.has-image.look-coral .adc-shade { background: linear-gradient(0deg, rgba(120, 30, 10, 0.94) 0%, rgba(160, 45, 20, 0.55) 45%, rgba(0, 0, 0, 0.02) 78%); }
-.adc-slide.has-image.look-violet .adc-shade { background: linear-gradient(0deg, rgba(40, 14, 100, 0.94) 0%, rgba(60, 26, 140, 0.55) 45%, rgba(0, 0, 0, 0.02) 78%); }
+.adc-bg { position: absolute; inset: 0; z-index: -6; overflow: hidden; background: linear-gradient(155deg, var(--c1) 0%, var(--c2) 48%, var(--c3) 100%); }
+.adc-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px;
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+}
+.adc-bg i { position: absolute; aspect-ratio: 1; border-radius: 50%; filter: blur(30px); mix-blend-mode: screen; will-change: transform; }
+.adc-bg .m1 { width: 80%; top: -32%; right: -28%; opacity: 0.75; background: radial-gradient(circle, var(--b1), transparent 66%); animation: adc-drift-a 13s ease-in-out infinite alternate; }
+.adc-bg .m2 { width: 74%; bottom: -36%; left: -28%; opacity: 0.6; background: radial-gradient(circle, var(--b2), transparent 66%); animation: adc-drift-b 17s ease-in-out infinite alternate; }
+.adc-bg .m3 { width: 58%; top: 22%; left: 26%; opacity: 0.42; background: radial-gradient(circle, var(--b3), transparent 70%); animation: adc-drift-c 21s ease-in-out infinite alternate; }
+@keyframes adc-drift-a { to { transform: translate(-24%, 20%) scale(1.18); } }
+@keyframes adc-drift-b { to { transform: translate(28%, -18%) scale(1.22); } }
+@keyframes adc-drift-c { 0% { transform: none; } 50% { transform: translate(-20%, 14%) scale(1.28); } 100% { transform: translate(16%, -12%) scale(0.9); } }
 
-/* Without a photo: a big faint icon and two slow rings. */
-.adc-art { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
-.adc-art svg { position: absolute; top: -10px; right: -34px; color: #fff; opacity: 0.14; transform: rotate(-10deg); transition: transform 8s linear; }
-.adc-slide.is-active .adc-art svg { transform: rotate(-2deg) scale(1.06); }
-.adc-art i { position: absolute; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.16); }
-.adc-art .r1 { width: 260px; height: 260px; top: -90px; right: -90px; animation: ring-spin 18s linear infinite; border-style: dashed; }
-.adc-art .r2 { width: 160px; height: 160px; top: -30px; right: -30px; }
-@keyframes ring-spin { to { transform: rotate(360deg); } }
+/* A photo eases closer while it is on screen, washed in the card's colour. */
+.adc-photo { position: absolute; inset: 0; z-index: -5; background: center / cover no-repeat; transform: scale(1.06); transition: transform 9s cubic-bezier(0.25, 0.1, 0.25, 1); }
+.adc-slide.is-active .adc-photo { transform: scale(1.18) translate(-2%, -1.5%); }
+.adc-tint { position: absolute; inset: 0; z-index: -4; background: linear-gradient(155deg, var(--c1), var(--c3)); mix-blend-mode: soft-light; opacity: 0.75; }
+.adc-shade { position: absolute; inset: 0; z-index: -3; pointer-events: none; }
+.adc-slide.has-image .adc-shade { background: linear-gradient(0deg, color-mix(in srgb, var(--c3) 94%, #000) 0%, color-mix(in srgb, var(--c3) 62%, transparent) 44%, transparent 74%); }
+.adc-slide.has-art .adc-shade { background: linear-gradient(0deg, color-mix(in srgb, var(--c3) 55%, transparent) 0%, transparent 58%); }
 
+/* Without a photo: glass floating before a morphing glow, on an orbit. */
+.adc-art { position: absolute; inset: 0; z-index: -4; pointer-events: none; }
+.adc-ghost { position: absolute; top: 6px; right: -52px; color: #fff; opacity: 0.1; transform: rotate(-12deg); transition: transform 9s linear; }
+.adc-slide.is-active .adc-ghost { transform: rotate(-4deg) scale(1.06); }
+.adc-blob {
+  position: absolute;
+  top: 36px;
+  right: 14px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--b1) 85%, #fff), var(--b2) 55%, transparent 74%);
+  border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+  filter: blur(5px);
+  opacity: 0.9;
+  mix-blend-mode: screen;
+  animation: adc-morph 9s ease-in-out infinite;
+}
+@keyframes adc-morph {
+  0%, 100% { border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; transform: rotate(0deg) scale(1); }
+  33% { border-radius: 63% 37% 41% 59% / 58% 36% 64% 42%; transform: rotate(40deg) scale(1.1); }
+  66% { border-radius: 37% 63% 52% 48% / 36% 61% 39% 64%; transform: rotate(-25deg) scale(0.94); }
+}
+.adc-orbit { position: absolute; top: 26px; right: 4px; width: 170px; height: 170px; border-radius: 50%; border: 1px dashed rgba(255, 255, 255, 0.34); animation: adc-turn 14s linear infinite; }
+.adc-orbit b { position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 12px 3px rgba(255, 255, 255, 0.85), 0 0 26px 8px color-mix(in srgb, var(--b1) 80%, transparent); }
+@keyframes adc-turn { to { transform: rotate(360deg); } }
+.adc-glass {
+  position: absolute;
+  top: 61px;
+  right: 39px;
+  width: 100px;
+  height: 100px;
+  display: grid;
+  place-items: center;
+  border-radius: 30px;
+  color: #fff;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 20px 38px -14px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  animation: adc-float 5.5s ease-in-out infinite;
+}
+.adc-glass svg { filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25)); }
+@keyframes adc-float { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-10px) rotate(-1deg); } }
+
+/* Waves rolling along the foot. */
+.adc-waves { position: absolute; left: 0; right: 0; bottom: 0; z-index: -2; height: 28%; overflow: hidden; pointer-events: none; }
+.adc-waves svg { position: absolute; left: 0; bottom: 0; width: 200%; height: 100%; animation: adc-wave linear infinite; mix-blend-mode: screen; }
+/* Tinted by the card's own light, so they glow rather than fog. */
+.adc-waves .w0 { fill: var(--b2); opacity: 0.11; animation-duration: 16s; }
+.adc-waves .w1 { fill: var(--b3); opacity: 0.14; animation-duration: 11s; animation-direction: reverse; }
+.adc-waves .w2 { fill: color-mix(in srgb, var(--b1) 70%, #fff); opacity: 0.18; animation-duration: 7.5s; }
+@keyframes adc-wave { to { transform: translateX(-50%); } }
+
+.adc-sparkles { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; animation: fade-in 700ms ease both; }
+
+/* A sheen that sweeps across now and then. */
+.adc-shine { position: absolute; z-index: -1; top: -50%; bottom: -50%; left: -50%; width: 42%; pointer-events: none; opacity: 0; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.3) 45%, rgba(255, 255, 255, 0.06) 56%, transparent); transform: skewX(-18deg); }
+.adc-slide.is-active .adc-shine { animation: adc-shine 6.5s ease-in-out 1.4s infinite; }
+@keyframes adc-shine {
+  0% { opacity: 0; transform: translateX(0) skewX(-18deg); }
+  6% { opacity: 1; }
+  30% { opacity: 0; transform: translateX(560%) skewX(-18deg); }
+  100% { opacity: 0; transform: translateX(560%) skewX(-18deg); }
+}
+
+/* A number worth putting big: glass, counting up as the card arrives. */
 .adc-stat {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 28px;
+  right: 14px;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 70px;
-  padding: 8px 12px 9px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  justify-content: center;
+  min-width: 78px;
+  padding: 10px 14px 11px;
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 18px 34px -14px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
-.adc-stat strong { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
-.adc-stat span { font-size: 10.5px; font-weight: 700; color: rgba(255, 255, 255, 0.82); }
+.adc-stat strong { font-size: 27px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; font-variant-numeric: tabular-nums; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2); }
+.adc-stat span { font-size: 10.5px; font-weight: 750; color: rgba(255, 255, 255, 0.88); letter-spacing: 0.02em; }
+/* On a card without a photo the number takes the glass tile's place. */
+.adc-slide.has-art.has-stat .adc-glass { display: none; }
+.adc-slide.has-art.has-stat .adc-stat { top: 61px; right: 39px; width: 100px; height: 100px; min-width: 0; padding: 0; border-radius: 30px; }
+.adc-slide.has-art.has-stat.is-active .adc-stat { animation: adc-float 5.5s ease-in-out 600ms infinite; }
 
-.adc-body { padding: 18px 18px 18px; }
+/* ---- the words ---- */
+
+.adc-body { position: relative; padding: 22px 18px 18px; }
 .adc-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 10px;
+  padding: 5px 11px 5px 9px;
   border-radius: 99px;
   background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   font-size: 11.5px;
   font-weight: 750;
   letter-spacing: 0.01em;
 }
-.adc-body h3 { margin: 10px 0 6px; color: #fff; font-size: 22px; line-height: 1.2; letter-spacing: -0.025em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.adc-body p { margin: 0; font-size: 13.5px; line-height: 1.5; color: rgba(255, 255, 255, 0.84); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-.adc.is-compact .adc-body p { -webkit-line-clamp: 3; }
-.adc-cta {
-  margin-top: 14px;
-  min-height: 40px;
-  padding: 0 16px;
-  gap: 7px;
-  border: none;
-  border-radius: 14px;
-  background: #fff;
-  color: var(--ink);
-  font-size: 13.5px;
-  box-shadow: 0 10px 20px -12px rgba(0, 0, 0, 0.6);
+.adc-body h3 {
+  margin: 12px 0 6px;
+  color: #fff;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.2);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.adc-cta:hover:not(:disabled) { background: #fff; border: none; transform: translateY(-1px); }
-.adc-cta svg { transition: transform 200ms var(--ease); }
-.adc-cta:hover svg { transform: translateX(3px); }
+.adc-body h3 span { display: inline-block; }
+.adc-body p { margin: 0; font-size: 13.5px; line-height: 1.5; color: rgba(255, 255, 255, 0.86); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
-/* Words rise in each time a slide arrives. */
-.adc-slide .adc-body > * { opacity: 0; transform: translateY(10px); transition: opacity 420ms var(--ease), transform 520ms var(--ease); }
-.adc-slide.is-active .adc-body > * { opacity: 1; transform: none; }
-.adc-slide.is-active .adc-body > *:nth-child(2) { transition-delay: 70ms; }
-.adc-slide.is-active .adc-body > *:nth-child(3) { transition-delay: 140ms; }
-.adc-slide.is-active .adc-body > *:nth-child(4) { transition-delay: 210ms; }
-.adc-slide .adc-stat { opacity: 0; transform: scale(0.85); transition: opacity 400ms var(--ease) 200ms, transform 500ms var(--spring) 200ms; }
+.adc-cta {
+  position: relative;
+  overflow: hidden;
+  margin-top: 14px;
+  min-height: 42px;
+  padding: 0 18px;
+  gap: 8px;
+  border: none;
+  border-radius: 99px;
+  background: #fff;
+  color: var(--c3);
+  font-size: 13.5px;
+  font-weight: 750;
+  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.55), inset 0 -2px 0 rgba(0, 0, 0, 0.06);
+}
+.adc-cta > * { position: relative; z-index: 1; }
+.adc-cta::after { content: ''; position: absolute; top: 0; bottom: 0; left: -45%; width: 40%; background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--b1) 55%, transparent), transparent); transform: skewX(-20deg); animation: adc-cta 3.8s ease-in-out 1.6s infinite; }
+@keyframes adc-cta { 0% { left: -45%; } 35%, 100% { left: 130%; } }
+.adc-cta:hover:not(:disabled) { background: #fff; border: none; transform: translateY(-2px); box-shadow: 0 18px 32px -12px rgba(0, 0, 0, 0.6), inset 0 -2px 0 rgba(0, 0, 0, 0.06); }
+.adc-cta svg { transition: transform 220ms var(--ease); }
+.adc-cta:hover svg { transform: translateX(4px); }
+
+/* Each arrival: the label and words rise in, the title word by word out of a blur. */
+.adc-slide .adc-body > :not(h3) { opacity: 0; transform: translateY(12px); transition: opacity 450ms var(--ease), transform 600ms cubic-bezier(0.22, 1, 0.36, 1); }
+.adc-slide.is-active .adc-body > :not(h3) { opacity: 1; transform: none; }
+.adc-slide.is-active .adc-eyebrow { transition-delay: 90ms; }
+.adc-slide.is-active .adc-body > p { transition-delay: 420ms; }
+.adc-slide.is-active .adc-cta { transition-delay: 520ms; }
+.adc-slide .adc-body h3 span { opacity: 0; transform: translateY(18px) rotate(3deg); filter: blur(6px); transition: opacity 500ms var(--ease), transform 700ms cubic-bezier(0.22, 1, 0.36, 1), filter 500ms var(--ease); }
+.adc-slide.is-active .adc-body h3 span { opacity: 1; transform: none; filter: none; transition-delay: calc(170ms + var(--i) * 55ms); }
+.adc-slide .adc-stat { opacity: 0; transform: scale(0.8) rotate(-6deg); transition: opacity 400ms var(--ease) 260ms, transform 600ms var(--spring) 260ms; }
 .adc-slide.is-active .adc-stat { opacity: 1; transform: none; }
 
-.adc.is-compact .adc-body { padding: 16px 18px; max-width: 70%; }
-.adc.is-compact .adc-body h3 { font-size: 20px; margin: 8px 0 4px; }
-.adc.is-compact .adc-cta { margin-top: 10px; }
+/* Only the card on screen moves. */
+.adc-slide:not(.is-active):not(.is-leaving) :is(.adc-bg i, .adc-blob, .adc-orbit, .adc-glass, .adc-waves svg) { animation-play-state: paused; }
+.adc-slide:not(.is-active) .adc-cta::after { animation-play-state: paused; }
 
-.adc-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
-.adc-dot { width: 7px; height: 7px; min-height: 0; padding: 0; border: none; border-radius: 99px; background: var(--line-strong); overflow: hidden; position: relative; transition: width 300ms var(--ease), background 200ms var(--ease); }
-.adc-dot:hover:not(:disabled) { background: var(--faint); border: none; }
-.adc-dot.is-on, .adc-dot.is-on:hover:not(:disabled) { width: 28px; background: var(--sunken-2); }
-.adc-dot i { position: absolute; inset: 0; transform-origin: left; background: var(--accent); border-radius: 99px; animation: dot-fill linear both; }
+/* ---- story bars: time left on this card; any one jumps there ---- */
+
+.adc-progress { position: absolute; z-index: 5; top: 9px; left: 14px; right: 14px; display: flex; gap: 5px; }
+.adc-progress button,
+.adc-progress button:hover:not(:disabled),
+.adc-progress button:active:not(:disabled) { flex: 1; min-width: 0; min-height: 0; height: 14px; padding: 0; border: none; border-radius: 0; background: none; box-shadow: none; transform: none; }
+.adc-progress i { position: relative; display: block; flex: 1; width: 100%; height: 3px; border-radius: 3px; overflow: hidden; background: rgba(255, 255, 255, 0.32); transition: height 180ms var(--ease), background 180ms var(--ease); }
+.adc-progress button:hover i { height: 5px; background: rgba(255, 255, 255, 0.5); }
+.adc-progress .is-done i { background: rgba(255, 255, 255, 0.85); }
+.adc-progress b { position: absolute; inset: 0; border-radius: inherit; background: #fff; box-shadow: 0 0 10px rgba(255, 255, 255, 0.9); transform-origin: left; animation: dot-fill linear both; }
 @keyframes dot-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---- smaller, at the top of a phone's home page ---- */
+
+.adc.is-compact .adc-slide { min-height: 240px; }
+.adc.is-compact .adc-body { max-width: 70%; padding: 20px 16px 16px; }
+.adc.is-compact .adc-body h3 { margin: 9px 0 4px; font-size: 20px; }
+.adc.is-compact .adc-body p { -webkit-line-clamp: 3; font-size: 13px; }
+.adc.is-compact .adc-cta { margin-top: 10px; min-height: 38px; }
+.adc.is-compact .adc-art { transform: scale(0.8); transform-origin: 100% 0; }
+.adc.is-compact .adc-slide.has-art.has-stat .adc-stat { top: 46px; right: 28px; width: 84px; height: 84px; border-radius: 26px; }
+.adc.is-compact .adc-stat strong { font-size: 23px; }
+.adc.is-compact .adc-waves { height: 34%; }
+
+/* With "reduce motion": the same card, standing still. */
+.adc.is-still .adc-frame,
+.adc.is-still .adc-bg i,
+.adc.is-still .adc-blob,
+.adc.is-still .adc-orbit,
+.adc.is-still .adc-glass,
+.adc.is-still .adc-waves svg,
+.adc.is-still .adc-shine,
+.adc.is-still .adc-cta::after,
+.adc.is-still .adc-stat { animation: none !important; }
+.adc.is-still .adc-slide { transform: none; filter: none; transition: opacity 300ms ease, visibility 0s linear 300ms; }
+.adc.is-still .adc-slide .adc-body > :not(h3),
+.adc.is-still .adc-slide .adc-body h3 span,
+.adc.is-still .adc-slide .adc-stat { transition: none; }
+.adc.is-still .adc-photo, .adc.is-still .adc-ghost { transition: none; }
 
 /* ---- your shop ---- */
 
@@ -294,7 +501,6 @@
 .fy-head .ads-label svg { color: var(--accent); }
 .fy-all { min-height: 30px; padding: 0 6px 0 10px; gap: 2px; border: none; background: transparent; font-size: 13px; color: var(--accent-deep); }
 .fy-all:hover:not(:disabled) { background: var(--accent-tint); border: none; }
-.fy .adc-dots { margin-top: 8px; }
 
 .fy-learn .ads-label { margin: 2px 0 8px 2px; }
 .fy-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }
