@@ -36,18 +36,24 @@ import './checkin.css';
 
 type Step = 'choose' | 'code' | 'manual' | 'done';
 
-const CheckInContext = createContext<(appointment?: Appointment) => void>(() => {});
+type OpenCheckIn = (appointment?: Appointment, options?: { manual?: boolean }) => void;
 
-/** Opens the check-in window, optionally with the customer already chosen. */
+const CheckInContext = createContext<OpenCheckIn>(() => {});
+
+/**
+ * Opens the check-in window, optionally with the customer already chosen —
+ * and, for an owner or manager, straight on "No code?".
+ */
 export const useCheckIn = () => useContext(CheckInContext);
 
 export function CheckInProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<{ open: boolean; preset?: Appointment; key: number }>({
+  const [state, setState] = useState<{ open: boolean; preset?: Appointment; manual?: boolean; key: number }>({
     open: false,
     key: 0,
   });
-  const open = useCallback(
-    (appointment?: Appointment) => setState((was) => ({ open: true, preset: appointment, key: was.key + 1 })),
+  const open = useCallback<OpenCheckIn>(
+    (appointment, options) =>
+      setState((was) => ({ open: true, preset: appointment, manual: options?.manual, key: was.key + 1 })),
     [],
   );
   const close = useCallback(() => setState((was) => ({ ...was, open: false })), []);
@@ -55,7 +61,9 @@ export function CheckInProvider({ children }: { children: ReactNode }) {
   return (
     <CheckInContext.Provider value={open}>
       {children}
-      {state.open && <CheckInDialog key={state.key} preset={state.preset} onClose={close} />}
+      {state.open && (
+        <CheckInDialog key={state.key} preset={state.preset} manual={state.manual} onClose={close} />
+      )}
     </CheckInContext.Provider>
   );
 }
@@ -98,10 +106,18 @@ const minutesBetween = (a: Appointment) =>
 const whatFor = (a: Appointment) =>
   `${a.service.name}${a.quantity > 1 ? ` · ${a.quantity} people` : ''}`;
 
-function CheckInDialog({ preset, onClose }: { preset?: Appointment; onClose: () => void }) {
+function CheckInDialog({
+  preset,
+  manual: startManual = false,
+  onClose,
+}: {
+  preset?: Appointment;
+  manual?: boolean;
+  onClose: () => void;
+}) {
   const queryClient = useQueryClient();
   const money = useMoney();
-  const [step, setStep] = useState<Step>(preset ? 'code' : 'choose');
+  const [step, setStep] = useState<Step>(preset ? (startManual ? 'manual' : 'code') : 'choose');
   const [chosen, setChosen] = useState<Appointment | null>(preset ?? null);
   const [code, setCode] = useState('');
   const [note, setNote] = useState('');

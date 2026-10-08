@@ -7119,9 +7119,12 @@ them, not to browse records.
 
 Three decisions follow from that:
 
-- The code input sits **in the row**, not behind a dialog. Verifying is the
+- ~~The code input sits **in the row**, not behind a dialog. Verifying is the
   single most frequent action in the app and it should cost one keystroke
-  sequence, not a click-then-type.
+  sequence, not a click-then-type.~~ *Superseded by §191/§193: the row's
+  Check in opens the check-in window with the customer chosen and the six
+  boxes focused, and the sixth digit checks them in — one click and six
+  keystrokes, where the row's box was a click, six keystrokes and a Verify.*
 - **"You earn"** shows the business's share of the deposit, with the service
   price beneath it and the words "rest paid to you directly". Showing one number
   would invite reading it as the price (§29.2).
@@ -14343,4 +14346,50 @@ flow, re-ordered so **Next up comes straight after the numbers**.
 `src/lib/time.ts` holds the time words every screen shares; `src/ui/Stars.tsx`
 draws ratings with halves. The status pill no longer capitalises every word
 ("2 h 45 min late", not "2 H 45 Min Late").
+
+## 193. Appointments, rebuilt — and one dialog for the business app (2026-10-08)
+
+### 193.1 The page
+
+`src/pages/AppointmentsPage.tsx`, keeping every action and its wording:
+
+- **Tabs with counts** — Expected, In progress, Awaiting payment, Done, All —
+  each saying how many it holds. The tab is in the address
+  (`/appointments?tab=in-progress`), so Overview's "With you now" lands on it.
+- **Grouped by day.** The waiting tabs (expected, in progress, awaiting
+  payment) are fetched whole and read **soonest first** — the list endpoint
+  only sorts newest first (§96), which put next month above this afternoon.
+  Expected customers from past days sit at the top under an amber **"Earlier —
+  not checked in"**. The history tabs (Done, All) stay newest first, 25 at a
+  time with **Show more** (there was no way past the first 25 before).
+- **Search** by email, service or branch, over what is loaded.
+- Each row: time and length, the customer with "Deposit paid", the service
+  (people count in coral), **You earn** with "of X — rest paid to you
+  directly" (§29.2), the state (late ones amber, "2 h 53 min late"), and the
+  next step as a button: **Check in** (opens §191 with them chosen) or **Mark
+  done**. The rarer steps — No code? (owner/manager), No-show, Cancel — are
+  behind **⋯**. "Waiting for the customer to pay" for unpaid ones.
+- **Clicking a row opens the details panel** (§96): the customer and state;
+  when, service and branch; **What happened** as steps (booked, deposit paid,
+  arrived, done / did not come / cancelled by whom, with the reason); the
+  money with **To pay you at the shop**; the payment trail with a **Copy**
+  button on the operator's reference; and the actions at its foot.
+
+### 193.2 One dialog (`src/ui/Dialog.tsx`)
+
+The business app's version of the customer app's §184: `confirmDialog`,
+`promptDialog` (with a minimum length and a hint until it is met) and
+`alertDialog`, awaited like the browser's, drawn by one `DialogHost` at the
+root — tone-coloured icon, the dangerous choice in red, Esc to back out, a
+sheet from the bottom on a phone. Appointments now uses it:
+
+- **Cancel** asks for the reason with §70's words ("The customer is told this
+  reason, and if they have paid a deposit it is refunded in full — including
+  our fee"); "Keep it" / "Cancel the booking", disabled under 3 characters.
+- **No-show** now asks first — it used to act on one click. The dialog says
+  the deposit is not refunded (§25: a no-show forfeits it).
+- **No code?** opens the check-in window straight on its written form (§191).
+
+The other pages' browser pop-ups (Services, Hours, Shopfront, People) move to
+the dialog as each page is rebuilt.
 

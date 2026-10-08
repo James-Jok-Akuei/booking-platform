@@ -1,0 +1,82 @@
+/* The one dialog (§193). */
+
+.dlg-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(21, 23, 28, 0.42);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade-in 160ms var(--ease);
+}
+
+.dlg {
+  width: min(470px, 100%);
+  padding: 26px 26px 22px;
+  border-radius: 28px;
+  background: var(--panel);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(21, 23, 28, 0.05);
+  animation: pop-in 260ms var(--ease);
+}
+
+.dlg-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+}
+.dlg.tone-danger .dlg-icon { background: var(--danger-soft); color: var(--danger); }
+.dlg.tone-ok .dlg-icon { background: var(--ok-soft); color: var(--ok-deep); }
+.dlg.tone-info .dlg-icon { background: var(--ask-soft); color: var(--ask); }
+.dlg.tone-warn .dlg-icon { background: var(--warn-soft); color: var(--warn); }
+
+.dlg h2 { margin: 0; font-size: 21px; letter-spacing: -0.02em; line-height: 1.25; }
+.dlg-body { margin-top: 8px; color: var(--ink-2); font-size: 14.5px; line-height: 1.55; }
+.dlg-body p { margin: 0 0 8px; }
+.dlg-body p:last-child { margin: 0; }
+
+.dlg-form { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+.dlg-form textarea, .dlg-form input { width: 100%; resize: vertical; }
+.dlg-hint { margin: 2px 0 0; font-size: 12.5px; color: var(--warn); font-weight: 600; }
+.dlg-note {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--sunken);
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dlg-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+.dlg-actions button { min-height: 46px; padding: 0 20px; border-radius: 14px; }
+.dlg-confirm { border: none; color: #fff; background: var(--accent-grad); box-shadow: var(--shadow-accent); }
+.dlg-confirm:hover:not(:disabled) { background: var(--accent-grad); border: none; filter: brightness(1.06); }
+.dlg-confirm.tone-danger { background: var(--danger); box-shadow: 0 10px 22px -10px rgba(217, 45, 32, 0.7); }
+.dlg-confirm.tone-danger:hover:not(:disabled) { background: #c2261a; }
+.dlg-confirm.tone-ok { background: var(--ok); box-shadow: 0 10px 22px -10px rgba(14, 159, 84, 0.7); }
+.dlg-confirm.tone-ok:hover:not(:disabled) { background: var(--ok-deep); }
+.dlg-confirm.tone-info, .dlg-confirm.tone-warn { background: var(--night); box-shadow: none; }
+.dlg-confirm.tone-info:hover:not(:disabled), .dlg-confirm.tone-warn:hover:not(:disabled) { background: var(--night-2); }
+
+@media (max-width: 640px) {
+  .dlg-backdrop { place-items: end stretch; padding: 0; }
+  .dlg {
+    width: 100%;
+    border-radius: 28px 28px 0 0;
+    padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
+    animation: sheet-up 320ms var(--ease);
+  }
+  .dlg-actions { flex-direction: column-reverse; }
+  .dlg-actions button { width: 100%; }
+}
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
