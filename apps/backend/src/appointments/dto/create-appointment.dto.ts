@@ -18,11 +18,11 @@ export class CreateAppointmentDto {
   startTime!: string;
 
   /**
-   * How many (§136). Left out, it is one — what every booking was.
+   * How many people (§136, §189). Left out, it is one — what every booking was.
    *
-   * What it MEANS is the service's to say: people, or units of the thing. The
-   * service's own maximum is checked in the service, where the row is loaded;
-   * the 1000 here only bounds the type.
+   * Each person takes one of the branch's places, so the most is the places
+   * the branch has; that is checked in the service, where the branch is
+   * loaded. The 1000 here only bounds the type.
    */
   @IsOptional()
   @IsInt()

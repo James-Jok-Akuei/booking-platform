@@ -1,10 +1,10 @@
 import type { IconName } from '../ui/Icon';
 
-export type Period = {
+export type Period<T = string> = {
   key: 'morning' | 'afternoon' | 'evening';
   label: string;
   icon: IconName;
-  slots: string[];
+  slots: T[];
 };
 
 const PERIODS: Array<Omit<Period, 'slots'> & { from: number; to: number }> = [
@@ -14,14 +14,20 @@ const PERIODS: Array<Omit<Period, 'slots'> & { from: number; to: number }> = [
 ];
 
 /**
- * Free times in the three parts of a day a person thinks in (§179).
+ * Times in the three parts of a day a person thinks in (§179).
  *
  * Thirty-five identical buttons in a grid are a wall; "the one after lunch"
  * is found by looking under Afternoon. Only the parts with something in them
  * are returned, in the day's order. A time that cannot be read is left out
- * rather than guessed at.
+ * rather than guessed at. Takes plain "HH:mm" strings, or anything else with
+ * a way to read its time — a time with its places left (§189).
  */
-export function groupByPeriod(slots: string[]): Period[] {
+export function groupByPeriod(slots: string[]): Period[];
+export function groupByPeriod<T>(slots: T[], timeOf: (slot: T) => string): Period<T>[];
+export function groupByPeriod<T>(
+  slots: T[],
+  timeOf: (slot: T) => string = (slot) => String(slot),
+): Period<T>[] {
   const hourOf = (time: string) => {
     const hour = Number(time.split(':')[0]);
     return Number.isFinite(hour) ? hour : null;
@@ -30,8 +36,8 @@ export function groupByPeriod(slots: string[]): Period[] {
     key: period.key,
     label: period.label,
     icon: period.icon,
-    slots: slots.filter((time) => {
-      const hour = hourOf(time);
+    slots: slots.filter((slot) => {
+      const hour = hourOf(timeOf(slot));
       return hour !== null && hour >= period.from && hour < period.to;
     }),
   })).filter((period) => period.slots.length > 0);

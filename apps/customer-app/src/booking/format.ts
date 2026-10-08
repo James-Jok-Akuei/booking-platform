@@ -34,13 +34,9 @@ export const timeRange = (a: Pick<Appointment, 'startTime' | 'endTime'>) =>
 export const minutesOf = (a: Pick<Appointment, 'startTime' | 'endTime'>) =>
   Math.round((new Date(a.endTime).getTime() - new Date(a.startTime).getTime()) / 60_000);
 
-/** "For 3 people", "× 3", or nothing for one. */
-export const howMany = (a: Pick<Appointment, 'quantity' | 'service'>) =>
-  a.quantity <= 1
-    ? null
-    : a.service.quantityMode === 'PEOPLE'
-      ? `For ${a.quantity} people`
-      : `× ${a.quantity}`;
+/** "For 3 people", or nothing for one (§189: a quantity is always people). */
+export const howMany = (a: Pick<Appointment, 'quantity'>) =>
+  a.quantity <= 1 ? null : `For ${a.quantity} people`;
 
 /**
  * A number a person can read out. It is the first eight characters of the

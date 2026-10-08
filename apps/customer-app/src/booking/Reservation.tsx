@@ -187,10 +187,7 @@ export function Reservation({
         <Row label="Time" value={timeRange(a)} />
         <Row label="Length" value={duration(minutesOf(a), true)} />
         {a.quantity > 1 && (
-          <Row
-            label={a.service.quantityMode === 'PEOPLE' ? 'People' : 'How many'}
-            value={String(a.quantity)}
-          />
+          <Row label="People" value={String(a.quantity)} />
         )}
         <Row label="Place" value={`${a.location.name}\n${a.location.address}`} />
         {way && <Row label="Getting there" value={way} />}

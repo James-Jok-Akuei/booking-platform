@@ -25,15 +25,15 @@ export class AvailabilityQueryDto {
   durationMinutes?: number = SLOT_GRID_MINUTES;
 
   /**
-   * Ask about a SERVICE instead of a length (§136). When sent, the server works
-   * out how long the booking is and how many places it needs from the service
-   * and `quantity`, and `durationMinutes` above is ignored.
+   * Ask about a SERVICE instead of a length (§136). When sent, the booking is
+   * the service's own length and needs one place per person in `quantity`
+   * (§189), and `durationMinutes` above is ignored.
    */
   @IsOptional()
   @IsUUID()
   serviceId?: string;
 
-  /** How many of `serviceId`. Only read alongside it. */
+  /** How many people. Only read alongside `serviceId`. */
   @IsOptional()
   @Type(() => Number)
   @IsInt()

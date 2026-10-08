@@ -3440,14 +3440,6 @@ export interface components {
              *     needs a database read and happens in ServicesService.
              */
             depositPercentage?: number;
-            /**
-             * @description Whether one booking may be for more than one, and what "more" means (§136).
-             *     Left out, a service is booked one at a time — what every service was.
-             * @enum {string}
-             */
-            quantityMode?: "SINGLE" | "PEOPLE" | "UNITS";
-            /** @description The most one booking may ask for. Ignored (stored as 1) when SINGLE. */
-            maxQuantity?: number;
             isActive?: boolean;
         };
         ServiceOfferLocationDto: {
@@ -3487,13 +3479,6 @@ export interface components {
             currency: string;
             /** @description A decimal STRING — "20", not 20 (§56). */
             depositPercentage: string;
-            /**
-             * @description Whether a booking may be for more than one, and what "more" means (§136).
-             * @enum {string}
-             */
-            quantityMode: "SINGLE" | "PEOPLE" | "UNITS";
-            /** @description The most one booking may ask for; 1 when `SINGLE`. */
-            maxQuantity: number;
             /** @description False means RETIRED, never deleted (§74, §101). */
             isActive: boolean;
             createdAt: string;
@@ -3547,14 +3532,6 @@ export interface components {
              *     needs a database read and happens in ServicesService.
              */
             depositPercentage?: number;
-            /**
-             * @description Whether one booking may be for more than one, and what "more" means (§136).
-             *     Left out, a service is booked one at a time — what every service was.
-             * @enum {string}
-             */
-            quantityMode?: "SINGLE" | "PEOPLE" | "UNITS";
-            /** @description The most one booking may ask for. Ignored (stored as 1) when SINGLE. */
-            maxQuantity?: number;
             isActive?: boolean;
         };
         SetServiceOfferedDto: {
@@ -3583,13 +3560,6 @@ export interface components {
             currency: string;
             /** @description A decimal string (§128.20). */
             depositPercentage: string;
-            /**
-             * @description Whether a booking may be for more than one, and what "more" means (§136).
-             * @enum {string}
-             */
-            quantityMode: "SINGLE" | "PEOPLE" | "UNITS";
-            /** @description The most one booking may ask for; 1 when `SINGLE`. */
-            maxQuantity: number;
             /** @description False once retired. The row is kept so past appointments still resolve. */
             isActive: boolean;
             createdAt: string;
@@ -3762,6 +3732,12 @@ export interface components {
             message: string;
             membership: components["schemas"]["RemovedMembershipDto"];
         };
+        AvailabilityTimeDto: {
+            /** @description `HH:mm`, wall clock, in the answer's `timeZone`. */
+            time: string;
+            /** @description 0 means the time is fully booked. */
+            placesLeft: number;
+        };
         AvailabilityDto: {
             locationId: string;
             /** @description A calendar day, `YYYY-MM-DD`. Not an instant. */
@@ -3771,7 +3747,7 @@ export interface components {
             /** @description The zone every time here is expressed in. */
             timeZone: string;
             durationMinutes: number;
-            /** @description Concurrent appointments this branch can run; a slot survives until this many overlap. */
+            /** @description People this branch serves at once (§189): the places every time starts with. */
             capacity: number;
             /**
              * @description WHY the answer is what it is — which of the weekly template, a date-specific
@@ -3787,8 +3763,14 @@ export interface components {
             closeTime: string | null;
             /** @description The words to show when closed, when there are any. */
             reason: string | null;
-            /** @description `HH:mm` start times. Empty when closed or fully booked. */
+            /** @description `HH:mm` start times with room for the booking asked about. Empty when closed or fully booked. */
             slots: string[];
+            /**
+             * @description Every start time the branch is open for, booked or not, with the places
+             *     still free (§189). A time with `placesLeft` 0 is fully booked and shows as
+             *     such; a time in the past or blocked off by the shop is not listed at all.
+             */
+            times: components["schemas"]["AvailabilityTimeDto"][];
         };
         CreateScheduleExceptionDto: {
             date: string;
@@ -3956,11 +3938,11 @@ export interface components {
              */
             startTime: string;
             /**
-             * @description How many (§136). Left out, it is one — what every booking was.
+             * @description How many people (§136, §189). Left out, it is one — what every booking was.
              *
-             *     What it MEANS is the service's to say: people, or units of the thing. The
-             *     service's own maximum is checked in the service, where the row is loaded;
-             *     the 1000 here only bounds the type.
+             *     Each person takes one of the branch's places, so the most is the places
+             *     the branch has; that is checked in the service, where the branch is
+             *     loaded. The 1000 here only bounds the type.
              */
             quantity?: number;
         };
@@ -3975,11 +3957,6 @@ export interface components {
             name: string;
             /** @description The NAME only. The live price is deliberately not joined here (§30). */
             durationMinutes: number;
-            /**
-             * @description What `quantity` on the appointment counts: people, or units (§136).
-             * @enum {string}
-             */
-            quantityMode: "SINGLE" | "PEOPLE" | "UNITS";
             /** @description What to know before coming (§180) — live from the service, for the reservation. */
             instructions: string | null;
         };
@@ -4005,8 +3982,9 @@ export interface components {
              */
             servicePriceMinor: number | null;
             /**
-             * @description How many were booked (§136). `servicePriceMinor` above is the price of ALL
-             *     of them; `unitPriceMinor` is the price of one, null on the same old rows.
+             * @description How many people it is for (§136, §189). `servicePriceMinor` above is the
+             *     price of ALL of them; `unitPriceMinor` is the price of one, null on the
+             *     same old rows.
              */
             quantity: number;
             unitPriceMinor: number | null;
@@ -4070,8 +4048,9 @@ export interface components {
              */
             servicePriceMinor: number | null;
             /**
-             * @description How many were booked (§136). `servicePriceMinor` above is the price of ALL
-             *     of them; `unitPriceMinor` is the price of one, null on the same old rows.
+             * @description How many people it is for (§136, §189). `servicePriceMinor` above is the
+             *     price of ALL of them; `unitPriceMinor` is the price of one, null on the
+             *     same old rows.
              */
             quantity: number;
             unitPriceMinor: number | null;
@@ -5291,21 +5270,13 @@ export interface components {
             /** @description A decimal string, like every percentage here (§128.20). */
             depositPercentage: string;
             /**
-             * @description The price of ONE as paid today — after the sale, if one is on (§186). A
-             *     booking of several costs this times how many (§136).
+             * @description The price of ONE person as paid today — after the sale, if one is on
+             *     (§186). A booking for several costs this times how many (§136); how many
+             *     can come at once is the branch's `capacity` (§189).
              */
             priceMinor: number;
             /** @description The sale on today, or null (§186). */
             discount: components["schemas"]["ServiceDiscountDto"] | null;
-            /**
-             * @description Whether a booking may be for more than one, and what "more" means (§136):
-             *     `PEOPLE` asks "how many people?", `UNITS` asks "how many?", and `SINGLE`
-             *     asks nothing.
-             * @enum {string}
-             */
-            quantityMode: "SINGLE" | "PEOPLE" | "UNITS";
-            /** @description The most one booking may ask for; 1 when `SINGLE`. */
-            maxQuantity: number;
             /**
              * @description Photos of the service, cover first (§132). Empty is normal — a service
              *     without photos is one nobody has photographed yet, not a broken one, and a
@@ -10003,12 +9974,12 @@ export interface operations {
                  */
                 durationMinutes?: number;
                 /**
-                 * @description Ask about a SERVICE instead of a length (§136). When sent, the server works
-                 *     out how long the booking is and how many places it needs from the service
-                 *     and `quantity`, and `durationMinutes` above is ignored.
+                 * @description Ask about a SERVICE instead of a length (§136). When sent, the booking is
+                 *     the service's own length and needs one place per person in `quantity`
+                 *     (§189), and `durationMinutes` above is ignored.
                  */
                 serviceId?: string;
-                /** @description How many of `serviceId`. Only read alongside it. */
+                /** @description How many people. Only read alongside `serviceId`. */
                 quantity?: number;
             };
             header?: never;

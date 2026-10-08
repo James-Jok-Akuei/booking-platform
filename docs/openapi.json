@@ -5613,7 +5613,7 @@
             "name": "serviceId",
             "required": false,
             "in": "query",
-            "description": "Ask about a SERVICE instead of a length (§136). When sent, the server works\nout how long the booking is and how many places it needs from the service\nand `quantity`, and `durationMinutes` above is ignored.",
+            "description": "Ask about a SERVICE instead of a length (§136). When sent, the booking is\nthe service's own length and needs one place per person in `quantity`\n(§189), and `durationMinutes` above is ignored.",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -5623,7 +5623,7 @@
             "name": "quantity",
             "required": false,
             "in": "query",
-            "description": "How many of `serviceId`. Only read alongside it.",
+            "description": "How many people. Only read alongside `serviceId`.",
             "schema": {
               "minimum": 1,
               "maximum": 1000,
@@ -15494,21 +15494,6 @@
             "minimum": 0,
             "maximum": 100
           },
-          "quantityMode": {
-            "type": "string",
-            "description": "Whether one booking may be for more than one, and what \"more\" means (§136).\nLeft out, a service is booked one at a time — what every service was.",
-            "enum": [
-              "SINGLE",
-              "PEOPLE",
-              "UNITS"
-            ]
-          },
-          "maxQuantity": {
-            "type": "number",
-            "description": "The most one booking may ask for. Ignored (stored as 1) when SINGLE.",
-            "minimum": 1,
-            "maximum": 1000
-          },
           "isActive": {
             "type": "boolean"
           }
@@ -15624,19 +15609,6 @@
             "type": "string",
             "description": "A decimal STRING — \"20\", not 20 (§56)."
           },
-          "quantityMode": {
-            "description": "Whether a booking may be for more than one, and what \"more\" means (§136).",
-            "enum": [
-              "SINGLE",
-              "PEOPLE",
-              "UNITS"
-            ],
-            "type": "string"
-          },
-          "maxQuantity": {
-            "type": "number",
-            "description": "The most one booking may ask for; 1 when `SINGLE`."
-          },
           "isActive": {
             "type": "boolean",
             "description": "False means RETIRED, never deleted (§74, §101)."
@@ -15673,8 +15645,6 @@
           "durationMinutes",
           "currency",
           "depositPercentage",
-          "quantityMode",
-          "maxQuantity",
           "isActive",
           "createdAt",
           "updatedAt",
@@ -15739,21 +15709,6 @@
             "description": "Share of the price the customer pays up front to hold the slot.\n\nThe lower bound is NOT expressed here: it is the live platform fee from\nPlatformSetting, which an admin can change at runtime, so validating it\nneeds a database read and happens in ServicesService.",
             "minimum": 0,
             "maximum": 100
-          },
-          "quantityMode": {
-            "description": "Whether one booking may be for more than one, and what \"more\" means (§136).\nLeft out, a service is booked one at a time — what every service was.",
-            "enum": [
-              "SINGLE",
-              "PEOPLE",
-              "UNITS"
-            ],
-            "type": "string"
-          },
-          "maxQuantity": {
-            "type": "number",
-            "description": "The most one booking may ask for. Ignored (stored as 1) when SINGLE.",
-            "minimum": 1,
-            "maximum": 1000
           },
           "isActive": {
             "type": "boolean"
@@ -15840,19 +15795,6 @@
             "type": "string",
             "description": "A decimal string (§128.20)."
           },
-          "quantityMode": {
-            "type": "string",
-            "description": "Whether a booking may be for more than one, and what \"more\" means (§136).",
-            "enum": [
-              "SINGLE",
-              "PEOPLE",
-              "UNITS"
-            ]
-          },
-          "maxQuantity": {
-            "type": "number",
-            "description": "The most one booking may ask for; 1 when `SINGLE`."
-          },
           "isActive": {
             "type": "boolean",
             "description": "False once retired. The row is kept so past appointments still resolve."
@@ -15876,8 +15818,6 @@
           "durationMinutes",
           "currency",
           "depositPercentage",
-          "quantityMode",
-          "maxQuantity",
           "isActive",
           "createdAt",
           "updatedAt"
@@ -16500,6 +16440,23 @@
           "membership"
         ]
       },
+      "AvailabilityTimeDto": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string",
+            "description": "`HH:mm`, wall clock, in the answer's `timeZone`."
+          },
+          "placesLeft": {
+            "type": "number",
+            "description": "0 means the time is fully booked."
+          }
+        },
+        "required": [
+          "time",
+          "placesLeft"
+        ]
+      },
       "AvailabilityDto": {
         "type": "object",
         "properties": {
@@ -16523,7 +16480,7 @@
           },
           "capacity": {
             "type": "number",
-            "description": "Concurrent appointments this branch can run; a slot survives until this many overlap."
+            "description": "People this branch serves at once (§189): the places every time starts with."
           },
           "source": {
             "type": "string",
@@ -16551,10 +16508,17 @@
             "description": "The words to show when closed, when there are any."
           },
           "slots": {
-            "description": "`HH:mm` start times. Empty when closed or fully booked.",
+            "description": "`HH:mm` start times with room for the booking asked about. Empty when closed or fully booked.",
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "times": {
+            "description": "Every start time the branch is open for, booked or not, with the places\nstill free (§189). A time with `placesLeft` 0 is fully booked and shows as\nsuch; a time in the past or blocked off by the shop is not listed at all.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvailabilityTimeDto"
             }
           }
         },
@@ -16569,7 +16533,8 @@
           "openTime",
           "closeTime",
           "reason",
-          "slots"
+          "slots",
+          "times"
         ]
       },
       "CreateScheduleExceptionDto": {
@@ -16960,7 +16925,7 @@
           },
           "quantity": {
             "type": "number",
-            "description": "How many (§136). Left out, it is one — what every booking was.\n\nWhat it MEANS is the service's to say: people, or units of the thing. The\nservice's own maximum is checked in the service, where the row is loaded;\nthe 1000 here only bounds the type.",
+            "description": "How many people (§136, §189). Left out, it is one — what every booking was.\n\nEach person takes one of the branch's places, so the most is the places\nthe branch has; that is checked in the service, where the branch is\nloaded. The 1000 here only bounds the type.",
             "minimum": 1,
             "maximum": 1000
           }
@@ -17007,15 +16972,6 @@
             "type": "number",
             "description": "The NAME only. The live price is deliberately not joined here (§30)."
           },
-          "quantityMode": {
-            "type": "string",
-            "description": "What `quantity` on the appointment counts: people, or units (§136).",
-            "enum": [
-              "SINGLE",
-              "PEOPLE",
-              "UNITS"
-            ]
-          },
           "instructions": {
             "type": "string",
             "nullable": true,
@@ -17026,7 +16982,6 @@
           "id",
           "name",
           "durationMinutes",
-          "quantityMode",
           "instructions"
         ]
       },
@@ -17088,7 +17043,7 @@
           },
           "quantity": {
             "type": "number",
-            "description": "How many were booked (§136). `servicePriceMinor` above is the price of ALL\nof them; `unitPriceMinor` is the price of one, null on the same old rows."
+            "description": "How many people it is for (§136, §189). `servicePriceMinor` above is the\nprice of ALL of them; `unitPriceMinor` is the price of one, null on the\nsame old rows."
           },
           "unitPriceMinor": {
             "type": "number",
@@ -17301,7 +17256,7 @@
           },
           "quantity": {
             "type": "number",
-            "description": "How many were booked (§136). `servicePriceMinor` above is the price of ALL\nof them; `unitPriceMinor` is the price of one, null on the same old rows."
+            "description": "How many people it is for (§136, §189). `servicePriceMinor` above is the\nprice of ALL of them; `unitPriceMinor` is the price of one, null on the\nsame old rows."
           },
           "unitPriceMinor": {
             "type": "number",
@@ -21348,7 +21303,7 @@
           },
           "priceMinor": {
             "type": "number",
-            "description": "The price of ONE as paid today — after the sale, if one is on (§186). A\nbooking of several costs this times how many (§136)."
+            "description": "The price of ONE person as paid today — after the sale, if one is on\n(§186). A booking for several costs this times how many (§136); how many\ncan come at once is the branch's `capacity` (§189)."
           },
           "discount": {
             "nullable": true,
@@ -21359,19 +21314,6 @@
                 "$ref": "#/components/schemas/ServiceDiscountDto"
               }
             ]
-          },
-          "quantityMode": {
-            "type": "string",
-            "description": "Whether a booking may be for more than one, and what \"more\" means (§136):\n`PEOPLE` asks \"how many people?\", `UNITS` asks \"how many?\", and `SINGLE`\nasks nothing.",
-            "enum": [
-              "SINGLE",
-              "PEOPLE",
-              "UNITS"
-            ]
-          },
-          "maxQuantity": {
-            "type": "number",
-            "description": "The most one booking may ask for; 1 when `SINGLE`."
           },
           "images": {
             "description": "Photos of the service, cover first (§132). Empty is normal — a service\nwithout photos is one nobody has photographed yet, not a broken one, and a\nclient should fall back to the shop's own picture rather than a gap.",
@@ -21392,8 +21334,6 @@
           "depositPercentage",
           "priceMinor",
           "discount",
-          "quantityMode",
-          "maxQuantity",
           "images"
         ]
       },

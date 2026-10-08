@@ -222,11 +222,14 @@ function LocationCard({
           Save
         </button>
       </div>
-      {/* Capacity is what availability counts against: two chairs means two
-          customers can hold the same slot (§16.4). */}
+      {/* Capacity is what availability counts against (§16.4), and since
+          §189 the only thing deciding how many one booking may be for. */}
       <p className="muted small">
-        Two chairs means two customers can book the same time. Lowering this does
-        not cancel bookings already made.
+        How many customers this branch can look after at the same time — the
+        same number for every service here. A booking for 3 people takes 3
+        places at that time; when every place is taken, customers see the time
+        as booked. It is also the most people one booking can be for. Lowering
+        it does not cancel bookings already made.
       </p>
       {saveCapacity.error && (
         <p className="error small" role="alert">

@@ -208,7 +208,8 @@ export class LocationsService {
   }
 
   /**
-   * Sets how many appointments this location can run at once.
+   * Sets how many people this location serves at once — its places (§189). A
+   * booking for three takes three of them.
    *
    * Its own endpoint rather than a field on the general location PATCH:
    * capacity changes what the availability engine will accept, so it is worth

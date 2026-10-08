@@ -12484,8 +12484,11 @@ deposits. A booking now carries a QUANTITY.
 
 ### 136.1 The service says what "three" means
 
-`Service.quantityMode`, chosen by the business, because the same number means
-different things:
+*Superseded by §189: the service says nothing; three is three people, taking
+three of the branch's places.*
+
+~~`Service.quantityMode`, chosen by the business, because the same number means
+different things:~~
 
 | Mode | Example | Price | Time | Places in the shop |
 |---|---|---|---|---|
@@ -12493,26 +12496,31 @@ different things:
 | `PEOPLE` | 3 haircuts | × how many | see 136.2 | see 136.2 |
 | `UNITS` | 3 passport photos | × how many | as set | 1 |
 
-`Service.maxQuantity` is the most one booking may ask for: 1 for `SINGLE`,
+~~`Service.maxQuantity` is the most one booking may ask for: 1 for `SINGLE`,
 2–20 otherwise. A CHECK constraint holds the two columns together and
 `normaliseQuantityRule` makes them agree before a write. Every existing
-service is `SINGLE`, so nothing changes until a business opts in.
+service is `SINGLE`, so nothing changes until a business opts in.~~
 
 ### 136.2 People are served side by side, then in rounds
 
-`planQuantity`, in `appointments/quantity.ts`:
+*Superseded by §189: side by side only. A group bigger than the branch is
+refused; it is never served in rounds.*
+
+~~`planQuantity`, in `appointments/quantity.ts`:~~
 
     places taken = min(people, branch capacity)
     rounds       = ceil(people / places taken)
     time         = rounds × the service's length
 
-Three 30-minute haircuts are 30 minutes in a four-chair salon (3 places), 60
+~~Three 30-minute haircuts are 30 minutes in a four-chair salon (3 places), 60
 across two chairs, and 90 back to back in a one-chair barbershop. No business
-configures which; it follows from the capacity they already set (§16.4).
+configures which; it follows from the capacity they already set (§16.4).~~
 
-**Rejected: refusing a group larger than the capacity.** Simpler, and it would
+~~**Rejected: refusing a group larger than the capacity.** Simpler, and it would
 make every one-chair shop — most of them — unable to take a parent and a child
-in one booking, which is the case that prompted this.
+in one booking, which is the case that prompted this.~~ Chosen after all in
+§189: the rounds made times vanish as the number went up, and nobody could
+see why.
 
 **Not built: quantity that lengthens a UNITS booking** ("2 hours of massage").
 A business sells that today as a second, longer service.
@@ -12520,8 +12528,9 @@ A business sells that today as a second, longer service.
 ### 136.3 Availability counts places
 
 An appointment stores `capacityUnits`, the places it occupies. A slot is
-offered while `places already taken + places needed ≤ capacity`; with one each
-that is exactly the old rule. `GET /locations/:id/availability` takes
+offered while ~~`places already taken + places needed ≤ capacity`~~ the places
+in use at the busiest moment of it, plus the places needed, are ≤ capacity
+(§189); with one each that is exactly the old rule. `GET /locations/:id/availability` takes
 `serviceId` and `quantity` and works out length and places ITSELF, with the
 same function booking uses, so a client never computes them and the times
 offered are the times accepted. The answer's `durationMinutes` is the whole
@@ -12541,9 +12550,10 @@ a business changing its rule later does not rewrite a booking already made.
 
 ### 136.5 Screens
 
-- **Business:** the service form asks "Can a customer book more than one?" with
+- ~~**Business:** the service form asks "Can a customer book more than one?" with
   the three answers in plain words, and "Most in one booking". Bookings show
-  "· 3 people" or "× 3", and their real length.
+  "· 3 people" or "× 3", and their real length.~~ Both questions are gone
+  (§189); bookings show "· 3 people".
 - **Customer:** the booking screen shows a − / + picker only where the service
   allows more than one, worded "How many people?" or "How many?". The total,
   the deposit, the length and the free times all follow it; changing it clears
@@ -12997,6 +13007,10 @@ The one rule for a new sky: dark enough for white text. All ten were rendered
 side by side and checked.
 
 ## 155. The quantity ceiling is 1000 (2026-10-06)
+
+*Superseded by §189: "Most in one booking" no longer exists. 1000 survives
+only as the bound on the number a booking or availability request may carry;
+the real limit is the branch's places.*
 
 "Most in one booking" was capped at 20 (§136.1). A business may sell a thing
 by the hundred — prints, tickets, seats — so the ceiling is 1000 everywhere it
@@ -14071,3 +14085,80 @@ This reverses §178's "stops after one round".
 
 Checked in the web build over 62 s: six spotlights, a move every 8 s,
 6th → 1st forwards at 47 s, then on to the 2nd at 55 s.
+
+## 189. How many people: the branch's places, and nothing else (2026-10-08)
+
+The user found that pressing + on "How many people?" made times disappear,
+and asked for one rule instead of three. A branch serves so many people at
+once ("People served at once", on Branches & hours). That is the only number:
+
+> If a time can serve 5 people at once and one booking takes 3, 2 are left at
+> that time. When those 2 are booked, the time reads as booked.
+
+### 189.1 What went
+
+- **"Can a customer book more than one?"** (`Service.quantityMode`, with its
+  SINGLE / PEOPLE / UNITS answers) and **"Most in one booking"**
+  (`Service.maxQuantity`), with the CHECK constraint holding them together.
+  Migration `places_only` drops both columns and the enum. The service form
+  says instead: the price is for one person, and how many can come at once is
+  set per branch, with a link to it.
+- **Rounds.** A group bigger than the branch was served one after another and
+  the booking grew longer (§136.2), which is what made times vanish: five
+  people at a one-chair shop was a five-hour booking. Now a booking is always
+  the service's own length.
+- **"Several of the same for one customer"** (UNITS, "3 passport photos"). It
+  took one place however many, which does not fit a rule made of places.
+  Sold that way, it is now one person's booking; a shop can still price a
+  pack as its own service.
+
+### 189.2 The rule
+
+- A booking for N people takes **N places, all at the same time**, for the
+  service's own length. `capacityUnits` is N.
+- The most one booking can be for is the branch's places. More is refused
+  with the number in it: "This branch serves at most 4 people at once" /
+  "This branch serves one person at a time." Every service at the branch
+  shares the same places, as before (§16.4).
+- **Places left at a time** = the branch's places minus the places in use at
+  the **busiest moment** of that time — not minus every booking that touches
+  it. Someone 10:00–11:00 and someone 11:00–12:00 never share a place, so an
+  hour from 10:30 still has a place free at a two-place branch. The old rule
+  added both and called it full.
+- A branch serving one asks no "how many" at all.
+
+### 189.3 What the customer sees
+
+- Availability now answers with **every open time and its places left**
+  (`times: [{ time, placesLeft }]`) besides the bookable `slots`. Times in
+  the past or blocked off by the shop are not listed: they are not booked,
+  they are not on offer.
+- A time with **no places** is shown, flat grey, struck through, **"Booked"**.
+  A time with **some places taken and five or fewer left** says **"2 left"**
+  in amber. A time with fewer places than the group is grey and cannot be
+  tapped, still saying how many it has. Morning / Afternoon count only the
+  times the group can take.
+- "How many people?" shows wherever the branch serves more than one, "Up to
+  3, all at once", with the − / + capped at the branch's places. On a narrow
+  phone the question sits above the − / +.
+- A day where nothing has room says why: "Every time is booked on this day",
+  or "No time has room for 4 people on this day. Try fewer people, or another
+  day."
+- Changing the number keeps the day's times on screen while the new answer
+  comes, rather than flashing back to grey boxes.
+
+### 189.4 Data
+
+- Bookings already made keep their quantity, length and places.
+- `seed-demo` gives the demo branches real place counts (barbers 4 and 2, spa
+  3, nails 3, braiding 4, tailor 2, gym 5); the garage stays at 1, since its
+  customers bring cars. In the dev database, only demo branches still at 1
+  were changed to match; branches the user had set themselves (20, 45, 60,
+  300…) were left alone.
+
+Checked live: two test bookings at the demo spa (3 places) — 2 people at
+10:00, 3 at 11:00 — showed "1 left" at 10:00 and "Booked" from 10:45 to
+11:15 for one person; with two people the "1 left" times greyed out. Both
+were cancelled afterwards. `booking-quantity.spec.ts` rewritten for the rule
+(9 tests, including the busiest-moment case). **1326 passing across 58
+suites.**

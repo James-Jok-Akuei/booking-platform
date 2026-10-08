@@ -8,6 +8,14 @@ import type { AvailabilitySource } from '../availability.service';
  * them against the same zone, so nothing in this response needs an offset and
  * nothing may be parsed as UTC.
  */
+/** One start time, and how many of the branch's places are free for it (§189). */
+export class AvailabilityTimeDto {
+  /** `HH:mm`, wall clock, in the answer's `timeZone`. */
+  time!: string;
+  /** 0 means the time is fully booked. */
+  placesLeft!: number;
+}
+
 export class AvailabilityDto {
   locationId!: string;
   /** A calendar day, `YYYY-MM-DD`. Not an instant. */
@@ -18,7 +26,7 @@ export class AvailabilityDto {
   timeZone!: string;
 
   durationMinutes!: number;
-  /** Concurrent appointments this branch can run; a slot survives until this many overlap. */
+  /** People this branch serves at once (§189): the places every time starts with. */
   capacity!: number;
 
   /**
@@ -37,8 +45,15 @@ export class AvailabilityDto {
   /** The words to show when closed, when there are any. */
   reason!: string | null;
 
-  /** `HH:mm` start times. Empty when closed or fully booked. */
+  /** `HH:mm` start times with room for the booking asked about. Empty when closed or fully booked. */
   slots!: string[];
+
+  /**
+   * Every start time the branch is open for, booked or not, with the places
+   * still free (§189). A time with `placesLeft` 0 is fully booked and shows as
+   * such; a time in the past or blocked off by the shop is not listed at all.
+   */
+  times!: AvailabilityTimeDto[];
 }
 
 /**

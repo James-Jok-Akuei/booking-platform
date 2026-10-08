@@ -445,8 +445,6 @@ describe('Money invariant: platformFee + business === deposit', () => {
           // What to know before coming (§180). Words, not a price.
           'instructions',
           'name',
-          // What the quantity counts (§136). A rule, not a price.
-          'quantityMode',
         ]);
         expect(JSON.stringify(list)).not.toContain('9999');
       });

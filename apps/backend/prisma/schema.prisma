@@ -667,16 +667,6 @@ model ServiceLocation {
   @@map("service_locations")
 }
 
-/// What a quantity of a service means (§136).
-enum QuantityMode {
-  /// One per booking. Every service before §136.
-  SINGLE
-  /// Several PEOPLE: each needs a place in the shop.
-  PEOPLE
-  /// Several of the thing for one customer: only the price multiplies.
-  UNITS
-}
-
 model Service {
   id         String          @id @default(uuid())
   businessId String
@@ -733,12 +723,6 @@ model Service {
   // the deposit it is taken from — i.e. businessAmountMinor can never go
   // negative. Decimal, never Float: this multiplies money.
   depositPercentage Decimal @default(10.00) @db.Decimal(5, 2)
-
-  /// Whether one booking may be for more than one, and what "more" means (§136).
-  quantityMode QuantityMode @default(SINGLE)
-  /// The most one booking may ask for. 1 when SINGLE, 2–20 otherwise (a CHECK
-  /// constraint holds the two together).
-  maxQuantity  Int          @default(1)
 
   // Soft-delete flag. Services are never hard-deleted: appointments booked in
   // the future will reference serviceId, and those records must still resolve
@@ -1121,7 +1105,9 @@ model Appointment {
   //
   // servicePriceMinor above is the price of the WHOLE booking; unitPriceMinor
   // is the price of one. capacityUnits is how many of the branch's places the
-  // booking occupies at once, which is what availability counts.
+  // booking occupies at once, which is what availability counts. Since §189 a
+  // booking for three people takes three places, so the two are equal; older
+  // rows may differ (they were served in rounds) and keep what they had.
   quantity              Int      @default(1)
   capacityUnits         Int      @default(1)
   unitPriceMinor        Int?

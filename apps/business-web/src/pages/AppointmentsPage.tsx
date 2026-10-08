@@ -192,10 +192,7 @@ function AppointmentDetail({ id, onClose }: { id: string; onClose: () => void })
             <div><dt>Customer</dt><dd>{d.customer.email}</dd></div>
             <div><dt>Service</dt><dd>
               {d.service.name}
-              {d.quantity > 1 &&
-                (d.service.quantityMode === 'PEOPLE'
-                  ? ` · ${d.quantity} people`
-                  : ` × ${d.quantity}`)}
+              {d.quantity > 1 && ` · ${d.quantity} people`}
             </dd></div>
             <div><dt>Branch</dt><dd>{d.location.name}</dd></div>
             <div><dt>Status</dt><dd>{d.status.replace('_', ' ').toLowerCase()}</dd></div>
@@ -319,12 +316,7 @@ function Row({
       <td>
         {appointment.service.name}
         {appointment.quantity > 1 && (
-          <strong>
-            {' '}
-            {appointment.service.quantityMode === 'PEOPLE'
-              ? `· ${appointment.quantity} people`
-              : `× ${appointment.quantity}`}
-          </strong>
+          <strong> · {appointment.quantity} people</strong>
         )}
         <div className="muted small">
           {Math.round(

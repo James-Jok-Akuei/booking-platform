@@ -1,4 +1,4 @@
-import { BusinessStatus, Prisma, QuantityMode } from '@prisma/client';
+import { BusinessStatus, Prisma } from '@prisma/client';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 
 /**
@@ -163,10 +163,6 @@ export class BusinessServiceDto implements ServicePayload {
   currency!: string;
   /** A decimal STRING — "20", not 20 (§56). */
   depositPercentage!: string;
-  /** Whether a booking may be for more than one, and what "more" means (§136). */
-  quantityMode!: QuantityMode;
-  /** The most one booking may ask for; 1 when `SINGLE`. */
-  maxQuantity!: number;
   /** False means RETIRED, never deleted (§74, §101). */
   isActive!: boolean;
   createdAt!: string;

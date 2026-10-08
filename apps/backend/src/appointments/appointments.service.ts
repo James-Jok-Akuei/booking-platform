@@ -36,7 +36,7 @@ import { zonedWallTimeToInstant } from '../availability/time.util';
 import { AvailabilityService } from '../availability/availability.service';
 import { computeAppointmentAmounts } from './appointment-pricing';
 import { liveDiscount, platformToday, priceFor } from '../business/discount';
-import { assertFitsInADay, assertQuantityAllowed, planQuantity } from './quantity';
+import { assertQuantityAllowed } from './quantity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ChatService } from '../chat/chat.service';
 import { LedgerService } from '../ledger/ledger.service';
@@ -235,8 +235,6 @@ export class AppointmentsService {
         isActive: true,
         durationMinutes: true,
         depositPercentage: true,
-        quantityMode: true,
-        maxQuantity: true,
         name: true,
         // A sale the shop is running (§186), applied to this branch's price.
         discountPercent: true,
@@ -301,20 +299,13 @@ export class AppointmentsService {
       throw new BadRequestException('That service is no longer available.');
     }
 
-    // How many, and what that costs the branch in time and places (§136).
-    // Worked out by the same function availability used to offer the slot.
+    // How many people (§189): each takes one of the branch's places, all at
+    // once, for the service's own length. No more than the branch has.
     const quantity = dto.quantity ?? 1;
-    assertQuantityAllowed(service, quantity);
-    const plan = planQuantity(
-      service.quantityMode,
-      quantity,
-      location.capacity,
-      service.durationMinutes,
-    );
-    assertFitsInADay(plan);
+    assertQuantityAllowed(quantity, location.capacity);
 
     // endTime is derived, never taken from the client.
-    const endTime = new Date(startTime.getTime() + plan.durationMinutes * 60_000);
+    const endTime = new Date(startTime.getTime() + service.durationMinutes * 60_000);
 
     // One unit's price as the customer was shown it: after the sale, if one
     // is on today (§186). The sale is taken off ONE and then multiplied, so
@@ -351,8 +342,8 @@ export class AppointmentsService {
       await this.assertSlotBookable(
         dto.locationId,
         startTime,
-        plan.durationMinutes,
-        plan.capacityUnits,
+        service.durationMinutes,
+        quantity,
       );
 
       return tx.appointment.create({
@@ -373,7 +364,7 @@ export class AppointmentsService {
           discountPercent: unit.discount?.percent ?? null,
           listPriceMinor: unit.discount ? unit.discount.listPriceMinor * quantity : null,
           quantity,
-          capacityUnits: plan.capacityUnits,
+          capacityUnits: quantity,
           depositPercentage: service.depositPercentage,
           platformFeePercentage,
           // Both written from the same generated value, in the same statement:

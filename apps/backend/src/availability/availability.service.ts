@@ -20,11 +20,7 @@ import {
   parseHhMm,
   zonedWallTimeToInstant,
 } from './time.util';
-import {
-  assertFitsInADay,
-  assertQuantityAllowed,
-  planQuantity,
-} from '../appointments/quantity';
+import { assertQuantityAllowed } from '../appointments/quantity';
 
 /**
  * Statuses that occupy a unit of a location's capacity.
@@ -56,6 +52,13 @@ export type AvailabilitySource =
   | 'CLOSED_EXCEPTION' // an exception closed this specific date
   | 'NO_TEMPLATE'; // no LocationHours row for this weekday at all
 
+/** One start time on the day, and how many of the branch's places are free for it (§189). */
+export interface AvailabilityTime {
+  time: string;
+  /** 0 is a time already fully booked. */
+  placesLeft: number;
+}
+
 export interface AvailabilityResult {
   locationId: string;
   date: string;
@@ -68,7 +71,15 @@ export interface AvailabilityResult {
   openTime: string | null;
   closeTime: string | null;
   reason: string | null;
+  /** The start times with room for the booking asked about. */
   slots: string[];
+  /**
+   * Every start time the branch is open for, booked or not, with the places
+   * left (§189) — so a screen can show a full time as "Booked" instead of
+   * leaving a gap. Times in the past and times the shop has blocked off are
+   * not here: those are not booked, they are not on offer.
+   */
+  times: AvailabilityTime[];
 }
 
 @Injectable()
@@ -111,7 +122,7 @@ export class AvailabilityService {
     date: Date,
     durationMinutes: number,
     viewerUserId?: string | null,
-    /** How many of the branch's places the booking needs at once (§136). */
+    /** How many of the branch's places the booking needs at once: one per person (§189). */
     unitsNeeded = 1,
   ): Promise<AvailabilityResult> {
     if (durationMinutes <= 0 || durationMinutes > MINUTES_PER_DAY) {
@@ -173,7 +184,10 @@ export class AvailabilityService {
     }
 
     const dayOfWeek = dayOfWeekUtc(date);
-    const base: Omit<AvailabilityResult, 'source' | 'openTime' | 'closeTime' | 'reason' | 'slots'> = {
+    const base: Omit<
+      AvailabilityResult,
+      'source' | 'openTime' | 'closeTime' | 'reason' | 'slots' | 'times'
+    > = {
       locationId,
       date: formatCalendarDate(date),
       dayOfWeek,
@@ -188,6 +202,7 @@ export class AvailabilityService {
       closeTime: null,
       reason,
       slots: [],
+      times: [],
     });
 
     // Both are read up front, in one round trip. The exception decides whether
@@ -248,14 +263,13 @@ export class AvailabilityService {
     const unavailability = await this.collectUnavailability(locationId, date);
 
     // ---- Steps 3 & 6: walk the grid, keeping only slots that fully fit ----
-    const slots = this.buildSlots(
+    const times = this.buildSlots(
       openMinutes,
       closeMinutes,
       durationMinutes,
       unavailability,
       location.capacity,
       date,
-      unitsNeeded,
     );
 
     return {
@@ -264,20 +278,21 @@ export class AvailabilityService {
       openTime: formatHhMm(openMinutes),
       closeTime: formatHhMm(closeMinutes),
       reason,
-      slots: slots.map(formatHhMm),
+      slots: times
+        .filter((slot) => slot.placesLeft >= unitsNeeded)
+        .map((slot) => formatHhMm(slot.start)),
+      times: times.map((slot) => ({ time: formatHhMm(slot.start), placesLeft: slot.placesLeft })),
     };
   }
 
   /**
-   * The same answer, asked the way a customer asks it: "when can I have THREE
-   * of this service?" (§136).
+   * The same answer, asked the way a customer asks it: "when can THREE of us
+   * have this service?" (§136, §189).
    *
-   * The length and the number of places are worked out HERE, from the service's
-   * own rule and the branch's capacity, rather than sent by the client — a
-   * client that computed them itself would be a second implementation of
-   * `planQuantity`, and the slots it showed could differ from the ones booking
-   * accepts. The answer's `durationMinutes` is the whole booking's length, so
-   * the screen can say "90 minutes" without knowing why.
+   * Three people take three of the branch's places for the service's own
+   * length, so the times offered are the ones with three places still free.
+   * Worked out HERE from the service and the branch rather than sent by the
+   * client, so the times offered are the times booking accepts.
    */
   async getAvailabilityForService(
     locationId: string,
@@ -289,12 +304,7 @@ export class AvailabilityService {
     const [service, location] = await Promise.all([
       this.prisma.service.findUnique({
         where: { id: serviceId },
-        select: {
-          businessId: true,
-          durationMinutes: true,
-          quantityMode: true,
-          maxQuantity: true,
-        },
+        select: { businessId: true, durationMinutes: true },
       }),
       this.prisma.location.findUnique({
         where: { id: locationId },
@@ -307,21 +317,14 @@ export class AvailabilityService {
       throw new NotFoundException('Service not found.');
     }
 
-    assertQuantityAllowed(service, quantity);
-    const plan = planQuantity(
-      service.quantityMode,
-      quantity,
-      location.capacity,
-      service.durationMinutes,
-    );
-    assertFitsInADay(plan);
+    assertQuantityAllowed(quantity, location.capacity);
 
     return this.getAvailability(
       locationId,
       date,
-      plan.durationMinutes,
+      service.durationMinutes,
       viewerUserId,
-      plan.capacityUnits,
+      quantity,
     );
   }
 
@@ -372,9 +375,9 @@ export class AvailabilityService {
    *   service for a period, regardless of capacity: "the owner is away
    *   2pm-4pm" does not mean one of four chairs is busy, it means the place is
    *   shut. One closure removes the time no matter how large capacity is.
-   * - **appointments** — each consumes its own `capacityUnits` (one, unless it
-   *   is for several people, §136). A slot survives while the places taken by
-   *   everything overlapping it leave room for the booking being asked about.
+   * - **appointments** — each consumes its own `capacityUnits`: one place per
+   *   person (§189). A slot survives while the places taken during it leave
+   *   room for the booking being asked about.
    *
    * Both are reduced to minutes since local midnight before being compared.
    */
@@ -428,6 +431,10 @@ export class AvailabilityService {
     };
   }
 
+  /**
+   * Every start time on the grid that the branch is open for, with the places
+   * still free across the whole of it (§189).
+   */
   private buildSlots(
     openMinutes: number,
     closeMinutes: number,
@@ -435,13 +442,12 @@ export class AvailabilityService {
     unavailability: { closures: MinuteInterval[]; appointments: WeightedInterval[] },
     capacity: number,
     date: Date,
-    unitsNeeded = 1,
-  ): number[] {
+  ): Array<{ start: number; placesLeft: number }> {
     // A slot may only start in the past-cutoff future. Computed once per call
     // so every slot is judged against the same instant.
     const nowMinutes = this.minutesSinceLocalMidnight(date);
 
-    const slots: number[] = [];
+    const slots: Array<{ start: number; placesLeft: number }> = [];
 
     // Opening at 08:10 means the first bookable start is 08:15, not 08:10 —
     // the grid is absolute, not relative to opening time.
@@ -464,19 +470,15 @@ export class AvailabilityService {
         continue;
       }
 
-      // Each appointment takes its own number of places (§136) — one, unless
-      // it is for several people. The slot survives while the places already
-      // taken by everything overlapping the window leave room for the places
-      // this booking needs. With one needed and one each, this is exactly the
-      // old "fewer than capacity overlap" rule.
-      const taken = unavailability.appointments
-        .filter((interval) => overlaps(candidate, interval))
-        .reduce((sum, interval) => sum + interval.units, 0);
-      if (taken + unitsNeeded > capacity) {
-        continue;
-      }
-
-      slots.push(start);
+      // Each appointment takes its own number of places — one per person
+      // (§189). What is left is the branch's places minus the BUSIEST moment
+      // inside the window, not minus everything that touches it: a booking
+      // ending at 10:00 and another starting at 10:00 never share a chair.
+      const taken = busiest(
+        candidate,
+        unavailability.appointments.filter((interval) => overlaps(candidate, interval)),
+      );
+      slots.push({ start, placesLeft: Math.max(0, capacity - taken) });
     }
 
     return slots;
@@ -495,4 +497,25 @@ export class AvailabilityService {
     if (elapsed >= MINUTES_PER_DAY) return MINUTES_PER_DAY; // date has fully passed
     return elapsed;
   }
+}
+
+/**
+ * The most places in use at any one moment inside `window` (§189).
+ *
+ * Places in use only change where a booking starts, so it is enough to look
+ * at the window's own start and at every booking that starts inside it.
+ */
+function busiest(window: MinuteInterval, booked: WeightedInterval[]): number {
+  const moments = [
+    window.start,
+    ...booked.map((b) => b.start).filter((t) => t > window.start && t < window.end),
+  ];
+  let most = 0;
+  for (const moment of moments) {
+    const inUse = booked
+      .filter((b) => b.start <= moment && moment < b.end)
+      .reduce((sum, b) => sum + b.units, 0);
+    most = Math.max(most, inUse);
+  }
+  return most;
 }

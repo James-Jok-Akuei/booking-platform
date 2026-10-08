@@ -1,4 +1,4 @@
-import { BusinessStatus, QuantityMode } from '@prisma/client';
+import { BusinessStatus } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -131,9 +131,10 @@ describe('Sales on services (§186)', () => {
 
     it('multiplies the sale price, so three cost three times the price on the card', async () => {
       const business = await shop({ percent: 15 });
-      await prisma.service.update({
-        where: { id: business.serviceId },
-        data: { quantityMode: QuantityMode.UNITS, maxQuantity: 5 },
+      // Three people need three places (§189).
+      await prisma.location.update({
+        where: { id: business.locationId },
+        data: { capacity: 5 },
       });
       const booked = await book(business, 3);
       const row = await prisma.appointment.findUniqueOrThrow({ where: { id: booked.id } });

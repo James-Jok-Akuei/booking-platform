@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { SellerAgreementGate, useOutstandingLegal } from '../components/LegalGate';
 import {
@@ -497,13 +498,6 @@ function ServiceForm({
   const percentOff = /^\d+$/.test(discount.trim()) ? Number(discount.trim()) : null;
   const [duration, setDuration] = useState(String(initial?.durationMinutes ?? 30));
   const [deposit, setDeposit] = useState(initial?.depositPercentage ?? '20');
-  // Whether one booking may be for more than one, and what "more" means (§136).
-  const [quantityMode, setQuantityMode] = useState<Service['quantityMode']>(
-    initial?.quantityMode ?? 'SINGLE',
-  );
-  const [maxQuantity, setMaxQuantity] = useState(
-    String(initial && initial.maxQuantity > 1 ? initial.maxQuantity : 5),
-  );
   // Photos chosen while writing a NEW service (§165). Held as files until
   // "Post", because a photo needs a service to belong to and there is none
   // yet; an existing service has ServicePhotos below it instead.
@@ -577,9 +571,6 @@ function ServiceForm({
       discountEndsOn: percentOff && saleEndsOn ? saleEndsOn : null,
       durationMinutes: Number(duration),
       depositPercentage: Number(deposit),
-      quantityMode,
-      // Sent only when it means something; the server stores 1 for SINGLE.
-      ...(quantityMode === 'SINGLE' ? {} : { maxQuantity: Number(maxQuantity) }),
       offers,
       },
       files,
@@ -616,40 +607,6 @@ function ServiceForm({
           required
         />
       </div>
-      <div>
-        <label htmlFor="sqty">Can a customer book more than one?</label>
-        <select
-          id="sqty"
-          value={quantityMode}
-          onChange={(e) => setQuantityMode(e.target.value as Service['quantityMode'])}
-        >
-          <option value="SINGLE">No — one per booking</option>
-          <option value="PEOPLE">Yes — for several people</option>
-          <option value="UNITS">Yes — several for one customer</option>
-        </select>
-        <span className="muted small">
-          {quantityMode === 'PEOPLE' &&
-            'Like 3 haircuts. Each person needs a place in your shop. If the group is bigger than the places you have, they are served one after another and the booking takes longer.'}
-          {quantityMode === 'UNITS' &&
-            'Like 3 passport photos. One customer, one visit, the same length — only the price is multiplied.'}
-          {quantityMode === 'SINGLE' && 'Every booking is for one.'}
-        </span>
-      </div>
-      {quantityMode !== 'SINGLE' && (
-        <div>
-          <label htmlFor="smax">Most in one booking</label>
-          <input
-            id="smax"
-            type="number"
-            min="2"
-            max="1000"
-            value={maxQuantity}
-            onChange={(e) => setMaxQuantity(e.target.value)}
-            required
-          />
-          <span className="muted small">Any number from 2 to 1000. The price above is for one.</span>
-        </div>
-      )}
       <div className="branch-prices">
         <span className="muted small">Price per branch ({money.code})</span>
         {locations.map((location) => (
@@ -667,7 +624,15 @@ function ServiceForm({
             />
           </label>
         ))}
-        <span className="muted small">Leave a branch blank to stop offering it there.</span>
+        <span className="muted small">
+          The price is for one person. Leave a branch blank to stop offering it there.
+        </span>
+        {/* How many people one booking can be for is the branch's to say, not
+            the service's (§189). */}
+        <span className="muted small">
+          How many people can book the same time is set for each branch, under{' '}
+          <Link to="/hours">Branches &amp; hours</Link> → “People served at once”.
+        </span>
       </div>
 
       {/* A sale (§186): a percentage off every branch's price, until a last
@@ -1018,11 +983,6 @@ function ServiceRow({
       </td>
       <td>
         {service.durationMinutes} min
-        {service.quantityMode !== 'SINGLE' && (
-          <div className="muted small">
-            up to {service.maxQuantity} {service.quantityMode === 'PEOPLE' ? 'people' : 'per booking'}
-          </div>
-        )}
       </td>
       <td className="actions">
         <button type="button" className="link" onClick={() => setEditing(true)}>

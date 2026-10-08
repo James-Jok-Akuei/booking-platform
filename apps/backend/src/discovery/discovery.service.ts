@@ -614,8 +614,6 @@ export class DiscoveryService {
               durationMinutes: true,
               depositPercentage: true,
               currency: true,
-              quantityMode: true,
-              maxQuantity: true,
               // What the service actually looks like (§132). Ordered here, so
               // the first one is the cover on every client.
               images: {
@@ -690,8 +688,6 @@ export class DiscoveryService {
         priceMinor: price.priceMinor,
         discount: price.discount,
         depositPercentage: offer.service.depositPercentage.toFixed(2),
-        quantityMode: offer.service.quantityMode,
-        maxQuantity: offer.service.maxQuantity,
         ...(viewerId ? { saved: savedServices.has(`${offer.service.id}:${locationId}`) } : {}),
         ...(rate
           ? {

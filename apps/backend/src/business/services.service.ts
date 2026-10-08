@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma, QuantityMode } from '@prisma/client';
-import { normaliseQuantityRule } from '../appointments/quantity';
+import { Prisma } from '@prisma/client';
 
 /**
  * The sentences a shop writes about a service (§180), tidied: trimmed, and a
@@ -159,12 +158,8 @@ export class ServicesService {
       dto.offers.map((offer) => offer.locationId),
     );
 
-    const { offers, quantityMode, maxQuantity, discountPercent, discountEndsOn, ...words } = dto;
+    const { offers, discountPercent, discountEndsOn, ...words } = dto;
     const fields = { ...tidyWords(words), ...this.discountColumns({ discountPercent, discountEndsOn }) };
-    const quantityRule = normaliseQuantityRule(
-      quantityMode ?? QuantityMode.SINGLE,
-      maxQuantity,
-    );
 
     // The service, its branch offers and every affected location's headline
     // price commit together (§44). A catalogue that has changed while the
@@ -179,7 +174,6 @@ export class ServicesService {
           businessId,
           currency: INTERNAL_CURRENCY,
           ...fields,
-          ...quantityRule,
           locations: {
             create: offers.map((offer) => ({
               locationId: offer.locationId,
@@ -214,7 +208,7 @@ export class ServicesService {
     // patch: an update can also flip `isActive` back on, which changes the
     // cheapest price without touching a price field. Checking which fields
     // moved would be a second place to get the rule right.
-    const { offers, quantityMode, maxQuantity, discountPercent, discountEndsOn, ...patch } = dto;
+    const { offers, discountPercent, discountEndsOn, ...patch } = dto;
     const sale =
       discountPercent === undefined && discountEndsOn === undefined
         ? {}
@@ -225,25 +219,7 @@ export class ServicesService {
               select: { discountPercent: true, discountEndsOn: true },
             }),
           );
-    const rest = { ...tidyWords(patch), ...sale };
-
-    // The rule is two columns that must agree (§136), so a patch naming either
-    // is completed from the stored row before it is checked — sending only a
-    // new maximum must not need the mode repeated, and must not slip past it.
-    let fields: typeof rest & Partial<ReturnType<typeof normaliseQuantityRule>> = rest;
-    if (quantityMode !== undefined || maxQuantity !== undefined) {
-      const current = await this.prisma.service.findUniqueOrThrow({
-        where: { id: serviceId },
-        select: { quantityMode: true, maxQuantity: true },
-      });
-      fields = {
-        ...rest,
-        ...normaliseQuantityRule(
-          quantityMode ?? current.quantityMode,
-          maxQuantity ?? current.maxQuantity,
-        ),
-      };
-    }
+    const fields = { ...tidyWords(patch), ...sale };
 
     if (offers) {
       await this.assertOwnsLocations(

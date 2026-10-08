@@ -1,4 +1,4 @@
-import { MediaType, QuantityMode } from '@prisma/client';
+import { MediaType } from '@prisma/client';
 import { ServiceImageRefDto } from '../../business/dto/business-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
@@ -218,21 +218,13 @@ export class ShopfrontServiceDto {
   /** A decimal string, like every percentage here (§128.20). */
   depositPercentage!: string;
   /**
-   * The price of ONE as paid today — after the sale, if one is on (§186). A
-   * booking of several costs this times how many (§136).
+   * The price of ONE person as paid today — after the sale, if one is on
+   * (§186). A booking for several costs this times how many (§136); how many
+   * can come at once is the branch's `capacity` (§189).
    */
   priceMinor!: number;
   /** The sale on today, or null (§186). */
   discount!: ServiceDiscountDto | null;
-
-  /**
-   * Whether a booking may be for more than one, and what "more" means (§136):
-   * `PEOPLE` asks "how many people?", `UNITS` asks "how many?", and `SINGLE`
-   * asks nothing.
-   */
-  quantityMode!: QuantityMode;
-  /** The most one booking may ask for; 1 when `SINGLE`. */
-  maxQuantity!: number;
 
   /** Whether this customer saved it at this branch (§158). Absent for a signed-out reader. */
   @ApiProperty({ required: false, description: 'Absent entirely for a signed-out reader.' })

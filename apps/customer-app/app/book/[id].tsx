@@ -155,11 +155,16 @@ export default function Book() {
    */
   const movedOn = useRef(false);
   const availability = useQuery({
-    // Asked again for every quantity: three people need three places, or
-    // three turns, and the free times are different either way (§136).
+    // Asked again for every quantity: three people need three places, and a
+    // time with two left is free for two but not for three (§189).
     queryKey: ['availability', id, date, serviceId, quantity],
     queryFn: () => getAvailability(id, date, { serviceId, quantity }),
     enabled: Boolean(service),
+    // Same day, different number of people: the times stay on screen while
+    // the new answer comes, instead of flashing back to grey boxes. A new DAY
+    // waits for its own times — the old day's would be wrong.
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[2] === date ? previous : undefined,
   });
 
   useEffect(() => {
@@ -231,12 +236,14 @@ export default function Book() {
   const district = s.district?.name ?? null;
   const category = s.business.category;
 
+  // How many people one booking can be for is the BRANCH's to say (§189): as
+  // many as it serves at once. A branch serving one asks nothing.
+  const places = Math.max(1, s.capacity);
+  const several = places > 1;
   // Everything is for the WHOLE booking (§136): the price is one times how
   // many, and the deposit is its share of that total.
-  const several = service.quantityMode !== 'SINGLE';
-  const people = service.quantityMode === 'PEOPLE';
-  const unitWord = people ? 'per person' : several ? 'each' : null;
-  const countWord = (n: number) => (people ? `${n} ${n === 1 ? 'person' : 'people'}` : `× ${n}`);
+  const unitWord = several ? 'per person' : null;
+  const countWord = (n: number) => `${n} ${n === 1 ? 'person' : 'people'}`;
   const totalMinor = service.priceMinor * quantity;
   const depositPct = Math.max(0, Math.min(100, Math.round(Number(service.depositPercentage))));
   const depositMinor = Math.round((totalMinor * Number(service.depositPercentage)) / 100);
@@ -247,11 +254,33 @@ export default function Book() {
   const sale = service.discount;
   const savedMinor = sale ? (sale.listPriceMinor - service.priceMinor) * quantity : 0;
 
-  // How long the whole booking takes comes from the server, which knows how
-  // many places the shop has. Until it answers, one sitting is the best guess.
-  const minutes = availability.data?.durationMinutes ?? service.durationMinutes;
+  // Everyone in a booking is served at the same time (§189), so it lasts the
+  // service's own length however many come.
+  const minutes = service.durationMinutes;
   const slots = availability.data?.slots ?? [];
-  const periods = groupByPeriod(slots);
+  // Every open time, booked ones too (§189): a full time says "Booked" rather
+  // than vanishing, and a nearly full one says how many places are left.
+  const times = availability.data?.times ?? [];
+  const periods = groupByPeriod(times, (t) => t.time);
+  /** Why no time can be chosen, when none can — the shop's reason first. */
+  const noTimeReason = (() => {
+    const data = availability.data;
+    if (!data || slots.length > 0) return null;
+    if (data.reason) return data.reason;
+    if (data.source.startsWith('CLOSED')) return 'Closed on this day.';
+    if (times.length > 0) {
+      return times.every((t) => t.placesLeft === 0)
+        ? 'Every time is booked on this day. Pick another day.'
+        : `No time has room for ${countWord(quantity)} on this day. Try fewer people, or another day.`;
+    }
+    // An empty TODAY is almost always the clock, not the shop (§156).
+    if (date === days[0]) {
+      return data.closeTime
+        ? `Closed for today — the shop shuts at ${data.closeTime}. Pick another day.`
+        : 'No times left today. Pick another day.';
+    }
+    return 'Fully booked on this day.';
+  })();
 
   // The page's inner width, and the width inside the deal card. Even columns
   // of times that fill the row: four on a normal phone, three on a narrow one,
@@ -391,8 +420,8 @@ export default function Book() {
                 <Pill label={s.business.subcategory?.name ?? category.name} tone="accent" />
               )}
               {s.openNow && <Pill label="Open now" tone="ok" dot />}
-              {people && (
-                <Pill label={`Up to ${service.maxQuantity} people`} tone="neutral" icon="people-outline" />
+              {several && (
+                <Pill label={`Up to ${places} people`} tone="neutral" icon="people-outline" />
               )}
             </View>
             <Text style={type.title}>{service.name}</Text>
@@ -476,19 +505,21 @@ export default function Book() {
             <View ref={timesRef} collapsable={false} style={styles.section}>
               <Text style={type.heading}>Choose a time</Text>
 
-              {/* Asked only where the shop allows more than one, in the
-                  shop's own sense of it (§136). Before the day and the time,
-                  because the answer changes which times are free. */}
+              {/* Asked only where the branch serves more than one at once
+                  (§189). Before the day and the time, because the answer
+                  changes which times have room. */}
               {several && (
-                <View style={styles.howMany}>
-                  <View style={styles.flex}>
-                    <Text style={type.subheading}>{people ? 'How many people?' : 'How many?'}</Text>
-                    <Text style={type.small}>Up to {service.maxQuantity} in one booking</Text>
+                // On a narrow phone the question sits above the − / +, so it
+                // reads on one line instead of three.
+                <View style={[styles.howMany, inCard < 300 && styles.howManyStacked]}>
+                  <View style={inCard < 300 ? undefined : styles.flex}>
+                    <Text style={type.subheading}>How many people?</Text>
+                    <Text style={type.small}>Up to {places}, all at once</Text>
                   </View>
                   <Stepper
                     value={quantity}
-                    max={service.maxQuantity}
-                    label={people ? 'people' : 'items'}
+                    max={places}
+                    label="people"
                     onFocus={keys.reveal}
                     onChange={(next) => {
                       setQuantity(next);
@@ -545,24 +576,18 @@ export default function Book() {
                 </View>
               )}
 
-              {availability.data && slots.length === 0 && (
+              {noTimeReason && (
                 <View style={styles.closed}>
                   <View style={styles.closedIcon}>
-                    <Icon name="moon-outline" size={18} color={theme.ink2} />
+                    <Icon
+                      name={times.length > 0 ? 'people-outline' : 'moon-outline'}
+                      size={18}
+                      color={theme.ink2}
+                    />
                   </View>
-                  <Text style={[type.body, styles.flex]}>
-                    {/* The server says WHY, and it is more useful than "no
-                        slots". An empty TODAY is almost always the clock, not
-                        the shop (§156). */}
-                    {availability.data.reason ??
-                      (availability.data.source.startsWith('CLOSED')
-                        ? 'Closed on this day.'
-                        : date === days[0]
-                          ? availability.data.closeTime
-                            ? `Closed for today — the shop shuts at ${availability.data.closeTime}. Pick another day.`
-                            : 'No times left today. Pick another day.'
-                          : 'Fully booked on this day.')}
-                  </Text>
+                  {/* The server says WHY, and it is more useful than "no
+                      slots". */}
+                  <Text style={[type.body, styles.flex]}>{noTimeReason}</Text>
                 </View>
               )}
 
@@ -573,22 +598,64 @@ export default function Book() {
                   <View style={styles.periodHead}>
                     <Icon name={period.icon} size={15} color={theme.ink2} />
                     <Text style={styles.periodLabel}>{period.label}</Text>
-                    <Text style={type.tiny}>{period.slots.length} free</Text>
+                    <Text style={type.tiny}>
+                      {period.slots.filter((t) => t.placesLeft >= quantity).length || 'None'} free
+                    </Text>
                   </View>
                   <View style={styles.slots}>
-                    {period.slots.map((time) => {
+                    {period.slots.map(({ time, placesLeft }) => {
                       const active = slot === time;
+                      // Room for everyone in this booking (§189).
+                      const fits = placesLeft >= quantity;
+                      const full = placesLeft === 0;
+                      // "2 left" only where it is news: some places already
+                      // taken, and only a few remaining.
+                      const few = several && !full && placesLeft < places && placesLeft <= 5;
+                      const note = full ? 'Booked' : few ? `${placesLeft} left` : null;
                       return (
                         <PressableScale
                           key={time}
-                          haptic
-                          scaleTo={0.92}
+                          haptic={fits}
+                          scaleTo={fits ? 0.92 : 1}
+                          disabled={!fits}
                           accessibilityRole="button"
-                          accessibilityState={{ selected: active }}
+                          accessibilityState={{ selected: active, disabled: !fits }}
+                          accessibilityLabel={
+                            full
+                              ? `${time}, booked`
+                              : few
+                                ? `${time}, ${placesLeft} ${placesLeft === 1 ? 'place' : 'places'} left`
+                                : time
+                          }
                           onPress={() => choose(time)}
-                          style={[styles.slot, { width: slotWidth }, active && styles.slotActive]}
+                          style={[
+                            styles.slot,
+                            { width: slotWidth },
+                            !fits && styles.slotTaken,
+                            active && styles.slotActive,
+                          ]}
                         >
-                          <Text style={[styles.slotText, active && styles.onAccent]}>{time}</Text>
+                          <Text
+                            style={[
+                              styles.slotText,
+                              !fits && styles.slotTextTaken,
+                              full && styles.slotStruck,
+                              active && styles.onAccent,
+                            ]}
+                          >
+                            {time}
+                          </Text>
+                          {note && (
+                            <Text
+                              style={[
+                                styles.slotNote,
+                                fits ? styles.slotNoteFew : styles.slotNoteTaken,
+                                active && styles.onAccentSoft,
+                              ]}
+                            >
+                              {note}
+                            </Text>
+                          )}
                         </PressableScale>
                       );
                     })}
@@ -925,6 +992,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: 12,
   },
+  howManyStacked: { flexDirection: 'column', alignItems: 'flex-start', gap: 10 },
   days: { paddingHorizontal: CARD_PAD, gap: 10, paddingVertical: 4 },
   day: {
     width: 64,
@@ -957,6 +1025,14 @@ const styles = StyleSheet.create({
   },
   slotActive: { backgroundColor: theme.accent, borderColor: theme.accent, ...shadow.raised },
   slotText: { fontFamily: font.bold, fontSize: 14.5, color: theme.ink },
+  // A time without room for this booking (§189): flat and quiet, so the free
+  // ones stand out, but still there to read.
+  slotTaken: { backgroundColor: theme.sunken, borderColor: theme.sunken },
+  slotTextTaken: { color: theme.muted },
+  slotStruck: { textDecorationLine: 'line-through' },
+  slotNote: { fontFamily: font.bold, fontSize: 10, lineHeight: 12, marginTop: 1 },
+  slotNoteFew: { color: theme.warn },
+  slotNoteTaken: { color: theme.muted },
   closed: {
     flexDirection: 'row',
     alignItems: 'center',
