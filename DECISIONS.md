@@ -14785,23 +14785,24 @@ side panel.
 
 ### 205.2 "Right now" — orders, messages and alerts
 
-A dark card near the top of the column: three counters (expected today,
+~~A dark card near the top of the column: three counters (expected today,
 unread messages, unread notifications), up to two unread conversations, and
 the latest notifications (five, "Show more" for ten). Pressing a
-notification marks it read and opens the page it is about. Each kind of
-notification's icon, colour and page now live in one place,
-`src/lib/notificationLook.ts`, shared with the bell in the top bar so the
-two always match.
+notification marks it read and opens the page it is about.~~ — superseded by
+§206.1 (removed; one "Just in" advert instead). Each kind of notification's
+icon, colour and page now live in one place, `src/lib/notificationLook.ts`,
+shared with the bell in the top bar so the two always match.
 
 ### 205.3 News and lessons in the banner
 
 The banner (§204.2) gains, in priority order after "Get paid":
 
-- **Just in** — a booking or a paid deposit from the last 24 hours. The
+- ~~**Just in** — a booking or a paid deposit from the last 24 hours. The
   title is the notification's subject; the text says what it means and what
-  happens next (not the e-mail body, which is far too long).
-- **New message** — the newest unread conversation, its first words, and why
-  a quick reply matters.
+  happens next (not the e-mail body, which is far too long).~~
+- ~~**New message** — the newest unread conversation, its first words, and why
+  a quick reply matters.~~ — both superseded by §206.1 (one "Just in", of any
+  kind).
 - **How it works · Cancellations** and **How it works · Photos** — the two
   rules sellers most often learn the hard way; "Read more" opens the topic.
 
@@ -14816,8 +14817,8 @@ Below 1280px there is no column, so Overview starts with "For you"
 spotlights (§176):
 
 1. the banner, smaller;
-2. tiles to swipe — expected today, unread messages, alerts, and how
-   complete the shop is;
+2. ~~tiles to swipe — expected today, unread messages, alerts, and how
+   complete the shop is;~~ — superseded by §206.1 (removed);
 3. "How it works" chips;
 4. "See all", opening everything the wide column holds in a side panel.
 
@@ -14835,3 +14836,48 @@ there is no column to scroll to.
 
 - "For you" on phones appears on Overview only, not on every page.
 - The guide is written in the app; an administrator cannot edit it.
+
+## 206. "For you" shows the one thing that just came in; more than one shop (2026-10-08)
+
+The user, on §205: they did not want a new section listing notifications,
+messages and orders — the notifications already hold all of those. What they
+meant was that "For you" shows **the one** message, notification or order
+that **just** arrived, so the seller sees it. They kept "The rules, in plain
+words" and "What customers are booking", and asked for adverts and a guide
+topic saying a seller can add branches, even in other places.
+
+### 206.1 One "Just in" advert, not a feed
+
+- **Removed**: the "Right now" card (§205.2), and on phones the row of
+  count tiles (§205.4).
+- **The banner's first advert is "Just in"**: the single newest thing of the
+  last 24 hours — a notification of **any** kind (booking, paid deposit,
+  cancellation, no-show, review, shop approved, payout number confirmed…) or
+  a customer's message still unread, whichever is newer. A message is shown
+  as the message (who wrote and their first words, "Reply") rather than as
+  its notification. The title is the notice's subject; the text says what it
+  means and what happens next (`MEANING` in `slides.ts`); the colour, icon and
+  button come from `notificationLook.ts`, so it matches the bell.
+- Older things, and everything after the newest, stay where they were: the
+  bell and Messages.
+- The folded column's badge counts things left to add to the shop again
+  (§204.1), not unread messages and alerts.
+
+### 206.2 More than one shop
+
+- **Advert** (owners and managers — the only roles that can add a branch):
+  "Have another shop? Add it as a branch" — another street, district or
+  town, each with its own page, hours, photos and prices, found on its own
+  by customers near it. With no branch yet it says to add the first. Its
+  button opens Branches & hours with the new-branch form already open
+  (`/hours?add=1`; the address is tidied afterwards so a reload does not
+  reopen it).
+- **"How it works" topic — More than one shop**, written from the code: an
+  owner or a manager adds one (`POST /business/locations`); each branch has
+  its own address and pin, district, hours, photos, closures and breaks,
+  people served at once (Location model); customers find each branch on its
+  own, nearest first, and each has its own reviews and rating (§43, §104);
+  services are shared, each offered at chosen branches at that branch's
+  price (§72); a new branch starts closed and offers nothing until its hours
+  and services are set; one team, one payout number and one money page cover
+  every branch (memberships and payout numbers belong to the business).

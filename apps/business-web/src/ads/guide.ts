@@ -153,6 +153,23 @@ export function guideTopics(feePercent: string | null): GuideTopic[] {
       link: { label: 'Reply to reviews', to: '/reviews' },
     },
     {
+      // §72, §104, §43, §12, §206
+      key: 'grow',
+      icon: 'store',
+      tone: 'green',
+      title: 'More than one shop',
+      short: 'Have shops in different places? Add each one as a branch.',
+      points: [
+        'Another shop in another street, district or town? Add it on Branches & hours with “Add a branch”. An owner or a manager can.',
+        'Each branch has its own address and map pin, opening hours, photos, closures and breaks, and how many people it serves at once.',
+        'Customers see each branch on its own: people nearby find the one closest to them, and each branch collects its own reviews and rating.',
+        'Your services are shared. On Services, choose which branches offer each one, at each branch’s own price.',
+        'A new branch starts closed and offers nothing. Set its hours and choose its services, and customers can book it.',
+        'One team, one payout number and one money page cover every branch.',
+      ],
+      link: { label: 'Add a branch', to: '/hours?add=1' },
+    },
+    {
       // §16.4, §189, §89, §119
       key: 'branches',
       icon: 'pin',

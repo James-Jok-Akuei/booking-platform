@@ -4,8 +4,8 @@ export type Tone = 'ok' | 'ask' | 'danger' | 'warn' | 'star' | 'accent';
 
 /**
  * Each kind of notification with its own mark, colour and page (§190, §205),
- * shared by the bell and the "Right now" feed so a new booking looks the same
- * wherever it is seen — and opens the same page.
+ * shared by the bell and the "Just in" advert (§206) so a new booking looks the
+ * same wherever it is seen — and opens the same page.
  */
 export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: Tone; to: string }>> = {
   APPOINTMENT_BOOKED: { icon: 'calendar', tone: 'ask', to: '/appointments' },
@@ -34,6 +34,3 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
 
 export const lookFor = (type: string) =>
   NOTIFICATION_LOOK[type] ?? { icon: 'bell' as IconName, tone: 'accent' as Tone, to: '/' };
-
-/** Kinds that are a new order coming in. */
-export const ORDER_TYPES = ['APPOINTMENT_BOOKED', 'DEPOSIT_CONFIRMED'];

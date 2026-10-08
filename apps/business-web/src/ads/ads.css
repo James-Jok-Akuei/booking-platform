@@ -247,75 +247,6 @@
 .ads-foot { display: flex; align-items: center; gap: 6px; margin: 2px 2px 0; font-size: 11px; color: var(--faint); font-weight: 600; }
 
 
-
-/* ---- right now (§205) ---- */
-
-.ads-live { flex: none; padding: 16px; border-radius: 22px; background: var(--night); color: #fff; }
-.ads-live .ads-label { display: flex; align-items: center; gap: 7px; color: rgba(255, 255, 255, 0.55); }
-.ads-live > header strong { display: block; margin-top: 2px; font-size: 15px; }
-.ads-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d27b; animation: pulse-green 2.2s ease-out infinite; }
-@keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(52, 210, 123, 0.55); } 70%, 100% { box-shadow: 0 0 0 8px rgba(52, 210, 123, 0); } }
-.ads-counters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
-.ads-counter {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 10px 10px 9px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
-  text-decoration: none;
-  transition: background 160ms var(--ease);
-}
-a.ads-counter:hover { background: rgba(255, 255, 255, 0.13); }
-.ads-counter strong { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
-.ads-counter span { font-size: 11px; font-weight: 650; color: rgba(255, 255, 255, 0.6); line-height: 1.25; }
-.ads-counter.is-coral { background: var(--accent-grad); }
-.ads-counter.is-coral span { color: rgba(255, 255, 255, 0.85); }
-.ads-counter.is-hot strong { color: #ffb08a; }
-
-.ads-chats { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.ads-chat { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); color: #fff; text-decoration: none; }
-.ads-chat:hover { background: rgba(255, 255, 255, 0.12); }
-.ads-chat-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.ads-chat-text strong { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ads-chat-text span { font-size: 12px; color: rgba(255, 255, 255, 0.65); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ads-chat-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 10.5px; color: rgba(255, 255, 255, 0.5); white-space: nowrap; }
-.ads-chat-meta i { font-style: normal; min-width: 18px; height: 18px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 800; }
-
-.ads-feed { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; }
-.ads-feed-row {
-  width: 100%;
-  min-height: 0;
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 8px 4px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  color: #fff;
-  text-align: left;
-  font-weight: 500;
-  white-space: normal;
-}
-.ads-feed-row:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); border: none; }
-.ads-feed-row:active:not(:disabled) { transform: none; }
-.ads-feed-icon { position: relative; width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 10px; background: rgba(255, 255, 255, 0.1); }
-.ads-feed-icon.tone-ok { color: #4fe39a; }
-.ads-feed-icon.tone-ask { color: #8db4ff; }
-.ads-feed-icon.tone-danger { color: #ff8a80; }
-.ads-feed-icon.tone-warn { color: #ffc65c; }
-.ads-feed-icon.tone-star { color: var(--star); }
-.ads-feed-icon.tone-accent { color: #ffa07a; }
-.ads-feed-row.is-unread .ads-feed-icon::after { content: ''; position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); border: 2px solid var(--night); }
-.ads-feed-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.ads-feed-text strong { font-size: 12.5px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ads-feed-row:not(.is-unread) .ads-feed-text strong { color: rgba(255, 255, 255, 0.72); font-weight: 550; }
-.ads-feed-text span { font-size: 11px; color: rgba(255, 255, 255, 0.45); }
-.ads-none { margin: 10px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.6); line-height: 1.5; }
-.ads-live .ads-more { color: rgba(255, 255, 255, 0.75); }
-.ads-live .ads-more:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); }
-
 /* ---- how it works (§205) ---- */
 
 .ads-guide { flex: none; padding: 16px; border-radius: 22px; border: 1px solid var(--line); }
@@ -364,38 +295,6 @@ a.ads-counter:hover { background: rgba(255, 255, 255, 0.13); }
 .fy-all { min-height: 30px; padding: 0 6px 0 10px; gap: 2px; border: none; background: transparent; font-size: 13px; color: var(--accent-deep); }
 .fy-all:hover:not(:disabled) { background: var(--accent-tint); border: none; }
 .fy .adc-dots { margin-top: 8px; }
-
-.fy-tiles { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px 4px; }
-.fy-tiles::-webkit-scrollbar { display: none; }
-.fy-tile {
-  flex: 0 0 auto;
-  min-width: 128px;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 12px 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(21, 23, 28, 0.06);
-  background: var(--panel);
-  box-shadow: var(--shadow-xs);
-  color: var(--ink);
-  text-decoration: none;
-  scroll-snap-align: start;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.fy-tile:hover:not(:disabled) { background: var(--panel); border-color: rgba(21, 23, 28, 0.1); }
-.fy-tile svg { color: var(--muted); margin-bottom: 4px; }
-.fy-tile strong { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
-.fy-tile span { font-size: 12px; color: var(--muted); font-weight: 650; }
-.fy-tile.is-coral { background: var(--accent-grad); border-color: transparent; color: #fff; }
-.fy-tile.is-coral svg, .fy-tile.is-coral span { color: rgba(255, 255, 255, 0.85); }
-.fy-tile.is-hot strong { color: var(--accent-deep); }
-.fy-tile.is-dark { background: var(--night); border-color: var(--night); color: #fff; }
-.fy-tile.is-dark svg { color: #ff8a5c; }
-.fy-tile.is-dark span { color: rgba(255, 255, 255, 0.6); }
 
 .fy-learn .ads-label { margin: 2px 0 8px 2px; }
 .fy-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 2px; }

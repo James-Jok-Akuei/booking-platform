@@ -1,12 +1,7 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { markNotificationRead } from '../api/business';
+import { Link, useLocation } from 'react-router-dom';
 import type { DiscoveredService } from '../api/discovery';
-import { lookFor } from '../lib/notificationLook';
-import { ago } from '../lib/time';
 import { useMoney } from '../money';
-import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 import { AdCarousel } from './AdCarousel';
 import { guideTopics, type GuideTopic } from './guide';
@@ -17,7 +12,7 @@ import './ads.css';
 
 /**
  * "For you" — the column down the right of every page on a wide screen (§204,
- * §205). It folds to a slim strip (remembered), which hands the room back to
+ * §205, §206). It folds to a slim strip (remembered), which hands the room back to
  * the page. On narrower screens the same content sits at the top of Overview
  * (`ForYouTop`).
  */
@@ -25,13 +20,13 @@ export function AdRail({ folded, onFold }: { folded: boolean; onFold: () => void
   const data = useAdData();
 
   if (folded) {
-    const waiting = data.unreadMessages + data.unreadNotifications;
+    const left = data.missing.length;
     return (
       <aside className="ads is-folded">
         <button type="button" className="ads-unfold" onClick={onFold} aria-label="Open For you" title="Open For you">
           <span className="ads-unfold-icon">
             <Icon name="sparkles" size={20} />
-            {waiting > 0 && <i>{waiting > 99 ? '99+' : waiting}</i>}
+            {left > 0 && <i>{left}</i>}
           </span>
           <span className="ads-unfold-label">For you</span>
         </button>
@@ -66,7 +61,6 @@ export function ForYouContent({ data, banner = true }: { data: AdData; banner?: 
   return (
     <>
       {banner && (data.ready ? <AdCarousel slides={buildSlides(data)} /> : <div className="skeleton ads-skel" />)}
-      <RightNow data={data} />
       {data.ready && data.checks.length > 0 && <HealthCard data={data} />}
       <Guide data={data} />
       <Trending data={data} />
@@ -84,107 +78,6 @@ export function ForYouContent({ data, banner = true }: { data: AdData; banner?: 
         <Icon name="info" size={13} /> Chosen from your shop and the app. Nothing here is paid for.
       </p>
     </>
-  );
-}
-
-/**
- * "Right now" (§205): what just happened — new bookings, cancellations,
- * reviews, messages — from the same inbox as the bell, newest first. Opening
- * one goes to its page and marks it read, as the bell does (§96).
- */
-export function RightNow({ data, compact = false }: { data: AdData; compact?: boolean }) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [more, setMore] = useState(false);
-  const read = useMutation({
-    mutationFn: markNotificationRead,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
-  });
-
-  const items = data.notifications.slice(0, more ? 10 : compact ? 3 : 5);
-  const waiting = data.unreadThreads.slice(0, 2);
-
-  return (
-    <article className={`ads-live${compact ? ' is-compact' : ''}`}>
-      <header>
-        <div>
-          <p className="ads-label">
-            <i className="ads-live-dot" /> Right now
-          </p>
-          <strong>Orders, messages and alerts</strong>
-        </div>
-      </header>
-
-      <div className="ads-counters">
-        <Link to="/appointments" className="ads-counter is-coral">
-          <strong>{data.expectedToday}</strong>
-          <span>expected today</span>
-        </Link>
-        <Link to="/messages" className={`ads-counter${data.unreadMessages ? ' is-hot' : ''}`}>
-          <strong>{data.unreadMessages}</strong>
-          <span>unread {data.unreadMessages === 1 ? 'message' : 'messages'}</span>
-        </Link>
-        <div className="ads-counter">
-          <strong>{data.unreadNotifications > 99 ? '99+' : data.unreadNotifications}</strong>
-          <span>new {data.unreadNotifications === 1 ? 'alert' : 'alerts'}</span>
-        </div>
-      </div>
-
-      {waiting.length > 0 && (
-        <ul className="ads-chats">
-          {waiting.map((t) => (
-            <li key={t.id}>
-              <Link to="/messages" className="ads-chat">
-                <Avatar label={t.customer.email} size={34} />
-                <span className="ads-chat-text">
-                  <strong>{t.customer.email}</strong>
-                  <span>{t.lastMessage?.preview ?? 'Sent a photo'}</span>
-                </span>
-                <span className="ads-chat-meta">
-                  {t.lastMessageAt ? ago(t.lastMessageAt) : ''}
-                  <i>{t.unreadCount}</i>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {items.length > 0 ? (
-        <ol className="ads-feed">
-          {items.map((n) => {
-            const look = lookFor(n.type);
-            return (
-              <li key={n.id}>
-                <button
-                  type="button"
-                  className={`ads-feed-row${n.readAt ? '' : ' is-unread'}`}
-                  onClick={() => {
-                    if (!n.readAt) read.mutate(n.id);
-                    navigate(look.to);
-                  }}
-                >
-                  <span className={`ads-feed-icon tone-${look.tone}`}>
-                    <Icon name={look.icon} size={15} />
-                  </span>
-                  <span className="ads-feed-text">
-                    <strong>{n.subject ?? n.type}</strong>
-                    <span>{ago(n.createdAt)}</span>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      ) : (
-        <p className="ads-none">Nothing new yet — bookings, cancellations and reviews appear here as they happen.</p>
-      )}
-      {!compact && data.notifications.length > 5 && (
-        <button type="button" className="ads-more" onClick={() => setMore((v) => !v)}>
-          {more ? 'Show fewer' : 'Show more'}
-        </button>
-      )}
-    </article>
   );
 }
 

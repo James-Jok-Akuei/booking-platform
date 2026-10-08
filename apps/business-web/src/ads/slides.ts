@@ -1,8 +1,9 @@
 import type { IconName } from '../ui/Icon';
+import { lookFor, type Tone } from '../lib/notificationLook';
 import { ago } from '../lib/time';
 import { guideTopics } from './guide';
 import { SEARCH_HOW } from './tips';
-import type { AdData } from './useAdData';
+import type { AdData, JustIn } from './useAdData';
 
 /**
  * The adverts in the "For you" banner (§204), most useful first.
@@ -35,6 +36,10 @@ export const CUSTOMER_APP_URL = (import.meta.env.VITE_CUSTOMER_APP_URL as string
 export function buildSlides(d: AdData): Slide[] {
   const slides: Slide[] = [];
 
+  // Just in (§206): the one newest thing — first, while it is still news.
+  const news = d.justIn ? justInSlide(d.justIn) : null;
+  if (news) slides.push(news);
+
   // Money first: nothing else matters if the seller cannot be paid. Only the
   // owner can set the number (§48), so only the owner is asked to.
   if (d.role === 'OWNER' && d.payoutStatus && d.payoutStatus !== 'VERIFIED' && d.payoutStatus !== 'SUPERSEDED') {
@@ -54,37 +59,6 @@ export function buildSlides(d: AdData): Slide[] {
           ? 'Payouts start as soon as an administrator confirms it. Nothing you earn is lost meanwhile.'
           : 'Your share of every deposit is held until there is a confirmed mobile money number to send it to.',
       cta: { label: d.payoutStatus === 'UNVERIFIED' ? 'See your money' : 'Add it now', to: '/getting-paid' },
-    });
-  }
-
-  // News: something that just happened, while it is still news.
-  if (d.newOrder) {
-    slides.push({
-      key: 'news-order',
-      look: 'green',
-      icon: 'calendarCheck',
-      eyebrow: `Just in · ${ago(d.newOrder.createdAt)}`,
-      title: d.newOrder.subject ?? 'A new booking',
-      // The notification's own body is an email's worth of words; a banner
-      // says what it means and what happens next.
-      text:
-        d.newOrder.type === 'DEPOSIT_CONFIRMED'
-          ? 'The deposit is paid. They read out their 6-digit code when they arrive — the sixth digit checks them in.'
-          : 'A customer has booked. It shows under “Expected” as soon as their deposit is paid.',
-      cta: { label: 'See your bookings', to: '/appointments' },
-    });
-  }
-  const waiting = d.unreadThreads[0];
-  if (waiting) {
-    slides.push({
-      key: 'news-message',
-      look: 'coral',
-      icon: 'message',
-      eyebrow: `New message · ${waiting.lastMessageAt ? ago(waiting.lastMessageAt) : 'now'}`,
-      title: `${waiting.customer.email} wrote to you`,
-      text: `“${waiting.lastMessage?.preview ?? 'Sent a photo'}” — a shop cannot start a conversation, so a quick reply is the chance to win the booking.`,
-      stat: d.unreadMessages > 1 ? { value: String(d.unreadMessages), label: 'unread' } : undefined,
-      cta: { label: 'Reply', to: '/messages' },
     });
   }
 
@@ -142,6 +116,23 @@ export function buildSlides(d: AdData): Slide[] {
       title: `${d.unanswered} ${d.unanswered === 1 ? 'review is' : 'reviews are'} waiting for a reply`,
       text: 'Your reply sits under the review for everyone who reads it — the next customer reads both.',
       cta: { label: 'Reply now', to: '/reviews' },
+    });
+  }
+
+  // More than one shop (§206). Only an owner or a manager can add a branch.
+  if (d.role === 'OWNER' || d.role === 'MANAGER') {
+    slides.push({
+      key: 'branches',
+      look: 'green',
+      icon: 'store',
+      eyebrow: 'Grow · Branches',
+      title: d.branchCount === 0 ? 'Add the place you work from' : 'Have another shop? Add it as a branch',
+      text:
+        d.branchCount === 0
+          ? 'Until there is a branch, there is nothing for customers to book. Add its address, pin it on the map, then set its hours.'
+          : 'Another street, district or town — each branch gets its own page, hours, photos and prices, and customers near it find it on its own.',
+      stat: d.branchCount > 1 ? { value: String(d.branchCount), label: 'branches' } : undefined,
+      cta: { label: 'Add a branch', to: '/hours?add=1' },
     });
   }
 
@@ -204,4 +195,75 @@ export function buildSlides(d: AdData): Slide[] {
   });
 
   return slides.slice(0, 11);
+}
+
+/** Where each kind of notice leads, said as a button. */
+const ACTION: Record<string, string> = {
+  '/appointments': 'See your bookings',
+  '/reviews': 'See your reviews',
+  '/messages': 'Reply',
+  '/getting-paid': 'See your money',
+  '/profile': 'See your shopfront',
+  '/help': 'Open Help',
+  '/people': 'See your team',
+};
+
+/**
+ * What a notice means and what happens next, in one or two sentences. The
+ * notice's own body is an e-mail's worth of words; its subject is the title.
+ */
+const MEANING: Record<string, string> = {
+  APPOINTMENT_BOOKED: 'A customer has booked. It shows under “Expected” as soon as their deposit is paid.',
+  DEPOSIT_CONFIRMED: 'The deposit is paid. They read out their 6-digit code when they arrive — the sixth digit checks them in.',
+  APPOINTMENT_CANCELLED: 'The time is free again for someone else. Who cancelled decides what happens to the deposit.',
+  APPOINTMENT_NO_SHOW: 'The deposit is not refunded, and your share of it is paid to you.',
+  APPOINTMENT_REMINDER: 'A booking is coming up. Ask for their 6-digit code when they arrive.',
+  DEPOSIT_FAILED: 'The payment did not go through. The customer can try again.',
+  NEW_MESSAGE: 'A customer wrote to you. A shop cannot start a conversation, so a quick reply is the chance to win the booking.',
+  REVIEW_CREATED: 'A customer reviewed you. Your reply shows under it for everyone, and you can edit it for 7 days.',
+  REVIEW_RESPONSE: 'Your reply is under the review for everyone to read.',
+  REVIEW_HIDDEN: 'An administrator hid a review. It no longer counts in your rating.',
+  BUSINESS_APPROVED: 'Your shop is public — customers can find it and book.',
+  BUSINESS_REINSTATED: 'Your shop is public again — customers can find it and book.',
+  BUSINESS_REJECTED: 'Open it to read the reason.',
+  BUSINESS_SUSPENDED: 'Open it to read the reason.',
+  PAYOUT_DESTINATION_VERIFIED: 'Your share of deposits can now be paid to it in the daily payout run.',
+  PAYOUT_DESTINATION_REJECTED: 'Open it to read the reason, then add a number again.',
+  TICKET_MESSAGE: 'There is a reply to your help request.',
+  TICKET_STATUS_CHANGED: 'Your help request has moved on.',
+};
+
+const LOOK_BY_TONE: Record<Tone, SlideLook> = {
+  ok: 'green',
+  ask: 'blue',
+  danger: 'night',
+  warn: 'amber',
+  star: 'gold',
+  accent: 'coral',
+};
+
+function justInSlide(j: JustIn): Slide {
+  if (j.kind === 'message') {
+    const t = j.thread;
+    return {
+      key: 'just-in',
+      look: 'coral',
+      icon: 'message',
+      eyebrow: `Just in · ${t.lastMessageAt ? ago(t.lastMessageAt) : 'now'}`,
+      title: `${t.customer.email} wrote to you`,
+      text: `“${t.lastMessage?.preview ?? 'Sent a photo'}” — a quick reply is the chance to win the booking.`,
+      cta: { label: 'Reply', to: '/messages' },
+    };
+  }
+  const n = j.notification;
+  const look = lookFor(n.type);
+  return {
+    key: 'just-in',
+    look: LOOK_BY_TONE[look.tone],
+    icon: look.icon,
+    eyebrow: `Just in · ${ago(n.createdAt)}`,
+    title: n.subject ?? 'Something new',
+    text: MEANING[n.type] ?? 'Open it to see the details.',
+    cta: { label: ACTION[look.to.split('?')[0]] ?? 'Open it', to: look.to },
+  };
 }

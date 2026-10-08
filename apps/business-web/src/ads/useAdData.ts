@@ -4,7 +4,6 @@ import {
   getMe,
   getPayoutDestination,
   getProfile,
-  listAppointments,
   listLocationReviews,
   listNotifications,
   listLocations,
@@ -15,7 +14,6 @@ import { listThreads } from '../api/chat';
 import { discoverServices, type DiscoveredService } from '../api/discovery';
 import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
 import { addDays, startOfDay } from '../lib/time';
-import { ORDER_TYPES } from '../lib/notificationLook';
 import type { IconName } from '../ui/Icon';
 
 /**
@@ -28,6 +26,8 @@ import type { IconName } from '../ui/Icon';
  * - **The platform**: what customers are booking most right now, from the same
  *   public list the customer app's home shows — in your own kind of business
  *   first, then everywhere — never your own services.
+ * - **Just in** (§206): the one newest notification or unread message of the
+ *   last day — a headline; the bell and the inbox keep the rest.
  *
  * Every query shares its key with the page that asks the same thing, so the
  * adverts cost almost nothing once the seller has looked around.
@@ -44,6 +44,10 @@ export type HealthCheck = {
 };
 
 export type BestSeller = { service: Service | null; name: string; count: number; onSale: boolean };
+
+type Thread = NonNullable<Awaited<ReturnType<typeof listThreads>>['threads']>[number];
+type Notice = NonNullable<Awaited<ReturnType<typeof listNotifications>>['notifications']>[number];
+export type JustIn = { kind: 'message'; thread: Thread } | { kind: 'notification'; notification: Notice };
 
 const isSaleOn = (s: Service) =>
   Boolean(s.discountPercent) && (!s.discountEndsOn || s.discountEndsOn.slice(0, 10) >= new Date().toISOString().slice(0, 10));
@@ -76,8 +80,8 @@ export function useAdData() {
     staleTime: 5 * 60_000,
   });
 
-  // What is happening right now (§205). Same keys as the bell and the frame's
-  // badges, so the three never disagree and nothing is fetched twice.
+  // The one thing that just came in (§206). Same keys as the bell and the
+  // frame's badges, so they never disagree and nothing is fetched twice.
   const inbox = useQuery({
     queryKey: ['notifications'],
     queryFn: () => listNotifications({ limit: 30 }),
@@ -86,19 +90,6 @@ export function useAdData() {
   const threads = useQuery({
     queryKey: ['threads', 'badge'],
     queryFn: () => listThreads({ limit: 100 }),
-    refetchInterval: 60_000,
-  });
-  const expected = useQuery({
-    queryKey: ['appointments', 'badge', 'expected-today'],
-    queryFn: () => {
-      const from = startOfDay();
-      return listAppointments({
-        status: 'BOOKED',
-        from: from.toISOString(),
-        to: addDays(from, 1).toISOString(),
-        limit: 1,
-      });
-    },
     refetchInterval: 60_000,
   });
 
@@ -232,15 +223,24 @@ export function useAdData() {
 
     const unanswered = (reviews.data ?? []).filter((r) => !r.responseText).length;
 
-    // ---- right now ----
-    const notifications = inbox.data?.notifications ?? [];
-    const conversations = (threads.data?.threads ?? [])
-      .filter((t) => t.lastMessage !== null)
-      .sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''));
-    const unreadThreads = conversations.filter((t) => t.unreadCount > 0);
+    // ---- just in ----
+    // ONE thing, the newest of the last day: a notification of any kind, or a
+    // customer's message still unread. Everything else stays in the bell and
+    // the inbox (§206) — this is a headline, not a second inbox.
     const dayAgo = Date.now() - 86_400_000;
-    const newOrder =
-      notifications.find((n) => ORDER_TYPES.includes(n.type) && new Date(n.createdAt).getTime() > dayAgo) ?? null;
+    const fresh = (iso: string | null | undefined) => Boolean(iso) && new Date(iso!).getTime() > dayAgo;
+    const note = (inbox.data?.notifications ?? []).find((n) => fresh(n.createdAt)) ?? null;
+    const message =
+      (threads.data?.threads ?? [])
+        .filter((t) => t.unreadCount > 0 && t.lastMessage !== null && fresh(t.lastMessageAt))
+        .sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''))[0] ?? null;
+    // A message notification is told better by the message itself.
+    const justIn: JustIn | null =
+      message && (!note || note.type === 'NEW_MESSAGE' || (message.lastMessageAt ?? '') >= note.createdAt)
+        ? { kind: 'message', thread: message }
+        : note
+          ? { kind: 'notification', notification: note }
+          : null;
     // The platform's fee as the seller is actually charged it: from their own
     // latest booking, never a number written into the app.
     const latest = [...(recent.data ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
@@ -262,13 +262,8 @@ export function useAdData() {
       saleRunning,
       hasServices: onSale.length > 0,
       payoutStatus: destination.data ? destination.data.destination?.status ?? 'NONE' : null,
-      notifications,
-      unreadNotifications: inbox.data?.unread ?? 0,
-      conversations,
-      unreadThreads,
-      unreadMessages: unreadThreads.reduce((sum, t) => sum + t.unreadCount, 0),
-      expectedToday: expected.data?.total ?? 0,
-      newOrder,
+      branchCount: branches.length,
+      justIn,
       feePercent,
     };
   }, [
@@ -282,7 +277,6 @@ export function useAdData() {
     trendingAll.data,
     inbox.data,
     threads.data,
-    expected.data,
     businessId,
     role,
   ]);

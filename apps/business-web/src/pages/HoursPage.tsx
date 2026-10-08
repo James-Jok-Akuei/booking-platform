@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import {
   closeLocation,
@@ -45,6 +46,21 @@ export function HoursPage() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['locations'] });
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Location | null>(null);
+
+  // "Add a branch" from anywhere else (For you, §206) arrives as ?add=1 and
+  // opens the form; the address is tidied so a reload does not open it again.
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    if (params.get('add') !== '1') return;
+    setAdding(true);
+    setParams(
+      (next) => {
+        next.delete('add');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [params, setParams]);
 
   return (
     <section className="hr">
