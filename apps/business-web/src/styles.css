@@ -759,6 +759,13 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .shop-logo.is-initials { background: var(--accent-grad); box-shadow: var(--shadow-accent); }
 .shop-logo-dot { position: absolute; right: -3px; bottom: -3px; width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid var(--panel); background: var(--faint); }
 .shop-logo-dot.is-live { background: var(--ok); }
+.shop-logo-dot.is-paused { background: var(--warn); }
+.shop-logo-badge { position: absolute; right: -6px; bottom: -6px; display: grid; place-items: center; border-radius: 50%; border: 2.5px solid var(--panel); background: var(--accent); color: #fff; }
+.shop-logo-badge.tone-ok { background: var(--ok); }
+.shop-logo-badge.tone-warn { background: var(--warn); }
+.shop-logo-badge.tone-danger { background: var(--danger); }
+.shop-logo-badge.tone-ask { background: var(--ask); }
+.shop-logo-badge.tone-star { background: #e0a100; }
 
 /* ---------- the app's own dropdown (§227) ---------- */
 

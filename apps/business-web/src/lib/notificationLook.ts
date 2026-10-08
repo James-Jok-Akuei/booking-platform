@@ -32,5 +32,8 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   PAYOUT_DESTINATION_REJECTED: { icon: 'wallet', tone: 'danger', to: '/getting-paid' },
 };
 
+/** News about the shop itself — drawn with the shop's own logo, its icon a badge on the corner (§231). */
+export const ABOUT_THE_SHOP = new Set(['BUSINESS_APPROVED', 'BUSINESS_REINSTATED', 'BUSINESS_REJECTED', 'BUSINESS_SUSPENDED']);
+
 export const lookFor = (type: string) =>
   NOTIFICATION_LOOK[type] ?? { icon: 'bell' as IconName, tone: 'accent' as Tone, to: '/' };

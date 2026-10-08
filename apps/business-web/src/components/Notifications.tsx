@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  getProfile,
   listNotifications,
   markAllNotificationsRead,
   markNotificationRead,
 } from '../api/business';
-import { lookFor } from '../lib/notificationLook';
+import { ABOUT_THE_SHOP, lookFor } from '../lib/notificationLook';
 import { Icon } from '../ui/Icon';
+import { ShopLogo } from '../ui/ShopLogo';
 import { Portal } from '../ui/Portal';
 import { useDismiss } from '../ui/useDismiss';
 import { useMediaQuery } from '../shell/useMediaQuery';
@@ -50,6 +52,8 @@ export function Notifications() {
     queryFn: () => listNotifications({ limit: 30 }),
     refetchInterval: 60_000,
   });
+  // The shop's logo, for news about the shop (§231) — the frame already asked.
+  const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile, retry: false });
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
@@ -98,12 +102,23 @@ export function Notifications() {
               if (!notification.readAt) readOne.mutate(notification.id);
             }}
           >
-            <span
-              className={`bell-mark tone-${lookFor(notification.type).tone}`}
-              aria-hidden="true"
-            >
-              <Icon name={lookFor(notification.type).icon} size={16} />
-            </span>
+            {ABOUT_THE_SHOP.has(notification.type) ? (
+              <span className="bell-mark is-shop" aria-hidden="true">
+                <ShopLogo
+                  logoUrl={profile.data?.logoUrl ?? null}
+                  name={profile.data?.name ?? 'Your business'}
+                  size={36}
+                  badge={lookFor(notification.type)}
+                />
+              </span>
+            ) : (
+              <span
+                className={`bell-mark tone-${lookFor(notification.type).tone}`}
+                aria-hidden="true"
+              >
+                <Icon name={lookFor(notification.type).icon} size={16} />
+              </span>
+            )}
             <div className="bell-text">
               <strong>{notification.subject ?? notification.type}</strong>
               {notification.body && <span className="bell-body">{notification.body}</span>}

@@ -208,7 +208,9 @@ body {
 .sb-foot { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 10px; }
 
 .sb-status {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
   padding: 14px 15px 15px;
   border-radius: 20px;
   text-decoration: none;
@@ -219,15 +221,14 @@ body {
   transition: transform 220ms var(--ease), box-shadow 220ms var(--ease);
 }
 .sb-status:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -16px rgba(21, 23, 28, 0.6); }
+.sb-status-body { flex: 1; min-width: 0; }
+.sb-status-logo { margin-top: 1px; }
 .sb-status-head { display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 750; }
 .sb-status-text { display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.45; color: rgba(255, 255, 255, 0.66); }
 .sb-status-text strong { color: #fff; }
-.sb-pulse { width: 9px; height: 9px; border-radius: 50%; background: #34d27b; animation: pulse-green 2.2s ease-out infinite; }
-@keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(52, 210, 123, 0.55); } 70%, 100% { box-shadow: 0 0 0 9px rgba(52, 210, 123, 0); } }
 .sb-status.is-off { background: var(--warn-soft); color: #6f4400; border: 1px solid #f6dfae; }
 .sb-status.is-off .sb-status-text { color: #8a5a10; }
 .sb-status.is-off .sb-status-text strong { color: #6f4400; }
-.sb-status.is-off .sb-pulse { background: var(--warn); animation: none; }
 
 .sb-user { display: flex; align-items: center; gap: 10px; padding: 9px 9px 9px 10px; border-radius: 18px; background: var(--sunken); }
 .sb-user-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -243,7 +244,8 @@ body {
    its heading, then goes. */
 @media (max-height: 960px) {
   .sb-status-text { display: none; }
-  .sb-status { padding: 11px 14px; border-radius: 16px; }
+  .sb-status { align-items: center; padding: 9px 12px; border-radius: 16px; }
+  .sb-status-logo { margin-top: 0; }
 }
 @media (max-height: 820px) {
   .sidebar:not(.is-drawer) .sb-status { display: none; }
@@ -547,6 +549,7 @@ body {
   content: ''; position: absolute; top: -1px; right: -1px; width: 10px; height: 10px; border-radius: 50%;
   background: var(--accent); border: 2px solid var(--panel);
 }
+.bell-mark.is-shop { background: none; border-radius: 11px; }
 .bell-mark.tone-ok { background: var(--ok-soft); color: var(--ok-deep); }
 .bell-mark.tone-ask { background: var(--ask-soft); color: var(--ask); }
 .bell-mark.tone-danger { background: var(--danger-soft); color: var(--danger); }

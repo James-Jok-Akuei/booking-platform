@@ -128,21 +128,33 @@ export function Sidebar({
             the green dot on its logo, top right, says it. */}
         {business && !live && (
           <Link to="/profile" className={`sb-status ${live ? 'is-live' : 'is-off'}`} onClick={onNavigate}>
-            <span className="sb-status-head">
-              <i className="sb-pulse" aria-hidden="true" />
-              {live ? 'Your shop is live' : data.paused ? 'Your shop is paused' : 'Not live yet'}
-            </span>
-            <span className="sb-status-text">
-              {live ? (
-                'Customers can find you and book.'
-              ) : data.paused ? (
-                'Customers cannot book until you resume it.'
-              ) : (
-                <>
-                  This business is <strong>{business.status}</strong>, so it does not appear in
-                  search and cannot take new bookings.
-                </>
-              )}
+            {/* The shop's own logo, with why it is hidden on the corner (§231). */}
+            <ShopLogo
+              logoUrl={data.logoUrl}
+              name={name}
+              size={34}
+              className="sb-status-logo"
+              badge={{
+                icon: data.paused ? 'pause' : business.status === 'PENDING' ? 'clock' : 'alert',
+                tone: business.status === 'PENDING' || data.paused ? 'warn' : 'danger',
+              }}
+            />
+            <span className="sb-status-body">
+              <span className="sb-status-head">
+                {live ? 'Your shop is live' : data.paused ? 'Your shop is paused' : 'Not live yet'}
+              </span>
+              <span className="sb-status-text">
+                {live ? (
+                  'Customers can find you and book.'
+                ) : data.paused ? (
+                  'Customers cannot book until you resume it.'
+                ) : (
+                  <>
+                    This business is <strong>{business.status}</strong>, so it does not appear in
+                    search and cannot take new bookings.
+                  </>
+                )}
+              </span>
             </span>
           </Link>
         )}

@@ -15,13 +15,12 @@
   border: 1px solid rgba(21, 23, 28, 0.05);
   box-shadow: var(--shadow-xs);
 }
-.pf-pause-icon { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 14px; background: var(--ok-soft); color: var(--ok-deep); }
+.pf-pause-logo { margin-right: 2px; }
 .pf-pause-text { flex: 1; min-width: 0; }
 .pf-pause-text h2 { margin: 0; font-size: 16px; }
 .pf-pause-text p { margin: 2px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; max-width: 90ch; }
 .pf-pause-action { display: flex; align-items: center; gap: 12px; flex: none; font-size: 13.5px; font-weight: 700; color: var(--ink-2); }
 .pf-pause.is-paused { background: linear-gradient(90deg, #fff3dc, #fff9ef); border-color: #f6dfae; }
-.pf-pause.is-paused .pf-pause-icon { background: var(--warn); color: #fff; }
 .pf-pause.is-paused h2 { color: #8a5a10; }
 .pf-pause.is-paused p { color: #8a5a10; }
 

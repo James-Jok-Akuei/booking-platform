@@ -15714,3 +15714,34 @@ the conversation pressed.
 
 Checked at 1440 and 390 wide: pressing the third and second messages on
 Overview opened those chats; switching chats in Messages updates the address.
+
+## 231. The shop's own logo wherever a card is about the shop (2026-10-09)
+
+The user: the "Your shop is open" card on Your shopfront showed a green play
+button; use the business's logo there, and in places like it.
+
+`ui/ShopLogo` (§217) now also draws a small **badge** on its corner — an
+icon in a coloured circle — for what the news is, and an amber dot for
+**paused**. It is used, in place of a plain icon, wherever a card or notice
+is about the shop itself:
+
+- **Your shop is open / paused** (Your shopfront): the logo with a green dot
+  when customers can see the shop, grey when they cannot, an amber ⏸ badge
+  when it is paused.
+- **The sidebar's card** shown only when the shop is hidden (§218): the
+  logo with ⏸ (paused), 🕒 (waiting for approval) or ⚠ (rejected or
+  suspended), in place of the coloured dot.
+- **The bell**: news about the shop — approved, reinstated, rejected,
+  suspended (`ABOUT_THE_SHOP` in `lib/notificationLook`) — shows the logo
+  with the news's own icon as the badge (✓ green, ⏸ red…). Other notices
+  (bookings, reviews, payouts) keep their icons: they are about something
+  else.
+
+Left as they were, on purpose: the sidebar's "Your shopfront" link and the
+account menu's (menu icons stay one set of line drawings, and the logo is
+already at the top of both); the "Logo" step on the shopfront checklist
+(it is the thing to add); the For you adverts' icon tiles.
+
+Checked at 1440, 1024 and 390 wide: the card open and paused, the sidebar
+card paused, the bell with an approved and a suspended notice (both made up
+in the test browser only; nothing was saved).

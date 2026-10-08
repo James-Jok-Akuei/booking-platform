@@ -20,6 +20,7 @@ import { CustomerPhone } from '../shopfront/CustomerPhone';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 import { Select } from '../ui/Select';
+import { ShopLogo } from '../ui/ShopLogo';
 import { Stars } from '../ui/Stars';
 import { Switch } from '../ui/Switch';
 import './profile.css';
@@ -557,9 +558,15 @@ function PausePanel({ profile }: { profile: BusinessProfile }) {
 
   return (
     <div className={`pf-pause${paused ? ' is-paused' : ''}`}>
-      <span className="pf-pause-icon">
-        <Icon name={paused ? 'pause' : 'play'} size={20} />
-      </span>
+      {/* The shop's own logo, not a play button (§231): this card is about it. */}
+      <ShopLogo
+        logoUrl={profile.logoUrl}
+        name={profile.name ?? 'Your business'}
+        size={48}
+        className="pf-pause-logo"
+        state={paused ? undefined : profile.status === 'APPROVED' ? 'live' : 'off'}
+        badge={paused ? { icon: 'pause', tone: 'warn' } : undefined}
+      />
       <div className="pf-pause-text">
         <h2>{paused ? 'Your shop is paused' : 'Your shop is open'}</h2>
         <p>
