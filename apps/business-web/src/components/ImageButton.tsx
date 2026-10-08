@@ -1,3 +1,5 @@
+import { Icon } from '../ui/Icon';
+
 /**
  * The file picker, as a button (§132.3).
  *
@@ -38,6 +40,7 @@ export function ImageButton({
         }}
       />
       <label htmlFor={id} className={busy ? 'file-trigger disabled' : 'file-trigger'}>
+        <Icon name="upload" size={17} />
         {busy ? 'Uploading…' : label}
       </label>
     </>

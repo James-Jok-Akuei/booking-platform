@@ -196,7 +196,6 @@ button.link {
 button.link:hover:not(:disabled) { background: none; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 button.link:active:not(:disabled) { transform: none; }
 button.link.danger-link { color: var(--danger); }
-button.tiny { font-size: 12px; min-height: 30px; padding: 0 11px; border-radius: var(--r-sm); }
 
 .icon-button {
   background: transparent;
@@ -353,19 +352,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1
 input.code { width: 96px; font-family: ui-monospace, Menlo, monospace; letter-spacing: 0.16em; text-align: center; font-weight: 700; }
 
 .section-title { font-size: 17px; margin: 30px 0 6px; }
-.service-form { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; padding: 22px 24px; margin-bottom: 16px; }
-.service-form label { display: block; margin-bottom: 5px; }
-.service-form input { width: 140px; }
-.service-sale { flex-basis: 100%; display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border: 1px dashed #f3b7a4; border-radius: var(--r-lg); background: var(--accent-tint); }
-.sale-fields { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
-.sale-fields label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; }
-.sale-fields input { width: 160px; }
-.sale-preview { display: flex; flex-direction: column; gap: 3px; }
-.sale-preview strong { color: var(--accent-deep); }
-.sale-tag { display: inline-block; margin: 2px 0; padding: 2px 9px; border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent-deep); font-size: 12px; font-weight: 750; }
-.service-words { flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; }
-.service-words input, .service-words textarea { width: 100%; max-width: 680px; resize: vertical; }
-.form-actions { display: flex; gap: 10px; align-items: center; }
 .location { margin-bottom: 18px; padding: 22px 24px; }
 table.hours { border: none; background: none; margin-bottom: 10px; box-shadow: none; border-radius: 0; }
 table.hours td { border: none; padding: 5px 12px 5px 0; vertical-align: middle; }
@@ -373,14 +359,6 @@ table.hours tbody tr:hover { background: none; }
 table.hours td.day { width: 120px; color: var(--ink-2); font-size: 13.5px; font-weight: 600; }
 label.inline { display: inline-flex; gap: 7px; align-items: center; font-size: 13.5px; }
 input[type='time'] { width: 120px; }
-
-.branch-prices { display: flex; flex-direction: column; gap: 8px; flex-basis: 100%; }
-.branch-price { display: flex; align-items: center; gap: 12px; font-size: 13.5px; }
-.branch-price span { min-width: 170px; color: var(--ink); font-weight: 600; }
-.branch-price input { width: 140px; }
-.branch-line { display: flex; align-items: baseline; gap: 10px; justify-content: space-between; }
-.branch-price-label { white-space: nowrap; }
-.branch-line.off .branch-price-label { opacity: 0.55; text-decoration: line-through; }
 
 .figures { display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 12px; }
 .figure-block { display: flex; flex-direction: column; gap: 2px; max-width: 26ch; }
@@ -465,12 +443,6 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .photo-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
 .photo-grid figure { margin: 0; width: 128px; display: flex; flex-direction: column; gap: 4px; }
 .photo-grid img { width: 128px; height: 96px; object-fit: cover; border-radius: var(--r-md); border: 1px solid var(--line); }
-/* The cover (§187): framed in coral and marked on the picture. */
-.photo-tile { position: relative; }
-.photo-tile.is-cover img { border: 2px solid var(--accent); }
-.cover-badge { position: absolute; top: 7px; left: 7px; padding: 2px 8px; border-radius: var(--r-pill); background: var(--accent); color: #fff; font-size: 11px; font-weight: 750; box-shadow: var(--shadow-sm); }
-.photo-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; font-size: 12px; white-space: nowrap; }
-.photo-actions .link { font-size: 13px; padding: 0; }
 
 .card.location.closed { opacity: 0.72; }
 .card.location.closed h2 { display: flex; align-items: center; gap: 9px; }
@@ -534,18 +506,9 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 }
 .legal-banner a { color: inherit; font-weight: 750; }
 
-/* Service photos (§132). */
-.service-name { display: flex; align-items: center; gap: 12px; }
-.service-thumb { width: 52px; height: 40px; flex: 0 0 52px; object-fit: cover; border-radius: var(--r-sm); border: 1px solid var(--line); }
-.service-thumb.empty { background: var(--sunken); display: inline-block; }
-
 /* The pin on a map, before it is saved (§157). */
 .map-pin { display: grid; gap: 6px; }
 .map-pin iframe { width: 100%; height: 230px; border: 1px solid var(--line); border-radius: var(--r-lg); }
-
-/* Photos chosen while writing a new service (§165). */
-.service-photos { flex-basis: 100%; border-top: 1px solid var(--line); padding-top: 14px; }
-.service-photos label.file-trigger { display: inline-flex; width: auto; margin: 0; }
 
 /* ---------- shared pieces (§190) ---------- */
 
@@ -573,3 +536,36 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
   background-size: 800px 100%;
   animation: shimmer 1.4s linear infinite;
 }
+
+/* On/off switch (§194). */
+.switch { position: relative; display: inline-flex; flex: none; cursor: pointer; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; width: 100%; height: 100%; cursor: pointer; }
+.switch-track {
+  width: 42px;
+  height: 25px;
+  padding: 3px;
+  border-radius: 99px;
+  background: var(--line-strong);
+  transition: background 200ms var(--ease);
+}
+.switch-thumb {
+  display: block;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(21, 23, 28, 0.22);
+  transition: transform 260ms var(--spring);
+}
+.switch.is-on .switch-track { background: var(--ok); }
+.switch.is-on .switch-thumb { transform: translateX(17px); }
+.switch input:focus-visible + .switch-track { box-shadow: var(--ring); }
+.switch.is-disabled { opacity: 0.5; cursor: not-allowed; }
+.switch.is-disabled input { cursor: not-allowed; }
+
+/* "⋯" menus (§194). The open one lifts its card or row above the next. */
+.more { position: relative; }
+.more-btn { width: 40px; height: 40px; min-height: 0; padding: 0; border-radius: 13px; background: var(--panel); }
+.more-menu { width: 240px; top: calc(100% + 6px); }
+.more-menu.is-left { right: auto; left: 0; transform-origin: top left; }
+

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
@@ -16,6 +16,7 @@ import {
 } from '../api/business';
 import { Avatar } from '../ui/Avatar';
 import { confirmDialog, promptDialog } from '../ui/Dialog';
+import { MoreMenu } from '../ui/MoreMenu';
 import { Icon, type IconName } from '../ui/Icon';
 import { clock, minutesBetween, relativeDay, sameDay, span, startOfDay } from '../lib/time';
 import './appointments.css';
@@ -417,7 +418,7 @@ function Row({
             <button type="button" className="primary ap-btn" disabled={busy} onClick={() => actions.checkIn(a)}>
               <Icon name="ticket" size={16} /> Check in
             </button>
-            <RowMenu
+            <MoreMenu
               items={[
                 ...(canVerifyManually
                   ? [{ label: 'No code?', icon: 'key' as const, onClick: () => actions.noCode(a) }]
@@ -444,64 +445,6 @@ function Row({
         )}
       </div>
     </article>
-  );
-}
-
-/** "⋯": the rarer things to do with a booking. */
-function RowMenu({
-  items,
-  disabled,
-}: {
-  items: Array<{ label: string; icon: IconName; onClick: () => void; danger?: boolean }>;
-  disabled?: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const away = (event: MouseEvent) => {
-      if (!ref.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const escape = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
-    document.addEventListener('mousedown', away);
-    document.addEventListener('keydown', escape);
-    return () => {
-      document.removeEventListener('mousedown', away);
-      document.removeEventListener('keydown', escape);
-    };
-  }, [open]);
-  return (
-    <div className="ap-more" ref={ref}>
-      <button
-        type="button"
-        className="ap-more-btn"
-        onClick={() => setOpen((was) => !was)}
-        disabled={disabled}
-        aria-label="More"
-        aria-expanded={open}
-      >
-        <Icon name="more" size={20} />
-      </button>
-      {open && (
-        <div className="menu ap-menu" role="menu">
-          {items.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              role="menuitem"
-              className={`menu-item${item.danger ? ' is-danger' : ''}`}
-              onClick={() => {
-                setOpen(false);
-                item.onClick();
-              }}
-            >
-              <Icon name={item.icon} size={18} />
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
 

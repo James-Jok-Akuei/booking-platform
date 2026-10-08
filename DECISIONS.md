@@ -14393,3 +14393,46 @@ sheet from the bottom on a phone. Appointments now uses it:
 The other pages' browser pop-ups (Services, Hours, Shopfront, People) move to
 the dialog as each page is rebuilt.
 
+## 194. Services, a catalogue (2026-10-08)
+
+`src/pages/ServicesPage.tsx`, every function and word kept, laid out the way
+a seller thinks about what they sell:
+
+- **Summary chips** under the heading: how many on sale, how many with a sale
+  running, how many **without photos** (amber — the one thing most worth
+  fixing), how many not on sale.
+- **Unfinished** drafts (§123) as a strip of dashed cards — name, last saved,
+  who started it — with **Carry on** and **Discard** (now a dialog, §193).
+- **Each service is a card**: its cover as the customer's app shows it (or
+  "Add a photo" on a striped tile), the sale on the picture ("−15%"), the
+  photo count, the name and its title (or "No title yet"), length and deposit
+  with "from RWF 1,000 up front", the sale line, then **each branch's price
+  with an on/off switch** — the switch is §74's "Stop offering here" / "Put
+  back on sale here", acting the moment it is flipped (those words are its
+  label). A sale shows the new price with the old one struck through.
+  Underneath, **Title · Description · Instructions** ticked or not, "2/3" — a
+  glance shows which services still have nothing to say for themselves.
+  Edit, Photos, and "⋯" for Stop offering everywhere.
+- **Not on sale** below, the same cards greyed, each with Put back on sale
+  (§76's two ways back unchanged).
+- **Adding and editing happen in a panel from the right**, in four sections —
+  Name and words, Price and time (each branch's price with the deposit it
+  means worked out beside it), Sale (each branch's "customers pay X instead
+  of Y" as it is typed), Photos (chosen ones for a new service; the live
+  manager for an existing one, "saved straight away") — with the action
+  buttons fixed at the foot. Clicking a card's cover opens it on Photos.
+- Photos are larger tiles with "★ Cover" on the picture; Make cover and
+  Remove appear on hover.
+- Every browser pop-up on the page is now the dialog: pausing the last branch
+  (the server's own message), stopping everywhere, discarding a draft,
+  removing a photo, and the two form checks (a price somewhere; a sale of
+  1–90%).
+
+`src/ui/Switch.tsx` and `src/ui/MoreMenu.tsx` ("⋯", now shared with
+Appointments) are new shared pieces. The old table/form styles were removed
+from `styles.css` once nothing used them.
+
+Testing note: opening "Add a service" starts a draft on the server (§123), so
+the one the screenshot run made was deleted afterwards; the two older drafts
+were left as they were.
+

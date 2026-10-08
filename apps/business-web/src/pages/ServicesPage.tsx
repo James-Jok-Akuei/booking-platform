@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ApiError } from '../api/client';
@@ -26,18 +26,30 @@ import {
   removeServiceImage,
   setServiceImageCover,
 } from '../api/business';
+import { ago } from '../lib/time';
+import { Avatar } from '../ui/Avatar';
+import { alertDialog, confirmDialog } from '../ui/Dialog';
+import { Icon, type IconName } from '../ui/Icon';
+import { MoreMenu } from '../ui/MoreMenu';
+import { Switch } from '../ui/Switch';
+import './services.css';
+
+type Editor = { mode: 'new' } | { mode: 'edit'; service: Service; focus?: 'photos' };
 
 /**
- * What the business sells, and for how much.
+ * What the business sells, and for how much (§10, §194).
  *
- * Services belong to the BUSINESS, not to a location (§10.2) — so a price
- * change applies at every branch at once. The page says so, because an owner
- * with two branches will reasonably expect otherwise.
+ * Services belong to the BUSINESS, not to a location (§10.2) — each is offered
+ * at the branches chosen, at that branch's price (§72). The page shows them
+ * as a catalogue of cards: the cover a customer sees, the price at each branch
+ * with a switch to pause it there, and whether the words a customer reads are
+ * written. Adding and editing happen in a panel from the right, in sections.
  */
 export function ServicesPage() {
   const queryClient = useQueryClient();
   const money = useMoney();
-  const [adding, setAdding] = useState(false);
+  const [editor, setEditor] = useState<Editor | null>(null);
+  const adding = editor?.mode === 'new';
 
   const services = useQuery({ queryKey: ['services'], queryFn: listServices });
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
@@ -59,25 +71,14 @@ export function ServicesPage() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const drafts = useQuery({ queryKey: ['service-drafts'], queryFn: listServiceDrafts });
-  const refreshDrafts = () =>
-    queryClient.invalidateQueries({ queryKey: ['service-drafts'] });
+  const refreshDrafts = () => queryClient.invalidateQueries({ queryKey: ['service-drafts'] });
 
   const discard = useMutation({
     mutationFn: discardServiceDraft,
     onSuccess: refreshDrafts,
   });
 
-  const queueDraftSave = (values: {
-    name: string;
-    title: string;
-    description: string;
-    instructions: string;
-    discountPercent: number | null;
-    discountEndsOn: string | null;
-    durationMinutes: number | null;
-    depositPercentage: number | null;
-    offers: Array<{ locationId: string; priceMinor: number }>;
-  }) => {
+  const queueDraftSave = (values: FormValues) => {
     if (!draftId) return;
     if (timer.current) clearTimeout(timer.current);
     // Long enough that typing a name is one save rather than eleven, short
@@ -121,11 +122,36 @@ export function ServicesPage() {
         priceMinor: offer.priceMinor,
       })),
     } as unknown as Service);
-    setAdding(true);
+    setEditor({ mode: 'new' });
   };
 
   const { sellerAgreement } = useOutstandingLegal();
   const [gateOpen, setGateOpen] = useState(false);
+
+  const startNew = async () => {
+    setResumed(undefined);
+    // Asked BEFORE the form opens, not after it is filled in (§126.4).
+    // Making somebody write a whole service and then telling them they
+    // cannot post it is the worst possible moment to raise this.
+    if (sellerAgreement) {
+      setGateOpen(true);
+      return;
+    }
+    // Started BEFORE the form opens, so the first keystroke has somewhere
+    // to go rather than being the one that gets lost.
+    const draft = await startServiceDraft().catch(() => null);
+    setDraftId(draft?.id ?? null);
+    setEditor({ mode: 'new' });
+    refreshDrafts();
+  };
+
+  const closeEditor = () => {
+    // Closing a new one keeps the draft. That is the whole point: the text is
+    // still there under Unfinished when they come back.
+    setEditor(null);
+    setDraftId(null);
+    setResumed(undefined);
+  };
 
   /**
    * Posting a NEW service is one act (§165): the service, then its photos, in
@@ -161,7 +187,7 @@ export function ServicesPage() {
     },
     onSettled: () => setPosting(null),
     onSuccess: () => {
-      setAdding(false);
+      setEditor(null);
       // The draft became a service. Keeping it would leave the Unfinished list
       // describing something that already exists.
       if (draftId) discard.mutate(draftId);
@@ -200,28 +226,50 @@ export function ServicesPage() {
     onSuccess: (result) => {
       // Pausing the last branch leaves it bookable by nobody. Worth saying
       // once, in the server's own words rather than a guess made here.
-      if (!result.isOffered && result.offeredAtCount === 0) window.alert(result.message);
+      if (!result.isOffered && result.offeredAtCount === 0) {
+        void alertDialog({ title: 'Nobody can book it now', body: <p>{result.message}</p>, tone: 'warn' });
+      }
       refresh();
     },
   });
+
+  const busy = save.isPending || everywhere.isPending || toggle.isPending || unretire.isPending;
 
   /**
    * Grouped by whether a customer can book it, not by the `isActive` flag.
    *
    * A service everybody has paused is in exactly the same position as a retired
    * one — in your catalogue, bookable by nobody — so it belongs in the same
-   * section, where there is an obvious way to bring it back. Splitting on the
-   * flag instead left it sitting among the live services with a red warning,
-   * which reads as a fault rather than a choice.
+   * section, where there is an obvious way to bring it back.
    */
   const onSale =
     services.data?.filter((s) => s.isActive && s.locations.some((o) => o.isOffered)) ?? [];
   const notOnSale =
-    services.data?.filter((s) => !s.isActive || !s.locations.some((o) => o.isOffered)) ??
-    [];
+    services.data?.filter((s) => !s.isActive || !s.locations.some((o) => o.isOffered)) ?? [];
+  const withSale = onSale.filter((s) => s.discountPercent && !isSaleOver(s.discountEndsOn)).length;
+  const noPhotos = onSale.filter((s) => s.images.length === 0).length;
+
+  const retire = async (service: Service) => {
+    const ok = await confirmDialog({
+      title: `Stop offering “${service.name}” at every branch?`,
+      body: (
+        <p>
+          It moves to “Not on sale”, keeps its prices, and you can put it back at any time.
+          Appointments already made are unaffected.
+        </p>
+      ),
+      tone: 'danger',
+      icon: 'pause',
+      confirmLabel: 'Stop offering everywhere',
+      cancelLabel: 'Keep it on sale',
+    });
+    if (ok) everywhere.mutate({ id: service.id, isOffered: false });
+  };
+
+  const error = save.error ?? everywhere.error ?? toggle.error ?? unretire.error;
 
   return (
-    <section>
+    <section className="sv">
       {gateOpen && sellerAgreement && (
         <SellerAgreementGate
           document={sellerAgreement}
@@ -232,210 +280,457 @@ export function ServicesPage() {
             // being returned to where they started is a second thing to do.
             const draft = await startServiceDraft().catch(() => null);
             setDraftId(draft?.id ?? null);
-            setAdding(true);
+            setEditor({ mode: 'new' });
             refreshDrafts();
           }}
         />
       )}
-      <header className="page-head">
-        <h1>Services</h1>
-        <button
-          type="button"
-          className="primary"
-          onClick={async () => {
-            if (adding) {
-              // Closing keeps the draft. That is the whole point: the text is
-              // still there under Unfinished when they come back.
-              setAdding(false);
-              setDraftId(null);
-              setResumed(undefined);
-              return;
-            }
-            setResumed(undefined);
-            // Started BEFORE the form opens, so the first keystroke has
-            // somewhere to go rather than being the one that gets lost.
-            // Asked BEFORE the form opens, not after it is filled in (§126.4).
-            // Making somebody write a whole service and then telling them they
-            // cannot post it is the worst possible moment to raise this.
-            if (sellerAgreement) {
-              setGateOpen(true);
-              return;
-            }
-            const draft = await startServiceDraft().catch(() => null);
-            setDraftId(draft?.id ?? null);
-            setAdding(true);
-            refreshDrafts();
-          }}
-        >
-          {adding ? 'Close' : 'Add a service'}
+
+      <header className="page-head sv-head">
+        <div>
+          <h1>Services</h1>
+          <p className="muted sv-lead">
+            Each service is offered at the branches you choose, at <strong>that branch's price</strong> —
+            a city-centre shop can charge more than a quieter one for the same work. The deposit
+            percentage is what a customer pays up front to hold the slot; the rest is settled with you
+            directly.
+          </p>
+        </div>
+        <button type="button" className="primary sv-add" onClick={startNew}>
+          <Icon name="plus" size={18} stroke={2.4} />
+          Add a service
         </button>
       </header>
 
-      <p className="muted small" style={{ maxWidth: '64ch' }}>
-        Each service is offered at the branches you choose, at{' '}
-        <strong>that branch's price</strong> — a city-centre shop can charge more
-        than a quieter one for the same work. The deposit percentage is what a
-        customer pays up front to hold the slot; the rest is settled with you
-        directly.
-      </p>
-
-      {(save.error || everywhere.error || toggle.error || unretire.error) && (
-        <p className="error" role="alert">
-          {(save.error ?? everywhere.error ?? toggle.error ?? unretire.error) instanceof
-          ApiError
-            ? (save.error ?? everywhere.error ?? toggle.error ?? unretire.error)!.message
-            : 'That did not work.'}
-        </p>
-      )}
-
-      {/* Unfinished services, shared by the shop (§123). Above the form, because
-          the question "did I already start this?" comes before writing it again. */}
-      {!adding && (drafts.data?.length ?? 0) > 0 && (
-        <div className="card">
-          <h2>Unfinished</h2>
-          <ul className="card-list">
-            {drafts.data?.map((item) => (
-              <li key={item.id}>
-                <div className="card-row" style={{ cursor: 'default' }}>
-                  <div>
-                    <strong>{item.name || 'Untitled service'}</strong>
-                    <div className="muted small">
-                      Last saved {new Date(item.updatedAt).toLocaleString()} ·
-                      started by {item.createdBy.email}
-                    </div>
-                  </div>
-                  <div className="row-end">
-                    <button type="button" onClick={() => resume(item)}>
-                      Carry on
-                    </button>
-                    <button
-                      type="button"
-                      className="link"
-                      onClick={() => {
-                        if (window.confirm('Throw this draft away?')) {
-                          discard.mutate(item.id);
-                        }
-                      }}
-                    >
-                      Discard
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+      {services.data && services.data.length > 0 && (
+        <div className="sv-chips">
+          <span className="sv-chip">
+            <i className="dot-ok" /> {onSale.length} on sale
+          </span>
+          {withSale > 0 && (
+            <span className="sv-chip is-accent">
+              <Icon name="percent" size={14} stroke={2.2} /> {withSale} with a sale on
+            </span>
+          )}
+          {noPhotos > 0 && (
+            <span className="sv-chip is-warn">
+              <Icon name="camera" size={14} /> {noPhotos} without photos
+            </span>
+          )}
+          {notOnSale.length > 0 && (
+            <span className="sv-chip">
+              <i className="dot-off" /> {notOnSale.length} not on sale
+            </span>
+          )}
         </div>
       )}
 
-      {adding && (
-        <ServiceForm
-          key={draftId ?? 'new'}
-          money={money}
-          locations={locations.data ?? []}
-          busy={save.isPending}
-          initial={resumed}
-          busyLabel={posting ?? undefined}
-          creating
-          onSubmit={(body, files) => save.mutate({ body, files })}
-          onChange={queueDraftSave}
-        />
+      {error && (
+        <p className="notice" role="alert">
+          {error instanceof ApiError ? error.message : 'That did not work.'}
+        </p>
       )}
       {postProblem && (
-        <p className="error small" role="alert">
+        <p className="notice" role="alert">
           {postProblem}
         </p>
       )}
 
-      {services.isLoading && <p className="muted">Loading…</p>}
+      {/* Unfinished services, shared by the shop (§123). Above the catalogue,
+          because "did I already start this?" comes before writing it again. */}
+      {!adding && (drafts.data?.length ?? 0) > 0 && (
+        <section className="sv-drafts">
+          <h2 className="sv-section-title">
+            <Icon name="pencil" size={16} /> Unfinished
+            <span>{drafts.data!.length}</span>
+          </h2>
+          <div className="sv-draft-row">
+            {drafts.data?.map((item) => (
+              <article key={item.id} className="sv-draft">
+                <div className="sv-draft-top">
+                  <span className="sv-draft-icon">
+                    <Icon name="tag" size={18} />
+                  </span>
+                  <div>
+                    <strong>{item.name || 'Untitled service'}</strong>
+                    <span>Last saved {ago(item.updatedAt)}</span>
+                  </div>
+                </div>
+                <div className="sv-draft-by">
+                  <Avatar label={item.createdBy.email} size={22} />
+                  <span>started by {item.createdBy.email}</span>
+                </div>
+                <div className="sv-draft-actions">
+                  <button
+                    type="button"
+                    className="link danger-link"
+                    onClick={async () => {
+                      if (
+                        await confirmDialog({
+                          title: 'Throw this draft away?',
+                          body: <p>What was written in it cannot be brought back.</p>,
+                          tone: 'danger',
+                          icon: 'trash',
+                          confirmLabel: 'Discard',
+                        })
+                      ) {
+                        discard.mutate(item.id);
+                      }
+                    }}
+                  >
+                    Discard
+                  </button>
+                  <button type="button" className="dark" onClick={() => resume(item)}>
+                    Carry on <Icon name="arrowRight" size={16} stroke={2.2} />
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {services.isLoading && (
+        <div className="sv-grid">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton sv-skeleton" />
+          ))}
+        </div>
+      )}
+
+      {services.data && services.data.length === 0 && (
+        <div className="sv-empty">
+          <span>
+            <Icon name="tag" size={30} />
+          </span>
+          <h2>Put your first service on sale</h2>
+          <p>
+            A name, how long it takes, a price at each branch — and a photo or two. Customers can book
+            it the moment it is posted.
+          </p>
+          <button type="button" className="primary" onClick={startNew}>
+            <Icon name="plus" size={18} stroke={2.4} /> Add a service
+          </button>
+        </div>
+      )}
 
       {onSale.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Service</th>
-              <th>Price</th>
-              <th>Deposit</th>
-              <th>Length</th>
-              <th aria-label="Actions" />
-            </tr>
-          </thead>
-          <tbody>
-            {onSale.map((service) => (
-              <ServiceRow
-                key={service.id}
-                service={service}
-                money={money}
-                locations={locations.data ?? []}
-                busy={save.isPending || everywhere.isPending || toggle.isPending || unretire.isPending}
-                onSave={(body) => save.mutate({ id: service.id, body })}
-                onToggle={(locationId, isOffered) =>
-                  toggle.mutate({ id: service.id, locationId, isOffered })
-                }
-                onRetire={() => {
-                  if (
-                    window.confirm(
-                      `Stop offering "${service.name}" at every branch?\n\n` +
-                        'It moves to "Not on sale", keeps its prices, and you can put it ' +
-                        'back at any time. Appointments already made are unaffected.',
-                    )
-                  ) {
-                    everywhere.mutate({ id: service.id, isOffered: false });
-                  }
-                }}
-              />
-            ))}
-          </tbody>
-        </table>
+        <div className="sv-grid">
+          {onSale.map((service, i) => (
+            <ServiceCard
+              key={service.id}
+              index={i}
+              service={service}
+              money={money}
+              busy={busy}
+              onEdit={() => setEditor({ mode: 'edit', service })}
+              onPhotos={() => setEditor({ mode: 'edit', service, focus: 'photos' })}
+              onToggle={(locationId, isOffered) => toggle.mutate({ id: service.id, locationId, isOffered })}
+              onRetire={() => retire(service)}
+            />
+          ))}
+        </div>
       )}
 
       {notOnSale.length > 0 && (
-        <>
-          <h2 className="section-title">Not on sale</h2>
-          <p className="muted small" style={{ maxWidth: '64ch' }}>
-            Still yours, and bookable by nobody. Kept so past appointments
-            resolve to what was booked. Switch a branch back on — or press
-            <strong> Put back on sale </strong> if you retired it everywhere.
+        <section className="sv-off">
+          <h2 className="sv-section-title">
+            <Icon name="pause" size={16} /> Not on sale
+            <span>{notOnSale.length}</span>
+          </h2>
+          <p className="muted small sv-off-lead">
+            Still yours, and bookable by nobody. Kept so past appointments resolve to what was booked.
+            Switch a branch back on — or press <strong>Put back on sale</strong> if you retired it
+            everywhere.
           </p>
-          <table>
-            <thead>
-              <tr>
-                <th>Service</th>
-                <th>Branches</th>
-                <th>Deposit</th>
-                <th>Length</th>
-                <th aria-label="Actions" />
-              </tr>
-            </thead>
-            <tbody>
-              {notOnSale.map((service) => (
-                <ServiceRow
-                  key={service.id}
-                  service={service}
-                  money={money}
-                  locations={locations.data ?? []}
-                  busy={save.isPending || everywhere.isPending || toggle.isPending || unretire.isPending}
-                  onSave={(body) => save.mutate({ id: service.id, body })}
-                  onToggle={(locationId, isOffered) =>
-                    toggle.mutate({ id: service.id, locationId, isOffered })
-                  }
-                  // Two different ways back, because they undo two different
-                  // things: a service retired through the API needs its flag
-                  // cleared, and one simply switched off everywhere needs its
-                  // branches turned back on.
-                  onRetire={() =>
-                    service.isActive
-                      ? everywhere.mutate({ id: service.id, isOffered: true })
-                      : unretire.mutate(service.id)
-                  }
-                  retireLabel="Put back on sale"
-                  retireIsRestore
-                />
-              ))}
-            </tbody>
-          </table>
-        </>
+          <div className="sv-grid">
+            {notOnSale.map((service, i) => (
+              <ServiceCard
+                key={service.id}
+                index={i}
+                service={service}
+                money={money}
+                busy={busy}
+                restore
+                onEdit={() => setEditor({ mode: 'edit', service })}
+                onPhotos={() => setEditor({ mode: 'edit', service, focus: 'photos' })}
+                onToggle={(locationId, isOffered) => toggle.mutate({ id: service.id, locationId, isOffered })}
+                // Two different ways back, because they undo two different
+                // things: a service retired through the API needs its flag
+                // cleared, and one simply switched off everywhere needs its
+                // branches turned back on.
+                onRetire={() =>
+                  service.isActive
+                    ? everywhere.mutate({ id: service.id, isOffered: true })
+                    : unretire.mutate(service.id)
+                }
+              />
+            ))}
+          </div>
+        </section>
       )}
 
+      {editor && (
+        <EditorPanel
+          title={editor.mode === 'new' ? (resumed ? 'Carry on with your service' : 'New service') : editor.service.name}
+          eyebrow={editor.mode === 'new' ? 'Add a service' : 'Edit service'}
+          onClose={closeEditor}
+        >
+          {editor.mode === 'new' ? (
+            <ServiceForm
+              key={draftId ?? 'new'}
+              money={money}
+              locations={locations.data ?? []}
+              busy={save.isPending}
+              initial={resumed}
+              busyLabel={posting ?? undefined}
+              creating
+              onSubmit={(body, files) => save.mutate({ body, files })}
+              onChange={queueDraftSave}
+              onCancel={closeEditor}
+            />
+          ) : (
+            <ServiceForm
+              key={editor.service.id}
+              money={money}
+              locations={locations.data ?? []}
+              busy={save.isPending}
+              initial={editor.service}
+              focus={editor.focus}
+              onCancel={closeEditor}
+              onSubmit={(body) => save.mutate({ id: editor.service.id, body })}
+              photos={<ServicePhotos serviceId={editor.service.id} />}
+            />
+          )}
+        </EditorPanel>
+      )}
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+/** The panel from the right that adding and editing happen in. */
+function EditorPanel({
+  title,
+  eyebrow,
+  onClose,
+  children,
+}: {
+  title: string;
+  eyebrow: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  return (
+    <div className="drawer-backdrop" onMouseDown={onClose}>
+      <aside
+        className="drawer sv-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header className="sv-panel-head">
+          <div>
+            <p>{eyebrow}</p>
+            <h2>{title}</h2>
+          </div>
+          <button type="button" className="sv-panel-close" onClick={onClose} aria-label="Close this panel">
+            <Icon name="close" size={18} />
+          </button>
+        </header>
+        {children}
+      </aside>
+    </div>
+  );
+}
+
+function ServiceCard({
+  service,
+  index,
+  money,
+  busy,
+  restore = false,
+  onEdit,
+  onPhotos,
+  onToggle,
+  onRetire,
+}: {
+  service: Service;
+  index: number;
+  money: ReturnType<typeof useMoney>;
+  busy: boolean;
+  /** True under "Not on sale", where the card's action brings it back. */
+  restore?: boolean;
+  onEdit: () => void;
+  onPhotos: () => void;
+  onToggle: (locationId: string, isOffered: boolean) => void;
+  onRetire: () => void;
+}) {
+  // The deposit is a percentage, so it differs per branch wherever the price
+  // does. Shown against the cheapest, which is the smallest a customer ever
+  // hands over.
+  const live = service.isActive ? service.locations.filter((o) => o.isOffered) : [];
+  const cheapest = live.length ? Math.min(...live.map((o) => o.priceMinor)) : null;
+  const depositMinor =
+    cheapest === null ? null : Math.round((cheapest * Number(service.depositPercentage)) / 100);
+  const sale = service.discountPercent && !isSaleOver(service.discountEndsOn) ? service.discountPercent : null;
+  const cover = service.images[0]?.url ?? null;
+
+  // The words a customer reads (§180, §185): a glance shows which services
+  // still have nothing to say for themselves.
+  const words: Array<[string, boolean]> = [
+    ['Title', Boolean(service.title)],
+    ['Description', Boolean(service.description)],
+    ['Instructions', Boolean(service.instructions)],
+  ];
+  const written = words.filter(([, has]) => has).length;
+
+  return (
+    <article className={`svc${restore ? ' is-off' : ''}`} style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
+      <button type="button" className="svc-cover" onClick={onPhotos} aria-label={`Photos of ${service.name}`}>
+        {cover ? (
+          <img src={cover} alt="" />
+        ) : (
+          <span className="svc-cover-empty">
+            <Icon name="camera" size={26} />
+            <span>Add a photo</span>
+          </span>
+        )}
+        {/* A sale running now (§186), on the picture so it is seen. */}
+        {sale && <span className="svc-sale">−{sale}%</span>}
+        <span className="svc-count">
+          <Icon name="image" size={14} />
+          {service.images.length === 0
+            ? 'No photos'
+            : `${service.images.length} photo${service.images.length === 1 ? '' : 's'}`}
+        </span>
+      </button>
+
+      <div className="svc-body">
+        <h3>{service.name}</h3>
+        <p className={`svc-title${service.title ? '' : ' is-missing'}`}>{service.title || 'No title yet'}</p>
+
+        <div className="svc-meta">
+          <span>
+            <Icon name="clock" size={15} /> {service.durationMinutes} min
+          </span>
+          <span>
+            <Icon name="wallet" size={15} /> {service.depositPercentage}% deposit
+          </span>
+        </div>
+        {depositMinor !== null && (
+          <p className="svc-dep">from {money.format(depositMinor)} up front</p>
+        )}
+        {sale && (
+          <p className="svc-sale-line">
+            <Icon name="percent" size={13} stroke={2.2} /> {sale}% off
+            {service.discountEndsOn ? ` · until ${niceDay(service.discountEndsOn.slice(0, 10))}` : ' · until you end it'}
+          </p>
+        )}
+
+        <ul className="svc-branches">
+          {service.locations.map((offer) => {
+            const on = offer.isOffered && service.isActive;
+            const price = sale ? salePrice(offer.priceMinor, sale) : offer.priceMinor;
+            return (
+              <li key={offer.locationId} className={on ? '' : 'is-paused'}>
+                <span className="svc-branch">
+                  <strong>{money.format(price)}</strong>
+                  {sale && <s>{money.format(offer.priceMinor)}</s>}
+                  <span>{offer.location.name}</span>
+                </span>
+                {/* Reads the EFFECTIVE state, not the branch flag alone. A
+                    retired service sells nothing anywhere, so offering to stop
+                    it here would be stopping something already stopped. */}
+                {!service.isActive ? (
+                  <span className="muted small">service stopped</span>
+                ) : (
+                  <Switch
+                    checked={offer.isOffered}
+                    disabled={busy}
+                    label={offer.isOffered ? `Stop offering here (${offer.location.name})` : `Put back on sale here (${offer.location.name})`}
+                    onChange={(next) => onToggle(offer.locationId, next)}
+                  />
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        {live.length === 0 && (
+          // No branch is selling it. Stated plainly, not as an error — it is a
+          // choice, not a fault.
+          <p className="svc-none">{service.isActive ? 'Switched off at every branch' : 'Service stopped'}</p>
+        )}
+
+        <div className="svc-words" title="What a customer reads on the service's page">
+          {words.map(([label, has]) => (
+            <span key={label} className={has ? 'is-done' : ''}>
+              <Icon name={has ? 'check' : 'minus'} size={12} stroke={2.6} />
+              {label}
+            </span>
+          ))}
+          <em>{written}/3</em>
+        </div>
+      </div>
+
+      <footer className="svc-foot">
+        <button type="button" onClick={onEdit}>
+          <Icon name="pencil" size={16} /> Edit
+        </button>
+        <button type="button" onClick={onPhotos}>
+          <Icon name="image" size={16} /> Photos
+        </button>
+        {restore ? (
+          <button type="button" className="primary svc-restore" disabled={busy} onClick={onRetire}>
+            Put back on sale
+          </button>
+        ) : (
+          <MoreMenu
+            disabled={busy}
+            items={[
+              { label: 'Edit', icon: 'pencil', onClick: onEdit },
+              { label: 'Photos', icon: 'image', onClick: onPhotos },
+              { label: 'Stop offering everywhere', icon: 'pause', onClick: onRetire, danger: true },
+            ]}
+          />
+        )}
+      </footer>
+    </article>
+  );
+}
+
+type FormValues = {
+  name: string;
+  title: string;
+  description: string;
+  instructions: string;
+  discountPercent: number | null;
+  discountEndsOn: string | null;
+  durationMinutes: number | null;
+  depositPercentage: number | null;
+  offers: Array<{ locationId: string; priceMinor: number }>;
+};
+
+function Section({ icon, title, hint, children, id }: { icon: IconName; title: string; hint?: string; children: ReactNode; id?: string }) {
+  return (
+    <section className="sv-section" id={id}>
+      <header>
+        <span className="sv-section-icon">
+          <Icon name={icon} size={18} />
+        </span>
+        <div>
+          <h3>{title}</h3>
+          {hint && <p>{hint}</p>}
+        </div>
+      </header>
+      <div className="sv-section-body">{children}</div>
     </section>
   );
 }
@@ -447,6 +742,8 @@ function ServiceForm({
   busyLabel,
   creating = false,
   initial,
+  focus,
+  photos,
   onSubmit,
   onCancel,
   onChange,
@@ -459,6 +756,10 @@ function ServiceForm({
   /** A NEW service (or a draft of one): photos are chosen here and the button posts. */
   creating?: boolean;
   initial?: Service;
+  /** Open scrolled to a section — the cover's "Photos" lands on the photos. */
+  focus?: 'photos';
+  /** An existing service's live photo manager, shown as the last section. */
+  photos?: ReactNode;
   /** `files` are the photos chosen for a NEW service, cover first (§165). */
   onSubmit: (body: Record<string, unknown>, files: File[]) => void;
   onCancel?: () => void;
@@ -467,17 +768,7 @@ function ServiceForm({
    * as a draft while it is being written (§123). Absent when editing an existing
    * service, which is already saved and needs no draft.
    */
-  onChange?: (values: {
-    name: string;
-    title: string;
-    description: string;
-    instructions: string;
-    discountPercent: number | null;
-    discountEndsOn: string | null;
-    durationMinutes: number | null;
-    depositPercentage: number | null;
-    offers: Array<{ locationId: string; priceMinor: number }>;
-  }) => void;
+  onChange?: (values: FormValues) => void;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
   // The headline under the photos on the customer's page (§185).
@@ -500,11 +791,18 @@ function ServiceForm({
   const [deposit, setDeposit] = useState(initial?.depositPercentage ?? '20');
   // Photos chosen while writing a NEW service (§165). Held as files until
   // "Post", because a photo needs a service to belong to and there is none
-  // yet; an existing service has ServicePhotos below it instead.
+  // yet; an existing service has its live photo manager instead.
   const [files, setFiles] = useState<File[]>([]);
   const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
   useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
   const PHOTO_LIMIT = 11;
+
+  const body = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (focus === 'photos') {
+      setTimeout(() => body.current?.querySelector('#sv-photos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 260);
+    }
+  }, [focus]);
 
   /**
    * One price box per branch, empty meaning "not offered here".
@@ -514,14 +812,9 @@ function ServiceForm({
    * reveals a field. An empty box is how you stop offering it somewhere.
    */
   const [prices, setPrices] = useState<Record<string, string>>(() => {
-    const byLocation = new Map(
-      (initial?.locations ?? []).map((o) => [o.locationId, o.priceMinor]),
-    );
+    const byLocation = new Map((initial?.locations ?? []).map((o) => [o.locationId, o.priceMinor]));
     return Object.fromEntries(
-      locations.map((l) => [
-        l.id,
-        byLocation.has(l.id) ? money.toMajor(byLocation.get(l.id)!) : '',
-      ]),
+      locations.map((l) => [l.id, byLocation.has(l.id) ? money.toMajor(byLocation.get(l.id)!) : '']),
     );
   });
 
@@ -552,120 +845,241 @@ function ServiceForm({
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (offers.length === 0) {
-      window.alert('Give a price at a least one branch, or nobody can book it.');
+      void alertDialog({
+        title: 'Give it a price',
+        body: <p>Give a price at a least one branch, or nobody can book it.</p>,
+        tone: 'warn',
+        icon: 'tag',
+      });
       return;
     }
     if (discount.trim() && (percentOff === null || percentOff < 1 || percentOff > 90)) {
-      window.alert('A sale is a whole number from 1 to 90 percent off — or leave it empty for no sale.');
+      void alertDialog({
+        title: 'Check the sale',
+        body: <p>A sale is a whole number from 1 to 90 percent off — or leave it empty for no sale.</p>,
+        tone: 'warn',
+        icon: 'percent',
+      });
       return;
     }
     onSubmit(
       {
-      name: name.trim(),
-      // Blank is "nothing to say": sent as null so the server stores nothing.
-      title: title.trim() || null,
-      description: description.trim() || null,
-      instructions: instructions.trim() || null,
-      // The sale (§186): null ends it; a last day only with a percentage.
-      discountPercent: percentOff,
-      discountEndsOn: percentOff && saleEndsOn ? saleEndsOn : null,
-      durationMinutes: Number(duration),
-      depositPercentage: Number(deposit),
-      offers,
+        name: name.trim(),
+        // Blank is "nothing to say": sent as null so the server stores nothing.
+        title: title.trim() || null,
+        description: description.trim() || null,
+        instructions: instructions.trim() || null,
+        // The sale (§186): null ends it; a last day only with a percentage.
+        discountPercent: percentOff,
+        discountEndsOn: percentOff && saleEndsOn ? saleEndsOn : null,
+        durationMinutes: Number(duration),
+        depositPercentage: Number(deposit),
+        offers,
       },
       files,
     );
   };
 
-  return (
-    <form className="card service-form" onSubmit={submit}>
-      <div>
-        <label htmlFor="sname">Name</label>
-        <input id="sname" value={name} onChange={(e) => setName(e.target.value)} required />
-      </div>
-      <div>
-        <label htmlFor="sdur">Minutes</label>
-        <input
-          id="sdur"
-          type="number"
-          min="5"
-          step="5"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="sdep">Deposit %</label>
-        <input
-          id="sdep"
-          type="number"
-          min="0"
-          max="100"
-          value={deposit}
-          onChange={(e) => setDeposit(e.target.value)}
-          required
-        />
-      </div>
-      <div className="branch-prices">
-        <span className="muted small">Price per branch ({money.code})</span>
-        {locations.map((location) => (
-          <label key={location.id} className="branch-price">
-            <span>{location.name}</span>
-            <input
-              type="number"
-              min="0"
-              step={money.exponent === 0 ? '1' : '0.01'}
-              placeholder="not offered"
-              value={prices[location.id] ?? ''}
-              onChange={(e) =>
-                setPrices((current) => ({ ...current, [location.id]: e.target.value }))
-              }
-            />
-          </label>
-        ))}
-        <span className="muted small">
-          The price is for one person. Leave a branch blank to stop offering it there.
-        </span>
-        {/* How many people one booking can be for is the branch's to say, not
-            the service's (§189). */}
-        <span className="muted small">
-          How many people can book the same time is set for each branch, under{' '}
-          <Link to="/hours">Branches &amp; hours</Link> → “People served at once”.
-        </span>
-      </div>
+  const depositShare = (minor: number) => Math.round((minor * Number(deposit || 0)) / 100);
 
-      {/* A sale (§186): a percentage off every branch's price, until a last
-          day or until it is ended. What customers will pay is worked out as
-          it is typed, branch by branch. */}
-      <div className="service-sale">
-        <div className="branch-head">
-          <strong>Sale</strong>
-          <span className="muted small">Optional — customers see the old price crossed out</span>
-        </div>
-        <div className="sale-fields">
-          <label>
-            <span>Percent off</span>
+  return (
+    <form className="sv-form" onSubmit={submit}>
+      <div className="sv-form-body" ref={body}>
+        {/* The words a customer reads (§180, §185), in the order the service's
+            page shows them. */}
+        <Section icon="pencil" title="Name and words" hint="What customers read when they choose it">
+          <div className="sv-field">
+            <label htmlFor="sname">Name</label>
             <input
-              type="number"
-              min="1"
-              max="90"
-              step="1"
-              placeholder="e.g. 20"
-              value={discount}
-              onChange={(e) => setDiscount(e.target.value)}
+              id="sname"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Haircut"
+              required
+              autoFocus={creating}
             />
-          </label>
-          <label>
-            <span>Last day</span>
+          </div>
+          <div className="sv-field">
+            <label htmlFor="stitle">
+              Title <em>{title.length}/100</em>
+            </label>
             <input
-              type="date"
-              min={todayYmd()}
-              value={saleEndsOn}
-              disabled={!percentOff}
-              onChange={(e) => setSaleEndsOn(e.target.value)}
+              id="stitle"
+              maxLength={100}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
             />
-          </label>
+            <span className="sv-help">
+              The headline right under the photos. The name above stays the short label on cards.
+            </span>
+          </div>
+          <div className="sv-field">
+            <label htmlFor="sdesc">
+              Description <em>{description.length}/2000</em>
+            </label>
+            <textarea
+              id="sdesc"
+              rows={4}
+              maxLength={2000}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What it is and what is included — a customer reads this before choosing it."
+            />
+            <span className="sv-help">Shown under “About this service”.</span>
+          </div>
+          <div className="sv-field">
+            <label htmlFor="sinstr">
+              Special instructions <em>{instructions.length}/600</em>
+            </label>
+            <textarea
+              id="sinstr"
+              rows={3}
+              maxLength={600}
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder="What to know before coming: arrive ten minutes early, bring a towel, park at the back…"
+            />
+            <span className="sv-help">
+              Shown as “Before you come” — on the service, and again on the customer’s reservation.
+            </span>
+          </div>
+        </Section>
+
+        <Section icon="tag" title="Price and time" hint="How long it takes, and what it costs at each branch">
+          <div className="sv-two">
+            <div className="sv-field">
+              <label htmlFor="sdur">Minutes</label>
+              <div className="sv-affix">
+                <input
+                  id="sdur"
+                  type="number"
+                  min="5"
+                  step="5"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  required
+                />
+                <span>min</span>
+              </div>
+            </div>
+            <div className="sv-field">
+              <label htmlFor="sdep">Deposit %</label>
+              <div className="sv-affix">
+                <input
+                  id="sdep"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={deposit}
+                  onChange={(e) => setDeposit(e.target.value)}
+                  required
+                />
+                <span>%</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="sv-field">
+            <label>Price per branch ({money.code})</label>
+            <div className="sv-prices">
+              {locations.map((location) => {
+                const value = prices[location.id] ?? '';
+                const minor = value.trim() ? money.toMinor(value) : null;
+                return (
+                  <label key={location.id} className={`sv-price${value.trim() ? ' is-set' : ''}`}>
+                    <span className="sv-price-branch">
+                      <Icon name="pin" size={16} />
+                      {location.name}
+                    </span>
+                    <span className="sv-affix sv-price-input">
+                      <span>{money.code}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step={money.exponent === 0 ? '1' : '0.01'}
+                        placeholder="not offered"
+                        value={value}
+                        onChange={(e) => setPrices((current) => ({ ...current, [location.id]: e.target.value }))}
+                      />
+                    </span>
+                    <span className="sv-price-dep">
+                      {minor !== null && Number.isFinite(minor) ? `${money.format(depositShare(minor))} up front` : '—'}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <span className="sv-help">
+              The price is for one person. Leave a branch blank to stop offering it there.
+            </span>
+            {/* How many people one booking can be for is the branch's to say,
+                not the service's (§189). */}
+            <span className="sv-help">
+              How many people can book the same time is set for each branch, under{' '}
+              <Link to="/hours">Branches &amp; hours</Link> → “People served at once”.
+            </span>
+          </div>
+        </Section>
+
+        {/* A sale (§186): a percentage off every branch's price, until a last
+            day or until it is ended. What customers will pay is worked out as
+            it is typed, branch by branch. */}
+        <Section icon="percent" title="Sale" hint="Optional — customers see the old price crossed out">
+          <div className="sv-two">
+            <div className="sv-field">
+              <label htmlFor="sdisc">Percent off</label>
+              <div className="sv-affix">
+                <input
+                  id="sdisc"
+                  type="number"
+                  min="1"
+                  max="90"
+                  step="1"
+                  placeholder="e.g. 20"
+                  value={discount}
+                  onChange={(e) => setDiscount(e.target.value)}
+                />
+                <span>%</span>
+              </div>
+            </div>
+            <div className="sv-field">
+              <label htmlFor="sends">Last day</label>
+              <input
+                id="sends"
+                type="date"
+                min={todayYmd()}
+                value={saleEndsOn}
+                disabled={!percentOff}
+                onChange={(e) => setSaleEndsOn(e.target.value)}
+              />
+            </div>
+          </div>
+          {percentOff !== null && percentOff >= 1 && percentOff <= 90 ? (
+            <div className="sv-sale-preview">
+              {locations
+                .filter((l) => prices[l.id]?.trim())
+                .map((l) => {
+                  const list = money.toMinor(prices[l.id]);
+                  return (
+                    <div key={l.id}>
+                      <span>{l.name}</span>
+                      <span className="sv-sale-pay">
+                        customers pay <strong>{money.format(salePrice(list, percentOff))}</strong> instead of{' '}
+                        <s>{money.format(list)}</s>
+                      </span>
+                    </div>
+                  );
+                })}
+              <p>
+                {saleEndsOn
+                  ? `${percentOff}% off until the end of ${niceDay(saleEndsOn)}. Bookings made before then keep the sale price.`
+                  : `${percentOff}% off until you end it. Bookings already made keep the price they were made at.`}
+              </p>
+            </div>
+          ) : saleEnded && initial?.discountEndsOn ? (
+            <span className="sv-help">The last sale ended on {niceDay(initial.discountEndsOn.slice(0, 10))}.</span>
+          ) : null}
           {(discount || saleEndsOn) && (
             <button
               type="button"
@@ -678,363 +1092,88 @@ function ServiceForm({
               End the sale
             </button>
           )}
-        </div>
-        {percentOff !== null && percentOff >= 1 && percentOff <= 90 ? (
-          <div className="sale-preview">
-            {locations
-              .filter((l) => prices[l.id]?.trim())
-              .map((l) => {
-                const list = money.toMinor(prices[l.id]);
-                return (
-                  <div key={l.id} className="small">
-                    {l.name}: customers pay <strong>{money.format(salePrice(list, percentOff))}</strong>{' '}
-                    instead of <s>{money.format(list)}</s>
-                  </div>
-                );
-              })}
-            <div className="muted small">
-              {saleEndsOn
-                ? `${percentOff}% off until the end of ${niceDay(saleEndsOn)}. Bookings made before then keep the sale price.`
-                : `${percentOff}% off until you end it. Bookings already made keep the price they were made at.`}
+        </Section>
+
+        {creating ? (
+          <Section
+            id="sv-photos"
+            icon="camera"
+            title="Photos"
+            hint={`${files.length} of ${PHOTO_LIMIT} · choose the cover with “Make cover”`}
+          >
+            <p className="sv-help">
+              Customers see these when they pick this service. Add them now and they go up with it; you
+              can change them later from Edit.
+            </p>
+            <div className="sv-photo-grid">
+              {previews.map((url, index) => (
+                <PhotoTile
+                  key={url}
+                  url={url}
+                  cover={index === 0}
+                  // The cover is simply the first: choosing one moves it there,
+                  // and it goes up first when the service is posted (§187).
+                  onCover={() => setFiles((was) => [was[index], ...was.filter((_, i) => i !== index)])}
+                  onRemove={() => setFiles((was) => was.filter((_, i) => i !== index))}
+                />
+              ))}
+              {files.length < PHOTO_LIMIT && (
+                <>
+                  <input
+                    id="new-service-photos"
+                    type="file"
+                    multiple
+                    className="visually-hidden"
+                    accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                    disabled={busy}
+                    onChange={(event) => {
+                      const picked = Array.from(event.target.files ?? []);
+                      setFiles((was) => [...was, ...picked].slice(0, PHOTO_LIMIT));
+                      event.target.value = '';
+                    }}
+                  />
+                  <label htmlFor="new-service-photos" className={`sv-photo-add${busy ? ' is-disabled' : ''}`}>
+                    <Icon name="upload" size={22} />
+                    {files.length === 0 ? 'Add photos' : 'Add more photos'}
+                  </label>
+                </>
+              )}
             </div>
-          </div>
-        ) : saleEnded && initial?.discountEndsOn ? (
-          <span className="muted small">
-            The last sale ended on {niceDay(initial.discountEndsOn.slice(0, 10))}.
-          </span>
-        ) : null}
+          </Section>
+        ) : (
+          photos && (
+            <Section id="sv-photos" icon="camera" title="Photos" hint="Changes here are saved straight away">
+              {photos}
+            </Section>
+          )
+        )}
       </div>
 
-      {/* The words a customer reads (§180, §185), in the order the service's
-          page shows them. Full width, because they are sentences, not numbers. */}
-      <div className="service-words">
-        <label htmlFor="stitle">Title</label>
-        <input
-          id="stitle"
-          maxLength={100}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
-        />
-        <span className="muted small">
-          The headline right under the photos. The name above stays the short label on cards.{' '}
-          {title.length}/100
-        </span>
-      </div>
-      <div className="service-words">
-        <label htmlFor="sdesc">Description</label>
-        <textarea
-          id="sdesc"
-          rows={3}
-          maxLength={2000}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="What it is and what is included — a customer reads this before choosing it."
-        />
-        <span className="muted small">
-          Shown under “About this service”. {description.length}/2000
-        </span>
-      </div>
-      <div className="service-words">
-        <label htmlFor="sinstr">Special instructions</label>
-        <textarea
-          id="sinstr"
-          rows={3}
-          maxLength={600}
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
-          placeholder="What to know before coming: arrive ten minutes early, bring a towel, park at the back…"
-        />
-        <span className="muted small">
-          Shown as “Before you come” — on the service, and again on the customer’s reservation.{' '}
-          {instructions.length}/600
-        </span>
-      </div>
-
-      {creating && (
-        <div className="service-photos">
-          <div className="branch-head">
-            <strong>Photos</strong>
-            <span className="muted small">
-              {files.length} of {PHOTO_LIMIT} · choose the cover with “Make cover”
-            </span>
-          </div>
-          <p className="muted small">
-            Customers see these when they pick this service. Add them now and they go up
-            with it; you can change them later from Edit.
-          </p>
-          <div className="photo-grid">
-            {previews.map((url, index) => (
-              <PhotoTile
-                key={url}
-                url={url}
-                cover={index === 0}
-                // The cover is simply the first: choosing one moves it there,
-                // and it goes up first when the service is posted (§187).
-                onCover={() =>
-                  setFiles((was) => [was[index], ...was.filter((_, i) => i !== index)])
-                }
-                onRemove={() => setFiles((was) => was.filter((_, i) => i !== index))}
-              />
-            ))}
-          </div>
-          {files.length < PHOTO_LIMIT && (
-            <>
-              <input
-                id="new-service-photos"
-                type="file"
-                multiple
-                className="visually-hidden"
-                accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
-                disabled={busy}
-                onChange={(event) => {
-                  const picked = Array.from(event.target.files ?? []);
-                  setFiles((was) => [...was, ...picked].slice(0, PHOTO_LIMIT));
-                  event.target.value = '';
-                }}
-              />
-              <label htmlFor="new-service-photos" className={busy ? 'file-trigger disabled' : 'file-trigger'}>
-                {files.length === 0 ? 'Add photos' : 'Add more photos'}
-              </label>
-            </>
-          )}
-        </div>
-      )}
-
-      <div className="form-actions">
-        <button type="submit" className="primary" disabled={busy}>
-          {busy
-            ? (busyLabel ?? 'Saving…')
-            : creating
-              ? 'Post this service'
-              : 'Save changes'}
-        </button>
+      <footer className="sv-form-foot">
         {creating && !busy && offers.length > 0 && (
-          <span className="muted small">
+          <span className="sv-golive">
+            <i className="dot-ok" />
             Goes live at {offers.length} {offers.length === 1 ? 'branch' : 'branches'}
             {files.length > 0 ? ` with ${files.length} ${files.length === 1 ? 'photo' : 'photos'}` : ''}.
           </span>
         )}
-        {onCancel && (
-          <button type="button" className="link" onClick={onCancel}>
-            Cancel
-          </button>
-        )}
-      </div>
-    </form>
-  );
-}
-
-function ServiceRow({
-  service,
-  money,
-  locations,
-  busy,
-  onSave,
-  onRetire,
-  onToggle,
-  retireLabel,
-  retireIsRestore,
-}: {
-  service: Service;
-  money: ReturnType<typeof useMoney>;
-  locations: Location[];
-  busy: boolean;
-  onSave: (body: Record<string, unknown>) => void;
-  onRetire: () => void;
-  onToggle: (locationId: string, isOffered: boolean) => void;
-  /** Wording for the row's whole-service action. */
-  retireLabel?: string;
-  /** True in the "not on sale" table, where the action restores rather than retires. */
-  retireIsRestore?: boolean;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [photos, setPhotos] = useState(false);
-
-  if (editing) {
-    return (
-      <tr>
-        <td colSpan={5}>
-          <ServiceForm
-            money={money}
-            locations={locations}
-            busy={busy}
-            initial={service}
-            onCancel={() => setEditing(false)}
-            onSubmit={(body) => {
-              onSave(body);
-              setEditing(false);
-            }}
-            busyLabel={undefined}
-          />
-        </td>
-      </tr>
-    );
-  }
-
-  // The deposit is a percentage, so it differs per branch wherever the price
-  // does. Shown against the cheapest, which is the smallest a customer ever
-  // hands over.
-  const onSale = service.isActive
-    ? service.locations.filter((o) => o.isOffered)
-    : [];
-  const cheapest = onSale.length ? Math.min(...onSale.map((o) => o.priceMinor)) : null;
-  const depositMinor =
-    cheapest === null
-      ? null
-      : Math.round((cheapest * Number(service.depositPercentage)) / 100);
-
-  return (
-    <>
-    <tr>
-      <td>
-        <div className="service-name">
-          {/* The cover, so a glance down the list shows which services have a
-              photo and which do not. */}
-          {service.images.length > 0 ? (
-            <img className="service-thumb" src={service.images[0].url} alt="" />
-          ) : (
-            <span className="service-thumb empty" aria-hidden="true" />
-          )}
-          <span>
-            <strong>{service.name}</strong>
-            <div className="muted small">
-              {service.images.length === 0
-                ? 'No photos'
-                : `${service.images.length} photo${service.images.length === 1 ? '' : 's'}`}
-            </div>
-            {/* The words (§180, §185), one line each: a glance down the list
-                shows which services still have nothing to say for themselves. */}
-            {/* A sale running now (§186), in colour so it is seen. */}
-            {service.discountPercent && !isSaleOver(service.discountEndsOn) && (
-              <div className="sale-tag">
-                {service.discountPercent}% off
-                {service.discountEndsOn ? ` · until ${niceDay(service.discountEndsOn.slice(0, 10))}` : ''}
-              </div>
-            )}
-            <div className="muted small">{service.title ? 'Title' : 'No title'}</div>
-            <div className="muted small">
-              {service.description ? 'Description' : 'No description'}
-            </div>
-            <div className="muted small">
-              {service.instructions ? 'Instructions' : 'No instructions'}
-            </div>
-          </span>
-        </div>
-      </td>
-      <td>
-        {onSale.length === 0 ? (
-          // No branch is selling it. Stated plainly rather than left as an
-          // empty column, but not as an error — it is a choice, not a fault.
-          <span className="muted small">
-            {service.isActive ? 'Switched off at every branch' : 'Service stopped'}
-          </span>
-        ) : null}
-        {service.locations.length > 0 && (
-          service.locations.map((offer) => (
-            // A button per branch, worded like the row's whole-service action
-            // so the pair reads as one idea at two scales: "here" and
-            // "everywhere". It sits beside that branch's price rather than
-            // among the row actions, where it could only mean all of them.
-            <div
-              key={offer.locationId}
-              className={
-                offer.isOffered && service.isActive ? 'branch-line' : 'branch-line off'
-              }
-            >
-              <span className="branch-price-label">
-                {money.format(offer.priceMinor)}
-                <span className="muted small"> · {offer.location.name}</span>
-              </span>
-              {/* Reads the EFFECTIVE state, not the branch flag alone. A
-                  retired service sells nothing anywhere, so offering to "stop
-                  offering here" would be stopping something already stopped —
-                  which is what this row used to say. */}
-              {!service.isActive ? (
-                <span className="muted small">service stopped</span>
-              ) : offer.isOffered ? (
-                <button
-                  type="button"
-                  className="link danger-link tiny"
-                  disabled={busy}
-                  onClick={() => onToggle(offer.locationId, false)}
-                >
-                  Stop offering here
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="link tiny"
-                  disabled={busy}
-                  onClick={() => onToggle(offer.locationId, true)}
-                >
-                  Put back on sale here
-                </button>
-              )}
-            </div>
-          ))
-        )}
-      </td>
-      <td>
-        {service.depositPercentage}%
-        {depositMinor !== null && (
-          <div className="muted small">from {money.format(depositMinor)} up front</div>
-        )}
-      </td>
-      <td>
-        {service.durationMinutes} min
-      </td>
-      <td className="actions">
-        <button type="button" className="link" onClick={() => setEditing(true)}>
-          Edit
-        </button>
-        <button
-          type="button"
-          className="link"
-          aria-expanded={photos}
-          onClick={() => setPhotos((open) => !open)}
-        >
-          {photos ? 'Hide photos' : 'Photos'}
-        </button>
-        {/* Only shown where it means something: a service already off sale
-            everywhere has nothing left to retire. */}
-        {retireIsRestore ? (
-          <button type="button" className="link" disabled={busy} onClick={onRetire}>
-            {retireLabel ?? 'Put back on sale'}
-          </button>
-        ) : (
-          !retireLabel && (
-            <button
-              type="button"
-              className="link danger-link"
-              disabled={busy}
-              onClick={onRetire}
-            >
-              Stop offering everywhere
+        <div className="sv-form-actions">
+          {onCancel && (
+            <button type="button" onClick={onCancel}>
+              {creating ? 'Close' : 'Cancel'}
             </button>
-          )
-        )}
-      </td>
-    </tr>
-    {/* A full-width row beneath, the same way editing expands: the five
-        columns are too narrow for a photo grid. */}
-    {photos && (
-      <tr>
-        <td colSpan={5}>
-          <ServicePhotos serviceId={service.id} />
-        </td>
-      </tr>
-    )}
-    </>
+          )}
+          <button type="submit" className="primary" disabled={busy}>
+            {busy ? (busyLabel ?? 'Saving…') : creating ? 'Post this service' : 'Save changes'}
+          </button>
+        </div>
+      </footer>
+    </form>
   );
 }
 
 /**
  * Photos of one service (§132).
- *
- * Mirrors the branch gallery on the shopfront page — same grid, same picker,
- * same confirm — because they are the same job on a different subject, and a
- * business should not have to learn two of them.
  *
  * The limit and the room left come from the SERVER, never from a constant
  * here: a number hardcoded in a client is a number that disagrees with the
@@ -1058,8 +1197,7 @@ function ServicePhotos({ serviceId }: { serviceId: string }) {
   const add = useMutation({
     mutationFn: (file: File) => addServiceImage(serviceId, file),
     onSuccess: refresh,
-    onError: (error) =>
-      setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
+    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
   });
 
   // The cover (§187): the listing that comes back is drawn at once, and the
@@ -1077,29 +1215,25 @@ function ServicePhotos({ serviceId }: { serviceId: string }) {
   const drop = useMutation({
     mutationFn: (imageId: string) => removeServiceImage(serviceId, imageId),
     onSuccess: refresh,
-    onError: (error) =>
-      setProblem(error instanceof ApiError ? error.message : 'That did not delete.'),
+    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not delete.'),
   });
 
   const full = (photos.data?.remaining ?? 1) <= 0;
 
   return (
-    <div className="branch-gallery">
-      <div className="branch-head">
-        <strong>Photos of this service</strong>
+    <div className="sv-photos">
+      <p className="sv-help">
+        Customers see these when they pick this service. The <strong>cover</strong> is the one on the
+        service’s card in the app — choose it with “Make cover”.
         {photos.data && (
-          <span className="muted small">
+          <span className="sv-photo-count">
+            {' '}
             {photos.data.count} of {photos.data.limit}
           </span>
         )}
-      </div>
-
-      <p className="muted small">
-        Customers see these when they pick this service. The <strong>cover</strong> is the
-        one on the service’s card in the app — choose it with “Make cover”.
       </p>
 
-      <div className="photo-grid">
+      <div className="sv-photo-grid">
         {photos.data?.images.map((photo, index) => (
           <PhotoTile
             key={photo.id}
@@ -1110,8 +1244,16 @@ function ServicePhotos({ serviceId }: { serviceId: string }) {
               setProblem(null);
               cover.mutate(photo.id);
             }}
-            onRemove={() => {
-              if (window.confirm('Remove this photo? It cannot be brought back.')) {
+            onRemove={async () => {
+              if (
+                await confirmDialog({
+                  title: 'Remove this photo?',
+                  body: <p>It cannot be brought back.</p>,
+                  tone: 'danger',
+                  icon: 'trash',
+                  confirmLabel: 'Remove',
+                })
+              ) {
                 setProblem(null);
                 drop.mutate(photo.id);
               }
@@ -1121,16 +1263,12 @@ function ServicePhotos({ serviceId }: { serviceId: string }) {
       </div>
 
       {photos.data?.count === 0 && (
-        <p className="muted small">
-          No photos yet. A service with a photo is easier to choose than one
-          without.
-        </p>
+        <p className="sv-help">No photos yet. A service with a photo is easier to choose than one without.</p>
       )}
 
       {full ? (
-        <p className="muted small">
-          This service is at its {photos.data?.limit} photo limit. Remove one to
-          add another.
+        <p className="sv-help">
+          This service is at its {photos.data?.limit} photo limit. Remove one to add another.
         </p>
       ) : (
         <ImageButton
@@ -1196,21 +1334,21 @@ function PhotoTile({
   onRemove: () => void;
 }) {
   return (
-    <figure className={cover ? 'photo-tile is-cover' : 'photo-tile'}>
+    <figure className={cover ? 'sv-photo is-cover' : 'sv-photo'}>
       <img src={url} alt="" />
-      {cover && <span className="cover-badge">★ Cover</span>}
-      <div className="photo-actions">
+      {cover && <span className="sv-cover-badge">★ Cover</span>}
+      <figcaption>
         {cover ? (
-          <span className="muted small">On the card</span>
+          <span className="sv-on-card">On the card</span>
         ) : (
-          <button type="button" className="link" disabled={busy} onClick={onCover}>
+          <button type="button" disabled={busy} onClick={onCover}>
             Make cover
           </button>
         )}
-        <button type="button" className="link danger-link" disabled={busy} onClick={onRemove}>
-          Remove
+        <button type="button" className="sv-photo-remove" disabled={busy} onClick={onRemove} aria-label="Remove">
+          <Icon name="trash" size={15} />
         </button>
-      </div>
+      </figcaption>
     </figure>
   );
 }
