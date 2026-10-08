@@ -14681,8 +14681,10 @@ businesses, and teaching the app's features.
   page (`src/ads/AdRail.tsx`); the page moves left to make room. It **folds**
   to a slim strip with a coral spark and a count of things left to add
   (remembered per browser); unfolding gives it back.
-- **Narrower (tablet, phone)**: no column; the banner sits at the top of
-  Overview instead, under the greeting.
+- ~~**Narrower (tablet, phone)**: no column; the banner sits at the top of
+  Overview instead, under the greeting.~~ — superseded by §205.4 (the
+  banner, live tiles and "How it works" at the top of Overview, with "See
+  all" for the rest).
 - Beside the column, the top bar's search shrinks to its icon until the
   screen is 1680px wide or the column is folded.
 
@@ -14715,7 +14717,8 @@ businesses, and teaching the app's features.
      the column matters.
    - **Run a sale this week** (when nothing is on sale): what a sale shows
      customers (§186).
-   - **Press ⌘K to jump anywhere**.
+   - ~~**Press ⌘K to jump anywhere**.~~ — superseded by §205.5 ("Jump to
+     anything", worded for the screen it is on).
 2. **Your shop** (`useAdData.ts`): a score ring and what is missing, each a
    link to where it is fixed — cover, logo, a description of 40+ characters,
    category and type, phone; per open branch: gallery photos, opening hours,
@@ -14747,3 +14750,88 @@ inside it, so every panel and drawer a page opens is now drawn at the end of
   they are written in `slides.ts`.
 - Paid placement for businesses.
 
+## 205. "For you" explains how it all works, and shows what just happened (2026-10-08)
+
+The user asked for the "For you" space to be informative as well as
+advertising: explain how cancellations, discounts, good photos and so on
+work; show new messages, notifications and orders; go through the code and
+add anything that fits; on a phone put it at the top like the customer app,
+on a big screen down the right.
+
+### 205.1 "How it works" — the rules, in plain words
+
+`src/ads/guide.ts` holds eleven topics, each a one-line summary and three to
+five points, written from what the code does (the section each comes from is
+noted beside it in the file). The fee is read from the shop's own latest
+booking (`platformFeePercentage`), never written in.
+
+| Topic | What it says (source) |
+|---|---|
+| Deposits and fees | deposit % per service, fee out of the deposit, rest paid at the shop, deposit never below the fee (§2, §16.3, §25, §40) |
+| Cancellations and refunds | customer cancels → no refund, share still paid; shop cancels → full refund incl. fee, mobile money charge is the shop's, reason required; only not-started bookings (§25, §33, §36) |
+| When a customer does not come | No-show keeps the deposit; automatic no-show / done 24 h after the end (§16.2, §20, §25) |
+| Bookings waiting for payment | held 5 minutes, then released; only paid ones are "Expected" (§17.4) |
+| Checking customers in | 6-digit code, sixth digit checks in, locked after 5 wrong tries, owner/manager override is recorded and every admin told (§16.2, §54.3, §191) |
+| Sales and discounts | 1–90%, every branch, last day inclusive or open, deposit on sale price, existing bookings keep their price, Friday email (§186, §140) |
+| Photos that get booked | 11 per service, 30 per branch, JPEG/PNG/WebP up to 15 MB, cover choice, what a good photo is (§132, §165, §187) |
+| Getting paid | when a share is earned, the waiting period, daily run, confirmed number, a changed number pauses payouts (§46, §48, §77) |
+| Reviews and ranking | only done bookings, one reply editable 7 days, popularity = bookings weighted by rating (§92, §135.1) |
+| Places, pausing and closing | people served at once, pausing hides every branch, a branch with bookings to come cannot close (§16.4, §189, §89, §119) |
+| Messages | customers write first, the team sees who replied, a shop cannot start a conversation (§21, §112) |
+
+On a wide screen each topic is a fold-open row in the column
+(`<details id="guide-<key>">`); on a phone each is a chip that opens it in a
+side panel.
+
+### 205.2 "Right now" — orders, messages and alerts
+
+A dark card near the top of the column: three counters (expected today,
+unread messages, unread notifications), up to two unread conversations, and
+the latest notifications (five, "Show more" for ten). Pressing a
+notification marks it read and opens the page it is about. Each kind of
+notification's icon, colour and page now live in one place,
+`src/lib/notificationLook.ts`, shared with the bell in the top bar so the
+two always match.
+
+### 205.3 News and lessons in the banner
+
+The banner (§204.2) gains, in priority order after "Get paid":
+
+- **Just in** — a booking or a paid deposit from the last 24 hours. The
+  title is the notification's subject; the text says what it means and what
+  happens next (not the e-mail body, which is far too long).
+- **New message** — the newest unread conversation, its first words, and why
+  a quick reply matters.
+- **How it works · Cancellations** and **How it works · Photos** — the two
+  rules sellers most often learn the hard way; "Read more" opens the topic.
+
+At most eleven adverts. A slide is now *at least* its old height and grows
+with a long title (every slide stretches to the tallest, so the banner does
+not jump); a title is cut at three lines.
+
+### 205.4 On a phone or tablet: at the top of Overview
+
+Below 1280px there is no column, so Overview starts with "For you"
+(`src/ads/ForYouTop.tsx`), the way the customer app starts Home with its
+spotlights (§176):
+
+1. the banner, smaller;
+2. tiles to swipe — expected today, unread messages, alerts, and how
+   complete the shop is;
+3. "How it works" chips;
+4. "See all", opening everything the wide column holds in a side panel.
+
+A banner button that points at a part of the column ("Read more", "See what
+is trending") opens that topic, or "See all" scrolled to that part, since
+there is no column to scroll to.
+
+### 205.5 Smaller
+
+- The search tip says "Tap the magnifying glass at the top" on a touch
+  screen and "Press ⌘ K" / "Ctrl K" on a computer.
+- The tip's icon is white again (a rule meant for its text was colouring it).
+
+### 205.6 Not built
+
+- "For you" on phones appears on Overview only, not on every page.
+- The guide is written in the app; an administrator cannot edit it.

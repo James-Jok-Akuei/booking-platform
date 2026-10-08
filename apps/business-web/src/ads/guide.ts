@@ -1,0 +1,184 @@
+import type { IconName } from '../ui/Icon';
+
+/**
+ * "How it works" — the rules a seller lives by, in plain words (§205).
+ *
+ * Every sentence here is taken from what the platform actually does, with the
+ * section of DECISIONS.md it comes from beside it, so a rule that changes has
+ * one obvious place whose words must change with it. The platform's fee is
+ * read from the seller's own latest booking rather than written here.
+ */
+export type GuideTopic = {
+  key: string;
+  icon: IconName;
+  tone: 'coral' | 'green' | 'blue' | 'amber' | 'violet' | 'red' | 'night' | 'gold';
+  title: string;
+  /** One line, for the chip and the banner. */
+  short: string;
+  points: string[];
+  link?: { label: string; to: string };
+};
+
+export function guideTopics(feePercent: string | null): GuideTopic[] {
+  const fee = feePercent ? `${feePercent}%` : 'a percentage';
+  return [
+    {
+      // §2, §16.3, §25, §40
+      key: 'deposits',
+      icon: 'wallet',
+      tone: 'green',
+      title: 'Deposits and fees',
+      short: 'Customers pay a deposit to hold their time; the rest is paid to you at the shop.',
+      points: [
+        'When a customer books, they pay a deposit from their phone — the percentage you set on each service.',
+        `The platform’s fee (${fee} of the price) comes out of that deposit. What is left of the deposit is your share, paid out to you.`,
+        'The rest of the price is paid to you directly at the shop — it never passes through the app.',
+        'A deposit percentage cannot be lower than the fee, so your share is never negative.',
+      ],
+      link: { label: 'Set deposits on Services', to: '/services' },
+    },
+    {
+      // §25, §33, §36
+      key: 'cancel',
+      icon: 'calendarX',
+      tone: 'red',
+      title: 'Cancellations and refunds',
+      short: 'If the customer cancels, the deposit stays. If you cancel, they get it all back.',
+      points: [
+        'A customer who cancels does not get their deposit back — that is what a deposit is for — and your share of it is still paid to you.',
+        'If you cancel, the customer gets the whole deposit back, the platform’s fee included, and the mobile money charge for sending it back is yours.',
+        'You must give a reason when you cancel. The customer is told it.',
+        'Only a booking that has not started can be cancelled — not one you have checked in.',
+      ],
+      link: { label: 'See your bookings', to: '/appointments' },
+    },
+    {
+      // §16.2, §20 (auto-transition), §25
+      key: 'noshow',
+      icon: 'userX',
+      tone: 'amber',
+      title: 'When a customer does not come',
+      short: 'Mark them as a no-show: the deposit is not refunded.',
+      points: [
+        'Press “No-show” on the booking. The deposit is not refunded, the customer is told, and your share of it is paid to you.',
+        'If you forget, a booking nobody checked in becomes a no-show by itself 24 hours after its end.',
+        'A booking you checked in but never marked done becomes “Done” by itself, 24 hours after its end.',
+      ],
+      link: { label: 'See your bookings', to: '/appointments' },
+    },
+    {
+      // §17.4
+      key: 'unpaid',
+      icon: 'hourglass',
+      tone: 'night',
+      title: 'Bookings waiting for payment',
+      short: 'An unpaid booking holds the time for 5 minutes, then lets it go.',
+      points: [
+        'A new booking holds its time while the customer approves the deposit on their phone.',
+        'If they have not paid within 5 minutes, it is cancelled by itself and the time is free again.',
+        'Only paid bookings appear under “Expected”.',
+      ],
+    },
+    {
+      // §16.2, §54.3, §191
+      key: 'checkin',
+      icon: 'ticket',
+      tone: 'coral',
+      title: 'Checking customers in',
+      short: 'Every booking has a 6-digit code. The sixth digit checks them in.',
+      points: [
+        'Each booking has a 6-digit code — emailed to the customer and shown in their app. Ask for it when they arrive.',
+        'After 5 wrong tries the code is locked.',
+        'An owner or manager can check someone in without the code by writing what the customer recalled. It is recorded against their name, and every administrator is told.',
+      ],
+      link: { label: 'Check someone in', to: '/appointments' },
+    },
+    {
+      // §186, §140
+      key: 'sales',
+      icon: 'percent',
+      tone: 'violet',
+      title: 'Sales and discounts',
+      short: '1–90% off, until a day you choose or until you end it.',
+      points: [
+        'Put any service on sale from 1% to 90% off, at every branch at once.',
+        'Choose a last day (the whole day counts) or leave it to run until you end it.',
+        'Customers see a −% badge and the old price crossed out. The deposit is worked out on the sale price.',
+        'Bookings already made keep the price they were made at.',
+        'Customers who asked for it get a Friday email of services near them, with sales shown at their sale price.',
+      ],
+      link: { label: 'Start a sale', to: '/services' },
+    },
+    {
+      // §132, §165, §187, storage limits
+      key: 'photos',
+      icon: 'camera',
+      tone: 'blue',
+      title: 'Photos that get booked',
+      short: 'The first photo is the cover customers scroll past. Make it your best.',
+      points: [
+        'Up to 11 photos per service and 30 per branch — JPEG, PNG or WebP, up to 15 MB each.',
+        'The cover is the photo on the service’s card in the app. Choose it with “Make cover”.',
+        'Show the real result, in daylight or good light, sharp and filling the frame — and no writing over the picture.',
+        'Photograph the place too: customers want to see where they are walking into.',
+      ],
+      link: { label: 'Add photos', to: '/services' },
+    },
+    {
+      // §46, §48, §77
+      key: 'payouts',
+      icon: 'banknote',
+      tone: 'green',
+      title: 'Getting paid',
+      short: 'Your share waits a short while after each visit, then goes to your mobile money.',
+      points: [
+        'Your share of a deposit becomes yours when the booking is done, marked a no-show, or cancelled by the customer.',
+        'It is held for a short waiting period, then paid in the daily payout run to your mobile money number.',
+        'Payouts need a confirmed number. Changing it pauses payouts until an administrator confirms the new one — nothing you earned is lost.',
+      ],
+      link: { label: 'See your money', to: '/getting-paid' },
+    },
+    {
+      // §92, §135.1
+      key: 'reviews',
+      icon: 'star',
+      tone: 'gold',
+      title: 'Reviews and ranking',
+      short: 'Only customers who came can review. Good ratings move you up.',
+      points: [
+        'Only a customer whose booking is done can review it.',
+        'You get one reply per review, and can edit it for 7 days. Both are public.',
+        'The app shows popular shops first: bookings, weighted by rating.',
+      ],
+      link: { label: 'Reply to reviews', to: '/reviews' },
+    },
+    {
+      // §16.4, §189, §89, §119
+      key: 'branches',
+      icon: 'pin',
+      tone: 'night',
+      title: 'Places, pausing and closing',
+      short: '“People served at once” decides how many can book the same time.',
+      points: [
+        'Each branch says how many people it serves at once. A booking for 3 takes 3 places; when every place is taken, the time shows as booked.',
+        'Pausing the shop hides every branch and stops new bookings. Bookings you already have still happen.',
+        'A branch cannot be closed while it still has bookings to come.',
+      ],
+      link: { label: 'Branches & hours', to: '/hours' },
+    },
+    {
+      // §21, §112
+      key: 'messages',
+      icon: 'message',
+      tone: 'coral',
+      title: 'Messages',
+      short: 'Customers can write before they book and about a booking.',
+      points: [
+        'A customer can message you before booking, and about any booking they have made.',
+        'Everyone on your team can reply; each reply shows who wrote it to your team, never to the customer.',
+        'A shop cannot start a conversation — so a quick reply is the one chance to win the booking.',
+      ],
+      link: { label: 'Open messages', to: '/messages' },
+    },
+  ];
+}

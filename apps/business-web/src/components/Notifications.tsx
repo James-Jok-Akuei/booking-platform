@@ -5,7 +5,8 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '../api/business';
-import { Icon, type IconName } from '../ui/Icon';
+import { lookFor } from '../lib/notificationLook';
+import { Icon } from '../ui/Icon';
 
 const when = (iso: string) => {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -13,35 +14,6 @@ const when = (iso: string) => {
   if (minutes < 60) return `${minutes}m ago`;
   if (minutes < 60 * 24) return `${Math.round(minutes / 60)}h ago`;
   return new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
-};
-
-/**
- * Each kind of notification with its own mark and colour (§190), so a glance
- * down the list tells a new booking from a cancellation from a review.
- */
-const LOOK: Partial<Record<string, { icon: IconName; tone: string }>> = {
-  APPOINTMENT_BOOKED: { icon: 'calendar', tone: 'ask' },
-  DEPOSIT_CONFIRMED: { icon: 'calendarCheck', tone: 'ok' },
-  APPOINTMENT_REMINDER: { icon: 'clock', tone: 'ask' },
-  APPOINTMENT_MANUALLY_VERIFIED: { icon: 'userCheck', tone: 'ok' },
-  APPOINTMENT_CANCELLED: { icon: 'calendarX', tone: 'danger' },
-  APPOINTMENT_NO_SHOW: { icon: 'userX', tone: 'danger' },
-  DEPOSIT_FAILED: { icon: 'alert', tone: 'danger' },
-  NEW_MESSAGE: { icon: 'message', tone: 'accent' },
-  TICKET_CREATED: { icon: 'help', tone: 'accent' },
-  TICKET_MESSAGE: { icon: 'help', tone: 'accent' },
-  TICKET_STATUS_CHANGED: { icon: 'help', tone: 'accent' },
-  REVIEW_CREATED: { icon: 'star', tone: 'star' },
-  REVIEW_RESPONSE: { icon: 'star', tone: 'star' },
-  REVIEW_HIDDEN: { icon: 'eye', tone: 'warn' },
-  BUSINESS_APPROVED: { icon: 'checkCircle', tone: 'ok' },
-  BUSINESS_REINSTATED: { icon: 'checkCircle', tone: 'ok' },
-  BUSINESS_REJECTED: { icon: 'xCircle', tone: 'danger' },
-  BUSINESS_SUSPENDED: { icon: 'pause', tone: 'danger' },
-  BUSINESS_INVITATION: { icon: 'users', tone: 'ask' },
-  PAYOUT_DESTINATION_SUBMITTED: { icon: 'wallet', tone: 'warn' },
-  PAYOUT_DESTINATION_VERIFIED: { icon: 'wallet', tone: 'ok' },
-  PAYOUT_DESTINATION_REJECTED: { icon: 'wallet', tone: 'danger' },
 };
 
 /**
@@ -127,10 +99,10 @@ export function Notifications() {
                   }}
                 >
                   <span
-                    className={`bell-mark tone-${LOOK[notification.type]?.tone ?? 'accent'}`}
+                    className={`bell-mark tone-${lookFor(notification.type).tone}`}
                     aria-hidden="true"
                   >
-                    <Icon name={LOOK[notification.type]?.icon ?? 'bell'} size={16} />
+                    <Icon name={lookFor(notification.type).icon} size={16} />
                   </span>
                   <div className="bell-text">
                     <strong>{notification.subject ?? notification.type}</strong>

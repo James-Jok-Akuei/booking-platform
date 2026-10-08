@@ -1,4 +1,7 @@
 import type { IconName } from '../ui/Icon';
+import { ago } from '../lib/time';
+import { guideTopics } from './guide';
+import { SEARCH_HOW } from './tips';
 import type { AdData } from './useAdData';
 
 /**
@@ -29,8 +32,6 @@ export type Slide = {
 /** A link to the customer app, when there is one to give (VITE_CUSTOMER_APP_URL). */
 export const CUSTOMER_APP_URL = (import.meta.env.VITE_CUSTOMER_APP_URL as string | undefined)?.trim() || null;
 
-const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
-
 export function buildSlides(d: AdData): Slide[] {
   const slides: Slide[] = [];
 
@@ -53,6 +54,37 @@ export function buildSlides(d: AdData): Slide[] {
           ? 'Payouts start as soon as an administrator confirms it. Nothing you earn is lost meanwhile.'
           : 'Your share of every deposit is held until there is a confirmed mobile money number to send it to.',
       cta: { label: d.payoutStatus === 'UNVERIFIED' ? 'See your money' : 'Add it now', to: '/getting-paid' },
+    });
+  }
+
+  // News: something that just happened, while it is still news.
+  if (d.newOrder) {
+    slides.push({
+      key: 'news-order',
+      look: 'green',
+      icon: 'calendarCheck',
+      eyebrow: `Just in · ${ago(d.newOrder.createdAt)}`,
+      title: d.newOrder.subject ?? 'A new booking',
+      // The notification's own body is an email's worth of words; a banner
+      // says what it means and what happens next.
+      text:
+        d.newOrder.type === 'DEPOSIT_CONFIRMED'
+          ? 'The deposit is paid. They read out their 6-digit code when they arrive — the sixth digit checks them in.'
+          : 'A customer has booked. It shows under “Expected” as soon as their deposit is paid.',
+      cta: { label: 'See your bookings', to: '/appointments' },
+    });
+  }
+  const waiting = d.unreadThreads[0];
+  if (waiting) {
+    slides.push({
+      key: 'news-message',
+      look: 'coral',
+      icon: 'message',
+      eyebrow: `New message · ${waiting.lastMessageAt ? ago(waiting.lastMessageAt) : 'now'}`,
+      title: `${waiting.customer.email} wrote to you`,
+      text: `“${waiting.lastMessage?.preview ?? 'Sent a photo'}” — a shop cannot start a conversation, so a quick reply is the chance to win the booking.`,
+      stat: d.unreadMessages > 1 ? { value: String(d.unreadMessages), label: 'unread' } : undefined,
+      cta: { label: 'Reply', to: '/messages' },
     });
   }
 
@@ -149,14 +181,27 @@ export function buildSlides(d: AdData): Slide[] {
     });
   }
 
+  // How it works: the two rules sellers most often learn the hard way.
+  for (const topic of guideTopics(d.feePercent).filter((t) => t.key === 'cancel' || t.key === 'photos')) {
+    slides.push({
+      key: `learn-${topic.key}`,
+      look: topic.key === 'cancel' ? 'night' : 'blue',
+      icon: topic.icon,
+      eyebrow: `How it works · ${topic.title}`,
+      title: topic.short,
+      text: topic.points[1] ?? topic.points[0],
+      cta: { label: 'Read more', scrollTo: `guide-${topic.key}` },
+    });
+  }
+
   slides.push({
     key: 'tip-search',
     look: 'night',
     icon: 'search',
     eyebrow: 'Tip',
-    title: `Press ${isMac ? '⌘' : 'Ctrl'} K to jump anywhere`,
-    text: 'Type any word — “prices”, “holiday”, “momo” — and go straight to the page you need.',
+    title: 'Jump to anything',
+    text: `${SEARCH_HOW} and type any word — “prices”, “holiday”, “momo” — to go straight to the page you need.`,
   });
 
-  return slides.slice(0, 8);
+  return slides.slice(0, 11);
 }

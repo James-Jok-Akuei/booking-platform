@@ -17,7 +17,17 @@ const reduceMotion = () =>
  * focusing it holds it still; the dots jump to any one; with "reduce motion"
  * on, it waits for the dots.
  */
-export function AdCarousel({ slides, compact = false }: { slides: Slide[]; compact?: boolean }) {
+export function AdCarousel({
+  slides,
+  compact = false,
+  onElsewhere,
+}: {
+  slides: Slide[];
+  compact?: boolean;
+  /** For a button pointing at part of the column when the column is not on
+   *  screen (a phone): the place that shows that part instead. */
+  onElsewhere?: (id: string) => void;
+}) {
   const navigate = useNavigate();
   const count = slides.length;
   // `index === count` is a copy of the first, drawn after the last, so the
@@ -62,7 +72,13 @@ export function AdCarousel({ slides, compact = false }: { slides: Slide[]; compa
     if (!cta) return;
     if (cta.href) window.open(cta.href, '_blank', 'noopener');
     else if (cta.to) navigate(cta.to);
-    else if (cta.scrollTo) document.getElementById(cta.scrollTo)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else if (cta.scrollTo) {
+      const target = document.getElementById(cta.scrollTo);
+      if (!target) return onElsewhere?.(cta.scrollTo);
+      // A "How it works" topic opens as it comes into view.
+      if (target instanceof HTMLDetailsElement) target.open = true;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (

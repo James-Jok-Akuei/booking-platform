@@ -4,14 +4,18 @@ import {
   getMe,
   getPayoutDestination,
   getProfile,
+  listAppointments,
   listLocationReviews,
+  listNotifications,
   listLocations,
   listServices,
   type Service,
 } from '../api/business';
+import { listThreads } from '../api/chat';
 import { discoverServices, type DiscoveredService } from '../api/discovery';
 import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
 import { addDays, startOfDay } from '../lib/time';
+import { ORDER_TYPES } from '../lib/notificationLook';
 import type { IconName } from '../ui/Icon';
 
 /**
@@ -70,6 +74,32 @@ export function useAdData() {
     },
     enabled: branchIds.length > 0,
     staleTime: 5 * 60_000,
+  });
+
+  // What is happening right now (§205). Same keys as the bell and the frame's
+  // badges, so the three never disagree and nothing is fetched twice.
+  const inbox = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => listNotifications({ limit: 30 }),
+    refetchInterval: 60_000,
+  });
+  const threads = useQuery({
+    queryKey: ['threads', 'badge'],
+    queryFn: () => listThreads({ limit: 100 }),
+    refetchInterval: 60_000,
+  });
+  const expected = useQuery({
+    queryKey: ['appointments', 'badge', 'expected-today'],
+    queryFn: () => {
+      const from = startOfDay();
+      return listAppointments({
+        status: 'BOOKED',
+        from: from.toISOString(),
+        to: addDays(from, 1).toISOString(),
+        limit: 1,
+      });
+    },
+    refetchInterval: 60_000,
   });
 
   const subcategoryId = profile.data?.subcategory?.id ?? null;
@@ -201,6 +231,20 @@ export function useAdData() {
     const everywhere = (trendingAll.data?.services ?? []).filter(notMine).filter(dedupe).slice(0, 4);
 
     const unanswered = (reviews.data ?? []).filter((r) => !r.responseText).length;
+
+    // ---- right now ----
+    const notifications = inbox.data?.notifications ?? [];
+    const conversations = (threads.data?.threads ?? [])
+      .filter((t) => t.lastMessage !== null)
+      .sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''));
+    const unreadThreads = conversations.filter((t) => t.unreadCount > 0);
+    const dayAgo = Date.now() - 86_400_000;
+    const newOrder =
+      notifications.find((n) => ORDER_TYPES.includes(n.type) && new Date(n.createdAt).getTime() > dayAgo) ?? null;
+    // The platform's fee as the seller is actually charged it: from their own
+    // latest booking, never a number written into the app.
+    const latest = [...(recent.data ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+    const feePercent = latest?.platformFeePercentage ? String(Number(latest.platformFeePercentage)) : null;
     const saleRunning = onSale.some(isSaleOn);
 
     return {
@@ -218,6 +262,14 @@ export function useAdData() {
       saleRunning,
       hasServices: onSale.length > 0,
       payoutStatus: destination.data ? destination.data.destination?.status ?? 'NONE' : null,
+      notifications,
+      unreadNotifications: inbox.data?.unread ?? 0,
+      conversations,
+      unreadThreads,
+      unreadMessages: unreadThreads.reduce((sum, t) => sum + t.unreadCount, 0),
+      expectedToday: expected.data?.total ?? 0,
+      newOrder,
+      feePercent,
     };
   }, [
     profile.data,
@@ -228,6 +280,9 @@ export function useAdData() {
     reviews.data,
     trendingSame.data,
     trendingAll.data,
+    inbox.data,
+    threads.data,
+    expected.data,
     businessId,
     role,
   ]);

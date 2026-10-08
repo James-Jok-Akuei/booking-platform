@@ -1,43 +1,43 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { markNotificationRead } from '../api/business';
 import type { DiscoveredService } from '../api/discovery';
+import { lookFor } from '../lib/notificationLook';
+import { ago } from '../lib/time';
 import { useMoney } from '../money';
+import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 import { AdCarousel } from './AdCarousel';
+import { guideTopics, type GuideTopic } from './guide';
 import { buildSlides } from './slides';
 import { tipFor } from './tips';
 import { useAdData, type AdData } from './useAdData';
 import './ads.css';
 
 /**
- * "For you" — the column down the right of every page on a wide screen (§204).
- *
- * The banner of adverts at the top; under it what the shop is missing, what
- * customers are booking elsewhere, and a tip about the page you are on. It
- * folds to a slim strip (remembered), which hands the room back to the page.
- * Nothing in it is paid for: every advert is made from the shop's own data,
- * the public list of popular services, or the platform itself.
+ * "For you" — the column down the right of every page on a wide screen (§204,
+ * §205). It folds to a slim strip (remembered), which hands the room back to
+ * the page. On narrower screens the same content sits at the top of Overview
+ * (`ForYouTop`).
  */
 export function AdRail({ folded, onFold }: { folded: boolean; onFold: () => void }) {
   const data = useAdData();
-  const { pathname } = useLocation();
 
   if (folded) {
+    const waiting = data.unreadMessages + data.unreadNotifications;
     return (
       <aside className="ads is-folded">
         <button type="button" className="ads-unfold" onClick={onFold} aria-label="Open For you" title="Open For you">
           <span className="ads-unfold-icon">
             <Icon name="sparkles" size={20} />
-            {data.missing.length > 0 && <i>{data.missing.length}</i>}
+            {waiting > 0 && <i>{waiting > 99 ? '99+' : waiting}</i>}
           </span>
           <span className="ads-unfold-label">For you</span>
         </button>
       </aside>
     );
   }
-
-  const slides = buildSlides(data);
-  const tip = tipFor(pathname);
 
   return (
     <aside className="ads" aria-label="For you">
@@ -46,36 +46,145 @@ export function AdRail({ folded, onFold }: { folded: boolean; onFold: () => void
           <h2>
             <Icon name="sparkles" size={17} /> For you
           </h2>
-          <p>Ideas, news and tips for your shop</p>
+          <p>News, ideas and how it all works</p>
         </div>
         <button type="button" className="ads-fold" onClick={onFold} aria-label="Fold For you" title="Fold">
           <Icon name="chevronRight" size={18} />
         </button>
       </header>
-
       <div className="ads-scroll">
-        {data.ready ? <AdCarousel slides={slides} /> : <div className="skeleton ads-skel" />}
-
-        {data.ready && data.checks.length > 0 && <HealthCard data={data} />}
-
-        <Trending data={data} />
-
-        <article className="ads-tip" key={pathname}>
-          <span className="ads-tip-icon">
-            <Icon name={tip.icon} size={18} />
-          </span>
-          <div>
-            <p className="ads-label">Did you know?</p>
-            <strong>{tip.title}</strong>
-            <span>{tip.text}</span>
-          </div>
-        </article>
-
-        <p className="ads-foot">
-          <Icon name="info" size={13} /> Chosen from your shop and the app. Nothing here is paid for.
-        </p>
+        <ForYouContent data={data} />
       </div>
     </aside>
+  );
+}
+
+/** Everything in "For you", top to bottom — the column, and the phone's panel. */
+export function ForYouContent({ data, banner = true }: { data: AdData; banner?: boolean }) {
+  const { pathname } = useLocation();
+  const tip = tipFor(pathname);
+  return (
+    <>
+      {banner && (data.ready ? <AdCarousel slides={buildSlides(data)} /> : <div className="skeleton ads-skel" />)}
+      <RightNow data={data} />
+      {data.ready && data.checks.length > 0 && <HealthCard data={data} />}
+      <Guide data={data} />
+      <Trending data={data} />
+      <article className="ads-tip" key={pathname}>
+        <span className="ads-tip-icon">
+          <Icon name={tip.icon} size={18} />
+        </span>
+        <div>
+          <p className="ads-label">Did you know?</p>
+          <strong>{tip.title}</strong>
+          <span>{tip.text}</span>
+        </div>
+      </article>
+      <p className="ads-foot">
+        <Icon name="info" size={13} /> Chosen from your shop and the app. Nothing here is paid for.
+      </p>
+    </>
+  );
+}
+
+/**
+ * "Right now" (§205): what just happened — new bookings, cancellations,
+ * reviews, messages — from the same inbox as the bell, newest first. Opening
+ * one goes to its page and marks it read, as the bell does (§96).
+ */
+export function RightNow({ data, compact = false }: { data: AdData; compact?: boolean }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [more, setMore] = useState(false);
+  const read = useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const items = data.notifications.slice(0, more ? 10 : compact ? 3 : 5);
+  const waiting = data.unreadThreads.slice(0, 2);
+
+  return (
+    <article className={`ads-live${compact ? ' is-compact' : ''}`}>
+      <header>
+        <div>
+          <p className="ads-label">
+            <i className="ads-live-dot" /> Right now
+          </p>
+          <strong>Orders, messages and alerts</strong>
+        </div>
+      </header>
+
+      <div className="ads-counters">
+        <Link to="/appointments" className="ads-counter is-coral">
+          <strong>{data.expectedToday}</strong>
+          <span>expected today</span>
+        </Link>
+        <Link to="/messages" className={`ads-counter${data.unreadMessages ? ' is-hot' : ''}`}>
+          <strong>{data.unreadMessages}</strong>
+          <span>unread {data.unreadMessages === 1 ? 'message' : 'messages'}</span>
+        </Link>
+        <div className="ads-counter">
+          <strong>{data.unreadNotifications > 99 ? '99+' : data.unreadNotifications}</strong>
+          <span>new {data.unreadNotifications === 1 ? 'alert' : 'alerts'}</span>
+        </div>
+      </div>
+
+      {waiting.length > 0 && (
+        <ul className="ads-chats">
+          {waiting.map((t) => (
+            <li key={t.id}>
+              <Link to="/messages" className="ads-chat">
+                <Avatar label={t.customer.email} size={34} />
+                <span className="ads-chat-text">
+                  <strong>{t.customer.email}</strong>
+                  <span>{t.lastMessage?.preview ?? 'Sent a photo'}</span>
+                </span>
+                <span className="ads-chat-meta">
+                  {t.lastMessageAt ? ago(t.lastMessageAt) : ''}
+                  <i>{t.unreadCount}</i>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {items.length > 0 ? (
+        <ol className="ads-feed">
+          {items.map((n) => {
+            const look = lookFor(n.type);
+            return (
+              <li key={n.id}>
+                <button
+                  type="button"
+                  className={`ads-feed-row${n.readAt ? '' : ' is-unread'}`}
+                  onClick={() => {
+                    if (!n.readAt) read.mutate(n.id);
+                    navigate(look.to);
+                  }}
+                >
+                  <span className={`ads-feed-icon tone-${look.tone}`}>
+                    <Icon name={look.icon} size={15} />
+                  </span>
+                  <span className="ads-feed-text">
+                    <strong>{n.subject ?? n.type}</strong>
+                    <span>{ago(n.createdAt)}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <p className="ads-none">Nothing new yet — bookings, cancellations and reviews appear here as they happen.</p>
+      )}
+      {!compact && data.notifications.length > 5 && (
+        <button type="button" className="ads-more" onClick={() => setMore((v) => !v)}>
+          {more ? 'Show fewer' : 'Show more'}
+        </button>
+      )}
+    </article>
   );
 }
 
@@ -132,6 +241,59 @@ function HealthCard({ data }: { data: AdData }) {
         </button>
       )}
     </article>
+  );
+}
+
+/** "How it works": the rules, one topic open at a time. */
+function Guide({ data }: { data: AdData }) {
+  const topics = guideTopics(data.feePercent);
+  return (
+    <article className="ads-guide">
+      <header>
+        <p className="ads-label">How it works</p>
+        <strong>The rules, in plain words</strong>
+      </header>
+      <div className="ads-guide-list">
+        {topics.map((topic) => (
+          <GuideItem key={topic.key} topic={topic} />
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function GuideItem({ topic }: { topic: GuideTopic }) {
+  return (
+    <details className={`ads-topic tone-${topic.tone}`} id={`guide-${topic.key}`}>
+      <summary>
+        <span className="ads-topic-icon">
+          <Icon name={topic.icon} size={16} />
+        </span>
+        <span className="ads-topic-text">
+          <strong>{topic.title}</strong>
+          <em>{topic.short}</em>
+        </span>
+        <Icon name="chevronDown" size={16} className="ads-topic-chev" />
+      </summary>
+      <GuideBody topic={topic} />
+    </details>
+  );
+}
+
+export function GuideBody({ topic, onLink }: { topic: GuideTopic; onLink?: () => void }) {
+  return (
+    <div className="ads-topic-body">
+      <ul>
+        {topic.points.map((p) => (
+          <li key={p}>{p}</li>
+        ))}
+      </ul>
+      {topic.link && (
+        <Link to={topic.link.to} className="ads-topic-link" onClick={onLink}>
+          {topic.link.label} <Icon name="arrowRight" size={14} stroke={2.2} />
+        </Link>
+      )}
+    </div>
   );
 }
 

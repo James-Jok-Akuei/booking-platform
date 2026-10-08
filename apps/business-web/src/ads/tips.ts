@@ -1,6 +1,10 @@
 import type { IconName } from '../ui/Icon';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+const touch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
+/** How to open search here: keys on a computer, the magnifying glass on a phone. */
+export const SEARCH_HOW = touch ? 'Tap the magnifying glass at the top' : `Press ${isMac ? '⌘' : 'Ctrl'} K`;
 
 /**
  * "Did you know?" — one feature worth knowing, chosen by the page the seller is
@@ -11,7 +15,7 @@ const TIPS: Record<string, { icon: IconName; title: string; text: string }> = {
   '/': {
     icon: 'search',
     title: 'Jump anywhere',
-    text: `Press ${isMac ? '⌘' : 'Ctrl'} K and type any word — “prices”, “holiday”, “momo” — to go straight there.`,
+    text: `${SEARCH_HOW} and type any word — “prices”, “holiday”, “momo” — to go straight there.`,
   },
   '/appointments': {
     icon: 'ticket',
