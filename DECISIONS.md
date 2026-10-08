@@ -15499,3 +15499,21 @@ banner grows to 118px to hold it (Overview's is 240px). The lines:
   the cover"
 - Just in — a message's first words; a notice's first sentence of meaning
   ("A customer has booked").
+
+## 226. Signing out asks first (2026-10-08)
+
+The user: the sign-out icon can be pressed by mistake — ask whether they
+really want to sign out.
+
+Every way out of the business app — the sidebar's icon, Sign out in the shop
+menu, the phone's menu, and search — goes through the frame's `leave`, which
+now asks first with the app's own dialog (§193.2): **"Sign out?"** — "You
+will leave *Kigali Barbers* on this device. To come back, sign in with your
+email and the new 6-digit code we send you." — **Stay signed in** / **Sign
+out**. Esc, a click outside, or Stay signed in keeps them signed in. On a
+phone it rises as a sheet from the bottom, as every dialog does.
+
+The customer app already asked (account screen), so it is unchanged.
+
+Checked: the dialog opens from the sidebar icon and from the phone's menu;
+"Stay signed in" leaves the person on the same page, still signed in.

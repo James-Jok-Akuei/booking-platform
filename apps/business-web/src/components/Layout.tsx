@@ -10,6 +10,7 @@ import { Sidebar } from '../shell/Sidebar';
 import { Topbar } from '../shell/Topbar';
 import { useMediaQuery } from '../shell/useMediaQuery';
 import { useShellData } from '../shell/useShellData';
+import { confirmDialog } from '../ui/Dialog';
 import { LegalBanner } from './LegalGate';
 import '../shell/shell.css';
 
@@ -166,10 +167,27 @@ function Frame() {
       return !was;
     });
 
+  // Signing out asks first (§226): the icon sits beside the account, easy to
+  // press by mistake, and coming back means a new code by email. Every way out
+  // — the sidebar, the shop menu, the phone's menu, search — comes through here.
   const leave = useCallback(async () => {
+    const sure = await confirmDialog({
+      title: 'Sign out?',
+      body: (
+        <p>
+          You will leave {data.business?.name ? <strong>{data.business.name}</strong> : 'your business'} on this
+          device. To come back, sign in with your email and the new 6-digit code we send you.
+        </p>
+      ),
+      icon: 'logout',
+      tone: 'warn',
+      confirmLabel: 'Sign out',
+      cancelLabel: 'Stay signed in',
+    });
+    if (!sure) return;
     await signOut();
     navigate('/login', { replace: true });
-  }, [navigate, signOut]);
+  }, [navigate, signOut, data.business?.name]);
 
   // Checking someone in has its own window (§191), from anywhere.
   const openCheckIn = useCheckIn();
