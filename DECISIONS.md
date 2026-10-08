@@ -14521,3 +14521,32 @@ branch, all three removed afterwards.
   hover with a remove button (now the dialog), and an "Add a photo" tile in
   the grid. Adding or removing refreshes the checklist.
 
+## 198. Messages, an inbox in two panes (2026-10-08)
+
+`src/pages/MessagesPage.tsx`. The rules are unchanged — unread is per person
+(§21.3), empty booking threads are hidden (§21.1), no "new message" button,
+the socket for the open conversation (§22.2), replies say who sent them
+(§14, §112.1). What changed is the shape:
+
+- **Two panes**: conversations down the left — newest first, each with the
+  customer's initials, what it is about (a booking, or "A question, before
+  booking"), the last line, how long ago, and the unread count — and the open
+  conversation on the right. A **search** box and **All / Unread** tabs sit
+  above the list. With none open, the right side says how many are waiting.
+- **The conversation**: a header with the customer, the subject and the
+  booking's state; messages **grouped by day** with a date between days, and
+  a run from one person drawn as one block with who-and-when once, under its
+  last message. Ours are night bubbles on the right, the customer's light ones
+  on the left, on a faint dotted page.
+- **Replying**: one rounded box with a paperclip for a photo (shown as a
+  thumbnail, removable, before sending) and a coral send button. **Enter sends,
+  Shift + Enter is a new line.** The box grows with the text.
+- **On a phone** the list is the page; a conversation opens over everything,
+  full screen, with a back arrow — the reply box at the bottom, clear of the
+  tab bar. It is drawn at the top of the page so nothing around it can clip
+  it.
+
+Testing note: opening a conversation marks it read for whoever opens it, as it
+always has — so the screenshots run as the demo owner read one demo
+conversation (2 messages).
+
