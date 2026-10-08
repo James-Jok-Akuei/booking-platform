@@ -410,16 +410,30 @@
 .ad-strip-note svg { flex: none; color: var(--muted); }
 .ad-strip-note span { flex: 1; min-width: 0; }
 .ad-strip-note button { min-height: 30px; padding: 0 12px; border-radius: 10px; font-size: 12.5px; color: var(--accent-deep); background: var(--panel); }
-.ad-strip-skel { height: 130px; margin: 0 0 18px; border-radius: 22px; }
+.ad-strip-skel { height: 140px; margin: 0 0 18px; border-radius: 22px; }
 .adc.is-slim .adc-frame { border-radius: 22px; }
 .adc.is-slim .adc-window { border-radius: 20.5px; }
-.adc.is-slim .adc-slide { min-height: 108px; justify-content: center; --ax: 38px; --ay: 54px; }
+.adc.is-slim .adc-slide { min-height: 118px; justify-content: center; --ax: 38px; --ay: 59px; }
 .adc.is-slim .adc-art,
 .adc.is-slim .adc-stat,
 .adc.is-slim .adc-body p { display: none; }
-.adc.is-slim .adc-body { padding: 14px 74px 14px 16px; }
+.adc.is-slim .adc-body { padding: 13px 74px 14px 16px; }
 .adc.is-slim .adc-eyebrow { padding: 3px 9px 3px 7px; font-size: 11px; }
 .adc.is-slim .adc-body h3 { margin: 7px 0 0; font-size: 16.5px; line-height: 1.22; -webkit-line-clamp: 2; }
+/* The key point under the title (§225): only on the slim banner. */
+.adc-gist { display: none; }
+.adc.is-slim .adc-gist {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.38;
+  color: rgba(255, 255, 255, 0.9);
+}
+.adc-slide.is-active .adc-gist { transition-delay: 330ms; }
 /* The button becomes a round arrow at the right; its words stay for screen readers. */
 .adc.is-slim .adc-cta { position: absolute; right: 16px; top: calc(50% - 22px); width: 44px; height: 44px; min-height: 0; margin: 0; padding: 0; justify-content: center; border-radius: 50%; }
 .adc.is-slim .adc-cta > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

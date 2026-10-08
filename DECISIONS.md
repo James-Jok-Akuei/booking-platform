@@ -15469,3 +15469,33 @@ The user prefers the customer app's original background, so §222 is undone
 there: `theme.bg` is `#F6F4F0` again, and the shopfront preview in the
 business app (§208), which copies the customer app, follows it. The business
 app keeps porcelain `#F9F8F6`.
+
+## 225. The slim banner says the point, in one short line (2026-10-08)
+
+The user: the slim banner (§221) shows a label and a title but not what the
+advert is about — "Tip · Jump to anything" without saying how. Use the
+important words, like ⌘ K, so it can be read and understood.
+
+Every advert now carries a **`gist`** — its point in one short line — shown
+under the title on the slim banner only (the full banners keep their longer
+text). Two lines at most, white on the card, rising in after the title. The
+banner grows to 118px to hold it (Overview's is 240px). The lines:
+
+- Tip — "Press ⌘ K, then type a word like "prices"" (on a touch screen:
+  "Tap the magnifying glass at the top, then …")
+- Your best seller — "18 bookings in 30 days · try a sale" / "· on sale now"
+- Trending — "12 booked · Kimironko Spa"
+- Make your shop stand out — "94% done · next: a description on 6 services"
+- Reviews waiting — "Your reply shows under the review, for everyone"
+- Branches — "Each gets its own page, hours and prices" (none yet: "Address,
+  map pin, hours — then customers can book")
+- You can book too — "Sign up in our customer app with your personal email"
+- How customers find you — "Bookings × rating decide where you appear"
+- Run a sale — "1–90% off · customers see a −% badge"
+- Get paid — "Your share is held until you add one" / "Payouts start as soon
+  as it is confirmed"
+- How it works · Cancellations — "Customer cancels: deposit kept · You
+  cancel: full refund"; · Photos — "Up to 11 per service · the first one is
+  the cover"
+- Just in — a message's first words; a notice's first sentence of meaning
+  ("A customer has booked").

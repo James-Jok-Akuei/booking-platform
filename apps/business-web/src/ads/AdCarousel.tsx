@@ -303,6 +303,8 @@ function Card({
           ))}
         </h3>
         <p>{slide.text}</p>
+        {/* The point in one line, for the slim banner (§225). */}
+        {slide.gist && <span className="adc-gist">{slide.gist}</span>}
         {slide.cta && (
           <button type="button" className="adc-cta" tabIndex={active ? 0 : -1} onClick={onAct}>
             <span>{slide.cta.label}</span>

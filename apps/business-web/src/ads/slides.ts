@@ -31,10 +31,21 @@ export type Slide = {
   cta?: { label: string; to?: string; href?: string; scrollTo?: string };
   /** The card's own moving effect (§212), chosen for what it is about. */
   effect?: SlideEffect;
+  /**
+   * The point in one short line (§225) — what the slim banner shows under the
+   * title, where there is no room for `text`: "Press ⌘ K, then type a word".
+   */
+  gist?: string;
 };
 
 /** A link to the customer app, when there is one to give (VITE_CUSTOMER_APP_URL). */
 export const CUSTOMER_APP_URL = (import.meta.env.VITE_CUSTOMER_APP_URL as string | undefined)?.trim() || null;
+
+/** The two rules the banner teaches, each in one line (§225). */
+const LEARN_GIST: Record<string, string> = {
+  cancel: 'Customer cancels: deposit kept · You cancel: full refund',
+  photos: 'Up to 11 per service · the first one is the cover',
+};
 
 export function buildSlides(d: AdData): Slide[] {
   const slides: Slide[] = [];
@@ -49,6 +60,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'payout',
       effect: 'coins',
+      gist: d.payoutStatus === 'UNVERIFIED' ? 'Payouts start as soon as it is confirmed' : 'Your share is held until you add one',
       look: 'amber',
       icon: 'wallet',
       eyebrow: 'Get paid',
@@ -70,6 +82,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'best',
       effect: 'confetti',
+      gist: `${d.best.count} ${d.best.count === 1 ? 'booking' : 'bookings'} in 30 days · ${d.best.onSale ? 'on sale now' : 'try a sale'}`,
       look: 'coral',
       icon: 'trendUp',
       eyebrow: 'Your best seller',
@@ -89,6 +102,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'trending',
       effect: 'streaks',
+      gist: `${trend.bookingCount} booked · ${trend.business.name ?? trend.location.name}`,
       look: 'violet',
       icon: 'zap',
       eyebrow: inKind ? `Trending in ${d.subcategoryName}` : 'Trending on the app',
@@ -104,6 +118,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'health',
       effect: 'constellation',
+      gist: `${d.score}% done · next: ${d.missing[0].label.toLowerCase()}`,
       look: 'night',
       icon: 'sparkles',
       eyebrow: 'Make your shop stand out',
@@ -118,6 +133,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'reviews',
       effect: 'stars',
+      gist: 'Your reply shows under the review, for everyone',
       look: 'gold',
       icon: 'star',
       eyebrow: 'Customers are waiting',
@@ -132,6 +148,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'branches',
       effect: 'waves',
+      gist: d.branchCount === 0 ? 'Address, map pin, hours — then customers can book' : 'Each gets its own page, hours and prices',
       look: 'green',
       icon: 'store',
       eyebrow: 'Grow · Branches',
@@ -148,6 +165,7 @@ export function buildSlides(d: AdData): Slide[] {
   slides.push({
     key: 'buyer',
     effect: 'bubbles',
+    gist: 'Sign up in our customer app with your personal email',
     look: 'blue',
     icon: 'phone',
     eyebrow: 'From us · You can book too',
@@ -163,6 +181,7 @@ export function buildSlides(d: AdData): Slide[] {
   slides.push({
     key: 'rank',
     effect: 'rays',
+    gist: 'Bookings × rating decide where you appear',
     look: 'green',
     icon: 'chart',
     eyebrow: 'How customers find you',
@@ -175,6 +194,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'sale',
       effect: 'glitter',
+      gist: '1–90% off · customers see a −% badge',
       look: 'coral',
       icon: 'percent',
       eyebrow: 'Idea',
@@ -189,6 +209,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: `learn-${topic.key}`,
       effect: topic.key === 'cancel' ? 'aurora' : 'bokeh',
+      gist: LEARN_GIST[topic.key] ?? topic.points[0],
       look: topic.key === 'cancel' ? 'night' : 'blue',
       icon: topic.icon,
       eyebrow: `How it works · ${topic.title}`,
@@ -201,6 +222,7 @@ export function buildSlides(d: AdData): Slide[] {
   slides.push({
     key: 'tip-search',
     effect: 'meteors',
+    gist: `${SEARCH_HOW}, then type a word like “prices”`,
     look: 'night',
     icon: 'search',
     eyebrow: 'Tip',
@@ -262,6 +284,7 @@ function justInSlide(j: JustIn): Slide {
     return {
       key: 'just-in',
       effect: 'ripples',
+      gist: `“${t.lastMessage?.preview ?? 'Sent a photo'}”`,
       look: 'coral',
       icon: 'message',
       eyebrow: `Just in · ${t.lastMessageAt ? ago(t.lastMessageAt) : 'now'}`,
@@ -275,6 +298,7 @@ function justInSlide(j: JustIn): Slide {
   return {
     key: 'just-in',
     effect: 'ripples',
+    gist: (MEANING[n.type] ?? 'Open it to see the details.').split('. ')[0].replace(/\.$/, ''),
     look: LOOK_BY_TONE[look.tone],
     icon: look.icon,
     eyebrow: `Just in · ${ago(n.createdAt)}`,
