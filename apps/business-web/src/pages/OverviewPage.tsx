@@ -215,8 +215,9 @@ export function OverviewPage() {
         <header className="ov-head">
           <div>
             <p className="ov-eyebrow">
-              {/* Where the shop is, as the customer app's home says it (§147, §233) —
-                  on a phone; a wide screen has it in the top bar (§234). */}
+              {/* Where the shop is, as the customer app's home says it (§147, §233).
+                  The chip is for phones: a wide screen's top bar has the flag, the
+                  date and the clock on every page (§234, §235). */}
               <span className="ov-country">
                 <RwandaFlag width={20} />
                 Rwanda

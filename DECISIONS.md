@@ -15814,3 +15814,22 @@ and §233's design (the Overview chip) for the phone.
 - Sign-in keeps "Made for Rwanda" (§233).
 
 Checked at 1440 (Overview), 1024 (Appointments) and 390 (Overview).
+
+## 235. Today's date once: the top bar has it, with a clock (2026-10-09)
+
+The user noticed Overview said "Friday 9 October" twice on a wide screen —
+in the top bar under "Your day › Overview", and in the chip just below it.
+
+- **The top bar's second line** now reads **Friday 9 October · 00:52** on
+  every page: the date and a clock, the clock in heavier type after a small
+  dot. It ticks (every 15 s), so the date also turns over at midnight with
+  the tab left open — it used to stay on the day the page was drawn.
+- **Overview's chip** ([flag] Rwanda | ☀ date | clock) is now **for phones
+  only** (under 860px), where the top bar has no date, flag or clock. On a
+  wide screen everything it said is in the bar, so it is gone there and the
+  greeting starts the page.
+
+No other page repeats today's date: Closures & breaks shows the day picked,
+and the calendar the day or week shown.
+
+Checked at 1440, 1024 and 390 wide.

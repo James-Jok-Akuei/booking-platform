@@ -6,6 +6,7 @@ import { RwandaFlag } from '../ui/RwandaFlag';
 import { ShopLogo } from '../ui/ShopLogo';
 import { Icon } from '../ui/Icon';
 import { useDismiss } from '../ui/useDismiss';
+import { clock, useNow } from '../lib/time';
 import { roleLabel, type ShellData } from './useShellData';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
@@ -35,7 +36,10 @@ export function Topbar({
 }) {
   const { pathname } = useLocation();
   const item = navItemFor(pathname);
-  const today = new Date().toLocaleDateString(undefined, {
+  // The date and a clock, on every page (§235) — the one place they are on a
+  // wide screen. Ticking keeps both right past midnight with the tab left open.
+  const now = useNow(15_000);
+  const today = now.toLocaleDateString(undefined, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -58,7 +62,10 @@ export function Topbar({
             <Icon name="chevronRight" size={13} stroke={2.2} />
             <strong>{item?.label ?? 'Business'}</strong>
           </span>
-          <span className="tb-date">{today}</span>
+          <span className="tb-date">
+            {today}
+            <span className="tb-clock">{clock(now)}</span>
+          </span>
         </div>
       </div>
 
