@@ -14362,10 +14362,13 @@ draws ratings with halves. The status pill no longer capitalises every word
   Expected customers from past days sit at the top under an amber **"Earlier —
   not checked in"**. The history tabs (Done, All) stay newest first, 25 at a
   time with **Show more** (there was no way past the first 25 before).
-- **Search** by email, service or branch, over what is loaded.
-- Each row: time and length, the customer with "Deposit paid", the service
+- ~~**Search** by email, service or branch, over what is loaded.~~ — superseded by
+  §213.2 (search and branch filter on the server, over every booking).
+- ~~Each row: time and length, the customer with "Deposit paid", the service
   (people count in coral), **You earn** with "of X — rest paid to you
-  directly" (§29.2), the state (late ones amber, "2 h 53 min late"), and the
+  directly" (§29.2), the state (late ones amber, "2 h 53 min late")~~ — the
+  row's columns superseded by §213.1 (Payment shows what is due at the shop),
+  and the
   next step as a button: **Check in** (opens §191 with them chosen) or **Mark
   done**. The rarer steps — No code? (owner/manager), No-show, Cancel — are
   behind **⋯**. "Waiting for the customer to pay" for unpaid ones.
@@ -15080,3 +15083,65 @@ shimmering edge, tilt, blur hand-over, swipe).
 
 **The dots are back under the card**, as in §204: the one shown is wider and
 fills with coral over its eight seconds; any dot jumps there.
+
+## 213. Appointments as a professional work list (2026-10-08)
+
+The user: the most important page; rows had no column headings (verify,
+action, customer…), and items did not line up vertically. Asked for a
+redemption-page standard of layout.
+
+The cause of the misalignment: at the commonest desktop width (1440 with
+"For you" open, ~770px of page) the old layout fell into its compact form —
+headings hidden, cells wrapping onto a second line at different offsets.
+
+### 213.1 The page
+
+- **Pinned head**, one card with the list (§209): title, search and a
+  **branch filter**; **today at a glance** — to come today (with "next at" or
+  "n running late"), with you now, done today, and **to collect today** (the
+  balance still to be paid at the shop by today's expected and checked-in
+  customers) — which folds away as the page scrolls; then underline **tabs
+  with counts**, an **Export** button, and the **column headings**, all
+  staying on screen while rows slide under them.
+- **One grid for headings and every row**, so nothing drifts: **Time ·
+  Customer · Service · Payment · Status · Action** (≥1000px of page); at
+  700–1000px the customer moves under the service in one **Booking**
+  column; below that each booking is a card with the same parts in fixed
+  places. Every cell is one or two single lines, cut with "…" rather than
+  wrapped.
+- **Each row**: a status-coloured stripe at the left edge (blue expected,
+  amber late or with you, green done, red cancelled or no-show, grey
+  unpaid); time and length; the customer with their **reservation number**
+  (`No. 3F2A-1C9B` — the same number the customer's app shows them, the
+  first eight characters of the booking's id); the service's photo, name, "×3" for a group, and branch;
+  **Payment** — what is due at the shop and whether the deposit is paid, or
+  what the shop keeps (no-show, customer's cancellation), "Deposit
+  refunded" (shop's cancellation), "No deposit"; **Status** — the pill and
+  one line of timing ("In 25 min", "5 h 31 min late", "Arrived 14:05",
+  "Finished 15:10", "By the customer", "Not paid in time"); **Action** — the
+  one next step always in the same place (Check in / Mark done / Waiting /
+  View) and "⋯" in every row (open details, copy the number, check in
+  without a code, no-show, cancel).
+- A **"Now" line** runs through today's list on the waiting tabs.
+- **Export** downloads what is shown as a spreadsheet (CSV): number, date,
+  times, customer, service, people, branch, status, deposit and when paid,
+  share, fee, full price, balance at the shop, who cancelled and why.
+- The booking panel shows the service photo with the customer's initials,
+  the status, and the reservation number to copy.
+
+### 213.2 On the server: branch and search
+
+`GET /appointments` takes **`locationId`** and **`q`**. Both narrow the
+caller's own scope (a branch or customer of another business finds nothing).
+`q` matches part of the customer's email, the service name or the branch
+name, case-insensitively — or a reservation number, with or without its dash
+(the id's first eight characters). So search and the branch filter reach
+every booking, not only those already loaded, and the tab counts follow
+them. Tested in `appointment-filters.spec.ts`.
+
+### 213.3 Smaller
+
+- The header fold in the frame needs 280px of scroll (was 180px) so the
+  tallest folding header — this one — cannot unfold itself.
+- "Awaiting payment" shows as an **Unpaid** pill in the list (the tab keeps
+  its name).

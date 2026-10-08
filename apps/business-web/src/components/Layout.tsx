@@ -84,7 +84,8 @@ function Frame() {
   // Each page's header stays pinned under the bar (§209) and, once the page
   // moves, folds to a slim strip. Only on a page long enough to scroll well
   // past the fold: on a short one, the fold itself would shorten the page
-  // enough to unfold it again, and it would flicker. Folding at 24px and
+  // enough to unfold it again, and it would flicker (280px covers the tallest
+  // fold, Appointments' with its today strip). Folding at 24px and
   // unfolding only back near the top keeps it from see-sawing.
   const [condensed, setCondensed] = useState(false);
   useEffect(() => {
@@ -92,7 +93,7 @@ function Frame() {
       const y = window.scrollY;
       setScrolled(y > 24);
       setCondensed((was) =>
-        was ? y > 8 : y > 24 && document.documentElement.scrollHeight - window.innerHeight > 180,
+        was ? y > 8 : y > 24 && document.documentElement.scrollHeight - window.innerHeight > 280,
       );
     };
     onScroll();

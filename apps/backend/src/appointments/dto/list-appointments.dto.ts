@@ -4,7 +4,10 @@ import {
   IsEnum,
   IsInt,
   IsOptional,
+  IsString,
+  IsUUID,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { AppointmentStatus } from '@prisma/client';
@@ -39,6 +42,24 @@ export class ListAppointmentsDto {
   @IsOptional()
   @IsDateString({}, { message: 'to must be an ISO-8601 date-time string.' })
   to?: string;
+
+  /**
+   * One branch only (§213). Combined with the caller's own scope, so another
+   * business's branch simply matches nothing.
+   */
+  @IsOptional()
+  @IsUUID('all', { message: 'locationId must be a branch id.' })
+  locationId?: string;
+
+  /**
+   * Find (§213): part of the customer's email, the service's name or the
+   * branch's name — or the reservation number the customer's app shows
+   * ("3F2A-1C9B", the first eight characters of the booking's id).
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
 
   @IsOptional()
   @IsEnum(AppointmentOrder, {

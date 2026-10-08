@@ -10774,6 +10774,17 @@ export interface operations {
                 from?: string;
                 /** @description Exclusive upper bound on startTime. */
                 to?: string;
+                /**
+                 * @description One branch only (§213). Combined with the caller's own scope, so another
+                 *     business's branch simply matches nothing.
+                 */
+                locationId?: string;
+                /**
+                 * @description Find (§213): part of the customer's email, the service's name or the
+                 *     branch's name — or the reservation number the customer's app shows
+                 *     ("3F2A-1C9B", the first eight characters of the booking's id).
+                 */
+                q?: string;
                 sort?: "soonest" | "latest";
                 limit?: number;
                 offset?: number;

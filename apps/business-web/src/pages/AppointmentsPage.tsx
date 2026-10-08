@@ -1,26 +1,28 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { useMoney } from '../money';
-import { useCheckIn } from '../checkin/CheckIn';
+import { dueLabel, useCheckIn } from '../checkin/CheckIn';
 import {
   getAppointment,
   cancelAppointment,
   completeAppointment,
   getMe,
   listAppointments,
+  listLocations,
   listServices,
   markNoShow,
   type Appointment,
   type AppointmentStatus,
 } from '../api/business';
+import { bookingsBetween } from '../lib/bookings';
 import { Avatar } from '../ui/Avatar';
 import { confirmDialog, promptDialog } from '../ui/Dialog';
-import { MoreMenu } from '../ui/MoreMenu';
+import { MoreMenu, type MoreItem } from '../ui/MoreMenu';
 import { Portal } from '../ui/Portal';
 import { Icon, type IconName } from '../ui/Icon';
-import { clock, minutesBetween, relativeDay, sameDay, span, startOfDay } from '../lib/time';
+import { addDays, clock, minutesBetween, relativeDay, sameDay, startOfDay, useNow } from '../lib/time';
 import './appointments.css';
 
 type TabKey = 'expected' | 'in-progress' | 'awaiting-payment' | 'done' | 'all';
@@ -42,7 +44,7 @@ const STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
   COMPLETED: { label: 'Done', cls: 'completed' },
   NO_SHOW: { label: 'No-show', cls: 'no-show' },
   CANCELLED: { label: 'Cancelled', cls: 'cancelled' },
-  PENDING_PAYMENT: { label: 'Awaiting payment', cls: 'pending-payment' },
+  PENDING_PAYMENT: { label: 'Unpaid', cls: 'pending-payment' },
 };
 
 const PAGE = 25;
@@ -50,12 +52,28 @@ const PAGE = 25;
 const when = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 
+/**
+ * The number the customer's app shows them (§213): the first eight
+ * characters of the booking's id, "3F2A-1C9B" — so the two screens can be
+ * matched at a glance, and it can be searched for.
+ */
+export const reservationNo = (id: string) => {
+  const s = id.replace(/-/g, '').slice(0, 8).toUpperCase();
+  return `${s.slice(0, 4)}-${s.slice(4)}`;
+};
+
+/** What is still to be paid at the shop; null on bookings older than the price snapshot. */
+const dueAtShop = (a: Appointment) =>
+  a.servicePriceMinor === null ? null : Math.max(0, a.servicePriceMinor - a.depositAmountMinor);
+
+type Filters = { locationId?: string; q?: string };
+
 /** Every booking of one status, a hundred at a time — the active tabs are short. */
-async function allOf(status: AppointmentStatus) {
+async function allOf(status: AppointmentStatus, filters: Filters) {
   const rows: Appointment[] = [];
   let total = 0;
   for (let offset = 0; offset < 1000; offset += 100) {
-    const page = await listAppointments({ status, limit: 100, offset });
+    const page = await listAppointments({ status, limit: 100, offset, ...filters });
     total = page.total;
     rows.push(...page.appointments);
     if (rows.length >= page.total || page.appointments.length < 100) break;
@@ -63,53 +81,76 @@ async function allOf(status: AppointmentStatus) {
   return { appointments: rows, total };
 }
 
+/** A value that settles a moment after typing stops. */
+function useSettled<T>(value: T, ms = 280) {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(value), ms);
+    return () => clearTimeout(timer);
+  }, [value, ms]);
+  return settled;
+}
+
 /**
- * The day's work (§70.2, §193).
+ * The day's work (§70.2, §193, §213) — a work list, laid out as a table.
  *
- * Opens on **Expected** — the people who have not arrived — because that is
- * what someone opens this to deal with; each tab says how many it holds. The
- * waiting tabs (expected, in progress, awaiting payment) are read soonest
- * first and grouped by day; the history tabs newest first, a page at a time.
+ * Opens on **Expected**, the people who have not arrived. At the top, today
+ * at a glance: who is still to come, who is with you, who is done, and the
+ * money still to collect at the shop. Then the bookings as a table whose
+ * columns never move — Time, Customer, Service, Payment, Status, Action —
+ * with the headings pinned while the list scrolls under them, grouped by
+ * day, with a "now" line through today.
  *
- * Each customer carries the one next step as a button — **Check in** (§191),
- * **Mark done** — and the rarer ones (no code, no-show, cancel) behind "⋯".
- * Clicking a row opens everything about the booking, including the payment
- * trail a business needs when a customer disputes a charge (§96).
+ * Every row carries its one next step as a button in the same place —
+ * **Check in** (§191), **Mark done** — and the rest behind "⋯". Search
+ * (email, service, branch or the reservation number the customer's app
+ * shows) and the branch filter run on the server, so they reach every
+ * booking, not just the ones loaded. What is shown can be downloaded.
  */
 export function AppointmentsPage() {
   const [params, setParams] = useSearchParams();
   const tab = TABS.find((t) => t.key === params.get('tab')) ?? TABS[0];
   const setTab = (key: TabKey) => setParams(key === 'expected' ? {} : { tab: key }, { replace: true });
   const [search, setSearch] = useState('');
+  const [branch, setBranch] = useState('');
   const [detail, setDetail] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const money = useMoney();
   const covers = useServiceCovers();
   const openCheckIn = useCheckIn();
+  const now = useNow(30_000);
 
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
   const canVerifyManually =
     me.data?.businessMembership?.role === 'OWNER' || me.data?.businessMembership?.role === 'MANAGER';
+  const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
+  const branches = (locations.data ?? []).filter((l) => l.isActive);
 
-  // How many each tab holds, for the counts on the tabs.
+  const q = useSettled(search.trim());
+  const filters: Filters = { ...(branch ? { locationId: branch } : {}), ...(q ? { q } : {}) };
+  const filterKey = [branch, q];
+
+  // How many each tab holds, for the counts on the tabs — with the filters.
   const counts = useQueries({
     queries: TABS.map((t) => ({
-      queryKey: ['appointments', 'count', t.status],
-      queryFn: () => listAppointments(t.status === 'ALL' ? { limit: 1 } : { status: t.status, limit: 1 }),
+      queryKey: ['appointments', 'count', t.status, ...filterKey],
+      queryFn: () =>
+        listAppointments(t.status === 'ALL' ? { limit: 1, ...filters } : { status: t.status, limit: 1, ...filters }),
     })),
   });
 
   const active = ACTIVE.includes(tab.status);
   const waiting = useQuery({
-    queryKey: ['appointments', 'list', tab.status, 'all'],
-    queryFn: () => allOf(tab.status as AppointmentStatus),
+    queryKey: ['appointments', 'list', tab.status, 'all', ...filterKey],
+    queryFn: () => allOf(tab.status as AppointmentStatus, filters),
     enabled: active,
   });
   const history = useInfiniteQuery({
-    queryKey: ['appointments', 'list', tab.status, 'paged'],
+    queryKey: ['appointments', 'list', tab.status, 'paged', ...filterKey],
     queryFn: ({ pageParam }) =>
       listAppointments({
         ...(tab.status === 'ALL' ? {} : { status: tab.status }),
+        ...filters,
         limit: PAGE,
         offset: pageParam,
       }),
@@ -121,34 +162,44 @@ export function AppointmentsPage() {
     enabled: !active,
   });
 
+  // Today, for the strip at the top — by branch, whatever is being searched.
+  const today = startOfDay(now);
+  const withYou = useQuery({
+    queryKey: ['appointments', 'count', 'IN_PROGRESS', branch, ''],
+    queryFn: () => listAppointments({ status: 'IN_PROGRESS', limit: 1, ...(branch ? { locationId: branch } : {}) }),
+  });
+  const todays = useQuery({
+    queryKey: ['appointments', 'today', today.toISOString()],
+    queryFn: () => bookingsBetween(today, addDays(today, 1)),
+    refetchInterval: 60_000,
+  });
+
   const rows = active
     ? waiting.data?.appointments ?? []
     : history.data?.pages.flatMap((p) => p.appointments) ?? [];
   const total = active ? waiting.data?.total ?? 0 : history.data?.pages[0]?.total ?? 0;
   const loading = active ? waiting.isLoading : history.isLoading;
+  const searching = Boolean(q) || Boolean(branch);
 
   const shown = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const filtered = rows.filter(
-      (a) => !q || `${a.customer.email} ${a.service.name} ${a.location.name}`.toLowerCase().includes(q),
-    );
     const t = (a: Appointment) => new Date(a.startTime).getTime();
-    return [...filtered].sort((x, y) => (active ? t(x) - t(y) : t(y) - t(x)));
-  }, [rows, search, active]);
+    return [...rows].sort((x, y) => (active ? t(x) - t(y) : t(y) - t(x)));
+  }, [rows, active]);
 
   const groups = useMemo(() => {
-    const today = startOfDay();
-    const out: Array<{ key: string; title: string; overdue: boolean; rows: Appointment[] }> = [];
+    const start = startOfDay();
+    const out: Array<{ key: string; title: string; overdue: boolean; today: boolean; rows: Appointment[] }> = [];
     for (const a of shown) {
-      const start = new Date(a.startTime);
-      const overdue = a.status === 'BOOKED' && start < today;
-      const key = overdue ? 'overdue' : startOfDay(start).toISOString();
+      const begins = new Date(a.startTime);
+      const overdue = a.status === 'BOOKED' && begins < start;
+      const key = overdue ? 'overdue' : startOfDay(begins).toISOString();
       let group = out.find((g) => g.key === key);
       if (!group) {
         group = {
           key,
-          title: overdue ? 'Earlier — not checked in' : relativeDay(start),
+          title: overdue ? 'Earlier — not checked in' : relativeDay(begins),
           overdue,
+          today: !overdue && sameDay(begins, new Date()),
           rows: [],
         };
         out.push(group);
@@ -211,121 +262,183 @@ export function AppointmentsPage() {
     if (reason) act.mutate({ id: a.id, action: 'cancel', text: reason });
   };
 
-  const actions = {
-    checkIn: (a: Appointment) => openCheckIn(a),
-    noCode: (a: Appointment) => openCheckIn(a, { manual: true }),
-    complete: (a: Appointment) => act.mutate({ id: a.id, action: 'complete' }),
+  const actions: Actions = {
+    checkIn: (a) => openCheckIn(a),
+    noCode: (a) => openCheckIn(a, { manual: true }),
+    complete: (a) => act.mutate({ id: a.id, action: 'complete' }),
     noShow: askNoShow,
     cancel: askCancel,
-    open: (a: Appointment) => setDetail(a.id),
+    open: (a) => setDetail(a.id),
   };
+
+  const download = () =>
+    downloadCsv(
+      `appointments-${tab.key}-${new Date().toISOString().slice(0, 10)}.csv`,
+      shown,
+      money.format,
+    );
 
   return (
     <section className="ap">
-      <div className="page-top">
+      <div className="page-top ap-top">
         <header className="page-head ap-head">
           <div>
             <h1>Appointments</h1>
-            <p className="muted">Who is coming, and checking them in.</p>
+            <p className="muted">Who is coming, checking them in, and what they still owe you.</p>
           </div>
-          <label className="ap-search">
-            <Icon name="search" size={18} />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Find by email, service or branch"
-              aria-label="Find a booking"
-            />
-            {search && (
-              <button type="button" className="ap-search-clear" onClick={() => setSearch('')} aria-label="Clear">
-                <Icon name="close" size={14} stroke={2.2} />
-              </button>
+          <div className="ap-find">
+            <label className="ap-search">
+              <Icon name="search" size={18} />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Email, service, branch or No."
+                aria-label="Find a booking"
+              />
+              {search && (
+                <button type="button" className="ap-search-clear" onClick={() => setSearch('')} aria-label="Clear">
+                  <Icon name="close" size={14} stroke={2.2} />
+                </button>
+              )}
+            </label>
+            {branches.length > 1 && (
+              <label className={`ap-branch${branch ? ' is-on' : ''}`}>
+                <Icon name="pin" size={16} />
+                <select value={branch} onChange={(event) => setBranch(event.target.value)} aria-label="Branch">
+                  <option value="">All branches</option>
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+                <Icon name="chevronDown" size={15} className="ap-branch-chev" />
+              </label>
             )}
-          </label>
+          </div>
         </header>
 
-        <div className="ap-tabs" role="tablist">
-          {TABS.map((t, i) => {
-            const count = counts[i].data?.total;
-            return (
-              <button
-                key={t.key}
-                type="button"
-                role="tab"
-                aria-selected={t.key === tab.key}
-                className={`ap-tab${t.key === tab.key ? ' is-active' : ''}`}
-                onClick={() => setTab(t.key)}
-              >
-                <Icon name={t.icon} size={17} />
-                {t.label}
-                {count !== undefined && <span className="ap-tab-count">{count}</span>}
-              </button>
-            );
-          })}
+        <TodayStrip
+          rows={(todays.data ?? []).filter((a) => !branch || a.location.id === branch)}
+          withYou={withYou.data?.total}
+          loading={todays.isLoading}
+          now={now}
+          money={money.format}
+          onTab={setTab}
+        />
+
+        <div className="ap-card-top">
+          <div className="ap-tabs-row">
+            <div className="ap-tabs" role="tablist">
+              {TABS.map((t, i) => {
+                const count = counts[i].data?.total;
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={t.key === tab.key}
+                    className={`ap-tab${t.key === tab.key ? ' is-active' : ''}`}
+                    onClick={() => setTab(t.key)}
+                  >
+                    <Icon name={t.icon} size={16} />
+                    {t.label}
+                    {count !== undefined && <span className="ap-tab-count">{count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="ap-export"
+              onClick={download}
+              disabled={shown.length === 0}
+              title="Download what is shown, for a spreadsheet"
+            >
+              <Icon name="upload" size={15} className="ap-export-icon" />
+              <span>Export</span>
+            </button>
+          </div>
+          <div className="ap-cols" aria-hidden="true">
+            <span>Time</span>
+            <span className="col-customer">Customer</span>
+            <span className="col-service">Service</span>
+            <span className="col-booking">Booking</span>
+            <span>Payment</span>
+            <span>Status</span>
+            <span className="col-action">Action</span>
+          </div>
         </div>
       </div>
 
       {act.error && (
-        <p className="notice" role="alert">
+        <p className="notice ap-notice" role="alert">
           {act.error instanceof ApiError ? act.error.message : 'That did not work.'}
         </p>
       )}
 
       <div className="ap-board">
-        <div className="ap-cols" aria-hidden="true">
-          <span>When</span>
-          <span>Customer</span>
-          <span>Service</span>
-          <span>You earn</span>
-          <span>Status</span>
-          <span />
-        </div>
-
         {loading && (
-          <div className="ap-skeletons">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="skeleton" />
+          <div className="ap-skeletons" aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="ap-skel-row">
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
             ))}
           </div>
         )}
 
-        {!loading && shown.length === 0 && <EmptyTab tab={tab.key} searching={Boolean(search)} />}
+        {!loading && shown.length === 0 && <EmptyTab tab={tab.key} searching={searching} />}
 
-        {groups.map((group) => (
-          <section key={group.key} className={`ap-group${group.overdue ? ' is-overdue' : ''}`}>
-            <h2 className="ap-group-title">
-              {group.overdue && <Icon name="alert" size={15} />}
-              {group.title}
-              <span>{group.rows.length}</span>
-            </h2>
-            {group.rows.map((a) => (
-              <Row
-                key={a.id}
-                appointment={a}
-                cover={covers.get(a.service.id) ?? null}
-                money={money.format}
-                busy={act.isPending && act.variables?.id === a.id}
-                canVerifyManually={canVerifyManually}
-                actions={actions}
-              />
-            ))}
-          </section>
-        ))}
+        {groups.map((group) => {
+          // Where "now" falls in today's list.
+          const nowAt = group.today && active ? group.rows.findIndex((a) => new Date(a.startTime) > now) : -2;
+          return (
+            <section key={group.key} className={`ap-group${group.overdue ? ' is-overdue' : ''}`}>
+              <h2 className="ap-group-title">
+                {group.overdue ? <Icon name="alert" size={15} /> : <Icon name="calendar" size={15} />}
+                {group.title}
+                <span>{group.rows.length}</span>
+              </h2>
+              {group.rows.map((a, i) => (
+                <Fragment key={a.id}>
+                  {i === nowAt && <NowLine now={now} />}
+                  <Row
+                    appointment={a}
+                    cover={covers.get(a.service.id) ?? null}
+                    money={money.format}
+                    now={now}
+                    picked={detail === a.id}
+                    busy={act.isPending && act.variables?.id === a.id}
+                    canVerifyManually={canVerifyManually}
+                    actions={actions}
+                  />
+                </Fragment>
+              ))}
+              {nowAt === -1 && <NowLine now={now} />}
+            </section>
+          );
+        })}
+
+        {!loading && shown.length > 0 && (
+          <footer className="ap-foot">
+            <span>
+              Showing <strong>{rows.length}</strong> of <strong>{total}</strong>
+              {searching ? ' that match' : ''}
+            </span>
+            {!active && history.hasNextPage && (
+              <button type="button" onClick={() => history.fetchNextPage()} disabled={history.isFetchingNextPage}>
+                {history.isFetchingNextPage ? 'Loading…' : 'Show more'}
+              </button>
+            )}
+          </footer>
+        )}
       </div>
-
-      <footer className="ap-foot">
-        {!loading && (
-          <span className="muted">
-            {search ? `${shown.length} found in ` : ''}
-            {rows.length} of {total}
-          </span>
-        )}
-        {!active && history.hasNextPage && (
-          <button type="button" onClick={() => history.fetchNextPage()} disabled={history.isFetchingNextPage}>
-            {history.isFetchingNextPage ? 'Loading…' : 'Show more'}
-          </button>
-        )}
-      </footer>
 
       {detail && (
         <AppointmentDetail
@@ -348,6 +461,108 @@ type Actions = {
   open: (a: Appointment) => void;
 };
 
+type Money = (minor: number | null | undefined, code?: string | null) => string;
+
+/** Today at a glance: still to come, with you, done, and the money still to collect. */
+function TodayStrip({
+  rows,
+  withYou,
+  loading,
+  now,
+  money,
+  onTab,
+}: {
+  rows: Appointment[];
+  withYou: number | undefined;
+  loading: boolean;
+  now: Date;
+  money: Money;
+  onTab: (key: TabKey) => void;
+}) {
+  const expected = rows.filter((a) => a.status === 'BOOKED').sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const late = expected.filter((a) => new Date(a.startTime) < now).length;
+  const next = expected.find((a) => new Date(a.startTime) >= now);
+  const done = rows.filter((a) => a.status === 'COMPLETED').length;
+  const owing = rows.filter((a) => a.status === 'BOOKED' || a.status === 'IN_PROGRESS');
+  const toCollect = owing.reduce((sum, a) => sum + (dueAtShop(a) ?? 0), 0);
+  const currency = rows[0]?.currency;
+
+  const tiles: Array<{ key: string; icon: IconName; tone: string; label: string; value: string; note: string; to?: TabKey }> = [
+    {
+      key: 'expected',
+      icon: 'calendarCheck',
+      tone: 'accent',
+      label: 'To come today',
+      value: String(expected.length),
+      note: late ? `${late} running late` : next ? `Next at ${clock(next.startTime)}` : 'Nobody else today',
+      to: 'expected',
+    },
+    {
+      key: 'with',
+      icon: 'timer',
+      tone: 'warn',
+      label: 'With you now',
+      value: withYou === undefined ? '–' : String(withYou),
+      note: withYou ? 'Mark done when finished' : 'Nobody checked in',
+      to: 'in-progress',
+    },
+    {
+      key: 'done',
+      icon: 'checkCircle',
+      tone: 'ok',
+      label: 'Done today',
+      value: String(done),
+      note: done === 1 ? '1 customer served' : done ? `${done} customers served` : 'None yet',
+      to: 'done',
+    },
+    {
+      key: 'collect',
+      icon: 'banknote',
+      tone: 'night',
+      label: 'To collect today',
+      value: money(toCollect, currency),
+      note: owing.length ? `from ${owing.length} ${owing.length === 1 ? 'customer' : 'customers'}` : 'Nothing left to collect',
+    },
+  ];
+
+  return (
+    <div className="ap-today" aria-label="Today">
+      {tiles.map((t) => {
+        const body = (
+          <>
+            <span className="ap-today-icon">
+              <Icon name={t.icon} size={18} />
+            </span>
+            <span className="ap-today-text">
+              <em>{t.label}</em>
+              <strong>{loading ? '–' : t.value}</strong>
+              <small>{loading ? ' ' : t.note}</small>
+            </span>
+          </>
+        );
+        return t.to ? (
+          <button key={t.key} type="button" className={`ap-today-tile tone-${t.tone}`} onClick={() => onTab(t.to!)}>
+            {body}
+          </button>
+        ) : (
+          <div key={t.key} className={`ap-today-tile tone-${t.tone}`}>
+            {body}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function NowLine({ now }: { now: Date }) {
+  return (
+    <div className="ap-now" aria-label={`Now, ${clock(now)}`}>
+      <span>Now · {clock(now)}</span>
+      <i />
+    </div>
+  );
+}
+
 /**
  * Each service's cover photo, by service (§211): a booking carries the
  * service's name, not its pictures, and the services list — shared with the
@@ -362,105 +577,183 @@ function useServiceCovers() {
   );
 }
 
-/** The service's photo, with the customer's initials pinned to its corner. */
-function OrderCover({ cover, email, size }: { cover: string | null; email: string; size: number }) {
+/** The service's photo, or a soft tile when it has none. */
+function Thumb({ cover, size }: { cover: string | null; size: number }) {
   return (
-    <span className={`ap-cover${cover ? '' : ' is-empty'}`} style={{ width: size, height: size }}>
-      {cover ? <img src={cover} alt="" loading="lazy" /> : <Icon name="tag" size={Math.round(size * 0.38)} />}
-      <Avatar label={email} size={Math.round(size * 0.44)} className="ap-cover-who" />
+    <span className={`ap-thumb${cover ? '' : ' is-empty'}`} style={{ width: size, height: size }}>
+      {cover ? <img src={cover} alt="" loading="lazy" /> : <Icon name="tag" size={Math.round(size * 0.4)} />}
     </span>
   );
+}
+
+/** What the money looks like for this booking, in two lines. */
+function payment(a: Appointment, money: Money) {
+  const paid = Boolean(a.depositPaidAt);
+  const due = dueAtShop(a);
+  switch (a.status) {
+    case 'PENDING_PAYMENT':
+      return { amount: money(a.depositAmountMinor, a.currency), unit: 'deposit', note: 'Not paid yet', tone: 'warn', icon: 'hourglass' as IconName };
+    case 'BOOKED':
+    case 'IN_PROGRESS':
+      return {
+        amount: due === null ? '—' : money(due, a.currency),
+        unit: due === null ? '' : 'due',
+        note: paid ? 'Deposit paid' : 'No deposit',
+        tone: paid ? 'ok' : 'muted',
+        icon: (paid ? 'checkCircle' : 'info') as IconName,
+      };
+    case 'COMPLETED':
+      return {
+        amount: a.servicePriceMinor === null ? money(a.businessAmountMinor, a.currency) : money(a.servicePriceMinor, a.currency),
+        unit: a.servicePriceMinor === null ? 'yours' : 'total',
+        note: 'Deposit paid',
+        tone: 'ok',
+        icon: 'checkCircle' as IconName,
+      };
+    case 'NO_SHOW':
+      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: 'Deposit kept', tone: 'muted', icon: 'wallet' as IconName };
+    case 'CANCELLED':
+      if (!paid) return { amount: '—', unit: '', note: 'No deposit', tone: 'muted', icon: 'info' as IconName };
+      if (a.cancelledBy === 'BUSINESS')
+        return { amount: '—', unit: '', note: 'Deposit refunded', tone: 'muted', icon: 'refresh' as IconName };
+      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: 'Deposit kept', tone: 'muted', icon: 'wallet' as IconName };
+  }
+}
+
+/** The status, and one line about where it stands in time. */
+function standing(a: Appointment, now: Date): { text: string; tone: string } {
+  switch (a.status) {
+    case 'BOOKED': {
+      const start = new Date(a.startTime);
+      if (start < startOfDay(now)) return { text: 'Not checked in', tone: 'late' };
+      if (!sameDay(start, now)) {
+        const days = Math.round((startOfDay(start).getTime() - startOfDay(now).getTime()) / 86_400_000);
+        return { text: days === 1 ? 'Tomorrow' : `In ${days} days`, tone: 'muted' };
+      }
+      const due = dueLabel(a.startTime, now.getTime());
+      return { text: due.text.charAt(0).toUpperCase() + due.text.slice(1), tone: due.tone };
+    }
+    case 'IN_PROGRESS':
+      return { text: a.verifiedAt ? `Arrived ${clock(a.verifiedAt)}` : 'With you', tone: 'muted' };
+    case 'COMPLETED':
+      return { text: a.completedAt ? `Finished ${clock(a.completedAt)}` : 'Finished', tone: 'muted' };
+    case 'NO_SHOW':
+      return { text: a.noShowAt ? `Marked ${clock(a.noShowAt)}` : 'Did not come', tone: 'muted' };
+    case 'CANCELLED':
+      return {
+        text: a.cancelledBy === 'BUSINESS' ? 'By you' : a.cancelledBy === 'CUSTOMER' ? 'By the customer' : 'Not paid in time',
+        tone: 'muted',
+      };
+    case 'PENDING_PAYMENT':
+      return { text: 'Paying on their phone', tone: 'muted' };
+  }
 }
 
 function Row({
   appointment: a,
   cover,
   money,
+  now,
+  picked,
   busy,
   canVerifyManually,
   actions,
 }: {
   appointment: Appointment;
   cover: string | null;
-  money: (minor: number | null | undefined, code?: string | null) => string;
+  money: Money;
+  now: Date;
+  picked: boolean;
   busy: boolean;
   canVerifyManually: boolean;
   actions: Actions;
 }) {
-  const now = new Date();
   const look = STATUS[a.status];
-  const late = a.status === 'BOOKED' && new Date(a.startTime) < now && sameDay(new Date(a.startTime), now);
+  const pay = payment(a, money);
+  const stand = standing(a, now);
+  const number = reservationNo(a.id);
+  const late = a.status === 'BOOKED' && stand.tone === 'late';
+  const [copied, setCopied] = useState(false);
+
+  const menu: MoreItem[] = [
+    { label: 'Open details', icon: 'eye', onClick: () => actions.open(a) },
+    {
+      label: copied ? 'Copied' : `Copy No. ${number}`,
+      icon: copied ? 'check' : 'copy',
+      onClick: () => {
+        navigator.clipboard?.writeText(number);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1600);
+      },
+    },
+    ...(a.status === 'BOOKED'
+      ? [
+          ...(canVerifyManually ? [{ label: 'Check in without a code', icon: 'key' as const, onClick: () => actions.noCode(a) }] : []),
+          { label: 'Mark as no-show', icon: 'userX' as const, onClick: () => actions.noShow(a) },
+          { label: 'Cancel booking', icon: 'calendarX' as const, onClick: () => actions.cancel(a), danger: true },
+        ]
+      : []),
+  ];
+
   return (
     <article
-      className={`ap-row is-${look.cls}`}
+      className={`ap-row is-${look.cls}${late ? ' is-late' : ''}${picked ? ' is-picked' : ''}`}
       onClick={() => actions.open(a)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' && event.target === event.currentTarget) actions.open(a);
       }}
       tabIndex={0}
-      aria-label={`${a.customer.email}, ${a.service.name} at ${clock(a.startTime)}. Open details.`}
+      aria-label={`${a.customer.email}, ${a.service.name} at ${clock(a.startTime)}, ${look.label}. Open details.`}
     >
       <div className="ap-time">
         <strong>{clock(a.startTime)}</strong>
         <span>{minutesBetween(a.startTime, a.endTime)} min</span>
       </div>
 
-      <div className="ap-who">
-        <OrderCover cover={cover} email={a.customer.email} size={54} />
-        <div>
-          <strong>{a.customer.email}</strong>
-          {/* The deposit is the platform's evidence the customer is serious. */}
-          {a.depositPaidAt ? (
-            <span className="ap-paid">
-              <Icon name="check" size={12} stroke={2.6} /> Deposit paid
-            </span>
-          ) : (
-            <span className="muted">No deposit yet</span>
-          )}
+      <div className="ap-customer">
+        <Avatar label={a.customer.email} size={36} />
+        <div className="ap-two">
+          <strong title={a.customer.email}>{a.customer.email}</strong>
+          <span className="ap-no">No. {number}</span>
         </div>
       </div>
 
-      <div className="ap-what">
+      <div className="ap-service">
+        <Thumb cover={cover} size={44} />
+        <div className="ap-two">
+          <strong title={a.service.name}>
+            {a.service.name}
+            {a.quantity > 1 && <em className="ap-qty">×{a.quantity}</em>}
+          </strong>
+          <span className="sub-branch">
+            <Icon name="pin" size={12} /> {a.location.name}
+          </span>
+          <span className="sub-customer" title={a.customer.email}>
+            {a.customer.email} · {a.location.name}
+          </span>
+        </div>
+      </div>
+
+      <div className="ap-pay">
         <strong>
-          {a.service.name}
-          {a.quantity > 1 && <em> · {a.quantity} people</em>}
+          {pay.amount}
+          {pay.unit && <small> {pay.unit}</small>}
         </strong>
-        <span>{a.location.name}</span>
-      </div>
-
-      <div className="ap-earn">
-        <strong>{money(a.businessAmountMinor, a.currency)}</strong>
-        {/* The deposit share is NOT the price. The balance is settled directly
-            with the customer and the platform never sees it (§29.2). */}
-        {a.servicePriceMinor !== null && (
-          <span>of {money(a.servicePriceMinor, a.currency)} — rest paid to you directly</span>
-        )}
-      </div>
-
-      <div className="ap-status">
-        <span className={`pill ${late ? 'late' : look.cls}`}>
-          {late ? `${span((now.getTime() - new Date(a.startTime).getTime()) / 60_000)} late` : look.label}
+        <span className={`tone-${pay.tone}`}>
+          <Icon name={pay.icon} size={13} stroke={2.2} /> {pay.note}
         </span>
-        {a.cancellationReason && <span className="ap-reason">{a.cancellationReason}</span>}
       </div>
 
-      <div className="ap-actions" onClick={(event) => event.stopPropagation()}>
+      <div className="ap-state" title={a.cancellationReason ?? undefined}>
+        <span className={`pill ${look.cls}`}>{look.label}</span>
+        <span className={`ap-when tone-${stand.tone}`}>{stand.text}</span>
+      </div>
+
+      <div className="ap-act" onClick={(event) => event.stopPropagation()}>
         {a.status === 'BOOKED' && (
-          <>
-            <button type="button" className="primary ap-btn" disabled={busy} onClick={() => actions.checkIn(a)}>
-              <Icon name="ticket" size={16} /> Check in
-            </button>
-            <MoreMenu
-              items={[
-                ...(canVerifyManually
-                  ? [{ label: 'No code?', icon: 'key' as const, onClick: () => actions.noCode(a) }]
-                  : []),
-                { label: 'No-show', icon: 'userX' as const, onClick: () => actions.noShow(a) },
-                { label: 'Cancel', icon: 'calendarX' as const, onClick: () => actions.cancel(a), danger: true },
-              ]}
-              disabled={busy}
-            />
-          </>
+          <button type="button" className="primary ap-btn" disabled={busy} onClick={() => actions.checkIn(a)}>
+            <Icon name="ticket" size={16} /> Check in
+          </button>
         )}
         {a.status === 'IN_PROGRESS' && (
           <button type="button" className="dark ap-btn" disabled={busy} onClick={() => actions.complete(a)}>
@@ -468,16 +761,78 @@ function Row({
           </button>
         )}
         {a.status === 'PENDING_PAYMENT' && (
-          <span className="ap-waiting">Waiting for the customer to pay</span>
-        )}
-        {a.status !== 'BOOKED' && a.status !== 'IN_PROGRESS' && a.status !== 'PENDING_PAYMENT' && (
-          <span className="ap-open">
-            Details <Icon name="chevronRight" size={16} />
+          <span className="ap-btn ap-btn-wait">
+            <Icon name="hourglass" size={15} /> Waiting
           </span>
         )}
+        {(a.status === 'COMPLETED' || a.status === 'CANCELLED' || a.status === 'NO_SHOW') && (
+          <button type="button" className="ap-btn ap-btn-quiet" onClick={() => actions.open(a)}>
+            View <Icon name="chevronRight" size={15} />
+          </button>
+        )}
+        <MoreMenu items={menu} disabled={busy} label="More for this booking" />
       </div>
     </article>
   );
+}
+
+/** What is shown, as a spreadsheet: one row per booking, the money in words a bookkeeper reads. */
+function downloadCsv(name: string, rows: Appointment[], money: Money) {
+  const head = [
+    'Reservation no.',
+    'Date',
+    'Start',
+    'End',
+    'Customer',
+    'Service',
+    'People',
+    'Branch',
+    'Status',
+    'Deposit',
+    'Deposit paid',
+    'Your share',
+    'Platform fee',
+    'Full price',
+    'Balance at the shop',
+    'Cancelled by',
+    'Reason',
+  ];
+  const cell = (v: string | number | null | undefined) => {
+    const s = v === null || v === undefined ? '' : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = rows.map((a) =>
+    [
+      reservationNo(a.id),
+      new Date(a.startTime).toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' }),
+      clock(a.startTime),
+      clock(a.endTime),
+      a.customer.email,
+      a.service.name,
+      a.quantity,
+      a.location.name,
+      STATUS[a.status].label,
+      money(a.depositAmountMinor, a.currency),
+      a.depositPaidAt ? when(a.depositPaidAt) : '',
+      money(a.businessAmountMinor, a.currency),
+      money(a.platformFeeAmountMinor, a.currency),
+      a.servicePriceMinor === null ? '' : money(a.servicePriceMinor, a.currency),
+      // Nothing is owed on a booking that did not happen.
+      a.status === 'CANCELLED' || a.status === 'NO_SHOW' || dueAtShop(a) === null ? '' : money(dueAtShop(a), a.currency),
+      a.cancelledBy === 'BUSINESS' ? 'Shop' : a.cancelledBy === 'CUSTOMER' ? 'Customer' : a.cancelledBy ? 'Not paid in time' : '',
+      a.cancellationReason ?? '',
+    ]
+      .map(cell)
+      .join(','),
+  );
+  // A byte-order mark, so a spreadsheet opens it as UTF-8 (names, "—").
+  const blob = new Blob(['﻿' + [head.join(','), ...lines].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function EmptyTab({ tab, searching }: { tab: TabKey; searching: boolean }) {
@@ -501,7 +856,11 @@ function EmptyTab({ tab, searching }: { tab: TabKey; searching: boolean }) {
     all: { icon: 'layers', title: 'No bookings yet', text: 'Every booking, in every state, will be listed here.' },
   };
   const c = searching
-    ? { icon: 'search' as const, title: 'Nothing matches', text: 'Try part of the email, the service or the branch.' }
+    ? {
+        icon: 'search' as const,
+        title: 'Nothing matches',
+        text: 'Try part of the email, the service, the branch — or the reservation number, like 3F2A-1C9B.',
+      }
     : copy[tab];
   return (
     <div className="ap-empty">
@@ -536,6 +895,7 @@ function AppointmentDetail({
   const detail = useQuery({ queryKey: ['appointment', id], queryFn: () => getAppointment(id) });
   const d = detail.data;
   const [copied, setCopied] = useState(false);
+  const [numberCopied, setNumberCopied] = useState(false);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
@@ -593,10 +953,28 @@ function AppointmentDetail({
         ) : (
           <>
             <div className="ap-drawer-who">
-              <OrderCover cover={covers.get(d.service.id) ?? null} email={d.customer.email} size={72} />
+              <span className="ap-drawer-cover">
+                <Thumb cover={covers.get(d.service.id) ?? null} size={72} />
+                <Avatar label={d.customer.email} size={30} className="ap-drawer-avatar" />
+              </span>
               <div>
                 <h2>{d.customer.email}</h2>
-                <span className={`pill ${STATUS[d.status].cls}`}>{STATUS[d.status].label}</span>
+                <div className="ap-drawer-tags">
+                  <span className={`pill ${STATUS[d.status].cls}`}>{STATUS[d.status].label}</span>
+                  <button
+                    type="button"
+                    className="ap-no-chip"
+                    title="The number the customer's app shows them. Click to copy."
+                    onClick={() => {
+                      navigator.clipboard?.writeText(reservationNo(d.id));
+                      setNumberCopied(true);
+                      setTimeout(() => setNumberCopied(false), 1600);
+                    }}
+                  >
+                    No. {reservationNo(d.id)}
+                    <Icon name={numberCopied ? 'check' : 'copy'} size={13} />
+                  </button>
+                </div>
               </div>
             </div>
 

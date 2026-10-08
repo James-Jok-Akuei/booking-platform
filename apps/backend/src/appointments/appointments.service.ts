@@ -1637,6 +1637,23 @@ export class AppointmentsService {
         ...(query.to ? { lt: new Date(query.to) } : {}),
       };
     }
+    // Alongside the scope above, never instead of it (§213).
+    if (query.locationId) where.locationId = query.locationId;
+    const find = query.q?.trim();
+    if (find) {
+      const contains = { contains: find, mode: Prisma.QueryMode.insensitive };
+      // A reservation number is the first eight hex characters of the id,
+      // shown as "3F2A-1C9B" (customer app, §213).
+      const number = /^[0-9a-f]{4}-?[0-9a-f]{4}$/i.test(find)
+        ? find.replace('-', '').toLowerCase()
+        : null;
+      where.OR = [
+        { customer: { email: contains } },
+        { service: { name: contains } },
+        { location: { name: contains } },
+        ...(number ? [{ id: { startsWith: number } }] : []),
+      ];
+    }
 
     const limit = query.limit ?? 25;
     const offset = query.offset ?? 0;
