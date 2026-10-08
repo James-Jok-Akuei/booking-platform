@@ -15372,3 +15372,28 @@ logos give trust and say at a glance what a part means.
 Noted, not changed: the business app sends only the number when saving it,
 so the server stores every payout number as MTN MoMo (its default), Airtel
 or not. The warning covers it until an Airtel payout provider exists.
+
+## 220. Dropdowns close on any click; notifications as a flyout (2026-10-08)
+
+The user: clicking anywhere should close dropdowns like the notifications;
+on large screens, notifications should be a flyout rather than a dropdown.
+
+- **Why the notifications did not close.** They drew an invisible full-screen
+  layer to catch the outside click, but the frosted top bar's blur makes the
+  bar the frame of any fixed layer inside it — so the layer covered only the
+  bar, and clicks on the page went nowhere.
+- **`ui/useDismiss`**: one rule for every menu — a press anywhere outside it
+  (`pointerdown` on the document: mouse, pen or touch) or Esc closes it. The
+  notifications, the shop/account menu and every "⋯" menu use it.
+- **Large screens (1024px and up)**: the notifications open as a **flyout**
+  down the right of the window — a floating panel the full height, the page
+  dimmed and softly blurred behind, sliding in from the right — drawn at the
+  end of the page (`Portal`) so nothing traps it. It closes on a click on the
+  page, Esc, its ✕, or moving to another page. Same rows as before, room for
+  many more, and a foot saying how many are unread and that it checks every
+  minute.
+- **Phones and small tablets** keep the dropdown under the bar, which now
+  closes on a tap anywhere else.
+
+Checked by script at 1440 and 390 wide: opens, closes on a click on the
+page, closes on Esc; the account menu likewise.

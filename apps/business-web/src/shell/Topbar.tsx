@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Notifications } from '../components/Notifications';
 import { navItemFor } from '../nav';
 import { ShopLogo } from '../ui/ShopLogo';
 import { Icon } from '../ui/Icon';
+import { useDismiss } from '../ui/useDismiss';
 import { roleLabel, type ShellData } from './useShellData';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
@@ -94,19 +95,8 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const away = (event: MouseEvent) => {
-      if (!ref.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const escape = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
-    document.addEventListener('mousedown', away);
-    document.addEventListener('keydown', escape);
-    return () => {
-      document.removeEventListener('mousedown', away);
-      document.removeEventListener('keydown', escape);
-    };
-  }, [open]);
+  const close = useCallback(() => setOpen(false), []);
+  useDismiss(open, ref, close);
 
   const name = data.business?.name ?? 'Your business';
   const live = data.business?.status === 'APPROVED' && !data.paused;

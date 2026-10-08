@@ -503,7 +503,6 @@ body {
   font-weight: 800;
   border: 2px solid var(--canvas);
 }
-.bell-backdrop { position: fixed; inset: 0; z-index: 65; }
 .bell-panel {
   position: absolute;
   right: -56px;
@@ -520,7 +519,7 @@ body {
   transform-origin: top right;
   animation: pop-in 200ms var(--ease);
 }
-.bell-panel header {
+:is(.bell-panel, .nf-flyout) header {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -531,10 +530,10 @@ body {
   padding: 16px 12px 12px;
   background: var(--panel);
 }
-.bell-panel header div { display: flex; flex-direction: column; }
-.bell-panel header strong { font-size: 16px; font-weight: 800; }
-.bell-panel ul { list-style: none; margin: 0; padding: 0; }
-.bell-panel li {
+:is(.bell-panel, .nf-flyout) header div { display: flex; flex-direction: column; }
+:is(.bell-panel, .nf-flyout) header strong { font-size: 16px; font-weight: 800; }
+:is(.bell-panel, .nf-flyout) ul { list-style: none; margin: 0; padding: 0; }
+:is(.bell-panel, .nf-flyout) li {
   display: flex;
   gap: 12px;
   padding: 12px;
@@ -542,9 +541,9 @@ body {
   cursor: pointer;
   transition: background 140ms var(--ease);
 }
-.bell-panel li:hover { background: var(--sunken); }
+:is(.bell-panel, .nf-flyout) li:hover { background: var(--sunken); }
 .bell-mark { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--accent-deep); position: relative; }
-.bell-panel li.unread .bell-mark::after {
+:is(.bell-panel, .nf-flyout) li.unread .bell-mark::after {
   content: ''; position: absolute; top: -1px; right: -1px; width: 10px; height: 10px; border-radius: 50%;
   background: var(--accent); border: 2px solid var(--panel);
 }
@@ -553,12 +552,37 @@ body {
 .bell-mark.tone-danger { background: var(--danger-soft); color: var(--danger); }
 .bell-mark.tone-warn { background: var(--warn-soft); color: var(--warn); }
 .bell-mark.tone-star { background: #fff4d9; color: #c98a00; }
-.bell-panel li.read { opacity: 0.62; }
-.bell-panel li.read .bell-mark { filter: grayscale(0.7); }
+:is(.bell-panel, .nf-flyout) li.read { opacity: 0.62; }
+:is(.bell-panel, .nf-flyout) li.read .bell-mark { filter: grayscale(0.7); }
 .bell-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .bell-text strong { font-size: 13.5px; font-weight: 700; }
 .bell-body { font-size: 13px; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .bell-when { font-size: 12px; color: var(--muted); font-weight: 600; }
+/* On a large screen, a flyout down the right of the window (§220). */
+.nf-backdrop { position: fixed; inset: 0; z-index: 80; background: rgba(28, 30, 36, 0.2); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); animation: fade-in 200ms var(--ease); }
+.nf-flyout {
+  position: fixed;
+  z-index: 81;
+  top: 14px;
+  right: 14px;
+  bottom: 14px;
+  width: min(430px, calc(100vw - 28px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--panel);
+  border-radius: 28px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(21, 23, 28, 0.05);
+  animation: nf-in 340ms var(--ease) both;
+}
+@keyframes nf-in { from { opacity: 0.4; transform: translateX(calc(100% + 28px)); } to { opacity: 1; transform: none; } }
+.nf-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 0 8px 8px; }
+.nf-flyout header { padding: 22px 64px 14px 14px; border-bottom: 1px solid var(--line); margin: 0 -8px 6px; padding-left: 22px; }
+.nf-flyout header strong { font-size: 19px; letter-spacing: -0.02em; }
+.nf-close { position: absolute; z-index: 2; top: 18px; right: 18px; width: 38px; height: 38px; min-height: 0; padding: 0; border-radius: 50%; border: none; background: var(--sunken); color: var(--ink-2); }
+.nf-close:hover:not(:disabled) { background: var(--sunken-2); border: none; color: var(--ink); }
+.nf-foot { display: flex; align-items: center; gap: 6px; padding: 12px 22px; border-top: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--muted); }
+.nf-flyout .bell-body { -webkit-line-clamp: 3; }
 .bell-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 30px 0 34px; color: var(--muted); }
 .bell-empty span { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: var(--sunken); }
 .bell-empty strong { color: var(--ink-2); }
