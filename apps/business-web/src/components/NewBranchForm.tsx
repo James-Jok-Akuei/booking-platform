@@ -3,6 +3,8 @@ import { MapPin } from './MapPin';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { createLocation, listProvinces } from '../api/business';
+import { Icon } from '../ui/Icon';
+import { Panel } from '../ui/Panel';
 
 /**
  * Pulls a latitude and longitude out of whatever someone pasted.
@@ -73,64 +75,40 @@ export function parseCoordinates(
 }
 
 /**
- * Opening a branch.
- *
- * This did not exist until §117, while three other pages told people to "add a
- * branch first, under Branches & hours" — so a newly approved business was
- * instructed three times to do something the app could not do.
- *
- * Coordinates are required by the server on create and optional on update
- * (§43.2), because a branch with no position never appears in a distance search
- * and being found by someone nearby is what discovery is for.
+ * Where a branch is (§157): a pasted map link or a typed pair, or the browser's
+ * own position for someone filling this in at the shop — and the pin on a map,
+ * because a pin either looks like your shop or it does not.
  */
-export function NewBranchForm({ onCreated }: { onCreated: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
-  const [districtId, setDistrictId] = useState('');
-  const [place, setPlace] = useState('');
-  const [problem, setProblem] = useState<string | null>(null);
+export function PlaceField({
+  value,
+  onChange,
+  onProblem,
+  hint,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  onProblem: (problem: string | null) => void;
+  hint: string;
+}) {
   const [locating, setLocating] = useState(false);
-
-  const provinces = useQuery({ queryKey: ['provinces'], queryFn: listProvinces });
-
-  const create = useMutation({
-    mutationFn: (body: Parameters<typeof createLocation>[0]) => createLocation(body),
-    onSuccess: () => {
-      setOpen(false);
-      setName('');
-      setAddress('');
-      setPhone('');
-      setDistrictId('');
-      setPlace('');
-      setProblem(null);
-      onCreated();
-    },
-    onError: (error) =>
-      setProblem(
-        error instanceof ApiError ? error.message : 'Could not open that branch.',
-      ),
-  });
+  const coordinates = value.trim() ? parseCoordinates(value) : null;
 
   /** The browser's own position, for someone filling this in at the shop. */
   const useMyPosition = () => {
     if (!navigator.geolocation) {
-      setProblem('This browser cannot find your position. Paste a map link instead.');
+      onProblem('This browser cannot find your position. Paste a map link instead.');
       return;
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setPlace(
-          `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`,
-        );
-        setProblem(null);
+        onChange(`${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`);
+        onProblem(null);
         setLocating(false);
       },
       () => {
         setLocating(false);
-        setProblem(
+        onProblem(
           'Could not get your position. Allow location for this site, or paste a ' +
             'Google Maps link instead.',
         );
@@ -139,15 +117,103 @@ export function NewBranchForm({ onCreated }: { onCreated: () => void }) {
     );
   };
 
-  if (!open) {
-    return (
-      <div className="row-end">
-        <button type="button" className="primary" onClick={() => setOpen(true)}>
-          Add a branch
+  return (
+    <div className="bf-field">
+      <label htmlFor="bf-place">Where it is</label>
+      <div className="bf-place">
+        <span className="bf-place-icon">
+          <Icon name="pin" size={18} />
+        </span>
+        <input
+          id="bf-place"
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            onProblem(null);
+          }}
+          placeholder="Paste a Google Maps link, or -1.9536, 30.0606"
+        />
+        <button type="button" className="bf-locate" onClick={useMyPosition} disabled={locating}>
+          <Icon name="zap" size={15} />
+          {locating ? 'Finding you…' : 'Use my current position'}
         </button>
       </div>
-    );
-  }
+      <span className="bf-help">{hint}</span>
+      {coordinates && 'error' in coordinates && (
+        <p className="error small" role="alert">
+          {coordinates.error}
+        </p>
+      )}
+      {coordinates && !('error' in coordinates) && (
+        <div className="bf-map">
+          <p>
+            <Icon name="checkCircle" size={15} /> Found {coordinates.latitude.toFixed(5)},{' '}
+            {coordinates.longitude.toFixed(5)}. Check that the pin is on your shop before saving —
+            customers' distances are measured from it.
+          </p>
+          <MapPin latitude={coordinates.latitude} longitude={coordinates.longitude} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Districts grouped by province, because thirty in one flat list is not how anyone thinks about where they are (§104). */
+export function DistrictField({
+  value,
+  onChange,
+  hint,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  hint: string;
+}) {
+  // Reference data, so it is fetched once and kept.
+  const provinces = useQuery({ queryKey: ['provinces'], queryFn: listProvinces, staleTime: Infinity });
+  return (
+    <div className="bf-field">
+      <label htmlFor="bf-district">District</label>
+      <select id="bf-district" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">Choose a district</option>
+        {provinces.data?.map((province) => (
+          <optgroup key={province.id} label={province.name}>
+            {province.districts.map((district) => (
+              <option key={district.id} value={district.id}>
+                {district.name}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+      <span className="bf-help">{hint}</span>
+    </div>
+  );
+}
+
+/**
+ * Opening a branch (§117), in the panel from the right (§195).
+ *
+ * Coordinates are required by the server on create and optional on update
+ * (§43.2), because a branch with no position never appears in a distance search
+ * and being found by someone nearby is what discovery is for.
+ */
+export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
+  const [districtId, setDistrictId] = useState('');
+  const [place, setPlace] = useState('');
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const create = useMutation({
+    mutationFn: (body: Parameters<typeof createLocation>[0]) => createLocation(body),
+    onSuccess: () => {
+      onCreated();
+      onClose();
+    },
+    onError: (error) =>
+      setProblem(error instanceof ApiError ? error.message : 'Could not open that branch.'),
+  });
 
   const coordinates = place.trim() ? parseCoordinates(place) : null;
   const ready =
@@ -160,140 +226,107 @@ export function NewBranchForm({ onCreated }: { onCreated: () => void }) {
     !('error' in coordinates);
 
   return (
-    <form
-      className="card"
-      onSubmit={(event) => {
-        event.preventDefault();
-        const parsed = parseCoordinates(place);
-        if ('error' in parsed) {
-          setProblem(parsed.error);
-          return;
-        }
-        setProblem(null);
-        create.mutate({
-          name: name.trim(),
-          address: address.trim(),
-          latitude: parsed.latitude,
-          longitude: parsed.longitude,
-          ...(districtId ? { districtId } : {}),
-          ...(phone.trim() ? { phone: phone.trim() } : {}),
-        });
-      }}
-    >
-      <h2>A new branch</h2>
-
-      <label>
-        Branch name
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={120}
-          placeholder="Kimironko Branch"
-          autoFocus
-        />
-      </label>
-
-      <label>
-        Address
-        <input
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          maxLength={300}
-          placeholder="KG 9 Ave, Kimironko"
-        />
-      </label>
-
-      <label>
-        Where it is
-        <input
-          value={place}
-          onChange={(e) => {
-            setPlace(e.target.value);
-            setProblem(null);
-          }}
-          placeholder="Paste a Google Maps link, or -1.9536, 30.0606"
-        />
-        <span className="muted small">
-          Customers find you by how near you are. Open the shop in Google Maps and
-          copy the link from the address bar — or press the button below if you are
-          there now.
-        </span>
-      </label>
-
-      <div className="row-end">
-        <button type="button" className="link" onClick={useMyPosition} disabled={locating}>
-          {locating ? 'Finding you…' : 'Use my current position'}
-        </button>
-      </div>
-
-      {coordinates && 'error' in coordinates && (
-        <p className="error small" role="alert">
-          {coordinates.error}
-        </p>
-      )}
-      {coordinates && !('error' in coordinates) && (
+    <Panel
+      eyebrow="Add a branch"
+      title="A new branch"
+      onClose={onClose}
+      footer={
         <>
-          <p className="muted small">
-            Found {coordinates.latitude.toFixed(5)}, {coordinates.longitude.toFixed(5)}. Check
-            that the pin is on your shop before saving — customers' distances are measured
-            from it.
-          </p>
-          <MapPin latitude={coordinates.latitude} longitude={coordinates.longitude} />
+          <button type="button" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" form="new-branch" className="primary" disabled={!ready || create.isPending}>
+            {create.isPending ? 'Opening…' : 'Open this branch'}
+          </button>
         </>
-      )}
+      }
+    >
+      <form
+        id="new-branch"
+        className="bf"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const parsed = parseCoordinates(place);
+          if ('error' in parsed) {
+            setProblem(parsed.error);
+            return;
+          }
+          setProblem(null);
+          create.mutate({
+            name: name.trim(),
+            address: address.trim(),
+            latitude: parsed.latitude,
+            longitude: parsed.longitude,
+            ...(districtId ? { districtId } : {}),
+            ...(phone.trim() ? { phone: phone.trim() } : {}),
+          });
+        }}
+      >
+        <div className="bf-two">
+          <div className="bf-field">
+            <label htmlFor="bf-name">Branch name</label>
+            <input
+              id="bf-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={120}
+              placeholder="Kimironko Branch"
+              autoFocus
+            />
+          </div>
+          <div className="bf-field">
+            <label htmlFor="bf-phone">
+              Phone for this branch <em>optional</em>
+            </label>
+            <input
+              id="bf-phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              maxLength={30}
+              placeholder="Leave empty to use the business phone"
+            />
+          </div>
+        </div>
 
-      <label>
-        District
-        <select value={districtId} onChange={(e) => setDistrictId(e.target.value)}>
-          <option value="">Choose a district</option>
-          {provinces.data?.map((province) => (
-            <optgroup key={province.id} label={province.name}>
-              {province.districts.map((district) => (
-                <option key={district.id} value={district.id}>
-                  {district.name}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        <span className="muted small">
-          Customers filter by this. It is how this branch appears when someone
-          searches their area, so it has to be chosen.
-        </span>
-      </label>
+        <div className="bf-field">
+          <label htmlFor="bf-address">Address</label>
+          <input
+            id="bf-address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            maxLength={300}
+            placeholder="KG 9 Ave, Kimironko"
+          />
+        </div>
 
-      <label>
-        Phone for this branch <span className="muted small">(optional)</span>
-        <input
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          maxLength={30}
-          placeholder="Leave empty to use the business phone"
+        <PlaceField
+          value={place}
+          onChange={setPlace}
+          onProblem={setProblem}
+          hint="Customers find you by how near you are. Open the shop in Google Maps and copy the link from the address bar — or press the button if you are there now."
         />
-      </label>
 
-      {problem && (
-        <p className="error small" role="alert">
-          {problem}
+        <DistrictField
+          value={districtId}
+          onChange={setDistrictId}
+          hint="Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen."
+        />
+
+        {problem && (
+          <p className="error small" role="alert">
+            {problem}
+          </p>
+        )}
+
+        {/* Said before the save, not after: a new branch is closed every day
+            until its hours are set, and a business that does not know that
+            reads an empty calendar as the platform being broken. */}
+        <p className="bf-note">
+          <Icon name="clock" size={16} />
+          A new branch starts closed every day. Set its hours once it is open, or customers will see
+          nothing bookable.
         </p>
-      )}
-
-      {/* Said before the save, not after: a new branch is closed every day until
-          its hours are set, and a business that does not know that reads an
-          empty calendar as the platform being broken. */}
-      <p className="muted small">
-        A new branch starts closed every day. Set its hours below once it is open,
-        or customers will see nothing bookable.
-      </p>
-
-      <div className="row-end">
-        <button type="button" className="link" onClick={() => setOpen(false)}>
-          Cancel
-        </button>
-        <button type="submit" className="primary" disabled={!ready || create.isPending}>
-          {create.isPending ? 'Opening…' : 'Open this branch'}
-        </button>
-      </div>
-    </form>
+      </form>
+    </Panel>
   );
 }

@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import {
   closeLocation,
-  listProvinces,
   listLocations,
   reopenLocation,
   setCapacity,
@@ -13,13 +12,27 @@ import {
   type Location,
 } from '../api/business';
 import { useMoney } from '../money';
-import { MapPin } from '../components/MapPin';
-import { NewBranchForm, parseCoordinates } from '../components/NewBranchForm';
+import { StaticMap } from '../components/StaticMap';
+import { DistrictField, NewBranchPanel, PlaceField, parseCoordinates } from '../components/NewBranchForm';
+import { confirmDialog } from '../ui/Dialog';
+import { Icon } from '../ui/Icon';
+import { Panel } from '../ui/Panel';
+import { Stars } from '../ui/Stars';
+import { Switch } from '../ui/Switch';
+import './hours.css';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+/** Monday first, the way a working week is read; the stored days stay 0 = Sunday. */
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+const minutes = (hhmm: string) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+};
 
 /**
- * When each branch is open, and how many people it can serve at once.
+ * Every place the business works from, when each is open, and how many people
+ * it can take at once (§12, §16.4, §195).
  *
  * Hours are per LOCATION, unlike services — a branch keeps its own week. The
  * whole week is submitted at once because the endpoint replaces it wholesale
@@ -30,75 +43,242 @@ export function HoursPage() {
   const money = useMoney();
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['locations'] });
+  const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<Location | null>(null);
 
   return (
-    <section>
+    <section className="hr">
       <header className="page-head">
         <div>
           <h1>Branches &amp; hours</h1>
           <p className="muted">
-            Every place you work from, when it is open, and how many people it can
-            take at once.
+            Every place you work from, when it is open, and how many people it can take at once.
           </p>
         </div>
+        <button type="button" className="primary hr-add" onClick={() => setAdding(true)}>
+          <Icon name="plus" size={18} stroke={2.4} /> Add a branch
+        </button>
       </header>
 
-      <NewBranchForm onCreated={refresh} />
-
-      {locations.isLoading && <p className="muted">Loading…</p>}
+      {locations.isLoading && <div className="skeleton hr-skeleton" />}
 
       {/* Three other pages send people here to add their first branch (§117), so
           this is the screen that has to say what to do when there are none. */}
       {locations.data?.length === 0 && (
-        <p className="muted empty">
-          No branches yet. Add one above — until then there is nothing for a
-          customer to book and nothing to set hours for.
-        </p>
+        <div className="hr-empty">
+          <span>
+            <Icon name="pin" size={30} />
+          </span>
+          <h2>No branches yet</h2>
+          <p>
+            Add one — until then there is nothing for a customer to book and nothing to set hours
+            for.
+          </p>
+          <button type="button" className="primary" onClick={() => setAdding(true)}>
+            <Icon name="plus" size={18} stroke={2.4} /> Add a branch
+          </button>
+        </div>
       )}
 
-      {locations.data?.map((location) => (
-        <LocationCard
-          key={location.id}
-          location={location}
-          money={money}
-          onSaved={refresh}
-        />
-      ))}
+      <div className="hr-list">
+        {locations.data?.map((location, i) => (
+          <BranchCard
+            key={location.id}
+            index={i}
+            location={location}
+            money={money}
+            onSaved={refresh}
+            onEdit={() => setEditing(location)}
+          />
+        ))}
+      </div>
+
+      {adding && <NewBranchPanel onClose={() => setAdding(false)} onCreated={refresh} />}
+      {editing && <EditBranchPanel location={editing} onClose={() => setEditing(null)} />}
     </section>
   );
 }
 
-function LocationCard({
+function BranchCard({
   location,
+  index,
   money,
   onSaved,
+  onEdit,
 }: {
   location: Location;
+  index: number;
   money: ReturnType<typeof useMoney>;
   onSaved: () => void;
+  onEdit: () => void;
 }) {
+  const queryClient = useQueryClient();
+  const [problem, setProblem] = useState<string | null>(null);
+  const today = new Date().getDay();
+  const todays = location.hours.find((h) => h.dayOfWeek === today);
+  const hasPin = location.latitude !== null && location.longitude !== null;
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['locations'] });
+  const fail = (error: unknown) => setProblem(error instanceof ApiError ? error.message : 'That did not work.');
+
+  const close = useMutation({
+    mutationFn: () => closeLocation(location.id),
+    onSuccess: () => {
+      setProblem(null);
+      refresh();
+    },
+    onError: fail,
+  });
+  const reopen = useMutation({
+    mutationFn: () => reopenLocation(location.id),
+    onSuccess: () => {
+      setProblem(null);
+      refresh();
+    },
+    onError: fail,
+  });
+
+  /**
+   * "Close", never "delete" (§89). It used to be a hard delete that cascaded
+   * through every appointment ever made there — and the server now refuses while
+   * bookings are still to happen, so the confirmation says what to do about that
+   * rather than letting a 400 explain the rule.
+   */
+  const askClose = async () => {
+    const ok = await confirmDialog({
+      title: `Close ${location.name}?`,
+      body: (
+        <p>
+          It stops taking bookings and customers will not find it. Nothing is deleted — past
+          bookings, reviews and takings stay, and you can reopen it at any time.
+        </p>
+      ),
+      tone: 'danger',
+      icon: 'pause',
+      confirmLabel: 'Close this branch',
+      cancelLabel: 'Keep it open',
+    });
+    if (ok) close.mutate();
+  };
+
+  return (
+    <article
+      className={`hr-card${location.isActive ? '' : ' is-closed'}`}
+      style={{ animationDelay: `${Math.min(index, 6) * 60}ms` }}
+    >
+      <div className="hr-hero">
+        {hasPin ? (
+          <div className="hr-map">
+            <StaticMap latitude={location.latitude!} longitude={location.longitude!} focusX={0.72} />
+          </div>
+        ) : (
+          <div className="hr-map is-empty">
+            <Icon name="pin" size={28} />
+            <span>No pin yet — add one under Edit details</span>
+          </div>
+        )}
+        <div className="hr-hero-shade" />
+        <div className="hr-hero-text">
+          <span className={`hr-state${location.isActive ? (todays && !todays.isClosed ? ' is-open' : '') : ' is-shut'}`}>
+            <i />
+            {!location.isActive
+              ? 'Closed'
+              : todays && !todays.isClosed
+                ? `Today ${todays.openTime} – ${todays.closeTime}`
+                : 'Closed today'}
+          </span>
+          <h2>{location.name}</h2>
+          <p>
+            <Icon name="pin" size={14} />
+            {location.district
+              ? `${location.district.name}, ${location.district.province.name}`
+              : 'No district set — customers cannot find this branch by place'}
+          </p>
+        </div>
+        <div className="hr-hero-actions">
+          <button type="button" onClick={onEdit}>
+            <Icon name="pencil" size={16} /> Edit details
+          </button>
+          {location.isActive ? (
+            <button type="button" className="hr-close-btn" disabled={close.isPending} onClick={askClose}>
+              {close.isPending ? 'Closing…' : 'Close this branch'}
+            </button>
+          ) : (
+            <button type="button" className="primary" disabled={reopen.isPending} onClick={() => reopen.mutate()}>
+              {reopen.isPending ? 'Reopening…' : 'Reopen this branch'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="hr-facts">
+        <span>
+          <Icon name="store" size={15} />
+          {location.address}
+        </span>
+        <span>
+          <Icon name="tag" size={15} />
+          cheapest service {money.format(location.fromPriceMinor)}
+        </span>
+        {location.ratingCount > 0 && (
+          <span>
+            <Stars value={Number(location.ratingAvg)} size={13} /> rated {location.ratingAvg} over{' '}
+            {location.ratingCount}
+          </span>
+        )}
+        {location.phone && (
+          <span>
+            <Icon name="phone" size={15} />
+            {location.phone}
+          </span>
+        )}
+      </div>
+
+      {problem && (
+        <p className="notice hr-problem" role="alert">
+          {problem}
+        </p>
+      )}
+
+      {!location.isActive && (
+        <p className="notice hr-problem">
+          This branch is closed. It takes no new bookings and customers cannot find it. Everything that
+          happened here is kept.
+        </p>
+      )}
+
+      <div className="hr-body">
+        <WeekEditor location={location} onSaved={onSaved} />
+        <PlacesCard location={location} onSaved={onSaved} />
+      </div>
+    </article>
+  );
+}
+
+function WeekEditor({ location, onSaved }: { location: Location; onSaved: () => void }) {
   const [week, setWeek] = useState<Hours[]>([]);
-  const [capacity, setCap] = useState(String(location.capacity));
+  const [dirty, setDirty] = useState(false);
 
   // Seeded from the server, and reset whenever it changes, so a successful save
   // leaves the form showing what was actually stored rather than what was typed.
   useEffect(() => {
     const byDay = new Map(location.hours.map((h) => [h.dayOfWeek, h]));
     setWeek(
-      DAYS.map((_, day) =>
-        byDay.get(day) ?? {
-          id: `new-${day}`,
-          // Carried on the synthetic row too, so an unsaved day has the same
-          // shape as a saved one (§128.40).
-          locationId: location.id,
-          dayOfWeek: day,
-          openTime: '09:00',
-          closeTime: '17:00',
-          isClosed: true,
-        },
+      DAYS.map(
+        (_, day) =>
+          byDay.get(day) ?? {
+            id: `new-${day}`,
+            // Carried on the synthetic row too, so an unsaved day has the same
+            // shape as a saved one (§128.40).
+            locationId: location.id,
+            dayOfWeek: day,
+            openTime: '09:00',
+            closeTime: '17:00',
+            isClosed: true,
+          },
       ),
     );
-    setCap(String(location.capacity));
+    setDirty(false);
   }, [location]);
 
   const saveHours = useMutation({
@@ -112,92 +292,108 @@ function LocationCard({
           isClosed: h.isClosed,
         })),
       ),
-    onSuccess: onSaved,
+    onSuccess: () => {
+      setDirty(false);
+      onSaved();
+    },
   });
 
-  const saveCapacity = useMutation({
-    mutationFn: () => setCapacity(location.id, Number(capacity)),
-    onSuccess: onSaved,
-  });
+  const update = (day: number, patch: Partial<Hours>) => {
+    setDirty(true);
+    saveHours.reset();
+    setWeek((current) => current.map((h) => (h.dayOfWeek === day ? { ...h, ...patch } : h)));
+  };
 
-  const update = (day: number, patch: Partial<Hours>) =>
+  /** The first open day's times, onto every other open day — still to be saved. */
+  const copyFirst = () => {
+    const first = WEEK_ORDER.map((d) => week.find((h) => h.dayOfWeek === d)).find((h) => h && !h.isClosed);
+    if (!first) return;
+    setDirty(true);
+    saveHours.reset();
     setWeek((current) =>
-      current.map((h) => (h.dayOfWeek === day ? { ...h, ...patch } : h)),
+      current.map((h) => (h.isClosed ? h : { ...h, openTime: first.openTime, closeTime: first.closeTime })),
     );
+  };
+
+  const openDays = week.filter((h) => !h.isClosed).length;
+  const firstOpen = WEEK_ORDER.map((d) => week.find((h) => h.dayOfWeek === d)).find((h) => h && !h.isClosed);
+  const today = new Date().getDay();
 
   return (
-    <div className={location.isActive ? 'card location' : 'card location closed'}>
-      <div className="setting-head">
-        <h2>
-          {location.name}
-          {!location.isActive && <span className="pill tkt-closed">Closed</span>}
-        </h2>
-        <p className="muted small">
-          {location.district
-            ? `${location.district.name}, ${location.district.province.name}`
-            : 'No district set — customers cannot find this branch by place'}
-        </p>
-        <p className="muted small">
-          {location.address} · cheapest service {money.format(location.fromPriceMinor)}
-          {location.ratingCount > 0 &&
-            ` · rated ${location.ratingAvg} over ${location.ratingCount}`}
-        </p>
-        <BranchActions location={location} />
-      </div>
+    <section className="hr-week">
+      <header>
+        <div>
+          <h3>Opening hours</h3>
+          <p>
+            {openDays === 0 ? 'Closed every day — nothing can be booked' : `Open ${openDays} ${openDays === 1 ? 'day' : 'days'} a week`}
+          </p>
+        </div>
+        {openDays > 1 && firstOpen && (
+          <button type="button" className="hr-copy" onClick={copyFirst}>
+            <Icon name="copy" size={15} />
+            {DAYS[firstOpen.dayOfWeek].slice(0, 3)}’s hours to every open day
+          </button>
+        )}
+      </header>
 
-      {!location.isActive && (
-        <p className="notice">
-          This branch is closed. It takes no new bookings and customers cannot find
-          it. Everything that happened here is kept.
-        </p>
-      )}
-
-      <table className="hours">
-        <tbody>
-          {week.map((h) => (
-            <tr key={h.dayOfWeek}>
-              <td className="day">{DAYS[h.dayOfWeek]}</td>
-              <td>
-                <label className="inline">
+      <ol className="hr-days">
+        {WEEK_ORDER.map((day) => {
+          const h = week.find((x) => x.dayOfWeek === day);
+          if (!h) return null;
+          const from = minutes(h.openTime);
+          const to = minutes(h.closeTime);
+          const valid = !h.isClosed && to > from;
+          return (
+            <li key={day} className={`${h.isClosed ? 'is-off' : ''}${day === today ? ' is-today' : ''}`}>
+              <span className="hr-day">
+                {DAYS[day].slice(0, 3)}
+                {day === today && <em>today</em>}
+              </span>
+              <Switch
+                checked={!h.isClosed}
+                label={`Open on ${DAYS[day]}`}
+                onChange={(open) => update(day, { isClosed: !open })}
+              />
+              {h.isClosed ? (
+                <span className="hr-closed">Closed</span>
+              ) : (
+                <span className="hr-times">
                   <input
-                    type="checkbox"
-                    checked={!h.isClosed}
-                    onChange={(e) => update(h.dayOfWeek, { isClosed: !e.target.checked })}
+                    type="time"
+                    value={h.openTime}
+                    aria-label={`${DAYS[day]} opens`}
+                    onChange={(e) => update(day, { openTime: e.target.value })}
                   />
-                  Open
-                </label>
-              </td>
-              <td>
-                <input
-                  type="time"
-                  value={h.openTime}
-                  disabled={h.isClosed}
-                  onChange={(e) => update(h.dayOfWeek, { openTime: e.target.value })}
-                />
-                {' to '}
-                <input
-                  type="time"
-                  value={h.closeTime}
-                  disabled={h.isClosed}
-                  onChange={(e) => update(h.dayOfWeek, { closeTime: e.target.value })}
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="setting-form">
-        <button
-          type="button"
-          className="primary"
-          disabled={saveHours.isPending}
-          onClick={() => saveHours.mutate()}
-        >
-          {saveHours.isPending ? 'Saving…' : 'Save the week'}
-        </button>
-        {saveHours.isSuccess && <span className="ok small">Saved</span>}
-      </div>
+                  <span>to</span>
+                  <input
+                    type="time"
+                    value={h.closeTime}
+                    aria-label={`${DAYS[day]} closes`}
+                    onChange={(e) => update(day, { closeTime: e.target.value })}
+                  />
+                </span>
+              )}
+              <span className="hr-bar" aria-hidden="true">
+                {valid && (
+                  <i style={{ left: `${(from / 1440) * 100}%`, width: `${((to - from) / 1440) * 100}%` }} />
+                )}
+              </span>
+            </li>
+          );
+        })}
+        <li className="hr-scale" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span className="hr-bar-scale">
+            <span>00</span>
+            <span>06</span>
+            <span>12</span>
+            <span>18</span>
+            <span>24</span>
+          </span>
+        </li>
+      </ol>
 
       {saveHours.error && (
         <p className="error small" role="alert">
@@ -205,54 +401,98 @@ function LocationCard({
         </p>
       )}
 
-      <div className="setting-form">
-        <label htmlFor={`cap-${location.id}`}>People served at once</label>
+      <footer className={`hr-week-foot${dirty ? ' is-dirty' : ''}`}>
+        <span>
+          {saveHours.isSuccess ? (
+            <span className="ok">
+              <Icon name="checkCircle" size={16} /> Saved
+            </span>
+          ) : dirty ? (
+            'You have changes that are not saved'
+          ) : (
+            'The whole week is saved together'
+          )}
+        </span>
+        <button
+          type="button"
+          className="primary"
+          disabled={saveHours.isPending || !dirty}
+          onClick={() => saveHours.mutate()}
+        >
+          {saveHours.isPending ? 'Saving…' : 'Save the week'}
+        </button>
+      </footer>
+    </section>
+  );
+}
+
+/** "People served at once" (§16.4, §189): the places every time starts with. */
+function PlacesCard({ location, onSaved }: { location: Location; onSaved: () => void }) {
+  const [capacity, setCap] = useState(String(location.capacity));
+  useEffect(() => setCap(String(location.capacity)), [location]);
+  const saveCapacity = useMutation({
+    mutationFn: () => setCapacity(location.id, Number(capacity)),
+    onSuccess: onSaved,
+  });
+  const n = Math.max(0, Math.round(Number(capacity) || 0));
+  const changed = capacity !== String(location.capacity);
+  const step = (by: number) => setCap(String(Math.max(1, Math.min(500, (Number(capacity) || 1) + by))));
+
+  return (
+    <section className="hr-places">
+      <h3>People served at once</h3>
+      <div className="hr-stepper">
+        <button type="button" onClick={() => step(-1)} disabled={n <= 1} aria-label="One fewer">
+          <Icon name="minus" size={18} stroke={2.4} />
+        </button>
         <input
           id={`cap-${location.id}`}
           type="number"
           min="1"
           value={capacity}
           onChange={(e) => setCap(e.target.value)}
+          aria-label="People served at once"
         />
-        <button
-          type="button"
-          disabled={saveCapacity.isPending || capacity === String(location.capacity)}
-          onClick={() => saveCapacity.mutate()}
-        >
-          Save
+        <button type="button" onClick={() => step(1)} aria-label="One more">
+          <Icon name="plus" size={18} stroke={2.4} />
         </button>
+      </div>
+      <div className="hr-seats" aria-hidden="true">
+        {Array.from({ length: Math.min(n, 12) }, (_, i) => (
+          <span key={i} style={{ animationDelay: `${i * 30}ms` }}>
+            <Icon name="user" size={15} />
+          </span>
+        ))}
+        {n > 12 && <em>+{n - 12}</em>}
       </div>
       {/* Capacity is what availability counts against (§16.4), and since
           §189 the only thing deciding how many one booking may be for. */}
-      <p className="muted small">
-        How many customers this branch can look after at the same time — the
-        same number for every service here. A booking for 3 people takes 3
-        places at that time; when every place is taken, customers see the time
-        as booked. It is also the most people one booking can be for. Lowering
+      <p>
+        How many customers this branch can look after at the same time — the same number for every
+        service here. A booking for 3 people takes 3 places at that time; when every place is taken,
+        customers see the time as booked. It is also the most people one booking can be for. Lowering
         it does not cancel bookings already made.
       </p>
       {saveCapacity.error && (
         <p className="error small" role="alert">
-          {saveCapacity.error instanceof ApiError
-            ? saveCapacity.error.message
-            : 'Could not save.'}
+          {saveCapacity.error instanceof ApiError ? saveCapacity.error.message : 'Could not save.'}
         </p>
       )}
-    </div>
+      <button
+        type="button"
+        className={changed ? 'primary' : ''}
+        disabled={saveCapacity.isPending || !changed}
+        onClick={() => saveCapacity.mutate()}
+      >
+        {saveCapacity.isPending ? 'Saving…' : changed ? 'Save' : saveCapacity.isSuccess ? 'Saved' : 'Save'}
+      </button>
+    </section>
   );
 }
 
-/**
- * Editing a branch, and closing it.
- *
- * "Close", never "delete" (§89). It used to be a hard delete that cascaded
- * through every appointment ever made there — and the server now refuses while
- * bookings are still to happen, so the confirmation says what to do about that
- * rather than letting a 400 explain the rule.
- */
-function BranchActions({ location }: { location: Location }) {
+/** Editing a branch's details, in the panel from the right (§195). */
+function EditBranchPanel({ location, onClose }: { location: Location; onClose: () => void }) {
   const queryClient = useQueryClient();
-  const [editing, setEditing] = useState(false);
   const [name, setName] = useState(location.name);
   const [address, setAddress] = useState(location.address);
   const [phone, setPhone] = useState(location.phone ?? '');
@@ -261,42 +501,9 @@ function BranchActions({ location }: { location: Location }) {
   // The pin (§157). Shown as it is stored; changed by pasting a map link or
   // by standing in the shop and pressing the button.
   const [place, setPlace] = useState(
-    location.latitude !== null && location.longitude !== null
-      ? `${location.latitude}, ${location.longitude}`
-      : '',
+    location.latitude !== null && location.longitude !== null ? `${location.latitude}, ${location.longitude}` : '',
   );
-  const [locating, setLocating] = useState(false);
   const coordinates = place.trim() ? parseCoordinates(place) : null;
-  const useMyPosition = () => {
-    if (!navigator.geolocation) {
-      setProblem('This browser cannot find your position. Paste a map link instead.');
-      return;
-    }
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setPlace(`${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`);
-        setProblem(null);
-        setLocating(false);
-      },
-      () => {
-        setLocating(false);
-        setProblem('Could not get your position. Allow location for this site, or paste a map link.');
-      },
-      { enableHighAccuracy: true, timeout: 10_000 },
-    );
-  };
-
-  // Reference data, so it is fetched once and kept.
-  const provinces = useQuery({
-    queryKey: ['provinces'],
-    queryFn: listProvinces,
-    staleTime: Infinity,
-  });
-
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['locations'] });
-  const fail = (error: unknown) =>
-    setProblem(error instanceof ApiError ? error.message : 'That did not work.');
 
   const save = useMutation({
     mutationFn: () =>
@@ -310,154 +517,69 @@ function BranchActions({ location }: { location: Location }) {
           : {}),
       }),
     onSuccess: () => {
-      setEditing(false);
-      setProblem(null);
-      refresh();
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
+      onClose();
     },
-    onError: fail,
+    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not work.'),
   });
 
-  const close = useMutation({
-    mutationFn: () => closeLocation(location.id),
-    onSuccess: () => {
-      setProblem(null);
-      refresh();
-    },
-    onError: fail,
-  });
-
-  const reopen = useMutation({
-    mutationFn: () => reopenLocation(location.id),
-    onSuccess: () => {
-      setProblem(null);
-      refresh();
-    },
-    onError: fail,
-  });
-
-  if (editing) {
-    return (
+  return (
+    <Panel
+      eyebrow="Edit details"
+      title={location.name}
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" form="edit-branch" className="primary" disabled={save.isPending}>
+            {save.isPending ? 'Saving…' : 'Save'}
+          </button>
+        </>
+      }
+    >
       <form
-        className="stack"
+        id="edit-branch"
+        className="bf"
         onSubmit={(event) => {
           event.preventDefault();
           save.mutate();
         }}
       >
-        <label>
-          Branch name
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
-        </label>
-        <label>
-          Address
-          <input value={address} onChange={(e) => setAddress(e.target.value)} />
-        </label>
-        <label>
-          Phone for this branch <span className="muted small">(optional)</span>
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
-        </label>
-        <label>
-          Where it is
-          <input
-            value={place}
-            onChange={(e) => {
-              setPlace(e.target.value);
-              setProblem(null);
-            }}
-            placeholder="Paste a Google Maps link, or -1.9536, 30.0606"
-          />
-          <span className="muted small">
-            Customers' distances are measured from this pin. Paste the shop's Google Maps
-            link, or press the button if you are at the shop now.
-          </span>
-        </label>
-        <div className="row-end">
-          <button type="button" className="link" onClick={useMyPosition} disabled={locating}>
-            {locating ? 'Finding you…' : 'Use my current position'}
-          </button>
+        <div className="bf-two">
+          <div className="bf-field">
+            <label htmlFor="eb-name">Branch name</label>
+            <input id="eb-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+          </div>
+          <div className="bf-field">
+            <label htmlFor="eb-phone">
+              Phone for this branch <em>optional</em>
+            </label>
+            <input id="eb-phone" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
+          </div>
         </div>
-        {coordinates && 'error' in coordinates && (
-          <p className="error small" role="alert">
-            {coordinates.error}
-          </p>
-        )}
-        {coordinates && !('error' in coordinates) && (
-          <MapPin latitude={coordinates.latitude} longitude={coordinates.longitude} />
-        )}
-        <label>
-          District
-          <select value={districtId} onChange={(e) => setDistrictId(e.target.value)}>
-            <option value="">Choose a district</option>
-            {/* Grouped by province, because thirty districts in one flat list
-                is not how anyone thinks about where they are (§104). */}
-            {provinces.data?.map((province) => (
-              <optgroup key={province.id} label={province.name}>
-                {province.districts.map((district) => (
-                  <option key={district.id} value={district.id}>
-                    {district.name}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-          <span className="muted small">
-            Customers filter by this. Without it, this branch does not appear when
-            someone searches their area.
-          </span>
-        </label>
+        <div className="bf-field">
+          <label htmlFor="eb-address">Address</label>
+          <input id="eb-address" value={address} onChange={(e) => setAddress(e.target.value)} />
+        </div>
+        <PlaceField
+          value={place}
+          onChange={setPlace}
+          onProblem={setProblem}
+          hint="Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
+        />
+        <DistrictField
+          value={districtId}
+          onChange={setDistrictId}
+          hint="Customers filter by this. Without it, this branch does not appear when someone searches their area."
+        />
         {problem && (
           <p className="error small" role="alert">
             {problem}
           </p>
         )}
-        <div className="row-end">
-          <button type="button" className="link" onClick={() => setEditing(false)}>
-            Cancel
-          </button>
-          <button type="submit" className="primary" disabled={save.isPending}>
-            {save.isPending ? 'Saving…' : 'Save'}
-          </button>
-        </div>
       </form>
-    );
-  }
-
-  return (
-    <div className="branch-actions">
-      <button type="button" onClick={() => setEditing(true)}>
-        Edit details
-      </button>
-
-      {location.isActive ? (
-        <button
-          type="button"
-          disabled={close.isPending}
-          onClick={() => {
-            if (
-              window.confirm(
-                `Close ${location.name}?\n\n` +
-                  'It stops taking bookings and customers will not find it. ' +
-                  'Nothing is deleted — past bookings, reviews and takings stay, ' +
-                  'and you can reopen it at any time.',
-              )
-            ) {
-              close.mutate();
-            }
-          }}
-        >
-          {close.isPending ? 'Closing…' : 'Close this branch'}
-        </button>
-      ) : (
-        <button type="button" disabled={reopen.isPending} onClick={() => reopen.mutate()}>
-          {reopen.isPending ? 'Reopening…' : 'Reopen this branch'}
-        </button>
-      )}
-
-      {problem && (
-        <p className="error small" role="alert">
-          {problem}
-        </p>
-      )}
-    </div>
+    </Panel>
   );
 }

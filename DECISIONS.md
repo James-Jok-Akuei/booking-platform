@@ -14436,3 +14436,38 @@ Testing note: opening "Add a service" starts a draft on the server (§123), so
 the one the screenshot run made was deleted afterwards; the two older drafts
 were left as they were.
 
+## 195. Branches & hours, redesigned (2026-10-08)
+
+`src/pages/HoursPage.tsx`, every rule and word kept:
+
+- **Each branch is a card headed by a map of where it is** — a still picture
+  drawn from OpenStreetMap's tiles (`src/components/StaticMap.tsx`, coral pin,
+  "© OpenStreetMap contributors" kept on it as their terms ask) — with the
+  name, the district, and **today's state** over it ("Today 08:00 – 19:00",
+  green; "Closed today"; "Closed"). Edit details and Close / Reopen sit on
+  the map. Below: address, cheapest service, rating with half stars, phone.
+  The interactive map (MapPin, §157) stays where the pin is placed — in the
+  add and edit forms — because that is where it must be checked.
+- **The week**: Monday first (stored days unchanged, 0 = Sunday), a switch per
+  day for open, the two times, and **a bar showing the open hours across the
+  24-hour day**, so a short day or a typo ("19:00 to 09:00") is seen at a
+  glance; today is marked. **"Mon's hours to every open day"** copies the
+  first open day's times to the others — a change still to be saved, like
+  any other. The foot says "You have changes that are not saved" until
+  **Save the week** (still the whole week at once, §12.7).
+- **People served at once** (§16.4, §189): a − / + stepper with the number
+  large, a row of seats showing it (twelve, then "+33"), §189's explanation
+  word for word, and Save.
+- **Adding and editing a branch open in the side panel** (`src/ui/Panel.tsx`,
+  now the shared panel): name and phone side by side, address, **Where it is**
+  with "Use my current position" inside the field and the map underneath once
+  a pin is found, district grouped by province, and §117's note that a new
+  branch starts closed every day. The checks are unchanged — a new branch
+  needs a name, an address, a district and a pin (§135.8).
+- **Close this branch** is now the dialog (§193), with §89's words: nothing
+  is deleted, and it can be reopened.
+
+`NewBranchForm.tsx` now holds the shared `PlaceField` and `DistrictField` the
+add and edit panels both use, and `NewBranchPanel`. On a phone the map is a
+strip above the branch, and each day stacks its switch and times.
+

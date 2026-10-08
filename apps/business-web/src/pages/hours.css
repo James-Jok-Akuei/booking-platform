@@ -1,0 +1,186 @@
+/* Branches & hours (§195). */
+
+.hr-add { min-height: 48px; padding: 0 20px; border-radius: 16px; }
+.hr-skeleton { height: 520px; border-radius: 28px; }
+.hr-list { display: flex; flex-direction: column; gap: 22px; }
+
+.hr-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 56px 20px; border-radius: 28px; background: var(--panel); border: 1.5px dashed #ddd6ca; }
+.hr-empty > span { width: 76px; height: 76px; display: grid; place-items: center; border-radius: 26px; background: var(--accent-soft); color: var(--accent-deep); margin-bottom: 6px; }
+.hr-empty h2 { margin: 0; font-size: 22px; }
+.hr-empty p { margin: 0 0 12px; color: var(--muted); max-width: 46ch; }
+
+.hr-card {
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-sm);
+  animation: rise-in 500ms var(--ease) both;
+}
+.hr-card.is-closed .hr-hero { filter: grayscale(0.9); }
+.hr-card.is-closed .hr-body { opacity: 0.6; }
+
+/* ---- the map strip with the branch over it ---- */
+
+.hr-hero { position: relative; height: 210px; background: var(--sunken); }
+.hr-map { position: absolute; inset: 0; overflow: hidden; }
+.hr-map.is-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+  font-weight: 650;
+  font-size: 13px;
+  background: repeating-linear-gradient(135deg, var(--sunken) 0 12px, #f1eee8 12px 24px);
+}
+.hr-hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(21, 23, 28, 0.86) 0%, rgba(21, 23, 28, 0.55) 45%, rgba(21, 23, 28, 0) 80%);
+  pointer-events: none;
+}
+.hr-hero-text { position: absolute; left: 26px; bottom: 22px; right: 340px; color: #fff; }
+.hr-hero-text h2 { margin: 8px 0 4px; color: #fff; font-size: 28px; letter-spacing: -0.03em; }
+.hr-hero-text p { display: flex; align-items: center; gap: 6px; margin: 0; color: rgba(255, 255, 255, 0.75); font-size: 13.5px; font-weight: 600; }
+.hr-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: 12.5px;
+  font-weight: 750;
+}
+.hr-state i { width: 8px; height: 8px; border-radius: 50%; background: #d9d5cd; }
+.hr-state.is-open i { background: #34d27b; box-shadow: 0 0 0 3px rgba(52, 210, 123, 0.28); }
+.hr-state.is-shut i { background: var(--danger); }
+.hr-hero-actions { position: absolute; right: 20px; bottom: 22px; display: flex; gap: 8px; }
+.hr-hero-actions button { min-height: 42px; border-radius: 13px; font-size: 13.5px; border: none; background: rgba(255, 255, 255, 0.95); }
+.hr-hero-actions button:hover:not(:disabled) { background: #fff; border: none; }
+.hr-hero-actions .primary { background: var(--accent-grad); }
+.hr-hero-actions .primary:hover:not(:disabled) { background: var(--accent-grad); }
+.hr-hero-actions .hr-close-btn { color: var(--danger); }
+
+.hr-facts { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 24px 0; }
+.hr-facts > span { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px; border-radius: 99px; background: var(--sunken); font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.hr-facts svg { color: var(--muted); }
+.hr-problem { margin: 14px 24px 0; }
+
+.hr-body { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr); gap: 18px; padding: 18px 24px 24px; }
+
+/* ---- the week ---- */
+
+.hr-week { border-radius: 22px; background: var(--sunken); padding: 18px 18px 14px; }
+.hr-week > header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.hr-week h3, .hr-places h3 { margin: 0; font-size: 16px; }
+.hr-week > header p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.hr-copy { min-height: 34px; padding: 0 12px; border-radius: 11px; font-size: 12.5px; gap: 6px; background: var(--panel); }
+
+.hr-days { list-style: none; margin: 0; padding: 0; }
+.hr-days li {
+  display: grid;
+  /* Fixed widths, not content-sized: each day is its own grid, so the bars
+     only line up when "Closed" takes the same room as two times. */
+  grid-template-columns: 74px 46px 272px minmax(80px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 7px 10px;
+  border-radius: 14px;
+  transition: background 160ms var(--ease);
+}
+.hr-days li:hover { background: rgba(255, 255, 255, 0.6); }
+.hr-days li.is-today { background: var(--panel); box-shadow: var(--shadow-xs); }
+.hr-day { display: flex; flex-direction: column; font-weight: 750; font-size: 14px; }
+.hr-day em { font-style: normal; font-size: 10.5px; font-weight: 800; color: var(--accent-deep); text-transform: uppercase; letter-spacing: 0.06em; }
+.hr-days li.is-off .hr-day { color: var(--muted); }
+.hr-closed { font-size: 13px; font-weight: 650; color: var(--faint); padding-left: 4px; }
+.hr-times { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.hr-times input { width: 108px; min-height: 38px; padding: 6px 10px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.hr-bar { position: relative; height: 10px; border-radius: 99px; background: rgba(21, 23, 28, 0.07); overflow: hidden; }
+.hr-bar i { position: absolute; top: 0; bottom: 0; border-radius: 99px; background: var(--accent-grad); transition: left 300ms var(--ease), width 300ms var(--ease); }
+.hr-days li.hr-scale { padding-top: 0; padding-bottom: 0; }
+.hr-days li.hr-scale:hover { background: none; }
+.hr-bar-scale { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 650; color: var(--faint); }
+
+.hr-week-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 4px 0;
+  border-top: 1px dashed var(--line-strong);
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.hr-week-foot .ok { display: inline-flex; align-items: center; gap: 6px; font-weight: 750; }
+.hr-week-foot.is-dirty > span { color: var(--warn); }
+.hr-week-foot button { min-height: 42px; border-radius: 13px; }
+
+/* ---- places ---- */
+
+.hr-places { display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 22px; border: 1px solid var(--line); }
+.hr-places p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+.hr-places > button { align-self: flex-start; min-height: 42px; border-radius: 13px; padding: 0 22px; }
+.hr-stepper { display: flex; align-items: center; gap: 8px; }
+.hr-stepper button { width: 46px; height: 46px; min-height: 0; padding: 0; border-radius: 15px; }
+.hr-stepper input {
+  width: 88px;
+  height: 56px;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  border-radius: 16px;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.hr-stepper input::-webkit-outer-spin-button, .hr-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.hr-seats { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.hr-seats span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--ok-soft);
+  color: var(--ok-deep);
+  animation: pop-in 260ms var(--spring) both;
+}
+.hr-seats em { font-style: normal; font-size: 12.5px; font-weight: 800; color: var(--ok-deep); padding-left: 2px; }
+
+@media (max-width: 1280px) {
+  .hr-body { grid-template-columns: minmax(0, 1fr); }
+  .hr-places { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .hr-places p { flex-basis: 100%; }
+}
+
+@media (max-width: 880px) {
+  /* On a phone the map is a strip above the branch, not behind its name. */
+  .hr-hero { height: auto; background: var(--night); }
+  .hr-map { position: relative; height: 150px; }
+  .hr-hero-shade { display: none; }
+  .hr-hero-text { position: relative; left: auto; right: auto; bottom: auto; padding: 16px 18px 0; }
+  .hr-hero-text h2 { font-size: 24px; }
+  .hr-hero-actions { position: relative; right: auto; bottom: auto; padding: 14px 18px 18px; flex-wrap: wrap; }
+  .hr-hero-actions button { flex: 1; }
+  .hr-facts { padding: 14px 16px 0; }
+  .hr-body { padding: 14px 14px 16px; }
+  .hr-days li { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'day switch' 'times times' 'bar bar'; row-gap: 8px; padding: 10px; }
+  .hr-day { grid-area: day; flex-direction: row; align-items: baseline; gap: 8px; }
+  .hr-days li > .switch { grid-area: switch; }
+  .hr-times, .hr-closed { grid-area: times; }
+  .hr-days li.is-off .hr-closed { display: none; }
+  .hr-days li.is-off .hr-bar { display: none; }
+  .hr-bar { grid-area: bar; }
+  .hr-days li.hr-scale { display: none; }
+  .hr-times { min-width: 0; }
+  .hr-times input { flex: 1; min-width: 0; width: auto; padding: 6px 8px; }
+  .hr-week > header { flex-direction: column; }
+}
