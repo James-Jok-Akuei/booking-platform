@@ -1,0 +1,36 @@
+/* Legal (§202). */
+
+.lg-skeleton { height: 300px; border-radius: 26px; }
+.lg-banner { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 18px; padding: 14px 18px; border-radius: 18px; background: var(--warn-soft); border: 1px solid #f6dfae; color: #7a4b00; font-size: 14px; line-height: 1.5; }
+.lg-banner svg { flex: none; margin-top: 1px; }
+.lg-banner.is-ok { background: var(--ok-soft); border-color: rgba(14, 159, 84, 0.2); color: var(--ok-deep); }
+
+.lg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+.lg-doc {
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  border-radius: 26px;
+  background: var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-sm);
+  animation: rise-in 460ms var(--ease) both;
+}
+.lg-doc.is-changed, .lg-doc.is-new { border-color: #f6dfae; box-shadow: 0 0 0 3px rgba(194, 120, 3, 0.08), var(--shadow-sm); }
+.lg-doc-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.lg-doc-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 16px; background: var(--sunken); color: var(--ink); }
+.lg-doc.is-changed .lg-doc-icon, .lg-doc.is-new .lg-doc-icon { background: var(--warn-soft); color: var(--warn); }
+.lg-state { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: 99px; font-size: 12px; font-weight: 750; }
+.lg-state.is-agreed { background: var(--ok-soft); color: var(--ok-deep); }
+.lg-state.is-changed, .lg-state.is-new { background: var(--warn-soft); color: #9a5d00; }
+.lg-doc h2 { margin: 16px 0 4px; font-size: 18px; }
+.lg-blurb { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+.lg-meta { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.lg-status { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.lg-status.is-warn { color: #9a5d00; font-weight: 600; }
+.lg-change { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: var(--sunken); font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+.lg-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 18px; }
+.lg-actions button { min-height: 42px; border-radius: 13px; }
+
+.lg-body { margin: 0; white-space: pre-wrap; font: inherit; font-size: 14.5px; line-height: 1.75; color: var(--ink-2); }
+.panel-body .lg-change { margin: 0 0 16px; }

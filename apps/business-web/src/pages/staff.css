@@ -1,0 +1,87 @@
+/* People (§202). */
+
+.st-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
+.st-main, .st-side { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+.st-skeleton { height: 240px; border-radius: 26px; }
+
+.st-note { display: flex; align-items: center; gap: 9px; margin: 0; padding: 12px 16px; border-radius: 16px; background: var(--ask-soft); color: var(--ask); font-size: 13.5px; font-weight: 600; }
+
+.st-card { padding: 20px 22px; border-radius: 26px; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.05); box-shadow: var(--shadow-sm); animation: rise-in 460ms var(--ease) both; }
+.st-card.is-quiet { background: #fbfaf8; box-shadow: none; }
+.st-card > header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.st-card h2 { margin: 0; font-size: 17px; }
+.st-card > header span { min-width: 22px; height: 22px; padding: 0 7px; display: grid; place-items: center; border-radius: 99px; background: var(--sunken-2); font-size: 11.5px; font-weight: 800; }
+.st-sub { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
+
+.st-people { list-style: none; margin: 0; padding: 0; }
+.st-person { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.st-person:last-child { border-bottom: none; }
+.st-person.is-removed { opacity: 0.6; }
+.st-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.st-who strong { display: flex; align-items: center; gap: 8px; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-who strong em { font-style: normal; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent-deep); }
+.st-who span { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.st-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+.st-badge { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 99px; font-size: 12.5px; font-weight: 750; }
+.st-badge.is-owner { background: var(--night); color: #fff; }
+.st-badge.is-owner svg { color: #ffd27a; }
+.st-badge.is-manager { background: var(--ask-soft); color: var(--ask); }
+.st-badge.is-staff { background: var(--sunken-2); color: var(--ink-2); }
+.st-mini-choice { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--sunken-2); gap: 2px; }
+.st-mini-choice button { min-height: 30px; padding: 0 11px; border: none; border-radius: 9px; background: transparent; font-size: 12.5px; }
+.st-mini-choice button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.6); border: none; }
+.st-mini-choice button.is-on, .st-mini-choice button.is-on:hover:not(:disabled) { background: var(--panel); box-shadow: var(--shadow-xs); }
+.st-remove { width: 36px; height: 36px; min-height: 0; padding: 0; border-radius: 11px; color: var(--danger); border-color: #f3c6c1; }
+.st-remove:hover:not(:disabled) { background: var(--danger-soft); border-color: #eeb4ae; }
+.st-invite-avatar { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1.5px dashed #d6d1c7; color: var(--muted); }
+.st-revoke { min-height: 36px; padding: 0 12px; border-radius: 11px; font-size: 12.5px; }
+
+/* ---- invite and roles ---- */
+
+.st-invite {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 26px;
+  background:
+    radial-gradient(260px 160px at 100% 0%, rgba(255, 138, 76, 0.18), transparent 70%),
+    var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-sm);
+}
+.st-invite-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; background: var(--accent-grad); color: #fff; box-shadow: var(--shadow-accent); }
+.st-invite h2 { margin: 2px 0 0; font-size: 19px; }
+.st-invite > p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.st-field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
+.st-field > span { font-size: 13px; color: var(--ink-2); }
+.st-field input { width: 100%; }
+.st-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: var(--sunken); }
+.st-choice button { min-height: 38px; border: none; border-radius: 10px; background: transparent; font-size: 13.5px; gap: 6px; }
+.st-choice button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.7); border: none; }
+.st-choice button.is-on, .st-choice button.is-on:hover:not(:disabled) { background: var(--night); color: #fff; }
+.st-means { margin: 0; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.st-sent { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13px; font-weight: 650; color: var(--ok-deep); }
+.st-send { min-height: 46px; border-radius: 15px; }
+
+.st-roles { padding: 20px 22px; border-radius: 26px; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.05); }
+.st-roles h2 { margin: 0 0 12px; font-size: 15px; }
+.st-role { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.st-role > span { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 11px; }
+.st-role.is-owner > span { background: var(--night); color: #ffd27a; }
+.st-role.is-manager > span { background: var(--ask-soft); color: var(--ask); }
+.st-role.is-staff > span { background: var(--sunken-2); color: var(--ink-2); }
+.st-role strong { font-size: 13.5px; }
+.st-role p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+
+@media (max-width: 1100px) {
+  .st-layout { grid-template-columns: minmax(0, 1fr); }
+  .st-side { position: static; order: -1; }
+}
+
+@media (max-width: 720px) {
+  .st-card, .st-invite, .st-roles { padding: 18px 16px; border-radius: 24px; }
+  .st-person { flex-wrap: wrap; }
+  .st-actions { width: 100%; padding-left: 58px; }
+}

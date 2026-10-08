@@ -14614,3 +14614,31 @@ partial totals still say so.
 `src/lib/bookings.ts` now holds the paged bookings fetch that Overview and
 this page share.
 
+## 202. People, Legal and Help, redesigned (2026-10-08)
+
+The last three pages, rules and words unchanged.
+
+- **People** (`StaffPage.tsx`): the team as rows with initials, "you", and a
+  role badge (Owner night with a key, Manager blue, Staff grey); an owner
+  switches a member between Staff and Manager with a two-way pill and removes
+  them with an icon button (now the dialog, §193, with §14's words). Beside
+  the list: **Add someone** (email, Staff / Manager as pills with what the
+  chosen role means) — owner only, as before — and **What each role can do**,
+  all three roles with their meanings. Invitations show an envelope and
+  Cancel invitation; people no longer here stay listed, faded, as the record.
+- **Legal** (`LegalPage.tsx`): a card per document with an icon, a line on
+  what it covers, its state (Agreed / Changed / Not agreed yet), version and
+  date, what changed, **Read it** (the whole text in the side panel, with
+  I agree at its foot) and **I agree to this**. A green "You are up to date"
+  when nothing is outstanding. Agreeing now also refreshes the banner over
+  every page (§126.3) — before, it stayed until the next reload.
+- **Help** (`SupportPage.tsx`): a night "How can we help?" header with the five
+  topics as buttons — each opens the request form with that topic already
+  chosen. Requests are grouped Open / Finished, each with its topic's icon,
+  reference, last activity and §80's status words. The form and the open
+  request use the side panel; the conversation is drawn as bubbles (yours
+  night, support's light).
+
+**No browser pop-up is left in the business app** — every confirm, prompt and
+alert is the designed dialog (§193).
+

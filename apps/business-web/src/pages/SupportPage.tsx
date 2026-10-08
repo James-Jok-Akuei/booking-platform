@@ -19,6 +19,19 @@ import {
   type TicketCategory,
   type TicketStatus,
 } from '../api/business';
+import { ago } from '../lib/time';
+import { Icon, type IconName } from '../ui/Icon';
+import { Panel as SidePanel } from '../ui/Panel';
+import './support.css';
+
+/** An icon for each kind of question, the same in the list and the form. */
+const CATEGORY_ICON: Record<TicketCategory, IconName> = {
+  PAYMENT_ISSUE: 'wallet',
+  APPOINTMENT_DISPUTE: 'calendar',
+  ACCOUNT_ISSUE: 'store',
+  TECHNICAL_ISSUE: 'zap',
+  OTHER: 'help',
+};
 
 /**
  * What a business is told each status means.
@@ -89,63 +102,59 @@ const withinReopenWindow = (resolvedAt: string | null) => {
   return days < REOPEN_WINDOW_DAYS;
 };
 
+/** Asking for help, and the answers (§79, §80, §202). */
 export function SupportPage() {
   const [openId, setOpenId] = useState<string | null>(null);
-  const [composing, setComposing] = useState(false);
+  const [composing, setComposing] = useState<TicketCategory | null>(null);
 
   const tickets = useQuery({ queryKey: ['my-tickets'], queryFn: () => listMyTickets() });
+  const rows = tickets.data?.tickets ?? [];
+  const live = rows.filter((t) => t.status === 'OPEN' || t.status === 'IN_PROGRESS');
+  const done = rows.filter((t) => t.status === 'RESOLVED' || t.status === 'CLOSED');
 
   return (
-    <section>
-      <header className="page-head">
-        <div>
-          <h1>Help</h1>
-          <p className="muted">
-            Something wrong with a payout, a booking or your profile? Tell us here and
-            you will get a reply in this page and by email.
+    <section className="hp">
+      <header className="hp-hero">
+        <div className="hp-hero-text">
+          <span className="hp-hero-icon">
+            <Icon name="help" size={24} />
+          </span>
+          <h1>How can we help?</h1>
+          <p>
+            Something wrong with a payout, a booking or your profile? Tell us here and you will get a reply in
+            this page and by email.
           </p>
         </div>
-        <button type="button" className="primary" onClick={() => setComposing(true)}>
-          Ask for help
-        </button>
+        <div className="hp-topics">
+          {TICKET_CATEGORIES.map((option) => (
+            <button key={option.value} type="button" className="hp-topic" onClick={() => setComposing(option.value)}>
+              <span>
+                <Icon name={CATEGORY_ICON[option.value]} size={18} />
+              </span>
+              {option.label}
+              <Icon name="arrowRight" size={15} className="hp-topic-go" />
+            </button>
+          ))}
+        </div>
       </header>
 
-      {tickets.isLoading && <p className="muted">Loading…</p>}
+      {tickets.isLoading && <div className="skeleton hp-skeleton" />}
 
-      {tickets.data?.tickets.length === 0 && (
-        <p className="muted empty">
-          You have not asked us anything yet. That is a good sign.
+      {tickets.data && rows.length === 0 && (
+        <p className="hp-none">
+          <Icon name="checkCircle" size={18} /> You have not asked us anything yet. That is a good sign.
         </p>
       )}
 
-      {tickets.data && tickets.data.tickets.length > 0 && (
-        <ul className="card-list">
-          {tickets.data.tickets.map((ticket) => (
-            <li key={ticket.id}>
-              <button type="button" className="card-row" onClick={() => setOpenId(ticket.id)}>
-                <div>
-                  <strong>{ticket.subject}</strong>
-                  <div className="muted small">
-                    {ticket.reference} · last activity {when(ticket.lastMessageAt ?? ticket.createdAt)}
-                  </div>
-                </div>
-                <div className="row-status">
-                  <span className={`pill ${STATUS[ticket.status].tone}`}>
-                    {STATUS[ticket.status].label}
-                  </span>
-                  <span className="muted small">{STATUS[ticket.status].short}</span>
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {live.length > 0 && <TicketGroup title="Open" rows={live} onOpen={setOpenId} />}
+      {done.length > 0 && <TicketGroup title="Finished" rows={done} onOpen={setOpenId} />}
 
       {composing && (
         <NewTicket
-          onClose={() => setComposing(false)}
+          initialCategory={composing}
+          onClose={() => setComposing(null)}
           onCreated={(id) => {
-            setComposing(false);
+            setComposing(null);
             setOpenId(id);
           }}
         />
@@ -155,19 +164,43 @@ export function SupportPage() {
   );
 }
 
-function Panel({
-  children,
-  onClose,
+function TicketGroup({
+  title,
+  rows,
+  onOpen,
 }: {
-  children: React.ReactNode;
-  onClose: () => void;
+  title: string;
+  rows: NonNullable<ReturnType<typeof listMyTickets> extends Promise<infer P> ? P : never>['tickets'];
+  onOpen: (id: string) => void;
 }) {
   return (
-    <div className="drawer-backdrop" onClick={onClose}>
-      <aside className="drawer" onClick={(event) => event.stopPropagation()}>
-        {children}
-      </aside>
-    </div>
+    <section className="hp-group">
+      <h2>
+        {title} <span>{rows.length}</span>
+      </h2>
+      <ul>
+        {rows.map((ticket) => (
+          <li key={ticket.id}>
+            <button type="button" className={`hp-ticket is-${STATUS[ticket.status].tone}`} onClick={() => onOpen(ticket.id)}>
+              <span className="hp-ticket-icon">
+                <Icon name={CATEGORY_ICON[ticket.category]} size={18} />
+              </span>
+              <span className="hp-ticket-text">
+                <strong>{ticket.subject}</strong>
+                <span>
+                  {ticket.reference} · last activity {ago(ticket.lastMessageAt ?? ticket.createdAt)}
+                </span>
+              </span>
+              <span className="hp-ticket-state">
+                <span className={`pill ${STATUS[ticket.status].tone}`}>{STATUS[ticket.status].label}</span>
+                <span>{STATUS[ticket.status].short}</span>
+              </span>
+              <Icon name="chevronRight" size={18} className="hp-ticket-go" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -278,6 +311,7 @@ function FilePicker({
         }}
       />
       <label htmlFor={id} className={full ? 'file-trigger disabled' : 'file-trigger'}>
+        <Icon name="paperclip" size={16} />
         {files.length === 0 ? 'Attach a file' : 'Add another file'}
       </label>
       {full && (
@@ -308,31 +342,17 @@ function Attachments({ files }: { files: TicketAttachment[] }) {
   );
 }
 
-function CloseX({ onClose }: { onClose: () => void }) {
-  return (
-    <button
-      type="button"
-      className="icon-button"
-      onClick={onClose}
-      aria-label="Close this panel"
-      title="Close this panel"
-    >
-      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    </button>
-  );
-}
-
 function NewTicket({
+  initialCategory,
   onClose,
   onCreated,
 }: {
+  initialCategory: TicketCategory;
   onClose: () => void;
   onCreated: (id: string) => void;
 }) {
   const queryClient = useQueryClient();
-  const [category, setCategory] = useState<TicketCategory>('PAYMENT_ISSUE');
+  const [category, setCategory] = useState<TicketCategory>(initialCategory);
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -352,26 +372,46 @@ function NewTicket({
   };
 
   return (
-    <Panel onClose={onClose}>
-      <header className="drawer-head">
-        <h2>Ask for help</h2>
-        <CloseX onClose={onClose} />
-      </header>
-
-      <form onSubmit={submit} className="stack">
-        <label>
-          What is this about?
-          <select
-            value={category}
-            onChange={(event) => setCategory(event.target.value as TicketCategory)}
+    <SidePanel
+      eyebrow="Ask for help"
+      title="Tell us what happened"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="new-ticket"
+            className="primary"
+            disabled={create.isPending || subject.trim().length < 3 || body.trim() === ''}
           >
+            <Icon name="send" size={16} />
+            {create.isPending ? 'Sending…' : 'Send'}
+          </button>
+        </>
+      }
+    >
+      <form id="new-ticket" onSubmit={submit} className="stack">
+        <div className="stack-field">
+          <span className="field-label">What is this about?</span>
+          <div className="hp-cats" role="radiogroup">
             {TICKET_CATEGORIES.map((option) => (
-              <option key={option.value} value={option.value}>
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={category === option.value}
+                className={category === option.value ? 'is-on' : ''}
+                onClick={() => setCategory(option.value)}
+              >
+                <Icon name={CATEGORY_ICON[option.value]} size={16} />
                 {option.label}
-              </option>
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
 
         <label>
           One line summary
@@ -412,21 +452,8 @@ function NewTicket({
             {create.error instanceof ApiError ? create.error.message : 'That did not send.'}
           </p>
         )}
-
-        <div className="row-end">
-          <button type="button" className="link" onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="primary"
-            disabled={create.isPending || subject.trim().length < 3 || body.trim() === ''}
-          >
-            {create.isPending ? 'Sending…' : 'Send'}
-          </button>
-        </div>
       </form>
-    </Panel>
+    </SidePanel>
   );
 }
 
@@ -456,26 +483,18 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
   const data = ticket.data;
 
   return (
-    <Panel onClose={onClose}>
+    <SidePanel
+      eyebrow={data ? `${data.reference} · raised ${when(data.createdAt)}` : 'Your question'}
+      title={data?.subject ?? 'Loading…'}
+      onClose={onClose}
+    >
       {!data ? (
-        <p className="muted">Loading…</p>
+        <div className="skeleton hp-skeleton" />
       ) : (
         <>
-          <header className="drawer-head">
-            <div>
-              <h2>{data.subject}</h2>
-              <p className="muted small">
-                {data.reference} · raised {when(data.createdAt)}
-              </p>
-            </div>
-            <CloseX onClose={onClose} />
-          </header>
-
-          <p>
-            <span className={`pill ${STATUS[data.status].tone}`}>
-              {STATUS[data.status].label}
-            </span>{' '}
-            <span className="muted small">{STATUS[data.status].hint}</span>
+          <p className="hp-status">
+            <span className={`pill ${STATUS[data.status].tone}`}>{STATUS[data.status].label}</span>
+            <span>{STATUS[data.status].hint}</span>
           </p>
 
           {data.resolutionNote && (
@@ -484,13 +503,13 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
             </p>
           )}
 
-          <div className="thread">
+          <div className="hp-thread">
             {data.messages.map((message, index) => (
               <div
                 key={message.id}
-                className={message.authorType === 'REPORTER' ? 'message mine' : 'message'}
+                className={message.authorType === 'REPORTER' ? 'hp-msg is-mine' : 'hp-msg'}
               >
-                <div className="muted small">
+                <div className="hp-msg-who">
                   {message.authorType === 'REPORTER' ? 'You' : 'Support'} · {when(message.createdAt)}
                 </div>
                 <p>{message.body}</p>
@@ -568,6 +587,6 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
           )}
         </>
       )}
-    </Panel>
+    </SidePanel>
   );
 }
