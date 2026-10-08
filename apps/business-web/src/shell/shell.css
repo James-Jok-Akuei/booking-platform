@@ -5,8 +5,8 @@
 
 body {
   background:
-    radial-gradient(1100px 520px at 105% -12%, rgba(255, 138, 76, 0.11), transparent 62%),
-    radial-gradient(800px 460px at -12% -8%, rgba(240, 83, 45, 0.05), transparent 60%),
+    radial-gradient(1100px 520px at 105% -12%, rgba(255, 138, 76, 0.07), transparent 62%),
+    radial-gradient(800px 460px at -12% -8%, rgba(240, 83, 45, 0.03), transparent 60%),
     var(--canvas);
   background-attachment: fixed;
 }
@@ -308,7 +308,7 @@ body {
   align-items: center;
   gap: 16px;
   padding: 14px 30px 14px 24px;
-  background: rgba(244, 242, 237, 0.8);
+  background: var(--canvas-glass);
   backdrop-filter: saturate(1.5) blur(18px);
   -webkit-backdrop-filter: saturate(1.5) blur(18px);
   transition: box-shadow 240ms var(--ease);

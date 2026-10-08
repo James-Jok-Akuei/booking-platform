@@ -15421,3 +15421,22 @@ and the rest), shorter than Overview's.
 - The "Read more" / "See what is trending" buttons open their topic or the
   "See all" panel from any page — that logic moved to
   `ads/useForYouPanels`, shared with Overview's block.
+
+## 222. A lighter background in both apps: porcelain (2026-10-08)
+
+The user: make the background of both apps lighter, more professional.
+
+- Both apps' canvas is now **porcelain `#F9F8F6`** — near-white with a
+  breath of warmth — instead of the beige `#F4F2ED` (business) and
+  `#F6F4F0` (customer). Premium apps sit their white cards on an almost-white
+  ground rather than a coloured one; the warmth keeps it from looking cold
+  next to the brand orange, and the orange stays the one colour that speaks.
+- Business: the token `--canvas`, a matching `--canvas-glass` for the frosted
+  top bar and pinned headers, the faint corner light above the page softened
+  (0.11 → 0.07, 0.05 → 0.03), and the browser's `theme-color`. White cards
+  keep their hairline border and soft shadow, which is what separates them
+  now.
+- Customer app: `theme.bg`, which every screen reads; and the shopfront
+  preview in the business app (§208) follows it.
+- Inside cards nothing changed: inputs, chips and quiet tiles keep their warm
+  greys (`--sunken`, `theme.sunken`).

@@ -11,7 +11,10 @@
 
 :root {
   /* ---- surfaces ---- */
-  --canvas: #f4f2ed;
+  /* Porcelain (§222): near-white with a breath of warmth, so white cards
+     float on it and the orange stays the only colour that speaks. */
+  --canvas: #f9f8f6;
+  --canvas-glass: rgba(249, 248, 246, 0.82);
   --panel: #ffffff;
   --sunken: #f6f4f0;
   --sunken-2: #efece6;
@@ -277,7 +280,7 @@ button.link.danger-link { color: var(--danger); }
   gap: 16px;
   margin: -6px calc(-1 * var(--pad-r, 30px)) 8px calc(-1 * var(--pad-l, 24px));
   padding: 6px var(--pad-r, 30px) 14px var(--pad-l, 24px);
-  background: rgba(244, 242, 237, 0.8);
+  background: var(--canvas-glass);
   backdrop-filter: saturate(1.5) blur(18px);
   -webkit-backdrop-filter: saturate(1.5) blur(18px);
   transition: box-shadow 240ms var(--ease);
