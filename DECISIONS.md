@@ -14550,3 +14550,24 @@ Testing note: opening a conversation marks it read for whoever opens it, as it
 always has — so the screenshots run as the demo owner read one demo
 conversation (2 messages).
 
+## 199. Reviews, with a summary and filters (2026-10-08)
+
+`src/pages/ReviewsPage.tsx`; who may reply, the one reply per review, the
+seven-day edit window and its explanation (§92) are unchanged.
+
+- **Summary**: the branch's rating large with half stars and its count; a
+  **bar for each of 5 to 1 stars** (counted from the reviews loaded — "Counted
+  from the latest 50" when there are more), each bar a filter; and a night
+  card **"3 waiting for a reply"** with a ring of how many are answered and
+  **Show them**.
+- **Filters**: All, Waiting for a reply, or one star rating.
+- **Each review is a card** with a coloured edge (gold 4–5, amber 3, red
+  1–2), the reviewer's initials, the stars and the number, and the words.
+  **Your reply sits under it as an answer from the shop** (its logo, "Your
+  reply", how long ago, Edit reply while it can be). With no reply yet, the
+  reply box is the card's foot, marked "Waiting for your reply", with §92's
+  two placeholders (a calm one for low ratings, "Thank them, briefly" for
+  good ones) and a reminder that everyone who reads the review sees it.
+- Branches are pills with each branch's rating (`src/ui/BranchPills.tsx`,
+  now shared with Closures & breaks).
+

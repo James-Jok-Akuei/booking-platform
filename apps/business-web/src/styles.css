@@ -668,3 +668,26 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
   color: var(--ink-2);
 }
 
+/* Choosing a branch (§199). */
+.bpills { display: flex; gap: 8px; flex-wrap: wrap; margin: -6px 0 20px; }
+.bpill {
+  min-height: 42px;
+  padding: 0 16px;
+  gap: 8px;
+  border-radius: 99px;
+  background: var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.06);
+  box-shadow: var(--shadow-xs);
+  font-size: 14px;
+}
+.bpill svg { color: var(--muted); }
+.bpill em { font-style: normal; font-size: 11.5px; color: var(--muted); font-weight: 700; }
+.bpill.is-active, .bpill.is-active:hover:not(:disabled) { background: var(--night); color: #fff; border-color: var(--night); }
+.bpill.is-active svg { color: #ff8a5c; }
+.bpill.is-active em { color: rgba(255, 255, 255, 0.6); }
+@media (max-width: 720px) {
+  .bpills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+  .bpills::-webkit-scrollbar { display: none; }
+  .bpill { flex: none; }
+}
+

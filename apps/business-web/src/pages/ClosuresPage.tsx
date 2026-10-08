@@ -13,6 +13,7 @@ import {
   type ScheduleException,
   type TimeBlock,
 } from '../api/business';
+import { BranchPills } from '../ui/BranchPills';
 import { Icon } from '../ui/Icon';
 import './closures.css';
 
@@ -75,24 +76,7 @@ export function ClosuresPage() {
         </div>
       </header>
 
-      {branches.length > 1 && (
-        <div className="cl-branches" role="tablist" aria-label="Branch">
-          {branches.map((b) => (
-            <button
-              key={b.id}
-              type="button"
-              role="tab"
-              aria-selected={b.id === locationId}
-              className={`cl-branch${b.id === locationId ? ' is-active' : ''}`}
-              onClick={() => setSelected(b.id)}
-            >
-              <Icon name="pin" size={16} />
-              {b.name}
-              {!b.isActive && <em>closed</em>}
-            </button>
-          ))}
-        </div>
-      )}
+      <BranchPills branches={branches} value={locationId} onChange={setSelected} />
 
       {locations.isLoading && <div className="skeleton cl-skeleton" />}
       {branches.length === 0 && !locations.isLoading && (
