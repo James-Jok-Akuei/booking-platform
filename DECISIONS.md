@@ -14571,3 +14571,22 @@ seven-day edit window and its explanation (§92) are unchanged.
 - Branches are pills with each branch's rating (`src/ui/BranchPills.tsx`,
   now shared with Closures & breaks).
 
+## 200. Getting paid, as a wallet (2026-10-08)
+
+`src/pages/PayoutsPage.tsx`, every figure, note and rule kept (§48, §77):
+
+- **The wallet**: a dark card with **Ready to send** large, "Goes out on the
+  next payout run", and at its foot paid so far, how many payouts, and the
+  last three digits of the number it goes to.
+- **Where your money goes** beside it: the mobile money number large, its
+  state as a coloured panel (green confirmed, amber waiting on an
+  administrator, red refused), §48's warning that changing it pauses payouts,
+  and Change the number — owner only, as before.
+- **Your money** as four steps in the order money moves — **Not yours yet →
+  Still held → Ready to send → Paid to you so far** — each with §77's note,
+  the ready step in green; then §29.2's line that these are deposits only.
+- **Payments to you** as a list: amount, run date, state (paid, pending,
+  processing, failed with its reason), when paid, the reference once there
+  is one.
+- The paused notice (§48.3) sits above everything when payouts are paused.
+

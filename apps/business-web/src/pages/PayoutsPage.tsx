@@ -10,12 +10,21 @@ import {
   type PayoutDestination,
 } from '../api/business';
 import { useMoney } from '../money';
+import { Icon, type IconName } from '../ui/Icon';
+import './payouts.css';
 
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
+const PAYOUT: Record<string, { label: string; cls: string }> = {
+  PAID: { label: 'Paid', cls: 'paid' },
+  PENDING: { label: 'Pending', cls: 'pending' },
+  PROCESSING: { label: 'Processing', cls: 'processing' },
+  FAILED: { label: 'Failed', cls: 'failed' },
+};
+
 /**
- * What you are owed, and where it goes.
+ * What you are owed, and where it goes (§77, §200).
  *
  * Deliberately one screen. A business owner's question is "when do I get my
  * money", and the answer depends on both halves: an unverified number pauses
@@ -28,10 +37,7 @@ export function GettingPaidPage() {
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
   const businessId = me.data?.businessMembership?.businessProfile.id;
 
-  const destination = useQuery({
-    queryKey: ['payout-destination'],
-    queryFn: getPayoutDestination,
-  });
+  const destination = useQuery({ queryKey: ['payout-destination'], queryFn: getPayoutDestination });
   const balance = useQuery({
     queryKey: ['balance', businessId],
     queryFn: () => getBalance(businessId!),
@@ -44,132 +50,185 @@ export function GettingPaidPage() {
   });
 
   const isOwner = me.data?.businessMembership?.role === 'OWNER';
+  const b = balance.data;
+  const number = destination.data?.destination ?? null;
 
   return (
-    <section>
+    <section className="gp">
       <header className="page-head">
-        <h1>Getting paid</h1>
+        <div>
+          <h1>Getting paid</h1>
+          <p className="muted">Your share of every deposit, sent to your mobile money.</p>
+        </div>
       </header>
 
-      <Destination
-        destination={destination.data?.destination ?? null}
-        isOwner={isOwner}
-        onSaved={() => {
-          queryClient.invalidateQueries({ queryKey: ['payout-destination'] });
-          queryClient.invalidateQueries({ queryKey: ['balance'] });
-        }}
-      />
-
-      {balance.data && (
-        <div className="card setting">
-          <div className="setting-head">
-            <h2>Your money</h2>
-            <p className="muted small">{balance.data.note}</p>
-          </div>
-
-          {balance.data.payoutsPaused && (
-            <p className="notice">
-              <strong>Payouts are paused.</strong>{' '}
-              {balance.data.payoutsPausedReason === 'DESTINATION_NOT_VERIFIED'
-                ? 'Your payout number has not been confirmed yet. Nothing is lost — ' +
-                  'the balance is held and goes out on the first run after it is.'
-                : 'This business is suspended. Nothing is written off; the balance ' +
-                  'is held until it is reinstated.'}
-            </p>
-          )}
-
-          <div className="figures">
-            <Figure
-              label="Ready to send"
-              value={money.format(balance.data.availableNowMinor)}
-              note="Goes out on the next payout run."
-              strong
-            />
-            <Figure
-              label="Still held"
-              value={money.format(balance.data.pendingMinor)}
-              note="Earned, inside the waiting period after an appointment."
-            />
-            <Figure
-              label="Not yours yet"
-              value={money.format(balance.data.unresolvedMinor)}
-              note="Appointments that have not been completed or cancelled."
-            />
-            <Figure
-              label="Paid to you so far"
-              value={money.format(balance.data.lifetimePaidMinor)}
-              note={`${balance.data.payoutCount} payout(s).`}
-            />
-          </div>
-
-          {/* The deposit is not the price. Saying so here stops a business
-              reconciling this screen against its till and finding a gap (§29.2). */}
-          <p className="muted small">
-            These are deposits only — the balance of each appointment is settled
-            with the customer directly and never passes through the platform.
+      {b?.payoutsPaused && (
+        <div className="gp-paused" role="status">
+          <span>
+            <Icon name="pause" size={20} />
+          </span>
+          <p>
+            <strong>Payouts are paused.</strong>{' '}
+            {b.payoutsPausedReason === 'DESTINATION_NOT_VERIFIED'
+              ? 'Your payout number has not been confirmed yet. Nothing is lost — the balance is held and goes out on the first run after it is.'
+              : 'This business is suspended. Nothing is written off; the balance is held until it is reinstated.'}
           </p>
         </div>
       )}
 
-      <h2 className="section-title">Payments to you</h2>
-      {payouts.data?.payouts.length === 0 && (
-        <p className="muted empty">Nothing sent yet.</p>
+      <div className="gp-top">
+        <article className="gp-wallet">
+          <div className="gp-wallet-head">
+            <span className="gp-wallet-label">
+              <Icon name="wallet" size={16} /> Ready to send
+            </span>
+            <span className="gp-chip" aria-hidden="true" />
+          </div>
+          <strong className="gp-wallet-amount">{b ? money.format(b.availableNowMinor) : '–'}</strong>
+          <p className="gp-wallet-note">Goes out on the next payout run.</p>
+          <div className="gp-wallet-foot">
+            <div>
+              <span>Paid to you so far</span>
+              <strong>{b ? money.format(b.lifetimePaidMinor) : '–'}</strong>
+            </div>
+            <div>
+              <span>Payouts</span>
+              <strong>{b ? b.payoutCount : '–'}</strong>
+            </div>
+            <div className="gp-wallet-to">
+              <span>To</span>
+              <strong>
+                {number ? `•••• ${(number.msisdn ?? number.msisdnLast3 ?? '').slice(-3)}` : 'No number yet'}
+              </strong>
+            </div>
+          </div>
+        </article>
+
+        <Destination
+          destination={number}
+          isOwner={isOwner}
+          onSaved={() => {
+            queryClient.invalidateQueries({ queryKey: ['payout-destination'] });
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+          }}
+        />
+      </div>
+
+      {b && (
+        <article className="gp-flow">
+          <header>
+            <h2>Your money</h2>
+            <p>{b.note}</p>
+          </header>
+          {/* Where each franc is, left to right: the order money moves in. */}
+          <ol className="gp-steps">
+            <Step
+              icon="hourglass"
+              tone="grey"
+              label="Not yours yet"
+              value={money.format(b.unresolvedMinor)}
+              note="Appointments that have not been completed or cancelled."
+            />
+            <Step
+              icon="clock"
+              tone="amber"
+              label="Still held"
+              value={money.format(b.pendingMinor)}
+              note="Earned, inside the waiting period after an appointment."
+            />
+            <Step
+              icon="wallet"
+              tone="green"
+              label="Ready to send"
+              value={money.format(b.availableNowMinor)}
+              note="Goes out on the next payout run."
+              strong
+            />
+            <Step
+              icon="checkCircle"
+              tone="night"
+              label="Paid to you so far"
+              value={money.format(b.lifetimePaidMinor)}
+              note={`${b.payoutCount} payout(s).`}
+            />
+          </ol>
+          {/* The deposit is not the price. Saying so here stops a business
+              reconciling this screen against its till and finding a gap (§29.2). */}
+          <p className="gp-deposits">
+            <Icon name="info" size={15} />
+            These are deposits only — the balance of each appointment is settled with the customer directly
+            and never passes through the platform.
+          </p>
+        </article>
       )}
-      {payouts.data && payouts.data.payouts.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Amount</th>
-              <th>Run</th>
-              <th>Status</th>
-              <th>Reference</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payouts.data.payouts.map((payout) => (
-              <tr key={payout.id}>
-                <td>
-                  <strong>{money.format(payout.settlementAmountMinor)}</strong>
-                </td>
-                <td className="small">{when(payout.runAt)}</td>
-                <td>
-                  <span className={`pill ${payout.status.toLowerCase()}`}>
-                    {payout.status}
+
+      <article className="gp-history">
+        <header>
+          <h2>Payments to you</h2>
+          {payouts.data && payouts.data.payouts.length > 0 && <span>{payouts.data.payouts.length}</span>}
+        </header>
+        {payouts.isLoading && <div className="skeleton gp-skeleton" />}
+        {payouts.data?.payouts.length === 0 && (
+          <div className="gp-empty">
+            <span>
+              <Icon name="banknote" size={26} />
+            </span>
+            <p>Nothing sent yet.</p>
+          </div>
+        )}
+        {payouts.data && payouts.data.payouts.length > 0 && (
+          <ul className="gp-list">
+            {payouts.data.payouts.map((payout) => {
+              const look = PAYOUT[payout.status] ?? { label: payout.status, cls: '' };
+              return (
+                <li key={payout.id} className={`gp-row is-${look.cls}`}>
+                  <span className="gp-row-icon">
+                    <Icon name={payout.status === 'FAILED' ? 'xCircle' : payout.status === 'PAID' ? 'arrowUpRight' : 'clock'} size={18} />
                   </span>
-                  {payout.failureReason && (
-                    <div className="muted small">{payout.failureReason}</div>
-                  )}
-                  {payout.paidAt && (
-                    <div className="muted small">{when(payout.paidAt)}</div>
-                  )}
-                </td>
-                <td className="small">{payout.reference ?? '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+                  <div className="gp-row-main">
+                    <strong>{money.format(payout.settlementAmountMinor)}</strong>
+                    <span>Run {when(payout.runAt)}</span>
+                    {payout.failureReason && <span className="gp-fail">{payout.failureReason}</span>}
+                  </div>
+                  <div className="gp-row-side">
+                    <span className={`pill ${look.cls}`}>{look.label}</span>
+                    {payout.paidAt && <span>{when(payout.paidAt)}</span>}
+                    {payout.reference && <code>{payout.reference}</code>}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </article>
     </section>
   );
 }
 
-function Figure({
+function Step({
+  icon,
+  tone,
   label,
   value,
   note,
   strong,
 }: {
+  icon: IconName;
+  tone: 'grey' | 'amber' | 'green' | 'night';
   label: string;
   value: string;
   note: string;
   strong?: boolean;
 }) {
   return (
-    <div className="figure-block">
-      <span className="muted small">{label}</span>
-      <span className={strong ? 'figure' : 'figure muted-figure'}>{value}</span>
-      <span className="muted small">{note}</span>
-    </div>
+    <li className={`gp-step tone-${tone}${strong ? ' is-strong' : ''}`}>
+      <span className="gp-step-icon">
+        <Icon name={icon} size={18} />
+      </span>
+      <span className="gp-step-label">{label}</span>
+      <strong>{value}</strong>
+      <span className="gp-step-note">{note}</span>
+    </li>
   );
 }
 
@@ -199,24 +258,33 @@ function Destination({
     submit.mutate(msisdn.trim());
   };
 
+  const status = destination?.status;
+  const tone = status === 'VERIFIED' ? 'ok' : status === 'UNVERIFIED' ? 'warn' : status ? 'bad' : 'none';
+
   return (
-    <div className="card setting">
-      <div className="setting-head">
-        <h2>Where your money goes</h2>
-        <p className="muted small">
-          The mobile money number payouts are sent to. Changing it{' '}
-          <strong>pauses payouts</strong> until an administrator confirms the new
-          one — that check is what stops money going to a number nobody verified.
-        </p>
-      </div>
+    <article className={`gp-dest tone-${tone}`}>
+      <header>
+        <span className="gp-dest-icon">
+          <Icon name="phone" size={20} />
+        </span>
+        <div>
+          <h2>Where your money goes</h2>
+          <p>
+            The mobile money number payouts are sent to. Changing it <strong>pauses payouts</strong> until an
+            administrator confirms the new one — that check is what stops money going to a number nobody
+            verified.
+          </p>
+        </div>
+      </header>
 
       {destination ? (
-        <div className="destination">
-          <code>{destination.msisdn ?? destination.msisdnLast3}</code>
-          <span className={`pill ${destination.status.toLowerCase()}`}>
-            {destination.status}
-          </span>
-          <span className="muted small">
+        <div className="gp-number">
+          <div>
+            <span className="gp-number-label">Mobile money</span>
+            <code>{destination.msisdn ?? destination.msisdnLast3}</code>
+          </div>
+          <span className={`pill ${destination.status.toLowerCase()}`}>{destination.status.toLowerCase()}</span>
+          <p>
             {destination.status === 'VERIFIED'
               ? `Confirmed ${when(destination.verifiedAt)}. Payouts can go out.`
               : destination.status === 'UNVERIFIED'
@@ -224,31 +292,38 @@ function Destination({
                 : destination.status === 'REJECTED'
                   ? (destination.rejectionReason ?? 'Refused. Submit another number.')
                   : 'Replaced by a newer number.'}
-          </span>
+          </p>
         </div>
       ) : (
-        <p className="error small">
-          No number yet — <strong>you cannot be paid</strong> until you add one.
+        <p className="gp-nonumber">
+          <Icon name="alert" size={16} />
+          <span>
+            No number yet — <strong>you cannot be paid</strong> until you add one.
+          </span>
         </p>
       )}
 
       {/* Only the OWNER may submit: it is the one decision that determines where
           money physically goes, and §48 keeps it at that level. */}
       {!isOwner ? (
-        <p className="muted small">Only the owner can change this.</p>
+        <p className="gp-owner-only">
+          <Icon name="shield" size={15} /> Only the owner can change this.
+        </p>
       ) : changing || !destination ? (
-        <form className="setting-form" onSubmit={onSubmit}>
+        <form className="gp-form" onSubmit={onSubmit}>
           <label htmlFor="msisdn">Number</label>
-          <input
-            id="msisdn"
-            value={msisdn}
-            onChange={(e) => setMsisdn(e.target.value)}
-            placeholder="+250788123456"
-            style={{ width: 190 }}
-          />
-          <button type="submit" className="primary" disabled={submit.isPending}>
-            {submit.isPending ? 'Sending…' : 'Submit for checking'}
-          </button>
+          <div>
+            <input
+              id="msisdn"
+              value={msisdn}
+              onChange={(e) => setMsisdn(e.target.value)}
+              placeholder="+250788123456"
+              inputMode="tel"
+            />
+            <button type="submit" className="primary" disabled={submit.isPending}>
+              {submit.isPending ? 'Sending…' : 'Submit for checking'}
+            </button>
+          </div>
           {destination && (
             <button type="button" className="link" onClick={() => setChanging(false)}>
               Cancel
@@ -256,8 +331,8 @@ function Destination({
           )}
         </form>
       ) : (
-        <button type="button" onClick={() => setChanging(true)}>
-          Change the number
+        <button type="button" className="gp-change" onClick={() => setChanging(true)}>
+          <Icon name="pencil" size={15} /> Change the number
         </button>
       )}
 
@@ -266,6 +341,6 @@ function Destination({
           {submit.error instanceof ApiError ? submit.error.message : 'Could not save.'}
         </p>
       )}
-    </div>
+    </article>
   );
 }
