@@ -15517,3 +15517,32 @@ The customer app already asked (account screen), so it is unchanged.
 
 Checked: the dialog opens from the sidebar icon and from the phone's menu;
 "Stay signed in" leaves the person on the same page, still signed in.
+
+## 227. The app's own dropdown, everywhere (2026-10-08)
+
+The user: the dropdowns open the computer's own menu (a grey macOS list) —
+design them properly, across the app.
+
+`ui/Select.tsx` replaces every `<select>` in the business app — five: the
+branch filter on Appointments, the order on Reviews, Category and Type of
+business on Your shopfront, and District in the branch form (new and edit).
+
+- **On a computer**: a white card under the field (above it when there is no
+  room below), the chosen option in orange with a ✓, the row under the
+  pointer or the arrow keys highlighted, headings for grouped lists
+  (districts under their province), and a search box when a list has more
+  than ten options. It follows the field when the page scrolls.
+- **On a phone** (600px and under): a sheet rising from the bottom, as the
+  app's dialogs do, with a heading, a close button and 50px rows.
+- **Keyboard**: ↓/↑/Enter/Space open it; ↓ ↑ Home End move; typing a letter
+  jumps to it (or types in the search); Enter or Space chooses; Esc closes
+  and returns to the field; Tab moves on. Screen readers hear a listbox with
+  the chosen option marked.
+- Closes on a press anywhere else. Two looks: `field` (like the app's inputs)
+  and `bare` (filling a container already styled — the branch and order pills).
+
+Checked: each opens; choosing by keyboard and by mouse changes the value
+(Reviews re-orders highest / lowest / oldest correctly); Esc closes; the
+phone sheet. The date and time fields (opening hours on Branches & hours,
+the sale's last day on Services, Closures & breaks) still use the browser's
+own pickers.

@@ -5,6 +5,7 @@ import { ApiError } from '../api/client';
 import { createLocation, listProvinces } from '../api/business';
 import { Icon } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
+import { Select } from '../ui/Select';
 
 /**
  * Pulls a latitude and longitude out of whatever someone pasted.
@@ -173,18 +174,19 @@ export function DistrictField({
   return (
     <div className="bf-field">
       <label htmlFor="bf-district">District</label>
-      <select id="bf-district" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Choose a district</option>
-        {provinces.data?.map((province) => (
-          <optgroup key={province.id} label={province.name}>
-            {province.districts.map((district) => (
-              <option key={district.id} value={district.id}>
-                {district.name}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
+      <Select
+        id="bf-district"
+        value={value}
+        onChange={onChange}
+        placeholder="Choose a district"
+        sheetTitle="District"
+        icon="pin"
+        options={
+          provinces.data?.flatMap((province) =>
+            province.districts.map((district) => ({ value: district.id, label: district.name, group: province.name })),
+          ) ?? []
+        }
+      />
       <span className="bf-help">{hint}</span>
     </div>
   );

@@ -19,6 +19,7 @@ import { initialsOf } from '../ui/Avatar';
 import { CustomerPhone } from '../shopfront/CustomerPhone';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
+import { Select } from '../ui/Select';
 import { Stars } from '../ui/Stars';
 import { Switch } from '../ui/Switch';
 import './profile.css';
@@ -321,41 +322,33 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
         </label>
 
         <div className="pf-two">
-          <label className="pf-field">
+          <div className="pf-field">
             <span>Category</span>
-            <select
+            <Select
               value={categoryId}
-              onChange={(event) => {
-                setCategoryId(event.target.value);
+              onChange={(next) => {
+                setCategoryId(next);
                 // A subcategory must belong to its category — the server checks,
                 // and keeping a stale one would send a pair it will refuse.
                 setSubcategoryId('');
               }}
-            >
-              <option value="">Choose one</option>
-              {categories.data?.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </label>
+              label="Category"
+              placeholder="Choose one"
+              options={categories.data?.map((category) => ({ value: category.id, label: category.name })) ?? []}
+            />
+          </div>
 
-          <label className="pf-field">
+          <div className="pf-field">
             <span>Type of business</span>
-            <select
+            <Select
               value={subcategoryId}
-              onChange={(event) => setSubcategoryId(event.target.value)}
+              onChange={setSubcategoryId}
               disabled={!chosen}
-            >
-              <option value="">{chosen ? 'Choose one' : 'Pick a category first'}</option>
-              {chosen?.subcategories.map((subcategory) => (
-                <option key={subcategory.id} value={subcategory.id}>
-                  {subcategory.name}
-                </option>
-              ))}
-            </select>
-          </label>
+              label="Type of business"
+              placeholder={chosen ? 'Choose one' : 'Pick a category first'}
+              options={chosen?.subcategories.map((subcategory) => ({ value: subcategory.id, label: subcategory.name })) ?? []}
+            />
+          </div>
         </div>
 
         {save.error && (

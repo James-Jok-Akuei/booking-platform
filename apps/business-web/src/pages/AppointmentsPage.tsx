@@ -21,6 +21,7 @@ import { Avatar } from '../ui/Avatar';
 import { confirmDialog, promptDialog } from '../ui/Dialog';
 import { MoreMenu, type MoreItem } from '../ui/MoreMenu';
 import { Portal } from '../ui/Portal';
+import { Select } from '../ui/Select';
 import { Icon, type IconName } from '../ui/Icon';
 import { addDays, clock, minutesBetween, relativeDay, sameDay, startOfDay, useNow } from '../lib/time';
 import './appointments.css';
@@ -323,18 +324,16 @@ export function AppointmentsPage() {
                 )}
               </label>
               {branches.length > 1 && (
-                <label className={`ap-branch${branch ? ' is-on' : ''}`}>
+                <div className={`ap-branch${branch ? ' is-on' : ''}`}>
                   <Icon name="pin" size={16} />
-                  <select value={branch} onChange={(event) => setBranch(event.target.value)} aria-label="Branch">
-                    <option value="">All branches</option>
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                  <Icon name="chevronDown" size={15} className="ap-branch-chev" />
-                </label>
+                  <Select
+                    variant="bare"
+                    value={branch}
+                    onChange={setBranch}
+                    label="Branch"
+                    options={[{ value: '', label: 'All branches' }, ...branches.map((b) => ({ value: b.id, label: b.name }))]}
+                  />
+                </div>
               )}
             </div>
             <button

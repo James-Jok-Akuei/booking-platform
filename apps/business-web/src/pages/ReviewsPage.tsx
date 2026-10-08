@@ -14,6 +14,7 @@ import { ago } from '../lib/time';
 import { Avatar, initialsOf } from '../ui/Avatar';
 import { BranchPills } from '../ui/BranchPills';
 import { Icon } from '../ui/Icon';
+import { Select } from '../ui/Select';
 import { Stars } from '../ui/Stars';
 import './reviews.css';
 
@@ -179,17 +180,10 @@ export function ReviewsPage() {
                   </button>
                 )}
               </label>
-              <label className="rv-sort">
+              <div className="rv-sort">
                 <Icon name="sliders" size={15} />
-                <select value={sort} onChange={(event) => setSort(event.target.value as Sort)} aria-label="Order">
-                  {SORTS.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-                <Icon name="chevronDown" size={14} className="rv-sort-chev" />
-              </label>
+                <Select variant="bare" value={sort} onChange={setSort} label="Order" options={SORTS} />
+              </div>
             </div>
             <div className="rv-tabs pin-phone" role="tablist">
               {tabs.map((t) => (

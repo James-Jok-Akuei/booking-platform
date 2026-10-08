@@ -50,28 +50,10 @@
   color: var(--muted);
 }
 .ap-branch.is-on { background: var(--night); border-color: var(--night); color: #ff8a5c; }
-.ap-branch select {
-  appearance: none;
-  -webkit-appearance: none;
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  min-height: 0;
-  padding: 0 34px 0 8px;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  font-weight: 650;
-  font-size: 13.5px;
-  color: var(--ink);
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-.ap-branch.is-on select { color: #fff; }
-.ap-branch select:focus, .ap-branch select:hover { border: none; box-shadow: none; }
+.ap-branch .sel { flex: 1; font-size: 13.5px; color: var(--ink); }
+.ap-branch.is-on .sel { color: #fff; }
+.ap-branch.is-on .sel-chev { color: rgba(255, 255, 255, 0.7); }
 .ap-branch:focus-within { box-shadow: var(--ring); }
-.ap-branch-chev { position: absolute; right: 14px; pointer-events: none; }
-.ap-branch.is-on .ap-branch-chev { color: rgba(255, 255, 255, 0.7); }
 
 /* ---- today at a glance ---- */
 
