@@ -14497,3 +14497,27 @@ What is new is being able to SEE them:
 Checked with a test closure, a test short day and a test break on the demo
 branch, all three removed afterwards.
 
+## 197. Your shopfront, with a live preview (2026-10-08)
+
+`src/pages/ProfilePage.tsx`, every action and word kept:
+
+- **Open / paused stays first** (§119.3), now a strip with a switch: "Your
+  shop is open" (green) or, paused, amber across the whole strip. Pausing
+  asks first in the dialog (§193) with §119's words; reopening does not ask.
+- **The shop window**: the cover full width with "Change cover" on it, the
+  logo large and reaching up over the cover with a camera button to change
+  it, then the name, category · type, and badges — Live / Paused, the rating
+  with half stars and review count, how many branches.
+- **"Make your shop window stand out"**: a progress ring and six checks — cover
+  photo, logo, what you do (40+ characters), category and type, phone, photos
+  at every open branch (from each branch's photo count). It counts only what
+  a customer sees; nothing is required by it.
+- **Details beside "How customers see you"**: the form on the left, and on
+  the right a phone showing the shop as the customer's app does — cover,
+  logo, name, category, first branch with its rating, the tabs, the
+  description — **changing as it is typed**. Save is enabled only when
+  something changed, and the foot says the preview shows unsaved changes.
+- **Photos per branch**: a fill bar of "n of 30", larger tiles that zoom on
+  hover with a remove button (now the dialog), and an "Add a photo" tile in
+  the grid. Adding or removing refreshes the checklist.
+

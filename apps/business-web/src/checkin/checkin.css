@@ -257,7 +257,6 @@
   border-top-color: #fff;
   animation: spin 700ms linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---- without the code ---- */
 

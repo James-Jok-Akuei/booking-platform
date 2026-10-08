@@ -103,6 +103,7 @@ img { max-width: 100%; }
 @keyframes slide-in-right { from { transform: translateX(100%); } to { transform: none; } }
 @keyframes slide-in-left { from { transform: translateX(-100%); } to { transform: none; } }
 @keyframes shimmer { from { background-position: -400px 0; } to { background-position: 400px 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(240, 83, 45, 0.45); } 100% { box-shadow: 0 0 0 12px rgba(240, 83, 45, 0); } }
 
 @media (prefers-reduced-motion: reduce) {

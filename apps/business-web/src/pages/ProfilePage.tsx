@@ -1,7 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
-import { ImageButton } from '../components/ImageButton';
 import {
   addGalleryPhoto,
   getCategories,
@@ -14,108 +13,165 @@ import {
   setProfileImage,
   updateProfile,
   type BusinessProfile,
+  type Location,
 } from '../api/business';
+import { initialsOf } from '../ui/Avatar';
+import { confirmDialog } from '../ui/Dialog';
+import { Icon, type IconName } from '../ui/Icon';
+import { Stars } from '../ui/Stars';
+import { Switch } from '../ui/Switch';
+import './profile.css';
+
+/** Mirrors ALLOWED_MIME_TYPES on the server (§132.3). */
+const ACCEPT = 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp';
 
 /**
- * How a business looks to a customer.
+ * How a business looks to a customer (§88, §197).
  *
  * Everything here is the shop window: the name and description a customer
- * reads before booking, and the photos they judge the place by. None of it was
- * reachable until §88 — a business that signed up got a listing with no
- * description and no photo and no way to add either.
+ * reads before booking, and the photos they judge the place by. The details
+ * form sits beside a live preview of the shop as the customer's app shows it,
+ * so every word is seen where it will be read.
  */
 export function ProfilePage() {
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
+  const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
 
   return (
-    <section>
+    <section className="pf">
       <header className="page-head">
         <div>
           <h1>Your shopfront</h1>
-          <p className="muted">
-            What a customer sees before they book. The photos do most of the work.
-          </p>
+          <p className="muted">What a customer sees before they book. The photos do most of the work.</p>
         </div>
       </header>
 
-      {profile.isLoading && <p className="muted">Loading…</p>}
+      {profile.isLoading && <div className="skeleton pf-skeleton" />}
       {profile.data && (
         <>
           <PausePanel profile={profile.data} />
-          <ShopWindow profile={profile.data} />
-          <Details profile={profile.data} />
-          <Galleries />
+          <ShopWindow profile={profile.data} locations={locations.data ?? []} />
+          <Strength profile={profile.data} locations={locations.data ?? []} />
+          <Details profile={profile.data} locations={locations.data ?? []} />
+          <Galleries locations={locations.data} />
         </>
       )}
     </section>
   );
 }
 
-function ShopWindow({ profile }: { profile: BusinessProfile }) {
+/** A hidden file input with its own label as the control (§81.4, §132.3). */
+function PickImage({
+  id,
+  busy,
+  onPick,
+  className,
+  children,
+}: {
+  id: string;
+  busy: boolean;
+  onPick: (file: File) => void;
+  className: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <input
+        id={id}
+        type="file"
+        className="visually-hidden"
+        accept={ACCEPT}
+        disabled={busy}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          // Cleared so picking the SAME file twice still fires a change.
+          event.target.value = '';
+          if (file) onPick(file);
+        }}
+      />
+      <label htmlFor={id} className={`${className}${busy ? ' is-busy' : ''}`}>
+        {children}
+      </label>
+    </>
+  );
+}
+
+function ShopWindow({ profile, locations }: { profile: BusinessProfile; locations: Location[] }) {
   const queryClient = useQueryClient();
   const [problem, setProblem] = useState<string | null>(null);
 
   const upload = useMutation({
-    mutationFn: (input: { kind: 'logo' | 'cover'; file: File }) =>
-      setProfileImage(input.kind, input.file),
+    mutationFn: (input: { kind: 'logo' | 'cover'; file: File }) => setProfileImage(input.kind, input.file),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
-    onError: (error) =>
-      setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
+    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
   });
 
-  const pick = (kind: 'logo' | 'cover') => (file: File | null) => {
+  const pick = (kind: 'logo' | 'cover') => (file: File) => {
     setProblem(null);
-    if (file) upload.mutate({ kind, file });
+    upload.mutate({ kind, file });
   };
+  const busy = upload.isPending;
+  const uploading = upload.isPending ? upload.variables?.kind : null;
+
+  const rated = locations.filter((l) => l.ratingCount > 0);
+  const count = rated.reduce((s, l) => s + l.ratingCount, 0);
+  const rating = count ? rated.reduce((s, l) => s + Number(l.ratingAvg ?? 0) * l.ratingCount, 0) / count : null;
+  const live = profile.status === 'APPROVED' && !profile.pausedAt;
 
   return (
-    <div className="shopwindow">
+    <div className="pf-window">
       <div
-        className="cover"
-        style={
-          profile.coverImageUrl
-            ? { backgroundImage: `url(${profile.coverImageUrl})` }
-            : undefined
-        }
+        className={`pf-cover${profile.coverImageUrl ? '' : ' is-empty'}`}
+        style={profile.coverImageUrl ? { backgroundImage: `url(${profile.coverImageUrl})` } : undefined}
       >
         {!profile.coverImageUrl && (
-          <span className="muted small">No cover photo yet</span>
+          <span className="pf-cover-hint">
+            <Icon name="image" size={28} />
+            No cover photo yet
+          </span>
         )}
-        <div className="cover-action">
-          <ImageButton
-            id="cover-upload"
-            label={profile.coverImageUrl ? 'Change cover' : 'Add a cover photo'}
-            busy={upload.isPending}
-            onPick={pick('cover')}
-          />
-        </div>
+        <PickImage id="cover-upload" busy={busy} onPick={pick('cover')} className="pf-cover-btn">
+          <Icon name="camera" size={17} />
+          {uploading === 'cover' ? 'Uploading…' : profile.coverImageUrl ? 'Change cover' : 'Add a cover photo'}
+        </PickImage>
       </div>
 
-      <div className="logo-row">
-        <div className="logo">
-          {profile.logoUrl ? (
-            <img src={profile.logoUrl} alt="" />
-          ) : (
-            <span className="muted small">No logo</span>
-          )}
+      <div className="pf-id">
+        <div className="pf-logo">
+          {profile.logoUrl ? <img src={profile.logoUrl} alt="" /> : <span>{initialsOf(profile.name ?? 'B')}</span>}
+          <PickImage id="logo-upload" busy={busy} onPick={pick('logo')} className="pf-logo-btn">
+            <Icon name="camera" size={16} />
+            <span className="visually-hidden">{profile.logoUrl ? 'Change logo' : 'Add a logo'}</span>
+          </PickImage>
+          {uploading === 'logo' && <i className="pf-logo-busy" />}
         </div>
-        <div>
-          <strong>{profile.name ?? 'Unnamed business'}</strong>
-          <div className="muted small">
+        <div className="pf-id-text">
+          <h2>{profile.name ?? 'Unnamed business'}</h2>
+          <p>
             {profile.category?.name ?? 'No category chosen'}
             {profile.subcategory && <> · {profile.subcategory.name}</>}
+          </p>
+          <div className="pf-badges">
+            <span className={`pf-badge${live ? ' is-live' : ' is-off'}`}>
+              <i /> {live ? 'Live' : profile.pausedAt ? 'Paused' : profile.status.toLowerCase()}
+            </span>
+            {rating !== null && (
+              <span className="pf-badge">
+                <Stars value={rating} size={13} /> {rating.toFixed(1)} · {count} reviews
+              </span>
+            )}
+            <span className="pf-badge">
+              <Icon name="pin" size={14} /> {locations.length} {locations.length === 1 ? 'branch' : 'branches'}
+            </span>
           </div>
-          <ImageButton
-            id="logo-upload"
-            label={profile.logoUrl ? 'Change logo' : 'Add a logo'}
-            busy={upload.isPending}
-            onPick={pick('logo')}
-          />
         </div>
+        <PickImage id="logo-upload-2" busy={busy} onPick={pick('logo')} className="pf-logo-change">
+          {profile.logoUrl ? 'Change logo' : 'Add a logo'}
+        </PickImage>
       </div>
 
       {problem && (
-        <p className="error small" role="alert">
+        <p className="notice pf-problem" role="alert">
           {problem}
         </p>
       )}
@@ -123,13 +179,63 @@ function ShopWindow({ profile }: { profile: BusinessProfile }) {
   );
 }
 
-/**
- * A file input referenced by `htmlFor`, never wrapped by its label (§81.4) —
- * wrapping re-dispatches the click and makes a selection look ignored. The
- * input is cleared after each pick so choosing the same file twice still fires.
- */
+/** How complete the shop window is: the things a customer judges a shop by. */
+function Strength({ profile, locations }: { profile: BusinessProfile; locations: Location[] }) {
+  const active = locations.filter((l) => l.isActive);
+  const steps: Array<{ label: string; done: boolean; icon: IconName }> = [
+    { label: 'Cover photo', done: Boolean(profile.coverImageUrl), icon: 'image' },
+    { label: 'Logo', done: Boolean(profile.logoUrl), icon: 'store' },
+    { label: 'What you do', done: (profile.description ?? '').trim().length >= 40, icon: 'pencil' },
+    { label: 'Category and type', done: Boolean(profile.category && profile.subcategory), icon: 'tag' },
+    { label: 'Phone', done: Boolean(profile.phone), icon: 'phone' },
+    {
+      label: 'Photos at every branch',
+      done: active.length > 0 && active.every((l) => (l._count?.media ?? 0) > 0),
+      icon: 'camera',
+    },
+  ];
+  const done = steps.filter((s) => s.done).length;
+  const pct = Math.round((done / steps.length) * 100);
+  const r = 34;
+  const c = 2 * Math.PI * r;
 
-function Details({ profile }: { profile: BusinessProfile }) {
+  return (
+    <article className="pf-strength">
+      <div className="pf-ring" aria-label={`${pct}% complete`}>
+        <svg viewBox="0 0 80 80" width="88" height="88">
+          <circle cx="40" cy="40" r={r} className="pf-ring-track" />
+          <circle
+            cx="40"
+            cy="40"
+            r={r}
+            className="pf-ring-fill"
+            strokeDasharray={c}
+            strokeDashoffset={c * (1 - done / steps.length)}
+          />
+        </svg>
+        <strong>{pct}%</strong>
+      </div>
+      <div className="pf-strength-text">
+        <h2>{done === steps.length ? 'Your shop window is complete' : 'Make your shop window stand out'}</h2>
+        <p>
+          {done === steps.length
+            ? 'Everything a customer looks for is here.'
+            : `${steps.length - done} ${steps.length - done === 1 ? 'thing' : 'things'} left — shops with photos and a good description get chosen first.`}
+        </p>
+        <ul>
+          {steps.map((s) => (
+            <li key={s.label} className={s.done ? 'is-done' : ''}>
+              <Icon name={s.done ? 'checkCircle' : s.icon} size={15} />
+              {s.label}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </article>
+  );
+}
+
+function Details({ profile, locations }: { profile: BusinessProfile; locations: Location[] }) {
   const queryClient = useQueryClient();
   const categories = useQuery({ queryKey: ['categories'], queryFn: getCategories });
 
@@ -151,6 +257,13 @@ function Details({ profile }: { profile: BusinessProfile }) {
   }, [profile]);
 
   const chosen = categories.data?.find((category) => category.id === categoryId);
+  const sub = chosen?.subcategories.find((s) => s.id === subcategoryId);
+  const dirty =
+    name !== (profile.name ?? '') ||
+    description !== (profile.description ?? '') ||
+    phone !== (profile.phone ?? '') ||
+    categoryId !== (profile.category?.id ?? '') ||
+    subcategoryId !== (profile.subcategory?.id ?? '');
 
   const save = useMutation({
     mutationFn: () =>
@@ -173,102 +286,162 @@ function Details({ profile }: { profile: BusinessProfile }) {
     save.mutate();
   };
 
+  const branch = locations.find((l) => l.isActive) ?? locations[0];
+
   return (
-    <form className="stack panel" onSubmit={submit}>
-      <h2>Details</h2>
+    <div className="pf-details">
+      <form className="pf-form" onSubmit={submit}>
+        <header>
+          <h2>Details</h2>
+          <p>Shown on your shop’s page in the app.</p>
+        </header>
 
-      <label>
-        Business name
-        <input value={name} onChange={(event) => setName(event.target.value)} maxLength={120} />
-      </label>
-
-      <label>
-        What you do
-        <textarea
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          rows={4}
-          maxLength={2000}
-          placeholder="A customer reads this before booking. Say what you offer and what makes you worth the trip."
-        />
-      </label>
-
-      <label>
-        Phone
-        <input value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={30} />
-      </label>
-
-      <div className="two-up">
-        <label>
-          Category
-          <select
-            value={categoryId}
-            onChange={(event) => {
-              setCategoryId(event.target.value);
-              // A subcategory must belong to its category — the server checks,
-              // and keeping a stale one would send a pair it will refuse.
-              setSubcategoryId('');
-            }}
-          >
-            <option value="">Choose one</option>
-            {categories.data?.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+        <label className="pf-field">
+          <span>Business name</span>
+          <input value={name} onChange={(event) => setName(event.target.value)} maxLength={120} />
         </label>
 
-        <label>
-          Type of business
-          <select
-            value={subcategoryId}
-            onChange={(event) => setSubcategoryId(event.target.value)}
-            disabled={!chosen}
-          >
-            <option value="">{chosen ? 'Choose one' : 'Pick a category first'}</option>
-            {chosen?.subcategories.map((subcategory) => (
-              <option key={subcategory.id} value={subcategory.id}>
-                {subcategory.name}
-              </option>
-            ))}
-          </select>
+        <label className="pf-field">
+          <span>
+            What you do <em>{description.length}/2000</em>
+          </span>
+          <textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={5}
+            maxLength={2000}
+            placeholder="A customer reads this before booking. Say what you offer and what makes you worth the trip."
+          />
         </label>
-      </div>
 
-      {save.error && (
-        <p className="error small" role="alert">
-          {save.error instanceof ApiError ? save.error.message : 'That did not save.'}
+        <label className="pf-field">
+          <span>Phone</span>
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={30} />
+        </label>
+
+        <div className="pf-two">
+          <label className="pf-field">
+            <span>Category</span>
+            <select
+              value={categoryId}
+              onChange={(event) => {
+                setCategoryId(event.target.value);
+                // A subcategory must belong to its category — the server checks,
+                // and keeping a stale one would send a pair it will refuse.
+                setSubcategoryId('');
+              }}
+            >
+              <option value="">Choose one</option>
+              {categories.data?.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="pf-field">
+            <span>Type of business</span>
+            <select
+              value={subcategoryId}
+              onChange={(event) => setSubcategoryId(event.target.value)}
+              disabled={!chosen}
+            >
+              <option value="">{chosen ? 'Choose one' : 'Pick a category first'}</option>
+              {chosen?.subcategories.map((subcategory) => (
+                <option key={subcategory.id} value={subcategory.id}>
+                  {subcategory.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {save.error && (
+          <p className="error small" role="alert">
+            {save.error instanceof ApiError ? save.error.message : 'That did not save.'}
+          </p>
+        )}
+
+        <footer className="pf-form-foot">
+          <span>
+            {saved && !save.isPending && !dirty ? (
+              <span className="ok">
+                <Icon name="checkCircle" size={16} /> Saved.
+              </span>
+            ) : dirty ? (
+              'The preview shows your changes — save to make them live.'
+            ) : (
+              ''
+            )}
+          </span>
+          <button type="submit" className="primary" disabled={save.isPending || !dirty}>
+            {save.isPending ? 'Saving…' : 'Save'}
+          </button>
+        </footer>
+      </form>
+
+      {/* The shop as the customer's app shows it, as it is being written. */}
+      <aside className="pf-preview" aria-label="How customers see your shop">
+        <p className="pf-preview-label">
+          <Icon name="eye" size={15} /> How customers see you
         </p>
-      )}
-
-      <div className="row-end">
-        {saved && !save.isPending && <span className="muted small">Saved.</span>}
-        <button type="submit" className="primary" disabled={save.isPending}>
-          {save.isPending ? 'Saving…' : 'Save'}
-        </button>
-      </div>
-    </form>
+        <div className="phone">
+          <div className="phone-screen">
+            <div
+              className="phone-cover"
+              style={profile.coverImageUrl ? { backgroundImage: `url(${profile.coverImageUrl})` } : undefined}
+            >
+              <span className="phone-back">
+                <Icon name="chevronLeft" size={16} />
+              </span>
+            </div>
+            <div className="phone-body">
+              <div className="phone-logo">
+                {profile.logoUrl ? <img src={profile.logoUrl} alt="" /> : <span>{initialsOf(name || 'B')}</span>}
+              </div>
+              <h3>{name.trim() || 'Your business name'}</h3>
+              <p className="phone-cat">
+                {[chosen?.name, sub?.name].filter(Boolean).join(' · ') || 'Category'}
+              </p>
+              {branch && (
+                <p className="phone-where">
+                  <Icon name="pin" size={12} /> {branch.name}
+                  {branch.ratingCount > 0 && (
+                    <>
+                      {' '}
+                      · <Icon name="star" size={12} filled /> {branch.ratingAvg}
+                    </>
+                  )}
+                </p>
+              )}
+              <div className="phone-tabs">
+                <span className="is-on">What they do</span>
+                <span>Reviews</span>
+                <span>About</span>
+              </div>
+              <p className={`phone-desc${description.trim() ? '' : ' is-empty'}`}>
+                {description.trim() || 'Say what you offer and what makes you worth the trip.'}
+              </p>
+              <div className="phone-cta">Message the shop</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
   );
 }
 
-function Galleries() {
-  const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
-
+function Galleries({ locations }: { locations: Location[] | undefined }) {
   return (
-    <div className="panel">
-      <h2>Photos</h2>
-      <p className="muted small">
-        Each branch has its own photos, because a customer wants to see the place they
-        are actually walking into.
-      </p>
-      {locations.data?.map((location) => (
-        <LocationGallery key={location.id} id={location.id} name={location.name} />
-      ))}
-      {locations.data?.length === 0 && (
-        <p className="muted empty">Add a branch first, under Branches &amp; hours.</p>
-      )}
-    </div>
+    <section className="pf-galleries">
+      <header className="pf-galleries-head">
+        <h2>Photos</h2>
+        <p>Each branch has its own photos, because a customer wants to see the place they are actually walking into.</p>
+      </header>
+      {locations?.map((location) => <LocationGallery key={location.id} id={location.id} name={location.name} />)}
+      {locations?.length === 0 && <p className="muted">Add a branch first, under Branches &amp; hours.</p>}
+    </section>
   );
 }
 
@@ -277,13 +450,16 @@ function LocationGallery({ id, name }: { id: string; name: string }) {
   const [problem, setProblem] = useState<string | null>(null);
   const gallery = useQuery({ queryKey: ['gallery', id], queryFn: () => getGallery(id) });
 
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['gallery', id] });
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['gallery', id] });
+    // The branch's photo count feeds the shop-window checklist.
+    queryClient.invalidateQueries({ queryKey: ['locations'] });
+  };
 
   const add = useMutation({
     mutationFn: (file: File) => addGalleryPhoto(id, file),
     onSuccess: refresh,
-    onError: (error) =>
-      setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
+    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
   });
 
   const drop = useMutation({
@@ -292,61 +468,80 @@ function LocationGallery({ id, name }: { id: string; name: string }) {
   });
 
   const full = (gallery.data?.remaining ?? 1) <= 0;
+  const count = gallery.data?.count ?? 0;
+  const limit = gallery.data?.limit ?? 0;
 
   return (
-    <div className="branch-gallery">
-      <div className="branch-head">
-        <strong>{name}</strong>
+    <article className="pf-gallery">
+      <header>
+        <div>
+          <h3>
+            <Icon name="pin" size={16} /> {name}
+          </h3>
+          {gallery.data && (
+            <span className="pf-meter">
+              <i style={{ width: `${limit ? (count / limit) * 100 : 0}%` }} />
+            </span>
+          )}
+        </div>
         {gallery.data && (
-          <span className="muted small">
-            {gallery.data.count} of {gallery.data.limit}
+          <span className="pf-count">
+            {count} of {limit}
           </span>
         )}
-      </div>
+      </header>
 
-      <div className="photo-grid">
+      <div className="pf-photos">
         {gallery.data?.photos.map((photo) => (
-          <figure key={photo.id}>
+          <figure key={photo.id} className="pf-photo">
             <img src={photo.url} alt="" />
             <button
               type="button"
-              className="link"
               disabled={drop.isPending}
-              onClick={() => {
-                if (window.confirm('Remove this photo? It cannot be brought back.')) {
+              aria-label="Remove"
+              onClick={async () => {
+                if (
+                  await confirmDialog({
+                    title: 'Remove this photo?',
+                    body: <p>It cannot be brought back.</p>,
+                    tone: 'danger',
+                    icon: 'trash',
+                    confirmLabel: 'Remove',
+                  })
+                ) {
                   drop.mutate(photo.id);
                 }
               }}
             >
-              Remove
+              <Icon name="trash" size={15} />
             </button>
           </figure>
         ))}
+        {!full && (
+          <PickImage
+            id={`gallery-${id}`}
+            busy={add.isPending}
+            className="pf-photo-add"
+            onPick={(file) => {
+              setProblem(null);
+              add.mutate(file);
+            }}
+          >
+            <Icon name="upload" size={22} />
+            {add.isPending ? 'Uploading…' : 'Add a photo'}
+          </PickImage>
+        )}
       </div>
 
-      {full ? (
-        <p className="muted small">This branch is at its {gallery.data?.limit} photo limit.</p>
-      ) : (
-        <ImageButton
-          id={`gallery-${id}`}
-          label="Add a photo"
-          busy={add.isPending}
-          onPick={(file) => {
-            setProblem(null);
-            if (file) add.mutate(file);
-          }}
-        />
-      )}
-
+      {full && <p className="muted small">This branch is at its {limit} photo limit.</p>}
       {problem && (
         <p className="error small" role="alert">
           {problem}
         </p>
       )}
-    </div>
+    </article>
   );
 }
-
 
 /**
  * Pausing the whole shop (§119.3).
@@ -369,66 +564,61 @@ function PausePanel({ profile }: { profile: BusinessProfile }) {
       setProblem(null);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
-    onError: (error) =>
-      setProblem(
-        error instanceof ApiError ? error.message : 'That did not work.',
-      ),
+    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not work.'),
   });
 
+  const flip = async () => {
+    if (
+      paused ||
+      (await confirmDialog({
+        title: 'Pause the shop?',
+        body: (
+          <>
+            <p>
+              Customers stop finding you and cannot make new bookings. Everything already booked still
+              happens and you are still paid for it.
+            </p>
+            <p>You can turn this off whenever you like.</p>
+          </>
+        ),
+        tone: 'warn',
+        icon: 'pause',
+        confirmLabel: 'Pause the shop',
+        cancelLabel: 'Keep it open',
+      }))
+    ) {
+      toggle.mutate();
+    }
+  };
+
   return (
-    <div className={paused ? 'card setting paused' : 'card setting'}>
-      <div className="setting-head">
+    <div className={`pf-pause${paused ? ' is-paused' : ''}`}>
+      <span className="pf-pause-icon">
+        <Icon name={paused ? 'pause' : 'play'} size={20} />
+      </span>
+      <div className="pf-pause-text">
         <h2>{paused ? 'Your shop is paused' : 'Your shop is open'}</h2>
-        <p className="muted small">
-          {paused ? (
-            <>
-              Customers cannot find you or make new bookings. Bookings you
-              already have still happen, and money you are owed is still paid out
-              — pausing does not cancel anything.
-            </>
-          ) : (
-            <>
-              Going away, or fully booked for a while? Pausing takes every branch
-              out of search and stops new bookings, and you can undo it at any
-              time.
-            </>
-          )}
+        <p>
+          {paused
+            ? 'Customers cannot find you or make new bookings. Bookings you already have still happen, and money you are owed is still paid out — pausing does not cancel anything.'
+            : 'Going away, or fully booked for a while? Pausing takes every branch out of search and stops new bookings, and you can undo it at any time.'}
         </p>
+        {problem && (
+          <p className="error small" role="alert">
+            {problem}
+          </p>
+        )}
       </div>
-
-      {problem && (
-        <p className="error small" role="alert">
-          {problem}
-        </p>
-      )}
-
-      <div className="row-end">
-        <button
-          type="button"
-          className={paused ? 'primary' : undefined}
+      <div className="pf-pause-action">
+        <span>
+          {toggle.isPending ? (paused ? 'Opening…' : 'Pausing…') : paused ? 'Open the shop again' : 'Pause the shop'}
+        </span>
+        <Switch
+          checked={!paused}
           disabled={toggle.isPending}
-          onClick={() => {
-            if (
-              paused ||
-              window.confirm(
-                'Pause the shop?\n\n' +
-                  'Customers stop finding you and cannot make new bookings. ' +
-                  'Everything already booked still happens and you are still ' +
-                  'paid for it.\n\nYou can turn this off whenever you like.',
-              )
-            ) {
-              toggle.mutate();
-            }
-          }}
-        >
-          {toggle.isPending
-            ? paused
-              ? 'Opening…'
-              : 'Pausing…'
-            : paused
-              ? 'Open the shop again'
-              : 'Pause the shop'}
-        </button>
+          label={paused ? 'Open the shop again' : 'Pause the shop'}
+          onChange={() => void flip()}
+        />
       </div>
     </div>
   );
