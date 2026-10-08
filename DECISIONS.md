@@ -15841,9 +15841,9 @@ a large screen — "if bad we revert it". So this is a trial, kept in one
 block at the end of `shell/shell.css` and in one commit, so it comes out
 whole.
 
-- **Wide screens (860px and up)**: the top bar is charcoal glass — the
-  app's `--night` at 74% with a 22px blur — so the page shows through it as a
-  soft dark smear as it scrolls under. Its bottom corners are rounded (24px)
+- **Wide screens (860px and up)**: the top bar is charcoal glass — ~~the
+  app's `--night` at 74% with a 22px blur~~ (deeper since §237) — so the page
+  shows through it as a soft dark smear as it scrolls under. Its bottom corners are rounded (24px)
   like the cards beside it, with a faint light line along the edge.
 - Everything in it turns light to read on it: crumbs and date in soft white,
   page name and clock in white, the search box and round buttons (messages,
@@ -15857,3 +15857,25 @@ If it is reverted: delete the block marked §236 in `shell/shell.css`
 
 Checked at 1920, 1440 and 1024 wide, at the top of a page and scrolled; 390
 unchanged.
+
+## 237. The dark bar near-black with a warm glow; room under it (2026-10-09)
+
+The user asked whether §236's colour was the best, and said "Good morning,
+Kigali Barbers" sat too close to the bar.
+
+- **The colour, honestly: it was not.** At 74% over the light page it came
+  out a flat mid grey — not black, and not like anything else in the app.
+  Now near-black (`rgba(22, 24, 30, 0.88)`, blur 24px) with the soft orange
+  glow, top right, that the app's other dark cards carry ("To collect
+  today", "Next up", the sign-in panel) — so the bar is one of that family.
+  Still glass: a coloured card scrolling under it tints it.
+- **Room under the bar** on a wide screen: the page area starts 18px lower
+  (was 6px), so the first thing on every page — a title, or the slim For you
+  banner on a tablet-width screen — no longer sits against the bar, and the
+  banner's ✕ no longer touches it. It is space above the page, not inside
+  its header: once a header pins (§209), it closes up under the bar as
+  before and costs no height. Phones unchanged.
+
+Checked at 1440 (Overview, Appointments at rest and scrolled — the step
+scroll test found no jumps and one header height) and 1024 (Services with
+the banner).

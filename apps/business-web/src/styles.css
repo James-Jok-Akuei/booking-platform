@@ -286,6 +286,13 @@ button.link.danger-link { color: var(--danger); }
   transition: box-shadow 240ms var(--ease);
 }
 .app .content .page-top > * { margin-top: 0; margin-bottom: 0; }
+/* Room between the top bar and whatever opens the page on a wide screen
+   (§237) — the title, or the slim "For you" banner above it — so nothing
+   sits against the bar. Space above the page, not in its header: once the
+   header pins, it closes up under the bar and costs no height. */
+@media (min-width: 860px) {
+  .app .content { padding-top: 18px; }
+}
 :is(.ov, .an, .pf, .gp, .hp) > .page-top { margin-bottom: -6px; }
 /* Bar and header read as one sheet of glass: the edge moves to the header. */
 .app-main:has(.page-top) .topbar.is-scrolled { box-shadow: none; }
