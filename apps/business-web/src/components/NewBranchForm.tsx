@@ -6,6 +6,8 @@ import { createLocation, listProvinces } from '../api/business';
 import { Icon } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import { Select } from '../ui/Select';
+import { AddressField, useDistrictFrom } from './AddressField';
+import type { FoundAddress } from '../api/business';
 
 /**
  * Pulls a latitude and longitude out of whatever someone pasted.
@@ -206,6 +208,17 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
   const [districtId, setDistrictId] = useState('');
   const [place, setPlace] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
+  const [fromAddress, setFromAddress] = useState<string | null>(null);
+  const districtFrom = useDistrictFrom();
+
+  // A chosen suggestion drops the pin, and picks the district when it names one (§228).
+  const onPick = (found: FoundAddress) => {
+    setPlace(`${found.latitude.toFixed(6)}, ${found.longitude.toFixed(6)}`);
+    const district = districtFrom(found);
+    if (district) setDistrictId(district);
+    setProblem(null);
+    setFromAddress(district ? 'The pin and the district were filled in from this address.' : 'The pin was filled in from this address.');
+  };
 
   const create = useMutation({
     mutationFn: (body: Parameters<typeof createLocation>[0]) => createLocation(body),
@@ -292,20 +305,26 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
 
         <div className="bf-field">
           <label htmlFor="bf-address">Address</label>
-          <input
+          <AddressField
             id="bf-address"
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            maxLength={300}
-            placeholder="KG 9 Ave, Kimironko"
+            onChange={(next) => {
+              setAddress(next);
+              setFromAddress(null);
+            }}
+            onPick={onPick}
+            placeholder="Start typing — KG 9 Ave, Kimironko…"
           />
+          <span className={`bf-help${fromAddress ? ' is-ok' : ''}`}>
+            {fromAddress ? `${fromAddress} Check the pin below is on your shop.` : 'Pick a suggestion to drop the pin on the map for you.'}
+          </span>
         </div>
 
         <PlaceField
           value={place}
           onChange={setPlace}
           onProblem={setProblem}
-          hint="Customers find you by how near you are. Open the shop in Google Maps and copy the link from the address bar — or press the button if you are there now."
+          hint="Customers find you by how near you are. Choose a suggested address above, paste the shop's Google Maps link, or press the button if you are there now."
         />
 
         <DistrictField

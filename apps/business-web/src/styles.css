@@ -858,3 +858,36 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .sel-sheet-head strong { font-size: 17px; }
 .sel-sheet-close { width: 36px; height: 36px; min-height: 0; padding: 0; border-radius: 50%; border: none; background: var(--sunken); }
 .sel-pop.is-sheet .sel-option { min-height: 50px; font-size: 15px; }
+
+/* ---------- an address, suggested while it is typed (§228) ---------- */
+
+.af { position: relative; }
+.af-input { position: relative; display: flex; align-items: center; gap: 9px; padding-left: 13px; border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--panel); color: var(--muted); transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease); }
+.af-input:focus-within { border-color: var(--accent); box-shadow: var(--ring); color: var(--accent); }
+.af-input input, .af-input input:hover, .af-input input:focus { flex: 1; min-width: 0; padding-left: 0; border: none; background: transparent; box-shadow: none; }
+.af-spin { flex: none; width: 16px; height: 16px; margin-right: 12px; border-radius: 50%; border: 2px solid var(--line-strong); border-top-color: var(--accent); animation: spin 700ms linear infinite; }
+.af-pop {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid rgba(21, 23, 28, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 18px 44px -14px rgba(21, 23, 28, 0.32), 0 2px 6px rgba(21, 23, 28, 0.05);
+  animation: sel-in 160ms var(--ease) both;
+}
+.af-list { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow-y: auto; transition: opacity 160ms var(--ease); }
+.af-list.is-asking { opacity: 0.55; }
+.af-option { display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 12px; cursor: pointer; }
+.af-option.is-active { background: var(--sunken); }
+.af-icon { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: var(--accent-soft); color: var(--accent-deep); }
+.af-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.af-text strong { font-size: 14px; font-weight: 600; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.af-text strong b { font-weight: 800; color: var(--ink); }
+.af-text em { font-style: normal; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.af-note { margin: 0; padding: 12px 10px; font-size: 13px; color: var(--muted); }
+.af-credit { margin: 4px 0 0; padding: 6px 10px 2px; border-top: 1px solid var(--line); font-size: 11px; color: var(--faint); }
+.bf-help.is-ok { color: var(--ok-deep); font-weight: 600; }

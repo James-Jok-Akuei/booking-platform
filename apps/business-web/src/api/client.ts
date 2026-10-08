@@ -139,6 +139,8 @@ interface RequestOptions {
   query?: Record<string, string | number | boolean | undefined | null>;
   /** Skip the bearer token — only the auth endpoints need this. */
   anonymous?: boolean;
+  /** Cancels the request — a search overtaken by more typing (§228). */
+  signal?: AbortSignal;
 }
 
 /**
@@ -149,7 +151,7 @@ interface RequestOptions {
  * forever against a server that is answering correctly.
  */
 export async function api<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, query, anonymous } = options;
+  const { method = 'GET', body, query, anonymous, signal } = options;
 
   const url = new URL(`${BASE_URL}${path}`, window.location.origin);
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -166,6 +168,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
   const send = async (token: string | null): Promise<Response> =>
     fetch(url.toString(), {
       method,
+      signal,
       headers: {
         ...(body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

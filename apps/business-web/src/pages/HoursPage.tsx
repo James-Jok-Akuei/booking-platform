@@ -15,6 +15,7 @@ import {
 import { useMoney } from '../money';
 import { StaticMap } from '../components/StaticMap';
 import { DistrictField, NewBranchPanel, PlaceField, parseCoordinates } from '../components/NewBranchForm';
+import { AddressField, useDistrictFrom } from '../components/AddressField';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
@@ -522,6 +523,8 @@ function EditBranchPanel({ location, onClose }: { location: Location; onClose: (
     location.latitude !== null && location.longitude !== null ? `${location.latitude}, ${location.longitude}` : '',
   );
   const coordinates = place.trim() ? parseCoordinates(place) : null;
+  const [fromAddress, setFromAddress] = useState<string | null>(null);
+  const districtFrom = useDistrictFrom();
 
   const save = useMutation({
     mutationFn: () =>
@@ -579,7 +582,23 @@ function EditBranchPanel({ location, onClose }: { location: Location; onClose: (
         </div>
         <div className="bf-field">
           <label htmlFor="eb-address">Address</label>
-          <input id="eb-address" value={address} onChange={(e) => setAddress(e.target.value)} />
+          <AddressField
+            id="eb-address"
+            value={address}
+            onChange={(next) => {
+              setAddress(next);
+              setFromAddress(null);
+            }}
+            onPick={(found) => {
+              // A chosen suggestion moves the pin, and the district when it names one (§228).
+              setPlace(`${found.latitude.toFixed(6)}, ${found.longitude.toFixed(6)}`);
+              const district = districtFrom(found);
+              if (district) setDistrictId(district);
+              setProblem(null);
+              setFromAddress(district ? 'The pin and the district were moved to this address.' : 'The pin was moved to this address.');
+            }}
+          />
+          {fromAddress && <span className="bf-help is-ok">{fromAddress} Check it below before saving.</span>}
         </div>
         <PlaceField
           value={place}

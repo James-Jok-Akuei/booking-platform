@@ -15546,3 +15546,34 @@ Checked: each opens; choosing by keyboard and by mouse changes the value
 phone sheet. The date and time fields (opening hours on Branches & hours,
 the sale's last day on Services, Closures & breaks) still use the browser's
 own pickers.
+
+## 228. Branch addresses are suggested while they are typed (2026-10-08)
+
+The user remembered address auto-completion working before and asked for it
+in the business app. It had only ever been built for the customer app's
+offers address (§174); the business app's branch forms never had it.
+
+- **`components/AddressField`**, in both branch forms (Add a branch, Edit
+  details): the same search as §174 (`GET /addresses`, Photon over
+  OpenStreetMap, Rwanda only), asked when typing pauses for 350 ms from three
+  letters, an earlier question cancelled when more letters come (`api()` now
+  takes a `signal`), the last answers kept, dimmed, while the next arrive.
+  Each suggestion: a pin, the name with the typed letters in bold, and where
+  it is ("Gasabo District, Kigali"). ↓ ↑ Enter Esc work; a press elsewhere
+  closes it; a line credits OpenStreetMap.
+- **Choosing one does the rest**: it fills the address, **drops the pin**
+  (the "Where it is" field and its map preview), and **chooses the district**
+  when the place names one — matched against the platform's districts
+  (`useDistrictFrom`). A green line says what was filled in and asks the
+  seller to check the pin is on their shop. Pasting a Google Maps link and
+  "Use my current position" still work as before.
+- Under three letters, nothing found, search unavailable and a failed search
+  each say so differently, as in §174.
+- The endpoint already allowed any signed-in account; its comment now names
+  the branch address as a use. Self-hosting Photon before launch (§174.1)
+  matters a little more now that sellers use it too.
+
+Checked: typing "kigali heights" offered three places; choosing "Kigali
+Heights, KG 7 Avenue" filled the address, put the pin at -1.952708,
+30.092776 and chose Gasabo; "kimir" in Edit details on a phone offered six.
+Nothing was saved.

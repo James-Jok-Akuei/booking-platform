@@ -791,3 +791,13 @@ export const saveServiceDraft = (
 /** A real delete, unlike almost everything else here: a draft is nobody's record. */
 export const discardServiceDraft = (id: string) =>
   api<{ message: string }>(`/business/service-drafts/${id}`, { method: 'DELETE' });
+
+export type FoundAddress = components['schemas']['AddressDto'];
+
+/**
+ * Places in Rwanda matching what has been typed so far (§174, §228) — streets,
+ * neighbourhoods, markets, buildings — each with its position on the map.
+ * `available` is false when the map search cannot be reached.
+ */
+export const searchAddresses = (q: string, signal?: AbortSignal) =>
+  api<components['schemas']['AddressSearchDto']>('/addresses', { query: { q }, signal });

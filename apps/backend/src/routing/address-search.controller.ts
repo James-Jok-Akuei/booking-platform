@@ -8,10 +8,11 @@ import { AddressSearchDto, AddressSearchQueryDto } from './dto/address.dto';
 /**
  * Finding an address as it is typed (§172, §174).
  *
- * Signed in only, unlike the road distance: its one use is the address a
- * customer saves for the weekly offers email, which needs an account — and the
- * map search is a shared, fair-use service for the WHOLE platform, which is
- * not something to hand to anyone with a script.
+ * Signed in only, unlike the road distance: its uses are the address a
+ * customer saves for the weekly offers email, and a business's branch address
+ * (§228) — both need an account — and the map search is a shared, fair-use
+ * service for the WHOLE platform, which is not something to hand to anyone
+ * with a script.
  */
 @Controller('addresses')
 @UseGuards(JwtAuthGuard)
