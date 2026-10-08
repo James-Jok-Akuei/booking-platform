@@ -5,6 +5,7 @@ import { Cover } from '../ui/Cover';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { SaveButton } from './SaveButton';
+import { SaleBadge } from './Sale';
 import { distanceLabel } from '../distance';
 import { duration } from '../duration';
 
@@ -51,13 +52,14 @@ export function ServiceCard({
       ? service.location.name.replace(/\s+branch$/i, '')
       : (service.location.district?.name ?? service.location.name);
   const rated = service.location.ratingCount > 0 && service.location.ratingAvg !== null;
+  const sale = service.discount;
 
   return (
     <PressableScale
       onPress={onPress}
       scaleTo={0.96}
       accessibilityRole="button"
-      accessibilityLabel={`${service.name} at ${service.business.name ?? service.location.name}, ${price}`}
+      accessibilityLabel={`${service.name} at ${service.business.name ?? service.location.name}, ${price}${sale ? `, ${sale.percent} percent off` : ''}`}
       style={[styles.card, { width }]}
     >
       <View>
@@ -72,7 +74,7 @@ export function ServiceCard({
             business uploaded one (§150). Nothing stands in for it: a card
             with no logo badge is a business that has not added one. */}
         {service.business.logoUrl && (
-          <View style={styles.logo}>
+          <View style={[styles.logo, sale && styles.logoUnderSale]}>
             <Image source={{ uri: service.business.logoUrl }} style={styles.logoImage} />
           </View>
         )}
@@ -83,6 +85,15 @@ export function ServiceCard({
         {onSave && (
           <View style={styles.heart}>
             <SaveButton saved={service.saved} onPress={onSave} onPhoto small />
+          </View>
+        )}
+
+        {/* On sale (§186): the percentage in the top corner, the logo under
+            it. The crossed-out old price is on the service's own page — a card
+            this narrow cannot hold two prices without cutting one short. */}
+        {sale && (
+          <View style={styles.sale}>
+            <SaleBadge percent={sale.percent} />
           </View>
         )}
 
@@ -120,7 +131,12 @@ export function ServiceCard({
 
         {/* The price has a line to itself: it is the one thing on the card
             that must never be cut short, and "RWF 7,0…" is not a price. */}
-        <Text style={styles.price} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+        <Text
+          style={[styles.price, sale && styles.priceSale]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.85}
+        >
           {price}
         </Text>
 
@@ -188,6 +204,9 @@ const styles = StyleSheet.create({
   whereName: { flex: 1 },
   away: { flexShrink: 0, fontFamily: font.bold, fontSize: 11, color: theme.ink2 },
   price: { fontFamily: font.extrabold, fontSize: 14, color: theme.ink, marginTop: 4 },
+  priceSale: { color: theme.accentDeep },
+  sale: { position: 'absolute', left: 7, top: 7 },
+  logoUnderSale: { top: 34 },
   proof: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 16 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   metaText: { fontFamily: font.bold, fontSize: 11.5, color: theme.ink2 },

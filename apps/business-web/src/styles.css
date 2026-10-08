@@ -225,6 +225,14 @@ aside .notice { margin: 0 14px 12px; }
 .service-form label { display: block; margin-bottom: 3px; }
 .service-form input { width: 130px; }
 /* The sentences (§180): a full row each, under the numbers. */
+/* A sale (§186): its own block under the prices. */
+.service-sale { flex-basis: 100%; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px dashed #f3b7a4; border-radius: 10px; background: #fff8f5; }
+.sale-fields { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+.sale-fields label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; }
+.sale-fields input { width: 150px; }
+.sale-preview { display: flex; flex-direction: column; gap: 3px; }
+.sale-preview strong { color: #d7421e; }
+.sale-tag { display: inline-block; margin: 2px 0; padding: 1px 8px; border-radius: 999px; background: #ffeee8; color: #d7421e; font-size: 12px; font-weight: 700; }
 .service-words { flex-basis: 100%; display: flex; flex-direction: column; gap: 4px; }
 .service-words input,
 .service-words textarea { font: inherit; width: 100%; max-width: 640px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px; resize: vertical; box-sizing: border-box; }

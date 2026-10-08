@@ -209,6 +209,9 @@ export class OffersService {
             shop: s.business.name ?? s.location.name,
             where: s.location.district?.name ?? null,
             price: formatMoney(s.priceMinor, s.currency),
+            sale: s.discount
+              ? { was: formatMoney(s.discount.listPriceMinor, s.currency), percent: s.discount.percent }
+              : null,
             minutes: s.durationMinutes,
             imageUrl: s.imageUrl ?? s.business.coverImageUrl,
             rating: s.location.ratingCount > 0 ? s.location.ratingAvg : null,

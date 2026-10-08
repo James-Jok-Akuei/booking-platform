@@ -155,6 +155,10 @@ export const createService = (body: {
   description?: string | null;
   /** What to know before coming (§180). Blank is stored as nothing. */
   instructions?: string | null;
+  /** A sale (§186): whole percent off, 1–90; null ends it. */
+  discountPercent?: number | null;
+  /** The sale's last day, YYYY-MM-DD; null runs until it is ended. */
+  discountEndsOn?: string | null;
   durationMinutes: number;
   depositPercentage: number;
   /** §136. Left out, a service is booked one at a time. */
@@ -170,6 +174,8 @@ export const updateService = (
     title: string | null;
     description: string | null;
     instructions: string | null;
+    discountPercent: number | null;
+    discountEndsOn: string | null;
     durationMinutes: number;
     depositPercentage: number;
     quantityMode: Service['quantityMode'];
@@ -761,6 +767,8 @@ export const saveServiceDraft = (
     title?: string | null;
     description?: string | null;
     instructions?: string | null;
+    discountPercent?: number | null;
+    discountEndsOn?: string | null;
     durationMinutes?: number | null;
     depositPercentage?: number | null;
     offers?: Array<{ locationId: string; priceMinor: number }>;

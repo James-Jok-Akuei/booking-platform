@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   Max,
   MaxLength,
   Min,
@@ -50,6 +51,17 @@ export class UpdateServiceDraftDto {
   @IsString()
   @MaxLength(600)
   instructions?: string | null;
+
+  /** A sale being written (§186). Checked when the service is posted, not here. */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  discountPercent?: number | null;
+
+  @IsOptional()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  discountEndsOn?: string | null;
 
   @IsOptional()
   @Type(() => Number)

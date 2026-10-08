@@ -3197,6 +3197,9 @@ export interface components {
             title: string | null;
             description: string | null;
             instructions: string | null;
+            discountPercent: number | null;
+            /** @description The last day, at UTC midnight; the date part is what counts. */
+            discountEndsOn: string | null;
             durationMinutes: number | null;
             /** @description A decimal string, like every other percentage here (§128.20). */
             depositPercentage: string | null;
@@ -3214,6 +3217,9 @@ export interface components {
             title?: string | null;
             description?: string | null;
             instructions?: string | null;
+            /** @description A sale being written (§186). Checked when the service is posted, not here. */
+            discountPercent?: number | null;
+            discountEndsOn?: string | null;
             durationMinutes?: number | null;
             depositPercentage?: number | null;
             offers?: components["schemas"]["DraftOfferDto"][];
@@ -3388,6 +3394,16 @@ export interface components {
              */
             instructions?: string | null;
             /**
+             * @description A sale (§186): whole percent off every branch's price, 1–90. `null` ends
+             *     the sale; left out, it stays as it is.
+             */
+            discountPercent?: number | null;
+            /**
+             * @description The LAST day the sale runs, as a date (YYYY-MM-DD) in the platform's time
+             *     zone; it can be booked all of that day. `null`: until it is turned off.
+             */
+            discountEndsOn?: string | null;
+            /**
              * @description Where this service is offered, and for how much at each branch (§72).
              *
              *     At least one: a service offered nowhere cannot be booked by anybody, and
@@ -3443,6 +3459,10 @@ export interface components {
             description: string | null;
             /** @description What to know before coming (§180). */
             instructions: string | null;
+            /** @description A sale, whole percent off every branch's price (§186). Null is none. */
+            discountPercent: number | null;
+            /** @description The sale's last day, at UTC midnight; the date part is what counts. Null runs until turned off. */
+            discountEndsOn: string | null;
             durationMinutes: number;
             currency: string;
             /** @description A decimal STRING — "20", not 20 (§56). */
@@ -3480,6 +3500,16 @@ export interface components {
              *     the back. Short on purpose — it is read on a phone, the day before.
              */
             instructions?: string | null;
+            /**
+             * @description A sale (§186): whole percent off every branch's price, 1–90. `null` ends
+             *     the sale; left out, it stays as it is.
+             */
+            discountPercent?: number | null;
+            /**
+             * @description The LAST day the sale runs, as a date (YYYY-MM-DD) in the platform's time
+             *     zone; it can be booked all of that day. `null`: until it is turned off.
+             */
+            discountEndsOn?: string | null;
             /**
              * @description Where this service is offered, and for how much at each branch (§72).
              *
@@ -3525,6 +3555,10 @@ export interface components {
             description: string | null;
             /** @description What to know before coming (§180). */
             instructions: string | null;
+            /** @description A sale, whole percent off (§186). */
+            discountPercent: number | null;
+            /** @description The sale's last day, at UTC midnight; the date part is what counts. */
+            discountEndsOn: string | null;
             durationMinutes: number;
             currency: string;
             /** @description A decimal string (§128.20). */
@@ -3956,6 +3990,13 @@ export interface components {
              */
             quantity: number;
             unitPriceMinor: number | null;
+            /**
+             * @description The sale it was booked under (§186): percent off, and the WHOLE booking's
+             *     price before it. Both null when there was no sale. `servicePriceMinor`
+             *     above is already the price after it.
+             */
+            discountPercent: number | null;
+            listPriceMinor: number | null;
             depositPercentage: string | null;
             platformFeePercentage: string | null;
             paymentProviderReferenceId: string | null;
@@ -4014,6 +4055,13 @@ export interface components {
              */
             quantity: number;
             unitPriceMinor: number | null;
+            /**
+             * @description The sale it was booked under (§186): percent off, and the WHOLE booking's
+             *     price before it. Both null when there was no sale. `servicePriceMinor`
+             *     above is already the price after it.
+             */
+            discountPercent: number | null;
+            listPriceMinor: number | null;
             depositPercentage: string | null;
             platformFeePercentage: string | null;
             paymentProviderReferenceId: string | null;
@@ -5132,6 +5180,14 @@ export interface components {
             radiusKm?: number;
             locations: components["schemas"]["DiscoveredLocationDto"][];
         };
+        ServiceDiscountDto: {
+            /** @description Whole percent off, 1–90. */
+            percent: number;
+            /** @description The last day it runs (YYYY-MM-DD, platform time), or null: until turned off. */
+            endsOn: string | null;
+            /** @description One unit's price before the sale. */
+            listPriceMinor: number;
+        };
         DiscoveredServiceLocationDto: {
             id: string;
             name: string;
@@ -5153,8 +5209,10 @@ export interface components {
             description: string | null;
             durationMinutes: number;
             currency: string;
-            /** @description This branch's price. */
+            /** @description This branch's price for one, as paid today: after the sale, if one is on (§186). */
             priceMinor: number;
+            /** @description The sale on today, or null (§186). */
+            discount: components["schemas"]["ServiceDiscountDto"] | null;
             /** @description A decimal string, like every percentage here (§128.20). */
             depositPercentage: string;
             /** @description The cover photo (§132), or null — a client falls back to a category tile. */
@@ -5212,8 +5270,13 @@ export interface components {
             currency: string;
             /** @description A decimal string, like every percentage here (§128.20). */
             depositPercentage: string;
-            /** @description The price of ONE. A booking of several costs this times how many (§136). */
+            /**
+             * @description The price of ONE as paid today — after the sale, if one is on (§186). A
+             *     booking of several costs this times how many (§136).
+             */
             priceMinor: number;
+            /** @description The sale on today, or null (§186). */
+            discount: components["schemas"]["ServiceDiscountDto"] | null;
             /**
              * @description Whether a booking may be for more than one, and what "more" means (§136):
              *     `PEOPLE` asks "how many people?", `UNITS` asks "how many?", and `SINGLE`
@@ -5320,8 +5383,10 @@ export interface components {
             description: string | null;
             durationMinutes: number;
             currency: string;
-            /** @description This branch's price. */
+            /** @description This branch's price for one, as paid today: after the sale, if one is on (§186). */
             priceMinor: number;
+            /** @description The sale on today, or null (§186). */
+            discount: components["schemas"]["ServiceDiscountDto"] | null;
             /** @description A decimal string, like every percentage here (§128.20). */
             depositPercentage: string;
             /** @description The cover photo (§132), or null — a client falls back to a category tile. */
@@ -14452,6 +14517,11 @@ export interface operations {
                 /** @description Against the location's CHEAPEST active service. */
                 maxPriceMinor?: number;
                 openNow?: boolean;
+                /**
+                 * @description Services only: just the ones on sale today (§186), biggest sale first
+                 *     unless another order is asked for. Ignored by the place search.
+                 */
+                onSale?: boolean;
                 lat?: number;
                 lng?: number;
                 radiusKm?: number;
@@ -14511,6 +14581,11 @@ export interface operations {
                 /** @description Against the location's CHEAPEST active service. */
                 maxPriceMinor?: number;
                 openNow?: boolean;
+                /**
+                 * @description Services only: just the ones on sale today (§186), biggest sale first
+                 *     unless another order is asked for. Ignored by the place search.
+                 */
+                onSale?: boolean;
                 lat?: number;
                 lng?: number;
                 radiusKm?: number;

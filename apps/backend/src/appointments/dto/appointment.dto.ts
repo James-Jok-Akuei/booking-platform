@@ -87,6 +87,13 @@ export class AppointmentDto implements AppointmentPayload {
    */
   quantity!: number;
   unitPriceMinor!: number | null;
+  /**
+   * The sale it was booked under (§186): percent off, and the WHOLE booking's
+   * price before it. Both null when there was no sale. `servicePriceMinor`
+   * above is already the price after it.
+   */
+  discountPercent!: number | null;
+  listPriceMinor!: number | null;
   depositPercentage!: string | null;
   platformFeePercentage!: string | null;
 

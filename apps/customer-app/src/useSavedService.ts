@@ -21,14 +21,13 @@ export function useSavedService() {
   const patch = (serviceId: string, locationId: string, saved: boolean) => {
     const mark = (s: Keyed) =>
       s.id === serviceId && (s.location?.id ?? locationId) === locationId ? { ...s, saved } : s;
-    queryClient.setQueriesData<{ services?: Keyed[] }>(
-      { queryKey: ['discover-services'] },
-      (page) => (page?.services ? { ...page, services: page.services.map(mark) } : page),
-    );
-    queryClient.setQueriesData<{ services?: Keyed[] }>(
-      { queryKey: ['discover-services-near'] },
-      (page) => (page?.services ? { ...page, services: page.services.map(mark) } : page),
-    );
+    // Every shelf of services on Home: all of them, near you, on sale (§186).
+    for (const shelf of ['discover-services', 'discover-services-near', 'discover-services-sale']) {
+      queryClient.setQueriesData<{ services?: Keyed[] }>(
+        { queryKey: [shelf] },
+        (page) => (page?.services ? { ...page, services: page.services.map(mark) } : page),
+      );
+    }
     queryClient.setQueryData<{ services?: Keyed[] }>(['shop', locationId], (shop) =>
       shop?.services ? { ...shop, services: shop.services.map(mark) } : shop,
     );

@@ -11,6 +11,7 @@ import { useSaved } from '../../src/useSaved';
 import { useSavedService } from '../../src/useSavedService';
 import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
+import { SaleBadge } from '../../src/components/Sale';
 import { useSignedIn } from '../../src/api/client';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
@@ -486,12 +487,20 @@ function ServiceRow({
     <PressableScale style={[styles.card, styles.service]} onPress={onPress} scaleTo={0.98}>
       {/* The cover photo (§132). A fixed box either way, so rows do not change
           height depending on whether a business has uploaded anything. */}
-      <Cover
-        uri={service.images[0]?.url}
-        categoryIcon={categoryIcon}
-        style={styles.serviceThumb}
-        iconSize={24}
-      />
+      <View>
+        <Cover
+          uri={service.images[0]?.url}
+          categoryIcon={categoryIcon}
+          style={styles.serviceThumb}
+          iconSize={24}
+        />
+        {/* On sale (§186): the percentage on the picture's corner. */}
+        {service.discount && (
+          <View style={styles.thumbSale}>
+            <SaleBadge percent={service.discount.percent} />
+          </View>
+        )}
+      </View>
       <View style={styles.serviceMain}>
         <Text style={styles.serviceName} numberOfLines={2}>
           {service.name}
@@ -506,7 +515,13 @@ function ServiceRow({
           <Text style={type.small}>{duration(service.durationMinutes, true)}</Text>
         </View>
         <View style={styles.servicePrice}>
-          <Text style={styles.price}>{format(service.priceMinor, service.currency)}</Text>
+          <Text style={[styles.price, service.discount && styles.priceSale]}>
+            {format(service.priceMinor, service.currency)}
+          </Text>
+          {/* On sale (§186): the old price crossed out, and how much off. */}
+          {service.discount && (
+            <Text style={styles.was}>{format(service.discount.listPriceMinor, service.currency)}</Text>
+          )}
           <Text style={styles.deposit}>pay {format(depositMinor, service.currency)} now</Text>
         </View>
       </View>
@@ -579,10 +594,18 @@ const styles = StyleSheet.create({
   },
   service: { flexDirection: 'row', alignItems: 'center', gap: 13, padding: 10 },
   serviceThumb: { width: 84, height: 96, borderRadius: radius.md },
+  thumbSale: { position: 'absolute', left: 5, top: 5 },
   serviceMain: { flex: 1, gap: 4, paddingVertical: 2 },
   serviceName: { fontFamily: font.bold, fontSize: 15.5, lineHeight: 20, color: theme.ink },
   servicePrice: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 3 },
   price: { fontFamily: font.extrabold, fontSize: 15.5, color: theme.ink },
+  priceSale: { color: theme.accentDeep },
+  was: {
+    fontFamily: font.semibold,
+    fontSize: 12.5,
+    color: theme.muted,
+    textDecorationLine: 'line-through',
+  },
   deposit: {
     fontFamily: font.bold,
     fontSize: 11.5,

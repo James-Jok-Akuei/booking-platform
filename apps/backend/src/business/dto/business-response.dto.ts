@@ -155,6 +155,10 @@ export class BusinessServiceDto implements ServicePayload {
   description!: string | null;
   /** What to know before coming (§180). */
   instructions!: string | null;
+  /** A sale, whole percent off every branch's price (§186). Null is none. */
+  discountPercent!: number | null;
+  /** The sale's last day, at UTC midnight; the date part is what counts. Null runs until turned off. */
+  discountEndsOn!: string | null;
   durationMinutes!: number;
   currency!: string;
   /** A decimal STRING — "20", not 20 (§56). */

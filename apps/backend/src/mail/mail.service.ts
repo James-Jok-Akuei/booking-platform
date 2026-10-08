@@ -167,6 +167,8 @@ export class MailService {
         rating: number | null;
         /** "3.4 km by road" from the customer's own spot, when they gave one (§169). */
         away: string | null;
+        /** On sale (§186): the price before, crossed out, and how much off. */
+        sale?: { was: string; percent: number } | null;
       }>;
     },
   ): Promise<void> {
@@ -215,7 +217,12 @@ export class MailService {
           '<td style="padding:12px 14px 12px 2px;font-family:-apple-system,Segoe UI,Roboto,sans-serif">' +
           `<div style="font-size:16px;font-weight:700;color:#15171C">${esc(service.name)}</div>` +
           `<div style="font-size:13px;color:#8B909B;padding:3px 0 7px">${facts}</div>` +
-          `<div style="font-size:16px;font-weight:800;color:#F0532D">${esc(service.price)}</div>` +
+          `<div style="font-size:16px;font-weight:800;color:#F0532D">${esc(service.price)}` +
+          (service.sale
+            ? ` <span style="font-size:13px;font-weight:600;color:#8B909B;text-decoration:line-through">${esc(service.sale.was)}</span>` +
+              ` <span style="font-size:11px;font-weight:800;color:#FFFFFF;background:#D7421E;border-radius:999px;padding:2px 7px">${service.sale.percent}% OFF</span>`
+            : '') +
+          '</div>' +
           '</td></tr></table></td></tr>'
         );
       })
@@ -245,7 +252,7 @@ export class MailService {
       digest.services
         .map(
           (service) =>
-            `${service.name} — ${service.price}\n${service.shop}${service.away ? `, ${service.away}` : service.where ? `, ${service.where}` : ''} · ${lengthOf(service.minutes)}`,
+            `${service.name} — ${service.price}${service.sale ? ` (${service.sale.percent}% off, was ${service.sale.was})` : ''}\n${service.shop}${service.away ? `, ${service.away}` : service.where ? `, ${service.where}` : ''} · ${lengthOf(service.minutes)}`,
         )
         .join('\n\n') +
       '\n\nOpen the app to book any of these.\n\n' +

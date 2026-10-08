@@ -10,12 +10,14 @@ import {
   IsString,
   IsUUID,
   Length,
+  Matches,
   Max,
   MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { QuantityMode } from '@prisma/client';
+import { MAX_DISCOUNT_PERCENT, MIN_DISCOUNT_PERCENT } from '../discount';
 import { MaxDecimalPlaces } from '../../common/validators/max-decimal-places.validator';
 
 /** One branch's offer of a service, at that branch's price (§72). */
@@ -73,6 +75,24 @@ export class CreateServiceDto {
   @IsString()
   @MaxLength(600)
   instructions?: string | null;
+
+  /**
+   * A sale (§186): whole percent off every branch's price, 1–90. `null` ends
+   * the sale; left out, it stays as it is.
+   */
+  @IsOptional()
+  @IsInt({ message: 'discountPercent must be a whole number, like 20' })
+  @Min(MIN_DISCOUNT_PERCENT)
+  @Max(MAX_DISCOUNT_PERCENT)
+  discountPercent?: number | null;
+
+  /**
+   * The LAST day the sale runs, as a date (YYYY-MM-DD) in the platform's time
+   * zone; it can be booked all of that day. `null`: until it is turned off.
+   */
+  @IsOptional()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'discountEndsOn must be a date like 2026-10-31' })
+  discountEndsOn?: string | null;
 
   /**
    * Where this service is offered, and for how much at each branch (§72).

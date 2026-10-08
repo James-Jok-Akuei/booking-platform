@@ -35,6 +35,7 @@ import {
 import { zonedWallTimeToInstant } from '../availability/time.util';
 import { AvailabilityService } from '../availability/availability.service';
 import { computeAppointmentAmounts } from './appointment-pricing';
+import { liveDiscount, platformToday, priceFor } from '../business/discount';
 import { assertFitsInADay, assertQuantityAllowed, planQuantity } from './quantity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ChatService } from '../chat/chat.service';
@@ -237,6 +238,9 @@ export class AppointmentsService {
         quantityMode: true,
         maxQuantity: true,
         name: true,
+        // A sale the shop is running (§186), applied to this branch's price.
+        discountPercent: true,
+        discountEndsOn: true,
         // The offer AT THIS BRANCH, which is where the price lives (§72). A
         // service with no row here is not sold at this location, however much
         // it belongs to the same business.
@@ -312,10 +316,18 @@ export class AppointmentsService {
     // endTime is derived, never taken from the client.
     const endTime = new Date(startTime.getTime() + plan.durationMinutes * 60_000);
 
+    // One unit's price as the customer was shown it: after the sale, if one
+    // is on today (§186). The sale is taken off ONE and then multiplied, so
+    // the card's price times three is exactly what three cost.
+    const sale = liveDiscount(service, platformToday(this.availability.platformTimeZone));
+    const unit = priceFor(offer.priceMinor, sale);
+
     // The price of the whole booking. Multiplied BEFORE the percentages are
     // applied, so the deposit of three is the deposit on the total rather than
     // three separately rounded deposits that can differ from it by a unit.
-    const totalPriceMinor = offer.priceMinor * quantity;
+    // The deposit and the platform fee are both shares of THIS — the price
+    // after the sale — so the fee still fits inside the deposit (§40).
+    const totalPriceMinor = unit.priceMinor * quantity;
 
     // Read live, at this instant: the fee an admin sets later must not change
     // what this customer agreed to.
@@ -356,7 +368,10 @@ export class AppointmentsService {
           // values, same transaction — this changes no arithmetic.
           // The WHOLE booking's price (§136); one unit's is beside it.
           servicePriceMinor: totalPriceMinor,
-          unitPriceMinor: offer.priceMinor,
+          unitPriceMinor: unit.priceMinor,
+          // What it was before the sale, and how much off (§186).
+          discountPercent: unit.discount?.percent ?? null,
+          listPriceMinor: unit.discount ? unit.discount.listPriceMinor * quantity : null,
           quantity,
           capacityUnits: plan.capacityUnits,
           depositPercentage: service.depositPercentage,

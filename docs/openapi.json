@@ -11793,6 +11793,15 @@
             }
           },
           {
+            "name": "onSale",
+            "required": false,
+            "in": "query",
+            "description": "Services only: just the ones on sale today (§186), biggest sale first\nunless another order is asked for. Ignored by the place search.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "lat",
             "required": false,
             "in": "query",
@@ -11967,6 +11976,15 @@
             "name": "openNow",
             "required": false,
             "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "onSale",
+            "required": false,
+            "in": "query",
+            "description": "Services only: just the ones on sale today (§186), biggest sale first\nunless another order is asked for. Ignored by the place search.",
             "schema": {
               "type": "boolean"
             }
@@ -14782,6 +14800,15 @@
             "type": "string",
             "nullable": true
           },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "discountEndsOn": {
+            "type": "string",
+            "nullable": true,
+            "description": "The last day, at UTC midnight; the date part is what counts."
+          },
           "durationMinutes": {
             "type": "number",
             "nullable": true
@@ -14808,6 +14835,8 @@
           "title",
           "description",
           "instructions",
+          "discountPercent",
+          "discountEndsOn",
           "durationMinutes",
           "depositPercentage",
           "createdBy",
@@ -14855,6 +14884,18 @@
             "type": "string",
             "nullable": true,
             "maxLength": 600
+          },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true,
+            "description": "A sale being written (§186). Checked when the service is posted, not here.",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "discountEndsOn": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
           "durationMinutes": {
             "type": "number",
@@ -15342,6 +15383,19 @@
             "description": "What to know before coming (§180): arrive early, bring a towel, park at\nthe back. Short on purpose — it is read on a phone, the day before.",
             "maxLength": 600
           },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true,
+            "description": "A sale (§186): whole percent off every branch's price, 1–90. `null` ends\nthe sale; left out, it stays as it is.",
+            "minimum": 1,
+            "maximum": 90
+          },
+          "discountEndsOn": {
+            "type": "string",
+            "nullable": true,
+            "description": "The LAST day the sale runs, as a date (YYYY-MM-DD) in the platform's time\nzone; it can be booked all of that day. `null`: until it is turned off.",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
           "offers": {
             "description": "Where this service is offered, and for how much at each branch (§72).\n\nAt least one: a service offered nowhere cannot be booked by anybody, and\ncreating one is almost always a mistake rather than an intention. A branch\ncan be removed later, which is the honest way to stop offering it there.",
             "minItems": 1,
@@ -15471,6 +15525,16 @@
             "nullable": true,
             "description": "What to know before coming (§180)."
           },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true,
+            "description": "A sale, whole percent off every branch's price (§186). Null is none."
+          },
+          "discountEndsOn": {
+            "type": "string",
+            "nullable": true,
+            "description": "The sale's last day, at UTC midnight; the date part is what counts. Null runs until turned off."
+          },
           "durationMinutes": {
             "type": "number"
           },
@@ -15525,6 +15589,8 @@
           "title",
           "description",
           "instructions",
+          "discountPercent",
+          "discountEndsOn",
           "durationMinutes",
           "currency",
           "depositPercentage",
@@ -15562,6 +15628,19 @@
             "nullable": true,
             "description": "What to know before coming (§180): arrive early, bring a towel, park at\nthe back. Short on purpose — it is read on a phone, the day before.",
             "maxLength": 600
+          },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true,
+            "description": "A sale (§186): whole percent off every branch's price, 1–90. `null` ends\nthe sale; left out, it stays as it is.",
+            "minimum": 1,
+            "maximum": 90
+          },
+          "discountEndsOn": {
+            "type": "string",
+            "nullable": true,
+            "description": "The LAST day the sale runs, as a date (YYYY-MM-DD) in the platform's time\nzone; it can be booked all of that day. `null`: until it is turned off.",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
           "offers": {
             "description": "Where this service is offered, and for how much at each branch (§72).\n\nAt least one: a service offered nowhere cannot be booked by anybody, and\ncreating one is almost always a mistake rather than an intention. A branch\ncan be removed later, which is the honest way to stop offering it there.",
@@ -15662,6 +15741,16 @@
             "nullable": true,
             "description": "What to know before coming (§180)."
           },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true,
+            "description": "A sale, whole percent off (§186)."
+          },
+          "discountEndsOn": {
+            "type": "string",
+            "nullable": true,
+            "description": "The sale's last day, at UTC midnight; the date part is what counts."
+          },
           "durationMinutes": {
             "type": "number"
           },
@@ -15703,6 +15792,8 @@
           "title",
           "description",
           "instructions",
+          "discountPercent",
+          "discountEndsOn",
           "durationMinutes",
           "currency",
           "depositPercentage",
@@ -16924,6 +17015,15 @@
             "type": "number",
             "nullable": true
           },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true,
+            "description": "The sale it was booked under (§186): percent off, and the WHOLE booking's\nprice before it. Both null when there was no sale. `servicePriceMinor`\nabove is already the price after it."
+          },
+          "listPriceMinor": {
+            "type": "number",
+            "nullable": true
+          },
           "depositPercentage": {
             "type": "string",
             "nullable": true
@@ -17025,6 +17125,8 @@
           "servicePriceMinor",
           "quantity",
           "unitPriceMinor",
+          "discountPercent",
+          "listPriceMinor",
           "depositPercentage",
           "platformFeePercentage",
           "paymentProviderReferenceId",
@@ -17123,6 +17225,15 @@
             "description": "How many were booked (§136). `servicePriceMinor` above is the price of ALL\nof them; `unitPriceMinor` is the price of one, null on the same old rows."
           },
           "unitPriceMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true,
+            "description": "The sale it was booked under (§186): percent off, and the WHOLE booking's\nprice before it. Both null when there was no sale. `servicePriceMinor`\nabove is already the price after it."
+          },
+          "listPriceMinor": {
             "type": "number",
             "nullable": true
           },
@@ -17241,6 +17352,8 @@
           "servicePriceMinor",
           "quantity",
           "unitPriceMinor",
+          "discountPercent",
+          "listPriceMinor",
           "depositPercentage",
           "platformFeePercentage",
           "paymentProviderReferenceId",
@@ -20830,6 +20943,29 @@
           "locations"
         ]
       },
+      "ServiceDiscountDto": {
+        "type": "object",
+        "properties": {
+          "percent": {
+            "type": "number",
+            "description": "Whole percent off, 1–90."
+          },
+          "endsOn": {
+            "type": "string",
+            "nullable": true,
+            "description": "The last day it runs (YYYY-MM-DD, platform time), or null: until turned off."
+          },
+          "listPriceMinor": {
+            "type": "number",
+            "description": "One unit's price before the sale."
+          }
+        },
+        "required": [
+          "percent",
+          "endsOn",
+          "listPriceMinor"
+        ]
+      },
       "DiscoveredServiceLocationDto": {
         "type": "object",
         "properties": {
@@ -20903,7 +21039,17 @@
           },
           "priceMinor": {
             "type": "number",
-            "description": "This branch's price."
+            "description": "This branch's price for one, as paid today: after the sale, if one is on (§186)."
+          },
+          "discount": {
+            "nullable": true,
+            "description": "The sale on today, or null (§186).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServiceDiscountDto"
+              }
+            ]
           },
           "depositPercentage": {
             "type": "string",
@@ -20932,6 +21078,7 @@
           "durationMinutes",
           "currency",
           "priceMinor",
+          "discount",
           "depositPercentage",
           "imageUrl",
           "bookingCount",
@@ -21122,7 +21269,17 @@
           },
           "priceMinor": {
             "type": "number",
-            "description": "The price of ONE. A booking of several costs this times how many (§136)."
+            "description": "The price of ONE as paid today — after the sale, if one is on (§186). A\nbooking of several costs this times how many (§136)."
+          },
+          "discount": {
+            "nullable": true,
+            "description": "The sale on today, or null (§186).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServiceDiscountDto"
+              }
+            ]
           },
           "quantityMode": {
             "type": "string",
@@ -21155,6 +21312,7 @@
           "currency",
           "depositPercentage",
           "priceMinor",
+          "discount",
           "quantityMode",
           "maxQuantity",
           "images"
@@ -21506,7 +21664,17 @@
           },
           "priceMinor": {
             "type": "number",
-            "description": "This branch's price."
+            "description": "This branch's price for one, as paid today: after the sale, if one is on (§186)."
+          },
+          "discount": {
+            "nullable": true,
+            "description": "The sale on today, or null (§186).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServiceDiscountDto"
+              }
+            ]
           },
           "depositPercentage": {
             "type": "string",
@@ -21542,6 +21710,7 @@
           "durationMinutes",
           "currency",
           "priceMinor",
+          "discount",
           "depositPercentage",
           "imageUrl",
           "bookingCount",

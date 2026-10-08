@@ -14,6 +14,8 @@ export const SERVICE_DRAFT_SELECT = {
   title: true,
   description: true,
   instructions: true,
+  discountPercent: true,
+  discountEndsOn: true,
   durationMinutes: true,
   depositPercentage: true,
   offers: true,
@@ -49,6 +51,9 @@ export class ServiceDraftDto implements ServiceDraftRow {
   title!: string | null;
   description!: string | null;
   instructions!: string | null;
+  discountPercent!: number | null;
+  /** The last day, at UTC midnight; the date part is what counts. */
+  discountEndsOn!: string | null;
   durationMinutes!: number | null;
   /** A decimal string, like every other percentage here (§128.20). */
   depositPercentage!: string | null;
@@ -155,6 +160,10 @@ export class ServiceDto implements ServiceRow {
   description!: string | null;
   /** What to know before coming (§180). */
   instructions!: string | null;
+  /** A sale, whole percent off (§186). */
+  discountPercent!: number | null;
+  /** The sale's last day, at UTC midnight; the date part is what counts. */
+  discountEndsOn!: string | null;
   durationMinutes!: number;
   currency!: string;
   /** A decimal string (§128.20). */

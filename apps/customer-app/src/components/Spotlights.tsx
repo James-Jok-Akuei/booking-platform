@@ -55,6 +55,7 @@ const LOOKS = {
   price: { from: '#8A2C0B', to: '#F59E0B', glow: '#FFE08A', ink: '#B45309', icon: 'pricetag' },
   fresh: { from: '#13296B', to: '#3B82F6', glow: '#BCD6FF', ink: '#1D4ED8', icon: 'sparkles' },
   business: { from: '#07090F', to: '#2B3243', glow: '#F5C451', ink: '#0B0F19', icon: 'trophy' },
+  deal: { from: '#4A0B3F', to: '#E0367A', glow: '#FFB3D1', ink: '#A3124F', icon: 'pricetags' },
 } satisfies Record<string, { from: string; to: string; glow: string; ink: string; icon: IconName }>;
 
 type Kind = keyof typeof LOOKS;
@@ -135,6 +136,12 @@ export function Spotlights({
     enabled: position !== null,
     ...fresh,
   });
+  // The biggest sale on today (§186): the server puts it first.
+  const sales = useQuery({
+    queryKey: ['spotlight', 'sale'],
+    queryFn: () => discoverServices({ onSale: true, limit: 4 }),
+    ...fresh,
+  });
   const business = useQuery({
     queryKey: ['spotlight', 'business'],
     queryFn: () => discoverLocations({ sort: 'rating', limit: 3 }),
@@ -186,6 +193,7 @@ export function Spotlights({
     );
     if (top) usedBusiness.add(top.business.id);
     const b = exact(booked.data?.services, (s) => s.bookingCount > 0);
+    const d = exact(sales.data?.services, (s) => s.discount !== null);
     const p = exact(cheap.data?.services, () => true);
     const n = exact(nearest.data?.services, (s) => typeof s.location.distanceKm === 'number');
     // "Top rated" is true of anything rated 4.5 or more, so it may choose.
@@ -205,6 +213,18 @@ export function Spotlights({
         stat: `${b.bookingCount} booked`,
         line: `${shopOf(b)} · ${areaOf(b)}`,
         label: `Most booked: ${b.name} at ${shopOf(b)}, ${b.bookingCount} bookings.`,
+      });
+    }
+    if (d?.discount) {
+      const was = money.format(d.discount.listPriceMinor);
+      const now = money.format(d.priceMinor);
+      out.push({
+        ...service(d),
+        kind: 'deal',
+        kicker: 'On sale',
+        stat: `−${d.discount.percent}%`,
+        line: `${shopOf(d)} · now ${now}, was ${was}`,
+        label: `On sale: ${d.name} at ${shopOf(d)}, ${d.discount.percent}% off, now ${now}.`,
       });
     }
     if (r) {
@@ -269,7 +289,7 @@ export function Spotlights({
       });
     }
     return out;
-  }, [booked.data, rated.data, nearest.data, cheap.data, newest.data, business.data, money, router]);
+  }, [booked.data, sales.data, rated.data, nearest.data, cheap.data, newest.data, business.data, money, router]);
 
   /**
    * The set on show is fixed for a whole round (§176). The six searches land
@@ -278,7 +298,7 @@ export function Spotlights({
    * answered, and a new set is taken only at the start of a new visit.
    */
   const settled =
-    [booked, rated, cheap, newest, business].every((q) => !q.isPending) &&
+    [booked, sales, rated, cheap, newest, business].every((q) => !q.isPending) &&
     (position === null || !nearest.isPending);
   const [round, setRound] = useState<Spot[]>([]);
   const latest = useRef(spots);

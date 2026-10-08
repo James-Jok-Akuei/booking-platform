@@ -693,6 +693,13 @@ model Service {
   /// and on the reservation after. Null when the shop has nothing to say.
   instructions String?
 
+  /// A sale the shop runs on this service (§186): a whole percentage, 1–90,
+  /// off every branch's price. Null is no sale. A CHECK holds the range.
+  discountPercent Int?
+  /// The LAST day the sale runs, in the platform's time zone; null runs until
+  /// the shop turns it off. Only meaningful with a percentage (CHECK).
+  discountEndsOn  DateTime? @db.Date
+
   // Money is stored as integer cents, never a float. Binary floating point
   // cannot represent most decimal money values exactly, and the deposit /
   // platform-fee split (see DECISIONS.md §2) does arithmetic on these amounts.
@@ -1120,6 +1127,15 @@ model Appointment {
   unitPriceMinor        Int?
   depositPercentage     Decimal? @db.Decimal(5, 2)
   platformFeePercentage Decimal? @db.Decimal(5, 2)
+
+  // ---- The sale, if one was on when it was booked (§186) ----
+  //
+  // servicePriceMinor and unitPriceMinor above are what was AGREED — after
+  // the sale. These say what it was before, so a receipt can show the saving
+  // and a later change to the sale never rewrites a past booking. Both null
+  // when there was no sale.
+  discountPercent Int?
+  listPriceMinor  Int?
 
   /// ISO 4217 code covering all three amounts above. One field rather than
   /// three: a deposit, the fee taken from it, and the remainder are by
@@ -2179,6 +2195,8 @@ model ServiceDraft {
   title             String?
   description       String?
   instructions      String?
+  discountPercent   Int?
+  discountEndsOn    DateTime? @db.Date
   durationMinutes   Int?
   depositPercentage Decimal? @db.Decimal(5, 2)
 

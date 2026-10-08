@@ -8,6 +8,8 @@ import { Cover } from '../ui/Cover';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { SaveButton } from './SaveButton';
+import { SaleBadge } from './Sale';
+import { useMoney } from '../money';
 
 /**
  * A saved service, as a card worth coming back to (§158).
@@ -35,6 +37,7 @@ export function SavedServiceCard({
 }) {
   const shop = service.business.name ?? service.location.name;
   const rated = service.location.ratingCount > 0 && service.location.ratingAvg !== null;
+  const money = useMoney();
 
   return (
     <PressableScale
@@ -61,9 +64,21 @@ export function SavedServiceCard({
           <SaveButton saved onPress={onSave} onPhoto />
         </View>
 
+        {/* On sale (§186). */}
+        {service.discount && (
+          <View style={styles.sale}>
+            <SaleBadge percent={service.discount.percent} large />
+          </View>
+        )}
+
         {/* The two numbers a person compares, on the picture. */}
         <View style={styles.onPhoto} pointerEvents="none">
-          <Text style={styles.price}>{price}</Text>
+          <Text style={styles.price}>
+            {price}
+            {service.discount && (
+              <Text style={styles.was}>{`  ${money.format(service.discount.listPriceMinor)}`}</Text>
+            )}
+          </Text>
           <View style={styles.facts}>
             <View style={styles.fact}>
               <Icon name="time-outline" size={12} color="#FFFFFF" />
@@ -146,6 +161,13 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: radius.lg,
   },
   heart: { position: 'absolute', top: 10, right: 10 },
+  sale: { position: 'absolute', top: 12, left: 12 },
+  was: {
+    fontFamily: font.semibold,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.78)',
+    textDecorationLine: 'line-through',
+  },
   onPhoto: { position: 'absolute', left: 14, right: 14, bottom: 12, gap: 5 },
   price: { fontFamily: font.extrabold, fontSize: 20, color: '#FFFFFF', letterSpacing: -0.3 },
   facts: { flexDirection: 'row', gap: 10 },

@@ -206,6 +206,13 @@ export function Reservation({
             value={format(a.servicePriceMinor, a.currency)}
           />
         )}
+        {/* The sale it was booked under (§186). */}
+        {a.discountPercent !== null && a.listPriceMinor !== null && a.servicePriceMinor !== null && (
+          <Row
+            label={`Sale · ${a.discountPercent}% off`}
+            value={`−${format(a.listPriceMinor - a.servicePriceMinor, a.currency)}`}
+          />
+        )}
         {a.servicePriceMinor !== null && (
           <Row label="Total" value={format(a.servicePriceMinor, a.currency)} />
         )}

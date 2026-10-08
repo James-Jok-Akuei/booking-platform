@@ -11,6 +11,7 @@ import {
 import { isPubliclyBookable } from '../business/business-status';
 import { FavouritesService } from '../favourites/favourites.service';
 import { dayOfWeekUtc, instantToZonedParts } from '../availability/time.util';
+import { liveDiscount, priceFor } from '../business/discount';
 import { isOpenAt } from './open-now';
 import { DiscoverLocationsDto, DiscoverySort } from './dto/discover-locations.dto';
 import { DiscoveredServicePageDto, DiscoveryPageDto } from './dto/discovery-response.dto';
@@ -330,15 +331,15 @@ export class DiscoveryService {
     const restrictTo =
       distance?.radiusKm !== undefined ? (nearby?.map((r) => r.id) ?? null) : null;
 
-    // The branch rules, minus the two filters that belong to the offer.
-    const { q, maxPriceMinor, ...branchQuery } = query;
+    // The branch rules, minus the filters that belong to the offer.
+    const { q, maxPriceMinor, onSale, ...branchQuery } = query;
     const locationWhere = this.buildWhere(branchQuery as DiscoverLocationsDto, restrictTo);
     const contains = q ? { contains: q, mode: 'insensitive' as const } : null;
 
     const offers = await this.prisma.serviceLocation.findMany({
       where: {
         isOffered: true,
-        ...(maxPriceMinor !== undefined ? { priceMinor: { lte: maxPriceMinor } } : {}),
+        // `maxPriceMinor` is applied below, to the price AFTER a sale (§186).
         service: { isActive: true },
         location: locationWhere,
         ...(contains
@@ -364,6 +365,8 @@ export class DiscoveryService {
             currency: true,
             depositPercentage: true,
             createdAt: true,
+            discountPercent: true,
+            discountEndsOn: true,
             // Only the cover. The rest are on the booking screen (§132).
             images: {
               orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
@@ -417,11 +420,21 @@ export class DiscoveryService {
     );
     const distanceById = new Map(nearby?.map((r) => [r.id, r.distance_km]) ?? []);
 
+    // Each offer at the price paid today (§186): after a sale, if one is on.
+    const today = this.localToday().date;
+    const priced = new Map(
+      offers.map((o) => [o, priceFor(o.priceMinor, liveDiscount(o.service, today))]),
+    );
+    const paid = (o: (typeof offers)[number]) => priced.get(o)!;
+
     // `openNow` is a filter on the BRANCH, resolved the way the place search
     // resolves it: from the one function that knows the rule (§114.2).
-    const candidates = query.openNow
-      ? offers.filter((o) => openNow.get(o.locationId))
-      : offers;
+    const candidates = offers.filter(
+      (o) =>
+        (!query.openNow || openNow.get(o.locationId)) &&
+        (!onSale || paid(o).discount !== null) &&
+        (maxPriceMinor === undefined || paid(o).priceMinor <= maxPriceMinor),
+    );
 
     const rating = (o: (typeof offers)[number]) =>
       o.location.ratingAvg ? Number(o.location.ratingAvg) : null;
@@ -439,7 +452,7 @@ export class DiscoveryService {
     const sorted = [...candidates].sort((a, b) => {
       switch (query.sort) {
         case DiscoverySort.PRICE:
-          return a.priceMinor - b.priceMinor || popular(a, b);
+          return paid(a).priceMinor - paid(b).priceMinor || popular(a, b);
         case DiscoverySort.RATING:
           return (rating(b) ?? -1) - (rating(a) ?? -1) || popular(a, b);
         case DiscoverySort.NEWEST:
@@ -452,7 +465,10 @@ export class DiscoveryService {
         default:
           // Popular is the default here, unlike the place search: a shelf of
           // services in alphabetical order would be a shelf nobody arranged.
-          return popular(a, b);
+          // Asking for sales only, the biggest sale leads (§186).
+          return onSale
+            ? (paid(b).discount?.percent ?? 0) - (paid(a).discount?.percent ?? 0) || popular(a, b)
+            : popular(a, b);
       }
     });
 
@@ -472,7 +488,8 @@ export class DiscoveryService {
         description: o.service.description,
         durationMinutes: o.service.durationMinutes,
         currency: o.service.currency,
-        priceMinor: o.priceMinor,
+        priceMinor: paid(o).priceMinor,
+        discount: paid(o).discount,
         depositPercentage: o.service.depositPercentage.toFixed(2),
         imageUrl: o.service.images[0]?.url ?? null,
         bookingCount: bookings.get(key(o.serviceId, o.locationId)) ?? 0,
@@ -592,6 +609,8 @@ export class DiscoveryService {
               title: true,
               description: true,
               instructions: true,
+              discountPercent: true,
+              discountEndsOn: true,
               durationMinutes: true,
               depositPercentage: true,
               currency: true,
@@ -661,9 +680,15 @@ export class DiscoveryService {
       // Flattened so a client still sees one service object with a price on it
       // — the per-branch join is how the price is STORED, not a shape a
       // customer should have to understand.
-      services: services.map((offer) => ({
-        ...offer.service,
-        priceMinor: offer.priceMinor,
+      services: services.map((offer) => {
+        // The stored sale columns stay inside; the customer gets the sale as
+        // it stands today (§186).
+        const { discountPercent, discountEndsOn, ...service } = offer.service;
+        const price = priceFor(offer.priceMinor, liveDiscount({ discountPercent, discountEndsOn }, today.date));
+        return {
+        ...service,
+        priceMinor: price.priceMinor,
+        discount: price.discount,
         depositPercentage: offer.service.depositPercentage.toFixed(2),
         quantityMode: offer.service.quantityMode,
         maxQuantity: offer.service.maxQuantity,
@@ -671,11 +696,12 @@ export class DiscoveryService {
         ...(rate
           ? {
               approxSettlement: {
-                priceMinor: approxSettlementFor(offer.priceMinor, rate),
+                priceMinor: approxSettlementFor(price.priceMinor, rate),
               },
             }
           : {}),
-      })),
+        };
+      }),
       district: location.district
         ? {
             id: location.district.id,

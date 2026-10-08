@@ -54,6 +54,8 @@ export class ServiceDraftsService {
       title?: string | null;
       description?: string | null;
       instructions?: string | null;
+      discountPercent?: number | null;
+      discountEndsOn?: string | null;
       durationMinutes?: number | null;
       depositPercentage?: number | null;
       offers?: Array<{ locationId: string; priceMinor: number }>;
@@ -67,6 +69,13 @@ export class ServiceDraftsService {
         ...(data.title !== undefined ? { title: data.title } : {}),
         ...(data.description !== undefined ? { description: data.description } : {}),
         ...(data.instructions !== undefined ? { instructions: data.instructions } : {}),
+        ...(data.discountPercent !== undefined ? { discountPercent: data.discountPercent } : {}),
+        ...(data.discountEndsOn !== undefined
+          ? {
+              discountEndsOn:
+                data.discountEndsOn === null ? null : new Date(`${data.discountEndsOn}T00:00:00Z`),
+            }
+          : {}),
         ...(data.durationMinutes !== undefined
           ? { durationMinutes: data.durationMinutes }
           : {}),

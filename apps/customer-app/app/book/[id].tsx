@@ -18,6 +18,7 @@ import { useSignedIn } from '../../src/api/client';
 import { BeforeYouCome } from '../../src/booking/BeforeYouCome';
 import { endOf, groupByPeriod } from '../../src/booking/periods';
 import { PhotoMosaic } from '../../src/components/PhotoMosaic';
+import { SaleBadge, saleUntil } from '../../src/components/Sale';
 import { SaveButton } from '../../src/components/SaveButton';
 import { distanceLabel } from '../../src/distance';
 import { duration } from '../../src/duration';
@@ -242,6 +243,9 @@ export default function Book() {
   const restMinor = Math.max(0, totalMinor - depositMinor);
   const split = depositMinor < totalMinor;
   const format = (minor: number) => money.format(minor, service.currency);
+  // A sale on today (§186). `service.priceMinor` is already the price after it.
+  const sale = service.discount;
+  const savedMinor = sale ? (sale.listPriceMinor - service.priceMinor) * quantity : 0;
 
   // How long the whole booking takes comes from the server, which knows how
   // many places the shop has. Until it answers, one sitting is the best guess.
@@ -410,11 +414,30 @@ export default function Book() {
                 wrong, and a bar is read faster than a sentence. */}
             <View style={styles.section}>
               <View style={styles.priceRow}>
-                <Text style={[styles.price, layout.compact && styles.priceCompact]}>
+                <Text
+                  style={[styles.price, layout.compact && styles.priceCompact, sale && styles.priceSale]}
+                >
                   {format(service.priceMinor)}
                 </Text>
                 {unitWord && <Text style={styles.priceUnit}>{unitWord}</Text>}
               </View>
+              {/* On sale (§186): how much off, for how long, and what it saves
+                  on THIS booking — the saving grows as "how many" does. */}
+              {sale && (
+                <View style={styles.saleLine}>
+                  <SaleBadge percent={sale.percent} large />
+                  <View style={styles.flex}>
+                    <Text style={styles.saleText}>
+                      Was <Text style={styles.was}>{format(sale.listPriceMinor)}</Text>
+                      {sale.endsOn ? ` · sale ${saleUntil(sale)}` : ' · on sale now'}
+                    </Text>
+                    <Text style={styles.saleSave}>
+                      You save {format(savedMinor)}
+                      {quantity > 1 ? ` on ${countWord(quantity)}` : ''}
+                    </Text>
+                  </View>
+                </View>
+              )}
               {split ? (
                 <>
                   <View style={styles.track}>
@@ -603,6 +626,11 @@ export default function Book() {
                     <View style={styles.flex}>
                       <Text style={styles.summaryLabel}>Total</Text>
                       <Text style={styles.summaryValue}>{format(totalMinor)}</Text>
+                      {sale && (
+                        <Text style={styles.summarySave}>
+                          {sale.percent}% off · you save {format(savedMinor)}
+                        </Text>
+                      )}
                     </View>
                     <View>
                       <Text style={styles.summaryLabel}>Pay now</Text>
@@ -729,6 +757,7 @@ export default function Book() {
           <View style={styles.flex}>
             <Text style={styles.footerLabel} numberOfLines={1}>
               {quantity > 1 ? `Total for ${countWord(quantity)}` : 'Total'}
+              {sale ? ` · ${sale.percent}% off` : ''}
             </Text>
             <Ticker
               value={totalMinor}
@@ -859,6 +888,11 @@ const styles = StyleSheet.create({
   price: { fontFamily: font.extrabold, fontSize: 30, color: theme.ink, letterSpacing: -0.7 },
   priceCompact: { fontSize: 26 },
   priceUnit: { fontFamily: font.semibold, fontSize: 13.5, color: theme.muted },
+  priceSale: { color: theme.accentDeep },
+  was: { fontFamily: font.bold, color: theme.muted, textDecorationLine: 'line-through' },
+  saleLine: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: -2 },
+  saleText: { fontFamily: font.semibold, fontSize: 13, lineHeight: 18, color: theme.ink2 },
+  saleSave: { fontFamily: font.extrabold, fontSize: 13, lineHeight: 18, color: theme.ok },
   track: { height: 8, borderRadius: 4, backgroundColor: theme.sunken, overflow: 'hidden' },
   fill: { height: 8, borderRadius: 4, backgroundColor: theme.accent },
   split: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
@@ -981,6 +1015,7 @@ const styles = StyleSheet.create({
   },
   summaryValue: { fontFamily: font.extrabold, fontSize: 17, color: '#FFFFFF' },
   summaryNow: { color: '#FFB59E' },
+  summarySave: { fontFamily: font.bold, fontSize: 12, color: '#7CE8BF', marginTop: 2 },
   link: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
 
   // ---- 4. the place ----

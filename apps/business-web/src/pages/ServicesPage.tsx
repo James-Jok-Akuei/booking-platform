@@ -70,6 +70,8 @@ export function ServicesPage() {
     title: string;
     description: string;
     instructions: string;
+    discountPercent: number | null;
+    discountEndsOn: string | null;
     durationMinutes: number | null;
     depositPercentage: number | null;
     offers: Array<{ locationId: string; priceMinor: number }>;
@@ -84,6 +86,8 @@ export function ServicesPage() {
         title: values.title.trim() || null,
         description: values.description.trim() || null,
         instructions: values.instructions.trim() || null,
+        discountPercent: values.discountPercent,
+        discountEndsOn: values.discountEndsOn,
         durationMinutes: values.durationMinutes,
         depositPercentage: values.depositPercentage,
         offers: values.offers,
@@ -104,6 +108,8 @@ export function ServicesPage() {
       name: draft.name ?? '',
       title: draft.title,
       description: draft.description,
+      discountPercent: draft.discountPercent,
+      discountEndsOn: draft.discountEndsOn,
       instructions: draft.instructions,
       durationMinutes: draft.durationMinutes ?? 30,
       depositPercentage: draft.depositPercentage ?? '20',
@@ -464,6 +470,8 @@ function ServiceForm({
     title: string;
     description: string;
     instructions: string;
+    discountPercent: number | null;
+    discountEndsOn: string | null;
     durationMinutes: number | null;
     depositPercentage: number | null;
     offers: Array<{ locationId: string; priceMinor: number }>;
@@ -476,6 +484,16 @@ function ServiceForm({
   // customer: under "About this service", and on the reservation.
   const [description, setDescription] = useState(initial?.description ?? '');
   const [instructions, setInstructions] = useState(initial?.instructions ?? '');
+  // A sale (§186). One that has already ended starts the form empty: it is
+  // history, and saving the form clears it.
+  const saleEnded = isSaleOver(initial?.discountEndsOn ?? null);
+  const [discount, setDiscount] = useState(
+    initial?.discountPercent && !saleEnded ? String(initial.discountPercent) : '',
+  );
+  const [saleEndsOn, setSaleEndsOn] = useState(
+    initial?.discountEndsOn && !saleEnded ? initial.discountEndsOn.slice(0, 10) : '',
+  );
+  const percentOff = /^\d+$/.test(discount.trim()) ? Number(discount.trim()) : null;
   const [duration, setDuration] = useState(String(initial?.durationMinutes ?? 30));
   const [deposit, setDeposit] = useState(initial?.depositPercentage ?? '20');
   // Whether one booking may be for more than one, and what "more" means (§136).
@@ -525,6 +543,8 @@ function ServiceForm({
       title,
       description,
       instructions,
+      discountPercent: percentOff,
+      discountEndsOn: percentOff && saleEndsOn ? saleEndsOn : null,
       durationMinutes: Number(duration) || null,
       depositPercentage: deposit === '' ? null : Number(deposit),
       offers,
@@ -532,12 +552,16 @@ function ServiceForm({
     // `offers` is derived from `prices` and rebuilt each render, so watching it
     // directly would fire this on every render rather than on every change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, title, description, instructions, duration, deposit, prices]);
+  }, [name, title, description, instructions, discount, saleEndsOn, duration, deposit, prices]);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (offers.length === 0) {
       window.alert('Give a price at a least one branch, or nobody can book it.');
+      return;
+    }
+    if (discount.trim() && (percentOff === null || percentOff < 1 || percentOff > 90)) {
+      window.alert('A sale is a whole number from 1 to 90 percent off — or leave it empty for no sale.');
       return;
     }
     onSubmit(
@@ -547,6 +571,9 @@ function ServiceForm({
       title: title.trim() || null,
       description: description.trim() || null,
       instructions: instructions.trim() || null,
+      // The sale (§186): null ends it; a last day only with a percentage.
+      discountPercent: percentOff,
+      discountEndsOn: percentOff && saleEndsOn ? saleEndsOn : null,
       durationMinutes: Number(duration),
       depositPercentage: Number(deposit),
       quantityMode,
@@ -640,6 +667,76 @@ function ServiceForm({
           </label>
         ))}
         <span className="muted small">Leave a branch blank to stop offering it there.</span>
+      </div>
+
+      {/* A sale (§186): a percentage off every branch's price, until a last
+          day or until it is ended. What customers will pay is worked out as
+          it is typed, branch by branch. */}
+      <div className="service-sale">
+        <div className="branch-head">
+          <strong>Sale</strong>
+          <span className="muted small">Optional — customers see the old price crossed out</span>
+        </div>
+        <div className="sale-fields">
+          <label>
+            <span>Percent off</span>
+            <input
+              type="number"
+              min="1"
+              max="90"
+              step="1"
+              placeholder="e.g. 20"
+              value={discount}
+              onChange={(e) => setDiscount(e.target.value)}
+            />
+          </label>
+          <label>
+            <span>Last day</span>
+            <input
+              type="date"
+              min={todayYmd()}
+              value={saleEndsOn}
+              disabled={!percentOff}
+              onChange={(e) => setSaleEndsOn(e.target.value)}
+            />
+          </label>
+          {(discount || saleEndsOn) && (
+            <button
+              type="button"
+              className="link danger-link"
+              onClick={() => {
+                setDiscount('');
+                setSaleEndsOn('');
+              }}
+            >
+              End the sale
+            </button>
+          )}
+        </div>
+        {percentOff !== null && percentOff >= 1 && percentOff <= 90 ? (
+          <div className="sale-preview">
+            {locations
+              .filter((l) => prices[l.id]?.trim())
+              .map((l) => {
+                const list = money.toMinor(prices[l.id]);
+                return (
+                  <div key={l.id} className="small">
+                    {l.name}: customers pay <strong>{money.format(salePrice(list, percentOff))}</strong>{' '}
+                    instead of <s>{money.format(list)}</s>
+                  </div>
+                );
+              })}
+            <div className="muted small">
+              {saleEndsOn
+                ? `${percentOff}% off until the end of ${niceDay(saleEndsOn)}. Bookings made before then keep the sale price.`
+                : `${percentOff}% off until you end it. Bookings already made keep the price they were made at.`}
+            </div>
+          </div>
+        ) : saleEnded && initial?.discountEndsOn ? (
+          <span className="muted small">
+            The last sale ended on {niceDay(initial.discountEndsOn.slice(0, 10))}.
+          </span>
+        ) : null}
       </div>
 
       {/* The words a customer reads (§180, §185), in the order the service's
@@ -842,6 +939,13 @@ function ServiceRow({
             </div>
             {/* The words (§180, §185), one line each: a glance down the list
                 shows which services still have nothing to say for themselves. */}
+            {/* A sale running now (§186), in colour so it is seen. */}
+            {service.discountPercent && !isSaleOver(service.discountEndsOn) && (
+              <div className="sale-tag">
+                {service.discountPercent}% off
+                {service.discountEndsOn ? ` · until ${niceDay(service.discountEndsOn.slice(0, 10))}` : ''}
+              </div>
+            )}
             <div className="muted small">{service.title ? 'Title' : 'No title'}</div>
             <div className="muted small">
               {service.description ? 'Description' : 'No description'}
@@ -1075,4 +1179,29 @@ function ServicePhotos({ serviceId }: { serviceId: string }) {
       )}
     </div>
   );
+}
+
+/** Today in the seller's own calendar, as YYYY-MM-DD. */
+function todayYmd() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** A sale's last day has passed (§186). A last day of today is still on. */
+function isSaleOver(endsOn: string | null) {
+  return endsOn !== null && endsOn.slice(0, 10) < todayYmd();
+}
+
+/** "Sun 12 Oct", for a YYYY-MM-DD. */
+function niceDay(ymd: string) {
+  return new Date(`${ymd}T12:00:00Z`).toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
+/** The same rounding the server uses: half up, to a whole unit (§186). */
+function salePrice(priceMinor: number, percent: number) {
+  return Math.round((priceMinor * (100 - percent)) / 100);
 }

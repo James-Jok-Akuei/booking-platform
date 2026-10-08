@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Prisma, QuantityMode } from '@prisma/client';
 import { normaliseQuantityRule } from '../appointments/quantity';
 
@@ -33,6 +34,7 @@ import { BusinessAccessService } from './business-access.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { recalculateFromPrice } from './from-price';
+import { platformToday, ymd } from './discount';
 
 /**
  * Services belong to the *business*, not to a location.
@@ -53,7 +55,46 @@ export class ServicesService {
     private readonly access: BusinessAccessService,
     private readonly settings: PlatformSettingsService,
     private readonly legal: LegalService,
+    private readonly config: ConfigService,
   ) {}
+
+  /**
+   * The sale columns to write (§186), from what was sent and what is stored.
+   *
+   * `discountPercent: null` ends a sale, and takes its last day with it. A last
+   * day needs a percentage, and a NEW last day may not be in the past — the
+   * stored one may be, and is accepted when sent back unchanged, so editing
+   * the name of a service whose sale ended last week is not refused.
+   */
+  private discountColumns(
+    sent: { discountPercent?: number | null; discountEndsOn?: string | null },
+    stored?: { discountPercent: number | null; discountEndsOn: Date | null },
+  ): { discountPercent?: number | null; discountEndsOn?: Date | null } {
+    if (sent.discountPercent === undefined && sent.discountEndsOn === undefined) return {};
+    if (sent.discountPercent === null) return { discountPercent: null, discountEndsOn: null };
+
+    const percent = sent.discountPercent ?? stored?.discountPercent ?? null;
+    const storedEnd = stored?.discountEndsOn ? ymd(stored.discountEndsOn) : null;
+    const endsOn = sent.discountEndsOn !== undefined ? sent.discountEndsOn : storedEnd;
+
+    if (endsOn !== null && percent === null) {
+      throw new BadRequestException('A sale needs a percentage off as well as a last day.');
+    }
+    if (endsOn !== null) {
+      const day = new Date(`${endsOn}T00:00:00Z`);
+      if (Number.isNaN(day.getTime()) || ymd(day) !== endsOn) {
+        throw new BadRequestException('discountEndsOn must be a real date, like 2026-10-31.');
+      }
+      const timeZone = this.config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
+      if (endsOn !== storedEnd && day.getTime() < platformToday(timeZone).getTime()) {
+        throw new BadRequestException('The last day of a sale cannot be in the past.');
+      }
+    }
+    return {
+      discountPercent: percent,
+      discountEndsOn: endsOn === null ? null : new Date(`${endsOn}T00:00:00Z`),
+    };
+  }
 
   /**
    * A service's deposit must be at least the platform's fee.
@@ -118,8 +159,8 @@ export class ServicesService {
       dto.offers.map((offer) => offer.locationId),
     );
 
-    const { offers, quantityMode, maxQuantity, ...words } = dto;
-    const fields = tidyWords(words);
+    const { offers, quantityMode, maxQuantity, discountPercent, discountEndsOn, ...words } = dto;
+    const fields = { ...tidyWords(words), ...this.discountColumns({ discountPercent, discountEndsOn }) };
     const quantityRule = normaliseQuantityRule(
       quantityMode ?? QuantityMode.SINGLE,
       maxQuantity,
@@ -173,8 +214,18 @@ export class ServicesService {
     // patch: an update can also flip `isActive` back on, which changes the
     // cheapest price without touching a price field. Checking which fields
     // moved would be a second place to get the rule right.
-    const { offers, quantityMode, maxQuantity, ...patch } = dto;
-    const rest = tidyWords(patch);
+    const { offers, quantityMode, maxQuantity, discountPercent, discountEndsOn, ...patch } = dto;
+    const sale =
+      discountPercent === undefined && discountEndsOn === undefined
+        ? {}
+        : this.discountColumns(
+            { discountPercent, discountEndsOn },
+            await this.prisma.service.findUniqueOrThrow({
+              where: { id: serviceId },
+              select: { discountPercent: true, discountEndsOn: true },
+            }),
+          );
+    const rest = { ...tidyWords(patch), ...sale };
 
     // The rule is two columns that must agree (§136), so a patch naming either
     // is completed from the stored row before it is checked — sending only a

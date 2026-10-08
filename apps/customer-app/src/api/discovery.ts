@@ -71,6 +71,8 @@ export const discoverLocations = (params: {
   subcategoryId?: string;
   sort?: DiscoverySort;
   openNow?: boolean;
+  /** Services only: just what is on sale today, biggest sale first (§186). */
+  onSale?: boolean;
   minRating?: number;
   maxPriceMinor?: number;
   /** districtId is the narrower of the two and wins if both are sent. */

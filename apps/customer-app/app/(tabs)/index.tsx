@@ -322,6 +322,19 @@ export default function Discover() {
     enabled: position !== null && !sortingByDistance && areaKnown,
     placeholderData: steady(filterKey),
   });
+  /**
+   * "On sale" (§186): what shops have put on sale today, biggest sale first,
+   * under the same filters as everything else on Home. Its own request, since
+   * a sale is rarely among the fifty most popular.
+   */
+  const deals = useQuery({
+    queryKey: ['discover-services-sale', filterKey, hereKey],
+    queryFn: () => discoverServices({ ...filters, onSale: true, limit: SHELF_SIZE }),
+    enabled: areaKnown,
+    placeholderData: steady(filterKey),
+  });
+  const onSale = deals.data?.services ?? [];
+
   const nearOffers = (nearby.data?.services ?? []).filter(
     (o) => o.location.distanceKm !== undefined && o.location.distanceKm !== null,
   );
@@ -694,6 +707,32 @@ export default function Discover() {
               contentContainerStyle={[styles.shelf, bleedPad]}
             >
               {offers.slice(0, SHELF_SIZE).map((service) => (
+                <ServiceCard
+                  key={offerKey(service)}
+                  service={service}
+                  price={money.format(service.priceMinor)}
+                  width={shelfCard}
+                  onPress={() => openService(service)}
+                  onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
+                />
+              ))}
+            </ScrollView>
+          </FadeIn>
+        )}
+
+        {browsing && onSale.length > 0 && (
+          <FadeIn delay={75}>
+            <SectionHead
+              title="On sale"
+              note={`${deals.data?.total ?? onSale.length} ${(deals.data?.total ?? onSale.length) === 1 ? 'deal' : 'deals'}`}
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={bleed}
+              contentContainerStyle={[styles.shelf, bleedPad]}
+            >
+              {onSale.map((service) => (
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}

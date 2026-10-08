@@ -21,6 +21,9 @@ export const APPOINTMENT_SELECT = {
   // How many, and the price of one (§136).
   quantity: true,
   unitPriceMinor: true,
+  // The sale it was booked under, and the price before it (§186).
+  discountPercent: true,
+  listPriceMinor: true,
   depositPercentage: true,
   platformFeePercentage: true,
   paymentProviderReferenceId: true,

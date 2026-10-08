@@ -13942,3 +13942,78 @@ A fourth test in `service-instructions.spec.ts` (the 100-character limit),
 and the existing ones extended to trim the title and carry it to the
 shopfront. **1316 passing across 57 suites.** Demo: Full-body massage and
 Haircut given titles.
+
+## 186. Sales: a shop puts a service on discount (2026-10-08)
+
+Asked: *"can we add discount functionality too."* Built as the discount a
+marketplace's sellers expect: the SHOP puts a service on sale. (Promo codes a
+customer types at checkout are a different feature, and not built.)
+
+### 186.1 The rule
+
+- **A whole percentage, 1–90, off every branch's price**, optionally until a
+  **last day** (in the platform's time zone, bookable all of that day), or
+  until the shop ends it. `Service.discountPercent` and `discountEndsOn`
+  (a DATE), with CHECKs for the range and for "a last day needs a
+  percentage". On `ServiceDraft` too.
+- **It applies to bookings MADE while it is on**, whatever day the visit is.
+  The price the customer is shown is the price they agree to.
+- **Taken off one unit, rounded half up to a whole unit, then multiplied**
+  (§136): the price on the card times three is what three cost.
+- **The deposit and the platform fee are shares of the price after the sale**,
+  so the fee still fits inside the deposit and fee + business = deposit
+  (§40). The sale costs the shop, not the platform: the platform's share
+  shrinks in proportion.
+- **The booking remembers it**: `Appointment.discountPercent` and
+  `listPriceMinor` (the whole booking before the sale) beside the agreed
+  `servicePriceMinor`. Ending or changing a sale never rewrites a booking.
+- One helper, `src/business/discount.ts` (`liveDiscount`, `discountedPrice`,
+  `priceFor`), used by booking, search, the shopfront and saved services, so
+  every screen and the charge agree.
+
+### 186.2 The seller
+
+A **Sale** box in the service form (new and Edit, kept in the draft): percent
+off, an optional last day (not before today), "End the sale", and — as it is
+typed — what customers will pay at each branch ("customers pay RWF 6,800
+instead of ~~RWF 8,000~~"). A sale that has ended starts the form empty and is
+cleared on the next save; the server also accepts a stored past last day sent
+back unchanged, so editing the name of a service whose sale ended is not
+refused. The list shows "15% off · until Sun 12 Oct" in coral.
+
+### 186.3 The customer
+
+- Search, the shopfront and saved services send `priceMinor` as the price
+  PAID today, and `discount: { percent, endsOn, listPriceMinor } | null`.
+  Every existing price on every screen is therefore already right; the sale
+  is drawn on top. "Cheapest" sorts by the price paid; `maxPriceMinor`
+  filters by it.
+- **Small cards**: "−20%" badge in the photo's top corner (the logo moves
+  under it), price in deep coral. No crossed-out price there — a card that
+  narrow cut one of the two prices short.
+- **Shop rows**: the badge on the photo; the price with the old one crossed
+  out beside it.
+- **Saved services**: badge, and the old price crossed out on the photo.
+- **The service page**: the price in coral with "per person"; then the badge,
+  "Was ~~RWF 30,000~~ · sale until Mon 12 Oct" and "You save RWF 6,000" (on
+  the whole booking, growing with "how many"); "Total · 20% off" in the bar;
+  the saving in the dark "Your booking" card.
+- **Checkout and the reservation**: a "Sale · 20% off" line, "−RWF 6,000",
+  in green.
+- **Home**: an **On sale** shelf (`onSale=true`: sales only, biggest first),
+  and an **On sale** spotlight (§176) — plum to pink, price tags, "−20%",
+  "now RWF 24,000, was RWF 30,000" — the biggest sale, picked exactly.
+- **The weekly offers email** (§140) shows the sale price, the old one
+  crossed out and "20% OFF".
+
+**Not changed:** a place's "from" price (`fromPriceMinor`, §44) is the list
+price; it is stored, and a sale ending would leave it stale without a nightly
+job.
+
+`service-discount.spec.ts`: eleven tests — the arithmetic, the last day,
+booking at the sale price with the record kept, three units, a sale that has
+ended, a sale changed after booking, what search/shopfront/saved show, the
+on-sale filter and order, sorting by price paid, and the seller's limits.
+Breaking the sale price on purpose fails five of them. **1327 passing across
+58 suites.** Demo: Full-body massage 20% off for four days, Hot-towel shave
+15% off with no end.

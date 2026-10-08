@@ -76,6 +76,15 @@ export class DiscoverLocationsDto {
   @IsBoolean()
   openNow?: boolean;
 
+  /**
+   * Services only: just the ones on sale today (§186), biggest sale first
+   * unless another order is asked for. Ignored by the place search.
+   */
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  onSale?: boolean;
+
   // All three together or none — enforced in the service, which is the only
   // layer that can see the combination.
   @IsOptional()

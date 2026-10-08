@@ -116,14 +116,29 @@ export class DiscoveredServiceLocationDto {
  * service's and `location.id` the branch's; the pair is what the booking screen
  * takes, and the pair is what makes a row unique.
  */
+/**
+ * A sale on today (§186). `priceMinor` beside it is already the price after
+ * it; `listPriceMinor` is what it was before, for the crossed-out figure.
+ */
+export class ServiceDiscountDto {
+  /** Whole percent off, 1–90. */
+  percent!: number;
+  /** The last day it runs (YYYY-MM-DD, platform time), or null: until turned off. */
+  endsOn!: string | null;
+  /** One unit's price before the sale. */
+  listPriceMinor!: number;
+}
+
 export class DiscoveredServiceDto {
   id!: string;
   name!: string;
   description!: string | null;
   durationMinutes!: number;
   currency!: string;
-  /** This branch's price. */
+  /** This branch's price for one, as paid today: after the sale, if one is on (§186). */
   priceMinor!: number;
+  /** The sale on today, or null (§186). */
+  discount!: ServiceDiscountDto | null;
   /** A decimal string, like every percentage here (§128.20). */
   depositPercentage!: string;
   /** The cover photo (§132), or null — a client falls back to a category tile. */
@@ -202,8 +217,13 @@ export class ShopfrontServiceDto {
   currency!: string;
   /** A decimal string, like every percentage here (§128.20). */
   depositPercentage!: string;
-  /** The price of ONE. A booking of several costs this times how many (§136). */
+  /**
+   * The price of ONE as paid today — after the sale, if one is on (§186). A
+   * booking of several costs this times how many (§136).
+   */
   priceMinor!: number;
+  /** The sale on today, or null (§186). */
+  discount!: ServiceDiscountDto | null;
 
   /**
    * Whether a booking may be for more than one, and what "more" means (§136):

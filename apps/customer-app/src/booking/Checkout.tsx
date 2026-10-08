@@ -132,6 +132,15 @@ export function Checkout({
             value={format(a.servicePriceMinor, a.currency)}
           />
         )}
+        {/* The sale it was booked under (§186), said as a saving. */}
+        {a.discountPercent !== null && a.listPriceMinor !== null && a.servicePriceMinor !== null && (
+          <Line
+            label={`Sale · ${a.discountPercent}% off`}
+            hint={`Was ${format(a.listPriceMinor, a.currency)}`}
+            value={`−${format(a.listPriceMinor - a.servicePriceMinor, a.currency)}`}
+            saving
+          />
+        )}
         {a.servicePriceMinor !== null && (
           <Line label="Total" value={format(a.servicePriceMinor, a.currency)} />
         )}
@@ -339,11 +348,14 @@ function Line({
   hint,
   value,
   muted,
+  saving,
 }: {
   label: string;
   hint?: string;
   value: string;
   muted?: boolean;
+  /** Money taken off — a sale (§186) — in green. */
+  saving?: boolean;
 }) {
   return (
     <View style={styles.line}>
@@ -353,7 +365,11 @@ function Line({
         </Text>
         {hint && <Text style={type.tiny}>{hint}</Text>}
       </View>
-      <Text style={[styles.lineValue, muted && { color: theme.ink2 }]}>{value}</Text>
+      <Text
+        style={[styles.lineValue, muted && { color: theme.ink2 }, saving && { color: theme.ok }]}
+      >
+        {value}
+      </Text>
     </View>
   );
 }

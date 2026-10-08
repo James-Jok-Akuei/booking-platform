@@ -7,7 +7,9 @@ import {
   SavedServicePageDto,
   ServiceFavouriteStateDto,
 } from './dto/service-favourite.dto';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { liveDiscount, platformToday, priceFor } from '../business/discount';
 import {
   FavouriteStateDto,
   SavedPlacePageDto,
@@ -15,7 +17,10 @@ import {
 
 @Injectable()
 export class FavouritesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+  ) {}
 
   /**
    * Saves a place. Saving one already saved changes nothing (§120).
@@ -204,6 +209,8 @@ export class FavouritesService {
             currency: true,
             depositPercentage: true,
             isActive: true,
+            discountPercent: true,
+            discountEndsOn: true,
             images: {
               orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
               take: 1,
@@ -257,8 +264,11 @@ export class FavouritesService {
           });
     const bookings = new Map(grouped.map((g) => [`${g.serviceId}:${g.locationId}`, g._count._all]));
 
+    // At the price paid today: after a sale, if one is on (§186).
+    const today = platformToday(this.config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba');
     const services: SavedServiceDto[] = kept.map((r) => {
       const offer = r.service.locations.find((o) => o.locationId === r.locationId)!;
+      const price = priceFor(offer.priceMinor, liveDiscount(r.service, today));
       const { status, pausedAt, ...business } = r.location.business;
       return {
         id: r.service.id,
@@ -266,7 +276,8 @@ export class FavouritesService {
         description: r.service.description,
         durationMinutes: r.service.durationMinutes,
         currency: r.service.currency,
-        priceMinor: offer.priceMinor,
+        priceMinor: price.priceMinor,
+        discount: price.discount,
         depositPercentage: r.service.depositPercentage.toFixed(2),
         imageUrl: r.service.images[0]?.url ?? null,
         bookingCount: bookings.get(`${r.serviceId}:${r.locationId}`) ?? 0,
