@@ -15436,8 +15436,9 @@ The user: make the background of both apps lighter, more professional.
   (0.11 → 0.07, 0.05 → 0.03), and the browser's `theme-color`. White cards
   keep their hairline border and soft shadow, which is what separates them
   now.
-- Customer app: `theme.bg`, which every screen reads; and the shopfront
-  preview in the business app (§208) follows it.
+- ~~Customer app: `theme.bg`, which every screen reads; and the shopfront
+  preview in the business app (§208) follows it.~~ — reverted by §224: the
+  user prefers the customer app's original `#F6F4F0`.
 - Inside cards nothing changed: inputs, chips and quiet tiles keep their warm
   greys (`--sunken`, `theme.sunken`).
 
@@ -15461,3 +15462,10 @@ so a seller can remove it; it comes back at the next log-in. Not on Overview.
 Checked on a phone: the ✕ shows; closing shows the note; Services and other
 pages then open without it; a reload keeps it closed; Overview's block is
 unaffected.
+
+## 224. The customer app keeps its original background (2026-10-08)
+
+The user prefers the customer app's original background, so §222 is undone
+there: `theme.bg` is `#F6F4F0` again, and the shopfront preview in the
+business app (§208), which copies the customer app, follows it. The business
+app keeps porcelain `#F9F8F6`.

@@ -15,8 +15,7 @@ import { Platform, type TextStyle, type ViewStyle } from 'react-native';
 export const theme = {
   // ---- surfaces ----
   /** Warm paper, not grey: white cards need something to sit ON. */
-  /** Porcelain (§222): near-white with a breath of warmth. */
-  bg: '#F9F8F6',
+  bg: '#F6F4F0',
   panel: '#FFFFFF',
   /** A card inside a card, an input, a quiet tile. */
   sunken: '#F3F1EC',
