@@ -34,6 +34,7 @@ import {
   useNow,
 } from '../lib/time';
 import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
+import { confirmDone, useServiceCovers } from '../lib/bookingLook';
 import { ForYouTop } from '../ads/ForYouTop';
 import { useMediaQuery } from '../shell/useMediaQuery';
 import '../ads/ads.css';
@@ -94,6 +95,7 @@ export function OverviewPage() {
   const wide = useMediaQuery('(min-width: 1280px)');
   const queryClient = useQueryClient();
   const money = useMoney();
+  const covers = useServiceCovers();
   const openCheckIn = useCheckIn();
 
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
@@ -326,7 +328,10 @@ export function OverviewPage() {
                 now={now}
                 busyId={complete.isPending ? complete.variables : undefined}
                 onCheckIn={(a) => openCheckIn(a)}
-                onComplete={(a) => complete.mutate(a.id)}
+                onComplete={async (a) => {
+                  // Finishing is for good, so it asks first, naming the branch (§232).
+                  if (await confirmDone(a, money.format, covers.get(a.service.id) ?? null)) complete.mutate(a.id);
+                }}
               />
             )}
           </article>

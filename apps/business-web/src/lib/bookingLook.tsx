@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { listServices, type Appointment, type AppointmentStatus } from '../api/business';
 import { dueLabel } from '../checkin/CheckIn';
-import { clock, sameDay, startOfDay } from './time';
+import { clock, relativeDay, sameDay, startOfDay } from './time';
+import { confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 
 /*
@@ -37,7 +38,8 @@ export const dueAtShop = (a: Appointment) =>
 export type Actions = {
   checkIn: (a: Appointment) => void;
   noCode: (a: Appointment) => void;
-  complete: (a: Appointment) => void;
+  /** Asks first (§232); true when it was marked done. */
+  complete: (a: Appointment) => Promise<boolean>;
   noShow: (a: Appointment) => void;
   cancel: (a: Appointment) => void;
   open: (a: Appointment) => void;
@@ -129,4 +131,70 @@ export function standing(a: Appointment, now: Date): { text: string; tone: strin
     case 'PENDING_PAYMENT':
       return { text: 'Paying on their phone', tone: 'muted' };
   }
+}
+
+/**
+ * Which booking a question is about (§232), at the top of the dialogs that
+ * change one for good — Mark done, No-show, Cancel: the service and its
+ * photo, the customer, the time, and the BRANCH in bold with its address, so
+ * a shop with several branches never closes the wrong one.
+ */
+export function BookingInQuestion({ a, cover }: { a: Appointment; cover?: string | null }) {
+  return (
+    <div className="dlg-booking">
+      <div className="dlg-booking-top">
+        <span className={`dlg-booking-thumb${cover ? '' : ' is-empty'}`}>
+          {cover ? <img src={cover} alt="" /> : <Icon name="tag" size={18} />}
+        </span>
+        <span className="dlg-booking-what">
+          <strong>
+            {a.service.name}
+            {a.quantity > 1 && <em> ×{a.quantity}</em>}
+          </strong>
+          <span>
+            {relativeDay(a.startTime)} · {clock(a.startTime)}–{clock(a.endTime)}
+          </span>
+          <span>
+            {a.customer.email} · No. {reservationNo(a.id)}
+          </span>
+        </span>
+      </div>
+      <div className="dlg-booking-where">
+        <Icon name="pin" size={17} />
+        <span>
+          <b>{a.location.name}</b>
+          {a.location.address && <small>{a.location.address}</small>}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/** "Mark this booking as done?" — finishing is for good, so it asks (§232). */
+export function confirmDone(a: Appointment, money: Money, cover?: string | null) {
+  const due = dueAtShop(a);
+  return confirmDialog({
+    title: 'Mark this booking as done?',
+    tone: 'ok',
+    icon: 'checkCircle',
+    body: (
+      <>
+        <BookingInQuestion a={a} cover={cover} />
+        {due !== null && due > 0 && (
+          <p className="dlg-booking-due">
+            <Icon name="banknote" size={16} />
+            <span>
+              Still to collect at the shop: <strong>{money(due, a.currency)}</strong>
+            </span>
+          </p>
+        )}
+        <p>
+          It cannot be changed back.{' '}
+          {a.depositPaidAt ? 'The deposit becomes yours to be paid out, and the customer can rate the visit.' : 'The customer can then rate the visit.'}
+        </p>
+      </>
+    ),
+    confirmLabel: 'Yes, mark done',
+    cancelLabel: 'Not yet',
+  });
 }

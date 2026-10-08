@@ -15745,3 +15745,32 @@ already at the top of both); the "Logo" step on the shopfront checklist
 Checked at 1440, 1024 and 390 wide: the card open and paused, the sidebar
 card paused, the bell with an approved and a suspended notice (both made up
 in the test browser only; nothing was saved).
+
+## 232. "Mark done" asks first, and names the branch (2026-10-09)
+
+The user: Mark done (on Overview and on Appointments) finished a booking at
+once; ask first — and say which branch the booking is at, in bold, so a
+shop with several branches does not mix them up.
+
+- **Every Mark done now asks** — Overview's today list, the Appointments
+  list, the booking's details panel, and the calendar's fanned-out cards:
+  "Mark this booking as done?" with **Yes, mark done** (green) and **Not
+  yet**. Finishing is for good on the server (only IN_PROGRESS → COMPLETED,
+  and it releases the money, §34.3), so the question says it cannot be
+  changed back, that the deposit becomes the shop's to be paid out, and
+  that the customer can then rate the visit.
+- **Which booking**, at the top of the question (`BookingInQuestion` in
+  `lib/bookingLook`): the service's photo and name ("×2" for a group), the
+  day and time, the customer and reservation number — and under a dashed
+  line, the **branch in bold** with its address beside a pin.
+- **Money still to collect** at the shop, when there is some, in an amber
+  line ("Still to collect at the shop: RWF 5,600") — the last chance to
+  remember it before the booking leaves the list.
+- The same booking card heads the **No-show** and **Cancel** questions too:
+  they also change a booking for good, and the branch confusion is the same.
+- From the details panel, the panel closes only when the answer is yes; "Not
+  yet" leaves it open where it was. `Actions.complete` now returns whether
+  it went ahead.
+
+Checked at 1440 (Overview) and 390 (Appointments, as a sheet from the
+bottom), with a made-up booking in the test browser; nothing was marked done.

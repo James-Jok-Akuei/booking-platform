@@ -23,7 +23,19 @@ import { Portal } from '../ui/Portal';
 import { Select } from '../ui/Select';
 import { Icon, type IconName } from '../ui/Icon';
 import { addDays, clock, minutesBetween, relativeDay, sameDay, startOfDay, useNow } from '../lib/time';
-import { STATUS, Thumb, dueAtShop, payment, reservationNo, standing, useServiceCovers, type Actions, type Money } from '../lib/bookingLook';
+import {
+  BookingInQuestion,
+  STATUS,
+  Thumb,
+  confirmDone,
+  dueAtShop,
+  payment,
+  reservationNo,
+  standing,
+  useServiceCovers,
+  type Actions,
+  type Money,
+} from '../lib/bookingLook';
 import { CalendarBody, CalendarHead, useCalendar } from './calendar/AppointmentCalendar';
 import './appointments.css';
 
@@ -248,10 +260,13 @@ export function AppointmentsPage() {
     const ok = await confirmDialog({
       title: 'Mark as a no-show?',
       body: (
-        <p>
-          Use this when <strong>{a.customer.email}</strong> did not come for their{' '}
-          {clock(a.startTime)} booking. Their deposit is not refunded — that is what it is for.
-        </p>
+        <>
+          <BookingInQuestion a={a} cover={covers.get(a.service.id) ?? null} />
+          <p>
+            Use this when <strong>{a.customer.email}</strong> did not come for their{' '}
+            {clock(a.startTime)} booking. Their deposit is not refunded — that is what it is for.
+          </p>
+        </>
       ),
       tone: 'danger',
       icon: 'userX',
@@ -265,10 +280,13 @@ export function AppointmentsPage() {
     const reason = await promptDialog({
       title: 'Cancel this booking?',
       body: (
-        <p>
-          The customer is told this reason, and if they have paid a deposit it is refunded in full —
-          including our fee.
-        </p>
+        <>
+          <BookingInQuestion a={a} cover={covers.get(a.service.id) ?? null} />
+          <p>
+            The customer is told this reason, and if they have paid a deposit it is refunded in full —
+            including our fee.
+          </p>
+        </>
       ),
       label: 'Reason',
       placeholder: 'For example: the barber is ill today — we are sorry.',
@@ -284,7 +302,12 @@ export function AppointmentsPage() {
   const actions: Actions = {
     checkIn: (a) => openCheckIn(a),
     noCode: (a) => openCheckIn(a, { manual: true }),
-    complete: (a) => act.mutate({ id: a.id, action: 'complete' }),
+    // Finishing is for good, so it asks first, naming the branch (§232).
+    complete: async (a) => {
+      if (!(await confirmDone(a, money.format, covers.get(a.service.id) ?? null))) return false;
+      act.mutate({ id: a.id, action: 'complete' });
+      return true;
+    },
     noShow: askNoShow,
     cancel: askCancel,
     open: (a) => setDetail(a.id),
@@ -1134,9 +1157,8 @@ function AppointmentDetail({
                   <button
                     type="button"
                     className="dark"
-                    onClick={() => {
-                      actions.complete(d);
-                      onClose();
+                    onClick={async () => {
+                      if (await actions.complete(d)) onClose();
                     }}
                   >
                     <Icon name="check" size={17} stroke={2.4} /> Mark done
