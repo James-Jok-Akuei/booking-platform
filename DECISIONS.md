@@ -14162,3 +14162,90 @@ Checked live: two test bookings at the demo spa (3 places) — 2 people at
 were cancelled afterwards. `booking-quantity.spec.ts` rewritten for the rule
 (9 tests, including the busiest-moment case). **1326 passing across 58
 suites.**
+
+## 190. The business app, redesigned — the design system and the frame (2026-10-08)
+
+The user asked for the business web app to get the customer app's treatment
+(§133): "a 3 million dollar UI/UX that sellers love to visit, since this is
+where orders, redemption etc. take place", built **piece by piece in the order
+a seller uses it**, starting with the navigation. Reference shots were finance
+and seller dashboards (Finexy, Steadi/Raxon, TRIVI, Mokopi, ShopSphere): warm
+off-white canvas, big rounded white cards, an orange accent, black pills for
+"you are here", round icon buttons, stat cards with trend chips. Patterns
+learned, nothing copied; every page, link and wording kept.
+
+The order of the pieces: **(1) design system + navigation**, (2) checking a
+customer in, (3) a "Today" overview, (4) Appointments, then Services,
+Branches & hours, Closures, Shopfront, Messages, Reviews, Getting paid, How it
+is going, People, Legal, Help and signing in — each its own section below as
+it lands.
+
+### 190.1 One brand across both apps
+
+`styles.css` is now a design system rather than "a deliberately plain internal
+tool" (§70): the customer app's tokens (§133) — warm canvas `#F4F2ED`, white
+panels, coral `#F0532D` with a three-stop coral gradient for the one main
+action on a screen, night `#15171C` for "selected" and the darkest buttons,
+ok/warn/danger/ask with their soft tints — and Plus Jakarta Sans, loaded from
+Google Fonts. Radii 8–26, four shadow levels, one easing curve, and
+`prefers-reduced-motion` honoured everywhere.
+
+**Every class name the pages used was kept** (checked by listing them all
+before rewriting), so the twelve pages took the new look at once — buttons,
+inputs and selects (with a drawn chevron), the night-pill segmented tabs,
+tables as rounded cards with a tinted header, status pills with a dot,
+drawers that slide in with a blurred backdrop — before any page is rebuilt.
+
+`src/ui/Icon.tsx` is the app's own line-icon set (~70 icons, Lucide-style
+paths, `currentColor`): no icon package, for the same reason §70 gave for no
+component library. `src/ui/Avatar.tsx` gives each customer — who reaches a
+business only as an email — initials on a colour derived from the address, so
+the same customer is the same colour everywhere.
+
+### 190.2 The frame
+
+- **Sidebar** (`src/shell/Sidebar.tsx`): a floating white panel. The shop's
+  logo (or its initials on the coral gradient), name, role and a live dot at
+  the top; §131's groups with an icon per link; the page you are on is a night
+  pill with a coral icon. Badges: **customers still expected today** on
+  Appointments, **unread messages** on Messages. At the foot, the shop's
+  state — "Your shop is live" (night card, pulsing green), "paused", or
+  §70.3's not-approved sentence word for word on amber — and who is signed
+  in, with sign-out. It **folds to a rail of icons** (remembered per browser);
+  a tablet (860–1199px) always gets the rail, with each label shown on hover
+  in a fixed-position bubble so the rail can scroll on a short screen. On a
+  short laptop the shop card shrinks to its heading, then goes, so no link is
+  ever cut; the menu fades at its foot when it scrolls.
+- **One list of pages** (`src/nav.ts`) feeds the sidebar, the phone menu, the
+  top bar's title and the search. §131.3's promise holds: the same twelve
+  addresses.
+- **Top bar**: where you are (group › page, and today's date), a search pill,
+  **Check in** (coral, with today's expected count), Messages with an unread
+  dot, the notification bell, and the account menu (shopfront, people, legal,
+  help, sign out). Frosted, sticky, and it gains an edge once the page
+  scrolls under it.
+- **Search, ⌘K / Ctrl K or "/"** (`CommandPalette.tsx`): finds any page by any
+  word for it ("prices" → Services, "momo" → Getting paid, "holiday" →
+  Closures) plus three actions (check in, add a service, take time off) and
+  sign out last. Arrow keys, Enter, Esc. It only reaches what the app already
+  does.
+- **Notifications** drop down from the bell, each kind with its own icon and
+  colour (a new booking blue, a cancellation red, a review gold, money green).
+  Same behaviour as §96: opening one marks it read.
+- **Phone (under 860px)**: the sidebar becomes a drawer; a floating night
+  **tab bar** in thumb's reach (Bookings, Services, Messages, Menu) with
+  **Check in as the raised coral button** in the middle — the customer app's
+  bar (§133) in the seller's hands. The page's big title is the title; the
+  top bar repeats it only once it has scrolled away. Tabs slide sideways
+  instead of wrapping.
+
+The legal banner (§126.3) is restyled as a card with an icon and a night
+"Read and agree" button; its words are unchanged.
+
+For now **Check in** opens Appointments, where each expected customer has
+their code box; the next piece gives it its own flow.
+
+Checked at 1440×900, 1024×768 and 390×844 against the live backend, with the
+search, the account menu, the bell and the phone drawer each opened. Type-checks
+and builds.
+

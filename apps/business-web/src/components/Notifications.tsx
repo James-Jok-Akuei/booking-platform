@@ -5,6 +5,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '../api/business';
+import { Icon, type IconName } from '../ui/Icon';
 
 const when = (iso: string) => {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -15,7 +16,36 @@ const when = (iso: string) => {
 };
 
 /**
- * The inbox, as a bell in the shell (§96).
+ * Each kind of notification with its own mark and colour (§190), so a glance
+ * down the list tells a new booking from a cancellation from a review.
+ */
+const LOOK: Partial<Record<string, { icon: IconName; tone: string }>> = {
+  APPOINTMENT_BOOKED: { icon: 'calendar', tone: 'ask' },
+  DEPOSIT_CONFIRMED: { icon: 'calendarCheck', tone: 'ok' },
+  APPOINTMENT_REMINDER: { icon: 'clock', tone: 'ask' },
+  APPOINTMENT_MANUALLY_VERIFIED: { icon: 'userCheck', tone: 'ok' },
+  APPOINTMENT_CANCELLED: { icon: 'calendarX', tone: 'danger' },
+  APPOINTMENT_NO_SHOW: { icon: 'userX', tone: 'danger' },
+  DEPOSIT_FAILED: { icon: 'alert', tone: 'danger' },
+  NEW_MESSAGE: { icon: 'message', tone: 'accent' },
+  TICKET_CREATED: { icon: 'help', tone: 'accent' },
+  TICKET_MESSAGE: { icon: 'help', tone: 'accent' },
+  TICKET_STATUS_CHANGED: { icon: 'help', tone: 'accent' },
+  REVIEW_CREATED: { icon: 'star', tone: 'star' },
+  REVIEW_RESPONSE: { icon: 'star', tone: 'star' },
+  REVIEW_HIDDEN: { icon: 'eye', tone: 'warn' },
+  BUSINESS_APPROVED: { icon: 'checkCircle', tone: 'ok' },
+  BUSINESS_REINSTATED: { icon: 'checkCircle', tone: 'ok' },
+  BUSINESS_REJECTED: { icon: 'xCircle', tone: 'danger' },
+  BUSINESS_SUSPENDED: { icon: 'pause', tone: 'danger' },
+  BUSINESS_INVITATION: { icon: 'users', tone: 'ask' },
+  PAYOUT_DESTINATION_SUBMITTED: { icon: 'wallet', tone: 'warn' },
+  PAYOUT_DESTINATION_VERIFIED: { icon: 'wallet', tone: 'ok' },
+  PAYOUT_DESTINATION_REJECTED: { icon: 'wallet', tone: 'danger' },
+};
+
+/**
+ * The inbox, as a bell in the top bar (§96, §190).
  *
  * Polled rather than pushed: there is no websocket in this platform, and a
  * count that is a minute stale is worth more than a connection to maintain.
@@ -45,28 +75,27 @@ export function Notifications() {
     <div className="bell-wrap">
       <button
         type="button"
-        className="bell"
+        className={`tb-icon bell ${open ? 'is-open' : ''}`}
         onClick={() => setOpen((was) => !was)}
         aria-label={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
+        aria-expanded={open}
+        title="Notifications"
       >
-        <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true">
-          <path
-            d="M8 2a3.5 3.5 0 0 0-3.5 3.5v2.2L3.3 10h9.4l-1.2-2.3V5.5A3.5 3.5 0 0 0 8 2zM6.5 11.5a1.5 1.5 0 0 0 3 0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <Icon name="bell" size={19} />
         {unread > 0 && <span className="bell-count">{unread > 99 ? '99+' : unread}</span>}
       </button>
 
       {open && (
         <>
           <div className="bell-backdrop" onClick={() => setOpen(false)} />
-          <div className="bell-panel">
+          <div className="bell-panel" role="dialog" aria-label="Notifications">
             <header>
-              <strong>Notifications</strong>
+              <div>
+                <strong>Notifications</strong>
+                <span className="muted small">
+                  {unread > 0 ? `${unread} unread` : 'All caught up'}
+                </span>
+              </div>
               {unread > 0 && (
                 <button
                   type="button"
@@ -79,7 +108,14 @@ export function Notifications() {
               )}
             </header>
 
-            {rows.length === 0 && <p className="muted small empty">Nothing yet.</p>}
+            {rows.length === 0 && (
+              <div className="bell-empty">
+                <span>
+                  <Icon name="inbox" size={22} />
+                </span>
+                <strong>Nothing yet.</strong>
+              </div>
+            )}
 
             <ul>
               {rows.map((notification) => (
@@ -90,13 +126,17 @@ export function Notifications() {
                     if (!notification.readAt) readOne.mutate(notification.id);
                   }}
                 >
-                  <div className="small">
+                  <span
+                    className={`bell-mark tone-${LOOK[notification.type]?.tone ?? 'accent'}`}
+                    aria-hidden="true"
+                  >
+                    <Icon name={LOOK[notification.type]?.icon ?? 'bell'} size={16} />
+                  </span>
+                  <div className="bell-text">
                     <strong>{notification.subject ?? notification.type}</strong>
+                    {notification.body && <span className="bell-body">{notification.body}</span>}
+                    <span className="bell-when">{when(notification.createdAt)}</span>
                   </div>
-                  {notification.body && (
-                    <div className="muted small">{notification.body}</div>
-                  )}
-                  <div className="muted small">{when(notification.createdAt)}</div>
                 </li>
               ))}
             </ul>

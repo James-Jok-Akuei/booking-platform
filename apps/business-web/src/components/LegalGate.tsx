@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { acceptLegal, myLegalStatus, type LegalStatus } from '../api/business';
+import { Icon } from '../ui/Icon';
 
 /**
  * What this business still has to agree to (§126).
@@ -123,15 +124,23 @@ export function LegalBanner() {
 
   return (
     <div className="legal-banner">
-      <strong>
-        {outstanding.length === 1
-          ? `${outstanding[0].title} has changed.`
-          : `${outstanding.length} documents have changed.`}
-      </strong>{' '}
-      {outstanding.length === 1 && outstanding[0].changeNote
-        ? outstanding[0].changeNote
-        : 'Please read and agree when you can.'}{' '}
-      <Link to="/legal">Read and agree</Link>
+      <span className="lb-icon">
+        <Icon name="legal" size={18} />
+      </span>
+      <p className="lb-text">
+        <strong>
+          {outstanding.length === 1
+            ? `${outstanding[0].title} has changed.`
+            : `${outstanding.length} documents have changed.`}
+        </strong>{' '}
+        {outstanding.length === 1 && outstanding[0].changeNote
+          ? outstanding[0].changeNote
+          : 'Please read and agree when you can.'}
+      </p>
+      <Link to="/legal" className="lb-action">
+        Read and agree
+        <Icon name="arrowRight" size={15} stroke={2.2} />
+      </Link>
     </div>
   );
 }
