@@ -112,7 +112,7 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
   useDismiss(open, ref, close);
 
   const name = data.business?.name ?? 'Your business';
-  const live = data.business?.status === 'APPROVED' && !data.paused;
+  const live = data.live;
 
   const links = [
     { to: '/profile', label: 'Your shopfront', icon: 'store' as const },

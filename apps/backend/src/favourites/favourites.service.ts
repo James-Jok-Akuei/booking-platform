@@ -36,7 +36,8 @@ export class FavouritesService {
       where: {
         id: locationId,
         isActive: true,
-        business: { status: BusinessStatus.APPROVED },
+        // Posted (§268): a shop that has not shown itself has nothing to save.
+        business: { status: BusinessStatus.APPROVED, publishedAt: { not: null } },
       },
       select: { id: true },
     });
@@ -88,6 +89,7 @@ export class FavouritesService {
                 name: true,
                 status: true,
                 pausedAt: true,
+                publishedAt: true,
                 logoUrl: true,
                 coverImageUrl: true,
               },
@@ -130,10 +132,7 @@ export class FavouritesService {
          * the shop paused, the shop is no longer approved — all mean the same
          * thing to them, and two of the three are nobody's business.
          */
-        bookable:
-          location.isActive &&
-          location.business.status === BusinessStatus.APPROVED &&
-          location.business.pausedAt === null,
+        bookable: location.isActive && isPubliclyBookable(location.business),
       })),
     };
   }
@@ -160,7 +159,7 @@ export class FavouritesService {
         service: { isActive: true },
         location: { isActive: true },
       },
-      select: { location: { select: { business: { select: { status: true, pausedAt: true } } } } },
+      select: { location: { select: { business: { select: { status: true, pausedAt: true, publishedAt: true } } } } },
     });
     if (!offer || !isPubliclyBookable(offer.location.business)) {
       throw new NotFoundException('Service not found.');
@@ -236,6 +235,7 @@ export class FavouritesService {
                 coverImageUrl: true,
                 status: true,
                 pausedAt: true,
+                publishedAt: true,
                 category: { select: { id: true, name: true, icon: true } },
                 subcategory: { select: { id: true, name: true } },
                 kinds: KINDS_SELECT,
@@ -271,7 +271,7 @@ export class FavouritesService {
     const services: SavedServiceDto[] = kept.map((r) => {
       const offer = r.service.locations.find((o) => o.locationId === r.locationId)!;
       const price = priceFor(offer.priceMinor, liveDiscount(r.service, today));
-      const { status, pausedAt, ...business } = r.location.business;
+      const { status, pausedAt, publishedAt, ...business } = r.location.business;
       return {
         id: r.service.id,
         name: r.service.name,
@@ -297,7 +297,7 @@ export class FavouritesService {
         saved: true,
         savedAt: r.createdAt.toISOString(),
         bookable:
-          offer.isOffered && r.location.isActive && isPubliclyBookable({ status, pausedAt }),
+          offer.isOffered && r.location.isActive && isPubliclyBookable({ status, pausedAt, publishedAt }),
       };
     });
 

@@ -213,8 +213,8 @@ export class BusinessModerationService {
       );
     }
 
-    // An APPROVED business becomes publicly listed, so it must be one a
-    // customer can use (§53.1, §255): a name — a nameless listing is a blank in
+    // An APPROVED business may be listed — the moment it posts itself (§268)
+    // — so it must be one a customer can use (§53.1, §255): a name — a nameless listing is a blank in
     // search — and an open branch with hours and a service to book there. The
     // rest of the checklist (its phone, its type) is the shop's to finish and
     // an administrator's to judge. Reinstatement is an approval too.

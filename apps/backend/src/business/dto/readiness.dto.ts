@@ -24,6 +24,8 @@ export class BusinessReadinessDto {
   submittedAt!: string | null;
   /** What the last rejection said, kept after the shop sends itself back. */
   lastRejectionReason!: string | null;
+  /** When the shop posted itself for customers (§268); null until it does. */
+  publishedAt!: string | null;
   items!: ReadinessItemDto[];
   /** Every required item is done. */
   ready!: boolean;
@@ -32,4 +34,6 @@ export class BusinessReadinessDto {
   /** What an administrator cannot approve without; empty when it could go live. */
   @ApiProperty({ enum: KEYS, isArray: true })
   goLiveGaps!: Array<(typeof KEYS)[number]>;
+  /** Approved, not yet posted, and still bookable — "Post my shop" can be pressed. */
+  canPublish!: boolean;
 }

@@ -47,9 +47,16 @@ const STATUS: Record<BusinessStatus, { label: string; cls: string }> = {
   REJECTED: { label: 'Rejected', cls: 'rejected' },
 };
 
-/** A shop's state as a word, telling the two kinds of PENDING apart (§255). */
-const lookOf = (b: { status: BusinessStatus; submittedAt: string | null }) =>
-  b.status === 'PENDING' && !b.submittedAt ? { label: 'Setting up', cls: 'setting-up' } : STATUS[b.status];
+/**
+ * A shop's state as a word, telling the two kinds of PENDING apart (§255),
+ * and an approved shop that has not posted itself yet — not in the app (§268).
+ */
+const lookOf = (b: { status: BusinessStatus; submittedAt: string | null; publishedAt: string | null }) =>
+  b.status === 'PENDING' && !b.submittedAt
+    ? { label: 'Setting up', cls: 'setting-up' }
+    : b.status === 'APPROVED' && !b.publishedAt
+      ? { label: 'Approved · not posted', cls: 'unposted' }
+      : STATUS[b.status];
 
 /** Old links say `status=PENDING`; that was always the queue. */
 const tabFrom = (raw: string | null): Tab =>
@@ -585,7 +592,9 @@ function ReviewPanel({
                   ? `Sent for review ${day(b.submittedAt)} (${sinceDay(b.submittedAt)})`
                   : b.status === 'PENDING'
                     ? `Signed up ${day(b.createdAt)} — not sent for review yet`
-                    : `Applied ${day(b.createdAt)} (${sinceDay(b.createdAt)})`}
+                    : b.status === 'APPROVED' && !b.publishedAt
+                      ? `Approved ${day(b.statusChangedAt)} — not posted by the shop yet, so customers cannot see it`
+                      : `Applied ${day(b.createdAt)} (${sinceDay(b.createdAt)})`}
                 {b.phone ? ` · ${b.phone}` : ''}
               </p>
             </div>

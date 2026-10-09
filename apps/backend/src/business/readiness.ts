@@ -25,6 +25,7 @@ export const READINESS_SELECT = {
   statusReason: true,
   submittedAt: true,
   lastRejectionReason: true,
+  publishedAt: true,
   locations: {
     where: { isActive: true },
     select: {
@@ -134,6 +135,14 @@ export const canSubmit = (shop: ReadinessShop) =>
   isReadyForReview(shop) &&
   ((shop.status === BusinessStatus.PENDING && shop.submittedAt === null) || shop.status === BusinessStatus.REJECTED);
 
+/**
+ * Whether the shop can post itself for customers now (§268): approved, not yet
+ * posted, and still something a customer could book — a service or the hours
+ * removed since approval would post an empty listing.
+ */
+export const canPublish = (shop: ReadinessShop) =>
+  shop.status === BusinessStatus.APPROVED && shop.publishedAt === null && goLiveGaps(shop).length === 0;
+
 /** The readiness as the apps receive it. */
 export function readinessView(shop: ReadinessShop) {
   const items = readinessItems(shop);
@@ -142,9 +151,11 @@ export function readinessView(shop: ReadinessShop) {
     statusReason: shop.statusReason,
     submittedAt: shop.submittedAt ? shop.submittedAt.toISOString() : null,
     lastRejectionReason: shop.lastRejectionReason,
+    publishedAt: shop.publishedAt ? shop.publishedAt.toISOString() : null,
     items,
     ready: items.every((item) => !item.required || item.done),
     canSubmit: canSubmit(shop),
     goLiveGaps: goLiveGaps(shop),
+    canPublish: canPublish(shop),
   };
 }

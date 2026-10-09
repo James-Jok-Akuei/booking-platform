@@ -196,6 +196,8 @@ export const PROFILE_SELECT = {
   // from `status` and has to be visible beside it — a shop that cannot see it
   // is paused would read an empty calendar as the platform being broken.
   pausedAt: true,
+  // Whether it has posted itself for customers yet (§268).
+  publishedAt: true,
   createdAt: true,
   updatedAt: true,
   category: { select: { id: true, name: true, icon: true } },
@@ -254,6 +256,8 @@ export class BusinessProfileDto implements ProfilePayload {
 
   /** Set while the business has paused ITSELF (§119.3). */
   pausedAt!: string | null;
+  /** When it posted itself for customers (§268); null until it has. */
+  publishedAt!: string | null;
 
   createdAt!: string;
   updatedAt!: string;

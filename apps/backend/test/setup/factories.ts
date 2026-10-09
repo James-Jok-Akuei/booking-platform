@@ -62,6 +62,12 @@ export async function createBusiness(
       // A complete shop that has asked to be reviewed (§255), as every shop
       // with a name was under the rule before it — and as the migration made them.
       submittedAt: new Date(),
+      // And, once approved, posted by its owner (§268) — a complete shop is
+      // one customers can find.
+      // A suspended shop was approved and posted before it was suspended.
+      publishedAt: [BusinessStatus.APPROVED, BusinessStatus.SUSPENDED].includes(options.status ?? BusinessStatus.APPROVED)
+        ? new Date()
+        : null,
       members: {
         create: {
           userId: user.id,

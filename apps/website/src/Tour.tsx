@@ -43,9 +43,9 @@ const STEPS: Step[] = [
   },
   {
     key: 'live',
-    title: 'We check it, you go live',
-    text: 'Usually within one working day. Then customers can find you and book.',
-    alt: 'The business app’s home page the moment a shop is approved: You are live!',
+    title: 'We check it, you post it',
+    text: 'Usually within one working day. Then you post your shop when you are ready, and customers can find you and book.',
+    alt: 'The business app’s home page the moment a shop is posted: You are live!',
     chip: { icon: 'shield', tone: 'green', title: 'Approved', text: 'Usually within one working day' },
     desk: { x: 21.2, y: 29.6, w: 53.8, h: 18.8 },
     phone: { x: 4, y: 37.6, w: 92, h: 27.6 },

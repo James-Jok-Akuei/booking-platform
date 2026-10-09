@@ -8,7 +8,6 @@ import {
   AppointmentStatus,
   BusinessMemberRole,
   BusinessMemberStatus,
-  Prisma,
 } from '@prisma/client';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -353,6 +352,3 @@ export class AccountService {
     return updated;
   }
 }
-
-/** Reusable `where` fragment: a business customers are allowed to reach. */
-export const TRADING: Prisma.BusinessProfileWhereInput = { pausedAt: null };

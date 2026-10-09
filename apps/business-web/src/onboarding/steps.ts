@@ -18,7 +18,7 @@ export const STEPS: Array<{ key: StepKey; title: string; short: string; icon: Ic
   { key: 'branch', title: 'Where you are', short: 'A branch and its hours', icon: 'pin', keys: ['branch', 'hours'] },
   { key: 'service', title: 'Your first service', short: 'Something to book', icon: 'tag', keys: ['service'] },
   { key: 'paid', title: 'Getting paid', short: 'Optional — add it later', icon: 'wallet', keys: ['payout'], optional: true },
-  { key: 'review', title: 'Send for review', short: 'We check it, you go live', icon: 'send', keys: [] },
+  { key: 'review', title: 'Send for review', short: 'We check it, you post it', icon: 'send', keys: [] },
 ];
 
 /**
@@ -70,12 +70,22 @@ export const ITEM_WORDS: Record<ReadinessKey, { label: string; step: Screen; sec
   payout: { label: 'A number to be paid on', step: 'paid', section: 'paid' },
 };
 
-/** The shop's state in a word or two, the seller's words rather than the status's. */
-export const shopStateWord = (status: Readiness['status'], paused: boolean, submittedAt: string | null | undefined) =>
+/**
+ * The shop's state in a word or two, the seller's words rather than the
+ * status's. Approved is not live until the shop posts itself (§268).
+ */
+export const shopStateWord = (
+  status: Readiness['status'],
+  paused: boolean,
+  submittedAt: string | null | undefined,
+  posted = true,
+) =>
   status === 'APPROVED'
-    ? paused
-      ? 'Paused'
-      : 'Live'
+    ? !posted
+      ? 'Not posted'
+      : paused
+        ? 'Paused'
+        : 'Live'
     : status === 'PENDING'
       ? submittedAt
         ? 'In review'

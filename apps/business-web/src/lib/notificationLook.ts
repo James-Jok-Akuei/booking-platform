@@ -22,7 +22,8 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   REVIEW_CREATED: { icon: 'star', tone: 'star', to: '/reviews' },
   REVIEW_RESPONSE: { icon: 'star', tone: 'star', to: '/reviews' },
   REVIEW_HIDDEN: { icon: 'eye', tone: 'warn', to: '/reviews' },
-  BUSINESS_APPROVED: { icon: 'checkCircle', tone: 'ok', to: '/profile' },
+  // To the Overview, where "Post my shop" is (§268).
+  BUSINESS_APPROVED: { icon: 'checkCircle', tone: 'ok', to: '/' },
   BUSINESS_REINSTATED: { icon: 'checkCircle', tone: 'ok', to: '/profile' },
   BUSINESS_REJECTED: { icon: 'xCircle', tone: 'danger', to: '/profile' },
   BUSINESS_SUSPENDED: { icon: 'pause', tone: 'danger', to: '/profile' },

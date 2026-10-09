@@ -9,7 +9,7 @@ import {
   RateContext,
   approxSettlementFor,
 } from '../payments/approx-settlement';
-import { isPubliclyBookable } from '../business/business-status';
+import { PUBLIC_BUSINESS, isPubliclyBookable } from '../business/business-status';
 import { FavouritesService } from '../favourites/favourites.service';
 import { dayOfWeekUtc, formatCalendarDate, instantToZonedParts } from '../availability/time.util';
 import { liveDiscount, priceFor } from '../business/discount';
@@ -571,6 +571,7 @@ export class DiscoveryService {
             coverImageUrl: true,
             status: true,
             pausedAt: true,
+            publishedAt: true,
             category: { select: { id: true, name: true, icon: true } },
             subcategory: { select: { id: true, name: true } },
             kinds: KINDS_SELECT,
@@ -913,13 +914,12 @@ export class DiscoveryService {
       // Applied in buildWhere so the count and the page agree about it, the
       // same reason maxPriceMinor moved into the query.
       isActive: true,
-      // Only publicly bookable businesses, through the single shared predicate
-      // rather than a second status check (§42.1).
+      // Only publicly bookable businesses, through the single shared rule
+      // rather than a second status check (§42.1): approved, posted by the
+      // shop itself (§268), and not paused (§119.3 — bookings already made
+      // still happen; this stops new ones).
       business: {
-        status: BusinessStatus.APPROVED,
-        // A business that paused itself is out of search until it resumes
-        // (§119.3). Bookings already made still happen; this stops new ones.
-        pausedAt: null,
+        ...PUBLIC_BUSINESS,
         // Any of its kinds (§265): a barbershop whose other branch is a spa
         // is found under both. The main kind is matched too, for a business
         // that chose a category before choosing its type.
@@ -956,12 +956,11 @@ export class DiscoveryService {
       const contains = { contains: query.q, mode: 'insensitive' as const };
       where.OR = [
         { name: contains },
-        { business: { is: { name: contains, status: BusinessStatus.APPROVED, pausedAt: null } } },
+        { business: { is: { name: contains, ...PUBLIC_BUSINESS } } },
         {
           business: {
             is: {
-              status: BusinessStatus.APPROVED,
-              pausedAt: null,
+              ...PUBLIC_BUSINESS,
               services: { some: { name: contains, isActive: true } },
             },
           },
@@ -971,8 +970,7 @@ export class DiscoveryService {
         {
           business: {
             is: {
-              status: BusinessStatus.APPROVED,
-              pausedAt: null,
+              ...PUBLIC_BUSINESS,
               kinds: { some: { OR: [{ otherLabel: contains }, { subcategory: { name: contains } }] } },
             },
           },

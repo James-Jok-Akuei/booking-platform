@@ -17039,8 +17039,9 @@ means and what to do, in the seller's words:
 - **Sent back**: what we said, quoted, and **Send back for review** (plus
   Edit your shop).
 - **Suspended**: why, and Talk to support.
-- **Just approved** (in the last week, once, closed for good on this device):
-  "You are live!", with a little confetti.
+- ~~**Just approved** (in the last week, once, closed for good on this device):
+  "You are live!", with a little confetti.~~ *Superseded by §268: approved
+  now shows "Post my shop"; "You are live!" follows the shop posting itself.*
 
 The sidebar's card and the shop's state word follow the same words instead
 of the raw status ("This business is PENDING"): Finish setting up (n things
@@ -17439,3 +17440,63 @@ common write-in can be turned into a real type.
   "Other". The write-in then leaves the list.
 
 Five tests in `business-kinds.spec.ts`.
+
+## 268. Approved is not posted: the shop posts itself, and setting up says what is ahead (2026-10-10)
+
+Asked: (1) the two cards floating beside setting up — "Deposit paid · RWF
+1,400 · MTN MoMo" and "New booking · Haircut · Saturday 10:30" — read as real
+notices to someone whose shop does not exist yet; (2) does an approved shop
+simply appear in the customer app? If so that is wrong: the seller should
+press "post" themselves, with a confirmation.
+
+It did appear: approval made a shop public at once (§42, §255), and a seller
+learned they were live from their first booking. Now approval says a shop
+**may** be listed, and the shop **posts** itself when it is ready.
+
+- **The rule**: a shop is public when it is approved, **posted**, and not
+  paused. `business_profiles.publishedAt` — set once, by the shop, never
+  cleared; after that, hiding is a pause (the shop's, §119.3) or a suspension
+  (ours). `isPubliclyBookable` takes it (required, like `pausedAt`) and
+  `PUBLIC_BUSINESS` is the same rule as a `where`, used by search (all four
+  of its filters), the shop page, booking, saving a place or service, and the
+  console's "live shops" and "live branches" counts. The unused `TRADING`
+  fragment, which checked only the pause, is gone.
+- **Nobody disappears**: the migration (`…_shop_posts_itself`) marks every shop
+  approved now — or suspended, having been approved before — as posted on the
+  day of its last status change. A reinstated shop comes back as it was,
+  without posting again. The demo seed posts its approved shops; the test
+  factory's approved and suspended shops are posted.
+- **`POST /business/publish`** (owner or manager, like sending for review):
+  refused before approval ("We will email you as soon as it is"), while
+  suspended, a second time (409), and when the shop has lost what approval
+  needed since — its service, its hours (`goLiveGaps`) — which would post a
+  listing nobody could book. A pause set before posting is lifted: posting
+  means "show it". Readiness gains `publishedAt` and `canPublish`.
+- **The business app**: the Overview's card has a new state — "Approved · not
+  posted yet — Your shop is approved. Post it when you are ready", with **See
+  it as customers will** (the Shopfront page) and **Post my shop**, which
+  asks first: "Post *name* for customers? From now on customers can find it…
+  Need a break later? Pause it on your Shopfront page." (Post my shop / Not
+  yet). Anything lost since approval is named with a way to it. The track is
+  now four stops: set up · we check it · **you post it** · customers book. The
+  Shopfront page shows the same choice in place of the pause until it is
+  posted. "You are live!" (with the confetti) now follows the posting. The
+  sidebar says "Approved — post it", the state word "Not posted", the
+  approval notice opens the Overview, and its email and in-app words say
+  customers cannot see it yet.
+- **Setting up** says it from the start: "Customers see nothing until we
+  approve your shop and you post it"; the last step is "We check it, you
+  post it"; what happens next adds "You post your shop — one button on your
+  dashboard". The review screen's title is "Ready to send" (it was "Ready to
+  go live", which it is not).
+- **The floating cards** say what is ahead, never a notice: "Deposits by MoMo
+  · Paid when they book" and "Bookings land here · Once your shop is posted".
+  The sign-in wall's rotating "seller's day" is unchanged — it is seen before
+  there is any shop, as a picture of the app.
+- **The console**: an approved shop not yet posted is "Approved · not posted"
+  (green, outlined only), and its panel says it was approved on that day and
+  customers cannot see it yet. **Landing page**: the third step is "We check
+  it, you post it".
+
+Six tests in `shop-posting.spec.ts`; the approval test that booked straight
+after approval now posts first. The full suite (65 suites, 1,396 tests) passes.

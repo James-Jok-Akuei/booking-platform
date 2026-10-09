@@ -353,7 +353,7 @@ export class AppointmentsService {
         address: true,
         isActive: true,
         capacity: true,
-        business: { select: { status: true, pausedAt: true } },
+        business: { select: { status: true, pausedAt: true, publishedAt: true } },
       },
     });
     if (!location) throw new NotFoundException('Location not found.');

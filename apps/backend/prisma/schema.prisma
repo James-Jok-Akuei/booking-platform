@@ -433,6 +433,15 @@ model BusinessProfile {
   /// shop out of search.
   pausedAt DateTime?
 
+  /// When the shop POSTED itself for customers to see (§268). Null until it
+  /// does.
+  ///
+  /// Approval says a shop may be listed; posting is the shop saying it wants
+  /// to be, now. Without it a seller learned they were public from their
+  /// first booking. Set once and never cleared — after that, hiding is a
+  /// pause (§119.3), which the shop can undo, or a suspension, which it cannot.
+  publishedAt DateTime?
+
   /// When the shop last sent itself for review (§255) — set once its name,
   /// type, phone, a branch with hours and a service are in. The admin queue is
   /// the shops that have asked; an account that signed up and stopped is

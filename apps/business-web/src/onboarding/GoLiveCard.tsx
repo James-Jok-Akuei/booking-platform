@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
-import { getMe, getProfile, getReadiness, submitForReview, type Readiness } from '../api/business';
+import { getMe, getProfile, getReadiness, submitForReview, type Readiness, type ReadinessKey } from '../api/business';
 import { Icon, type IconName } from '../ui/Icon';
 import { ITEM_WORDS } from './steps';
+import { usePostShop } from './usePostShop';
 import './golive.css';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -28,8 +29,9 @@ const said = (error: unknown) =>
  * rather than the status's: still being set up (a checklist, and the way back
  * into setting up), sent and waiting (what happens now, and what to make
  * better meanwhile), sent back (what we said, and sending it again — §255),
- * suspended (why, and who to talk to). A shop approved in the last week is
- * told it is live, once; a live shop otherwise needs no card.
+ * suspended (why, and who to talk to), approved and not yet posted (look
+ * it over, then post it — §268). A shop posted in the last week is told it is
+ * live, once; a live shop otherwise needs no card.
  */
 export function GoLiveCard() {
   const queryClient = useQueryClient();
@@ -53,8 +55,11 @@ export function GoLiveCard() {
   if (!r || !me.data) return null;
 
   if (r.status === 'APPROVED') {
-    const changed = profile.data?.statusChangedAt ?? null;
-    if (!changed || Date.now() - new Date(changed).getTime() > 7 * DAY) return null;
+    if (!r.publishedAt) {
+      return <ReadyToPost readiness={r} name={profile.data?.name ?? 'your shop'} canAct={canAct} />;
+    }
+    const changed = r.publishedAt;
+    if (Date.now() - new Date(changed).getTime() > 7 * DAY) return null;
     if (dismissed === changed || readSeen(seenKey(businessId)) === changed) return null;
     const close = () => {
       try {
@@ -234,11 +239,12 @@ function Ring({ done, total }: { done: number; total: number }) {
   );
 }
 
-/** Set up → checked → live: where the shop is on the way. */
-function Track({ at }: { at: 0 | 1 }) {
+/** Set up → checked → posted → booked: where the shop is on the way. */
+function Track({ at }: { at: 0 | 1 | 2 }) {
   const stops: Array<{ label: string; icon: IconName }> = [
     { label: 'Set up your shop', icon: 'store' },
     { label: 'We check it', icon: 'shield' },
+    { label: 'You post it', icon: 'send' },
     { label: 'Customers book', icon: 'calendarCheck' },
   ];
   return (
@@ -262,6 +268,72 @@ function Reason({ text }: { text: string }) {
   );
 }
 
+/** Where to fix what approval needed, once the shop is past setting up (which sends an approved shop home). */
+const FIX_AT: Partial<Record<ReadinessKey, string>> = { name: '/profile', branch: '/hours', hours: '/hours', service: '/services' };
+
+/**
+ * Approved, and not yet showing (§268): the shop looks itself over and posts
+ * itself — customers never meet a shop its owner did not mean to show yet.
+ */
+function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: string; canAct: boolean }) {
+  const { ask, post } = usePostShop(name);
+  // Lost since approval — a service switched off, the hours cleared.
+  const gaps = readiness.goLiveGaps;
+  return (
+    <section className="gl is-approved" aria-label="Your shop's status">
+      <div className="gl-head">
+        <span className="gl-badge">
+          <Icon name="checkCircle" size={26} />
+        </span>
+        <div className="gl-text">
+          <span className="gl-eyebrow">Approved · not posted yet</span>
+          <h2>Your shop is approved. Post it when you are ready</h2>
+          <p>
+            Customers cannot see <b>{name}</b> yet. Look it over the way they will, then post it — and from that moment they
+            can find you and book.
+          </p>
+        </div>
+        {canAct ? (
+          <div className="gl-actions">
+            <Link to="/profile" className="btn-quiet">
+              <Icon name="eye" size={16} /> See it as customers will
+            </Link>
+            <button
+              type="button"
+              className="primary gl-go gl-post"
+              disabled={post.isPending || !readiness.canPublish}
+              onClick={() => void ask()}
+            >
+              {post.isPending ? 'Posting…' : 'Post my shop'}
+              {!post.isPending && <Icon name="send" size={16} />}
+            </button>
+          </div>
+        ) : (
+          <p className="gl-staff">The owner or a manager posts it.</p>
+        )}
+      </div>
+
+      {gaps.length > 0 && (
+        <p className="gl-problem" role="status">
+          <Icon name="alert" size={16} />
+          <span>
+            Before it can be posted, it needs {gaps.map((k) => ITEM_WORDS[k].label.toLowerCase()).join(' and ')} —
+            otherwise customers would find nothing to book.{' '}
+            {FIX_AT[gaps[0]] && <Link to={FIX_AT[gaps[0]]!}>Add it</Link>}
+          </span>
+        </p>
+      )}
+      {post.error && (
+        <p className="gl-problem" role="alert">
+          <Icon name="alert" size={16} /> {said(post.error)}
+        </p>
+      )}
+
+      <Track at={2} />
+    </section>
+  );
+}
+
 /** The moment a shop goes live, once. */
 function Live({ name, onClose }: { name: string; onClose: () => void }) {
   return (
@@ -276,7 +348,7 @@ function Live({ name, onClose }: { name: string; onClose: () => void }) {
           <Icon name="sparkles" size={26} />
         </span>
         <div className="gl-text">
-          <span className="gl-eyebrow">Approved</span>
+          <span className="gl-eyebrow">Posted</span>
           <h2>You are live! 🎉</h2>
           <p>
             Customers can now find <b>{name}</b> and book. New bookings appear on this page and in Appointments, and we tell

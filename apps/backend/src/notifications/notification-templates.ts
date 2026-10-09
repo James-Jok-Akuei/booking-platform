@@ -218,11 +218,12 @@ export function renderNotification(
 
     case NotificationType.BUSINESS_APPROVED:
       return {
-        subject: 'Your business has been approved',
+        subject: 'Your shop is approved — post it when you are ready',
         body:
-          'Your business is now live. Customers can find your locations, see ' +
-          'your availability and book with you.\n\n' +
-          'If anything about your profile looks wrong, you can edit it now.',
+          'Your shop has been approved. Customers cannot see it yet: open your ' +
+          'dashboard and press "Post my shop" when you are ready, and from then ' +
+          'they can find your branches, see your times and book with you.\n\n' +
+          'Anything you would like to change first, you can change now.',
       };
 
     case NotificationType.BUSINESS_REJECTED:

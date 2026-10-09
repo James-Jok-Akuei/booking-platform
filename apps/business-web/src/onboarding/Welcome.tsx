@@ -229,7 +229,7 @@ export function Welcome() {
                 <Link to="/help">Talk to us</Link>
               </div>
               <p className="wz-lock">
-                <Icon name="lock" size={14} /> Customers see nothing until we approve your shop.
+                <Icon name="lock" size={14} /> Customers see nothing until we approve your shop and you post it.
               </p>
             </div>
           </aside>
@@ -292,16 +292,19 @@ export function Welcome() {
   );
 }
 
-/** Two moments from a seller's day, drifting beside the panel on a wide screen. */
+/**
+ * What is ahead, drifting beside the panel on a wide screen. Said as what the
+ * shop WILL get, never as a notice — a "Deposit paid" beside a shop that has
+ * no name yet reads as somebody else's money, or a mistake.
+ */
 function Floats() {
-  const money = useMoney();
   return (
     <div className="wz-floats" aria-hidden="true">
       <span className="wz-float f1">
         <NetworkMark network="MTN_MOMO" size={36} />
         <span>
-          <strong>Deposit paid</strong>
-          <em>{money.code || 'RWF'} 1,400 · MTN MoMo</em>
+          <strong>Deposits by MoMo</strong>
+          <em>Paid when they book</em>
         </span>
       </span>
       <span className="wz-float f2">
@@ -309,8 +312,8 @@ function Floats() {
           <Icon name="calendarCheck" size={19} />
         </span>
         <span>
-          <strong>New booking</strong>
-          <em>Haircut · Saturday 10:30</em>
+          <strong>Bookings land here</strong>
+          <em>Once your shop is posted</em>
         </span>
       </span>
     </div>
@@ -1494,7 +1497,16 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
               </span>
               <span>
                 <strong>You get an email</strong>
-                At {email || 'your address'}, the moment you are approved and your shop goes live.
+                At {email || 'your address'}, the moment you are approved.
+              </span>
+            </li>
+            <li>
+              <span className="wz-next-icon is-ok">
+                <StepGlyph name="review" size={22} />
+              </span>
+              <span>
+                <strong>You post your shop</strong>
+                When you are ready — one button on your dashboard. Customers see it from then, not before.
               </span>
             </li>
             <li>
@@ -1545,7 +1557,7 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
     >
       <QHead
         screen="review"
-        title={rejected ? 'Send your shop back for review' : missing.length ? 'Almost there' : 'Ready to go live'}
+        title={rejected ? 'Send your shop back for review' : missing.length ? 'Almost there' : 'Ready to send'}
         lead={
           rejected
             ? 'Fix what we asked, then send it back. Everything you set up is still here.'

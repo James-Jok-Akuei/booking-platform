@@ -359,17 +359,22 @@ describe('Business approval (§42)', () => {
       expect(created.id).toBeDefined();
     });
 
-    it('approving a PENDING business makes booking work immediately', async () => {
+    it('approving a PENDING business, then the shop posting itself, makes booking work (§268)', async () => {
       const shop = await shopIn(BusinessStatus.PENDING);
-      await expect(
+      const book = () =>
         appointments.create(customer.userId, {
           locationId: shop.locationId,
           serviceId: shop.serviceId,
           startTime: futureSlot(7, 8).toISOString(),
-        }),
-      ).rejects.toBeInstanceOf(NotFoundException);
+        });
+      await expect(book()).rejects.toBeInstanceOf(NotFoundException);
 
+      // Approval alone: the shop has not shown itself yet.
       await moderation.approve(AS_ADMIN(), shop.businessId);
+      await expect(book()).rejects.toBeInstanceOf(NotFoundException);
+
+      // What "Post my shop" sets (`shop-posting.spec.ts` covers the action).
+      await prisma.businessProfile.update({ where: { id: shop.businessId }, data: { publishedAt: new Date() } });
 
       const created = await appointments.create(customer.userId, {
         locationId: shop.locationId,

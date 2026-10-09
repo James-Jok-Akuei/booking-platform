@@ -9,6 +9,7 @@
 .gl.is-waiting { background: linear-gradient(120deg, var(--ask-soft) 0%, var(--panel) 46%); }
 .gl.is-rejected, .gl.is-danger { background: linear-gradient(120deg, var(--danger-soft) 0%, var(--panel) 46%); }
 .gl.is-live { background: linear-gradient(120deg, var(--ok-soft) 0%, var(--panel) 55%); }
+.gl.is-approved { background: linear-gradient(120deg, var(--ok-soft) 0%, var(--panel) 50%); }
 
 .gl-head { display: flex; align-items: center; gap: 18px; }
 .is-rejected .gl-head, .is-danger .gl-head { align-items: flex-start; }
@@ -18,7 +19,7 @@
 .gl-eyebrow { font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-deep); }
 .is-waiting .gl-eyebrow { color: var(--ask); }
 .is-rejected .gl-eyebrow, .is-danger .gl-eyebrow { color: var(--danger); }
-.is-live .gl-eyebrow { color: var(--ok-deep); }
+.is-live .gl-eyebrow, .is-approved .gl-eyebrow { color: var(--ok-deep); }
 .gl-actions { flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .gl-go { min-height: 44px; gap: 8px; }
 .gl-go svg { transition: transform 200ms var(--ease); }
@@ -28,6 +29,7 @@
 .gl-badge { flex: none; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-sm); color: var(--accent-deep); }
 .is-waiting .gl-badge { color: var(--ask); }
 .is-rejected .gl-badge, .is-danger .gl-badge { color: var(--danger); }
+.is-approved .gl-badge { color: var(--ok); }
 .is-live .gl-badge { color: #fff; background: var(--ok); box-shadow: 0 10px 22px -8px rgba(14, 159, 84, 0.6); animation: pop-in 520ms var(--spring) 120ms both; }
 .gl-pulse { position: relative; }
 .gl-pulse::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; animation: gl-pulse 2.2s var(--ease) infinite; }
@@ -80,6 +82,10 @@
 
 .gl-reason { margin: 8px 0 0; padding: 10px 14px; border-left: 3px solid var(--danger); border-radius: 0 var(--r-sm) var(--r-sm) 0; background: rgba(255, 255, 255, 0.75); color: var(--ink); font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; gap: 2px; max-width: 70ch; }
 .gl-reason strong { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--danger); }
+.gl-problem a { color: inherit; font-weight: 800; }
+/* Posting: the one thing to do, so it breathes a little until it is done. */
+.gl-post:not(:disabled) { animation: gl-breathe 2.6s var(--ease) 900ms infinite; }
+@keyframes gl-breathe { 0%, 100% { box-shadow: var(--shadow-xs); } 50% { box-shadow: 0 0 0 6px rgba(240, 83, 45, 0.14), var(--shadow-sm); } }
 .gl-problem { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; border-radius: var(--r-md); background: var(--danger-soft); color: var(--danger); font-size: 13.5px; font-weight: 600; }
 
 .gl-close { width: 40px; height: 40px; min-height: 0; padding: 0; border-radius: 50%; background: transparent; border-color: transparent; color: var(--muted); }
@@ -103,6 +109,7 @@
 @media (prefers-reduced-motion: reduce) {
   .gl-confetti { display: none; }
   .gl-pulse::after { animation: none; }
+  .gl-post:not(:disabled) { animation: none; }
 }
 
 @media (max-width: 1180px) {
@@ -118,6 +125,8 @@
   .gl-actions { width: 100%; flex-direction: column; align-items: stretch; }
   .gl-actions > * { justify-content: center; }
   .is-live .gl-actions .gl-close { position: absolute; top: 10px; right: 10px; flex: none; }
+  /* The one thing to do comes first under the thumb. */
+  .gl-actions .gl-post { order: -1; }
   .gl-ring, .gl-badge { width: 52px; height: 52px; }
   .gl-ring svg { width: 52px; height: 52px; }
   .gl-badge { border-radius: 16px; }

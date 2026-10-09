@@ -77,7 +77,7 @@
 }
 .wz-later:hover { background: rgba(255, 255, 255, 0.24); border-color: rgba(255, 255, 255, 0.4); }
 
-/* Two moments of a seller's day, beside the panel where there is room. */
+/* What is ahead for the shop, beside the panel where there is room (§268). */
 .wz-floats { display: none; }
 .wz-float {
   position: absolute;

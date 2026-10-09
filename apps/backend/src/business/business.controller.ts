@@ -173,6 +173,18 @@ export class BusinessController {
   }
 
   /**
+   * The shop posts itself for customers, once approved (§268). OWNER and
+   * MANAGER, like sending it for review — the person who set it up finishes it.
+   */
+  @Post('publish')
+  @ApiOkResponse({ type: BusinessReadinessDto })
+  @HttpCode(HttpStatus.OK)
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  publish(@CurrentBusiness() business: BusinessContext) {
+    return this.profiles.publish(business.businessId);
+  }
+
+  /**
    * Pause the whole shop (§119.3). OWNER only — it takes every branch out of
    * search at once, which is the business's most consequential self-service act.
    *

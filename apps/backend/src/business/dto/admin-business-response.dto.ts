@@ -22,6 +22,9 @@ export const ADMIN_BUSINESS_SELECT = {
   // When it last sent itself for review, and what a past rejection said (§255).
   submittedAt: true,
   lastRejectionReason: true,
+  // When the shop posted itself after approval (§268) — approved and not yet
+  // posted is not in the app, and the console has to say so.
+  publishedAt: true,
   logoUrl: true,
   coverImageUrl: true,
   createdAt: true,
@@ -76,6 +79,8 @@ export class AdminBusinessDto implements AdminBusinessPayload {
   submittedAt!: string | null;
   /** What the last rejection said, kept after the shop sends itself back (§255). */
   lastRejectionReason!: string | null;
+  /** When the shop posted itself for customers (§268); null while approved and not yet posted. */
+  publishedAt!: string | null;
 
   logoUrl!: string | null;
   coverImageUrl!: string | null;

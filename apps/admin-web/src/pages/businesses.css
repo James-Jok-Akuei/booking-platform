@@ -158,6 +158,8 @@
 
 /* §257: still setting up, sent back, and what approval cannot go without. */
 .pill.setting-up { background: var(--sunken-2); color: var(--ink-2); }
+/* Approved but not yet posted by the shop (§268): green, but only outlined — not in the app yet. */
+.pill.unposted { background: transparent; color: var(--ok-deep); outline: 1.5px dashed rgba(14, 159, 84, 0.5); outline-offset: -1.5px; }
 .bz-row-text .bz-row-back { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--ask); }
 .bz-reason.tone-ask { background: var(--ask-soft); color: #1d4597; }
 .bz-reason.tone-ask strong { color: var(--ask); }

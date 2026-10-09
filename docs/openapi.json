@@ -3085,6 +3085,68 @@
         ]
       }
     },
+    "/business/publish": {
+      "post": {
+        "operationId": "BusinessController_publish",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessReadinessDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The shop posts itself for customers, once approved (§268). OWNER and\nMANAGER, like sending it for review — the person who set it up finishes it.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
     "/business/pause": {
       "post": {
         "operationId": "BusinessController_pause",
@@ -15529,6 +15591,11 @@
             "nullable": true,
             "description": "Set while the business has paused ITSELF (§119.3)."
           },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When it posted itself for customers (§268); null until it has."
+          },
           "createdAt": {
             "type": "string"
           },
@@ -15573,6 +15640,7 @@
           "statusReason",
           "statusChangedAt",
           "pausedAt",
+          "publishedAt",
           "createdAt",
           "updatedAt",
           "category",
@@ -15729,6 +15797,11 @@
             "nullable": true,
             "description": "What the last rejection said, kept after the shop sends itself back."
           },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the shop posted itself for customers (§268); null until it does."
+          },
           "items": {
             "type": "array",
             "items": {
@@ -15742,6 +15815,10 @@
           "canSubmit": {
             "type": "boolean",
             "description": "Ready, and not already waiting or decided — a rejected shop can send itself back."
+          },
+          "canPublish": {
+            "type": "boolean",
+            "description": "Approved, not yet posted, and still bookable — \"Post my shop\" can be pressed."
           }
         },
         "required": [
@@ -15750,9 +15827,11 @@
           "statusReason",
           "submittedAt",
           "lastRejectionReason",
+          "publishedAt",
           "items",
           "ready",
-          "canSubmit"
+          "canSubmit",
+          "canPublish"
         ]
       },
       "BusinessPauseStateDto": {
@@ -16952,6 +17031,11 @@
             "nullable": true,
             "description": "What the last rejection said, kept after the shop sends itself back (§255)."
           },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the shop posted itself for customers (§268); null while approved and not yet posted."
+          },
           "logoUrl": {
             "type": "string",
             "nullable": true
@@ -17001,6 +17085,7 @@
           "statusChangedById",
           "submittedAt",
           "lastRejectionReason",
+          "publishedAt",
           "logoUrl",
           "coverImageUrl",
           "createdAt",
@@ -17328,6 +17413,11 @@
             "nullable": true,
             "description": "What the last rejection said, kept after the shop sends itself back (§255)."
           },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the shop posted itself for customers (§268); null while approved and not yet posted."
+          },
           "logoUrl": {
             "type": "string",
             "nullable": true
@@ -17411,6 +17501,7 @@
           "statusChangedById",
           "submittedAt",
           "lastRejectionReason",
+          "publishedAt",
           "logoUrl",
           "coverImageUrl",
           "createdAt",

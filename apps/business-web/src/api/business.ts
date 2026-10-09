@@ -175,6 +175,9 @@ export const getReadiness = () => api<Readiness>('/business/readiness');
 /** Sends the shop for review — or back for review after a rejection. */
 export const submitForReview = () => api<Readiness>('/business/submit', { method: 'POST' });
 
+/** Posts the approved shop for customers to see (§268). */
+export const publishShop = () => api<Readiness>('/business/publish', { method: 'POST' });
+
 export const listServices = () => api<Service[]>('/business/services');
 
 /**

@@ -45,31 +45,38 @@ export function Sidebar({
   };
   const hideTip = () => setTip(null);
   const name = business?.name ?? 'Your business';
-  const live = business?.status === 'APPROVED' && !data.paused;
+  const live = data.live;
   // Why customers cannot see the shop, in the seller's words rather than
   // the status's (§256), and where to go about it.
   const left = (data.readiness?.items ?? []).filter((i) => i.required && !i.done).length;
-  const standing: { head: string; text: string; to: string; icon: IconName; tone: string } | null =
-    !business || live
-      ? null
-      : business.status === 'APPROVED'
+  type Standing = { head: string; text: string; to: string; icon: IconName; tone: string };
+  const standingFor = (): Standing | null => {
+    if (!business || live) return null;
+    if (business.status === 'APPROVED') {
+      return data.posted
         ? { head: 'Your shop is paused', text: 'Customers cannot book until you resume it.', to: '/profile', icon: 'pause', tone: 'warn' }
-        : business.status === 'PENDING' && data.readiness?.submittedAt
-          ? { head: 'Waiting for review', text: 'We are checking your shop. You get an email when it is live.', to: '/', icon: 'hourglass', tone: 'warn' }
-          : business.status === 'PENDING'
-            ? left
-              ? {
-                  head: 'Finish setting up',
-                  text: `${left} ${left === 1 ? 'thing' : 'things'} left before we can check your shop.`,
-                  to: '/welcome',
-                  icon: 'clock',
-                  tone: 'warn',
-                }
-              : { head: 'Ready to send', text: 'Send your shop for review from your Overview.', to: '/', icon: 'send', tone: 'warn' }
-            : business.status === 'REJECTED'
-              ? { head: 'Needs a change', text: 'See what we said, fix it, and send your shop back.', to: '/', icon: 'alert', tone: 'danger' }
-              : { head: 'Shop suspended', text: 'Customers cannot find or book it. Talk to support.', to: '/help', icon: 'alert', tone: 'danger' };
-  const state = !business ? '' : shopStateWord(business.status, data.paused, data.readiness?.submittedAt);
+        : { head: 'Approved — post it', text: 'Customers see your shop once you post it.', to: '/', icon: 'send', tone: 'ok' };
+    }
+    if (business.status === 'PENDING' && data.readiness?.submittedAt) {
+      return { head: 'Waiting for review', text: 'We are checking your shop. You get an email when it is approved.', to: '/', icon: 'hourglass', tone: 'warn' };
+    }
+    if (business.status === 'PENDING') {
+      return left
+        ? {
+            head: 'Finish setting up',
+            text: `${left} ${left === 1 ? 'thing' : 'things'} left before we can check your shop.`,
+            to: '/welcome',
+            icon: 'clock',
+            tone: 'warn',
+          }
+        : { head: 'Ready to send', text: 'Send your shop for review from your Overview.', to: '/', icon: 'send', tone: 'warn' };
+    }
+    return business.status === 'REJECTED'
+      ? { head: 'Needs a change', text: 'See what we said, fix it, and send your shop back.', to: '/', icon: 'alert', tone: 'danger' }
+      : { head: 'Shop suspended', text: 'Customers cannot find or book it. Talk to support.', to: '/help', icon: 'alert', tone: 'danger' };
+  };
+  const standing = standingFor();
+  const state = !business ? '' : shopStateWord(business.status, data.paused, data.readiness?.submittedAt, data.posted);
 
   const badgeFor = (to: string) =>
     to === '/appointments' ? data.expectedToday : to === '/messages' ? data.unreadMessages : 0;

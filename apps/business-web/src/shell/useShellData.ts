@@ -42,13 +42,20 @@ export function useShellData() {
 
   const membership = me.data?.businessMembership ?? null;
   const business = membership?.businessProfile ?? null;
+  const paused = Boolean(profile.data?.pausedAt);
+  // Approved and posted (§268). Taken as posted until the profile says
+  // otherwise, so a live shop never flickers "not posted" while it loads.
+  const posted = profile.data ? Boolean(profile.data.publishedAt) : true;
 
   return {
     email: me.data?.email ?? '',
     role: membership?.role ?? null,
     business,
     logoUrl: profile.data?.logoUrl ?? null,
-    paused: Boolean(profile.data?.pausedAt),
+    paused,
+    posted,
+    /** Customers can find it and book: approved, posted, not paused. */
+    live: business?.status === 'APPROVED' && posted && !paused,
     readiness: readiness.data ?? null,
     expectedToday: expectedToday.data?.total ?? 0,
     unreadMessages: (threads.data?.threads ?? []).reduce((sum, t) => sum + (t.unreadCount ?? 0), 0),

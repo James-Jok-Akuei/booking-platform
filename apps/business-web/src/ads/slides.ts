@@ -259,7 +259,7 @@ const MEANING: Record<string, string> = {
   REVIEW_CREATED: 'A customer reviewed you. Your reply shows under it for everyone, and you can edit it for 7 days.',
   REVIEW_RESPONSE: 'Your reply is under the review for everyone to read.',
   REVIEW_HIDDEN: 'An administrator hid a review. It no longer counts in your rating.',
-  BUSINESS_APPROVED: 'Your shop is public — customers can find it and book.',
+  BUSINESS_APPROVED: 'Customers cannot see it yet — post your shop from your Overview when you are ready.',
   BUSINESS_REINSTATED: 'Your shop is public again — customers can find it and book.',
   BUSINESS_REJECTED: 'Open it to read the reason.',
   BUSINESS_SUSPENDED: 'Open it to read the reason.',

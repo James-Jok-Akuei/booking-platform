@@ -162,8 +162,8 @@ export function CustomerPhone({ live, locations }: { live: LiveDetails; location
       <p className="csp-note">
         {hidden ? (
           <>
-            <b>Customers cannot see this right now</b> — your shop is paused or not yet approved. This is how it will
-            look.
+            <b>Customers cannot see this right now</b> — your shop is not posted yet, paused, or not yet approved. This is
+            how it will look.
           </>
         ) : (
           'The real page from the app, with what you have typed. Scroll it, and try the tabs.'

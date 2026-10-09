@@ -5,6 +5,7 @@ import {
   addGalleryPhoto,
   getCategories,
   getGallery,
+  getMe,
   getProfile,
   getReadiness,
   listLocations,
@@ -30,6 +31,7 @@ import { Stars } from '../ui/Stars';
 import { Switch } from '../ui/Switch';
 import { shopStateWord } from '../onboarding/steps';
 import { LineArt } from '../onboarding/LineArt';
+import { usePostShop } from '../onboarding/usePostShop';
 import './profile.css';
 
 /** Mirrors ALLOWED_MIME_TYPES on the server (§132.3). */
@@ -61,7 +63,12 @@ export function ProfilePage() {
       {profile.isLoading && <div className="skeleton pf-skeleton" />}
       {profile.data && (
         <>
-          <PausePanel profile={profile.data} />
+          {/* Approved and not yet showing: posting comes before pausing (§268). */}
+          {profile.data.status === 'APPROVED' && !profile.data.publishedAt ? (
+            <PostPanel profile={profile.data} />
+          ) : (
+            <PausePanel profile={profile.data} />
+          )}
           <ShopWindow profile={profile.data} locations={locations.data ?? []} />
           <Strength profile={profile.data} locations={locations.data ?? []} />
           <Details profile={profile.data} locations={locations.data ?? []} />
@@ -129,7 +136,7 @@ function ShopWindow({ profile, locations }: { profile: BusinessProfile; location
   const rated = locations.filter((l) => l.ratingCount > 0);
   const count = rated.reduce((s, l) => s + l.ratingCount, 0);
   const rating = count ? rated.reduce((s, l) => s + Number(l.ratingAvg ?? 0) * l.ratingCount, 0) / count : null;
-  const live = profile.status === 'APPROVED' && !profile.pausedAt;
+  const live = profile.status === 'APPROVED' && Boolean(profile.publishedAt) && !profile.pausedAt;
 
   return (
     <div className="pf-window">
@@ -166,7 +173,7 @@ function ShopWindow({ profile, locations }: { profile: BusinessProfile; location
           </p>
           <div className="pf-badges">
             <span className={`pf-badge${live ? ' is-live' : ' is-off'}`}>
-              <i /> {shopStateWord(profile.status, Boolean(profile.pausedAt), readiness.data?.submittedAt)}
+              <i /> {shopStateWord(profile.status, Boolean(profile.pausedAt), readiness.data?.submittedAt, Boolean(profile.publishedAt))}
             </span>
             {rating !== null && (
               <span className="pf-badge">
@@ -624,6 +631,54 @@ function LocationGallery({ id, name }: { id: string; name: string }) {
  * Owner-only on the server. Everyone sees the state — a staff member who cannot
  * find the shop in the app deserves to know why without asking.
  */
+/**
+ * Approved, and not yet showing (§268): the same bar as the pause, saying the
+ * shop is ready and waiting on its owner, with the one thing to do. Here as
+ * well as on the Overview, because this page is where a seller looks the shop
+ * over before showing it.
+ */
+function PostPanel({ profile }: { profile: BusinessProfile }) {
+  const me = useQuery({ queryKey: ['me'], queryFn: getMe });
+  const role = me.data?.businessMembership?.role;
+  const canAct = role === 'OWNER' || role === 'MANAGER';
+  const { ask, post } = usePostShop(profile.name ?? 'your shop');
+
+  return (
+    <div className="pf-pause is-unposted">
+      <ShopLogo
+        logoUrl={profile.logoUrl}
+        name={profile.name ?? 'Your business'}
+        size={48}
+        className="pf-pause-logo"
+        state="off"
+        badge={{ icon: 'check', tone: 'ok' }}
+      />
+      <div className="pf-pause-text">
+        <h2>Approved — not posted yet</h2>
+        <p>
+          Customers cannot see your shop until you post it. Look it over below, the way they will see it, and post it when
+          you are ready.
+        </p>
+        {post.error && (
+          <p className="error small" role="alert">
+            {post.error instanceof ApiError ? post.error.message : 'That did not work.'}
+          </p>
+        )}
+      </div>
+      <div className="pf-pause-action">
+        {canAct ? (
+          <button type="button" className="primary pf-post" disabled={post.isPending} onClick={() => void ask()}>
+            {post.isPending ? 'Posting…' : 'Post my shop'}
+            {!post.isPending && <Icon name="send" size={16} />}
+          </button>
+        ) : (
+          <span>The owner or a manager posts it.</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PausePanel({ profile }: { profile: BusinessProfile }) {
   const queryClient = useQueryClient();
   const [problem, setProblem] = useState<string | null>(null);

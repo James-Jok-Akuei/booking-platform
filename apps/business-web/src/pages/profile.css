@@ -23,6 +23,8 @@
 .pf-pause.is-paused { background: linear-gradient(90deg, #fff3dc, #fff9ef); border-color: #f6dfae; }
 .pf-pause.is-paused h2 { color: #8a5a10; }
 .pf-pause.is-paused p { color: #8a5a10; }
+.pf-pause.is-unposted { background: linear-gradient(90deg, var(--ok-soft), var(--panel) 70%); border-color: rgba(14, 159, 84, 0.18); }
+.pf-post { min-height: 44px; gap: 8px; }
 
 /* ---- cover and identity ---- */
 
@@ -250,6 +252,7 @@
 @container page (max-width: 640px) {
   .pf-pause { flex-wrap: wrap; }
   .pf-pause-action { width: 100%; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(31, 42, 31, 0.06); }
+  .pf-post { flex: 1; justify-content: center; }
   .pf-cover { height: 180px; }
   .pf-id { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px 16px 18px; }
   .pf-logo { width: 96px; height: 96px; border-radius: 28px; margin-top: -60px; }

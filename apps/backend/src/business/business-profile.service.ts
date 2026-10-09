@@ -9,7 +9,9 @@ import { BusinessStatus, NotificationType, Prisma, UserRole } from '@prisma/clie
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
+  GO_LIVE_WORDS,
   READINESS_SELECT,
+  goLiveGaps,
   isReadyForReview,
   listInWords,
   readinessItems,
@@ -95,6 +97,53 @@ export class BusinessProfileService {
 
     this.logger.log(`Business ${businessId} ${resubmitted ? 'sent itself back' : 'sent itself'} for review.`);
     await this.notifyAdmins(updated.name ?? 'A shop', resubmitted);
+    return readinessView(updated);
+  }
+
+  /**
+   * The shop posts itself for customers to see (§268).
+   *
+   * Approval says it MAY be listed; this is the shop saying it wants to be,
+   * now — so a seller is never surprised by a first booking. Refused before
+   * approval, refused twice, and refused when the shop has since lost what
+   * approval needed (its service, its hours), which would post a listing no
+   * customer could book. A pause set before posting is lifted: posting means
+   * "show it", and the dialog the shop confirmed said so.
+   */
+  async publish(businessId: string) {
+    const shop = await this.prisma.businessProfile.findUnique({
+      where: { id: businessId },
+      select: READINESS_SELECT,
+    });
+    if (!shop) throw new NotFoundException('Business not found.');
+
+    if (shop.status === BusinessStatus.SUSPENDED) {
+      throw new BadRequestException(
+        'A suspended shop cannot be posted. Raise a support ticket to talk it through.',
+      );
+    }
+    if (shop.status !== BusinessStatus.APPROVED) {
+      throw new BadRequestException(
+        'Your shop has not been approved yet. We will email you as soon as it is, and then you can post it.',
+      );
+    }
+    if (shop.publishedAt) {
+      throw new ConflictException('Your shop is already posted.');
+    }
+    const gaps = goLiveGaps(shop);
+    if (gaps.length > 0) {
+      throw new BadRequestException(
+        `Your shop cannot be posted yet: it still needs ${listInWords(gaps, GO_LIVE_WORDS)}, ` +
+          'or customers would find nothing to book.',
+      );
+    }
+
+    const updated = await this.prisma.businessProfile.update({
+      where: { id: businessId },
+      data: { publishedAt: new Date(), pausedAt: null },
+      select: READINESS_SELECT,
+    });
+    this.logger.log(`Business ${businessId} posted itself for customers.`);
     return readinessView(updated);
   }
 

@@ -571,6 +571,9 @@ async function main() {
   // -------------------------------------------------------------------------
   for (const business of [nile, konyo, thongpiny, autocare, haicinema, atlabara, munuki]) {
     await moderation.approve(ADMIN_ACTOR, business.businessId);
+    // And each posts itself, as its owner would (§268) — approval alone no
+    // longer puts a shop in the app.
+    await prisma.businessProfile.update({ where: { id: business.businessId }, data: { publishedAt: new Date() } });
   }
   // `gudele` is deliberately left PENDING.
   // `munuki` is suspended LATER, after its booking exists — a suspended

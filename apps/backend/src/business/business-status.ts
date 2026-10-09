@@ -1,4 +1,4 @@
-import { BusinessStatus } from '@prisma/client';
+import { BusinessStatus, Prisma } from '@prisma/client';
 
 /** One legal move in the approval lifecycle. */
 export interface BusinessTransitionRule {
@@ -59,4 +59,16 @@ export const isPubliclyBookable = (business: {
    * this predicate exists to make impossible.
    */
   pausedAt: Date | null;
-}) => business.status === BusinessStatus.APPROVED && !business.pausedAt;
+  /** When the shop posted itself (§268). Required for the same reason. */
+  publishedAt: Date | null;
+}) => business.status === BusinessStatus.APPROVED && !!business.publishedAt && !business.pausedAt;
+
+/**
+ * The same rule as a `where` on the business, for lists and counts (§268):
+ * approved by an administrator, posted by the shop, and not paused by it.
+ */
+export const PUBLIC_BUSINESS = {
+  status: BusinessStatus.APPROVED,
+  publishedAt: { not: null },
+  pausedAt: null,
+} satisfies Prisma.BusinessProfileWhereInput;

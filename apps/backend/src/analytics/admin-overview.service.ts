@@ -15,6 +15,7 @@ import type {
   OverviewDayDto,
   OverviewPeriodDto,
 } from './dto/admin-overview.dto';
+import { PUBLIC_BUSINESS } from '../business/business-status';
 
 /** The chart's length; the two weeks compared are its halves. */
 export const OVERVIEW_DAYS = 14;
@@ -111,10 +112,10 @@ export class AdminOverviewService {
         GROUP BY 1
       `,
       this.prisma.businessProfile.count({
-        where: { status: BusinessStatus.APPROVED, pausedAt: null },
+        where: PUBLIC_BUSINESS,
       }),
       this.prisma.location.count({
-        where: { isActive: true, business: { status: BusinessStatus.APPROVED, pausedAt: null } },
+        where: { isActive: true, business: PUBLIC_BUSINESS },
       }),
       this.prisma.user.count({ where: { role: UserRole.CUSTOMER, closedAt: null } }),
     ]);
