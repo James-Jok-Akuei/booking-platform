@@ -22,6 +22,8 @@ import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import { StaticMap } from '../ui/StaticMap';
 import './businesses.css';
+import { RichText } from '../ui/RichText';
+import { hasRichText } from '../lib/richText';
 
 type Tab = 'WAITING' | 'SETTING_UP' | 'APPROVED' | 'SUSPENDED' | 'REJECTED' | 'ALL';
 
@@ -646,8 +648,8 @@ function ReviewPanel({
           </Section>
 
           <Section icon="info" title="About">
-            {b.description?.trim() ? (
-              <p className="bz-about">{b.description}</p>
+            {hasRichText(b.description) ? (
+              <RichText text={b.description} className="bz-about" />
             ) : (
               <p className="muted">No description. Customers see this on the shop page.</p>
             )}

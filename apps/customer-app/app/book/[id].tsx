@@ -28,6 +28,7 @@ import { font, radius, shadow, theme, type } from '../../src/theme';
 import { useNearMe } from '../../src/useNearMe';
 import { useSavedService } from '../../src/useSavedService';
 import { Avatar } from '../../src/ui/Avatar';
+import { RichText } from '../../src/ui/RichText';
 import { Button } from '../../src/ui/Button';
 import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
@@ -121,7 +122,6 @@ export default function Book() {
   const keys = useKeyboardScroll({ pad: true });
 
   const [viewer, setViewer] = useState<{ index: number; origin: ViewerOrigin | null } | null>(null);
-  const [expanded, setExpanded] = useState(false);
   const days = useMemo(() => nextDays(14), []);
   const [date, setDate] = useState(days[0]);
   const [slot, setSlot] = useState<string | null>(null);
@@ -393,18 +393,8 @@ export default function Book() {
           {service.description && (
             <FadeIn delay={30} style={styles.words}>
               <Text style={type.heading}>About this service</Text>
-              <Text style={styles.wordsText} numberOfLines={expanded ? undefined : 4}>
-                {service.description}
-              </Text>
-              {service.description.length > 200 && (
-                <PressableScale
-                  onPress={() => setExpanded((was) => !was)}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.link}>{expanded ? 'Show less' : 'Read more'}</Text>
-                </PressableScale>
-              )}
+              {/* The shop's own formatting (§271); four lines, then "Read more". */}
+              <RichText text={service.description} style={styles.wordsText} collapsedLines={4} />
             </FadeIn>
           )}
           {service.instructions && (
@@ -1096,7 +1086,6 @@ const styles = StyleSheet.create({
   summaryValue: { fontFamily: font.extrabold, fontSize: 17, color: '#FFFFFF' },
   summaryNow: { color: '#FFB59E' },
   summarySave: { fontFamily: font.bold, fontSize: 12, color: '#7CE8BF', marginTop: 2 },
-  link: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
 
   // ---- 4. the place ----
   who: { gap: 8 },

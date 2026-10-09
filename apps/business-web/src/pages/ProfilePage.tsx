@@ -32,6 +32,7 @@ import { Switch } from '../ui/Switch';
 import { shopStateWord } from '../onboarding/steps';
 import { LineArt } from '../onboarding/LineArt';
 import { usePostShop } from '../onboarding/usePostShop';
+import { RichTextBox } from '../ui/RichTextBox';
 import './profile.css';
 
 /** Mirrors ALLOWED_MIME_TYPES on the server (§132.3). */
@@ -351,18 +352,19 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
           <input value={name} onChange={(event) => setName(event.target.value)} maxLength={120} />
         </label>
 
-        <label className="pf-field pf-grow">
-          <span>
-            What you do <em>{description.length}/2000</em>
-          </span>
-          <textarea
+        {/* Not a <label>: a click on its words would press the first button
+            of the formatting bar inside it. */}
+        <div className="pf-field pf-grow">
+          <span id="pf-desc-label">What you do</span>
+          <RichTextBox
+            labelledBy="pf-desc-label"
             value={description}
-            onChange={(event) => setDescription(event.target.value)}
+            onChange={setDescription}
             rows={5}
             maxLength={2000}
             placeholder="A customer reads this before booking. Say what you offer and what makes you worth the trip."
           />
-        </label>
+        </div>
 
         <label className="pf-field">
           <span>Phone</span>
@@ -477,13 +479,15 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
               <span className="ok">
                 <Icon name="checkCircle" size={16} /> Saved.
               </span>
+            ) : description.length > 2000 ? (
+              <span className="error">“What you do” is {description.length - 2000} characters too long.</span>
             ) : dirty ? (
               'The preview shows your changes — save to make them live.'
             ) : (
               ''
             )}
           </span>
-          <button type="submit" className="primary" disabled={save.isPending || !dirty || unlabelled}>
+          <button type="submit" className="primary" disabled={save.isPending || !dirty || unlabelled || description.length > 2000}>
             {save.isPending ? 'Saving…' : 'Save'}
           </button>
         </footer>

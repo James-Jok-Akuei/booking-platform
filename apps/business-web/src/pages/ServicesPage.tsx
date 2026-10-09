@@ -34,6 +34,7 @@ import { Icon, type IconName } from '../ui/Icon';
 import { MoreMenu } from '../ui/MoreMenu';
 import { Portal } from '../ui/Portal';
 import { Switch } from '../ui/Switch';
+import { RichTextBox } from '../ui/RichTextBox';
 import './services.css';
 
 type Editor = { mode: 'new' } | { mode: 'edit'; service: Service; focus?: 'photos' };
@@ -1062,6 +1063,20 @@ function ServiceForm({
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
+    // The box cannot stop typing at the limit as a plain one did; it says so here.
+    const long = [
+      description.length > 2000 && `the description by ${description.length - 2000}`,
+      instructions.length > 600 && `the special instructions by ${instructions.length - 600}`,
+    ].filter(Boolean);
+    if (long.length > 0) {
+      void alertDialog({
+        title: 'A little too long',
+        body: <p>Shorten {long.join(' and ')} characters — the count is at the top right of each box.</p>,
+        tone: 'warn',
+        icon: 'pencil',
+      });
+      return;
+    }
     if (offers.length === 0) {
       void alertDialog({
         title: 'Give it a price',
@@ -1133,29 +1148,31 @@ function ServiceForm({
             </span>
           </div>
           <div className="sv-field">
-            <label htmlFor="sdesc">
-              Description <em>{description.length}/2000</em>
+            <label id="sdesc-label" onClick={() => document.getElementById('sdesc')?.focus()}>
+              Description
             </label>
-            <textarea
+            <RichTextBox
               id="sdesc"
+              labelledBy="sdesc-label"
               rows={4}
               maxLength={2000}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={setDescription}
               placeholder="What it is and what is included — a customer reads this before choosing it."
             />
             <span className="sv-help">Shown under “About this service”.</span>
           </div>
           <div className="sv-field">
-            <label htmlFor="sinstr">
-              Special instructions <em>{instructions.length}/600</em>
+            <label id="sinstr-label" onClick={() => document.getElementById('sinstr')?.focus()}>
+              Special instructions
             </label>
-            <textarea
+            <RichTextBox
               id="sinstr"
+              labelledBy="sinstr-label"
               rows={3}
               maxLength={600}
               value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
+              onChange={setInstructions}
               placeholder="What to know before coming: arrive ten minutes early, bring a towel, park at the back…"
             />
             <span className="sv-help">

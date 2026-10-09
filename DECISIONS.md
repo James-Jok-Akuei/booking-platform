@@ -17566,3 +17566,51 @@ you".
   a phone, whose own padding still wins.
 - **Both** the business app and the admin console, which share the frame
   (§242). Tried at 1920 wide with everything folded in each.
+
+## 271. A shop's words, formatted: the way professional editors do it, the way sellers already type (2026-10-10)
+
+Asked: a better way to format what is written in descriptions and, above
+all, special instructions — the tools professional apps use.
+
+They were plain boxes: a seller's list was a wall of lines, and customers saw
+it as typed. Now the shop's words have formatting a phone shows well, in a
+proper editor, read the same in every app.
+
+- **The editor**: **Tiptap** (3.31.3, on ProseMirror) — the editor much of
+  the web's writing tools are built on — in the business app for a service's
+  description and special instructions and the shop's own description ("What
+  you do"). A bar inside the box: **bold**, *italic*, bulleted list, numbered
+  list, with the count beside them. Nothing more on purpose: no headings,
+  colours, sizes or links — they do not read well on a phone, and a link from
+  a shop to a customer is a door to scams.
+- **Typed the way sellers already type** — WhatsApp's marks: `*bold*`,
+  `_italic_`; a line starting `- ` or `1. ` becomes a list; ⌘B / ⌘I too.
+  Tab still moves to the next field (lists are one level). **Pasting** a
+  WhatsApp message or a note keeps its lists and marks; pasting from a web
+  page or a document keeps only bold, italic and lists.
+- **Stored as plain text with those marks**, never HTML (`lib/richText.ts`):
+  everything written before still reads exactly as it did (a stray `*` or a
+  `snake_case` word stays as typed), any app can draw it, and nothing a shop
+  types can become markup. What the editor writes is always tidy — no empty
+  paragraphs, no runs of spaces, every mark the one way; italic on part of a
+  word, which "_" cannot express, is dropped rather than stored as stray
+  underscores. One copy of the rules in each app (business-web, admin-web,
+  customer-app), identical — check with `cmp`, like the line drawings.
+- **Read formatted everywhere**: the customer app (About this service — four
+  lines with a soft fade, then "Read more" only when there is more; Before
+  you come, on the service and on the reservation; the shop's description),
+  with the app's own italic faces now loaded (Plus Jakarta Sans 400/500/700
+  italic); the business app's shopfront preview; the console's review panel.
+  Cards that show two lines of a description show its words without marks.
+- **Limits** are counted on the stored text, as the server counts them
+  (2000 / 600 / 2000). The box cannot stop typing at the limit as a plain one
+  did, so it turns red with the count, and Save says what to shorten.
+- **Size**: the editor is about 400 kB, loaded only when a page shows one of
+  these boxes (`ui/RichTextBox.tsx`); every other page grows by 4 kB.
+- A page's own `em` (the forms' small grey counters) no longer reaches the
+  shop's italic words.
+
+The rules were tried on 31 cases (marks, escapes, lists, old plain text, the
+editor's document in and out); the editor typed into for real, a WhatsApp
+message pasted, and the result read in the customer app, the preview and the
+console — at 1440 and 390 wide.

@@ -70,6 +70,10 @@ export const font = {
   semibold: 'PlusJakartaSans_600SemiBold',
   bold: 'PlusJakartaSans_700Bold',
   extrabold: 'PlusJakartaSans_800ExtraBold',
+  // For a shop's own formatted words (§271): _italic_, and *_both_*.
+  italic: 'PlusJakartaSans_400Regular_Italic',
+  mediumItalic: 'PlusJakartaSans_500Medium_Italic',
+  boldItalic: 'PlusJakartaSans_700Bold_Italic',
 } as const;
 
 /** The type ramp. Seven sizes; a screen needing an eighth needs a rethink. */

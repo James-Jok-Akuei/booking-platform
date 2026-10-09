@@ -1,0 +1,77 @@
+/* A shop's formatted words (§271): the box with its formatting bar, and the
+   words as customers read them. The box looks like the app's other fields. */
+
+.rtf {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+  min-width: 0;
+}
+.rtf:hover { border-color: #cfcac0; }
+.rtf.is-focused { border-color: var(--accent); box-shadow: var(--ring); }
+.rtf.is-over, .rtf.is-over.is-focused { border-color: var(--danger); }
+.rtf.is-disabled { background: var(--sunken); }
+
+.rtf-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 8px 5px 5px;
+  border-bottom: 1px solid var(--line);
+}
+.rtf-tool-wrap { display: inline-flex; align-items: center; gap: 2px; }
+/* The app's buttons have a height and a border; these are marks on a bar. */
+.rtf .rtf-tool {
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-2);
+  box-shadow: none;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+.rtf .rtf-tool:hover:not(:disabled) { background: var(--sunken); color: var(--ink); border: none; box-shadow: none; }
+.rtf .rtf-tool.is-on, .rtf .rtf-tool.is-on:hover:not(:disabled) { background: var(--night); color: #fff; }
+.rtf-sep { width: 1px; height: 18px; margin: 0 5px; background: var(--line-strong); }
+.rtf-bar-wait { height: 43px; }
+.rtf-count { margin-left: auto; font-size: 12px; font-weight: 650; color: var(--faint); font-variant-numeric: tabular-nums; }
+.rtf-count.is-over { color: var(--danger); }
+
+.rtf-body { cursor: text; }
+.rtf-input {
+  padding: 10px 13px 12px;
+  line-height: 1.55;
+  color: var(--ink);
+  outline: none;
+  overflow-wrap: anywhere;
+}
+.rtf-input:focus-visible { outline: none; }
+.rtf-input p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+/* The words — in the box, and wherever they are read. */
+.rtf-input p, .rich p { margin: 0; }
+.rtf-input ul, .rtf-input ol, .rich ul, .rich ol { margin: 0; padding-left: 1.35em; }
+/* A paragraph's gap, after the resets above (and stronger than them). */
+:is(.rtf-input, .rich) > :is(p, ul, ol) + :is(p, ul, ol) { margin-top: 8px; }
+.rtf-input li + li, .rich li + li { margin-top: 3px; }
+.rtf-input li p { margin: 0; }
+.rtf-input li::marker, .rich li::marker { color: var(--accent); font-weight: 700; }
+.rtf-input strong, .rich strong { font-weight: 750; color: var(--ink); }
+/* Italic is italic here, whatever a page does with <em> elsewhere — a form's
+   counters are <em>s ("12/600"), small and grey, and that must not reach the
+   shop's words (doubled classes outweigh "a-field em"). */
+.rtf-input.rtf-input em, .rich.rich em { font-style: italic; font-size: inherit; font-weight: inherit; color: inherit; }

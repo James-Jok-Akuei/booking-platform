@@ -8,6 +8,9 @@ import {
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold,
   PlusJakartaSans_800ExtraBold,
+  PlusJakartaSans_400Regular_Italic,
+  PlusJakartaSans_500Medium_Italic,
+  PlusJakartaSans_700Bold_Italic,
   useFonts,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -41,6 +44,9 @@ export default function RootLayout() {
     PlusJakartaSans_600SemiBold,
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
+    PlusJakartaSans_400Regular_Italic,
+    PlusJakartaSans_500Medium_Italic,
+    PlusJakartaSans_700Bold_Italic,
   });
 
   // SecureStore is async, so the token cache is filled once before anything

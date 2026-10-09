@@ -6,6 +6,8 @@ import { useMoney } from '../money';
 import { LineArt } from '../onboarding/LineArt';
 import { ION, type IonName } from './ionicons';
 import './customer-phone.css';
+import { RichText } from '../ui/RichText';
+import { hasRichText, richToPlain } from '../lib/richText';
 
 /**
  * "How customers see you" (§208): the customer app's shop page, drawn here at
@@ -273,8 +275,8 @@ function ShopScreen({
               </div>
             )}
 
-            {description ? (
-              <p className="csp-body csp-desc">{description}</p>
+            {hasRichText(description) ? (
+              <RichText text={description} className="csp-body csp-desc" />
             ) : (
               <p className="csp-desc csp-hint">Your description shows here. Say what you offer and why you are worth the trip.</p>
             )}
@@ -450,7 +452,7 @@ function ServiceRow({
       </span>
       <div className="csp-service-main">
         <b className="csp-service-name">{service.name}</b>
-        {service.description && <p className="csp-small csp-clamp">{service.description}</p>}
+        {hasRichText(service.description) && <p className="csp-small csp-clamp">{richToPlain(service.description)}</p>}
         <div className="csp-line">
           <Ion name="time-outline" size={13} color="#8B909B" />
           <span className="csp-small">{duration(service.durationMinutes)}</span>

@@ -1,0 +1,8 @@
+/* A shop's formatted words as read (§271) — the business app's, for review. */
+.rich p { margin: 0; }
+.rich ul, .rich ol { margin: 0; padding-left: 1.35em; }
+.rich > :is(p, ul, ol) + :is(p, ul, ol) { margin-top: 8px; }
+.rich li + li { margin-top: 3px; }
+.rich li::marker { color: var(--accent); font-weight: 700; }
+.rich strong { font-weight: 750; color: var(--ink); }
+.rich.rich em { font-style: italic; font-size: inherit; font-weight: inherit; color: inherit; }

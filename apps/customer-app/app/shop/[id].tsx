@@ -30,6 +30,8 @@ import { PressableScale } from '../../src/ui/PressableScale';
 import { Segmented } from '../../src/ui/Segmented';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { Stars } from '../../src/ui/Stars';
+import { RichText } from '../../src/ui/RichText';
+import { hasRichText, richToPlain } from '../../src/richText';
 import { TopBar } from '../../src/ui/TopBar';
 import { showProblem } from '../../src/ui/Dialog';
 
@@ -250,8 +252,10 @@ export default function Shop() {
                 </View>
               )}
 
-              {s.business.description && (
-                <Text style={[type.body, styles.description]}>{s.business.description}</Text>
+              {hasRichText(s.business.description) && (
+                <View style={styles.description}>
+                  <RichText text={s.business.description} style={type.body} />
+                </View>
               )}
             </FadeIn>
 
@@ -514,9 +518,9 @@ function ServiceRow({
         <Text style={styles.serviceName} numberOfLines={2}>
           {service.name}
         </Text>
-        {service.description && (
+        {hasRichText(service.description) && (
           <Text style={type.small} numberOfLines={2}>
-            {service.description}
+            {richToPlain(service.description)}
           </Text>
         )}
         <View style={styles.line}>
