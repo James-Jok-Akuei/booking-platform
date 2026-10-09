@@ -439,17 +439,6 @@ input[type='time'] { width: 120px; }
 .stack textarea { resize: vertical; }
 .row-end { display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.thread { display: flex; flex-direction: column; gap: 12px; margin: 18px 0; }
-.message { border-left: 3px solid var(--line); padding-left: 12px; }
-.message p { margin: 4px 0 0; white-space: pre-wrap; }
-.message.mine { border-left-color: var(--accent); }
-
-.reply { display: flex; flex-direction: column; gap: 8px; }
-.reply textarea { resize: vertical; }
-.attachments { display: flex; flex-direction: column; gap: 3px; margin-top: 5px; }
-.reply-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.reply-actions input[type='file'] { font-size: 12px; max-width: 58%; }
-
 .stack-field { display: flex; flex-direction: column; gap: 5px; }
 .field-label { font-weight: 600; font-size: 13px; color: var(--ink-2); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -769,10 +758,6 @@ tr.clickable:hover { background: var(--accent-tint); }
 /* Legal documents (§122): a long plain-text document reads as its paragraphs. */
 .legal-body { white-space: pre-wrap; font: inherit; margin: 0; max-height: 440px; overflow-y: auto; line-height: 1.6; padding: 16px 18px; background: var(--sunken); border-radius: var(--r-md); }
 .legal-input { width: 100%; font-family: inherit; font-size: 14px; line-height: 1.6; resize: vertical; }
-
-/* A support ticket: internal notes in amber, never shown to the reporter (§24.5). */
-.message { padding: 10px 14px; border-left: 3px solid var(--line-strong); border-radius: 0 var(--r-md) var(--r-md) 0; background: var(--panel); }
-.message.internal { border-left-color: var(--warn); background: var(--warn-soft); }
 
 .review.hidden { opacity: 0.8; border: 1.5px dashed var(--line-strong); box-shadow: none; background: var(--sunken); }
 

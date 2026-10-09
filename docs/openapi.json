@@ -9680,6 +9680,16 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "A word to find a ticket by (§247): its reference, its subject, the\nreporter's email or the business's name, any case — searched by the\ndatabase.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -9688,7 +9698,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TicketPageDto"
+                  "$ref": "#/components/schemas/AdminTicketPageDto"
                 }
               }
             }
@@ -9758,7 +9768,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TicketDetailDto"
+                  "$ref": "#/components/schemas/AdminTicketDetailDto"
                 }
               }
             }
@@ -9804,7 +9814,7 @@
             }
           }
         },
-        "summary": "Includes internal notes — the one view that does.",
+        "summary": "Includes internal notes — the one view that does — and the booking it is about (§247).",
         "tags": [
           "AdminTickets"
         ]
@@ -19500,6 +19510,448 @@
           "authorType",
           "isInternal",
           "createdAt"
+        ]
+      },
+      "TicketPersonDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "TicketShopDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "logoUrl"
+        ]
+      },
+      "TicketLatestDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "description": "At most 160 characters."
+          },
+          "authorType": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "REPORTER"
+            ]
+          },
+          "isInternal": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "body",
+          "authorType",
+          "isInternal",
+          "createdAt"
+        ]
+      },
+      "AdminTicketDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "description": "The human-quotable handle. What a reporter reads out on the phone."
+          },
+          "reporterId": {
+            "type": "string"
+          },
+          "reporterType": {
+            "description": "Derived from the authenticated role, never from the request body.",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER"
+            ],
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "enum": [
+              "PAYMENT_ISSUE",
+              "APPOINTMENT_DISPUTE",
+              "ACCOUNT_ISSUE",
+              "TECHNICAL_ISSUE",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "IN_PROGRESS",
+              "OPEN",
+              "RESOLVED",
+              "CLOSED"
+            ],
+            "type": "string"
+          },
+          "assignedAdminId": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolutionNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolvedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "closedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenCount": {
+            "type": "number",
+            "description": "How many times it has come back. A reopened ticket is a signal, not a retry."
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "description": "Non-null: set at creation, bumped by every message."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "reporter": {
+            "$ref": "#/components/schemas/TicketPersonDto"
+          },
+          "businessProfile": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketShopDto"
+              }
+            ]
+          },
+          "assignedAdmin": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketPersonDto"
+              }
+            ]
+          },
+          "latest": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketLatestDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "reporterId",
+          "reporterType",
+          "businessId",
+          "appointmentId",
+          "category",
+          "subject",
+          "status",
+          "assignedAdminId",
+          "resolutionNote",
+          "resolvedAt",
+          "closedAt",
+          "reopenedAt",
+          "reopenCount",
+          "lastMessageAt",
+          "createdAt",
+          "updatedAt",
+          "reporter",
+          "businessProfile",
+          "assignedAdmin",
+          "latest"
+        ]
+      },
+      "AdminTicketPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminTicketDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "tickets"
+        ]
+      },
+      "TicketAppointmentServiceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "TicketAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ]
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "depositAmountMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "depositPaidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "service": {
+            "$ref": "#/components/schemas/TicketAppointmentServiceDto"
+          },
+          "location": {
+            "$ref": "#/components/schemas/TicketAppointmentServiceDto"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "startTime",
+          "endTime",
+          "depositAmountMinor",
+          "currency",
+          "depositPaidAt",
+          "service",
+          "location"
+        ]
+      },
+      "AdminTicketDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string",
+            "description": "The human-quotable handle. What a reporter reads out on the phone."
+          },
+          "reporterId": {
+            "type": "string"
+          },
+          "reporterType": {
+            "description": "Derived from the authenticated role, never from the request body.",
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER"
+            ],
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "enum": [
+              "PAYMENT_ISSUE",
+              "APPOINTMENT_DISPUTE",
+              "ACCOUNT_ISSUE",
+              "TECHNICAL_ISSUE",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "IN_PROGRESS",
+              "OPEN",
+              "RESOLVED",
+              "CLOSED"
+            ],
+            "type": "string"
+          },
+          "assignedAdminId": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolutionNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolvedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "closedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenCount": {
+            "type": "number",
+            "description": "How many times it has come back. A reopened ticket is a signal, not a retry."
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "description": "Non-null: set at creation, bumped by every message."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketMessageDto"
+            }
+          },
+          "attachments": {
+            "description": "Files attached to the ticket itself rather than to any one message.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketAttachmentDto"
+            }
+          },
+          "reporter": {
+            "$ref": "#/components/schemas/TicketPersonDto"
+          },
+          "businessProfile": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketShopDto"
+              }
+            ]
+          },
+          "assignedAdmin": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketPersonDto"
+              }
+            ]
+          },
+          "appointment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TicketAppointmentDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "reporterId",
+          "reporterType",
+          "businessId",
+          "appointmentId",
+          "category",
+          "subject",
+          "status",
+          "assignedAdminId",
+          "resolutionNote",
+          "resolvedAt",
+          "closedAt",
+          "reopenedAt",
+          "reopenCount",
+          "lastMessageAt",
+          "createdAt",
+          "updatedAt",
+          "messages",
+          "attachments",
+          "reporter",
+          "businessProfile",
+          "assignedAdmin",
+          "appointment"
         ]
       },
       "AssignTicketDto": {

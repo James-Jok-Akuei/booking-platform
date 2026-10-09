@@ -613,6 +613,42 @@ describe('Support tickets (§24)', () => {
     });
   });
 
+  describe('the console’s inbox (§247)', () => {
+    it('lists each ticket with its reporter, its shop and the latest word', async () => {
+      const ticket = await openTicket(alpha.userId, 'BUSINESS', 'Payout never arrived');
+      const list = await tickets.listForAdmin(AS_ADMIN(), { limit: 100 });
+      const row: any = list.tickets.find((t) => t.id === ticket.id);
+
+      expect(row.reporter.email).toBe(alpha.email);
+      expect(row.businessProfile).toHaveProperty('name');
+      expect(row.assignedAdmin).toBeNull();
+      expect(row.latest).toMatchObject({ body: 'Details of the problem.', authorType: 'REPORTER', isInternal: false });
+      expect(row).not.toHaveProperty('messages');
+    });
+
+    it('finds a ticket by its reference, its subject or the reporter’s email', async () => {
+      const ticket = await openTicket(customerA.userId, 'CUSTOMER', 'The app showed a strange price');
+      const ids = async (q: string) => (await tickets.listForAdmin(AS_ADMIN(), { q, limit: 100 })).tickets.map((t) => t.id);
+
+      expect(await ids(ticket.reference.toLowerCase())).toContain(ticket.id);
+      expect(await ids('STRANGE PRICE')).toContain(ticket.id);
+      expect(await ids(customerA.email)).toContain(ticket.id);
+      expect(await ids('nothing-matches-this')).toEqual([]);
+    });
+
+    it('opens a ticket with the reporter and the booking it is about, for an admin only', async () => {
+      const ticket = await openTicket(customerA.userId, 'CUSTOMER');
+      const detail: any = await tickets.findOneForAdmin(AS_ADMIN(), ticket.id);
+      expect(detail.reporter.email).toBe(customerA.email);
+      expect(detail.appointment).toBeNull();
+      expect(detail.messages.length).toBeGreaterThan(0);
+
+      await expect(tickets.findOneForAdmin(asUser(customerA.userId, 'CUSTOMER'), ticket.id)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+  });
+
   describe('billing adjustments', () => {
     it('records a FEE_REFUND against the appointment when resolving', async () => {
       const appointment = await createAppointment(prisma, {

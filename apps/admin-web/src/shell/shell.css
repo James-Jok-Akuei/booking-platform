@@ -815,6 +815,11 @@ body {
    in. Quiet green when every queue is empty. */
 .tb-checkin.is-clear { background: var(--ok-soft); color: var(--ok-deep); box-shadow: none; }
 .tb-checkin.is-clear:hover:not(:disabled) { background: #d6efe0; box-shadow: none; }
+/* Before the counts arrive: neither coral nor green, because neither is known. */
+.tb-checkin.is-checking, .tb-checkin.is-checking:disabled { background: var(--sunken-2); color: var(--muted); box-shadow: none; opacity: 1; cursor: default; }
+@media (min-width: 860px) {
+  .tb-checkin.is-checking, .tb-checkin.is-checking:disabled { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.6); }
+}
 .tb-waiting-menu { width: 300px; }
 .tb-waiting-head { margin: 4px 10px 8px; font-size: 11px; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
 .tb-waiting-row span { flex: 1; min-width: 0; }

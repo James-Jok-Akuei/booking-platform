@@ -1,4 +1,5 @@
 import {
+  AppointmentStatus,
   Prisma,
   TicketAuthorType,
   TicketCategory,
@@ -144,4 +145,65 @@ export class PostedTicketMessageDto {
   authorType!: TicketAuthorType;
   isInternal!: boolean;
   createdAt!: string;
+}
+
+// ---------------------------------------------------------------------------
+// The console's inbox (§247)
+// ---------------------------------------------------------------------------
+
+export class TicketPersonDto {
+  email!: string;
+}
+
+export class TicketShopDto {
+  name!: string | null;
+  logoUrl!: string | null;
+}
+
+/** The newest message on a ticket, cut short — enough to read a queue by. */
+export class TicketLatestDto {
+  /** At most 160 characters. */
+  body!: string;
+  authorType!: TicketAuthorType;
+  isInternal!: boolean;
+  createdAt!: string;
+}
+
+/** A ticket as the console's inbox lists it: who, which shop, the latest word. */
+export class AdminTicketDto extends TicketDto {
+  reporter!: TicketPersonDto;
+  businessProfile!: TicketShopDto | null;
+  assignedAdmin!: TicketPersonDto | null;
+  latest!: TicketLatestDto | null;
+}
+
+export class AdminTicketPageDto {
+  total!: number;
+  limit!: number;
+  offset!: number;
+  tickets!: AdminTicketDto[];
+}
+
+export class TicketAppointmentServiceDto {
+  name!: string;
+}
+
+/** The booking a ticket is about, when it is about one — a dispute's evidence. */
+export class TicketAppointmentDto {
+  id!: string;
+  status!: AppointmentStatus;
+  startTime!: string;
+  endTime!: string;
+  depositAmountMinor!: number;
+  currency!: string;
+  depositPaidAt!: string | null;
+  service!: TicketAppointmentServiceDto;
+  location!: TicketAppointmentServiceDto;
+}
+
+export class AdminTicketDetailDto extends TicketDetailDto {
+  reporter!: TicketPersonDto;
+  businessProfile!: TicketShopDto | null;
+  assignedAdmin!: TicketPersonDto | null;
+  appointment!: TicketAppointmentDto | null;
 }

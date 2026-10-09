@@ -222,11 +222,21 @@ export type TicketDetail = components['schemas']['TicketDetailDto'];
 export type TicketPage = components['schemas']['TicketPageDto'];
 export type PostedTicketMessage = components['schemas']['PostedTicketMessageDto'];
 
-export const listTickets = (params: { status?: TicketStatus; limit?: number }) =>
-  api<{ total: number; tickets: Ticket[] }>('/admin/tickets', { query: params });
+/** A ticket as the inbox lists it: its reporter, shop and latest word (§247). */
+export type AdminTicket = components['schemas']['AdminTicketDto'];
+export type AdminTicketDetail = components['schemas']['AdminTicketDetailDto'];
 
-/** The one view that includes internal notes (§24.5). */
-export const getTicket = (id: string) => api<TicketDetail>(`/admin/tickets/${id}`);
+export const listTickets = (params: {
+  status?: TicketStatus;
+  /** A reference, subject, reporter's email or shop name (§247). */
+  q?: string;
+  assignedAdminId?: string;
+  limit?: number;
+  offset?: number;
+}) => api<components['schemas']['AdminTicketPageDto']>('/admin/tickets', { query: params });
+
+/** The one view that includes internal notes (§24.5), and the booking a ticket is about (§247). */
+export const getTicket = (id: string) => api<AdminTicketDetail>(`/admin/tickets/${id}`);
 
 export const assignTicket = (id: string, assignedAdminId: string) =>
   api<Ticket>(`/admin/tickets/${id}/assign`, {

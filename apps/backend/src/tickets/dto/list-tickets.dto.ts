@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 import { TicketCategory, TicketStatus } from '@prisma/client';
 
 export class ListTicketsDto {
@@ -30,4 +30,14 @@ export class ListAdminTicketsDto extends ListTicketsDto {
   @IsOptional()
   @IsUUID()
   assignedAdminId?: string;
+
+  /**
+   * A word to find a ticket by (§247): its reference, its subject, the
+   * reporter's email or the business's name, any case — searched by the
+   * database.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
 }

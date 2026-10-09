@@ -33,6 +33,9 @@ export function useShellData() {
 
   return {
     email: user?.email ?? '',
+    // Until every queue has answered, the frame says nothing about them rather
+    // than "All clear" — which, a second later, may not be true.
+    known: [businesses, destinations, payouts, tickets].every((q) => q.data !== undefined),
     waiting: {
       businesses: businesses.data ?? 0,
       destinations: destinations.data ?? 0,

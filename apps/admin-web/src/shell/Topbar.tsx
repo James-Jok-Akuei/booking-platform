@@ -98,6 +98,17 @@ function WaitingMenu({ data }: { data: ShellData }) {
   ];
   const total = rows.reduce((sum, row) => sum + row.n, 0);
 
+  if (!data.known) {
+    return (
+      <div className="tb-account">
+        <button type="button" className="tb-checkin is-checking" disabled aria-label="Checking the queues">
+          <Icon name="inbox" size={18} />
+          <span>Checking…</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="tb-account" ref={ref}>
       <button

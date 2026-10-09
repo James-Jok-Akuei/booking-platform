@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from '../api/admin';
-import { lookFor } from '../lib/notificationLook';
+import { destinationFor, lookFor } from '../lib/notificationLook';
 import { useMediaQuery } from '../shell/useMediaQuery';
 import { Icon } from '../ui/Icon';
 import { Portal } from '../ui/Portal';
@@ -82,7 +82,7 @@ export function Notifications() {
               onClick={() => {
                 if (!notification.readAt) readOne.mutate(notification.id);
                 close();
-                navigate(look.to);
+                navigate(destinationFor(notification));
               }}
             >
               <span className={`bell-mark tone-${look.tone}`} aria-hidden="true">

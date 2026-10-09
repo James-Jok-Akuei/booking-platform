@@ -27,10 +27,10 @@ import { ticketUploadOptions } from './ticket-upload.options';
 import { MAX_TICKET_ATTACHMENTS } from '../storage/storage.service';
 import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import {
+  AdminTicketDetailDto,
+  AdminTicketPageDto,
   PostedTicketMessageDto,
-  TicketDetailDto,
   TicketDto,
-  TicketPageDto,
 } from './dto/ticket-response.dto';
 import { CreateTicketMessageDto } from './dto/create-ticket-message.dto';
 import { ListAdminTicketsDto } from './dto/list-tickets.dto';
@@ -54,7 +54,7 @@ export class AdminTicketsController {
   constructor(private readonly tickets: TicketsService) {}
 
   @Get()
-  @ApiOkResponse({ type: TicketPageDto })
+  @ApiOkResponse({ type: AdminTicketPageDto })
   list(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListAdminTicketsDto,
@@ -62,14 +62,14 @@ export class AdminTicketsController {
     return this.tickets.listForAdmin(user, query);
   }
 
-  /** Includes internal notes — the one view that does. */
+  /** Includes internal notes — the one view that does — and the booking it is about (§247). */
   @Get(':id')
-  @ApiOkResponse({ type: TicketDetailDto })
+  @ApiOkResponse({ type: AdminTicketDetailDto })
   findOne(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.tickets.findOne(user, id);
+    return this.tickets.findOneForAdmin(user, id);
   }
 
   @Patch(':id/assign')

@@ -260,10 +260,21 @@ export class TicketsService {
       throw new ForbiddenException('Only administrators can list all tickets.');
     }
 
+    const q = query.q?.trim();
     const where: Prisma.TicketWhereInput = {
       ...(query.status ? { status: query.status } : {}),
       ...(query.category ? { category: query.category } : {}),
       ...(query.assignedAdminId ? { assignedAdminId: query.assignedAdminId } : {}),
+      ...(q
+        ? {
+            OR: [
+              { reference: { contains: q, mode: 'insensitive' } },
+              { subject: { contains: q, mode: 'insensitive' } },
+              { reporter: { email: { contains: q, mode: 'insensitive' } } },
+              { businessProfile: { name: { contains: q, mode: 'insensitive' } } },
+            ],
+          }
+        : {}),
     };
 
     const limit = query.limit ?? 25;
@@ -276,11 +287,65 @@ export class TicketsService {
         orderBy: { lastMessageAt: 'desc' },
         take: limit,
         skip: offset,
-        select: REPORTER_TICKET_SELECT,
+        select: {
+          ...REPORTER_TICKET_SELECT,
+          // What an inbox is read by (§247): who wrote, which shop, who has
+          // it, and the latest word — one message, not the conversation.
+          reporter: { select: { email: true } },
+          businessProfile: { select: { name: true, logoUrl: true } },
+          assignedAdmin: { select: { email: true } },
+          messages: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: { body: true, authorType: true, isInternal: true, createdAt: true },
+          },
+        },
       }),
     ]);
 
-    return { total, limit, offset, tickets: tickets.map((t) => this.withLazyClosure(t)) };
+    return {
+      total,
+      limit,
+      offset,
+      tickets: tickets.map(({ messages, ...t }) => ({
+        ...this.withLazyClosure(t),
+        latest: messages[0] ? { ...messages[0], body: messages[0].body.slice(0, 160) } : null,
+      })),
+    };
+  }
+
+  /**
+   * One ticket as the console opens it (§247): the conversation, internal
+   * notes included (findOne), plus who raised it, which shop, who has it, and
+   * the booking it is about — a dispute's evidence, on the same screen.
+   */
+  async findOneForAdmin(actor: { userId: string; role: string }, ticketId: string) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only administrators can open a ticket this way.');
+    }
+    const ticket = await this.findOne(actor, ticketId);
+    const extra = await this.prisma.ticket.findUniqueOrThrow({
+      where: { id: ticketId },
+      select: {
+        reporter: { select: { email: true } },
+        businessProfile: { select: { name: true, logoUrl: true } },
+        assignedAdmin: { select: { email: true } },
+        appointment: {
+          select: {
+            id: true,
+            status: true,
+            startTime: true,
+            endTime: true,
+            depositAmountMinor: true,
+            currency: true,
+            depositPaidAt: true,
+            service: { select: { name: true } },
+            location: { select: { name: true } },
+          },
+        },
+      },
+    });
+    return { ...ticket, ...extra };
   }
 
   /**

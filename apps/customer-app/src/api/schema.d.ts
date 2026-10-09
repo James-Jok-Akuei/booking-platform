@@ -2062,7 +2062,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Includes internal notes — the one view that does. */
+        /** Includes internal notes — the one view that does — and the booking it is about (§247). */
         get: operations["AdminTicketsController_findOne"];
         put?: never;
         post?: never;
@@ -4724,6 +4724,111 @@ export interface components {
             authorType: "ADMIN" | "REPORTER";
             isInternal: boolean;
             createdAt: string;
+        };
+        TicketPersonDto: {
+            email: string;
+        };
+        TicketShopDto: {
+            name: string | null;
+            logoUrl: string | null;
+        };
+        TicketLatestDto: {
+            /** @description At most 160 characters. */
+            body: string;
+            /** @enum {string} */
+            authorType: "ADMIN" | "REPORTER";
+            isInternal: boolean;
+            createdAt: string;
+        };
+        AdminTicketDto: {
+            id: string;
+            /** @description The human-quotable handle. What a reporter reads out on the phone. */
+            reference: string;
+            reporterId: string;
+            /**
+             * @description Derived from the authenticated role, never from the request body.
+             * @enum {string}
+             */
+            reporterType: "BUSINESS" | "CUSTOMER";
+            businessId: string | null;
+            appointmentId: string | null;
+            /** @enum {string} */
+            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            subject: string;
+            /** @enum {string} */
+            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            assignedAdminId: string | null;
+            resolutionNote: string | null;
+            resolvedAt: string | null;
+            closedAt: string | null;
+            reopenedAt: string | null;
+            /** @description How many times it has come back. A reopened ticket is a signal, not a retry. */
+            reopenCount: number;
+            /** @description Non-null: set at creation, bumped by every message. */
+            lastMessageAt: string;
+            createdAt: string;
+            updatedAt: string;
+            reporter: components["schemas"]["TicketPersonDto"];
+            businessProfile: components["schemas"]["TicketShopDto"] | null;
+            assignedAdmin: components["schemas"]["TicketPersonDto"] | null;
+            latest: components["schemas"]["TicketLatestDto"] | null;
+        };
+        AdminTicketPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            tickets: components["schemas"]["AdminTicketDto"][];
+        };
+        TicketAppointmentServiceDto: {
+            name: string;
+        };
+        TicketAppointmentDto: {
+            id: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            startTime: string;
+            endTime: string;
+            depositAmountMinor: number;
+            currency: string;
+            depositPaidAt: string | null;
+            service: components["schemas"]["TicketAppointmentServiceDto"];
+            location: components["schemas"]["TicketAppointmentServiceDto"];
+        };
+        AdminTicketDetailDto: {
+            id: string;
+            /** @description The human-quotable handle. What a reporter reads out on the phone. */
+            reference: string;
+            reporterId: string;
+            /**
+             * @description Derived from the authenticated role, never from the request body.
+             * @enum {string}
+             */
+            reporterType: "BUSINESS" | "CUSTOMER";
+            businessId: string | null;
+            appointmentId: string | null;
+            /** @enum {string} */
+            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            subject: string;
+            /** @enum {string} */
+            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            assignedAdminId: string | null;
+            resolutionNote: string | null;
+            resolvedAt: string | null;
+            closedAt: string | null;
+            reopenedAt: string | null;
+            /** @description How many times it has come back. A reopened ticket is a signal, not a retry. */
+            reopenCount: number;
+            /** @description Non-null: set at creation, bumped by every message. */
+            lastMessageAt: string;
+            createdAt: string;
+            updatedAt: string;
+            messages: components["schemas"]["TicketMessageDto"][];
+            /** @description Files attached to the ticket itself rather than to any one message. */
+            attachments: components["schemas"]["TicketAttachmentDto"][];
+            reporter: components["schemas"]["TicketPersonDto"];
+            businessProfile: components["schemas"]["TicketShopDto"] | null;
+            assignedAdmin: components["schemas"]["TicketPersonDto"] | null;
+            appointment: components["schemas"]["TicketAppointmentDto"] | null;
         };
         AssignTicketDto: {
             /** Format: uuid */
@@ -13148,6 +13253,12 @@ export interface operations {
                 limit?: number;
                 offset?: number;
                 assignedAdminId?: string;
+                /**
+                 * @description A word to find a ticket by (§247): its reference, its subject, the
+                 *     reporter's email or the business's name, any case — searched by the
+                 *     database.
+                 */
+                q?: string;
             };
             header?: never;
             path?: never;
@@ -13160,7 +13271,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TicketPageDto"];
+                    "application/json": components["schemas"]["AdminTicketPageDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
@@ -13217,7 +13328,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TicketDetailDto"];
+                    "application/json": components["schemas"]["AdminTicketDetailDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

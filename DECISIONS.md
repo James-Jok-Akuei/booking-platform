@@ -16430,3 +16430,69 @@ listed held-back shops by the first eight characters of their id. Now:
 
 Checked at 1440 (the run result with two shops held back, faked in the test
 browser — no real run was made), 1024 and 390. Nothing was sent or marked.
+
+## 247. Admin piece 6 — Support, as an inbox in two panes (2026-10-09)
+
+Support was a table and a drawer: a ticket's reporter was an id, the latest
+word was not shown, and "Take it" and "Start handling" sat side by side
+although the server already makes the person who starts a ticket its owner
+(§24.3). Now it is the business app's Messages (§198) for the people who
+answer everyone else.
+
+### 247.1 The server
+
+- **Search** (`q` on `GET /admin/tickets`): a reference, the subject, the
+  reporter's email or the shop's name, case-insensitive.
+- **Each row says who and what was said last**: the reporter's email, the
+  shop's name and logo for a shop's ticket, who has it, and the **latest
+  message** (cut to 160 characters, with whether it was the reporter, an
+  answer or an internal note) — so the list can be read without opening
+  anything.
+- **`GET /admin/tickets/:id` carries the booking** a ticket is about: its
+  service, branch, time, status and deposit, plus the reporter, shop and
+  holder. Three tests in "the console's inbox (§247)"; the suite (62) passes.
+
+### 247.2 The page
+
+- **Left, the tickets**, newest word first: who raised it (the shop's tile
+  for a shop, initials for a customer), the subject, the latest words
+  ("Support:" / "Note:" before ours), its status, reference and **"Nobody has
+  it"** in amber or **"With you"**, and "Reopened ×n". A coral dot marks one
+  waiting on us — new, or the reporter spoke last.
+- **Filters on two rows**, the work still open over the finished: New ·
+  Being handled · **Mine** / Resolved · Closed · All, each with its count.
+  **Mine is what you are handling now** (being handled, held by you): a
+  count of your finished tickets would read as work on your plate.
+- **Right, the ticket**: category and reference, the subject, who raised it
+  and when; **one next step** — *Start handling* on a new ticket ("it becomes
+  yours, and they are told someone is on it"), *Mark resolved* (asks for the
+  outcome the reporter is sent, §24.3), *Close* (asks first: nobody can reopen
+  a closed ticket; left alone it closes 14 days after resolving, §24.4);
+  *Take over* asks before taking a colleague's ticket.
+- **The booking it is about**, as a card at the top of the conversation: the
+  service and branch, the day and time, the reservation number the customer
+  quotes (§213), the deposit, and its status in the business app's words
+  (Expected, Done, No-show…) — `lib/bookingLook.ts`, which the Appointments
+  piece will use. It links to the booking.
+- **The conversation**: the reporter on the left, answers on the right in
+  ink, **internal notes across the middle in amber with a dashed edge**, so
+  nobody mistakes one for something the reporter was sent; attachments as
+  chips ("Image · 180 KB"). The **outcome** sits in green above it once
+  resolved.
+- **Writing**: *Reply to the customer / the shop* or *Internal note*; the box
+  turns amber for a note ("the reporter never sees a note"); ⌘ Enter sends.
+- **On a phone** the open ticket is the whole screen, over the list: back on
+  the left, its status on the right, the title under both.
+- **A notice opens its ticket**: ticket notices carry no id, but name the
+  reference, so they open `/tickets?ref=TKT-…`, which finds the ticket, picks
+  its tab and opens it (as §230 did for the business app's messages).
+
+### 247.3 The frame
+
+- **"Checking…" until the queues have answered.** The top bar said "All
+  clear" in green for the moment before the counts arrived, then turned coral
+  — a claim it could not yet make. It is neutral until all four counts are in.
+
+Checked at 1440, 1024 and 390, open and closed, with a conversation of a
+reply, a note and an attachment faked in the test browser. No ticket was
+started, answered or closed.
