@@ -628,13 +628,18 @@ describe('Business approval (§42)', () => {
     });
 
     it('allows it once a name exists', async () => {
-      const id = await nameless();
+      // A shop a customer could book (§255) — a branch with hours and a
+      // service — whose only gap is its name.
+      const shop = await createBusiness(prisma, { status: BusinessStatus.PENDING });
+      await prisma.businessProfile.update({ where: { id: shop.businessId }, data: { name: null } });
+      await expect(moderation.approve(AS_ADMIN(), shop.businessId)).rejects.toThrow(/no name/i);
+
       await prisma.businessProfile.update({
-        where: { id },
+        where: { id: shop.businessId },
         data: { name: 'Now Named Ltd' },
       });
 
-      const result = await moderation.approve(AS_ADMIN(), id);
+      const result = await moderation.approve(AS_ADMIN(), shop.businessId);
 
       expect(result.status).toBe(BusinessStatus.APPROVED);
     });

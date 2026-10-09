@@ -59,6 +59,9 @@ export async function createBusiness(
     data: {
       name: 'Test Salon',
       status: options.status ?? BusinessStatus.APPROVED,
+      // A complete shop that has asked to be reviewed (§255), as every shop
+      // with a name was under the rule before it — and as the migration made them.
+      submittedAt: new Date(),
       members: {
         create: {
           userId: user.id,

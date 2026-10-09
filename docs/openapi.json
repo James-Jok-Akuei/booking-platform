@@ -2725,6 +2725,129 @@
         ]
       }
     },
+    "/business/readiness": {
+      "get": {
+        "operationId": "BusinessController_getReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessReadinessDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Business"
+        ]
+      }
+    },
+    "/business/submit": {
+      "post": {
+        "operationId": "BusinessController_submitForReview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessReadinessDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The shop sends itself for review, or back for review after a rejection\n(§255). OWNER and MANAGER, like every other change to how it is set up.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
     "/business/pause": {
       "post": {
         "operationId": "BusinessController_pause",
@@ -4717,6 +4840,19 @@
             "schema": {
               "maxLength": 100,
               "type": "string"
+            }
+          },
+          {
+            "name": "submitted",
+            "required": false,
+            "in": "query",
+            "description": "'true' — only shops that have sent themselves for review; 'false' — only\nthose still setting up (§255). Omit for both.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
             }
           },
           {
@@ -15122,6 +15258,105 @@
           }
         }
       },
+      "ReadinessItemDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "enum": [
+              "name",
+              "type",
+              "phone",
+              "branch",
+              "hours",
+              "service",
+              "logo",
+              "payout"
+            ],
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether the shop can be sent for review without it."
+          },
+          "done": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "required",
+          "done"
+        ]
+      },
+      "BusinessReadinessDto": {
+        "type": "object",
+        "properties": {
+          "goLiveGaps": {
+            "type": "array",
+            "description": "What an administrator cannot approve without; empty when it could go live.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "name",
+                "type",
+                "phone",
+                "branch",
+                "hours",
+                "service",
+                "logo",
+                "payout"
+              ]
+            }
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "SUSPENDED"
+            ],
+            "type": "string"
+          },
+          "statusReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "submittedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When it last sent itself for review; null while it is still setting up."
+          },
+          "lastRejectionReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the last rejection said, kept after the shop sends itself back."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReadinessItemDto"
+            }
+          },
+          "ready": {
+            "type": "boolean",
+            "description": "Every required item is done."
+          },
+          "canSubmit": {
+            "type": "boolean",
+            "description": "Ready, and not already waiting or decided — a rejected shop can send itself back."
+          }
+        },
+        "required": [
+          "goLiveGaps",
+          "status",
+          "statusReason",
+          "submittedAt",
+          "lastRejectionReason",
+          "items",
+          "ready",
+          "canSubmit"
+        ]
+      },
       "BusinessPauseStateDto": {
         "type": "object",
         "properties": {
@@ -16288,6 +16523,16 @@
             "type": "string",
             "nullable": true
           },
+          "submittedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When it last sent itself for review; null while it is still setting up (§255)."
+          },
+          "lastRejectionReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the last rejection said, kept after the shop sends itself back (§255)."
+          },
           "logoUrl": {
             "type": "string",
             "nullable": true
@@ -16327,6 +16572,8 @@
           "statusReason",
           "statusChangedAt",
           "statusChangedById",
+          "submittedAt",
+          "lastRejectionReason",
           "logoUrl",
           "coverImageUrl",
           "createdAt",
@@ -16643,6 +16890,16 @@
             "type": "string",
             "nullable": true
           },
+          "submittedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When it last sent itself for review; null while it is still setting up (§255)."
+          },
+          "lastRejectionReason": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the last rejection said, kept after the shop sends itself back (§255)."
+          },
           "logoUrl": {
             "type": "string",
             "nullable": true
@@ -16697,6 +16954,14 @@
             "items": {
               "$ref": "#/components/schemas/AdminPayoutNumberDto"
             }
+          },
+          "readiness": {
+            "description": "Its checklist, worked out by the same rules the shop sees (§255).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BusinessReadinessDto"
+              }
+            ]
           }
         },
         "required": [
@@ -16708,6 +16973,8 @@
           "statusReason",
           "statusChangedAt",
           "statusChangedById",
+          "submittedAt",
+          "lastRejectionReason",
           "logoUrl",
           "coverImageUrl",
           "createdAt",
@@ -16716,7 +16983,8 @@
           "locations",
           "services",
           "members",
-          "payoutDestinations"
+          "payoutDestinations",
+          "readiness"
         ]
       },
       "ChangeBusinessStatusDto": {
@@ -19740,6 +20008,7 @@
               "REVIEW_HIDDEN",
               "DISPLAY_NAME_CLEARED",
               "EXCHANGE_RATE_STALE",
+              "BUSINESS_SUBMITTED",
               "BUSINESS_APPROVED",
               "BUSINESS_REJECTED",
               "BUSINESS_SUSPENDED",

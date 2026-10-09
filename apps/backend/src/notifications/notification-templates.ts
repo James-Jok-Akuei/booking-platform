@@ -196,6 +196,16 @@ export function renderNotification(
           'market rate and update it if it has moved.',
       };
 
+    case NotificationType.BUSINESS_SUBMITTED:
+      return {
+        subject: 'A shop is ready for review',
+        body:
+          (ctx.reason ? `${ctx.reason}\n\n` : '') +
+          'It cannot take bookings until it is approved. Review it in the admin ' +
+          'console, under Businesses — approve it, or reject it with a reason the ' +
+          'shop can act on.',
+      };
+
     case NotificationType.BUSINESS_APPROVED:
       return {
         subject: 'Your business has been approved',
@@ -211,8 +221,9 @@ export function renderNotification(
         body:
           'An administrator has reviewed your application and not approved it.\n\n' +
           (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
-          'Your account and everything in it is intact. Raise a support ticket ' +
-          'if you would like this looked at again.',
+          'Your account and everything in it is intact. Fix what the reason ' +
+          'describes, then send your shop back for review from your dashboard — ' +
+          'or raise a support ticket if you would like to talk it through.',
       };
 
     case NotificationType.BUSINESS_SUSPENDED:

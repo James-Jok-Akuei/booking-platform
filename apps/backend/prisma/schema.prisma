@@ -124,6 +124,7 @@ enum NotificationType {
   REVIEW_HIDDEN // an admin hid a review; both sides are told
   DISPLAY_NAME_CLEARED // an admin cleared a customer's review display name
   EXCHANGE_RATE_STALE // the manual USD->provider rate has not been updated
+  BUSINESS_SUBMITTED // a shop sent itself for review (§255); administrators are told
   BUSINESS_APPROVED // an admin approved the business; it is now public
   BUSINESS_REJECTED // an admin rejected the application, with a reason
   BUSINESS_SUSPENDED // an admin suspended the business, with a reason
@@ -427,6 +428,15 @@ model BusinessProfile {
   /// shop out of search.
   pausedAt DateTime?
 
+  /// When the shop last sent itself for review (§255) — set once its name,
+  /// type, phone, a branch with hours and a service are in. The admin queue is
+  /// the shops that have asked; an account that signed up and stopped is
+  /// "setting up", not waiting on anyone.
+  submittedAt DateTime?
+  /// What the last rejection said, kept once the shop has fixed things and
+  /// sent itself back (§255): `statusReason` describes the current status.
+  lastRejectionReason String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -447,6 +457,7 @@ model BusinessProfile {
 
   @@index([categoryId])
   @@index([status])
+  @@index([status, submittedAt])
   @@map("business_profiles")
 }
 

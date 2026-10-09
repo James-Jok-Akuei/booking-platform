@@ -1,5 +1,6 @@
 import { BusinessStatus, MediaStatus, MobileMoneyProvider, PayoutDestinationStatus, Prisma } from '@prisma/client';
 import { NoExtraFields, Serialised } from '../../common/serialised';
+import { BusinessReadinessDto } from './readiness.dto';
 
 /**
  * A business in the moderation queue (§29), and in full on its own panel (§117.2).
@@ -18,6 +19,9 @@ export const ADMIN_BUSINESS_SELECT = {
   statusReason: true,
   statusChangedAt: true,
   statusChangedById: true,
+  // When it last sent itself for review, and what a past rejection said (§255).
+  submittedAt: true,
+  lastRejectionReason: true,
   logoUrl: true,
   coverImageUrl: true,
   createdAt: true,
@@ -50,6 +54,10 @@ export class AdminBusinessDto implements AdminBusinessPayload {
   statusReason!: string | null;
   statusChangedAt!: string | null;
   statusChangedById!: string | null;
+  /** When it last sent itself for review; null while it is still setting up (§255). */
+  submittedAt!: string | null;
+  /** What the last rejection said, kept after the shop sends itself back (§255). */
+  lastRejectionReason!: string | null;
 
   logoUrl!: string | null;
   coverImageUrl!: string | null;
@@ -146,6 +154,8 @@ export class AdminBusinessDetailDto extends AdminBusinessDto {
   members!: AdminBusinessMemberDto[];
   /** The latest payout number they gave, if any — at most one (§48, §244). */
   payoutDestinations!: AdminPayoutNumberDto[];
+  /** Its checklist, worked out by the same rules the shop sees (§255). */
+  readiness!: BusinessReadinessDto;
 }
 
 /**

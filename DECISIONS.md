@@ -16901,3 +16901,68 @@ That completes the outline of §242.1: all thirteen pieces are done (§242–§2
 Checked at 1440 (the email step; the not-invited step, reached with an
 address that has no account — the server refuses before any code is made) and
 390.
+
+## 255. Going live: a shop gets ready, sends itself for review, and can send itself back (2026-10-09)
+
+Asked: connect the landing page to the business app so sellers sign in or up
+first; keep the approval step; guide new sellers through the vital details only
+(the rest skippable, added later); tell administrators when a shop is ready;
+refuse approval of a shop nobody could book; let a rejected shop fix things
+and send itself back. Built as four pieces: the rules (§255), the business
+app's onboarding (§256), the console (§257), the landing page (§258).
+
+### 255.1 How it worked before
+
+Signing up as a business created the account, an EMPTY shop (no name) in
+`PENDING`, and its owner membership (§50, §90.3). The shop could set up
+everything while PENDING, invisible and unbookable (`isPubliclyBookable`,
+§119). Every PENDING shop was in the administrators' queue from the moment
+of sign-up; nobody was told one had arrived; approval refused only a shop with
+no name (§53.1); a rejection was final unless an administrator changed their
+mind (the email said to raise a ticket).
+
+### 255.2 What a shop needs — two levels (`business/readiness.ts`)
+
+- **Ready for review** — what the wizard asks for and a shop must have to
+  send itself: its **name**, **what kind of shop** (its type), a **phone**, a
+  **branch customers can find** (active, with a map pin and a district —
+  without them it is missing from the distance search and the area filter),
+  **opening hours** there, and **one service** offered at an open branch.
+  Its **logo** and a **payout number** are on the checklist but not required.
+- **Able to go live** — what an administrator cannot approve without: a name,
+  an open branch with hours, and a service offered there. Approving a shop
+  missing its phone or type is an administrator's judgement; approving one no
+  customer could book is not. Reinstatement is an approval and is held to the
+  same. (The "no name" refusal keeps its words, §53.1.)
+
+One select (`READINESS_SELECT`) and one function decide both, for the shop
+(`GET /business/readiness`) and for the administrator (`readiness` on
+`GET /admin/businesses/:id`), so the two can never disagree.
+
+### 255.3 Sending for review
+
+- `POST /business/submit` (owner or manager): refused while the shop is not
+  ready, naming what is missing in words; refused when already waiting (409),
+  live, or suspended (a suspension is talked through on a ticket). Sets
+  `submittedAt` and tells every administrator (`BUSINESS_SUBMITTED`, in the
+  app and by email).
+- **After a rejection** the same call sends the shop **back**: `REJECTED →
+  PENDING`, the rejection moved from `statusReason` (which describes the
+  current status) to `lastRejectionReason`, which is kept so the next
+  reviewer sees what was asked. This is the shop asking, not deciding, so it
+  is not in `BUSINESS_STATUS_TRANSITIONS`, the table of what an administrator
+  may decide. The rejection email now says to fix what it describes and send
+  the shop back from the dashboard.
+- **The queue is the shops that asked**: `submitted=true|false` on the
+  administrators' list, oldest request first; the Overview's "shops to
+  approve" and its "oldest waiting" count from `submittedAt`. A shop that
+  signed up and stopped is "setting up", waiting on nobody.
+- Migration `20261009120000_shop_onboarding`: the two columns, the
+  notification type, and every existing shop with a name marked as having
+  asked (under the old rule, signing up was applying); rejected shops keep
+  their reason as `lastRejectionReason`. The test factory's complete shops are
+  marked as asked too.
+
+Eleven tests in `shop-onboarding.spec.ts`; two existing tests now build a
+bookable shop to approve (business-approval, guard-chain); the full suite
+(63 suites, 1,378 tests) passes.

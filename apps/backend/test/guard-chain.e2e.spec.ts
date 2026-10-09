@@ -916,7 +916,9 @@ describe('Guard chain over HTTP (§23.3)', () => {
     });
 
     it('an admin can approve, and the business goes public -> 200', async () => {
-      const id = await pendingShop();
+      // A shop a customer could book (§255): approval refuses one with no
+      // branch, hours or service.
+      const id = (await createBusiness(prisma, { status: 'PENDING' })).businessId;
 
       const res = await request(url, `/admin/businesses/${id}/approve`, {
         method: 'PATCH',

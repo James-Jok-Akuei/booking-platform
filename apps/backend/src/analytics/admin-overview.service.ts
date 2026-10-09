@@ -171,11 +171,13 @@ export class AdminOverviewService {
       oldestTicket,
       unassigned,
     ] = await Promise.all([
-      this.prisma.businessProfile.count({ where: { status: BusinessStatus.PENDING } }),
+      // Shops that have asked to be reviewed (§255) — one still setting up is
+      // not waiting on anyone, and is counted from when it asked.
+      this.prisma.businessProfile.count({ where: { status: BusinessStatus.PENDING, submittedAt: { not: null } } }),
       this.prisma.businessProfile.findFirst({
-        where: { status: BusinessStatus.PENDING },
-        orderBy: { createdAt: 'asc' },
-        select: { createdAt: true },
+        where: { status: BusinessStatus.PENDING, submittedAt: { not: null } },
+        orderBy: { submittedAt: 'asc' },
+        select: { submittedAt: true },
       }),
       this.prisma.payoutDestination.count({ where: { status: PayoutDestinationStatus.UNVERIFIED } }),
       this.prisma.payoutDestination.findFirst({
@@ -206,7 +208,7 @@ export class AdminOverviewService {
     ]);
 
     return {
-      businesses: { count: businesses, oldestAt: oldestBusiness?.createdAt.toISOString() ?? null },
+      businesses: { count: businesses, oldestAt: oldestBusiness?.submittedAt?.toISOString() ?? null },
       destinations: { count: destinations, oldestAt: oldestDestination?.submittedAt.toISOString() ?? null },
       payouts: {
         count: payouts,

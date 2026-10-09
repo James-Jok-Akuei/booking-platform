@@ -669,6 +669,42 @@ export interface paths {
         patch: operations["BusinessController_updateProfile"];
         trace?: never;
     };
+    "/business/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BusinessController_getReadiness"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/business/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The shop sends itself for review, or back for review after a rejection
+         *     (§255). OWNER and MANAGER, like every other change to how it is set up.
+         */
+        post: operations["BusinessController_submitForReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/business/pause": {
         parameters: {
             query?: never;
@@ -3236,6 +3272,29 @@ export interface components {
             logoUrl?: string;
             coverImageUrl?: string;
         };
+        ReadinessItemDto: {
+            /** @enum {string} */
+            key: "name" | "type" | "phone" | "branch" | "hours" | "service" | "logo" | "payout";
+            /** @description Whether the shop can be sent for review without it. */
+            required: boolean;
+            done: boolean;
+        };
+        BusinessReadinessDto: {
+            /** @description What an administrator cannot approve without; empty when it could go live. */
+            goLiveGaps: ("name" | "type" | "phone" | "branch" | "hours" | "service" | "logo" | "payout")[];
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+            statusReason: string | null;
+            /** @description When it last sent itself for review; null while it is still setting up. */
+            submittedAt: string | null;
+            /** @description What the last rejection said, kept after the shop sends itself back. */
+            lastRejectionReason: string | null;
+            items: components["schemas"]["ReadinessItemDto"][];
+            /** @description Every required item is done. */
+            ready: boolean;
+            /** @description Ready, and not already waiting or decided — a rejected shop can send itself back. */
+            canSubmit: boolean;
+        };
         BusinessPauseStateDto: {
             id: string;
             name: string | null;
@@ -3654,6 +3713,10 @@ export interface components {
             statusReason: string | null;
             statusChangedAt: string | null;
             statusChangedById: string | null;
+            /** @description When it last sent itself for review; null while it is still setting up (§255). */
+            submittedAt: string | null;
+            /** @description What the last rejection said, kept after the shop sends itself back (§255). */
+            lastRejectionReason: string | null;
             logoUrl: string | null;
             coverImageUrl: string | null;
             createdAt: string;
@@ -3749,6 +3812,10 @@ export interface components {
             statusReason: string | null;
             statusChangedAt: string | null;
             statusChangedById: string | null;
+            /** @description When it last sent itself for review; null while it is still setting up (§255). */
+            submittedAt: string | null;
+            /** @description What the last rejection said, kept after the shop sends itself back (§255). */
+            lastRejectionReason: string | null;
             logoUrl: string | null;
             coverImageUrl: string | null;
             createdAt: string;
@@ -3760,6 +3827,8 @@ export interface components {
             members: components["schemas"]["AdminBusinessMemberDto"][];
             /** @description The latest payout number they gave, if any — at most one (§48, §244). */
             payoutDestinations: components["schemas"]["AdminPayoutNumberDto"][];
+            /** @description Its checklist, worked out by the same rules the shop sees (§255). */
+            readiness: components["schemas"]["BusinessReadinessDto"];
         };
         ChangeBusinessStatusDto: {
             reason: string;
@@ -4745,7 +4814,7 @@ export interface components {
         NotificationDto: {
             id: string;
             /** @enum {string} */
-            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED";
+            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED";
             /** @enum {string} */
             channel: "EMAIL" | "SMS";
             /**
@@ -8161,6 +8230,116 @@ export interface operations {
             };
         };
     };
+    BusinessController_getReadiness: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessReadinessDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessController_submitForReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessReadinessDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
     BusinessController_pause: {
         parameters: {
             query?: never;
@@ -9743,6 +9922,11 @@ export interface operations {
                  *     never loaded to be filtered in the browser.
                  */
                 q?: string;
+                /**
+                 * @description 'true' — only shops that have sent themselves for review; 'false' — only
+                 *     those still setting up (§255). Omit for both.
+                 */
+                submitted?: "true" | "false";
                 limit?: number;
                 offset?: number;
             };

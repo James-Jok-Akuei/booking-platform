@@ -18,6 +18,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ADMIN_BUSINESS_SELECT } from './dto/admin-business-response.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { findBusinessTransition } from './business-status';
+import { GO_LIVE_WORDS, READINESS_SELECT, goLiveGaps, listInWords, readinessView } from './readiness';
 import { ListBusinessesDto } from './dto/list-businesses.dto';
 
 /** What an admin reviewing an application needs to see. */
@@ -50,6 +51,8 @@ export class BusinessModerationService {
     const q = query.q?.trim();
     const where: Prisma.BusinessProfileWhereInput = {
       ...(query.status ? { status: query.status } : {}),
+      ...(query.submitted === 'true' ? { submittedAt: { not: null } } : {}),
+      ...(query.submitted === 'false' ? { submittedAt: null } : {}),
       ...(q
         ? {
             OR: [
@@ -72,8 +75,9 @@ export class BusinessModerationService {
       this.prisma.businessProfile.findMany({
         where,
         // Oldest first: a queue sorted newest-first is one where the person who
-        // has waited longest is read last.
-        orderBy: { createdAt: 'asc' },
+        // has waited longest is read last. Waiting is counted from when the
+        // shop asked to be reviewed (§255), not from when it signed up.
+        orderBy: [{ submittedAt: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }],
         take: limit,
         skip: offset,
         select: ADMIN_BUSINESS_SELECT,
@@ -140,7 +144,11 @@ export class BusinessModerationService {
     });
     if (!business) throw new NotFoundException('Business not found.');
 
-    return business;
+    const shop = await this.prisma.businessProfile.findUniqueOrThrow({
+      where: { id: businessId },
+      select: READINESS_SELECT,
+    });
+    return { ...business, readiness: readinessView(shop) };
   }
 
   approve(actor: { userId: string; role: UserRole | string }, businessId: string) {
@@ -205,18 +213,29 @@ export class BusinessModerationService {
       );
     }
 
-    // An APPROVED business becomes publicly listed, and a listing with no name
-    // is not something a customer can choose (§53.1). The approval queue itself
-    // rendered a nameless row during the walk-through, which is not a decision
-    // anyone can make.
-    //
-    // The COLUMN stays nullable: a profile mid-onboarding legitimately has no
-    // name yet, and forcing one at creation would block the step before it.
-    if (to === BusinessStatus.APPROVED && !business.name?.trim()) {
-      throw new BadRequestException(
-        'This business has no name, so it cannot be approved — it would appear ' +
-          'in search as a blank. Ask the business to complete its profile first.',
-      );
+    // An APPROVED business becomes publicly listed, so it must be one a
+    // customer can use (§53.1, §255): a name — a nameless listing is a blank in
+    // search — and an open branch with hours and a service to book there. The
+    // rest of the checklist (its phone, its type) is the shop's to finish and
+    // an administrator's to judge. Reinstatement is an approval too.
+    if (to === BusinessStatus.APPROVED) {
+      const shop = await this.prisma.businessProfile.findUniqueOrThrow({
+        where: { id: businessId },
+        select: READINESS_SELECT,
+      });
+      const gaps = goLiveGaps(shop);
+      if (gaps.includes('name')) {
+        throw new BadRequestException(
+          'This business has no name, so it cannot be approved — it would appear ' +
+            'in search as a blank. Ask the business to complete its profile first.',
+        );
+      }
+      if (gaps.length > 0) {
+        throw new BadRequestException(
+          `This business cannot go live yet: it still needs ${listInWords(gaps, GO_LIVE_WORDS)}. ` +
+            'Listed without that, no customer could book it — ask the business to finish setting up.',
+        );
+      }
     }
 
     if (rule.requiresReason && !reason?.trim()) {
@@ -233,6 +252,9 @@ export class BusinessModerationService {
         // Cleared on the way back to APPROVED: a stale rejection reason sitting
         // beside an approved business reads as an accusation.
         statusReason: rule.requiresReason ? reason!.trim() : null,
+        // Kept after the shop fixes things and sends itself back (§255), so
+        // whoever reviews it next can see what was asked.
+        ...(to === BusinessStatus.REJECTED ? { lastRejectionReason: reason!.trim() } : {}),
         statusChangedAt: new Date(),
         statusChangedById: actor.userId,
       },

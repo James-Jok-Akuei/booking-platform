@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { BusinessStatus } from '@prisma/client';
 
 export class ListBusinessesDto {
@@ -17,6 +17,14 @@ export class ListBusinessesDto {
   @IsString()
   @MaxLength(100)
   q?: string;
+
+  /**
+   * 'true' — only shops that have sent themselves for review; 'false' — only
+   * those still setting up (§255). Omit for both.
+   */
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  submitted?: 'true' | 'false';
 
   @IsOptional()
   @Type(() => Number)

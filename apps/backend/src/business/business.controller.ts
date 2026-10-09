@@ -60,6 +60,7 @@ import { ServiceImagesService } from './service-images.service';
 import { galleryUploadOptions } from './gallery-upload.options';
 import { MulterExceptionFilter } from './filters/multer-exception.filter';
 import { UpdateBusinessProfileDto } from './dto/update-profile.dto';
+import { BusinessReadinessDto } from './dto/readiness.dto';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { UpdateLocationCapacityDto } from './dto/update-capacity.dto';
@@ -130,6 +131,32 @@ export class BusinessController {
     @Body() dto: UpdateBusinessProfileDto,
   ) {
     return this.profiles.update(business.businessId, dto);
+  }
+
+  // ---------- Going live (§255) ----------
+
+  /** What the shop has and still needs before it can go live. */
+  @Get('readiness')
+  @ApiOkResponse({ type: BusinessReadinessDto })
+  @BusinessRoles(
+    BusinessMemberRole.OWNER,
+    BusinessMemberRole.MANAGER,
+    BusinessMemberRole.STAFF,
+  )
+  getReadiness(@CurrentBusiness() business: BusinessContext) {
+    return this.profiles.readiness(business.businessId);
+  }
+
+  /**
+   * The shop sends itself for review, or back for review after a rejection
+   * (§255). OWNER and MANAGER, like every other change to how it is set up.
+   */
+  @Post('submit')
+  @ApiOkResponse({ type: BusinessReadinessDto })
+  @HttpCode(HttpStatus.OK)
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  submitForReview(@CurrentBusiness() business: BusinessContext) {
+    return this.profiles.submitForReview(business.businessId);
   }
 
   /**

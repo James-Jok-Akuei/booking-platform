@@ -1,9 +1,20 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { BusinessStatus, NotificationType, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import {
+  READINESS_SELECT,
+  isReadyForReview,
+  listInWords,
+  readinessItems,
+  readinessView,
+} from './readiness';
 // One select, shared with the DTO describing its result (§128.5).
 import { PROFILE_SELECT } from './dto/business-response.dto';
 import { StorageService } from '../storage/storage.service';
@@ -11,10 +22,103 @@ import { UpdateBusinessProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class BusinessProfileService {
+  private readonly logger = new Logger(BusinessProfileService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly notifications: NotificationsService,
   ) {}
+
+  // ---------- Going live (§255) ----------
+
+  /** The shop's checklist: what it has, what it still needs, and whether it can send itself for review. */
+  async readiness(businessId: string) {
+    const shop = await this.prisma.businessProfile.findUnique({
+      where: { id: businessId },
+      select: READINESS_SELECT,
+    });
+    if (!shop) throw new NotFoundException('Business not found.');
+    return readinessView(shop);
+  }
+
+  /**
+   * The shop sends itself to be reviewed (§255) — or, after a rejection, sends
+   * itself BACK, having fixed what it was told.
+   *
+   * Not an administrator's transition, so it is not in
+   * BUSINESS_STATUS_TRANSITIONS, which is the table of what an administrator
+   * may decide: a shop can only ask. Asking moves a rejected shop back to
+   * PENDING; it never makes anything live. Administrators are told.
+   */
+  async submitForReview(businessId: string) {
+    const shop = await this.prisma.businessProfile.findUnique({
+      where: { id: businessId },
+      select: READINESS_SELECT,
+    });
+    if (!shop) throw new NotFoundException('Business not found.');
+
+    if (shop.status === BusinessStatus.APPROVED) {
+      throw new BadRequestException('Your shop is already live.');
+    }
+    if (shop.status === BusinessStatus.SUSPENDED) {
+      throw new BadRequestException(
+        'A suspended shop cannot send itself for review. Raise a support ticket to talk it through.',
+      );
+    }
+    if (shop.status === BusinessStatus.PENDING && shop.submittedAt) {
+      throw new ConflictException('Your shop is already waiting for review.');
+    }
+    if (!isReadyForReview(shop)) {
+      const missing = readinessItems(shop)
+        .filter((item) => item.required && !item.done)
+        .map((item) => item.key);
+      throw new BadRequestException(
+        `Your shop is not ready to be reviewed yet. Still to add: ${listInWords(missing)}.`,
+      );
+    }
+
+    const resubmitted = shop.status === BusinessStatus.REJECTED;
+    const updated = await this.prisma.businessProfile.update({
+      where: { id: businessId },
+      data: {
+        status: BusinessStatus.PENDING,
+        submittedAt: new Date(),
+        // A shop waiting again is no longer rejected; what the rejection said
+        // stays in `lastRejectionReason` for whoever reviews it next.
+        ...(resubmitted ? { statusReason: null, statusChangedAt: new Date(), statusChangedById: null } : {}),
+      },
+      select: READINESS_SELECT,
+    });
+
+    this.logger.log(`Business ${businessId} ${resubmitted ? 'sent itself back' : 'sent itself'} for review.`);
+    await this.notifyAdmins(updated.name ?? 'A shop', resubmitted);
+    return readinessView(updated);
+  }
+
+  private async notifyAdmins(name: string, resubmitted: boolean) {
+    const admins = await this.prisma.user.findMany({
+      where: { role: UserRole.ADMIN },
+      select: { id: true },
+    });
+    await Promise.all(
+      admins.map((admin) =>
+        this.notifications.notify({
+          recipientId: admin.id,
+          type: NotificationType.BUSINESS_SUBMITTED,
+          context: {
+            serviceName: 'Business review',
+            locationName: name,
+            businessName: name,
+            startTime: undefined as unknown as Date,
+            reason: resubmitted
+              ? `${name} has fixed what its rejection asked for and sent itself back for review.`
+              : `${name} has finished setting up and is ready for review.`,
+          },
+        }),
+      ),
+    );
+  }
 
   /**
    * Stores a logo or cover image and records it on the profile (§88).
