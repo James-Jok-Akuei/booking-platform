@@ -17052,3 +17052,32 @@ Tested end to end on a new account: signed up from "Start selling", landed in
 the wizard, each step saved through the page, sent for review (the
 administrator emailed), rejected with a reason, sent back (emailed again),
 approved — at 1440, 1024 and 390 wide.
+
+## 257. The console's side: the queue is the shops that asked (2026-10-09)
+
+The admin console's half of §255 (`apps/admin-web`).
+
+- **Businesses has two kinds of PENDING**, each with its own tab: **Awaiting
+  review** (sent for review — the queue, oldest request first, the default
+  tab and the one with the hot count) and **Setting up** (signed up, not sent;
+  waiting on nobody). Then Approved, Suspended, Rejected, All. The tab is in
+  the URL as before (`?status=SETTING_UP`); an old `?status=PENDING` link
+  opens the queue, which is what it always meant. `listBusinesses` takes
+  `submitted`. A row says "Waiting since" from when the shop asked, "Signed
+  up" for one still setting up (no quick Approve/Reject on those), and "Sent
+  back after a rejection" on a shop that came back.
+- **The frame's count** ("shops to approve", the Waiting button, the sidebar
+  badge) counts only shops that asked.
+- **The review panel** checks the shop against the same checklist it worked
+  through (`readiness` on the detail, §255) in the reviewer's words, plus a
+  description as advice and whether the payout number has been checked. What
+  approval cannot go without (`goLiveGaps`: a name, an open branch, hours
+  there, a service offered there) is marked as a lock, said once at the top
+  in what approval needs, and Approve / Approve after all / Reinstate are
+  disabled with "Cannot go live yet" — the server would refuse anyway (§255).
+  A shop that came back shows **"Sent back after a rejection — last time we
+  said …"** (`lastRejectionReason`), so the reviewer can check it was done;
+  the identity line says when it was sent for review, or that it has not been.
+- **The notice** `BUSINESS_SUBMITTED` has its own mark (a shop) and opens
+  Businesses searched for that shop (its name is the first words of the
+  notice).

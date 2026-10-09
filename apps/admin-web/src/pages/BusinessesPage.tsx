@@ -23,14 +23,21 @@ import { ShopMark } from '../ui/ShopMark';
 import { StaticMap } from '../ui/StaticMap';
 import './businesses.css';
 
-type Tab = BusinessStatus | 'ALL';
+type Tab = 'WAITING' | 'SETTING_UP' | 'APPROVED' | 'SUSPENDED' | 'REJECTED' | 'ALL';
 
-const TABS: Array<{ value: Tab; label: string }> = [
-  { value: 'PENDING', label: 'Awaiting review' },
-  { value: 'APPROVED', label: 'Approved' },
-  { value: 'SUSPENDED', label: 'Suspended' },
-  { value: 'REJECTED', label: 'Rejected' },
-  { value: 'ALL', label: 'All' },
+/**
+ * A PENDING shop is one of two things (§255): one that has sent itself for
+ * review and waits on us, and one still setting up, which waits on nobody. The
+ * queue is the first; the second has its own tab, so the count that matters
+ * is not inflated by sign-ups that stopped half way.
+ */
+const TABS: Array<{ value: Tab; label: string; query: { status?: BusinessStatus; submitted?: 'true' | 'false' } }> = [
+  { value: 'WAITING', label: 'Awaiting review', query: { status: 'PENDING', submitted: 'true' } },
+  { value: 'SETTING_UP', label: 'Setting up', query: { status: 'PENDING', submitted: 'false' } },
+  { value: 'APPROVED', label: 'Approved', query: { status: 'APPROVED' } },
+  { value: 'SUSPENDED', label: 'Suspended', query: { status: 'SUSPENDED' } },
+  { value: 'REJECTED', label: 'Rejected', query: { status: 'REJECTED' } },
+  { value: 'ALL', label: 'All', query: {} },
 ];
 
 const STATUS: Record<BusinessStatus, { label: string; cls: string }> = {
@@ -39,6 +46,14 @@ const STATUS: Record<BusinessStatus, { label: string; cls: string }> = {
   SUSPENDED: { label: 'Suspended', cls: 'suspended' },
   REJECTED: { label: 'Rejected', cls: 'rejected' },
 };
+
+/** A shop's state as a word, telling the two kinds of PENDING apart (§255). */
+const lookOf = (b: { status: BusinessStatus; submittedAt: string | null }) =>
+  b.status === 'PENDING' && !b.submittedAt ? { label: 'Setting up', cls: 'setting-up' } : STATUS[b.status];
+
+/** Old links say `status=PENDING`; that was always the queue. */
+const tabFrom = (raw: string | null): Tab =>
+  raw === null || raw === 'PENDING' ? 'WAITING' : TABS.some((t) => t.value === raw) ? (raw as Tab) : 'WAITING';
 
 const PAGE = 25;
 
@@ -68,7 +83,8 @@ const nameOf = (b: { name: string | null }) => (b.name?.trim() ? b.name : null);
  */
 export function BusinessesPage() {
   const [params, setParams] = useSearchParams();
-  const tab = (params.get('status') as Tab | null) ?? 'PENDING';
+  const tab = tabFrom(params.get('status'));
+  const query = TABS.find((t) => t.value === tab)!.query;
   const openId = params.get('open');
   const [typed, setTyped] = useState(params.get('q') ?? '');
   const q = params.get('q') ?? '';
@@ -98,8 +114,7 @@ export function BusinessesPage() {
 
   const list = useInfiniteQuery({
     queryKey: ['businesses', tab, q],
-    queryFn: ({ pageParam }) =>
-      listBusinesses({ ...(tab === 'ALL' ? {} : { status: tab }), ...(q ? { q } : {}), limit: PAGE, offset: pageParam }),
+    queryFn: ({ pageParam }) => listBusinesses({ ...query, ...(q ? { q } : {}), limit: PAGE, offset: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.offset + last.businesses.length < last.total ? last.offset + PAGE : undefined),
   });
@@ -111,7 +126,7 @@ export function BusinessesPage() {
     queryKey: ['businesses', 'counts', q],
     queryFn: async () => {
       const entries = await Promise.all(
-        TABS.map(async (t) => [t.value, (await listBusinesses({ ...(t.value === 'ALL' ? {} : { status: t.value }), ...(q ? { q } : {}), limit: 1 })).total] as const),
+        TABS.map(async (t) => [t.value, (await listBusinesses({ ...t.query, ...(q ? { q } : {}), limit: 1 })).total] as const),
       );
       return Object.fromEntries(entries) as Record<Tab, number>;
     },
@@ -167,10 +182,10 @@ export function BusinessesPage() {
               role="tab"
               aria-selected={tab === t.value}
               className={`qtab${tab === t.value ? ' is-on' : ''}`}
-              onClick={() => patch({ status: t.value === 'PENDING' ? null : t.value, open: null })}
+              onClick={() => patch({ status: t.value === 'WAITING' ? null : t.value, open: null })}
             >
               {t.label}
-              {counts.data && <span className={t.value === 'PENDING' && counts.data.PENDING > 0 ? 'is-hot' : ''}>{counts.data[t.value]}</span>}
+              {counts.data && <span className={t.value === 'WAITING' && counts.data.WAITING > 0 ? 'is-hot' : ''}>{counts.data[t.value]}</span>}
             </button>
           ))}
         </div>
@@ -200,11 +215,19 @@ export function BusinessesPage() {
       {list.data && rows.length === 0 && (
         <div className="q-empty">
           <span>
-            <Icon name={q ? 'search' : tab === 'PENDING' ? 'checkCircle' : 'store'} size={26} />
+            <Icon name={q ? 'search' : tab === 'WAITING' ? 'checkCircle' : 'store'} size={26} />
           </span>
-          <strong>{q ? `Nothing found for “${q}”` : tab === 'PENDING' ? 'Nobody is waiting' : 'No businesses here'}</strong>
+          <strong>
+            {q ? `Nothing found for “${q}”` : tab === 'WAITING' ? 'Nobody is waiting' : tab === 'SETTING_UP' ? 'Nobody is setting up' : 'No businesses here'}
+          </strong>
           <p className="muted">
-            {q ? 'Try part of the name, a phone number or an email.' : tab === 'PENDING' ? 'Every application has an answer. New ones appear here, oldest first.' : 'None are in this state just now.'}
+            {q
+              ? 'Try part of the name, a phone number or an email.'
+              : tab === 'WAITING'
+                ? 'Every shop that asked has an answer. New ones appear here, oldest first, and you are told when one arrives.'
+                : tab === 'SETTING_UP'
+                  ? 'Shops that signed up and have not sent themselves for review yet appear here.'
+                  : 'None are in this state just now.'}
           </p>
         </div>
       )}
@@ -327,8 +350,10 @@ function Row({
   onReject: () => void;
 }) {
   const name = nameOf(business);
-  const look = STATUS[business.status];
-  const pending = business.status === 'PENDING';
+  const look = lookOf(business);
+  // Only a shop that asked is waiting on us; one still setting up is not (§255).
+  const pending = business.status === 'PENDING' && business.submittedAt !== null;
+  const settingUp = business.status === 'PENDING' && business.submittedAt === null;
   return (
     <li className={`bz-row${pending ? ' is-pending' : ''}`}>
       <button type="button" className="bz-row-main" onClick={onOpen} aria-label={`Review ${name ?? 'this business'}`}>
@@ -340,12 +365,23 @@ function Row({
             {business.subcategory ? ` · ${business.subcategory.name}` : ''}
           </span>
           {business.statusReason && business.status !== 'APPROVED' && <span className="bz-row-reason">“{business.statusReason}”</span>}
+          {pending && business.lastRejectionReason && (
+            <span className="bz-row-back">
+              <Icon name="refresh" size={13} /> Sent back after a rejection
+            </span>
+          )}
           <span className={`pill ${look.cls}`}>{look.label}</span>
         </span>
       </button>
       <span className="bz-row-when">
-        <strong>{day(business.createdAt)}</strong>
-        <span>{pending ? `Waiting since ${sinceDay(business.createdAt)}` : `Applied ${sinceDay(business.createdAt)}`}</span>
+        <strong>{day(pending ? business.submittedAt : business.createdAt)}</strong>
+        <span>
+          {pending
+            ? `Waiting since ${sinceDay(business.submittedAt!)}`
+            : settingUp
+              ? `Signed up ${sinceDay(business.createdAt)}`
+              : `Applied ${sinceDay(business.createdAt)}`}
+        </span>
       </span>
       <span className="bz-row-status">
         <span className={`pill ${look.cls}`}>{look.label}</span>
@@ -373,30 +409,62 @@ function Row({
 // ---------------------------------------------------------------------------
 // The review panel
 
-type Check = { ok: boolean; label: string; hint: string };
+type Check = { key: string; ok: boolean; label: string; hint: string; gate?: boolean };
 
-/** What an approval puts in front of customers, checked (§244). Advice, not a gate — except the name (§53). */
-function readiness(b: AdminBusinessDetail): Check[] {
-  const open = b.locations.filter((l) => l.isActive);
-  const services = b.services.filter((s) => s.isActive);
+type ReadinessKey = AdminBusinessDetail['readiness']['items'][number]['key'];
+
+/** The shop's own checklist (§255), in the reviewer's words. */
+const CHECK_WORDS: Record<ReadinessKey, { label: string; hint: string }> = {
+  name: { label: 'A name', hint: 'An approved blank would go straight into search.' },
+  type: { label: 'What kind of shop', hint: 'Customers browse by type; it is missing from every list until it has one.' },
+  phone: { label: 'A phone number', hint: 'How customers — and we — reach them.' },
+  branch: { label: 'A branch on the map, with its district', hint: 'Customers nearby find it by its pin and its area.' },
+  hours: { label: 'Opening hours', hint: 'No time can be booked without them.' },
+  service: { label: 'A service offered at an open branch', hint: 'Otherwise there is nothing to book.' },
+  logo: { label: 'A logo', hint: 'Customers see initials until there is one.' },
+  payout: { label: 'A payout number', hint: 'They can take bookings without one; they cannot be paid.' },
+};
+
+/** What approval itself needs (§255) — less than the shop's checklist: any open branch, pinned or not. */
+const GATE_WORDS: Partial<Record<ReadinessKey, string>> = {
+  name: 'a name',
+  branch: 'an open branch',
+  hours: 'opening hours at a branch',
+  service: 'a service offered at an open branch',
+};
+
+const inWords = (words: string[]) =>
+  words.length <= 1 ? (words[0] ?? '') : `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
+
+/**
+ * What an approval puts in front of customers, checked (§244) — from the same
+ * checklist the shop worked through (§255). The ones it cannot go live
+ * without (`goLiveGaps`) are a gate: the server refuses, so the button does
+ * too. The rest are advice.
+ */
+function checksOf(b: AdminBusinessDetail): Check[] {
+  const gaps = new Set(b.readiness.goLiveGaps);
   const destination = b.payoutDestinations[0];
-  return [
-    { ok: Boolean(nameOf(b)), label: 'A name', hint: 'Required — an approved blank would go straight into search.' },
-    { ok: Boolean(b.description?.trim()), label: 'A description', hint: 'Shown on the shop page; worth asking for.' },
-    { ok: Boolean(b.logoUrl), label: 'A logo', hint: 'Customers see initials until there is one.' },
-    { ok: open.length > 0, label: 'An open branch', hint: 'Nothing is bookable without one.' },
-    { ok: open.some((l) => l.latitude !== null), label: 'A branch on the map', hint: 'Customers nearby find it by its pin.' },
-    {
-      ok: services.some((s) => s.locations.length > 0),
-      label: 'A service with a price',
-      hint: 'Otherwise there is nothing to book.',
-    },
-    {
-      ok: destination?.status === 'VERIFIED',
-      label: destination ? (destination.status === 'VERIFIED' ? 'A checked payout number' : 'A payout number, not yet checked') : 'A payout number',
-      hint: destination ? 'Check it under Payout numbers before money is owed.' : 'They can book without one; they cannot be paid.',
-    },
-  ];
+  const items: Check[] = b.readiness.items.map((item) => ({
+    key: item.key,
+    ok: item.done,
+    gate: gaps.has(item.key),
+    ...CHECK_WORDS[item.key],
+  }));
+  // The payout number: whether it has been checked matters to us, not to the shop.
+  const payout = items.find((i) => i.key === 'payout');
+  if (payout && destination) {
+    payout.ok = destination.status === 'VERIFIED';
+    payout.label = destination.status === 'VERIFIED' ? 'A checked payout number' : 'A payout number, not yet checked';
+    payout.hint = 'Check it under Payout numbers before money is owed.';
+  }
+  items.push({
+    key: 'description',
+    ok: Boolean(b.description?.trim()),
+    label: 'A description',
+    hint: 'Shown on the shop page; worth asking for.',
+  });
+  return items;
 }
 
 function ReviewPanel({
@@ -414,6 +482,8 @@ function ReviewPanel({
   const business = useQuery({ queryKey: ['business', id], queryFn: () => getBusiness(id) });
   const b = business.data;
   const name = b ? nameOf(b) : null;
+  // What the server would refuse an approval for (§255): a shop no customer could book.
+  const blocked = b ? b.readiness.goLiveGaps.length > 0 : true;
 
   const footer = b ? (
     <>
@@ -423,9 +493,9 @@ function ReviewPanel({
             <Icon name="xCircle" size={17} />
             Reject
           </button>
-          <button type="button" className="primary" disabled={busy || !name} onClick={() => decide.approve(b)}>
+          <button type="button" className="primary" disabled={busy || blocked} onClick={() => decide.approve(b)}>
             <Icon name="checkCircle" size={17} />
-            {name ? 'Approve' : 'Needs a name first'}
+            {blocked ? 'Cannot go live yet' : 'Approve'}
           </button>
         </>
       )}
@@ -436,14 +506,14 @@ function ReviewPanel({
         </button>
       )}
       {b.status === 'SUSPENDED' && (
-        <button type="button" className="primary" disabled={busy || !name} onClick={() => decide.reinstate(b)}>
+        <button type="button" className="primary" disabled={busy || blocked} onClick={() => decide.reinstate(b)}>
           <Icon name="refresh" size={17} />
           Reinstate
         </button>
       )}
       {b.status === 'REJECTED' && (
         // The appeal path (§42): a rejected shop that fixed things can be approved.
-        <button type="button" className="primary" disabled={busy || !name} onClick={() => decide.approve(b)}>
+        <button type="button" className="primary" disabled={busy || blocked} onClick={() => decide.approve(b)}>
           <Icon name="checkCircle" size={17} />
           Approve after all
         </button>
@@ -453,7 +523,7 @@ function ReviewPanel({
 
   return (
     <Panel
-      eyebrow={b ? STATUS[b.status].label : 'Application'}
+      eyebrow={b ? lookOf(b).label : 'Application'}
       title={b ? name ?? 'No name yet' : 'Loading…'}
       onClose={onClose}
       footer={footer}
@@ -485,7 +555,12 @@ function ReviewPanel({
                 {b.subcategory ? ` · ${b.subcategory.name}` : ''}
               </p>
               <p className="muted small">
-                Applied {day(b.createdAt)} ({sinceDay(b.createdAt)}){b.phone ? ` · ${b.phone}` : ''}
+                {b.submittedAt && b.status === 'PENDING'
+                  ? `Sent for review ${day(b.submittedAt)} (${sinceDay(b.submittedAt)})`
+                  : b.status === 'PENDING'
+                    ? `Signed up ${day(b.createdAt)} — not sent for review yet`
+                    : `Applied ${day(b.createdAt)} (${sinceDay(b.createdAt)})`}
+                {b.phone ? ` · ${b.phone}` : ''}
               </p>
             </div>
           </div>
@@ -501,14 +576,34 @@ function ReviewPanel({
             </div>
           )}
 
+          {/* Sent back after a rejection (§255): what was asked last time, to check it was done. */}
+          {b.status === 'PENDING' && b.lastRejectionReason && (
+            <div className="bz-reason tone-ask">
+              <Icon name="refresh" size={17} />
+              <span>
+                <strong>Sent back after a rejection — last time we said</strong>
+                {b.lastRejectionReason}
+              </span>
+            </div>
+          )}
+
           <Section icon="checkCircle" title="Ready to go live?">
+            {blocked && (
+              <p className="bz-gate">
+                <Icon name="lock" size={15} />
+                It cannot be approved until it has {inWords(b.readiness.goLiveGaps.map((k) => GATE_WORDS[k] ?? k))} —
+                customers would find a shop they cannot book.
+              </p>
+            )}
             <ul className="bz-checks">
-              {readiness(b).map((c) => (
-                <li key={c.label} className={c.ok ? 'is-ok' : 'is-missing'}>
-                  <Icon name={c.ok ? 'checkCircle' : 'alert'} size={17} />
+              {checksOf(b).map((c) => (
+                <li key={c.key} className={c.ok ? 'is-ok' : c.gate ? 'is-gate' : 'is-missing'}>
+                  <Icon name={c.ok ? 'checkCircle' : c.gate ? 'lock' : 'alert'} size={17} />
                   <span>
                     <strong>{c.label}</strong>
-                    {!c.ok && <em>{c.hint}</em>}
+                    {!c.ok && (
+                      <em>{c.gate ? `Approval needs ${GATE_WORDS[c.key as ReadinessKey]}. ${c.hint}` : c.hint}</em>
+                    )}
                   </span>
                 </li>
               ))}

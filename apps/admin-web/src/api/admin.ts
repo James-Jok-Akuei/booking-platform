@@ -28,6 +28,8 @@ export const listBusinesses = (params: {
   status?: BusinessStatus;
   /** Part of the name, the phone, or a member's email (§244). */
   q?: string;
+  /** Whether the shop has sent itself for review (§255) — "true" is the queue, "false" is still setting up. */
+  submitted?: 'true' | 'false';
   limit?: number;
   offset?: number;
 }) => api<Page<AdminBusiness>>('/admin/businesses', { query: params });

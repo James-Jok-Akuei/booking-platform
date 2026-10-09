@@ -155,3 +155,14 @@
 @media (max-width: 640px) {
   .bz-checks, .bz-two { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* §257: still setting up, sent back, and what approval cannot go without. */
+.pill.setting-up { background: var(--sunken-2); color: var(--ink-2); }
+.bz-row-text .bz-row-back { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--ask); }
+.bz-reason.tone-ask { background: var(--ask-soft); color: #1d4597; }
+.bz-reason.tone-ask strong { color: var(--ask); }
+.bz-checks li.is-gate { background: var(--danger-soft); }
+.bz-checks li.is-gate svg { color: var(--danger); }
+.bz-checks li.is-gate em { color: #9f2318; }
+.bz-gate { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 10px; padding: 10px 12px; border-radius: var(--r-md); background: var(--danger-soft); color: #9f2318; font-size: 13px; font-weight: 600; line-height: 1.45; }
+.bz-gate svg { flex: none; margin-top: 2px; }

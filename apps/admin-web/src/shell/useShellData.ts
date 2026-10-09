@@ -22,8 +22,8 @@ export function useShellData() {
       select: (page) => page.total,
     });
 
-  // Applications waiting for a decision (§42).
-  const businesses = count('businesses', () => listBusinesses({ status: 'PENDING', limit: 1 }));
+  // Shops that have asked for a decision (§42, §255) — not those still setting up.
+  const businesses = count('businesses', () => listBusinesses({ status: 'PENDING', submitted: 'true', limit: 1 }));
   // Payout numbers waiting to be checked: a business left here is not paid (§48.3).
   const destinations = count('destinations', () => listPayoutDestinations({ status: 'UNVERIFIED', limit: 1 }));
   // Payouts created and not yet sent (§36).

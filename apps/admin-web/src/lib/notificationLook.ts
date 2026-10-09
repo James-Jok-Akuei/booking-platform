@@ -17,6 +17,7 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   APPOINTMENT_MANUALLY_VERIFIED: { icon: 'userCheck', tone: 'warn', to: '/appointments' },
   REVIEW_HIDDEN: { icon: 'eye', tone: 'warn', to: '/reviews' },
   DISPLAY_NAME_CLEARED: { icon: 'user', tone: 'warn', to: '/users' },
+  BUSINESS_SUBMITTED: { icon: 'store', tone: 'accent', to: '/businesses' },
 };
 
 export const lookFor = (type: string) =>
@@ -33,6 +34,12 @@ export const destinationFor = (n: { type: string; subject?: string | null; body?
   if (n.type.startsWith('TICKET_')) {
     const ref = `${n.subject ?? ''} ${n.body ?? ''}`.match(/TKT-\d+/)?.[0];
     if (ref) return `/tickets?ref=${ref}`;
+  }
+  // "Nile Cuts has finished setting up…" / "…has fixed what its rejection asked for…" (§255):
+  // the queue, searched for that shop.
+  if (n.type === 'BUSINESS_SUBMITTED') {
+    const name = /^(.+?) has (?:finished setting up|fixed what)/.exec(n.body ?? '')?.[1];
+    if (name) return `/businesses?q=${encodeURIComponent(name)}`;
   }
   return look.to;
 };
