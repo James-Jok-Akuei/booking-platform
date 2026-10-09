@@ -2,7 +2,7 @@ import { File } from 'expo-file-system';
 import { UploadType } from 'expo-file-system';
 import { ApiError, tokens } from './api/client';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4100';
 
 /**
  * Sends a file to the API (§125.2).

@@ -31,7 +31,7 @@ describe('Application boot', () => {
     'builds AppModule, listens, serves HTTP, and shuts down',
     async () => {
       // Port 0 asks the OS for a free port, so the test never collides with a
-      // dev server on 3000 or with a parallel run.
+      // dev server on 4100 or with a parallel run.
       app = configureApp(await NestFactory.create(AppModule, { logger: false }));
       await app.init();
       await app.listen(0);

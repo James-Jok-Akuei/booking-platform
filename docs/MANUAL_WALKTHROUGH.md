@@ -32,7 +32,7 @@ created (everything reachable from a `demo-` email).
 Two shell variables used throughout:
 
 ```bash
-B=http://localhost:3000
+B=http://localhost:4100
 J() { python3 -m json.tool; }       # pretty-print
 ```
 

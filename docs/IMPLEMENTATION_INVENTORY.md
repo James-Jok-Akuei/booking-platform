@@ -47,7 +47,7 @@ library.
 ### 1.3 Boot
 
 `src/main.ts:7` — `NestFactory.create(AppModule)`, then `configureApp(app)`, then
-listen on `process.env.PORT ?? 3000`.
+listen on `process.env.PORT ?? 4100`.
 
 `src/app-bootstrap.ts:14` — `configureApp` is the whole of the global
 configuration and is deliberately shared with the boot smoke test so the test

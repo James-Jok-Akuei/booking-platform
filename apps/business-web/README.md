@@ -9,7 +9,7 @@ API client as the admin console.
 ```bash
 # backend, from apps/backend
 docker compose up -d
-npm run start:dev                      # http://localhost:3000
+npm run start:dev                      # http://localhost:4100
 
 # this app, from the repo root
 npm run dev --workspace=business-web   # http://localhost:5174

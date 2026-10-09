@@ -15,7 +15,7 @@ async function bootstrap() {
   // configuration this file no longer uses.
   configureApp(app);
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? 4100;
   await app.listen(port);
   // eslint-disable-next-line no-console
   console.log(`Backend listening on http://localhost:${port}`);

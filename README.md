@@ -65,7 +65,7 @@ npm run -w apps/backend exec prisma migrate dev --name init
 npm run backend:dev
 ```
 
-The API listens on `http://localhost:3000`. Mailhog's inbox — where OTP emails
+The API listens on `http://localhost:4100`. Mailhog's inbox — where OTP emails
 land in development — is at `http://localhost:8025`.
 
 Full backend detail, endpoint reference and design notes: [`apps/backend/README.md`](apps/backend/README.md).

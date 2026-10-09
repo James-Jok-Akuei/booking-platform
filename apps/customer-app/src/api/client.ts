@@ -52,7 +52,7 @@ export const deviceStore = SecureStore;
  *    rehydrated once at startup. Every request would otherwise await a
  *    Keychain read.
  */
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4100';
 
 const ACCESS_KEY = 'booking.accessToken';
 const REFRESH_KEY = 'booking.refreshToken';

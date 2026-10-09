@@ -131,7 +131,7 @@ export class StorageService implements OnModuleInit {
       });
     } else {
       this.driver = 'local';
-      const base = this.env('APP_BASE_URL') ?? 'http://localhost:3000';
+      const base = this.env('APP_BASE_URL') ?? 'http://localhost:4100';
       this.publicUrl = `${base.replace(/\/+$/, '')}/${LOCAL_UPLOAD_DIR}`;
     }
   }

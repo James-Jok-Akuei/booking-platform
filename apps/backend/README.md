@@ -62,7 +62,7 @@ installed from the **repo root** (`npm install`) via npm workspaces — see the
    npm run start:dev          # from apps/backend
    npm run backend:dev        # or from the repo root
    ```
-   Server starts on `http://localhost:3000` (or `PORT` from `.env`).
+   Server starts on `http://localhost:4100` (or `PORT` from `.env`).
 
 ## Automated tests
 
@@ -95,7 +95,7 @@ external sandbox and real test MSISDNs, so it stays a manual check
 
 ```bash
 # 1. Request a code
-curl -s -X POST http://localhost:3000/auth/otp/request \
+curl -s -X POST http://localhost:4100/auth/otp/request \
   -H 'Content-Type: application/json' \
   -d '{"email":"owner@example.com","role":"BUSINESS"}'
 
@@ -104,12 +104,12 @@ curl -s http://localhost:8025/api/v2/messages | \
   python3 -c 'import json,sys,re; print(re.search(r"\b\d{6}\b", json.load(sys.stdin)["items"][0]["Content"]["Body"]).group())'
 
 # 3. Verify it -> returns accessToken / refreshToken / user
-curl -s -X POST http://localhost:3000/auth/otp/verify \
+curl -s -X POST http://localhost:4100/auth/otp/verify \
   -H 'Content-Type: application/json' \
   -d '{"email":"owner@example.com","code":"<CODE>","role":"BUSINESS"}'
 
 # 4. Call a protected endpoint
-curl -s http://localhost:3000/users/me -H "Authorization: Bearer <ACCESS_TOKEN>"
+curl -s http://localhost:4100/users/me -H "Authorization: Bearer <ACCESS_TOKEN>"
 ```
 
 Note the OTP rate limit: `OTP_RESEND_COOLDOWN_SECONDS` (default 60s) blocks a second

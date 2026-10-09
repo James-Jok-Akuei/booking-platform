@@ -17105,3 +17105,29 @@ hero (`#businesses`; the top link and the side rail scroll to it):
 
 `apps/website/.env.example` documents the build's settings
 (`VITE_API_URL`, `VITE_BUSINESS_APP_URL`, the store and app links).
+
+## 259. The API moves off port 3000, to 4100 (2026-10-09)
+
+Port 3000 is the default of nearly every web dev server (Next.js, Rails,
+Express), and another project on this machine took it: while it ran, this
+backend could not start there and the three web apps' `/api` proxies reached
+the other project instead. The user asked for a port of our own.
+
+- **4100**, everywhere it was 3000: the backend's default (`main.ts`) and
+  `.env.example`; the default `APP_BASE_URL` in storage and offers; the `/api`
+  (and `/socket.io`) proxy of business-web, admin-web and the website; the
+  customer app's default `EXPO_PUBLIC_API_URL`; `scripts/dev.sh` (one
+  `BACKEND_PORT` variable now, instead of the number in eight places); the
+  READMEs, docs and `ws-smoke-test.js`. Tests are unaffected — the boot test
+  listens on port 0. The web apps stay on 5173–5175, the phone app on 8081.
+- **Links to uploaded files.** With local-disk storage the full URL, port
+  included, is stored on the row at upload (§112.7), so moving the port would
+  have broken every earlier image — as a new wifi address already did. New
+  `apps/backend/prisma/local-upload-links.sql`, run by `dev.sh` on every start
+  with the current address, moves every stored `http(s)://…/uploads/…` link
+  (any text column, so new kinds of upload need nothing) to the current
+  `APP_BASE_URL`. Development only: R2 links have no `/uploads/` path. Run
+  once by hand this time; 95 links (logos, covers, branch and service photos,
+  avatars, chat photos) moved to the new port and current address.
+- Local `.env` files (not in git) were updated to match: `PORT="4100"` and
+  `APP_BASE_URL` in the backend's, `EXPO_PUBLIC_API_URL` in the app's.

@@ -8,14 +8,14 @@ review, settings. React + Vite + TypeScript, built to static files.
 ```bash
 # 1. the backend, in apps/backend
 docker compose up -d
-npm run start:dev            # http://localhost:3000
+npm run start:dev            # http://localhost:4100
 
 # 2. this app
 npm install                  # from the repo root
 npm run dev --workspace=admin-web   # http://localhost:5173
 ```
 
-Vite proxies `/api/*` to `localhost:3000`, so the browser sees one origin and
+Vite proxies `/api/*` to `localhost:4100`, so the browser sees one origin and
 CORS does not apply in development. Leave `VITE_API_URL` empty locally.
 
 ## Signing in

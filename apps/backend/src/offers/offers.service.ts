@@ -312,7 +312,7 @@ export class OffersService {
   }
 
   private unsubscribeUrl(token: string): string {
-    const base = (this.config.get<string>('APP_BASE_URL') ?? 'http://localhost:3000').replace(
+    const base = (this.config.get<string>('APP_BASE_URL') ?? 'http://localhost:4100').replace(
       /\/$/,
       '',
     );

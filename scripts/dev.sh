@@ -15,6 +15,10 @@ cd "$(dirname "$0")/.."
 WITH_APP=1
 [[ "${1:-}" == "--no-app" ]] && WITH_APP=0
 
+# This project's API port. Not 3000: that is every other dev server's default
+# (Next.js, Rails, Express), and another project on this machine uses it (§259).
+BACKEND_PORT=4100
+
 LOGS=".dev-logs"
 mkdir -p "$LOGS"
 
@@ -95,25 +99,35 @@ LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/nu
 #
 # Rewritten on every start for the same reason the app's is: the address changes
 # whenever this machine joins a different network. The URL is stored on the row
-# when the file is uploaded, so this fixes the NEXT upload — anything uploaded
-# under a previous address keeps pointing there.
+# when the file is uploaded, so this fixes the NEXT upload — and the links
+# already stored are moved to it too (§259), or anything uploaded under an
+# earlier address (or the old port 3000) would show as a broken image.
 if [[ -n "$LAN_IP" ]]; then
   BACKEND_ENV=apps/backend/.env
   if grep -q '^APP_BASE_URL=' "$BACKEND_ENV"; then
     # A temp file, because sed -i '' differs between BSD and GNU and this script
     # should not care which one is on the path.
-    sed "s|^APP_BASE_URL=.*|APP_BASE_URL=\"http://$LAN_IP:3000\"|" "$BACKEND_ENV" > "$BACKEND_ENV.tmp" \
+    sed "s|^APP_BASE_URL=.*|APP_BASE_URL=\"http://$LAN_IP:$BACKEND_PORT\"|" "$BACKEND_ENV" > "$BACKEND_ENV.tmp" \
       && mv "$BACKEND_ENV.tmp" "$BACKEND_ENV"
   else
-    printf '\nAPP_BASE_URL="http://%s:3000"\n' "$LAN_IP" >> "$BACKEND_ENV"
+    printf '\nAPP_BASE_URL="http://%s:%s"\n' "$LAN_IP" "$BACKEND_PORT" >> "$BACKEND_ENV"
   fi
-  ok "uploaded files will be served from http://$LAN_IP:3000"
+  ok "uploaded files will be served from http://$LAN_IP:$BACKEND_PORT"
+  if (
+    cd apps/backend
+    sed "s|__BASE__|http://$LAN_IP:$BACKEND_PORT|" prisma/local-upload-links.sql \
+      | npx prisma db execute --stdin >/dev/null 2>&1
+  ); then
+    ok "earlier uploads point there too"
+  else
+    bad "could not move earlier upload links — older images may show as broken"
+  fi
 fi
 
 say "Backend"
 npm run backend:dev > "$LOGS/backend.log" 2>&1 &
 PIDS+=($!)
-wait_for 3000 backend 120
+wait_for $BACKEND_PORT backend 120
 
 say "Web apps"
 npm run dev --workspace apps/admin-web > "$LOGS/admin-web.log" 2>&1 &
@@ -139,9 +153,9 @@ if [[ $WITH_APP == 1 ]]; then
     printf '%s\n' \
       "# Written by scripts/dev.sh on every start — this machine's address on" \
       "# the wifi, so a real phone can reach the backend. Do not edit by hand." \
-      "EXPO_PUBLIC_API_URL=http://$LAN_IP:3000" \
+      "EXPO_PUBLIC_API_URL=http://$LAN_IP:$BACKEND_PORT" \
       > apps/customer-app/.env
-    ok "app will call http://$LAN_IP:3000"
+    ok "app will call http://$LAN_IP:$BACKEND_PORT"
   else
     bad "not on a network — a real phone will not reach the backend"
   fi
@@ -152,7 +166,7 @@ cat <<EOF
 
   Admin        http://localhost:5173
   Business     http://localhost:5174
-  Backend      http://localhost:3000
+  Backend      http://localhost:$BACKEND_PORT
   Email inbox  http://localhost:8025
 
   Sign in with any demo-*@example.com address — the six-digit code
@@ -164,7 +178,7 @@ EOF
 
 if [[ $WITH_APP == 1 ]]; then
   if [[ -n "$LAN_IP" ]]; then
-    say "Phone app — the app will call http://$LAN_IP:3000"
+    say "Phone app — the app will call http://$LAN_IP:$BACKEND_PORT"
     printf "  Android: open Expo Go, tap Scan QR Code\n"
     printf "  iPhone:  point the normal Camera app at the QR code\n"
     printf "  Both:    same wifi as this Mac\n\n"

@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { tokens } from './api/client';
 import type { Message, MessagePage } from './api/chat';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4100';
 
 /**
  * Live messages for one open thread.

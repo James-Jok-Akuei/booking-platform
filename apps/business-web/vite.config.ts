@@ -19,7 +19,7 @@ export default defineConfig({
     port: 5174,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:4100',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
@@ -28,7 +28,7 @@ export default defineConfig({
       // `/socket.io` regardless of namespace. `ws: true` is what makes the
       // proxy upgrade the connection rather than answer the poll and stop.
       '/socket.io': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:4100',
         changeOrigin: true,
         ws: true,
       },

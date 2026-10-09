@@ -14,7 +14,7 @@
  * confirming the join, so there is no race with the caller.
  */
 const { io } = require('socket.io-client');
-const URL = 'http://localhost:3000/chat';
+const URL = 'http://localhost:4100/chat';
 const [, , CUST_TOKEN, OUT_TOKEN, BIZ_TOKEN, THREAD] = process.argv;
 const log = (...a) => console.log('   ', ...a);
 
@@ -71,7 +71,7 @@ const emit = (s, ev, body) => new Promise((res) => {
     const form = new FormData();
     form.append('body', body);
     const t0 = Date.now();
-    const res = await fetch(`http://localhost:3000/threads/${THREAD}/messages`, {
+    const res = await fetch(`http://localhost:4100/threads/${THREAD}/messages`, {
       method: 'POST', headers: { Authorization: `Bearer ${BIZ_TOKEN}` }, body: form,
     });
     const j = await res.json();
