@@ -21,16 +21,53 @@ export const STEPS: Array<{ key: StepKey; title: string; short: string; icon: Ic
   { key: 'review', title: 'Send for review', short: 'We check it, you go live', icon: 'send', keys: [] },
 ];
 
-/** Each item of the checklist, said the way a seller would. */
-export const ITEM_WORDS: Record<ReadinessKey, { label: string; step: StepKey }> = {
-  name: { label: 'Your shop’s name', step: 'shop' },
-  type: { label: 'What kind of shop it is', step: 'shop' },
-  phone: { label: 'A phone number', step: 'shop' },
-  logo: { label: 'Your logo', step: 'shop' },
-  branch: { label: 'A branch on the map', step: 'branch' },
-  hours: { label: 'Opening hours', step: 'branch' },
-  service: { label: 'A service to book', step: 'service' },
-  payout: { label: 'A number to be paid on', step: 'paid' },
+/**
+ * The questions, one to a screen (§263): each part of setting up is asked
+ * as a few short questions rather than one long form, so a screen never
+ * holds more than a field or two.
+ */
+export type Screen = 'name' | 'kind' | 'type' | 'contact' | 'address' | 'hours' | 'service' | 'price' | 'paid' | 'review';
+
+export const SCREENS: Array<{ key: Screen; section: StepKey }> = [
+  { key: 'name', section: 'shop' },
+  { key: 'kind', section: 'shop' },
+  { key: 'type', section: 'shop' },
+  { key: 'contact', section: 'shop' },
+  { key: 'address', section: 'branch' },
+  { key: 'hours', section: 'branch' },
+  { key: 'service', section: 'service' },
+  { key: 'price', section: 'service' },
+  { key: 'paid', section: 'paid' },
+  { key: 'review', section: 'review' },
+];
+
+/** Where "Skip for now" leads: past the questions that need this one's answer. */
+export const SKIP_TO: Record<Screen, Screen> = {
+  name: 'kind',
+  kind: 'contact',
+  type: 'contact',
+  contact: 'address',
+  address: 'service',
+  hours: 'service',
+  service: 'paid',
+  price: 'paid',
+  paid: 'review',
+  review: 'review',
+};
+
+export const sectionOf = (screen: Screen) => SCREENS.find((s) => s.key === screen)!.section;
+export const isScreen = (value: string | null): value is Screen => SCREENS.some((s) => s.key === value);
+
+/** Each item of the checklist, said the way a seller would, and the question that asks it. */
+export const ITEM_WORDS: Record<ReadinessKey, { label: string; step: Screen; section: StepKey }> = {
+  name: { label: 'Your shop’s name', step: 'name', section: 'shop' },
+  type: { label: 'What kind of shop it is', step: 'kind', section: 'shop' },
+  phone: { label: 'A phone number', step: 'contact', section: 'shop' },
+  logo: { label: 'Your logo', step: 'contact', section: 'shop' },
+  branch: { label: 'A branch on the map', step: 'address', section: 'branch' },
+  hours: { label: 'Opening hours', step: 'hours', section: 'branch' },
+  service: { label: 'A service to book', step: 'service', section: 'service' },
+  payout: { label: 'A number to be paid on', step: 'paid', section: 'paid' },
 };
 
 /** The shop's state in a word or two, the seller's words rather than the status's. */
@@ -50,13 +87,16 @@ export const shopStateWord = (status: Readiness['status'], paused: boolean, subm
 export const isDone = (readiness: Readiness | undefined, keys: ReadinessKey[]) =>
   Boolean(readiness) && keys.every((k) => readiness!.items.find((i) => i.key === k)?.done);
 
-/** The first step still to do — where "Continue setting up" leads. */
-export function nextStep(readiness: Readiness | undefined): StepKey {
-  if (!readiness) return 'shop';
-  for (const step of STEPS) {
-    if (step.key === 'review' || step.optional) continue;
-    if (!isDone(readiness, step.keys)) return step.key;
-  }
+/** The first question still to answer — where "Continue setting up" leads. */
+export function nextStep(readiness: Readiness | undefined): Screen {
+  if (!readiness) return 'name';
+  const done = (key: ReadinessKey) => readiness.items.find((i) => i.key === key)?.done ?? false;
+  if (!done('name')) return 'name';
+  if (!done('type')) return 'kind';
+  if (!done('phone')) return 'contact';
+  if (!done('branch')) return 'address';
+  if (!done('hours')) return 'hours';
+  if (!done('service')) return 'service';
   return 'review';
 }
 

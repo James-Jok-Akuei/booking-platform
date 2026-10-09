@@ -17229,3 +17229,46 @@ scrolling; high-quality icons; "a million-dollar deal". The steps and rules of
 - Short windows (≤860px tall) tighten the rail and the head so all of it
   fits a 1024×768 screen; reduced motion stops the photos and the effects
   (the app-wide rule).
+
+## 263. One question to a screen, and the kinds of shop drawn (2026-10-09)
+
+Asked, with a reference (a "for Business" setup with fine-line drawings for
+each kind of service): draw the categories like that, in our own context;
+make each step clear and uncrowded; make the fields easy to notice; keep it
+clean. The panel, photos and rail of §262 stay; what is inside changes.
+
+- **One question to a screen.** The four parts are asked as ten short
+  screens (`SCREENS` in `steps.ts`): your shop — its name; what kind;
+  which kind exactly; how to reach you (phone, logo optional) · where you
+  are — the address; the hours · your first service — what it is and how
+  long; what it costs and the deposit · getting paid (optional) · send for
+  review. Each screen is one question as the title ("What's your shop
+  called?", "When are you open?", "How much is gel nails?"), one line under
+  it, the answer, and the way on. Answers saved together (the kind and its
+  type; a service and its price) are carried between their two screens and
+  saved on the second. The head says the part and "2 of 4" with small dots;
+  the rail still shows the four parts. "Skip for now" jumps past questions
+  that need the skipped answer (`SKIP_TO`); coming back opens on the first
+  question still unanswered (`nextStep`); the Overview's checklist and the
+  last step link to the question for each item.
+- **Big, plain answer boxes**: 62px, 18px text (22px for money and the
+  payout number), a firm border and a soft orange ring when in use, the
+  meaning drawn at the start; everything in one centred column.
+- **The kinds of shop, drawn** (`LineArt.tsx`): eight fine-line drawings in
+  one ink line over a soft brush mark of the category's colour — a car with
+  the air still moving behind it; scissors, a comb and a little shine; two
+  glasses meeting in confetti; a heartbeat that grows into a sprout; a house
+  and a wrench; a sitting cat; a camera with a flash; a laptop with a rising
+  line and a coffee — plus a shopfront for any kind not drawn yet. All on
+  one 200×100 sheet standing on one ground line, so the grid reads as a
+  set. The brush mark settles and the line draws itself, card after card.
+  Each card names the kind and a few of its types; the chosen one gets a
+  ring and a tick. The next screen carries the chosen drawing with
+  "Change", and the types as large radio options.
+- **The address** shows the found place on a still map with "On the map —
+  customers nearby will find you here" and "Move the pin"; pasting a map
+  link or using where you are is one link away; the district appears once
+  there is a place; the branch takes the shop's name unless renamed.
+- **Hours**: the three common weeks as cards with their times, then the day
+  toggles, the times and the sentence (§262); a week is "chosen" only while
+  both its days and times still match.
