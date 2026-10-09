@@ -15,6 +15,8 @@ body {
 .app {
   --side: 286px;
   --ads: 0px;
+  /* The widest a page grows; the page and the top bar's contents share it. */
+  --page-max: 1440px;
   display: grid;
   grid-template-columns: var(--side) minmax(0, 1fr) var(--ads);
   min-height: 100vh;
@@ -41,7 +43,11 @@ body {
   --pad-l: 24px;
   --pad-r: 30px;
   width: 100%;
-  max-width: 1440px;
+  max-width: var(--page-max);
+  /* Centred in the room between the side columns (§270): with the sidebar
+     and "For you" folded on a wide screen, the spare room is shared on both
+     sides instead of piling up on the right. */
+  margin-inline: auto;
   /* The page ends 14px above the window's edge, as the sidebar and "For you"
      do, so at the end of a page all three bottoms line up (§216). On a short
      page the page itself fills the height, and a page can let its last card
@@ -297,7 +303,9 @@ body {
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 16px;
-  padding: 14px 30px 14px 24px;
+  /* The bar runs edge to edge between the side columns, but what is in it
+     lines up with the page's edges once the page is centred (§270). */
+  padding: 14px max(30px, calc((100% - var(--page-max)) / 2 + 30px)) 14px max(24px, calc((100% - var(--page-max)) / 2 + 24px));
   background: var(--canvas-glass);
   backdrop-filter: saturate(1.5) blur(18px);
   -webkit-backdrop-filter: saturate(1.5) blur(18px);

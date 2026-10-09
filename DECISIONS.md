@@ -17543,3 +17543,26 @@ word, when its panel was closed before "Save changes".
 Front end only; no server change. Tried in the app: a new service saved as
 it was typed, "Save as draft" into Drafts, an edited service marked unsaved
 and the question on leaving — at 1440 and 390 wide.
+
+## 270. The page sits in the middle, whatever is folded (2026-10-10)
+
+Asked: with the sidebar and "For you" both folded, a big gap was left on the
+right — keep the page balanced in the middle, always.
+
+The page has a widest size (1440px, §204), and it sat at the LEFT of the room
+between the side columns: on a wide screen with both folded (e.g. 1920 wide:
+98 + 82 of rails, 1740 of room) 300px piled up on the right, next to "For
+you".
+
+- **Centred**: the page (`.content`) takes the room it is given up to that
+  widest size and is centred in it, so any room left over is shared on both
+  sides. The widest size is one value on the frame (`--page-max`).
+- **The top bar** still runs edge to edge between the side columns — it is
+  the frame, not the page — but its padding grows with the spare room, so the
+  breadcrumbs and the account button line up with the page's two edges
+  instead of sitting far outside them.
+- Nothing changes until the room is wider than the page can grow — every
+  laptop with the sidebar open, and every screen with "For you" open — nor on
+  a phone, whose own padding still wins.
+- **Both** the business app and the admin console, which share the frame
+  (§242). Tried at 1920 wide with everything folded in each.
