@@ -52,6 +52,8 @@ export class DiscoveredBusinessDto {
 export class DiscoveredKindDto {
   category!: { id: string; name: string; icon: string | null };
   subcategory!: { id: string; name: string };
+  /** What the business wrote when this kind is "Other" (§267) — show it in place of "Other". */
+  otherLabel!: string | null;
 }
 
 export class DiscoveredLocationDto {
@@ -208,6 +210,8 @@ export class ShopfrontBusinessDto {
 export class ShopfrontKindDto {
   category!: ShopfrontCategoryDto;
   subcategory!: ShopfrontSubcategoryDto;
+  /** What the business wrote when this kind is "Other" (§267) — show it in place of "Other". */
+  otherLabel!: string | null;
 }
 
 export class ShopfrontRatingDto {

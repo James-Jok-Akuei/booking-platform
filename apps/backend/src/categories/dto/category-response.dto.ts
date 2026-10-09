@@ -91,3 +91,31 @@ export class SubcategoryRecordDto {
   name!: string;
   isLive!: boolean;
 }
+
+/** A shop that wrote something in under "Other" (§267). */
+export class WriteInBusinessDto {
+  id!: string;
+  name!: string | null;
+}
+
+/**
+ * What shops wrote under one category's "Other", grouped regardless of case
+ * (§267) — the console's list of types the taxonomy may be missing.
+ */
+export class AdminWriteInDto {
+  categoryId!: string;
+  categoryName!: string;
+  categoryIcon!: string | null;
+  /** The spelling most of them used. */
+  label!: string;
+  /** How many shops wrote it. */
+  count!: number;
+  businesses!: WriteInBusinessDto[];
+}
+
+/** A write-in made a type: the type, and how many shops moved into it (§267). */
+export class PromotedWriteInDto {
+  subcategoryId!: string;
+  name!: string;
+  moved!: number;
+}

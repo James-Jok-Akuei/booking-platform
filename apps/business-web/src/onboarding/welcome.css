@@ -848,3 +848,4 @@
 .wz .wz-x:hover:not(:disabled) { background: var(--sunken-2); border-color: transparent; }
 .wz .wz-later:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); border-color: rgba(255, 255, 255, 0.4); color: #fff; }
 .wz :is(.wz-link, .wz-inline):hover:not(:disabled) { background: none; border-color: transparent; }
+.wz-writein { animation: rise-in 320ms var(--ease) both; }

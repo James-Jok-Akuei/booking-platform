@@ -534,6 +534,17 @@ export const updateCategory = (
   body: { name?: string; icon?: string; description?: string },
 ) => api<AdminCategory>(`/admin/categories/${id}`, { method: 'PATCH', body });
 
+/** What shops wrote under "Other", grouped, most-written first (§267). */
+export type WriteIn = components['schemas']['AdminWriteInDto'];
+export const listWriteIns = () => api<WriteIn[]>('/admin/categories/write-ins');
+
+/** Makes a write-in a type of its own and moves the shops that wrote it into it (§267). */
+export const promoteWriteIn = (categoryId: string, label: string, name: string) =>
+  api<components['schemas']['PromotedWriteInDto']>(`/admin/categories/${categoryId}/write-ins/promote`, {
+    method: 'POST',
+    body: { label, name },
+  });
+
 export const createSubcategory = (categoryId: string, name: string) =>
   api<AdminSubcategory>(`/admin/categories/${categoryId}/subcategories`, {
     method: 'POST',

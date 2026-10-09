@@ -572,6 +572,43 @@ export interface paths {
         patch: operations["AdminCategoriesController_setSubcategoryLive"];
         trace?: never;
     };
+    "/admin/categories/write-ins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCategoriesController_writeIns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/categories/{id}/write-ins/promote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Makes a write-in a type of its own (or uses the category's type of that
+         *     name, if there is one), and moves every shop that wrote it from "Other"
+         *     into it (§267). A shop that already lists that type just loses its "Other".
+         */
+        post: operations["AdminCategoriesController_promoteWriteIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/places/provinces": {
         parameters: {
             query?: never;
@@ -3192,6 +3229,29 @@ export interface components {
         UpdateSubcategoryDto: {
             name: string;
         };
+        WriteInBusinessDto: {
+            id: string;
+            name: string | null;
+        };
+        AdminWriteInDto: {
+            categoryId: string;
+            categoryName: string;
+            categoryIcon: string | null;
+            /** @description The spelling most of them used. */
+            label: string;
+            /** @description How many shops wrote it. */
+            count: number;
+            businesses: components["schemas"]["WriteInBusinessDto"][];
+        };
+        PromoteWriteInDto: {
+            label: string;
+            name?: string;
+        };
+        PromotedWriteInDto: {
+            subcategoryId: string;
+            name: string;
+            moved: number;
+        };
         DistrictDto: {
             id: string;
             /** @description A stable handle, so a seed or a support query need not carry a UUID. */
@@ -3255,6 +3315,8 @@ export interface components {
         BusinessKindDto: {
             category: components["schemas"]["BusinessCategoryDto"];
             subcategory: components["schemas"]["BusinessSubcategoryDto"];
+            /** @description What the business wrote when this kind is "Other" (§267); null otherwise. */
+            otherLabel: string | null;
         };
         BusinessProfileDto: {
             id: string;
@@ -3299,8 +3361,15 @@ export interface components {
             logoUrl?: string;
             coverImageUrl?: string;
         };
+        OtherLabelDto: {
+            /** Format: uuid */
+            subcategoryId: string;
+            label: string;
+        };
         SetBusinessKindsDto: {
             subcategoryIds: string[];
+            /** @description For a kind that is a category's "Other": what it actually is (§267). */
+            otherLabels?: components["schemas"]["OtherLabelDto"][];
         };
         ReadinessItemDto: {
             /** @enum {string} */
@@ -3728,6 +3797,8 @@ export interface components {
         AdminBusinessKindDto: {
             category: components["schemas"]["AdminBusinessCategoryDto"];
             subcategory: components["schemas"]["AdminBusinessCategoryDto"];
+            /** @description What the business wrote when this kind is "Other" (§267). */
+            otherLabel: string | null;
         };
         AdminBusinessDto: {
             id: string;
@@ -4854,7 +4925,7 @@ export interface components {
         NotificationDto: {
             id: string;
             /** @enum {string} */
-            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED";
+            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED";
             /** @enum {string} */
             channel: "EMAIL" | "SMS";
             /**
@@ -5702,6 +5773,8 @@ export interface components {
                 id: string;
                 name: string;
             };
+            /** @description What the business wrote when this kind is "Other" (§267) — show it in place of "Other". */
+            otherLabel: string | null;
         };
         DiscoveredBusinessDto: {
             id: string;
@@ -5832,6 +5905,8 @@ export interface components {
         ShopfrontKindDto: {
             category: components["schemas"]["ShopfrontCategoryDto"];
             subcategory: components["schemas"]["ShopfrontSubcategoryDto"];
+            /** @description What the business wrote when this kind is "Other" (§267) — show it in place of "Other". */
+            otherLabel: string | null;
         };
         ShopfrontBusinessDto: {
             id: string;
@@ -7836,6 +7911,140 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionMessageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description The act has already happened, or something else holds the slot it needs. Safe to show the message and stop. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminCategoriesController_writeIns: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminWriteInDto"][];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description The act has already happened, or something else holds the slot it needs. Safe to show the message and stop. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminCategoriesController_promoteWriteIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoteWriteInDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotedWriteInDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

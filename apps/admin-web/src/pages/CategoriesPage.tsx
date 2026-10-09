@@ -12,10 +12,13 @@ import {
   updateSubcategory,
   type AdminCategory,
   type AdminSubcategory,
+  listWriteIns,
+  promoteWriteIn,
+  type WriteIn,
 } from '../api/admin';
 import { CATEGORY_LOOKS, categoryLook } from '../ui/CategoryMark';
 import { LineArt } from '../ui/LineArt';
-import { confirmDialog } from '../ui/Dialog';
+import { confirmDialog, promptDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import './taxonomy.css';
@@ -88,6 +91,8 @@ export function CategoriesPage() {
           ))}
         </div>
       )}
+
+      <WriteIns onChanged={refresh} />
 
       <div className="tx-grid">
         {list.map((category, i) => (
@@ -421,5 +426,79 @@ function TypeRow({
         </>
       )}
     </li>
+  );
+}
+
+/**
+ * What shops wrote under "Other" (§267), most-written first: the types the
+ * list may be missing. One press makes a write-in a type of its own and moves
+ * every shop that wrote it into that type.
+ */
+function WriteIns({ onChanged }: { onChanged: () => void }) {
+  const queryClient = useQueryClient();
+  const writeIns = useQuery({ queryKey: ['admin-write-ins'], queryFn: listWriteIns });
+  const promote = useMutation({
+    mutationFn: (input: { row: WriteIn; name: string }) => promoteWriteIn(input.row.categoryId, input.row.label, input.name),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-write-ins'] });
+      onChanged();
+    },
+  });
+
+  const rows = writeIns.data ?? [];
+  if (rows.length === 0) return null;
+
+  const make = async (row: WriteIn) => {
+    const name = await promptDialog({
+      title: `Make “${row.label}” a type?`,
+      body: (
+        <p>
+          It becomes a type in <strong>{row.categoryName}</strong> that any shop can choose, and the {shops(row.count)} that
+          wrote it {row.count === 1 ? 'moves' : 'move'} from “Other” into it.
+        </p>
+      ),
+      label: 'The type’s name — as customers will read it',
+      initial: row.label,
+      minLength: 2,
+      minMessage: 'A name of at least 2 characters.',
+      multiline: false,
+      tone: 'ok',
+      icon: 'plus',
+      confirmLabel: 'Make it a type',
+      cancelLabel: 'Not now',
+    });
+    if (name !== null) promote.mutate({ row, name: name.trim() });
+  };
+
+  return (
+    <section className="tx-writeins" aria-labelledby="tx-writeins-title">
+      <header>
+        <div>
+          <h2 id="tx-writeins-title">Written in under “Other”</h2>
+          <p className="muted">What shops say they are when no type fits. When many write the same thing, make it a type.</p>
+        </div>
+      </header>
+      {promote.error && (
+        <p className="error small" role="alert">
+          {promote.error instanceof ApiError ? promote.error.message : 'That did not work.'}
+        </p>
+      )}
+      <ul>
+        {rows.map((row) => (
+          <li key={`${row.categoryId}:${row.label}`}>
+            <LineArt icon={row.categoryIcon} className="tx-writein-art" />
+            <span className="tx-writein-text">
+              <strong>“{row.label}”</strong>
+              <em>
+                {row.categoryName} · {shops(row.count)}: {row.businesses.map((b) => b.name ?? 'No name yet').join(', ')}
+              </em>
+            </span>
+            <button type="button" disabled={promote.isPending} onClick={() => void make(row)}>
+              <Icon name="plus" size={15} /> Make it a type
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

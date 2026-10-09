@@ -2235,6 +2235,171 @@
         ]
       }
     },
+    "/admin/categories/write-ins": {
+      "get": {
+        "operationId": "AdminCategoriesController_writeIns",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminWriteInDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The act has already happened, or something else holds the slot it needs. Safe to show the message and stop.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminCategories"
+        ]
+      }
+    },
+    "/admin/categories/{id}/write-ins/promote": {
+      "post": {
+        "operationId": "AdminCategoriesController_promoteWriteIn",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromoteWriteInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotedWriteInDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The act has already happened, or something else holds the slot it needs. Safe to show the message and stop.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Makes a write-in a type of its own (or uses the category's type of that\nname, if there is one), and moves every shop that wrote it from \"Other\"\ninto it (§267). A shop that already lists that type just loses its \"Other\".",
+        "tags": [
+          "AdminCategories"
+        ]
+      }
+    },
     "/places/provinces": {
       "get": {
         "operationId": "PlacesController_findAll",
@@ -14987,6 +15152,96 @@
           "name"
         ]
       },
+      "WriteInBusinessDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "AdminWriteInDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "categoryIcon": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "description": "The spelling most of them used."
+          },
+          "count": {
+            "type": "number",
+            "description": "How many shops wrote it."
+          },
+          "businesses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WriteInBusinessDto"
+            }
+          }
+        },
+        "required": [
+          "categoryId",
+          "categoryName",
+          "categoryIcon",
+          "label",
+          "count",
+          "businesses"
+        ]
+      },
+      "PromoteWriteInDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 40
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "PromotedWriteInDto": {
+        "type": "object",
+        "properties": {
+          "subcategoryId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "moved": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "subcategoryId",
+          "name",
+          "moved"
+        ]
+      },
       "DistrictDto": {
         "type": "object",
         "properties": {
@@ -15210,11 +15465,17 @@
           },
           "subcategory": {
             "$ref": "#/components/schemas/BusinessSubcategoryDto"
+          },
+          "otherLabel": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the business wrote when this kind is \"Other\" (§267); null otherwise."
           }
         },
         "required": [
           "category",
-          "subcategory"
+          "subcategory",
+          "otherLabel"
         ]
       },
       "BusinessProfileDto": {
@@ -15354,6 +15615,24 @@
           }
         }
       },
+      "OtherLabelDto": {
+        "type": "object",
+        "properties": {
+          "subcategoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "subcategoryId",
+          "label"
+        ]
+      },
       "SetBusinessKindsDto": {
         "type": "object",
         "properties": {
@@ -15363,6 +15642,13 @@
             "items": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          "otherLabels": {
+            "description": "For a kind that is a category's \"Other\": what it actually is (§267).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OtherLabelDto"
             }
           }
         },
@@ -16602,11 +16888,17 @@
           },
           "subcategory": {
             "$ref": "#/components/schemas/AdminBusinessCategoryDto"
+          },
+          "otherLabel": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the business wrote when this kind is \"Other\" (§267)."
           }
         },
         "required": [
           "category",
-          "subcategory"
+          "subcategory",
+          "otherLabel"
         ]
       },
       "AdminBusinessDto": {
@@ -20154,6 +20446,7 @@
               "DISPLAY_NAME_CLEARED",
               "EXCHANGE_RATE_STALE",
               "BUSINESS_SUBMITTED",
+              "BUSINESS_KIND_WRITTEN",
               "BUSINESS_APPROVED",
               "BUSINESS_REJECTED",
               "BUSINESS_SUSPENDED",
@@ -23175,11 +23468,17 @@
               "id",
               "name"
             ]
+          },
+          "otherLabel": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the business wrote when this kind is \"Other\" (§267) — show it in place of \"Other\"."
           }
         },
         "required": [
           "category",
-          "subcategory"
+          "subcategory",
+          "otherLabel"
         ]
       },
       "DiscoveredBusinessDto": {
@@ -23622,11 +23921,17 @@
           },
           "subcategory": {
             "$ref": "#/components/schemas/ShopfrontSubcategoryDto"
+          },
+          "otherLabel": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the business wrote when this kind is \"Other\" (§267) — show it in place of \"Other\"."
           }
         },
         "required": [
           "category",
-          "subcategory"
+          "subcategory",
+          "otherLabel"
         ]
       },
       "ShopfrontBusinessDto": {

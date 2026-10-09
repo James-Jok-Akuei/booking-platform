@@ -20,14 +20,18 @@ import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import {
   AdminCategoryDto,
+  AdminWriteInDto,
   CategoryRecordDto,
+  PromotedWriteInDto,
   SubcategoryRecordDto,
 } from './dto/category-response.dto';
+import { OTHER } from '../business/kinds';
 import { SetCategoryLiveDto } from './dto/set-category-live.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   CreateCategoryDto,
   CreateSubcategoryDto,
+  PromoteWriteInDto,
   UpdateCategoryDto,
   UpdateSubcategoryDto,
 } from './dto/category-crud.dto';
@@ -230,6 +234,93 @@ export class AdminCategoriesController {
 
 
   // ---------- Shared ----------
+
+  // ---------- What shops wrote under "Other" (§267) ----------
+
+  /**
+   * Every write-in, grouped by category and by what was written (case and
+   * spacing aside), most-written first — the types the taxonomy may be missing.
+   */
+  @Get('categories/write-ins')
+  @ApiOkResponse({ type: AdminWriteInDto, isArray: true })
+  async writeIns(): Promise<AdminWriteInDto[]> {
+    const kinds = await this.prisma.businessKind.findMany({
+      where: { otherLabel: { not: null }, subcategory: { name: OTHER } },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        otherLabel: true,
+        category: { select: { id: true, name: true, icon: true } },
+        business: { select: { id: true, name: true } },
+      },
+    });
+    const groups = new Map<string, { row: AdminWriteInDto; spellings: Map<string, number> }>();
+    for (const kind of kinds) {
+      const label = kind.otherLabel!;
+      const key = `${kind.category.id}:${label.toLowerCase()}`;
+      if (!groups.has(key)) {
+        groups.set(key, {
+          row: { categoryId: kind.category.id, categoryName: kind.category.name, categoryIcon: kind.category.icon, label, count: 0, businesses: [] },
+          spellings: new Map(),
+        });
+      }
+      const group = groups.get(key)!;
+      group.row.count += 1;
+      group.row.businesses.push(kind.business);
+      group.spellings.set(label, (group.spellings.get(label) ?? 0) + 1);
+    }
+    return [...groups.values()]
+      .map(({ row, spellings }) => ({ ...row, label: [...spellings.entries()].sort((a, b) => b[1] - a[1])[0][0] }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  }
+
+  /**
+   * Makes a write-in a type of its own (or uses the category's type of that
+   * name, if there is one), and moves every shop that wrote it from "Other"
+   * into it (§267). A shop that already lists that type just loses its "Other".
+   */
+  @Post('categories/:id/write-ins/promote')
+  @ApiCreatedResponse({ type: PromotedWriteInDto })
+  async promoteWriteIn(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: PromoteWriteInDto,
+  ): Promise<PromotedWriteInDto> {
+    await this.requireCategory(id);
+    const label = dto.label.trim().toLowerCase();
+    const name = (dto.name ?? dto.label).trim().replace(/\s+/g, ' ');
+    if (name.toLowerCase() === OTHER.toLowerCase()) {
+      throw new ConflictException(`A type cannot be called "${OTHER}".`);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.subcategory.findFirst({
+        where: { categoryId: id, name: { equals: name, mode: 'insensitive' } },
+        select: { id: true, name: true },
+      });
+      const type = existing ?? (await tx.subcategory.create({ data: { categoryId: id, name }, select: { id: true, name: true } }));
+
+      const writers = (
+        await tx.businessKind.findMany({
+          where: { categoryId: id, subcategory: { name: OTHER }, otherLabel: { not: null } },
+          select: { id: true, businessId: true, subcategoryId: true, otherLabel: true },
+        })
+      ).filter((k) => k.otherLabel!.trim().toLowerCase() === label);
+
+      for (const kind of writers) {
+        const already = await tx.businessKind.findUnique({
+          where: { businessId_subcategoryId: { businessId: kind.businessId, subcategoryId: type.id } },
+          select: { id: true },
+        });
+        if (already) await tx.businessKind.delete({ where: { id: kind.id } });
+        else await tx.businessKind.update({ where: { id: kind.id }, data: { subcategoryId: type.id, otherLabel: null } });
+        // The main kind is mirrored on the profile (§265).
+        await tx.businessProfile.updateMany({
+          where: { id: kind.businessId, subcategoryId: kind.subcategoryId },
+          data: { subcategoryId: type.id },
+        });
+      }
+      return { subcategoryId: type.id, name: type.name, moved: writers.length };
+    });
+  }
 
   private async requireCategory(id: string) {
     const category = await this.prisma.category.findUnique({

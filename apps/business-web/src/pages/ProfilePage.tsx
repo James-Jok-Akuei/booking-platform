@@ -15,6 +15,8 @@ import {
   updateProfile,
   setKinds,
   MAX_KIND_CATEGORIES,
+  OTHER,
+  kindName,
   type BusinessProfile,
   type Location,
 } from '../api/business';
@@ -160,7 +162,7 @@ function ShopWindow({ profile, locations }: { profile: BusinessProfile; location
           <h2>{profile.name ?? 'Unnamed business'}</h2>
           <p>
             {profile.category?.name ?? 'No category chosen'}
-            {profile.subcategory && <> · {profile.subcategory.name}</>}
+            {profile.subcategory && <> · {profile.kinds[0] ? kindName(profile.kinds[0]) : profile.subcategory.name}</>}
           </p>
           <div className="pf-badges">
             <span className={`pf-badge${live ? ' is-live' : ' is-off'}`}>
@@ -256,8 +258,14 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
   // Every kind of place the shop is (§265), as types in order — the first is the main one.
   const savedKinds = profile.kinds.length ? profile.kinds.map((k) => k.subcategory.id) : profile.subcategory ? [profile.subcategory.id] : [];
   const [kinds, setKindsList] = useState<string[]>(savedKinds);
+  // What the shop wrote for each "Other" it lists (§267).
+  const savedLabels: Record<string, string> = Object.fromEntries(
+    profile.kinds.filter((k) => k.otherLabel).map((k) => [k.subcategory.id, k.otherLabel!]),
+  );
+  const [labels, setLabels] = useState<Record<string, string>>(savedLabels);
   const [addCategoryId, setAddCategoryId] = useState('');
   const [addTypeId, setAddTypeId] = useState('');
+  const [addLabel, setAddLabel] = useState('');
   const [saved, setSaved] = useState(false);
 
   // The server is the source of truth: after a save the form follows what came
@@ -267,6 +275,7 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
     setDescription(profile.description ?? '');
     setPhone(profile.phone ?? '');
     setKindsList(profile.kinds.length ? profile.kinds.map((k) => k.subcategory.id) : profile.subcategory ? [profile.subcategory.id] : []);
+    setLabels(Object.fromEntries(profile.kinds.filter((k) => k.otherLabel).map((k) => [k.subcategory.id, k.otherLabel!])));
     // Only when the shop itself changes, not on every keystroke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
@@ -284,7 +293,14 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
   const addCategory = categories.data?.find((c) => c.id === addCategoryId);
   const categoryFull = usedCategories.length >= MAX_KIND_CATEGORIES && !usedCategories.includes(addCategoryId);
   const main = listed[0] ?? null;
-  const kindsChanged = kinds.length !== savedKinds.length || kinds.some((k, i) => k !== savedKinds[i]);
+  const others = listed.filter((k) => k.subcategory.name === OTHER);
+  const otherLabels = others.map((k) => ({ subcategoryId: k.subcategory.id, label: (labels[k.subcategory.id] ?? '').trim() }));
+  const unlabelled = otherLabels.some((o) => o.label.length < 2);
+  const addIsOther = addCategory?.subcategories.find((t) => t.id === addTypeId)?.name === OTHER;
+  const kindsChanged =
+    kinds.length !== savedKinds.length ||
+    kinds.some((k, i) => k !== savedKinds[i]) ||
+    otherLabels.some((o) => o.label !== (savedLabels[o.subcategoryId] ?? ''));
   const dirty =
     name !== (profile.name ?? '') ||
     description !== (profile.description ?? '') ||
@@ -301,7 +317,7 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
         ...(phone !== (profile.phone ?? '') ? { phone: phone.trim() } : {}),
       };
       if (Object.keys(body).length > 0) await updateProfile(body);
-      if (kindsChanged && kinds.length > 0) await setKinds(kinds);
+      if (kindsChanged && kinds.length > 0) await setKinds(kinds, otherLabels);
     },
     onSuccess: () => {
       setSaved(true);
@@ -356,10 +372,25 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
               {listed.map((k, i) => (
                 <li key={k.subcategory.id}>
                   <LineArt icon={k.category.icon} className="pf-kind-art" />
-                  <span className="pf-kind-text">
-                    <strong>{k.subcategory.name}</strong>
-                    <em>{k.category.name}</em>
-                  </span>
+                  {k.subcategory.name === OTHER ? (
+                    // "Other": what it is, in the shop's own words, shown to customers (§267).
+                    <span className="pf-kind-text">
+                      <input
+                        className="pf-kind-writein"
+                        value={labels[k.subcategory.id] ?? ''}
+                        onChange={(e) => setLabels({ ...labels, [k.subcategory.id]: e.target.value })}
+                        maxLength={40}
+                        placeholder="What kind exactly?"
+                        aria-label={`What kind of ${k.category.name} exactly`}
+                      />
+                      <em>Other · {k.category.name}</em>
+                    </span>
+                  ) : (
+                    <span className="pf-kind-text">
+                      <strong>{k.subcategory.name}</strong>
+                      <em>{k.category.name}</em>
+                    </span>
+                  )}
                   {i === 0 ? (
                     <span className="pf-kind-main">Main</span>
                   ) : (
@@ -402,15 +433,29 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
             />
             <button
               type="button"
-              disabled={!addTypeId}
+              disabled={!addTypeId || (addIsOther && addLabel.trim().length < 2)}
               onClick={() => {
                 setKindsList([...kinds, addTypeId]);
+                if (addIsOther) setLabels({ ...labels, [addTypeId]: addLabel.trim() });
                 setAddTypeId('');
+                setAddLabel('');
               }}
             >
               <Icon name="plus" size={16} /> Add
             </button>
           </div>
+          {addIsOther && (
+            <input
+              className="pf-kind-add-writein"
+              value={addLabel}
+              onChange={(e) => setAddLabel(e.target.value)}
+              maxLength={40}
+              placeholder="What kind exactly? e.g. Henna artist"
+              aria-label="What kind exactly"
+              autoFocus
+            />
+          )}
+          {unlabelled && <span className="pf-kind-hint">Say what each “Other” is — customers see it in its place.</span>}
         </div>
 
         {save.error && (
@@ -431,7 +476,7 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
               ''
             )}
           </span>
-          <button type="submit" className="primary" disabled={save.isPending || !dirty}>
+          <button type="submit" className="primary" disabled={save.isPending || !dirty || unlabelled}>
             {save.isPending ? 'Saving…' : 'Save'}
           </button>
         </footer>
@@ -447,7 +492,7 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
           live={{
             name,
             description,
-            subcategory: main?.subcategory.name ?? null,
+            subcategory: main ? (main.subcategory.name === OTHER ? labels[main.subcategory.id] || OTHER : main.subcategory.name) : null,
             categoryIcon: main?.category.icon ?? null,
             logoUrl: profile.logoUrl,
             coverImageUrl: profile.coverImageUrl,

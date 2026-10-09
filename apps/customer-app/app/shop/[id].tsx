@@ -202,14 +202,17 @@ export default function Shop() {
                   <Pill label="Closed" tone="neutral" />
                 )}
                 {/* Every kind of place it is, the main one first (§265). */}
+                {/* An "Other" reads as what the shop wrote; one it left blank is not shown (§267). */}
                 {(s.business.kinds.length
-                  ? s.business.kinds.map((k) => k.subcategory)
+                  ? s.business.kinds.map((k) => ({ id: k.subcategory.id, name: k.otherLabel || k.subcategory.name }))
                   : s.business.subcategory
                     ? [s.business.subcategory]
                     : []
-                ).map((kind, i) => (
-                  <Pill key={kind.id} label={kind.name} tone={i === 0 ? 'accent' : 'neutral'} />
-                ))}
+                )
+                  .filter((kind) => kind.name !== 'Other')
+                  .map((kind, i) => (
+                    <Pill key={kind.id} label={kind.name} tone={i === 0 ? 'accent' : 'neutral'} />
+                  ))}
               </View>
 
               <View style={styles.titleRow}>

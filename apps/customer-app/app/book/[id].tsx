@@ -416,8 +416,12 @@ export default function Book() {
           {/* 3. THE DEAL, in one card. */}
           <FadeIn delay={90} style={styles.deal}>
             <View style={styles.pills}>
+              {/* The main kind as customers read it — the shop's own words under "Other" (§267). */}
               {category && (
-                <Pill label={s.business.subcategory?.name ?? category.name} tone="accent" />
+                <Pill
+                  label={s.business.kinds[0]?.otherLabel || s.business.subcategory?.name || category.name}
+                  tone="accent"
+                />
               )}
               {s.openNow && <Pill label="Open now" tone="ok" dot />}
               {several && (

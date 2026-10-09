@@ -29,6 +29,8 @@ import {
   updateProfile,
   setKinds,
   MAX_KIND_CATEGORIES,
+  OTHER,
+  kindName,
   type FoundAddress,
   type Readiness,
 } from '../api/business';
@@ -464,7 +466,8 @@ function NameQ({ nav }: { nav: Nav }) {
     onError: (error) => setProblem(said(error, 'That did not save. Check your connection and try again.')),
   });
   const ready = name.trim().length >= 2;
-  const kind = profile.data?.subcategory ? `${profile.data.category?.name} · ${profile.data.subcategory.name}` : null;
+  const main = profile.data?.kinds[0];
+  const kind = main ? `${main.category.name} · ${kindName(main)}` : profile.data?.subcategory ? `${profile.data.category?.name} · ${profile.data.subcategory.name}` : null;
 
   return (
     <form
@@ -589,6 +592,10 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
   const saved = (profile.data?.kinds ?? []).map((k) => k.subcategory.id);
   const [picked, setPicked] = useState<string[] | null>(null);
   const types = picked ?? (saved.length ? saved : profile.data?.subcategory ? [profile.data.subcategory.id] : []);
+  // What the shop writes for an "Other" it ticks (§267), seeded from what is saved.
+  const savedLabels = Object.fromEntries((profile.data?.kinds ?? []).filter((k) => k.otherLabel).map((k) => [k.subcategory.id, k.otherLabel!]));
+  const [typed, setTyped] = useState<Record<string, string> | null>(null);
+  const labels = typed ?? savedLabels;
   const [problem, setProblem] = useState<string | null>(null);
 
   const typesIn = (categoryId: string) => {
@@ -598,10 +605,16 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
   const empty = groups.filter((g) => typesIn(g.id).length === 0);
   // Saved as: the main category's types first, then each other category's, in the order chosen.
   const ordered = groups.flatMap((g) => typesIn(g.id));
-  const unchanged = ordered.length === saved.length && ordered.every((t, i) => t === saved[i]);
+  const others = groups.flatMap((g) => g.subcategories.filter((s) => s.name === OTHER && types.includes(s.id)));
+  const unlabelled = others.filter((o) => (labels[o.id] ?? '').trim().length < 2);
+  const otherLabels = others.map((o) => ({ subcategoryId: o.id, label: (labels[o.id] ?? '').trim() }));
+  const unchanged =
+    ordered.length === saved.length &&
+    ordered.every((t, i) => t === saved[i]) &&
+    otherLabels.every((o) => o.label === (savedLabels[o.subcategoryId] ?? ''));
 
   const save = useMutation({
-    mutationFn: () => setKinds(ordered),
+    mutationFn: () => setKinds(ordered, otherLabels),
     onSuccess: () => nav.saved(),
     onError: (error) => setProblem(said(error, 'That did not save. Check your connection and try again.')),
   });
@@ -613,7 +626,7 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
       onSubmit={(event: FormEvent) => {
         event.preventDefault();
         setProblem(null);
-        if (groups.length === 0 || empty.length > 0) return;
+        if (groups.length === 0 || empty.length > 0 || unlabelled.length > 0) return;
         if (unchanged) nav.next();
         else save.mutate();
       }}
@@ -671,17 +684,55 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
                 );
               })}
             </div>
+            {/* "Other": what it is, in a few words, shown to customers in its place (§267). */}
+            {group.subcategories
+              .filter((s) => s.name === OTHER && types.includes(s.id))
+              .map((s) => (
+                <label key={s.id} className="wz-field wz-writein">
+                  <span className="wz-label">What kind exactly?</span>
+                  <BigInput
+                    icon="pencil"
+                    value={labels[s.id] ?? ''}
+                    onChange={(e) => setTyped({ ...labels, [s.id]: e.target.value })}
+                    maxLength={40}
+                    placeholder={WRITE_IN_EXAMPLES[group.icon ?? ''] ?? 'In a few words'}
+                    autoFocus
+                  />
+                  <em>Customers see this instead of “Other”. Our team checks it with the rest of your shop.</em>
+                </label>
+              ))}
           </section>
         ))}
         {groups.length > 1 && empty.length > 0 && (
           <p className="wz-quiet">Still to choose: one in {empty.map((g) => g.name).join(' and ')}.</p>
         )}
+        {unlabelled.length > 0 && empty.length === 0 && <p className="wz-quiet">Say what kind it is, under “Other”.</p>}
         <Problem text={problem} />
       </Body>
-      <Foot nav={nav} busy={save.isPending} ready={groups.length > 0 && empty.length === 0} />
+      <Foot nav={nav} busy={save.isPending} ready={groups.length > 0 && empty.length === 0 && unlabelled.length === 0} />
     </form>
   );
 }
+
+/** What a write-in under each category's "Other" might be, as a hint (§267). */
+const WRITE_IN_EXAMPLES: Record<string, string> = {
+  sparkles: 'e.g. Henna artist',
+  'heart-pulse': 'e.g. Reflexology',
+  stethoscope: 'e.g. Hearing tests',
+  dumbbell: 'e.g. Climbing wall',
+  utensils: 'e.g. Cooking at your table',
+  ticket: 'e.g. Poetry nights',
+  people: 'e.g. Chess club',
+  mountain: 'e.g. Coffee farm visit',
+  bed: 'e.g. Camping',
+  briefcase: 'e.g. CV writing',
+  car: 'e.g. Car hire',
+  shirt: 'e.g. Beading',
+  'home-tools': 'e.g. Solar panel fitting',
+  paw: 'e.g. Pet photography',
+  camera: 'e.g. Drone filming',
+  'calendar-star': 'e.g. Photo booth hire',
+};
 
 function ContactQ({ nav }: { nav: Nav }) {
   const queryClient = useQueryClient();

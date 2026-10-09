@@ -143,7 +143,7 @@ export class BusinessController {
   @ApiOkResponse({ type: BusinessProfileDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   setKinds(@CurrentBusiness() business: BusinessContext, @Body() dto: SetBusinessKindsDto) {
-    return this.profiles.setKinds(business.businessId, dto.subcategoryIds);
+    return this.profiles.setKinds(business.businessId, dto.subcategoryIds, dto.otherLabels ?? []);
   }
 
   // ---------- Going live (§255) ----------

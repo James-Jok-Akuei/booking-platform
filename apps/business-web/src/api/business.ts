@@ -139,8 +139,15 @@ export const getProfile = () => api<BusinessProfile>('/business/profile');
  * Every kind of place the shop is (§265), in order — the first is its main
  * kind. Replaces the whole list; up to four categories.
  */
-export const setKinds = (subcategoryIds: string[]) =>
-  api<BusinessProfile>('/business/kinds', { method: 'PUT', body: { subcategoryIds } });
+export const setKinds = (subcategoryIds: string[], otherLabels: Array<{ subcategoryId: string; label: string }> = []) =>
+  api<BusinessProfile>('/business/kinds', { method: 'PUT', body: { subcategoryIds, otherLabels } });
+
+/** "Other", the type every category ends with (§266). */
+export const OTHER = 'Other';
+
+/** A kind as a customer reads it: what the shop wrote under "Other" (§267), else the type's name. */
+export const kindName = (kind: { subcategory: { name: string }; otherLabel?: string | null }) =>
+  kind.otherLabel || kind.subcategory.name;
 
 /** The most categories one shop may list (§265); the server says the same. */
 export const MAX_KIND_CATEGORIES = 4;

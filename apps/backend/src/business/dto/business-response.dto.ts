@@ -223,6 +223,8 @@ export class BusinessSubcategoryDto {
 export class BusinessKindDto {
   category!: BusinessCategoryDto;
   subcategory!: BusinessSubcategoryDto;
+  /** What the business wrote when this kind is "Other" (§267); null otherwise. */
+  otherLabel!: string | null;
 }
 
 /** The shopfront, as the business itself sees it. */

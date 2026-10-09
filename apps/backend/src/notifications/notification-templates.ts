@@ -206,6 +206,16 @@ export function renderNotification(
           'shop can act on.',
       };
 
+    case NotificationType.BUSINESS_KIND_WRITTEN:
+      return {
+        subject: 'A live shop wrote in what it is',
+        body:
+          (ctx.reason ? `${ctx.reason}\n\n` : '') +
+          'Check that it is a fair description in a few words. If many shops ' +
+          'write the same thing, add it as a type in Categories — the console ' +
+          'can move those shops into it.',
+      };
+
     case NotificationType.BUSINESS_APPROVED:
       return {
         subject: 'Your business has been approved',

@@ -17404,3 +17404,38 @@ drawings for the new kinds.
   types (a table for two, a day pass, a pitch for an hour, an eye test…).
 - A new category or type added in the console appears in every app at once
   (the lists come from the server); a new DRAWING needs an app release.
+
+## 267. "Other" — the shop writes what it is (2026-10-10)
+
+Asked: when a shop picks "Other", what happens — can it type what it is in a
+box that appears, and is there any harm in that, as long as it sits under one
+of our categories? No harm, with three guards: it stays inside a category
+(so it is still found and counted there), an administrator sees it, and a
+common write-in can be turned into a real type.
+
+- **The box**: picking a category's "Other" — in setting up's "Which describe
+  it best?" or the Shopfront page's kinds — opens "What kind exactly?" (up to
+  40 characters, an example to suit the category). Next and Save wait until
+  it is filled. Stored on the kind (`business_kinds.otherLabel`), tidied of
+  extra spaces; the server refuses one on a type that already has a name.
+  `PUT /business/kinds` takes `otherLabels: [{ subcategoryId, label }]`.
+- **Shown instead of "Other"** wherever a kind is named — the shop's pills
+  and the booking screen in the customer app, the shopfront preview, the
+  console's rows (in quotes) and its review panel ("written in under Beauty
+  & Spa · Other"). A bare "Other" with nothing written is never shown as a
+  pill.
+- **Search** finds a shop by what it wrote, and now also by the name of any
+  of its types (before, only its main ones).
+- **Watched**: a shop still setting up is checked at review, where the
+  write-in is in plain sight. A LIVE shop that writes in a new one or changes
+  it sends administrators a notice ("A live shop wrote in what it is" — it is
+  already showing to customers), which opens the shop.
+- **Made a type**: the console's Categories page lists "Written in under
+  Other" — each write-in once per category, whatever its capitals, with how
+  many shops and which — and "Make it a type" names the new type (the
+  write-in to start with), creates it (or uses the one already there, any
+  capitals; never one called "Other"), and moves those shops' "Other" into
+  it, main kind and all. A shop that already had that type simply loses the
+  "Other". The write-in then leaves the list.
+
+Five tests in `business-kinds.spec.ts`.

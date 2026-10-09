@@ -350,6 +350,8 @@ export class DiscoveryService {
                 { service: { name: contains } },
                 { location: { name: contains } },
                 { location: { business: { name: contains } } },
+                // A shop's kinds and what it wrote under "Other" (§267).
+                { location: { business: { kinds: { some: { OR: [{ otherLabel: contains }, { subcategory: { name: contains } }] } } } } },
               ],
             }
           : {}),
@@ -961,6 +963,17 @@ export class DiscoveryService {
               status: BusinessStatus.APPROVED,
               pausedAt: null,
               services: { some: { name: contains, isActive: true } },
+            },
+          },
+        },
+        // A shop's kinds — "barber" finds barbershops — and what it wrote
+        // under "Other": "henna" finds the shop that calls itself a henna artist (§267).
+        {
+          business: {
+            is: {
+              status: BusinessStatus.APPROVED,
+              pausedAt: null,
+              kinds: { some: { OR: [{ otherLabel: contains }, { subcategory: { name: contains } }] } },
             },
           },
         },

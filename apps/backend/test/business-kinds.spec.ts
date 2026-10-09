@@ -7,7 +7,9 @@ import { FavouritesService } from '../src/favourites/favourites.service';
 import { StorageService } from '../src/storage/storage.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
-import { createBusiness } from './setup/factories';
+import { createBusiness, createAdmin } from './setup/factories';
+import { AdminCategoriesController } from '../src/categories/admin-categories.controller';
+import { NotificationsService } from '../src/notifications/notifications.service';
 
 /**
  * §265. A business can be more than one kind of place — a barbershop whose
@@ -19,6 +21,7 @@ describe('Kinds of place a business is (§265)', () => {
   let prisma: PrismaService;
   let profiles: BusinessProfileService;
   let discovery: DiscoveryService;
+  let notifications: { notify: jest.Mock };
 
   beforeAll(async () => {
     moduleRef = await createTestModule([
@@ -32,6 +35,7 @@ describe('Kinds of place a business is (§265)', () => {
     prisma = moduleRef.get(PrismaService);
     profiles = moduleRef.get(BusinessProfileService);
     discovery = moduleRef.get(DiscoveryService);
+    notifications = moduleRef.get(NotificationsService) as never;
   });
 
   afterAll(async () => {
@@ -40,6 +44,7 @@ describe('Kinds of place a business is (§265)', () => {
 
   beforeEach(async () => {
     await resetDatabase(prisma);
+    notifications.notify.mockClear();
   });
 
   let n = 0;
@@ -139,5 +144,85 @@ describe('Kinds of place a business is (§265)', () => {
     const profile = await profiles.update(shop.businessId, { categoryId: a.categoryId, subcategoryId: a.subcategoryId });
 
     expect(profile.kinds.map((k) => k.subcategory.id)).toEqual([a.subcategoryId]);
+  });
+
+  // ---------------------------------------------------------------------
+  describe('writing in a kind under "Other" (§267)', () => {
+    /** A category with a named type and its "Other". */
+    const withOther = async () => {
+      n += 1;
+      const category = await prisma.category.create({ data: { name: `Beauty ${n} ${Date.now()}` } });
+      const named = await prisma.subcategory.create({ data: { name: 'Nails', categoryId: category.id } });
+      const other = await prisma.subcategory.create({ data: { name: 'Other', categoryId: category.id } });
+      return { categoryId: category.id, named: named.id, other: other.id };
+    };
+
+    it('keeps what the shop wrote, tidied, and shows it with the kind', async () => {
+      const shop = await located();
+      const c = await withOther();
+
+      const profile = await profiles.setKinds(shop.businessId, [c.other], [{ subcategoryId: c.other, label: '  Henna   artist ' }]);
+
+      expect(profile.kinds[0].otherLabel).toBe('Henna artist');
+      const found = await discovery.search({ categoryId: c.categoryId });
+      expect(found.locations[0].business.kinds[0].otherLabel).toBe('Henna artist');
+    });
+
+    it('refuses a write-in for a type that already has a name', async () => {
+      const shop = await located();
+      const c = await withOther();
+
+      await expect(
+        profiles.setKinds(shop.businessId, [c.named], [{ subcategoryId: c.named, label: 'Gel only' }]),
+      ).rejects.toThrow('already named');
+    });
+
+    it('is found by what it wrote, and by the name of its type', async () => {
+      const shop = await located();
+      await located();
+      const c = await withOther();
+      await profiles.setKinds(shop.businessId, [c.other, c.named], [{ subcategoryId: c.other, label: 'Henna artist' }]);
+
+      expect((await discovery.search({ q: 'henna' })).locations.map((l) => l.id)).toEqual([shop.locationId]);
+      expect((await discovery.search({ q: 'nails' })).locations.map((l) => l.id)).toEqual([shop.locationId]);
+    });
+
+    it('tells administrators when a LIVE shop writes in or changes one, not a shop still setting up', async () => {
+      await createAdmin(prisma);
+      const live = await located();
+      const pending = await createBusiness(prisma, { status: BusinessStatus.PENDING });
+      const c = await withOther();
+
+      await profiles.setKinds(pending.businessId, [c.other], [{ subcategoryId: c.other, label: 'Henna artist' }]);
+      expect(notifications.notify).not.toHaveBeenCalled();
+
+      await profiles.setKinds(live.businessId, [c.other], [{ subcategoryId: c.other, label: 'Henna artist' }]);
+      await profiles.setKinds(live.businessId, [c.other], [{ subcategoryId: c.other, label: 'Henna artist' }]);
+      await profiles.setKinds(live.businessId, [c.other], [{ subcategoryId: c.other, label: 'Henna and mehndi' }]);
+      expect(notifications.notify).toHaveBeenCalledTimes(2);
+    });
+
+    it('gathers write-ins for the console, case aside, and makes one a type with its shops moved in', async () => {
+      const a = await located();
+      const b = await located();
+      const c = await withOther();
+      await profiles.setKinds(a.businessId, [c.other], [{ subcategoryId: c.other, label: 'Henna artist' }]);
+      await profiles.setKinds(b.businessId, [c.named, c.other], [{ subcategoryId: c.other, label: 'henna ARTIST' }]);
+      const admin = new AdminCategoriesController(prisma);
+
+      const writeIns = await admin.writeIns();
+      expect(writeIns).toHaveLength(1);
+      expect(writeIns[0].count).toBe(2);
+
+      const promoted = await admin.promoteWriteIn(c.categoryId, { label: 'Henna Artist', name: 'Henna' });
+      expect(promoted.moved).toBe(2);
+
+      const aNow = await profiles.findOwn(a.businessId);
+      const bNow = await profiles.findOwn(b.businessId);
+      expect(aNow.subcategory?.name).toBe('Henna');
+      expect(aNow.kinds.map((k) => [k.subcategory.name, k.otherLabel])).toEqual([['Henna', null]]);
+      expect(bNow.kinds.map((k) => k.subcategory.name)).toEqual(['Nails', 'Henna']);
+      expect(await admin.writeIns()).toHaveLength(0);
+    });
   });
 });

@@ -30,7 +30,12 @@ export const ADMIN_BUSINESS_SELECT = {
   // Every kind of place it is, the main one first (§265).
   kinds: {
     orderBy: { position: 'asc' },
-    select: { category: { select: { id: true, name: true } }, subcategory: { select: { id: true, name: true } } },
+    select: {
+      category: { select: { id: true, name: true } },
+      subcategory: { select: { id: true, name: true } },
+      // What the business wrote under "Other" (§267) — checked at review.
+      otherLabel: true,
+    },
   },
 } as const;
 
@@ -43,6 +48,8 @@ export class AdminBusinessCategoryDto {
 export class AdminBusinessKindDto {
   category!: AdminBusinessCategoryDto;
   subcategory!: AdminBusinessCategoryDto;
+  /** What the business wrote when this kind is "Other" (§267). */
+  otherLabel!: string | null;
 }
 
 type AdminBusinessPayload = Serialised<

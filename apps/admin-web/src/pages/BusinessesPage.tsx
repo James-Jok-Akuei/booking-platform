@@ -68,22 +68,33 @@ const sinceDay = (iso: string) => {
 
 const nameOf = (b: { name: string | null }) => (b.name?.trim() ? b.name : null);
 
+type Kind = { category: { name: string }; subcategory: { name: string }; otherLabel: string | null };
 type Kinded = {
   category: { name: string } | null;
   subcategory: { name: string } | null;
-  kinds: Array<{ category: { name: string }; subcategory: { name: string } }>;
+  kinds: Kind[];
 };
+
+/** A kind as customers read it: what the shop wrote under "Other" (§267), in quotes, else the type. */
+const kindWords = (k: Kind) => (k.otherLabel ? `“${k.otherLabel}”` : k.subcategory.name);
 
 /** Its main kind, and how many more it lists (§265). */
 const kindLine = (b: Kinded) => {
-  const main = b.category ? `${b.category.name}${b.subcategory ? ` · ${b.subcategory.name}` : ''}` : 'No category';
+  const first = b.kinds[0];
+  const main = first
+    ? `${first.category.name} · ${kindWords(first)}`
+    : b.category
+      ? `${b.category.name}${b.subcategory ? ` · ${b.subcategory.name}` : ''}`
+      : 'No category';
   const more = Math.max(0, b.kinds.length - 1);
   return more ? `${main} + ${more} more` : main;
 };
 
-/** Every kind it lists, the main one first (§265). */
+/** Every kind it lists, the main one first (§265); a write-in is marked as the shop's own words (§267). */
 const allKinds = (b: Kinded) =>
-  b.kinds.length > 1 ? b.kinds.map((k) => `${k.subcategory.name} (${k.category.name})`).join(', ') : kindLine(b);
+  b.kinds.length > 1 || b.kinds.some((k) => k.otherLabel)
+    ? b.kinds.map((k) => (k.otherLabel ? `${kindWords(k)} (written in under ${k.category.name} · Other)` : `${k.subcategory.name} (${k.category.name})`)).join(', ')
+    : kindLine(b);
 
 /**
  * The approval desk (§244, §42, §117.2).

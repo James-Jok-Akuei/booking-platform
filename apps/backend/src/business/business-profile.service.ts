@@ -20,6 +20,7 @@ import { PROFILE_SELECT } from './dto/business-response.dto';
 import { StorageService } from '../storage/storage.service';
 import { UpdateBusinessProfileDto } from './dto/update-profile.dto';
 import { MAX_KIND_CATEGORIES } from './dto/set-kinds.dto';
+import { OTHER, tidyLabel } from './kinds';
 
 @Injectable()
 export class BusinessProfileService {
@@ -186,7 +187,7 @@ export class BusinessProfileService {
    * by a business that already has it — retiring a type never takes it away
    * from anyone (§98) — but not newly chosen.
    */
-  async setKinds(businessId: string, subcategoryIds: string[]) {
+  async setKinds(businessId: string, subcategoryIds: string[], otherLabels: Array<{ subcategoryId: string; label: string }> = []) {
     const ids = [...new Set(subcategoryIds)];
     if (ids.length === 0) throw new BadRequestException('Choose at least one kind of shop.');
 
@@ -208,28 +209,84 @@ export class BusinessProfileService {
       throw new BadRequestException(`Choose up to ${MAX_KIND_CATEGORIES} kinds of shop.`);
     }
 
+    // What a shop wrote under "Other" (§267) — only for an "Other", only for a kind it lists.
+    const labels = new Map<string, string>();
+    for (const { subcategoryId, label } of otherLabels) {
+      const type = types.find((t) => t.id === subcategoryId);
+      if (!type) throw new BadRequestException('A written-in kind must be one of the kinds chosen.');
+      if (type.name !== OTHER) throw new BadRequestException(`Only "${OTHER}" takes a written-in kind — ${type.name} is already named.`);
+      labels.set(subcategoryId, tidyLabel(label));
+    }
+
+    const before = await this.prisma.businessProfile.findUniqueOrThrow({
+      where: { id: businessId },
+      select: { name: true, status: true, kinds: { select: { subcategoryId: true, otherLabel: true } } },
+    });
+
     const byId = new Map(types.map((t) => [t.id, t]));
     const main = byId.get(ids[0])!;
-    return this.prisma.$transaction(async (tx) => {
-      await this.writeKinds(tx, businessId, ids.map((id) => ({ id, categoryId: byId.get(id)!.categoryId })));
+    const profile = await this.prisma.$transaction(async (tx) => {
+      await this.writeKinds(
+        tx,
+        businessId,
+        ids.map((id) => ({ id, categoryId: byId.get(id)!.categoryId, otherLabel: labels.get(id) ?? null })),
+      );
       return tx.businessProfile.update({
         where: { id: businessId },
         data: { categoryId: main.categoryId, subcategoryId: main.id },
         select: PROFILE_SELECT,
       });
     });
+
+    // A LIVE shop's write-in is words customers read that nobody has checked:
+    // an administrator is told when one is new or changed (§267). A shop not
+    // yet live is checked when it is reviewed.
+    if (before.status === BusinessStatus.APPROVED) {
+      const had = new Map(before.kinds.map((k) => [k.subcategoryId, k.otherLabel]));
+      for (const kind of profile.kinds) {
+        if (kind.otherLabel && kind.otherLabel !== had.get(kind.subcategory.id)) {
+          await this.notifyAdminsOfWriteIn(before.name ?? 'A shop', kind.otherLabel, kind.category.name);
+        }
+      }
+    }
+    return profile;
+  }
+
+  private async notifyAdminsOfWriteIn(name: string, label: string, category: string) {
+    const admins = await this.prisma.user.findMany({ where: { role: UserRole.ADMIN }, select: { id: true } });
+    await Promise.all(
+      admins.map((admin) =>
+        this.notifications.notify({
+          recipientId: admin.id,
+          type: NotificationType.BUSINESS_KIND_WRITTEN,
+          context: {
+            serviceName: 'Business review',
+            locationName: name,
+            businessName: name,
+            startTime: undefined as unknown as Date,
+            reason: `${name} now calls itself “${label}”, under ${category} · ${OTHER}. It is live, so customers already see it.`,
+          },
+        }),
+      ),
+    );
   }
 
   /** The kinds, in order, replacing what was there (§265). */
   private async writeKinds(
     tx: Prisma.TransactionClient,
     businessId: string,
-    kinds: Array<{ id: string; categoryId: string }>,
+    kinds: Array<{ id: string; categoryId: string; otherLabel?: string | null }>,
   ) {
     await tx.businessKind.deleteMany({ where: { businessId } });
     if (kinds.length === 0) return;
     await tx.businessKind.createMany({
-      data: kinds.map((k, position) => ({ businessId, subcategoryId: k.id, categoryId: k.categoryId, position })),
+      data: kinds.map((k, position) => ({
+        businessId,
+        subcategoryId: k.id,
+        categoryId: k.categoryId,
+        position,
+        otherLabel: k.otherLabel ?? null,
+      })),
     });
   }
 
@@ -286,10 +343,13 @@ export class BusinessProfileService {
         const others = await tx.businessKind.findMany({
           where: { businessId, subcategoryId: { notIn: [current.subcategoryId, nextSubcategoryId].filter((v): v is string => Boolean(v)) } },
           orderBy: { position: 'asc' },
-          select: { subcategoryId: true, categoryId: true },
+          select: { subcategoryId: true, categoryId: true, otherLabel: true },
         });
         const main = nextSubcategoryId && categoryId ? [{ id: nextSubcategoryId, categoryId }] : [];
-        await this.writeKinds(tx, businessId, [...main, ...others.map((k) => ({ id: k.subcategoryId, categoryId: k.categoryId }))]);
+        await this.writeKinds(tx, businessId, [
+          ...main,
+          ...others.map((k) => ({ id: k.subcategoryId, categoryId: k.categoryId, otherLabel: k.otherLabel })),
+        ]);
       }
       return tx.businessProfile.update({
         where: { id: current.id },
