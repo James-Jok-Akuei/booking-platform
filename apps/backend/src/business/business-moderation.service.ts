@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   BusinessMemberStatus,
+  PayoutDestinationStatus,
   BusinessStatus,
   NotificationType,
   Prisma,
@@ -46,8 +47,22 @@ export class BusinessModerationService {
   async list(actor: { role: UserRole | string }, query: ListBusinessesDto) {
     this.assertAdmin(actor);
 
+    const q = query.q?.trim();
     const where: Prisma.BusinessProfileWhereInput = {
       ...(query.status ? { status: query.status } : {}),
+      ...(q
+        ? {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { phone: { contains: q } },
+              {
+                members: {
+                  some: { status: BusinessMemberStatus.ACTIVE, user: { email: { contains: q, mode: 'insensitive' } } },
+                },
+              },
+            ],
+          }
+        : {}),
     };
     const limit = query.limit ?? 25;
     const offset = query.offset ?? 0;
@@ -75,7 +90,28 @@ export class BusinessModerationService {
       where: { id: businessId },
       select: {
         ...ADMIN_BUSINESS_SELECT,
-        locations: { select: { id: true, name: true, address: true, capacity: true } },
+        // Where they are, as a reviewer needs to see it (§244): the pin, the
+        // district, whether the branch is open, and its photos.
+        locations: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            capacity: true,
+            latitude: true,
+            longitude: true,
+            isActive: true,
+            district: { select: { name: true, province: { select: { name: true } } } },
+            media: { orderBy: { displayOrder: 'asc' }, take: 6, select: { url: true, status: true } },
+          },
+        },
+        // The number they are to be paid to, if they have given one (§48).
+        payoutDestinations: {
+          where: { status: { not: PayoutDestinationStatus.SUPERSEDED } },
+          orderBy: { submittedAt: 'desc' },
+          take: 1,
+          select: { msisdn: true, provider: true, status: true },
+        },
         services: {
           select: {
             id: true,
@@ -83,6 +119,8 @@ export class BusinessModerationService {
             durationMinutes: true,
             depositPercentage: true,
             isActive: true,
+            description: true,
+            images: { orderBy: { displayOrder: 'asc' }, take: 1, select: { url: true } },
             // Price is per branch since §72, so an admin reviewing an
             // application sees where each service is offered and for how much —
             // which is more of the picture than one number ever was.

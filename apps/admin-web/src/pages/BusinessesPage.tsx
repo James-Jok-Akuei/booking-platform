@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { useMoney } from '../money';
 import {
@@ -10,11 +11,21 @@ import {
   rejectBusiness,
   suspendBusiness,
   type AdminBusiness,
+  type AdminBusinessDetail,
   type BusinessStatus,
 } from '../api/admin';
-import { promptDialog } from '../ui/Dialog';
+import { Avatar } from '../ui/Avatar';
+import { confirmDialog, promptDialog } from '../ui/Dialog';
+import { Icon, type IconName } from '../ui/Icon';
+import { NetworkMark } from '../ui/NetworkMark';
+import { Panel } from '../ui/Panel';
+import { ShopMark } from '../ui/ShopMark';
+import { StaticMap } from '../ui/StaticMap';
+import './businesses.css';
 
-const STATUSES: Array<{ value: BusinessStatus | 'ALL'; label: string }> = [
+type Tab = BusinessStatus | 'ALL';
+
+const TABS: Array<{ value: Tab; label: string }> = [
   { value: 'PENDING', label: 'Awaiting review' },
   { value: 'APPROVED', label: 'Approved' },
   { value: 'SUSPENDED', label: 'Suspended' },
@@ -22,29 +33,92 @@ const STATUSES: Array<{ value: BusinessStatus | 'ALL'; label: string }> = [
   { value: 'ALL', label: 'All' },
 ];
 
-const formatDate = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—';
+const STATUS: Record<BusinessStatus, { label: string; cls: string }> = {
+  PENDING: { label: 'Awaiting review', cls: 'pending' },
+  APPROVED: { label: 'Approved', cls: 'approved' },
+  SUSPENDED: { label: 'Suspended', cls: 'suspended' },
+  REJECTED: { label: 'Rejected', cls: 'rejected' },
+};
+
+const PAGE = 25;
+
+const day = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+
+/** "today", "yesterday", "5 days ago" — how long an application has waited. */
+const sinceDay = (iso: string) => {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  return days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
+};
+
+const nameOf = (b: { name: string | null }) => (b.name?.trim() ? b.name : null);
 
 /**
- * The approval queue.
+ * The approval desk (§244, §42, §117.2).
  *
- * Defaults to PENDING because that is the only list with work in it — an admin
- * opening this app is almost always here to answer "who is waiting". The
- * backend already returns the queue oldest-first, so whoever has waited longest
- * is read first rather than last.
+ * The queue, oldest first, with counts on the tabs and a search that asks the
+ * server; each application opens in a review panel with everything the
+ * decision rests on — the shop as customers will see it, where it is on a
+ * map, what it sells and for how much, who acts for it, the number it is to
+ * be paid to — and a "ready to go live?" check. The decision sits at the foot
+ * of that panel, beside the evidence; the row keeps quick buttons for the
+ * obvious cases.
+ *
+ * Approving asks first: it puts the shop in front of every customer at once.
  */
 export function BusinessesPage() {
-  const [status, setStatus] = useState<BusinessStatus | 'ALL'>('PENDING');
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const tab = (params.get('status') as Tab | null) ?? 'PENDING';
+  const openId = params.get('open');
+  const [typed, setTyped] = useState(params.get('q') ?? '');
+  const q = params.get('q') ?? '';
   const queryClient = useQueryClient();
 
-  const businesses = useQuery({
-    queryKey: ['businesses', status],
-    queryFn: () => listBusinesses(status === 'ALL' ? {} : { status }),
+  const patch = (next: Record<string, string | null>) =>
+    setParams(
+      (now) => {
+        const out = new URLSearchParams(now);
+        for (const [k, v] of Object.entries(next)) {
+          if (v === null || v === '') out.delete(k);
+          else out.set(k, v);
+        }
+        return out;
+      },
+      { replace: true },
+    );
+
+  // The search asks once typing pauses.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (typed.trim() !== q) patch({ q: typed.trim() || null });
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typed]);
+
+  const list = useInfiniteQuery({
+    queryKey: ['businesses', tab, q],
+    queryFn: ({ pageParam }) =>
+      listBusinesses({ ...(tab === 'ALL' ? {} : { status: tab }), ...(q ? { q } : {}), limit: PAGE, offset: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (last) => (last.offset + last.businesses.length < last.total ? last.offset + PAGE : undefined),
+  });
+  const rows = useMemo(() => list.data?.pages.flatMap((p) => p.businesses) ?? [], [list.data]);
+  const total = list.data?.pages[0]?.total ?? 0;
+
+  // A count on every tab: one row each, read for its total.
+  const counts = useQuery({
+    queryKey: ['businesses', 'counts', q],
+    queryFn: async () => {
+      const entries = await Promise.all(
+        TABS.map(async (t) => [t.value, (await listBusinesses({ ...(t.value === 'ALL' ? {} : { status: t.value }), ...(q ? { q } : {}), limit: 1 })).total] as const),
+      );
+      return Object.fromEntries(entries) as Record<Tab, number>;
+    },
   });
 
   const act = useMutation({
-    mutationFn: (input: { id: string; action: string; reason?: string }) => {
+    mutationFn: (input: { id: string; action: 'approve' | 'reinstate' | 'reject' | 'suspend'; reason?: string }) => {
       switch (input.action) {
         case 'approve':
           return approveBusiness(input.id);
@@ -54,339 +128,520 @@ export function BusinessesPage() {
           return rejectBusiness(input.id, input.reason!);
         case 'suspend':
           return suspendBusiness(input.id, input.reason!);
-        default:
-          throw new Error(`Unknown action ${input.action}.`);
       }
     },
     // Refetch rather than patch the cache: a transition can change more than
-    // the status (statusReason, statusChangedAt, who acted), and the server is
-    // the only thing that knows what it actually wrote.
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['businesses'] }),
+    // the status, and the server is the only thing that knows what it wrote.
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['businesses'] });
+      void queryClient.invalidateQueries({ queryKey: ['business'] });
+    },
   });
 
-  /**
-   * Rejection and suspension require a reason, and the backend enforces 3-500
-   * characters. Asking here means the admin is not told off by a validation
-   * error after the fact.
-   */
-  const withReason = async (id: string, action: 'reject' | 'suspend') => {
-    const reason = await promptDialog({
-      title: action === 'reject' ? 'Reject this business?' : 'Suspend this business?',
-      body: (
-        <p>
-          {action === 'reject'
-            ? 'They are told the reason, and can fix what is wrong and apply again.'
-            : 'They disappear from search and cannot take new bookings until reinstated. They are told the reason.'}
-        </p>
-      ),
-      label: 'Reason — sent to them, so write it for them to read',
-      placeholder: action === 'reject' ? 'For example: the photos are not of your shop.' : 'For example: customers report the shop is closed.',
-      minLength: 3,
-      minMessage: 'A reason of at least 3 characters.',
-      multiline: true,
-      tone: 'danger',
-      icon: action === 'reject' ? 'xCircle' : 'pause',
-      confirmLabel: action === 'reject' ? 'Reject' : 'Suspend',
-      cancelLabel: 'Not now',
-    });
-    if (reason === null) return;
-    act.mutate({ id, action, reason: reason.trim() });
-  };
+  const decide = useDecisions(act.mutate);
 
   return (
-    <section>
-      <header className="page-head">
-        <h1>Businesses</h1>
-        <div className="tabs">
-          {STATUSES.map((option) => (
+    <section className="bz">
+      <div className="page-top">
+        <header className="page-head bz-head">
+          <div>
+            <h1>Businesses</h1>
+            <p className="muted">Shops waiting for approval, and every shop on the platform.</p>
+          </div>
+          <label className="bz-search">
+            <Icon name="search" size={18} />
+            <input
+              type="search"
+              value={typed}
+              onChange={(event) => setTyped(event.target.value)}
+              placeholder="Search a name, phone or email"
+              aria-label="Search businesses"
+            />
+          </label>
+        </header>
+        <div className="bz-tabs pin-from" role="tablist" aria-label="Show">
+          {TABS.map((t) => (
             <button
-              key={option.value}
+              key={t.value}
               type="button"
-              className={option.value === status ? 'tab active' : 'tab'}
-              onClick={() => setStatus(option.value)}
+              role="tab"
+              aria-selected={tab === t.value}
+              className={`bz-tab${tab === t.value ? ' is-on' : ''}`}
+              onClick={() => patch({ status: t.value === 'PENDING' ? null : t.value, open: null })}
             >
-              {option.label}
+              {t.label}
+              {counts.data && <span className={t.value === 'PENDING' && counts.data.PENDING > 0 ? 'is-hot' : ''}>{counts.data[t.value]}</span>}
             </button>
           ))}
         </div>
-      </header>
+      </div>
 
       {act.error && (
-        <p className="error" role="alert">
+        <p className="error bz-error" role="alert">
+          <Icon name="alert" size={16} />
           {act.error instanceof ApiError ? act.error.message : 'That did not work.'}
         </p>
       )}
-
-      {businesses.isLoading && <p className="muted">Loading…</p>}
-
-      {businesses.error && (
-        <p className="error" role="alert">
-          {businesses.error instanceof ApiError
-            ? businesses.error.message
-            : 'Could not load businesses.'}
+      {list.error && (
+        <p className="error bz-error" role="alert">
+          <Icon name="alert" size={16} />
+          {list.error instanceof ApiError ? list.error.message : 'Could not load businesses.'}
         </p>
       )}
 
-      {businesses.data && businesses.data.businesses.length === 0 && (
-        <p className="muted empty">Nothing here.</p>
+      {list.isLoading && (
+        <div className="bz-list">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton bz-skel" />
+          ))}
+        </div>
       )}
 
-      {businesses.data && businesses.data.businesses.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Business</th>
-              <th>Category</th>
-              <th>Applied</th>
-              <th>Status</th>
-              <th aria-label="Actions" />
-            </tr>
-          </thead>
-          <tbody>
-            {businesses.data.businesses.map((business) => (
-              <Row
-                key={business.id}
-                business={business}
-                busy={act.isPending && act.variables?.id === business.id}
-                onApprove={() => act.mutate({ id: business.id, action: 'approve' })}
-                onReinstate={() => act.mutate({ id: business.id, action: 'reinstate' })}
-                onReject={() => withReason(business.id, 'reject')}
-                onSuspend={() => withReason(business.id, 'suspend')}
-                onOpen={() => setOpenId(business.id)}
-              />
-            ))}
-          </tbody>
-        </table>
+      {list.data && rows.length === 0 && (
+        <div className="bz-empty">
+          <span>
+            <Icon name={q ? 'search' : tab === 'PENDING' ? 'checkCircle' : 'store'} size={26} />
+          </span>
+          <strong>{q ? `Nothing found for “${q}”` : tab === 'PENDING' ? 'Nobody is waiting' : 'No businesses here'}</strong>
+          <p className="muted">
+            {q ? 'Try part of the name, a phone number or an email.' : tab === 'PENDING' ? 'Every application has an answer. New ones appear here, oldest first.' : 'None are in this state just now.'}
+          </p>
+        </div>
       )}
 
-      {businesses.data && (
-        <p className="muted count">
-          {businesses.data.businesses.length} of {businesses.data.total}
-        </p>
+      {rows.length > 0 && (
+        <ul className="bz-list">
+          {rows.map((business) => (
+            <Row
+              key={business.id}
+              business={business}
+              busy={act.isPending && act.variables?.id === business.id}
+              onOpen={() => patch({ open: business.id })}
+              onApprove={() => decide.approve(business)}
+              onReject={() => decide.reject(business)}
+            />
+          ))}
+        </ul>
       )}
 
-      {openId && <BusinessDrawer id={openId} onClose={() => setOpenId(null)} />}
+      {list.data && rows.length > 0 && (
+        <div className="bz-more">
+          <span className="muted small">
+            {rows.length} of {total}
+          </span>
+          {list.hasNextPage && (
+            <button type="button" onClick={() => void list.fetchNextPage()} disabled={list.isFetchingNextPage}>
+              {list.isFetchingNextPage ? 'Loading…' : 'Show more'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {openId && <ReviewPanel id={openId} onClose={() => patch({ open: null })} decide={decide} busy={act.isPending} />}
     </section>
   );
+}
+
+/** The four decisions, each asked first in plain words (§242.4). */
+function useDecisions(run: (input: { id: string; action: 'approve' | 'reinstate' | 'reject' | 'suspend'; reason?: string }) => void) {
+  const label = (b: { name: string | null }) => nameOf(b) ?? 'this business';
+  return {
+    approve: async (b: { id: string; name: string | null; status: BusinessStatus }) => {
+      const sure = await confirmDialog({
+        title: `Approve ${label(b)}?`,
+        body: (
+          <p>
+            Customers can find {nameOf(b) ? <strong>{nameOf(b)}</strong> : 'it'} in search and book straight away. The
+            owner is told by email.
+          </p>
+        ),
+        tone: 'ok',
+        icon: 'checkCircle',
+        confirmLabel: 'Approve',
+        cancelLabel: 'Not yet',
+      });
+      if (sure) run({ id: b.id, action: 'approve' });
+    },
+    reinstate: async (b: { id: string; name: string | null }) => {
+      const sure = await confirmDialog({
+        title: `Reinstate ${label(b)}?`,
+        body: <p>It comes back into search and can take bookings again; its payouts resume on the next run.</p>,
+        tone: 'ok',
+        icon: 'refresh',
+        confirmLabel: 'Reinstate',
+        cancelLabel: 'Not yet',
+      });
+      if (sure) run({ id: b.id, action: 'reinstate' });
+    },
+    reject: async (b: { id: string; name: string | null }) => {
+      const reason = await promptDialog({
+        title: `Reject ${label(b)}?`,
+        body: <p>They are told the reason, and can fix what is wrong and apply again.</p>,
+        label: 'Reason — sent to them, so write it for them to read',
+        placeholder: 'For example: the photos are not of your shop.',
+        minLength: 3,
+        minMessage: 'A reason of at least 3 characters.',
+        multiline: true,
+        tone: 'danger',
+        icon: 'xCircle',
+        confirmLabel: 'Reject',
+        cancelLabel: 'Not now',
+      });
+      if (reason !== null) run({ id: b.id, action: 'reject', reason: reason.trim() });
+    },
+    suspend: async (b: { id: string; name: string | null }) => {
+      const reason = await promptDialog({
+        title: `Suspend ${label(b)}?`,
+        body: (
+          <p>
+            It disappears from search and cannot take new bookings until reinstated. Bookings already made still happen.
+            They are told the reason.
+          </p>
+        ),
+        label: 'Reason — sent to them, so write it for them to read',
+        placeholder: 'For example: customers report the shop is closed.',
+        minLength: 3,
+        minMessage: 'A reason of at least 3 characters.',
+        multiline: true,
+        tone: 'danger',
+        icon: 'pause',
+        confirmLabel: 'Suspend',
+        cancelLabel: 'Not now',
+      });
+      if (reason !== null) run({ id: b.id, action: 'suspend', reason: reason.trim() });
+    },
+  };
 }
 
 function Row({
   business,
   busy,
-  onApprove,
-  onReinstate,
-  onReject,
-  onSuspend,
   onOpen,
+  onApprove,
+  onReject,
 }: {
   business: AdminBusiness;
   busy: boolean;
-  onApprove: () => void;
-  onReinstate: () => void;
-  onReject: () => void;
-  onSuspend: () => void;
   onOpen: () => void;
+  onApprove: () => void;
+  onReject: () => void;
 }) {
-  // A business with no name cannot be approved — the backend refuses, because
-  // an approved blank goes straight into search results (§53). Said here so the
-  // admin sees why the button is off, rather than clicking into an error.
-  const nameless = !business.name || business.name.trim() === '';
-
+  const name = nameOf(business);
+  const look = STATUS[business.status];
+  const pending = business.status === 'PENDING';
   return (
-    <tr>
-      <td>
-        {/* The name opens the detail. Approving makes a business visible to every
-            customer, and the row alone does not say what is being approved. */}
-        <button type="button" className="link-strong" onClick={onOpen}>
-          {business.name ?? <em className="muted">No name yet</em>}
-        </button>
-        {business.phone && <div className="muted small">{business.phone}</div>}
-        {business.statusReason && (
-          <div className="muted small">Reason: {business.statusReason}</div>
-        )}
-      </td>
-      <td>
-        {business.category?.name ?? '—'}
-        {business.subcategory && (
-          <div className="muted small">{business.subcategory.name}</div>
-        )}
-      </td>
-      <td>{formatDate(business.createdAt)}</td>
-      <td>
-        <span className={`pill ${business.status.toLowerCase()}`}>{business.status}</span>
-        {business.statusChangedAt && (
-          <div className="muted small">{formatDate(business.statusChangedAt)}</div>
-        )}
-      </td>
-      <td className="actions">
-        {business.status === 'PENDING' && (
+    <li className={`bz-row${pending ? ' is-pending' : ''}`}>
+      <button type="button" className="bz-row-main" onClick={onOpen} aria-label={`Review ${name ?? 'this business'}`}>
+        <ShopMark name={name} logoUrl={business.logoUrl} size={48} />
+        <span className="bz-row-text">
+          <strong>{name ?? <em className="muted">No name yet</em>}</strong>
+          <span>
+            {business.category?.name ?? 'No category'}
+            {business.subcategory ? ` · ${business.subcategory.name}` : ''}
+          </span>
+          {business.statusReason && business.status !== 'APPROVED' && <span className="bz-row-reason">“{business.statusReason}”</span>}
+          <span className={`pill ${look.cls}`}>{look.label}</span>
+        </span>
+      </button>
+      <span className="bz-row-when">
+        <strong>{day(business.createdAt)}</strong>
+        <span>{pending ? `Waiting since ${sinceDay(business.createdAt)}` : `Applied ${sinceDay(business.createdAt)}`}</span>
+      </span>
+      <span className="bz-row-status">
+        <span className={`pill ${look.cls}`}>{look.label}</span>
+      </span>
+      <span className="bz-row-actions">
+        {pending && (
           <>
-            <button type="button" disabled={busy || nameless} onClick={onApprove}>
-              Approve
-            </button>
             <button type="button" className="danger" disabled={busy} onClick={onReject}>
               Reject
             </button>
-            {nameless && <div className="muted small">Needs a name first</div>}
+            <button type="button" className="primary" disabled={busy || !name} onClick={onApprove} title={name ? undefined : 'Needs a name first'}>
+              Approve
+            </button>
           </>
         )}
-        {business.status === 'APPROVED' && (
-          <button type="button" className="danger" disabled={busy} onClick={onSuspend}>
-            Suspend
-          </button>
-        )}
-        {business.status === 'SUSPENDED' && (
-          <button type="button" disabled={busy || nameless} onClick={onReinstate}>
-            Reinstate
-          </button>
-        )}
-        {business.status === 'REJECTED' && <span className="muted small">Closed</span>}
-      </td>
-    </tr>
+        <button type="button" className="bz-review" onClick={onOpen}>
+          {pending ? 'Review' : 'Open'}
+          <Icon name="arrowRight" size={16} stroke={2.2} />
+        </button>
+      </span>
+    </li>
   );
 }
 
-/**
- * Everything an approval decision rests on (§117.2).
- *
- * The list says a name and a status. This says where they work from, what they
- * sell and for how much at each branch, and who can act for them — which is what
- * `GET /admin/businesses/:id` has always returned and nothing ever showed.
- *
- * Read-only on purpose. The actions stay on the row where they already are:
- * duplicating approve and reject in here would mean two places to keep in step,
- * and the drawer's job is to answer "what am I about to let in", not to be a
- * second control panel.
- */
-function BusinessDrawer({ id, onClose }: { id: string; onClose: () => void }) {
+// ---------------------------------------------------------------------------
+// The review panel
+
+type Check = { ok: boolean; label: string; hint: string };
+
+/** What an approval puts in front of customers, checked (§244). Advice, not a gate — except the name (§53). */
+function readiness(b: AdminBusinessDetail): Check[] {
+  const open = b.locations.filter((l) => l.isActive);
+  const services = b.services.filter((s) => s.isActive);
+  const destination = b.payoutDestinations[0];
+  return [
+    { ok: Boolean(nameOf(b)), label: 'A name', hint: 'Required — an approved blank would go straight into search.' },
+    { ok: Boolean(b.description?.trim()), label: 'A description', hint: 'Shown on the shop page; worth asking for.' },
+    { ok: Boolean(b.logoUrl), label: 'A logo', hint: 'Customers see initials until there is one.' },
+    { ok: open.length > 0, label: 'An open branch', hint: 'Nothing is bookable without one.' },
+    { ok: open.some((l) => l.latitude !== null), label: 'A branch on the map', hint: 'Customers nearby find it by its pin.' },
+    {
+      ok: services.some((s) => s.locations.length > 0),
+      label: 'A service with a price',
+      hint: 'Otherwise there is nothing to book.',
+    },
+    {
+      ok: destination?.status === 'VERIFIED',
+      label: destination ? (destination.status === 'VERIFIED' ? 'A checked payout number' : 'A payout number, not yet checked') : 'A payout number',
+      hint: destination ? 'Check it under Payout numbers before money is owed.' : 'They can book without one; they cannot be paid.',
+    },
+  ];
+}
+
+function ReviewPanel({
+  id,
+  onClose,
+  decide,
+  busy,
+}: {
+  id: string;
+  onClose: () => void;
+  decide: ReturnType<typeof useDecisions>;
+  busy: boolean;
+}) {
   const money = useMoney();
   const business = useQuery({ queryKey: ['business', id], queryFn: () => getBusiness(id) });
   const b = business.data;
+  const name = b ? nameOf(b) : null;
+
+  const footer = b ? (
+    <>
+      {b.status === 'PENDING' && (
+        <>
+          <button type="button" className="danger" disabled={busy} onClick={() => decide.reject(b)}>
+            <Icon name="xCircle" size={17} />
+            Reject
+          </button>
+          <button type="button" className="primary" disabled={busy || !name} onClick={() => decide.approve(b)}>
+            <Icon name="checkCircle" size={17} />
+            {name ? 'Approve' : 'Needs a name first'}
+          </button>
+        </>
+      )}
+      {b.status === 'APPROVED' && (
+        <button type="button" className="danger" disabled={busy} onClick={() => decide.suspend(b)}>
+          <Icon name="pause" size={17} />
+          Suspend
+        </button>
+      )}
+      {b.status === 'SUSPENDED' && (
+        <button type="button" className="primary" disabled={busy || !name} onClick={() => decide.reinstate(b)}>
+          <Icon name="refresh" size={17} />
+          Reinstate
+        </button>
+      )}
+      {b.status === 'REJECTED' && (
+        // The appeal path (§42): a rejected shop that fixed things can be approved.
+        <button type="button" className="primary" disabled={busy || !name} onClick={() => decide.approve(b)}>
+          <Icon name="checkCircle" size={17} />
+          Approve after all
+        </button>
+      )}
+    </>
+  ) : undefined;
 
   return (
-    <div className="drawer-backdrop" onClick={onClose}>
-      <aside className="drawer" onClick={(event) => event.stopPropagation()}>
-        <header className="drawer-head">
-          <div>
-            <h2>{b?.name ?? 'Business'}</h2>
-            <p className="muted small">
-              {b?.category?.name ?? 'No category'}
-              {b?.subcategory ? ` · ${b.subcategory.name}` : ''}
-              {b ? ` · applied ${formatDate(b.createdAt)}` : ''}
-            </p>
+    <Panel
+      eyebrow={b ? STATUS[b.status].label : 'Application'}
+      title={b ? name ?? 'No name yet' : 'Loading…'}
+      onClose={onClose}
+      footer={footer}
+      width={760}
+    >
+      {business.isLoading && (
+        <div className="bz-panel-skel">
+          <div className="skeleton" />
+          <div className="skeleton" />
+        </div>
+      )}
+      {business.error && (
+        <p className="error" role="alert">
+          {business.error instanceof ApiError ? business.error.message : 'Could not load this business.'}
+        </p>
+      )}
+      {b && (
+        <div className="bz-review-body">
+          {/* The shop as a customer will meet it. */}
+          <div className="bz-hero" style={b.coverImageUrl ? { backgroundImage: `url(${b.coverImageUrl})` } : undefined}>
+            {!b.coverImageUrl && <span className="bz-hero-empty">No cover photo</span>}
           </div>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={onClose}
-            aria-label="Close this panel"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
-          </button>
-        </header>
-
-        {business.isLoading && <p className="muted">Loading…</p>}
-        {business.error && (
-          <p className="error" role="alert">
-            {business.error instanceof ApiError
-              ? business.error.message
-              : 'Could not load this business.'}
-          </p>
-        )}
-
-        {b && (
-          <>
-            {b.description ? (
-              <p>{b.description}</p>
-            ) : (
-              <p className="muted">
-                No description. Customers see this on the shop page, so an empty one
-                is worth asking about before approving.
+          <div className="bz-ident">
+            <ShopMark name={name} logoUrl={b.logoUrl} size={76} className="bz-ident-logo" />
+            <div>
+              <h3>{name ?? 'No name yet'}</h3>
+              <p>
+                {b.category?.name ?? 'No category'}
+                {b.subcategory ? ` · ${b.subcategory.name}` : ''}
               </p>
+              <p className="muted small">
+                Applied {day(b.createdAt)} ({sinceDay(b.createdAt)}){b.phone ? ` · ${b.phone}` : ''}
+              </p>
+            </div>
+          </div>
+
+          {b.statusReason && b.status !== 'APPROVED' && (
+            <div className={`bz-reason tone-${b.status === 'PENDING' ? 'warn' : 'danger'}`}>
+              <Icon name="alert" size={17} />
+              <span>
+                <strong>Why it is {STATUS[b.status].label.toLowerCase()}</strong>
+                {b.statusReason}
+                <em>{day(b.statusChangedAt)}</em>
+              </span>
+            </div>
+          )}
+
+          <Section icon="checkCircle" title="Ready to go live?">
+            <ul className="bz-checks">
+              {readiness(b).map((c) => (
+                <li key={c.label} className={c.ok ? 'is-ok' : 'is-missing'}>
+                  <Icon name={c.ok ? 'checkCircle' : 'alert'} size={17} />
+                  <span>
+                    <strong>{c.label}</strong>
+                    {!c.ok && <em>{c.hint}</em>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+
+          <Section icon="info" title="About">
+            {b.description?.trim() ? (
+              <p className="bz-about">{b.description}</p>
+            ) : (
+              <p className="muted">No description. Customers see this on the shop page.</p>
             )}
+          </Section>
 
-            <section className="panel">
-              <h2>Branches ({b.locations.length})</h2>
-              {b.locations.length === 0 ? (
-                <p className="muted">
-                  None. Nothing is bookable until they add one, so approving this
-                  puts an empty shop in front of customers.
-                </p>
-              ) : (
-                <ul className="plain">
-                  {b.locations.map((location) => (
-                    <li key={location.id}>
-                      <strong>{location.name}</strong>
-                      <div className="muted small">{location.address}</div>
-                      <div className="muted small">
-                        {location.capacity} at a time
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
-            <section className="panel">
-              <h2>Services ({b.services.length})</h2>
-              {b.services.length === 0 ? (
-                <p className="muted">
-                  None yet. There is nothing for a customer to book.
-                </p>
-              ) : (
-                <ul className="plain">
-                  {b.services.map((service) => (
-                    <li key={service.id}>
-                      <strong>{service.name}</strong>
-                      {!service.isActive && <span className="pill">Paused</span>}
-                      <div className="muted small">
-                        {service.durationMinutes} minutes · {service.depositPercentage}%
-                        deposit
-                      </div>
-                      {/* Per branch, because §72 made price a property of where
-                          the service is offered rather than of the service. */}
-                      {service.locations.length === 0 ? (
-                        <div className="muted small">Not offered at any branch.</div>
+          <Section icon="pin" title={`Branches · ${b.locations.length}`}>
+            {b.locations.length === 0 ? (
+              <p className="muted">None. Nothing is bookable until they add one.</p>
+            ) : (
+              <div className="bz-branches">
+                {b.locations.map((l) => (
+                  <article key={l.id} className={`bz-branch${l.isActive ? '' : ' is-closed'}`}>
+                    <div className="bz-branch-map">
+                      {l.latitude !== null && l.longitude !== null ? (
+                        <StaticMap latitude={l.latitude} longitude={l.longitude} />
                       ) : (
-                        <div className="muted small">
-                          {service.locations
-                            .map(
-                              (at) =>
-                                `${at.location.name}: ${money.format(at.priceMinor)}`,
-                            )
-                            .join(' · ')}
-                        </div>
+                        <span className="bz-branch-nomap">
+                          <Icon name="pin" size={22} />
+                          No pin on the map yet
+                        </span>
                       )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+                    </div>
+                    <div className="bz-branch-text">
+                      <strong>
+                        {l.name}
+                        {!l.isActive && <span className="pill">Closed</span>}
+                      </strong>
+                      <span>{l.address}</span>
+                      <span className="muted small">
+                        {l.district ? `${l.district.name}, ${l.district.province.name}` : 'No district'} · {l.capacity} at a time
+                      </span>
+                    </div>
+                    {l.media.length > 0 && (
+                      <div className="bz-photos">
+                        {l.media.map((m) => (
+                          <img key={m.url} src={m.url} alt="" loading="lazy" />
+                        ))}
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </Section>
 
-            <section className="panel">
-              <h2>People ({b.members.length})</h2>
-              <ul className="plain">
-                {b.members.map((member) => (
-                  <li key={member.id}>
-                    <strong>{member.user.email}</strong>
-                    <span className="pill">{member.role}</span>
+          <Section icon="tag" title={`Services · ${b.services.length}`}>
+            {b.services.length === 0 ? (
+              <p className="muted">None yet. There is nothing for a customer to book.</p>
+            ) : (
+              <ul className="bz-services">
+                {b.services.map((s) => (
+                  <li key={s.id} className={s.isActive ? '' : 'is-paused'}>
+                    <span className="bz-service-thumb">
+                      {s.images[0] ? <img src={s.images[0].url} alt="" loading="lazy" /> : <Icon name="tag" size={18} />}
+                    </span>
+                    <span className="bz-service-text">
+                      <strong>
+                        {s.name}
+                        {!s.isActive && <span className="pill">Paused</span>}
+                      </strong>
+                      <span className="muted small">
+                        {s.durationMinutes} min · {s.depositPercentage}% deposit
+                      </span>
+                      {/* Per branch, since §72 made price a property of where it is offered. */}
+                      <span className="bz-prices">
+                        {s.locations.length === 0
+                          ? 'Not offered at any branch'
+                          : s.locations.map((at) => (
+                              <span key={at.location.id}>
+                                {at.location.name} <b>{money.format(at.priceMinor)}</b>
+                              </span>
+                            ))}
+                      </span>
+                    </span>
                   </li>
                 ))}
               </ul>
-            </section>
-
-            {b.statusReason && (
-              <section className="panel">
-                <h2>Why it is {b.status.toLowerCase()}</h2>
-                <p>{b.statusReason}</p>
-                <p className="muted small">{formatDate(b.statusChangedAt)}</p>
-              </section>
             )}
-          </>
-        )}
-      </aside>
-    </div>
+          </Section>
+
+          <div className="bz-two">
+            <Section icon="users" title={`People · ${b.members.length}`}>
+              <ul className="bz-people">
+                {b.members.map((m) => (
+                  <li key={m.id}>
+                    <Avatar label={m.user.email} size={34} />
+                    <span>
+                      <strong>{m.user.email}</strong>
+                      <em>{m.role.charAt(0) + m.role.slice(1).toLowerCase()}</em>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+            <Section icon="wallet" title="Paid to">
+              {b.payoutDestinations[0] ? (
+                <div className="bz-payto">
+                  <NetworkMark network={b.payoutDestinations[0].provider === 'AIRTEL_MONEY' ? 'AIRTEL_MONEY' : 'MTN_MOMO'} size={36} />
+                  <span>
+                    <strong>{b.payoutDestinations[0].msisdn}</strong>
+                    <span className={`pill ${b.payoutDestinations[0].status === 'VERIFIED' ? 'verified' : b.payoutDestinations[0].status === 'REJECTED' ? 'rejected' : 'unverified'}`}>
+                      {b.payoutDestinations[0].status === 'VERIFIED' ? 'Checked' : b.payoutDestinations[0].status === 'REJECTED' ? 'Refused' : 'Not checked yet'}
+                    </span>
+                  </span>
+                </div>
+              ) : (
+                <p className="muted">No payout number yet.</p>
+              )}
+            </Section>
+          </div>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function Section({ icon, title, children }: { icon: IconName; title: string; children: ReactNode }) {
+  return (
+    <section className="bz-section">
+      <h4>
+        <Icon name={icon} size={16} />
+        {title}
+      </h4>
+      {children}
+    </section>
   );
 }

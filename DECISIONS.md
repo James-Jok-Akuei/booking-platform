@@ -16288,3 +16288,60 @@ once (a mutation cache), rather than at the next minute.
 
 Checked at 1440, 1024 and 390 with the demo data (25 paid bookings this
 week, the four queues at 1 / 2 / 2 / 2).
+
+## 244. Admin piece 3 — Businesses, the approval desk (2026-10-09)
+
+The approval queue was a table: a name, a category, a date, two buttons, and
+a read-only drawer (§117.2) beside it. Approving puts a shop in front of every
+customer at once, so the page is now a desk built around that decision.
+
+### 244.1 The server
+
+- **`GET /admin/businesses?q=`** — a word to find a business by: part of its
+  name (any case), its phone, or an active member's email. Searched by the
+  database, with the status filter and the paging, so a long list is never
+  loaded to be filtered in the browser (§216's rule).
+- **The detail an approval rests on** (`GET /admin/businesses/:id`) now also
+  carries each branch's **pin, district and province, open or closed, and up
+  to six photos**; each service's **description and cover photo**; and the
+  business's **latest payout number** with its network and whether it has
+  been checked (§48).
+- `test/admin-business-desk.spec.ts`: search by name, phone and a member's
+  email, combined with a status; the pin, district, photos and payout number
+  in the detail. The 61 approval tests (§42) still pass.
+
+### 244.2 The page
+
+- **Tabs with counts** (Awaiting review, Approved, Suspended, Rejected, All),
+  the waiting count in coral; **search** that asks once typing pauses; tab,
+  search and the open application kept in the address, so a link or a
+  reload lands on the same view. Oldest first, as before (§42), 25 at a time
+  with "Show more".
+- **Each business a card**: its logo (or initials on a colour of its own —
+  `ui/ShopMark`, squarer than a person's avatar, so a shop and a person are
+  never confused), name, category, when it applied ("Waiting since 5 days
+  ago" in amber on the queue, with an amber edge), its status, and the
+  reason when rejected or suspended. A waiting one has **Reject / Approve /
+  Review** on the card; the rest open their review.
+- **The review panel** (the business app's side panel, §195), with the
+  decision at its foot beside the evidence: the **cover and logo as a
+  customer will see them**; **"Ready to go live?"** — a name (the only hard
+  rule, §53), a description, a logo, an open branch, a branch on the map, a
+  service with a price, a checked payout number — each missing one saying
+  why it matters; the description; **each branch on a map** (the business
+  app's still map, §195) with its address, district, capacity and photos;
+  **each service** with its photo, length, deposit and **price at each
+  branch** (§72); **the people** who act for it; **the number it is paid
+  to** with the network's mark (§219) and whether it has been checked.
+- **Every decision asks first**, in plain words: approving says customers
+  can find and book it at once; rejecting and suspending ask for the reason
+  they are sent; reinstating says payouts resume; a rejected shop can be
+  **approved after all** — the appeal path §42 always allowed and the page
+  never offered.
+- On a phone the cards stack, the whole card opens the review, and the
+  panel's decision buttons stay at its foot.
+
+Checked at 1440 and 390: the queue, All, search ("kimir" → Kimironko Spa,
+the counts following), an approved shop's review (three branches on maps
+with photos, seven services), the waiting application's review (the logo
+and payout number flagged). Nothing was approved or rejected.

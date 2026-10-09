@@ -3637,11 +3637,37 @@ export interface components {
             offset: number;
             businesses: components["schemas"]["AdminBusinessDto"][];
         };
+        AdminLocationPlaceDto: {
+            name: string;
+        };
+        AdminLocationDistrictDto: {
+            name: string;
+            province: components["schemas"]["AdminLocationPlaceDto"];
+        };
+        AdminMediaDto: {
+            url: string;
+            /**
+             * @description Photos are checked separately (§132); shown here whatever their state.
+             * @enum {string}
+             */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+        };
         AdminBusinessLocationDto: {
             id: string;
             name: string;
             address: string;
             capacity: number;
+            /** @description The pin, when they have placed one (§157). */
+            latitude: number | null;
+            longitude: number | null;
+            /** @description False once the branch is closed (§89). */
+            isActive: boolean;
+            district: components["schemas"]["AdminLocationDistrictDto"] | null;
+            /** @description Up to six of the branch's photos, in the shop's order. */
+            media: components["schemas"]["AdminMediaDto"][];
+        };
+        AdminServiceImageDto: {
+            url: string;
         };
         AdminServiceOfferDto: {
             priceMinor: number;
@@ -3654,6 +3680,9 @@ export interface components {
             /** @description A decimal STRING — read, never multiplied (§56). */
             depositPercentage: string;
             isActive: boolean;
+            description: string | null;
+            /** @description The cover photo (§132), if there is one. */
+            images: components["schemas"]["AdminServiceImageDto"][];
             /** @description Price is per BRANCH since §72, so a service can cost different amounts. */
             locations: components["schemas"]["AdminServiceOfferDto"][];
         };
@@ -3665,6 +3694,13 @@ export interface components {
             id: string;
             role: string;
             user: components["schemas"]["AdminBusinessMemberUserDto"];
+        };
+        AdminPayoutNumberDto: {
+            msisdn: string;
+            /** @enum {string} */
+            provider: "MTN_MOMO" | "AIRTEL_MONEY";
+            /** @enum {string} */
+            status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
         };
         AdminBusinessDetailDto: {
             id: string;
@@ -3693,6 +3729,8 @@ export interface components {
             services: components["schemas"]["AdminBusinessServiceDto"][];
             /** @description ACTIVE members only. Removed ones stay as history and grant nothing (§14). */
             members: components["schemas"]["AdminBusinessMemberDto"][];
+            /** @description The latest payout number they gave, if any — at most one (§48, §244). */
+            payoutDestinations: components["schemas"]["AdminPayoutNumberDto"][];
         };
         ChangeBusinessStatusDto: {
             reason: string;
@@ -9365,6 +9403,12 @@ export interface operations {
             query?: {
                 /** @description Omit for every business, whatever its status. */
                 status?: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+                /**
+                 * @description A word to find a business by (§244): part of its name, its phone, or a
+                 *     member's email, any case. Searched by the database, so a long list is
+                 *     never loaded to be filtered in the browser.
+                 */
+                q?: string;
                 limit?: number;
                 offset?: number;
             };

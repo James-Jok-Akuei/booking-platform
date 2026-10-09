@@ -4710,6 +4710,16 @@
             }
           },
           {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "A word to find a business by (§244): part of its name, its phone, or a\nmember's email, any case. Searched by the database, so a long list is\nnever loaded to be filtered in the browser.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -16141,6 +16151,53 @@
           "businesses"
         ]
       },
+      "AdminLocationPlaceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AdminLocationDistrictDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "province": {
+            "$ref": "#/components/schemas/AdminLocationPlaceDto"
+          }
+        },
+        "required": [
+          "name",
+          "province"
+        ]
+      },
+      "AdminMediaDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "Photos are checked separately (§132); shown here whatever their state.",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ]
+          }
+        },
+        "required": [
+          "url",
+          "status"
+        ]
+      },
       "AdminBusinessLocationDto": {
         "type": "object",
         "properties": {
@@ -16155,13 +16212,58 @@
           },
           "capacity": {
             "type": "number"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "description": "The pin, when they have placed one (§157)."
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "False once the branch is closed (§89)."
+          },
+          "district": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminLocationDistrictDto"
+              }
+            ]
+          },
+          "media": {
+            "description": "Up to six of the branch's photos, in the shop's order.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminMediaDto"
+            }
           }
         },
         "required": [
           "id",
           "name",
           "address",
-          "capacity"
+          "capacity",
+          "latitude",
+          "longitude",
+          "isActive",
+          "district",
+          "media"
+        ]
+      },
+      "AdminServiceImageDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
         ]
       },
       "AdminServiceOfferDto": {
@@ -16198,6 +16300,17 @@
           "isActive": {
             "type": "boolean"
           },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "images": {
+            "description": "The cover photo (§132), if there is one.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminServiceImageDto"
+            }
+          },
           "locations": {
             "description": "Price is per BRANCH since §72, so a service can cost different amounts.",
             "type": "array",
@@ -16212,6 +16325,8 @@
           "durationMinutes",
           "depositPercentage",
           "isActive",
+          "description",
+          "images",
           "locations"
         ]
       },
@@ -16247,6 +16362,35 @@
           "id",
           "role",
           "user"
+        ]
+      },
+      "AdminPayoutNumberDto": {
+        "type": "object",
+        "properties": {
+          "msisdn": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "REJECTED",
+              "UNVERIFIED",
+              "VERIFIED",
+              "SUPERSEDED"
+            ]
+          }
+        },
+        "required": [
+          "msisdn",
+          "provider",
+          "status"
         ]
       },
       "AdminBusinessDetailDto": {
@@ -16337,6 +16481,13 @@
             "items": {
               "$ref": "#/components/schemas/AdminBusinessMemberDto"
             }
+          },
+          "payoutDestinations": {
+            "description": "The latest payout number they gave, if any — at most one (§48, §244).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPayoutNumberDto"
+            }
           }
         },
         "required": [
@@ -16355,7 +16506,8 @@
           "subcategory",
           "locations",
           "services",
-          "members"
+          "members",
+          "payoutDestinations"
         ]
       },
       "ChangeBusinessStatusDto": {

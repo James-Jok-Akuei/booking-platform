@@ -1,4 +1,4 @@
-import { BusinessStatus, Prisma } from '@prisma/client';
+import { BusinessStatus, MediaStatus, MobileMoneyProvider, PayoutDestinationStatus, Prisma } from '@prisma/client';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 
 /**
@@ -69,11 +69,44 @@ export class AdminBusinessPageDto {
 // The detail panel (§117.2)
 // ---------------------------------------------------------------------------
 
+export class AdminLocationPlaceDto {
+  name!: string;
+}
+
+export class AdminLocationDistrictDto {
+  name!: string;
+  province!: AdminLocationPlaceDto;
+}
+
+export class AdminMediaDto {
+  url!: string;
+  /** Photos are checked separately (§132); shown here whatever their state. */
+  status!: MediaStatus;
+}
+
 export class AdminBusinessLocationDto {
   id!: string;
   name!: string;
   address!: string;
   capacity!: number;
+  /** The pin, when they have placed one (§157). */
+  latitude!: number | null;
+  longitude!: number | null;
+  /** False once the branch is closed (§89). */
+  isActive!: boolean;
+  district!: AdminLocationDistrictDto | null;
+  /** Up to six of the branch's photos, in the shop's order. */
+  media!: AdminMediaDto[];
+}
+
+export class AdminServiceImageDto {
+  url!: string;
+}
+
+export class AdminPayoutNumberDto {
+  msisdn!: string;
+  provider!: MobileMoneyProvider;
+  status!: PayoutDestinationStatus;
 }
 
 export class AdminServiceOfferDto {
@@ -88,6 +121,9 @@ export class AdminBusinessServiceDto {
   /** A decimal STRING — read, never multiplied (§56). */
   depositPercentage!: string;
   isActive!: boolean;
+  description!: string | null;
+  /** The cover photo (§132), if there is one. */
+  images!: AdminServiceImageDto[];
   /** Price is per BRANCH since §72, so a service can cost different amounts. */
   locations!: AdminServiceOfferDto[];
 }
@@ -108,6 +144,8 @@ export class AdminBusinessDetailDto extends AdminBusinessDto {
   services!: AdminBusinessServiceDto[];
   /** ACTIVE members only. Removed ones stay as history and grant nothing (§14). */
   members!: AdminBusinessMemberDto[];
+  /** The latest payout number they gave, if any — at most one (§48, §244). */
+  payoutDestinations!: AdminPayoutNumberDto[];
 }
 
 /**

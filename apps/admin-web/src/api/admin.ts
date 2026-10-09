@@ -26,6 +26,8 @@ export interface Page<T> {
 
 export const listBusinesses = (params: {
   status?: BusinessStatus;
+  /** Part of the name, the phone, or a member's email (§244). */
+  q?: string;
   limit?: number;
   offset?: number;
 }) => api<Page<AdminBusiness>>('/admin/businesses', { query: params });
