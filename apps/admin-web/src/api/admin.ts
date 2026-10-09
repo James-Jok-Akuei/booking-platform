@@ -579,3 +579,14 @@ export const updateLegalDraft = (
 /** From here it is read-only forever. A change is a new version. */
 export const publishLegalDraft = (id: string) =>
   api<LegalDocument>(`/admin/legal/drafts/${id}/publish`, { method: 'POST' });
+
+// ---------------------------------------------------------------------------
+// The console's home page (§243)
+// ---------------------------------------------------------------------------
+
+/** Everything waiting, the last fourteen days, and the platform's size — one request. */
+export type AdminOverview = components['schemas']['AdminOverviewDto'];
+export type OverviewDay = components['schemas']['OverviewDayDto'];
+export type OverviewPeriod = components['schemas']['OverviewPeriodDto'];
+
+export const getOverview = () => api<AdminOverview>('/admin/overview');

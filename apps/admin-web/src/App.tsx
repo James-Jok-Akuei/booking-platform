@@ -13,6 +13,7 @@ import { ReviewsPage } from './pages/ReviewsPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { UsersPage } from './pages/UsersPage';
 import { LegalPage } from './pages/LegalPage';
+import { OverviewPage } from './pages/OverviewPage';
 import { TicketsPage } from './pages/TicketsPage';
 
 export function App() {
@@ -26,6 +27,7 @@ export function App() {
           </RequireAuth>
         }
       >
+        <Route index element={<OverviewPage />} />
         <Route path="/businesses" element={<BusinessesPage />} />
         <Route path="/payout-destinations" element={<PayoutDestinationsPage />} />
         <Route path="/payouts" element={<PayoutsPage />} />
@@ -39,7 +41,7 @@ export function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/legal" element={<LegalPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/businesses" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -20,9 +20,22 @@ export type NavItem = {
   badge?: 'businesses' | 'destinations' | 'payouts' | 'tickets';
 };
 
-export type NavGroup = { group: string; items: NavItem[] };
+export type NavGroup = { group: string | null; items: NavItem[] };
 
 export const SECTIONS: NavGroup[] = [
+  {
+    // Above the headings: the first thing seen every morning (§243).
+    group: null,
+    items: [
+      {
+        to: '/',
+        label: 'Overview',
+        icon: 'overview',
+        keywords: 'home dashboard today waiting queue summary pulse week',
+        hint: 'What needs you, and how the platform is doing',
+      },
+    ],
+  },
   {
     // Deciding what stays on the platform.
     group: 'Moderation',
@@ -136,10 +149,10 @@ export const SECTIONS: NavGroup[] = [
   },
 ];
 
-export const NAV_ITEMS: Array<NavItem & { group: string }> = SECTIONS.flatMap((section) =>
+export const NAV_ITEMS: Array<NavItem & { group: string | null }> = SECTIONS.flatMap((section) =>
   section.items.map((item) => ({ ...item, group: section.group })),
 );
 
 /** The page an address belongs to, for the top bar's title. */
 export const navItemFor = (pathname: string) =>
-  NAV_ITEMS.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`)) ?? null;
+  NAV_ITEMS.find((item) => pathname === item.to || (item.to !== '/' && pathname.startsWith(`${item.to}/`))) ?? null;

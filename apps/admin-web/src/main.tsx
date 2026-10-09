@@ -1,13 +1,22 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App } from './App';
 import { AuthProvider } from './auth/auth-context';
 import { DialogHost } from './ui/Dialog';
 import './styles.css';
 
-const queryClient = new QueryClient({
+const queryClient: QueryClient = new QueryClient({
+  // Whatever an administrator does — approve, verify, send, answer — the
+  // counts of what is waiting (the menu, "Waiting", the Overview) follow at
+  // once rather than at the next minute (§243).
+  mutationCache: new MutationCache({
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['shell-count'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin-overview'] });
+    },
+  }),
   defaultOptions: {
     queries: {
       // An admin acts on what they see, so a stale queue is worse than an extra

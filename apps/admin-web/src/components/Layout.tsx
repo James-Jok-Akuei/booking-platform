@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
 import { CommandPalette } from '../shell/CommandPalette';
@@ -51,6 +51,66 @@ export function Layout() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [location.pathname]);
+
+  // Page headers pin right under the top bar, however tall it is (§209, §214):
+  // the bar's height goes into --tb-h; a tall header pins from its `.pin-from`
+  // row (on a phone, its `.pin-phone` row, or its first row after the title),
+  // the part above scrolling away under the bar. A header never changes size
+  // as the page scrolls — that once made the page fight the scroll.
+  const main = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const box = main.current;
+    const bar = box?.querySelector<HTMLElement>('.topbar');
+    if (!box || !bar) return;
+    const phone = window.matchMedia('(max-width: 859px)');
+    const watched = new Set<Element>();
+    const set = (el: HTMLElement, name: string, value: string) => {
+      if (el.style.getPropertyValue(name) !== value) el.style.setProperty(name, value);
+    };
+    const measureNow = () => {
+      set(box, '--tb-h', `${bar.offsetHeight}px`);
+      const content = box.querySelector<HTMLElement>('.content');
+      const top = content?.querySelector<HTMLElement>('.page-top');
+      for (const el of [content, top]) {
+        if (el && !watched.has(el)) {
+          watched.add(el);
+          watch.observe(el);
+        }
+      }
+      if (!top) return;
+      const pin = phone.matches
+        ? top.querySelector<HTMLElement>('.pin-phone') ??
+          top.querySelector<HTMLElement>(':scope > .pin-from') ??
+          top.querySelector<HTMLElement>(':scope > :nth-child(2)')
+        : top.querySelector<HTMLElement>(':scope > .pin-from');
+      const fold = pin
+        ? Math.max(0, pin.getBoundingClientRect().top - top.getBoundingClientRect().top - 10)
+        : phone.matches
+          ? top.offsetHeight
+          : 0;
+      set(top, '--pt-fold', `${Math.round(fold)}px`);
+    };
+    let frame = 0;
+    const measure = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        measureNow();
+      });
+    };
+    const watch = new ResizeObserver(measure);
+    watch.observe(bar);
+    const swap = new MutationObserver(measure);
+    swap.observe(box, { childList: true, subtree: true });
+    phone.addEventListener('change', measure);
+    measureNow();
+    return () => {
+      cancelAnimationFrame(frame);
+      watch.disconnect();
+      swap.disconnect();
+      phone.removeEventListener('change', measure);
+    };
+  }, []);
 
   const toggleRail = () =>
     setRail((was) => {
@@ -108,7 +168,7 @@ export function Layout() {
         <Sidebar data={data} rail={folded} onToggleRail={tablet ? undefined : toggleRail} onSignOut={leave} />
       </div>
 
-      <div className="app-main">
+      <div className="app-main" ref={main}>
         <Topbar
           data={data}
           scrolled={scrolled}

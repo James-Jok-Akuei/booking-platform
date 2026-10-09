@@ -2260,6 +2260,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminOverviewController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/payouts/run": {
         parameters: {
             query?: never;
@@ -4855,6 +4871,79 @@ export interface components {
             money: components["schemas"]["MoneyAnalyticsDto"];
             reviews: components["schemas"]["ReviewAnalyticsDto"];
             busiest: components["schemas"]["BusiestPeriodsDto"];
+        };
+        OverviewQueueDto: {
+            count: number;
+            /** @description When the longest-waiting item arrived, or null when the queue is empty. */
+            oldestAt: string | null;
+        };
+        OverviewAmountDto: {
+            currency: string;
+            amountMinor: number;
+        };
+        OverviewPayoutQueueDto: {
+            count: number;
+            /** @description When the longest-waiting item arrived, or null when the queue is empty. */
+            oldestAt: string | null;
+            /** @description What the waiting payouts add up to, per settlement currency. */
+            amounts: components["schemas"]["OverviewAmountDto"][];
+        };
+        OverviewTicketQueueDto: {
+            count: number;
+            /** @description When the longest-waiting item arrived, or null when the queue is empty. */
+            oldestAt: string | null;
+            /** @description Open or in-progress tickets nobody has taken. */
+            unassigned: number;
+        };
+        OverviewWaitingDto: {
+            /** @description Applications waiting for a decision (§42). */
+            businesses: components["schemas"]["OverviewQueueDto"];
+            /** @description Payout numbers waiting to be checked (§48). */
+            destinations: components["schemas"]["OverviewQueueDto"];
+            /** @description Payouts created and not yet sent (§36). */
+            payouts: components["schemas"]["OverviewPayoutQueueDto"];
+            /** @description New tickets (§24). */
+            tickets: components["schemas"]["OverviewTicketQueueDto"];
+        };
+        OverviewDayDto: {
+            /** @description YYYY-MM-DD, in `timeZone`. */
+            day: string;
+            /** @description Bookings whose deposit was paid that day. */
+            bookings: number;
+            /** @description Those deposits, added up. */
+            depositsMinor: number;
+            /** @description The platform's fees that day, less any handed back (§25). */
+            feesMinor: number;
+            newBusinesses: number;
+            newCustomers: number;
+        };
+        OverviewPeriodDto: {
+            bookings: number;
+            depositsMinor: number;
+            feesMinor: number;
+            newBusinesses: number;
+            newCustomers: number;
+        };
+        OverviewTotalsDto: {
+            /** @description Approved and not paused: what customers can find. */
+            liveBusinesses: number;
+            /** @description Open branches of those businesses. */
+            liveBranches: number;
+            /** @description Customer accounts that are not closed. */
+            customers: number;
+        };
+        AdminOverviewDto: {
+            asOf: string;
+            timeZone: string;
+            currency: string;
+            waiting: components["schemas"]["OverviewWaitingDto"];
+            /** @description The last 14 days, oldest first; today is the last. */
+            days: components["schemas"]["OverviewDayDto"][];
+            /** @description The last seven of those days, today included. */
+            thisWeek: components["schemas"]["OverviewPeriodDto"];
+            /** @description The seven before them. */
+            lastWeek: components["schemas"]["OverviewPeriodDto"];
+            totals: components["schemas"]["OverviewTotalsDto"];
         };
         PausedBusinessDto: {
             businessId: string;
@@ -13820,6 +13909,43 @@ export interface operations {
             };
             /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminOverviewController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOverviewDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

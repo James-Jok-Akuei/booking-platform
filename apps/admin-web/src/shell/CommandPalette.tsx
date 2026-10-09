@@ -68,8 +68,8 @@ export function CommandPalette({ onClose, onSignOut }: { onClose: () => void; on
         hint: item.hint,
         icon: item.icon,
         section: 'Pages',
-        tag: item.group,
-        words: `${item.keywords} ${item.group}`,
+        tag: item.group ?? 'Admin',
+        words: `${item.keywords} ${item.group ?? ''}`,
         run: go(item.to),
       })),
       {

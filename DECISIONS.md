@@ -16225,3 +16225,66 @@ the Waiting menu, the search, the reject / verify / send dialogs (opened,
 not confirmed) and the sign-in. Phones show tables scrolling sideways until
 each page's own piece turns them into cards. Nothing was approved,
 verified, sent or changed.
+
+## 243. Admin piece 2 — the Overview: "What needs you" (2026-10-09)
+
+The console had no home: an administrator landed on the approval queue and
+had to visit four pages to learn what was waiting. Now `/` is an Overview
+(first in the menu, where signing in lands) — the business app's Overview
+(§192), for the people who run the platform.
+
+### 243.1 One request: `GET /admin/overview`
+
+A new read-only endpoint (`analytics/admin-overview.*`, admins only, the role
+asserted again in the service, §27.1) counts, in one round trip:
+
+- **The four queues**, each with when its oldest item arrived: applications
+  waiting (§42), payout numbers to check (§48), payouts to send (§36) with
+  what they add up to per currency, new support tickets (§24) and how many
+  nobody has taken.
+- **The last 14 days, in the platform's own time zone** (PLATFORM_TIMEZONE,
+  Kigali): paid bookings, deposits, fees, new shops, new customers per day —
+  grouped by the database (`AT TIME ZONE`, as §96's busiest hour), never by
+  loading rows. **A booking counts on the day its deposit was paid**: an
+  unpaid hold that lapses never counts. **Fees come from the ledger**, net of
+  any handed back when a business cancelled (§25), so a refunded fee is not
+  shown as earned.
+- **This week and last**: the chart's two halves added up.
+- **What customers can find**: approved, unpaused shops; their open
+  branches; customer accounts not closed.
+
+`test/admin-overview.spec.ts` (5 tests): admins only; each queue counted
+with its oldest; fourteen days, today last, a booking on its deposit's day;
+this week against last with a refunded fee taken off; the platform's size.
+
+### 243.2 The page
+
+- **"Good morning."** and one sentence: "7 things are waiting for you; the
+  longest, a shop's application, for 5 days." — or "Nothing is waiting for
+  you — every queue is clear." Quick actions: invite an administrator, run
+  payouts.
+- **What needs you**: a coral card per queue — the count, what it is, how
+  long the oldest has waited (an amber chip after two days), why it matters
+  in one line ("A shop is not paid until its number is checked"), the
+  money for payouts, "2 not taken by anyone" for tickets. An empty queue is a
+  quiet white card with a green tick and "All clear". Each opens its page.
+- **The last seven days**: bookings paid, deposits taken, fees kept, and
+  who joined (shops and customers), each against the week before ("+40%",
+  "New" when last week had none).
+- **Bookings, day by day**: the business app's bar chart over 14 days, the
+  week before a step lighter, today in coral; each bar says its bookings and
+  deposits.
+- **Money — does it add up?**: what is held for shops and not yet paid out
+  (§51), payouts ready to send, the wallet check (§87 — the MTN sandbox has
+  no real wallet, said so), and whether the exchange rate needs updating
+  (not needed while the platform takes and pays in RWF).
+- **On the platform**: live shops, open branches, customers.
+
+### 243.3 Counts that follow every action
+
+Any successful action anywhere in the console (approve, verify, send,
+answer…) now refreshes the menu's counts, "Waiting" and the Overview at
+once (a mutation cache), rather than at the next minute.
+
+Checked at 1440, 1024 and 390 with the demo data (25 paid bookings this
+week, the four queues at 1 / 2 / 2 / 2).

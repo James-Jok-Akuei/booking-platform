@@ -49,7 +49,7 @@ export function LoginPage() {
         );
         return;
       }
-      navigate('/businesses', { replace: true });
+      navigate('/', { replace: true });
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Could not sign in.');
     } finally {

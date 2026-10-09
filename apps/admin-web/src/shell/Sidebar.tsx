@@ -75,14 +75,15 @@ export function Sidebar({
 
       <nav className="sb-nav" aria-label="Main">
         {SECTIONS.map((section) => (
-          <div className="sb-group" key={section.group}>
-            <p className="sb-group-title">{section.group}</p>
+          <div className="sb-group" key={section.group ?? 'top'}>
+            {section.group && <p className="sb-group-title">{section.group}</p>}
             {section.items.map((item) => {
               const badge = item.badge ? data.waiting[item.badge] : 0;
               return (
                 <NavLink
                   key={item.to}
                   to={item.to}
+                  end={item.to === '/'}
                   onClick={onNavigate}
                   className={({ isActive }) => `sb-link${isActive ? ' active' : ''}`}
                   aria-label={rail ? `${item.label}${badge ? `, ${badge} waiting` : ''}` : undefined}

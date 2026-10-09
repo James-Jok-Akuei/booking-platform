@@ -266,6 +266,37 @@ button.link.danger-link { color: var(--danger); }
 .page-head h1 { margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -0.03em; }
 .page-head p { margin: 6px 0 0; }
 
+/* The page's header, pinned under the top bar (§209, §214): the same frosted
+   glass, so the page is seen sliding underneath. It runs edge to edge of the
+   page area and never changes size while the page scrolls. Where a header is
+   tall, the part above its `.pin-from` row scrolls away under the bar and the
+   rest stays: the frame measures that part into --pt-fold. */
+.page-top {
+  position: sticky;
+  top: calc(var(--tb-h, 74px) - 1px - var(--pt-fold, 0px));
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: -6px calc(-1 * var(--pad-r, 30px)) 8px calc(-1 * var(--pad-l, 24px));
+  padding: 6px var(--pad-r, 30px) 14px var(--pad-l, 24px);
+  background: var(--canvas-glass);
+  backdrop-filter: saturate(1.5) blur(18px);
+  -webkit-backdrop-filter: saturate(1.5) blur(18px);
+  transition: box-shadow 240ms var(--ease);
+}
+.app .content .page-top > * { margin-top: 0; margin-bottom: 0; }
+/* Room between the top bar and whatever opens the page on a wide screen
+   (§237) — the title, or the slim "For you" banner above it — so nothing
+   sits against the bar. Space above the page, not in its header: once the
+   header pins, it closes up under the bar and costs no height. */
+@media (min-width: 860px) {
+  .app .content { padding-top: 18px; }
+}
+/* Bar and header read as one sheet of glass: the edge moves to the header. */
+.app-main:has(.page-top) .topbar.is-scrolled { box-shadow: none; }
+.app.is-scrolled .page-top { box-shadow: 0 1px 0 rgba(31, 42, 31, 0.06), 0 14px 30px -24px rgba(31, 42, 31, 0.35); }
+
 /* Segmented tabs: a white track, the chosen one a night pill. */
 .tabs {
   display: inline-flex;

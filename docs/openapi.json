@@ -10838,6 +10838,47 @@
         ]
       }
     },
+    "/admin/overview": {
+      "get": {
+        "operationId": "AdminOverviewController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverviewDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminOverview"
+        ]
+      }
+    },
     "/admin/payouts/run": {
       "post": {
         "operationId": "AdminPayoutsController_run",
@@ -19974,6 +20015,265 @@
           "money",
           "reviews",
           "busiest"
+        ]
+      },
+      "OverviewQueueDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "oldestAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the longest-waiting item arrived, or null when the queue is empty."
+          }
+        },
+        "required": [
+          "count",
+          "oldestAt"
+        ]
+      },
+      "OverviewAmountDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "currency",
+          "amountMinor"
+        ]
+      },
+      "OverviewPayoutQueueDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "oldestAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the longest-waiting item arrived, or null when the queue is empty."
+          },
+          "amounts": {
+            "description": "What the waiting payouts add up to, per settlement currency.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OverviewAmountDto"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "oldestAt",
+          "amounts"
+        ]
+      },
+      "OverviewTicketQueueDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "oldestAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the longest-waiting item arrived, or null when the queue is empty."
+          },
+          "unassigned": {
+            "type": "number",
+            "description": "Open or in-progress tickets nobody has taken."
+          }
+        },
+        "required": [
+          "count",
+          "oldestAt",
+          "unassigned"
+        ]
+      },
+      "OverviewWaitingDto": {
+        "type": "object",
+        "properties": {
+          "businesses": {
+            "description": "Applications waiting for a decision (§42).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OverviewQueueDto"
+              }
+            ]
+          },
+          "destinations": {
+            "description": "Payout numbers waiting to be checked (§48).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OverviewQueueDto"
+              }
+            ]
+          },
+          "payouts": {
+            "description": "Payouts created and not yet sent (§36).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OverviewPayoutQueueDto"
+              }
+            ]
+          },
+          "tickets": {
+            "description": "New tickets (§24).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OverviewTicketQueueDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "businesses",
+          "destinations",
+          "payouts",
+          "tickets"
+        ]
+      },
+      "OverviewDayDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "description": "YYYY-MM-DD, in `timeZone`."
+          },
+          "bookings": {
+            "type": "number",
+            "description": "Bookings whose deposit was paid that day."
+          },
+          "depositsMinor": {
+            "type": "number",
+            "description": "Those deposits, added up."
+          },
+          "feesMinor": {
+            "type": "number",
+            "description": "The platform's fees that day, less any handed back (§25)."
+          },
+          "newBusinesses": {
+            "type": "number"
+          },
+          "newCustomers": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "day",
+          "bookings",
+          "depositsMinor",
+          "feesMinor",
+          "newBusinesses",
+          "newCustomers"
+        ]
+      },
+      "OverviewPeriodDto": {
+        "type": "object",
+        "properties": {
+          "bookings": {
+            "type": "number"
+          },
+          "depositsMinor": {
+            "type": "number"
+          },
+          "feesMinor": {
+            "type": "number"
+          },
+          "newBusinesses": {
+            "type": "number"
+          },
+          "newCustomers": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "bookings",
+          "depositsMinor",
+          "feesMinor",
+          "newBusinesses",
+          "newCustomers"
+        ]
+      },
+      "OverviewTotalsDto": {
+        "type": "object",
+        "properties": {
+          "liveBusinesses": {
+            "type": "number",
+            "description": "Approved and not paused: what customers can find."
+          },
+          "liveBranches": {
+            "type": "number",
+            "description": "Open branches of those businesses."
+          },
+          "customers": {
+            "type": "number",
+            "description": "Customer accounts that are not closed."
+          }
+        },
+        "required": [
+          "liveBusinesses",
+          "liveBranches",
+          "customers"
+        ]
+      },
+      "AdminOverviewDto": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string"
+          },
+          "timeZone": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "waiting": {
+            "$ref": "#/components/schemas/OverviewWaitingDto"
+          },
+          "days": {
+            "description": "The last 14 days, oldest first; today is the last.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OverviewDayDto"
+            }
+          },
+          "thisWeek": {
+            "description": "The last seven of those days, today included.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OverviewPeriodDto"
+              }
+            ]
+          },
+          "lastWeek": {
+            "description": "The seven before them.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OverviewPeriodDto"
+              }
+            ]
+          },
+          "totals": {
+            "$ref": "#/components/schemas/OverviewTotalsDto"
+          }
+        },
+        "required": [
+          "asOf",
+          "timeZone",
+          "currency",
+          "waiting",
+          "days",
+          "thisWeek",
+          "lastWeek",
+          "totals"
         ]
       },
       "PausedBusinessDto": {
