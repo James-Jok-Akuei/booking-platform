@@ -145,6 +145,19 @@ export const updateProfile = (body: {
 
 export const getCategories = () => api<Category[]>('/categories', { anonymous: true });
 
+// ---------------------------------------------------------------------------
+// Going live (§255, §256)
+// ---------------------------------------------------------------------------
+
+export type Readiness = components['schemas']['BusinessReadinessDto'];
+export type ReadinessKey = Readiness['items'][number]['key'];
+
+/** What the shop has, and still needs, before it can go live. */
+export const getReadiness = () => api<Readiness>('/business/readiness');
+
+/** Sends the shop for review — or back for review after a rejection. */
+export const submitForReview = () => api<Readiness>('/business/submit', { method: 'POST' });
+
 export const listServices = () => api<Service[]>('/business/services');
 
 /**

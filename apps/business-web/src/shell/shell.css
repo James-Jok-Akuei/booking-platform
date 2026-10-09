@@ -127,7 +127,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sb-sub { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: capitalize; }
+.sb-sub { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .sb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--star); flex: none; }
 .sb-dot.is-live { background: var(--ok); box-shadow: 0 0 0 3px rgba(14, 159, 84, 0.16); }
 

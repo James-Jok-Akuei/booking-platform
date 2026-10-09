@@ -16966,3 +16966,89 @@ One select (`READINESS_SELECT`) and one function decide both, for the shop
 Eleven tests in `shop-onboarding.spec.ts`; two existing tests now build a
 bookable shop to approve (business-approval, guard-chain); the full suite
 (63 suites, 1,378 tests) passes.
+
+## 256. Setting up a shop: four short steps, every one skippable, and where it stands after (2026-10-09)
+
+The business app's half of §255: what a new seller sees after signing up, and
+what every seller sees until their shop is live.
+
+### 256.1 The wizard (`/welcome`, `src/onboarding/`)
+
+Asked for: only the vital details, everything skippable, the rest added later
+at the seller's own pace. So four short steps and a send-off, one at a time,
+full screen outside the app's frame, in the order a seller thinks of it:
+
+1. **Your shop** — name, what kind of shop (the customer app's category
+   marks, then its types as chips), phone. Logo optional. A preview shows the
+   name and type as customers will see them while they are typed.
+2. **Where you are** — the first branch: name (the shop's, by default),
+   address with suggestions that drop the pin (`AddressField`), the pin itself
+   (`PlaceField`: a Maps link, coordinates or "use my position") and the
+   district (`DistrictField`) — the same pieces as the branch panel (§117,
+   §195). Opening hours from three common weeks (Monday–Saturday,
+   every day, Monday–Friday) and one opening and closing time; split days and
+   breaks are for Branches & hours, and the step says so.
+3. **Your first service** — name (examples for the shop's type, one press
+   each), price, how long (chips), deposit (20/30/50 %, 20 by default, with
+   what the customer pays in money). Offered at every open branch.
+4. **Getting paid — optional** — a MoMo or Airtel number, its network shown
+   as it is typed. "Add it later" is the skip.
+5. **Send for review** — the checklist (or one line, "Everything we need is
+   in", once it is), the nice-to-haves with a way to each, and Send. Then a
+   tick that draws itself and what happens next: we check (usually one working
+   day, may call), you get an email, meanwhile add photos and services.
+
+Every step has **Skip for now** (or Add it later) and **Save and continue**;
+**Finish later** is always at the top. Each step reads what is saved, so a
+step already done shows what it holds (the branch on the map, the service and
+its price, the payout number) instead of asking again, and coming back opens
+at the first required step still to do (`nextStep`). The rail on the left
+(steps, ticks) folds into a "Step 2 of 4" line on narrower screens; on a phone
+the main button is full width with Back and Skip beneath it. A live or
+suspended shop has nothing to set up and is sent to the Overview; staff are
+told the owner or a manager finishes it.
+
+Left out on purpose — all in the app already, and none needed to go live:
+description, cover and gallery photos, more branches, service photos and
+descriptions, the team, time off, split hours.
+
+### 256.2 Getting there
+
+- Signing in (`auth/LoginPage.tsx`) asks for the shop's readiness once the
+  code is right: an owner or manager whose shop is not yet sent and not yet
+  ready goes to `/welcome`; everybody else to their day (or where they were
+  going). A new account says "Let us set up your shop", and then does.
+- `?start=signup` and `?start=signin` (the landing page's buttons, §258)
+  change only the sign-in sheet's words ("Start selling. Free to join." /
+  "Welcome back."); one email box still serves both and the server still
+  decides who is new (§50).
+
+### 256.3 Where the shop stands (`GoLiveCard` on the Overview, the frame)
+
+Until the shop is live, a card at the top of the Overview says what its state
+means and what to do, in the seller's words:
+
+- **Setting up**: a ring of what is in (4/6), the checklist with a way into
+  the wizard at each missing item, "Continue setting up" — or, once ready,
+  only the nice-to-haves and **Send for review** right there.
+- **Waiting**: "We are checking your shop", when it was sent, that we may
+  call and that an email comes; set up → we check it → customers book, with
+  the middle lit; and things to do meanwhile.
+- **Sent back**: what we said, quoted, and **Send back for review** (plus
+  Edit your shop).
+- **Suspended**: why, and Talk to support.
+- **Just approved** (in the last week, once, closed for good on this device):
+  "You are live!", with a little confetti.
+
+The sidebar's card and the shop's state word follow the same words instead
+of the raw status ("This business is PENDING"): Finish setting up (n things
+left) / Ready to send / Waiting for review / Needs a change / Shop suspended /
+Your shop is paused; under the shop's name, Setting up / In review / Needs a
+change / Suspended / Paused / Live (`shopStateWord`), also on the shopfront
+page. The frame asks for readiness once (`['readiness']`, shared with the
+Overview and the wizard).
+
+Tested end to end on a new account: signed up from "Start selling", landed in
+the wizard, each step saved through the page, sent for review (the
+administrator emailed), rejected with a reason, sent back (emailed again),
+approved — at 1440, 1024 and 390 wide.

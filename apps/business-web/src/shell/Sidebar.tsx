@@ -3,8 +3,9 @@ import { Link, NavLink } from 'react-router-dom';
 import { SECTIONS } from '../nav';
 import { initialsOf } from '../ui/Avatar';
 import { ShopLogo } from '../ui/ShopLogo';
-import { Icon } from '../ui/Icon';
+import { Icon, type IconName } from '../ui/Icon';
 import { roleLabel, type ShellData } from './useShellData';
+import { shopStateWord } from '../onboarding/steps';
 
 /**
  * The menu down the left (§131, §190).
@@ -45,7 +46,30 @@ export function Sidebar({
   const hideTip = () => setTip(null);
   const name = business?.name ?? 'Your business';
   const live = business?.status === 'APPROVED' && !data.paused;
-  const state = !business ? '' : data.paused ? 'Paused' : live ? 'Live' : business.status.toLowerCase();
+  // Why customers cannot see the shop, in the seller's words rather than
+  // the status's (§256), and where to go about it.
+  const left = (data.readiness?.items ?? []).filter((i) => i.required && !i.done).length;
+  const standing: { head: string; text: string; to: string; icon: IconName; tone: string } | null =
+    !business || live
+      ? null
+      : business.status === 'APPROVED'
+        ? { head: 'Your shop is paused', text: 'Customers cannot book until you resume it.', to: '/profile', icon: 'pause', tone: 'warn' }
+        : business.status === 'PENDING' && data.readiness?.submittedAt
+          ? { head: 'Waiting for review', text: 'We are checking your shop. You get an email when it is live.', to: '/', icon: 'hourglass', tone: 'warn' }
+          : business.status === 'PENDING'
+            ? left
+              ? {
+                  head: 'Finish setting up',
+                  text: `${left} ${left === 1 ? 'thing' : 'things'} left before we can check your shop.`,
+                  to: '/welcome',
+                  icon: 'clock',
+                  tone: 'warn',
+                }
+              : { head: 'Ready to send', text: 'Send your shop for review from your Overview.', to: '/', icon: 'send', tone: 'warn' }
+            : business.status === 'REJECTED'
+              ? { head: 'Needs a change', text: 'See what we said, fix it, and send your shop back.', to: '/', icon: 'alert', tone: 'danger' }
+              : { head: 'Shop suspended', text: 'Customers cannot find or book it. Talk to support.', to: '/help', icon: 'alert', tone: 'danger' };
+  const state = !business ? '' : shopStateWord(business.status, data.paused, data.readiness?.submittedAt);
 
   const badgeFor = (to: string) =>
     to === '/appointments' ? data.expectedToday : to === '/messages' ? data.unreadMessages : 0;
@@ -126,35 +150,19 @@ export function Sidebar({
             unbookable, so its empty appointment list is correct — and looks
             like a bug unless something says so. A live shop needs no card:
             the green dot on its logo, top right, says it. */}
-        {business && !live && (
-          <Link to="/profile" className={`sb-status ${live ? 'is-live' : 'is-off'}`} onClick={onNavigate}>
+        {standing && (
+          <Link to={standing.to} className="sb-status is-off" onClick={onNavigate}>
             {/* The shop's own logo, with why it is hidden on the corner (§231). */}
             <ShopLogo
               logoUrl={data.logoUrl}
               name={name}
               size={34}
               className="sb-status-logo"
-              badge={{
-                icon: data.paused ? 'pause' : business.status === 'PENDING' ? 'clock' : 'alert',
-                tone: business.status === 'PENDING' || data.paused ? 'warn' : 'danger',
-              }}
+              badge={{ icon: standing.icon, tone: standing.tone }}
             />
             <span className="sb-status-body">
-              <span className="sb-status-head">
-                {live ? 'Your shop is live' : data.paused ? 'Your shop is paused' : 'Not live yet'}
-              </span>
-              <span className="sb-status-text">
-                {live ? (
-                  'Customers can find you and book.'
-                ) : data.paused ? (
-                  'Customers cannot book until you resume it.'
-                ) : (
-                  <>
-                    This business is <strong>{business.status}</strong>, so it does not appear in
-                    search and cannot take new bookings.
-                  </>
-                )}
-              </span>
+              <span className="sb-status-head">{standing.head}</span>
+              <span className="sb-status-text">{standing.text}</span>
             </span>
           </Link>
         )}

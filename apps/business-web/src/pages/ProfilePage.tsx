@@ -6,6 +6,7 @@ import {
   getCategories,
   getGallery,
   getProfile,
+  getReadiness,
   listLocations,
   pauseBusiness,
   removeGalleryPhoto,
@@ -23,6 +24,7 @@ import { Select } from '../ui/Select';
 import { ShopLogo } from '../ui/ShopLogo';
 import { Stars } from '../ui/Stars';
 import { Switch } from '../ui/Switch';
+import { shopStateWord } from '../onboarding/steps';
 import './profile.css';
 
 /** Mirrors ALLOWED_MIME_TYPES on the server (§132.3). */
@@ -103,6 +105,7 @@ function PickImage({
 
 function ShopWindow({ profile, locations }: { profile: BusinessProfile; locations: Location[] }) {
   const queryClient = useQueryClient();
+  const readiness = useQuery({ queryKey: ['readiness'], queryFn: getReadiness });
   const [problem, setProblem] = useState<string | null>(null);
 
   const upload = useMutation({
@@ -158,7 +161,7 @@ function ShopWindow({ profile, locations }: { profile: BusinessProfile; location
           </p>
           <div className="pf-badges">
             <span className={`pf-badge${live ? ' is-live' : ' is-off'}`}>
-              <i /> {live ? 'Live' : profile.pausedAt ? 'Paused' : profile.status.toLowerCase()}
+              <i /> {shopStateWord(profile.status, Boolean(profile.pausedAt), readiness.data?.submittedAt)}
             </span>
             {rating !== null && (
               <span className="pf-badge">

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getMe, getProfile, listAppointments } from '../api/business';
+import { getMe, getProfile, getReadiness, listAppointments } from '../api/business';
 import { listThreads } from '../api/chat';
 
 /** Today, from local midnight to the next one, as the instants the API takes. */
@@ -24,6 +24,9 @@ export const todayRange = () => {
 export function useShellData() {
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile, retry: false });
+  // Whether a shop that is not live has been sent for review, and what it
+  // still needs (§256) — so the frame can say so in words.
+  const readiness = useQuery({ queryKey: ['readiness'], queryFn: getReadiness, retry: false });
 
   const expectedToday = useQuery({
     queryKey: ['appointments', 'badge', 'expected-today'],
@@ -46,6 +49,7 @@ export function useShellData() {
     business,
     logoUrl: profile.data?.logoUrl ?? null,
     paused: Boolean(profile.data?.pausedAt),
+    readiness: readiness.data ?? null,
     expectedToday: expectedToday.data?.total ?? 0,
     unreadMessages: (threads.data?.threads ?? []).reduce((sum, t) => sum + (t.unreadCount ?? 0), 0),
   };

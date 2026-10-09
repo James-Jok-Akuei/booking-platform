@@ -37,6 +37,7 @@ import {
 import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
 import { confirmDone, useServiceCovers } from '../lib/bookingLook';
 import { ForYouTop } from '../ads/ForYouTop';
+import { GoLiveCard } from '../onboarding/GoLiveCard';
 import { useMediaQuery } from '../shell/useMediaQuery';
 import '../ads/ads.css';
 import './overview.css';
@@ -243,6 +244,9 @@ export function OverviewPage() {
           </div>
         </header>
       </div>
+
+      {/* Until the shop is live, where it stands comes first (§256). */}
+      <GoLiveCard />
 
       {/* No room for the "For you" column (§204): on a phone or tablet it sits
           at the top of the home page instead, like the customer app's (§205). */}

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent, type ReactNode } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError, requestOtp } from '../api/client';
-import { publishedLegal, wallPlaces, type LegalDocument } from '../api/business';
+import { getMe, getReadiness, publishedLegal, wallPlaces, type LegalDocument } from '../api/business';
 import { CodeBoxes, type CodeState } from '../ui/CodeBoxes';
 import { Icon, type IconName } from '../ui/Icon';
 import { NetworkMark } from '../ui/NetworkMark';
@@ -65,6 +65,11 @@ export function LoginPage() {
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from;
   const next = from && from !== '/login' ? from : '/';
+  // What the landing page's buttons asked for (§258): "Start selling" or
+  // "Sign in". Only the words change — one email box serves both, and the
+  // server still decides who is new (§50).
+  const start = new URLSearchParams(location.search).get('start');
+  const queryClient = useQueryClient();
   // Somebody already signed in has nothing to do here — judged as they
   // arrive only: signing in on this page sets the user too, and the "You
   // are in" moment has to play before leaving.
@@ -201,8 +206,11 @@ export function LoginPage() {
       }
       setCodeState('ok');
       later(() => setStep('done'), 450);
-      // Back where they were going, or to their day.
-      later(() => navigate(next, { replace: true }), 1900);
+      // Back where they were going, or to their day — or, for a shop still
+      // to be set up, to setting it up (§256).
+      const began = Date.now();
+      const where = await whereNext();
+      later(() => navigate(where, { replace: true }), Math.max(0, 1900 - (Date.now() - began)));
     } catch (caught) {
       setCodeState('error');
       setShake(true);
@@ -211,6 +219,27 @@ export function LoginPage() {
         setCode('');
         setCodeState('idle');
       }, 700);
+    }
+  };
+
+  /**
+   * A shop nobody has finished setting up — not yet sent for review, still
+   * missing something it needs — opens on setting it up (§256), for whoever
+   * may do it (its owner or a manager). Everybody else, and anybody who was
+   * going somewhere in particular, goes there.
+   */
+  const whereNext = async () => {
+    if (next !== '/') return next;
+    try {
+      const [readiness, me] = await Promise.all([
+        queryClient.fetchQuery({ queryKey: ['readiness'], queryFn: getReadiness }),
+        queryClient.fetchQuery({ queryKey: ['me'], queryFn: getMe }),
+      ]);
+      const role = me.businessMembership?.role;
+      const setUp = role === 'OWNER' || role === 'MANAGER';
+      return setUp && readiness.status === 'PENDING' && readiness.submittedAt === null && !readiness.ready ? '/welcome' : '/';
+    } catch {
+      return '/';
     }
   };
 
@@ -283,15 +312,42 @@ export function LoginPage() {
               }}
               noValidate
             >
-              <h1 className="au-title">
-                One email.
-                <br />
-                <span className="au-hot">No password.</span>
-              </h1>
-              <p className="au-lead">
-                Type your email and we will send you a 6-digit code. New here? The same code creates your
-                business account.
-              </p>
+              {start === 'signup' ? (
+                <>
+                  <h1 className="au-title">
+                    Start selling.
+                    <br />
+                    <span className="au-hot">Free to join.</span>
+                  </h1>
+                  <p className="au-lead">
+                    Type your business email and we will send you a 6-digit code. It creates your account — no
+                    password — and then we set up your shop together, in about five minutes.
+                  </p>
+                </>
+              ) : start === 'signin' ? (
+                <>
+                  <h1 className="au-title">
+                    Welcome
+                    <br />
+                    <span className="au-hot">back.</span>
+                  </h1>
+                  <p className="au-lead">
+                    Type your business email and we will send you a 6-digit code to sign in.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="au-title">
+                    One email.
+                    <br />
+                    <span className="au-hot">No password.</span>
+                  </h1>
+                  <p className="au-lead">
+                    Type your email and we will send you a 6-digit code. New here? The same code creates your
+                    business account.
+                  </p>
+                </>
+              )}
 
               <label className="au-field">
                 <span className="au-field-icon">

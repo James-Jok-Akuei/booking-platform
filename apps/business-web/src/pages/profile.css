@@ -110,7 +110,6 @@
 .pf-id-text p { margin: 2px 0 10px; color: var(--muted); font-weight: 600; }
 .pf-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .pf-badge { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border-radius: 99px; background: var(--sunken); font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
-.pf-badge.is-live, .pf-badge.is-off { text-transform: capitalize; }
 .pf-badge svg { color: var(--muted); }
 .pf-badge i { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
 .pf-badge.is-live { background: var(--ok-soft); color: var(--ok-deep); }

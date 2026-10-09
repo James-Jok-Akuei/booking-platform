@@ -1,0 +1,235 @@
+/* Setting up a shop (§256): full screen, one step at a time. */
+
+.wz { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; background: var(--canvas); }
+
+/* ---- the top: the mark, how far along, and the way out ---- */
+.wz-top {
+  position: sticky; top: 0; z-index: 20;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px;
+  padding: 14px 28px; background: var(--canvas-glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.wz-brand { display: inline-flex; align-items: center; gap: 11px; }
+.wz-brand > span { display: flex; flex-direction: column; font-weight: 700; font-size: 15px; letter-spacing: -0.01em; line-height: 1.2; }
+.wz-brand b { color: var(--accent); font-weight: 800; }
+.wz-brand em { font-style: normal; font-weight: 600; font-size: 12px; color: var(--muted); letter-spacing: 0; }
+.wz-progress { justify-self: center; width: min(360px, 100%); height: 6px; border-radius: var(--r-pill); background: var(--sunken-2); overflow: hidden; }
+.wz-progress i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 600ms var(--ease); }
+.wz-later { background: transparent; border-color: transparent; color: var(--ink-2); gap: 6px; font-weight: 600; }
+.wz-later:hover { background: var(--sunken); }
+
+/* ---- the body: the steps on the left, the step itself in the middle ---- */
+.wz-body { flex: 1; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 0; width: 100%; max-width: 1180px; margin: 0 auto; padding: 36px 28px 64px; }
+
+.wz-rail { position: sticky; top: 104px; align-self: start; display: flex; flex-direction: column; gap: 6px; padding-right: 36px; }
+.wz-rail h2 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
+.wz-rail > p { margin: 0 0 14px; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+.wz-rail ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; position: relative; }
+.wz-rail ol::before { content: ''; position: absolute; left: 27px; top: 30px; bottom: 30px; width: 2px; background: var(--line); border-radius: 2px; }
+.wz-rail li button {
+  position: relative; width: 100%; justify-content: flex-start; gap: 14px; padding: 10px 12px; min-height: 60px; text-align: left;
+  background: transparent; border-color: transparent; border-radius: var(--r-md); box-shadow: none; font-weight: 500;
+}
+.wz-rail li button:hover { background: var(--sunken); }
+.wz-rail li button > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.wz-rail li strong { font-size: 14.5px; color: var(--ink-2); font-weight: 700; }
+.wz-rail li em { font-style: normal; font-size: 12.5px; color: var(--muted); }
+.wz-dot {
+  flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--panel); border: 2px solid var(--line-strong); color: var(--muted); font-weight: 800; font-size: 13px;
+  transition: background 200ms var(--ease), border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.wz-rail li.is-done .wz-dot { background: var(--ok); border-color: var(--ok); color: #fff; }
+.wz-rail li.is-on button { background: var(--panel); box-shadow: var(--shadow-sm); }
+.wz-rail li.is-on strong { color: var(--ink); }
+.wz-rail li.is-on .wz-dot { border-color: var(--accent); color: var(--accent); box-shadow: var(--ring); }
+.wz-rail li.is-on.is-done .wz-dot { background: var(--ok); border-color: var(--ok); color: #fff; box-shadow: 0 0 0 4px rgba(14, 159, 84, 0.16); }
+.wz-rail-foot { display: flex; align-items: center; gap: 8px; margin: 18px 0 0; padding: 12px 14px; border-radius: var(--r-md); background: var(--sunken); color: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+.wz-rail-foot svg { flex: none; color: var(--muted); }
+
+.wz-main { min-width: 0; display: flex; flex-direction: column; align-items: center; }
+.wz-phone-steps { display: none; }
+
+.wz-card {
+  width: 100%; max-width: 640px; padding: 34px 36px 28px; border-radius: var(--r-xl); background: var(--panel);
+  border: 1px solid var(--line); box-shadow: var(--shadow-md); animation: rise-in 420ms var(--ease) both;
+}
+.wz-card form, .wz-card > div:not(.wz-sent) { display: flex; flex-direction: column; gap: 20px; }
+.wz-card h1 { margin: 0; font-size: 28px; line-height: 1.15; letter-spacing: -0.025em; }
+.wz-eyebrow { display: block; margin-bottom: -12px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.wz-lead { margin: -10px 0 4px; color: var(--muted); font-size: 15px; line-height: 1.55; }
+.wz-optional { display: inline-block; vertical-align: middle; margin-left: 6px; padding: 3px 9px; border-radius: var(--r-pill); background: var(--sunken); color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 0; }
+
+/* ---- fields: a bold label, the control, a quiet line of help ---- */
+.wz-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.wz-field > span:first-child, .wz .bf-field > label { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.wz-field > span:first-child em { font-style: normal; font-weight: 600; color: var(--faint); font-size: 12px; margin-left: 4px; }
+.wz-field > em, .wz .bf-help { font-style: normal; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.wz-field input:not([type='time']) { width: 100%; min-height: 46px; font-size: 15px; }
+.wz-two { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 16px; align-items: start; }
+
+/* How customers will see you, as it is typed. */
+.wz-preview {
+  position: relative; display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--r-lg);
+  background: linear-gradient(135deg, var(--accent-tint), var(--sunken)); border: 1px solid var(--line);
+}
+.wz-logo-blank { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 16px; border: 2px dashed var(--line-strong); background: rgba(255, 255, 255, 0.7); color: var(--faint); }
+.wz-preview > span { display: flex; flex-direction: column; min-width: 0; }
+.wz-preview strong { font-size: 17px; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wz-preview > span em { font-style: normal; color: var(--muted); font-size: 13px; }
+.wz-preview > i { position: absolute; top: 10px; right: 14px; font-style: normal; font-size: 11px; font-weight: 700; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* What kind of shop: the customer app's category marks, then the types. */
+.category-mark { display: inline-grid; place-items: center; flex: none; }
+.wz-cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.wz-cats button {
+  flex-direction: column; gap: 8px; min-height: 96px; padding: 14px 8px 10px; border-radius: var(--r-md);
+  background: var(--panel); border: 1.5px solid var(--line); font-size: 12.5px; font-weight: 600; color: var(--ink-2); line-height: 1.25; text-align: center;
+  transition: border-color 160ms var(--ease), transform 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+.wz-cats button:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+.wz-cats button span { white-space: normal; overflow-wrap: anywhere; }
+.wz-cats button.is-on { border-color: var(--accent); box-shadow: var(--ring); color: var(--ink); }
+.wz-cat-skel { height: 96px; border-radius: var(--r-md); }
+.wz-types { display: flex; flex-wrap: wrap; gap: 8px; animation: rise-in 300ms var(--ease) both; }
+.wz-types button, .wz-chips button, .wz-examples button, .wz-presets button {
+  min-height: 36px; padding: 0 14px; border-radius: var(--r-pill); background: var(--panel); border: 1.5px solid var(--line-strong);
+  font-size: 13px; font-weight: 600; color: var(--ink-2); gap: 6px;
+}
+.wz-types button:hover, .wz-chips button:hover, .wz-examples button:hover, .wz-presets button:hover { border-color: var(--faint); }
+.wz-types button.is-on, .wz-chips button.is-on, .wz-presets button.is-on { background: var(--night); border-color: var(--night); color: #fff; }
+.wz-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.wz-examples { display: flex; flex-wrap: wrap; gap: 6px; }
+.wz-examples button { min-height: 30px; padding: 0 11px; font-size: 12.5px; border-style: dashed; color: var(--muted); }
+
+.wz-logo > div { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.wz-logo > div > em { font-style: normal; font-size: 12.5px; color: var(--muted); }
+
+/* Hours: three common weeks, then the times. */
+.wz-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.wz-times { display: flex; align-items: flex-end; gap: 10px; }
+.wz-times label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.wz-times input { min-width: 156px; font-size: 15px; }
+.wz-times > span { padding-bottom: 10px; color: var(--faint); }
+
+.wz-branch .bf-place input { min-height: 38px; }
+
+/* Money and numbers with what they are written beside them. */
+.wz-money, .wz-msisdn {
+  display: flex; align-items: center; gap: 8px; padding-left: 12px; border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--panel);
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+.wz-money:focus-within, .wz-msisdn:focus-within { border-color: var(--accent); box-shadow: var(--ring); }
+.wz-money b { font-size: 13px; color: var(--muted); font-weight: 800; }
+.wz .wz-money input, .wz .wz-msisdn input { flex: 1; min-width: 0; border: none; background: transparent; box-shadow: none; padding-left: 2px; font-weight: 600; }
+.wz-msisdn { padding: 0 12px 0 7px; }
+.wz-msisdn > em { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--ok-deep); white-space: nowrap; }
+.wz-msisdn-blank { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: var(--sunken); color: var(--muted); }
+
+/* What is already saved, when coming back to a step. */
+.wz-have { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--panel); box-shadow: var(--shadow-xs); }
+.wz-have > span:not(.wz-have-icon) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.wz-have strong { font-size: 15px; }
+.wz-have em { font-style: normal; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wz-have > svg:last-child { flex: none; color: var(--ok); }
+.wz-have-icon { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--accent-soft); color: var(--accent-deep); }
+
+.wz-note { display: flex; align-items: flex-start; gap: 9px; margin: 0; padding: 12px 14px; border-radius: var(--r-md); background: var(--sunken); color: var(--ink-2); font-size: 13px; line-height: 1.5; }
+.wz-note svg { flex: none; margin-top: 2px; color: var(--muted); }
+.wz-note.is-warn { background: var(--warn-soft); color: #7a4a00; }
+.wz-note.is-warn svg { color: var(--warn); }
+.wz-note a { font-weight: 700; }
+.wz-inline { min-height: 0; padding: 0; border: none; background: none; color: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
+.wz-problem { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 11px 14px; border-radius: var(--r-md); background: var(--danger-soft); color: var(--danger); font-size: 13.5px; font-weight: 600; animation: pop-in 240ms var(--ease) both; }
+.wz-problem svg { flex: none; margin-top: 2px; }
+
+/* ---- the way on: back on the left, skip and continue on the right ---- */
+.wz-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; padding-top: 20px; border-top: 1px solid var(--line); }
+.wz-foot > div { display: flex; align-items: center; gap: 8px; }
+.wz-back, .wz-skip { background: transparent; border-color: transparent; color: var(--ink-2); font-weight: 600; gap: 4px; }
+.wz-back:hover, .wz-skip:hover { background: var(--sunken); }
+.wz-skip { color: var(--muted); }
+.wz-go { min-height: 46px; padding: 0 22px; font-size: 15px; gap: 8px; border-radius: var(--r-md); }
+.wz-go svg { transition: transform 200ms var(--ease); }
+.wz-go:hover:not(:disabled) svg { transform: translateX(3px); }
+
+/* ---- the last step: what is in, what is missing, then send ---- */
+.wz-check { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.wz-check li { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 10px 8px 16px; font-weight: 600; color: var(--ink); }
+.wz-check li + li { border-top: 1px solid var(--line); }
+.wz-check li > svg { flex: none; color: var(--faint); }
+.wz-check li.is-done > svg { color: var(--ok); }
+.wz-check li.is-done > span { color: var(--ink-2); }
+.wz-check li > span { flex: 1; min-width: 0; }
+.wz-check li button { min-height: 34px; padding: 0 12px; gap: 4px; font-size: 13px; color: var(--accent-deep); background: var(--accent-tint); border-color: transparent; }
+.wz-check li button:hover { background: var(--accent-soft); }
+.wz-check.is-optional li { font-weight: 500; min-height: 46px; }
+.wz-check.is-optional li button { color: var(--ink-2); background: var(--sunken); }
+.wz-allin { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; border-radius: var(--r-lg); background: var(--ok-soft); color: var(--ok-deep); }
+.wz-allin > svg { flex: none; margin-top: 1px; }
+.wz-allin span { display: flex; flex-direction: column; gap: 3px; }
+.wz-allin strong { font-size: 15px; color: var(--ink); }
+.wz-allin em { font-style: normal; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+.wz-sub { margin: 4px 0 -10px; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.wz-reason { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: var(--r-lg); background: var(--danger-soft); color: var(--danger); }
+.wz-reason svg { flex: none; margin-top: 2px; }
+.wz-reason span { display: flex; flex-direction: column; gap: 2px; color: var(--ink); font-size: 14px; line-height: 1.5; }
+.wz-reason strong { color: var(--danger); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ---- sent: a tick that draws itself, and what happens next ---- */
+.wz-sent { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; padding: 10px 0 6px; }
+.wz-sent .wz-lead { margin: -4px 0 6px; }
+.wz-sent-ring { position: relative; width: 96px; height: 96px; display: grid; place-items: center; margin-bottom: 4px; }
+.wz-sent-ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--ok-soft); animation: wz-ring 900ms var(--spring) both; }
+.wz-sent-ring > span { position: relative; width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center; background: var(--ok); box-shadow: 0 10px 24px -8px rgba(14, 159, 84, 0.55); animation: pop-in 500ms var(--spring) 120ms both; }
+.wz-sent-ring path { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; animation: wz-draw 520ms var(--ease) 480ms forwards; }
+@keyframes wz-ring { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes wz-draw { to { stroke-dashoffset: 0; } }
+.wz-next { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 10px; width: 100%; text-align: left; }
+.wz-next li { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; border-radius: var(--r-lg); background: var(--sunken); font-size: 14px; line-height: 1.5; color: var(--ink-2); animation: rise-in 420ms var(--ease) both; }
+.wz-next li:nth-child(1) { animation-delay: 700ms; }
+.wz-next li:nth-child(2) { animation-delay: 800ms; }
+.wz-next li:nth-child(3) { animation-delay: 900ms; }
+.wz-next li b { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--panel); color: var(--accent-deep); font-size: 13px; box-shadow: var(--shadow-xs); }
+.wz-next strong { color: var(--ink); }
+.wz-skel { height: 420px; border-radius: var(--r-lg); }
+
+/* ---- narrower: the rail folds into a line above the card ---- */
+@media (max-width: 1080px) {
+  .wz-body { grid-template-columns: 260px minmax(0, 1fr); padding: 28px 22px 56px; }
+  .wz-rail { padding-right: 24px; }
+  .wz-rail li em { display: none; }
+  .wz-rail li button { min-height: 50px; }
+  .wz-rail ol::before { top: 25px; bottom: 25px; }
+}
+@media (max-width: 860px) {
+  .wz-top { grid-template-columns: auto auto; gap: 12px; padding: 12px 16px; }
+  .wz-progress { grid-column: 1 / -1; grid-row: 2; width: 100%; height: 4px; justify-self: stretch; }
+  .wz-later { justify-self: end; }
+  .wz-body { display: block; padding: 20px 16px 40px; }
+  .wz-rail { display: none; }
+  .wz-phone-steps { display: block; width: 100%; max-width: 640px; margin-bottom: 12px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+}
+@media (max-width: 560px) {
+  .wz-brand em { display: none; }
+  .wz-brand > span { font-size: 14px; }
+  .wz-card { padding: 22px 18px 18px; border-radius: var(--r-lg); }
+  .wz-card h1 { font-size: 23px; }
+  .wz-eyebrow { display: none; }
+  .wz-lead { margin-top: -12px; font-size: 14px; }
+  .wz-cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wz-cats { gap: 8px; }
+  .wz-cats button { flex-direction: row; justify-content: flex-start; gap: 10px; padding: 10px; text-align: left; min-height: 64px; font-size: 12.5px; }
+  .wz-cats button .category-mark { width: 32px !important; height: 32px !important; }
+  .wz-two { grid-template-columns: minmax(0, 1fr); }
+  .wz-times input { min-width: 0; width: 100%; }
+  .wz-times label { flex: 1; }
+  .wz-foot { position: sticky; bottom: 0; z-index: 5; margin: 4px -18px -18px; padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); background: var(--panel); border-radius: 0 0 var(--r-lg) var(--r-lg); }
+  /* The way on, full width; back and skip on a quiet row beneath it. */
+  .wz-foot { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'go go' 'back skip'; gap: 2px 8px; }
+  .wz-foot > div { display: contents; }
+  .wz-foot .wz-go { grid-area: go; width: 100%; justify-content: center; }
+  .wz-foot .wz-back { grid-area: back; justify-self: start; padding: 0 8px; min-height: 38px; }
+  .wz-foot .wz-skip { grid-area: skip; justify-self: end; padding: 0 10px; min-height: 38px; }
+  .wz-preview > i { display: none; }
+}

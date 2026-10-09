@@ -15,11 +15,21 @@ import { SupportPage } from './pages/SupportPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { LegalPage } from './pages/LegalPage';
 import { OverviewPage } from './pages/OverviewPage';
+import { Welcome } from './onboarding/Welcome';
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      {/* Setting up a shop (§256): full screen, outside the app's frame. */}
+      <Route
+        path="/welcome"
+        element={
+          <RequireAuth>
+            <Welcome />
+          </RequireAuth>
+        }
+      />
       <Route
         element={
           <RequireAuth>
