@@ -12,6 +12,19 @@ export const CUSTOMER_APP_URL = env('VITE_CUSTOMER_APP_URL');
 /** The business app's sign-in. In development, the app next door. */
 export const BUSINESS_APP_URL = env('VITE_BUSINESS_APP_URL') ?? (import.meta.env.DEV ? 'http://localhost:5174/login' : null);
 
+/**
+ * The business app's sign-in, saying which button was pressed (§258): the
+ * sheet greets a newcomer with "Start selling" and a returning seller with
+ * "Welcome back". One email box serves both either way (§50), so a wrong
+ * guess costs nothing. Null until the build knows where the app lives.
+ */
+export const businessStart = (start: 'signup' | 'signin') => {
+  if (!BUSINESS_APP_URL) return null;
+  const url = new URL(BUSINESS_APP_URL, window.location.href);
+  url.searchParams.set('start', start);
+  return url.toString();
+};
+
 export const API_URL = env('VITE_API_URL') ?? '/api';
 
 /** Whether there is anywhere yet for "Get the app" to lead. */

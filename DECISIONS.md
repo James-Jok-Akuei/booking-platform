@@ -17081,3 +17081,27 @@ The admin console's half of §255 (`apps/admin-web`).
 - **The notice** `BUSINESS_SUBMITTED` has its own mark (a shop) and opens
   Businesses searched for that shop (its name is the first words of the
   notice).
+
+## 258. The landing page's door for sellers (2026-10-09)
+
+`apps/website` had one hero and a "For businesses" link straight to the
+business app's sign-in. Now there is a **For businesses** section under the
+hero (`#businesses`; the top link and the side rail scroll to it):
+
+- "Get booked while you work." — what the app does for a shop, in one
+  sentence; three ticks (deposits to MTN MoMo, fewer no-shows, bookings,
+  messages and money in one place); the business app's own Overview with two
+  moments floating over it (a new booking; "You are live!").
+- **Two doors**: **Start selling — it is free** → the sign-in page with
+  `?start=signup`, **Sign in** → `?start=signin` (`businessStart` in
+  `links.ts`). The sign-in page only changes its greeting (§256.2); one email
+  box still serves both. "Get the app" offers Start selling too. With no
+  `VITE_BUSINESS_APP_URL` in a production build the section says sign-ups
+  open soon instead of linking nowhere (§239).
+- **Live in three steps** — sign up with your email; set up your shop (about
+  five minutes, skip anything); we check it, you go live (usually within one
+  working day) — so nobody signs up expecting to take bookings the same
+  minute, and the approval of §255 is part of the promise, not a surprise.
+
+`apps/website/.env.example` documents the build's settings
+(`VITE_API_URL`, `VITE_BUSINESS_APP_URL`, the store and app links).

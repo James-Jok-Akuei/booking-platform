@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Logo, Wordmark } from './Logo';
-import { API_URL, APP_IS_OUT, APP_STORE_URL, BUSINESS_APP_URL, CUSTOMER_APP_URL, PLAY_STORE_URL } from './links';
+import { API_URL, APP_IS_OUT, APP_STORE_URL, CUSTOMER_APP_URL, PLAY_STORE_URL, businessStart } from './links';
 import { sheetPath, useSize } from './sheet';
 
 type Sheet = 'app' | 'how' | null;
@@ -20,6 +20,7 @@ export function App() {
   return (
     <>
       <Hero onOpen={setSheet} />
+      <ForBusinesses />
       <Rail onOpen={setSheet} />
       <BackToTop />
       {sheet === 'app' && <GetTheApp onClose={() => setSheet(null)} />}
@@ -70,11 +71,9 @@ function Hero({ onOpen }: { onOpen: (sheet: Sheet) => void }) {
           <Wordmark />
         </a>
         <nav className="top-nav" aria-label="Main">
-          {BUSINESS_APP_URL && (
-            <a className="top-link" href={BUSINESS_APP_URL}>
-              For businesses
-            </a>
-          )}
+          <a className="top-link" href="#businesses">
+            For businesses
+          </a>
           <button type="button" className="btn" onClick={openApp}>
             Get the app
           </button>
@@ -148,13 +147,118 @@ function Count() {
 }
 
 // ---------------------------------------------------------------------------
+// For businesses
+
+const toBusinesses = () => document.getElementById('businesses')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+/**
+ * The way in for sellers (§258), under the hero: what the business app does
+ * for a shop, two doors into it — "Start selling" for a newcomer, "Sign in"
+ * for a returning seller, each telling the sign-in page which it was — and
+ * the three steps from here to taking bookings, the approval among them, so
+ * nobody signs up expecting to be live the same minute.
+ */
+function ForBusinesses() {
+  const signUp = businessStart('signup');
+  const signIn = businessStart('signin');
+  const steps: Array<{ icon: IconName; title: string; text: string }> = [
+    { icon: 'mail', title: 'Sign up with your email', text: 'We send a 6-digit code, and that is your account. No password, no card.' },
+    { icon: 'store', title: 'Set up your shop', text: 'Your name, a branch and one service — about five minutes. Skip anything and add it later.' },
+    { icon: 'shield', title: 'We check it, you go live', text: 'Usually within one working day. Then customers can find you and book.' },
+  ];
+  return (
+    <section className="biz" id="businesses" aria-labelledby="biz-title">
+      <div className="biz-grid">
+        <div className="biz-copy">
+          <p className="biz-eyebrow">
+            <Icon name="store" size={16} /> For businesses
+          </p>
+          <h2 id="biz-title">
+            Get booked
+            <br />
+            while you work.
+          </h2>
+          <p className="biz-lead">
+            Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo
+            deposit. You see your whole day on one screen, and check people in with a code.
+          </p>
+          {signUp && signIn ? (
+            <div className="biz-actions">
+              <a className="btn" href={signUp}>
+                Start selling — it is free <Icon name="arrowRight" size={17} stroke={2.2} />
+              </a>
+              <a className="btn-line" href={signIn}>
+                <Icon name="logIn" size={18} /> Sign in
+              </a>
+            </div>
+          ) : (
+            <p className="biz-soon">Sign-ups for businesses open soon.</p>
+          )}
+          <ul className="biz-ticks">
+            <li>
+              <Icon name="check" size={16} stroke={2.6} /> Deposits paid straight to MTN MoMo
+            </li>
+            <li>
+              <Icon name="check" size={16} stroke={2.6} /> Fewer people who book and do not come
+            </li>
+            <li>
+              <Icon name="check" size={16} stroke={2.6} /> Your bookings, messages and money in one place
+            </li>
+          </ul>
+        </div>
+
+        <div className="biz-visual" aria-hidden="true">
+          <figure className="biz-shot">
+            <img src="/shots/overview.jpg" alt="" loading="lazy" decoding="async" draggable={false} />
+          </figure>
+          <span className="biz-chip c1">
+            <span className="biz-chip-icon is-orange">
+              <Icon name="calendarCheck" size={18} />
+            </span>
+            <span>
+              <strong>New booking</strong>
+              <em>Haircut · Saturday 10:30</em>
+            </span>
+          </span>
+          <span className="biz-chip c2">
+            <span className="biz-chip-icon is-green">
+              <Icon name="shield" size={18} />
+            </span>
+            <span>
+              <strong>You are live!</strong>
+              <em>Customers can book you now</em>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div className="biz-steps">
+        <h3>Live in three steps</h3>
+        <ol>
+          {steps.map((step, i) => (
+            <li key={step.title}>
+              <span className="biz-step-n">{i + 1}</span>
+              <span className="biz-step-icon">
+                <Icon name={step.icon} size={22} />
+              </span>
+              <strong>{step.title}</strong>
+              <span>{step.text}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // The rail and the way back up
 
 function Rail({ onOpen }: { onOpen: (sheet: Sheet) => void }) {
   const items: Array<{ icon: IconName; label: string; go: () => void }> = [
     { icon: 'phone', label: 'Get the app', go: () => onOpen('app') },
     { icon: 'play', label: 'How it works', go: () => onOpen('how') },
-    ...(BUSINESS_APP_URL ? [{ icon: 'store' as const, label: 'For businesses', go: () => window.location.assign(BUSINESS_APP_URL ?? '/') }] : []),
+    { icon: 'store', label: 'For businesses', go: toBusinesses },
     { icon: 'message', label: 'Help', go: () => onOpen('app') },
   ];
   return (
@@ -227,9 +331,9 @@ function GetTheApp({ onClose }: { onClose: () => void }) {
         set up their shop.
       </p>
       <div className="modal-actions">
-        {BUSINESS_APP_URL && (
-          <a className="btn" href={BUSINESS_APP_URL}>
-            For businesses <Icon name="arrowRight" size={17} stroke={2.2} />
+        {businessStart('signup') && (
+          <a className="btn" href={businessStart('signup')!}>
+            Start selling <Icon name="arrowRight" size={17} stroke={2.2} />
           </a>
         )}
         <button type="button" className="btn-quiet" onClick={onClose}>
