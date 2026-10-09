@@ -120,8 +120,12 @@ npm run dev --workspace apps/admin-web > "$LOGS/admin-web.log" 2>&1 &
 PIDS+=($!)
 npm run dev --workspace apps/business-web > "$LOGS/business-web.log" 2>&1 &
 PIDS+=($!)
+# The public site (§239): the landing page, on its own port.
+npm run dev --workspace apps/website > "$LOGS/website.log" 2>&1 &
+PIDS+=($!)
 wait_for 5173 admin-web 60
 wait_for 5174 business-web 60
+wait_for 5175 website 60
 
 if [[ $WITH_APP == 1 ]]; then
   say "Phone app"

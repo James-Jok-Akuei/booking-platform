@@ -10,9 +10,10 @@ availability and bookings; admins oversee the marketplace.
 |---|---|
 | [`apps/backend/`](apps/backend/) | NestJS + Prisma + PostgreSQL API — **[setup instructions](apps/backend/README.md)** |
 | [`DECISIONS.md`](DECISIONS.md) | Every product & technical decision, with reasoning. Read this first. |
-| `apps/business-web/` | Business PWA — not started |
-| `apps/customer-web/` | Customer PWA — not started |
-| `apps/admin-web/` | Admin portal PWA — not started |
+| [`apps/business-web/`](apps/business-web/) | The business app (Vite + React), :5174 |
+| [`apps/customer-app/`](apps/customer-app/) | The customer app (Expo), web at :8081 |
+| [`apps/admin-web/`](apps/admin-web/) | The admin portal (Vite + React), :5173 |
+| [`apps/website/`](apps/website/) | The public site — the landing page (Vite + React), :5175 |
 
 ## Product overview
 

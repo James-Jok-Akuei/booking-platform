@@ -15979,3 +15979,66 @@ the wall once (17 of 17); the new-business step with the reading panel; the
 code step and "You are in!" with a real code from the local mail catcher; a
 customer's email refused and signed out; the phone fold while typing. Codes
 went only to the local mail catcher; no account was created.
+
+## 239. The landing page: the hero, built to the picture (2026-10-09)
+
+The user: the landing page is "the most attractive part that brings in
+users"; replicate the given picture (a dark hero, a headline and a play
+button on the left, a tilted stack of screenshots on the right, a sheet of
+paper slanting up across the foot with a big number cut out of photos, then
+four features and a dark "ready to import" grid) exactly, colours aside —
+the hero first. The platform is named **BwanguReservations** for now
+("bwangu": quick), with a given mark: a white tile, a "b" in dark green-black
+ink and an orange check.
+
+### 239.1 Where it lives
+
+A new app, **`apps/website`** (Vite + React, port 5175, in `scripts/dev.sh`
+and the README): its own small static site, apart from the business app, so
+the first page a visitor ever sees carries no sign-in code and no data
+library — it has to load in a blink on a phone in Kigali. `/api` is proxied
+in development; `VITE_API_URL` in production, as in the other web apps.
+
+### 239.2 The hero, piece by piece
+
+- **Colours from the mark**: the ink's dark green-black for the hero (where
+  the picture has dark grey), the brand's orange for the button and the play
+  disc (where it has yellow), cream for the paper. Plus Jakarta Sans, as in
+  the apps, so the site and the apps read as one product.
+- **Top bar**: the mark and the name — "Bwangu" white, "Reservations"
+  orange — a quiet "For businesses" link to the business sign-in, and the one
+  button, "Get the app".
+- **The words**: "Bwangu means quick." over "Book your next appointment,
+  Easily!" (the picture's "We make it easy" / "Create a beautiful website,
+  Easily!"), and the play button "Watch how to book in under a minute!".
+- **The stack**: real screens of the two apps, taken from the running apps
+  (`public/shots/`): the business app's Overview and its week calendar
+  behind, the customer app's home and a shop's page in front, in phone
+  frames, overlapping and running off the right edge, each drifting a little.
+  When the apps change, the shots are retaken — never mocked up.
+- **The paper**: three layers slanting up across the foot — two translucent
+  cream bands fanning behind, the cream sheet in front — each a `clip-path`
+  path computed in pixels (`sheet.ts`) with its rounded corner, so the angles
+  stay true at every width instead of stretching with the box.
+- **The number**: the places taking bookings, counted live by the server
+  (`GET /discover/locations`), cut out of a mosaic of the shops' own photos
+  (`public/collage.jpg`) — "11 Places you can book today." It grows by
+  itself; it is never a boast. If the server cannot be reached, the block is
+  left out rather than shown with a stale number.
+- **The rail** on the right (get the app, how it works, for businesses,
+  help) and the back-to-top button, as in the picture. The rail is off on
+  phones.
+- **Until the app is in the stores**, "Get the app" opens a small sheet that
+  says so and points businesses to the web sign-in; the links come from the
+  build (`VITE_APP_STORE_URL`, `VITE_PLAY_STORE_URL`, `VITE_CUSTOMER_APP_URL`,
+  `VITE_BUSINESS_APP_URL`), so the page points at the real things once they
+  exist. The play button opens "How booking works" — find a shop, hold it
+  with a MoMo deposit, show the 6-digit code — until there is a video.
+- **A phone**: the same, stacked — bar, words, play, the stack, the paper,
+  the number. Checked at 390 and 360.
+
+Not yet built (next): the four feature columns, the dark "shops you can book
+today" grid with real services, the footer with the three documents and
+contact details, the share preview image, and the walkthrough video.
+
+Checked at 1920, 1440, 1024, 390 and 360 wide, and the two sheets.
