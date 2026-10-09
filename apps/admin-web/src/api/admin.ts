@@ -619,6 +619,22 @@ export const publishLegalDraft = (id: string) =>
   api<LegalDocument>(`/admin/legal/drafts/${id}/publish`, { method: 'POST' });
 
 // ---------------------------------------------------------------------------
+// The sign-in wall (§238, §254): the same public lists the business app's uses
+// ---------------------------------------------------------------------------
+
+export type DiscoveredServicePage = components['schemas']['DiscoveredServicePageDto'];
+
+/** The services customers book most, for their photos behind signing in. */
+export const wallServices = () =>
+  api<DiscoveredServicePage>('/discover/services', { query: { sort: 'popular', limit: 50 }, anonymous: true });
+
+export type DiscoveryPage = components['schemas']['DiscoveryPageDto'];
+
+/** How many places take bookings, for the line under the headline. */
+export const wallPlaces = () =>
+  api<DiscoveryPage>('/discover/locations', { query: { sort: 'popular', limit: 12 }, anonymous: true });
+
+// ---------------------------------------------------------------------------
 // The console's home page (§243)
 // ---------------------------------------------------------------------------
 

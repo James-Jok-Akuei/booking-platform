@@ -16852,3 +16852,52 @@ styles left `styles.css`.
 Checked at 1440 (Legal reading; a draft faked in the test browser with one
 paragraph changed and one added — none was started; Settings with a change
 open, not saved) and 390. Nothing was published or changed.
+
+## 254. Admin piece 13 — Signing in to the console, and the redesign closed (2026-10-09)
+
+### 254.1 The sign-in
+
+The console's sign-in was a small centred card. Now it is the business app's
+(§238), for the people who look after the platform — the same split screen,
+copied rather than shared, as the rest of the console was (§242):
+
+- **The wall**: the shops' own service photos gliding in turned columns,
+  every photo shown once (`planWall`, §238), from the same public list the
+  business app reads (`GET /discover/services`, added to the console's API
+  with `/discover/locations`).
+- **On it**: the platform's mark and name, *Admin console*, *Made for
+  Rwanda*; the console's own notices arriving one at a time — a shop to
+  approve, a payout number to check, a new ticket, payouts ready to send, a
+  review to look at; and the headline **"Look after every shop. / booking. /
+  payout. / review. / ticket."**, with "Approve shops, settle disputes and
+  send payouts — the platform's back office" and how many places take
+  bookings, with their logos.
+- **The sheet**, one question at a time: *Administrators only* — "Sign in to
+  the console." — the email you were invited at; then the code in six boxes
+  (with the resend timer, the "we sent one a moment ago" case, the shake on a
+  wrong code); then "You are in!" and on to what needs you.
+- **No signing up.** This is the difference from §238: administrators are
+  invited (§99). An invited address simply asks for a code — the invitation
+  is what lets it go out, and the first code makes the account — so an
+  address with no account here is not somebody new to welcome but somebody
+  not invited. The sheet says so plainly: *Not invited* — "No account for
+  this address", and how invitations work (the primary administrator sends
+  one from Users; then sign in here; an old one may have run out). An
+  account that is not an administrator's is signed straight back out, with
+  why.
+- No role is ever sent (§50).
+
+### 254.2 Closing the redesign
+
+`styles.css` was swept: every class it styles was checked against the whole
+console, and the 55 rules styling nothing any more — the old sign-in card,
+the drawer forms, the business app's gallery, file and switch pieces copied
+in §242 and never used — left. Classes made at run time (the dropdown's
+`sel-…` variants, `is-…` states, status pills) stayed. The earlier pages were
+checked afterwards and look as they did.
+
+That completes the outline of §242.1: all thirteen pieces are done (§242–§254).
+
+Checked at 1440 (the email step; the not-invited step, reached with an
+address that has no account — the server refuses before any code is made) and
+390.
