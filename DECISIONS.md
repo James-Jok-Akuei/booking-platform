@@ -17187,3 +17187,45 @@ with a 40px title — the heading read as stuck to the bar.
 - **Heading to first card** on Overview, How it is going, Shopfront, Getting
   paid and Help: 32px instead of 28px.
 - Phones unchanged: their light top bar already leaves room.
+
+## 262. Setting up a shop, redrawn: a panel over the shops' own photos (2026-10-09)
+
+Asked: make the onboarding wizard far better than a plain form — moving
+images behind, the wizard floating over them with the background a little
+blurred; the containers held in place on the screen with only their content
+scrolling; high-quality icons; "a million-dollar deal". The steps and rules of
+§256 are unchanged; this is how they are drawn (`src/onboarding/`).
+
+- **Behind**: the sign-in's photo wall (`AuthWall`, §238 — real service
+  photos, gliding columns, never one photo twice), softened (2px blur) and
+  dimmed under a coral-to-night shade with a little grain; it leans away
+  from the mouse. Two glass "moments" (a MoMo deposit, a new booking) drift
+  beside the panel on screens wide enough (≥1640px).
+- **The panel**: fixed in the middle of the screen (`position: fixed`, the
+  page itself never scrolls), white, in a frame of frosted glass, rising in
+  on a spring. Left, the rail: the shop's name as it is saved, a progress
+  card ("3 of 6 done", a filling bar with a sheen), the steps as badges with
+  the wizard's own duotone icons (`StepIcons.tsx`: line over a soft fill,
+  drawn for it), a pulsing ring on the current one, a tick that draws itself
+  on each one done, dashed threads that turn green behind; a dark "Need a
+  hand? Talk to us" card and the reminder that customers see nothing until
+  approval. Right, the step: a head that stays (its icon, "Step 2 of 4",
+  title, one line), a middle that scrolls (with shadows that appear only
+  while there is more above or below), a foot that stays (Back · Skip ·
+  Save and continue, which carries a slow light sweep when it is ready).
+  Steps slide in from the right going forward and from the left going back.
+- **Better controls**: inputs with their meaning drawn at the start; category
+  tiles with a tick badge; opening hours as three common weeks *and* seven
+  day toggles, the times side by side and the result in a sentence ("Open
+  Monday to Saturday, 08:00–18:00"); the deposit as a bar splitting the price
+  into what the customer pays on their phone and what is paid at the shop;
+  getting paid as three cards (deposit → we hold it → your share is sent);
+  the last step as a grid of what is in and what is not, each a way back.
+- **Sent**: rings, a burst of confetti, a tick that draws itself, and three
+  cards for what happens next.
+- **Phone**: the photos are a band at the top with the brand and "Finish
+  later"; the panel is a sheet rising over them (higher while typing), with
+  four step bars in place of the rail and the main button full width.
+- Short windows (≤860px tall) tighten the rail and the head so all of it
+  fits a 1024×768 screen; reduced motion stops the photos and the effects
+  (the app-wide rule).
