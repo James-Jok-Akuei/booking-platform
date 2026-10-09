@@ -12,6 +12,7 @@ import {
   type AdminBusiness,
   type BusinessStatus,
 } from '../api/admin';
+import { promptDialog } from '../ui/Dialog';
 
 const STATUSES: Array<{ value: BusinessStatus | 'ALL'; label: string }> = [
   { value: 'PENDING', label: 'Awaiting review' },
@@ -68,16 +69,27 @@ export function BusinessesPage() {
    * characters. Asking here means the admin is not told off by a validation
    * error after the fact.
    */
-  const withReason = (id: string, action: 'reject' | 'suspend') => {
-    const verb = action === 'reject' ? 'Rejecting' : 'Suspending';
-    const reason = window.prompt(
-      `${verb} this business. The reason is sent to them, so write it for them to read:`,
-    );
+  const withReason = async (id: string, action: 'reject' | 'suspend') => {
+    const reason = await promptDialog({
+      title: action === 'reject' ? 'Reject this business?' : 'Suspend this business?',
+      body: (
+        <p>
+          {action === 'reject'
+            ? 'They are told the reason, and can fix what is wrong and apply again.'
+            : 'They disappear from search and cannot take new bookings until reinstated. They are told the reason.'}
+        </p>
+      ),
+      label: 'Reason — sent to them, so write it for them to read',
+      placeholder: action === 'reject' ? 'For example: the photos are not of your shop.' : 'For example: customers report the shop is closed.',
+      minLength: 3,
+      minMessage: 'A reason of at least 3 characters.',
+      multiline: true,
+      tone: 'danger',
+      icon: action === 'reject' ? 'xCircle' : 'pause',
+      confirmLabel: action === 'reject' ? 'Reject' : 'Suspend',
+      cancelLabel: 'Not now',
+    });
     if (reason === null) return;
-    if (reason.trim().length < 3) {
-      window.alert('A reason of at least 3 characters is required.');
-      return;
-    }
     act.mutate({ id, action, reason: reason.trim() });
   };
 

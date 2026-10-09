@@ -14,6 +14,7 @@ import {
   type PayoutStatus,
   type RunSummary,
 } from '../api/admin';
+import { confirmDialog, promptDialog } from '../ui/Dialog';
 
 const STATUSES: Array<{ value: PayoutStatus | 'ALL'; label: string }> = [
   { value: 'PENDING', label: 'To send' },
@@ -83,31 +84,44 @@ export function PayoutsPage() {
     onSuccess: refresh,
   });
 
-  const markPaid = (payout: Payout) => {
-    const reference = window.prompt(
-      `Marking ${money(payout.settlementAmountMinor, payout.settlementCurrency)} as sent.\n\n` +
-        "Enter the provider's transfer reference. Without it this payout cannot " +
-        'be reconciled against a statement, and the statement is the only thing ' +
-        'that proves the money left.',
-    );
+  const markPaid = async (payout: Payout) => {
+    const reference = await promptDialog({
+      title: 'Mark this payout as sent by hand?',
+      body: (
+        <p>
+          <strong>{money(payout.settlementAmountMinor, payout.settlementCurrency)}</strong> to{' '}
+          <strong>{payout.businessName ?? 'this business'}</strong>. Without the provider’s reference this payout
+          cannot be matched against a statement — and the statement is the only proof the money left.
+        </p>
+      ),
+      label: 'The provider’s transfer reference',
+      placeholder: 'For example: 4823019937',
+      minLength: 3,
+      minMessage: 'A reference of at least 3 characters.',
+      tone: 'ok',
+      icon: 'checkCircle',
+      confirmLabel: 'Mark as sent',
+      cancelLabel: 'Not yet',
+    });
     if (reference === null) return;
-    if (reference.trim().length < 3) {
-      window.alert('A reference of at least 3 characters is required.');
-      return;
-    }
     mark.mutate({ id: payout.id, action: 'paid', text: reference.trim() });
   };
 
-  const markFailed = (payout: Payout) => {
-    const reason = window.prompt(
-      'Marking this payout failed returns its money to the pool, so it will be ' +
-        'picked up by the next run. Why did it fail?',
-    );
+  const markFailed = async (payout: Payout) => {
+    const reason = await promptDialog({
+      title: 'Mark this payout as failed?',
+      body: <p>Its money goes back to the pool, so the next run picks it up again.</p>,
+      label: 'Why did it fail?',
+      placeholder: 'For example: the number is not registered for MoMo.',
+      minLength: 3,
+      minMessage: 'A reason of at least 3 characters.',
+      multiline: true,
+      tone: 'danger',
+      icon: 'xCircle',
+      confirmLabel: 'Mark as failed',
+      cancelLabel: 'Not now',
+    });
     if (reason === null) return;
-    if (reason.trim().length < 3) {
-      window.alert('A reason of at least 3 characters is required.');
-      return;
-    }
     mark.mutate({ id: payout.id, action: 'failed', text: reason.trim() });
   };
 
@@ -287,19 +301,22 @@ export function PayoutsPage() {
                         type="button"
                         className="primary"
                         disabled={send.isPending || !payout.destinationMsisdn}
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `Send ${money(
-                                payout.settlementAmountMinor,
-                                payout.settlementCurrency,
-                              )} to ${payout.businessName ?? 'this business'} ` +
-                                `at ${payout.destinationMsisdn}?\n\n` +
-                                'This moves real money and cannot be undone.',
-                            )
-                          ) {
-                            send.mutate(payout.id);
-                          }
+                        onClick={async () => {
+                          const sure = await confirmDialog({
+                            title: `Send ${money(payout.settlementAmountMinor, payout.settlementCurrency)}?`,
+                            body: (
+                              <p>
+                                To <strong>{payout.businessName ?? 'this business'}</strong> at{' '}
+                                <strong>{payout.destinationMsisdn}</strong>. This moves real money through the
+                                operator and cannot be undone.
+                              </p>
+                            ),
+                            tone: 'warn',
+                            icon: 'send',
+                            confirmLabel: 'Send the money',
+                            cancelLabel: 'Not now',
+                          });
+                          if (sure) send.mutate(payout.id);
                         }}
                       >
                         Send

@@ -7,6 +7,7 @@ import {
   unhideReview,
   type ModeratedReview,
 } from '../api/admin';
+import { promptDialog } from '../ui/Dialog';
 
 const formatDate = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
@@ -53,19 +54,28 @@ export function ReviewsPage() {
 
   const unhide = useMutation({ mutationFn: unhideReview, onSuccess: refresh });
 
-  const onHide = (review: ModeratedReview) => {
-    const reason = window.prompt(
-      `Hide this ${review.rating}-star review of ${review.businessName ?? 'this business'}?\n\n` +
-        'It stops showing to customers and stops counting towards the star ' +
-        'rating. The review itself is kept — it is usually the evidence in ' +
-        'whatever dispute led here.\n\n' +
-        'Why are you hiding it? This is recorded against your name.',
-    );
+  const onHide = async (review: ModeratedReview) => {
+    const reason = await promptDialog({
+      title: `Hide this ${review.rating}-star review?`,
+      body: (
+        <p>
+          Of <strong>{review.businessName ?? 'this business'}</strong>. It stops showing to customers and stops
+          counting towards the star rating. The review itself is kept — it is usually the evidence in whatever
+          dispute led here.
+        </p>
+      ),
+      label: 'Why are you hiding it?',
+      placeholder: 'For example: insults the staff by name.',
+      note: 'Recorded against your name.',
+      minLength: 3,
+      minMessage: 'A reason of at least 3 characters.',
+      multiline: true,
+      tone: 'warn',
+      icon: 'eye',
+      confirmLabel: 'Hide the review',
+      cancelLabel: 'Keep it showing',
+    });
     if (reason === null) return;
-    if (reason.trim().length < 3) {
-      window.alert('A reason of at least three characters is required.');
-      return;
-    }
     hide.mutate({ id: review.id, reason: reason.trim() });
   };
 

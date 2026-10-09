@@ -11,6 +11,7 @@ import {
   type TicketAttachment,
   type TicketStatus,
 } from '../api/admin';
+import { promptDialog } from '../ui/Dialog';
 
 const TABS: Array<{ value: TicketStatus | 'ALL'; label: string }> = [
   { value: 'OPEN', label: 'New' },
@@ -193,16 +194,21 @@ function TicketDrawer({ id, onClose }: { id: string; onClose: () => void }) {
     if (next.to === 'RESOLVED') {
       // Required by the server, and genuinely the record of what was decided:
       // the reporter is told this, and it is what a reopen argues against.
-      const note = window.prompt(
-        'What was the outcome? The reporter is told this, and it is the record ' +
-          'of what was decided.',
-      );
-      if (note === null) return;
-      if (note.trim().length < 3) {
-        window.alert('Please write at least a few words.');
-        return;
-      }
-      move.mutate({ to: next.to, note: note.trim() });
+      void promptDialog({
+        title: 'Mark this ticket resolved?',
+        body: <p>The reporter is told the outcome, and it is the record of what was decided.</p>,
+        label: 'What was the outcome?',
+        placeholder: 'For example: refunded the deposit in full; the shop has been reminded of its hours.',
+        minLength: 3,
+        minMessage: 'Please write at least a few words.',
+        multiline: true,
+        tone: 'ok',
+        icon: 'checkCircle',
+        confirmLabel: 'Resolve',
+        cancelLabel: 'Not yet',
+      }).then((note) => {
+        if (note !== null) move.mutate({ to: next.to, note: note.trim() });
+      });
       return;
     }
     move.mutate({ to: next.to });

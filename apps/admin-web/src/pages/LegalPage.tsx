@@ -9,6 +9,7 @@ import {
   type LegalDocument,
   type LegalKind,
 } from '../api/admin';
+import { confirmDialog } from '../ui/Dialog';
 
 const KINDS: Array<{ value: LegalKind; label: string; who: string }> = [
   { value: 'TERMS_OF_USE', label: 'Terms of Use', who: 'Everyone who uses the platform.' },
@@ -251,18 +252,21 @@ function DraftEditor({ draft, onSaved }: { draft: LegalDocument; onSaved: () => 
           type="button"
           className="primary"
           disabled={publish.isPending || body.trim().length === 0}
-          onClick={() => {
-            if (
-              window.confirm(
-                `Publish version ${draft.version}?\n\n` +
-                  'Everyone sees it immediately, and it can never be edited — a ' +
-                  'change after this is another new version.\n\n' +
-                  'Anyone who agreed to the last version will be asked to agree ' +
-                  'to this one.',
-              )
-            ) {
-              publish.mutate();
-            }
+          onClick={async () => {
+            const sure = await confirmDialog({
+              title: `Publish version ${draft.version}?`,
+              body: (
+                <>
+                  <p>Everyone sees it immediately, and it can never be edited — a change after this is another new version.</p>
+                  <p>Anyone who agreed to the last version will be asked to agree to this one.</p>
+                </>
+              ),
+              tone: 'warn',
+              icon: 'legal',
+              confirmLabel: 'Publish',
+              cancelLabel: 'Keep editing',
+            });
+            if (sure) publish.mutate();
           }}
         >
           {publish.isPending ? 'Publishing…' : 'Publish'}

@@ -8,6 +8,7 @@ import {
   type PayoutDestination,
   type PayoutDestinationStatus,
 } from '../api/admin';
+import { promptDialog } from '../ui/Dialog';
 
 const STATUSES: Array<{ value: PayoutDestinationStatus | 'ALL'; label: string }> = [
   { value: 'UNVERIFIED', label: 'Awaiting check' },
@@ -46,30 +47,50 @@ export function PayoutDestinationsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['payout-destinations'] }),
   });
 
-  const verify = (destination: PayoutDestination) => {
-    const note = window.prompt(
-      `Verifying ${destination.msisdn} for ${destination.businessProfile.name ?? 'this business'}.\n\n` +
-        'How did you confirm this number belongs to them? This is recorded and ' +
-        'is the only account of the decision after money has moved.',
-    );
+  const verify = async (destination: PayoutDestination) => {
+    const note = await promptDialog({
+      title: 'Verify this payout number?',
+      body: (
+        <p>
+          <strong>{destination.msisdn}</strong> for{' '}
+          <strong>{destination.businessProfile.name ?? 'this business'}</strong>. Once verified, the shop’s money is
+          sent to this number — and money sent does not come back.
+        </p>
+      ),
+      label: 'How did you confirm it is theirs?',
+      placeholder: 'For example: called the owner on the shop’s number; the name on MoMo matches.',
+      note: 'Recorded, and the only account of this decision once money has moved.',
+      minLength: 3,
+      minMessage: 'A note of at least 3 characters.',
+      multiline: true,
+      tone: 'ok',
+      icon: 'shield',
+      confirmLabel: 'Verify the number',
+      cancelLabel: 'Not yet',
+    });
     if (note === null) return;
-    if (note.trim().length < 3) {
-      window.alert('A note of at least 3 characters is required.');
-      return;
-    }
     act.mutate({ id: destination.id, action: 'verify', text: note.trim() });
   };
 
-  const reject = (destination: PayoutDestination) => {
-    const reason = window.prompt(
-      'Rejecting this number. The reason is sent to the business, so write it ' +
-        'for them to read — they have to know what to fix:',
-    );
+  const reject = async (destination: PayoutDestination) => {
+    const reason = await promptDialog({
+      title: 'Reject this payout number?',
+      body: (
+        <p>
+          The business is told the reason and asked for another number. Until one is verified, their payouts wait.
+        </p>
+      ),
+      label: 'Reason — sent to them, so they know what to fix',
+      placeholder: 'For example: the MoMo name does not match the business owner.',
+      minLength: 3,
+      minMessage: 'A reason of at least 3 characters.',
+      multiline: true,
+      tone: 'danger',
+      icon: 'xCircle',
+      confirmLabel: 'Reject the number',
+      cancelLabel: 'Not now',
+    });
     if (reason === null) return;
-    if (reason.trim().length < 3) {
-      window.alert('A reason of at least 3 characters is required.');
-      return;
-    }
     act.mutate({ id: destination.id, action: 'reject', text: reason.trim() });
   };
 

@@ -13,6 +13,7 @@ import {
   type AdminCategory,
   type AdminSubcategory,
 } from '../api/admin';
+import { confirmDialog } from '../ui/Dialog';
 
 /**
  * The taxonomy: what exists, and what a business may choose.
@@ -179,16 +180,25 @@ function CategoryCard({
     onError: fail,
   });
 
-  const onToggle = (next: boolean) => {
+  const onToggle = async (next: boolean) => {
     const inUse = category.businessCount;
-    const message = next
-      ? `Offer "${category.name}" to businesses again?\n\nNew sign-ups will be able to choose it.`
-      : `Stop offering "${category.name}"?\n\n` +
-        'New businesses will not be able to choose it.' +
-        (inUse > 0
-          ? `\n\nThe ${inUse} business${inUse === 1 ? '' : 'es'} already in it keep their listing and stay in search. Nothing is removed.`
-          : '');
-    if (window.confirm(message)) toggle.mutate(next);
+    const sure = await confirmDialog({
+      title: next ? `Offer “${category.name}” again?` : `Stop offering “${category.name}”?`,
+      body: next ? (
+        <p>New sign-ups will be able to choose it.</p>
+      ) : (
+        <p>
+          New businesses will not be able to choose it.
+          {inUse > 0 &&
+            ` The ${inUse} business${inUse === 1 ? '' : 'es'} already in it keep their listing and stay in search. Nothing is removed.`}
+        </p>
+      ),
+      tone: next ? 'ok' : 'warn',
+      icon: next ? 'checkCircle' : 'pause',
+      confirmLabel: next ? 'Offer it' : 'Stop offering it',
+      cancelLabel: 'Not now',
+    });
+    if (sure) toggle.mutate(next);
   };
 
   return (
@@ -312,16 +322,22 @@ function SubcategoryRow({
     onError,
   });
 
-  const onToggle = (next: boolean) => {
+  const onToggle = async (next: boolean) => {
     const n = subcategory.businessCount;
-    const message = next
-      ? `Offer "${subcategory.name}" again?`
-      : `Stop offering "${subcategory.name}"?\n\n` +
-        'New businesses will not be able to choose it.' +
-        (n > 0
-          ? `\n\nThe ${n} business${n === 1 ? '' : 'es'} already using it keep their listing.`
-          : '');
-    if (window.confirm(message)) toggle.mutate(next);
+    const sure = await confirmDialog({
+      title: next ? `Offer “${subcategory.name}” again?` : `Stop offering “${subcategory.name}”?`,
+      body: next ? undefined : (
+        <p>
+          New businesses will not be able to choose it.
+          {n > 0 && ` The ${n} business${n === 1 ? '' : 'es'} already using it keep their listing.`}
+        </p>
+      ),
+      tone: next ? 'ok' : 'warn',
+      icon: next ? 'checkCircle' : 'pause',
+      confirmLabel: next ? 'Offer it' : 'Stop offering it',
+      cancelLabel: 'Not now',
+    });
+    if (sure) toggle.mutate(next);
   };
 
   return (

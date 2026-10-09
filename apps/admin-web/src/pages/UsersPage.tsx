@@ -11,6 +11,8 @@ import {
   revokeAdminInvitation,
   type DirectoryUser,
 } from '../api/admin';
+import { confirmDialog, promptDialog } from '../ui/Dialog';
+import { Select } from '../ui/Select';
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
@@ -56,19 +58,26 @@ export function UsersPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
   });
 
-  const onClear = (user: DirectoryUser) => {
-    const reason = window.prompt(
-      `Clear the name "${user.displayName}" from ${user.email}?\n\n` +
-        'Their reviews will show as "Anonymous" instead. They are told this ' +
-        'happened and given the reason, so write something that can be read ' +
-        'by the person it is about.\n\n' +
-        'Why?',
-    );
+  const onClear = async (user: DirectoryUser) => {
+    const reason = await promptDialog({
+      title: 'Clear this display name?',
+      body: (
+        <p>
+          “<strong>{user.displayName}</strong>” from {user.email}. Their reviews show as “Anonymous” instead. They
+          are told this happened, and the reason.
+        </p>
+      ),
+      label: 'Why? — written for the person it is about',
+      placeholder: 'For example: the name included a phone number.',
+      minLength: 3,
+      minMessage: 'A reason of at least 3 characters.',
+      multiline: true,
+      tone: 'warn',
+      icon: 'user',
+      confirmLabel: 'Clear the name',
+      cancelLabel: 'Keep it',
+    });
     if (reason === null) return;
-    if (reason.trim().length < 3) {
-      window.alert('A reason of at least three characters is required.');
-      return;
-    }
     clear.mutate({ id: user.id, reason: reason.trim() });
   };
 
@@ -91,13 +100,14 @@ export function UsersPage() {
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search email or name"
           />
-          <select value={role} onChange={(event) => setRole(event.target.value)}>
-            {ROLES.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          {/* The app's own dropdown (§227, §242); "Everyone" is a choice of its own. */}
+          <Select
+            value={role === '' ? 'ALL' : role}
+            onChange={(next) => setRole(next === 'ALL' ? '' : next)}
+            label="Who"
+            sheetTitle="Show"
+            options={ROLES.map((option) => ({ value: option.value === '' ? 'ALL' : option.value, label: option.label }))}
+          />
           <label className="inline small">
             <input
               type="checkbox"
@@ -260,18 +270,22 @@ function Administrators() {
               <button
                 type="button"
                 disabled={revokeAccess.isPending}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      `Remove administrator access from ${admin.email}?\n\n` +
-                        'They lose it immediately, even if they are signed in. ' +
-                        'The account becomes an ordinary customer account — ' +
-                        'nothing they did is deleted, and anything they handled ' +
-                        'still names them.',
-                    )
-                  ) {
-                    revokeAccess.mutate(admin.id);
-                  }
+                onClick={async () => {
+                  const sure = await confirmDialog({
+                    title: 'Remove administrator access?',
+                    body: (
+                      <p>
+                        <strong>{admin.email}</strong> loses it immediately, even if signed in. The account becomes an
+                        ordinary customer account — nothing they did is deleted, and anything they handled still
+                        names them.
+                      </p>
+                    ),
+                    tone: 'danger',
+                    icon: 'userX',
+                    confirmLabel: 'Remove access',
+                    cancelLabel: 'Keep them',
+                  });
+                  if (sure) revokeAccess.mutate(admin.id);
                 }}
               >
                 Remove access

@@ -16124,3 +16124,104 @@ second, larger swap (every button and link); the dark is done either way.
 
 Checked: the business Overview (top bar, dark card, dark button, text), the
 business sign-in, the customer home (tab bar) and sign-in (the wall's shade).
+
+## 242. The admin console, redesigned — the outline, and piece 1: the design system and the frame (2026-10-09)
+
+The user asked for the admin dashboard to get the treatment the customer
+app (§133) and the business app (§190–§204) had: outlined, then built piece
+by piece. ~~§61's "a deliberately plain internal tool"~~: the people who run
+the platform spend their day here too, and it is the third face of one
+product.
+
+### 242.1 The outline — the pieces, in the order an administrator works
+
+1. **The design system and the frame** (this section).
+2. **Overview — "What needs you"**: a new home page. Every waiting queue
+   with its count and how long the oldest has waited; the platform's pulse
+   (bookings, deposits, fees, new shops, new customers — this week against
+   last, a 14-day chart); money health (unsettled total, the MoMo wallets
+   against the ledger, the exchange rate's age). One new server endpoint,
+   `GET /admin/overview`, counts it in one call.
+3. **Businesses — the approval desk**: the queue, oldest first, as a review
+   workspace — the whole application in a side panel (logo, cover, branches
+   on a map, services and prices, people), approve / reject / suspend /
+   reinstate with reasons, counts on the tabs, search.
+4. **Payout numbers**: the check queue with the networks' marks (§219), the
+   number spelled clearly, verify with how it was confirmed, or reject.
+5. **Payouts**: a wallet — unsettled money, run payouts, each payout a card
+   with send / sent by hand / failed / export.
+6. **Support**: an inbox in two panes like the business app's Messages
+   (§198) — tickets left, conversation right, internal notes in amber,
+   assign and status.
+7. **Reviews**: moderation as cards with stars, the shop and the customer,
+   hide and unhide with a reason, the hidden ones a filter.
+8. **Appointments**: a work list like the business app's (§213), status
+   colours and reservation numbers, and the one admin action — reclassifying
+   a cancellation — as a careful flow.
+9. **Users**: a directory with search and role filters, avatars, and the
+   administrators with their invitations.
+10. **Money**: the ledger with filters and plain-language entry types, the
+    reconciliation, the adjustments.
+11. **Categories and Places**: the taxonomy with each category's icon and
+    colour; districts by province, with their switches.
+12. **Legal and Settings**: the document editor with its versions; the four
+    settings as cards, each saying plainly what it changes.
+13. **Signing in**: the business sign-in's split screen (§238), for
+    administrators — no new-account step, since administrators are invited
+    (§99).
+
+Each piece is checked at 1440, 1024 and 390 and recorded here as it lands.
+
+### 242.2 Piece 1 — one brand across the three apps
+
+- **`styles.css` is the business app's design system**, copied (tokens with
+  §241's green-black ink, coral, porcelain, Plus Jakarta Sans; controls,
+  buttons, tables as rounded cards, night-pill tabs, status pills with a
+  dot, drawers, the switch, the app's own dropdown), plus a section for the
+  thirty classes only the console uses (money as big tabular figures, the
+  ledger's legend, the taxonomy cards, the old Toggle in the switch's look,
+  amber internal notes on tickets, hidden reviews dashed). **Every class name
+  the twelve pages use was kept**, so all twelve took the new look at once.
+- **The UI pieces are the business app's**, copied into `src/ui/`: the icon
+  set, the dialog, the dropdown, the avatar, the portal, `useDismiss`, the
+  flag; and `src/ui/Logo.tsx` — the platform's own mark (§239).
+
+### 242.3 The frame
+
+- **Sidebar**: the platform's mark and **BwanguReservations** with "Admin
+  console" under it; §131's four groups (Moderation, People, Money,
+  Platform) with an icon per link; **a count on each queue's link** —
+  shops waiting for approval, payout numbers to check, payouts to send, new
+  support tickets — so the menu itself says where to go next; who is signed
+  in at the foot. Folds to a rail (remembered); always the rail on a
+  tablet, labels on hover; a drawer on a phone.
+- **"Payout destinations" is "Payout numbers"** in the menu and the search:
+  plain words for what they are. The address is unchanged.
+- **Top bar** (the business app's, §234–§237, dark glass on a wide screen):
+  the flag, where you are, the date and a clock; search (⌘K or "/") over
+  every page, with actions — approve a shop, run payouts, invite an
+  administrator; **"Waiting"** — the coral button that, in the business
+  app, checks a customer in — with the sum of the four queues, opening on
+  each queue and its count ("1 shop to approve", "2 payouts to send"), green
+  "All clear" when every queue is empty; notifications (§220: a flyout on a
+  large screen, a dropdown on a phone) where **a notice now opens the page
+  that deals with it** (a new ticket opens Support, a number to check opens
+  Payout numbers); the account menu with sign-out.
+- **Signing out asks first** (§226).
+
+### 242.4 The browser's own boxes are gone
+
+All **24** `window.prompt` / `confirm` / `alert` calls across ten pages are
+the app's dialog now (§193): each says what will happen in plain words,
+names the business, number or amount in bold, marks the dangerous choice in
+red, and keeps its button disabled until a required reason is long enough —
+so the "at least 3 characters" alert boxes went with them. The ledger's
+optional reference allows blank but not one or two characters. The two
+native dropdowns (the ledger's entry kind, the users' role) are the app's
+own (§227).
+
+Checked at 1440, 1024 and 390: Businesses, Payouts, Money, Support, Users,
+the Waiting menu, the search, the reject / verify / send dialogs (opened,
+not confirmed) and the sign-in. Phones show tables scrolling sideways until
+each page's own piece turns them into cards. Nothing was approved,
+verified, sent or changed.

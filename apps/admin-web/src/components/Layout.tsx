@@ -1,98 +1,128 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
-import { Notifications } from './Notifications';
+import { CommandPalette } from '../shell/CommandPalette';
+import { MenuDrawer, Sidebar } from '../shell/Sidebar';
+import { Topbar } from '../shell/Topbar';
+import { useMediaQuery } from '../shell/useMediaQuery';
+import { useShellData } from '../shell/useShellData';
+import { confirmDialog } from '../ui/Dialog';
+import '../shell/shell.css';
 
-/**
- * The sidebar, grouped (§131). Only the sections that exist; others are added
- * as they are built.
- *
- * Twelve flat links in no order meant reading all twelve to find one — and the
- * three money screens were not even next to each other. Same twelve links, same
- * addresses, so every bookmark still works. Only the menu changed.
- */
-type NavGroup = {
-  group: string;
-  items: Array<{ to: string; label: string }>;
+const RAIL_KEY = 'booking-admin.sidebar-rail';
+
+const readRail = () => {
+  try {
+    return localStorage.getItem(RAIL_KEY) === '1';
+  } catch {
+    return false;
+  }
 };
 
-const SECTIONS: NavGroup[] = [
-  {
-    // Deciding what stays on the platform.
-    group: 'Moderation',
-    items: [
-      { to: '/businesses', label: 'Businesses' },
-      { to: '/reviews', label: 'Reviews' },
-      { to: '/appointments', label: 'Appointments' },
-    ],
-  },
-  {
-    group: 'People',
-    items: [
-      { to: '/users', label: 'Users' },
-      { to: '/tickets', label: 'Support' },
-    ],
-  },
-  {
-    // The three that have to be read together to answer "did the money move".
-    group: 'Money',
-    items: [
-      { to: '/payouts', label: 'Payouts' },
-      { to: '/payout-destinations', label: 'Payout destinations' },
-      { to: '/ledger', label: 'Money' },
-    ],
-  },
-  {
-    // Reference data and rules. Rarely touched, and dangerous when it is.
-    group: 'Platform',
-    items: [
-      { to: '/categories', label: 'Categories' },
-      { to: '/places', label: 'Places' },
-      { to: '/legal', label: 'Legal' },
-      { to: '/settings', label: 'Settings' },
-    ],
-  },
-];
+/** True while someone is typing, so a single-key shortcut does not steal the key. */
+const typing = (target: EventTarget | null) => {
+  const el = target as HTMLElement | null;
+  return Boolean(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)));
+};
 
+/**
+ * The frame around every page (§131, §242) — the business app's (§190): the
+ * sidebar, the top bar, and on a phone the menu drawer. The twelve pages are
+ * unchanged and render in the middle.
+ */
 export function Layout() {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const data = useShellData();
+
+  const [rail, setRail] = useState(readRail);
+  // A tablet is always the rail: a full sidebar would leave the page too narrow.
+  const tablet = useMediaQuery('(min-width: 860px) and (max-width: 1199px)');
+  const folded = rail || tablet;
+  const [drawer, setDrawer] = useState(false);
+  const [palette, setPalette] = useState(false);
+  // Once the page moves under the top bar, the bar gets an edge — and on a
+  // phone, the page's name, which has scrolled out of view.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [location.pathname]);
+
+  const toggleRail = () =>
+    setRail((was) => {
+      try {
+        localStorage.setItem(RAIL_KEY, was ? '0' : '1');
+      } catch {
+        // Private mode: the fold just is not remembered.
+      }
+      return !was;
+    });
+
+  // Signing out asks first (§226): every way out comes through here.
+  const leave = useCallback(async () => {
+    const sure = await confirmDialog({
+      title: 'Sign out?',
+      body: (
+        <p>
+          You will leave the admin console on this device. To come back, sign in with your email and the new
+          6-digit code we send you.
+        </p>
+      ),
+      icon: 'logout',
+      tone: 'warn',
+      confirmLabel: 'Sign out',
+      cancelLabel: 'Stay signed in',
+    });
+    if (!sure) return;
+    await signOut();
+    navigate('/login', { replace: true });
+  }, [navigate, signOut]);
+
+  const closePalette = useCallback(() => setPalette(false), []);
+
+  // A new page closes the phone's menu.
+  useEffect(() => setDrawer(false), [location.pathname]);
+
+  // ⌘K / Ctrl K anywhere, and "/" when not typing, open the search.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setPalette((was) => !was);
+      } else if (event.key === '/' && !typing(event.target)) {
+        event.preventDefault();
+        setPalette(true);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
-    <div className="shell">
-      <aside>
-        <div className="brand">Admin</div>
-        <nav>
-          {SECTIONS.map((section) => (
-            <div className="nav-group" key={section.group}>
-              <p className="nav-group-title">{section.group}</p>
-              {section.items.map((item) => (
-                <NavLink key={item.to} to={item.to}>
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-          ))}
-        </nav>
-        <div className="who">
-          <div className="who-top">
-            <span title={user?.email}>{user?.email}</span>
-            <Notifications />
-          </div>
-          <button
-            type="button"
-            className="link"
-            onClick={async () => {
-              await signOut();
-              navigate('/login', { replace: true });
-            }}
-          >
-            Sign out
-          </button>
-        </div>
-      </aside>
-      <main>
-        <Outlet />
-      </main>
+    <div className={`app${folded ? ' has-rail' : ''}${scrolled ? ' is-scrolled' : ''}`}>
+      <div className="app-side">
+        <Sidebar data={data} rail={folded} onToggleRail={tablet ? undefined : toggleRail} onSignOut={leave} />
+      </div>
+
+      <div className="app-main">
+        <Topbar
+          data={data}
+          scrolled={scrolled}
+          onOpenMenu={() => setDrawer(true)}
+          onOpenSearch={() => setPalette(true)}
+          onSignOut={leave}
+        />
+        <main className="content" key={location.pathname}>
+          <Outlet />
+        </main>
+      </div>
+
+      {drawer && <MenuDrawer data={data} onClose={() => setDrawer(false)} onSignOut={leave} />}
+      {palette && <CommandPalette onClose={closePalette} onSignOut={leave} />}
     </div>
   );
 }

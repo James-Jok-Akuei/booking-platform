@@ -10,6 +10,7 @@ import {
   type AdminDistrict,
   type AdminProvince,
 } from '../api/admin';
+import { confirmDialog } from '../ui/Dialog';
 
 /**
  * Where the platform is open for business.
@@ -171,18 +172,27 @@ function DistrictRow({
     onError,
   });
 
-  const onToggle = (next: boolean) => {
+  const onToggle = async (next: boolean) => {
     const n = district.branchCount;
     // Names the consequence rather than asking "are you sure". The reassurance
     // about existing branches is the part worth reading.
-    const message = next
-      ? `Open the platform in ${district.name}?\n\nBusinesses will be able to put a branch here, and customers will see it as a filter.`
-      : `Retire ${district.name}?\n\n` +
-        'No new branch can be put here, and customers will not see it as a filter.' +
-        (n > 0
-          ? `\n\nThe ${n} branch${n === 1 ? '' : 'es'} already here keep their listing and stay in search. Nothing is removed.`
-          : '');
-    if (window.confirm(message)) toggle.mutate(next);
+    const sure = await confirmDialog({
+      title: next ? `Open the platform in ${district.name}?` : `Retire ${district.name}?`,
+      body: next ? (
+        <p>Businesses will be able to put a branch here, and customers will see it as a filter.</p>
+      ) : (
+        <p>
+          No new branch can be put here, and customers will not see it as a filter.
+          {n > 0 &&
+            ` The ${n} branch${n === 1 ? '' : 'es'} already here keep their listing and stay in search. Nothing is removed.`}
+        </p>
+      ),
+      tone: next ? 'ok' : 'warn',
+      icon: next ? 'pin' : 'pause',
+      confirmLabel: next ? `Open ${district.name}` : `Retire ${district.name}`,
+      cancelLabel: 'Not now',
+    });
+    if (sure) toggle.mutate(next);
   };
 
   return (

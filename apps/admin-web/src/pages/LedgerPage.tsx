@@ -11,6 +11,8 @@ import {
   listLedgerEntries,
   type LedgerEntryType,
 } from '../api/admin';
+import { alertDialog, promptDialog } from '../ui/Dialog';
+import { Select } from '../ui/Select';
 
 const formatDate = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
@@ -241,19 +243,32 @@ function Adjustments() {
     (row) => !onlyOutstanding || row.settledAt === null,
   );
 
-  const run = (id: string, amount: string, type: keyof typeof ADJUSTMENT_LABEL) => {
-    const ref = window.prompt(
-      `Executing a ${ADJUSTMENT_LABEL[type].toLowerCase()} of ${amount}.\n\n` +
-        'This writes ledger entries and changes what the business is owed. It ' +
-        'cannot be undone — a mistake is corrected by recording another ' +
-        'adjustment, not by reversing this one.\n\n' +
-        "The provider's reference, if this was settled by its own transfer. " +
-        'Leave blank if it nets against a future payout.',
-    );
+  const run = async (id: string, amount: string, type: keyof typeof ADJUSTMENT_LABEL) => {
+    const ref = await promptDialog({
+      title: `Execute this ${ADJUSTMENT_LABEL[type].toLowerCase()}?`,
+      body: (
+        <p>
+          <strong>{amount}</strong>. This writes ledger entries and changes what the business is owed. It cannot be
+          undone — a mistake is corrected by recording another adjustment, not by reversing this one.
+        </p>
+      ),
+      label: 'The provider’s reference (optional)',
+      placeholder: 'Leave blank if it nets against a future payout',
+      note: 'Only if this was settled by its own transfer.',
+      minLength: 0,
+      tone: 'warn',
+      icon: 'banknote',
+      confirmLabel: 'Execute',
+      cancelLabel: 'Not now',
+    });
     if (ref === null) return;
     const trimmed = ref.trim();
     if (trimmed !== '' && trimmed.length < 3) {
-      window.alert('A reference needs at least three characters, or leave it blank.');
+      await alertDialog({
+        title: 'That reference is too short',
+        body: <p>A reference needs at least three characters — or leave it blank.</p>,
+        tone: 'info',
+      });
       return;
     }
     execute.mutate({ id, ref: trimmed === '' ? undefined : trimmed });
@@ -367,14 +382,17 @@ function Entries() {
       <div className="toolbar">
         <label className="inline small">
           Showing
-          <select value={type} onChange={(event) => setType(event.target.value as LedgerEntryType | '')}>
-            <option value="">every kind of entry</option>
-            {(Object.keys(ENTRY_LABEL) as LedgerEntryType[]).map((key) => (
-              <option key={key} value={key}>
-                {ENTRY_LABEL[key]}
-              </option>
-            ))}
-          </select>
+          {/* The app's own dropdown (§227, §242); "every kind" is a choice of its own. */}
+          <Select<LedgerEntryType | 'ALL'>
+            value={type === '' ? 'ALL' : type}
+            onChange={(next) => setType(next === 'ALL' ? '' : next)}
+            label="Kind of entry"
+            sheetTitle="Kind of entry"
+            options={[
+              { value: 'ALL', label: 'Every kind of entry' },
+              ...(Object.keys(ENTRY_LABEL) as LedgerEntryType[]).map((key) => ({ value: key, label: ENTRY_LABEL[key] })),
+            ]}
+          />
         </label>
         {ledger.data && (
           <span className="muted small">

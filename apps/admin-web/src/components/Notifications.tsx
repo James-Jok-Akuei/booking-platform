@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  listNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
-} from '../api/admin';
+import { listNotifications, markAllNotificationsRead, markNotificationRead } from '../api/admin';
+import { lookFor } from '../lib/notificationLook';
+import { useMediaQuery } from '../shell/useMediaQuery';
+import { Icon } from '../ui/Icon';
+import { Portal } from '../ui/Portal';
+import { useDismiss } from '../ui/useDismiss';
 
 const when = (iso: string) => {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -15,17 +17,24 @@ const when = (iso: string) => {
 };
 
 /**
- * The inbox, as a bell in the shell (§96).
+ * The inbox, as a bell in the top bar (§96, §242) — the business app's
+ * (§190, §220): a flyout down the right on a large screen, a dropdown under
+ * the bar on a phone; a press outside, Esc or another page closes it.
  *
- * Polled rather than pushed: there is no websocket in this platform, and a
- * count that is a minute stale is worth more than a connection to maintain.
- *
- * Opening a notification marks it read — the alternative is a separate control
- * per row for an action nobody deliberately performs.
+ * Polled once a minute rather than pushed. Pressing a notice marks it read
+ * and opens the page that deals with it — a new ticket opens Support, a
+ * number to check opens Payout numbers.
  */
 export function Notifications() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const wide = useMediaQuery('(min-width: 1024px)');
+  const close = useCallback(() => setOpen(false), []);
+  const wrap = useRef<HTMLDivElement>(null);
+  useDismiss(open && !wide, wrap, close);
+  const { pathname } = useLocation();
+  useEffect(close, [pathname, close]);
 
   const inbox = useQuery({
     queryKey: ['notifications'],
@@ -34,75 +43,113 @@ export function Notifications() {
   });
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['notifications'] });
-
   const readOne = useMutation({ mutationFn: markNotificationRead, onSuccess: refresh });
   const readAll = useMutation({ mutationFn: markAllNotificationsRead, onSuccess: refresh });
 
   const unread = inbox.data?.unread ?? 0;
   const rows = inbox.data?.notifications ?? [];
 
+  const list = (
+    <>
+      <header>
+        <div>
+          <strong>Notifications</strong>
+          <span className="muted small">{unread > 0 ? `${unread} unread` : 'All caught up'}</span>
+        </div>
+        {unread > 0 && (
+          <button type="button" className="link" disabled={readAll.isPending} onClick={() => readAll.mutate()}>
+            Mark all read
+          </button>
+        )}
+      </header>
+
+      {rows.length === 0 && (
+        <div className="bell-empty">
+          <span>
+            <Icon name="inbox" size={22} />
+          </span>
+          <strong>Nothing yet.</strong>
+        </div>
+      )}
+
+      <ul>
+        {rows.map((notification) => {
+          const look = lookFor(notification.type);
+          return (
+            <li
+              key={notification.id}
+              className={notification.readAt ? 'read' : 'unread'}
+              onClick={() => {
+                if (!notification.readAt) readOne.mutate(notification.id);
+                close();
+                navigate(look.to);
+              }}
+            >
+              <span className={`bell-mark tone-${look.tone}`} aria-hidden="true">
+                <Icon name={look.icon} size={16} />
+              </span>
+              <div className="bell-text">
+                <strong>{notification.subject ?? notification.type}</strong>
+                {notification.body && <span className="bell-body">{notification.body}</span>}
+                <span className="bell-when">{when(notification.createdAt)}</span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+
   return (
-    <div className="bell-wrap">
+    <div className="bell-wrap" ref={wrap}>
       <button
         type="button"
-        className="bell"
+        className={`tb-icon bell ${open ? 'is-open' : ''}`}
         onClick={() => setOpen((was) => !was)}
         aria-label={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
+        aria-expanded={open}
+        title="Notifications"
       >
-        <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true">
-          <path
-            d="M8 2a3.5 3.5 0 0 0-3.5 3.5v2.2L3.3 10h9.4l-1.2-2.3V5.5A3.5 3.5 0 0 0 8 2zM6.5 11.5a1.5 1.5 0 0 0 3 0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <Icon name="bell" size={19} />
         {unread > 0 && <span className="bell-count">{unread > 99 ? '99+' : unread}</span>}
       </button>
 
-      {open && (
-        <>
-          <div className="bell-backdrop" onClick={() => setOpen(false)} />
-          <div className="bell-panel">
-            <header>
-              <strong>Notifications</strong>
-              {unread > 0 && (
-                <button
-                  type="button"
-                  className="link"
-                  disabled={readAll.isPending}
-                  onClick={() => readAll.mutate()}
-                >
-                  Mark all read
-                </button>
-              )}
-            </header>
-
-            {rows.length === 0 && <p className="muted small empty">Nothing yet.</p>}
-
-            <ul>
-              {rows.map((notification) => (
-                <li
-                  key={notification.id}
-                  className={notification.readAt ? 'read' : 'unread'}
-                  onClick={() => {
-                    if (!notification.readAt) readOne.mutate(notification.id);
-                  }}
-                >
-                  <div className="small">
-                    <strong>{notification.subject ?? notification.type}</strong>
-                  </div>
-                  {notification.body && (
-                    <div className="muted small">{notification.body}</div>
-                  )}
-                  <div className="muted small">{when(notification.createdAt)}</div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
+      {open && !wide && (
+        <div className="bell-panel" role="dialog" aria-label="Notifications">
+          {list}
+        </div>
+      )}
+      {open && wide && (
+        <Flyout onClose={close} unread={unread}>
+          {list}
+        </Flyout>
       )}
     </div>
+  );
+}
+
+/** Down the right of the window, over the page, which is dimmed behind it (§220). */
+function Flyout({ onClose, unread, children }: { onClose: () => void; unread: number; children: ReactNode }) {
+  const closeBtn = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    closeBtn.current?.focus();
+    const escape = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+    document.addEventListener('keydown', escape);
+    return () => document.removeEventListener('keydown', escape);
+  }, [onClose]);
+  return (
+    <Portal>
+      <div className="nf-backdrop" onPointerDown={onClose} />
+      <aside className="nf-flyout" role="dialog" aria-modal="true" aria-label="Notifications">
+        <button type="button" className="nf-close" onClick={onClose} ref={closeBtn} aria-label="Close notifications">
+          <Icon name="close" size={18} />
+        </button>
+        <div className="nf-scroll bell-panel-body">{children}</div>
+        <footer className="nf-foot">
+          <Icon name="bell" size={14} />
+          {unread > 0 ? `${unread} unread · ` : ''}checked every minute
+        </footer>
+      </aside>
+    </Portal>
   );
 }
