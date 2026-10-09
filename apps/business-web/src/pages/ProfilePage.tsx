@@ -13,6 +13,8 @@ import {
   resumeBusiness,
   setProfileImage,
   updateProfile,
+  setKinds,
+  MAX_KIND_CATEGORIES,
   type BusinessProfile,
   type Location,
 } from '../api/business';
@@ -25,6 +27,7 @@ import { ShopLogo } from '../ui/ShopLogo';
 import { Stars } from '../ui/Stars';
 import { Switch } from '../ui/Switch';
 import { shopStateWord } from '../onboarding/steps';
+import { LineArt } from '../onboarding/LineArt';
 import './profile.css';
 
 /** Mirrors ALLOWED_MIME_TYPES on the server (§132.3). */
@@ -194,7 +197,7 @@ function Strength({ profile, locations }: { profile: BusinessProfile; locations:
     { label: 'Cover photo', done: Boolean(profile.coverImageUrl), icon: 'image' },
     { label: 'Logo', done: Boolean(profile.logoUrl), icon: 'store' },
     { label: 'What you do', done: (profile.description ?? '').trim().length >= 40, icon: 'pencil' },
-    { label: 'Category and type', done: Boolean(profile.category && profile.subcategory), icon: 'tag' },
+    { label: 'Kind of shop', done: Boolean(profile.category && profile.subcategory), icon: 'tag' },
     { label: 'Phone', done: Boolean(profile.phone), icon: 'phone' },
     {
       label: 'Photos at every branch',
@@ -250,8 +253,11 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
   const [name, setName] = useState(profile.name ?? '');
   const [description, setDescription] = useState(profile.description ?? '');
   const [phone, setPhone] = useState(profile.phone ?? '');
-  const [categoryId, setCategoryId] = useState(profile.category?.id ?? '');
-  const [subcategoryId, setSubcategoryId] = useState(profile.subcategory?.id ?? '');
+  // Every kind of place the shop is (§265), as types in order — the first is the main one.
+  const savedKinds = profile.kinds.length ? profile.kinds.map((k) => k.subcategory.id) : profile.subcategory ? [profile.subcategory.id] : [];
+  const [kinds, setKindsList] = useState<string[]>(savedKinds);
+  const [addCategoryId, setAddCategoryId] = useState('');
+  const [addTypeId, setAddTypeId] = useState('');
   const [saved, setSaved] = useState(false);
 
   // The server is the source of truth: after a save the form follows what came
@@ -260,28 +266,43 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
     setName(profile.name ?? '');
     setDescription(profile.description ?? '');
     setPhone(profile.phone ?? '');
-    setCategoryId(profile.category?.id ?? '');
-    setSubcategoryId(profile.subcategory?.id ?? '');
+    setKindsList(profile.kinds.length ? profile.kinds.map((k) => k.subcategory.id) : profile.subcategory ? [profile.subcategory.id] : []);
+    // Only when the shop itself changes, not on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
-  const chosen = categories.data?.find((category) => category.id === categoryId);
-  const sub = chosen?.subcategories.find((s) => s.id === subcategoryId);
+  // Each listed type with its category, from the taxonomy (or, for one no longer offered, from the profile).
+  const typeOf = (id: string) => {
+    for (const c of categories.data ?? []) {
+      const t = c.subcategories.find((s) => s.id === id);
+      if (t) return { category: { id: c.id, name: c.name, icon: c.icon }, subcategory: { id: t.id, name: t.name } };
+    }
+    return profile.kinds.find((k) => k.subcategory.id === id) ?? null;
+  };
+  const listed = kinds.map(typeOf).filter((k): k is NonNullable<ReturnType<typeof typeOf>> => Boolean(k));
+  const usedCategories = [...new Set(listed.map((k) => k.category.id))];
+  const addCategory = categories.data?.find((c) => c.id === addCategoryId);
+  const categoryFull = usedCategories.length >= MAX_KIND_CATEGORIES && !usedCategories.includes(addCategoryId);
+  const main = listed[0] ?? null;
+  const kindsChanged = kinds.length !== savedKinds.length || kinds.some((k, i) => k !== savedKinds[i]);
   const dirty =
     name !== (profile.name ?? '') ||
     description !== (profile.description ?? '') ||
     phone !== (profile.phone ?? '') ||
-    categoryId !== (profile.category?.id ?? '') ||
-    subcategoryId !== (profile.subcategory?.id ?? '');
+    kindsChanged;
 
   const save = useMutation({
-    mutationFn: () =>
-      updateProfile({
-        name: name.trim(),
-        description: description.trim(),
-        phone: phone.trim(),
-        ...(categoryId ? { categoryId } : {}),
-        ...(subcategoryId ? { subcategoryId } : {}),
-      }),
+    // Only what changed is sent: a shop changing its kinds is not held up by a
+    // field it never touched.
+    mutationFn: async () => {
+      const body = {
+        ...(name !== (profile.name ?? '') ? { name: name.trim() } : {}),
+        ...(description !== (profile.description ?? '') ? { description: description.trim() } : {}),
+        ...(phone !== (profile.phone ?? '') ? { phone: phone.trim() } : {}),
+      };
+      if (Object.keys(body).length > 0) await updateProfile(body);
+      if (kindsChanged && kinds.length > 0) await setKinds(kinds);
+    },
     onSuccess: () => {
       setSaved(true);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -325,33 +346,70 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
           <input value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={30} />
         </label>
 
-        <div className="pf-two">
-          <div className="pf-field">
-            <span>Category</span>
+        {/* Every kind of place the shop is (§265): a salon whose other branch is a spa is both. */}
+        <div className="pf-field">
+          <span>
+            Kinds of shop <em>the first is your main one · up to {MAX_KIND_CATEGORIES} categories</em>
+          </span>
+          {listed.length > 0 && (
+            <ul className="pf-kinds">
+              {listed.map((k, i) => (
+                <li key={k.subcategory.id}>
+                  <LineArt icon={k.category.icon} className="pf-kind-art" />
+                  <span className="pf-kind-text">
+                    <strong>{k.subcategory.name}</strong>
+                    <em>{k.category.name}</em>
+                  </span>
+                  {i === 0 ? (
+                    <span className="pf-kind-main">Main</span>
+                  ) : (
+                    <button type="button" className="pf-kind-link" onClick={() => setKindsList([k.subcategory.id, ...kinds.filter((id) => id !== k.subcategory.id)])}>
+                      Make main
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="pf-kind-remove"
+                    aria-label={`Remove ${k.subcategory.name}`}
+                    title={listed.length === 1 ? 'A shop needs at least one kind' : 'Remove'}
+                    disabled={listed.length === 1}
+                    onClick={() => setKindsList(kinds.filter((id) => id !== k.subcategory.id))}
+                  >
+                    <Icon name="close" size={15} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="pf-kind-add">
             <Select
-              value={categoryId}
+              value={addCategoryId}
               onChange={(next) => {
-                setCategoryId(next);
-                // A subcategory must belong to its category — the server checks,
-                // and keeping a stale one would send a pair it will refuse.
-                setSubcategoryId('');
+                setAddCategoryId(next);
+                setAddTypeId('');
               }}
               label="Category"
-              placeholder="Choose one"
+              placeholder={listed.length ? 'Add another kind…' : 'Choose a category'}
               options={categories.data?.map((category) => ({ value: category.id, label: category.name })) ?? []}
             />
-          </div>
-
-          <div className="pf-field">
-            <span>Type of business</span>
             <Select
-              value={subcategoryId}
-              onChange={setSubcategoryId}
-              disabled={!chosen}
-              label="Type of business"
-              placeholder={chosen ? 'Choose one' : 'Pick a category first'}
-              options={chosen?.subcategories.map((subcategory) => ({ value: subcategory.id, label: subcategory.name })) ?? []}
+              value={addTypeId}
+              onChange={setAddTypeId}
+              disabled={!addCategory || categoryFull}
+              label="Type"
+              placeholder={categoryFull ? `Up to ${MAX_KIND_CATEGORIES} categories` : addCategory ? 'Which type' : 'Then a type'}
+              options={addCategory?.subcategories.filter((t) => !kinds.includes(t.id)).map((t) => ({ value: t.id, label: t.name })) ?? []}
             />
+            <button
+              type="button"
+              disabled={!addTypeId}
+              onClick={() => {
+                setKindsList([...kinds, addTypeId]);
+                setAddTypeId('');
+              }}
+            >
+              <Icon name="plus" size={16} /> Add
+            </button>
           </div>
         </div>
 
@@ -389,8 +447,8 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
           live={{
             name,
             description,
-            subcategory: sub?.name ?? null,
-            categoryIcon: chosen?.icon ?? null,
+            subcategory: main?.subcategory.name ?? null,
+            categoryIcon: main?.category.icon ?? null,
             logoUrl: profile.logoUrl,
             coverImageUrl: profile.coverImageUrl,
           }}

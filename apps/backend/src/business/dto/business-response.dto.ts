@@ -1,4 +1,5 @@
 import { BusinessStatus, Prisma } from '@prisma/client';
+import { KINDS_SELECT } from '../kinds';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 
 /**
@@ -199,6 +200,8 @@ export const PROFILE_SELECT = {
   updatedAt: true,
   category: { select: { id: true, name: true, icon: true } },
   subcategory: { select: { id: true, name: true } },
+  // Every kind it is (§265), the main one first.
+  kinds: KINDS_SELECT,
 } as const;
 
 type ProfilePayload = Serialised<
@@ -214,6 +217,12 @@ export class BusinessCategoryDto {
 export class BusinessSubcategoryDto {
   id!: string;
   name!: string;
+}
+
+/** One kind of place the business is: a type, and the category it is in (§265). */
+export class BusinessKindDto {
+  category!: BusinessCategoryDto;
+  subcategory!: BusinessSubcategoryDto;
 }
 
 /** The shopfront, as the business itself sees it. */
@@ -246,8 +255,11 @@ export class BusinessProfileDto implements ProfilePayload {
 
   createdAt!: string;
   updatedAt!: string;
+  /** Its MAIN kind — the first of `kinds` (§265). */
   category!: BusinessCategoryDto | null;
   subcategory!: BusinessSubcategoryDto | null;
+  /** Every kind of place it is, the main one first (§265). */
+  kinds!: BusinessKindDto[];
 }
 
 /**

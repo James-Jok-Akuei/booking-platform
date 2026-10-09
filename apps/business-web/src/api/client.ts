@@ -133,7 +133,7 @@ async function refreshTokens(): Promise<TokenPair> {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   /** Query string parameters; undefined and null values are dropped. */
   query?: Record<string, string | number | boolean | undefined | null>;

@@ -17309,3 +17309,49 @@ customer app, the business app and the console — instead of icons.
 - Kept as icons on purpose: the tiny marks where a drawing cannot be read
   (a section title's dot, search shortcuts, service thumbnails), and the
   dark advert banners' faint motif. The landing page has no categories yet.
+
+## 265. A shop can be more than one kind of place (2026-10-10)
+
+Asked: let sellers choose more than one category, since a business may run
+different kinds of place at different branches; and make a chosen day in the
+hours picker readable when hovered.
+
+- **Kinds**: new table `business_kinds` — one row per type a business offers
+  (`subcategoryId`, its `categoryId` copied for lookups, `position`). The
+  first (`position` 0) is the MAIN kind, and stays mirrored on
+  `BusinessProfile.categoryId / subcategoryId`, so everything that shows "the"
+  kind (cards, pictures, wording, readiness, the admin row) is unchanged.
+  Migration `…_business_kinds` gives every shop that had a type that one
+  kind.
+- **Limits**: up to 4 categories (and 8 types) per shop — a few kinds of
+  place, not every kind; the busiest booking apps cap it the same way. A type
+  no longer offered may be kept by a shop that has it (retiring a type never
+  takes it away, §98) but not newly chosen.
+- **API**: `PUT /business/kinds { subcategoryIds }` (owner or manager)
+  replaces the list, first = main. `PATCH /business/profile` with a category
+  and type still works and keeps the list in step (the new main first, the
+  old main gone, the others kept). `kinds` is on the profile, discovery's
+  business, the shopfront, saved services and the admin business.
+- **Discovery** finds a shop under ANY of its kinds — by category or by type
+  (and still by the main columns, for a shop that chose a category but no
+  type). Known limit: services carry no kind of their own, so filtering by
+  "Health & Wellness" shows a salon-and-spa's every service, not only its
+  massages. A per-service kind is the next step if that matters.
+- **Setting up**: "What kind of shop is it?" takes up to four (the first
+  chosen marked Main; the rest dimmed once four are chosen); "Which describe
+  it best?" asks for at least one type in each, with "Make it the main one"
+  on the others. **Shopfront page**: the kinds as a list — drawing, type,
+  category, Main or "Make main", remove — with category-then-type to add
+  another; Save sends only what changed.
+- **Customer app**: a place counts in each of its categories on the
+  categories wall; a shop's page shows every kind as a pill, the main one in
+  colour. **Console**: a row reads "Beauty · Nail Salon + 2 more"; the review
+  panel lists them all; a category's shop count counts each shop once,
+  however many of its types it lists, and a type's count is its kinds.
+- **Hover**: the app-wide button hover (styles.css, loaded after the page's
+  own CSS) turned a chosen day grey under its white word. Each control in
+  setting up now keeps its own hover at a weight that wins — the chosen day
+  goes a deeper orange — and the same fixes "Finish later" on the photos,
+  chosen chips, and the chosen card's border.
+
+Seven tests in `business-kinds.spec.ts`.

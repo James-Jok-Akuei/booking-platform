@@ -56,9 +56,12 @@ export default function Categories() {
     const page = places.data;
     if (!page || page.total > page.locations.length) return null;
     const byCategory = new Map<string, number>();
+    // A place counts once in each category it is (§265): a barbershop
+    // whose other branch is a spa is in both.
     for (const place of page.locations) {
-      const id = place.business.category?.id;
-      if (id) byCategory.set(id, (byCategory.get(id) ?? 0) + 1);
+      const ids = new Set(place.business.kinds.map((k) => k.category.id));
+      if (place.business.category) ids.add(place.business.category.id);
+      for (const id of ids) byCategory.set(id, (byCategory.get(id) ?? 0) + 1);
     }
     return byCategory;
   }, [places.data]);

@@ -393,6 +393,10 @@ model BusinessProfile {
   // Taxonomy. Both nullable: the profile row is created at signup, before the
   // business has picked anything. SetNull on delete so retiring a category
   // never cascades away a business account.
+  //
+  // This is the business's MAIN kind (§265) — the one shown first and the one
+  // its pictures and wording follow. Every kind it offers, the main one
+  // included, is in `kinds`.
   categoryId    String?
   category      Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   subcategoryId String?
@@ -455,6 +459,8 @@ model BusinessProfile {
 
   serviceDrafts ServiceDraft[]
 
+  kinds BusinessKind[]
+
   @@index([categoryId])
   @@index([status])
   @@index([status, submittedAt])
@@ -486,6 +492,7 @@ model Category {
 
   subcategories Subcategory[]
   businesses    BusinessProfile[]
+  kinds         BusinessKind[]
 
   @@map("categories")
 }
@@ -505,12 +512,38 @@ model Subcategory {
   isLive Boolean @default(true)
 
   businesses BusinessProfile[]
+  kinds      BusinessKind[]
 
   // Unique per parent, not globally: "Bridal Makeup" under Beauty and a
   // same-named entry under a future category must not collide.
   @@unique([categoryId, name])
   @@index([categoryId])
   @@map("subcategories")
+}
+
+/// Every kind of place a business is (§265): a barbershop whose other branch
+/// is a spa is both. One row per type it offers; the first (`position` 0) is
+/// its main kind, mirrored on BusinessProfile.categoryId / subcategoryId so
+/// everything that shows "the" kind keeps reading one column. Discovery finds
+/// the business under any of its kinds.
+///
+/// `categoryId` is the type's own category, copied onto the row so "which
+/// businesses are in Beauty" is one indexed lookup, not a join through types.
+model BusinessKind {
+  id            String          @id @default(uuid())
+  businessId    String
+  business      BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  categoryId    String
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subcategoryId String
+  subcategory   Subcategory     @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
+  position      Int
+  createdAt     DateTime        @default(now())
+
+  @@unique([businessId, subcategoryId])
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@map("business_kinds")
 }
 
 // ---------- Locations ----------

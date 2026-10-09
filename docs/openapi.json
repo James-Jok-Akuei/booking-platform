@@ -2725,6 +2725,78 @@
         ]
       }
     },
+    "/business/kinds": {
+      "put": {
+        "operationId": "BusinessController_setKinds",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetBusinessKindsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessProfileDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Every kind of place the shop is (§265) — a barbershop whose other branch is\na spa is both. The first is its main kind. Replaces the whole list.",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
     "/business/readiness": {
       "get": {
         "operationId": "BusinessController_getReadiness",
@@ -15130,6 +15202,21 @@
           "name"
         ]
       },
+      "BusinessKindDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/BusinessCategoryDto"
+          },
+          "subcategory": {
+            "$ref": "#/components/schemas/BusinessSubcategoryDto"
+          }
+        },
+        "required": [
+          "category",
+          "subcategory"
+        ]
+      },
       "BusinessProfileDto": {
         "type": "object",
         "properties": {
@@ -15189,6 +15276,7 @@
           },
           "category": {
             "nullable": true,
+            "description": "Its MAIN kind — the first of `kinds` (§265).",
             "type": "object",
             "allOf": [
               {
@@ -15204,6 +15292,13 @@
                 "$ref": "#/components/schemas/BusinessSubcategoryDto"
               }
             ]
+          },
+          "kinds": {
+            "description": "Every kind of place it is, the main one first (§265).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusinessKindDto"
+            }
           }
         },
         "required": [
@@ -15220,7 +15315,8 @@
           "createdAt",
           "updatedAt",
           "category",
-          "subcategory"
+          "subcategory",
+          "kinds"
         ]
       },
       "UpdateBusinessProfileDto": {
@@ -15257,6 +15353,22 @@
             "maxLength": 500
           }
         }
+      },
+      "SetBusinessKindsDto": {
+        "type": "object",
+        "properties": {
+          "subcategoryIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "subcategoryIds"
+        ]
       },
       "ReadinessItemDto": {
         "type": "object",
@@ -16482,6 +16594,21 @@
           "name"
         ]
       },
+      "AdminBusinessKindDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/AdminBusinessCategoryDto"
+          },
+          "subcategory": {
+            "$ref": "#/components/schemas/AdminBusinessCategoryDto"
+          }
+        },
+        "required": [
+          "category",
+          "subcategory"
+        ]
+      },
       "AdminBusinessDto": {
         "type": "object",
         "properties": {
@@ -16546,6 +16673,7 @@
           },
           "category": {
             "nullable": true,
+            "description": "Its MAIN kind (§265).",
             "type": "object",
             "allOf": [
               {
@@ -16561,6 +16689,13 @@
                 "$ref": "#/components/schemas/AdminBusinessCategoryDto"
               }
             ]
+          },
+          "kinds": {
+            "description": "Every kind of place it is, the main one first (§265).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminBusinessKindDto"
+            }
           }
         },
         "required": [
@@ -16578,7 +16713,8 @@
           "coverImageUrl",
           "createdAt",
           "category",
-          "subcategory"
+          "subcategory",
+          "kinds"
         ]
       },
       "AdminBusinessPageDto": {
@@ -16913,6 +17049,7 @@
           },
           "category": {
             "nullable": true,
+            "description": "Its MAIN kind (§265).",
             "type": "object",
             "allOf": [
               {
@@ -16928,6 +17065,13 @@
                 "$ref": "#/components/schemas/AdminBusinessCategoryDto"
               }
             ]
+          },
+          "kinds": {
+            "description": "Every kind of place it is, the main one first (§265).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminBusinessKindDto"
+            }
           },
           "locations": {
             "type": "array",
@@ -16980,6 +17124,7 @@
           "createdAt",
           "category",
           "subcategory",
+          "kinds",
           "locations",
           "services",
           "members",
@@ -22993,6 +23138,50 @@
           "provinceName"
         ]
       },
+      "DiscoveredKindDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "icon"
+            ]
+          },
+          "subcategory": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ]
+          }
+        },
+        "required": [
+          "category",
+          "subcategory"
+        ]
+      },
       "DiscoveredBusinessDto": {
         "type": "object",
         "properties": {
@@ -23046,6 +23235,13 @@
               "id",
               "name"
             ]
+          },
+          "kinds": {
+            "description": "Every kind of place it is, the main one first (§265).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscoveredKindDto"
+            }
           }
         },
         "required": [
@@ -23054,7 +23250,8 @@
           "logoUrl",
           "coverImageUrl",
           "category",
-          "subcategory"
+          "subcategory",
+          "kinds"
         ]
       },
       "ApproxSettlementDto": {
@@ -23417,6 +23614,21 @@
           "name"
         ]
       },
+      "ShopfrontKindDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/ShopfrontCategoryDto"
+          },
+          "subcategory": {
+            "$ref": "#/components/schemas/ShopfrontSubcategoryDto"
+          }
+        },
+        "required": [
+          "category",
+          "subcategory"
+        ]
+      },
       "ShopfrontBusinessDto": {
         "type": "object",
         "properties": {
@@ -23445,6 +23657,7 @@
           },
           "category": {
             "nullable": true,
+            "description": "Its MAIN kind (§265).",
             "type": "object",
             "allOf": [
               {
@@ -23460,6 +23673,13 @@
                 "$ref": "#/components/schemas/ShopfrontSubcategoryDto"
               }
             ]
+          },
+          "kinds": {
+            "description": "Every kind of place it is, the main one first (§265).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShopfrontKindDto"
+            }
           }
         },
         "required": [
@@ -23470,7 +23690,8 @@
           "logoUrl",
           "coverImageUrl",
           "category",
-          "subcategory"
+          "subcategory",
+          "kinds"
         ]
       },
       "ShopfrontRatingDto": {

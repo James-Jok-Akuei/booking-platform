@@ -439,6 +439,15 @@
 .wz-kind-tick { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: #fff; opacity: 0; transform: scale(0.4); transition: opacity 200ms var(--ease), transform 340ms var(--spring); }
 .wz-kind.is-on .wz-kind-tick { opacity: 1; transform: none; }
 .wz-kind-skel { height: 196px; border-radius: 20px; }
+/* The first chosen is the main kind (§265); a chosen card past the fourth cannot be added. */
+.wz-kind-main { position: absolute; top: 9px; right: 9px; padding: 3px 9px; border-radius: var(--r-pill); background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 6px 14px -8px rgba(240, 83, 45, 0.9); animation: pop-in 320ms var(--spring) both; }
+.wz-kind.is-full { filter: grayscale(0.7) opacity(0.5); }
+.wz-kind.is-full:hover { transform: none; box-shadow: none; }
+.wz-kind-count { text-align: center; margin-top: -6px; }
+.wz-group { display: flex; flex-direction: column; gap: 12px; }
+.wz-group + .wz-group { padding-top: 8px; border-top: 1px dashed var(--line-strong); }
+.wz-box { flex: none; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 6px; border: 2px solid var(--line-strong); background: #fff; color: #fff; transition: background 160ms var(--ease), border-color 160ms var(--ease); }
+.is-on > .wz-box { background: var(--accent); border-color: var(--accent); }
 
 .wz-kind:hover .line-art-swash, .wz-kind.is-on .line-art-swash { opacity: 1; }
 .wz-kind.is-on .line-art-ink { stroke: var(--ink); }
@@ -820,3 +829,22 @@
 .wz :is(.wz-kind, .wz-option, .wz-preset, .wz-ready) :is(strong, em, span) { white-space: normal; overflow-wrap: anywhere; }
 .wz-kind strong { max-width: 100%; padding: 0 16px; text-wrap: balance; }
 .wz-kind em { max-width: 100%; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ---------- hovering ----------
+   The app-wide button hover (styles.css, loaded after this file) sets a grey
+   background and border and would win over the rules above — a chosen day
+   turned grey with its white word still on it. Each control here keeps its
+   own hover, at a weight that wins. */
+.wz .wz-week button:hover:not(:disabled) { background: var(--sunken); border-color: #cfc9be; color: var(--ink-2); }
+.wz .wz-week button.is-on:hover:not(:disabled) { background: linear-gradient(160deg, #ff8a57, var(--accent-deep)); border-color: transparent; color: #fff; }
+.wz .wz-chips button.is-on:hover:not(:disabled) { background: var(--night-2); border-color: var(--night-2); color: #fff; }
+.wz .wz-examples button:hover:not(:disabled) { background: var(--panel); border-color: var(--faint); color: var(--ink-2); }
+.wz .wz-examples button.is-on:hover:not(:disabled) { background: var(--accent-tint); border-color: var(--accent); color: var(--accent-deep); }
+.wz :is(.wz-kind, .wz-option, .wz-preset):hover:not(:disabled) { background: #fff; border-color: var(--line-strong); }
+.wz :is(.wz-kind, .wz-option, .wz-preset).is-on:hover:not(:disabled) { background: #fff8f5; border-color: var(--accent); }
+.wz .wz-steps button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.75); border-color: transparent; }
+.wz .wz-steps li.is-on button:hover:not(:disabled) { background: var(--panel); border-color: var(--line); }
+.wz :is(.wz-back, .wz-skip):hover:not(:disabled) { background: var(--sunken); border-color: transparent; }
+.wz .wz-x:hover:not(:disabled) { background: var(--sunken-2); border-color: transparent; }
+.wz .wz-later:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); border-color: rgba(255, 255, 255, 0.4); color: #fff; }
+.wz :is(.wz-link, .wz-inline):hover:not(:disabled) { background: none; border-color: transparent; }

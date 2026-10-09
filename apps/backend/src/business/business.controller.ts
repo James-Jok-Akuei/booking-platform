@@ -10,6 +10,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   UploadedFile,
   UseFilters,
   UseGuards,
@@ -34,6 +35,7 @@ import { BusinessProfileService } from './business-profile.service';
 import { AccountService } from '../users/account.service';
 import { ServiceDraftsService } from './service-drafts.service';
 import { UpdateServiceDraftDto } from './dto/service-draft.dto';
+import { SetBusinessKindsDto } from './dto/set-kinds.dto';
 import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import {
   BusinessLocationDto,
@@ -131,6 +133,17 @@ export class BusinessController {
     @Body() dto: UpdateBusinessProfileDto,
   ) {
     return this.profiles.update(business.businessId, dto);
+  }
+
+  /**
+   * Every kind of place the shop is (§265) — a barbershop whose other branch is
+   * a spa is both. The first is its main kind. Replaces the whole list.
+   */
+  @Put('kinds')
+  @ApiOkResponse({ type: BusinessProfileDto })
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  setKinds(@CurrentBusiness() business: BusinessContext, @Body() dto: SetBusinessKindsDto) {
+    return this.profiles.setKinds(business.businessId, dto.subcategoryIds);
   }
 
   // ---------- Going live (§255) ----------

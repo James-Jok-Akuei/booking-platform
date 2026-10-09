@@ -135,6 +135,16 @@ export type Category = components['schemas']['CategoryDto'];
 
 export const getProfile = () => api<BusinessProfile>('/business/profile');
 
+/**
+ * Every kind of place the shop is (§265), in order — the first is its main
+ * kind. Replaces the whole list; up to four categories.
+ */
+export const setKinds = (subcategoryIds: string[]) =>
+  api<BusinessProfile>('/business/kinds', { method: 'PUT', body: { subcategoryIds } });
+
+/** The most categories one shop may list (§265); the server says the same. */
+export const MAX_KIND_CATEGORIES = 4;
+
 export const updateProfile = (body: {
   name?: string;
   description?: string;

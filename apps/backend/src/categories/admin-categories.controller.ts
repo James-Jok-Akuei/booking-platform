@@ -65,18 +65,32 @@ export class AdminCategoriesController {
         icon: true,
         description: true,
         isLive: true,
-        _count: { select: { businesses: true } },
         subcategories: {
           orderBy: { name: 'asc' },
           select: {
             id: true,
             name: true,
             isLive: true,
-            _count: { select: { businesses: true } },
+            _count: { select: { kinds: true } },
           },
         },
       },
     });
+
+    // Businesses in each category, counted ONCE however many of its types
+    // they list (§265) — by their kinds, and by the main category of any that
+    // chose a category before choosing a type.
+    const [kinds, mains] = await Promise.all([
+      this.prisma.businessKind.findMany({ distinct: ['categoryId', 'businessId'], select: { categoryId: true, businessId: true } }),
+      this.prisma.businessProfile.findMany({ where: { categoryId: { not: null } }, select: { id: true, categoryId: true } }),
+    ]);
+    const inCategory = new Map<string, Set<string>>();
+    const count = (categoryId: string, businessId: string) => {
+      if (!inCategory.has(categoryId)) inCategory.set(categoryId, new Set());
+      inCategory.get(categoryId)!.add(businessId);
+    };
+    kinds.forEach((k) => count(k.categoryId, k.businessId));
+    mains.forEach((b) => count(b.categoryId!, b.id));
 
     return categories.map((category) => ({
       id: category.id,
@@ -85,12 +99,12 @@ export class AdminCategoriesController {
       description: category.description,
       isLive: category.isLive,
       /** Businesses already in it. Shown before anything is switched off. */
-      businessCount: category._count.businesses,
+      businessCount: inCategory.get(category.id)?.size ?? 0,
       subcategories: category.subcategories.map((subcategory) => ({
         id: subcategory.id,
         name: subcategory.name,
         isLive: subcategory.isLive,
-        businessCount: subcategory._count.businesses,
+        businessCount: subcategory._count.kinds,
         /**
          * What a business actually sees. A live type inside a hidden category
          * is not offered, and the screen should say that rather than show a

@@ -669,6 +669,26 @@ export interface paths {
         patch: operations["BusinessController_updateProfile"];
         trace?: never;
     };
+    "/business/kinds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Every kind of place the shop is (§265) — a barbershop whose other branch is
+         *     a spa is both. The first is its main kind. Replaces the whole list.
+         */
+        put: operations["BusinessController_setKinds"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/business/readiness": {
         parameters: {
             query?: never;
@@ -3232,6 +3252,10 @@ export interface components {
             id: string;
             name: string;
         };
+        BusinessKindDto: {
+            category: components["schemas"]["BusinessCategoryDto"];
+            subcategory: components["schemas"]["BusinessSubcategoryDto"];
+        };
         BusinessProfileDto: {
             id: string;
             name: string | null;
@@ -3258,8 +3282,11 @@ export interface components {
             pausedAt: string | null;
             createdAt: string;
             updatedAt: string;
+            /** @description Its MAIN kind — the first of `kinds` (§265). */
             category: components["schemas"]["BusinessCategoryDto"] | null;
             subcategory: components["schemas"]["BusinessSubcategoryDto"] | null;
+            /** @description Every kind of place it is, the main one first (§265). */
+            kinds: components["schemas"]["BusinessKindDto"][];
         };
         UpdateBusinessProfileDto: {
             name?: string;
@@ -3271,6 +3298,9 @@ export interface components {
             phone?: string;
             logoUrl?: string;
             coverImageUrl?: string;
+        };
+        SetBusinessKindsDto: {
+            subcategoryIds: string[];
         };
         ReadinessItemDto: {
             /** @enum {string} */
@@ -3695,6 +3725,10 @@ export interface components {
             id: string;
             name: string;
         };
+        AdminBusinessKindDto: {
+            category: components["schemas"]["AdminBusinessCategoryDto"];
+            subcategory: components["schemas"]["AdminBusinessCategoryDto"];
+        };
         AdminBusinessDto: {
             id: string;
             name: string | null;
@@ -3720,8 +3754,11 @@ export interface components {
             logoUrl: string | null;
             coverImageUrl: string | null;
             createdAt: string;
+            /** @description Its MAIN kind (§265). */
             category: components["schemas"]["AdminBusinessCategoryDto"] | null;
             subcategory: components["schemas"]["AdminBusinessCategoryDto"] | null;
+            /** @description Every kind of place it is, the main one first (§265). */
+            kinds: components["schemas"]["AdminBusinessKindDto"][];
         };
         AdminBusinessPageDto: {
             total: number;
@@ -3819,8 +3856,11 @@ export interface components {
             logoUrl: string | null;
             coverImageUrl: string | null;
             createdAt: string;
+            /** @description Its MAIN kind (§265). */
             category: components["schemas"]["AdminBusinessCategoryDto"] | null;
             subcategory: components["schemas"]["AdminBusinessCategoryDto"] | null;
+            /** @description Every kind of place it is, the main one first (§265). */
+            kinds: components["schemas"]["AdminBusinessKindDto"][];
             locations: components["schemas"]["AdminBusinessLocationDto"][];
             services: components["schemas"]["AdminBusinessServiceDto"][];
             /** @description ACTIVE members only. Removed ones stay as history and grant nothing (§14). */
@@ -5652,6 +5692,17 @@ export interface components {
             provinceId: string;
             provinceName: string;
         };
+        DiscoveredKindDto: {
+            category: {
+                id: string;
+                name: string;
+                icon: string | null;
+            };
+            subcategory: {
+                id: string;
+                name: string;
+            };
+        };
         DiscoveredBusinessDto: {
             id: string;
             name: string | null;
@@ -5667,6 +5718,8 @@ export interface components {
                 id: string;
                 name: string;
             };
+            /** @description Every kind of place it is, the main one first (§265). */
+            kinds: components["schemas"]["DiscoveredKindDto"][];
         };
         ApproxSettlementDto: {
             currency: string;
@@ -5776,6 +5829,10 @@ export interface components {
             id: string;
             name: string;
         };
+        ShopfrontKindDto: {
+            category: components["schemas"]["ShopfrontCategoryDto"];
+            subcategory: components["schemas"]["ShopfrontSubcategoryDto"];
+        };
         ShopfrontBusinessDto: {
             id: string;
             name: string | null;
@@ -5783,8 +5840,11 @@ export interface components {
             phone: string | null;
             logoUrl: string | null;
             coverImageUrl: string | null;
+            /** @description Its MAIN kind (§265). */
             category: components["schemas"]["ShopfrontCategoryDto"] | null;
             subcategory: components["schemas"]["ShopfrontSubcategoryDto"] | null;
+            /** @description Every kind of place it is, the main one first (§265). */
+            kinds: components["schemas"]["ShopfrontKindDto"][];
         };
         ShopfrontRatingDto: {
             /** @description Null when nothing has been reviewed. Not zero — zero is a rating. */
@@ -8181,6 +8241,65 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateBusinessProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessProfileDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessController_setKinds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetBusinessKindsDto"];
             };
         };
         responses: {

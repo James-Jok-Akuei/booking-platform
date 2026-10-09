@@ -262,3 +262,20 @@
   .pf-gallery { padding: 16px 14px; }
   .pf-photos { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Kinds of shop (§265): each a row with its drawing, the main one marked. */
+.pf-kinds { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pf-kinds li { display: flex; align-items: center; gap: 12px; padding: 6px 8px 6px 6px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); }
+.pf-kind-art { flex: none; width: 72px; height: 36px; color: var(--ink); }
+.pf-kind-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.pf-kind-text strong { font-size: 14px; }
+.pf-kind-text em { font-style: normal; font-size: 12.5px; color: var(--muted); }
+.pf-kind-main { flex: none; padding: 3px 9px; border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent-deep); font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+.pf-kinds .pf-kind-link { flex: none; min-height: 30px; padding: 0 10px; border-color: transparent; background: transparent; color: var(--accent-deep); font-size: 12.5px; font-weight: 750; }
+.pf-kinds .pf-kind-link:hover:not(:disabled) { background: var(--accent-tint); border-color: transparent; }
+.pf-kinds .pf-kind-remove { flex: none; width: 32px; min-height: 32px; padding: 0; border-color: transparent; background: transparent; color: var(--muted); }
+.pf-kinds .pf-kind-remove:hover:not(:disabled) { background: var(--danger-soft); border-color: transparent; color: var(--danger); }
+.pf-kind-add { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+@media (max-width: 640px) {
+  .pf-kind-add { grid-template-columns: minmax(0, 1fr); }
+}

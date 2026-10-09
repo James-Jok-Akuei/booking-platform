@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { KINDS_SELECT } from '../business/kinds';
 import { BusinessStatus, Prisma } from '@prisma/client';
 import { isPubliclyBookable } from '../business/business-status';
 import { COUNTED_BOOKING_STATUSES } from '../discovery/popularity';
@@ -237,6 +238,7 @@ export class FavouritesService {
                 pausedAt: true,
                 category: { select: { id: true, name: true, icon: true } },
                 subcategory: { select: { id: true, name: true } },
+                kinds: KINDS_SELECT,
               },
             },
           },

@@ -27,11 +27,22 @@ export const ADMIN_BUSINESS_SELECT = {
   createdAt: true,
   category: { select: { id: true, name: true } },
   subcategory: { select: { id: true, name: true } },
+  // Every kind of place it is, the main one first (§265).
+  kinds: {
+    orderBy: { position: 'asc' },
+    select: { category: { select: { id: true, name: true } }, subcategory: { select: { id: true, name: true } } },
+  },
 } as const;
 
 export class AdminBusinessCategoryDto {
   id!: string;
   name!: string;
+}
+
+/** One kind of place a business is (§265). */
+export class AdminBusinessKindDto {
+  category!: AdminBusinessCategoryDto;
+  subcategory!: AdminBusinessCategoryDto;
 }
 
 type AdminBusinessPayload = Serialised<
@@ -62,8 +73,11 @@ export class AdminBusinessDto implements AdminBusinessPayload {
   logoUrl!: string | null;
   coverImageUrl!: string | null;
   createdAt!: string;
+  /** Its MAIN kind (§265). */
   category!: AdminBusinessCategoryDto | null;
   subcategory!: AdminBusinessCategoryDto | null;
+  /** Every kind of place it is, the main one first (§265). */
+  kinds!: AdminBusinessKindDto[];
 }
 
 export class AdminBusinessPageDto {

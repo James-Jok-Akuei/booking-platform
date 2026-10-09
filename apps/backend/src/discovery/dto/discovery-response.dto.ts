@@ -41,8 +41,17 @@ export class DiscoveredBusinessDto {
   logoUrl!: string | null;
   /** What a card leads with (§133). Null until the business uploads one. */
   coverImageUrl!: string | null;
+  /** Its MAIN kind (§265). */
   category!: { id: string; name: string; icon: string | null } | null;
   subcategory!: { id: string; name: string } | null;
+  /** Every kind of place it is, the main one first (§265). */
+  kinds!: DiscoveredKindDto[];
+}
+
+/** One kind of place a business is (§265). */
+export class DiscoveredKindDto {
+  category!: { id: string; name: string; icon: string | null };
+  subcategory!: { id: string; name: string };
 }
 
 export class DiscoveredLocationDto {
@@ -188,8 +197,17 @@ export class ShopfrontBusinessDto {
   phone!: string | null;
   logoUrl!: string | null;
   coverImageUrl!: string | null;
+  /** Its MAIN kind (§265). */
   category!: ShopfrontCategoryDto | null;
   subcategory!: ShopfrontSubcategoryDto | null;
+  /** Every kind of place it is, the main one first (§265). */
+  kinds!: ShopfrontKindDto[];
+}
+
+/** One kind of place a business is (§265). */
+export class ShopfrontKindDto {
+  category!: ShopfrontCategoryDto;
+  subcategory!: ShopfrontSubcategoryDto;
 }
 
 export class ShopfrontRatingDto {

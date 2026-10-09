@@ -27,6 +27,8 @@ import {
   submitForReview,
   submitPayoutDestination,
   updateProfile,
+  setKinds,
+  MAX_KIND_CATEGORIES,
   type FoundAddress,
   type Readiness,
 } from '../api/business';
@@ -95,7 +97,8 @@ export function Welcome() {
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
   const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
   // Answers carried between two questions before they are saved together.
-  const [kindDraft, setKindDraft] = useState<string | null>(null);
+  // The kinds of shop chosen, in order (the first is the main one), until their types are saved with them.
+  const [kindDraft, setKindDraft] = useState<string[] | null>(null);
   const [serviceDraft, setServiceDraft] = useState<ServiceDraft>({ name: '', duration: 30 });
   const root = useRef<HTMLDivElement>(null);
 
@@ -496,69 +499,109 @@ function NameQ({ nav }: { nav: Nav }) {
   );
 }
 
-function KindQ({ nav, draft, onDraft }: { nav: Nav; draft: string | null; onDraft: (id: string) => void }) {
+/** The categories a profile already lists, in order, main first. */
+const savedCategories = (profile: { kinds: Array<{ category: { id: string } }>; category: { id: string } | null } | undefined) => {
+  if (!profile) return [];
+  const ids = profile.kinds.map((k) => k.category.id);
+  if (ids.length === 0 && profile.category) ids.push(profile.category.id);
+  return [...new Set(ids)];
+};
+
+function KindQ({ nav, draft, onDraft }: { nav: Nav; draft: string[] | null; onDraft: (ids: string[]) => void }) {
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
   const categories = useQuery({ queryKey: ['categories'], queryFn: getCategories, staleTime: 10 * 60_000 });
-  const [picked, setPicked] = useState<string | null>(draft);
-  const chosen = picked ?? profile.data?.category?.id ?? null;
+  const [picked, setPicked] = useState<string[] | null>(draft);
+  // Chosen in order: the first is the main kind (§265).
+  const chosen = picked ?? savedCategories(profile.data);
+  const full = chosen.length >= MAX_KIND_CATEGORIES;
+  const toggle = (id: string) =>
+    setPicked(chosen.includes(id) ? chosen.filter((c) => c !== id) : full ? chosen : [...chosen, id]);
 
   return (
     <form
       className="wz-step"
       onSubmit={(event: FormEvent) => {
         event.preventDefault();
-        if (!chosen) return;
+        if (chosen.length === 0) return;
         onDraft(chosen);
         nav.next();
       }}
     >
-      <QHead screen="kind" title="What kind of shop is it?" lead="Choose the one that fits best. Customers browse by it." />
+      <QHead
+        screen="kind"
+        title="What kind of shop is it?"
+        lead="Choose all that fit, up to four — a shop with a salon at one branch and a spa at another is both. The first you choose is your main one."
+      />
       <Body>
-        <div className="wz-kinds" role="radiogroup" aria-label="What kind of shop">
-          {(categories.data ?? []).map((c, i) => (
-            <button
-              key={c.id}
-              type="button"
-              role="radio"
-              aria-checked={c.id === chosen}
-              className={`wz-kind${c.id === chosen ? ' is-on' : ''}`}
-              onClick={() => setPicked(c.id)}
-              onDoubleClick={() => {
-                onDraft(c.id);
-                nav.next();
-              }}
-            >
-              <span className="wz-kind-tick" aria-hidden="true">
-                <DrawnCheck size={12} stroke={3.4} />
-              </span>
-              <strong>{c.name}</strong>
-              <em>{describe(c.subcategories.map((s) => s.name))}</em>
-              <LineArt icon={c.icon} delay={120 + i * 70} />
-            </button>
-          ))}
+        <div className="wz-kinds" role="group" aria-label="What kind of shop">
+          {(categories.data ?? []).map((c, i) => {
+            const at = chosen.indexOf(c.id);
+            const on = at >= 0;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                role="checkbox"
+                aria-checked={on}
+                className={`wz-kind${on ? ' is-on' : ''}${!on && full ? ' is-full' : ''}`}
+                onClick={() => toggle(c.id)}
+                title={!on && full ? `Up to ${MAX_KIND_CATEGORIES} kinds — take one off first` : undefined}
+              >
+                {at === 0 ? (
+                  <span className="wz-kind-main">Main</span>
+                ) : (
+                  <span className="wz-kind-tick" aria-hidden="true">
+                    <DrawnCheck size={12} stroke={3.4} />
+                  </span>
+                )}
+                <strong>{c.name}</strong>
+                <em>{describe(c.subcategories.map((s) => s.name))}</em>
+                <LineArt icon={c.icon} delay={120 + i * 70} />
+              </button>
+            );
+          })}
           {categories.isLoading && [0, 1, 2, 3, 4, 5, 6, 7].map((i) => <span key={i} className="skeleton wz-kind-skel" />)}
         </div>
+        <p className="wz-quiet wz-kind-count" aria-live="polite">
+          {chosen.length === 0
+            ? 'Nothing chosen yet.'
+            : `${chosen.length} of up to ${MAX_KIND_CATEGORIES} chosen${full ? ' — take one off to choose another' : ''}.`}
+        </p>
       </Body>
-      <Foot nav={nav} ready={Boolean(chosen)} />
+      <Foot nav={nav} ready={chosen.length > 0} />
     </form>
   );
 }
 
-function TypeQ({ nav, draft }: { nav: Nav; draft: string | null }) {
+function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
   const categories = useQuery({ queryKey: ['categories'], queryFn: getCategories, staleTime: 10 * 60_000 });
-  const categoryId = draft ?? profile.data?.category?.id ?? null;
-  const category = categories.data?.find((c) => c.id === categoryId) ?? null;
-  const savedType = profile.data?.category?.id === categoryId ? (profile.data?.subcategory?.id ?? null) : null;
-  const [picked, setPicked] = useState<string | null>(null);
-  const chosen = picked ?? savedType;
+  const [order, setOrder] = useState<string[] | null>(draft);
+  const categoryIds = order ?? savedCategories(profile.data);
+  const groups = categoryIds
+    .map((id) => categories.data?.find((c) => c.id === id))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
+  // The types chosen, in the order they were chosen; seeded from what is saved.
+  const saved = (profile.data?.kinds ?? []).map((k) => k.subcategory.id);
+  const [picked, setPicked] = useState<string[] | null>(null);
+  const types = picked ?? (saved.length ? saved : profile.data?.subcategory ? [profile.data.subcategory.id] : []);
   const [problem, setProblem] = useState<string | null>(null);
 
+  const typesIn = (categoryId: string) => {
+    const group = groups.find((g) => g.id === categoryId);
+    return types.filter((t) => group?.subcategories.some((s) => s.id === t));
+  };
+  const empty = groups.filter((g) => typesIn(g.id).length === 0);
+  // Saved as: the main category's types first, then each other category's, in the order chosen.
+  const ordered = groups.flatMap((g) => typesIn(g.id));
+  const unchanged = ordered.length === saved.length && ordered.every((t, i) => t === saved[i]);
+
   const save = useMutation({
-    mutationFn: () => updateProfile({ categoryId: categoryId!, subcategoryId: chosen! }),
+    mutationFn: () => setKinds(ordered),
     onSuccess: () => nav.saved(),
     onError: (error) => setProblem(said(error, 'That did not save. Check your connection and try again.')),
   });
+  const toggle = (id: string) => setPicked(types.includes(id) ? types.filter((t) => t !== id) : [...types, id]);
 
   return (
     <form
@@ -566,43 +609,18 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string | null }) {
       onSubmit={(event: FormEvent) => {
         event.preventDefault();
         setProblem(null);
-        if (!categoryId || !chosen) return;
-        if (chosen === profile.data?.subcategory?.id && categoryId === profile.data?.category?.id) nav.next();
+        if (groups.length === 0 || empty.length > 0) return;
+        if (unchanged) nav.next();
         else save.mutate();
       }}
     >
-      <QHead screen="type" title="Which describes it best?" lead={category ? `Within ${category.name.toLowerCase()}.` : undefined} />
+      <QHead
+        screen="type"
+        title={groups.length > 1 ? 'Which describe it best?' : 'Which describes it best?'}
+        lead={groups.length > 1 ? 'Choose at least one in each. You can choose more than one.' : 'Choose all that apply.'}
+      />
       <Body>
-        {category ? (
-          <>
-            <div className="wz-chosen">
-              <LineArt icon={category.icon} />
-              <span>
-                <em>Your kind of shop</em>
-                <strong>{category.name}</strong>
-              </span>
-              <button type="button" className="wz-link" onClick={() => nav.go('kind')}>
-                Change
-              </button>
-            </div>
-            <div className="wz-options" role="radiogroup" aria-label="Which kind exactly">
-              {category.subcategories.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={s.id === chosen}
-                  className={`wz-option${s.id === chosen ? ' is-on' : ''}`}
-                  style={{ animationDelay: `${i * 40}ms` }}
-                  onClick={() => setPicked(s.id)}
-                >
-                  <span className="wz-radio" aria-hidden="true" />
-                  {s.name}
-                </button>
-              ))}
-            </div>
-          </>
-        ) : (
+        {groups.length === 0 && (
           <p className="wz-note is-warn">
             <Icon name="alert" size={15} /> Choose what kind of shop it is first.{' '}
             <button type="button" className="wz-inline" onClick={() => nav.go('kind')}>
@@ -610,9 +628,53 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string | null }) {
             </button>
           </p>
         )}
+        {groups.map((group, g) => (
+          <section key={group.id} className="wz-group">
+            <div className="wz-chosen">
+              <LineArt icon={group.icon} />
+              <span>
+                <em>{g === 0 ? 'Main kind' : 'Also'}</em>
+                <strong>{group.name}</strong>
+              </span>
+              {g === 0 ? (
+                <button type="button" className="wz-link" onClick={() => nav.go('kind')}>
+                  Change
+                </button>
+              ) : (
+                <button type="button" className="wz-link" onClick={() => setOrder([group.id, ...categoryIds.filter((c) => c !== group.id)])}>
+                  Make it the main one
+                </button>
+              )}
+            </div>
+            <div className="wz-options" role="group" aria-label={`Types of ${group.name}`}>
+              {group.subcategories.map((s, i) => {
+                const on = types.includes(s.id);
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={on}
+                    className={`wz-option${on ? ' is-on' : ''}`}
+                    style={{ animationDelay: `${i * 40}ms` }}
+                    onClick={() => toggle(s.id)}
+                  >
+                    <span className="wz-box" aria-hidden="true">
+                      {on && <DrawnCheck size={12} stroke={3.4} />}
+                    </span>
+                    {s.name}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+        {groups.length > 1 && empty.length > 0 && (
+          <p className="wz-quiet">Still to choose: one in {empty.map((g) => g.name).join(' and ')}.</p>
+        )}
         <Problem text={problem} />
       </Body>
-      <Foot nav={nav} busy={save.isPending} ready={Boolean(categoryId && chosen)} />
+      <Foot nav={nav} busy={save.isPending} ready={groups.length > 0 && empty.length === 0} />
     </form>
   );
 }

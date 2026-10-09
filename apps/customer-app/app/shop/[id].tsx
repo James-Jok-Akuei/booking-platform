@@ -201,9 +201,15 @@ export default function Shop() {
                 ) : (
                   <Pill label="Closed" tone="neutral" />
                 )}
-                {s.business.subcategory && (
-                  <Pill label={s.business.subcategory.name} tone="accent" />
-                )}
+                {/* Every kind of place it is, the main one first (§265). */}
+                {(s.business.kinds.length
+                  ? s.business.kinds.map((k) => k.subcategory)
+                  : s.business.subcategory
+                    ? [s.business.subcategory]
+                    : []
+                ).map((kind, i) => (
+                  <Pill key={kind.id} label={kind.name} tone={i === 0 ? 'accent' : 'neutral'} />
+                ))}
               </View>
 
               <View style={styles.titleRow}>

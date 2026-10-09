@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { KINDS_SELECT } from '../business/kinds';
 import { ConfigService } from '@nestjs/config';
 import { BusinessStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -185,6 +186,7 @@ export class DiscoveryService {
               coverImageUrl: true,
               category: { select: { id: true, name: true, icon: true } },
               subcategory: { select: { id: true, name: true } },
+              kinds: KINDS_SELECT,
             },
           },
         },
@@ -390,6 +392,7 @@ export class DiscoveryService {
                 coverImageUrl: true,
                 category: { select: { id: true, name: true, icon: true } },
                 subcategory: { select: { id: true, name: true } },
+                kinds: KINDS_SELECT,
               },
             },
           },
@@ -568,6 +571,7 @@ export class DiscoveryService {
             pausedAt: true,
             category: { select: { id: true, name: true, icon: true } },
             subcategory: { select: { id: true, name: true } },
+            kinds: KINDS_SELECT,
           },
         },
         hours: {
@@ -670,6 +674,7 @@ export class DiscoveryService {
         coverImageUrl: location.business.coverImageUrl,
         category: location.business.category,
         subcategory: location.business.subcategory,
+        kinds: location.business.kinds,
       },
       rating: {
         average: location.ratingAvg ? Number(location.ratingAvg) : null,
@@ -913,8 +918,17 @@ export class DiscoveryService {
         // A business that paused itself is out of search until it resumes
         // (§119.3). Bookings already made still happen; this stops new ones.
         pausedAt: null,
-        ...(query.categoryId ? { categoryId: query.categoryId } : {}),
-        ...(query.subcategoryId ? { subcategoryId: query.subcategoryId } : {}),
+        // Any of its kinds (§265): a barbershop whose other branch is a spa
+        // is found under both. The main kind is matched too, for a business
+        // that chose a category before choosing its type.
+        AND: [
+          ...(query.categoryId
+            ? [{ OR: [{ categoryId: query.categoryId }, { kinds: { some: { categoryId: query.categoryId } } }] }]
+            : []),
+          ...(query.subcategoryId
+            ? [{ OR: [{ subcategoryId: query.subcategoryId }, { kinds: { some: { subcategoryId: query.subcategoryId } } }] }]
+            : []),
+        ],
       },
       ...(ids ? { id: { in: ids } } : {}),
       // Place (§104). districtId is the narrower of the two, so it wins when
