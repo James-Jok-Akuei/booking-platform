@@ -82,7 +82,7 @@ function Hero({ onOpen }: { onOpen: (sheet: Sheet) => void }) {
       </header>
 
       <div className="copy">
-        <p className="eyebrow">Bwangu means quick.</p>
+        <p className="eyebrow">Your appointments, without the phone calls.</p>
         <h1>
           Book your next
           <br />
