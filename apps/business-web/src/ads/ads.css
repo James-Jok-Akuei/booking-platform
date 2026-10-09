@@ -8,7 +8,7 @@
   flex-direction: column;
   border-radius: 28px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.05);
+  border: 1px solid rgba(31, 42, 31, 0.05);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   animation: fade-in 400ms var(--ease) both;
@@ -82,7 +82,7 @@
     rgba(130, 228, 255, 0.65) 66%,
     rgba(255, 255, 255, 0.3) 74%
   );
-  box-shadow: 0 30px 54px -30px rgba(21, 23, 28, 0.8), 0 12px 26px -18px rgba(240, 83, 45, 0.45);
+  box-shadow: 0 30px 54px -30px rgba(31, 42, 31, 0.8), 0 12px 26px -18px rgba(240, 83, 45, 0.45);
   transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry));
   transition: transform 520ms var(--ease);
   animation: adc-edge 7s linear infinite;
@@ -90,7 +90,7 @@
 }
 .adc-frame:hover { transition: transform 140ms linear; }
 @keyframes adc-edge { to { --adc-angle: 360deg; } }
-.adc-window { position: relative; overflow: hidden; isolation: isolate; border-radius: 24.5px; background: #15171c; }
+.adc-window { position: relative; overflow: hidden; isolation: isolate; border-radius: 24.5px; background: #1f2a1f; }
 .adc-stage { display: grid; }
 
 .adc-glare {
@@ -399,7 +399,7 @@
   border-radius: 50%;
   background: var(--panel);
   color: var(--ink-2);
-  box-shadow: 0 0 0 1px rgba(21, 23, 28, 0.08), 0 4px 12px -4px rgba(21, 23, 28, 0.4);
+  box-shadow: 0 0 0 1px rgba(31, 42, 31, 0.08), 0 4px 12px -4px rgba(31, 42, 31, 0.4);
 }
 .ad-strip-close::before { content: ''; position: absolute; inset: -9px; border-radius: 50%; }
 .ad-strip-close:hover:not(:disabled) { background: var(--panel); border: none; color: var(--ink); }

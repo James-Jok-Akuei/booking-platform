@@ -9,8 +9,8 @@
   --csp-bg: #f6f4f0;
   --csp-panel: #ffffff;
   --csp-sunken: #f3f1ec;
-  --csp-night: #15171c;
-  --csp-ink: #15171c;
+  --csp-night: #1f2a1f;
+  --csp-ink: #1f2a1f;
   --csp-ink2: #4b505b;
   --csp-muted: #8b909b;
   --csp-line: #ece9e3;
@@ -55,7 +55,7 @@
   padding: 12px;
   border-radius: 60px;
   background: var(--csp-night);
-  box-shadow: 0 50px 90px -40px rgba(21, 23, 28, 0.55), 0 0 0 2px #2c2f37 inset, 0 0 0 1px rgba(255, 255, 255, 0.04);
+  box-shadow: 0 50px 90px -40px rgba(31, 42, 31, 0.55), 0 0 0 2px #2c2f37 inset, 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 .csp-screen {
   position: relative;
@@ -129,7 +129,7 @@
 .csp-gallery { display: flex; gap: 10px; margin: 0 -20px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
 .csp-gallery::-webkit-scrollbar { display: none; }
 .csp-photo { position: relative; flex: none; width: 150px; height: 112px; border-radius: 16px; background: var(--csp-line) center / cover no-repeat; overflow: hidden; }
-.csp-photo em { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(21, 23, 28, 0.55); font-style: normal; font-size: 20px; font-weight: 800; color: #fff; }
+.csp-photo em { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(31, 42, 31, 0.55); font-style: normal; font-size: 20px; font-weight: 800; color: #fff; }
 
 /* Three views of one shop, switched (§138) — the thumb slides with a spring. */
 .csp-segmented { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 999px; background: #ebe8e1; }

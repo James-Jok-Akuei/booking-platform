@@ -11,7 +11,7 @@
   grid-template-columns: minmax(276px, 400px) minmax(0, 1fr);
   border-radius: 28px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.05);
+  border: 1px solid rgba(31, 42, 31, 0.05);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   animation: rise-in 460ms var(--ease) both;
@@ -165,7 +165,7 @@
   padding: 20px 22px 16px;
   border-radius: 28px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.05);
+  border: 1px solid rgba(31, 42, 31, 0.05);
   box-shadow: var(--shadow-sm);
   animation: rise-in 500ms var(--ease) both;
   animation-delay: 80ms;

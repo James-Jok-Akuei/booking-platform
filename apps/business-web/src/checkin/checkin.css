@@ -8,7 +8,7 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(21, 23, 28, 0.42);
+  background: rgba(31, 42, 31, 0.42);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: fade-in 180ms var(--ease);
@@ -22,7 +22,7 @@
   overflow: hidden;
   background: var(--panel);
   border-radius: 30px;
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(31, 42, 31, 0.05);
   animation: pop-in 300ms var(--ease);
 }
 
@@ -67,10 +67,10 @@
   flex: none;
   border-radius: 50%;
   border: none;
-  background: rgba(21, 23, 28, 0.05);
+  background: rgba(31, 42, 31, 0.05);
   color: var(--ink-2);
 }
-.ci-close:hover:not(:disabled) { background: rgba(21, 23, 28, 0.1); border: none; color: var(--ink); }
+.ci-close:hover:not(:disabled) { background: rgba(31, 42, 31, 0.1); border: none; color: var(--ink); }
 
 /* ---- body ---- */
 

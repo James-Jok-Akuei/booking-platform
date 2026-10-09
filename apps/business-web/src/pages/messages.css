@@ -13,7 +13,7 @@
   min-height: 540px;
   border-radius: 28px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.05);
+  border: 1px solid rgba(31, 42, 31, 0.05);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   animation: rise-in 460ms var(--ease) both;
@@ -104,7 +104,7 @@
   overflow-y: auto;
   padding: 18px 22px 10px;
   background:
-    radial-gradient(circle at 1px 1px, rgba(21, 23, 28, 0.045) 1px, transparent 0) 0 0 / 18px 18px,
+    radial-gradient(circle at 1px 1px, rgba(31, 42, 31, 0.045) 1px, transparent 0) 0 0 / 18px 18px,
     var(--panel);
 }
 .ms-log-skeleton { height: 200px; border-radius: 18px; }

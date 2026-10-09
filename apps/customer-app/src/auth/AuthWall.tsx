@@ -102,7 +102,7 @@ export function AuthWall({ width, height }: { width: number; height: number }) {
       </View>
       {/* Night rising from the bottom, where the words sit… */}
       <LinearGradient
-        colors={['rgba(21,23,28,0.30)', 'rgba(21,23,28,0.55)', 'rgba(21,23,28,0.97)']}
+        colors={['rgba(31,42,31,0.30)', 'rgba(31,42,31,0.55)', 'rgba(31,42,31,0.97)']}
         locations={[0, 0.48, 1]}
         style={StyleSheet.absoluteFill}
       />

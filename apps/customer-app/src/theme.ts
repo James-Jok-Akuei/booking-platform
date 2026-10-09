@@ -20,12 +20,12 @@ export const theme = {
   /** A card inside a card, an input, a quiet tile. */
   sunken: '#F3F1EC',
   /** The floating tab bar and the darkest buttons. */
-  night: '#15171C',
+  night: '#1F2A1F',
 
   // ---- text ----
-  ink: '#15171C',
-  ink2: '#4B505B',
-  muted: '#8B909B',
+  ink: '#1F2A1F',
+  ink2: '#4A554A',
+  muted: '#7D867D',
   line: '#ECE9E3',
 
   // ---- the one colour ----

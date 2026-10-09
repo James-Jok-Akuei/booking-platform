@@ -14,7 +14,7 @@
   padding: 22px;
   border-radius: 26px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.05);
+  border: 1px solid rgba(31, 42, 31, 0.05);
   box-shadow: var(--shadow-sm);
   animation: rise-in 460ms var(--ease) both;
 }

@@ -15,7 +15,7 @@
     radial-gradient(420px 260px at 0% 0%, rgba(240, 83, 45, 0.45), transparent 70%),
     radial-gradient(300px 200px at 100% 100%, rgba(255, 138, 76, 0.18), transparent 70%),
     var(--night);
-  box-shadow: 0 30px 60px -32px rgba(21, 23, 28, 0.8);
+  box-shadow: 0 30px 60px -32px rgba(31, 42, 31, 0.8);
   animation: rise-in 480ms var(--ease) both;
 }
 .hp-hero-icon { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 16px; background: var(--accent-grad); box-shadow: var(--shadow-accent); }
@@ -39,7 +39,7 @@
 .hp-topic:hover .hp-topic-go { opacity: 1; transform: translateX(3px); }
 
 /* Your questions: one card that runs down to the page's bottom line (§216). */
-.hp-board { flex: 1 0 auto; display: flex; flex-direction: column; gap: 18px; padding: 20px 22px 22px; border-radius: 28px; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.05); box-shadow: var(--shadow-sm); }
+.hp-board { flex: 1 0 auto; display: flex; flex-direction: column; gap: 18px; padding: 20px 22px 22px; border-radius: 28px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.05); box-shadow: var(--shadow-sm); }
 .hp-board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .hp-board-head h2 { margin: 0; font-size: 18px; }
 .hp-board-head span { font-size: 13px; color: var(--muted); font-weight: 600; }
@@ -58,7 +58,7 @@
   padding: 14px 16px;
   border-radius: 20px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.05);
+  border: 1px solid rgba(31, 42, 31, 0.05);
   box-shadow: var(--shadow-xs);
   text-align: left;
   font-weight: 500;

@@ -969,13 +969,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 5,
   },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(21,23,28,0.16)' },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(31,42,31,0.16)' },
   dotOn: {
     width: 24,
     height: 6,
     borderRadius: 3,
     overflow: 'hidden',
-    backgroundColor: 'rgba(21,23,28,0.12)',
+    backgroundColor: 'rgba(31,42,31,0.12)',
   },
   dotFill: { width: 24, height: 6, borderRadius: 3 },
 });

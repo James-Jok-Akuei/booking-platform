@@ -16087,3 +16087,40 @@ Checked: the composed frames (contact sheet), each voice line landing at
 its step (silence detection), the window at 1440 and 390. Three bookings
 were made in the sandbox while recording (the demo customer's; nothing on a
 real phone).
+
+## 241. One ink: the logo's green-black, in every app (2026-10-09)
+
+The user asked to use the landing page hero's background colour in the apps
+too, "so that it becomes one of our colours", and what I thought.
+
+**Yes — and as a replacement, not an addition.** The apps' dark was a cool,
+blue-ish charcoal (`#15171c` text, `#2c3039` buttons and cards, blue-grey
+secondary text); the landing page's is the warm green-black of the logo's
+ink (`#1f2a1f`). Two darks across one brand would read as two products,
+and a warm dark sits better beside the coral and orange than a cool one.
+So the green-black is now the one ink of the platform, taken from the mark:
+
+- **Text**: `#1f2a1f` (was `#15171c`) in both apps; secondary `#4a554a`,
+  muted `#7d867d`, faint `#abb3ab` — greys that go with it, warm not blue,
+  the same values the landing page uses.
+- **Dark surfaces**: the business app's `--night` family becomes a lighter
+  tint of the same green-black (`#2b352c` / `#364237` / `#424f43`), so dark
+  buttons, chosen pills and dark cards keep §218's "not full black" weight.
+  The darkest surfaces — the sign-in wall, the dark top bar's glass
+  (§237, now `rgba(30, 38, 30, 0.88)`) — take the ink itself. The customer
+  app's `theme.night` (tab bar, darkest buttons) is the ink.
+- **Shadows and scrims**: every `rgba(21, 23, 28, …)` (142 in the business
+  app, 11 in the customer app) is now `rgba(31, 42, 31, …)` — the ink at a
+  strength, as before, so shadows carry the same warmth.
+- Left alone: the customer app's "Kigali at dusk" sky palette (art, not
+  brand), and the state colours.
+- **Admin app**: still the old look with its own tokens; it takes the same
+  ink when it is redesigned.
+
+Not changed, and a question for the user: the apps' accent is the coral
+`#f0532d` / `#d4401c`, the logo's check is orange `#fd7511`. They are close,
+not the same. If the orange is to be the brand's one accent, that is a
+second, larger swap (every button and link); the dark is done either way.
+
+Checked: the business Overview (top bar, dark card, dark button, text), the
+business sign-in, the customer home (tab bar) and sign-in (the wall's shade).

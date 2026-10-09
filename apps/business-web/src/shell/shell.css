@@ -72,7 +72,7 @@ body {
   display: flex;
   flex-direction: column;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.05);
+  border: 1px solid rgba(31, 42, 31, 0.05);
   border-radius: 28px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
@@ -220,7 +220,7 @@ body {
   color: #fff;
   transition: transform 220ms var(--ease), box-shadow 220ms var(--ease);
 }
-.sb-status:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -16px rgba(21, 23, 28, 0.6); }
+.sb-status:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -16px rgba(31, 42, 31, 0.6); }
 .sb-status-body { flex: 1; min-width: 0; }
 .sb-status-logo { margin-top: 1px; }
 .sb-status-head { display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 750; }
@@ -315,11 +315,11 @@ body {
   -webkit-backdrop-filter: saturate(1.5) blur(18px);
   transition: box-shadow 240ms var(--ease);
 }
-.topbar.is-scrolled { box-shadow: 0 1px 0 rgba(21, 23, 28, 0.06), 0 14px 30px -24px rgba(21, 23, 28, 0.35); }
+.topbar.is-scrolled { box-shadow: 0 1px 0 rgba(31, 42, 31, 0.06), 0 14px 30px -24px rgba(31, 42, 31, 0.35); }
 
 .tb-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .tb-flag { flex: none; display: grid; place-items: center; }
-.tb-flag .rw-flag { box-shadow: 0 0 0 1px rgba(21, 23, 28, 0.1), 0 4px 10px -5px rgba(21, 23, 28, 0.4); }
+.tb-flag .rw-flag { box-shadow: 0 0 0 1px rgba(31, 42, 31, 0.1), 0 4px 10px -5px rgba(31, 42, 31, 0.4); }
 .tb-where { display: flex; flex-direction: column; min-width: 0; }
 .tb-crumbs { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); font-weight: 600; white-space: nowrap; }
 .tb-crumbs strong { color: var(--ink); font-weight: 750; font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
@@ -337,7 +337,7 @@ body {
   gap: 10px;
   border-radius: var(--r-pill);
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.06);
+  border: 1px solid rgba(31, 42, 31, 0.06);
   box-shadow: var(--shadow-xs);
   color: var(--muted);
   font-weight: 500;
@@ -358,13 +358,13 @@ body {
   place-items: center;
   border-radius: 50%;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.06);
+  border: 1px solid rgba(31, 42, 31, 0.06);
   box-shadow: var(--shadow-xs);
   color: var(--ink-2);
   text-decoration: none;
   transition: transform 200ms var(--ease), box-shadow 200ms var(--ease), color 160ms var(--ease);
 }
-.tb-icon:hover, .tb-icon:hover:not(:disabled) { background: var(--panel); border-color: rgba(21, 23, 28, 0.08); color: var(--ink); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.tb-icon:hover, .tb-icon:hover:not(:disabled) { background: var(--panel); border-color: rgba(31, 42, 31, 0.08); color: var(--ink); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 .tb-icon.is-open { color: var(--accent-deep); border-color: rgba(240, 83, 45, 0.35); }
 .tb-dot { position: absolute; top: 11px; right: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--panel); }
 .tb-menu, .tb-search-small { display: none; }
@@ -401,11 +401,11 @@ body {
   gap: 6px;
   border-radius: var(--r-pill);
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.06);
+  border: 1px solid rgba(31, 42, 31, 0.06);
   box-shadow: var(--shadow-xs);
   color: var(--muted);
 }
-.tb-avatar:hover:not(:disabled), .tb-avatar.is-open { background: var(--panel); border-color: rgba(21, 23, 28, 0.1); box-shadow: var(--shadow-sm); color: var(--ink); }
+.tb-avatar:hover:not(:disabled), .tb-avatar.is-open { background: var(--panel); border-color: rgba(31, 42, 31, 0.1); box-shadow: var(--shadow-sm); color: var(--ink); }
 
 /* Your shop, top right on every page (§217): its logo and name, live or not. */
 .tb-shop { height: 50px; padding: 5px 12px 5px 5px; gap: 10px; max-width: 250px; }
@@ -457,7 +457,7 @@ body {
   padding: 8px;
   z-index: 70;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.06);
+  border: 1px solid rgba(31, 42, 31, 0.06);
   border-radius: 22px;
   box-shadow: var(--shadow-lg);
   transform-origin: top right;
@@ -519,7 +519,7 @@ body {
   overflow-y: auto;
   padding: 0 6px 8px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.06);
+  border: 1px solid rgba(31, 42, 31, 0.06);
   border-radius: 22px;
   box-shadow: var(--shadow-lg);
   transform-origin: top right;
@@ -579,7 +579,7 @@ body {
   overflow: hidden;
   background: var(--panel);
   border-radius: 28px;
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(31, 42, 31, 0.05);
   animation: nf-in 340ms var(--ease) both;
 }
 @keyframes nf-in { from { opacity: 0.4; transform: translateX(calc(100% + 28px)); } to { opacity: 1; transform: none; } }
@@ -624,7 +624,7 @@ body {
   justify-content: center;
   align-items: flex-start;
   padding: 12vh 16px 16px;
-  background: rgba(21, 23, 28, 0.36);
+  background: rgba(31, 42, 31, 0.36);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   animation: fade-in 160ms var(--ease);
@@ -637,7 +637,7 @@ body {
   overflow: hidden;
   background: var(--panel);
   border-radius: 26px;
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(31, 42, 31, 0.05);
   animation: pop-in 240ms var(--ease);
 }
 .cp-search { display: flex; align-items: center; gap: 12px; height: 66px; padding: 0 18px 0 22px; border-bottom: 1px solid var(--line); color: var(--muted); }
@@ -687,7 +687,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: rgba(21, 23, 28, 0.4);
+  background: rgba(31, 42, 31, 0.4);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   animation: fade-in 180ms var(--ease);
@@ -779,7 +779,7 @@ body {
     padding: 0 6px;
     border-radius: 26px;
     background: var(--night);
-    box-shadow: 0 20px 40px -14px rgba(21, 23, 28, 0.55);
+    box-shadow: 0 20px 40px -14px rgba(31, 42, 31, 0.55);
   }
   .tab-item {
     flex: 1;
@@ -849,7 +849,7 @@ body {
        that family; still glass enough for the page to tint it. */
     background:
       radial-gradient(460px 130px at 88% 0%, rgba(240, 83, 45, 0.2), transparent 72%),
-      rgba(22, 24, 30, 0.88);
+      rgba(30, 38, 30, 0.88);
     backdrop-filter: saturate(1.8) blur(24px);
     -webkit-backdrop-filter: saturate(1.8) blur(24px);
     box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px -22px rgba(10, 12, 16, 0.7);
@@ -892,9 +892,9 @@ body {
     color: #fff;
   }
   .tb-icon.is-open { color: #ffb39e; border-color: rgba(240, 83, 45, 0.55); }
-  .tb-dot, .bell-count { border-color: #1d1f25; }
+  .tb-dot, .bell-count { border-color: #1d251d; }
   .tb-shop-text strong { color: #fff; }
   .tb-shop-text span { color: rgba(255, 255, 255, 0.6); }
-  .tb-shop .shop-logo-dot { border-color: #1d1f25; }
+  .tb-shop .shop-logo-dot { border-color: #1d251d; }
   .tb-checkin { box-shadow: 0 8px 20px -8px rgba(240, 83, 45, 0.7); }
 }

@@ -7,7 +7,7 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(21, 23, 28, 0.42);
+  background: rgba(31, 42, 31, 0.42);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: fade-in 160ms var(--ease);
@@ -18,7 +18,7 @@
   padding: 26px 26px 22px;
   border-radius: 28px;
   background: var(--panel);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(21, 23, 28, 0.05);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(31, 42, 31, 0.05);
   animation: pop-in 260ms var(--ease);
 }
 
@@ -43,16 +43,16 @@
 .dlg-body p:last-child { margin: 0; }
 
 /* The booking a dialog is about (§232): what, when, who — and where, in bold. */
-.dlg-booking { margin: 4px 0 14px; border-radius: 18px; background: var(--sunken); border: 1px solid rgba(21, 23, 28, 0.06); overflow: hidden; }
+.dlg-booking { margin: 4px 0 14px; border-radius: 18px; background: var(--sunken); border: 1px solid rgba(31, 42, 31, 0.06); overflow: hidden; }
 .dlg-booking-top { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
-.dlg-booking-thumb { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 13px; overflow: hidden; background: var(--panel); color: var(--faint); box-shadow: 0 0 0 1px rgba(21, 23, 28, 0.06); }
+.dlg-booking-thumb { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 13px; overflow: hidden; background: var(--panel); color: var(--faint); box-shadow: 0 0 0 1px rgba(31, 42, 31, 0.06); }
 .dlg-booking-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .dlg-booking-what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; line-height: 1.35; }
 .dlg-booking-what strong { font-size: 15.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dlg-booking-what strong em { font-style: normal; color: var(--accent-deep); }
 .dlg-booking-what span { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dlg-booking-what span:nth-child(2) { font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.dlg-booking-where { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px 12px; background: var(--panel); border-top: 1px dashed rgba(21, 23, 28, 0.12); color: var(--accent); }
+.dlg-booking-where { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px 12px; background: var(--panel); border-top: 1px dashed rgba(31, 42, 31, 0.12); color: var(--accent); }
 .dlg-booking-where svg { flex: none; margin-top: 2px; }
 .dlg-booking-where span { min-width: 0; display: flex; flex-direction: column; }
 .dlg-booking-where b { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; color: var(--ink); }

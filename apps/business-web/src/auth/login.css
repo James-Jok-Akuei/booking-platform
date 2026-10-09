@@ -12,7 +12,7 @@
   min-height: 100dvh;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--sheet-w);
-  background: #15171c;
+  background: #1f2a1f;
   color: var(--ink);
 }
 
@@ -28,7 +28,7 @@
   margin-right: calc(-1 * var(--under));
   overflow: hidden;
   isolation: isolate;
-  background: #15171c;
+  background: #1f2a1f;
   color: #fff;
   user-select: none;
 }
@@ -74,7 +74,7 @@
   flex: none;
   overflow: hidden;
   border-radius: var(--tile-r, 18px);
-  background: linear-gradient(160deg, #30343d, #1d2027);
+  background: linear-gradient(160deg, #2c372d, #1b231b);
 }
 .au-tile img {
   display: block;
@@ -101,7 +101,7 @@
   pointer-events: none;
   background:
     linear-gradient(135deg, rgba(240, 83, 45, 0.62) 0%, rgba(240, 83, 45, 0.12) 50%, rgba(240, 83, 45, 0) 100%),
-    linear-gradient(180deg, rgba(21, 23, 28, 0.3) 0%, rgba(21, 23, 28, 0.55) 48%, rgba(21, 23, 28, 0.97) 100%);
+    linear-gradient(180deg, rgba(31, 42, 31, 0.3) 0%, rgba(31, 42, 31, 0.55) 48%, rgba(31, 42, 31, 0.97) 100%);
 }
 
 /* ---------- on the wall: brand, a seller's day, the headline ---------- */

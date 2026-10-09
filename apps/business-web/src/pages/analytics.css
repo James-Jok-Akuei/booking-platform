@@ -5,12 +5,12 @@
 .an .bpills { margin: 0; }
 .an-skeleton { height: 380px; border-radius: 28px; }
 
-.an-period { display: inline-flex; gap: 4px; padding: 5px; border-radius: 99px; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.05); box-shadow: var(--shadow-xs); }
+.an-period { display: inline-flex; gap: 4px; padding: 5px; border-radius: 99px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.05); box-shadow: var(--shadow-xs); }
 .an-period button { min-height: 38px; padding: 0 16px; border: none; border-radius: 99px; background: transparent; font-size: 13.5px; }
 .an-period button:hover:not(:disabled) { background: var(--sunken); border: none; }
 .an-period button.is-on, .an-period button.is-on:hover:not(:disabled) { background: var(--night); color: #fff; }
 
-.an-card { padding: 22px 24px; border-radius: 28px; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.05); box-shadow: var(--shadow-sm); animation: rise-in 480ms var(--ease) both; }
+.an-card { padding: 22px 24px; border-radius: 28px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.05); box-shadow: var(--shadow-sm); animation: rise-in 480ms var(--ease) both; }
 .an-label { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 700; color: var(--ink-2); }
 .an-label svg { color: var(--accent); }
 
@@ -91,7 +91,7 @@
 /* ---- tiles ---- */
 
 .an-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.an-tile { display: flex; flex-direction: column; gap: 3px; padding: 20px 22px; border-radius: 24px; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.05); box-shadow: var(--shadow-sm); animation: rise-in 520ms var(--ease) both; }
+.an-tile { display: flex; flex-direction: column; gap: 3px; padding: 20px 22px; border-radius: 24px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.05); box-shadow: var(--shadow-sm); animation: rise-in 520ms var(--ease) both; }
 .an-tile-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 14px; margin-bottom: 10px; }
 .an-tile.tone-gold .an-tile-icon { background: #fff4d9; color: #c98a00; }
 .an-tile.tone-blue .an-tile-icon { background: var(--ask-soft); color: var(--ask); }

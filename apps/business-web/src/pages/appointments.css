@@ -72,7 +72,7 @@
   padding: 12px 14px 12px;
   border-radius: 20px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.06);
+  border: 1px solid rgba(31, 42, 31, 0.06);
   box-shadow: var(--shadow-xs);
   text-align: left;
   color: var(--ink);
@@ -97,7 +97,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
   background: radial-gradient(160px 120px at 100% 0%, rgba(240, 83, 45, 0.45), transparent 70%), var(--night);
   border-color: var(--night);
   color: #fff;
-  box-shadow: 0 16px 30px -18px rgba(21, 23, 28, 0.8);
+  box-shadow: 0 16px 30px -18px rgba(31, 42, 31, 0.8);
 }
 .ap-today-tile.tone-night .ap-today-icon { background: rgba(255, 255, 255, 0.1); color: #ffb08a; }
 .ap-today-tile.tone-night em, .ap-today-tile.tone-night small { color: rgba(255, 255, 255, 0.62); }
@@ -107,7 +107,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 .ap-card-top {
   border-radius: 24px 24px 0 0;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.06);
+  border: 1px solid rgba(31, 42, 31, 0.06);
   border-bottom: none;
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.6) inset;
   overflow: hidden;
@@ -177,7 +177,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 .ap-board {
   border-radius: 0 0 24px 24px;
   background: var(--panel);
-  border: 1px solid rgba(21, 23, 28, 0.06);
+  border: 1px solid rgba(31, 42, 31, 0.06);
   border-top: none;
   box-shadow: var(--shadow-sm);
   padding-bottom: 4px;
@@ -248,7 +248,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 .ap-service { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .ap-qty { margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-deep); font-style: normal; font-size: 11.5px; font-weight: 800; vertical-align: 1px; }
 .ap-service .sub-customer { display: none; }
-.ap-thumb { position: relative; flex: none; display: grid; place-items: center; overflow: hidden; border-radius: 13px; background: linear-gradient(145deg, #ffe6dc, #ffcdb9); color: var(--accent-deep); box-shadow: 0 6px 14px -10px rgba(21, 23, 28, 0.6), inset 0 0 0 1px rgba(21, 23, 28, 0.04); }
+.ap-thumb { position: relative; flex: none; display: grid; place-items: center; overflow: hidden; border-radius: 13px; background: linear-gradient(145deg, #ffe6dc, #ffcdb9); color: var(--accent-deep); box-shadow: 0 6px 14px -10px rgba(31, 42, 31, 0.6), inset 0 0 0 1px rgba(31, 42, 31, 0.04); }
 .ap-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms var(--ease); }
 .ap-row:hover .ap-thumb img { transform: scale(1.07); }
 
@@ -388,7 +388,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 @container page (max-width: 680px) {
   .ap-tab { padding: 0 9px; font-size: 13.5px; }
   .ap-cols { display: none; }
-  .ap-card-top { border-radius: 22px; border-bottom: 1px solid rgba(21, 23, 28, 0.06); }
+  .ap-card-top { border-radius: 22px; border-bottom: 1px solid rgba(31, 42, 31, 0.06); }
   .ap-toolbar { flex-wrap: wrap; padding: 10px; }
   .ap-find { display: contents; }
   .ap-search { flex: 1 1 100%; }
@@ -406,7 +406,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
     padding: 14px 14px 14px 18px;
     border-radius: 20px;
     background: var(--panel);
-    border: 1px solid rgba(21, 23, 28, 0.06);
+    border: 1px solid rgba(31, 42, 31, 0.06);
     box-shadow: var(--shadow-xs);
   }
   .ap-row + .ap-row, .ap-now + .ap-row, .ap-row + .ap-now { box-shadow: var(--shadow-xs); }
@@ -459,7 +459,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
   .ap-mode button { padding: 0 10px; }
 }
 @container page (max-width: 680px) {
-  .ap-board.is-cal { margin-top: 12px; padding: 0; background: var(--panel); border: 1px solid rgba(21, 23, 28, 0.06); border-radius: 22px; box-shadow: var(--shadow-sm); overflow: hidden; }
+  .ap-board.is-cal { margin-top: 12px; padding: 0; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.06); border-radius: 22px; box-shadow: var(--shadow-sm); overflow: hidden; }
 }
 
 .ap-drawer-skel .skeleton { height: 96px; border-radius: 16px; }

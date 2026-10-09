@@ -155,8 +155,8 @@ export function exportDocumentHtml(
 <style>
   @page { margin: 18mm 16mm; }
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #15171C; font-size: 12.5px; line-height: 1.5; margin: 0; padding: 10px; }
-  .cover { background: #15171C; color: #fff; border-radius: 16px; padding: 22px 24px; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1F2A1F; font-size: 12.5px; line-height: 1.5; margin: 0; padding: 10px; }
+  .cover { background: #1F2A1F; color: #fff; border-radius: 16px; padding: 22px 24px; }
   .cover h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -0.3px; }
   .cover p { margin: 0; color: rgba(255,255,255,0.7); }
   .cover .who { margin-top: 14px; font-size: 15px; font-weight: 700; color: #fff; }

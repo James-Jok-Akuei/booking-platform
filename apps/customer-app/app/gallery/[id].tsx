@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     left: 8,
     bottom: 8,
     maxWidth: '80%',
-    backgroundColor: 'rgba(21,23,28,0.62)',
+    backgroundColor: 'rgba(31,42,31,0.62)',
     borderRadius: 999,
     paddingHorizontal: 9,
     paddingVertical: 4,
