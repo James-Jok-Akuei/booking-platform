@@ -13,7 +13,8 @@ import {
   type AdminCategory,
   type AdminSubcategory,
 } from '../api/admin';
-import { CATEGORY_LOOKS, CategoryMark, categoryLook } from '../ui/CategoryMark';
+import { CATEGORY_LOOKS, categoryLook } from '../ui/CategoryMark';
+import { LineArt } from '../ui/LineArt';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
@@ -99,11 +100,15 @@ export function CategoriesPage() {
   );
 }
 
-/** The marks the apps know how to draw; anything else is drawn as a shop. */
+/**
+ * The drawings the apps know (§264); anything else is drawn as a shopfront.
+ * The same fine-line drawing a customer sees on the home screen and the
+ * categories wall, and a seller sees when setting up.
+ */
 function MarkPicker({ value, onChange }: { value: string; onChange: (key: string) => void }) {
   return (
-    <div className="tx-marks" role="radiogroup" aria-label="Its mark">
-      {Object.entries(CATEGORY_LOOKS).map(([key, look]) => (
+    <div className="tx-marks" role="radiogroup" aria-label="Its drawing">
+      {Object.entries(CATEGORY_LOOKS).map(([key, look], i) => (
         <button
           key={key}
           type="button"
@@ -113,7 +118,8 @@ function MarkPicker({ value, onChange }: { value: string; onChange: (key: string
           onClick={() => onChange(key)}
           title={look.name}
         >
-          <CategoryMark icon={key} size={44} />
+          <LineArt icon={key} delay={i * 50} />
+          <span>{look.name}</span>
         </button>
       ))}
     </div>
@@ -156,11 +162,12 @@ function NewCategory({ onClose, onDone }: { onClose: () => void; onDone: () => v
         </>
       }
     >
+      {/* As the customer app's categories wall draws it (§264). */}
       <div className="tx-preview" style={{ background: categoryLook(icon).tint }}>
-        <CategoryMark icon={icon} size={64} />
-        <div>
+        <div className="tx-preview-card">
           <strong>{name.trim() || 'Its name'}</strong>
           <span>{description.trim() || 'What it covers, in a few words.'}</span>
+          <LineArt key={icon} icon={icon} />
         </div>
         <em>As customers will see it</em>
       </div>
@@ -177,7 +184,7 @@ function NewCategory({ onClose, onDone }: { onClose: () => void; onDone: () => v
           <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Restaurants, cafes and takeaways." maxLength={200} />
         </label>
         <div className="tx-field">
-          <span>Its mark</span>
+          <span>Its drawing</span>
           <MarkPicker value={icon} onChange={setIcon} />
         </div>
         <p className="tx-note">It is offered to shops as soon as it exists. Add its types next — a shop picks one of those.</p>
@@ -244,7 +251,7 @@ function CategoryCard({ category, index, onChanged }: { category: AdminCategory;
   return (
     <article className={`tx-card${category.isLive ? '' : ' is-off'}`} style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
       <header className="tx-card-head" style={{ background: `linear-gradient(180deg, ${look.tint}, transparent)` }}>
-        <CategoryMark icon={category.icon} size={52} />
+        <LineArt icon={category.icon} delay={Math.min(index, 8) * 60} className="tx-card-art" />
         {editing ? (
           <EditCategory category={category} busy={save.isPending} onSave={(body) => save.mutate(body)} onCancel={() => setEditing(false)} />
         ) : (
@@ -259,7 +266,7 @@ function CategoryCard({ category, index, onChanged }: { category: AdminCategory;
         {!editing && (
           <div className="tx-card-acts">
             <Toggle checked={category.isLive} disabled={toggle.isPending} onChange={(v) => void onToggle(v)} label={category.isLive ? 'Offered' : 'Retired'} />
-            <button type="button" className="tx-icon-btn" onClick={() => setEditing(true)} aria-label={`Edit ${category.name}`} title="Rename, describe or change its mark">
+            <button type="button" className="tx-icon-btn" onClick={() => setEditing(true)} aria-label={`Edit ${category.name}`} title="Rename, describe or change its drawing">
               <Icon name="pencil" size={15} />
             </button>
           </div>

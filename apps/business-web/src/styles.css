@@ -919,3 +919,12 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .af-note { margin: 0; padding: 12px 10px; font-size: 13px; color: var(--muted); }
 .af-credit { margin: 4px 0 0; padding: 6px 10px 2px; border-top: 1px solid var(--line); font-size: 11px; color: var(--faint); }
 .bf-help.is-ok { color: var(--ok-deep); font-weight: 600; }
+
+/* The fine-line drawings of each kind of shop (§263, §264): the brush mark
+   settles, then the line draws itself. Shared by setting up and the
+   shopfront preview. */
+.line-art { display: block; overflow: visible; }
+.line-art-swash { opacity: 0.85; transform-origin: 50% 70%; animation: art-swash 900ms var(--ease) var(--delay, 0ms) both; transition: opacity 300ms var(--ease); }
+.line-art-ink path { stroke-dasharray: 600; stroke-dashoffset: 600; animation: art-draw 1700ms cubic-bezier(0.45, 0.05, 0.3, 1) calc(var(--delay, 0ms) + 150ms) forwards; }
+@keyframes art-draw { to { stroke-dashoffset: 0; } }
+@keyframes art-swash { from { opacity: 0; transform: scaleX(0.6); } }

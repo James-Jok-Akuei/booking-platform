@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { discoverLocations, listCategories, type Category } from '../src/api/discovery';
 import { font, radius, shadow, theme, type } from '../src/theme';
@@ -10,6 +9,7 @@ import { Button } from '../src/ui/Button';
 import { EmptyState } from '../src/ui/EmptyState';
 import { FadeIn } from '../src/ui/FadeIn';
 import { Icon, lookFor } from '../src/ui/Icon';
+import { LineArt } from '../src/ui/LineArt';
 import { useLayout } from '../src/ui/layout';
 import { PopIn } from '../src/ui/Motion';
 import { PressableScale } from '../src/ui/PressableScale';
@@ -20,15 +20,15 @@ import { TopBar } from '../src/ui/TopBar';
 const GAP = 12;
 
 /**
- * Everything the platform is open for (§121), as a wall of colour (§145).
+ * Everything the platform is open for (§121), as a wall of drawings (§145, §264).
  *
  * Discovery already filters by category, through tiles that scroll sideways and
  * show about four of eight. That works for someone who knows what they want.
  * This is for someone who does not — so it is built to be looked at, not read:
- * each category is a tile in its own colour (the same rose sparkle it wears on
- * the home screen, §133), with its icon large and half off the corner, and how
- * many places it holds. The tiles are two heights, staggered, so the page is a
- * pattern rather than a table.
+ * each category is a card with its fine-line drawing over a brush mark in its
+ * own colour (the same drawing it wears on the home screen and in the business
+ * app), and how many places it holds. The cards are two heights, staggered, so
+ * the page is a pattern rather than a table.
  *
  * Tapping a tile lifts a sheet with what the category covers and the kinds
  * inside it — which keeps the wall clean and still puts every subcategory two
@@ -219,7 +219,9 @@ export default function Categories() {
                 <PopIn key={category.id} delay={Math.min(index, 8) * 55}>
                   <Tile
                     category={category}
-                    height={tall ? 196 : 148}
+                    width={tileWidth}
+                    index={index}
+                    tall={tall}
                     count={counts ? (counts.get(category.id) ?? 0) : undefined}
                     onPress={() => setOpenId(category.id)}
                   />
@@ -272,21 +274,24 @@ export default function Categories() {
 }
 
 /**
- * One category, as a tile of its own colour.
- *
- * The icon is drawn twice: small in a white disc, where it is a label, and
- * very large and faint, tipped off the bottom corner, where it is the picture.
- * That second one is what makes eight tiles look like eight different places
- * with no photograph behind any of them.
+ * One category, as a card with its drawing (§264): the name and what is in
+ * it on top, and along the bottom the same fine-line drawing the business
+ * app and the console use — a car, scissors and a comb, a sitting cat — over
+ * a brush mark in the category's colour, drawing itself in as the card
+ * arrives. A tall card also says what kinds of place it covers.
  */
 function Tile({
   category,
-  height,
+  width,
+  index,
+  tall,
   count,
   onPress,
 }: {
   category: Category;
-  height: number;
+  width: number;
+  index: number;
+  tall: boolean;
   /** Places in it; undefined while that is not known. */
   count: number | undefined;
   onPress: () => void;
@@ -297,6 +302,8 @@ function Tile({
     count === undefined ? null : count === 0 ? 'Coming soon' : `${count} ${count === 1 ? 'place' : 'places'}`,
     kinds > 0 ? `${kinds} ${kinds === 1 ? 'kind' : 'kinds'}` : null,
   ].filter(Boolean);
+  const names = category.subcategories.map((s) => s.name);
+  const covers = names.length > 2 ? `${names.slice(0, 2).join(', ')} and more` : names.join(' and ');
 
   return (
     <PressableScale
@@ -305,38 +312,29 @@ function Tile({
       scaleTo={0.96}
       accessibilityRole="button"
       accessibilityLabel={`${category.name}${facts.length ? `, ${facts.join(', ')}` : ''}`}
-      style={[styles.tile, { height }]}
+      style={[styles.tile, { height: tall ? 216 : 176 }]}
     >
-      <LinearGradient
-        colors={[look.from, look.to]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-
-      <View style={styles.ghost} pointerEvents="none">
-        <Icon name={look.icon} size={height > 160 ? 128 : 104} color={look.ink} />
-      </View>
-
       <View style={styles.tileTop}>
-        <View style={styles.tileDisc}>
-          <Icon name={look.icon} size={20} color={look.ink} />
+        <View style={styles.tileText}>
+          <Text style={styles.tileName} numberOfLines={3}>
+            {category.name}
+          </Text>
+          {facts.length > 0 && (
+            <Text style={styles.tileFacts} numberOfLines={1}>
+              {facts.join(' · ')}
+            </Text>
+          )}
         </View>
-        <View style={styles.tileGo}>
+        <View style={[styles.tileGo, { backgroundColor: look.tint }]}>
           <Icon name="arrow-forward" size={14} color={look.ink} />
         </View>
       </View>
-
-      <View style={styles.tileText}>
-        <Text style={[styles.tileName, { color: look.ink }]} numberOfLines={3}>
-          {category.name}
+      {tall && covers !== '' && (
+        <Text style={styles.tileCovers} numberOfLines={2}>
+          {covers}
         </Text>
-        {facts.length > 0 && (
-          <Text style={[styles.tileFacts, { color: look.ink }]} numberOfLines={1}>
-            {facts.join(' · ')}
-          </Text>
-        )}
-      </View>
+      )}
+      <LineArt icon={category.icon} width={width - 2} delay={Math.min(index, 8) * 90 + 120} style={styles.art} />
     </PressableScale>
   );
 }
@@ -395,37 +393,25 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     overflow: 'hidden',
     padding: 14,
-    justifyContent: 'space-between',
+    backgroundColor: theme.panel,
+    borderWidth: 1,
+    borderColor: theme.line,
+    ...shadow.card,
   },
-  // Bigger than the tile's corner and tipped, so it reads as a picture cut by
-  // the edge rather than an icon that did not fit.
-  ghost: {
-    position: 'absolute',
-    right: -26,
-    bottom: -24,
-    opacity: 0.16,
-    transform: [{ rotate: '-14deg' }],
-  },
-  tileTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  tileDisc: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: 'rgba(255,255,255,0.86)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  tileTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
   tileGo: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tileText: { gap: 3 },
-  tileName: { fontFamily: font.extrabold, fontSize: 16.5, lineHeight: 20.5, letterSpacing: -0.2 },
-  tileFacts: { fontFamily: font.semibold, fontSize: 12, opacity: 0.78 },
+  tileText: { flex: 1, gap: 3 },
+  tileName: { fontFamily: font.extrabold, fontSize: 16, lineHeight: 20, letterSpacing: -0.2, color: theme.ink },
+  tileFacts: { fontFamily: font.semibold, fontSize: 12, color: theme.muted },
+  tileCovers: { marginTop: 6, fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: theme.ink2 },
+  // The drawing stands on the card's bottom edge, the full width of it.
+  art: { position: 'absolute', left: 0, bottom: 2 },
 
   sheet: { gap: 14, paddingBottom: 8 },
   subs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

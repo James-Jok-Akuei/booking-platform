@@ -405,14 +405,14 @@
 
 /* ---------- what kind of shop: drawings, not icons ---------- */
 
-.wz-kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.wz-kinds { display: grid; grid-template-columns: repeat(auto-fill, minmax(166px, 1fr)); gap: 14px; }
 .wz-kind {
   position: relative;
   flex-direction: column;
   justify-content: flex-start;
   gap: 5px;
-  min-height: 196px;
-  padding: 18px 30px 0;
+  min-height: 204px;
+  padding: 18px 16px 0;
   overflow: hidden;
   border-radius: 20px;
   border: 1.5px solid var(--line);
@@ -433,19 +433,13 @@
 .wz-kind:nth-child(8) { animation-delay: 280ms; }
 .wz-kind strong { font-size: 14.5px; font-weight: 750; line-height: 1.25; letter-spacing: -0.01em; }
 .wz-kind em { font-style: normal; font-size: 11.5px; line-height: 1.45; color: var(--muted); }
-.wz-kind .line-art { width: calc(100% + 60px); margin: auto -30px 0; height: auto; color: var(--ink); }
+.wz-kind .line-art { width: calc(100% + 32px); margin: auto -16px 0; height: auto; color: var(--ink); }
 .wz-kind:hover { border-color: var(--line-strong); transform: translateY(-3px); box-shadow: 0 18px 34px -24px rgba(31, 42, 31, 0.45); }
 .wz-kind.is-on { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(240, 83, 45, 0.14), 0 18px 34px -22px rgba(240, 83, 45, 0.55); }
 .wz-kind-tick { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: #fff; opacity: 0; transform: scale(0.4); transition: opacity 200ms var(--ease), transform 340ms var(--spring); }
 .wz-kind.is-on .wz-kind-tick { opacity: 1; transform: none; }
 .wz-kind-skel { height: 196px; border-radius: 20px; }
 
-/* The drawing: the brush mark settles, then the line draws itself. */
-.line-art { display: block; overflow: visible; }
-.line-art-swash { opacity: 0.85; transform-origin: 50% 70%; animation: art-swash 900ms var(--ease) var(--delay, 0ms) both; transition: opacity 300ms var(--ease); }
-.line-art-ink :is(path, circle, ellipse) { stroke-dasharray: 600; stroke-dashoffset: 600; animation: art-draw 1700ms cubic-bezier(0.45, 0.05, 0.3, 1) calc(var(--delay, 0ms) + 150ms) forwards; }
-@keyframes art-draw { to { stroke-dashoffset: 0; } }
-@keyframes art-swash { from { opacity: 0; transform: scaleX(0.6); } }
 .wz-kind:hover .line-art-swash, .wz-kind.is-on .line-art-swash { opacity: 1; }
 .wz-kind.is-on .line-art-ink { stroke: var(--ink); }
 
@@ -737,7 +731,6 @@
   .wz-head { padding: 30px 40px 14px; }
   .wz-scroll { padding: 12px 40px 28px; }
   .wz-foot { padding: 14px 40px 16px; }
-  .wz-kinds { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .wz-help em { display: none; }
 }
 /* A short window: the step's head and the rail give back some height. */
@@ -795,8 +788,8 @@
   .wz-scroll { padding: 10px 20px 26px; }
   .wz-body { gap: 18px; }
   .wz-kinds { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .wz-kind { min-height: 0; padding: 14px 24px 0; }
-  .wz-kind .line-art { width: calc(100% + 48px); margin-left: -24px; margin-right: -24px; }
+  .wz-kind { min-height: 0; padding: 14px 12px 0; }
+  .wz-kind .line-art { width: calc(100% + 24px); margin-left: -12px; margin-right: -12px; }
   .wz-kind .line-art { margin-top: 4px; }
   .wz-kind em { display: none; }
   .wz-options { grid-template-columns: minmax(0, 1fr); }
@@ -825,5 +818,5 @@
 
 /* Buttons app-wide keep their words on one line; these cards and options are read, so they wrap. */
 .wz :is(.wz-kind, .wz-option, .wz-preset, .wz-ready) :is(strong, em, span) { white-space: normal; overflow-wrap: anywhere; }
-.wz-kind strong { max-width: 100%; text-wrap: balance; }
-.wz-kind em { max-width: 100%; text-wrap: balance; }
+.wz-kind strong { max-width: 100%; padding: 0 16px; text-wrap: balance; }
+.wz-kind em { max-width: 100%; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

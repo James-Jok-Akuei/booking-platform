@@ -17272,3 +17272,40 @@ clean. The panel, photos and rail of §262 stay; what is inside changes.
 - **Hours**: the three common weeks as cards with their times, then the day
   toggles, the times and the sentence (§262); a week is "chosen" only while
   both its days and times still match.
+
+## 264. One set of drawings for categories, in every app (2026-10-09)
+
+Asked: use the fine-line drawings of §263 wherever categories are shown — the
+customer app, the business app and the console — instead of icons.
+
+- **One set, as data**: `src/ui/lineArtData.ts` holds each drawing as path
+  data (`DRAWINGS`, keyed on the category's `icon` word, plus the shared
+  brush mark), identical in business-web, admin-web and customer-app — copied,
+  as the apps' other shared pieces are; change one, change all three. The web
+  apps draw it with `<svg>` (`LineArt`), the phone app with react-native-svg
+  (added: 15.15.4, the version Expo 57 ships in Expo Go).
+- **Customer app**:
+  - the home screen's category row is a row of small cards with the drawing
+    and the name under it ("All" keeps its grid mark), the chosen one ringed
+    in orange with a tick;
+  - the "Browse all categories" wall is white cards — name, places and
+    kinds on top, the drawing standing on the bottom edge, tall cards also
+    naming what they cover — instead of colour tiles with a large icon;
+  - a shop or service with no photo shows its category's drawing on a tint
+    of the category's colour wherever the picture is 120px or wider; smaller
+    thumbnails keep the icon, where a drawing could not be read.
+  On a phone the line draws itself in; in a browser preview, and with
+  reduce motion, it is simply shown.
+- **Business app**: setting up already used them (§263); the shopfront
+  preview's empty cover now matches the customer app's. The category cards
+  in setting up now fit three or four to a row by the room there is, and
+  their words no longer squeeze into a narrow column. The old icon mark
+  (`ui/CategoryMark.tsx`) is gone.
+- **Console**: Categories shows each category's drawing on its card; adding
+  or editing one picks "its drawing" from the eight, by what they show (Car,
+  Scissors and comb, Glasses and confetti, Heartbeat and sprout, House and
+  wrench, Cat, Camera, Laptop and coffee), with a preview of the card a
+  customer will see.
+- Kept as icons on purpose: the tiny marks where a drawing cannot be read
+  (a section title's dot, search shortcuts, service thumbnails), and the
+  dark advert banners' faint motif. The landing page has no categories yet.

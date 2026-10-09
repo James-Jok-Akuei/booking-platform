@@ -44,6 +44,7 @@ import { IconButton } from '../../src/ui/IconButton';
 import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon, lookFor } from '../../src/ui/Icon';
+import { LineArt } from '../../src/ui/LineArt';
 import { useLayout } from '../../src/ui/layout';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { RwandaFlag } from '../../src/ui/RwandaFlag';
@@ -75,6 +76,9 @@ const SHELF_TITLE: Record<DiscoverySort, string> = {
 
 /** Space between the rows at the top of Home. */
 const HEADER_GAP = 16;
+
+/** A category card's width in the sideways row (§264). */
+const TILE_W = 112;
 
 /** How many cards a shelf holds before "more" is the category itself. */
 const SHELF_SIZE = 10;
@@ -537,11 +541,12 @@ export default function Discover() {
             contentContainerStyle={[styles.tiles, bleedPad]}
           >
             <CategoryTile label="All" active={categoryId === null} onPress={() => pickCategory(null)} />
-            {categories.data?.map((category) => (
+            {categories.data?.map((category, i) => (
               <CategoryTile
                 key={category.id}
                 label={category.name}
                 category={category}
+                index={i}
                 active={categoryId === category.id}
                 onPress={() => pickCategory(category.id)}
               />
@@ -925,35 +930,40 @@ function CategoryTile({
   label,
   category,
   active,
+  index = 0,
   onPress,
 }: {
   label: string;
   category?: Category;
   active: boolean;
+  /** Its place in the row, so the drawings draw in one after another. */
+  index?: number;
   onPress: () => void;
 }) {
-  const look = category ? lookFor(category.icon) : null;
   return (
     <PressableScale
       onPress={onPress}
       haptic
-      scaleTo={0.93}
+      scaleTo={0.94}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
+      accessibilityLabel={label}
       style={styles.tile}
     >
-      <View
-        style={[
-          styles.tileDisc,
-          { backgroundColor: look ? look.tint : theme.panel },
-          active && styles.tileDiscOn,
-        ]}
-      >
-        <Icon
-          name={look ? look.icon : 'apps'}
-          size={24}
-          color={active ? '#FFFFFF' : look ? look.ink : theme.ink}
-        />
+      {/* The kind of place as a drawing (§264); "All" as the shelf of them. */}
+      <View style={[styles.tileCard, active && styles.tileCardOn]}>
+        {category ? (
+          <LineArt icon={category.icon} width={TILE_W - 8} delay={index * 90} />
+        ) : (
+          <View style={styles.tileAll}>
+            <Icon name="grid-outline" size={26} color={active ? theme.accent : theme.ink2} />
+          </View>
+        )}
+        {active && (
+          <View style={styles.tileTick}>
+            <Icon name="checkmark" size={12} color="#FFFFFF" />
+          </View>
+        )}
       </View>
       <Text style={[styles.tileLabel, active && styles.tileLabelOn]} numberOfLines={2}>
         {label}
@@ -1065,15 +1075,32 @@ const styles = StyleSheet.create({
   sectionText: { flexShrink: 1 },
   link: { fontFamily: font.bold, fontSize: 13, color: theme.accent },
   tiles: { gap: 14 },
-  tile: { width: 72, alignItems: 'center', gap: 7 },
-  tileDisc: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+  tile: { width: TILE_W, alignItems: 'center', gap: 7 },
+  tileCard: {
+    width: TILE_W,
+    height: TILE_W / 2 + 18,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    borderColor: theme.line,
+    backgroundColor: theme.panel,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+    paddingBottom: 4,
+  },
+  tileCardOn: { borderColor: theme.accent, backgroundColor: '#FFF8F5' },
+  tileAll: { flex: 1, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', paddingTop: 4 },
+  tileTick: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: theme.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tileDiscOn: { backgroundColor: theme.accent, ...shadow.raised },
   tileLabel: {
     fontFamily: font.semibold,
     fontSize: 11.5,

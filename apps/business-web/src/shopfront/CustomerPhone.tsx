@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getGallery, listServices, type Location, type Service } from '../api/business';
 import { getShopfront, getShopReviews, type Shopfront, type ShopfrontService } from '../api/discovery';
 import { useMoney } from '../money';
+import { LineArt } from '../onboarding/LineArt';
 import { ION, type IonName } from './ionicons';
 import './customer-phone.css';
 
@@ -23,17 +24,17 @@ const HERO = 300;
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 /** Each category's picture and colours when a shop has no cover (customer app `lookFor`). */
-const LOOKS: Record<string, { icon: IonName; from: string; to: string; ink: string }> = {
-  car: { icon: 'car-sport', from: '#DCE9FF', to: '#B9D2FF', ink: '#2456C7' },
-  sparkles: { icon: 'sparkles', from: '#FFE1EC', to: '#FFC2D6', ink: '#D03A6E' },
-  'calendar-star': { icon: 'calendar', from: '#EADFFF', to: '#D2BEFF', ink: '#6B3FD4' },
-  'heart-pulse': { icon: 'fitness', from: '#D8F5E6', to: '#B1E9CC', ink: '#0E8A4A' },
-  'home-tools': { icon: 'hammer', from: '#FFE9CF', to: '#FFD3A0', ink: '#B5630A' },
-  paw: { icon: 'paw', from: '#FFE4D6', to: '#FFC9AE', ink: '#C4501B' },
-  camera: { icon: 'camera', from: '#D9F1F7', to: '#B2E1EE', ink: '#0F7C97' },
-  briefcase: { icon: 'briefcase', from: '#E3E6EE', to: '#C8CEDC', ink: '#3E4A66' },
+const LOOKS: Record<string, { icon: IonName; from: string; to: string; tint: string; ink: string }> = {
+  car: { icon: 'car-sport', from: '#DCE9FF', to: '#B9D2FF', tint: '#EAF1FF', ink: '#2456C7' },
+  sparkles: { icon: 'sparkles', from: '#FFE1EC', to: '#FFC2D6', tint: '#FFECF2', ink: '#D03A6E' },
+  'calendar-star': { icon: 'calendar', from: '#EADFFF', to: '#D2BEFF', tint: '#F2EBFF', ink: '#6B3FD4' },
+  'heart-pulse': { icon: 'fitness', from: '#D8F5E6', to: '#B1E9CC', tint: '#E6F8EE', ink: '#0E8A4A' },
+  'home-tools': { icon: 'hammer', from: '#FFE9CF', to: '#FFD3A0', tint: '#FFF1DF', ink: '#B5630A' },
+  paw: { icon: 'paw', from: '#FFE4D6', to: '#FFC9AE', tint: '#FFEEE5', ink: '#C4501B' },
+  camera: { icon: 'camera', from: '#D9F1F7', to: '#B2E1EE', tint: '#E6F6FA', ink: '#0F7C97' },
+  briefcase: { icon: 'briefcase', from: '#E3E6EE', to: '#C8CEDC', tint: '#EEF0F5', ink: '#3E4A66' },
 };
-const FALLBACK_LOOK = { icon: 'storefront' as IonName, from: '#FFE6DC', to: '#FFCDB9', ink: '#F0532D' };
+const FALLBACK_LOOK = { icon: 'storefront' as IonName, from: '#FFE6DC', to: '#FFCDB9', tint: '#FFEEE8', ink: '#F0532D' };
 const lookFor = (icon: string | null | undefined) => (icon && LOOKS[icon]) || FALLBACK_LOOK;
 
 /** The customer app's avatar tints, chosen by the letters of the name. */
@@ -216,8 +217,9 @@ function ShopScreen({
   return (
     <>
       <div className="csp-hero" ref={hero}>
-        <div className="csp-cover" style={{ background: `linear-gradient(135deg, ${look.from}, ${look.to})` }}>
-          <Ion name={look.icon} size={64} color={look.ink} />
+        {/* No photo: the category's drawing on a tint of its colour, as the app draws it (§264). */}
+        <div className="csp-cover" style={{ background: look.tint, color: look.ink }}>
+          {!cover && <LineArt icon={live.categoryIcon} swash={false} className="csp-cover-art" />}
           {cover && <img src={cover} alt="" />}
         </div>
       </div>
