@@ -76,7 +76,7 @@ export default function Categories() {
       )
     : all;
   // Kinds that match what was typed, offered directly: nobody searching
-  // "barber" wants to be shown "Beauty & Personal Care" and left to dig.
+  // "barber" wants to be shown "Beauty & Spa" and left to dig.
   const kinds = needle
     ? all.flatMap((c) =>
         c.subcategories
@@ -305,7 +305,8 @@ function Tile({
     count === undefined ? null : count === 0 ? 'Coming soon' : `${count} ${count === 1 ? 'place' : 'places'}`,
     kinds > 0 ? `${kinds} ${kinds === 1 ? 'kind' : 'kinds'}` : null,
   ].filter(Boolean);
-  const names = category.subcategories.map((s) => s.name);
+  // The named kinds, not "Other" (§266).
+  const names = category.subcategories.map((s) => s.name).filter((n) => n !== 'Other');
   const covers = names.length > 2 ? `${names.slice(0, 2).join(', ')} and more` : names.join(' and ');
 
   return (

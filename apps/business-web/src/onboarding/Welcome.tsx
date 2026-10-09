@@ -441,7 +441,11 @@ function Have({ icon, title, text, children }: { icon: ReactNode; title: ReactNo
   );
 }
 
-const describe = (names: string[]) => (names.length > 3 ? `${names.slice(0, 3).join(', ')} and more` : names.join(', '));
+/** A category's types in a few words — the named ones, not "Other". */
+const describe = (all: string[]) => {
+  const names = all.filter((n) => n !== 'Other');
+  return names.length > 3 ? `${names.slice(0, 3).join(', ')} and more` : names.join(', ');
+};
 
 // ---------------------------------------------------------------------------
 // Your shop: its name, what kind, which kind exactly, how to reach it
@@ -1081,6 +1085,54 @@ function OfferedHave({ nav, screen }: { nav: Nav; screen: Screen }) {
   );
 }
 
+/** A few things a shop of this type is booked for, one press each (§256, §266). */
+const EXAMPLES: Array<[RegExp, string[]]> = [
+  [/barber/, ['Haircut', 'Beard trim', 'Haircut and beard']],
+  [/braid|locs/, ['Box braids', 'Locs retwist', 'Cornrows']],
+  [/^hair$|hair salon/, ['Wash and blow-dry', 'Braids', 'Relaxer']],
+  [/nail/, ['Manicure', 'Pedicure', 'Gel nails']],
+  [/lash|brow/, ['Lash extensions', 'Brow shaping', 'Lash lift']],
+  [/make-?up/, ['Bridal make-up', 'Evening make-up', 'Make-up lesson']],
+  [/facial|skin/, ['Classic facial', 'Deep-cleanse facial', 'Body scrub']],
+  [/massage|spa|sauna/, ['Full-body massage', 'Back massage', 'Steam room']],
+  [/tattoo|piercing/, ['Small tattoo', 'Ear piercing', 'Consultation']],
+  [/dine-in|private dining/, ['Table for two', 'Table for four', 'Private room for ten']],
+  [/pick-up/, ['Lunch to collect', 'Dinner to collect', 'Breakfast to collect']],
+  [/movie/, ['Standard ticket', 'VIP seat', 'Seat for two']],
+  [/concert|theatre|show|comedy|festival|sporting|exhibit/, ['General admission', 'VIP ticket', 'Group of four']],
+  [/gym/, ['Day pass', 'Gym session', 'Fitness assessment']],
+  [/pitch|court/, ['Pitch for one hour', 'Evening slot', 'Weekend slot']],
+  [/swim/, ['Swim session', 'Swimming lesson', 'Kids’ lesson']],
+  [/martial|dance|pilates/, ['Drop-in class', 'Private lesson', 'Beginners’ class']],
+  [/personal training/, ['One-hour session', 'Fitness assessment', 'Partner session']],
+  [/tutor|educational/, ['One-hour lesson', 'Exam revision', 'Group lesson']],
+  [/coach|consult/, ['First consultation', 'One-hour session', 'Follow-up']],
+  [/dental/, ['Check-up and clean', 'Filling', 'Whitening']],
+  [/eye/, ['Eye test', 'Contact lens fitting', 'Glasses fitting']],
+  [/clinic|dermatolog|specialist/, ['Consultation', 'Follow-up visit', 'Check-up']],
+  [/lab|vaccin/, ['Blood test', 'Vaccination', 'Health check']],
+  [/yoga|meditation/, ['Yoga class', 'Meditation session', 'Private class']],
+  [/therapy|nutrition|acupuncture|chiropractic|physio/, ['First session', 'Follow-up session', 'Assessment']],
+  [/hotel|guesthouse|apartment/, ['One night, double room', 'One night, single room', 'Weekend stay']],
+  [/day pass|pool/, ['Pool day pass', 'Spa and pool day', 'Family day pass']],
+  [/meeting|conference/, ['Meeting room, half day', 'Meeting room, full day', 'Conference hall']],
+  [/gorilla|wildlife/, ['Gorilla trekking', 'Golden monkey trek', 'Chimpanzee trek']],
+  [/safari/, ['Full-day safari', 'Half-day game drive', 'Boat safari']],
+  [/tour|hik|boat|adventure/, ['Kigali city tour', 'Guided hike', 'Lake boat trip']],
+  [/tailor|clothing|fitting/, ['Trouser alterations', 'Dress fitting', 'Suit made to measure']],
+  [/shoe/, ['Shoe repair', 'Shoe shine', 'Heel replacement']],
+  [/laundry|dry clean/, ['Wash and fold', 'Dry cleaning', 'Ironing']],
+  [/driving/, ['Driving lesson', 'Test preparation', 'Refresher lesson']],
+  [/car|tyre|vehicle|auto/, ['Car wash', 'Oil change', 'Wheel balancing']],
+  [/photo|video|studio/, ['Portrait session', 'Event coverage', 'Studio hour']],
+  [/groom|dog|pet|vet/, ['Dog grooming', 'Nail clipping', 'Check-up']],
+  [/clean/, ['Home cleaning', 'Deep clean', 'Office cleaning']],
+];
+const examplesFor = (type: string | null | undefined) => {
+  const name = type?.toLowerCase() ?? '';
+  return EXAMPLES.find(([match]) => match.test(name))?.[1] ?? [];
+};
+
 function ServiceQ({ nav, draft, onDraft }: { nav: Nav; draft: ServiceDraft; onDraft: (d: ServiceDraft) => void }) {
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
@@ -1089,16 +1141,7 @@ function ServiceQ({ nav, draft, onDraft }: { nav: Nav; draft: ServiceDraft; onDr
   const [duration, setDuration] = useState(draft.duration);
   const open = (locations.data ?? []).filter((l) => l.isActive);
 
-  const examples = useMemo(() => {
-    const type = profile.data?.subcategory?.name.toLowerCase() ?? '';
-    if (/barber/.test(type)) return ['Haircut', 'Beard trim', 'Haircut and beard'];
-    if (/hair|braid|locs/.test(type)) return ['Wash and blow-dry', 'Braids', 'Relaxer'];
-    if (/nail/.test(type)) return ['Manicure', 'Pedicure', 'Gel nails'];
-    if (/massage|spa/.test(type)) return ['Full-body massage', 'Back massage', 'Steam room'];
-    if (/car|tyre|vehicle/.test(type)) return ['Car wash', 'Oil change', 'Wheel balancing'];
-    if (/photo/.test(type)) return ['Portrait session', 'Event coverage', 'Studio hour'];
-    return [];
-  }, [profile.data?.subcategory?.name]);
+  const examples = useMemo(() => examplesFor(profile.data?.subcategory?.name), [profile.data?.subcategory?.name]);
 
   if (offered.length > 0) return <OfferedHave nav={nav} screen="service" />;
 

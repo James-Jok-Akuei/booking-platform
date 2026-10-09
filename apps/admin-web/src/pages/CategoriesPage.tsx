@@ -128,7 +128,8 @@ function MarkPicker({ value, onChange }: { value: string; onChange: (key: string
 
 function NewCategory({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const [name, setName] = useState('');
-  const [icon, setIcon] = useState('sparkles');
+  // A new category starts as a general shop (§266), never borrowing another kind's drawing by accident.
+  const [icon, setIcon] = useState('store');
   const [description, setDescription] = useState('');
 
   const create = useMutation({
@@ -175,13 +176,13 @@ function NewCategory({ onClose, onDone }: { onClose: () => void; onDone: () => v
       <form id="tx-new" className="tx-form" onSubmit={submit}>
         <label>
           <span>Name</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Dining" autoFocus maxLength={60} />
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Car Hire" autoFocus maxLength={60} />
         </label>
         <label>
           <span>
             What it covers <em>(optional)</em>
           </span>
-          <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Restaurants, cafes and takeaways." maxLength={200} />
+          <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Cars and vans by the day, with or without a driver." maxLength={200} />
         </label>
         <div className="tx-field">
           <span>Its drawing</span>
@@ -318,7 +319,7 @@ function EditCategory({
 }) {
   const [name, setName] = useState(category.name);
   const [description, setDescription] = useState(category.description ?? '');
-  const [icon, setIcon] = useState(category.icon ?? 'sparkles');
+  const [icon, setIcon] = useState(category.icon ?? 'store');
   return (
     <form
       className="tx-edit"

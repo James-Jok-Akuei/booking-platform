@@ -436,7 +436,7 @@ async function main() {
     address: 'KN 4 Ave, Nyarugenge',
     district: 'Nyarugenge',
     locationName: 'Nyarugenge Branch',
-    category: 'Beauty & Personal Care',
+    category: 'Beauty & Spa',
     subcategory: 'Barbershop',
     note: 'APPROVED, 2 branches, verified payout destination, POSITIVE balance.',
   });
@@ -461,8 +461,8 @@ async function main() {
     address: 'KG 9 Ave, Kimironko',
     district: 'Gasabo',
     locationName: 'Kimironko',
-    category: 'Health & Wellness',
-    subcategory: 'Massage Therapy',
+    category: 'Beauty & Spa',
+    subcategory: 'Massage',
     note: 'APPROVED. Deposit == fee (10%), so the business share of a deposit is ZERO.',
   });
   await setHours(konyo, konyo.locationIds[0], '10:00', '20:00');
@@ -477,8 +477,8 @@ async function main() {
     address: 'KG 17 Ave, Remera',
     district: 'Gasabo',
     locationName: 'Remera Studio',
-    category: 'Beauty & Personal Care',
-    subcategory: 'Nail Salon',
+    category: 'Beauty & Spa',
+    subcategory: 'Nails',
     note: 'APPROVED. Cancelled a PAID booking, so its ledger balance is NEGATIVE.',
   });
   await setHours(thongpiny, thongpiny.locationIds[0], '09:00', '18:00');
@@ -509,8 +509,8 @@ async function main() {
     address: 'KN 2 Ave, Nyamirambo',
     district: 'Nyarugenge',
     locationName: 'Nyamirambo Salon',
-    category: 'Beauty & Personal Care',
-    subcategory: 'Hair Salon',
+    category: 'Beauty & Spa',
+    subcategory: 'Hair',
     note: 'APPROVED, CLOSED TODAY, and NO payout destination at all.',
   });
   await setHours(haicinema, haicinema.locationIds[0], '09:00', '17:00', true);
@@ -525,8 +525,8 @@ async function main() {
     address: 'KK 15 Rd, Kicukiro',
     district: 'Kicukiro',
     locationName: 'Kicukiro Workshop',
-    category: 'Home Services',
-    subcategory: 'Carpentry & Furniture Repair',
+    category: 'Fashion & Tailoring',
+    subcategory: 'Tailoring & Alterations',
     note: 'PENDING approval — absent from discovery, and unbookable.',
   });
   await setHours(gudele, gudele.locationIds[0], '09:00', '17:00');
@@ -541,7 +541,7 @@ async function main() {
     address: 'KK 3 Ave, Gikondo',
     district: 'Kicukiro',
     locationName: 'Gikondo Gym',
-    category: 'Health & Wellness',
+    category: 'Services',
     subcategory: 'Personal Training',
     note: 'SUSPENDED — invisible and unbookable, but its existing appointments stand.',
   });

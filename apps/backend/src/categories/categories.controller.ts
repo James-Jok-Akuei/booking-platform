@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { otherLast } from './other-last';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { CategoryDto, PUBLIC_CATEGORY_SELECT } from './dto/category-response.dto';
@@ -17,8 +18,8 @@ export class CategoriesController {
    */
   @Get()
   @ApiOkResponse({ type: CategoryDto, isArray: true })
-  findAll() {
-    return this.prisma.category.findMany({
+  async findAll() {
+    const categories = await this.prisma.category.findMany({
       // Only what a business may choose (§98). Discovery is NOT filtered this
       // way — a shop already in a category that was switched off keeps its
       // listing, because it did not make that decision.
@@ -27,5 +28,6 @@ export class CategoriesController {
       // One select, shared with the DTO that describes it (§128.5).
       select: PUBLIC_CATEGORY_SELECT,
     });
+    return categories.map((category) => ({ ...category, subcategories: otherLast(category.subcategories) }));
   }
 }

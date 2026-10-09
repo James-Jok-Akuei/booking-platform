@@ -1,3 +1,4 @@
+import { otherLast } from './other-last';
 import {
   Body,
   ConflictException,
@@ -100,7 +101,7 @@ export class AdminCategoriesController {
       isLive: category.isLive,
       /** Businesses already in it. Shown before anything is switched off. */
       businessCount: inCategory.get(category.id)?.size ?? 0,
-      subcategories: category.subcategories.map((subcategory) => ({
+      subcategories: otherLast(category.subcategories).map((subcategory) => ({
         id: subcategory.id,
         name: subcategory.name,
         isLive: subcategory.isLive,

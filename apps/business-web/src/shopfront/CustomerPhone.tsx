@@ -33,6 +33,15 @@ const LOOKS: Record<string, { icon: IonName; from: string; to: string; tint: str
   paw: { icon: 'paw', from: '#FFE4D6', to: '#FFC9AE', tint: '#FFEEE5', ink: '#C4501B' },
   camera: { icon: 'camera', from: '#D9F1F7', to: '#B2E1EE', tint: '#E6F6FA', ink: '#0F7C97' },
   briefcase: { icon: 'briefcase', from: '#E3E6EE', to: '#C8CEDC', tint: '#EEF0F5', ink: '#3E4A66' },
+  // The kinds added in §266 have no glyph in this small icon set; their thumbnail uses the shopfront.
+  utensils: { icon: 'storefront', from: '#FFECD2', to: '#FFD9A8', tint: '#FFF4E4', ink: '#B8620B' },
+  ticket: { icon: 'storefront', from: '#FFF2C7', to: '#FFE08A', tint: '#FFF8DF', ink: '#9A6B00' },
+  people: { icon: 'storefront', from: '#D7F5EC', to: '#B3EAD9', tint: '#E7F8F2', ink: '#0F7F63' },
+  dumbbell: { icon: 'storefront', from: '#DCEFFF', to: '#B8DCFF', tint: '#EAF5FF', ink: '#1D6FB8' },
+  stethoscope: { icon: 'storefront', from: '#FFE1DE', to: '#FFC4BE', tint: '#FFEDEB', ink: '#C2392B' },
+  bed: { icon: 'storefront', from: '#EFE4FF', to: '#DCC8FF', tint: '#F5EEFF', ink: '#7445C9' },
+  mountain: { icon: 'storefront', from: '#E0F2D6', to: '#C4E5B2', tint: '#ECF7E6', ink: '#3F7A28' },
+  shirt: { icon: 'storefront', from: '#FCE1F3', to: '#F5C3E6', tint: '#FDEEF8', ink: '#B03A86' },
 };
 const FALLBACK_LOOK = { icon: 'storefront' as IonName, from: '#FFE6DC', to: '#FFCDB9', tint: '#FFEEE8', ink: '#F0532D' };
 const lookFor = (icon: string | null | undefined) => (icon && LOOKS[icon]) || FALLBACK_LOOK;

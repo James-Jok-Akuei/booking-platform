@@ -28,7 +28,9 @@ businesses; businesses manage their availability, services and bookings.
 
 **Explicitly OUT of scope for MVP:**
 
-- Medical / dental
+- ~~Medical / dental~~ **Superseded by §266 (2026-10-10): clinics, dentists,
+  eye care and tests by appointment are in, as "Health & Medical" — an
+  administrator can switch it off.**
 - Catering
 - Delivery-style categories generally (this is an appointment platform, not a
   delivery platform)
@@ -17355,3 +17357,50 @@ hours picker readable when hovered.
   chosen chips, and the chosen card's border.
 
 Seven tests in `business-kinds.spec.ts`.
+
+## 266. Every kind of book-and-go place, with a drawing for each (2026-10-10)
+
+Asked: put in the complete taxonomy now — the user's sheet (Beauty & Spa,
+Wellness, Dining, Events tickets & Movies, Group Classes & Activities,
+Services) and the kinds suggested here (dining, fitness, tutoring, clinics,
+hotels, tailoring, tours) — everything a customer books and then goes to in
+person, nothing delivered; administrators only switch off what is not wanted
+at launch. And start the console's drawing picker on a neutral drawing, with
+drawings for the new kinds.
+
+- **16 categories, 122 types** (`prisma/seed.ts`), each ending with "Other":
+  Automotive · Beauty & Spa · Dining (Dine-in, Pick-up, Private Dining) ·
+  Event Services · Events, Tickets & Movies · Fashion & Tailoring · Fitness &
+  Sports · Group Classes & Activities · Health & Medical · Home Services ·
+  Hotels & Stays · Pet Services · Photography & Creative Services · Services ·
+  Tours & Experiences · Wellness. The user's names are used as given; their
+  "Other services" is "Other" like every other category.
+- **Renamed and regrouped, not duplicated** (migration `…_taxonomy_v2`,
+  keyed on the old names and a no-op on a fresh database): Beauty & Personal
+  Care → Beauty & Spa (Hair Salon → Hair, Nail Salon → Nails, Makeup Artist →
+  Make-up, Skincare & Facials → Facials); Health & Wellness → Wellness
+  (Nutrition Coaching → Diet & Nutrition, Yoga & Pilates → Meditation & Yoga,
+  Mental Wellness Coaching → Therapy); Massage Therapy moves to Beauty & Spa as
+  Massage, and Personal Training to Services, as the user's sheet places them;
+  Events → Event Services (planners, DJs, venues for your own event — "Events,
+  Tickets & Movies" is going to one); Professional & Consulting → Services
+  (Tutoring & Training → Tutoring). Every business's main category and kinds
+  follow their type. The demo tailor, filed under carpentry for want of
+  anything better, is now Fashion & Tailoring.
+- **Scope**: medical and dental are in (§1 marked); catering and delivery stay
+  out — Dining is dine-in or pick-up, and the seed says so.
+- **"Other" last**: types are listed alphabetically with "Other" at the end
+  (`categories/other-last.ts`, public and admin lists); the short summaries on
+  cards leave it out.
+- **Drawings**: eight more in the same hand (`lineArtData.ts`, identical in the
+  three apps): plate and cutlery, ticket and popcorn, a group arms up,
+  dumbbell and ball, cross and stethoscope, bed and moon, mountains and flag,
+  shirt and tape measure — with their colours in the customer app, the
+  console and the shopfront preview. The console's picker offers all 17 by
+  what they show, a **new category starts on "General shop"** (a shopfront)
+  rather than borrowing another kind's drawing, and an unknown `icon` still
+  falls back to it. The console's old icon mark and its glyph file are gone.
+- Setting up's "What can customers book first?" suggests services for the new
+  types (a table for two, a day pass, a pitch for an hour, an eye test…).
+- A new category or type added in the console appears in every app at once
+  (the lists come from the server); a new DRAWING needs an app release.

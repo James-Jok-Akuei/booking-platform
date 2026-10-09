@@ -148,7 +148,115 @@ export const DRAWINGS: Record<string, Drawing> = {
       'M24 92h168',
     ),
   },
-  // A shopfront, for a kind of place not drawn yet.
+  // A plate, a fork and a knife, and something hot on the way.
+  utensils: {
+    swash: '#ffe1bf',
+    strokes: [
+      { d: 'M52 32v15c0 4 3 7 6 7s6-3 6-7V32M58 32v16' },
+      { d: 'M58 54v36' },
+      { d: circle(100, 62, 26) },
+      { d: circle(100, 62, 18) },
+      { d: 'M142 90V32c8 6 10 17 9 28h-9' },
+      { d: 'M92 26c-3-4 3-6 0-10M100 24c-3-4 3-6 0-10M108 26c-3-4 3-6 0-10' },
+      { d: 'M30 94h140' },
+    ],
+  },
+  // A ticket and a box of popcorn.
+  ticket: {
+    swash: '#ffe6a8',
+    strokes: [
+      { d: 'M0 0h70v10a6 6 0 0 0 0 12v14H0V22a6 6 0 0 0 0-12Z', transform: 'translate(34 44) rotate(-10)' },
+      { d: 'M52 4v5M52 13v5M52 22v5M52 31v3', transform: 'translate(34 44) rotate(-10)' },
+      { d: 'M10 12h28M10 20h20M10 28h24', transform: 'translate(34 44) rotate(-10)' },
+      { d: 'M128 92l-7-36h42l-7 36Z' },
+      { d: 'M137 56l3 36M150 56l-2 36' },
+      { d: 'M121 56c-3-7 4-12 10-8 1-7 11-9 14-2 4-6 13-4 13 3 4 0 6 4 5 7' },
+      { d: 'M176 34c.6 3.4 1.8 4.6 5 5-3.2.4-4.4 1.6-5 5-.6-3.4-1.8-4.6-5-5 3.2-.4 4.4-1.6 5-5Z' },
+      { d: 'M28 94h150' },
+    ],
+  },
+  // A class, arms up together.
+  people: {
+    swash: '#cdeee4',
+    strokes: [
+      { d: circle(68, 40, 7) },
+      { d: 'M68 47v22M68 54l-11-13M68 54l11-13M68 69l-7 23M68 69l7 23' },
+      { d: circle(100, 32, 7.5) },
+      { d: 'M100 40v25M100 47l-12-15M100 47l12-15M100 65l-8 27M100 65l8 27' },
+      { d: circle(132, 40, 7) },
+      { d: 'M132 47v22M132 54l-11-13M132 54l11-13M132 69l-7 23M132 69l7 23' },
+      { d: 'M44 22c.6 3.4 1.8 4.6 5 5-3.2.4-4.4 1.6-5 5-.6-3.4-1.8-4.6-5-5 3.2-.4 4.4-1.6 5-5Z' },
+      { d: 'M158 26l3-6M164 32l6-2' },
+      { d: 'M40 94h120' },
+    ],
+  },
+  // A dumbbell, and a ball for the pitch.
+  dumbbell: {
+    swash: '#bfe3ff',
+    strokes: [
+      { d: 'M52 70h56' },
+      { d: 'M42 55h10v30H42ZM32 62h10v16H32Z' },
+      { d: 'M108 55h10v30h-10ZM118 62h10v16h-10Z' },
+      { d: circle(158, 76, 16) },
+      { d: 'M158 69l6.6 4.8-2.5 7.8h-8.2l-2.5-7.8Z' },
+      { d: 'M158 69v-9M164.6 73.8l8.5-2.8M162.1 81.6l5.3 7.3M153.9 81.6l-5.3 7.3M151.4 73.8l-8.5-2.8' },
+      { d: 'M24 93h168' },
+    ],
+  },
+  // A cross and a stethoscope.
+  stethoscope: {
+    swash: '#ffd5d0',
+    strokes: [
+      { d: 'M62 34h16v18h18v16H78v18H62V68H44V52h18Z' },
+      { d: 'M124 26v16c0 12 7 20 17 20s17-8 17-20V26' },
+      { d: circle(124, 23, 2.5) },
+      { d: circle(158, 23, 2.5) },
+      { d: 'M141 62v10c0 9 7 14 15 14' },
+      { d: circle(162, 86, 6) },
+      { d: 'M30 94h150' },
+    ],
+  },
+  // A made bed, and the night outside.
+  bed: {
+    swash: '#e9dcff',
+    strokes: [
+      { d: 'M38 94V46' },
+      { d: 'M38 74h132v20M38 88h132' },
+      { d: ellipse(60, 66, 14, 7) },
+      { d: 'M82 74c0-9 6-14 14-14h58c9 0 16 6 16 14' },
+      { d: 'M150 22a11 11 0 1 0 12 15 9 9 0 0 1-12-15Z' },
+      { d: 'M126 24c.6 3.4 1.8 4.6 5 5-3.2.4-4.4 1.6-5 5-.6-3.4-1.8-4.6-5-5 3.2-.4 4.4-1.6 5-5Z' },
+      { d: circle(178, 30, 1.6) },
+    ],
+  },
+  // Mountains with a flag on top, the sun and the birds.
+  mountain: {
+    swash: '#d5ebc8',
+    strokes: [
+      { d: 'M22 92l40-48 22 26 18-22 44 44' },
+      { d: 'M52 56l10-12 10 12-5-2-5 4-5-4Z' },
+      { d: 'M102 48V30l12 5-12 5' },
+      { d: circle(158, 32, 10) },
+      { d: 'M150 52q4-4 8 0q4-4 8 0M124 62q3-3 6 0q3-3 6 0' },
+      { d: 'M92 92c6-6-8-10 0-18' },
+      { d: 'M18 92h168' },
+    ],
+  },
+  // A shirt on its hanger, and a tape measure.
+  shirt: {
+    swash: '#f9d6f0',
+    strokes: [
+      { d: 'M100 16c0-5 7-6 7 0 0 4-7 5-7 10' },
+      { d: 'M100 26L66 42h68Z' },
+      { d: 'M76 46l-20 12 8 14 10-5v25h52V67l10 5 8-14-20-12c-4 5-10 8-19 8s-15-3-19-8Z' },
+      { d: circle(100, 64, 1.6) },
+      { d: circle(100, 74, 1.6) },
+      { d: circle(100, 84, 1.6) },
+      { d: 'M144 94h34M148 94v-4M154 94v-3M160 94v-4M166 94v-3M172 94v-4' },
+      { d: 'M28 94h108' },
+    ],
+  },
+  // A shopfront: a general shop, and any kind of place not drawn yet.
   store: {
     swash: '#ffd9cb',
     strokes: lines(
@@ -161,7 +269,25 @@ export const DRAWINGS: Record<string, Drawing> = {
   },
 };
 
-/** The `icon` words an administrator can give a category, each with its drawing. */
-export const DRAWING_KEYS = ['car', 'sparkles', 'calendar-star', 'heart-pulse', 'home-tools', 'paw', 'camera', 'briefcase'] as const;
+/** The `icon` words an administrator can give a category, each with its drawing (§266). */
+export const DRAWING_KEYS = [
+  'store',
+  'sparkles',
+  'heart-pulse',
+  'stethoscope',
+  'dumbbell',
+  'utensils',
+  'ticket',
+  'people',
+  'mountain',
+  'bed',
+  'briefcase',
+  'car',
+  'shirt',
+  'home-tools',
+  'paw',
+  'camera',
+  'calendar-star',
+] as const;
 
 export const drawingFor = (icon: string | null | undefined): Drawing => (icon && DRAWINGS[icon]) || DRAWINGS.store;
