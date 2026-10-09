@@ -211,17 +211,6 @@ button.link:hover:not(:disabled) { background: none; color: var(--accent); text-
 button.link:active:not(:disabled) { transform: none; }
 button.link.danger-link { color: var(--danger); }
 
-.icon-button {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  min-height: 0;
-  padding: 7px;
-  border-radius: var(--r-sm);
-  display: inline-flex;
-  line-height: 0;
-}
-.icon-button:hover:not(:disabled) { background: var(--sunken); color: var(--ink); }
 
 /* ---------- auth (until the sign-in page is redesigned) ---------- */
 
@@ -431,8 +420,6 @@ input[type='time'] { width: 120px; }
   border-radius: var(--r-xl) 0 0 var(--r-xl);
   animation: slide-in-right 340ms var(--ease);
 }
-.drawer-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
-.drawer-head h2 { margin: 0 0 2px; font-size: 21px; letter-spacing: -0.02em; }
 
 .stack { display: flex; flex-direction: column; gap: 14px; }
 .stack label { display: flex; flex-direction: column; gap: 6px; }
@@ -702,9 +689,6 @@ tr.clickable:hover { background: var(--accent-tint); }
 .legend dd { margin: 0; font-size: 13.5px; color: var(--ink-2); padding: 9px 0; border-top: 1px solid var(--line); }
 
 /* What a decision will do, before it is made. */
-.consequences { margin: 12px 0 18px; padding: 14px 16px 14px 34px; font-size: 13.5px; background: var(--warn-soft); border-radius: var(--r-md); color: #6f4400; }
-.consequences li { margin-bottom: 5px; }
-.consequences li:last-child { margin-bottom: 0; }
 
 .drawer-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 18px 0; padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 

@@ -16553,3 +16553,81 @@ Checked at 1440 (Showing; All with the hidden one), 1024 (a search) and 390
 The old page's styles (`.reviews`, `.review`, `.rating`, `.reply-shown`…)
 and the old ticket drawer's (`.thread`, `.message`, `.reply`…) left
 `styles.css`. An `eyeOff` icon joined the set for hiding.
+
+## 249. Admin piece 8 — Appointments, every booking on the platform and each one's whole story (2026-10-09)
+
+Appointments was a table of up to 100 rows behind an "only reclassifiable"
+checkbox, a drawer that asked for a ticket by its raw id and an operator's
+charge in "minor units", and no way to find a booking a customer quotes. Now
+it is the business app's work list (§213) for the people who look bookings
+up rather than run a day, with a panel that tells one booking's whole story.
+
+### 249.1 The server
+
+- **`q` on `GET /admin/appointments`** takes what people quote: the
+  **reservation number** from the customer's app ("0440-A141", "0440A141" or
+  "No. 0440-A141" — the first eight hex characters of the id, §213), part of
+  the customer's email or name, or the shop's, branch's or service's name.
+- **`sort`**: latest start first, or soonest (`AppointmentOrder`, §213), ties
+  broken by id so pages never repeat or skip a row.
+- **Each row says more**: when it was booked, how many people, the full
+  price, when the deposit was paid, when the customer was checked in and how
+  (code, or without one), when it was done or marked a no-show, the
+  customer's name, the service's first photo, the shop's logo, the stars it
+  was given and how many tickets are about it. One select and one mapper
+  serve the list and the new read, so the two cannot drift.
+- **`GET /admin/appointments/:id`** — one booking with everything a dispute
+  turns on: the unit, list and discounted price; the branch's address and the
+  number to call (the branch's own, else the shop's); the operator, its
+  reference, when payment was asked for, what the operator charged and at
+  which rate; who checked the customer in and their note when it was done
+  without a code; who cancelled; the ticket a reclassification was decided
+  on; **every ledger line written for it** (signed from the shop's side, and
+  whether it has been paid out); the review; and the tickets about it.
+- Five tests in "the console's bookings (§249)"; the suite (14) and the refund
+  and ticket suites (107) pass.
+
+### 249.2 The page
+
+- **One card, its top pinned**: a search box that says what it takes ("No.
+  like 0440-A141, an email, a shop…"), then tabs with counts — All, Expected,
+  In progress, Unpaid, Done, No-show, Cancelled — in the business app's words
+  and colours (`lib/bookingLook.ts`, §247). Under *Cancelled*, one chip:
+  **Paid, then cancelled by the customer** — the only ones that can still be
+  put on the shop — with its count.
+- **Rows grouped by day**, the business app's columns: the time and length;
+  the customer (name or email) with the reservation number; the service's
+  photo, name and ×people, with the shop's tile, name and branch (the branch
+  gives way before the shop's name when space runs out); the deposit and
+  what it came to (paid, never paid, waiting, refunded in full); the status
+  with a line of what matters — "Checked in 10:02 · no code", "Reviewed 4 ★",
+  "Cancelled by the customer", "Not paid in time" (a booking released unpaid
+  was not cancelled by anyone); and a coral flag when tickets are about it.
+  The tabs still ahead read soonest first; the rest latest first.
+- **One booking, in the panel**: its photo, status, the number to copy, the
+  day and time; **the customer and the shop** side by side (email, address,
+  the number to call, *Their bookings →*, *The shop →*); **the money** as
+  tiles — full price, the deposit and when it landed, our fee, the shop's
+  share, and in coral what is still to pay at the shop — then **what the
+  ledger wrote for it**, line by line in plain words, signed, with *paid out*
+  where it has been; **the payment** under the operator's own mark, with its
+  reference to copy; **what happened** as steps (booked, paid, checked in —
+  with or without a code, by whom — done, no-show or cancelled and why, and
+  what is still to come); the review; the tickets, each opening in Support.
+- **Putting a cancellation on the shop** stays the one change an
+  administrator may make (§25, §95), offered only when the server would
+  accept it. It opens in the same panel: in red, that it moves money and
+  cannot be undone; then, in money, what each side gets — the customer back
+  the whole deposit with our fee, the shop losing its share and carrying the
+  operator's charge — and that both are told the reason. The form asks what
+  happened, **which of this booking's tickets it was decided on** (picked,
+  not pasted as an id), and the operator's charge **in the currency's own
+  units**, converted with the server's exponent (§70.1). The button names the
+  amount: *Refund RWF 1,400*. A booking already put on the shop says so in
+  green, linking the ticket it was decided on.
+- **Links in**: Support's booking card (§247) and each review (§248) open
+  `/appointments?open=<id>`.
+
+Checked at 1440 (the list; a booking with a ticket; a reviewed one; the
+refund form, not sent), 1024 (a search) and 390 (the list; a booking). No
+cancellation was put on a shop.

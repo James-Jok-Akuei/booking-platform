@@ -7588,6 +7588,29 @@
             }
           },
           {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "The reservation number the customer quotes (\"3F2A-1C9B\"), or part of the\ncustomer's email or name, the shop's, branch's or service's name (§249).",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "Latest start first unless asked otherwise (§249).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "soonest",
+                "latest"
+              ]
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -7660,6 +7683,77 @@
           }
         },
         "summary": "The listing (§95). Without it the PATCH below took an id that nothing in\nthe platform produced.",
+        "tags": [
+          "AdminAppointments"
+        ]
+      }
+    },
+    "/admin/appointments/{id}": {
+      "get": {
+        "operationId": "AdminAppointmentsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAppointmentDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "One booking, with its payment, steps, ledger lines, review and tickets (§249).",
         "tags": [
           "AdminAppointments"
         ]
@@ -17933,8 +18027,21 @@
           "endTime": {
             "type": "string"
           },
+          "createdAt": {
+            "type": "string",
+            "description": "When it was booked."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "People booked together (§186)."
+          },
           "currency": {
             "type": "string"
+          },
+          "servicePriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "The full price when booked; null on bookings older than the snapshot."
           },
           "depositAmountMinor": {
             "type": "number"
@@ -17948,6 +18055,31 @@
           "depositPaid": {
             "type": "boolean",
             "description": "Derived from `depositPaidAt`, so a console need not know the column."
+          },
+          "depositPaidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The steps it went through (§249)."
+          },
+          "verificationMethod": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "CODE",
+              "MANUAL"
+            ]
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "noShowAt": {
+            "type": "string",
+            "nullable": true
           },
           "cancelledAt": {
             "type": "string",
@@ -17977,8 +18109,17 @@
           "customerEmail": {
             "type": "string"
           },
+          "customerDisplayName": {
+            "type": "string",
+            "nullable": true
+          },
           "serviceName": {
             "type": "string"
+          },
+          "serviceImageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "The service's first photo, for the row (§249)."
           },
           "locationId": {
             "type": "string"
@@ -17993,6 +18134,19 @@
             "type": "string",
             "nullable": true
           },
+          "businessLogoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewRating": {
+            "type": "number",
+            "nullable": true,
+            "description": "The stars the customer gave it, when they reviewed it."
+          },
+          "ticketCount": {
+            "type": "number",
+            "description": "Support tickets raised about it."
+          },
           "canReclassify": {
             "type": "boolean",
             "description": "Whether reclassifying would do anything at all.\n\nMirrors the PATCH exactly: a COMPLETED appointment and one already blamed\non the business are both refused, and with no deposit taken there is\nnothing to refund. Published so the console can stop offering an action the\nserver will decline (§118)."
@@ -18003,22 +18157,35 @@
           "status",
           "startTime",
           "endTime",
+          "createdAt",
+          "quantity",
           "currency",
+          "servicePriceMinor",
           "depositAmountMinor",
           "platformFeeAmountMinor",
           "businessAmountMinor",
           "depositPaid",
+          "depositPaidAt",
+          "verifiedAt",
+          "verificationMethod",
+          "completedAt",
+          "noShowAt",
           "cancelledAt",
           "cancelledBy",
           "cancellationReason",
           "cancellationTicketId",
           "customerId",
           "customerEmail",
+          "customerDisplayName",
           "serviceName",
+          "serviceImageUrl",
           "locationId",
           "locationName",
           "businessId",
           "businessName",
+          "businessLogoUrl",
+          "reviewRating",
+          "ticketCount",
           "canReclassify"
         ]
       },
@@ -18046,6 +18213,398 @@
           "limit",
           "offset",
           "appointments"
+        ]
+      },
+      "AdminAppointmentTicketDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "OPEN",
+              "RESOLVED",
+              "CLOSED"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "subject",
+          "status",
+          "createdAt"
+        ]
+      },
+      "AdminAppointmentLedgerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_RECEIVED",
+              "PLATFORM_FEE",
+              "DEPOSIT_REFUND",
+              "PLATFORM_FEE_REVERSAL",
+              "GATEWAY_FEE_DEBIT",
+              "ADJUSTMENT"
+            ]
+          },
+          "amountMinor": {
+            "type": "number",
+            "description": "Signed: what the shop gains is positive, what it gives up negative."
+          },
+          "currency": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "payoutId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Set once the line has been paid out to the shop."
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "amountMinor",
+          "currency",
+          "createdAt",
+          "payoutId"
+        ]
+      },
+      "AdminAppointmentReviewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "hiddenAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "rating",
+          "comment",
+          "hiddenAt",
+          "createdAt"
+        ]
+      },
+      "AdminAppointmentDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ],
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When it was booked."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "People booked together (§186)."
+          },
+          "currency": {
+            "type": "string"
+          },
+          "servicePriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "The full price when booked; null on bookings older than the snapshot."
+          },
+          "depositAmountMinor": {
+            "type": "number"
+          },
+          "platformFeeAmountMinor": {
+            "type": "number"
+          },
+          "businessAmountMinor": {
+            "type": "number"
+          },
+          "depositPaid": {
+            "type": "boolean",
+            "description": "Derived from `depositPaidAt`, so a console need not know the column."
+          },
+          "depositPaidAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The steps it went through (§249)."
+          },
+          "verificationMethod": {
+            "nullable": true,
+            "enum": [
+              "CODE",
+              "MANUAL"
+            ],
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "noShowAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledBy": {
+            "nullable": true,
+            "enum": [
+              "BUSINESS",
+              "CUSTOMER",
+              "SYSTEM_EXPIRY"
+            ],
+            "type": "string"
+          },
+          "cancellationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationTicketId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The support ticket a reclassification was recorded against, if any."
+          },
+          "customerId": {
+            "type": "string"
+          },
+          "customerEmail": {
+            "type": "string"
+          },
+          "customerDisplayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "serviceImageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "The service's first photo, for the row (§249)."
+          },
+          "locationId": {
+            "type": "string"
+          },
+          "locationName": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true
+          },
+          "businessLogoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewRating": {
+            "type": "number",
+            "nullable": true,
+            "description": "The stars the customer gave it, when they reviewed it."
+          },
+          "ticketCount": {
+            "type": "number",
+            "description": "Support tickets raised about it."
+          },
+          "canReclassify": {
+            "type": "boolean",
+            "description": "Whether reclassifying would do anything at all.\n\nMirrors the PATCH exactly: a COMPLETED appointment and one already blamed\non the business are both refused, and with no deposit taken there is\nnothing to refund. Published so the console can stop offering an action the\nserver will decline (§118)."
+          },
+          "unitPriceMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "listPriceMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "locationAddress": {
+            "type": "string"
+          },
+          "shopPhone": {
+            "type": "string",
+            "nullable": true,
+            "description": "The branch's own number, else the shop's."
+          },
+          "paymentProvider": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          },
+          "paymentProviderReferenceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentInitiatedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerCurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerAmountMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "exchangeRateUsed": {
+            "type": "number",
+            "nullable": true
+          },
+          "verifiedByEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "manualVerificationNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledByEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationTicketReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAppointmentTicketDto"
+            }
+          },
+          "ledger": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAppointmentLedgerDto"
+            }
+          },
+          "review": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminAppointmentReviewDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "startTime",
+          "endTime",
+          "createdAt",
+          "quantity",
+          "currency",
+          "servicePriceMinor",
+          "depositAmountMinor",
+          "platformFeeAmountMinor",
+          "businessAmountMinor",
+          "depositPaid",
+          "depositPaidAt",
+          "verifiedAt",
+          "verificationMethod",
+          "completedAt",
+          "noShowAt",
+          "cancelledAt",
+          "cancelledBy",
+          "cancellationReason",
+          "cancellationTicketId",
+          "customerId",
+          "customerEmail",
+          "customerDisplayName",
+          "serviceName",
+          "serviceImageUrl",
+          "locationId",
+          "locationName",
+          "businessId",
+          "businessName",
+          "businessLogoUrl",
+          "reviewRating",
+          "ticketCount",
+          "canReclassify",
+          "unitPriceMinor",
+          "discountPercent",
+          "listPriceMinor",
+          "locationAddress",
+          "shopPhone",
+          "paymentProvider",
+          "paymentProviderReferenceId",
+          "paymentInitiatedAt",
+          "providerCurrency",
+          "providerAmountMinor",
+          "exchangeRateUsed",
+          "verifiedByEmail",
+          "manualVerificationNote",
+          "cancelledByEmail",
+          "cancellationTicketReference",
+          "tickets",
+          "ledger",
+          "review"
         ]
       },
       "ReclassifyCancellationDto": {

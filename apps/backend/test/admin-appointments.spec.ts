@@ -1,10 +1,11 @@
-import { ForbiddenException } from '@nestjs/common';
-import { AppointmentStatus, CancelledBy, UserRole } from '@prisma/client';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { AppointmentStatus, CancelledBy, LedgerEntryType, TicketCategory, TicketStatus, UserRole } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { AppointmentsService } from '../src/appointments/appointments.service';
 import { AvailabilityService } from '../src/availability/availability.service';
 import { PlatformSettingsService } from '../src/settings/platform-settings.service';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { AppointmentOrder } from '../src/appointments/dto/list-appointments.dto';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import {
   TestBusiness,
@@ -190,5 +191,108 @@ describe('Admin appointments (§95)', () => {
     await expect(
       appointments.listForAdmin({ role }, {}),
     ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  describe("the console's bookings (§249)", () => {
+    const booked = (startsInHours = 48) =>
+      createAppointment(prisma, { business, customerId, status: AppointmentStatus.BOOKED, startsInHours });
+
+    it('finds a booking by the reservation number the customer quotes', async () => {
+      const wanted = await booked();
+      await booked(72);
+      const hex = wanted.id.replace(/-/g, '').slice(0, 8).toUpperCase();
+
+      for (const q of [`${hex.slice(0, 4)}-${hex.slice(4)}`, hex, `No. ${hex.slice(0, 4)}-${hex.slice(4)}`]) {
+        const page = await appointments.listForAdmin(AS_ADMIN(), { q });
+        expect(page.appointments.map((a) => a.id)).toEqual([wanted.id]);
+      }
+    });
+
+    it("finds a booking by the customer's email, the shop's name or the service's", async () => {
+      const appointment = await booked();
+      await prisma.businessProfile.update({ where: { id: business.businessId }, data: { name: 'Findable Barbers 249' } });
+      const customer = await prisma.user.findUniqueOrThrow({ where: { id: customerId }, select: { email: true } });
+      const service = await prisma.service.findUniqueOrThrow({ where: { id: business.serviceId }, select: { name: true } });
+
+      for (const q of [customer.email.slice(0, 10), 'findable barbers', service.name.toUpperCase()]) {
+        const page = await appointments.listForAdmin(AS_ADMIN(), { q });
+        expect(page.appointments.map((a) => a.id)).toEqual([appointment.id]);
+      }
+      expect((await appointments.listForAdmin(AS_ADMIN(), { q: 'nothing-like-this-249' })).total).toBe(0);
+    });
+
+    it('reads the latest start first, or the soonest when asked', async () => {
+      const soon = await booked(24);
+      const later = await booked(96);
+
+      const latest = await appointments.listForAdmin(AS_ADMIN(), {});
+      expect(latest.appointments.map((a) => a.id)).toEqual([later.id, soon.id]);
+      const soonest = await appointments.listForAdmin(AS_ADMIN(), { sort: AppointmentOrder.SOONEST });
+      expect(soonest.appointments.map((a) => a.id)).toEqual([soon.id, later.id]);
+    });
+
+    it('opens one booking with its payment, ledger lines, review and tickets', async () => {
+      const appointment = await createAppointment(prisma, {
+        business,
+        customerId,
+        status: AppointmentStatus.COMPLETED,
+        verified: true,
+      });
+      await prisma.appointment.update({
+        where: { id: appointment.id },
+        data: { depositPaidAt: new Date(), paymentProviderReferenceId: 'MTN-REF-249', completedAt: new Date() },
+      });
+      await prisma.ledgerEntry.createMany({
+        data: [
+          { businessId: business.businessId, appointmentId: appointment.id, type: LedgerEntryType.DEPOSIT_RECEIVED, amountMinor: 900, currency: 'USD' },
+          { businessId: business.businessId, appointmentId: appointment.id, type: LedgerEntryType.PLATFORM_FEE, amountMinor: -450, currency: 'USD' },
+        ],
+      });
+      await prisma.review.create({
+        data: {
+          appointmentId: appointment.id,
+          customerId,
+          businessId: business.businessId,
+          locationId: business.locationId,
+          rating: 4,
+          comment: 'Good.',
+        },
+      });
+      const ticket = await prisma.ticket.create({
+        data: {
+          reference: 'TKT-249001',
+          reporterId: customerId,
+          reporterType: 'CUSTOMER',
+          appointmentId: appointment.id,
+          category: TicketCategory.APPOINTMENT_DISPUTE,
+          subject: 'About my booking',
+          status: TicketStatus.OPEN,
+        },
+      });
+
+      const one = await appointments.findOneForAdmin(AS_ADMIN(), appointment.id);
+      expect(one.id).toBe(appointment.id);
+      expect(one.paymentProviderReferenceId).toBe('MTN-REF-249');
+      expect(one.ledger.map((l) => [l.type, l.amountMinor])).toEqual([
+        [LedgerEntryType.DEPOSIT_RECEIVED, 900],
+        [LedgerEntryType.PLATFORM_FEE, -450],
+      ]);
+      expect(one.review).toMatchObject({ rating: 4, comment: 'Good.', hiddenAt: null });
+      expect(one.reviewRating).toBe(4);
+      expect(one.tickets.map((t) => t.reference)).toEqual([ticket.reference]);
+      expect(one.ticketCount).toBe(1);
+      expect(one.exchangeRateUsed).toBe(650);
+      expect(one.locationAddress).toBeTruthy();
+    });
+
+    it('404s on a booking that does not exist, and refuses anyone but an admin', async () => {
+      await expect(
+        appointments.findOneForAdmin(AS_ADMIN(), '00000000-0000-4000-8000-000000000000'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      const appointment = await booked();
+      await expect(
+        appointments.findOneForAdmin({ role: UserRole.CUSTOMER }, appointment.id),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
   });
 });

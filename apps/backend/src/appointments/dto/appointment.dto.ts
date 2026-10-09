@@ -1,4 +1,12 @@
-import { AppointmentStatus, CancelledBy, Prisma } from '@prisma/client';
+import {
+  AppointmentStatus,
+  CancelledBy,
+  LedgerEntryType,
+  MobileMoneyProvider,
+  Prisma,
+  TicketStatus,
+  VerificationMethod,
+} from '@prisma/client';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import {
   APPOINTMENT_SELECT,
@@ -201,13 +209,26 @@ export class AdminAppointmentDto {
   status!: AppointmentStatus;
   startTime!: string;
   endTime!: string;
+  /** When it was booked. */
+  createdAt!: string;
+  /** People booked together (§186). */
+  quantity!: number;
 
   currency!: string;
+  /** The full price when booked; null on bookings older than the snapshot. */
+  servicePriceMinor!: number | null;
   depositAmountMinor!: number;
   platformFeeAmountMinor!: number;
   businessAmountMinor!: number;
   /** Derived from `depositPaidAt`, so a console need not know the column. */
   depositPaid!: boolean;
+  depositPaidAt!: string | null;
+
+  /** The steps it went through (§249). */
+  verifiedAt!: string | null;
+  verificationMethod!: VerificationMethod | null;
+  completedAt!: string | null;
+  noShowAt!: string | null;
 
   cancelledAt!: string | null;
   cancelledBy!: CancelledBy | null;
@@ -217,11 +238,20 @@ export class AdminAppointmentDto {
 
   customerId!: string;
   customerEmail!: string;
+  customerDisplayName!: string | null;
   serviceName!: string;
+  /** The service's first photo, for the row (§249). */
+  serviceImageUrl!: string | null;
   locationId!: string;
   locationName!: string;
   businessId!: string;
   businessName!: string | null;
+  businessLogoUrl!: string | null;
+
+  /** The stars the customer gave it, when they reviewed it. */
+  reviewRating!: number | null;
+  /** Support tickets raised about it. */
+  ticketCount!: number;
 
   /**
    * Whether reclassifying would do anything at all.
@@ -239,4 +269,63 @@ export class AdminAppointmentPageDto {
   limit!: number;
   offset!: number;
   appointments!: AdminAppointmentDto[];
+}
+
+export class AdminAppointmentTicketDto {
+  id!: string;
+  reference!: string;
+  subject!: string;
+  status!: TicketStatus;
+  createdAt!: string;
+}
+
+/** A line the ledger wrote for the booking: what moved, which way, when (§25). */
+export class AdminAppointmentLedgerDto {
+  id!: string;
+  type!: LedgerEntryType;
+  /** Signed: what the shop gains is positive, what it gives up negative. */
+  amountMinor!: number;
+  currency!: string;
+  createdAt!: string;
+  /** Set once the line has been paid out to the shop. */
+  payoutId!: string | null;
+}
+
+export class AdminAppointmentReviewDto {
+  id!: string;
+  rating!: number;
+  comment!: string | null;
+  hiddenAt!: string | null;
+  createdAt!: string;
+}
+
+/**
+ * One booking, with everything a dispute turns on (§249): the price it was
+ * booked at, the payment and its operator, who checked the customer in and
+ * how, who cancelled, the ledger's lines, the review and the tickets.
+ */
+export class AdminAppointmentDetailDto extends AdminAppointmentDto {
+  unitPriceMinor!: number | null;
+  discountPercent!: number | null;
+  listPriceMinor!: number | null;
+  locationAddress!: string;
+  /** The branch's own number, else the shop's. */
+  shopPhone!: string | null;
+
+  paymentProvider!: MobileMoneyProvider | null;
+  paymentProviderReferenceId!: string | null;
+  paymentInitiatedAt!: string | null;
+  providerCurrency!: string | null;
+  providerAmountMinor!: number | null;
+  exchangeRateUsed!: number | null;
+
+  verifiedByEmail!: string | null;
+  manualVerificationNote!: string | null;
+
+  cancelledByEmail!: string | null;
+  cancellationTicketReference!: string | null;
+
+  tickets!: AdminAppointmentTicketDto[];
+  ledger!: AdminAppointmentLedgerDto[];
+  review!: AdminAppointmentReviewDto | null;
 }

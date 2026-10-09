@@ -89,6 +89,100 @@ export const MAX_VERIFICATION_CODE_SENDS = 5;
 
 
 
+/**
+ * What the console's list of bookings reads for each row (§95, §249): the
+ * booking, its money and its steps, who booked, the shop, the branch, the
+ * service and its first photo, and whether it was reviewed.
+ */
+const ADMIN_APPOINTMENT_SELECT = {
+  id: true,
+  status: true,
+  startTime: true,
+  endTime: true,
+  createdAt: true,
+  quantity: true,
+  currency: true,
+  servicePriceMinor: true,
+  depositAmountMinor: true,
+  platformFeeAmountMinor: true,
+  businessAmountMinor: true,
+  depositPaidAt: true,
+  verifiedAt: true,
+  verificationMethod: true,
+  completedAt: true,
+  noShowAt: true,
+  cancelledAt: true,
+  cancelledBy: true,
+  cancellationReason: true,
+  cancellationTicketId: true,
+  customer: { select: { id: true, email: true, displayName: true } },
+  service: {
+    select: {
+      name: true,
+      images: { orderBy: { displayOrder: 'asc' }, take: 1, select: { url: true } },
+    },
+  },
+  location: {
+    select: {
+      id: true,
+      name: true,
+      address: true,
+      phone: true,
+      businessId: true,
+      business: { select: { name: true, logoUrl: true, phone: true } },
+    },
+  },
+  review: { select: { rating: true } },
+  _count: { select: { tickets: true } },
+} satisfies Prisma.AppointmentSelect;
+
+type AdminAppointmentRow = Prisma.AppointmentGetPayload<{ select: typeof ADMIN_APPOINTMENT_SELECT }>;
+
+const toAdminAppointment = (appointment: AdminAppointmentRow) => ({
+  id: appointment.id,
+  status: appointment.status,
+  startTime: appointment.startTime,
+  endTime: appointment.endTime,
+  createdAt: appointment.createdAt,
+  quantity: appointment.quantity,
+  currency: appointment.currency,
+  servicePriceMinor: appointment.servicePriceMinor,
+  depositAmountMinor: appointment.depositAmountMinor,
+  platformFeeAmountMinor: appointment.platformFeeAmountMinor,
+  businessAmountMinor: appointment.businessAmountMinor,
+  depositPaid: appointment.depositPaidAt !== null,
+  depositPaidAt: appointment.depositPaidAt,
+  verifiedAt: appointment.verifiedAt,
+  verificationMethod: appointment.verificationMethod,
+  completedAt: appointment.completedAt,
+  noShowAt: appointment.noShowAt,
+  cancelledAt: appointment.cancelledAt,
+  cancelledBy: appointment.cancelledBy,
+  cancellationReason: appointment.cancellationReason,
+  cancellationTicketId: appointment.cancellationTicketId,
+  customerId: appointment.customer.id,
+  customerEmail: appointment.customer.email,
+  customerDisplayName: appointment.customer.displayName,
+  serviceName: appointment.service.name,
+  serviceImageUrl: appointment.service.images[0]?.url ?? null,
+  locationId: appointment.location.id,
+  locationName: appointment.location.name,
+  businessId: appointment.location.businessId,
+  businessName: appointment.location.business.name,
+  businessLogoUrl: appointment.location.business.logoUrl,
+  reviewRating: appointment.review?.rating ?? null,
+  ticketCount: appointment._count.tickets,
+  /**
+   * Whether reclassifying would do anything. Mirrors the PATCH exactly:
+   * a COMPLETED appointment and one already blamed on the business are
+   * both refused, and with no deposit taken there is nothing to refund.
+   */
+  canReclassify:
+    appointment.status === AppointmentStatus.CANCELLED &&
+    appointment.cancelledBy !== CancelledBy.BUSINESS &&
+    appointment.depositPaidAt !== null,
+});
+
 @Injectable()
 export class AppointmentsService {
   private readonly logger = new Logger(AppointmentsService.name);
@@ -1310,6 +1404,13 @@ export class AppointmentsService {
 
     const limit = query.limit ?? 25;
     const offset = query.offset ?? 0;
+    const find = query.q?.trim();
+    // A reservation number is the first eight hex characters of the id,
+    // shown as "3F2A-1C9B" (§213) — what a customer quotes in a dispute.
+    const number = find && /^(no\.?\s*)?[0-9a-f]{4}-?[0-9a-f]{4}$/i.test(find)
+      ? find.replace(/^no\.?\s*/i, '').replace('-', '').toLowerCase()
+      : null;
+    const contains = find ? { contains: find, mode: Prisma.QueryMode.insensitive } : undefined;
 
     const where: Prisma.AppointmentWhereInput = {
       ...(query.status ? { status: query.status } : {}),
@@ -1323,40 +1424,28 @@ export class AppointmentsService {
             depositPaidAt: { not: null },
           }
         : {}),
+      ...(contains
+        ? {
+            OR: [
+              ...(number ? [{ id: { startsWith: number } }] : []),
+              { customer: { email: contains } },
+              { customer: { displayName: contains } },
+              { service: { name: contains } },
+              { location: { name: contains } },
+              { location: { business: { name: contains } } },
+            ],
+          }
+        : {}),
     };
 
     const [total, appointments] = await Promise.all([
       this.prisma.appointment.count({ where }),
       this.prisma.appointment.findMany({
         where,
-        orderBy: { startTime: 'desc' },
+        orderBy: [{ startTime: query.sort === AppointmentOrder.SOONEST ? 'asc' : 'desc' }, { id: 'asc' }],
         take: limit,
         skip: offset,
-        select: {
-          id: true,
-          status: true,
-          startTime: true,
-          endTime: true,
-          currency: true,
-          depositAmountMinor: true,
-          platformFeeAmountMinor: true,
-          businessAmountMinor: true,
-          depositPaidAt: true,
-          cancelledAt: true,
-          cancelledBy: true,
-          cancellationReason: true,
-          cancellationTicketId: true,
-          customer: { select: { id: true, email: true, displayName: true } },
-          service: { select: { name: true } },
-          location: {
-            select: {
-              id: true,
-              name: true,
-              businessId: true,
-              business: { select: { name: true } },
-            },
-          },
-        },
+        select: ADMIN_APPOINTMENT_SELECT,
       }),
     ]);
 
@@ -1364,37 +1453,81 @@ export class AppointmentsService {
       total,
       limit,
       offset,
-      appointments: appointments.map((appointment) => ({
-        id: appointment.id,
-        status: appointment.status,
-        startTime: appointment.startTime,
-        endTime: appointment.endTime,
-        currency: appointment.currency,
-        depositAmountMinor: appointment.depositAmountMinor,
-        platformFeeAmountMinor: appointment.platformFeeAmountMinor,
-        businessAmountMinor: appointment.businessAmountMinor,
-        depositPaid: appointment.depositPaidAt !== null,
-        cancelledAt: appointment.cancelledAt,
-        cancelledBy: appointment.cancelledBy,
-        cancellationReason: appointment.cancellationReason,
-        cancellationTicketId: appointment.cancellationTicketId,
-        customerId: appointment.customer.id,
-        customerEmail: appointment.customer.email,
-        serviceName: appointment.service.name,
-        locationId: appointment.location.id,
-        locationName: appointment.location.name,
-        businessId: appointment.location.businessId,
-        businessName: appointment.location.business.name,
-        /**
-         * Whether reclassifying would do anything. Mirrors the PATCH exactly:
-         * a COMPLETED appointment and one already blamed on the business are
-         * both refused, and with no deposit taken there is nothing to refund.
-         */
-        canReclassify:
-          appointment.status === AppointmentStatus.CANCELLED &&
-          appointment.cancelledBy !== CancelledBy.BUSINESS &&
-          appointment.depositPaidAt !== null,
-      })),
+      appointments: appointments.map(toAdminAppointment),
+    };
+  }
+
+  /**
+   * One booking, with everything a dispute turns on (§249): how it was paid
+   * and through which operator, who checked the customer in and how, who
+   * cancelled and why, the money the ledger moved for it, its review, and the
+   * tickets raised about it.
+   */
+  async findOneForAdmin(actor: { role: UserRole | string }, appointmentId: string) {
+    if (actor.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only an administrator can read this appointment.');
+    }
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      select: {
+        ...ADMIN_APPOINTMENT_SELECT,
+        unitPriceMinor: true,
+        discountPercent: true,
+        listPriceMinor: true,
+        paymentProvider: true,
+        paymentProviderReferenceId: true,
+        paymentInitiatedAt: true,
+        providerCurrency: true,
+        providerAmountMinor: true,
+        exchangeRateUsed: true,
+        verifiedBy: { select: { email: true } },
+        manualVerificationNote: true,
+        cancelledByUser: { select: { email: true } },
+        cancellationTicket: { select: { id: true, reference: true } },
+        tickets: {
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, reference: true, subject: true, status: true, createdAt: true },
+        },
+        ledgerEntries: {
+          orderBy: { createdAt: 'asc' },
+          select: { id: true, type: true, amountMinor: true, currency: true, createdAt: true, payoutId: true },
+        },
+        review: { select: { id: true, rating: true, comment: true, hiddenAt: true, createdAt: true } },
+      },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found.');
+
+    const {
+      verifiedBy,
+      cancelledByUser,
+      cancellationTicket,
+      tickets,
+      ledgerEntries,
+      review,
+      exchangeRateUsed,
+      ...rest
+    } = appointment;
+    return {
+      ...toAdminAppointment({ ...rest, review }),
+      unitPriceMinor: rest.unitPriceMinor,
+      discountPercent: rest.discountPercent,
+      listPriceMinor: rest.listPriceMinor,
+      locationAddress: rest.location.address,
+      // The branch's own number when it has one, else the shop's (§5).
+      shopPhone: rest.location.phone ?? rest.location.business.phone,
+      paymentProvider: rest.paymentProvider,
+      paymentProviderReferenceId: rest.paymentProviderReferenceId,
+      paymentInitiatedAt: rest.paymentInitiatedAt,
+      providerCurrency: rest.providerCurrency,
+      providerAmountMinor: rest.providerAmountMinor,
+      exchangeRateUsed: exchangeRateUsed === null ? null : Number(exchangeRateUsed),
+      verifiedByEmail: verifiedBy?.email ?? null,
+      manualVerificationNote: rest.manualVerificationNote,
+      cancelledByEmail: cancelledByUser?.email ?? null,
+      cancellationTicketReference: cancellationTicket?.reference ?? null,
+      tickets,
+      ledger: ledgerEntries,
+      review,
     };
   }
 

@@ -433,12 +433,22 @@ export type AdminAppointment = components['schemas']['AdminAppointmentDto'];
 
 export type AdminAppointmentPage = components['schemas']['AdminAppointmentPageDto'];
 
+export type AdminAppointmentDetail = components['schemas']['AdminAppointmentDetailDto'];
+
 export const listAdminAppointments = (params: {
   status?: AppointmentStatus;
   cancelledBy?: CancelledBy;
   reclassifiable?: string;
+  businessId?: string;
+  customerId?: string;
+  q?: string;
+  sort?: 'soonest' | 'latest';
   limit?: number;
+  offset?: number;
 }) => api<AdminAppointmentPage>('/admin/appointments', { query: params });
+
+/** One booking, with its payment, steps, ledger lines, review and tickets (§249). */
+export const getAdminAppointment = (id: string) => api<AdminAppointmentDetail>(`/admin/appointments/${id}`);
 
 /**
  * Says a cancellation was the business's fault, which **moves money**: the

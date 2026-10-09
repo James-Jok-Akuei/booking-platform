@@ -22,6 +22,7 @@ import { ListAdminAppointmentsDto } from './dto/list-admin-appointments.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
+  AdminAppointmentDetailDto,
   AdminAppointmentPageDto,
   AppointmentDto,
 } from './dto/appointment.dto';
@@ -29,10 +30,9 @@ import {
 /**
  * Dispute resolution. API-only, like every other admin surface here (§16.9).
  *
- * One route, and deliberately narrow: an admin may say a cancellation was the
- * business's responsibility, which triggers the refund §25 requires. They
- * cannot edit amounts, reclassify in the other direction, or reach anything
- * else about an appointment from here.
+ * Deliberately narrow: an admin may read any booking (§249) and say a
+ * cancellation was the business's responsibility, which triggers the refund
+ * §25 requires. They cannot edit amounts or reclassify in the other direction.
  */
 @Controller('admin/appointments')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -52,6 +52,16 @@ export class AdminAppointmentsController {
     @Query() query: ListAdminAppointmentsDto,
   ) {
     return this.appointments.listForAdmin(user, query);
+  }
+
+  /** One booking, with its payment, steps, ledger lines, review and tickets (§249). */
+  @Get(':id')
+  @ApiOkResponse({ type: AdminAppointmentDetailDto })
+  findOne(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.appointments.findOneForAdmin(user, id);
   }
 
   @Patch(':id/business-cancellation')

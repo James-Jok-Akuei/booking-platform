@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 import { AppointmentStatus, CancelledBy } from '@prisma/client';
+import { AppointmentOrder } from './list-appointments.dto';
 
 /**
  * What an admin is looking for in the appointment list (§95).
@@ -30,6 +31,20 @@ export class ListAdminAppointmentsDto {
   @IsOptional()
   @IsUUID()
   customerId?: string;
+
+  /**
+   * The reservation number the customer quotes ("3F2A-1C9B"), or part of the
+   * customer's email or name, the shop's, branch's or service's name (§249).
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
+
+  /** Latest start first unless asked otherwise (§249). */
+  @IsOptional()
+  @IsEnum(AppointmentOrder, { message: `sort must be one of: ${Object.values(AppointmentOrder).join(', ')}` })
+  sort?: AppointmentOrder;
 
   @IsOptional()
   @Type(() => Number)

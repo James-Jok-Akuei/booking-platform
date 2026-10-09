@@ -1638,6 +1638,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/appointments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One booking, with its payment, steps, ledger lines, review and tickets (§249). */
+        get: operations["AdminAppointmentsController_findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/appointments/{id}/business-cancellation": {
         parameters: {
             query?: never;
@@ -4267,12 +4284,25 @@ export interface components {
             status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
             startTime: string;
             endTime: string;
+            /** @description When it was booked. */
+            createdAt: string;
+            /** @description People booked together (§186). */
+            quantity: number;
             currency: string;
+            /** @description The full price when booked; null on bookings older than the snapshot. */
+            servicePriceMinor: number | null;
             depositAmountMinor: number;
             platformFeeAmountMinor: number;
             businessAmountMinor: number;
             /** @description Derived from `depositPaidAt`, so a console need not know the column. */
             depositPaid: boolean;
+            depositPaidAt: string | null;
+            /** @description The steps it went through (§249). */
+            verifiedAt: string | null;
+            /** @enum {string|null} */
+            verificationMethod: "CODE" | "MANUAL" | null;
+            completedAt: string | null;
+            noShowAt: string | null;
             cancelledAt: string | null;
             /** @enum {string|null} */
             cancelledBy: "BUSINESS" | "CUSTOMER" | "SYSTEM_EXPIRY" | null;
@@ -4281,11 +4311,19 @@ export interface components {
             cancellationTicketId: string | null;
             customerId: string;
             customerEmail: string;
+            customerDisplayName: string | null;
             serviceName: string;
+            /** @description The service's first photo, for the row (§249). */
+            serviceImageUrl: string | null;
             locationId: string;
             locationName: string;
             businessId: string;
             businessName: string | null;
+            businessLogoUrl: string | null;
+            /** @description The stars the customer gave it, when they reviewed it. */
+            reviewRating: number | null;
+            /** @description Support tickets raised about it. */
+            ticketCount: number;
             /**
              * @description Whether reclassifying would do anything at all.
              *
@@ -4301,6 +4339,108 @@ export interface components {
             limit: number;
             offset: number;
             appointments: components["schemas"]["AdminAppointmentDto"][];
+        };
+        AdminAppointmentTicketDto: {
+            id: string;
+            reference: string;
+            subject: string;
+            /** @enum {string} */
+            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            createdAt: string;
+        };
+        AdminAppointmentLedgerDto: {
+            id: string;
+            /** @enum {string} */
+            type: "DEPOSIT_RECEIVED" | "PLATFORM_FEE" | "DEPOSIT_REFUND" | "PLATFORM_FEE_REVERSAL" | "GATEWAY_FEE_DEBIT" | "ADJUSTMENT";
+            /** @description Signed: what the shop gains is positive, what it gives up negative. */
+            amountMinor: number;
+            currency: string;
+            createdAt: string;
+            /** @description Set once the line has been paid out to the shop. */
+            payoutId: string | null;
+        };
+        AdminAppointmentReviewDto: {
+            id: string;
+            rating: number;
+            comment: string | null;
+            hiddenAt: string | null;
+            createdAt: string;
+        };
+        AdminAppointmentDetailDto: {
+            id: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            startTime: string;
+            endTime: string;
+            /** @description When it was booked. */
+            createdAt: string;
+            /** @description People booked together (§186). */
+            quantity: number;
+            currency: string;
+            /** @description The full price when booked; null on bookings older than the snapshot. */
+            servicePriceMinor: number | null;
+            depositAmountMinor: number;
+            platformFeeAmountMinor: number;
+            businessAmountMinor: number;
+            /** @description Derived from `depositPaidAt`, so a console need not know the column. */
+            depositPaid: boolean;
+            depositPaidAt: string | null;
+            /** @description The steps it went through (§249). */
+            verifiedAt: string | null;
+            /** @enum {string|null} */
+            verificationMethod: "CODE" | "MANUAL" | null;
+            completedAt: string | null;
+            noShowAt: string | null;
+            cancelledAt: string | null;
+            /** @enum {string|null} */
+            cancelledBy: "BUSINESS" | "CUSTOMER" | "SYSTEM_EXPIRY" | null;
+            cancellationReason: string | null;
+            /** @description The support ticket a reclassification was recorded against, if any. */
+            cancellationTicketId: string | null;
+            customerId: string;
+            customerEmail: string;
+            customerDisplayName: string | null;
+            serviceName: string;
+            /** @description The service's first photo, for the row (§249). */
+            serviceImageUrl: string | null;
+            locationId: string;
+            locationName: string;
+            businessId: string;
+            businessName: string | null;
+            businessLogoUrl: string | null;
+            /** @description The stars the customer gave it, when they reviewed it. */
+            reviewRating: number | null;
+            /** @description Support tickets raised about it. */
+            ticketCount: number;
+            /**
+             * @description Whether reclassifying would do anything at all.
+             *
+             *     Mirrors the PATCH exactly: a COMPLETED appointment and one already blamed
+             *     on the business are both refused, and with no deposit taken there is
+             *     nothing to refund. Published so the console can stop offering an action the
+             *     server will decline (§118).
+             */
+            canReclassify: boolean;
+            unitPriceMinor: number | null;
+            discountPercent: number | null;
+            listPriceMinor: number | null;
+            locationAddress: string;
+            /** @description The branch's own number, else the shop's. */
+            shopPhone: string | null;
+            /** @enum {string|null} */
+            paymentProvider: "MTN_MOMO" | "AIRTEL_MONEY" | null;
+            paymentProviderReferenceId: string | null;
+            paymentInitiatedAt: string | null;
+            providerCurrency: string | null;
+            providerAmountMinor: number | null;
+            exchangeRateUsed: number | null;
+            verifiedByEmail: string | null;
+            manualVerificationNote: string | null;
+            cancelledByEmail: string | null;
+            cancellationTicketReference: string | null;
+            tickets: components["schemas"]["AdminAppointmentTicketDto"][];
+            ledger: components["schemas"]["AdminAppointmentLedgerDto"][];
+            review: components["schemas"]["AdminAppointmentReviewDto"] | null;
         };
         ReclassifyCancellationDto: {
             reason: string;
@@ -11745,6 +11885,13 @@ export interface operations {
                 reclassifiable?: string;
                 businessId?: string;
                 customerId?: string;
+                /**
+                 * @description The reservation number the customer quotes ("3F2A-1C9B"), or part of the
+                 *     customer's email or name, the shop's, branch's or service's name (§249).
+                 */
+                q?: string;
+                /** @description Latest start first unless asked otherwise (§249). */
+                sort?: "soonest" | "latest";
                 limit?: number;
                 offset?: number;
             };
@@ -11760,6 +11907,63 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminAppointmentPageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminAppointmentsController_findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAppointmentDetailDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
