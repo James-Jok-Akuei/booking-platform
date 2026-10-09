@@ -17,6 +17,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import {
   ADJUSTMENT_INCLUDE,
+  ADMIN_LEDGER_INCLUDE,
   HeldTotalsDto,
 } from './dto/ledger-response.dto';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
@@ -492,17 +493,30 @@ export class LedgerService {
       appointmentId?: string;
       payoutId?: string;
       type?: LedgerEntryType;
+      q?: string;
+      from?: string;
+      to?: string;
       limit?: number;
       offset?: number;
     },
   ) {
     this.assertAdmin(actor);
 
+    const find = query.q?.trim();
     const where: Prisma.LedgerEntryWhereInput = {
       ...(query.businessId ? { businessId: query.businessId } : {}),
       ...(query.appointmentId ? { appointmentId: query.appointmentId } : {}),
       ...(query.payoutId ? { payoutId: query.payoutId } : {}),
       ...(query.type ? { type: query.type } : {}),
+      ...(find ? { businessProfile: { name: { contains: find, mode: Prisma.QueryMode.insensitive } } } : {}),
+      ...(query.from || query.to
+        ? {
+            createdAt: {
+              ...(query.from ? { gte: new Date(query.from) } : {}),
+              ...(query.to ? { lt: new Date(query.to) } : {}),
+            },
+          }
+        : {}),
     };
     const limit = query.limit ?? 50;
     const offset = query.offset ?? 0;
@@ -513,9 +527,10 @@ export class LedgerService {
         where,
         // Newest first: reading a ledger almost always starts from "what just
         // happened", not from the beginning of time.
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
         take: limit,
         skip: offset,
+        include: ADMIN_LEDGER_INCLUDE,
       }),
       // Over the WHOLE filter, not the page. A total that changed when you
       // turned the page would be worse than no total.
@@ -554,16 +569,22 @@ export class LedgerService {
       businessId?: string;
       appointmentId?: string;
       ticketId?: string;
+      state?: 'outstanding' | 'executed';
       limit?: number;
       offset?: number;
     },
   ) {
     this.assertAdmin(actor);
 
-    const where: Prisma.BillingAdjustmentWhereInput = {
+    const scope: Prisma.BillingAdjustmentWhereInput = {
       ...(query.businessId ? { businessId: query.businessId } : {}),
       ...(query.appointmentId ? { appointmentId: query.appointmentId } : {}),
       ...(query.ticketId ? { ticketId: query.ticketId } : {}),
+    };
+    const where: Prisma.BillingAdjustmentWhereInput = {
+      ...scope,
+      ...(query.state === 'outstanding' ? { settledAt: null } : {}),
+      ...(query.state === 'executed' ? { settledAt: { not: null } } : {}),
     };
     const limit = query.limit ?? 50;
     const offset = query.offset ?? 0;
@@ -578,7 +599,8 @@ export class LedgerService {
         skip: offset,
         include: ADJUSTMENT_INCLUDE,
       }),
-      this.prisma.billingAdjustment.count({ where: { ...where, settledAt: null } }),
+      // Over the scope, whatever the state filter: the number still waiting.
+      this.prisma.billingAdjustment.count({ where: { ...scope, settledAt: null } }),
     ]);
 
     return { total, limit, offset, outstanding, adjustments };

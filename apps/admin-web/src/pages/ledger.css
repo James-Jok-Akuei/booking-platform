@@ -1,0 +1,194 @@
+/* Money (§251): our figure beside the operator's, then the adjustments and
+   the ledger as cards. The words are the domain's (§85); the legend says who
+   gained or lost (§86). */
+
+.lg { display: flex; flex-direction: column; }
+
+/* ---- our figure beside the operator's ---- */
+
+.lg-recon {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  padding: 22px;
+  border-radius: 28px;
+  color: #fff;
+  background:
+    radial-gradient(420px 220px at 100% 0%, rgba(253, 117, 17, 0.28), transparent 70%),
+    radial-gradient(360px 240px at 0% 120%, rgba(120, 170, 120, 0.2), transparent 70%),
+    linear-gradient(160deg, #2b352c, #1d251d);
+  box-shadow: 0 30px 60px -30px rgba(31, 42, 31, 0.75);
+  animation: rise-in 480ms var(--ease) both;
+}
+.lg-k { font-size: 12.5px; font-weight: 700; color: rgba(255, 255, 255, 0.62); letter-spacing: 0.01em; }
+.lg-ours { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 6px 6px 6px 4px; }
+.lg-big { font-size: clamp(30px, 3.4vw, 46px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.lg-sub { font-size: 12.5px; color: rgba(255, 255, 255, 0.58); }
+.lg-warn { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: 6px; padding: 5px 10px; border-radius: 99px; background: rgba(255, 200, 87, 0.16); color: #ffd98a; font-size: 12px; font-weight: 650; }
+
+.lg-theirs { position: relative; display: grid; grid-template-rows: 1fr 1fr; gap: 10px; min-width: 0; }
+.lg-wallet { display: flex; flex-direction: column; justify-content: center; gap: 3px; padding: 12px 14px; border-radius: 18px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.08); min-width: 0; }
+.lg-wallet strong { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lg-wallet strong.is-none { color: rgba(255, 255, 255, 0.45); }
+.lg-sandbox { position: absolute; top: -8px; right: -6px; padding: 3px 9px; border-radius: 99px; background: #ffcb05; color: #3b3000; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; transform: rotate(4deg); box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.6); }
+
+.lg-verdict { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 16px; border-radius: 18px; background: rgba(255, 255, 255, 0.95); color: var(--ink); min-width: 0; }
+.lg-verdict > svg { margin-bottom: 4px; }
+.lg-verdict strong { font-size: 16px; letter-spacing: -0.01em; }
+.lg-verdict > span { font-size: 12.5px; color: var(--ink-2); line-height: 1.45; }
+.lg-verdict.tone-ok > svg { color: var(--ok); }
+.lg-verdict.tone-ok strong { color: var(--ok-deep); }
+.lg-verdict.tone-warn { background: #fff6e0; }
+.lg-verdict.tone-warn > svg, .lg-verdict.tone-warn strong { color: #9a5d00; }
+.lg-verdict.tone-muted > svg { color: var(--muted); }
+.lg-again { margin-top: auto; min-height: 32px; padding: 0 11px; gap: 6px; border-radius: 10px; font-size: 12.5px; }
+.lg-spin { animation: spin 900ms linear infinite; }
+
+/* ---- the two halves ---- */
+
+.lg-tabs { display: flex; gap: 8px; padding-top: 6px; }
+.lg-tabs button { min-height: 44px; padding: 0 16px; gap: 8px; border-radius: 14px; font-size: 14.5px; font-weight: 700; color: var(--ink-2); background: var(--panel); }
+.lg-tabs button > span { font-size: 12px; font-weight: 700; color: var(--muted); }
+.lg-tabs button > span.is-hot { padding: 2px 8px; border-radius: 99px; background: var(--accent); color: #fff; }
+.lg-tabs button.is-on, .lg-tabs button.is-on:hover:not(:disabled) { background: var(--night); border-color: var(--night); color: #fff; }
+.lg-tabs button.is-on svg { color: #ffb08a; }
+.lg-tabs button.is-on > span { color: rgba(255, 255, 255, 0.66); }
+.lg-tabs button.is-on > span.is-hot { background: var(--accent); color: #fff; }
+
+.lg-card { border-radius: 24px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.06); box-shadow: var(--shadow-sm); overflow: hidden; animation: rise-in 420ms var(--ease) both; }
+.lg-card-top { display: flex; flex-direction: column; gap: 10px; padding: 14px 14px 0; border-bottom: 1px solid var(--line); }
+.lg-hint { margin: 0 0 12px 4px; font-size: 12.5px; color: var(--muted); font-weight: 550; }
+
+.lg-seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 14px; background: var(--sunken-2); align-self: flex-start; }
+.lg-seg button { min-height: 34px; padding: 0 12px; gap: 7px; border: none; border-radius: 10px; background: transparent; font-size: 13px; color: var(--ink-2); }
+.lg-seg button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.6); border: none; }
+.lg-seg button.is-on, .lg-seg button.is-on:hover:not(:disabled) { background: var(--panel); color: var(--ink); box-shadow: var(--shadow-xs); }
+.lg-seg button > span { font-size: 11.5px; font-weight: 800; color: var(--muted); }
+.lg-seg button > span.is-hot { min-width: 20px; height: 20px; padding: 0 6px; display: grid; place-items: center; border-radius: 99px; background: var(--accent); color: #fff; }
+
+.lg-error { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 18px; background: var(--danger-soft); color: var(--danger); font-size: 13px; font-weight: 600; }
+.lg-skel { height: 220px; margin: 14px; border-radius: 18px; }
+.lg-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 44px 16px 40px; }
+.lg-empty > span { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 22px; background: var(--sunken); color: var(--muted); margin-bottom: 4px; }
+.lg-empty strong { font-size: 15.5px; }
+.lg-empty p { margin: 0; color: var(--muted); max-width: 48ch; }
+
+/* ---- adjustments ---- */
+
+.lg-adjs { list-style: none; margin: 0; padding: 0; }
+.lg-adjs li {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) 150px 210px;
+  gap: 18px;
+  align-items: center;
+  padding: 16px 18px 16px 22px;
+  animation: rise-in 340ms var(--ease) both;
+}
+.lg-adjs li + li { border-top: 1px solid var(--line); }
+.lg-adjs li::before { content: ''; position: absolute; left: 8px; top: 18px; bottom: 18px; width: 3.5px; border-radius: 4px; background: var(--accent); }
+.lg-adjs li.is-done::before { background: var(--ok); }
+.lg-adj-who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.lg-adj-who .shop-mark { flex: none; }
+.lg-adj-who > span:not(.shop-mark) { display: flex; flex-direction: column; min-width: 0; }
+.lg-adj-who strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lg-adj-who em { font-style: normal; font-size: 12.5px; font-weight: 650; color: var(--accent-deep); }
+.lg-adj-why { min-width: 0; }
+.lg-adj-why p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; }
+.lg-adj-why span { display: block; margin-top: 3px; font-size: 12px; color: var(--muted); font-weight: 550; }
+.lg-adj-why a { color: var(--ink-2); font-weight: 700; }
+.lg-adj-amount { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.lg-adj-amount strong { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lg-adj-amount span { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.is-pos > strong, .is-pos > b, strong.is-pos { color: var(--ok-deep); }
+.is-neg > strong, .is-neg > b, strong.is-neg { color: var(--danger); }
+.lg-adj-state { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.lg-adj-state span:not(.pill) { font-size: 12px; color: var(--muted); font-weight: 600; overflow-wrap: anywhere; }
+.lg-adj-state button { min-height: 40px; gap: 7px; border-radius: 12px; }
+
+/* ---- the ledger ---- */
+
+.lg { --lcols: 92px minmax(0, 1fr) minmax(0, 1.25fr) 150px 120px; }
+.lg-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.lg-search { display: flex; align-items: center; gap: 9px; flex: 1 1 240px; min-width: 0; height: 42px; padding: 0 10px 0 13px; border-radius: 12px; background: var(--sunken); border: 1px solid transparent; color: var(--muted); }
+.lg-search:focus-within { background: var(--panel); border-color: var(--accent); box-shadow: var(--ring); }
+.lg-search input { flex: 1; min-width: 0; min-height: 0; padding: 0; border: none; background: transparent; box-shadow: none; }
+.lg-search input:focus, .lg-search input:hover { border: none; box-shadow: none; }
+.lg-search button { width: 24px; height: 24px; min-height: 0; padding: 0; border-radius: 50%; border: none; background: var(--sunken-2); }
+.lg-types { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.lg-types::-webkit-scrollbar { display: none; }
+.lg-types button { flex: none; min-height: 32px; padding: 0 12px; border-radius: 99px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); background: var(--panel); }
+.lg-types button.is-on, .lg-types button.is-on:hover:not(:disabled) { background: var(--night); border-color: var(--night); color: #fff; }
+.lg-inview { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 10px 14px; border-radius: 14px; background: #fcfbf9; border: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
+.lg-inview strong { font-variant-numeric: tabular-nums; }
+.lg-inview .is-pos { color: var(--ok-deep); font-weight: 750; }
+.lg-inview .is-neg { color: var(--danger); font-weight: 750; }
+.lg-inview em { font-style: normal; font-size: 12px; color: var(--muted); margin-left: auto; }
+.lg-cols { display: grid; grid-template-columns: var(--lcols); gap: 14px; margin: 0 -14px; padding: 10px 18px 10px 22px; background: #faf9f6; border-top: 1px solid var(--line); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lg-cols .num { text-align: right; }
+
+.lg-rows { list-style: none; margin: 0; padding: 0; transition: opacity 200ms var(--ease); }
+.lg-rows.is-refreshing { opacity: 0.6; }
+.lg-line { display: grid; grid-template-columns: var(--lcols); gap: 14px; align-items: center; min-height: 58px; padding: 8px 18px 8px 22px; }
+.lg-line + .lg-line { border-top: 1px solid var(--line); }
+.lg-line:hover { background: #fdfcfa; }
+.lg-when { display: flex; flex-direction: column; }
+.lg-when b { font-size: 13px; font-weight: 700; }
+.lg-when em { font-style: normal; font-size: 11.5px; color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.lg-shop { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lg-shop .shop-mark { flex: none; }
+.lg-shop b { font-size: 13.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lg-what { display: flex; flex-direction: column; min-width: 0; }
+.lg-what b { font-size: 13.5px; font-weight: 700; }
+.lg-what a, .lg-what em { font-size: 12px; font-style: normal; font-weight: 600; color: var(--muted); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lg-what a:hover { color: var(--accent-deep); }
+.lg-amount { display: flex; flex-direction: column; align-items: flex-end; }
+.lg-amount b { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lg-amount em { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.lg-payable { justify-self: start; padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 750; white-space: nowrap; }
+.lg-payable.is-paid { background: var(--sunken-2); color: var(--muted); }
+.lg-payable.is-held { background: var(--warn-soft); color: #9a5d00; }
+.lg-payable.is-ok { background: var(--ok-soft); color: var(--ok-deep); }
+
+.lg-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 22px 10px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.lg-foot strong { color: var(--ink); }
+.lg-foot button { min-height: 36px; border-radius: 11px; }
+
+/* What these lines mean (§86). */
+.lg-legend { margin-top: 16px; padding: 18px 20px; border-radius: 22px; background: var(--panel); border: 1px dashed var(--line-strong); }
+.lg-legend h2 { margin: 0 0 4px; font-size: 15px; }
+.lg-legend > p { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.lg-legend dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 18px; margin: 0; }
+.lg-legend dt { font-size: 13.5px; font-weight: 750; }
+.lg-legend dd { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+@container page (max-width: 1000px) {
+  .lg-recon { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .lg-ours { grid-column: 1 / -1; }
+  .lg-adjs li { grid-template-columns: minmax(0, 1fr) 150px; grid-template-areas: 'who amount' 'why state'; }
+  .lg-adj-who { grid-area: who; }
+  .lg-adj-why { grid-area: why; }
+  .lg-adj-amount { grid-area: amount; }
+  .lg-adj-state { grid-area: state; }
+  .lg { --lcols: 84px minmax(0, 1fr) minmax(0, 1.2fr) 130px; }
+  .lg-cols span:last-child, .lg-payable { display: none; }
+}
+
+@container page (max-width: 640px) {
+  .lg-recon { grid-template-columns: minmax(0, 1fr); padding: 18px; border-radius: 24px; }
+  .lg-theirs { grid-template-rows: none; grid-template-columns: 1fr 1fr; }
+  .lg-tabs button { flex: 1; justify-content: center; padding: 0 10px; }
+  .lg-tabs button > span { display: none; }
+  .lg-adjs li { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'who amount' 'why why' 'state state'; gap: 10px; padding: 14px 14px 14px 18px; }
+  .lg-adj-state { align-items: flex-start; text-align: left; }
+  .lg-cols { display: none; }
+  .lg-line { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'shop amount' 'what when'; gap: 4px 12px; padding: 12px 14px; }
+  .lg-shop { grid-area: shop; }
+  .lg-what { grid-area: what; }
+  .lg-amount { grid-area: amount; }
+  .lg-when { grid-area: when; flex-direction: row; align-items: baseline; justify-content: flex-end; gap: 5px; white-space: nowrap; }
+  .lg-when b { font-size: 12px; font-weight: 650; color: var(--muted); }
+  .lg-inview em { margin-left: 0; }
+}

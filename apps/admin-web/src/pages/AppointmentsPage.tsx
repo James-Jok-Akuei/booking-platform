@@ -12,6 +12,7 @@ import {
   type AppointmentStatus,
 } from '../api/admin';
 import { BOOKING_STATUS, reservationNo } from '../lib/bookingLook';
+import { ENTRY_LABEL, ENTRY_MEANING } from '../lib/ledgerWords';
 import { ago, clock, minutesBetween, relativeDay, shortDay } from '../lib/time';
 import { Avatar } from '../ui/Avatar';
 import { Icon, type IconName } from '../ui/Icon';
@@ -43,15 +44,6 @@ const CANCELLED: Record<string, string> = {
   CUSTOMER: 'Cancelled by the customer',
   BUSINESS: 'Cancelled by the shop',
   SYSTEM_EXPIRY: 'Not paid in time',
-};
-
-const LEDGER_WORDS: Record<string, string> = {
-  DEPOSIT_RECEIVED: 'Deposit received',
-  PLATFORM_FEE: 'Our fee',
-  DEPOSIT_REFUND: 'Deposit refunded',
-  PLATFORM_FEE_REVERSAL: 'Our fee given back',
-  GATEWAY_FEE_DEBIT: "The operator's charge for the refund",
-  ADJUSTMENT: 'Adjustment',
 };
 
 const longDate = (iso: string) =>
@@ -603,7 +595,7 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
         <div className="ad-banner is-ok">
           <Icon name="checkCircle" size={18} />
           <span>
-            <strong>Put on the shop.</strong> The customer was refunded the whole deposit, our fee included.
+            <strong>Put on the shop.</strong> The customer was refunded the whole deposit, the platform fee included.
             {a.cancellationTicketReference && (
               <>
                 {' '}
@@ -637,7 +629,7 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
             </dd>
           </div>
           <div>
-            <dt>Our fee</dt>
+            <dt>Platform fee</dt>
             <dd>{money.format(a.platformFeeAmountMinor, a.currency)}</dd>
           </div>
           <div>
@@ -654,12 +646,14 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
 
         {a.ledger.length > 0 && (
           <>
-            <p className="ad-sub">What the ledger wrote for it</p>
+            <p className="ad-sub">
+              Ledger entries for it <em>— from the business’s side: positive is owed to them, negative is owed back</em>
+            </p>
             <ul className="ad-ledger">
               {a.ledger.map((line) => (
                 <li key={line.id}>
-                  <span>
-                    {LEDGER_WORDS[line.type] ?? line.type}
+                  <span title={ENTRY_MEANING[line.type]}>
+                    {ENTRY_LABEL[line.type] ?? line.type}
                     <em>{stamp(line.createdAt)}</em>
                   </span>
                   {line.payoutId && <i className="ad-paid-out">paid out</i>}
@@ -849,15 +843,15 @@ function Reclassify({
         <li>
           <Avatar label={a.customerDisplayName || a.customerEmail} size={30} />
           <span>
-            <strong>{a.customerEmail}</strong> gets back <b>{money.format(a.depositAmountMinor, a.currency)}</b> — the whole deposit, our fee of{' '}
-            {money.format(a.platformFeeAmountMinor, a.currency)} included.
+            <strong>{a.customerEmail}</strong> gets back <b>{money.format(a.depositAmountMinor, a.currency)}</b> — the whole deposit, the platform fee
+            of {money.format(a.platformFeeAmountMinor, a.currency)} included.
           </span>
         </li>
         <li>
           <ShopMark name={a.businessName} logoUrl={a.businessLogoUrl} size={30} />
           <span>
             <strong>{a.businessName ?? 'The shop'}</strong> loses the {money.format(a.businessAmountMinor, a.currency)} it was owed, and carries the
-            operator’s charge for sending the refund.
+            gateway fee — what the operator charges to send the refund.
           </span>
         </li>
         <li>
@@ -900,7 +894,7 @@ function Reclassify({
         </fieldset>
 
         <label>
-          <span>What the operator charged to send the refund</span>
+          <span>The gateway fee: what the operator charged to send the refund</span>
           <div className="ad-amount">
             <b>{money.code || a.currency}</b>
             <input value={charge} onChange={(event) => setCharge(event.target.value)} inputMode="decimal" aria-label="The operator's charge" />

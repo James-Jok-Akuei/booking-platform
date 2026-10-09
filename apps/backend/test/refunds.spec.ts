@@ -777,6 +777,70 @@ describe('Refunds and adjustments (§36)', () => {
       expect(page.adjustments[0].ledgerEntries).toHaveLength(1);
     });
 
+    it('names the shop and the booking beside each line (§251)', async () => {
+      const a = await paidAppointment();
+      const shop = await prisma.businessProfile.findUniqueOrThrow({ where: { id: business.businessId }, select: { name: true } });
+      const service = await prisma.service.findUniqueOrThrow({ where: { id: business.serviceId }, select: { name: true } });
+
+      const page = await ledger.listEntries(AS, { appointmentId: a.id });
+
+      expect(page.entries.every((e) => e.businessProfile.name === shop.name)).toBe(true);
+      expect(page.entries.every((e) => e.appointment?.id === a.id && e.appointment.service.name === service.name)).toBe(true);
+    });
+
+    it("filters by part of the shop's name and by when the line was written (§251)", async () => {
+      const a = await paidAppointment();
+      const shop = await prisma.businessProfile.findUniqueOrThrow({ where: { id: business.businessId }, select: { name: true } });
+      const part = (shop.name ?? '').slice(0, 4).toUpperCase();
+
+      const named = await ledger.listEntries(AS, { appointmentId: a.id, q: part });
+      expect(named.total).toBe(2);
+      expect((await ledger.listEntries(AS, { appointmentId: a.id, q: 'no-shop-like-this' })).total).toBe(0);
+
+      const later = new Date(Date.now() + DAY).toISOString();
+      const earlier = new Date(Date.now() - 7 * DAY).toISOString();
+      expect((await ledger.listEntries(AS, { appointmentId: a.id, from: later })).total).toBe(0);
+      expect((await ledger.listEntries(AS, { appointmentId: a.id, to: earlier })).total).toBe(0);
+      expect((await ledger.listEntries(AS, { appointmentId: a.id, from: earlier, to: later })).total).toBe(2);
+    });
+
+    it('lists adjustments by state, with the shop, the ticket and who recorded it (§251)', async () => {
+      const a = await paidAppointment();
+      const ticket = await prisma.ticket.create({
+        data: {
+          reference: `TKT-251${Date.now() % 100000}`,
+          reporterId: customer.userId,
+          reporterType: 'CUSTOMER',
+          appointmentId: a.id,
+          category: 'APPOINTMENT_DISPUTE',
+          subject: 'The shop was closed',
+          status: 'RESOLVED',
+        },
+      });
+      const row = await prisma.billingAdjustment.create({
+        data: {
+          businessId: business.businessId,
+          appointmentId: a.id,
+          ticketId: ticket.id,
+          type: BillingAdjustmentType.FEE_REFUND,
+          amount: new Prisma.Decimal(4),
+          reason: 'Agreed on the ticket.',
+          createdById: admin.userId,
+        },
+      });
+
+      const waiting = await ledger.listAdjustments(AS, { appointmentId: a.id, state: 'outstanding' });
+      expect(waiting.adjustments.map((x) => x.id)).toEqual([row.id]);
+      expect(waiting.adjustments[0].ticket).toEqual({ id: ticket.id, reference: ticket.reference, subject: 'The shop was closed' });
+      expect(waiting.adjustments[0].createdBy.email).toBe(admin.email);
+      expect(waiting.adjustments[0].businessProfile.name).toBeTruthy();
+
+      const done = await ledger.listAdjustments(AS, { appointmentId: a.id, state: 'executed' });
+      expect(done.adjustments).toHaveLength(0);
+      // Still counted as waiting, whatever the state filter shows.
+      expect(done.outstanding).toBe(1);
+    });
+
     it.each(['CUSTOMER', 'BUSINESS'])('refuses a %s both reads', async (role) => {
       await expect(ledger.listEntries({ role }, {})).rejects.toBeInstanceOf(
         ForbiddenException,

@@ -307,11 +307,18 @@ export type BillingAdjustment = components['schemas']['AdjustmentDto'];
 export type AdjustmentPage = components['schemas']['AdjustmentPageDto'];
 export type ExecutedAdjustment = components['schemas']['ExecutedAdjustmentDto'];
 
+export type AdminLedgerEntry = components['schemas']['AdminLedgerEntryDto'];
+
 export const listLedgerEntries = (params: {
   businessId?: string;
   appointmentId?: string;
   payoutId?: string;
   type?: LedgerEntryType;
+  /** Part of a shop's name (§251). */
+  q?: string;
+  /** ISO instants: written at or after `from`, before `to` (§251). */
+  from?: string;
+  to?: string;
   limit?: number;
   offset?: number;
 }) => api<LedgerPage>('/admin/ledger/entries', { query: params });
@@ -319,6 +326,7 @@ export const listLedgerEntries = (params: {
 export const listAdjustments = (params: {
   businessId?: string;
   ticketId?: string;
+  state?: 'outstanding' | 'executed';
   limit?: number;
   offset?: number;
 }) => api<AdjustmentPage>('/admin/billing-adjustments', { query: params });

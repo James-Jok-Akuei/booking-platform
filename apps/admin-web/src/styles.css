@@ -654,39 +654,9 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
 .filters input[type='search'] { min-width: 240px; }
 
-/* Money waiting to be paid out, said as big numbers. */
-.held {
-  background: var(--panel);
-  border: 1px solid rgba(31, 42, 31, 0.05);
-  border-radius: var(--r-xl);
-  padding: 20px 22px;
-  margin-bottom: 18px;
-  box-shadow: var(--shadow-sm);
-}
-.held-figures { display: flex; gap: 36px; flex-wrap: wrap; margin-bottom: 8px; }
-.held-figure { display: flex; flex-direction: column; gap: 2px; }
-.held-figure strong { font-size: 26px; font-weight: 800; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
-
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-td.negative { color: var(--danger); }
-td.reason { max-width: 320px; }
 tr.clickable { cursor: pointer; }
 tr.clickable:hover { background: var(--accent-tint); }
-
-/* What each ledger line means (§86). */
-.legend {
-  margin-top: 26px;
-  padding: 20px 22px;
-  background: var(--panel);
-  border: 1px solid rgba(31, 42, 31, 0.05);
-  border-radius: var(--r-xl);
-  box-shadow: var(--shadow-xs);
-}
-.legend h2 { font-size: 16px; margin: 0 0 4px; }
-.legend dl { margin: 12px 0 0; display: grid; grid-template-columns: minmax(150px, 210px) 1fr; gap: 0 18px; }
-.legend dl > div { display: contents; }
-.legend dt { font-weight: 700; padding: 9px 0; border-top: 1px solid var(--line); }
-.legend dd { margin: 0; font-size: 13.5px; color: var(--ink-2); padding: 9px 0; border-top: 1px solid var(--line); }
 
 /* What a decision will do, before it is made. */
 

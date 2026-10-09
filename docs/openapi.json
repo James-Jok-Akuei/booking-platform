@@ -8372,6 +8372,34 @@
             }
           },
           {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Part of a shop's name (§251).",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Written at or after this instant (§251).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Written before this instant (§251).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -8478,6 +8506,19 @@
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "description": "Only those still to execute, or only those executed (§251).",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "outstanding",
+                "executed"
+              ]
             }
           },
           {
@@ -19026,9 +19067,68 @@
           "reason"
         ]
       },
-      "LedgerEntryDto": {
+      "LedgerShopDto": {
         "type": "object",
         "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "logoUrl"
+        ]
+      },
+      "LedgerServiceNameDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "LedgerAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "service": {
+            "$ref": "#/components/schemas/LedgerServiceNameDto"
+          }
+        },
+        "required": [
+          "id",
+          "startTime",
+          "service"
+        ]
+      },
+      "AdminLedgerEntryDto": {
+        "type": "object",
+        "properties": {
+          "businessProfile": {
+            "$ref": "#/components/schemas/LedgerShopDto"
+          },
+          "appointment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LedgerAppointmentDto"
+              }
+            ]
+          },
           "id": {
             "type": "string"
           },
@@ -19087,6 +19187,8 @@
           }
         },
         "required": [
+          "businessProfile",
+          "appointment",
           "id",
           "businessId",
           "appointmentId",
@@ -19138,7 +19240,7 @@
           "entries": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/LedgerEntryDto"
+              "$ref": "#/components/schemas/AdminLedgerEntryDto"
             }
           },
           "totalsBySettlementCurrency": {
@@ -19175,6 +19277,36 @@
           "id",
           "amountMinor",
           "settlementAmountMinor"
+        ]
+      },
+      "AdjustmentTicketDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "subject"
+        ]
+      },
+      "AdjustmentPersonDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
         ]
       },
       "AdjustmentDto": {
@@ -19229,6 +19361,26 @@
           },
           "createdAt": {
             "type": "string"
+          },
+          "businessProfile": {
+            "description": "Whose money, the ticket it was decided on, and who decided (§251).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LedgerShopDto"
+              }
+            ]
+          },
+          "ticket": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdjustmentTicketDto"
+              }
+            ]
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/AdjustmentPersonDto"
           }
         },
         "required": [
@@ -19243,7 +19395,10 @@
           "settlementRef",
           "ledgerEntries",
           "createdById",
-          "createdAt"
+          "createdAt",
+          "businessProfile",
+          "ticket",
+          "createdBy"
         ]
       },
       "AdjustmentPageDto": {
@@ -19466,6 +19621,82 @@
           "settledAt",
           "settlementRef",
           "createdById",
+          "createdAt"
+        ]
+      },
+      "LedgerEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "appointmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_RECEIVED",
+              "PLATFORM_FEE",
+              "DEPOSIT_REFUND",
+              "PLATFORM_FEE_REVERSAL",
+              "GATEWAY_FEE_DEBIT",
+              "ADJUSTMENT"
+            ]
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "settlementCurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "settlementAmountMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "bookingExchangeRate": {
+            "type": "string",
+            "nullable": true,
+            "description": "The rate this entry was fixed at. A string, like every Decimal here."
+          },
+          "availableAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the money matures. Null means it is not payable yet (§38.1)."
+          },
+          "payoutId": {
+            "type": "string",
+            "nullable": true
+          },
+          "billingAdjustmentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "businessId",
+          "appointmentId",
+          "type",
+          "amountMinor",
+          "currency",
+          "settlementCurrency",
+          "settlementAmountMinor",
+          "bookingExchangeRate",
+          "availableAt",
+          "payoutId",
+          "billingAdjustmentId",
           "createdAt"
         ]
       },

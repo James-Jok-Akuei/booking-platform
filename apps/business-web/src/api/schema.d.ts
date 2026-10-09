@@ -4569,7 +4569,21 @@ export interface components {
             /** @description What went wrong, in words, for the screen that shows it. */
             reason: string;
         };
-        LedgerEntryDto: {
+        LedgerShopDto: {
+            name: string | null;
+            logoUrl: string | null;
+        };
+        LedgerServiceNameDto: {
+            name: string;
+        };
+        LedgerAppointmentDto: {
+            id: string;
+            startTime: string;
+            service: components["schemas"]["LedgerServiceNameDto"];
+        };
+        AdminLedgerEntryDto: {
+            businessProfile: components["schemas"]["LedgerShopDto"];
+            appointment: components["schemas"]["LedgerAppointmentDto"] | null;
             id: string;
             businessId: string;
             appointmentId: string | null;
@@ -4597,7 +4611,7 @@ export interface components {
             total: number;
             limit: number;
             offset: number;
-            entries: components["schemas"]["LedgerEntryDto"][];
+            entries: components["schemas"]["AdminLedgerEntryDto"][];
             /**
              * @description Totals over the whole filter rather than the page. A total that changed
              *     when you turned the page would be worse than no total.
@@ -4608,6 +4622,14 @@ export interface components {
             id: string;
             amountMinor: number;
             settlementAmountMinor: number | null;
+        };
+        AdjustmentTicketDto: {
+            id: string;
+            reference: string;
+            subject: string;
+        };
+        AdjustmentPersonDto: {
+            email: string;
         };
         AdjustmentDto: {
             id: string;
@@ -4626,6 +4648,10 @@ export interface components {
             ledgerEntries: components["schemas"]["AdjustmentEntryDto"][];
             createdById: string;
             createdAt: string;
+            /** @description Whose money, the ticket it was decided on, and who decided (§251). */
+            businessProfile: components["schemas"]["LedgerShopDto"];
+            ticket: components["schemas"]["AdjustmentTicketDto"] | null;
+            createdBy: components["schemas"]["AdjustmentPersonDto"];
         };
         AdjustmentPageDto: {
             total: number;
@@ -4692,6 +4718,24 @@ export interface components {
             settledAt: string | null;
             settlementRef: string | null;
             createdById: string;
+            createdAt: string;
+        };
+        LedgerEntryDto: {
+            id: string;
+            businessId: string;
+            appointmentId: string | null;
+            /** @enum {string} */
+            type: "DEPOSIT_RECEIVED" | "PLATFORM_FEE" | "DEPOSIT_REFUND" | "PLATFORM_FEE_REVERSAL" | "GATEWAY_FEE_DEBIT" | "ADJUSTMENT";
+            amountMinor: number;
+            currency: string;
+            settlementCurrency: string | null;
+            settlementAmountMinor: number | null;
+            /** @description The rate this entry was fixed at. A string, like every Decimal here. */
+            bookingExchangeRate: string | null;
+            /** @description When the money matures. Null means it is not payable yet (§38.1). */
+            availableAt: string | null;
+            payoutId: string | null;
+            billingAdjustmentId: string | null;
             createdAt: string;
         };
         ExecutedAdjustmentDto: {
@@ -12457,6 +12501,12 @@ export interface operations {
                 appointmentId?: string;
                 payoutId?: string;
                 type?: "DEPOSIT_RECEIVED" | "PLATFORM_FEE" | "DEPOSIT_REFUND" | "PLATFORM_FEE_REVERSAL" | "GATEWAY_FEE_DEBIT" | "ADJUSTMENT";
+                /** @description Part of a shop's name (§251). */
+                q?: string;
+                /** @description Written at or after this instant (§251). */
+                from?: string;
+                /** @description Written before this instant (§251). */
+                to?: string;
                 limit?: number;
                 offset?: number;
             };
@@ -12518,6 +12568,8 @@ export interface operations {
                 businessId?: string;
                 appointmentId?: string;
                 ticketId?: string;
+                /** @description Only those still to execute, or only those executed (§251). */
+                state?: "outstanding" | "executed";
                 limit?: number;
                 offset?: number;
             };

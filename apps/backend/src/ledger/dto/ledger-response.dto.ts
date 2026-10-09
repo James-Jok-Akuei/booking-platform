@@ -49,6 +49,37 @@ export const __ledgerEntryDtoIsExact: NoExtraFields<
   LedgerEntryRow
 > = true;
 
+/** What the console's ledger reads beside each line (§251): whose it is, and the booking. */
+export const ADMIN_LEDGER_INCLUDE = {
+  businessProfile: { select: { name: true, logoUrl: true } },
+  appointment: { select: { id: true, startTime: true, service: { select: { name: true } } } },
+} as const satisfies Prisma.LedgerEntryInclude;
+
+type AdminLedgerEntryRow = Serialised<Prisma.LedgerEntryGetPayload<{ include: typeof ADMIN_LEDGER_INCLUDE }>>;
+
+export class LedgerShopDto {
+  name!: string | null;
+  logoUrl!: string | null;
+}
+
+export class LedgerServiceNameDto {
+  name!: string;
+}
+
+export class LedgerAppointmentDto {
+  id!: string;
+  startTime!: string;
+  service!: LedgerServiceNameDto;
+}
+
+/** A ledger line as the console lists it: the line, the shop, and the booking it is for. */
+export class AdminLedgerEntryDto extends LedgerEntryDto implements AdminLedgerEntryRow {
+  businessProfile!: LedgerShopDto;
+  appointment!: LedgerAppointmentDto | null;
+}
+
+export const __adminLedgerEntryDtoIsExact: NoExtraFields<AdminLedgerEntryDto, AdminLedgerEntryRow> = true;
+
 /** A per-currency total over the WHOLE filter, not the page. */
 export class SettlementTotalDto {
   settlementCurrency!: string | null;
@@ -61,7 +92,7 @@ export class LedgerEntryPageDto {
   total!: number;
   limit!: number;
   offset!: number;
-  entries!: LedgerEntryDto[];
+  entries!: AdminLedgerEntryDto[];
 
   /**
    * Totals over the whole filter rather than the page. A total that changed
@@ -167,7 +198,21 @@ export const ADJUSTMENT_INCLUDE = {
   ledgerEntries: {
     select: { id: true, amountMinor: true, settlementAmountMinor: true },
   },
+  // Whose money, the ticket it was decided on, and who decided (§251).
+  businessProfile: { select: { name: true, logoUrl: true } },
+  ticket: { select: { id: true, reference: true, subject: true } },
+  createdBy: { select: { email: true } },
 } as const satisfies Prisma.BillingAdjustmentInclude;
+
+export class AdjustmentTicketDto {
+  id!: string;
+  reference!: string;
+  subject!: string;
+}
+
+export class AdjustmentPersonDto {
+  email!: string;
+}
 
 type AdjustmentRow = Serialised<
   Prisma.BillingAdjustmentGetPayload<{ include: typeof ADJUSTMENT_INCLUDE }>
@@ -206,6 +251,11 @@ export class AdjustmentDto implements AdjustmentRow {
 
   createdById!: string;
   createdAt!: string;
+
+  /** Whose money, the ticket it was decided on, and who decided (§251). */
+  businessProfile!: LedgerShopDto;
+  ticket!: AdjustmentTicketDto | null;
+  createdBy!: AdjustmentPersonDto;
 }
 
 export const __adjustmentDtoIsExact: NoExtraFields<AdjustmentDto, AdjustmentRow> = true;

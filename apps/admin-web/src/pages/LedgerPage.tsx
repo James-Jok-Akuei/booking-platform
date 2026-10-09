@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { useMoney } from '../money';
 import {
@@ -7,249 +8,241 @@ import {
   getReconciliation,
   heldTotals,
   listAdjustments,
-  listBusinesses,
   listLedgerEntries,
+  type AdminLedgerEntry,
+  type BillingAdjustment,
   type LedgerEntryType,
+  type NotComparableReason,
 } from '../api/admin';
+import { ADJUSTMENT_LABEL, ENTRY_LABEL, ENTRY_MEANING } from '../lib/ledgerWords';
+import { ago, clock, shortDay } from '../lib/time';
 import { alertDialog, promptDialog } from '../ui/Dialog';
-import { Select } from '../ui/Select';
+import { Icon } from '../ui/Icon';
+import { ShopMark } from '../ui/ShopMark';
+import './ledger.css';
 
-const formatDate = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+type Tab = 'adjustments' | 'ledger';
+type State = 'outstanding' | 'executed' | 'all';
+type Period = 'any' | 'today' | '7d' | '30d';
 
-/** Plain-language names for the entry types in §34's enum. */
-const ENTRY_LABEL: Record<LedgerEntryType, string> = {
-  DEPOSIT_RECEIVED: 'Deposit received',
-  PLATFORM_FEE: 'Platform fee',
-  DEPOSIT_REFUND: 'Deposit refunded',
-  PLATFORM_FEE_REVERSAL: 'Platform fee returned',
-  GATEWAY_FEE_DEBIT: 'Gateway fee',
-  ADJUSTMENT: 'Manual adjustment',
-};
+const PAGE = 40;
 
-/**
- * What each line means, and — the part the label cannot carry — WHO gained or
- * lost the money (§86).
- *
- * A legend rather than longer labels: "Platform fee returned" does not say who
- * returns it or who receives it, and no column heading can. Renaming it was
- * tried and reversed (§85), so the words stay and the explanation sits beside
- * them.
- */
-const ENTRY_MEANING: Record<LedgerEntryType, string> = {
-  DEPOSIT_RECEIVED: "The customer's payment at booking. Owed to the business.",
-  PLATFORM_FEE: 'Our cut of that payment, taken from the business.',
-  DEPOSIT_REFUND:
-    'The customer got their payment back, because the business cancelled.',
-  PLATFORM_FEE_REVERSAL:
-    'We hand our own cut back too, so the business is not left funding our fee ' +
-    'on a booking it earned nothing from. The money reaches the customer, who ' +
-    'is refunded in full.',
-  GATEWAY_FEE_DEBIT:
-    'What the operator charged to move the refund. Borne by the business that ' +
-    'cancelled, because it caused it.',
-  ADJUSTMENT: 'A correction recorded and executed on the Adjustments tab.',
-};
-
-const ADJUSTMENT_LABEL = {
-  FEE_REFUND: 'Fee refund',
-  GATEWAY_FEE_DEBIT: 'Gateway fee charged back',
-} as const;
-
-/**
- * The ledger, and the adjustments that write to it.
- *
- * Read-only except for one button. Executing an adjustment is the only act on
- * this screen that changes a balance, and it does so by APPENDING entries —
- * nothing here edits history, because the database will not allow it (§34.2).
- */
-export function LedgerPage() {
-  const [tab, setTab] = useState<'adjustments' | 'entries'>('adjustments');
-
-  return (
-    <section>
-      <header className="page-head">
-        <div>
-          <h1>Money</h1>
-          <p className="muted">
-            What the platform is holding, and the corrections that change it.
-          </p>
-        </div>
-        <div className="tabs">
-          <button
-            type="button"
-            className={tab === 'adjustments' ? 'tab active' : 'tab'}
-            onClick={() => setTab('adjustments')}
-          >
-            Adjustments
-          </button>
-          <button
-            type="button"
-            className={tab === 'entries' ? 'tab active' : 'tab'}
-            onClick={() => setTab('entries')}
-          >
-            Ledger
-          </button>
-        </div>
-      </header>
-
-      <HeldSummary />
-      {tab === 'adjustments' ? <Adjustments /> : <Entries />}
-    </section>
-  );
-}
-
-/** Looks up business names once, so every table can print one. */
-function useBusinessNames() {
-  // 100 is the server's cap on this list, not a guess — asking for more is a
-  // 400, which would blank every name on the page.
-  const businesses = useQuery({
-    queryKey: ['businesses', 'all'],
-    queryFn: () => listBusinesses({ limit: 100 }),
-    staleTime: 60_000,
-  });
-
-  return useMemo(() => {
-    const byId = new Map<string, string>();
-    for (const business of businesses.data?.businesses ?? []) {
-      // A business may genuinely have no name yet — one can be created before
-      // its profile is filled in.
-      if (business.name) byId.set(business.id, business.name);
-    }
-    // The id, shortened, when a name is not loaded or not set — never a blank
-    // cell, which reads as "no business" rather than "name not to hand".
-    return (id: string) => byId.get(id) ?? `${id.slice(0, 8)}…`;
-  }, [businesses.data]);
-}
+const PERIODS: Array<{ value: Period; label: string }> = [
+  { value: 'any', label: 'Any time' },
+  { value: 'today', label: 'Today' },
+  { value: '7d', label: 'Last 7 days' },
+  { value: '30d', label: 'Last 30 days' },
+];
 
 const WALLET_LABEL = {
   COLLECTION: 'Deposits land here',
   DISBURSEMENT: 'Payouts go out from here',
 } as const;
 
-function HeldSummary() {
-  const money = useMoney();
-  const held = useQuery({ queryKey: ['held'], queryFn: heldTotals });
-  // Separate query: the operator is a network call away and sometimes slow or
-  // refusing, and our own figure must render without waiting for theirs.
-  const check = useQuery({
-    queryKey: ['reconciliation'],
-    queryFn: getReconciliation,
-    retry: false,
+/** Why our figure and the operator's cannot honestly be subtracted (§87), said plainly. */
+const NOT_COMPARABLE: Record<NotComparableReason & string, string> = {
+  SANDBOX: 'Sandbox: the operator reports a made-up balance no transfer moves.',
+  DIFFERENT_CURRENCY: 'The operator reports a different currency from the one we hold.',
+  BALANCE_UNAVAILABLE: 'The operator did not report the wallet that holds deposits.',
+  NOTHING_HELD: 'Our ledger holds nothing, so there is nothing to compare.',
+};
+
+const stamp = (iso: string) => `${shortDay(iso)}, ${clock(iso)}`;
+
+const periodFrom = (p: Period) => {
+  if (p === 'any') return undefined;
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  if (p === '7d') d.setDate(d.getDate() - 6);
+  if (p === '30d') d.setDate(d.getDate() - 29);
+  return d.toISOString();
+};
+
+/**
+ * Money (§251, §84–§87): what the platform holds, whether the operator
+ * agrees, the adjustments waiting to be executed, and every ledger entry.
+ *
+ * The words are the domain's (§85): entry types keep their names, and what a
+ * name cannot say — who gained or lost — is the legend beside them (§86).
+ * Read-only except for one button: executing an adjustment, which APPENDS
+ * entries; nothing here edits history, because the database will not (§34.2).
+ */
+export function LedgerPage() {
+  const [params, setParams] = useSearchParams();
+  const tab: Tab = params.get('tab') === 'ledger' ? 'ledger' : 'adjustments';
+  const outstanding = useQuery({
+    queryKey: ['adjustments', 'count'],
+    queryFn: () => listAdjustments({ state: 'outstanding', limit: 1 }),
+    select: (page) => page.outstanding,
+  });
+  const entries = useQuery({
+    queryKey: ['ledger', 'count'],
+    queryFn: () => listLedgerEntries({ limit: 1 }),
+    select: (page) => page.total,
   });
 
-  if (!held.data) return null;
+  return (
+    <section className="lg">
+      <div className="page-top">
+        <header className="page-head">
+          <div>
+            <h1>Money</h1>
+            <p className="muted">What the platform is holding, whether the operator agrees, and the corrections that change it.</p>
+          </div>
+        </header>
+
+        <Reconciliation />
+
+        {/* The title and the operator's figures scroll away; the choice stays. */}
+        <div className="lg-tabs pin-from pin-phone" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'adjustments'}
+          className={tab === 'adjustments' ? 'is-on' : ''}
+          onClick={() => setParams({}, { replace: true })}
+        >
+          <Icon name="sliders" size={16} />
+          Adjustments
+          {outstanding.data !== undefined && (
+            <span className={outstanding.data > 0 ? 'is-hot' : ''}>{outstanding.data > 0 ? `${outstanding.data} to execute` : 'none waiting'}</span>
+          )}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'ledger'}
+          className={tab === 'ledger' ? 'is-on' : ''}
+          onClick={() => setParams({ tab: 'ledger' }, { replace: true })}
+        >
+          <Icon name="list" size={16} />
+          Ledger
+          {entries.data !== undefined && <span>{entries.data.toLocaleString()} entries</span>}
+        </button>
+        </div>
+      </div>
+
+      {tab === 'adjustments' ? <Adjustments /> : <Ledger />}
+    </section>
+  );
+}
+
+/** Our figure beside the operator's (§87), and whether they can be compared at all. */
+function Reconciliation() {
+  const money = useMoney();
+  const held = useQuery({ queryKey: ['held'], queryFn: heldTotals });
+  // Separate: the operator is a network call away and sometimes slow or
+  // refusing, and our own figure must not wait for theirs.
+  const check = useQuery({ queryKey: ['reconciliation'], queryFn: getReconciliation, retry: false });
+
+  const ours = held.data?.bySettlementCurrency ?? [];
+  const verdict = check.data
+    ? check.data.comparable
+      ? check.data.difference === 0
+        ? { tone: 'ok', icon: 'checkCircle' as const, title: 'They agree', text: 'Our ledger and the operator hold the same.' }
+        : {
+            tone: 'warn',
+            icon: 'alert' as const,
+            title: `Off by ${money.signed(check.data.difference ?? 0)}`,
+            text: 'Money landed or left without a ledger entry, or the other way round. Look into it before the next payout run.',
+          }
+      : {
+          tone: 'muted',
+          icon: 'info' as const,
+          title: 'Not comparable now',
+          text: check.data.notComparableReason ? NOT_COMPARABLE[check.data.notComparableReason] : check.data.note,
+        }
+    : check.isError
+      ? { tone: 'muted', icon: 'info' as const, title: 'The operator could not be reached', text: 'There is nothing to compare against — compare it by hand.' }
+      : { tone: 'muted', icon: 'refresh' as const, title: 'Asking the operator…', text: 'Our own figure does not wait for theirs.' };
 
   return (
-    <div className="held">
-      <div className="held-figures">
-        {held.data.bySettlementCurrency.map((row) => (
-          <div key={row.settlementCurrency} className="held-figure">
-            <span className="muted small">Our ledger says</span>
-            <strong>{money.format(row.amountMinor, row.settlementCurrency)}</strong>
-            <span className="muted small">
-              {row.entryCount} entries not yet paid out
-            </span>
-          </div>
-        ))}
-        {held.data.bySettlementCurrency.length === 0 && (
-          <div className="held-figure">
-            <strong>Nothing held</strong>
-          </div>
-        )}
-
-        {check.data?.wallets.map((wallet) => (
-          <div key={wallet.wallet} className="held-figure">
-            <span className="muted small">
-              MTN · {WALLET_LABEL[wallet.wallet]}
-            </span>
-            {wallet.status === 'OK' ? (
-              <strong>
-                {wallet.currency} {wallet.reportedAmount}
-              </strong>
-            ) : (
-              <strong className="muted">No answer</strong>
-            )}
-            {wallet.status === 'UNAVAILABLE' && (
-              <span className="muted small">{wallet.reason}</span>
-            )}
-          </div>
-        ))}
-
-        {/* Only ever shown when the server says the two figures can honestly
-            be subtracted. In sandbox, in a mismatched currency, or when the
-            operator did not answer, there is no difference to show. */}
-        {check.data?.comparable && (
-          <div className="held-figure">
-            <span className="muted small">Difference</span>
-            <strong className={check.data.difference === 0 ? 'ok' : 'warn'}>
-              {money.signed(check.data.difference ?? 0)}
+    <div className="lg-recon">
+      <div className="lg-ours">
+        <span className="lg-k">Our ledger says</span>
+        {ours.length > 0 ? (
+          ours.map((row) => (
+            <strong key={row.settlementCurrency} className="lg-big">
+              {money.format(row.amountMinor, row.settlementCurrency)}
             </strong>
-          </div>
+          ))
+        ) : (
+          <strong className="lg-big">{held.data ? 'Nothing held' : '…'}</strong>
+        )}
+        <span className="lg-sub">
+          {held.data
+            ? `${held.data.totalEntries.toLocaleString()} entries not yet paid out, as of ${clock(held.data.asOf)}`
+            : 'Adding up what has not been paid out…'}
+        </span>
+        {held.data && held.data.entriesWithoutSettlement > 0 && (
+          <span className="lg-warn">
+            <Icon name="alert" size={14} /> {held.data.entriesWithoutSettlement} entries carry no settlement amount and are missing from this figure
+          </span>
         )}
       </div>
 
-      <p className="muted small">
-        As of {formatDate(held.data.asOf)}.{' '}
-        {check.isLoading && <>Asking MTN what it is holding…</>}
-        {check.data && (
-          <>
-            {check.data.isSandbox && <strong>Sandbox. </strong>}
-            {check.data.note}
-          </>
-        )}
-        {check.isError && (
-          <>
-            MTN could not be reached, so there is nothing to compare against —{' '}
-            <strong>compare it by hand</strong>.
-          </>
-        )}
-        {held.data.entriesWithoutSettlement > 0 && (
-          <>
-            {' '}
-            <span className="warn">
-              {held.data.entriesWithoutSettlement} entries carry no settlement amount and
-              are missing from this figure.
-            </span>
-          </>
-        )}
-      </p>
+      <div className="lg-theirs">
+        {(check.data?.wallets ?? [{ wallet: 'COLLECTION' as const }, { wallet: 'DISBURSEMENT' as const }]).map((w) => (
+          <div key={w.wallet} className="lg-wallet">
+            <span className="lg-k">MTN · {WALLET_LABEL[w.wallet]}</span>
+            {'status' in w && w.status === 'OK' ? (
+              <strong>
+                {w.currency} {Number(w.reportedAmount).toLocaleString()}
+              </strong>
+            ) : 'status' in w ? (
+              <strong className="is-none" title={w.reason}>
+                No answer
+              </strong>
+            ) : (
+              <strong className="is-none">…</strong>
+            )}
+          </div>
+        ))}
+        {check.data?.isSandbox && <span className="lg-sandbox">Sandbox</span>}
+      </div>
+
+      <div className={`lg-verdict tone-${verdict.tone}`}>
+        <Icon name={verdict.icon} size={20} />
+        <strong>{verdict.title}</strong>
+        <span>{verdict.text}</span>
+        <button type="button" className="lg-again" onClick={() => void check.refetch()} disabled={check.isFetching}>
+          <Icon name="refresh" size={14} className={check.isFetching ? 'lg-spin' : undefined} /> {check.isFetching ? 'Asking…' : 'Ask again'}
+        </button>
+      </div>
     </div>
   );
 }
 
 function Adjustments() {
   const money = useMoney();
-  const nameOf = useBusinessNames();
   const queryClient = useQueryClient();
-  const [onlyOutstanding, setOnlyOutstanding] = useState(true);
+  const [state, setState] = useState<State>('outstanding');
 
-  const adjustments = useQuery({
-    queryKey: ['adjustments'],
-    queryFn: () => listAdjustments({ limit: 200 }),
+  const list = useQuery({
+    queryKey: ['adjustments', state],
+    queryFn: () => listAdjustments({ ...(state === 'all' ? {} : { state }), limit: 200 }),
+    placeholderData: (previous) => previous,
   });
+  const all = useQuery({ queryKey: ['adjustments', 'all-count'], queryFn: () => listAdjustments({ limit: 1 }), select: (p) => p });
 
   const execute = useMutation({
-    mutationFn: (input: { id: string; ref?: string }) =>
-      executeAdjustment(input.id, input.ref),
+    mutationFn: (input: { id: string; ref?: string }) => executeAdjustment(input.id, input.ref),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adjustments'] });
-      queryClient.invalidateQueries({ queryKey: ['ledger'] });
-      queryClient.invalidateQueries({ queryKey: ['held'] });
+      void queryClient.invalidateQueries({ queryKey: ['adjustments'] });
+      void queryClient.invalidateQueries({ queryKey: ['ledger'] });
+      void queryClient.invalidateQueries({ queryKey: ['held'] });
     },
   });
 
-  const rows = (adjustments.data?.adjustments ?? []).filter(
-    (row) => !onlyOutstanding || row.settledAt === null,
-  );
-
-  const run = async (id: string, amount: string, type: keyof typeof ADJUSTMENT_LABEL) => {
+  const run = async (row: BillingAdjustment) => {
+    const amount = `${money.code} ${row.amount}`;
     const ref = await promptDialog({
-      title: `Execute this ${ADJUSTMENT_LABEL[type].toLowerCase()}?`,
+      title: `Execute this ${ADJUSTMENT_LABEL[row.type].toLowerCase()}?`,
       body: (
         <p>
-          <strong>{amount}</strong>. This writes ledger entries and changes what the business is owed. It cannot be
-          undone — a mistake is corrected by recording another adjustment, not by reversing this one.
+          <strong>{amount}</strong> {row.type === 'FEE_REFUND' ? 'to' : 'from'} <strong>{row.businessProfile.name ?? 'the business'}</strong>. This writes a
+          ledger entry and changes what the business is owed. It cannot be undone — a mistake is corrected by recording another adjustment, not by
+          reversing this one.
         </p>
       ),
       label: 'The provider’s reference (optional)',
@@ -264,224 +257,306 @@ function Adjustments() {
     if (ref === null) return;
     const trimmed = ref.trim();
     if (trimmed !== '' && trimmed.length < 3) {
-      await alertDialog({
-        title: 'That reference is too short',
-        body: <p>A reference needs at least three characters — or leave it blank.</p>,
-        tone: 'info',
-      });
+      await alertDialog({ title: 'That reference is too short', body: <p>A reference needs at least three characters — or leave it blank.</p>, tone: 'info' });
       return;
     }
-    execute.mutate({ id, ref: trimmed === '' ? undefined : trimmed });
+    execute.mutate({ id: row.id, ref: trimmed === '' ? undefined : trimmed });
   };
 
+  const rows = list.data?.adjustments ?? [];
+  const outstanding = list.data?.outstanding ?? 0;
+  const total = all.data?.total;
+
   return (
-    <>
-      <div className="toolbar">
-        <label className="inline small">
-          <input
-            type="checkbox"
-            checked={onlyOutstanding}
-            onChange={(event) => setOnlyOutstanding(event.target.checked)}
-          />
-          Only ones still to execute
-        </label>
-        {adjustments.data && (
-          <span className="muted small">
-            {adjustments.data.outstanding} outstanding of {adjustments.data.total}
-          </span>
-        )}
+    <div className="lg-card">
+      <div className="lg-card-top">
+        <div className="lg-seg" role="tablist" aria-label="Show">
+          {(
+            [
+              ['outstanding', 'Still to execute', outstanding],
+              ['executed', 'Executed', total !== undefined ? total - outstanding : undefined],
+              ['all', 'All', total],
+            ] as Array<[State, string, number | undefined]>
+          ).map(([value, label, count]) => (
+            <button key={value} type="button" role="tab" aria-selected={state === value} className={state === value ? 'is-on' : ''} onClick={() => setState(value)}>
+              {label}
+              {count !== undefined && <span className={value === 'outstanding' && count > 0 ? 'is-hot' : ''}>{count}</span>}
+            </button>
+          ))}
+        </div>
+        <p className="lg-hint">
+          An adjustment is a decision recorded when a ticket is resolved. Executing it is what moves the money.
+        </p>
       </div>
 
       {execute.error && (
-        <p className="error" role="alert">
+        <p className="error lg-error" role="alert">
+          <Icon name="alert" size={15} />
           {execute.error instanceof ApiError ? execute.error.message : 'That did not work.'}
         </p>
       )}
 
-      {adjustments.isLoading && <p className="muted">Loading…</p>}
-      {rows.length === 0 && !adjustments.isLoading && (
-        <p className="muted empty">
-          {onlyOutstanding ? 'Nothing waiting to be executed.' : 'No adjustments recorded.'}
-        </p>
+      {list.isLoading && <div className="skeleton lg-skel" />}
+      {list.data && rows.length === 0 && (
+        <div className="lg-empty">
+          <span>
+            <Icon name={state === 'outstanding' ? 'checkCircle' : 'sliders'} size={26} />
+          </span>
+          <strong>{state === 'outstanding' ? 'Nothing waiting to be executed' : 'No adjustments recorded'}</strong>
+          <p>Adjustments are recorded when a support ticket is resolved with money owed one way or the other.</p>
+        </div>
       )}
 
-      {rows.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Business</th>
-              <th>What</th>
-              <th className="num">Amount</th>
-              <th>Why</th>
-              <th>Recorded</th>
-              <th>State</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>{nameOf(row.businessId)}</td>
-                <td>{ADJUSTMENT_LABEL[row.type]}</td>
-                {/* `amount` is a decimal string in MAJOR units, unlike every
-                    other figure on this page. Printed as given, with the code
-                    beside it, rather than converted into a minor-unit integer
-                    that would look like the ledger column and not match it. */}
-                <td className="num">
-                  {money.code} {row.amount}
-                </td>
-                <td className="reason">{row.reason}</td>
-                <td className="small">{formatDate(row.createdAt)}</td>
-                <td>
-                  {row.settledAt ? (
+      <ul className="lg-adjs">
+        {rows.map((row) => {
+          const credit = row.type === 'FEE_REFUND';
+          return (
+            <li key={row.id} className={row.settledAt ? 'is-done' : 'is-waiting'}>
+              <div className="lg-adj-who">
+                <ShopMark name={row.businessProfile.name} logoUrl={row.businessProfile.logoUrl} size={40} />
+                <span>
+                  <strong>{row.businessProfile.name ?? 'Unnamed business'}</strong>
+                  <em>{ADJUSTMENT_LABEL[row.type]}</em>
+                </span>
+              </div>
+              <div className="lg-adj-why">
+                <p>“{row.reason}”</p>
+                <span>
+                  Recorded {ago(row.createdAt)} by {row.createdBy.email}
+                  {row.ticket && (
                     <>
-                      <span className="pill resolved">Executed</span>
-                      <div className="muted small">
-                        {formatDate(row.settledAt)}
-                        {row.settlementRef && <> · {row.settlementRef}</>}
-                        {!row.settlementRef && <> · netted against a payout</>}
-                      </div>
-                      {row.ledgerEntries.length > 0 && (
-                        <div className="muted small">
-                          wrote {row.ledgerEntries.length} ledger{' '}
-                          {row.ledgerEntries.length === 1 ? 'entry' : 'entries'}
-                        </div>
-                      )}
+                      {' '}
+                      · on <Link to={`/tickets?ref=${row.ticket.reference}`}>{row.ticket.reference}</Link>
                     </>
-                  ) : (
-                    <button
-                      type="button"
-                      className="primary"
-                      disabled={execute.isPending}
-                      onClick={() => run(row.id, `${money.code} ${row.amount}`, row.type)}
-                    >
-                      Execute
-                    </button>
                   )}
-                </td>
-              </tr>
+                </span>
+              </div>
+              <div className="lg-adj-amount">
+                {/* `amount` is a decimal string in MAJOR units, unlike every
+                    other figure here: printed as given, with the code. */}
+                <strong className={credit ? 'is-pos' : 'is-neg'}>
+                  {credit ? '+' : '−'}
+                  {money.code} {row.amount}
+                </strong>
+                <span>{credit ? 'to the business' : 'from the business'}</span>
+              </div>
+              <div className="lg-adj-state">
+                {row.settledAt ? (
+                  <>
+                    <span className="pill resolved">Executed</span>
+                    <span>
+                      {stamp(row.settledAt)} · {row.settlementRef ? row.settlementRef : 'netted against a payout'}
+                    </span>
+                  </>
+                ) : (
+                  <button type="button" className="primary" disabled={execute.isPending} onClick={() => void run(row)}>
+                    <Icon name="banknote" size={16} /> Execute
+                  </button>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function Ledger() {
+  const money = useMoney();
+  const [type, setType] = useState<LedgerEntryType | null>(null);
+  const [period, setPeriod] = useState<Period>('any');
+  const [typed, setTyped] = useState('');
+  const [q, setQ] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setQ(typed.trim()), 300);
+    return () => clearTimeout(t);
+  }, [typed]);
+
+  const from = useMemo(() => periodFrom(period), [period]);
+  const list = useInfiniteQuery({
+    queryKey: ['ledger', type, period, q],
+    queryFn: ({ pageParam }) =>
+      listLedgerEntries({ ...(type ? { type } : {}), ...(from ? { from } : {}), ...(q ? { q } : {}), limit: PAGE, offset: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (last, pages) => {
+      const loaded = pages.reduce((sum, p) => sum + p.entries.length, 0);
+      return loaded < last.total ? loaded : undefined;
+    },
+    placeholderData: (previous) => previous,
+  });
+  const rows = useMemo(() => list.data?.pages.flatMap((p) => p.entries) ?? [], [list.data]);
+  const first = list.data?.pages[0];
+
+  const end = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = end.current;
+    if (!el) return;
+    const seen = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && list.hasNextPage && !list.isFetchingNextPage) void list.fetchNextPage();
+      },
+      { rootMargin: '600px 0px' },
+    );
+    seen.observe(el);
+    return () => seen.disconnect();
+  }, [list]);
+
+  return (
+    <>
+      <div className="lg-card">
+        <div className="lg-card-top">
+          <div className="lg-filters">
+            <label className="lg-search">
+              <Icon name="search" size={17} />
+              <input value={typed} onChange={(event) => setTyped(event.target.value)} placeholder="A business’s name" aria-label="Business" />
+              {typed && (
+                <button type="button" onClick={() => setTyped('')} aria-label="Clear">
+                  <Icon name="close" size={13} stroke={2.2} />
+                </button>
+              )}
+            </label>
+            <div className="lg-seg" role="tablist" aria-label="When">
+              {PERIODS.map((p) => (
+                <button key={p.value} type="button" role="tab" aria-selected={period === p.value} className={period === p.value ? 'is-on' : ''} onClick={() => setPeriod(p.value)}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="lg-types" role="group" aria-label="Kind of entry">
+            <button type="button" className={type === null ? 'is-on' : ''} aria-pressed={type === null} onClick={() => setType(null)}>
+              Every kind
+            </button>
+            {(Object.keys(ENTRY_LABEL) as LedgerEntryType[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                className={type === key ? 'is-on' : ''}
+                aria-pressed={type === key}
+                onClick={() => setType(type === key ? null : key)}
+                title={ENTRY_MEANING[key]}
+              >
+                {ENTRY_LABEL[key]}
+              </button>
             ))}
-          </tbody>
-        </table>
-      )}
+          </div>
+          {first && (
+            <div className="lg-inview">
+              <span>
+                <strong>{first.total.toLocaleString()}</strong> {first.total === 1 ? 'entry' : 'entries'}
+              </span>
+              {first.totalsBySettlementCurrency.map((t) => (
+                <span key={t.settlementCurrency ?? 'none'} className={t.amountMinor < 0 ? 'is-neg' : 'is-pos'}>
+                  {money.signed(t.amountMinor, t.settlementCurrency)} in view
+                </span>
+              ))}
+              <em>From the business’s side: positive is owed to them, negative is owed back.</em>
+            </div>
+          )}
+          <div className="lg-cols" aria-hidden="true">
+            <span>When</span>
+            <span>Business</span>
+            <span>What happened</span>
+            <span className="num">Amount</span>
+            <span>Payable</span>
+          </div>
+        </div>
+
+        {list.isLoading && <div className="skeleton lg-skel" />}
+        {list.data && rows.length === 0 && (
+          <div className="lg-empty">
+            <span>
+              <Icon name="list" size={26} />
+            </span>
+            <strong>No entries here</strong>
+            <p>Nothing of that kind{q ? ` for “${q}”` : ''}{period !== 'any' ? ' in that time' : ''}.</p>
+          </div>
+        )}
+
+        <ul className={`lg-rows${list.isPlaceholderData ? ' is-refreshing' : ''}`}>
+          {rows.map((e) => (
+            <Line key={e.id} e={e} format={money.format} signed={money.signed} />
+          ))}
+        </ul>
+        <div ref={end} />
+        {rows.length > 0 && first && (
+          <footer className="lg-foot">
+            <span>
+              Showing <strong>{rows.length.toLocaleString()}</strong> of <strong>{first.total.toLocaleString()}</strong>
+            </span>
+            {list.hasNextPage && (
+              <button type="button" onClick={() => void list.fetchNextPage()} disabled={list.isFetchingNextPage}>
+                {list.isFetchingNextPage ? 'Loading…' : 'Show more'}
+              </button>
+            )}
+          </footer>
+        )}
+      </div>
+
+      <div className="lg-legend">
+        <h2>What these lines mean</h2>
+        <p>
+          Every amount is written from the <strong>business’s</strong> point of view: positive is owed to them, negative is owed back.
+        </p>
+        <dl>
+          {(Object.keys(ENTRY_LABEL) as LedgerEntryType[]).map((key) => (
+            <div key={key}>
+              <dt>{ENTRY_LABEL[key]}</dt>
+              <dd>{ENTRY_MEANING[key]}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
     </>
   );
 }
 
-function Entries() {
-  const money = useMoney();
-  const nameOf = useBusinessNames();
-  const [type, setType] = useState<LedgerEntryType | ''>('');
-
-  const ledger = useQuery({
-    queryKey: ['ledger', type],
-    queryFn: () => listLedgerEntries({ limit: 200, ...(type ? { type } : {}) }),
-  });
-
+function Line({
+  e,
+  format,
+  signed,
+}: {
+  e: AdminLedgerEntry;
+  format: (minor: number | null | undefined, code?: string | null) => string;
+  signed: (minor: number, code?: string | null) => string;
+}) {
+  const amount = e.settlementAmountMinor ?? e.amountMinor;
+  const now = Date.now();
+  const payable = e.payoutId
+    ? { cls: 'is-paid', text: 'paid out' }
+    : e.availableAt === null
+      ? // §34.3: null means the booking has not resolved or the hold has not
+        // ended. Not "pending" — nothing waits on a process; it is not payable.
+        { cls: 'is-held', text: 'held' }
+      : new Date(e.availableAt).getTime() > now
+        ? { cls: 'is-held', text: `held until ${shortDay(e.availableAt)}` }
+        : { cls: 'is-ok', text: 'available' };
   return (
-    <>
-      <div className="toolbar">
-        <label className="inline small">
-          Showing
-          {/* The app's own dropdown (§227, §242); "every kind" is a choice of its own. */}
-          <Select<LedgerEntryType | 'ALL'>
-            value={type === '' ? 'ALL' : type}
-            onChange={(next) => setType(next === 'ALL' ? '' : next)}
-            label="Kind of entry"
-            sheetTitle="Kind of entry"
-            options={[
-              { value: 'ALL', label: 'Every kind of entry' },
-              ...(Object.keys(ENTRY_LABEL) as LedgerEntryType[]).map((key) => ({ value: key, label: ENTRY_LABEL[key] })),
-            ]}
-          />
-        </label>
-        {ledger.data && (
-          <span className="muted small">
-            {ledger.data.entries.length} of {ledger.data.total}
-            {ledger.data.totalsBySettlementCurrency.map((total) => (
-              <span key={total.settlementCurrency}>
-                {' '}
-                · {money.signed(total.amountMinor, total.settlementCurrency)} in view
-              </span>
-            ))}
-          </span>
-        )}
-      </div>
-
-      {ledger.isLoading && <p className="muted">Loading…</p>}
-      {ledger.data?.entries.length === 0 && (
-        <p className="muted empty">No entries of that kind.</p>
-      )}
-
-      {ledger.data && ledger.data.entries.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>When</th>
-              <th>Business</th>
-              <th>What happened</th>
-              <th className="num">Amount</th>
-              <th>Payable</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ledger.data.entries.map((entry) => (
-              <tr key={entry.id}>
-                <td className="small">{formatDate(entry.createdAt)}</td>
-                <td>{nameOf(entry.businessId)}</td>
-                <td>
-                  {ENTRY_LABEL[entry.type]}
-                  {entry.billingAdjustmentId && (
-                    <div className="muted small">from an adjustment</div>
-                  )}
-                </td>
-                {/* Signed from the business's point of view (§34.2): positive
-                    is owed to them, negative is owed back. */}
-                <td className={entry.amountMinor < 0 ? 'num negative' : 'num'}>
-                  {money.signed(entry.settlementAmountMinor ?? entry.amountMinor,
-                    entry.settlementCurrency ?? entry.currency)}
-                  {entry.settlementAmountMinor !== null &&
-                    entry.settlementCurrency !== entry.currency && (
-                      <div className="muted small">
-                        reporting {money.signed(entry.amountMinor, entry.currency)}
-                      </div>
-                    )}
-                </td>
-                <td className="small">
-                  {entry.payoutId ? (
-                    <span className="muted">paid out</span>
-                  ) : entry.availableAt === null ? (
-                    // §34.3: null means the appointment has not resolved, or
-                    // the hold has not expired. Not "pending" — nothing is
-                    // waiting on a process, the money is simply not payable.
-                    <span className="muted">held</span>
-                  ) : new Date(entry.availableAt) > new Date() ? (
-                    <>held until {formatDate(entry.availableAt)}</>
-                  ) : (
-                    <span className="ok">available</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {ledger.data && ledger.data.entries.length > 0 && (
-        <div className="legend">
-          <h2>What these lines mean</h2>
-          <p className="muted small">
-            Every amount is written from the <strong>business's</strong> point of view:
-            positive is owed to them, negative is owed back.
-          </p>
-          <dl>
-            {(Object.keys(ENTRY_LABEL) as LedgerEntryType[]).map((key) => (
-              <div key={key}>
-                <dt>{ENTRY_LABEL[key]}</dt>
-                <dd className="muted">{ENTRY_MEANING[key]}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      )}
-    </>
+    <li className="lg-line">
+      <span className="lg-when">
+        <b>{shortDay(e.createdAt)}</b>
+        <em>{clock(e.createdAt)}</em>
+      </span>
+      <span className="lg-shop">
+        <ShopMark name={e.businessProfile.name} logoUrl={e.businessProfile.logoUrl} size={30} />
+        <b>{e.businessProfile.name ?? 'Unnamed business'}</b>
+      </span>
+      <span className="lg-what" title={ENTRY_MEANING[e.type]}>
+        <b>{ENTRY_LABEL[e.type]}</b>
+        {e.appointment ? (
+          <Link to={`/appointments?open=${e.appointment.id}`}>
+            {e.appointment.service.name} · {shortDay(e.appointment.startTime)}
+          </Link>
+        ) : e.billingAdjustmentId ? (
+          <em>from an adjustment</em>
+        ) : null}
+      </span>
+      <span className={`lg-amount ${amount < 0 ? 'is-neg' : 'is-pos'}`}>
+        <b>{signed(amount, e.settlementCurrency ?? e.currency)}</b>
+        {e.settlementAmountMinor !== null && e.settlementCurrency !== e.currency && <em>reporting {format(e.amountMinor, e.currency)}</em>}
+      </span>
+      <span className={`lg-payable ${payable.cls}`}>{payable.text}</span>
+    </li>
   );
 }

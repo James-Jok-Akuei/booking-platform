@@ -16686,3 +16686,66 @@ Checked at 1440 (Everyone; Administrators with an invitation faked in the
 test browser — the demo administrator is not the primary, so for them the
 section is read-only; a customer's panel), 1024 (a shop owner's panel) and
 390. Nothing was invited, cleared or removed.
+
+## 251. Admin piece 10 — Money: our figure beside the operator's, adjustments as decisions, the ledger with its context (2026-10-09)
+
+The outline (§242.1) said "plain-language entry types". **That part was not
+done, on purpose**: §85 renamed exactly these labels and was reversed at the
+user's request — "plain words when I explain, the domain's words on screen".
+The entry types keep their names (Deposit received, Platform fee, Deposit
+refunded, Platform fee returned, Gateway fee, Manual adjustment), as do
+*Adjustments*, *Ledger*, *Execute*, *held* and *available*; what a name cannot
+say is the legend beside it (§86).
+
+### 251.1 The server
+
+- **Each ledger line carries its business** (name and logo) **and the booking
+  it is for** (its service and day) — the page used to load a hundred
+  businesses just to print names, and showed an id for the rest.
+  `AdminLedgerEntryDto` extends the bare line and is checked against the
+  query's own payload (`NoExtraFields`, §128), so the two cannot drift.
+- **`q`** (part of a business's name) **and `from`/`to`** on
+  `GET /admin/ledger/entries`; the totals still cover the whole filter.
+- **Each adjustment carries its business, the ticket it was decided on and
+  who recorded it**; **`state`** (outstanding / executed) filters it on the
+  server, while `outstanding` still counts every one waiting.
+- Three tests in "admin ledger reads (§53.3)"; the refund suite (48) and the
+  other ledger, payout and reconciliation suites (264) pass.
+
+### 251.2 The page
+
+- **Our figure beside the operator's** (§87), one dark card: *Our ledger says*
+  — what is held and not yet paid out, large; *MTN · Deposits land here* and
+  *MTN · Payouts go out from here*, each its own answer or *No answer*; a
+  *Sandbox* tag when it is; and **a verdict** — *They agree* in green, *Off
+  by …* in amber with what that means, or *Not comparable now* with why
+  (sandbox, a different currency, the deposit wallet not reported, nothing
+  held) — and *Ask again*. Our figure never waits for theirs.
+- **Adjustments** (the default, with how many are waiting) as rows: the
+  business, the kind, the reason in its own words, who recorded it and on
+  which ticket, the amount signed from the business's side (+ to them, − from
+  them), and either *Execute* (asks for the provider's reference, says it
+  cannot be undone) or *Executed* with when and the reference — or "netted
+  against a payout". *Still to execute · Executed · All*, with counts.
+- **Ledger**: search by business, *Any time · Today · Last 7 days · Last 30
+  days*, the kinds of entry as chips (each with its meaning on hover), the
+  count and **the total in view** with the rule that makes signs readable;
+  then each line — when, the business, what happened and **for which booking**
+  (opening it, §249), the signed amount (and the reporting figure when the
+  currency differs), and whether it is *held*, *held until …*, *available* or
+  *paid out*. Forty at a time, the next as the end comes into view; the
+  legend under it.
+- **Pinned**: the title and the operator's card scroll away; the
+  *Adjustments / Ledger* switch stays.
+
+### 251.3 A correction to §249
+
+The booking panel's money had said "Our fee", "Our fee given back" and "The
+operator's charge for the refund" — the renaming §85 reversed. The ledger's
+words now live once, in `lib/ledgerWords.ts`, and both pages read them:
+*Platform fee*, *Platform fee returned*, *Gateway fee*, with each line's
+meaning on hover; the refund form says "the platform fee … included" and
+names the gateway fee for what it is.
+
+Checked at 1440 (adjustments; the ledger scrolled, with the switch pinned),
+1024 and 390. Nothing was executed.
