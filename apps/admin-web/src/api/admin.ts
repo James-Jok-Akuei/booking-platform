@@ -122,7 +122,7 @@ export type BusinessBalance = components['schemas']['BusinessBalanceDto'];
 
 export type HeldTotals = components['schemas']['HeldTotalsDto'];
 
-export const listPayouts = (params: { status?: PayoutStatus; limit?: number }) =>
+export const listPayouts = (params: { status?: PayoutStatus; limit?: number; offset?: number }) =>
   api<PayoutPage>('/admin/payouts', { query: params });
 
 export const heldTotals = () => api<HeldTotals>('/admin/ledger/held');

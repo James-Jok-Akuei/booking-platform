@@ -493,6 +493,8 @@ describe('Payout destinations (§48)', () => {
       expect(summary.pausedBusinesses).toContainEqual({
         businessId: shop.businessId,
         reason: 'NO_VERIFIED_PAYOUT_DESTINATION',
+        // By name, so the list can be chased (§246).
+        name: 'Test Salon',
       });
     });
 

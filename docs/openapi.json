@@ -20440,11 +20440,17 @@
               "SUSPENDED",
               "NO_VERIFIED_PAYOUT_DESTINATION"
             ]
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "So the list can be chased by name, not by id (§246)."
           }
         },
         "required": [
           "businessId",
-          "reason"
+          "reason",
+          "name"
         ]
       },
       "PayoutRunSummaryDto": {
@@ -20516,11 +20522,16 @@
           "name": {
             "type": "string",
             "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
           "id",
-          "name"
+          "name",
+          "logoUrl"
         ]
       },
       "AdminPayoutDto": {

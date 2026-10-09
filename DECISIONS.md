@@ -16387,3 +16387,46 @@ after for the same business, so a changed number is read beside the old one.
   is sent.
 
 Checked at 1440 (To check, All) and 390. Nothing was checked or refused.
+
+## 246. Admin piece 5 — Payouts, as a wallet (2026-10-09)
+
+The payouts page was a table, a grey "Unsettled" card, and a run result that
+listed held-back shops by the first eight characters of their id. Now:
+
+### 246.1 The server
+
+- **A run names whom it held back**: each entry in `pausedBusinesses` now
+  carries the shop's **name** beside its id and reason — a list of ids is not
+  a list anyone can chase. The existing assertion was extended; the payout
+  suites (99 tests) pass.
+- **Each payout carries the shop's logo** (`businessProfile.logoUrl`).
+
+### 246.2 The page
+
+- **The wallet** — a dark card in the logo's ink with a warm glow: **held for
+  shops, not yet paid out** (§51), large; beside it **ready to send** (the
+  amount and the number of payouts, from §243's overview), **with the
+  operator** (checked every minute, §64.3) and **sent so far**. Entries that
+  cannot be paid (no settlement amount, §46.3) are said in amber on it.
+- **Run payouts** asks first and says what it does in plain words: it works
+  out what each shop is owed and makes one payout per shop — **no money moves
+  yet**; shops that cannot be paid are held back and listed by name.
+- **What the run did**: "3 payouts ready to send — RWF 28,400", how many shops
+  were considered, then **the held-back shops by name**, each with why and a
+  link to fix it (Suspended → that shop on Businesses; no checked payout
+  number → Payout numbers), and how many were skipped for a zero or negative
+  balance ("what they owe carries forward rather than being forgiven", §35.3).
+- **Tabs in plain words with counts**: To send · With the operator · Sent ·
+  Failed · All, kept in the address.
+- **Each payout a row**: the shop's logo and name, **where the money goes**
+  (the number in threes with the network's mark — or, in red, "No checked
+  payout number — check one first", linking there, which is also why Send is
+  off), **the amount** large, its status and when (run / handed over / sent),
+  the reference or the failure reason, and **Export the run** for checking
+  against the operator's statement; the coral edge marks one to send, red one
+  that failed. **Send** asks first (real money, cannot be undone); **Sent by
+  hand** asks for the reference; **Mark failed** asks why. A payout with the
+  operator shows a pulsing "checked every minute".
+
+Checked at 1440 (the run result with two shops held back, faked in the test
+browser — no real run was made), 1024 and 390. Nothing was sent or marked.

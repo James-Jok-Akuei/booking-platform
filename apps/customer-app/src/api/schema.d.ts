@@ -4987,6 +4987,8 @@ export interface components {
             businessId: string;
             /** @enum {string} */
             reason: "SUSPENDED" | "NO_VERIFIED_PAYOUT_DESTINATION";
+            /** @description So the list can be chased by name, not by id (§246). */
+            name: string | null;
         };
         PayoutRunSummaryDto: {
             runAt: string;
@@ -5013,6 +5015,7 @@ export interface components {
         AdminPayoutBusinessDto: {
             id: string;
             name: string | null;
+            logoUrl: string | null;
         };
         AdminPayoutDto: {
             /** @description Spread from the row, so the nested profile is on the wire too. */

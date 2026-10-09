@@ -4,7 +4,8 @@ import type { PauseReason, RunSummary } from '../payouts.service';
 
 /** One include, shared with the DTO that describes its result (§128.5). */
 export const PAYOUT_INCLUDE = {
-  businessProfile: { select: { id: true, name: true } },
+  // The logo, so the console shows each shop as it is known everywhere (§246).
+  businessProfile: { select: { id: true, name: true, logoUrl: true } },
 } as const satisfies Prisma.PayoutInclude;
 
 type PayoutRow = Serialised<Prisma.PayoutGetPayload<object>>;
@@ -58,6 +59,7 @@ export class PayoutDto implements PayoutRow {
 export class AdminPayoutBusinessDto {
   id!: string;
   name!: string | null;
+  logoUrl!: string | null;
 }
 
 /**
@@ -106,6 +108,8 @@ export class BusinessPayoutPageDto {
 export class PausedBusinessDto {
   businessId!: string;
   reason!: PauseReason;
+  /** So the list can be chased by name, not by id (§246). */
+  name!: string | null;
 }
 
 /** What one payout run did — and, as importantly, what it held back. */

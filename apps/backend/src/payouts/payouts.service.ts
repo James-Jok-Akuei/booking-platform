@@ -54,7 +54,7 @@ export interface RunSummary {
    * Every business held back this run, and why — so an admin has a list to
    * chase rather than a silently smaller payout batch.
    */
-  pausedBusinesses: Array<{ businessId: string; reason: PauseReason }>;
+  pausedBusinesses: Array<{ businessId: string; reason: PauseReason; name: string | null }>;
   /** Entries with no settlement amount, which cannot be paid — see §46.3. */
   entriesWithoutSettlement: number;
 }
@@ -187,6 +187,20 @@ export class PayoutsService {
       }
     }
 
+    // Each held-back business by name (§246): a list of ids is not a list
+    // anyone can chase.
+    const heldBack = [...new Map(pausedBusinesses.map((p) => [p.businessId, p])).values()];
+    const heldNames = heldBack.length
+      ? new Map(
+          (
+            await this.prisma.businessProfile.findMany({
+              where: { id: { in: heldBack.map((p) => p.businessId) } },
+              select: { id: true, name: true },
+            })
+          ).map((b) => [b.id, b.name]),
+        )
+      : new Map<string, string | null>();
+
     const summary: RunSummary = {
       runAt: now,
       businessesConsidered: owing.length,
@@ -200,9 +214,7 @@ export class PayoutsService {
       pausedForUnverifiedDestination,
       // De-duplicated: a business owed money in two currencies would otherwise
       // appear twice on a list an admin is meant to work through.
-      pausedBusinesses: [
-        ...new Map(pausedBusinesses.map((p) => [p.businessId, p])).values(),
-      ],
+      pausedBusinesses: heldBack.map((p) => ({ ...p, name: heldNames.get(p.businessId) ?? null })),
       entriesWithoutSettlement,
     };
 
