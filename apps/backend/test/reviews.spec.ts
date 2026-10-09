@@ -18,6 +18,7 @@ import {
 import { ClearDisplayNameDto } from '../src/users/dto/clear-display-name.dto';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { REVIEW_EDIT_WINDOW_MS } from '../src/reviews/review-window';
+import { ReviewOrder } from '../src/reviews/dto/list-reviews.dto';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import {
   TestBusiness,
@@ -540,6 +541,92 @@ describe('Reviews (§28)', () => {
       await expect(
         reviews.listForModeration(asUser(alpha.userId, role), {}),
       ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
+
+  describe("the console's review desk (§248)", () => {
+    const AS_ADMIN = () => asUser(admin.userId, 'ADMIN');
+
+    /** A shop of its own, with a name worth searching for. */
+    const namedShop = async (name: string, logoUrl: string | null = null) => {
+      const shop = await createBusiness(prisma);
+      await prisma.businessProfile.update({ where: { id: shop.businessId }, data: { name, logoUrl } });
+      return shop;
+    };
+
+    it('searches the words, the reviewer and the shop', async () => {
+      const shop = await namedShop('Searchable Salon 248');
+      const appointment = await completedAppointment(shop);
+      const review = await reviews.create(customerA.userId, appointment.id, {
+        rating: 2,
+        comment: 'The fade was uneven on one side.',
+      });
+      const scope = { businessId: shop.businessId };
+
+      for (const q of ['UNEVEN on one', 'searchable salon', customerA.email.slice(0, 12)]) {
+        const found = await reviews.listForModeration(AS_ADMIN(), { ...scope, q });
+        expect(found.reviews.map((r) => r.id)).toEqual([review.id]);
+      }
+      const none = await reviews.listForModeration(AS_ADMIN(), { ...scope, q: 'nothing-like-this-248' });
+      expect(none.total).toBe(0);
+    });
+
+    it('filters to exactly one number of stars', async () => {
+      const shop = await namedShop('Star Count Shop');
+      const four = await reviews.create(customerA.userId, (await completedAppointment(shop)).id, { rating: 4 });
+      await reviews.create(customerB.userId, (await completedAppointment(shop, customerB.userId)).id, { rating: 5 });
+
+      const page = await reviews.listForModeration(AS_ADMIN(), { businessId: shop.businessId, rating: 4 });
+      expect(page.reviews.map((r) => r.id)).toEqual([four.id]);
+    });
+
+    it('counts what customers see by star, and the hidden apart, whatever the filter', async () => {
+      const shop = await namedShop('Breakdown Barbers');
+      await reviews.create(customerA.userId, (await completedAppointment(shop)).id, { rating: 5 });
+      await reviews.create(customerB.userId, (await completedAppointment(shop, customerB.userId)).id, { rating: 4 });
+      const hidden = await reviews.create(customerA.userId, (await completedAppointment(shop)).id, { rating: 1 });
+      await reviews.hide(AS_ADMIN(), hidden.id, { hiddenReason: 'Abusive.' });
+
+      // The filter narrows the rows, never the counts.
+      const page = await reviews.listForModeration(AS_ADMIN(), {
+        businessId: shop.businessId,
+        visibility: 'HIDDEN',
+        rating: 1,
+      });
+      expect(page.reviews.map((r) => r.id)).toEqual([hidden.id]);
+      expect(page.breakdown).toEqual({ stars: [0, 0, 0, 1, 1], visible: 2, hidden: 1, ratingAvg: 4.5 });
+    });
+
+    it('has no average, rather than zero, when nothing is showing', async () => {
+      const shop = await namedShop('Quiet Shop');
+      const page = await reviews.listForModeration(AS_ADMIN(), { businessId: shop.businessId });
+      expect(page.breakdown).toEqual({ stars: [0, 0, 0, 0, 0], visible: 0, hidden: 0, ratingAvg: null });
+    });
+
+    it("carries the booking, its service and the shop's logo", async () => {
+      const shop = await namedShop('Logo Lounge', 'https://example.com/logo-248.png');
+      const appointment = await completedAppointment(shop);
+      await reviews.create(customerA.userId, appointment.id, { rating: 3 });
+      const service = await prisma.service.findUniqueOrThrow({ where: { id: shop.serviceId }, select: { name: true } });
+
+      const [row] = (await reviews.listForModeration(AS_ADMIN(), { businessId: shop.businessId })).reviews;
+      expect(row.appointmentId).toBe(appointment.id);
+      expect(row.serviceName).toBe(service.name);
+      expect(row.businessLogoUrl).toBe('https://example.com/logo-248.png');
+      expect(row.businessName).toBe('Logo Lounge');
+    });
+
+    it('reads lowest first when asked, newest first otherwise', async () => {
+      const shop = await namedShop('Order Shop');
+      await reviews.create(customerA.userId, (await completedAppointment(shop)).id, { rating: 3 });
+      await reviews.create(customerB.userId, (await completedAppointment(shop, customerB.userId)).id, { rating: 1 });
+      await reviews.create(customerA.userId, (await completedAppointment(shop)).id, { rating: 5 });
+      const scope = { businessId: shop.businessId };
+
+      const lowest = await reviews.listForModeration(AS_ADMIN(), { ...scope, sort: ReviewOrder.LOWEST });
+      expect(lowest.reviews.map((r) => r.rating)).toEqual([1, 3, 5]);
+      const newest = await reviews.listForModeration(AS_ADMIN(), scope);
+      expect(newest.reviews.map((r) => r.rating)).toEqual([5, 1, 3]);
     });
   });
 

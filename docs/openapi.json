@@ -10524,12 +10524,47 @@
             }
           },
           {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "description": "Only reviews of exactly this many stars — a bar of the breakdown (§248).",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
+          },
+          {
             "name": "businessId",
             "required": false,
             "in": "query",
             "schema": {
               "format": "uuid",
               "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Part of the words, the reviewer's name or email, or the shop's or\nbranch's name (§248).",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "newest",
+                "oldest",
+                "lowest",
+                "highest"
+              ]
             }
           },
           {
@@ -20227,6 +20262,35 @@
           "breakdown"
         ]
       },
+      "AdminReviewBreakdownDto": {
+        "type": "object",
+        "properties": {
+          "stars": {
+            "description": "Five numbers, one-star first: the reviews customers can see.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "ratingAvg": {
+            "type": "number",
+            "nullable": true,
+            "description": "Of the visible reviews, to one decimal place; null when there are none."
+          },
+          "visible": {
+            "type": "number"
+          },
+          "hidden": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "stars",
+          "ratingAvg",
+          "visible",
+          "hidden"
+        ]
+      },
       "AdminReviewDto": {
         "type": "object",
         "properties": {
@@ -20249,6 +20313,10 @@
             "nullable": true
           },
           "responseAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "responseEditedAt": {
             "type": "string",
             "nullable": true
           },
@@ -20282,6 +20350,18 @@
             "type": "string",
             "nullable": true
           },
+          "businessLogoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentId": {
+            "type": "string",
+            "description": "The booking reviewed, and what it was for (§248)."
+          },
+          "serviceName": {
+            "type": "string",
+            "nullable": true
+          },
           "customerId": {
             "type": "string"
           },
@@ -20300,6 +20380,7 @@
           "editedAt",
           "responseText",
           "responseAt",
+          "responseEditedAt",
           "createdAt",
           "hiddenAt",
           "hiddenReason",
@@ -20308,6 +20389,9 @@
           "locationName",
           "businessId",
           "businessName",
+          "businessLogoUrl",
+          "appointmentId",
+          "serviceName",
           "customerId",
           "customerEmail",
           "displayName"
@@ -20329,6 +20413,9 @@
             "type": "number",
             "description": "Across the whole platform, not this page — the number worth watching."
           },
+          "breakdown": {
+            "$ref": "#/components/schemas/AdminReviewBreakdownDto"
+          },
           "reviews": {
             "type": "array",
             "items": {
@@ -20341,6 +20428,7 @@
           "limit",
           "offset",
           "hiddenCount",
+          "breakdown",
           "reviews"
         ]
       },

@@ -356,11 +356,18 @@ export type ModeratedReview = components['schemas']['AdminReviewDto'];
 
 export type ModeratedReviewPage = components['schemas']['AdminReviewPageDto'];
 
+export type ReviewOrder = 'newest' | 'oldest' | 'lowest' | 'highest';
+
 /** The only listing that returns hidden reviews. */
 export const listReviewsForModeration = (params: {
   visibility?: 'VISIBLE' | 'HIDDEN' | 'ALL';
   maxRating?: number;
+  rating?: number;
+  businessId?: string;
+  q?: string;
+  sort?: ReviewOrder;
   limit?: number;
+  offset?: number;
 }) => api<ModeratedReviewPage>('/admin/reviews', { query: params });
 
 /** A reason is required: hiding feedback unexplained cannot be reviewed later. */

@@ -551,20 +551,48 @@ export class ReviewsService {
     const limit = query.limit ?? 25;
     const offset = query.offset ?? 0;
     const visibility = query.visibility ?? 'ALL';
+    const find = query.q?.trim();
 
+    // What the breakdown counts: one shop's reviews, or the platform's.
+    const scope: Prisma.ReviewWhereInput = query.businessId ? { businessId: query.businessId } : {};
     const where: Prisma.ReviewWhereInput = {
+      ...scope,
       ...(visibility === 'HIDDEN' ? { hiddenAt: { not: null } } : {}),
       ...(visibility === 'VISIBLE' ? { hiddenAt: null } : {}),
       ...(query.maxRating !== undefined ? { rating: { lte: query.maxRating } } : {}),
-      ...(query.businessId ? { businessId: query.businessId } : {}),
+      ...(query.rating !== undefined ? { rating: query.rating } : {}),
+      ...(find
+        ? {
+            OR: [
+              { comment: { contains: find, mode: Prisma.QueryMode.insensitive } },
+              { customer: { displayName: { contains: find, mode: Prisma.QueryMode.insensitive } } },
+              { customer: { email: { contains: find, mode: Prisma.QueryMode.insensitive } } },
+              { businessProfile: { name: { contains: find, mode: Prisma.QueryMode.insensitive } } },
+              { location: { name: { contains: find, mode: Prisma.QueryMode.insensitive } } },
+            ],
+          }
+        : {}),
     };
+    // Ties broken by date and id, so a page boundary never repeats or skips a
+    // review (§215).
+    const orderBy: Prisma.ReviewOrderByWithRelationInput[] =
+      query.sort === ReviewOrder.OLDEST
+        ? [{ createdAt: 'asc' }, { id: 'asc' }]
+        : query.sort === ReviewOrder.LOWEST
+          ? [{ rating: 'asc' }, { createdAt: 'desc' }, { id: 'asc' }]
+          : query.sort === ReviewOrder.HIGHEST
+            ? [{ rating: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }]
+            : [{ createdAt: 'desc' }, { id: 'asc' }];
 
-    const [total, hiddenCount, reviews] = await Promise.all([
+    const [total, hiddenCount, scopedHidden, byStars, reviews] = await Promise.all([
       this.prisma.review.count({ where }),
       this.prisma.review.count({ where: { hiddenAt: { not: null } } }),
+      this.prisma.review.count({ where: { ...scope, hiddenAt: { not: null } } }),
+      // What customers see, by star, whatever the filter (§215, §248).
+      this.prisma.review.groupBy({ by: ['rating'], where: { ...scope, hiddenAt: null }, _count: { _all: true } }),
       this.prisma.review.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         take: limit,
         skip: offset,
         select: {
@@ -574,18 +602,24 @@ export class ReviewsService {
           editedAt: true,
           responseText: true,
           responseAt: true,
+          responseEditedAt: true,
           createdAt: true,
           hiddenAt: true,
           hiddenReason: true,
           locationId: true,
           businessId: true,
+          appointmentId: true,
+          appointment: { select: { service: { select: { name: true } } } },
           customer: { select: { id: true, email: true, displayName: true } },
           location: { select: { name: true } },
-          businessProfile: { select: { name: true } },
+          businessProfile: { select: { name: true, logoUrl: true } },
           hiddenBy: { select: { email: true } },
         },
       }),
     ]);
+
+    const stars = [1, 2, 3, 4, 5].map((n) => byStars.find((g) => g.rating === n)?._count._all ?? 0);
+    const shown = stars.reduce((sum, n) => sum + n, 0);
 
     return {
       total,
@@ -593,6 +627,13 @@ export class ReviewsService {
       offset,
       /** Across the whole platform, not this page — the number worth watching. */
       hiddenCount,
+      breakdown: {
+        stars,
+        visible: shown,
+        hidden: scopedHidden,
+        // From the counts already in hand, to one decimal place.
+        ratingAvg: shown ? Math.round((stars.reduce((sum, n, i) => sum + n * (i + 1), 0) / shown) * 10) / 10 : null,
+      },
       reviews: reviews.map((review) => ({
         id: review.id,
         rating: review.rating,
@@ -600,6 +641,7 @@ export class ReviewsService {
         editedAt: review.editedAt,
         responseText: review.responseText,
         responseAt: review.responseAt,
+        responseEditedAt: review.responseEditedAt,
         createdAt: review.createdAt,
         hiddenAt: review.hiddenAt,
         hiddenReason: review.hiddenReason,
@@ -608,6 +650,9 @@ export class ReviewsService {
         locationName: review.location.name,
         businessId: review.businessId,
         businessName: review.businessProfile.name,
+        businessLogoUrl: review.businessProfile.logoUrl,
+        appointmentId: review.appointmentId,
+        serviceName: review.appointment?.service.name ?? null,
         customerId: review.customer.id,
         customerEmail: review.customer.email,
         displayName: review.customer.displayName ?? ANONYMOUS_DISPLAY_NAME,

@@ -102,6 +102,7 @@ export class AdminReviewDto {
 
   responseText!: string | null;
   responseAt!: string | null;
+  responseEditedAt!: string | null;
   createdAt!: string;
 
   /** Null when visible. Set together with the reason, never alone. */
@@ -114,11 +115,31 @@ export class AdminReviewDto {
   locationName!: string;
   businessId!: string;
   businessName!: string | null;
+  businessLogoUrl!: string | null;
+
+  /** The booking reviewed, and what it was for (§248). */
+  appointmentId!: string;
+  serviceName!: string | null;
 
   customerId!: string;
   customerEmail!: string;
   /** "Anonymous" when no name is set — never null. */
   displayName!: string;
+}
+
+/**
+ * What customers see, counted whatever the filter (§248): by star, shown and
+ * hidden — over one shop when the list is for one, else the platform.
+ */
+export class AdminReviewBreakdownDto {
+  /** Five numbers, one-star first: the reviews customers can see. */
+  @ApiProperty({ type: [Number] })
+  stars!: number[];
+  visible!: number;
+  hidden!: number;
+  /** Of the visible reviews, to one decimal place; null when there are none. */
+  @ApiProperty({ type: Number, nullable: true })
+  ratingAvg!: number | null;
 }
 
 export class AdminReviewPageDto {
@@ -127,5 +148,6 @@ export class AdminReviewPageDto {
   offset!: number;
   /** Across the whole platform, not this page — the number worth watching. */
   hiddenCount!: number;
+  breakdown!: AdminReviewBreakdownDto;
   reviews!: AdminReviewDto[];
 }

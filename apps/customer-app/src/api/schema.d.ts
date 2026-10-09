@@ -4903,6 +4903,14 @@ export interface components {
             reviews: components["schemas"]["ReviewDto"][];
             breakdown: components["schemas"]["ReviewBreakdownDto"];
         };
+        AdminReviewBreakdownDto: {
+            /** @description Five numbers, one-star first: the reviews customers can see. */
+            stars: number[];
+            /** @description Of the visible reviews, to one decimal place; null when there are none. */
+            ratingAvg: number | null;
+            visible: number;
+            hidden: number;
+        };
         AdminReviewDto: {
             id: string;
             rating: number;
@@ -4910,6 +4918,7 @@ export interface components {
             editedAt: string | null;
             responseText: string | null;
             responseAt: string | null;
+            responseEditedAt: string | null;
             createdAt: string;
             /** @description Null when visible. Set together with the reason, never alone. */
             hiddenAt: string | null;
@@ -4920,6 +4929,10 @@ export interface components {
             locationName: string;
             businessId: string;
             businessName: string | null;
+            businessLogoUrl: string | null;
+            /** @description The booking reviewed, and what it was for (§248). */
+            appointmentId: string;
+            serviceName: string | null;
             customerId: string;
             customerEmail: string;
             /** @description "Anonymous" when no name is set — never null. */
@@ -4931,6 +4944,7 @@ export interface components {
             offset: number;
             /** @description Across the whole platform, not this page — the number worth watching. */
             hiddenCount: number;
+            breakdown: components["schemas"]["AdminReviewBreakdownDto"];
             reviews: components["schemas"]["AdminReviewDto"][];
         };
         HideReviewDto: {
@@ -13854,7 +13868,15 @@ export interface operations {
                 visibility?: "VISIBLE" | "HIDDEN" | "ALL";
                 /** @description Only reviews at or below this rating — the ones that get disputed. */
                 maxRating?: number;
+                /** @description Only reviews of exactly this many stars — a bar of the breakdown (§248). */
+                rating?: number;
                 businessId?: string;
+                /**
+                 * @description Part of the words, the reviewer's name or email, or the shop's or
+                 *     branch's name (§248).
+                 */
+                q?: string;
+                sort?: "newest" | "oldest" | "lowest" | "highest";
                 limit?: number;
                 offset?: number;
             };

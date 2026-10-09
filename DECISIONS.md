@@ -16496,3 +16496,60 @@ answer everyone else.
 Checked at 1440, 1024 and 390, open and closed, with a conversation of a
 reply, a note and an attachment faked in the test browser. No ticket was
 started, answered or closed.
+
+## 248. Admin piece 7 — Reviews, the business app's page from the moderator's side (2026-10-09)
+
+Reviews was a list of boxes with "★★★☆☆" in text, a checkbox for low
+ratings and up to 100 reviews with no search. Now it is the business app's
+Reviews (§199, §215) turned around: there, each review is about *your* shop
+and the job is to answer it; here, each is someone writing about *a* shop,
+and the job is to decide whether customers may read it.
+
+### 248.1 The server
+
+`GET /admin/reviews` gains, beside its visibility and `maxRating` filters:
+
+- **`q`** — the words, the reviewer's name or email, the shop's or branch's
+  name, case-insensitive;
+- **`rating`** — exactly this many stars (a bar of the breakdown);
+- **`sort`** — newest, oldest, lowest or highest first, ties broken by date
+  and id so a page boundary never repeats or skips one (as §215);
+- per review: the **shop's logo**, the **booking** reviewed and its
+  **service**, and when the shop's reply was edited;
+- **`breakdown`**: the reviews customers can see, by star, how many are
+  shown and hidden, and their average — **counted whatever the filter**, over
+  one shop when the list is for one, else the platform. The average comes
+  from the star counts already in hand (one decimal place; null, not zero,
+  when nothing shows), not a separate `AVG()`.
+
+Six tests in "the console's review desk (§248)"; the suite (107) passes.
+
+### 248.2 The page
+
+- **The summary**: the platform's score large, with stars; the split by star
+  as bars (1–2 stars in coral — those are the disputed ones), **each bar a
+  filter**; and a dark card for **what is hidden** — how many, the share of
+  all reviews as an amber ring, what hiding does, and *See them*.
+- **One card of reviews**, its top pinned: search, order, then *Showing ·
+  Hidden · All* with counts, and a **1–2 ★ only** chip (a chosen bar shows as
+  its own chip, with ×). The address keeps all of it.
+- **Each review leads with who wrote it** — their name as shown (or
+  Anonymous) and their email — then **about which shop** (its tile, name and
+  branch), the service and the date, the stars as a pill (red at 1–2), the
+  words (clamped, *Read all*), and the shop's reply under its own tile.
+  Search words are marked where they appear.
+- **Hide from customers** asks for the reason (kept against your name; the
+  customer is told why, the shop that its rating changed — §93). **Show it
+  again** asks first too, quoting why it was hidden. A hidden review stays
+  in the list faded behind a light hatch, with an amber note of who hid it,
+  when and why. *The booking →* links to the booking reviewed.
+- Twenty at a time, the next page loading as the end comes into view.
+
+Checked at 1440 (Showing; All with the hidden one), 1024 (a search) and 390
+(the summary; Hidden). Nothing was hidden or shown again.
+
+### 248.3 Housekeeping
+
+The old page's styles (`.reviews`, `.review`, `.rating`, `.reply-shown`…)
+and the old ticket drawer's (`.thread`, `.message`, `.reply`…) left
+`styles.css`. An `eyeOff` icon joined the set for hiding.

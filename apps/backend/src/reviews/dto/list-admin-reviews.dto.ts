@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
+import { ReviewOrder } from './list-reviews.dto';
 
 /**
  * Which reviews a moderator wants to see (§93).
@@ -21,9 +22,30 @@ export class ListAdminReviewsDto {
   @Max(5)
   maxRating?: number;
 
+  /** Only reviews of exactly this many stars — a bar of the breakdown (§248). */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  rating?: number;
+
   @IsOptional()
   @IsUUID()
   businessId?: string;
+
+  /**
+   * Part of the words, the reviewer's name or email, or the shop's or
+   * branch's name (§248).
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
+
+  @IsOptional()
+  @IsEnum(ReviewOrder, { message: `sort must be one of: ${Object.values(ReviewOrder).join(', ')}` })
+  sort?: ReviewOrder;
 
   @IsOptional()
   @Type(() => Number)
