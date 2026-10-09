@@ -13,158 +13,199 @@ import {
   type AdminCategory,
   type AdminSubcategory,
 } from '../api/admin';
+import { CATEGORY_LOOKS, CategoryMark, categoryLook } from '../ui/CategoryMark';
 import { confirmDialog } from '../ui/Dialog';
+import { Icon } from '../ui/Icon';
+import { Panel } from '../ui/Panel';
+import './taxonomy.css';
+
+const shops = (n: number) => `${n} ${n === 1 ? 'shop' : 'shops'}`;
 
 /**
- * The taxonomy: what exists, and what a business may choose.
+ * The taxonomy: what a shop may choose when it signs up (§252, §98).
  *
- * Switching something off gates the **picker** only. A business already in it
- * keeps its listing and stays in search — it did not make this decision (§98).
- *
- * **Nothing here is deleted** (§101). Off is a retirement and can be undone; a
- * mistake in a name is fixed by renaming. Between them there is nothing a
- * delete would add, and plenty it could take away.
- *
- * Every switch confirms first. They take effect immediately and change what
- * thousands of future sign-ups can choose, which is not something to do by
- * brushing a control on the way past.
+ * Each category as the customer app draws it — its own colours and mark —
+ * with its types under it. Switching something off gates the **picker** only:
+ * a shop already in it keeps its listing and stays in search, because it did
+ * not make this decision (§98). **Nothing is deleted** (§101): off is a
+ * retirement and can be undone, and a mistake in a name is fixed by renaming.
+ * Every switch asks first; it changes what every future sign-up can choose.
  */
 export function CategoriesPage() {
   const queryClient = useQueryClient();
   const [adding, setAdding] = useState(false);
+  const categories = useQuery({ queryKey: ['admin-categories'], queryFn: listAdminCategories });
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
 
-  const categories = useQuery({
-    queryKey: ['admin-categories'],
-    queryFn: listAdminCategories,
-  });
-
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
-  const live = categories.data?.filter((category) => category.isLive).length ?? 0;
+  const list = categories.data ?? [];
+  const live = list.filter((c) => c.isLive).length;
+  const types = list.reduce((sum, c) => sum + c.subcategories.length, 0);
+  const liveTypes = list.reduce((sum, c) => sum + (c.isLive ? c.subcategories.filter((s) => s.isLive).length : 0), 0);
+  const inUse = list.reduce((sum, c) => sum + c.businessCount, 0);
 
   return (
-    <section>
-      <header className="page-head">
-        <div>
-          <h1>Categories</h1>
-          <p className="muted">
-            What a business can pick when it signs up. Nothing here is ever
-            deleted — switching one off retires it, and switching it back on
-            brings it straight back.
-          </p>
-        </div>
-        <div className="filters">
-          {categories.data && (
-            <span className="muted small">
-              {live} of {categories.data.length} offered
-            </span>
-          )}
-          <button type="button" className="primary" onClick={() => setAdding(true)}>
-            Add a category
+    <section className="tx">
+      <div className="page-top">
+        <header className="page-head tx-head">
+          <div>
+            <h1>Categories</h1>
+            <p className="muted">What a shop can choose when it signs up. Nothing is ever deleted — switching one off retires it, and on brings it back.</p>
+          </div>
+          <button type="button" className="primary tx-add" onClick={() => setAdding(true)}>
+            <Icon name="plus" size={17} /> Add a category
           </button>
+        </header>
+      </div>
+
+      {categories.data && (
+        <div className="tx-stats">
+          <div>
+            <strong>
+              {live}
+              <small> of {list.length}</small>
+            </strong>
+            <span>categories offered</span>
+          </div>
+          <div>
+            <strong>
+              {liveTypes}
+              <small> of {types}</small>
+            </strong>
+            <span>types a shop can pick</span>
+          </div>
+          <div>
+            <strong>{inUse}</strong>
+            <span>shops listed in them</span>
+          </div>
         </div>
-      </header>
+      )}
 
-      {adding && <NewCategory onDone={() => { setAdding(false); refresh(); }} onCancel={() => setAdding(false)} />}
+      {categories.isLoading && (
+        <div className="tx-grid">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="skeleton tx-skel" />
+          ))}
+        </div>
+      )}
 
-      {categories.isLoading && <p className="muted">Loading…</p>}
-
-      <ul className="taxonomy">
-        {categories.data?.map((category) => (
-          <CategoryCard key={category.id} category={category} onChanged={refresh} />
+      <div className="tx-grid">
+        {list.map((category, i) => (
+          <CategoryCard key={category.id} category={category} index={i} onChanged={refresh} />
         ))}
-      </ul>
+      </div>
+
+      {adding && <NewCategory onClose={() => setAdding(false)} onDone={refresh} />}
     </section>
   );
 }
 
-function NewCategory({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+/** The marks the apps know how to draw; anything else is drawn as a shop. */
+function MarkPicker({ value, onChange }: { value: string; onChange: (key: string) => void }) {
+  return (
+    <div className="tx-marks" role="radiogroup" aria-label="Its mark">
+      {Object.entries(CATEGORY_LOOKS).map(([key, look]) => (
+        <button
+          key={key}
+          type="button"
+          role="radio"
+          aria-checked={value === key}
+          className={value === key ? 'is-on' : ''}
+          onClick={() => onChange(key)}
+          title={look.name}
+        >
+          <CategoryMark icon={key} size={44} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function NewCategory({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const [name, setName] = useState('');
-  const [icon, setIcon] = useState('');
+  const [icon, setIcon] = useState('sparkles');
   const [description, setDescription] = useState('');
 
   const create = useMutation({
     mutationFn: () =>
-      createCategory({
-        name: name.trim(),
-        ...(icon.trim() ? { icon: icon.trim() } : {}),
-        ...(description.trim() ? { description: description.trim() } : {}),
-      }),
-    onSuccess: onDone,
+      createCategory({ name: name.trim(), icon, ...(description.trim() ? { description: description.trim() } : {}) }),
+    onSuccess: () => {
+      onDone();
+      onClose();
+    },
   });
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    create.mutate();
+    if (name.trim().length >= 2) create.mutate();
   };
 
   return (
-    <form className="card setting" onSubmit={submit}>
-      <div className="setting-head">
-        <h2>New category</h2>
-        <p className="muted small">
-          It is offered to businesses as soon as it exists. Add its types next.
-        </p>
+    <Panel
+      eyebrow="Categories"
+      title="A new category"
+      onClose={onClose}
+      width={560}
+      footer={
+        <>
+          <button type="button" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" form="tx-new" className="primary" disabled={create.isPending || name.trim().length < 2}>
+            {create.isPending ? 'Adding…' : 'Add the category'}
+          </button>
+        </>
+      }
+    >
+      <div className="tx-preview" style={{ background: categoryLook(icon).tint }}>
+        <CategoryMark icon={icon} size={64} />
+        <div>
+          <strong>{name.trim() || 'Its name'}</strong>
+          <span>{description.trim() || 'What it covers, in a few words.'}</span>
+        </div>
+        <em>As customers will see it</em>
       </div>
-      <div className="filters">
-        <input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Dining"
-          autoFocus
-        />
-        <input
-          value={icon}
-          onChange={(event) => setIcon(event.target.value)}
-          placeholder="icon key or emoji"
-        />
-        <input
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder="Restaurants, cafes and takeaways."
-        />
-      </div>
-      {create.error && (
-        <p className="error small" role="alert">
-          {create.error instanceof ApiError ? create.error.message : 'That did not save.'}
-        </p>
-      )}
-      <div className="row-end">
-        <button type="button" className="link" onClick={onCancel}>
-          Cancel
-        </button>
-        <button type="submit" className="primary" disabled={create.isPending || name.trim().length < 2}>
-          {create.isPending ? 'Adding…' : 'Add'}
-        </button>
-      </div>
-    </form>
+
+      <form id="tx-new" className="tx-form" onSubmit={submit}>
+        <label>
+          <span>Name</span>
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Dining" autoFocus maxLength={60} />
+        </label>
+        <label>
+          <span>
+            What it covers <em>(optional)</em>
+          </span>
+          <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Restaurants, cafes and takeaways." maxLength={200} />
+        </label>
+        <div className="tx-field">
+          <span>Its mark</span>
+          <MarkPicker value={icon} onChange={setIcon} />
+        </div>
+        <p className="tx-note">It is offered to shops as soon as it exists. Add its types next — a shop picks one of those.</p>
+        {create.error && (
+          <p className="error small" role="alert">
+            {create.error instanceof ApiError ? create.error.message : 'That did not save.'}
+          </p>
+        )}
+      </form>
+    </Panel>
   );
 }
 
-function CategoryCard({
-  category,
-  onChanged,
-}: {
-  category: AdminCategory;
-  onChanged: () => void;
-}) {
+function CategoryCard({ category, index, onChanged }: { category: AdminCategory; index: number; onChanged: () => void }) {
   const [editing, setEditing] = useState(false);
   const [newType, setNewType] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
+  const look = categoryLook(category.icon);
 
-  const fail = (error: unknown) =>
-    setProblem(error instanceof ApiError ? error.message : 'That did not work.');
+  const fail = (error: unknown) => setProblem(error instanceof ApiError ? error.message : 'That did not work.');
   const done = () => {
     setProblem(null);
     onChanged();
   };
 
-  const toggle = useMutation({
-    mutationFn: (isLive: boolean) => setCategoryLive(category.id, isLive),
-    onSuccess: done,
-    onError: fail,
-  });
-  const rename = useMutation({
-    mutationFn: (name: string) => updateCategory(category.id, { name }),
+  const toggle = useMutation({ mutationFn: (isLive: boolean) => setCategoryLive(category.id, isLive), onSuccess: done, onError: fail });
+  const save = useMutation({
+    mutationFn: (body: { name: string; icon: string; description?: string }) => updateCategory(category.id, body),
     onSuccess: () => {
       setEditing(false);
       done();
@@ -181,16 +222,15 @@ function CategoryCard({
   });
 
   const onToggle = async (next: boolean) => {
-    const inUse = category.businessCount;
+    const n = category.businessCount;
     const sure = await confirmDialog({
       title: next ? `Offer “${category.name}” again?` : `Stop offering “${category.name}”?`,
       body: next ? (
-        <p>New sign-ups will be able to choose it.</p>
+        <p>New shops will be able to choose it, and customers will see it on the home screen.</p>
       ) : (
         <p>
-          New businesses will not be able to choose it.
-          {inUse > 0 &&
-            ` The ${inUse} business${inUse === 1 ? '' : 'es'} already in it keep their listing and stay in search. Nothing is removed.`}
+          New shops will not be able to choose it.
+          {n > 0 && ` The ${shops(n)} already in it keep their listing and stay in search. Nothing is removed.`}
         </p>
       ),
       tone: next ? 'ok' : 'warn',
@@ -202,119 +242,116 @@ function CategoryCard({
   };
 
   return (
-    <li className={category.isLive ? 'cat' : 'cat off'}>
-      <div className="cat-head">
-        <div>
-          {editing ? (
-            <form
-              className="sub-add"
-              onSubmit={(event) => {
-                event.preventDefault();
-                const input = (event.currentTarget.elements.namedItem('name') as HTMLInputElement);
-                rename.mutate(input.value.trim());
-              }}
-            >
-              <input name="name" defaultValue={category.name} autoFocus />
-              <button type="submit" className="primary" disabled={rename.isPending}>
-                Save
-              </button>
-              <button type="button" className="link" onClick={() => setEditing(false)}>
-                Cancel
-              </button>
-            </form>
-          ) : (
-            <>
-              <strong>
-                {category.icon && <span className="cat-icon">{category.icon} </span>}
-                {category.name}
-              </strong>
-              <div className="muted small">
-                {category.businessCount} business{category.businessCount === 1 ? '' : 'es'}
-                {category.description && ` · ${category.description}`}
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="people-actions">
-          <Toggle
-            checked={category.isLive}
-            disabled={toggle.isPending}
-            onChange={onToggle}
-            label={category.isLive ? 'Offered' : 'Hidden'}
-          />
-          {!editing && (
-            <button type="button" className="link" onClick={() => setEditing(true)}>
-              Rename
+    <article className={`tx-card${category.isLive ? '' : ' is-off'}`} style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
+      <header className="tx-card-head" style={{ background: `linear-gradient(180deg, ${look.tint}, transparent)` }}>
+        <CategoryMark icon={category.icon} size={52} />
+        {editing ? (
+          <EditCategory category={category} busy={save.isPending} onSave={(body) => save.mutate(body)} onCancel={() => setEditing(false)} />
+        ) : (
+          <div className="tx-title">
+            <strong>{category.name}</strong>
+            <span>
+              {shops(category.businessCount)}
+              {category.description && ` · ${category.description}`}
+            </span>
+          </div>
+        )}
+        {!editing && (
+          <div className="tx-card-acts">
+            <Toggle checked={category.isLive} disabled={toggle.isPending} onChange={(v) => void onToggle(v)} label={category.isLive ? 'Offered' : 'Retired'} />
+            <button type="button" className="tx-icon-btn" onClick={() => setEditing(true)} aria-label={`Edit ${category.name}`} title="Rename, describe or change its mark">
+              <Icon name="pencil" size={15} />
             </button>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </header>
 
       {problem && (
-        <p className="error small" role="alert">
+        <p className="error small tx-problem" role="alert">
           {problem}
         </p>
       )}
 
-      <ul className="subs">
-        {category.subcategories.map((subcategory) => (
-          <SubcategoryRow
-            key={subcategory.id}
-            subcategory={subcategory}
-            parentLive={category.isLive}
-            parentName={category.name}
-            onChanged={done}
-            onError={fail}
-          />
+      <ul className="tx-types">
+        {category.subcategories.map((s) => (
+          <TypeRow key={s.id} type={s} parentLive={category.isLive} parentName={category.name} onChanged={done} onError={fail} />
         ))}
-        {category.subcategories.length === 0 && (
-          <li className="muted small">No types yet. A business picks one of these.</li>
-        )}
+        {category.subcategories.length === 0 && <li className="tx-none">No types yet. A shop picks one of these when it signs up.</li>}
       </ul>
 
       <form
-        className="sub-add"
+        className="tx-add-type"
         onSubmit={(event) => {
           event.preventDefault();
-          addType.mutate();
+          if (newType.trim().length >= 2) addType.mutate();
         }}
       >
-        <input
-          value={newType}
-          onChange={(event) => setNewType(event.target.value)}
-          placeholder="Add a type, e.g. Barbershop"
-        />
-        <button type="submit" disabled={addType.isPending || newType.trim().length < 2}>
-          Add
-        </button>
+        <Icon name="plus" size={15} />
+        <input value={newType} onChange={(event) => setNewType(event.target.value)} placeholder="Add a type, like Barbershop" aria-label={`Add a type to ${category.name}`} />
+        {newType.trim().length >= 2 && (
+          <button type="submit" className="primary" disabled={addType.isPending}>
+            {addType.isPending ? 'Adding…' : 'Add'}
+          </button>
+        )}
       </form>
-    </li>
+    </article>
   );
 }
 
-function SubcategoryRow({
-  subcategory,
+function EditCategory({
+  category,
+  busy,
+  onSave,
+  onCancel,
+}: {
+  category: AdminCategory;
+  busy: boolean;
+  onSave: (body: { name: string; icon: string; description?: string }) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(category.name);
+  const [description, setDescription] = useState(category.description ?? '');
+  const [icon, setIcon] = useState(category.icon ?? 'sparkles');
+  return (
+    <form
+      className="tx-edit"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (name.trim().length >= 2) onSave({ name: name.trim(), icon, ...(description.trim() ? { description: description.trim() } : {}) });
+      }}
+    >
+      <input value={name} onChange={(event) => setName(event.target.value)} aria-label="Name" autoFocus maxLength={60} />
+      <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What it covers" aria-label="What it covers" maxLength={200} />
+      <MarkPicker value={icon} onChange={setIcon} />
+      <div className="tx-edit-acts">
+        <button type="button" onClick={onCancel}>
+          Cancel
+        </button>
+        <button type="submit" className="primary" disabled={busy || name.trim().length < 2}>
+          {busy ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function TypeRow({
+  type,
   parentLive,
   parentName,
   onChanged,
   onError,
 }: {
-  subcategory: AdminSubcategory;
+  type: AdminSubcategory;
   parentLive: boolean;
   parentName: string;
   onChanged: () => void;
   onError: (error: unknown) => void;
 }) {
   const [editing, setEditing] = useState(false);
-
-  const toggle = useMutation({
-    mutationFn: (isLive: boolean) => setSubcategoryLive(subcategory.id, isLive),
-    onSuccess: onChanged,
-    onError,
-  });
+  const toggle = useMutation({ mutationFn: (isLive: boolean) => setSubcategoryLive(type.id, isLive), onSuccess: onChanged, onError });
   const rename = useMutation({
-    mutationFn: (name: string) => updateSubcategory(subcategory.id, name),
+    mutationFn: (name: string) => updateSubcategory(type.id, name),
     onSuccess: () => {
       setEditing(false);
       onChanged();
@@ -323,13 +360,13 @@ function SubcategoryRow({
   });
 
   const onToggle = async (next: boolean) => {
-    const n = subcategory.businessCount;
+    const n = type.businessCount;
     const sure = await confirmDialog({
-      title: next ? `Offer “${subcategory.name}” again?` : `Stop offering “${subcategory.name}”?`,
+      title: next ? `Offer “${type.name}” again?` : `Stop offering “${type.name}”?`,
       body: next ? undefined : (
         <p>
-          New businesses will not be able to choose it.
-          {n > 0 && ` The ${n} business${n === 1 ? '' : 'es'} already using it keep their listing.`}
+          New shops will not be able to choose it.
+          {n > 0 && ` The ${shops(n)} already using it keep their listing.`}
         </p>
       ),
       tone: next ? 'ok' : 'warn',
@@ -340,56 +377,41 @@ function SubcategoryRow({
     if (sure) toggle.mutate(next);
   };
 
+  // Its own switch is on and the parent's is off, so it is not actually
+  // offered. Saying so beats a row that looks open.
+  const shadowed = type.isLive && !parentLive;
+
   return (
-    <li>
+    <li className={type.isLive && parentLive ? '' : 'is-off'}>
       {editing ? (
         <form
-          className="sub-add"
+          className="tx-rename"
           onSubmit={(event) => {
             event.preventDefault();
             const input = event.currentTarget.elements.namedItem('name') as HTMLInputElement;
-            rename.mutate(input.value.trim());
+            if (input.value.trim().length >= 2) rename.mutate(input.value.trim());
           }}
         >
-          <input name="name" defaultValue={subcategory.name} autoFocus />
+          <input name="name" defaultValue={type.name} autoFocus aria-label="New name" />
           <button type="submit" className="primary" disabled={rename.isPending}>
             Save
           </button>
-          <button type="button" className="link" onClick={() => setEditing(false)}>
+          <button type="button" onClick={() => setEditing(false)}>
             Cancel
           </button>
         </form>
       ) : (
-        <div>
-          <span>{subcategory.name}</span>
-          <span className="muted small">
-            {' '}
-            · {subcategory.businessCount} business
-            {subcategory.businessCount === 1 ? '' : 'es'}
+        <>
+          <span className="tx-type-name">
+            <b>{type.name}</b>
+            <em>{shadowed ? `Not offered while “${parentName}” is retired` : shops(type.businessCount)}</em>
           </span>
-          {/* Its own switch is on and the parent's is off, so it is not
-              actually offered. Saying so beats a row that looks open. */}
-          {subcategory.isLive && !parentLive && (
-            <div className="muted small">
-              Not offered while “{parentName}” is hidden.
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="people-actions">
-        <Toggle
-          checked={subcategory.isLive}
-          disabled={toggle.isPending}
-          onChange={onToggle}
-          label={subcategory.isLive ? 'Offered' : 'Hidden'}
-        />
-        {!editing && (
-          <button type="button" className="link" onClick={() => setEditing(true)}>
-            Rename
+          <button type="button" className="tx-icon-btn is-quiet" onClick={() => setEditing(true)} aria-label={`Rename ${type.name}`} title="Rename">
+            <Icon name="pencil" size={14} />
           </button>
-        )}
-      </div>
+          <Toggle checked={type.isLive} disabled={toggle.isPending} onChange={(v) => void onToggle(v)} label={type.isLive ? 'Offered' : 'Retired'} />
+        </>
+      )}
     </li>
   );
 }

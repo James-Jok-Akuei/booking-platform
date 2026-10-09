@@ -467,11 +467,6 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .card.location.closed h2 { display: flex; align-items: center; gap: 9px; }
 .branch-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 10px; }
 
-.people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.people li { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); }
-.people li:last-child { border-bottom: none; }
-.people-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-.people-actions select { min-height: 36px; padding-top: 6px; padding-bottom: 6px; }
 
 
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 18px; }
@@ -652,7 +647,6 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
    figures, a legend, the taxonomy, the old on/off toggle, internal notes. */
 
 .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
-.filters input[type='search'] { min-width: 240px; }
 
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 tr.clickable { cursor: pointer; }
@@ -672,24 +666,6 @@ tr.clickable:hover { background: var(--accent-tint); }
 .plain > li:last-child { border-bottom: none; padding-bottom: 0; }
 .plain > li .pill { align-self: flex-start; margin-top: 3px; }
 
-/* The taxonomy (§98, §101): categories and districts, each a card. */
-.taxonomy { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
-.cat {
-  background: var(--panel);
-  border: 1px solid rgba(31, 42, 31, 0.05);
-  border-radius: var(--r-lg);
-  padding: 18px 20px;
-  box-shadow: var(--shadow-xs);
-}
-.cat.off { opacity: 0.7; background: var(--sunken); box-shadow: none; }
-.cat-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
-.cat-head strong { font-size: 15.5px; }
-.cat-icon { font-weight: 500; color: var(--muted); }
-.subs { list-style: none; margin: 14px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
-.subs li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 8px; border-radius: var(--r-sm); }
-.subs li:hover { background: var(--sunken); }
-.sub-add { display: flex; gap: 8px; margin-top: 12px; }
-.sub-add input { flex: 1; max-width: 320px; }
 .link.danger { color: var(--danger); }
 
 /* The on/off control (Toggle.tsx), in the switch's look (§194). */

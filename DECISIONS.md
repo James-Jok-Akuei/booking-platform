@@ -16749,3 +16749,50 @@ names the gateway fee for what it is.
 
 Checked at 1440 (adjustments; the ledger scrolled, with the switch pinned),
 1024 and 390. Nothing was executed.
+
+## 252. Admin piece 11 — Categories and Places, as the customer sees them and as a map of switches (2026-10-09)
+
+Both pages were lists of grey cards with a switch and a *Rename* link per
+line, and a category's mark was its raw `icon` word ("calendar-star") printed
+before its name. No server change: what both need was already there.
+
+### 252.1 Categories
+
+- **Each category as the customer app draws it** (§133): its own pair of
+  colours and its mark, from the same table and the same Ionicons glyphs the
+  customer app ships — copied with the business app's shopfront subset
+  (§208) into `ui/ionicons.ts` and drawn by `ui/CategoryMark.tsx`. The card's
+  head is washed in the category's tint, so the page reads like the
+  customer's home screen.
+- Above them: **how many categories and types are offered** ("46 of 46 types
+  a shop can pick" — a type under a retired category does not count) and how
+  many shops are listed in them.
+- Each card: the mark, the name, how many shops and what it covers; its
+  switch (*Offered / Retired*, asks first, naming the shops that keep their
+  listing, §98); a pencil that edits **the name, the description and the
+  mark** in place; then its types, each with its shop count, its own switch
+  and a rename that shows on hover — a type left on under a retired category
+  says "Not offered while … is retired" and is struck through; and *Add a
+  type* at the foot.
+- **A new category** opens in a panel with a live preview ("as customers will
+  see it") and a picker of the marks the apps can draw, instead of a free
+  "icon key or emoji" box that produced marks no app knew.
+- A retired category is drawn quietly: a dashed edge, a grey mark.
+
+### 252.2 Places
+
+- A line across the top: **"Open in 6 of 31 districts"**, the provinces and
+  branches it covers, and a bar per province.
+- **Each province a card** with a ring of how many of its districts are open,
+  and **each district a tile**: open ones lit green with a pin, retired ones
+  quiet, each with its branches ("· still listed" when retired with branches
+  in it), its switch (asks first, §105, §98.1) and a rename on hover. *Add a
+  district* is the last tile and becomes a small form (name and code).
+- Nothing on either page deletes anything (§101).
+
+The old `.taxonomy`, `.cat`, `.subs`, `.sub-add`, `.people` and `.filters`
+styles left `styles.css`.
+
+Checked at 1440 (both pages; the new-category panel), 1024 (editing a
+category in place) and 390 (both pages). Nothing was switched, renamed or
+added.
