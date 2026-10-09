@@ -2998,6 +2998,7 @@ export interface components {
         AdminUserBusinessDto: {
             id: string;
             name: string | null;
+            logoUrl: string | null;
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF";
         };
@@ -3007,7 +3008,18 @@ export interface components {
             /** @enum {string} */
             role: "BUSINESS" | "CUSTOMER" | "ADMIN";
             displayName: string | null;
+            /** @description Their own photo, when they set one. */
+            imageUrl: string | null;
             createdAt: string;
+            /** @description When they closed their account (§122); null while it is open. */
+            closedAt: string | null;
+            /**
+             * @description When their app last renewed its session — the nearest thing to "last seen"
+             *     the platform keeps (§250). Null if they never signed in.
+             */
+            lastSeenAt: string | null;
+            /** @description The district they set as home, for offers (§186). */
+            homeArea: string | null;
             /**
              * @description So the console can stop offering an action the server refuses (§118).
              *     Meaningless on a CUSTOMER or BUSINESS row, where it is simply false.

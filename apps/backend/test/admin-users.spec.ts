@@ -110,6 +110,42 @@ describe('User directory (§94)', () => {
     expect(row.ticketCount).toBe(0);
   });
 
+  describe("the console's people (§250)", () => {
+    it('says when their app last came back, from the newest session', async () => {
+      const customer = await createCustomer(prisma);
+      const never = await users.list(AS_ADMIN(), { search: customer.email });
+      expect(never.users[0].lastSeenAt).toBeNull();
+
+      const older = new Date('2026-10-01T08:00:00Z');
+      const newer = new Date('2026-10-08T17:30:00Z');
+      await prisma.refreshToken.createMany({
+        data: [
+          { userId: customer.userId, tokenHash: `old-${customer.userId}`, expiresAt: new Date('2027-01-01'), createdAt: older },
+          { userId: customer.userId, tokenHash: `new-${customer.userId}`, expiresAt: new Date('2027-01-01'), createdAt: newer },
+        ],
+      });
+
+      const seen = await users.list(AS_ADMIN(), { search: customer.email });
+      expect(seen.users[0].lastSeenAt).toBe(newer.toISOString());
+    });
+
+    it('carries their photo, a closed account and the shop logo where they work', async () => {
+      const business = await createBusiness(prisma);
+      await prisma.businessProfile.update({ where: { id: business.businessId }, data: { logoUrl: 'https://example.com/shop-250.png' } });
+      const closedAt = new Date('2026-10-05T10:00:00Z');
+      await prisma.user.update({
+        where: { id: business.userId },
+        data: { imageUrl: 'https://example.com/me-250.png', closedAt },
+      });
+
+      const [row] = (await users.list(AS_ADMIN(), { search: business.email })).users;
+      expect(row.imageUrl).toBe('https://example.com/me-250.png');
+      expect(row.closedAt).toBe(closedAt.toISOString());
+      expect(row.businesses[0].logoUrl).toBe('https://example.com/shop-250.png');
+      expect(row.homeArea).toBeNull();
+    });
+  });
+
   it.each([UserRole.CUSTOMER, UserRole.BUSINESS])('refuses a %s', async (role) => {
     await expect(
       users.list({ role }, {}),

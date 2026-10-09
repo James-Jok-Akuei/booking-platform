@@ -400,6 +400,7 @@ export const listUsers = (params: {
   search?: string;
   withDisplayName?: string;
   limit?: number;
+  offset?: number;
 }) => api<DirectoryPage>('/admin/users', { query: params });
 
 /**

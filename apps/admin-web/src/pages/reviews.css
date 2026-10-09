@@ -258,7 +258,7 @@
 .rv-who .rv-about { display: flex; align-items: center; gap: 7px; margin: 3px 0 1px; font-size: 13px; color: var(--ink-2); }
 .rv-about .shop-mark { flex: none; }
 .rv-about b { font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rv-about > span { flex: none; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
+.rv-about > span:not(.shop-mark) { flex: none; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%; }
 
 .rv-reply .rv-reply-mark { flex: none; }
 
@@ -282,5 +282,5 @@
 
 @container page (max-width: 640px) {
   .rv-tabs-gap { flex-basis: 8px; }
-  .rv-about > span { max-width: 40%; }
+  .rv-about > span:not(.shop-mark) { max-width: 40%; }
 }

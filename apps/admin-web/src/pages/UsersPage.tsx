@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth/auth-context';
 import {
@@ -11,60 +12,421 @@ import {
   revokeAdminInvitation,
   type DirectoryUser,
 } from '../api/admin';
+import { ago } from '../lib/time';
+import { Avatar } from '../ui/Avatar';
 import { confirmDialog, promptDialog } from '../ui/Dialog';
-import { Select } from '../ui/Select';
+import { Icon, type IconName } from '../ui/Icon';
+import { Panel } from '../ui/Panel';
+import { ShopMark } from '../ui/ShopMark';
+import './users.css';
 
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
+type Role = 'ALL' | 'CUSTOMER' | 'BUSINESS' | 'ADMIN';
 
-const ROLES = [
-  { value: '', label: 'Everyone' },
-  { value: 'CUSTOMER', label: 'Customers' },
-  { value: 'BUSINESS', label: 'Business accounts' },
-  { value: 'ADMIN', label: 'Administrators' },
-] as const;
+const TABS: Array<{ value: Role; label: string; icon: IconName }> = [
+  { value: 'ALL', label: 'Everyone', icon: 'users' },
+  { value: 'CUSTOMER', label: 'Customers', icon: 'user' },
+  { value: 'BUSINESS', label: 'Shop accounts', icon: 'store' },
+  { value: 'ADMIN', label: 'Administrators', icon: 'shield' },
+];
+
+const ROLE_WORD: Record<DirectoryUser['role'], string> = {
+  CUSTOMER: 'Customer',
+  BUSINESS: 'Shop account',
+  ADMIN: 'Administrator',
+};
+
+const MEMBER_WORD: Record<string, string> = { OWNER: 'Owner', MANAGER: 'Manager', STAFF: 'Staff' };
+
+const PAGE = 30;
+
+const joined = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
 /**
- * The user directory.
+ * Everyone with an account (§250, §94, §99).
  *
- * The only action here is clearing a display name, and until §94 there was no
- * list, search or lookup to reach a user by — the PATCH took an id nothing
- * produced. So this is mostly a way to find someone, and the moderation is one
- * button on the row.
+ * The console reaches a person three ways — by what they booked, what they
+ * wrote, or what they asked — and this is the fourth: the person. Each row
+ * says who they are (their photo or initials, the name they chose, their
+ * email), what kind of account it is, where they work if they run a shop or
+ * the area they call home if they book, how much they have done, and when
+ * their app last came back. Opening one shows the same at full size with a
+ * way into each of their bookings, reviews and tickets.
  *
- * There is deliberately no edit. Replacing a name with wording an admin
- * preferred would publish words under that customer's byline they never wrote.
+ * Two decisions live here. Clearing a name a customer chose — there is
+ * deliberately no edit: replacing a name with wording an administrator
+ * preferred would publish words under their byline they never wrote. And,
+ * for the primary administrator only, who else is one: invitations under the
+ * Administrators tab, and removing access from a person's panel.
  */
 export function UsersPage() {
+  const { user: me } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const role = (params.get('role')?.toUpperCase() as Role | undefined) ?? 'ALL';
+  const named = params.get('named') === '1';
+  const openId = params.get('open');
+  const q = params.get('q') ?? '';
+  const [typed, setTyped] = useState(q);
+
+  const patch = (next: Record<string, string | null>) =>
+    setParams(
+      (was) => {
+        const out = new URLSearchParams(was);
+        for (const [k, v] of Object.entries(next)) {
+          if (v === null || v === '') out.delete(k);
+          else out.set(k, v);
+        }
+        return out;
+      },
+      { replace: true },
+    );
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (typed.trim() !== q) patch({ q: typed.trim() || null });
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typed]);
+
+  const filters = (r: Role) => ({
+    ...(r !== 'ALL' ? { role: r } : {}),
+    ...(q ? { search: q } : {}),
+    ...(named ? { withDisplayName: 'true' } : {}),
+  });
+
+  const list = useInfiniteQuery({
+    queryKey: ['users', role, q, named],
+    queryFn: ({ pageParam }) => listUsers({ ...filters(role), limit: PAGE, offset: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (last, pages) => {
+      const loaded = pages.reduce((sum, p) => sum + p.users.length, 0);
+      return loaded < last.total ? loaded : undefined;
+    },
+    placeholderData: (previous) => previous,
+  });
+  const rows = useMemo(() => list.data?.pages.flatMap((p) => p.users) ?? [], [list.data]);
+  const total = list.data?.pages[0]?.total ?? 0;
+
+  const counts = useQueries({
+    queries: TABS.map((t) => ({
+      queryKey: ['users', 'count', t.value, q, named],
+      queryFn: () => listUsers({ ...filters(t.value), limit: 1 }),
+      select: (page: { total: number }) => page.total,
+    })),
+  });
+
+  // Only the primary administrator may list invitations; a 403 is the answer
+  // to "may I manage administrators?" and cannot disagree with the server.
+  const invites = useQuery({ queryKey: ['admin-invitations'], queryFn: listAdminInvitations, retry: false });
+  const canManage = invites.isSuccess;
+
+  const end = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = end.current;
+    if (!el) return;
+    const seen = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && list.hasNextPage && !list.isFetchingNextPage) void list.fetchNextPage();
+      },
+      { rootMargin: '600px 0px' },
+    );
+    seen.observe(el);
+    return () => seen.disconnect();
+  }, [list]);
+
+  const open = rows.find((u) => u.id === openId) ?? null;
+
+  return (
+    <section className="us">
+      <div className="page-top us-top">
+        <header className="page-head">
+          <div>
+            <h1>Users</h1>
+            <p className="muted">Everyone with an account: the people who book, the people who run shops, and administrators.</p>
+          </div>
+        </header>
+
+        <div className="us-card-top pin-from">
+          <div className="us-toolbar">
+            <label className="us-search">
+              <Icon name="search" size={18} />
+              <input value={typed} onChange={(event) => setTyped(event.target.value)} placeholder="An email or a name" aria-label="Find a person" />
+              {typed && (
+                <button type="button" className="us-search-clear" onClick={() => setTyped('')} aria-label="Clear">
+                  <Icon name="close" size={14} stroke={2.2} />
+                </button>
+              )}
+            </label>
+            <button
+              type="button"
+              className={`us-chip${named ? ' is-on' : ''}`}
+              aria-pressed={named}
+              onClick={() => patch({ named: named ? null : '1' })}
+              title="Only people who chose a name — the names shown on reviews, which can be cleared"
+              aria-label="Only people who chose a name"
+            >
+              <Icon name={named ? 'check' : 'pencil'} size={14} />
+              <span className="us-chip-text">Has a chosen name</span>
+            </button>
+          </div>
+          <div className="us-tabs pin-phone" role="tablist">
+            {TABS.map((t, i) => (
+              <button
+                key={t.value}
+                type="button"
+                role="tab"
+                aria-selected={role === t.value}
+                className={`us-tab${role === t.value ? ' is-on' : ''}`}
+                onClick={() => patch({ role: t.value === 'ALL' ? null : t.value.toLowerCase() })}
+              >
+                <Icon name={t.icon} size={16} />
+                {t.label}
+                {counts[i]?.data !== undefined && <span className="us-tab-count">{counts[i].data!.toLocaleString()}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className={`us-board${list.isPlaceholderData ? ' is-refreshing' : ''}`}>
+        {role === 'ADMIN' && <Invitations canManage={canManage} invites={invites.data ?? []} />}
+
+        {list.isLoading && (
+          <div className="us-skeletons" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="us-skel">
+                <i />
+                <div>
+                  <i />
+                  <i />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {list.data && rows.length === 0 && (
+          <div className="us-empty">
+            <span>
+              <Icon name={q ? 'search' : 'users'} size={28} />
+            </span>
+            <strong>{q ? `Nobody matches “${q}”` : 'Nobody here yet'}</strong>
+            <p>{q ? 'Try part of their email, or the name they chose.' : 'Accounts appear here as people sign up.'}</p>
+          </div>
+        )}
+
+        <ul className="us-list">
+          {rows.map((u, i) => (
+            <li key={u.id} style={{ animationDelay: `${Math.min(i % PAGE, 8) * 25}ms` }}>
+              <Row u={u} me={me?.id} picked={u.id === openId} onOpen={() => patch({ open: u.id })} />
+            </li>
+          ))}
+        </ul>
+
+        <div ref={end} />
+        {rows.length > 0 && (
+          <footer className="us-foot">
+            <span>
+              Showing <strong>{rows.length.toLocaleString()}</strong> of <strong>{total.toLocaleString()}</strong>
+            </span>
+            {list.hasNextPage && (
+              <button type="button" onClick={() => void list.fetchNextPage()} disabled={list.isFetchingNextPage}>
+                {list.isFetchingNextPage ? 'Loading…' : 'Show more'}
+              </button>
+            )}
+          </footer>
+        )}
+      </div>
+
+      {open && <Person key={open.id} u={open} me={me?.id} canManage={canManage} onClose={() => patch({ open: null })} />}
+    </section>
+  );
+}
+
+function Row({ u, me, picked, onOpen }: { u: DirectoryUser; me?: string; picked: boolean; onOpen: () => void }) {
+  const closed = Boolean(u.closedAt);
+  return (
+    <button type="button" className={`us-row is-${u.role.toLowerCase()}${picked ? ' is-picked' : ''}${closed ? ' is-closed' : ''}`} onClick={onOpen}>
+      <Avatar label={u.displayName || u.email} src={u.imageUrl} size={42} />
+      <span className="us-who">
+        <strong>
+          <span>{u.displayName ?? u.email}</span>
+          {u.id === me && <em className="us-you">You</em>}
+        </strong>
+        <span>{u.displayName ? u.email : 'No name chosen'}</span>
+      </span>
+
+      <span className="us-kind">
+        <span className={`us-role is-${u.role.toLowerCase()}`}>
+          {u.role === 'ADMIN' && <Icon name="shield" size={12} />}
+          {u.isPrimaryAdmin ? 'Primary administrator' : ROLE_WORD[u.role]}
+        </span>
+        {closed && <span className="us-closed">Closed {u.closedAt && ago(u.closedAt)}</span>}
+      </span>
+
+      <span className="us-where">
+        {u.businesses.length > 0 ? (
+          <>
+            <ShopMark name={u.businesses[0].name} logoUrl={u.businesses[0].logoUrl} size={22} />
+            <span>
+              <b>{u.businesses[0].name ?? 'Unnamed shop'}</b>
+              <em>
+                {MEMBER_WORD[u.businesses[0].role] ?? u.businesses[0].role}
+                {u.businesses.length > 1 && ` · +${u.businesses.length - 1} more`}
+              </em>
+            </span>
+          </>
+        ) : u.homeArea ? (
+          <>
+            <span className="us-pin">
+              <Icon name="pin" size={13} />
+            </span>
+            <span>
+              <b>{u.homeArea}</b>
+              <em>Home</em>
+            </span>
+          </>
+        ) : (
+          <span className="us-none">—</span>
+        )}
+      </span>
+
+      <span className="us-did">
+        <span title="Bookings">
+          <Icon name="calendar" size={13} /> {u.appointmentCount}
+        </span>
+        <span title="Reviews">
+          <Icon name="star" size={13} /> {u.reviewCount}
+        </span>
+        <span title="Support tickets">
+          <Icon name="help" size={13} /> {u.ticketCount}
+        </span>
+      </span>
+
+      <span className="us-when">
+        <b>{u.lastSeenAt ? `Seen ${ago(u.lastSeenAt)}` : 'Never signed in'}</b>
+        <em>Joined {joined(u.createdAt)}</em>
+      </span>
+      <Icon name="chevronRight" size={16} className="us-chev" />
+    </button>
+  );
+}
+
+/** Administrators-to-be (§99): who has been asked and has not joined, and asking someone new. */
+function Invitations({ canManage, invites }: { canManage: boolean; invites: Array<{ id: string; email: string; expiresAt: string; createdAt: string; invitedBy: { email: string } }> }) {
   const queryClient = useQueryClient();
-  const [role, setRole] = useState<string>('');
-  const [search, setSearch] = useState('');
-  const [namedOnly, setNamedOnly] = useState(false);
-
-  const users = useQuery({
-    queryKey: ['users', role, search, namedOnly],
-    queryFn: () =>
-      listUsers({
-        limit: 100,
-        ...(role ? { role: role as 'ADMIN' | 'BUSINESS' | 'CUSTOMER' } : {}),
-        ...(search.trim() ? { search: search.trim() } : {}),
-        ...(namedOnly ? { withDisplayName: 'true' } : {}),
-      }),
+  const [email, setEmail] = useState('');
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: ['users'] });
+    void queryClient.invalidateQueries({ queryKey: ['admin-invitations'] });
+  };
+  const invite = useMutation({
+    mutationFn: () => inviteAdmin(email.trim()),
+    onSuccess: () => {
+      setEmail('');
+      refresh();
+    },
   });
+  const revoke = useMutation({ mutationFn: revokeAdminInvitation, onSuccess: refresh });
 
-  const clear = useMutation({
-    mutationFn: (input: { id: string; reason: string }) =>
-      clearDisplayName(input.id, input.reason),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
-  });
+  if (!canManage) {
+    return (
+      <div className="us-invites is-readonly">
+        <Icon name="lock" size={16} />
+        <span>Only the primary administrator can invite administrators or remove one.</span>
+      </div>
+    );
+  }
 
-  const onClear = async (user: DirectoryUser) => {
+  const send = (event: FormEvent) => {
+    event.preventDefault();
+    if (email.trim()) invite.mutate();
+  };
+
+  return (
+    <div className="us-invites">
+      <form className="us-invite" onSubmit={send}>
+        <span className="us-invite-icon">
+          <Icon name="mail" size={18} />
+        </span>
+        <div>
+          <strong>Invite an administrator</strong>
+          <span>They get an email with a link to sign in. The address must not have an account of any kind yet.</span>
+        </div>
+        <div className="us-invite-row">
+          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="their@email.com" aria-label="Their email" />
+          <button type="submit" className="primary" disabled={invite.isPending || !email.trim()}>
+            <Icon name="send" size={15} /> {invite.isPending ? 'Sending…' : 'Send the invitation'}
+          </button>
+        </div>
+        {invite.error && (
+          <p className="error small" role="alert">
+            {invite.error instanceof ApiError ? invite.error.message : 'That did not send.'}
+          </p>
+        )}
+      </form>
+
+      {invites.length > 0 && (
+        <ul className="us-pending">
+          {invites.map((inv) => {
+            const expired = new Date(inv.expiresAt).getTime() < Date.now();
+            return (
+              <li key={inv.id}>
+                <Avatar label={inv.email} size={34} />
+                <span className="us-who">
+                  <strong>{inv.email}</strong>
+                  <span>
+                    Invited {ago(inv.createdAt)} by {inv.invitedBy.email} · {expired ? 'the link has expired' : `the link works until ${joined(inv.expiresAt)}`}
+                  </span>
+                </span>
+                <span className={`us-wait${expired ? ' is-expired' : ''}`}>{expired ? 'Expired' : 'Not joined yet'}</span>
+                <button
+                  type="button"
+                  className="us-act"
+                  disabled={revoke.isPending}
+                  onClick={async () => {
+                    const ok = await confirmDialog({
+                      title: 'Cancel this invitation?',
+                      body: (
+                        <p>
+                          The link sent to <strong>{inv.email}</strong> stops working. You can invite them again later.
+                        </p>
+                      ),
+                      tone: 'warn',
+                      icon: 'mail',
+                      confirmLabel: 'Cancel the invitation',
+                      cancelLabel: 'Keep it',
+                    });
+                    if (ok) revoke.mutate(inv.id);
+                  }}
+                >
+                  Cancel
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** One person, at full size: who they are, what they have done, and the decisions about them. */
+function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; canManage: boolean; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: ['users'] });
+  const clear = useMutation({ mutationFn: (reason: string) => clearDisplayName(u.id, reason), onSuccess: refresh });
+  const revoke = useMutation({ mutationFn: () => revokeAdminAccess(u.id), onSuccess: refresh });
+  const error = clear.error ?? revoke.error;
+  const self = u.id === me;
+
+  const onClear = async () => {
     const reason = await promptDialog({
       title: 'Clear this display name?',
       body: (
         <p>
-          “<strong>{user.displayName}</strong>” from {user.email}. Their reviews show as “Anonymous” instead. They
-          are told this happened, and the reason.
+          “<strong>{u.displayName}</strong>” from {u.email}. Their reviews show as “Anonymous” instead, and they can choose a new name. They are
+          told this happened, and why.
         </p>
       ),
       label: 'Why? — written for the person it is about',
@@ -77,281 +439,140 @@ export function UsersPage() {
       confirmLabel: 'Clear the name',
       cancelLabel: 'Keep it',
     });
-    if (reason === null) return;
-    clear.mutate({ id: user.id, reason: reason.trim() });
+    if (reason !== null) clear.mutate(reason.trim());
   };
 
+  const onRevoke = async () => {
+    const ok = await confirmDialog({
+      title: 'Remove administrator access?',
+      body: (
+        <p>
+          <strong>{u.email}</strong> loses it at once, even if signed in now. The account becomes an ordinary customer account — nothing they did
+          is deleted, and anything they handled still names them.
+        </p>
+      ),
+      tone: 'danger',
+      icon: 'userX',
+      confirmLabel: 'Remove access',
+      cancelLabel: 'Keep them',
+    });
+    if (ok) revoke.mutate();
+  };
+
+  const linkFor = (to: string) => ({ to, onClick: onClose });
+
   return (
-    <section>
-      <header className="page-head">
+    <Panel eyebrow={u.isPrimaryAdmin ? 'Primary administrator' : ROLE_WORD[u.role]} title={u.displayName ?? u.email} onClose={onClose} width={640}>
+      <div className="up-hero">
+        <Avatar label={u.displayName || u.email} src={u.imageUrl} size={72} />
         <div>
-          <h1>Users</h1>
-          <p className="muted">Every account on the platform.</p>
+          <strong>{u.displayName ?? <span className="us-noname">No name chosen</span>}</strong>
+          <a href={`mailto:${u.email}`}>{u.email}</a>
+          <span>
+            Joined {joined(u.createdAt)} · {u.lastSeenAt ? `last seen ${ago(u.lastSeenAt)}` : 'never signed in'}
+            {u.homeArea && ` · lives around ${u.homeArea}`}
+          </span>
         </div>
-      </header>
-
-      <Administrators />
-
-      <div className="toolbar">
-        <div className="filters">
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search email or name"
-          />
-          {/* The app's own dropdown (§227, §242); "Everyone" is a choice of its own. */}
-          <Select
-            value={role === '' ? 'ALL' : role}
-            onChange={(next) => setRole(next === 'ALL' ? '' : next)}
-            label="Who"
-            sheetTitle="Show"
-            options={ROLES.map((option) => ({ value: option.value === '' ? 'ALL' : option.value, label: option.label }))}
-          />
-          <label className="inline small">
-            <input
-              type="checkbox"
-              checked={namedOnly}
-              onChange={(event) => setNamedOnly(event.target.checked)}
-            />
-            Only those with a chosen name
-          </label>
-        </div>
-        {users.data && <span className="muted small">{users.data.total} accounts</span>}
       </div>
 
-      {clear.error && (
-        <p className="error" role="alert">
-          {clear.error instanceof ApiError ? clear.error.message : 'That did not work.'}
-        </p>
+      {u.closedAt && (
+        <div className="up-banner">
+          <Icon name="lock" size={17} />
+          <span>
+            <strong>They closed their account {ago(u.closedAt)}.</strong> What they did is kept — bookings are financial records — but they can no
+            longer sign in.
+          </span>
+        </div>
       )}
 
-      {users.isLoading && <p className="muted">Loading…</p>}
-      {users.data?.users.length === 0 && <p className="muted empty">Nobody matches.</p>}
+      <div className="up-tiles">
+        <Link className="up-tile" {...linkFor(`/appointments?q=${encodeURIComponent(u.email)}`)}>
+          <Icon name="calendar" size={18} />
+          <strong>{u.appointmentCount}</strong>
+          <span>{u.appointmentCount === 1 ? 'booking' : 'bookings'}</span>
+        </Link>
+        <Link className="up-tile" {...linkFor(`/reviews?show=all&q=${encodeURIComponent(u.email)}`)}>
+          <Icon name="star" size={18} />
+          <strong>{u.reviewCount}</strong>
+          <span>{u.reviewCount === 1 ? 'review' : 'reviews'}</span>
+        </Link>
+        <Link className="up-tile" {...linkFor(`/tickets?status=ALL&q=${encodeURIComponent(u.email)}`)}>
+          <Icon name="help" size={18} />
+          <strong>{u.ticketCount}</strong>
+          <span>{u.ticketCount === 1 ? 'ticket' : 'tickets'}</span>
+        </Link>
+      </div>
 
-      {users.data && users.data.users.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Shows as</th>
-              <th>Role</th>
-              <th>Activity</th>
-              <th>Joined</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {users.data.users.map((user) => (
-              <tr key={user.id}>
-                <td>
-                  <strong>{user.email}</strong>
-                  {user.businesses.length > 0 && (
-                    <div className="muted small">
-                      {user.businesses
-                        .map((b) => `${b.name ?? 'Unnamed'} · ${b.role.toLowerCase()}`)
-                        .join(', ')}
-                    </div>
-                  )}
-                </td>
-                <td>
-                  {user.displayName ?? <span className="muted">Anonymous</span>}
-                </td>
-                <td className="small">{user.role.toLowerCase()}</td>
-                <td className="small muted">
-                  {/* Enough to tell a real account from an empty one, which is
-                      the question a directory row has to answer. */}
-                  {user.appointmentCount} bookings · {user.reviewCount} reviews ·{' '}
-                  {user.ticketCount} tickets
-                </td>
-                <td className="small">{formatDate(user.createdAt)}</td>
-                <td>
-                  {user.displayName && (
-                    <button
-                      type="button"
-                      disabled={clear.isPending}
-                      onClick={() => onClear(user)}
-                    >
-                      Clear name
-                    </button>
-                  )}
-                </td>
-              </tr>
+      {u.businesses.length > 0 && (
+        <section className="up-section">
+          <h4>
+            <Icon name="store" size={15} /> Where they work
+          </h4>
+          <ul className="up-shops">
+            {u.businesses.map((b) => (
+              <li key={b.id}>
+                <Link {...linkFor(`/businesses?status=ALL&open=${b.id}`)}>
+                  <ShopMark name={b.name} logoUrl={b.logoUrl} size={36} />
+                  <span>
+                    <strong>{b.name ?? 'Unnamed shop'}</strong>
+                    <em>{MEMBER_WORD[b.role] ?? b.role}</em>
+                  </span>
+                  <Icon name="chevronRight" size={15} />
+                </Link>
+              </li>
             ))}
-          </tbody>
-        </table>
+          </ul>
+        </section>
       )}
-    </section>
-  );
-}
 
-/**
- * Administrators, and inviting more of them (§99).
- *
- * Only the primary administrator may invite or remove. Rather than ask who is
- * primary, the panel tries to list invitations: a 403 is the answer, and it
- * then shows the administrators without the controls. One request, no new
- * endpoint, and it cannot disagree with the server about who may act.
- */
-function Administrators() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-  const [email, setEmail] = useState('');
-
-  const admins = useQuery({
-    queryKey: ['users', 'ADMIN'],
-    queryFn: () => listUsers({ role: 'ADMIN', limit: 100 }),
-  });
-
-  const invites = useQuery({
-    queryKey: ['admin-invitations'],
-    queryFn: listAdminInvitations,
-    retry: false,
-  });
-
-  // A 403 here means "you are not the primary administrator", which is the
-  // only thing the controls depend on.
-  const canManage = invites.isSuccess;
-
-  const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['users'] });
-    queryClient.invalidateQueries({ queryKey: ['admin-invitations'] });
-  };
-
-  const invite = useMutation({
-    mutationFn: () => inviteAdmin(email.trim()),
-    onSuccess: () => {
-      setEmail('');
-      refresh();
-    },
-  });
-
-  /** The reader's own row, which is the one the server refuses outright. */
-  const isSelf = (admin: { id: string }) => admin.id === user?.id;
-
-  const revokeInvite = useMutation({ mutationFn: revokeAdminInvitation, onSuccess: refresh });
-  const revokeAccess = useMutation({ mutationFn: revokeAdminAccess, onSuccess: refresh });
-
-  return (
-    <div className="card setting">
-      <div className="setting-head">
-        <h2>Administrators</h2>
-        <p className="muted small">
-          {canManage
-            ? 'You are the primary administrator. Only you can invite or remove others.'
-            : 'Only the primary administrator can invite or remove administrators.'}
-        </p>
-      </div>
-
-      <ul className="people">
-        {admins.data?.users.map((admin) => (
-          <li key={admin.id}>
-            <div>
-              <strong>{admin.email}</strong>
-              <div className="muted small">
-                joined {new Date(admin.createdAt).toLocaleDateString()}
-              </div>
-            </div>
-            {/* Two rows can never be removed, and the server says so plainly:
-                your own ("You cannot remove your own access") and the primary
-                administrator's ("there must always be one"). The button used to
-                appear on both — including the reader's own row, which on a
-                platform with one administrator is the ONLY row (§118). */}
-            {canManage && (isSelf(admin) || admin.isPrimaryAdmin) && (
-              <span className="muted small">
-                {isSelf(admin)
-                  ? admin.isPrimaryAdmin
-                    ? 'You, the primary administrator'
-                    : 'You'
-                  : 'The primary administrator'}
+      <section className="up-section">
+        <h4>
+          <Icon name="shield" size={15} /> Decisions
+        </h4>
+        <div className="up-decisions">
+          {u.displayName ? (
+            <div className="up-decision">
+              <span>
+                <strong>The name on their reviews</strong>
+                <em>“{u.displayName}”. Clear it if it breaks the rules; there is no editing someone else’s name.</em>
               </span>
-            )}
-            {canManage && !isSelf(admin) && !admin.isPrimaryAdmin && (
-              <button
-                type="button"
-                disabled={revokeAccess.isPending}
-                onClick={async () => {
-                  const sure = await confirmDialog({
-                    title: 'Remove administrator access?',
-                    body: (
-                      <p>
-                        <strong>{admin.email}</strong> loses it immediately, even if signed in. The account becomes an
-                        ordinary customer account — nothing they did is deleted, and anything they handled still
-                        names them.
-                      </p>
-                    ),
-                    tone: 'danger',
-                    icon: 'userX',
-                    confirmLabel: 'Remove access',
-                    cancelLabel: 'Keep them',
-                  });
-                  if (sure) revokeAccess.mutate(admin.id);
-                }}
-              >
-                Remove access
+              <button type="button" disabled={clear.isPending} onClick={() => void onClear()}>
+                <Icon name="xCircle" size={15} /> Clear the name
               </button>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      {canManage && (
-        <>
-          {(invites.data?.length ?? 0) > 0 && (
-            <ul className="people">
-              {invites.data?.map((invitation) => (
-                <li key={invitation.id}>
-                  <div>
-                    <strong>{invitation.email}</strong>
-                    <div className="muted small">
-                      invited, not joined yet · expires{' '}
-                      {new Date(invitation.expiresAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={revokeInvite.isPending}
-                    onClick={() => revokeInvite.mutate(invitation.id)}
-                  >
-                    Cancel invitation
-                  </button>
-                </li>
-              ))}
-            </ul>
+            </div>
+          ) : (
+            <p className="up-quiet">They have not chosen a name, so their reviews show as “Anonymous”.</p>
           )}
 
-          <form
-            className="row-end"
-            onSubmit={(event) => {
-              event.preventDefault();
-              invite.mutate();
-            }}
-          >
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="their@email.com"
-            />
-            <button type="submit" className="primary" disabled={invite.isPending || !email.trim()}>
-              {invite.isPending ? 'Sending…' : 'Invite an administrator'}
-            </button>
-          </form>
-
-          {/* The address must have no account at all: a role decides what every
-              guard lets someone reach, so promoting an existing customer would
-              move their own bookings out of their app. */}
-          <p className="muted small">
-            The address must not already have an account of any kind.
-          </p>
-
-          {invite.error && (
-            <p className="error small" role="alert">
-              {invite.error instanceof ApiError ? invite.error.message : 'That did not send.'}
-            </p>
+          {u.role === 'ADMIN' && (
+            <div className="up-decision">
+              <span>
+                <strong>Administrator access</strong>
+                <em>
+                  {self
+                    ? 'This is you. Nobody can remove their own access.'
+                    : u.isPrimaryAdmin
+                      ? 'The primary administrator cannot be removed: there must always be one.'
+                      : canManage
+                        ? 'They can see and change everything in this console.'
+                        : 'Only the primary administrator can remove an administrator.'}
+                </em>
+              </span>
+              {canManage && !self && !u.isPrimaryAdmin && (
+                <button type="button" className="danger" disabled={revoke.isPending} onClick={() => void onRevoke()}>
+                  <Icon name="userX" size={15} /> Remove access
+                </button>
+              )}
+            </div>
           )}
-        </>
+        </div>
+      </section>
+
+      {error && (
+        <p className="error" role="alert">
+          {error instanceof ApiError ? error.message : 'That did not work.'}
+        </p>
       )}
-    </div>
+    </Panel>
   );
 }

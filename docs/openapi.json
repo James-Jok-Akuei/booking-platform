@@ -14271,6 +14271,10 @@
             "type": "string",
             "nullable": true
           },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "role": {
             "type": "string",
             "enum": [
@@ -14283,6 +14287,7 @@
         "required": [
           "id",
           "name",
+          "logoUrl",
           "role"
         ]
       },
@@ -14307,8 +14312,28 @@
             "type": "string",
             "nullable": true
           },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Their own photo, when they set one."
+          },
           "createdAt": {
             "type": "string"
+          },
+          "closedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When they closed their account (§122); null while it is open."
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When their app last renewed its session — the nearest thing to \"last seen\"\nthe platform keeps (§250). Null if they never signed in."
+          },
+          "homeArea": {
+            "type": "string",
+            "nullable": true,
+            "description": "The district they set as home, for offers (§186)."
           },
           "isPrimaryAdmin": {
             "type": "boolean",
@@ -14336,7 +14361,11 @@
           "email",
           "role",
           "displayName",
+          "imageUrl",
           "createdAt",
+          "closedAt",
+          "lastSeenAt",
+          "homeArea",
           "isPrimaryAdmin",
           "appointmentCount",
           "reviewCount",

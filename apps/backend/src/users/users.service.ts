@@ -87,7 +87,13 @@ export class UsersService {
           email: true,
           role: true,
           displayName: true,
+          imageUrl: true,
           createdAt: true,
+          closedAt: true,
+          homeDistrict: { select: { name: true } },
+          // Sessions rotate on every renewal, so the newest is when their app
+          // last came back (§250).
+          refreshTokens: { orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true } },
           /**
            * So the console can stop offering an action the server refuses
            * (§118). `revokeAdmin` turns down two cases — removing yourself, and
@@ -111,7 +117,7 @@ export class UsersService {
             where: { status: BusinessMemberStatus.ACTIVE },
             select: {
               role: true,
-              businessProfile: { select: { id: true, name: true } },
+              businessProfile: { select: { id: true, name: true, logoUrl: true } },
             },
           },
         },
@@ -127,7 +133,11 @@ export class UsersService {
         email: user.email,
         role: user.role,
         displayName: user.displayName,
+        imageUrl: user.imageUrl,
         createdAt: user.createdAt.toISOString(),
+        closedAt: user.closedAt?.toISOString() ?? null,
+        lastSeenAt: user.refreshTokens[0]?.createdAt.toISOString() ?? null,
+        homeArea: user.homeDistrict?.name ?? null,
         isPrimaryAdmin: user.isPrimaryAdmin,
         appointmentCount: user._count.appointments,
         reviewCount: user._count.reviews,
@@ -135,6 +145,7 @@ export class UsersService {
         businesses: user.businessMemberships.map((membership) => ({
           id: membership.businessProfile.id,
           name: membership.businessProfile.name,
+          logoUrl: membership.businessProfile.logoUrl,
           role: membership.role,
         })),
       })),

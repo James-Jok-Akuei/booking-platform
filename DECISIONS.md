@@ -16631,3 +16631,58 @@ up rather than run a day, with a panel that tells one booking's whole story.
 Checked at 1440 (the list; a booking with a ticket; a reviewed one; the
 refund form, not sent), 1024 (a search) and 390 (the list; a booking). No
 cancellation was put on a shop.
+
+## 250. Admin piece 9 — Users, the person behind the bookings, reviews and tickets (2026-10-09)
+
+Users was a table of up to 100 accounts with a role dropdown, and an
+Administrators card on top of every view. Now it is one card of people with
+a panel for each, and administrators are a tab.
+
+### 250.1 The server
+
+The directory row (`GET /admin/users`) gains:
+
+- **their photo** (`imageUrl`), when they set one;
+- **`closedAt`** — a closed account (§122) says so;
+- **`lastSeenAt`** — when their app last renewed its session: sessions rotate
+  on every renewal, so the newest refresh token's creation is the nearest
+  thing to "last seen" the platform keeps, without adding a column that
+  every request would have to write;
+- **`homeArea`** — the district a customer set as home for offers (§186);
+- **each shop's logo** beside where they work.
+
+Two tests in "the console's people (§250)"; the suite (11) passes.
+
+### 250.2 The page
+
+- **Search** (email or name), a **Has a chosen name** filter (the names on
+  reviews — the only ones that can be cleared; an icon on a phone), and
+  tabs with counts: **Everyone · Customers · Shop accounts ·
+  Administrators**, all kept in the address.
+- **Each person a row**: their photo or initials; the name they chose over
+  their email — or the email over "No name chosen", never a made-up name
+  from the address; **what kind of account** as a coloured word (the primary
+  administrator named as such, "You" on your own row, "Closed" in red);
+  **where they work** (the shop's tile, its name and their role, "+1 more")
+  or, for a customer, **the area they call home**; their bookings, reviews
+  and tickets as three small counts; and **when they were last seen** and
+  joined. A closed account is faded. On a phone the kind of account sits
+  under the name.
+- **One person in the panel**: the photo large, the name, the email to write
+  to, joined, last seen and home; a red note if they closed their account;
+  **three tiles that open their bookings, reviews and tickets**, already
+  searched for them (§247–§249); the shops they work at; and **Decisions**:
+  clearing the name on their reviews (asks for the reason they are told —
+  there is still no editing someone else's name, §94), and, for the primary
+  administrator, **removing another administrator's access** (asks first;
+  it is said why it is not offered on your own row or the primary's).
+- **Administrators**: the tab shows, above them, **inviting one** — what the
+  invitee gets and that the address must have no account yet (§99) — and the
+  **invitations not yet taken**, with who sent each, until when its link
+  works or that it has expired, and *Cancel* (asks first). Anyone who is not
+  the primary administrator sees one line saying only the primary can.
+
+Checked at 1440 (Everyone; Administrators with an invitation faked in the
+test browser — the demo administrator is not the primary, so for them the
+section is read-only; a customer's panel), 1024 (a shop owner's panel) and
+390. Nothing was invited, cleared or removed.

@@ -138,6 +138,7 @@ export class SavedPaymentNumberDto
 export class AdminUserBusinessDto {
   id!: string;
   name!: string | null;
+  logoUrl!: string | null;
   role!: BusinessMemberRole;
 }
 
@@ -146,7 +147,18 @@ export class AdminUserDto {
   email!: string;
   role!: UserRole;
   displayName!: string | null;
+  /** Their own photo, when they set one. */
+  imageUrl!: string | null;
   createdAt!: string;
+  /** When they closed their account (§122); null while it is open. */
+  closedAt!: string | null;
+  /**
+   * When their app last renewed its session — the nearest thing to "last seen"
+   * the platform keeps (§250). Null if they never signed in.
+   */
+  lastSeenAt!: string | null;
+  /** The district they set as home, for offers (§186). */
+  homeArea!: string | null;
 
   /**
    * So the console can stop offering an action the server refuses (§118).
