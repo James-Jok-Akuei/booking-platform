@@ -192,7 +192,7 @@ function BackToTop() {
 // ---------------------------------------------------------------------------
 // The two small sheets
 
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+function Modal({ title, onClose, wide = false, children }: { title: string; onClose: () => void; wide?: boolean; children: ReactNode }) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
@@ -204,7 +204,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   }, [onClose]);
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
-      <div className="modal" role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()}>
+      <div className={`modal${wide ? ' is-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()}>
         <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
           <Icon name="close" size={18} stroke={2.2} />
         </button>
@@ -240,6 +240,12 @@ function GetTheApp({ onClose }: { onClose: () => void }) {
   );
 }
 
+/**
+ * The walkthrough (§240): a minute of the real customer app, booking a steam
+ * room — recorded from the app itself, with a voice over each step — in a
+ * window over the page. The three steps are written under it for anyone
+ * who would rather read.
+ */
 function HowItWorks({ onClose }: { onClose: () => void }) {
   const steps: Array<{ icon: IconName; title: string; text: string }> = [
     { icon: 'search', title: 'Find a shop near you', text: 'Barbers, salons, spas, garages — with real photos, prices and open hours.' },
@@ -247,9 +253,9 @@ function HowItWorks({ onClose }: { onClose: () => void }) {
     { icon: 'ticket', title: 'Show your 6-digit code at the door', text: 'The shop checks you in with it. No password, no printout.' },
   ];
   return (
-    <Modal title="How booking works" onClose={onClose}>
-      <h3>How booking works</h3>
-      <ol className="steps">
+    <Modal title="How booking works" onClose={onClose} wide>
+      <video className="walkthrough" src="/video/how-booking-works.mp4" poster="/video/how-booking-works-poster.jpg" controls autoPlay playsInline preload="metadata" />
+      <ol className="steps is-row">
         {steps.map((step, i) => (
           <li key={step.title}>
             <span className="step-n">{i + 1}</span>
@@ -263,7 +269,6 @@ function HowItWorks({ onClose }: { onClose: () => void }) {
           </li>
         ))}
       </ol>
-      <p className="modal-note">A short video of all three is on its way.</p>
     </Modal>
   );
 }

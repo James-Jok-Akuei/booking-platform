@@ -337,6 +337,21 @@ p { margin: 0; }
 .steps li > span:last-child > span { font-size: 14px; line-height: 1.5; color: var(--ink-2); }
 .modal-note { margin-top: 22px !important; font-size: 13px !important; color: var(--muted) !important; }
 
+/* The walkthrough video, with the three steps in a row under it. */
+.modal.is-wide { width: min(1040px, 100%); padding: 18px 18px 22px; }
+.modal.is-wide .modal-close { top: -14px; right: -14px; background: #fff; box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.5); }
+.walkthrough { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 18px; background: var(--dark); }
+.steps.is-row { flex-direction: row; gap: 18px; margin-top: 18px; padding: 0 6px; }
+.steps.is-row li { flex: 1; min-width: 0; }
+.steps.is-row .step-n { display: none; }
+@media (max-width: 760px) {
+  .modal.is-wide { padding: 12px 12px 18px; border-radius: 22px; }
+  .modal.is-wide .modal-close { top: 8px; right: 8px; }
+  .steps.is-row { flex-direction: column; gap: 14px; }
+  .steps.is-row .step-n { display: grid; }
+  .walkthrough { border-radius: 12px; }
+}
+
 /* ---------- a phone ---------- */
 
 @media (max-width: 899px) {

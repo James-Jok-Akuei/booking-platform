@@ -16042,3 +16042,48 @@ today" grid with real services, the footer with the three documents and
 contact details, the share preview image, and the walkthrough video.
 
 Checked at 1920, 1440, 1024, 390 and 360 wide, and the two sheets.
+
+## 240. The walkthrough video, made from the real app with a voice (2026-10-09)
+
+The user asked whether a video could be made from screenshots with a good
+voice-over explaining each step, and chose voice 1 of five samples
+(Microsoft's neural "Asilia", Kenyan English). Also: the hero's opening
+line "Bwangu means quick." was unprofessional — it now says the benefit,
+"Your appointments, without the phone calls."
+
+### 240.1 Made, not edited
+
+`apps/website/video-tools/` makes the video from the running customer app,
+so it can be made again with one command whenever the screens change and
+never shows an app that no longer exists:
+
+- **`rec.mjs` + `steps.js`** record the real booking on a phone-sized
+  screen, frame by frame (Chrome's screencast), while a script taps through
+  it as a person would — search "spa", open Kimironko Spa, choose the steam
+  room, a day, a free time, Book, choose the saved MoMo number, Pay now —
+  and waits for the MoMo **sandbox** to approve the deposit. Each tap is
+  logged with its place, for a ripple in the video. `steps4.js` records the
+  confirmed reservation with its six-digit code.
+- **`voices.sh`**: six lines (intro, one per step, outro), plain words, a
+  touch slower than the voice's default.
+- **`compose.py`** draws every frame: the dark canvas with the mark, the
+  phone in a frame on the right, "STEP n OF 4", the step's title and one
+  line under it on the left, the four steps as bars along the foot filling
+  as they pass, the tap ripple; an intro and an outro with the name and
+  "Get the app". Each step's recording is slowed (to 0.62× at most) or held
+  on its last frame so the voice fits; the lines are mixed in where their
+  step begins. 1920×1080, 30 fps, H.264, 57 s, 2 MB.
+- **`make.sh`** runs the three in order. Each run books and pays for one
+  real steam room in the sandbox for the signed-in demo customer.
+
+### 240.2 On the landing page
+
+The play button ("Watch how to book in under a minute!") opens the video in
+a wide window with the browser's own controls, a poster of step 1, and the
+three steps written under it for anyone who would rather read. On a phone
+the steps stack under the video.
+
+Checked: the composed frames (contact sheet), each voice line landing at
+its step (silence detection), the window at 1440 and 390. Three bookings
+were made in the sandbox while recording (the demo customer's; nothing on a
+real phone).

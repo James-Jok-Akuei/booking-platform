@@ -1,0 +1,7 @@
+token.json
+rec/
+rec-code/
+rec.log
+voice/
+.venv/
+*-audio.m4a
