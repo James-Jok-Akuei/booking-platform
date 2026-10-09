@@ -16796,3 +16796,59 @@ styles left `styles.css`.
 Checked at 1440 (both pages; the new-category panel), 1024 (editing a
 category in place) and 390 (both pages). Nothing was switched, renamed or
 added.
+
+## 253. Admin piece 12 — Legal as a document desk, Settings as four cards (2026-10-09)
+
+No server change.
+
+### 253.1 Legal
+
+- **The three documents on a shelf** — Terms of Use, Privacy Policy, Seller
+  Agreement — each saying its live version and since when, how many people
+  agreed to it, whether a draft is being written, and **how many [BLANKS]**
+  are still in it (the published texts carry placeholders like "[COMPANY
+  LEGAL NAME]"; 19 and 20 in the demo — something to fill before launch).
+- **The live version read as a page** (`ui/LegalText.tsx`): the text stays
+  plain (§122.4); only its shape is read — a line in capitals is a heading,
+  "- " lines a list — and every [BLANK] is marked in amber. Beside it, **the
+  versions** as a timeline (each with its date, how many agreed and what
+  changed), any of which opens in the page; and *Write a new version*.
+- **A draft is written beside its preview.** The preview marks, paragraph by
+  paragraph, **what it changes from the live version** — taken out in red,
+  struck through; added in green — with "+2 −1" in its pinned header, or
+  shows it as it will read. Paragraphs, not words: the reader asking "what
+  moved?" wants the clause. The editor shows whether it is saved, the word
+  count and the blanks; *Publish* saves first and asks, saying how much
+  changed, and warning when there is no note of what changed or blanks
+  remain. A published version still cannot be edited (§122).
+- The page's title is not pinned: a document is long, and its own headers
+  stay in view instead.
+
+### 253.2 Settings
+
+**Four cards, each its value large** and what it means in money, each still
+saved on its own (§96's reasoning stands):
+
+- **Platform fee** — "10%", and "on a RWF 10,000 service, RWF 1,000 is the
+  platform's"; future bookings only, when it last changed.
+- **Payout hold** — "2 days", drawn as *Done → 2 days → Payable*.
+- **Exchange rate** — "1 RWF = 1 RWF" with *No conversion is in use* when the
+  platform collects in the currency it prices in (§69.1); otherwise the rate,
+  a bar of its age against when administrators are warned (the threshold
+  itself a link to change), and the stale warning.
+- **Payment providers** — MTN MoMo and Airtel Money under their own marks,
+  *Taking deposits* or *Not configured*; read-only, because it follows from
+  credentials (§96).
+
+A change opens in place (*Change* → the number, Save, Cancel); the fee, the
+hold and the rate then **ask first**, saying the old and the new value and
+what does not change (bookings already made keep their fee and rate; dates
+already set stand). The server's refusals — a fee raise above a service's
+deposit (§40) — are shown in its own words.
+
+The `.setting`, `.card-list`, `.card-row`, `.legal-body` and `.legal-input`
+styles left `styles.css`.
+
+Checked at 1440 (Legal reading; a draft faked in the test browser with one
+paragraph changed and one added — none was started; Settings with a change
+open, not saved) and 390. Nothing was published or changed.

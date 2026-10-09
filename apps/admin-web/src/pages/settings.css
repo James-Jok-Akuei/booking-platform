@@ -1,0 +1,77 @@
+/* Settings (§253): four cards, each its value large and what it means. */
+
+.st { display: flex; flex-direction: column; }
+.st-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+
+.st-card {
+  --tone: var(--accent);
+  --tone-soft: var(--accent-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px 18px;
+  border-radius: 26px;
+  background: var(--panel);
+  border: 1px solid rgba(31, 42, 31, 0.06);
+  box-shadow: var(--shadow-sm);
+  animation: rise-in 420ms var(--ease) both;
+}
+.st-card.tone-night { --tone: #2b352c; --tone-soft: var(--sunken-2); }
+.st-card.tone-ask { --tone: var(--ask); --tone-soft: var(--ask-soft); }
+.st-card.tone-warn { --tone: var(--warn); --tone-soft: var(--warn-soft); }
+.st-card.tone-ok { --tone: var(--ok); --tone-soft: var(--ok-soft); }
+.st-card.tone-danger { --tone: var(--danger); --tone-soft: var(--danger-soft); }
+.st-card > header { display: flex; align-items: center; gap: 10px; }
+.st-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--tone-soft); color: var(--tone); }
+.st-label { flex: 1; font-size: 14px; font-weight: 750; }
+.st-edit { min-height: 34px; padding: 0 12px; gap: 6px; border-radius: 11px; font-size: 13px; }
+.st-value { font-size: clamp(38px, 4.2vw, 54px); font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--ink); }
+.st-value small { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--muted); }
+.st-sub { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.st-card > footer { margin-top: 2px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); font-weight: 550; line-height: 1.5; }
+
+/* The hold, drawn: done → N days → payable. */
+.st-line { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 16px; background: var(--sunken); }
+.st-line > span { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 750; color: var(--ink-2); white-space: nowrap; }
+.st-line > span:first-child svg { color: var(--ok); }
+.st-line > span:last-child svg { color: var(--accent); }
+.st-line i { position: relative; flex: 1; height: 2px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--faint) 0 6px, transparent 6px 11px); }
+.st-line i::after { content: ''; position: absolute; right: -2px; top: -4px; border: 5px solid transparent; border-left: 7px solid var(--faint); border-right: none; }
+.st-line em { position: absolute; left: 50%; top: -11px; transform: translateX(-50%); padding: 2px 9px; border-radius: 99px; background: var(--night); color: #fff; font-style: normal; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+
+/* How old the exchange rate is, against when administrators are warned. */
+.st-meter { height: 8px; border-radius: 99px; background: var(--sunken-2); overflow: hidden; }
+.st-meter i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #6ea8ff, var(--ask)); transition: width 500ms var(--ease); }
+.st-meter i.is-stale { background: linear-gradient(90deg, #ffc857, var(--warn)); }
+.st-meter-text { margin: 0; font-size: 12.5px; color: var(--muted); font-weight: 550; line-height: 1.5; }
+.st-inline { min-height: 0; padding: 0; border: none; background: none; font: inherit; font-weight: 750; color: var(--ink-2); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.st-inline:hover:not(:disabled) { background: none; border: none; color: var(--accent-deep); }
+.st-warn { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 14px; background: var(--warn-soft); color: #9a5d00; font-size: 13px; font-weight: 600; }
+.st-warn svg { flex: none; margin-top: 2px; }
+
+.st-ops { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.st-ops li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; border: 1px solid var(--line); }
+.st-ops li:not(.is-on) .network-mark { filter: grayscale(1); opacity: 0.45; }
+.st-ops li > span { flex: 1; display: flex; flex-direction: column; }
+.st-ops b { font-size: 14px; }
+.st-ops em { font-style: normal; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.st-ops li.is-on { background: var(--ok-soft); border-color: rgba(14, 159, 84, 0.2); }
+.st-ops li.is-on em { color: var(--ok-deep); }
+.st-ops li.is-on > svg { color: var(--ok); }
+.st-ops li > svg { color: var(--faint); }
+
+/* Changing a number, in place. */
+.st-change { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; padding: 14px; border-radius: 18px; background: var(--accent-tint); border: 1px solid #f6cbbd; animation: rise-in 240ms var(--ease) both; }
+.st-change label { flex: 1 1 200px; display: flex; flex-direction: column; gap: 6px; }
+.st-change label > span:first-child { font-size: 13px; font-weight: 700; }
+.st-input { display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 13px; border: 1px solid var(--line-strong); background: var(--panel); }
+.st-input:focus-within { border-color: var(--accent); box-shadow: var(--ring); }
+.st-input input { flex: 1; min-width: 0; height: 44px; padding: 0; border: none; background: transparent; box-shadow: none !important; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.st-input b { font-size: 13px; color: var(--muted); }
+.st-change > div { display: flex; gap: 8px; }
+.st-change button { min-height: 44px; border-radius: 13px; }
+.st-change .error { flex-basis: 100%; margin: 0; }
+
+@container page (max-width: 820px) {
+  .st-grid { grid-template-columns: minmax(0, 1fr); }
+}
