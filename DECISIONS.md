@@ -17500,3 +17500,46 @@ learned they were live from their first booking. Now approval says a shop
 
 Six tests in `shop-posting.spec.ts`; the approval test that booked straight
 after approval now posts first. The full suite (65 suites, 1,396 tests) passes.
+
+## 269. Saved, and seen to be: drafts that say so, and changes that are not lost (2026-10-10)
+
+Asked: if a seller does not post straight away, does their work wait as a
+draft — and if so, show the seller editing a service that their changes are
+being saved, or give them a "save to drafts".
+
+It does wait: an approved shop that is not posted (§268) keeps everything,
+and nobody sees any of it until it is posted. A new service already saved
+itself as a draft while it was written (§123) — but silently, so nothing told
+the seller. And a service that already existed lost its changes, without a
+word, when its panel was closed before "Save changes".
+
+- **A new service says where it stands**, under the panel's title: "Saved as
+  a draft while you type" before anything is typed, then "Saving draft…",
+  then "Draft saved · 14:32". A failed save is still never an error box
+  mid-sentence (§123), but it is no longer silent: "Not saved — trying
+  again", and it tries again by itself every five seconds.
+- **"Save as draft"** takes the place of "Close": it saves what is waiting at
+  once (not in a moment), closes the panel, and the draft lights up under
+  **Drafts** (was "Unfinished") as "Saved just now". Closing any other way
+  saves what is waiting first too; if that fails, it asks before closing. A
+  panel opened and never typed in leaves no empty "Untitled service" behind
+  — the draft started for it is thrown away.
+- **Drafts** says what they are: "Saved as you typed — customers never see a
+  draft".
+- **A service that exists** is still saved only by "Save changes" — typing
+  into a live service must not change it under customers mid-word. The title
+  line says "All changes saved", then "Unsaved changes" once anything differs
+  from what is saved (back to the start, and it is clean again); "Saving…"
+  while it goes. Leaving with unsaved changes — ✕, Escape, the backdrop or
+  Cancel — asks "Leave without saving?" (Keep editing / Leave without
+  saving). Its photos still save straight away, and say so.
+- **Before the shop is live**, the new-service button says "Add this
+  service", not "Post this service", and the note under it says when
+  customers will see it: "Ready at 1 branch — customers see it once you post
+  your shop" (or once it is live, or open again after a pause).
+- The "approved, not posted" cards (§268) add: "No rush: everything you
+  change is saved as you go."
+
+Front end only; no server change. Tried in the app: a new service saved as
+it was typed, "Save as draft" into Drafts, an edited service marked unsaved
+and the question on leaving — at 1440 and 390 wide.

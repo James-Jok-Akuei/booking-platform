@@ -656,8 +656,8 @@ function PostPanel({ profile }: { profile: BusinessProfile }) {
       <div className="pf-pause-text">
         <h2>Approved — not posted yet</h2>
         <p>
-          Customers cannot see your shop until you post it. Look it over below, the way they will see it, and post it when
-          you are ready.
+          Customers cannot see your shop until you post it. Take your time — everything you change is saved, and nobody
+          sees it until you post.
         </p>
         {post.error && (
           <p className="error small" role="alert">

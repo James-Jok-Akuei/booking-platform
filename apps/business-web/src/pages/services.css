@@ -49,6 +49,7 @@
 /* ---- unfinished drafts ---- */
 
 .sv-drafts { margin-bottom: 26px; }
+.sv-drafts .sv-section-title { flex-wrap: wrap; }
 .sv-draft-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
 .sv-draft {
   display: flex;
@@ -69,6 +70,11 @@
 .sv-draft-by span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .sv-draft-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .sv-draft-actions .dark { min-height: 38px; border-radius: 12px; font-size: 13.5px; }
+.sv-drafts-note { margin-left: 4px; font-style: normal; font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); }
+/* Just saved by hand (§269): it lands here, and says so for a moment. */
+.sv-draft.is-fresh { border-color: var(--ok); border-style: solid; animation: rise-in 420ms var(--ease) both, sv-fresh 2.4s var(--ease) 200ms both; }
+.sv-draft.is-fresh .sv-draft-top span { color: var(--ok-deep); }
+@keyframes sv-fresh { 0% { box-shadow: 0 0 0 0 rgba(14, 159, 84, 0.35); } 40% { box-shadow: 0 0 0 8px rgba(14, 159, 84, 0.12); } 100% { box-shadow: 0 0 0 0 rgba(14, 159, 84, 0); } }
 
 /* ---- the catalogue ---- */
 
@@ -218,6 +224,24 @@
 }
 .sv-panel-head p { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-deep); }
 .sv-panel-head h2 { margin: 3px 0 0; font-size: 24px; letter-spacing: -0.03em; }
+/* Whether it is saved (§269): a quiet line under the title, never a box. */
+.sv-save {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 4px 10px 4px 8px; border-radius: var(--r-pill);
+  font-size: 12.5px; font-weight: 700; color: var(--muted); background: rgba(31, 42, 31, 0.05);
+  animation: sv-save-in 260ms var(--ease) both;
+}
+.sv-save.is-saved, .sv-save.is-clean { color: var(--ok-deep); background: var(--ok-soft); }
+.sv-save.is-saved svg { animation: pop-in 420ms var(--spring) both; }
+.sv-save.is-failed { color: #8a5a10; background: #fff3dc; }
+.sv-save.is-unsaved { color: #8a5a10; background: #fff3dc; }
+.sv-save-dot { width: 7px; height: 7px; border-radius: 50%; background: #e0a100; box-shadow: 0 0 0 3px rgba(224, 161, 0, 0.2); }
+.sv-save-spin { width: 11px; height: 11px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: sv-spin 700ms linear infinite; }
+@keyframes sv-spin { to { transform: rotate(360deg); } }
+@keyframes sv-save-in { from { opacity: 0; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .sv-save, .sv-save.is-saved svg, .sv-draft.is-fresh { animation: none; }
+  .sv-save-spin { animation-duration: 2s; }
+}
 .sv-panel-close { width: 40px; height: 40px; min-height: 0; padding: 0; flex: none; border-radius: 50%; border: none; background: rgba(31, 42, 31, 0.05); }
 
 .sv-form { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -345,9 +369,11 @@
   border-top: 1px solid var(--line);
   background: var(--panel);
 }
-.sv-golive { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 650; color: var(--ink-2); }
+.sv-golive { display: inline-flex; align-items: flex-start; gap: 8px; font-size: 13px; font-weight: 650; color: var(--ink-2); line-height: 1.45; }
+.sv-golive > i { flex: none; margin-top: 5px; }
 .sv-form-actions { display: flex; gap: 10px; margin-left: auto; }
 .sv-form-actions button { min-height: 48px; padding: 0 20px; border-radius: 15px; }
+.sv-form-actions .sv-draft-btn { gap: 8px; }
 
 @container page (max-width: 640px) {
   .sv-head { flex-direction: column; }

@@ -290,7 +290,7 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
           <h2>Your shop is approved. Post it when you are ready</h2>
           <p>
             Customers cannot see <b>{name}</b> yet. Look it over the way they will, then post it — and from that moment they
-            can find you and book.
+            can find you and book. No rush: everything you change is saved as you go.
           </p>
         </div>
         {canAct ? (

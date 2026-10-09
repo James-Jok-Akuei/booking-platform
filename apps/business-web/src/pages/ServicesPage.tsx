@@ -5,6 +5,7 @@ import { ApiError } from '../api/client';
 import { SellerAgreementGate, useOutstandingLegal } from '../components/LegalGate';
 import {
   createService,
+  getProfile,
   discardServiceDraft,
   listServiceDrafts,
   saveServiceDraft,
@@ -38,6 +39,12 @@ import './services.css';
 type Editor = { mode: 'new' } | { mode: 'edit'; service: Service; focus?: 'photos' };
 
 /**
+ * Where a new service's draft stands, said at the top of the panel (§269):
+ * nothing typed yet, saving, saved (and when), or not saved and trying again.
+ */
+type DraftSave = { kind: 'new' } | { kind: 'saving' } | { kind: 'saved'; at: Date } | { kind: 'failed' };
+
+/**
  * What the business sells, and for how much (§10, §194).
  *
  * Services belong to the BUSINESS, not to a location (§10.2) — each is offered
@@ -67,9 +74,25 @@ export function ServicesPage() {
    * the moment it closes and that is exactly when the last keystroke still needs
    * saving. A ref holds the timer so a re-render does not start a second one.
    */
-  const [draftId, setDraftId] = useState<string | null>(null);
+  const [draftId, setDraftIdState] = useState<string | null>(null);
+  // The same id for timers that outlive a render — a retry must not save into
+  // the draft that was open when it was scheduled if another is open now.
+  const draftRef = useRef<string | null>(null);
+  const setDraftId = (id: string | null) => {
+    draftRef.current = id;
+    setDraftIdState(id);
+  };
   const [resumed, setResumed] = useState<Service | undefined>(undefined);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [draftSave, setDraftSave] = useState<DraftSave>({ kind: 'new' });
+  // What was typed last, and whether anything has been typed at all: the form
+  // reports what it opened with too, and that is not an edit.
+  const latest = useRef<FormValues | null>(null);
+  const edited = useRef(false);
+  // Editing a service that already exists: changes wait for "Save changes".
+  const [dirty, setDirty] = useState(false);
+  // A draft just saved by hand, lit up for a moment in Drafts.
+  const [fresh, setFresh] = useState<string | null>(null);
 
   const drafts = useQuery({ queryKey: ['service-drafts'], queryFn: listServiceDrafts });
   const refreshDrafts = () => queryClient.invalidateQueries({ queryKey: ['service-drafts'] });
@@ -79,29 +102,69 @@ export function ServicesPage() {
     onSuccess: refreshDrafts,
   });
 
-  const queueDraftSave = (values: FormValues) => {
-    if (!draftId) return;
+  const writeDraft = (id: string, values: FormValues) =>
+    saveServiceDraft(id, {
+      name: values.name || null,
+      title: values.title.trim() || null,
+      description: values.description.trim() || null,
+      instructions: values.instructions.trim() || null,
+      discountPercent: values.discountPercent,
+      discountEndsOn: values.discountEndsOn,
+      durationMinutes: values.durationMinutes,
+      depositPercentage: values.depositPercentage,
+      offers: values.offers,
+    }).then(() => {
+      if (draftRef.current === id) setDraftSave({ kind: 'saved', at: new Date() });
+      void refreshDrafts();
+    });
+
+  const scheduleDraftSave = (delay: number) => {
     if (timer.current) clearTimeout(timer.current);
     // Long enough that typing a name is one save rather than eleven, short
     // enough that closing the laptop lid loses a sentence and not a service.
     timer.current = setTimeout(() => {
-      saveServiceDraft(draftId, {
-        name: values.name || null,
-        title: values.title.trim() || null,
-        description: values.description.trim() || null,
-        instructions: values.instructions.trim() || null,
-        discountPercent: values.discountPercent,
-        discountEndsOn: values.discountEndsOn,
-        durationMinutes: values.durationMinutes,
-        depositPercentage: values.depositPercentage,
-        offers: values.offers,
-      })
-        .then(refreshDrafts)
-        // Silent on purpose: an auto-save that interrupts with an error box
-        // while somebody is typing is worse than one that quietly retries on the
-        // next keystroke. Nothing is lost — the form still holds the text.
-        .catch(() => undefined);
-    }, 1200);
+      timer.current = null;
+      const id = draftRef.current;
+      if (!id || !latest.current) return;
+      writeDraft(id, latest.current).catch(() => {
+        // Still no error box mid-sentence (§123) — but no longer silent: the
+        // panel says it is not saved, and it tries again by itself.
+        if (draftRef.current !== id) return;
+        setDraftSave({ kind: 'failed' });
+        scheduleDraftSave(5000);
+      });
+    }, delay);
+  };
+
+  const queueDraftSave = (values: FormValues, changed: boolean) => {
+    if (!draftRef.current) return;
+    if (!changed && !edited.current) return;
+    edited.current = true;
+    latest.current = values;
+    setDraftSave({ kind: 'saving' });
+    scheduleDraftSave(1200);
+  };
+
+  /**
+   * Saves what is waiting NOW rather than in a moment — before "Save as draft"
+   * or closing ends the panel. True when everything typed is saved.
+   */
+  const flushDraft = async () => {
+    const id = draftRef.current;
+    if (!id || !edited.current || !latest.current) return true;
+    if (!timer.current && draftSave.kind === 'saved') return true;
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+    setDraftSave({ kind: 'saving' });
+    try {
+      await writeDraft(id, latest.current);
+      return true;
+    } catch {
+      setDraftSave({ kind: 'failed' });
+      return false;
+    }
   };
 
   /** Reopens the form with a draft's contents, and keeps saving into it. */
@@ -148,11 +211,90 @@ export function ServicesPage() {
 
   const closeEditor = () => {
     // Closing a new one keeps the draft. That is the whole point: the text is
-    // still there under Unfinished when they come back.
+    // still there under Drafts when they come back.
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
     setEditor(null);
     setDraftId(null);
     setResumed(undefined);
+    setDirty(false);
+    setDraftSave({ kind: 'new' });
+    edited.current = false;
+    latest.current = null;
   };
+
+  /**
+   * Every way out of the panel — ✕, Escape, the backdrop, Cancel (§269).
+   *
+   * A new service saves what is waiting first; one opened and never typed in
+   * leaves no empty "Untitled service" behind. A service that exists asks
+   * before throwing away changes that were never saved.
+   */
+  const asking = useRef(false);
+  const requestClose = async () => {
+    if (asking.current || !editor) return;
+    asking.current = true;
+    try {
+      if (editor.mode === 'edit' && dirty) {
+        const leave = await confirmDialog({
+          title: 'Leave without saving?',
+          body: (
+            <p>
+              Your changes to “{editor.service.name}” are not saved yet. If you leave now, the service stays as it was.
+            </p>
+          ),
+          tone: 'warn',
+          icon: 'pencil',
+          confirmLabel: 'Leave without saving',
+          cancelLabel: 'Keep editing',
+        });
+        if (!leave) return;
+      }
+      if (editor.mode === 'new') {
+        if (!edited.current && !resumed && draftRef.current) {
+          discard.mutate(draftRef.current);
+        } else if (!(await flushDraft())) {
+          const close = await confirmDialog({
+            title: 'Close without your last changes?',
+            body: <p>We could not save what you typed last — check your connection. Everything before it is saved.</p>,
+            tone: 'warn',
+            icon: 'alert',
+            confirmLabel: 'Close anyway',
+            cancelLabel: 'Keep writing',
+          });
+          if (!close) return;
+        }
+      }
+      closeEditor();
+    } finally {
+      asking.current = false;
+    }
+  };
+
+  /** "Save as draft": saved now, the panel closed, the draft lit up in Drafts. */
+  const saveAsDraft = async () => {
+    const id = draftRef.current;
+    if (!(await flushDraft())) return;
+    closeEditor();
+    if (id) {
+      setFresh(id);
+      setTimeout(() => setFresh((was) => (was === id ? null : was)), 4000);
+    }
+  };
+
+  // Whether a new service is seen as soon as it is added (§268): not while
+  // the shop is waiting for approval, not posted yet, or paused.
+  const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
+  const p = profile.data;
+  const hiddenUntil = !p
+    ? null
+    : p.status !== 'APPROVED'
+      ? 'your shop is live'
+      : !p.publishedAt
+        ? 'you post your shop'
+        : p.pausedAt
+          ? 'you open your shop again'
+          : null;
 
   /**
    * Posting a NEW service is one act (§165): the service, then its photos, in
@@ -188,12 +330,11 @@ export function ServicesPage() {
     },
     onSettled: () => setPosting(null),
     onSuccess: () => {
-      setEditor(null);
-      // The draft became a service. Keeping it would leave the Unfinished list
-      // describing something that already exists.
-      if (draftId) discard.mutate(draftId);
-      setDraftId(null);
-      setResumed(undefined);
+      // The draft became a service. Keeping it would leave Drafts describing
+      // something that already exists.
+      const id = draftRef.current;
+      closeEditor();
+      if (id) discard.mutate(id);
       refresh();
     },
   });
@@ -344,19 +485,20 @@ export function ServicesPage() {
       {!adding && (drafts.data?.length ?? 0) > 0 && (
         <section className="sv-drafts">
           <h2 className="sv-section-title">
-            <Icon name="pencil" size={16} /> Unfinished
+            <Icon name="pencil" size={16} /> Drafts
             <span>{drafts.data!.length}</span>
+            <em className="sv-drafts-note">Saved as you typed — customers never see a draft</em>
           </h2>
           <div className="sv-draft-row">
             {drafts.data?.map((item) => (
-              <article key={item.id} className="sv-draft">
+              <article key={item.id} className={`sv-draft${fresh === item.id ? ' is-fresh' : ''}`}>
                 <div className="sv-draft-top">
                   <span className="sv-draft-icon">
                     <Icon name="tag" size={18} />
                   </span>
                   <div>
                     <strong>{item.name || 'Untitled service'}</strong>
-                    <span>Last saved {ago(item.updatedAt)}</span>
+                    <span>{fresh === item.id ? 'Saved just now' : `Last saved ${ago(item.updatedAt)}`}</span>
                   </div>
                 </div>
                 <div className="sv-draft-by">
@@ -477,7 +619,21 @@ export function ServicesPage() {
         <EditorPanel
           title={editor.mode === 'new' ? (resumed ? 'Carry on with your service' : 'New service') : editor.service.name}
           eyebrow={editor.mode === 'new' ? 'Add a service' : 'Edit service'}
-          onClose={closeEditor}
+          status={
+            <SaveState
+              look={
+                editor.mode === 'new'
+                  ? draftSave
+                  : save.isPending
+                    ? { kind: 'saving' }
+                    : dirty
+                      ? { kind: 'unsaved' }
+                      : { kind: 'clean' }
+              }
+              editing={editor.mode === 'edit'}
+            />
+          }
+          onClose={() => void requestClose()}
         >
           {editor.mode === 'new' ? (
             <ServiceForm
@@ -488,9 +644,12 @@ export function ServicesPage() {
               initial={resumed}
               busyLabel={posting ?? undefined}
               creating
+              hiddenUntil={hiddenUntil}
+              canDraft={draftSave.kind !== 'new' || Boolean(resumed)}
+              onSaveDraft={() => void saveAsDraft()}
               onSubmit={(body, files) => save.mutate({ body, files })}
               onChange={queueDraftSave}
-              onCancel={closeEditor}
+              onCancel={() => void requestClose()}
             />
           ) : (
             <ServiceForm
@@ -500,7 +659,8 @@ export function ServicesPage() {
               busy={save.isPending}
               initial={editor.service}
               focus={editor.focus}
-              onCancel={closeEditor}
+              onCancel={() => void requestClose()}
+              onDirtyChange={setDirty}
               onSubmit={(body) => save.mutate({ id: editor.service.id, body })}
               photos={<ServicePhotos serviceId={editor.service.id} />}
             />
@@ -517,11 +677,14 @@ export function ServicesPage() {
 function EditorPanel({
   title,
   eyebrow,
+  status,
   onClose,
   children,
 }: {
   title: string;
   eyebrow: string;
+  /** Whether what is typed is saved, under the title (§269). */
+  status?: ReactNode;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -544,6 +707,7 @@ function EditorPanel({
           <div>
             <p>{eyebrow}</p>
             <h2>{title}</h2>
+            {status}
           </div>
           <button type="button" className="sv-panel-close" onClick={onClose} aria-label="Close this panel">
             <Icon name="close" size={18} />
@@ -553,6 +717,35 @@ function EditorPanel({
       </aside>
     </div>
     </Portal>
+  );
+}
+
+type SaveLook = DraftSave | { kind: 'unsaved' } | { kind: 'clean' };
+
+/**
+ * Whether what is in the panel is saved, in a few words (§269). A new service
+ * saves itself as a draft while it is written, and says so; a service that
+ * exists waits for "Save changes", and says when something has not been.
+ */
+function SaveState({ look, editing }: { look: SaveLook; editing: boolean }) {
+  const at = (date: Date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const [icon, words, tone]: [ReactNode, string, string] =
+    look.kind === 'saving'
+      ? [<i className="sv-save-spin" />, editing ? 'Saving…' : 'Saving draft…', 'is-saving']
+      : look.kind === 'saved'
+        ? [<Icon name="check" size={13} stroke={3} />, `Draft saved · ${at(look.at)}`, 'is-saved']
+        : look.kind === 'failed'
+          ? [<Icon name="alert" size={13} />, 'Not saved — trying again', 'is-failed']
+          : look.kind === 'unsaved'
+            ? [<i className="sv-save-dot" />, 'Unsaved changes', 'is-unsaved']
+            : look.kind === 'clean'
+              ? [<Icon name="check" size={13} stroke={3} />, 'All changes saved', 'is-clean']
+              : [<Icon name="pencil" size={13} />, 'Saved as a draft while you type', 'is-new'];
+  return (
+    <span className={`sv-save ${tone}`} role="status" aria-live="polite" key={look.kind}>
+      {icon}
+      {words}
+    </span>
   );
 }
 
@@ -749,9 +942,13 @@ function ServiceForm({
   initial,
   focus,
   photos,
+  hiddenUntil = null,
+  canDraft = false,
+  onSaveDraft,
   onSubmit,
   onCancel,
   onChange,
+  onDirtyChange,
 }: {
   money: ReturnType<typeof useMoney>;
   locations: Location[];
@@ -765,15 +962,24 @@ function ServiceForm({
   focus?: 'photos';
   /** An existing service's live photo manager, shown as the last section. */
   photos?: ReactNode;
+  /** When customers will see a new service, if not at once (§268) — e.g. "you post your shop". */
+  hiddenUntil?: string | null;
+  /** Something is written, so "Save as draft" has something to keep. */
+  canDraft?: boolean;
+  /** "Save as draft" on a NEW service: saved now, and the panel closes (§269). */
+  onSaveDraft?: () => void;
   /** `files` are the photos chosen for a NEW service, cover first (§165). */
   onSubmit: (body: Record<string, unknown>, files: File[]) => void;
   onCancel?: () => void;
   /**
    * Called whenever anything in the form changes, so a NEW service can be kept
    * as a draft while it is being written (§123). Absent when editing an existing
-   * service, which is already saved and needs no draft.
+   * service, which is already saved and needs no draft. `changed` is whether
+   * it differs from what the form opened with.
    */
-  onChange?: (values: FormValues) => void;
+  onChange?: (values: FormValues, changed: boolean) => void;
+  /** An existing service: whether anything differs from what is saved (§269). */
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
   // The headline under the photos on the customer's page (§185).
@@ -830,8 +1036,10 @@ function ServiceForm({
   // Reported on every change; the PAGE decides how often to actually save.
   // Debouncing here would put the timer in the component that unmounts when the
   // form closes, which is exactly when the last keystroke still needs saving.
+  // What the form opened with is the baseline: matching it is not a change.
+  const baseline = useRef<string | null>(null);
   useEffect(() => {
-    onChange?.({
+    const values: FormValues = {
       name,
       title,
       description,
@@ -841,7 +1049,12 @@ function ServiceForm({
       durationMinutes: Number(duration) || null,
       depositPercentage: deposit === '' ? null : Number(deposit),
       offers,
-    });
+    };
+    const snapshot = JSON.stringify(values);
+    if (baseline.current === null) baseline.current = snapshot;
+    const changed = snapshot !== baseline.current;
+    onChange?.(values, changed);
+    onDirtyChange?.(changed);
     // `offers` is derived from `prices` and rebuilt each render, so watching it
     // directly would fire this on every render rather than on every change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1157,19 +1370,34 @@ function ServiceForm({
       <footer className="sv-form-foot">
         {creating && !busy && offers.length > 0 && (
           <span className="sv-golive">
-            <i className="dot-ok" />
-            Goes live at {offers.length} {offers.length === 1 ? 'branch' : 'branches'}
-            {files.length > 0 ? ` with ${files.length} ${files.length === 1 ? 'photo' : 'photos'}` : ''}.
+            <i className={hiddenUntil ? 'dot-off' : 'dot-ok'} />
+            {hiddenUntil
+              ? `Ready at ${offers.length} ${offers.length === 1 ? 'branch' : 'branches'} — customers see it once ${hiddenUntil}.`
+              : `Goes live at ${offers.length} ${offers.length === 1 ? 'branch' : 'branches'}${
+                  files.length > 0 ? ` with ${files.length} ${files.length === 1 ? 'photo' : 'photos'}` : ''
+                }.`}
           </span>
         )}
         <div className="sv-form-actions">
-          {onCancel && (
-            <button type="button" onClick={onCancel}>
-              {creating ? 'Close' : 'Cancel'}
+          {creating && onSaveDraft ? (
+            <button
+              type="button"
+              className="sv-draft-btn"
+              onClick={onSaveDraft}
+              disabled={busy || !canDraft}
+              title={canDraft ? 'Keep it under Drafts and finish it later' : 'Type something first'}
+            >
+              <Icon name="pencil" size={16} /> Save as draft
             </button>
+          ) : (
+            onCancel && (
+              <button type="button" onClick={onCancel}>
+                Cancel
+              </button>
+            )
           )}
           <button type="submit" className="primary" disabled={busy}>
-            {busy ? (busyLabel ?? 'Saving…') : creating ? 'Post this service' : 'Save changes'}
+            {busy ? (busyLabel ?? 'Saving…') : creating ? (hiddenUntil ? 'Add this service' : 'Post this service') : 'Save changes'}
           </button>
         </div>
       </footer>
