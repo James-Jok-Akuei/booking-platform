@@ -16345,3 +16345,45 @@ Checked at 1440 and 390: the queue, All, search ("kimir" → Kimironko Spa,
 the counts following), an approved shop's review (three branches on maps
 with photos, seven services), the waiting application's review (the logo
 and payout number flagged). Nothing was approved or rejected.
+
+## 245. Admin piece 4 — Payout numbers, each one a card with its check (2026-10-09)
+
+The queue that decides whether shops get paid (§48) was a table with a raw
+number in code type and the words UNVERIFIED / SUPERSEDED. A shop waiting
+here is not being paid (§48.3), so each number is now a card with what the
+check needs beside it.
+
+### 245.1 The server
+
+`GET /admin/payout-destinations` now also gives, per number: the **shop's
+logo**; **who gave the number** (their email — the person to check it
+with) and **who checked it**; and **`replaces`** — the number it came
+after for the same business, so a changed number is read beside the old one.
+(`replacedBy`, its forward pointer, was §78.) Two tests added to
+`payout-destinations.spec.ts`; all 52 pass.
+
+### 245.2 The page
+
+- **Plain words**: To check · Checked · Refused · Replaced · All (was
+  UNVERIFIED / VERIFIED / REJECTED / SUPERSEDED), with counts on the tabs;
+  the tab is kept in the address.
+- When numbers are waiting: "A shop waiting here is **not being paid**: an
+  unchecked number pauses its payouts rather than skipping them quietly."
+- **Each number a card**: the shop's logo and name, who gave it and how long
+  it has waited (an amber strip along the top while waiting); **the number
+  spelled in threes** (+250 788 100 004), large, beside the network's own
+  mark (§219); then the facts the check rests on:
+  - **does the prefix agree** with the network given (078/079 MTN, 072/073
+    Airtel — §58.1's table, `networkOf`)? A mismatch is said in amber;
+  - **is it the shop's own phone?** If not, the shop's phone is shown with
+    **"call the shop"** (a `tel:` link) — calling the number on file is the
+    usual way to confirm a new one;
+  - **"Changes their number from +250 …"** when it replaces an earlier one —
+    "worth a call before money goes elsewhere" when the old one was checked;
+  - once checked: by whom, when, and the note of how (§48), quoted; once
+    refused: the reason; once replaced: by what.
+- **Mark as checked** (green) asks how it was confirmed — the only record of
+  the decision once money has moved; **Refuse** asks for the reason the shop
+  is sent.
+
+Checked at 1440 (To check, All) and 390. Nothing was checked or refused.

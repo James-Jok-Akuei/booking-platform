@@ -690,4 +690,32 @@ describe('Payout destinations (§48)', () => {
       expect(row.replacedBy).toBeNull();
     });
   });
+
+  describe('a new number says what it replaces, and who gave it (§245)', () => {
+    it('points back at the number before it, which is null for the first', async () => {
+      const first: any = await verified(shop, '+250788111111');
+      const second: any = await submit(shop, '+250788222222');
+
+      // The first is superseded by the second; each looked up in its own queue,
+      // since earlier tests leave many rows behind.
+      const old = await destinations.list(AS_ADMIN(), { status: PayoutDestinationStatus.SUPERSEDED, limit: 100 });
+      const fresh = await destinations.list(AS_ADMIN(), { status: PayoutDestinationStatus.UNVERIFIED, limit: 100 });
+      const firstRow = old.destinations.find((d: any) => d.id === first.id) as any;
+      const secondRow = fresh.destinations.find((d: any) => d.id === second.id) as any;
+
+      expect(firstRow.replaces).toBeNull();
+      expect(secondRow.replaces.msisdn).toBe('+250788111111');
+    });
+
+    it('names who submitted it, and carries the shop’s logo', async () => {
+      const row: any = await submit(shop, '+250788555555');
+
+      const page = await destinations.list(AS_ADMIN(), { status: PayoutDestinationStatus.UNVERIFIED, limit: 100 });
+      const listed = page.destinations.find((d: any) => d.id === row.id) as any;
+
+      expect(listed.submittedBy.email).toBe(shop.email);
+      expect(listed.verifiedBy).toBeNull();
+      expect(listed.businessProfile).toHaveProperty('logoUrl');
+    });
+  });
 });

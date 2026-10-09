@@ -237,7 +237,9 @@ export class PayoutDestinationsService {
         skip: offset,
         select: {
           ...DESTINATION_SELECT,
-          businessProfile: { select: { id: true, name: true, phone: true } },
+          businessProfile: { select: { id: true, name: true, phone: true, logoUrl: true } },
+          submittedBy: { select: { email: true } },
+          verifiedBy: { select: { email: true } },
         },
       }),
     ]);
@@ -249,17 +251,14 @@ export class PayoutDestinationsService {
     // timestamps — during a payment dispute, which is exactly when guessing is
     // worst. Resolved here rather than in the client because a status filter
     // means the successor is usually not on the same page.
-    const supersededByBusiness = [
-      ...new Set(
-        destinations
-          .filter((d) => d.status === PayoutDestinationStatus.SUPERSEDED)
-          .map((d) => d.businessId),
-      ),
-    ];
+    //
+    // And what each row came after (§245): every business on the page, so a
+    // changed number can be read beside the one it replaces.
+    const businessesOnPage = [...new Set(destinations.map((d) => d.businessId))];
 
-    const successors = supersededByBusiness.length
+    const successors = businessesOnPage.length
       ? await this.prisma.payoutDestination.findMany({
-          where: { businessId: { in: supersededByBusiness } },
+          where: { businessId: { in: businessesOnPage } },
           orderBy: { submittedAt: 'asc' },
           select: {
             id: true,
@@ -272,8 +271,18 @@ export class PayoutDestinationsService {
       : [];
 
     const withHistory = destinations.map((destination) => {
+      const earlier = successors.filter(
+        (candidate) =>
+          candidate.businessId === destination.businessId &&
+          candidate.submittedAt < destination.submittedAt,
+      );
+      const before = earlier[earlier.length - 1];
+      const replaces = before
+        ? { id: before.id, msisdn: before.msisdn, status: before.status, submittedAt: before.submittedAt }
+        : null;
+
       if (destination.status !== PayoutDestinationStatus.SUPERSEDED) {
-        return { ...destination, replacedBy: null };
+        return { ...destination, replacedBy: null, replaces };
       }
 
       // The next submission for that business. Submissions are strictly
@@ -286,6 +295,7 @@ export class PayoutDestinationsService {
 
       return {
         ...destination,
+        replaces,
         replacedBy: next
           ? {
               id: next.id,

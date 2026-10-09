@@ -76,6 +76,13 @@ export class DestinationBusinessDto {
   id!: string;
   name!: string | null;
   phone!: string | null;
+  /** So the check page shows the shop as it is known everywhere (§245). */
+  logoUrl!: string | null;
+}
+
+/** A person, by the address they sign in with. */
+export class DestinationPersonDto {
+  email!: string;
 }
 
 export class AdminPayoutDestinationDto {
@@ -105,6 +112,17 @@ export class AdminPayoutDestinationDto {
 
   /** Null when this is the latest one for its business. */
   replacedBy!: ReplacedByDto | null;
+  /**
+   * The number this one came after, for the same business — null for its
+   * first (§245). A changed number is checked against the old one: a shop
+   * that was paid to one number for months and suddenly asks for another is
+   * the case worth a phone call.
+   */
+  replaces!: ReplacedByDto | null;
+  /** Who gave the number: the person to check it with (§245). */
+  submittedBy!: DestinationPersonDto;
+  /** Who checked it, once checked. */
+  verifiedBy!: DestinationPersonDto | null;
 }
 
 export class AdminPayoutDestinationPageDto {

@@ -1,0 +1,57 @@
+/* Payout numbers (§245): one card per number, the check's facts beside it. */
+
+.pd-why { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 16px; padding: 13px 16px; border-radius: var(--r-md); background: var(--warn-soft); color: #7a4b00; font-size: 14px; }
+.pd-why svg { flex: none; margin-top: 1px; color: var(--warn); }
+
+.pd-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; }
+.pd-skel { height: 300px; border-radius: 24px; }
+
+.pd-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 18px 16px;
+  border-radius: 24px;
+  background: var(--panel);
+  border: 1px solid rgba(31, 42, 31, 0.05);
+  box-shadow: var(--shadow-sm);
+  animation: rise-in 420ms var(--ease) both;
+}
+.pd-card { position: relative; overflow: hidden; }
+/* Waiting: a straight amber strip along the top, clipped by the corners. */
+.pd-card.is-waiting::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--warn); }
+.pd-card-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pd-card-shop { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.pd-card-shop strong { font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pd-card-shop span { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pd-card.is-waiting .pd-card-shop span { color: #9a5d00; }
+
+/* The number, as big as it matters: it is where the money goes. */
+.pd-number { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; background: var(--sunken); }
+.pd-number .network-mark { border-radius: 12px; box-shadow: 0 6px 14px -8px rgba(31, 42, 31, 0.4); }
+.pd-number span { display: flex; flex-direction: column; gap: 1px; }
+.pd-number strong { font-size: 24px; font-weight: 800; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+.pd-number em { font-style: normal; font-size: 12.5px; font-weight: 650; color: var(--muted); }
+
+.pd-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pd-facts li { display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); }
+.pd-facts li svg { flex: none; margin-top: 2px; color: var(--muted); }
+.pd-facts li > span { min-width: 0; }
+.pd-facts li.is-ok svg { color: var(--ok); }
+.pd-facts li.is-warn { color: #7a4b00; }
+.pd-facts li.is-warn svg { color: var(--warn); }
+.pd-facts li.is-danger { color: #9f2318; }
+.pd-facts li.is-danger svg { color: var(--danger); }
+.pd-facts q { display: block; margin-top: 3px; padding: 6px 10px; border-radius: 10px; background: var(--sunken); color: var(--ink); font-style: italic; quotes: '“' '”'; }
+.pd-facts a { color: var(--accent-deep); font-weight: 700; }
+
+.pd-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line); }
+.pd-actions button { min-height: 40px; border-radius: 12px; }
+.pd-verify { background: var(--ok) !important; }
+.pd-verify:hover:not(:disabled) { background: var(--ok-deep) !important; }
+
+@container page (max-width: 520px) {
+  .pd-grid { grid-template-columns: minmax(0, 1fr); }
+  .pd-actions button { flex: 1; }
+  .pd-number strong { font-size: 21px; }
+}

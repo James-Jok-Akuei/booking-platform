@@ -851,3 +851,37 @@ tr.clickable:hover { background: var(--accent-tint); }
 /* A shop as a rounded tile (§244): logo, or initials on its own colour. */
 .shop-mark { display: inline-flex; align-items: center; justify-content: center; flex: none; overflow: hidden; font-weight: 800; letter-spacing: 0.01em; box-shadow: 0 0 0 1px rgba(31, 42, 31, 0.06); user-select: none; }
 .shop-mark img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- queues (§244, §245): underline tabs with counts, empty states, "show more" ---------- */
+
+/* Underline tabs with counts, as the business app's work lists (§213). */
+.qtabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line-strong); }
+.qtabs::-webkit-scrollbar { display: none; }
+.qtab {
+  flex: none;
+  position: relative;
+  min-height: 44px;
+  padding: 0 14px;
+  gap: 8px;
+  border: none;
+  border-radius: 12px 12px 0 0;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+.qtab:hover:not(:disabled) { background: var(--sunken); border: none; color: var(--ink); }
+.qtab.is-on { color: var(--ink); }
+.qtab.is-on::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--accent); }
+.qtab span { min-width: 22px; height: 21px; padding: 0 7px; display: grid; place-items: center; border-radius: 99px; background: var(--sunken-2); color: var(--ink-2); font-size: 11.5px; font-weight: 800; }
+.qtab span.is-hot { background: var(--accent); color: #fff; }
+
+.q-error { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: var(--r-md); background: var(--danger-soft); margin: 0 0 14px; }
+.q-more { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+.q-more button { border-radius: 12px; }
+
+.q-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 54px 20px; border-radius: 26px; background: var(--panel); border: 1px dashed var(--line-strong); }
+.q-empty > span { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 18px; background: var(--ok-soft); color: var(--ok-deep); margin-bottom: 6px; }
+.q-empty strong { font-size: 17px; }
+.q-empty p { margin: 0; max-width: 44ch; }
+

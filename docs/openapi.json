@@ -20947,12 +20947,18 @@
           "phone": {
             "type": "string",
             "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "So the check page shows the shop as it is known everywhere (§245)."
           }
         },
         "required": [
           "id",
           "name",
-          "phone"
+          "phone",
+          "logoUrl"
         ]
       },
       "ReplacedByDto": {
@@ -20982,6 +20988,17 @@
           "msisdn",
           "status",
           "submittedAt"
+        ]
+      },
+      "DestinationPersonDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
         ]
       },
       "AdminPayoutDestinationDto": {
@@ -21062,6 +21079,34 @@
                 "$ref": "#/components/schemas/ReplacedByDto"
               }
             ]
+          },
+          "replaces": {
+            "nullable": true,
+            "description": "The number this one came after, for the same business — null for its\nfirst (§245). A changed number is checked against the old one: a shop\nthat was paid to one number for months and suddenly asks for another is\nthe case worth a phone call.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReplacedByDto"
+              }
+            ]
+          },
+          "submittedBy": {
+            "description": "Who gave the number: the person to check it with (§245).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DestinationPersonDto"
+              }
+            ]
+          },
+          "verifiedBy": {
+            "nullable": true,
+            "description": "Who checked it, once checked.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DestinationPersonDto"
+              }
+            ]
           }
         },
         "required": [
@@ -21079,7 +21124,10 @@
           "verificationNote",
           "rejectionReason",
           "createdAt",
-          "replacedBy"
+          "replacedBy",
+          "replaces",
+          "submittedBy",
+          "verifiedBy"
         ]
       },
       "AdminPayoutDestinationPageDto": {

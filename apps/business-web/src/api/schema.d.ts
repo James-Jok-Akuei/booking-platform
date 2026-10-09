@@ -5143,6 +5143,8 @@ export interface components {
             id: string;
             name: string | null;
             phone: string | null;
+            /** @description So the check page shows the shop as it is known everywhere (§245). */
+            logoUrl: string | null;
         };
         ReplacedByDto: {
             id: string;
@@ -5150,6 +5152,9 @@ export interface components {
             /** @enum {string} */
             status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
             submittedAt: string;
+        };
+        DestinationPersonDto: {
+            email: string;
         };
         AdminPayoutDestinationDto: {
             id: string;
@@ -5178,6 +5183,17 @@ export interface components {
             createdAt: string;
             /** @description Null when this is the latest one for its business. */
             replacedBy: components["schemas"]["ReplacedByDto"] | null;
+            /**
+             * @description The number this one came after, for the same business — null for its
+             *     first (§245). A changed number is checked against the old one: a shop
+             *     that was paid to one number for months and suddenly asks for another is
+             *     the case worth a phone call.
+             */
+            replaces: components["schemas"]["ReplacedByDto"] | null;
+            /** @description Who gave the number: the person to check it with (§245). */
+            submittedBy: components["schemas"]["DestinationPersonDto"];
+            /** @description Who checked it, once checked. */
+            verifiedBy: components["schemas"]["DestinationPersonDto"] | null;
         };
         AdminPayoutDestinationPageDto: {
             total: number;

@@ -159,14 +159,14 @@ export function BusinessesPage() {
             />
           </label>
         </header>
-        <div className="bz-tabs pin-from" role="tablist" aria-label="Show">
+        <div className="qtabs pin-from" role="tablist" aria-label="Show">
           {TABS.map((t) => (
             <button
               key={t.value}
               type="button"
               role="tab"
               aria-selected={tab === t.value}
-              className={`bz-tab${tab === t.value ? ' is-on' : ''}`}
+              className={`qtab${tab === t.value ? ' is-on' : ''}`}
               onClick={() => patch({ status: t.value === 'PENDING' ? null : t.value, open: null })}
             >
               {t.label}
@@ -177,13 +177,13 @@ export function BusinessesPage() {
       </div>
 
       {act.error && (
-        <p className="error bz-error" role="alert">
+        <p className="error q-error" role="alert">
           <Icon name="alert" size={16} />
           {act.error instanceof ApiError ? act.error.message : 'That did not work.'}
         </p>
       )}
       {list.error && (
-        <p className="error bz-error" role="alert">
+        <p className="error q-error" role="alert">
           <Icon name="alert" size={16} />
           {list.error instanceof ApiError ? list.error.message : 'Could not load businesses.'}
         </p>
@@ -198,7 +198,7 @@ export function BusinessesPage() {
       )}
 
       {list.data && rows.length === 0 && (
-        <div className="bz-empty">
+        <div className="q-empty">
           <span>
             <Icon name={q ? 'search' : tab === 'PENDING' ? 'checkCircle' : 'store'} size={26} />
           </span>
@@ -225,7 +225,7 @@ export function BusinessesPage() {
       )}
 
       {list.data && rows.length > 0 && (
-        <div className="bz-more">
+        <div className="q-more">
           <span className="muted small">
             {rows.length} of {total}
           </span>
