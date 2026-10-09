@@ -17131,3 +17131,38 @@ the other project instead. The user asked for a port of our own.
   avatars, chat photos) moved to the new port and current address.
 - Local `.env` files (not in git) were updated to match: `PORT="4100"` and
   `APP_BASE_URL` in the backend's, `EXPO_PUBLIC_API_URL` in the app's.
+
+## 260. "Live in three steps", told with the app's real screens (2026-10-09)
+
+Asked: any section that shows steps should use real screenshots of the app,
+with better animation and a "million-dollar" finish — UI/UX is the measure.
+The first is the landing page's "Live in three steps" (§258), three plain
+cards until now. It is now its own section (`apps/website/src/Tour.tsx`):
+
+- **Real screens, per device.** Each step shows the screen a seller meets at
+  that moment, captured from the business app: the sign-up's code boxes, the
+  setup wizard's first step filled in, the Overview's "You are live!" the
+  moment a shop is approved. Captured at 1440×900 and 390×844, so a computer
+  shows the computer's screens in a browser window and a phone shows the
+  phone's in a phone frame (`<picture>`, with 2× versions for sharp screens;
+  `public/shots/steps/`). Captured from a temporary shop, removed afterwards.
+  The sign-in wall's photos were captured without five demo services' images
+  — among them a celebrity's photo, a "Company — tagline goes here"
+  placeholder, a stock photo carrying another brand's name and a forex chart
+  under a barbershop — none of which belongs on a public page (they remain in the demo data and
+  on the real sign-in wall until replaced there).
+- **A short film, not a carousel.** The steps sit on the left; the lit one
+  opens its words and fills a line over 6.5 s, then the next lights. The
+  screen cross-fades to that step's screenshot, eases in towards the part
+  that matters, and dims everything else around an orange ring (the code
+  boxes; how customers see you; the "You are live!" card). A note floats in
+  beside it ("Code sent — six digits, no password, ever"; "About five
+  minutes — skip anything"; "Approved — usually within one working day").
+  The line, the zoom and the ring share one switch: paused while the section
+  is off screen or under the mouse, so nothing plays unseen. A press on any
+  step jumps there. "Start selling" closes the column.
+- **On a phone** the steps become story bars over the phone, the step's words
+  sit under it, and the phone can be swiped.
+- **Reduced motion**: plain tabs — no timer, no zoom, the ring shown at once.
+- The window is flat: a tilted 3D frame was tried and made the real screens
+  soft, and their being readable is the point.

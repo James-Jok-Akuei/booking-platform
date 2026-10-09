@@ -3,6 +3,7 @@ import { Icon, type IconName } from './Icon';
 import { Logo, Wordmark } from './Logo';
 import { API_URL, APP_IS_OUT, APP_STORE_URL, CUSTOMER_APP_URL, PLAY_STORE_URL, businessStart } from './links';
 import { sheetPath, useSize } from './sheet';
+import { Tour } from './Tour';
 
 type Sheet = 'app' | 'how' | null;
 
@@ -21,6 +22,7 @@ export function App() {
     <>
       <Hero onOpen={setSheet} />
       <ForBusinesses />
+      <Tour />
       <Rail onOpen={setSheet} />
       <BackToTop />
       {sheet === 'app' && <GetTheApp onClose={() => setSheet(null)} />}
@@ -153,19 +155,14 @@ const toBusinesses = () => document.getElementById('businesses')?.scrollIntoView
 
 /**
  * The way in for sellers (§258), under the hero: what the business app does
- * for a shop, two doors into it — "Start selling" for a newcomer, "Sign in"
- * for a returning seller, each telling the sign-in page which it was — and
- * the three steps from here to taking bookings, the approval among them, so
- * nobody signs up expecting to be live the same minute.
+ * for a shop, and two doors into it — "Start selling" for a newcomer, "Sign
+ * in" for a returning seller, each telling the sign-in page which it was. The
+ * three steps from here to taking bookings follow it (`Tour`, §260), the
+ * approval among them, so nobody signs up expecting to be live the same minute.
  */
 function ForBusinesses() {
   const signUp = businessStart('signup');
   const signIn = businessStart('signin');
-  const steps: Array<{ icon: IconName; title: string; text: string }> = [
-    { icon: 'mail', title: 'Sign up with your email', text: 'We send a 6-digit code, and that is your account. No password, no card.' },
-    { icon: 'store', title: 'Set up your shop', text: 'Your name, a branch and one service — about five minutes. Skip anything and add it later.' },
-    { icon: 'shield', title: 'We check it, you go live', text: 'Usually within one working day. Then customers can find you and book.' },
-  ];
   return (
     <section className="biz" id="businesses" aria-labelledby="biz-title">
       <div className="biz-grid">
@@ -232,21 +229,6 @@ function ForBusinesses() {
         </div>
       </div>
 
-      <div className="biz-steps">
-        <h3>Live in three steps</h3>
-        <ol>
-          {steps.map((step, i) => (
-            <li key={step.title}>
-              <span className="biz-step-n">{i + 1}</span>
-              <span className="biz-step-icon">
-                <Icon name={step.icon} size={22} />
-              </span>
-              <strong>{step.title}</strong>
-              <span>{step.text}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
     </section>
   );
 }
