@@ -288,13 +288,22 @@ button.link.danger-link { color: var(--danger); }
 }
 .app .content .page-top > * { margin-top: 0; margin-bottom: 0; }
 /* Room between the top bar and whatever opens the page on a wide screen
-   (§237) — the title, or the slim "For you" banner above it — so nothing
-   sits against the bar. Space above the page, not in its header: once the
-   header pins, it closes up under the bar and costs no height. */
+   (§237, §261) — the title, or the slim "For you" banner above it — so
+   nothing sits against the bar. 18px read as cramped under a 40px title: it
+   is now about the title's own height, growing with the screen (≈36px on a
+   small laptop, 48px on a large one), the same on every page. Space above
+   the page, not in its header: once the header pins, it closes up under the
+   bar and costs no height. */
 @media (min-width: 860px) {
-  .app .content { padding-top: 18px; }
+  .app .content { padding-top: clamp(32px, 2.6vw, 44px); }
+  /* Pinned, a title keeps 14px of glass above it, not 6px, so it never sits
+     against the bar. Taken from the room above the page, so nothing moves at
+     the top of the page; and the pinned row of a tall header stays put, as
+     the fold is measured from the header's own top (Layout). */
+  .app .content .page-top { margin-top: -14px; padding-top: 14px; }
 }
-:is(.ov, .an, .pf, .gp, .hp) > .page-top { margin-bottom: -6px; }
+/* And a little more between the page's heading and its first card (32px). */
+:is(.ov, .an, .pf, .gp, .hp) > .page-top { margin-bottom: -2px; }
 /* Bar and header read as one sheet of glass: the edge moves to the header. */
 .app-main:has(.page-top) .topbar.is-scrolled { box-shadow: none; }
 .app.is-scrolled .page-top { box-shadow: 0 1px 0 rgba(31, 42, 31, 0.06), 0 14px 30px -24px rgba(31, 42, 31, 0.35); }

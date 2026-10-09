@@ -17166,3 +17166,24 @@ cards until now. It is now its own section (`apps/website/src/Tour.tsx`):
 - **Reduced motion**: plain tabs — no timer, no zoom, the ring shown at once.
 - The window is flat: a tilted 3D frame was tried and made the real screens
   soft, and their being readable is the point.
+
+## 261. Room under the top bar (2026-10-09)
+
+The user found the top of the business app's pages cramped: on a computer the
+page title sat about 22px under the dark top bar (18px of page padding, §237),
+with a 40px title — the heading read as stuck to the bar.
+
+- **Above the page**: `clamp(32px, 2.6vw, 44px)` instead of 18px on screens
+  860px and wider — about the title's own height, growing with the screen
+  (≈37px on a 1024 tablet, ≈44px on a 1284 laptop, up to 48px). One rule for
+  every page, so titles start at the same distance below the bar everywhere.
+  It is space above the page, not in its header, so it scrolls away and the
+  pinned header costs no extra height (§237 still holds).
+- **Pinned**: the header keeps 14px of glass above its title instead of 6px
+  (taken from that room, so nothing moves at the top of the page), so a
+  pinned title never touches the bar either. The pinned row of a tall header
+  (`.pin-from`) does not move: its fold is measured from the header's own top
+  (Layout).
+- **Heading to first card** on Overview, How it is going, Shopfront, Getting
+  paid and Help: 32px instead of 28px.
+- Phones unchanged: their light top bar already leaves room.
