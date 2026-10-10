@@ -17614,3 +17614,20 @@ The rules were tried on 31 cases (marks, escapes, lists, old plain text, the
 editor's document in and out); the editor typed into for real, a WhatsApp
 message pasted, and the result read in the customer app, the preview and the
 console — at 1440 and 390 wide.
+
+### 271.1 Words that flickered on a phone
+
+Reported: on a phone, a service's description and "before you come"
+blinked and jumped up and down.
+
+"Read more" measured the description INSIDE its shortened four-line box. A
+browser measures text at its full height there; a phone measures it at the
+height of the box it is in. So on a phone: shortened → "it fits, nothing
+more" → opened → "there is more" → shortened … for as long as the screen was
+open, with "Read more" and the fade blinking and everything below — "before
+you come" — pushed up and down with it. The web preview never showed it.
+
+The words are now measured positioned over a box of the height to show (not
+inside it), so nothing ever holds them in while they are measured and the
+answer cannot change with the box. Every collapsible `RichText` in the
+customer app takes it; the rest of a page cannot be moved by it.

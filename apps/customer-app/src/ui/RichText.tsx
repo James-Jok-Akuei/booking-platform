@@ -80,13 +80,21 @@ export function RichText({
 
   const limit = collapsedLines * lineHeight;
   const more = fullHeight > limit + 4;
-  // Held short until measured, so long words never flash open first.
-  const clipped = !expanded && (fullHeight === 0 || more);
+  // How much shows. Until the words are measured, the short height — so
+  // long words never flash open first.
+  const shown = fullHeight === 0 ? limit : expanded || !more ? fullHeight : limit;
   return (
     <View style={styles.collapsible}>
-      <View style={clipped ? { maxHeight: limit, overflow: 'hidden' } : undefined}>
-        <View onLayout={(e) => setFullHeight(e.nativeEvent.layout.height)}>{body}</View>
-        {clipped && more && (
+      {/* The words are measured where nothing holds them in: positioned over
+          a box of the height to show, not inside it. Measured inside a
+          shortened box, a phone measures them shortened too — "nothing
+          more", so it opens; open, "there is more", so it shuts — and the
+          words flickered up and down for good, with everything below them. */}
+      <View style={{ height: shown, overflow: 'hidden' }}>
+        <View style={styles.measured} onLayout={(e) => setFullHeight(Math.ceil(e.nativeEvent.layout.height))}>
+          {body}
+        </View>
+        {more && !expanded && (
           <LinearGradient
             colors={[`${fadeTo}00`, fadeTo]}
             style={[styles.fade, { height: Math.min(lineHeight * 1.6, limit) }]}
@@ -111,6 +119,7 @@ const styles = StyleSheet.create({
   number: { minWidth: 18 },
   itemText: { flex: 1 },
   collapsible: { gap: 10 },
+  measured: { position: 'absolute', top: 0, left: 0, right: 0 },
   fade: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   link: { fontFamily: font.bold, fontSize: 13.5, color: theme.accent },
 });
