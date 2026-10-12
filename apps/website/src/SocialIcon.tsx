@@ -1,6 +1,8 @@
+import { useId } from 'react';
+
 /**
- * The four networks' marks (§276), as their owners draw them — one colour,
- * filled, so they read at 18px. Shapes from Simple Icons (CC0).
+ * The four networks' marks (§276), as their owners draw them and in their
+ * own colours. Shapes from Simple Icons (CC0).
  */
 const MARKS: Record<'linkedin' | 'facebook' | 'instagram' | 'tiktok', string> = {
   linkedin:
@@ -15,10 +17,35 @@ const MARKS: Record<'linkedin' | 'facebook' | 'instagram' | 'tiktok', string> = 
 
 export type Network = keyof typeof MARKS;
 
-export function SocialIcon({ network, size = 18 }: { network: Network; size?: number }) {
+/** Each network's own colours (their brand guides): LinkedIn and Facebook blue, Instagram's gradient, TikTok's black with its cyan and red edges. */
+const BLUE = { linkedin: '#0A66C2', facebook: '#0866FF' } as const;
+
+export function SocialIcon({ network, size = 20 }: { network: Network; size?: number }) {
+  const id = useId().replace(/:/g, '');
+  const d = MARKS[network];
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true" focusable="false">
-      <path d={MARKS[network]} />
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" focusable="false" overflow="visible">
+      {network === 'instagram' && (
+        <defs>
+          {/* Instagram's sunrise: yellow at the foot, through orange and pink, to purple and blue at the top. */}
+          <radialGradient id={`ig-${id}`} cx="0.3" cy="1.07" r="1.5">
+            <stop offset="0" stopColor="#FDF497" />
+            <stop offset="0.05" stopColor="#FDF497" />
+            <stop offset="0.45" stopColor="#FD5949" />
+            <stop offset="0.6" stopColor="#D6249F" />
+            <stop offset="0.9" stopColor="#285AEB" />
+          </radialGradient>
+        </defs>
+      )}
+      {network === 'tiktok' ? (
+        <>
+          <path d={d} fill="#25F4EE" transform="translate(-0.9 -0.7)" />
+          <path d={d} fill="#FE2C55" transform="translate(0.9 0.7)" />
+          <path d={d} fill="#111111" />
+        </>
+      ) : (
+        <path d={d} fill={network === 'instagram' ? `url(#ig-${id})` : BLUE[network]} />
+      )}
     </svg>
   );
 }

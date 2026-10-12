@@ -17790,13 +17790,15 @@ downtown Kigali; write the Seller Agreement, researched for Rwanda.
 
 Asked: LinkedIn, Facebook, Instagram and TikTok icons.
 
-- In the landing page's footer, under "Made for Rwanda": four round buttons
-  with each network's own mark (`SocialIcon.tsx`, shapes from Simple Icons,
-  one colour, filled), turning to the network's colour on hover — LinkedIn
-  blue, Facebook blue, Instagram's gradient, TikTok black with its cyan/red
-  edge.
+- In the landing page's footer, under "Made for Rwanda": four round white
+  buttons with each network's own mark (`SocialIcon.tsx`, shapes from Simple
+  Icons) ~~in one colour, turning to the network's colour on hover~~ — **in
+  their real colours, always** (the user asked): LinkedIn #0A66C2, Facebook
+  #0866FF, Instagram's gradient (yellow, orange, pink, purple, blue), TikTok's
+  black note with its cyan #25F4EE and red #FE2C55 edges. On hover a button
+  lifts, ringed in its network's colour.
 - The links come from the build (`VITE_LINKEDIN_URL`, `VITE_FACEBOOK_URL`,
   `VITE_INSTAGRAM_URL`, `VITE_TIKTOK_URL`). No account was given yet, so none
-  is guessed: an icon without a link shows quieter, says "coming soon", and
-  links nowhere — a wrong account is worse than none.
+  is guessed: an icon without a link says "coming soon" and links nowhere —
+  a wrong account is worse than none.
 - "Talk to us" takes two columns' room, so the email stays on one line.
