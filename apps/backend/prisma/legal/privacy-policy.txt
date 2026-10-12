@@ -11,9 +11,9 @@ We follow Law n° 058/2021 of 13/10/2021 relating to the protection of personal 
 
 BwanguReservations is the data controller for the personal data described here.
 
-- Address: [PHYSICAL ADDRESS IN RWANDA]
-- Email for privacy questions: [PRIVACY EMAIL]
-- Data protection officer: [NAME], [EMAIL]
+- Address: Downtown Kigali, Nyarugenge District, City of Kigali, Rwanda
+- Email for privacy questions: jokditakeerleek@gmail.com
+- Data protection officer: [NAME], jokditakeerleek@gmail.com
 - NCSA registration certificate: [CERTIFICATE NUMBER, ONCE ISSUED]
 
 When you book with a business, that business also receives some of your data so that it can serve you. The business is responsible for how it uses the data once it has it.
@@ -135,7 +135,7 @@ How to use these rights in the app:
 - Stop location use: turn off location for the app in your phone's settings.
 - Close your account and remove your identity: Account, then "Close my account".
 
-For anything else, write to [PRIVACY EMAIL]. We do not charge for this. We will answer within 30 days. We may ask you to confirm that you are the owner of the account before we act.
+For anything else, write to jokditakeerleek@gmail.com. We do not charge for this. We will answer within 30 days. We may ask you to confirm that you are the owner of the account before we act.
 
 
 9. CHILDREN
@@ -163,8 +163,8 @@ When we change this policy we will show you what changed in the app and ask you 
 Contact us first, so we can put things right:
 
 BwanguReservations
-[PHYSICAL ADDRESS IN RWANDA]
-[PRIVACY EMAIL]
+Downtown Kigali, Nyarugenge District, City of Kigali, Rwanda
+jokditakeerleek@gmail.com
 +250 798 972 441
 
 If you are not satisfied with our answer, you have the right to complain to the National Cyber Security Authority (NCSA), Data Protection and Privacy Office, which supervises the Data Protection Law in Rwanda.

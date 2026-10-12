@@ -17724,3 +17724,64 @@ as the phone.
 - **The landing page's footer** shows "Talk to us: +250 798 972 441" (a
   `tel:` link) by default; `VITE_CONTACT_PHONE` can change it.
 
+
+## 275. The address, the email, and a Seller Agreement written for Rwanda (2026-10-12)
+
+The user: the email is jokditakeerleek@gmail.com; the company is in
+downtown Kigali; write the Seller Agreement, researched for Rwanda.
+
+- **Terms and Privacy Policy**: every support, privacy, complaints and
+  data-protection email is jokditakeerleek@gmail.com; the address is
+  "Downtown Kigali, Nyarugenge District, City of Kigali, Rwanda" (downtown
+  Kigali is in Nyarugenge); the complaints officer's mobile is the support
+  line. Still blank: the two officers' names, the RDB company code and place
+  of registration, the RICA and NCSA numbers, where data is stored, and the
+  providers (hosting, email, address search, routes).
+- **The Seller Agreement** (`prisma/legal/seller-agreement.txt`, ~3,800
+  words, 18 sections, the Terms' style), built on the official text of **Law
+  n° 011/2026** (competition and consumer protection, Official Gazette of
+  04/03/2026), read from the gazette itself, articles 41–48 on e-commerce:
+  selling a service through an app is e-commerce (41); the business's
+  identity, full prices, refund terms and complaints within 72 hours / 15
+  days, proof of purchase, no false reviews or endorsements (42); an
+  intermediary carries those duties for a seller with no online shop of its
+  own (43) — so the agreement makes the seller answerable for the truth of
+  what it gives us (45); a licence from RICA where its regulations require
+  one (44); the intermediary removes unlawful content as soon as reasonably
+  practicable and may stop serving the seller (46); refund, repair or
+  replacement and the 7-day withdrawal, refunds within 15 days (47); 30
+  days' public notice before closing (48). Also Law n° 058/2021 (personal
+  data: use only for the booking, NCSA registration where required, report
+  breaches), Law n° 18/2010 (agreeing in the app binds as a signature), RRA
+  (own taxes; EBM receipts where the law requires; our confirmation is not
+  the seller's tax receipt), and sector licences (RDB, health, tourism,
+  Rwanda FDA).
+- **The platform's real rules, as the code has them**: deposit percentage
+  per service, never below the fee; fee 10% of the price unless the app says
+  otherwise, fixed at booking; share is the deposit less the fee, earned when
+  done, no-show or customer-cancelled; held 2 days then paid daily to a
+  checked MTN or Airtel number (a change pauses payouts); seller cancels →
+  whole deposit back including the fee, the refund's mobile money charge the
+  seller's; negative balances netted from later earnings; 5-minute hold;
+  arrival codes (5 tries; code-less check-in by owner/manager, recorded,
+  admins told); automatic done/no-show after 24 hours; reviews only after a
+  done booking, one reply editable 7 days; ranking by bookings weighted by
+  rating; a shop cannot start a conversation; approval then "Post my shop"
+  (§268); pause any time. We pay the charge for sending payouts (nothing is
+  deducted from a payout today).
+- **Choices made in it, for the company to confirm** (none is in the code
+  yet): 30 days' notice before a fee rise or a change against sellers; a
+  balance below zero for 60 days may be asked for, payable in 14 days; 60
+  days to query a payout; 3 days to give the seller's side of a complaint;
+  liability capped at 12 months of fees (except what the law forbids
+  capping); a licence to show and promote the seller's name, logo and
+  photos; no paid ranking (and paid placements, if ever, marked); a
+  disagreement answered in 15 days, then mediation or the courts in Kigali.
+- **Deposits are received "on the seller's behalf"** (the platform as the
+  seller's agent for collecting deposits only), the usual marketplace
+  structure; whether that collection needs a payment-service licence under
+  BNR Regulation n° 74/2023 is for a Rwandan lawyer to confirm.
+- Published with the Terms and Privacy Policy (`legal:publish`, which now
+  includes the Seller Agreement): locally Terms v8, Privacy v6, Seller
+  Agreement v3; sellers are asked to accept it before listing (§126.4). The
+  landing page's footer shows the email and phone by default.

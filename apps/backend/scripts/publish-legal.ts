@@ -30,6 +30,8 @@ import { PrismaService } from '../src/prisma/prisma.service';
 const DOCUMENTS: Array<{ kind: LegalDocumentKind; file: string; title: string }> = [
   { kind: LegalDocumentKind.TERMS_OF_USE, file: 'terms-of-use.txt', title: 'Terms of Use' },
   { kind: LegalDocumentKind.PRIVACY_POLICY, file: 'privacy-policy.txt', title: 'Privacy Policy' },
+  // Written in full on 2026-10-12 (§275); until then only the console's stub.
+  { kind: LegalDocumentKind.SELLER_AGREEMENT, file: 'seller-agreement.txt', title: 'Seller Agreement' },
 ];
 
 async function main() {

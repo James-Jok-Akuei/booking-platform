@@ -71,11 +71,11 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
             ))}
           </div>
           {(CONTACT_EMAIL || CONTACT_PHONE) && (
-            <div>
+            <div className="foot-contact">
               <h3>Talk to us</h3>
               {CONTACT_EMAIL && (
                 <a href={`mailto:${CONTACT_EMAIL}`}>
-                  <Icon name="mail" size={16} /> {CONTACT_EMAIL}
+                  <Icon name="mail" size={16} /> <span>{CONTACT_EMAIL}</span>
                 </a>
               )}
               {CONTACT_PHONE && (

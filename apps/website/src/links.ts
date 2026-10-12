@@ -31,9 +31,8 @@ export const API_URL = env('VITE_API_URL') ?? '/api';
 export const APP_IS_OUT = Boolean(APP_STORE_URL || PLAY_STORE_URL || CUSTOMER_APP_URL);
 
 /**
- * How to reach the people behind the platform, for the footer (§273, §274).
- * The phone is the support line the Terms of Use name; the build can change
- * it. No email until there is one somebody reads.
+ * How to reach the people behind the platform, for the footer (§273–§275):
+ * the support line and email the Terms of Use name. The build can change them.
  */
-export const CONTACT_EMAIL = env('VITE_CONTACT_EMAIL');
+export const CONTACT_EMAIL = env('VITE_CONTACT_EMAIL') ?? 'jokditakeerleek@gmail.com';
 export const CONTACT_PHONE = env('VITE_CONTACT_PHONE') ?? '+250 798 972 441';

@@ -1,0 +1,216 @@
+SELLER AGREEMENT
+
+Last updated: 12 October 2026
+
+This Seller Agreement is the agreement between your business and BwanguReservations ("we", "us", "the Platform") when your business takes bookings through BwanguReservations. It applies to every business that is listed on the Platform, to all of its branches, and to everyone who works in its account.
+
+Please read it before you list your business. You accept it, for your business, when you tick the box in the business app. Accepting it there is as binding as signing it on paper: the law of Rwanda on electronic messages, electronic signatures and electronic transactions (Law n° 18/2010 of 12/05/2010) recognises agreements made this way.
+
+The Terms of Use and the Privacy Policy also apply to you as a user of the Platform. If something in this Seller Agreement and the Terms of Use disagree on a matter between you and us as a business, this Seller Agreement applies.
+
+
+1. WHO WE ARE
+
+BwanguReservations is a company registered in Rwanda with the Rwanda Development Board.
+
+- Company code: [RDB COMPANY CODE]
+- Address: Downtown Kigali, Nyarugenge District, City of Kigali, Rwanda
+- Telephone and support line: +250 798 972 441
+- Email: jokditakeerleek@gmail.com
+- E-commerce licence: [RICA LICENCE NUMBER, ONCE ISSUED]
+
+
+2. WHAT WE DO, AND WHAT YOU DO
+
+2.1 The Platform. The Platform is an online marketplace. Customers find your business, see your services and prices, book a time and pay a deposit to hold it. We run the Platform, show your listing, take bookings, collect deposits, pay your share of them to you, and help when something goes wrong.
+
+2.2 The service is yours. The service a customer books is provided by your business, not by us. The contract for the service is between your business and the customer. You are responsible for the service, its quality and safety, your staff and your premises.
+
+2.3 We are an online intermediary. Under the law of Rwanda on competition and consumer protection (Law n° 011/2026 of 26/02/2026), selling a service through the internet or an app, with or without a platform like ours, is e-commerce, and we are an online intermediary. Where a business has no online shop of its own, the law asks the intermediary to give customers much of the information an online seller must give. We do that for you, from what you tell us — so what you tell us must be true (section 4).
+
+2.4 You are independent. Nothing in this agreement makes you our employee, partner or general agent, or us yours. The one exception is the deposit: you appoint us to receive deposits from customers on your behalf and to pay your share of them to you, as section 6 describes. A customer who has paid us the deposit has paid you that part of the price.
+
+2.5 You are free to sell elsewhere. You may also take bookings by phone, on your own website or on other platforms. You must not, however, ask a customer who found you on the Platform to pay their deposit outside it, or to cancel a booking made here in order to book it again elsewhere.
+
+
+3. JOINING AND STAYING ON THE PLATFORM
+
+3.1 Who can join. You must run a real business, lawfully, in Rwanda, and the person who accepts this agreement must be at least 18 years old and allowed to bind the business.
+
+3.2 Setting up. You give your business's name, what kind of business it is, a phone number, at least one branch with its address, map location and opening hours, and at least one service with its price. You can add a logo, photos, more branches, more services and a number to be paid on.
+
+3.3 We check before you are listed. When you send your business for review we check it, usually within one working day. We may call the number you gave, and may ask for documents — for example your RDB registration certificate, a licence or a permit for the services you offer, or proof that the payout number is yours. We may decline a business, and we tell you why so that you can fix it and send it back.
+
+3.4 You post it. Approval does not show your business to customers on its own. Customers see it from the moment you press "Post my shop" in the business app.
+
+3.5 Keep it true. Keep your details up to date: your name, phone, addresses, opening hours, closures, services, prices and payout number. If your business changes owner, closes a branch or stops a service, change the Platform at the same time.
+
+3.6 Your team. The owner can invite managers and staff. Each person signs in with their own email. You are responsible for what everyone in your account does in it, so give each person only the role they need and remove anyone who leaves. Keep your email account secure: anyone who can read it can sign in.
+
+
+4. YOUR LISTING
+
+4.1 Everything must be true and lawful. Your business name, descriptions, special instructions, photos, prices, sale prices, durations and opening hours must be accurate, complete enough for a customer to decide, and lawful. Under Law n° 011/2026 you are responsible for any information you give about your services on the Platform that does not comply with the law.
+
+4.2 Prices. Prices are in Rwandan francs (RWF) and must be the full price a customer pays for the service, including any taxes and any other charges you will ask for. Do not add charges at your business that were not shown on the Platform, unless the customer asks for something extra and agrees to pay for it.
+
+4.3 Sales. A sale must be a real reduction from the price you normally charge. Bookings already made keep the price they were made at.
+
+4.4 Photos. Use photos of your own work, your own staff and your own place, or photos you have the right to use. Do not use photos that mislead about what the customer will get, photos of other businesses, or photos of people who have not agreed to appear.
+
+4.5 What is not allowed. You must not offer, describe or show anything that is illegal in Rwanda, unsafe, sexual, hateful, discriminatory or misleading, or that infringes another person's rights. You must not offer services for which you do not hold the licence the law requires.
+
+4.6 Rights to your content. You keep everything you upload. You allow us, without charge and for as long as your business is on the Platform, to show it, resize it, and use your business's name, logo and photos to show your listing and to promote the Platform and your business — for example on our website, in our apps, in emails to customers who asked for offers, and in our advertising. When you remove content or leave, we stop using it in new material within a reasonable time.
+
+4.7 We may remove content. If we learn that something on your listing is unlawful, misleading, or breaks this agreement, we may remove it or hide your listing, as the law asks us to do as soon as reasonably practicable. Where we can, we tell you first, or right after, and say why.
+
+
+5. BOOKINGS
+
+5.1 Your times. Customers can book the times your branches are open, less the closures and breaks you set, up to the number of people each branch serves at once. You must honour every booking the Platform confirms for those times.
+
+5.2 Confirmation. A booking is confirmed only when the customer's deposit is received. While the customer pays, the time is held for up to 5 minutes; if the deposit is not paid, the hold ends and the time is free again.
+
+5.3 Arrival codes. Every confirmed booking has a 6-digit code. Ask for it when the customer arrives and enter it in the business app: that is how you check them in. After 5 wrong tries a code is locked. An owner or a manager can check a customer in without the code by writing what the customer recalled; this is recorded against their name and our administrators are told. Do not check in anyone who has not come.
+
+5.4 Finishing. Mark each booking done after the service. A booking that was checked in but not marked done becomes done by itself 24 hours after its end.
+
+5.5 Customers who do not come. If a customer does not come, mark the booking as a no-show. A booking that nobody checked in becomes a no-show by itself 24 hours after its end. Mark a no-show only when the customer really did not come.
+
+5.6 Cancelling as a business. You may cancel a booking that has not started, but you must give a reason, and the customer is told it. Cancel only when you truly cannot serve the customer. If you know you will be closed, add a closure so that nobody can book those times. Frequent cancellations harm customers; we may limit or suspend a business that cancels often.
+
+5.7 Pausing. You can pause your whole business at any time, for example for a holiday. Paused, it is hidden and takes no new bookings; bookings already made still happen and money you are owed is still paid.
+
+5.8 Messages. Customers can message you about your business and their bookings. Answer them politely and promptly, and use messages only for that. You cannot start a conversation with a customer who has not written to you, and you must not use a customer's details to contact them about anything other than their booking.
+
+
+6. MONEY
+
+6.1 The deposit. For each service you choose the deposit percentage a customer pays when booking. It cannot be lower than our fee. The rest of the price is paid to you directly at your business, in the way you accept, and does not pass through the Platform.
+
+6.2 Our fee. For each booking we keep a fee, which is a percentage of the booking's price, out of the deposit. Our fee is 10% of the price unless we tell you otherwise in the business app. The fee that applies to a booking is the one in force when it was made. If we raise our fee, we tell you in the business app and by email at least 30 days before, and the new fee applies only to bookings made after that date. Our fee includes any VAT that applies to it.
+
+6.3 Your share. Your share of a deposit is the deposit less our fee. It becomes yours when the booking is done, marked a no-show, or cancelled by the customer.
+
+6.4 When you are paid. Once your share is yours, it is held for a short waiting period — currently 2 days — so that a mistaken check-in or a complaint can be put right, and then paid in our daily payout run to your payout number. We may change the waiting period; we tell you in the business app before a change applies.
+
+6.5 Your payout number. Payouts go to a mobile money number (MTN Mobile Money or Airtel Money) that you give us and that we have checked. Changing it pauses your payouts until we have checked the new one; nothing you have earned is lost in the meantime. You must give a number that belongs to your business or to its owner. We pay the mobile money charge for sending a payout to you.
+
+6.6 When you cancel. If you cancel a booking, the customer gets the whole deposit back, including our fee, and the mobile money charge for sending it back is yours. Any part of it already paid to you is taken from your balance.
+
+6.7 Refunds the law or a complaint requires. If the law gives a customer a refund — for example under Law n° 011/2026 when a service is defective, different from what was booked, or when the customer lawfully withdraws — or if we decide a complaint in the customer's favour under section 7, we refund the customer, and your share of that deposit is taken back from your balance.
+
+6.8 A balance below zero. If what is taken back is more than what you are owed, your balance goes below zero. It is then taken from your next earnings. If it stays below zero for 60 days, we may ask you to pay it to us, and you agree to do so within 14 days of our asking.
+
+6.9 Payment problems. If a customer's payment is reversed, fails after the booking was shown as paid, or turns out to be fraudulent, the booking can be cancelled and your share of it reversed. We tell you when this happens.
+
+6.10 Your records. The business app shows every deposit, fee, refund and payout. If you think something is wrong, tell us within 60 days of the payout or entry concerned, and we will look into it.
+
+6.11 Your taxes and receipts. You are responsible for your own taxes on the money you earn, including income tax and, if you are registered for VAT, VAT on the full price of your services. Where the law requires it, give the customer an Electronic Billing Machine (EBM) receipt for the service. The Platform's confirmation is the customer's proof that they paid the deposit; it is not your tax receipt.
+
+
+7. CUSTOMERS, COMPLAINTS AND THE LAW THAT PROTECTS THEM
+
+7.1 Serve as described. Provide each service as it was described on the Platform, at the time booked, with the care and skill a customer can expect, safely and hygienically.
+
+7.2 When something goes wrong. If a customer tells you a service was defective or not what they booked, try to put it right — by doing it again, repairing it or refunding — as Law n° 011/2026 gives the customer the right to ask for a refund, repair or replacement in that case. Customers keep every right the law gives them, and nothing in this agreement takes it away.
+
+7.3 Complaints to us. A customer can complain to us from their reservation. The law asks us to acknowledge a complaint within 72 hours and to give an answer within 15 days. When we ask for your side, answer within 3 days, and give us what we reasonably need — your account of what happened, messages, photos. If we decide in the customer's favour, section 6.7 applies.
+
+7.4 RICA. Customers may also complain to the Rwanda Inspectorate, Competition and Consumer Protection Authority (RICA). If RICA or a court asks us about your business, we may share what we hold about it.
+
+7.5 Fair treatment. Treat every customer with respect, and do not refuse or treat a customer differently because of their sex, ethnicity, religion, disability or any other ground the law protects.
+
+
+8. REVIEWS AND RANKING
+
+8.1 Only real customers. Only a customer whose booking is done can review it. You must not write reviews of your own business or of a competitor, ask anyone to, or offer customers anything in return for a review or for changing one.
+
+8.2 Your reply. You may post one public reply to each review and edit it for 7 days. Keep it polite and do not reveal a customer's private information in it.
+
+8.3 How businesses are ordered. The app shows popular businesses first, by bookings weighted by rating, and nearby businesses first when a customer shares their location. We do not sell a higher place in this order. If we ever offer paid placements, they will be clearly marked as such.
+
+8.4 Hidden reviews. We may hide a review that breaks the rules in the Terms of Use. We do not remove a review because it is negative.
+
+
+9. CUSTOMERS' PERSONAL DATA
+
+9.1 What you receive. For each booking you see what you need to serve the customer — for example their name or email, the service, the time and how many people. Messages they send you are kept on the Platform.
+
+9.2 How you may use it. Use a customer's personal data only to provide and follow up the booking they made, and as the law allows. Do not use it for marketing, sell it, share it, or copy it out of the Platform, unless the customer has clearly agreed. Keep it confidential and let only the people who need it see it.
+
+9.3 The law. You must handle personal data as Law n° 058/2021 of 13/10/2021 relating to the protection of personal data and privacy requires, including registering with the National Cyber Security Authority (NCSA) if the law requires it of your business.
+
+9.4 If something goes wrong. If you learn that customers' personal data from the Platform has been lost, stolen or seen by someone who should not see it, tell us at once at jokditakeerleek@gmail.com.
+
+9.5 Your own data. We handle your personal data, and that of your team, as our Privacy Policy describes.
+
+
+10. LICENCES AND THE LAW
+
+10.1 Your licences. You must hold, and keep in force, every registration, licence and permit your business and its services need — for example your registration with the Rwanda Development Board, a licence for a health facility or a health professional, a tourism licence, or a permit from the Rwanda Food and Drugs Authority. Under Law n° 011/2026 a business that sells online applies to RICA for the licence its regulations require; you must hold it when they require it of you. Tell us at once if a licence you need is suspended, withdrawn or expires.
+
+10.2 Your staff and premises. Your staff must be qualified for what they do, and your premises safe and fit for your services. Keep any insurance the law requires.
+
+10.3 Health and age. For any service that carries a health risk, or that is not suitable for children, tell the customer before they book (for example in the special instructions), and refuse it where the law says you must.
+
+
+11. OUR DECISIONS ABOUT YOUR BUSINESS
+
+11.1 Suspension. We may suspend your business — hide it and stop new bookings — if you seriously or repeatedly break this agreement, if customers' safety or money is at risk, if a licence you need is missing, or if the law, a court or RICA requires it. Bookings already made still go ahead unless that would be unsafe or unlawful.
+
+11.2 We tell you why. When we suspend your business, decline it or remove content, we tell you why in the business app and by email, unless the law or an investigation prevents it. You can reply and ask us to look again, from Help in the business app.
+
+11.3 Payouts during a suspension. While your business is suspended, payouts may be held while we look into what happened. Money you are owed for services you provided is paid once that is settled.
+
+
+12. RESPONSIBILITY
+
+12.1 Yours. You are responsible to customers, and to us, for your services, your staff, your premises and the information you give on the Platform. If we have to pay a customer, a third party or an authority because of a service you provided, something your business did, or content you uploaded, you will repay us what we reasonably paid, unless it was our fault.
+
+12.2 Ours. We run the Platform with reasonable care, show your listing as you gave it to us, collect deposits and pay your share as this agreement says. We do not promise that the Platform will always be available or free of errors, or that you will receive a particular number of bookings.
+
+12.3 Limits. As far as the law allows, we are not liable to you for loss of profit or of business, or for losses we could not reasonably have foreseen; and our total liability to your business in any 12 months is limited to the fees we kept from your bookings in those 12 months, plus any of your share we still owe you. Nothing in this agreement limits liability for fraud, for death or personal injury caused by negligence, or any other liability that the law of Rwanda does not allow to be limited.
+
+
+13. OUR NAME AND THE PLATFORM
+
+The Platform, its name, logo, design and software belong to us or to those who license them to us. You may say that your business can be booked on BwanguReservations, and use the links and badges we provide for that. You may not otherwise use our name or logo without our written permission, or copy, resell or interfere with the Platform.
+
+
+14. CHANGES TO THIS AGREEMENT
+
+We may change this agreement, for example when the law changes, when we add features, or when we change how the Platform works. We will show you what changed in the business app and ask you to accept the new version before you can carry on listing; changes that are not in your favour apply at the earliest 30 days after we tell you, except where the law requires a change sooner. Bookings already made keep the terms they were made under.
+
+
+15. LEAVING, AND ENDING THIS AGREEMENT
+
+15.1 By you. You can stop at any time: pause your business at once, or ask us to close your business account once you have no bookings still to come. The money you are owed is still paid to you, less anything section 6 allows us to take back.
+
+15.2 By us. We may end this agreement with 30 days' notice for any reason, or at once if you seriously or repeatedly break it, act fraudulently, or if the law requires it.
+
+15.3 What continues. Bookings already made, money owed either way, refunds the law requires, and sections 6, 9, 12 and 16 continue after this agreement ends. We keep records of bookings and payments for as long as the law requires.
+
+
+16. IF WE STOP THE PLATFORM
+
+If we decide to stop running the Platform, we will publish a notice on the Platform at least 30 days before, as Law n° 011/2026 requires, pay you what you are owed, and arrange for bookings already paid to be honoured or refunded.
+
+
+17. LAW AND DISPUTES
+
+17.1 This agreement is governed by the laws of the Republic of Rwanda.
+
+17.2 If there is a disagreement, we will first try to settle it together, in good faith. Write to us from Help in the business app or at jokditakeerleek@gmail.com; we will answer within 15 days.
+
+17.3 If that does not settle it within 30 days, either of us may ask for mediation, or bring the dispute before the competent courts of Rwanda in Kigali.
+
+17.4 This agreement is written in English. If we provide a translation in Kinyarwanda or French and there is a difference, the English version applies unless the law says otherwise.
+
+
+18. CONTACT
+
+BwanguReservations
+Downtown Kigali, Nyarugenge District, City of Kigali, Rwanda
+jokditakeerleek@gmail.com
++250 798 972 441
