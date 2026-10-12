@@ -17646,3 +17646,54 @@ stop (it removes lock, pid and socket files only — the database's disk is
 untouched; the data was all still there), then one more start; and if that
 fails too, it shows the last lines of what Colima said instead of hiding
 them.
+
+## 273. The landing page, finished to the picture: four reasons, what can be booked, the foot, the share picture (2026-10-12)
+
+The rest of §239's list, in the order of the user's picture (the XTRA page,
+now kept outside the repo with the other references): four feature columns
+under the big number, a dark slanted section with a grid, then — after the
+business sections (§258, §260) — a footer, and the picture a shared link shows.
+
+- **Four reasons** (`Features.tsx`), the picture's columns: a fine orange line
+  drawing, a bold two-line title, a few plain grey words — *Real places,
+  checked by us* · *Book in under a minute* · *A small deposit holds your
+  time* · *Your code, not a queue*. Every claim is the apps' real rule: shops
+  are checked before they are listed (§255); the deposit is part of the price
+  and comes back in full **only when the shop cancels** — a customer who
+  cancels does not get it back, so the page never says otherwise; the
+  reminder comes the day before. The drawings draw themselves in, one after
+  another, the first time the row is seen; the words follow.
+- **What can be booked** (`Places.tsx`), the picture's dark "132 Ready to
+  Import" section: the stacked-layers mark, "**24** services ready to
+  **book** today." — counted by the server (`GET /discover/services`) — and
+  "Find a place -> Pick a free time -> Show your code at the door." Six real
+  services on photo cards: the shop's kind, its rating, a sale, the name, the
+  shop and district, the price and what it takes to book. Cards with a photo
+  come first, one card per service (a shop's "Haircut" at two branches is
+  one), shops taking turns so the grid shows the range. A card opens that
+  service in the customer app once `VITE_CUSTOMER_APP_URL` is set, and "Get
+  the app" until then. The cream paper above ends in the picture's slant —
+  down to the right, a rounded corner, steeply back up — drawn in pixels like
+  the hero's paper, with a paler band behind. Left out if the server cannot
+  be reached. On a phone the cards slide sideways.
+- **The foot** (`Footer.tsx`), on cream after the dark steps card: the mark,
+  one line of what this is, "Made for Rwanda"; for customers, for businesses,
+  and **the three published documents read in a window right there** (`GET
+  /legal/:kind`, open to anyone, §122; plain text, headings in capitals,
+  never HTML); contact details only when the build names them
+  (`VITE_CONTACT_EMAIL`, `VITE_CONTACT_PHONE`).
+- **The share picture** (`public/og.jpg`, 1200×630) made from the real app
+  screens (`og-image/og.html` remakes it), with Open Graph and X tags. Its
+  address must be a full one for WhatsApp and Facebook to show it:
+  `VITE_SITE_URL` fills it in at build time (`vite.config.ts`); development
+  falls back to "/og.jpg". The page's description no longer explains the
+  name (§240).
+- Two small helpers learned to wait for a section that appears only after its
+  data (`useInView`, `useSize` take `ready`): measured before it existed, the
+  dark section had neither its slant nor its cards.
+
+Checked at 1440, 1024 and 390 wide; the document window opened from the
+footer. The published Terms and Privacy Policy still hold their blanks —
+[COMPANY LEGAL NAME], [PLATFORM NAME], [PHYSICAL ADDRESS IN RWANDA] — and the
+Seller Agreement is a placeholder; anyone can now read them on the landing
+page, so they need filling in before launch.

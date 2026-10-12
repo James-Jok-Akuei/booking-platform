@@ -118,6 +118,7 @@ export function Tour() {
   return (
     <section
       ref={ref}
+      id="steps"
       className={`tour${playing ? ' is-playing' : ''}${still ? ' is-still' : ''}`}
       aria-labelledby="tour-title"
       onMouseEnter={() => setHovered(true)}

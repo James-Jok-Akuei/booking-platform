@@ -1,9 +1,13 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Logo, Wordmark } from './Logo';
 import { API_URL, APP_IS_OUT, APP_STORE_URL, CUSTOMER_APP_URL, PLAY_STORE_URL, businessStart } from './links';
 import { sheetPath, useSize } from './sheet';
 import { Tour } from './Tour';
+import { Features } from './Features';
+import { Places } from './Places';
+import { Footer } from './Footer';
+import { Modal } from './Modal';
 
 type Sheet = 'app' | 'how' | null;
 
@@ -21,8 +25,12 @@ export function App() {
   return (
     <>
       <Hero onOpen={setSheet} />
+      {/* The picture's order: four reasons, then the dark grid of what can be booked (§273). */}
+      <Features />
+      <Places onGetApp={() => setSheet('app')} />
       <ForBusinesses />
       <Tour />
+      <Footer onGetApp={() => setSheet('app')} onHow={() => setSheet('how')} />
       <Rail onOpen={setSheet} />
       <BackToTop />
       {sheet === 'app' && <GetTheApp onClose={() => setSheet(null)} />}
@@ -277,28 +285,6 @@ function BackToTop() {
 
 // ---------------------------------------------------------------------------
 // The two small sheets
-
-function Modal({ title, onClose, wide = false, children }: { title: string; onClose: () => void; wide?: boolean; children: ReactNode }) {
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [onClose]);
-  return (
-    <div className="modal-backdrop" onMouseDown={onClose}>
-      <div className={`modal${wide ? ' is-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()}>
-        <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
-          <Icon name="close" size={18} stroke={2.2} />
-        </button>
-        {children}
-      </div>
-    </div>
-  );
-}
 
 /** Until the app is in the stores, "Get the app" says so rather than leading nowhere. */
 function GetTheApp({ onClose }: { onClose: () => void }) {

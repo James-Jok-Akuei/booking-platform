@@ -26,17 +26,20 @@ export function sheetPath(
   return `M 0 ${p(h + 50)} L 0 ${p(yLeft)} L ${p(a.x)} ${p(a.y)} Q ${p(corner.x)} ${p(corner.y)} ${p(b.x)} ${p(b.y)} L ${p(w)} ${p(yRight)} L ${p(w)} ${p(h + 50)} Z`;
 }
 
-/** An element's size, kept current as it changes. */
-export function useSize(ref: RefObject<HTMLElement>) {
+/**
+ * An element's size, kept current as it changes. `ready` for one that
+ * appears later, after its data: it is measured from then.
+ */
+export function useSize(ref: RefObject<HTMLElement>, ready = true) {
   const [size, setSize] = useState({ w: 0, h: 0 });
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !ready) return;
     const measure = () => setSize({ w: el.clientWidth, h: el.clientHeight });
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [ref]);
+  }, [ref, ready]);
   return size;
 }

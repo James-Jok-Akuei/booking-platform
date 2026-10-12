@@ -29,3 +29,10 @@ export const API_URL = env('VITE_API_URL') ?? '/api';
 
 /** Whether there is anywhere yet for "Get the app" to lead. */
 export const APP_IS_OUT = Boolean(APP_STORE_URL || PLAY_STORE_URL || CUSTOMER_APP_URL);
+
+/**
+ * How to reach the people behind the platform, for the footer (§273). Shown
+ * only when the build names them — an address nobody reads is worse than none.
+ */
+export const CONTACT_EMAIL = env('VITE_CONTACT_EMAIL');
+export const CONTACT_PHONE = env('VITE_CONTACT_PHONE');
