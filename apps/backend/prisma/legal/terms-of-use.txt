@@ -1,22 +1,22 @@
 TERMS OF USE
 
-Last updated: 7 October 2026
+Last updated: 12 October 2026
 
-These Terms of Use are the agreement between you and [COMPANY LEGAL NAME] ("we", "us", "the Platform") when you use the [PLATFORM NAME] mobile app and related services. Please read them before you book. By creating an account or making a booking you agree to them.
+These Terms of Use are the agreement between you and BwanguReservations ("we", "us", "the Platform") when you use the BwanguReservations mobile app and related services. Please read them before you book. By creating an account or making a booking you agree to them.
 
 If you run a business on the Platform, the Seller Agreement also applies to you.
 
 
 1. WHO WE ARE
 
-[COMPANY LEGAL NAME] is a company registered in Rwanda with the Rwanda Development Board.
+BwanguReservations is a company registered in Rwanda with the Rwanda Development Board.
 
 - Company code: [RDB COMPANY CODE]
 - Registered at: [PLACE OF REGISTRATION]
 - Address: [PHYSICAL ADDRESS IN RWANDA]
-- Telephone: [TELEPHONE NUMBER]
+- Telephone: +250 798 972 441
 - Email: [SUPPORT EMAIL]
-- After-sales and support line: [SUPPORT MOBILE NUMBER]
+- After-sales and support line: +250 798 972 441
 - Consumer complaints officer: [NAME], [MOBILE NUMBER], [EMAIL]
 - E-commerce licence: [RICA LICENCE NUMBER, ONCE ISSUED]
 
@@ -119,7 +119,7 @@ We may suspend or close an account that breaks these rules. Where we can, we wil
 
 10. COMPLAINTS
 
-10.1 How to complain. Open the reservation, choose Get help and tell us what happened. You can also write to [SUPPORT EMAIL] or call [SUPPORT MOBILE NUMBER].
+10.1 How to complain. Open the reservation, choose Get help and tell us what happened. You can also write to [SUPPORT EMAIL] or call +250 798 972 441.
 
 10.2 Our reply. We will confirm that we have received your complaint within 72 hours, and give you our answer within 15 days.
 
@@ -186,7 +186,7 @@ If we decide to stop running the Platform, we will give notice on the Platform a
 
 19. CONTACT
 
-[COMPANY LEGAL NAME]
+BwanguReservations
 [PHYSICAL ADDRESS IN RWANDA]
 [SUPPORT EMAIL]
-[SUPPORT MOBILE NUMBER]
++250 798 972 441

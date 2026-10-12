@@ -17680,8 +17680,9 @@ business sections (§258, §260) — a footer, and the picture a shared link sho
   one line of what this is, "Made for Rwanda"; for customers, for businesses,
   and **the three published documents read in a window right there** (`GET
   /legal/:kind`, open to anyone, §122; plain text, headings in capitals,
-  never HTML); contact details only when the build names them
-  (`VITE_CONTACT_EMAIL`, `VITE_CONTACT_PHONE`).
+  never HTML); ~~contact details only when the build names them
+  (`VITE_CONTACT_EMAIL`, `VITE_CONTACT_PHONE`)~~ — the phone is shown by
+  default since §274; the email still only when set.
 - **The share picture** (`public/og.jpg`, 1200×630) made from the real app
   screens (`og-image/og.html` remakes it), with Open Graph and X tags. Its
   address must be a full one for WhatsApp and Facebook to show it:
@@ -17697,3 +17698,29 @@ footer. The published Terms and Privacy Policy still hold their blanks —
 [COMPANY LEGAL NAME], [PLATFORM NAME], [PHYSICAL ADDRESS IN RWANDA] — and the
 Seller Agreement is a placeholder; anyone can now read them on the landing
 page, so they need filling in before launch.
+
+## 274. The company's name and phone, filled in (2026-10-12)
+
+The user: use **BwanguReservations** as the company name, and **0798972441**
+as the phone.
+
+- **Terms of Use and Privacy Policy** (`prisma/legal/*.txt`): every
+  `[COMPANY LEGAL NAME]` and `[PLATFORM NAME]` is now BwanguReservations;
+  the telephone and the after-sales/support line are **+250 798 972 441**
+  (the number in its international form, as the documents and a `tel:` link
+  need it); "Last updated" is 12 October 2026. Published through
+  `npm run legal:publish` — the same path as the console, so these are new
+  versions (locally Terms v7, Privacy v5; the first run left the old date, so
+  it ran twice) and everyone is asked to accept them, with the note "We added
+  our company name, BwanguReservations, and our phone number, +250 798 972
+  441. Nothing else has changed."
+- **Still blank, waiting on facts only the company has**: the support and
+  privacy email, the physical address, the RDB company code and place of
+  registration, the consumer-complaints officer (name, mobile, email), the
+  data-protection officer, the RICA licence and NCSA certificate numbers,
+  where data is stored, and the names of the hosting, email, address-search
+  and route-finding providers. The publish script refuses to publish to
+  production while any blank is left. The Seller Agreement is still a stub.
+- **The landing page's footer** shows "Talk to us: +250 798 972 441" (a
+  `tel:` link) by default; `VITE_CONTACT_PHONE` can change it.
+

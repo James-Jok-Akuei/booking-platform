@@ -1,15 +1,15 @@
 PRIVACY POLICY
 
-Last updated: 7 October 2026
+Last updated: 12 October 2026
 
-This Privacy Policy explains what personal data [COMPANY LEGAL NAME] ("we", "us") collects when you use the [PLATFORM NAME] app, why we collect it, who we share it with, and the rights you have.
+This Privacy Policy explains what personal data BwanguReservations ("we", "us") collects when you use the BwanguReservations app, why we collect it, who we share it with, and the rights you have.
 
 We follow Law n° 058/2021 of 13/10/2021 relating to the protection of personal data and privacy ("the Data Protection Law"). The authority that supervises this law in Rwanda is the National Cyber Security Authority (NCSA), through its Data Protection and Privacy Office.
 
 
 1. WHO IS RESPONSIBLE FOR YOUR DATA
 
-[COMPANY LEGAL NAME] is the data controller for the personal data described here.
+BwanguReservations is the data controller for the personal data described here.
 
 - Address: [PHYSICAL ADDRESS IN RWANDA]
 - Email for privacy questions: [PRIVACY EMAIL]
@@ -162,9 +162,9 @@ When we change this policy we will show you what changed in the app and ask you 
 
 Contact us first, so we can put things right:
 
-[COMPANY LEGAL NAME]
+BwanguReservations
 [PHYSICAL ADDRESS IN RWANDA]
 [PRIVACY EMAIL]
-[SUPPORT MOBILE NUMBER]
++250 798 972 441
 
 If you are not satisfied with our answer, you have the right to complain to the National Cyber Security Authority (NCSA), Data Protection and Privacy Office, which supervises the Data Protection Law in Rwanda.
