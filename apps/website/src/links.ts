@@ -36,3 +36,16 @@ export const APP_IS_OUT = Boolean(APP_STORE_URL || PLAY_STORE_URL || CUSTOMER_AP
  */
 export const CONTACT_EMAIL = env('VITE_CONTACT_EMAIL') ?? 'jokditakeerleek@gmail.com';
 export const CONTACT_PHONE = env('VITE_CONTACT_PHONE') ?? '+250 798 972 441';
+
+/**
+ * The platform's social pages, for the footer (§276). Each comes from the
+ * build; one that is not set yet shows its icon as "coming soon" rather than
+ * linking to a guess — a wrong account is worse than none.
+ */
+export const SOCIAL = [
+  { key: 'linkedin', label: 'LinkedIn', url: env('VITE_LINKEDIN_URL') },
+  { key: 'facebook', label: 'Facebook', url: env('VITE_FACEBOOK_URL') },
+  { key: 'instagram', label: 'Instagram', url: env('VITE_INSTAGRAM_URL') },
+  { key: 'tiktok', label: 'TikTok', url: env('VITE_TIKTOK_URL') },
+] as const;
+

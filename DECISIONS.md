@@ -17785,3 +17785,18 @@ downtown Kigali; write the Seller Agreement, researched for Rwanda.
   includes the Seller Agreement): locally Terms v8, Privacy v6, Seller
   Agreement v3; sellers are asked to accept it before listing (§126.4). The
   landing page's footer shows the email and phone by default.
+
+## 276. Social pages in the footer (2026-10-13)
+
+Asked: LinkedIn, Facebook, Instagram and TikTok icons.
+
+- In the landing page's footer, under "Made for Rwanda": four round buttons
+  with each network's own mark (`SocialIcon.tsx`, shapes from Simple Icons,
+  one colour, filled), turning to the network's colour on hover — LinkedIn
+  blue, Facebook blue, Instagram's gradient, TikTok black with its cyan/red
+  edge.
+- The links come from the build (`VITE_LINKEDIN_URL`, `VITE_FACEBOOK_URL`,
+  `VITE_INSTAGRAM_URL`, `VITE_TIKTOK_URL`). No account was given yet, so none
+  is guessed: an icon without a link shows quieter, says "coming soon", and
+  links nowhere — a wrong account is worse than none.
+- "Talk to us" takes two columns' room, so the email stays on one line.

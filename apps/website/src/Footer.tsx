@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Icon } from './Icon';
 import { Logo, Wordmark } from './Logo';
 import { Modal } from './Modal';
-import { API_URL, CONTACT_EMAIL, CONTACT_PHONE, businessStart } from './links';
+import { API_URL, CONTACT_EMAIL, CONTACT_PHONE, SOCIAL, businessStart } from './links';
+import { SocialIcon } from './SocialIcon';
 
 type Kind = 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
 type Doc = { title: string; version: number; body: string; publishedAt: string };
@@ -39,6 +40,34 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
           <span className="foot-made">
             <RwandaFlag /> Made for Rwanda
           </span>
+          {/* Our pages (§276). One whose link is not set yet says so, rather than leading to a guess. */}
+          <ul className="foot-social" aria-label="BwanguReservations on social media">
+            {SOCIAL.map((s) => (
+              <li key={s.key}>
+                {s.url ? (
+                  <a
+                    className={`social is-${s.key}`}
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`BwanguReservations on ${s.label}`}
+                    title={s.label}
+                  >
+                    <SocialIcon network={s.key} />
+                  </a>
+                ) : (
+                  <span
+                    className={`social is-${s.key} is-soon`}
+                    role="img"
+                    aria-label={`${s.label} — coming soon`}
+                    title={`${s.label} — coming soon`}
+                  >
+                    <SocialIcon network={s.key} />
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
 
         <nav className="foot-cols" aria-label="More">
