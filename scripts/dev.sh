@@ -60,7 +60,18 @@ say "Container runtime"
 if ! docker info >/dev/null 2>&1; then
   if command -v colima >/dev/null 2>&1; then
     say "  starting Colima (this takes a moment on a cold boot)"
-    colima start >/dev/null 2>&1 || { bad "Colima would not start"; exit 1; }
+    # A Mac that shut down with Colima running leaves its disk marked "in use"
+    # and every start then fails at once. A forced stop clears that (it only
+    # removes lock files — the database's disk is untouched), so try once more.
+    if ! colima_log=$(colima start 2>&1); then
+      say "  Colima did not start — clearing what an unclean shutdown left behind"
+      colima stop --force >/dev/null 2>&1 || true
+      if ! colima_log=$(colima start 2>&1); then
+        bad "Colima would not start. What it said:"
+        printf '%s\n' "$colima_log" | tail -5 | sed 's/^/      /'
+        exit 1
+      fi
+    fi
   else
     bad "Docker is not running, and Colima is not installed. Start Docker and try again."
     exit 1

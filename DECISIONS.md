@@ -17631,3 +17631,18 @@ The words are now measured positioned over a box of the height to show (not
 inside it), so nothing ever holds them in while they are measured and the
 answer cannot change with the box. Every collapsible `RichText` in the
 customer app takes it; the rest of a page cannot be moved by it.
+
+## 272. `npm run dev` gets itself past an unclean shutdown (2026-10-12)
+
+Reported: `npm run dev` stopped at "Colima would not start", every time.
+
+The Mac had shut down with Colima running, which left Colima's disk marked
+"in use by colima" (`~/.colima/_lima/_disks/colima/in_use_by`) with nothing
+using it, and every start then failed at once — but `dev.sh` hid Colima's
+own words, so all it could say was that it would not start.
+
+`dev.sh` now does what fixed it by hand: if Colima will not start, a forced
+stop (it removes lock, pid and socket files only — the database's disk is
+untouched; the data was all still there), then one more start; and if that
+fails too, it shows the last lines of what Colima said instead of hiding
+them.
