@@ -1,3 +1,4 @@
+import type { Access } from './access';
 import type { IconName } from './ui/Icon';
 
 /**
@@ -16,6 +17,8 @@ export type NavItem = {
   keywords: string;
   /** Said under the label in the search, so a page is found by what it is FOR. */
   hint: string;
+  /** Shown only to those who may use it (§277): the money, or how it is going. */
+  need?: 'money' | 'insights';
 };
 
 export type NavGroup = { group: string | null; items: NavItem[] };
@@ -102,6 +105,7 @@ export const SECTIONS: NavGroup[] = [
         icon: 'wallet',
         keywords: 'payouts balance momo mobile money number',
         hint: 'Your balance and payouts',
+        need: 'money',
       },
       {
         to: '/analytics',
@@ -109,6 +113,7 @@ export const SECTIONS: NavGroup[] = [
         icon: 'chart',
         keywords: 'analytics stats numbers reports busiest earnings',
         hint: 'Bookings, money and ratings over time',
+        need: 'insights',
       },
     ],
   },
@@ -143,6 +148,16 @@ export const SECTIONS: NavGroup[] = [
 export const NAV_ITEMS: Array<NavItem & { group: string | null }> = SECTIONS.flatMap((section) =>
   section.items.map((item) => ({ ...item, group: section.group })),
 );
+
+const allowed = (item: NavItem, access: Access) => !item.need || access[item.need];
+
+/** The pages this person may use (§277), with any heading left empty dropped. */
+export const sectionsFor = (access: Access): NavGroup[] =>
+  SECTIONS.map((section) => ({ ...section, items: section.items.filter((item) => allowed(item, access)) })).filter(
+    (section) => section.items.length > 0,
+  );
+
+export const navItemsFor = (access: Access) => NAV_ITEMS.filter((item) => allowed(item, access));
 
 /** The page an address belongs to, for the top bar's title. */
 export const navItemFor = (pathname: string) =>

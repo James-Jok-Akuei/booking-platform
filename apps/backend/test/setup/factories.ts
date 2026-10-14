@@ -160,18 +160,22 @@ export async function addMember(
   prisma: PrismaService,
   businessId: string,
   role: BusinessMemberRole,
+  /** The branches they look after (§277). Left out: every branch. */
+  locationIds?: string[],
 ) {
   const email = uniqueEmail('member');
   const user = await prisma.user.create({ data: { email, role: UserRole.BUSINESS } });
-  await prisma.businessMembership.create({
+  const membership = await prisma.businessMembership.create({
     data: {
       userId: user.id,
       businessProfileId: businessId,
       role,
       status: BusinessMemberStatus.ACTIVE,
+      allLocations: !locationIds,
+      ...(locationIds && { locations: { create: locationIds.map((locationId) => ({ locationId })) } }),
     },
   });
-  return { userId: user.id, email };
+  return { userId: user.id, email, membershipId: membership.id };
 }
 
 export const KNOWN_VERIFICATION_CODE = '123456';

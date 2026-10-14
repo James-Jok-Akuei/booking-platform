@@ -10,6 +10,7 @@ import {
 import {
   AppointmentStatus,
   CancelledBy,
+  BusinessMemberRole,
   BusinessMemberStatus,
   Prisma,
   MobileMoneyProvider,
@@ -61,6 +62,7 @@ import {
   InitiateDepositPaymentResponseDto,
   PaymentStatusResponseDto,
 } from './dto/payment-status.dto';
+import { MEMBERSHIP_SCOPE_SELECT, branchIn, scopeOf, seesBranch } from '../business/branch-scope';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -1299,6 +1301,14 @@ export class AppointmentsService {
     const cancelledBy =
       appointment.customerId === userId ? CancelledBy.CUSTOMER : CancelledBy.BUSINESS;
 
+    // A business cancelling refunds the customer and pays the refund's charge
+    // (§25): the owner's or a manager's decision, not the front desk's (§277).
+    if (cancelledBy === CancelledBy.BUSINESS && appointment.memberRole === BusinessMemberRole.STAFF) {
+      throw new ForbiddenException(
+        'Only the owner or a manager can cancel a booking — cancelling refunds the customer. Ask one of them.',
+      );
+    }
+
     if (cancelledBy === CancelledBy.BUSINESS && !dto.reason) {
       throw new BadRequestException(
         'A reason is required when a business cancels an appointment.',
@@ -1749,7 +1759,7 @@ export class AppointmentsService {
     } else if (role === UserRole.BUSINESS) {
       const membership = await this.prisma.businessMembership.findFirst({
         where: { userId, status: BusinessMemberStatus.ACTIVE },
-        select: { businessProfileId: true },
+        select: { businessProfileId: true, ...MEMBERSHIP_SCOPE_SELECT },
       });
       if (!membership) {
         throw new ForbiddenException(
@@ -1757,6 +1767,9 @@ export class AppointmentsService {
         );
       }
       where.location = { businessId: membership.businessProfileId };
+      // Only the branches they look after (§277).
+      const only = branchIn(scopeOf(membership));
+      if (only) where.locationId = only;
     } else {
       throw new ForbiddenException(
         'This account type cannot list appointments.',
@@ -1770,8 +1783,13 @@ export class AppointmentsService {
         ...(query.to ? { lt: new Date(query.to) } : {}),
       };
     }
-    // Alongside the scope above, never instead of it (§213).
-    if (query.locationId) where.locationId = query.locationId;
+    // Alongside the scope above, never instead of it (§213): a branch that is
+    // not theirs narrows to nothing rather than widening (§277).
+    if (query.locationId) {
+      where.locationId = where.locationId
+        ? { in: (where.locationId as { in: string[] }).in.filter((id) => id === query.locationId) }
+        : query.locationId;
+    }
     const find = query.q?.trim();
     if (find) {
       const contains = { contains: find, mode: Prisma.QueryMode.insensitive };
@@ -1836,7 +1854,7 @@ export class AppointmentsService {
   private async requireBusinessAppointment(userId: string, appointmentId: string) {
     const membership = await this.prisma.businessMembership.findFirst({
       where: { userId, status: BusinessMemberStatus.ACTIVE },
-      select: { businessProfileId: true },
+      select: { businessProfileId: true, ...MEMBERSHIP_SCOPE_SELECT },
     });
     if (!membership) {
       throw new ForbiddenException(
@@ -1844,10 +1862,13 @@ export class AppointmentsService {
       );
     }
 
+    // A booking at a branch that is not theirs is not found (§277).
+    const only = branchIn(scopeOf(membership));
     const appointment = await this.prisma.appointment.findFirst({
       where: {
         id: appointmentId,
         location: { businessId: membership.businessProfileId },
+        ...(only ? { locationId: only } : {}),
       },
     });
     if (!appointment) throw new NotFoundException('Appointment not found.');
@@ -1864,22 +1885,27 @@ export class AppointmentsService {
         customerId: true,
         // Needed by cancel(): whether a refund is owed turns on it.
         depositPaidAt: true,
+        locationId: true,
         location: { select: { businessId: true } },
       },
     });
     if (!appointment) throw new NotFoundException('Appointment not found.');
 
-    if (appointment.customerId === userId) return appointment;
+    if (appointment.customerId === userId) return { ...appointment, memberRole: null };
 
-    const member = await this.prisma.businessMembership.count({
+    const member = await this.prisma.businessMembership.findFirst({
       where: {
         userId,
         businessProfileId: appointment.location.businessId,
         status: BusinessMemberStatus.ACTIVE,
       },
+      select: MEMBERSHIP_SCOPE_SELECT,
     });
-    if (member === 0) throw new NotFoundException('Appointment not found.');
+    // Not a member, or a member of another branch (§277): not found either way.
+    if (!member || !seesBranch(scopeOf(member), appointment.locationId)) {
+      throw new NotFoundException('Appointment not found.');
+    }
 
-    return appointment;
+    return { ...appointment, memberRole: member.role };
   }
 }

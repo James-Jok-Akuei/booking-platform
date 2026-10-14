@@ -14,6 +14,7 @@ import {
   BusinessMemberStatus,
   InvitationStatus,
   OtpPurpose,
+  Prisma,
   UserRole,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -302,6 +303,7 @@ export class AuthService {
             userId: user.id,
             businessProfileId: invitation.businessProfileId,
             role: invitation.role,
+            ...(await this.invitedBranches(tx, invitation)),
           },
         });
         await tx.businessInvitation.update({
@@ -365,8 +367,28 @@ export class AuthService {
         expiresAt: { gt: new Date() },
       },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, businessProfileId: true, role: true },
+      select: { id: true, businessProfileId: true, role: true, allLocations: true, locationIds: true },
     });
+  }
+
+  /**
+   * The branches the owner chose when inviting (§277), as membership data.
+   * Only branches that are still the business's are copied — one removed
+   * since the invitation was sent has nothing left to look after.
+   */
+  private async invitedBranches(
+    tx: Prisma.TransactionClient,
+    invitation: { businessProfileId: string; allLocations: boolean; locationIds: string[] },
+  ) {
+    if (invitation.allLocations) return { allLocations: true };
+    const still = await tx.location.findMany({
+      where: { id: { in: invitation.locationIds }, businessId: invitation.businessProfileId },
+      select: { id: true },
+    });
+    return {
+      allLocations: false,
+      locations: { create: still.map((l) => ({ locationId: l.id })) },
+    };
   }
 
   /**
@@ -418,24 +440,26 @@ export class AuthService {
       select: { id: true },
     });
 
-    await this.prisma.$transaction([
-      priorHere
-        ? this.prisma.businessMembership.update({
-            where: { id: priorHere.id },
-            data: { status: BusinessMemberStatus.ACTIVE, role: invitation.role },
-          })
-        : this.prisma.businessMembership.create({
-            data: {
-              userId,
-              businessProfileId: invitation.businessProfileId,
-              role: invitation.role,
-            },
-          }),
-      this.prisma.businessInvitation.update({
+    await this.prisma.$transaction(async (tx) => {
+      const branches = await this.invitedBranches(tx, invitation);
+      if (priorHere) {
+        // Re-hired: the branches are this invitation's, not whatever they
+        // looked after the last time (§277).
+        await tx.membershipLocation.deleteMany({ where: { membershipId: priorHere.id } });
+        await tx.businessMembership.update({
+          where: { id: priorHere.id },
+          data: { status: BusinessMemberStatus.ACTIVE, role: invitation.role, ...branches },
+        });
+      } else {
+        await tx.businessMembership.create({
+          data: { userId, businessProfileId: invitation.businessProfileId, role: invitation.role, ...branches },
+        });
+      }
+      await tx.businessInvitation.update({
         where: { id: invitation.id },
         data: { status: InvitationStatus.ACCEPTED },
-      }),
-    ]);
+      });
+    });
 
     this.logger.log(
       `${email} joined business ${invitation.businessProfileId} as ${invitation.role} (${priorHere ? 'reactivated' : 'new'} membership).`,

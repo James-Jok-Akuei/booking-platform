@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { BusinessMemberStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { MEMBERSHIP_SCOPE_SELECT, assertBranch, scopeOf, type BranchScope } from './branch-scope';
 
 /**
  * The ownership boundary for every business-owned resource.
@@ -32,7 +33,7 @@ export class BusinessAccessService {
   async requireActiveMembership(userId: string) {
     const membership = await this.prisma.businessMembership.findFirst({
       where: { userId, status: BusinessMemberStatus.ACTIVE },
-      select: { id: true, businessProfileId: true, role: true },
+      select: { id: true, businessProfileId: true, ...MEMBERSHIP_SCOPE_SELECT },
     });
 
     if (!membership) {
@@ -41,7 +42,45 @@ export class BusinessAccessService {
       );
     }
 
-    return membership;
+    // The branches they look after (§277), with the role — read live, like it.
+    return {
+      id: membership.id,
+      businessProfileId: membership.businessProfileId,
+      role: membership.role,
+      scope: scopeOf(membership),
+    };
+  }
+
+  /**
+   * The caller's place in ONE given business, or null when they are not an
+   * active member of it — for the routes shared with customers, which find the
+   * business from the thing asked about (a booking, a review) rather than from
+   * the caller (§277).
+   */
+  async memberOf(userId: string, businessProfileId: string) {
+    const membership = await this.prisma.businessMembership.findFirst({
+      where: { userId, businessProfileId, status: BusinessMemberStatus.ACTIVE },
+      select: { id: true, ...MEMBERSHIP_SCOPE_SELECT },
+    });
+    return membership ? { id: membership.id, role: membership.role, scope: scopeOf(membership) } : null;
+  }
+
+  /**
+   * A branch of the caller's business that they look after (§277) — its
+   * business id, the branch, and their scope. Another business's branch and a
+   * branch that is not theirs are the same 404.
+   */
+  async requireMemberBranch(userId: string, locationId: string) {
+    const membership = await this.requireActiveMembership(userId);
+    const location = await this.requireOwnedLocation(membership.businessProfileId, locationId);
+    assertBranch(membership.scope, locationId);
+    return { businessId: membership.businessProfileId, location, membership };
+  }
+
+  /** The caller's business id and the branches they look after. */
+  async requireBusinessScope(userId: string): Promise<{ businessId: string; scope: BranchScope }> {
+    const membership = await this.requireActiveMembership(userId);
+    return { businessId: membership.businessProfileId, scope: membership.scope };
   }
 
   /**

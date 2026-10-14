@@ -22,6 +22,7 @@ import { Panel } from '../ui/Panel';
 import { Stars } from '../ui/Stars';
 import { Switch } from '../ui/Switch';
 import './hours.css';
+import { useAccess } from '../access';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 /** Monday first, the way a working week is read; the stored days stay 0 = Sunday. */
@@ -47,13 +48,16 @@ export function HoursPage() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['locations'] });
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Location | null>(null);
+  // Opening and closing branches is the whole shop's; a manager runs their
+  // own branches' hours and details; staff look (§277).
+  const access = useAccess();
 
   // "Add a branch" from anywhere else (For you, §206) arrives as ?add=1 and
   // opens the form; the address is tidied so a reload does not open it again.
   const [params, setParams] = useSearchParams();
   useEffect(() => {
     if (params.get('add') !== '1') return;
-    setAdding(true);
+    if (access.runsBusiness) setAdding(true);
     setParams(
       (next) => {
         next.delete('add');
@@ -61,7 +65,7 @@ export function HoursPage() {
       },
       { replace: true },
     );
-  }, [params, setParams]);
+  }, [params, setParams, access.runsBusiness]);
 
   return (
     <section className="hr">
@@ -73,11 +77,27 @@ export function HoursPage() {
               Every place you work from, when it is open, and how many people it can take at once.
             </p>
           </div>
-          <button type="button" className="primary hr-add" onClick={() => setAdding(true)}>
-            <Icon name="plus" size={18} stroke={2.4} /> Add a branch
-          </button>
+          {access.runsBusiness && (
+            <button type="button" className="primary hr-add" onClick={() => setAdding(true)}>
+              <Icon name="plus" size={18} stroke={2.4} /> Add a branch
+            </button>
+          )}
         </header>
       </div>
+
+      {!access.allBranches && (
+        <p className="hr-scope">
+          <Icon name="pin" size={16} />
+          {access.runsBranches
+            ? 'These are the branches you look after. You can change their hours and details; the owner opens and closes branches.'
+            : 'These are the branches you work at. The owner or a manager changes their hours.'}
+        </p>
+      )}
+      {access.allBranches && !access.runsBranches && (
+        <p className="hr-scope">
+          <Icon name="shield" size={16} /> The owner or a manager changes the hours. You can see them here.
+        </p>
+      )}
 
       {locations.isLoading && <div className="skeleton hr-skeleton" />}
 
@@ -89,13 +109,19 @@ export function HoursPage() {
             <Icon name="pin" size={30} />
           </span>
           <h2>No branches yet</h2>
-          <p>
-            Add one — until then there is nothing for a customer to book and nothing to set hours
-            for.
-          </p>
-          <button type="button" className="primary" onClick={() => setAdding(true)}>
-            <Icon name="plus" size={18} stroke={2.4} /> Add a branch
-          </button>
+          {access.runsBusiness ? (
+            <>
+              <p>
+                Add one — until then there is nothing for a customer to book and nothing to set hours
+                for.
+              </p>
+              <button type="button" className="primary" onClick={() => setAdding(true)}>
+                <Icon name="plus" size={18} stroke={2.4} /> Add a branch
+              </button>
+            </>
+          ) : (
+            <p>The owner has not given you a branch yet. Ask them to choose yours on the People page.</p>
+          )}
         </div>
       )}
 
@@ -108,6 +134,8 @@ export function HoursPage() {
             money={money}
             onSaved={refresh}
             onEdit={() => setEditing(location)}
+            canChange={access.runsBranches}
+            canOpenClose={access.runsBusiness}
           />
         ))}
       </div>
@@ -124,12 +152,18 @@ function BranchCard({
   money,
   onSaved,
   onEdit,
+  canChange,
+  canOpenClose,
 }: {
   location: Location;
   index: number;
   money: ReturnType<typeof useMoney>;
   onSaved: () => void;
   onEdit: () => void;
+  /** Its hours, details and places (§277). */
+  canChange: boolean;
+  /** Closing or reopening it. */
+  canOpenClose: boolean;
 }) {
   const queryClient = useQueryClient();
   const [problem, setProblem] = useState<string | null>(null);
@@ -182,7 +216,7 @@ function BranchCard({
 
   return (
     <article
-      className={`hr-card${location.isActive ? '' : ' is-closed'}`}
+      className={`hr-card${location.isActive ? '' : ' is-closed'}${canChange ? '' : ' is-readonly'}`}
       style={{ animationDelay: `${Math.min(index, 6) * 60}ms` }}
     >
       <div className="hr-hero">
@@ -193,7 +227,7 @@ function BranchCard({
         ) : (
           <div className="hr-map is-empty">
             <Icon name="pin" size={28} />
-            <span>No pin yet — add one under Edit details</span>
+            <span>{canChange ? 'No pin yet — add one under Edit details' : 'No pin yet'}</span>
           </div>
         )}
         <div className="hr-hero-shade" />
@@ -214,20 +248,25 @@ function BranchCard({
               : 'No district set — customers cannot find this branch by place'}
           </p>
         </div>
-        <div className="hr-hero-actions">
-          <button type="button" onClick={onEdit}>
-            <Icon name="pencil" size={16} /> Edit details
-          </button>
-          {location.isActive ? (
-            <button type="button" className="hr-close-btn" disabled={close.isPending} onClick={askClose}>
-              {close.isPending ? 'Closing…' : 'Close this branch'}
-            </button>
-          ) : (
-            <button type="button" className="primary" disabled={reopen.isPending} onClick={() => reopen.mutate()}>
-              {reopen.isPending ? 'Reopening…' : 'Reopen this branch'}
-            </button>
-          )}
-        </div>
+        {(canChange || canOpenClose) && (
+          <div className="hr-hero-actions">
+            {canChange && (
+              <button type="button" onClick={onEdit}>
+                <Icon name="pencil" size={16} /> Edit details
+              </button>
+            )}
+            {canOpenClose &&
+              (location.isActive ? (
+                <button type="button" className="hr-close-btn" disabled={close.isPending} onClick={askClose}>
+                  {close.isPending ? 'Closing…' : 'Close this branch'}
+                </button>
+              ) : (
+                <button type="button" className="primary" disabled={reopen.isPending} onClick={() => reopen.mutate()}>
+                  {reopen.isPending ? 'Reopening…' : 'Reopen this branch'}
+                </button>
+              ))}
+          </div>
+        )}
       </div>
 
       <div className="hr-facts">
@@ -267,14 +306,14 @@ function BranchCard({
       )}
 
       <div className="hr-body">
-        <WeekEditor location={location} onSaved={onSaved} />
-        <PlacesCard location={location} onSaved={onSaved} />
+        <WeekEditor location={location} onSaved={onSaved} readOnly={!canChange} />
+        <PlacesCard location={location} onSaved={onSaved} readOnly={!canChange} />
       </div>
     </article>
   );
 }
 
-function WeekEditor({ location, onSaved }: { location: Location; onSaved: () => void }) {
+function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSaved: () => void; readOnly: boolean }) {
   const [week, setWeek] = useState<Hours[]>([]);
   const [dirty, setDirty] = useState(false);
 
@@ -347,7 +386,7 @@ function WeekEditor({ location, onSaved }: { location: Location; onSaved: () => 
             {openDays === 0 ? 'Closed every day — nothing can be booked' : `Open ${openDays} ${openDays === 1 ? 'day' : 'days'} a week`}
           </p>
         </div>
-        {openDays > 1 && firstOpen && (
+        {openDays > 1 && firstOpen && !readOnly && (
           <button type="button" className="hr-copy" onClick={copyFirst}>
             <Icon name="copy" size={15} />
             {DAYS[firstOpen.dayOfWeek].slice(0, 3)}’s hours to every open day
@@ -371,6 +410,7 @@ function WeekEditor({ location, onSaved }: { location: Location; onSaved: () => 
               <Switch
                 checked={!h.isClosed}
                 label={`Open on ${DAYS[day]}`}
+                disabled={readOnly}
                 onChange={(open) => update(day, { isClosed: !open })}
               />
               {h.isClosed ? (
@@ -380,6 +420,7 @@ function WeekEditor({ location, onSaved }: { location: Location; onSaved: () => 
                   <input
                     type="time"
                     value={h.openTime}
+                    readOnly={readOnly}
                     aria-label={`${DAYS[day]} opens`}
                     onChange={(e) => update(day, { openTime: e.target.value })}
                   />
@@ -387,6 +428,7 @@ function WeekEditor({ location, onSaved }: { location: Location; onSaved: () => 
                   <input
                     type="time"
                     value={h.closeTime}
+                    readOnly={readOnly}
                     aria-label={`${DAYS[day]} closes`}
                     onChange={(e) => update(day, { closeTime: e.target.value })}
                   />
@@ -420,33 +462,35 @@ function WeekEditor({ location, onSaved }: { location: Location; onSaved: () => 
         </p>
       )}
 
-      <footer className={`hr-week-foot${dirty ? ' is-dirty' : ''}`}>
-        <span>
-          {saveHours.isSuccess ? (
-            <span className="ok">
-              <Icon name="checkCircle" size={16} /> Saved
-            </span>
-          ) : dirty ? (
-            'You have changes that are not saved'
-          ) : (
-            'The whole week is saved together'
-          )}
-        </span>
-        <button
-          type="button"
-          className="primary"
-          disabled={saveHours.isPending || !dirty}
-          onClick={() => saveHours.mutate()}
-        >
-          {saveHours.isPending ? 'Saving…' : 'Save the week'}
-        </button>
-      </footer>
+      {!readOnly && (
+        <footer className={`hr-week-foot${dirty ? ' is-dirty' : ''}`}>
+          <span>
+            {saveHours.isSuccess ? (
+              <span className="ok">
+                <Icon name="checkCircle" size={16} /> Saved
+              </span>
+            ) : dirty ? (
+              'You have changes that are not saved'
+            ) : (
+              'The whole week is saved together'
+            )}
+          </span>
+          <button
+            type="button"
+            className="primary"
+            disabled={saveHours.isPending || !dirty}
+            onClick={() => saveHours.mutate()}
+          >
+            {saveHours.isPending ? 'Saving…' : 'Save the week'}
+          </button>
+        </footer>
+      )}
     </section>
   );
 }
 
 /** "People served at once" (§16.4, §189): the places every time starts with. */
-function PlacesCard({ location, onSaved }: { location: Location; onSaved: () => void }) {
+function PlacesCard({ location, onSaved, readOnly }: { location: Location; onSaved: () => void; readOnly: boolean }) {
   const [capacity, setCap] = useState(String(location.capacity));
   useEffect(() => setCap(String(location.capacity)), [location]);
   const saveCapacity = useMutation({
@@ -460,21 +504,26 @@ function PlacesCard({ location, onSaved }: { location: Location; onSaved: () => 
   return (
     <section className="hr-places">
       <h3>People served at once</h3>
-      <div className="hr-stepper">
-        <button type="button" onClick={() => step(-1)} disabled={n <= 1} aria-label="One fewer">
-          <Icon name="minus" size={18} stroke={2.4} />
-        </button>
+      <div className={`hr-stepper${readOnly ? ' is-readonly' : ''}`}>
+        {!readOnly && (
+          <button type="button" onClick={() => step(-1)} disabled={n <= 1} aria-label="One fewer">
+            <Icon name="minus" size={18} stroke={2.4} />
+          </button>
+        )}
         <input
           id={`cap-${location.id}`}
           type="number"
           min="1"
           value={capacity}
+          readOnly={readOnly}
           onChange={(e) => setCap(e.target.value)}
           aria-label="People served at once"
         />
-        <button type="button" onClick={() => step(1)} aria-label="One more">
-          <Icon name="plus" size={18} stroke={2.4} />
-        </button>
+        {!readOnly && (
+          <button type="button" onClick={() => step(1)} aria-label="One more">
+            <Icon name="plus" size={18} stroke={2.4} />
+          </button>
+        )}
       </div>
       <div className="hr-seats" aria-hidden="true">
         {Array.from({ length: Math.min(n, 12) }, (_, i) => (
@@ -497,14 +546,16 @@ function PlacesCard({ location, onSaved }: { location: Location; onSaved: () => 
           {saveCapacity.error instanceof ApiError ? saveCapacity.error.message : 'Could not save.'}
         </p>
       )}
-      <button
-        type="button"
-        className={changed ? 'primary' : ''}
-        disabled={saveCapacity.isPending || !changed}
-        onClick={() => saveCapacity.mutate()}
-      >
-        {saveCapacity.isPending ? 'Saving…' : changed ? 'Save' : saveCapacity.isSuccess ? 'Saved' : 'Save'}
-      </button>
+      {!readOnly && (
+        <button
+          type="button"
+          className={changed ? 'primary' : ''}
+          disabled={saveCapacity.isPending || !changed}
+          onClick={() => saveCapacity.mutate()}
+        >
+          {saveCapacity.isPending ? 'Saving…' : changed ? 'Save' : saveCapacity.isSuccess ? 'Saved' : 'Save'}
+        </button>
+      )}
     </section>
   );
 }

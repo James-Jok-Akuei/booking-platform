@@ -41,8 +41,8 @@ export class ScheduleManagementService {
     locationId: string,
     dto: CreateScheduleExceptionDto,
   ) {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     const date = this.parseDate(dto.date);
     const isClosed = dto.isClosed ?? false;
@@ -98,8 +98,8 @@ export class ScheduleManagementService {
   }
 
   async listExceptions(userId: string, locationId: string) {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     const exceptions = await this.prisma.locationScheduleException.findMany({
       where: { locationId },
@@ -110,8 +110,8 @@ export class ScheduleManagementService {
   }
 
   async deleteException(userId: string, locationId: string, exceptionId: string): Promise<ActionMessageDto> {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     // Scoped by locationId as well as id, so an exception id belonging to
     // another location can never be deleted through this route.
@@ -130,8 +130,8 @@ export class ScheduleManagementService {
   // ---------- Time blocks ----------
 
   async createTimeBlock(userId: string, locationId: string, dto: CreateTimeBlockDto) {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     const date = this.parseDate(dto.date);
     const start = parseHhMm(dto.startTime)!;
@@ -158,8 +158,8 @@ export class ScheduleManagementService {
   }
 
   async listTimeBlocks(userId: string, locationId: string) {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     const blocks = await this.prisma.locationTimeBlock.findMany({
       where: { locationId },
@@ -170,8 +170,8 @@ export class ScheduleManagementService {
   }
 
   async deleteTimeBlock(userId: string, locationId: string, blockId: string): Promise<ActionMessageDto> {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     const existing = await this.prisma.locationTimeBlock.findFirst({
       where: { id: blockId, locationId },

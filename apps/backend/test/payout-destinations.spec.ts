@@ -249,18 +249,27 @@ describe('Payout destinations (§48)', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
-    it('a non-owner sees the STATUS but only the last 3 digits', async () => {
+    it('a manager of every branch sees the STATUS but only the last 3 digits', async () => {
       await verified(shop);
-      const staff = await addMember(prisma, shop.businessId, BusinessMemberRole.STAFF);
+      const manager = await addMember(prisma, shop.businessId, BusinessMemberRole.MANAGER);
 
-      const view: any = await destinations.findForBusiness(staff.userId);
+      const view: any = await destinations.findForBusiness(manager.userId);
 
-      // Staff need to know WHY payouts are paused; they have no reason to know
+      // They need to know WHY payouts are paused; they have no reason to know
       // where the money goes.
       expect(view.destination.status).toBe(PayoutDestinationStatus.VERIFIED);
       expect(view.destination).not.toHaveProperty('msisdn');
       expect(view.destination.msisdnLast3).toContain(VALID.slice(-3));
       expect(JSON.stringify(view)).not.toContain(VALID);
+    });
+
+    it('staff, and a manager of some branches, see none of it (§277)', async () => {
+      await verified(shop);
+      const staff = await addMember(prisma, shop.businessId, BusinessMemberRole.STAFF);
+      const branchManager = await addMember(prisma, shop.businessId, BusinessMemberRole.MANAGER, [shop.locationId]);
+
+      await expect(destinations.findForBusiness(staff.userId)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(destinations.findForBusiness(branchManager.userId)).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('the OWNER sees the full number', async () => {

@@ -25,6 +25,7 @@ import { PayoutDestinationsService } from './payout-destinations.service';
 import { DisbursementProviderRegistry } from '../payments/disbursement-provider.registry';
 import { maskMsisdn } from './msisdn';
 import { MarkPaidDto, MarkFailedDto } from './dto/mark-payout.dto';
+import { MEMBERSHIP_SCOPE_SELECT, MONEY_READERS_ONLY, mayReadMoney, scopeOf } from '../business/branch-scope';
 
 /** Why a business was held back from a run. */
 export type PauseReason = 'SUSPENDED' | 'NO_VERIFIED_PAYOUT_DESTINATION';
@@ -985,16 +986,19 @@ export class PayoutsService {
   ) {
     if (actor.role === UserRole.ADMIN) return;
 
-    const membership = await this.prisma.businessMembership.count({
+    const membership = await this.prisma.businessMembership.findFirst({
       where: {
         userId: actor.userId,
         businessProfileId: businessId,
         status: BusinessMemberStatus.ACTIVE,
       },
+      select: MEMBERSHIP_SCOPE_SELECT,
     });
     // 404, not 403: the same rule used everywhere. Do not confirm that another
     // tenant's business exists to someone who may not read it.
-    if (membership === 0) throw new NotFoundException('Business not found.');
+    if (!membership) throw new NotFoundException('Business not found.');
+    // A member, but the money is not theirs to read (§277).
+    if (!mayReadMoney(membership.role, scopeOf(membership))) throw new ForbiddenException(MONEY_READERS_ONLY);
   }
 
   private async requirePayout(payoutId: string) {

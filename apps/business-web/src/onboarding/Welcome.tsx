@@ -59,6 +59,7 @@ import {
   weekOf,
   type Screen,
 } from './steps';
+import { accessOf } from '../access';
 import './welcome.css';
 
 /** The server's refusal in its own words, or ours. */
@@ -145,7 +146,7 @@ export function Welcome() {
   const required = (readiness.data?.items ?? []).filter((i) => i.required);
   const doneCount = required.filter((i) => i.done).length;
   const share = required.length ? doneCount / required.length : 0;
-  const role = me.data?.businessMembership?.role;
+  const access = accessOf(me.data?.businessMembership, me.isSuccess);
   const shopName = me.data?.businessMembership?.businessProfile.name?.trim() || null;
   const sectionIndex = STEPS.findIndex((s) => s.key === section);
 
@@ -251,13 +252,16 @@ export function Welcome() {
               </div>
             </div>
 
-            {role === 'STAFF' ? (
+            {!access.runsBusiness ? (
               <div className="wz-stage">
                 <div className="wz-step">
                   <header className="wz-head">
                     <div className="wz-col">
-                      <h1 id="wz-title">Only the owner or a manager can set up the shop</h1>
-                      <p className="wz-lead">Ask them to finish setting it up. You can still look around.</p>
+                      <h1 id="wz-title">Only the owner can set up the shop</h1>
+                      <p className="wz-lead">
+                        Or a manager who looks after every branch. Ask them to finish setting it up — you can still
+                        look around.
+                      </p>
                     </div>
                   </header>
                   <div className="wz-scroll" />

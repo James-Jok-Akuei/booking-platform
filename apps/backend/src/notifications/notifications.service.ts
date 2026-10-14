@@ -21,6 +21,7 @@ import {
   NotificationChannelDriver,
 } from './notification-channel.interface';
 import { AppointmentContext, renderNotification } from './notification-templates';
+import { MONEY_READERS, membersOfBranch } from '../business/branch-scope';
 
 /** Give up after this many failed sends; the row stays FAILED for inspection. */
 export const MAX_NOTIFICATION_ATTEMPTS = 5;
@@ -113,21 +114,49 @@ export class NotificationsService {
     }
   }
 
-  /** Notifies every ACTIVE member of a business — owner, managers and staff. */
+  /**
+   * Notifies the ACTIVE members of a business who should hear it (§277): about
+   * a booking or a review, those who look after its branch; about the money,
+   * those who may read it; about the business itself, everyone.
+   */
   async notifyBusiness(params: {
     businessId: string;
     type: NotificationType;
     context: AppointmentContext;
     appointmentId?: string;
+    /** The branch it is about. Left out with an `appointmentId`, the booking's. */
+    locationId?: string | null;
+    /** Only those who may read the money — the owner and every-branch managers. */
+    moneyOnly?: boolean;
   }): Promise<void> {
+    const branch =
+      params.locationId !== undefined
+        ? params.locationId
+        : params.appointmentId
+          ? ((
+              await this.prisma.appointment.findUnique({
+                where: { id: params.appointmentId },
+                select: { locationId: true },
+              })
+            )?.locationId ?? null)
+          : undefined;
+
     const members = await this.prisma.businessMembership.findMany({
-      where: { businessProfileId: params.businessId, status: BusinessMemberStatus.ACTIVE },
+      where: {
+        businessProfileId: params.businessId,
+        status: BusinessMemberStatus.ACTIVE,
+        AND: [
+          ...(branch !== undefined ? [membersOfBranch(branch)] : []),
+          ...(params.moneyOnly ? [MONEY_READERS] : []),
+        ],
+      },
       select: { userId: true },
     });
 
-    // Everyone, not just the owner: staff run the day's appointments (§16.6),
-    // so a booking nobody on the floor hears about is the problem this module
-    // exists to fix. Per-person preferences are a later concern.
+    // Everyone it concerns, not just the owner: staff run the day's
+    // appointments (§16.6), so a booking nobody on that floor hears about is
+    // the problem this module exists to fix — and a booking at another
+    // branch is noise to them (§277). Per-person preferences are a later concern.
     await Promise.all(
       members.map((member) =>
         this.notify({

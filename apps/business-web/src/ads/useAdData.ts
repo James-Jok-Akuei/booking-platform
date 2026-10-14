@@ -15,6 +15,7 @@ import { discoverServices, type DiscoveredService } from '../api/discovery';
 import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
 import { addDays, startOfDay } from '../lib/time';
 import type { IconName } from '../ui/Icon';
+import { useAccess } from '../access';
 
 /**
  * Everything the "For you" adverts are made from (§204), from what the app
@@ -56,11 +57,18 @@ export function useAdData() {
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
   const businessId = me.data?.businessMembership?.businessProfile.id ?? null;
   const role = me.data?.businessMembership?.role ?? null;
+  const access = useAccess();
 
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile, retry: false });
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
   const services = useQuery({ queryKey: ['services'], queryFn: listServices });
-  const destination = useQuery({ queryKey: ['payout-destination'], queryFn: getPayoutDestination, retry: false });
+  // Asked only by those who may see the money (§277) — anyone else is refused.
+  const destination = useQuery({
+    queryKey: ['payout-destination'],
+    queryFn: getPayoutDestination,
+    retry: false,
+    enabled: access.ready && access.money,
+  });
 
   const today = startOfDay();
   const recent = useQuery({
@@ -251,6 +259,7 @@ export function useAdData() {
     return {
       ready: Boolean(p && locations.data && services.data),
       role,
+      access,
       businessName: p?.name ?? null,
       subcategoryName: p?.subcategory?.name ?? null,
       checks,
@@ -280,6 +289,7 @@ export function useAdData() {
     threads.data,
     businessId,
     role,
+    access,
   ]);
 }
 

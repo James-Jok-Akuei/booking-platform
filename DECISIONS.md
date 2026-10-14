@@ -971,6 +971,9 @@ through the migration still owned by the same account.
 | View member list | yes | yes | yes |
 | Invite, remove, change roles, manage invitations | yes | **no** | **no** |
 
+(§277 adds *where*: a manager or staff member may be given some branches, and
+then sees and acts on only those; whole-business changes need every branch.)
+
 The OWNER/MANAGER line is exactly one thing: **who may change who has access.**
 A manager runs the business day to day and can do everything operational; they
 cannot alter the membership of the business itself.
@@ -1481,7 +1484,7 @@ PENDING_PAYMENT at 40h were all correctly left alone.
 | POST | `/business/appointments/:id/verify` | OWNER, MANAGER, STAFF |
 | POST | `/business/appointments/:id/complete` | OWNER, MANAGER, STAFF |
 | POST | `/business/appointments/:id/no-show` | OWNER, MANAGER, STAFF |
-| POST | `/appointments/:id/cancel` | the customer, or any active business member |
+| POST | `/appointments/:id/cancel` | the customer, or ~~any active business member~~ the owner or a manager of its branch (§277) |
 | GET | `/appointments` | customer sees own; business member sees the business's |
 | GET | `/appointments/:id` | either participant |
 
@@ -2073,7 +2076,8 @@ Three deliberate asymmetries:
   the business has nothing to act on until it succeeds.
 - **A no-show goes to the customer**, because a forfeited deposit (§2) should
   never be a silent charge someone discovers later.
-- **Bookings go to every active member, not just the owner.** Staff run the
+- **Bookings go to every active member ~~, not just the owner~~ who looks after
+  that booking's branch (§277), not just the owner.** Staff run the
   day's appointments (§16.6), so a booking nobody on the floor hears about is
   precisely the failure this module exists to fix. Per-person preferences are a
   later concern.
@@ -2258,8 +2262,9 @@ refused while reopening an existing thread still returned 200.
 ### 21.5 Notifications are debounced, not suppressed
 
 New messages notify the other side through the §20 infrastructure — no parallel
-delivery path. Business-side messages go to every active member, for the same
-reason bookings do (§20.4): whoever is on the floor should see it.
+delivery path. Business-side messages go to ~~every active member~~ every active
+member who looks after the conversation's branch (§277), for the same reason
+bookings do (§20.4): whoever is on the floor should see it.
 
 At most **one email per thread, per recipient, per 5 minutes**. A back-and-forth
 conversation would otherwise produce an email per line, which trains people to
@@ -3301,7 +3306,9 @@ wrong by the offset. Day numbering is 0 = Sunday, matching
 ### 29.5 Access
 
 `@Roles(BUSINESS, ADMIN)` gates the route; `assertMayRead` decides *which*
-business — an admin any, a business user only one they are an ACTIVE member of.
+business — an admin any, a business user only one they are an ACTIVE member of
+(§277: ~~any member~~ the owner and managers only, and a manager of some
+branches sees only theirs).
 `BusinessRolesGuard` is deliberately not used here: it requires a membership,
 which an admin does not have.
 
@@ -5096,7 +5103,8 @@ transfer is a fact about the past.
 ### 48.5 Exposure, permissions and the export
 
 **OWNER only may submit.** A MANAGER can change prices, hours and staff; only the
-owner may redirect where the money goes. Any ACTIVE member may **read** the
+owner may redirect where the money goes. ~~Any ACTIVE member~~ The owner, and a
+manager of every branch (§277), may **read** the
 status — they need to know why payouts are paused — but only the owner sees the
 full number. Everyone else gets the last three digits: enough for the owner's
 colleague to recognise it, not enough for anyone to dial it. The full number is
@@ -17802,3 +17810,117 @@ Asked: LinkedIn, Facebook, Instagram and TikTok icons.
   is guessed: an icon without a link says "coming soon" and links nowhere —
   a wrong account is worse than none.
 - "Talk to us" takes two columns' room, so the email stays on one line.
+
+## 277. Who sees what: the owner, managers and staff, by branch (2026-10-14)
+
+Asked: the main user (the owner) sees everything; the others should be given
+one branch, or two, three, more or all — the owner decides — and should not see
+the rest.
+
+Access is now two things, not one. The **role** says *what* someone may do
+(§14.2, §16.6). The **branches** say *where*.
+
+### 277.1 Where: every branch, or the ones chosen
+
+- `BusinessMembership.allLocations` (default true) and `MembershipLocation`
+  rows (membership × branch). Invitations carry the same choice
+  (`allLocations`, `locationIds`) and accepting copies it — only branches that
+  are still the business's.
+- **The owner always has every branch**, whatever the columns say.
+- **"Every branch" includes ones opened later.** A list would leave a new
+  branch with nobody on it.
+- **Everyone who was already a member kept every branch** — the default — so
+  nobody lost access when this arrived.
+- Changed by the owner only (`PATCH /business/members/:id/branches`), never for
+  the owner, only to the business's own open branches, at least one. It takes
+  effect on the next request: roles and branches are read from the database
+  every time (§14.2), so nobody signs in again.
+
+### 277.2 What each person can do
+
+| | Owner | Manager, every branch | Manager, some branches | Staff |
+|---|---|---|---|---|
+| See bookings, messages, reviews, branches, hours | all | all | theirs | theirs |
+| Check in, finish, no-show; reply to messages and reviews | yes | yes | theirs | theirs |
+| **Cancel a booking** (refunds the customer) | yes | yes | theirs | **no** |
+| Hours, closures, breaks, branch photos, branch details | yes | yes | theirs | no |
+| Switch a service on or off at a branch | yes | yes | theirs | no |
+| Shopfront, logo, kinds; the service menu and prices; add, close, reopen branches; send for review; post | yes | yes | **no** | no |
+| Balance, payouts, payout number's state | yes | yes | **no** | **no** |
+| How it is going (analytics) | yes | yes | their branches | **no** |
+| People: invite, remove, roles, branches; payout number; pause and resume | yes | no | no | no |
+
+- **A branch outside someone's scope does not exist for them** — 404, the same
+  answer as another business's branch (§10.7), for the branch, its bookings,
+  its conversations and its reviews. Asking for it by id, or filtering a list
+  by it, finds nothing.
+- **Whole-business changes need every branch** (`@AllBranches()` on 19
+  routes): a manager of some branches would otherwise be changing the others'
+  prices and shopfront. Refused with 403 and a sentence saying who can.
+- **New rule: staff cannot cancel.** Cancelling by the business refunds the
+  customer in full (§25), so it is money leaving; the owner or a manager does
+  it. Check-in, finishing and no-show stay with staff (§16.6).
+- **The money is the owner's and every-branch managers'.** Its figures are the
+  whole business's, so a manager of some branches would be reading the
+  others' takings; the front desk does not need them. Supersedes §48.5's "any
+  member may read the status".
+- **Analytics are for the owner and managers.** A manager of some branches
+  sees their branches together, or one of them; the response says which
+  (`locationIds`, null for the whole business).
+- **Review replies stay open to staff** (§92.1), within their branches.
+
+### 277.3 Conversations, tickets and who is told
+
+- **A question asked from a branch's page remembers the branch**
+  (`Thread.locationId`; the customer app now sends it). A booking's
+  conversation belongs to the booking's branch. A question with no branch —
+  older ones, or one asked of the business as a whole — is seen by the owner
+  and every-branch members only.
+- **Help tickets**: someone with some branches sees the tickets they raised and
+  those about bookings at their branches.
+- **Who is told**: booking and message notices go to the owner, every-branch
+  members, and those who look after that branch (supersedes §20.4 and §21.5's
+  "every active member"). Money notices go to those who may see the money.
+  Notices about the whole shop (moderation, approval) still go to everyone.
+- **The People list** shows someone with some branches the people they work
+  with: the owner, every-branch members, and those who share a branch — and of
+  anyone's branches, only the shared ones.
+
+### 277.4 The seller app says it, rather than refusing
+
+- One `useAccess()` (`src/access.ts`) holds the rules, so every screen agrees.
+  While it is still finding out who this is it acts as the owner, so nothing
+  flickers away for most people; the server decides every request regardless.
+- **People**: inviting asks "Where they work" — *Every branch, including any
+  you open later*, or *Chosen branches* with a tick list. Each person shows
+  their branches as tags; the owner changes them in a panel from the right.
+  The roles card explains branches.
+- **Menus**: *Getting paid* is hidden from those who may not see the money,
+  *How it is going* from staff; a heading left empty goes too. Opened by its
+  address anyway, the page says who it is for, in one calm card.
+- **Pages** hide what someone cannot do and say so in a blue line: Services
+  (no Add, no edit; a branch manager keeps the on/off switch), Branches & hours
+  (staff see the week read-only; only every-branch runners add or close
+  branches), Closures (read-only for staff), the shopfront (read-only; branch
+  managers keep their branches' photos; only the owner sees the pause switch),
+  Appointments (no Cancel for staff; "All your branches"), Overview (no money
+  card, no owner actions), the setup screen, the go-live card, and the "For
+  you" adverts (no "start a sale" or "add a branch" to someone who cannot).
+
+### 277.5 Verified
+
+- `test/branch-access.e2e.spec.ts`, 20 cases over HTTP: what a one-branch
+  member sees; 404 on another branch's booking, branch, photos and reviews;
+  `@AllBranches` refusals and an every-branch manager allowed; staff cancel
+  refused; analytics refused to staff and scoped for a branch manager; money
+  readers; who a branch-B message notifies; the inquiry's branch; the owner
+  changing branches and the effect at once; refusals (manager, for the owner,
+  none, another business's); an invitation's branches surviving acceptance;
+  `/users/me`. Two older tests changed with the rule (staff reading the payout
+  number). Full suite: 66 suites, 1,417 tests.
+- In the browser on Kigali Barbers (3 branches), with a manager of one branch
+  and staff of another invited and signed in through the real flow: the
+  People page and its panel at 1440 and 390, saving a branch change through
+  the panel (the staff member's branches followed at once), the branch
+  manager's Services and Getting paid, the staff member's Branches & hours,
+  People and shopfront. The two test accounts were removed afterwards.

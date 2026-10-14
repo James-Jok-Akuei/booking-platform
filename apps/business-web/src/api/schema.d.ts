@@ -1274,6 +1274,23 @@ export interface paths {
         patch: operations["MembersController_updateMemberRole"];
         trace?: never;
     };
+    "/business/members/{membershipId}/branches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Which branches they look after: every one, or the ones chosen (§277). */
+        patch: operations["MembersController_setMemberBranches"];
+        trace?: never;
+    };
     "/business/members/{membershipId}": {
         parameters: {
             query?: never;
@@ -2963,6 +2980,10 @@ export interface components {
             role: "OWNER" | "MANAGER" | "STAFF";
             /** @enum {string} */
             status: "ACTIVE" | "REMOVED";
+            /** @description Every branch, including ones added later (§277). Always true for the owner. */
+            allLocations: boolean;
+            /** @description The branches they look after when not every one; empty otherwise. */
+            locationIds: string[];
             businessProfile: components["schemas"]["MeBusinessDto"];
         };
         MeDto: {
@@ -3979,6 +4000,10 @@ export interface components {
             email: string;
             /** @enum {string} */
             role: "MANAGER" | "STAFF";
+            /** @description Every branch, including ones added later (§277). Left out: every branch. */
+            allLocations?: boolean;
+            /** @description The branches they will look after, when not every one. */
+            locationIds?: string[];
         };
         InvitedByDto: {
             id: string;
@@ -3989,6 +4014,10 @@ export interface components {
             email: string;
             /** @enum {string} */
             role: "OWNER" | "MANAGER" | "STAFF";
+            /** @description Every branch, including ones added later (§277). */
+            allLocations: boolean;
+            /** @description The branches they will look after when not every one; empty otherwise. */
+            locationIds: string[];
             /** @enum {string} */
             status: "PENDING" | "ACCEPTED" | "REVOKED";
             createdAt: string;
@@ -4007,10 +4036,18 @@ export interface components {
             status: "ACTIVE" | "REMOVED";
             /** @description When they joined. */
             createdAt: string;
+            /** @description Every branch, including ones added later (§277). Always true for the owner. */
+            allLocations: boolean;
+            /** @description The branches they look after when not every one; empty otherwise. */
+            locationIds: string[];
         };
         UpdateMemberRoleDto: {
             /** @enum {string} */
             role: "MANAGER" | "STAFF";
+        };
+        MemberBranchesDto: {
+            allLocations: boolean;
+            locationIds?: string[];
         };
         RemovedMembershipDto: {
             id: string;
@@ -4676,6 +4713,13 @@ export interface components {
         CreateInquiryThreadDto: {
             /** Format: uuid */
             businessProfileId: string;
+            /**
+             * Format: uuid
+             * @description The branch whose page the question is asked from (§277), so the people who
+             *     look after that branch see it. Optional: without it, the question goes to
+             *     those who look after every branch.
+             */
+            locationId?: string;
         };
         ThreadBusinessDto: {
             id: string;
@@ -5429,6 +5473,12 @@ export interface components {
             locationId: string | null;
             /** @enum {string} */
             scope: "BUSINESS" | "LOCATION";
+            /**
+             * @description The branches counted when the caller looks after only some (§277) and
+             *     asked for no one branch: the figures are for those branches together.
+             *     Null for one branch or the whole business.
+             */
+            locationIds: string[] | null;
             range: components["schemas"]["AnalyticsRangeDto"];
             appointments: components["schemas"]["AppointmentAnalyticsDto"];
             money: components["schemas"]["MoneyAnalyticsDto"];
@@ -10814,6 +10864,67 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateMemberRoleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessMemberDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    MembersController_setMemberBranches: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                membershipId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberBranchesDto"];
             };
         };
         responses: {

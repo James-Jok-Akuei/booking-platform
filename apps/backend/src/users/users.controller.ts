@@ -4,6 +4,7 @@ import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-use
 import { PrismaService } from '../prisma/prisma.service';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { ME_SELECT, MeDto } from './dto/user-response.dto';
+import { scopeOf } from '../business/branch-scope';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 @Controller('users')
@@ -37,6 +38,14 @@ export class UsersController {
     // callers still see one membership or null, so the response shape is
     // unchanged from before that index existed.
     const { businessMemberships, ...rest } = record;
-    return { ...rest, businessMembership: businessMemberships[0] ?? null };
+    const membership = businessMemberships[0];
+    if (!membership) return { ...rest, businessMembership: null };
+    // The branches as the screens use them (§277): the owner always has every one.
+    const { locations, ...kept } = membership;
+    const scope = scopeOf({ ...membership, locations });
+    return {
+      ...rest,
+      businessMembership: { ...kept, allLocations: scope.allLocations, locationIds: scope.locationIds },
+    };
   }
 }

@@ -26,6 +26,7 @@ import { BusinessRolesGuard } from './guards/business-roles.guard';
 import { MembersService } from './members.service';
 import { InviteMemberDto } from './dto/invite-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
+import { MemberBranchesDto } from './dto/member-branches.dto';
 import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
@@ -69,7 +70,7 @@ export class MembersController {
     BusinessMemberRole.STAFF,
   )
   listMembers(@CurrentBusiness() business: BusinessContext) {
-    return this.members.listMembers(business.businessId);
+    return this.members.listMembers(business.businessId, business.scope);
   }
 
   @Patch('members/:membershipId/role')
@@ -81,6 +82,18 @@ export class MembersController {
     @Body() dto: UpdateMemberRoleDto,
   ) {
     return this.members.updateMemberRole(business.businessId, membershipId, dto);
+  }
+
+  /** Which branches they look after: every one, or the ones chosen (§277). */
+  @Patch('members/:membershipId/branches')
+  @ApiOkResponse({ type: BusinessMemberDto })
+  @BusinessRoles(BusinessMemberRole.OWNER)
+  setMemberBranches(
+    @CurrentBusiness() business: BusinessContext,
+    @Param('membershipId', ParseUUIDPipe) membershipId: string,
+    @Body() dto: MemberBranchesDto,
+  ) {
+    return this.members.setMemberBranches(business.businessId, membershipId, dto);
   }
 
   /** Soft delete — sets status REMOVED, never drops the row. */

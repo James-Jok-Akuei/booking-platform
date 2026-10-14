@@ -41,6 +41,7 @@ import { GoLiveCard } from '../onboarding/GoLiveCard';
 import { useMediaQuery } from '../shell/useMediaQuery';
 import '../ads/ads.css';
 import './overview.css';
+import { useAccess } from '../access';
 
 /**
  * Today (§192) — the page a seller opens the app on.
@@ -101,6 +102,7 @@ export function OverviewPage() {
   const openCheckIn = useCheckIn();
 
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
+  const access = useAccess();
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile, retry: false });
   const businessId = me.data?.businessMembership?.businessProfile.id;
   const businessName =
@@ -120,7 +122,8 @@ export function OverviewPage() {
   const balance = useQuery({
     queryKey: ['balance', businessId],
     queryFn: () => getBalance(businessId!),
-    enabled: Boolean(businessId),
+    // The money is for the owner and managers of every branch (§277).
+    enabled: Boolean(businessId) && access.ready && access.money,
     retry: false,
   });
   const threads = useQuery({
@@ -232,16 +235,22 @@ export function OverviewPage() {
             </h1>
             <p className="ov-sentence">{sentence}</p>
           </div>
-          <div className="ov-head-actions">
-            <Link to="/closures" className="btn-quiet">
-              <Icon name="calendarX" size={18} />
-              Take time off
-            </Link>
-            <Link to="/services" className="btn-dark">
-              <Icon name="plus" size={18} stroke={2.2} />
-              Add a service
-            </Link>
-          </div>
+          {(access.runsBranches || access.runsBusiness) && (
+            <div className="ov-head-actions">
+              {access.runsBranches && (
+                <Link to="/closures" className="btn-quiet">
+                  <Icon name="calendarX" size={18} />
+                  Take time off
+                </Link>
+              )}
+              {access.runsBusiness && (
+                <Link to="/services" className="btn-dark">
+                  <Icon name="plus" size={18} stroke={2.2} />
+                  Add a service
+                </Link>
+              )}
+            </div>
+          )}
         </header>
       </div>
 
@@ -295,7 +304,7 @@ export function OverviewPage() {
           loading={bookings.isLoading}
           trend={trend}
           sub={trend === null ? 'Counting from this week' : 'vs the 7 days before'}
-          to="/analytics"
+          to={access.insights ? '/analytics' : undefined}
         />
         <Stat
           icon="star"
@@ -361,7 +370,7 @@ export function OverviewPage() {
             </header>
             <Chart days={days} loading={bookings.isLoading} />
           </article>
-          <MoneyCard balance={balance.data} loading={balance.isLoading} format={money.format} />
+          {access.money && <MoneyCard balance={balance.data} loading={balance.isLoading} format={money.format} />}
         </div>
         <div className="ov-side">
             <NextUp appointment={next} now={now} onCheckIn={(a) => openCheckIn(a)} money={money.format} />

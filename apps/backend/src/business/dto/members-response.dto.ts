@@ -23,6 +23,10 @@ export class BusinessMemberDto {
   status!: BusinessMemberStatus;
   /** When they joined. */
   createdAt!: string;
+  /** Every branch, including ones added later (§277). Always true for the owner. */
+  allLocations!: boolean;
+  /** The branches they look after when not every one; empty otherwise. */
+  locationIds!: string[];
 }
 
 /** What is left after removing somebody: a sentence, and the retired row. */
@@ -43,6 +47,9 @@ export const BUSINESS_INVITATION_SELECT = {
   id: true,
   email: true,
   role: true,
+  // The branches they will look after once they join (§277).
+  allLocations: true,
+  locationIds: true,
   status: true,
   createdAt: true,
   expiresAt: true,
@@ -73,6 +80,10 @@ export class BusinessInvitationDto implements BusinessInvitationRow {
   id!: string;
   email!: string;
   role!: BusinessMemberRole;
+  /** Every branch, including ones added later (§277). */
+  allLocations!: boolean;
+  /** The branches they will look after when not every one; empty otherwise. */
+  locationIds!: string[];
   status!: InvitationStatus;
   createdAt!: string;
   expiresAt!: string;

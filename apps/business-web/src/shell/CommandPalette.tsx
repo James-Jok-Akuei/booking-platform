@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { NAV_ITEMS } from '../nav';
+import { useAccess } from '../access';
+import { navItemsFor } from '../nav';
 import { Icon, type IconName } from '../ui/Icon';
 
 type Entry = {
@@ -36,6 +37,7 @@ export function CommandPalette({
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const access = useAccess();
 
   const entries = useMemo<Entry[]>(() => {
     const go = (to: string) => () => {
@@ -55,25 +57,34 @@ export function CommandPalette({
           onCheckIn();
         },
       },
-      {
-        id: 'add-service',
-        label: 'Add a service',
-        hint: 'Put something new on your menu',
-        icon: 'plus',
-        section: 'Actions',
-        words: 'new service price create',
-        run: go('/services'),
-      },
-      {
-        id: 'block-time',
-        label: 'Take time off',
-        hint: 'Close a day, or block a break',
-        icon: 'calendarX',
-        section: 'Actions',
-        words: 'holiday closed break lunch',
-        run: go('/closures'),
-      },
-      ...NAV_ITEMS.map<Entry>((item) => ({
+      // Offered only to those who may do them (§277).
+      ...(access.runsBusiness
+        ? [
+            {
+              id: 'add-service',
+              label: 'Add a service',
+              hint: 'Put something new on your menu',
+              icon: 'plus' as const,
+              section: 'Actions' as const,
+              words: 'new service price create',
+              run: go('/services'),
+            },
+          ]
+        : []),
+      ...(access.runsBranches
+        ? [
+            {
+              id: 'block-time',
+              label: 'Take time off',
+              hint: 'Close a day, or block a break',
+              icon: 'calendarX' as const,
+              section: 'Actions' as const,
+              words: 'holiday closed break lunch',
+              run: go('/closures'),
+            },
+          ]
+        : []),
+      ...navItemsFor(access).map<Entry>((item) => ({
         id: item.to,
         label: item.label,
         hint: item.hint,
@@ -96,7 +107,7 @@ export function CommandPalette({
         },
       },
     ];
-  }, [navigate, onCheckIn, onClose, onSignOut]);
+  }, [navigate, onCheckIn, onClose, onSignOut, access]);
 
   const shown = useMemo(() => {
     const words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);

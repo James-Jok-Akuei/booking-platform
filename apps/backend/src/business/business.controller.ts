@@ -21,7 +21,7 @@ import { BusinessMemberRole, UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { BusinessRoles } from '../common/decorators/business-roles.decorator';
+import { AllBranches, BusinessRoles } from '../common/decorators/business-roles.decorator';
 import {
   BusinessContext,
   CurrentBusiness,
@@ -128,6 +128,7 @@ export class BusinessController {
   @Patch('profile')
   @ApiOkResponse({ type: BusinessProfileDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   updateProfile(
     @CurrentBusiness() business: BusinessContext,
     @Body() dto: UpdateBusinessProfileDto,
@@ -142,6 +143,7 @@ export class BusinessController {
   @Put('kinds')
   @ApiOkResponse({ type: BusinessProfileDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   setKinds(@CurrentBusiness() business: BusinessContext, @Body() dto: SetBusinessKindsDto) {
     return this.profiles.setKinds(business.businessId, dto.subcategoryIds, dto.otherLabels ?? []);
   }
@@ -168,6 +170,7 @@ export class BusinessController {
   @ApiOkResponse({ type: BusinessReadinessDto })
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   submitForReview(@CurrentBusiness() business: BusinessContext) {
     return this.profiles.submitForReview(business.businessId);
   }
@@ -180,6 +183,7 @@ export class BusinessController {
   @ApiOkResponse({ type: BusinessReadinessDto })
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   publish(@CurrentBusiness() business: BusinessContext) {
     return this.profiles.publish(business.businessId);
   }
@@ -216,6 +220,7 @@ export class BusinessController {
   @Get('service-drafts')
   @ApiOkResponse({ type: ServiceDraftDto, isArray: true })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   listServiceDrafts(@CurrentUser() user: AuthenticatedUser) {
     return this.drafts.list(user.userId);
   }
@@ -223,6 +228,7 @@ export class BusinessController {
   @Post('service-drafts')
   @ApiCreatedResponse({ type: ServiceDraftDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   createServiceDraft(@CurrentUser() user: AuthenticatedUser) {
     return this.drafts.create(user.userId);
   }
@@ -230,6 +236,7 @@ export class BusinessController {
   @Patch('service-drafts/:id')
   @ApiOkResponse({ type: ServiceDraftDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   updateServiceDraft(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -241,6 +248,7 @@ export class BusinessController {
   @Delete('service-drafts/:id')
   @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   discardServiceDraft(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -253,6 +261,7 @@ export class BusinessController {
   @Post('locations')
   @ApiCreatedResponse({ type: BusinessLocationDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   createLocation(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateLocationDto,
@@ -290,6 +299,7 @@ export class BusinessController {
   @Delete('locations/:id')
   @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   closeLocation(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -300,6 +310,7 @@ export class BusinessController {
   @Patch('locations/:id/reopen')
   @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   reopenLocation(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -343,6 +354,7 @@ export class BusinessController {
   @Post('profile/image/:kind')
   @ApiCreatedResponse({ type: BusinessProfileDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
   @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'image' }))
   setProfileImage(
@@ -406,6 +418,7 @@ export class BusinessController {
   @Post('services')
   @ApiCreatedResponse({ type: BusinessServiceDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   createService(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateServiceDto,
@@ -427,6 +440,7 @@ export class BusinessController {
   @Patch('services/:id')
   @ApiOkResponse({ type: BusinessServiceDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   updateService(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -463,6 +477,7 @@ export class BusinessController {
   @Patch('services/:id/offered')
   @ApiOkResponse({ type: ServiceOfferedResultDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   setServiceOfferedEverywhere(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -478,6 +493,7 @@ export class BusinessController {
   @Delete('services/:id')
   @ApiOkResponse({ type: DeactivatedServiceDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   deleteService(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -501,6 +517,7 @@ export class BusinessController {
   @Post('services/:id/images')
   @ApiCreatedResponse({ type: ServiceImageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   @UseInterceptors(FileInterceptor('file', galleryUploadOptions))
   @UseFilters(new MulterExceptionFilter({ maxFiles: 1, field: 'file', noun: 'image' }))
   uploadServiceImage(
@@ -533,6 +550,7 @@ export class BusinessController {
   @Patch('services/:id/images/:imageId/cover')
   @ApiOkResponse({ type: ServiceImagesDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   setServiceImageCover(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -544,6 +562,7 @@ export class BusinessController {
   @Delete('services/:id/images/:imageId')
   @ApiOkResponse({ type: ActionMessageDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  @AllBranches()
   deleteServiceImage(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

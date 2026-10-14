@@ -14,6 +14,7 @@ import { RotatingWord } from './RotatingWord';
 import { useAuth } from './auth-context';
 import { looksLikeEmail, suggestEmail } from './email';
 import './login.css';
+import { accessOf } from '../access';
 
 /** What the headline says a seller can grow, one after another. */
 const WORDS = ['barbershop.', 'salon.', 'spa.', 'garage.', 'nail studio.', 'photo studio.'];
@@ -225,7 +226,7 @@ export function LoginPage() {
   /**
    * A shop nobody has finished setting up — not yet sent for review, still
    * missing something it needs — opens on setting it up (§256), for whoever
-   * may do it (its owner or a manager). Everybody else, and anybody who was
+   * may do it (its owner, or a manager of every branch). Everybody else, and anybody who was
    * going somewhere in particular, goes there.
    */
   const whereNext = async () => {
@@ -235,8 +236,8 @@ export function LoginPage() {
         queryClient.fetchQuery({ queryKey: ['readiness'], queryFn: getReadiness }),
         queryClient.fetchQuery({ queryKey: ['me'], queryFn: getMe }),
       ]);
-      const role = me.businessMembership?.role;
-      const setUp = role === 'OWNER' || role === 'MANAGER';
+      // The owner, or a manager of every branch (§277).
+      const setUp = accessOf(me.businessMembership).runsBusiness;
       return setUp && readiness.status === 'PENDING' && readiness.submittedAt === null && !readiness.ready ? '/welcome' : '/';
     } catch {
       return '/';

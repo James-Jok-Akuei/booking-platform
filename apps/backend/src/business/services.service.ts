@@ -34,6 +34,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { recalculateFromPrice } from './from-price';
 import { platformToday, ymd } from './discount';
+import { branchIn } from './branch-scope';
 
 /**
  * Services belong to the *business*, not to a location.
@@ -188,14 +189,23 @@ export class ServicesService {
     });
   }
 
-  /** Returns inactive services too — this is the owner's own catalogue view. */
+  /**
+   * Returns inactive services too — this is the owner's own catalogue view.
+   *
+   * Someone who looks after some branches only (§277) sees the services priced
+   * at those branches, and only those branches' prices: the rest of the
+   * catalogue belongs to branches that are not theirs.
+   */
   async findAll(userId: string) {
-    const businessId = await this.access.requireBusinessId(userId);
+    const { businessId, scope } = await this.access.requireBusinessScope(userId);
+    const only = branchIn(scope);
 
     return this.prisma.service.findMany({
-      where: { businessId },
+      where: { businessId, ...(only ? { locations: { some: { locationId: only } } } : {}) },
       orderBy: [{ isActive: 'desc' }, { createdAt: 'asc' }],
-      include: SERVICE_INCLUDE,
+      include: only
+        ? { ...SERVICE_INCLUDE, locations: { ...SERVICE_INCLUDE.locations, where: { locationId: only } } }
+        : SERVICE_INCLUDE,
     });
   }
 
@@ -290,7 +300,8 @@ export class ServicesService {
     locationId: string,
     isOffered: boolean,
   ) {
-    const businessId = await this.access.requireBusinessId(userId);
+    // Pausing a service at a branch is that branch's call (§277).
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
     await this.requireOwned(businessId, serviceId);
 
     const offer = await this.prisma.serviceLocation.findUnique({

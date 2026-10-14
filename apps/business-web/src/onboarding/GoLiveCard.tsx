@@ -7,6 +7,7 @@ import { Icon, type IconName } from '../ui/Icon';
 import { ITEM_WORDS } from './steps';
 import { usePostShop } from './usePostShop';
 import './golive.css';
+import { accessOf } from '../access';
 
 const DAY = 24 * 60 * 60 * 1000;
 const seenKey = (businessId: string) => `bp.live-seen.${businessId}`;
@@ -39,8 +40,9 @@ export function GoLiveCard() {
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile, retry: false });
   const businessId = me.data?.businessMembership?.businessProfile.id ?? '';
-  const role = me.data?.businessMembership?.role;
-  const canAct = role === 'OWNER' || role === 'MANAGER';
+  // Setting up, sending and posting change the whole shop: the owner, or a
+  // manager of every branch (§277).
+  const canAct = accessOf(me.data?.businessMembership, me.isSuccess).runsBusiness;
   const [dismissed, setDismissed] = useState<string | null>(null);
 
   const submit = useMutation({
@@ -176,7 +178,7 @@ export function GoLiveCard() {
             )}
           </div>
         ) : (
-          <p className="gl-staff">The owner or a manager finishes this.</p>
+          <p className="gl-staff">The owner, or a manager of every branch, finishes this.</p>
         )}
       </div>
 
@@ -309,7 +311,7 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
             </button>
           </div>
         ) : (
-          <p className="gl-staff">The owner or a manager posts it.</p>
+          <p className="gl-staff">The owner, or a manager of every branch, posts it.</p>
         )}
       </div>
 

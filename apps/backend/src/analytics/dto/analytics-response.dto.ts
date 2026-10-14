@@ -99,6 +99,12 @@ export class BusinessAnalyticsDto {
   /** Null when the figures cover the whole business rather than one branch. */
   locationId!: string | null;
   scope!: 'BUSINESS' | 'LOCATION';
+  /**
+   * The branches counted when the caller looks after only some (§277) and
+   * asked for no one branch: the figures are for those branches together.
+   * Null for one branch or the whole business.
+   */
+  locationIds!: string[] | null;
   range!: AnalyticsRangeDto;
 
   appointments!: AppointmentAnalyticsDto;

@@ -36,6 +36,7 @@ import { Portal } from '../ui/Portal';
 import { Switch } from '../ui/Switch';
 import { RichTextBox } from '../ui/RichTextBox';
 import './services.css';
+import { useAccess } from '../access';
 
 type Editor = { mode: 'new' } | { mode: 'edit'; service: Service; focus?: 'photos' };
 
@@ -62,6 +63,10 @@ export function ServicesPage() {
 
   const services = useQuery({ queryKey: ['services'], queryFn: listServices });
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
+  // The menu and its prices are the whole shop's: the owner, or a manager of
+  // every branch, changes them; a manager of some branches switches services
+  // on or off there; staff look (§277).
+  const access = useAccess();
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['services'] });
 
   /**
@@ -95,7 +100,11 @@ export function ServicesPage() {
   // A draft just saved by hand, lit up for a moment in Drafts.
   const [fresh, setFresh] = useState<string | null>(null);
 
-  const drafts = useQuery({ queryKey: ['service-drafts'], queryFn: listServiceDrafts });
+  const drafts = useQuery({
+    queryKey: ['service-drafts'],
+    queryFn: listServiceDrafts,
+    enabled: access.ready && access.runsBusiness,
+  });
   const refreshDrafts = () => queryClient.invalidateQueries({ queryKey: ['service-drafts'] });
 
   const discard = useMutation({
@@ -440,12 +449,23 @@ export function ServicesPage() {
               directly.
             </p>
           </div>
-          <button type="button" className="primary sv-add" onClick={startNew}>
-            <Icon name="plus" size={18} stroke={2.4} />
-            Add a service
-          </button>
+          {access.runsBusiness && (
+            <button type="button" className="primary sv-add" onClick={startNew}>
+              <Icon name="plus" size={18} stroke={2.4} />
+              Add a service
+            </button>
+          )}
         </header>
       </div>
+
+      {!access.runsBusiness && (
+        <p className="sv-scope">
+          <Icon name="shield" size={16} />
+          {access.runsBranches
+            ? 'You can switch a service on or off at your branches. The owner, or a manager of every branch, changes the menu and its prices.'
+            : 'You can see what is on sale at your branches. The owner or a manager changes it.'}
+        </p>
+      )}
 
       {services.data && services.data.length > 0 && (
         <div className="sv-chips">
@@ -483,7 +503,7 @@ export function ServicesPage() {
 
       {/* Unfinished services, shared by the shop (§123). Above the catalogue,
           because "did I already start this?" comes before writing it again. */}
-      {!adding && (drafts.data?.length ?? 0) > 0 && (
+      {!adding && access.runsBusiness && (drafts.data?.length ?? 0) > 0 && (
         <section className="sv-drafts">
           <h2 className="sv-section-title">
             <Icon name="pencil" size={16} /> Drafts
@@ -549,14 +569,23 @@ export function ServicesPage() {
           <span>
             <Icon name="tag" size={30} />
           </span>
-          <h2>Put your first service on sale</h2>
-          <p>
-            A name, how long it takes, a price at each branch — and a photo or two. Customers can book
-            it the moment it is posted.
-          </p>
-          <button type="button" className="primary" onClick={startNew}>
-            <Icon name="plus" size={18} stroke={2.4} /> Add a service
-          </button>
+          {access.runsBusiness ? (
+            <>
+              <h2>Put your first service on sale</h2>
+              <p>
+                A name, how long it takes, a price at each branch — and a photo or two. Customers can book
+                it the moment it is posted.
+              </p>
+              <button type="button" className="primary" onClick={startNew}>
+                <Icon name="plus" size={18} stroke={2.4} /> Add a service
+              </button>
+            </>
+          ) : (
+            <>
+              <h2>Nothing on sale at your branches yet</h2>
+              <p>When the owner adds a service at your branch, it shows here.</p>
+            </>
+          )}
         </div>
       )}
 
@@ -569,6 +598,8 @@ export function ServicesPage() {
               service={service}
               money={money}
               busy={busy}
+              canEdit={access.runsBusiness}
+              canToggle={access.runsBranches}
               onEdit={() => setEditor({ mode: 'edit', service })}
               onPhotos={() => setEditor({ mode: 'edit', service, focus: 'photos' })}
               onToggle={(locationId, isOffered) => toggle.mutate({ id: service.id, locationId, isOffered })}
@@ -598,6 +629,8 @@ export function ServicesPage() {
                 money={money}
                 busy={busy}
                 restore
+                canEdit={access.runsBusiness}
+                canToggle={access.runsBranches}
                 onEdit={() => setEditor({ mode: 'edit', service })}
                 onPhotos={() => setEditor({ mode: 'edit', service, focus: 'photos' })}
                 onToggle={(locationId, isOffered) => toggle.mutate({ id: service.id, locationId, isOffered })}
@@ -756,6 +789,8 @@ function ServiceCard({
   money,
   busy,
   restore = false,
+  canEdit,
+  canToggle,
   onEdit,
   onPhotos,
   onToggle,
@@ -767,6 +802,10 @@ function ServiceCard({
   busy: boolean;
   /** True under "Not on sale", where the card's action brings it back. */
   restore?: boolean;
+  /** The whole service — words, prices, photos (§277). */
+  canEdit: boolean;
+  /** On or off at a branch. */
+  canToggle: boolean;
   onEdit: () => void;
   onPhotos: () => void;
   onToggle: (locationId: string, isOffered: boolean) => void;
@@ -793,13 +832,19 @@ function ServiceCard({
 
   return (
     <article className={`svc${restore ? ' is-off' : ''}`} style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
-      <button type="button" className="svc-cover" onClick={onPhotos} aria-label={`Photos of ${service.name}`}>
+      <button
+        type="button"
+        className="svc-cover"
+        onClick={canEdit ? onPhotos : undefined}
+        disabled={!canEdit}
+        aria-label={`Photos of ${service.name}`}
+      >
         {cover ? (
           <img src={cover} alt="" />
         ) : (
           <span className="svc-cover-empty">
             <Icon name="camera" size={26} />
-            <span>Add a photo</span>
+            <span>{canEdit ? 'Add a photo' : 'No photo yet'}</span>
           </span>
         )}
         {/* A sale running now (§186), on the picture so it is seen. */}
@@ -850,6 +895,10 @@ function ServiceCard({
                     it here would be stopping something already stopped. */}
                 {!service.isActive ? (
                   <span className="muted small">service stopped</span>
+                ) : !canToggle ? (
+                  <span className={`svc-state${offer.isOffered ? ' is-on' : ''}`}>
+                    {offer.isOffered ? 'On sale' : 'Paused'}
+                  </span>
                 ) : (
                   <Switch
                     checked={offer.isOffered}
@@ -879,28 +928,30 @@ function ServiceCard({
         </div>
       </div>
 
-      <footer className="svc-foot">
-        <button type="button" onClick={onEdit}>
-          <Icon name="pencil" size={16} /> Edit
-        </button>
-        <button type="button" onClick={onPhotos}>
-          <Icon name="image" size={16} /> Photos
-        </button>
-        {restore ? (
-          <button type="button" className="primary svc-restore" disabled={busy} onClick={onRetire}>
-            Put back on sale
+      {canEdit && (
+        <footer className="svc-foot">
+          <button type="button" onClick={onEdit}>
+            <Icon name="pencil" size={16} /> Edit
           </button>
-        ) : (
-          <MoreMenu
-            disabled={busy}
-            items={[
-              { label: 'Edit', icon: 'pencil', onClick: onEdit },
-              { label: 'Photos', icon: 'image', onClick: onPhotos },
-              { label: 'Stop offering everywhere', icon: 'pause', onClick: onRetire, danger: true },
-            ]}
-          />
-        )}
-      </footer>
+          <button type="button" onClick={onPhotos}>
+            <Icon name="image" size={16} /> Photos
+          </button>
+          {restore ? (
+            <button type="button" className="primary svc-restore" disabled={busy} onClick={onRetire}>
+              Put back on sale
+            </button>
+          ) : (
+            <MoreMenu
+              disabled={busy}
+              items={[
+                { label: 'Edit', icon: 'pencil', onClick: onEdit },
+                { label: 'Photos', icon: 'image', onClick: onPhotos },
+                { label: 'Stop offering everywhere', icon: 'pause', onClick: onRetire, danger: true },
+              ]}
+            />
+          )}
+        </footer>
+      )}
     </article>
   );
 }

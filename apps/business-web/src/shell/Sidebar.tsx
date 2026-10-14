@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { SECTIONS } from '../nav';
+import { useAccess } from '../access';
+import { sectionsFor } from '../nav';
 import { initialsOf } from '../ui/Avatar';
 import { ShopLogo } from '../ui/ShopLogo';
 import { Icon, type IconName } from '../ui/Icon';
@@ -34,6 +35,7 @@ export function Sidebar({
   onSignOut: () => void;
 }) {
   const { business } = data;
+  const sections = sectionsFor(useAccess());
   // The rail's labels, shown beside an icon on hover or focus. Drawn fixed to
   // the window rather than inside the rail, so the rail can still scroll on a
   // short screen without cutting them off.
@@ -111,7 +113,7 @@ export function Sidebar({
       </div>
 
       <nav className="sb-nav" aria-label="Main">
-        {SECTIONS.map((section) => (
+        {sections.map((section) => (
           <div className="sb-group" key={section.group ?? 'top'}>
             {section.group && <p className="sb-group-title">{section.group}</p>}
             {section.items.map((item) => {

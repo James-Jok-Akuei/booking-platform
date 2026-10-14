@@ -101,7 +101,7 @@ export default function Shop() {
    * rather than starting a parallel one the shop has to notice separately.
    */
   const openChat = useMutation({
-    mutationFn: () => openInquiry(shop.data!.business.id),
+    mutationFn: () => openInquiry(shop.data!.business.id, id),
     onSuccess: (thread) => router.push(`/thread/${thread.id}`),
     onError: (error) =>
       showProblem('Could not open that', error),

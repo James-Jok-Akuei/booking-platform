@@ -22,6 +22,7 @@ import {
 import { StorageService } from '../storage/storage.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ChatRealtimePublisher, NOOP_CHAT_REALTIME } from './chat-realtime.interface';
+import { MEMBERSHIP_SCOPE_SELECT, branchIn, membersOfBranch, scopeOf } from '../business/branch-scope';
 
 /** New inquiry threads one customer may open in a rolling 24 hours. */
 export const MAX_INQUIRY_THREADS_PER_DAY = 10;
@@ -93,11 +94,19 @@ export class ChatService {
    * should land in the same conversation, not start a parallel one the business
    * has to notice separately.
    */
-  async createInquiryThread(customerId: string, businessProfileId: string) {
+  async createInquiryThread(customerId: string, businessProfileId: string, locationId?: string) {
     const business = await this.prisma.businessProfile.findUnique({
       where: { id: businessProfileId },
       select: { id: true, status: true },
     });
+    // The branch page it was asked from (§277) — kept only if it is one of
+    // this business's open branches; anything else is simply not recorded.
+    const branch = locationId
+      ? await this.prisma.location.findFirst({
+          where: { id: locationId, businessId: businessProfileId, isActive: true },
+          select: { id: true },
+        })
+      : null;
 
     // 404 rather than 403 for a non-approved business, matching the
     // availability rule (§13.2): the public should not be able to tell an
@@ -108,9 +117,14 @@ export class ChatService {
 
     const existing = await this.prisma.thread.findFirst({
       where: { customerId, businessProfileId, appointmentId: null },
-      select: { id: true },
+      select: { id: true, locationId: true },
     });
     if (existing) {
+      // A conversation from before branches were remembered takes the branch
+      // asked from now; one that has a branch keeps it.
+      if (branch && !existing.locationId) {
+        await this.prisma.thread.update({ where: { id: existing.id }, data: { locationId: branch.id } });
+      }
       // Reuse never counts against the rate limit — the limit exists to stop a
       // customer spraying NEW conversations across many businesses, not to
       // ration questions within a relationship that already exists.
@@ -121,7 +135,7 @@ export class ChatService {
 
     try {
       const thread = await this.prisma.thread.create({
-        data: { customerId, businessProfileId },
+        data: { customerId, businessProfileId, locationId: branch?.id ?? null },
         select: { id: true },
       });
       return this.loadThread(thread.id, customerId);
@@ -353,13 +367,15 @@ export class ChatService {
     const recipients: string[] = [];
 
     if (thread.customerId === senderId) {
-      // Customer wrote: tell every active member of the business, for the same
-      // reason bookings go to all of them (§20.4) — whoever is on the floor
-      // should see it.
+      // Customer wrote: tell every active member who looks after the
+      // conversation's branch (§20.4, §277) — whoever is on that floor. A
+      // question with no branch goes to those who look after every branch.
+      const branch = thread.appointment?.locationId ?? thread.locationId;
       const members = await this.prisma.businessMembership.findMany({
         where: {
           businessProfileId: thread.businessProfileId,
           status: BusinessMemberStatus.ACTIVE,
+          ...membersOfBranch(branch),
         },
         select: { userId: true },
       });
@@ -470,13 +486,21 @@ export class ChatService {
     if (role === UserRole.BUSINESS) {
       const membership = await this.prisma.businessMembership.findFirst({
         where: { userId, status: BusinessMemberStatus.ACTIVE },
-        select: { businessProfileId: true },
+        select: { businessProfileId: true, ...MEMBERSHIP_SCOPE_SELECT },
       });
 
       // No active membership means no threads — not an error, just an empty
       // scope that matches nothing.
       if (!membership) return { id: '__none__' };
-      return { businessProfileId: membership.businessProfileId };
+      // Only conversations about their branches (§277): a booking's at its
+      // branch, a question at the branch it was asked from.
+      const only = branchIn(scopeOf(membership));
+      return {
+        businessProfileId: membership.businessProfileId,
+        ...(only
+          ? { OR: [{ appointment: { locationId: only } }, { appointmentId: null, locationId: only }] }
+          : {}),
+      };
     }
 
     throw new ForbiddenException('This account type cannot access chat threads.');
@@ -582,6 +606,7 @@ const THREAD_SELECT = {
   customerId: true,
   businessProfileId: true,
   appointmentId: true,
+  locationId: true,
   lastMessageAt: true,
   createdAt: true,
   // The logo too (§164): a list of conversations is a list of faces.
@@ -604,6 +629,7 @@ const THREAD_SELECT = {
   appointment: {
     select: {
       id: true,
+      locationId: true,
       status: true,
       startTime: true,
       service: { select: { name: true } },

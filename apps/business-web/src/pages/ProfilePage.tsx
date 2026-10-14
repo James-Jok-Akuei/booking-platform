@@ -5,7 +5,6 @@ import {
   addGalleryPhoto,
   getCategories,
   getGallery,
-  getMe,
   getProfile,
   getReadiness,
   listLocations,
@@ -34,6 +33,7 @@ import { LineArt } from '../onboarding/LineArt';
 import { usePostShop } from '../onboarding/usePostShop';
 import { RichTextBox } from '../ui/RichTextBox';
 import './profile.css';
+import { useAccess } from '../access';
 
 /** Mirrors ALLOWED_MIME_TYPES on the server (§132.3). */
 const ACCEPT = 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp';
@@ -47,6 +47,7 @@ const ACCEPT = 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp';
  * so every word is seen where it will be read.
  */
 export function ProfilePage() {
+  const access = useAccess();
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
 
@@ -61,6 +62,16 @@ export function ProfilePage() {
         </header>
       </div>
 
+      {/* The shopfront is the whole shop's (§277); a branch's photos are its own. */}
+      {access.ready && !access.runsBusiness && (
+        <p className="pf-scope">
+          <Icon name="shield" size={16} />
+          {access.runsBranches
+            ? 'The owner, or a manager of every branch, changes the shopfront. You can add and remove photos at your branches.'
+            : 'The owner or a manager changes the shopfront. You can see it here as customers do.'}
+        </p>
+      )}
+
       {profile.isLoading && <div className="skeleton pf-skeleton" />}
       {profile.data && (
         <>
@@ -70,10 +81,10 @@ export function ProfilePage() {
           ) : (
             <PausePanel profile={profile.data} />
           )}
-          <ShopWindow profile={profile.data} locations={locations.data ?? []} />
+          <ShopWindow profile={profile.data} locations={locations.data ?? []} canEdit={access.runsBusiness} />
           <Strength profile={profile.data} locations={locations.data ?? []} />
-          <Details profile={profile.data} locations={locations.data ?? []} />
-          <Galleries locations={locations.data} />
+          <Details profile={profile.data} locations={locations.data ?? []} canEdit={access.runsBusiness} />
+          <Galleries locations={locations.data} canEdit={access.runsBranches} />
         </>
       )}
     </section>
@@ -116,7 +127,15 @@ function PickImage({
   );
 }
 
-function ShopWindow({ profile, locations }: { profile: BusinessProfile; locations: Location[] }) {
+function ShopWindow({
+  profile,
+  locations,
+  canEdit,
+}: {
+  profile: BusinessProfile;
+  locations: Location[];
+  canEdit: boolean;
+}) {
   const queryClient = useQueryClient();
   const readiness = useQuery({ queryKey: ['readiness'], queryFn: getReadiness });
   const [problem, setProblem] = useState<string | null>(null);
@@ -151,19 +170,23 @@ function ShopWindow({ profile, locations }: { profile: BusinessProfile; location
             No cover photo yet
           </span>
         )}
-        <PickImage id="cover-upload" busy={busy} onPick={pick('cover')} className="pf-cover-btn">
-          <Icon name="camera" size={17} />
-          {uploading === 'cover' ? 'Uploading…' : profile.coverImageUrl ? 'Change cover' : 'Add a cover photo'}
-        </PickImage>
+        {canEdit && (
+          <PickImage id="cover-upload" busy={busy} onPick={pick('cover')} className="pf-cover-btn">
+            <Icon name="camera" size={17} />
+            {uploading === 'cover' ? 'Uploading…' : profile.coverImageUrl ? 'Change cover' : 'Add a cover photo'}
+          </PickImage>
+        )}
       </div>
 
       <div className="pf-id">
         <div className="pf-logo">
           {profile.logoUrl ? <img src={profile.logoUrl} alt="" /> : <span>{initialsOf(profile.name ?? 'B')}</span>}
-          <PickImage id="logo-upload" busy={busy} onPick={pick('logo')} className="pf-logo-btn">
-            <Icon name="camera" size={16} />
-            <span className="visually-hidden">{profile.logoUrl ? 'Change logo' : 'Add a logo'}</span>
-          </PickImage>
+          {canEdit && (
+            <PickImage id="logo-upload" busy={busy} onPick={pick('logo')} className="pf-logo-btn">
+              <Icon name="camera" size={16} />
+              <span className="visually-hidden">{profile.logoUrl ? 'Change logo' : 'Add a logo'}</span>
+            </PickImage>
+          )}
           {uploading === 'logo' && <i className="pf-logo-busy" />}
         </div>
         <div className="pf-id-text">
@@ -186,9 +209,11 @@ function ShopWindow({ profile, locations }: { profile: BusinessProfile; location
             </span>
           </div>
         </div>
-        <PickImage id="logo-upload-2" busy={busy} onPick={pick('logo')} className="pf-logo-change">
-          {profile.logoUrl ? 'Change logo' : 'Add a logo'}
-        </PickImage>
+        {canEdit && (
+          <PickImage id="logo-upload-2" busy={busy} onPick={pick('logo')} className="pf-logo-change">
+            {profile.logoUrl ? 'Change logo' : 'Add a logo'}
+          </PickImage>
+        )}
       </div>
 
       {problem && (
@@ -256,7 +281,15 @@ function Strength({ profile, locations }: { profile: BusinessProfile; locations:
   );
 }
 
-function Details({ profile, locations }: { profile: BusinessProfile; locations: Location[] }) {
+function Details({
+  profile,
+  locations,
+  canEdit,
+}: {
+  profile: BusinessProfile;
+  locations: Location[];
+  canEdit: boolean;
+}) {
   const queryClient = useQueryClient();
   const categories = useQuery({ queryKey: ['categories'], queryFn: getCategories });
 
@@ -342,155 +375,163 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
   return (
     <div className="pf-details">
       <form className="pf-form" onSubmit={submit}>
-        <header>
-          <h2>Details</h2>
-          <p>Shown on your shop’s page in the app.</p>
-        </header>
+        <fieldset className="pf-fieldset" disabled={!canEdit}>
+          <header>
+            <h2>Details</h2>
+            <p>
+              {canEdit
+                ? 'Shown on your shop’s page in the app.'
+                : 'Shown on your shop’s page in the app. The owner, or a manager of every branch, changes them.'}
+            </p>
+          </header>
 
-        <label className="pf-field">
-          <span>Business name</span>
-          <input value={name} onChange={(event) => setName(event.target.value)} maxLength={120} />
-        </label>
+          <label className="pf-field">
+            <span>Business name</span>
+            <input value={name} onChange={(event) => setName(event.target.value)} maxLength={120} />
+          </label>
 
-        {/* Not a <label>: a click on its words would press the first button
-            of the formatting bar inside it. */}
-        <div className="pf-field pf-grow">
-          <span id="pf-desc-label">What you do</span>
-          <RichTextBox
-            labelledBy="pf-desc-label"
-            value={description}
-            onChange={setDescription}
-            rows={5}
-            maxLength={2000}
-            placeholder="A customer reads this before booking. Say what you offer and what makes you worth the trip."
-          />
-        </div>
-
-        <label className="pf-field">
-          <span>Phone</span>
-          <input value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={30} />
-        </label>
-
-        {/* Every kind of place the shop is (§265): a salon whose other branch is a spa is both. */}
-        <div className="pf-field">
-          <span>
-            Kinds of shop <em>the first is your main one · up to {MAX_KIND_CATEGORIES} categories</em>
-          </span>
-          {listed.length > 0 && (
-            <ul className="pf-kinds">
-              {listed.map((k, i) => (
-                <li key={k.subcategory.id}>
-                  <LineArt icon={k.category.icon} className="pf-kind-art" />
-                  {k.subcategory.name === OTHER ? (
-                    // "Other": what it is, in the shop's own words, shown to customers (§267).
-                    <span className="pf-kind-text">
-                      <input
-                        className="pf-kind-writein"
-                        value={labels[k.subcategory.id] ?? ''}
-                        onChange={(e) => setLabels({ ...labels, [k.subcategory.id]: e.target.value })}
-                        maxLength={40}
-                        placeholder="What kind exactly?"
-                        aria-label={`What kind of ${k.category.name} exactly`}
-                      />
-                      <em>Other · {k.category.name}</em>
-                    </span>
-                  ) : (
-                    <span className="pf-kind-text">
-                      <strong>{k.subcategory.name}</strong>
-                      <em>{k.category.name}</em>
-                    </span>
-                  )}
-                  {i === 0 ? (
-                    <span className="pf-kind-main">Main</span>
-                  ) : (
-                    <button type="button" className="pf-kind-link" onClick={() => setKindsList([k.subcategory.id, ...kinds.filter((id) => id !== k.subcategory.id)])}>
-                      Make main
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className="pf-kind-remove"
-                    aria-label={`Remove ${k.subcategory.name}`}
-                    title={listed.length === 1 ? 'A shop needs at least one kind' : 'Remove'}
-                    disabled={listed.length === 1}
-                    onClick={() => setKindsList(kinds.filter((id) => id !== k.subcategory.id))}
-                  >
-                    <Icon name="close" size={15} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="pf-kind-add">
-            <Select
-              value={addCategoryId}
-              onChange={(next) => {
-                setAddCategoryId(next);
-                setAddTypeId('');
-              }}
-              label="Category"
-              placeholder={listed.length ? 'Add another kind…' : 'Choose a category'}
-              options={categories.data?.map((category) => ({ value: category.id, label: category.name })) ?? []}
+          {/* Not a <label>: a click on its words would press the first button
+              of the formatting bar inside it. */}
+          <div className="pf-field pf-grow">
+            <span id="pf-desc-label">What you do</span>
+            <RichTextBox
+              labelledBy="pf-desc-label"
+              value={description}
+              onChange={setDescription}
+              rows={5}
+              maxLength={2000}
+              placeholder="A customer reads this before booking. Say what you offer and what makes you worth the trip."
             />
-            <Select
-              value={addTypeId}
-              onChange={setAddTypeId}
-              disabled={!addCategory || categoryFull}
-              label="Type"
-              placeholder={categoryFull ? `Up to ${MAX_KIND_CATEGORIES} categories` : addCategory ? 'Which type' : 'Then a type'}
-              options={addCategory?.subcategories.filter((t) => !kinds.includes(t.id)).map((t) => ({ value: t.id, label: t.name })) ?? []}
-            />
-            <button
-              type="button"
-              disabled={!addTypeId || (addIsOther && addLabel.trim().length < 2)}
-              onClick={() => {
-                setKindsList([...kinds, addTypeId]);
-                if (addIsOther) setLabels({ ...labels, [addTypeId]: addLabel.trim() });
-                setAddTypeId('');
-                setAddLabel('');
-              }}
-            >
-              <Icon name="plus" size={16} /> Add
-            </button>
           </div>
-          {addIsOther && (
-            <input
-              className="pf-kind-add-writein"
-              value={addLabel}
-              onChange={(e) => setAddLabel(e.target.value)}
-              maxLength={40}
-              placeholder="What kind exactly? e.g. Henna artist"
-              aria-label="What kind exactly"
-              autoFocus
-            />
-          )}
-          {unlabelled && <span className="pf-kind-hint">Say what each “Other” is — customers see it in its place.</span>}
-        </div>
 
-        {save.error && (
-          <p className="error small" role="alert">
-            {save.error instanceof ApiError ? save.error.message : 'That did not save.'}
-          </p>
-        )}
+          <label className="pf-field">
+            <span>Phone</span>
+            <input value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={30} />
+          </label>
 
-        <footer className="pf-form-foot">
-          <span>
-            {saved && !save.isPending && !dirty ? (
-              <span className="ok">
-                <Icon name="checkCircle" size={16} /> Saved.
-              </span>
-            ) : description.length > 2000 ? (
-              <span className="error">“What you do” is {description.length - 2000} characters too long.</span>
-            ) : dirty ? (
-              'The preview shows your changes — save to make them live.'
-            ) : (
-              ''
+          {/* Every kind of place the shop is (§265): a salon whose other branch is a spa is both. */}
+          <div className="pf-field">
+            <span>
+              Kinds of shop <em>the first is your main one · up to {MAX_KIND_CATEGORIES} categories</em>
+            </span>
+            {listed.length > 0 && (
+              <ul className="pf-kinds">
+                {listed.map((k, i) => (
+                  <li key={k.subcategory.id}>
+                    <LineArt icon={k.category.icon} className="pf-kind-art" />
+                    {k.subcategory.name === OTHER ? (
+                      // "Other": what it is, in the shop's own words, shown to customers (§267).
+                      <span className="pf-kind-text">
+                        <input
+                          className="pf-kind-writein"
+                          value={labels[k.subcategory.id] ?? ''}
+                          onChange={(e) => setLabels({ ...labels, [k.subcategory.id]: e.target.value })}
+                          maxLength={40}
+                          placeholder="What kind exactly?"
+                          aria-label={`What kind of ${k.category.name} exactly`}
+                        />
+                        <em>Other · {k.category.name}</em>
+                      </span>
+                    ) : (
+                      <span className="pf-kind-text">
+                        <strong>{k.subcategory.name}</strong>
+                        <em>{k.category.name}</em>
+                      </span>
+                    )}
+                    {i === 0 ? (
+                      <span className="pf-kind-main">Main</span>
+                    ) : (
+                      <button type="button" className="pf-kind-link" onClick={() => setKindsList([k.subcategory.id, ...kinds.filter((id) => id !== k.subcategory.id)])}>
+                        Make main
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="pf-kind-remove"
+                      aria-label={`Remove ${k.subcategory.name}`}
+                      title={listed.length === 1 ? 'A shop needs at least one kind' : 'Remove'}
+                      disabled={listed.length === 1}
+                      onClick={() => setKindsList(kinds.filter((id) => id !== k.subcategory.id))}
+                    >
+                      <Icon name="close" size={15} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
-          </span>
-          <button type="submit" className="primary" disabled={save.isPending || !dirty || unlabelled || description.length > 2000}>
-            {save.isPending ? 'Saving…' : 'Save'}
-          </button>
-        </footer>
+            <div className="pf-kind-add">
+              <Select
+                value={addCategoryId}
+                onChange={(next) => {
+                  setAddCategoryId(next);
+                  setAddTypeId('');
+                }}
+                label="Category"
+                placeholder={listed.length ? 'Add another kind…' : 'Choose a category'}
+                options={categories.data?.map((category) => ({ value: category.id, label: category.name })) ?? []}
+              />
+              <Select
+                value={addTypeId}
+                onChange={setAddTypeId}
+                disabled={!addCategory || categoryFull}
+                label="Type"
+                placeholder={categoryFull ? `Up to ${MAX_KIND_CATEGORIES} categories` : addCategory ? 'Which type' : 'Then a type'}
+                options={addCategory?.subcategories.filter((t) => !kinds.includes(t.id)).map((t) => ({ value: t.id, label: t.name })) ?? []}
+              />
+              <button
+                type="button"
+                disabled={!addTypeId || (addIsOther && addLabel.trim().length < 2)}
+                onClick={() => {
+                  setKindsList([...kinds, addTypeId]);
+                  if (addIsOther) setLabels({ ...labels, [addTypeId]: addLabel.trim() });
+                  setAddTypeId('');
+                  setAddLabel('');
+                }}
+              >
+                <Icon name="plus" size={16} /> Add
+              </button>
+            </div>
+            {addIsOther && (
+              <input
+                className="pf-kind-add-writein"
+                value={addLabel}
+                onChange={(e) => setAddLabel(e.target.value)}
+                maxLength={40}
+                placeholder="What kind exactly? e.g. Henna artist"
+                aria-label="What kind exactly"
+                autoFocus
+              />
+            )}
+            {unlabelled && <span className="pf-kind-hint">Say what each “Other” is — customers see it in its place.</span>}
+          </div>
+
+          {save.error && (
+            <p className="error small" role="alert">
+              {save.error instanceof ApiError ? save.error.message : 'That did not save.'}
+            </p>
+          )}
+
+          {canEdit && (
+            <footer className="pf-form-foot">
+              <span>
+                {saved && !save.isPending && !dirty ? (
+                  <span className="ok">
+                    <Icon name="checkCircle" size={16} /> Saved.
+                  </span>
+                ) : description.length > 2000 ? (
+                  <span className="error">“What you do” is {description.length - 2000} characters too long.</span>
+                ) : dirty ? (
+                  'The preview shows your changes — save to make them live.'
+                ) : (
+                  ''
+                )}
+              </span>
+              <button type="submit" className="primary" disabled={save.isPending || !dirty || unlabelled || description.length > 2000}>
+                {save.isPending ? 'Saving…' : 'Save'}
+              </button>
+            </footer>
+          )}
+        </fieldset>
       </form>
 
       {/* The shop as the customer's app shows it, as it is being written (§208). */}
@@ -514,20 +555,22 @@ function Details({ profile, locations }: { profile: BusinessProfile; locations: 
   );
 }
 
-function Galleries({ locations }: { locations: Location[] | undefined }) {
+function Galleries({ locations, canEdit }: { locations: Location[] | undefined; canEdit: boolean }) {
   return (
     <section className="pf-galleries">
       <header className="pf-galleries-head">
         <h2>Photos</h2>
         <p>Each branch has its own photos, because a customer wants to see the place they are actually walking into.</p>
       </header>
-      {locations?.map((location) => <LocationGallery key={location.id} id={location.id} name={location.name} />)}
+      {locations?.map((location) => (
+        <LocationGallery key={location.id} id={location.id} name={location.name} canEdit={canEdit} />
+      ))}
       {locations?.length === 0 && <p className="muted">Add a branch first, under Branches &amp; hours.</p>}
     </section>
   );
 }
 
-function LocationGallery({ id, name }: { id: string; name: string }) {
+function LocationGallery({ id, name, canEdit }: { id: string; name: string; canEdit: boolean }) {
   const queryClient = useQueryClient();
   const [problem, setProblem] = useState<string | null>(null);
   const gallery = useQuery({ queryKey: ['gallery', id], queryFn: () => getGallery(id) });
@@ -577,29 +620,31 @@ function LocationGallery({ id, name }: { id: string; name: string }) {
         {gallery.data?.photos.map((photo) => (
           <figure key={photo.id} className="pf-photo">
             <img src={photo.url} alt="" />
-            <button
-              type="button"
-              disabled={drop.isPending}
-              aria-label="Remove"
-              onClick={async () => {
-                if (
-                  await confirmDialog({
-                    title: 'Remove this photo?',
-                    body: <p>It cannot be brought back.</p>,
-                    tone: 'danger',
-                    icon: 'trash',
-                    confirmLabel: 'Remove',
-                  })
-                ) {
-                  drop.mutate(photo.id);
-                }
-              }}
-            >
-              <Icon name="trash" size={15} />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                disabled={drop.isPending}
+                aria-label="Remove"
+                onClick={async () => {
+                  if (
+                    await confirmDialog({
+                      title: 'Remove this photo?',
+                      body: <p>It cannot be brought back.</p>,
+                      tone: 'danger',
+                      icon: 'trash',
+                      confirmLabel: 'Remove',
+                    })
+                  ) {
+                    drop.mutate(photo.id);
+                  }
+                }}
+              >
+                <Icon name="trash" size={15} />
+              </button>
+            )}
           </figure>
         ))}
-        {!full && (
+        {!full && canEdit && (
           <PickImage
             id={`gallery-${id}`}
             busy={add.isPending}
@@ -642,9 +687,8 @@ function LocationGallery({ id, name }: { id: string; name: string }) {
  * over before showing it.
  */
 function PostPanel({ profile }: { profile: BusinessProfile }) {
-  const me = useQuery({ queryKey: ['me'], queryFn: getMe });
-  const role = me.data?.businessMembership?.role;
-  const canAct = role === 'OWNER' || role === 'MANAGER';
+  // Posting shows the whole shop: the owner, or a manager of every branch (§277).
+  const canAct = useAccess().runsBusiness;
   const { ask, post } = usePostShop(profile.name ?? 'your shop');
 
   return (
@@ -676,7 +720,7 @@ function PostPanel({ profile }: { profile: BusinessProfile }) {
             {!post.isPending && <Icon name="send" size={16} />}
           </button>
         ) : (
-          <span>The owner or a manager posts it.</span>
+          <span>The owner, or a manager of every branch, posts it.</span>
         )}
       </div>
     </div>
@@ -685,6 +729,8 @@ function PostPanel({ profile }: { profile: BusinessProfile }) {
 
 function PausePanel({ profile }: { profile: BusinessProfile }) {
   const queryClient = useQueryClient();
+  // Owner-only on the server; everyone else sees the state (§277).
+  const canPause = useAccess().pauses;
   const [problem, setProblem] = useState<string | null>(null);
   const paused = profile.pausedAt !== null;
 
@@ -746,15 +792,21 @@ function PausePanel({ profile }: { profile: BusinessProfile }) {
         )}
       </div>
       <div className="pf-pause-action">
-        <span>
-          {toggle.isPending ? (paused ? 'Opening…' : 'Pausing…') : paused ? 'Open the shop again' : 'Pause the shop'}
-        </span>
-        <Switch
-          checked={!paused}
-          disabled={toggle.isPending}
-          label={paused ? 'Open the shop again' : 'Pause the shop'}
-          onChange={() => void flip()}
-        />
+        {canPause ? (
+          <>
+            <span>
+              {toggle.isPending ? (paused ? 'Opening…' : 'Pausing…') : paused ? 'Open the shop again' : 'Pause the shop'}
+            </span>
+            <Switch
+              checked={!paused}
+              disabled={toggle.isPending}
+              label={paused ? 'Open the shop again' : 'Pause the shop'}
+              onChange={() => void flip()}
+            />
+          </>
+        ) : (
+          <span>Only the owner pauses the shop.</span>
+        )}
       </div>
     </div>
   );

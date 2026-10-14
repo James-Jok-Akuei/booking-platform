@@ -2,34 +2,50 @@ import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { useAuth } from '../auth/auth-context';
+import { useAccess } from '../access';
 import {
   inviteMember,
   listInvitations,
+  listLocations,
   listMembers,
   removeMember,
   revokeInvitation,
+  setMemberBranches,
   setMemberRole,
+  type Location,
   type Member,
+  type MemberBranches,
   type StaffRole,
 } from '../api/business';
 import { Avatar } from '../ui/Avatar';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
+import { Panel } from '../ui/Panel';
+import { BranchPicker, branchWords } from './BranchPicker';
 import './staff.css';
 
 const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
 
 /**
- * What each role may actually do, in the words of the person deciding.
+ * What each role may actually do, in the words of the person deciding (§277).
  *
- * Taken from the guards, not invented: OWNER and MANAGER may write; STAFF reads
- * everything and writes nothing. Only the OWNER may change who has access —
- * that is the line between OWNER and MANAGER.
+ * Taken from the guards, not invented. The role says WHAT; the branches say
+ * WHERE. Only the OWNER may change who has access, and where — that is the
+ * line between OWNER and everyone else.
  */
 const ROLE_MEANS: Record<'OWNER' | StaffRole, string> = {
-  OWNER: 'Runs everything, including who works here. Only one person can be the owner.',
-  MANAGER: 'Can change services, hours, prices and bookings. Cannot add or remove people.',
-  STAFF: 'Can see everything and handle bookings, but cannot change the business.',
+  OWNER: 'Runs everything at every branch: the money, the shopfront, and who works where. There is only one owner.',
+  MANAGER:
+    'Runs their branches: bookings, cancellations, hours, closures and photos. A manager of every branch also changes the shopfront, services and prices, and sees the money.',
+  STAFF:
+    'Works the front desk at their branches: checks customers in, marks visits done, and answers messages and reviews. Cannot cancel bookings or see the money.',
+};
+
+/** The same, in a few words, for a row. */
+const ROLE_SHORT: Record<'OWNER' | StaffRole, string> = {
+  OWNER: 'Runs everything',
+  MANAGER: 'Runs their branches',
+  STAFF: 'Front desk',
 };
 
 const ROLE_LOOK: Record<'OWNER' | StaffRole, { label: string; icon: IconName; cls: string }> = {
@@ -43,8 +59,18 @@ export function StaffPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  const access = useAccess();
   const members = useQuery({ queryKey: ['members'], queryFn: listMembers });
-  const invitations = useQuery({ queryKey: ['invitations'], queryFn: listInvitations });
+  // Invitations are the owner's to see (§90).
+  const invitations = useQuery({
+    queryKey: ['invitations'],
+    queryFn: listInvitations,
+    enabled: access.ready && access.people,
+  });
+  const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
+  const branches = locations.data ?? [];
+  const open = branches.filter((b) => b.isActive);
+  const [choosing, setChoosing] = useState<Member | null>(null);
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['members'] });
@@ -76,8 +102,13 @@ export function StaffPage() {
         <div className="st-main">
           {!isOwner && members.data && (
             <p className="st-note">
-              <Icon name="shield" size={16} /> Only the owner can add or remove people. You can see who works
-              here.
+              <Icon name="shield" size={16} />
+              <span>
+                Only the owner can add people and choose where they work.{' '}
+                {access.allBranches
+                  ? 'You work at every branch.'
+                  : `You work at ${branchWords({ allLocations: false, locationIds: access.branchIds }, branches)} — you see the people there.`}
+              </span>
             </p>
           )}
 
@@ -96,6 +127,8 @@ export function StaffPage() {
                     member={member}
                     isOwner={isOwner}
                     isMe={member.userId === user?.id}
+                    branches={branches}
+                    onChooseBranches={() => setChoosing(member)}
                     onDone={refresh}
                   />
                 ))}
@@ -121,6 +154,7 @@ export function StaffPage() {
                         Invited as {invitation.role.toLowerCase()} on {when(invitation.createdAt)} · expires{' '}
                         {when(invitation.expiresAt)}
                       </span>
+                      <BranchChips value={invitation} branches={branches} />
                     </div>
                     {isOwner && <RevokeButton id={invitation.id} onDone={refresh} />}
                   </li>
@@ -152,7 +186,7 @@ export function StaffPage() {
         </div>
 
         <aside className="st-side">
-          {isOwner && <InviteForm onDone={refresh} />}
+          {isOwner && <InviteForm branches={open} onDone={refresh} />}
           <article className="st-roles">
             <h2>What each role can do</h2>
             {(['OWNER', 'MANAGER', 'STAFF'] as const).map((role) => (
@@ -166,20 +200,130 @@ export function StaffPage() {
                 </div>
               </div>
             ))}
+            <div className="st-role is-branches">
+              <span>
+                <Icon name="pin" size={17} />
+              </span>
+              <div>
+                <strong>Branches</strong>
+                <p>
+                  Choose where each person works. They see only the bookings, messages and reviews of their branches.
+                  “Every branch” includes any you open later.
+                </p>
+              </div>
+            </div>
           </article>
         </aside>
       </div>
+
+      {choosing && (
+        <BranchesPanel member={choosing} branches={open} onClose={() => setChoosing(null)} onDone={refresh} />
+      )}
     </section>
   );
 }
 
-function InviteForm({ onDone }: { onDone: () => void }) {
+/** Where someone works, as small tags: every branch, or each by name. */
+function BranchChips({ value, branches }: { value: MemberBranches; branches: Location[] }) {
+  if (value.allLocations) {
+    return (
+      <span className="st-branches">
+        <span className="st-branch is-every">
+          <Icon name="layers" size={12} /> Every branch
+        </span>
+      </span>
+    );
+  }
+  const named = value.locationIds
+    .map((id) => branches.find((b) => b.id === id))
+    .filter((b): b is Location => Boolean(b));
+  return (
+    <span className="st-branches">
+      {named.length === 0 && <span className="st-branch is-none">No branch yet</span>}
+      {named.map((b) => (
+        <span key={b.id} className={`st-branch${b.isActive ? '' : ' is-closed'}`}>
+          <Icon name="pin" size={12} /> {b.name}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Changing where someone works (§277), in the panel from the right. */
+function BranchesPanel({
+  member,
+  branches,
+  onClose,
+  onDone,
+}: {
+  member: Member;
+  branches: Location[];
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const [value, setValue] = useState<MemberBranches>({
+    allLocations: member.allLocations,
+    // Only open branches can be chosen; a closed one they had stays theirs only if left alone.
+    locationIds: member.locationIds.filter((id) => branches.some((b) => b.id === id)),
+  });
+  const save = useMutation({
+    mutationFn: () => setMemberBranches(member.id, value),
+    onSuccess: () => {
+      onDone();
+      onClose();
+    },
+  });
+  const unchanged =
+    value.allLocations === member.allLocations &&
+    (value.allLocations ||
+      (value.locationIds.length === member.locationIds.length &&
+        value.locationIds.every((id) => member.locationIds.includes(id))));
+  const empty = !value.allLocations && value.locationIds.length === 0;
+
+  return (
+    <Panel
+      eyebrow="Where they work"
+      title={member.email}
+      width={560}
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="button" className="primary" disabled={save.isPending || unchanged || empty} onClick={() => save.mutate()}>
+            {save.isPending ? 'Saving…' : 'Save'}
+          </button>
+        </>
+      }
+    >
+      <p className="st-panel-lead">
+        {member.role === 'MANAGER'
+          ? 'A manager runs the branches you choose — their bookings, hours, closures and photos. With every branch, they also run the shopfront, the services and prices, and see the money.'
+          : 'Staff work the front desk at the branches you choose. They see only those branches’ bookings, messages and reviews.'}
+      </p>
+      <BranchPicker branches={branches} value={value} onChange={setValue} />
+      <p className="st-panel-note">
+        <Icon name="info" size={14} /> It changes straight away — they do not need to sign in again.
+      </p>
+      {save.error && (
+        <p className="error small" role="alert">
+          {save.error instanceof ApiError ? save.error.message : 'That did not save.'}
+        </p>
+      )}
+    </Panel>
+  );
+}
+
+function InviteForm({ branches, onDone }: { branches: Location[]; onDone: () => void }) {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<StaffRole>('STAFF');
+  const [where, setWhere] = useState<MemberBranches>({ allLocations: true, locationIds: [] });
   const [sent, setSent] = useState<string | null>(null);
+  const noBranch = !where.allLocations && where.locationIds.length === 0;
 
   const invite = useMutation({
-    mutationFn: () => inviteMember(email.trim(), role),
+    mutationFn: () => inviteMember(email.trim(), role, where),
     onSuccess: () => {
       setSent(email.trim());
       setEmail('');
@@ -233,6 +377,13 @@ function InviteForm({ onDone }: { onDone: () => void }) {
         <p className="st-means">{ROLE_MEANS[role]}</p>
       </div>
 
+      {branches.length > 0 && (
+        <div className="st-field">
+          <span>Where they work</span>
+          <BranchPicker branches={branches} value={where} onChange={setWhere} compact />
+        </div>
+      )}
+
       {invite.error && (
         <p className="error small" role="alert">
           {invite.error instanceof ApiError ? invite.error.message : 'That did not send.'}
@@ -244,7 +395,7 @@ function InviteForm({ onDone }: { onDone: () => void }) {
         </p>
       )}
 
-      <button type="submit" className="primary st-send" disabled={invite.isPending || email.trim() === ''}>
+      <button type="submit" className="primary st-send" disabled={invite.isPending || email.trim() === '' || noBranch}>
         <Icon name="send" size={16} />
         {invite.isPending ? 'Sending…' : 'Send invitation'}
       </button>
@@ -256,11 +407,15 @@ function MemberRow({
   member,
   isOwner,
   isMe,
+  branches,
+  onChooseBranches,
   onDone,
 }: {
   member: Member;
   isOwner: boolean;
   isMe: boolean;
+  branches: Location[];
+  onChooseBranches: () => void;
   onDone: () => void;
 }) {
   const [problem, setProblem] = useState<string | null>(null);
@@ -298,7 +453,10 @@ function MemberRow({
           {member.email}
           {isMe && <em>you</em>}
         </strong>
-        <span>{ROLE_MEANS[member.role as 'OWNER' | StaffRole]}</span>
+        <span title={ROLE_MEANS[member.role as 'OWNER' | StaffRole]}>
+          {ROLE_SHORT[member.role as 'OWNER' | StaffRole]}
+        </span>
+        <BranchChips value={member} branches={branches} />
         {problem && (
           <p className="error small" role="alert">
             {problem}
@@ -327,6 +485,19 @@ function MemberRow({
           <span className={`st-badge is-${look.cls}`}>
             <Icon name={look.icon} size={14} /> {look.label}
           </span>
+        )}
+
+        {editable && (
+          <button
+            type="button"
+            className="st-where"
+            onClick={onChooseBranches}
+            aria-label={`Where ${member.email} works`}
+            title="Where they work"
+          >
+            <Icon name="pin" size={16} />
+            <span>Branches</span>
+          </button>
         )}
 
         {editable && (

@@ -48,10 +48,12 @@ export const listMessages = (
  * the same thread rather than starting a parallel one the shop has to notice
  * separately. So this is safe to call every time the button is tapped.
  */
-export const openInquiry = (businessProfileId: string) =>
+export const openInquiry = (businessProfileId: string, locationId?: string) =>
   api<Thread>('/threads/inquiry', {
     method: 'POST',
-    body: { businessProfileId } satisfies components['schemas']['CreateInquiryThreadDto'],
+    // The branch it was asked from (§277), so the question reaches the people
+    // who work there.
+    body: { businessProfileId, locationId } satisfies components['schemas']['CreateInquiryThreadDto'],
   });
 
 /**

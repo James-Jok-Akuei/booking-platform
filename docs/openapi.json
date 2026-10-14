@@ -5816,6 +5816,87 @@
         ]
       }
     },
+    "/business/members/{membershipId}/branches": {
+      "patch": {
+        "operationId": "MembersController_setMemberBranches",
+        "parameters": [
+          {
+            "name": "membershipId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberBranchesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessMemberDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Which branches they look after: every one, or the ones chosen (§277).",
+        "tags": [
+          "Members"
+        ]
+      }
+    },
     "/business/members/{membershipId}": {
       "delete": {
         "operationId": "MembersController_removeMember",
@@ -14188,6 +14269,17 @@
               "REMOVED"
             ]
           },
+          "allLocations": {
+            "type": "boolean",
+            "description": "Every branch, including ones added later (§277). Always true for the owner."
+          },
+          "locationIds": {
+            "description": "The branches they look after when not every one; empty otherwise.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "businessProfile": {
             "$ref": "#/components/schemas/MeBusinessDto"
           }
@@ -14196,6 +14288,8 @@
           "id",
           "role",
           "status",
+          "allLocations",
+          "locationIds",
           "businessProfile"
         ]
       },
@@ -17541,6 +17635,19 @@
               "MANAGER",
               "STAFF"
             ]
+          },
+          "allLocations": {
+            "type": "boolean",
+            "description": "Every branch, including ones added later (§277). Left out: every branch."
+          },
+          "locationIds": {
+            "description": "The branches they will look after, when not every one.",
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         },
         "required": [
@@ -17580,6 +17687,17 @@
             ],
             "type": "string"
           },
+          "allLocations": {
+            "type": "boolean",
+            "description": "Every branch, including ones added later (§277)."
+          },
+          "locationIds": {
+            "description": "The branches they will look after when not every one; empty otherwise.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "status": {
             "enum": [
               "PENDING",
@@ -17602,6 +17720,8 @@
           "id",
           "email",
           "role",
+          "allLocations",
+          "locationIds",
           "status",
           "createdAt",
           "expiresAt",
@@ -17640,6 +17760,17 @@
           "createdAt": {
             "type": "string",
             "description": "When they joined."
+          },
+          "allLocations": {
+            "type": "boolean",
+            "description": "Every branch, including ones added later (§277). Always true for the owner."
+          },
+          "locationIds": {
+            "description": "The branches they look after when not every one; empty otherwise.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -17648,7 +17779,9 @@
           "email",
           "role",
           "status",
-          "createdAt"
+          "createdAt",
+          "allLocations",
+          "locationIds"
         ]
       },
       "UpdateMemberRoleDto": {
@@ -17664,6 +17797,25 @@
         },
         "required": [
           "role"
+        ]
+      },
+      "MemberBranchesDto": {
+        "type": "object",
+        "properties": {
+          "allLocations": {
+            "type": "boolean"
+          },
+          "locationIds": {
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "allLocations"
         ]
       },
       "RemovedMembershipDto": {
@@ -19501,6 +19653,11 @@
         "properties": {
           "businessProfileId": {
             "type": "string",
+            "format": "uuid"
+          },
+          "locationId": {
+            "type": "string",
+            "description": "The branch whose page the question is asked from (§277), so the people who\nlook after that branch see it. Optional: without it, the question goes to\nthose who look after every branch.",
             "format": "uuid"
           }
         },
@@ -22299,6 +22456,14 @@
               "LOCATION"
             ]
           },
+          "locationIds": {
+            "nullable": true,
+            "description": "The branches counted when the caller looks after only some (§277) and\nasked for no one branch: the figures are for those branches together.\nNull for one branch or the whole business.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "range": {
             "$ref": "#/components/schemas/AnalyticsRangeDto"
           },
@@ -22319,6 +22484,7 @@
           "businessId",
           "locationId",
           "scope",
+          "locationIds",
           "range",
           "appointments",
           "money",

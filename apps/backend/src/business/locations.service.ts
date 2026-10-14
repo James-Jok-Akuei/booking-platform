@@ -9,6 +9,7 @@ import { recalculateFromPrice } from './from-price';
 import { SetLocationHoursDto } from './dto/set-hours.dto';
 // One include, shared with the DTO that describes its result (§128.5).
 import { LOCATION_INCLUDE } from './dto/business-response.dto';
+import { branchIn } from './branch-scope';
 
 const DAY_NAMES = [
   'Sunday',
@@ -51,18 +52,22 @@ export class LocationsService {
   }
 
   async findAll(userId: string) {
-    const businessId = await this.access.requireBusinessId(userId);
+    const { businessId, scope } = await this.access.requireBusinessScope(userId);
+    const only = branchIn(scope);
 
     return this.prisma.location.findMany({
-      where: { businessId },
+      // Only the branches they look after (§277) — every page that picks a
+      // branch takes its list from here, so a branch that is not theirs is
+      // never offered.
+      where: { businessId, ...(only ? { id: only } : {}) },
       orderBy: { createdAt: 'asc' },
       include: LOCATION_INCLUDE,
     });
   }
 
   async update(userId: string, locationId: string, dto: UpdateLocationDto) {
-    const businessId = await this.access.requireBusinessId(userId);
-    const existing = await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId, location: existing } = await this.access.requireMemberBranch(userId, locationId);
 
     // Validate against the merged result, not just the patch: clearing one half
     // of an existing coordinate pair is as invalid as setting only one half.
@@ -109,8 +114,8 @@ export class LocationsService {
    * well, so the destructive path is impossible rather than merely unused.
    */
   async close(userId: string, locationId: string): Promise<ActionMessageDto> {
-    const businessId = await this.access.requireBusinessId(userId);
-    const existing = await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId, location: existing } = await this.access.requireMemberBranch(userId, locationId);
 
     if (!existing.isActive) {
       throw new BadRequestException('That branch is already closed.');
@@ -142,8 +147,8 @@ export class LocationsService {
 
   /** Puts a closed branch back into service. */
   async reopen(userId: string, locationId: string): Promise<ActionMessageDto> {
-    const businessId = await this.access.requireBusinessId(userId);
-    const existing = await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId, location: existing } = await this.access.requireMemberBranch(userId, locationId);
 
     if (existing.isActive) {
       throw new BadRequestException('That branch is already open.');
@@ -165,8 +170,8 @@ export class LocationsService {
    * free of stale days left behind by a shrinking payload.
    */
   async setHours(userId: string, locationId: string, dto: SetLocationHoursDto) {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     const seen = new Set<number>();
     for (const entry of dto.hours) {
@@ -225,8 +230,8 @@ export class LocationsService {
     locationId: string,
     capacity: number,
   ) {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     return this.prisma.location.update({
       where: { id: locationId },

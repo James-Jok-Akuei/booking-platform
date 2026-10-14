@@ -1,7 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { BusinessMemberRole } from '@prisma/client';
-import { BUSINESS_ROLES_KEY } from '../../common/decorators/business-roles.decorator';
+import { ALL_BRANCHES_KEY, BUSINESS_ROLES_KEY } from '../../common/decorators/business-roles.decorator';
+import { assertAllBranches } from '../branch-scope';
 import { BUSINESS_CONTEXT_KEY } from '../../common/decorators/current-business.decorator';
 import { BusinessAccessService } from '../business-access.service';
 
@@ -46,6 +47,7 @@ export class BusinessRolesGuard implements CanActivate {
       membershipId: membership.id,
       businessId: membership.businessProfileId,
       role: membership.role,
+      scope: membership.scope,
     };
 
     const required = this.reflector.getAllAndOverride<BusinessMemberRole[]>(
@@ -55,8 +57,15 @@ export class BusinessRolesGuard implements CanActivate {
 
     // No declaration means "any active member" — the membership check above has
     // already run, so this is still not an open door.
-    if (!required || required.length === 0) return true;
+    if (required && required.length > 0 && !required.includes(membership.role)) return false;
 
-    return required.includes(membership.role);
+    // Whole-business changes need every branch (§277). Said in words, not a bare 403.
+    const allBranches = this.reflector.getAllAndOverride<boolean>(ALL_BRANCHES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (allBranches) assertAllBranches(membership.scope);
+
+    return true;
   }
 }

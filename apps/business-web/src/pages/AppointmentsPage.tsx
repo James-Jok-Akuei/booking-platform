@@ -8,7 +8,6 @@ import {
   getAppointment,
   cancelAppointment,
   completeAppointment,
-  getMe,
   listAppointments,
   listLocations,
   markNoShow,
@@ -38,6 +37,7 @@ import {
 } from '../lib/bookingLook';
 import { CalendarBody, CalendarHead, useCalendar } from './calendar/AppointmentCalendar';
 import './appointments.css';
+import { useAccess } from '../access';
 
 export { reservationNo };
 
@@ -150,9 +150,8 @@ export function AppointmentsPage() {
   const openCheckIn = useCheckIn();
   const now = useNow(30_000);
 
-  const me = useQuery({ queryKey: ['me'], queryFn: getMe });
-  const canVerifyManually =
-    me.data?.businessMembership?.role === 'OWNER' || me.data?.businessMembership?.role === 'MANAGER';
+  const access = useAccess();
+  const canVerifyManually = access.runsBranches;
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
   const branches = (locations.data ?? []).filter((l) => l.isActive);
 
@@ -309,7 +308,7 @@ export function AppointmentsPage() {
       return true;
     },
     noShow: askNoShow,
-    cancel: askCancel,
+    ...(access.cancels && { cancel: askCancel }),
     open: (a) => setDetail(a.id),
   };
 
@@ -382,7 +381,10 @@ export function AppointmentsPage() {
                     value={branch}
                     onChange={setBranch}
                     label="Branch"
-                    options={[{ value: '', label: 'All branches' }, ...branches.map((b) => ({ value: b.id, label: b.name }))]}
+                    options={[
+                      { value: '', label: access.allBranches ? 'All branches' : 'All your branches' },
+                      ...branches.map((b) => ({ value: b.id, label: b.name })),
+                    ]}
                   />
                 </div>
               )}
@@ -670,7 +672,9 @@ function Row({
       ? [
           ...(canVerifyManually ? [{ label: 'Check in without a code', icon: 'key' as const, onClick: () => actions.noCode(a) }] : []),
           { label: 'Mark as no-show', icon: 'userX' as const, onClick: () => actions.noShow(a) },
-          { label: 'Cancel booking', icon: 'calendarX' as const, onClick: () => actions.cancel(a), danger: true },
+          ...(actions.cancel
+            ? [{ label: 'Cancel booking', icon: 'calendarX' as const, onClick: () => actions.cancel!(a), danger: true }]
+            : []),
         ]
       : []),
   ];
@@ -1124,9 +1128,11 @@ function AppointmentDetail({
               <div className="ap-drawer-actions">
                 {d.status === 'BOOKED' && (
                   <>
-                    <button type="button" className="danger" onClick={() => actions.cancel(d)}>
-                      Cancel
-                    </button>
+                    {actions.cancel && (
+                      <button type="button" className="danger" onClick={() => actions.cancel!(d)}>
+                        Cancel
+                      </button>
+                    )}
                     <button type="button" onClick={() => actions.noShow(d)}>
                       No-show
                     </button>

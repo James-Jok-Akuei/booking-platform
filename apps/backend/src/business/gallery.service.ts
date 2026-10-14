@@ -35,8 +35,8 @@ export class GalleryService {
       );
     }
 
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     // Checked after ownership so a stranger probing a location id learns
     // nothing about how full someone else's gallery is.
@@ -71,8 +71,8 @@ export class GalleryService {
   async list(userId: string, locationId: string) {
     // Not declared: the photo rows carry Dates, which GalleryPhotoDto describes
     // as strings. The DTO is bound to the LocationMedia model instead (§128.11).
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     const photos = await this.prisma.locationMedia.findMany({
       where: { locationId },
@@ -90,8 +90,8 @@ export class GalleryService {
   }
 
   async remove(userId: string, locationId: string, mediaId: string): Promise<ActionMessageDto> {
-    const businessId = await this.access.requireBusinessId(userId);
-    await this.access.requireOwnedLocation(businessId, locationId);
+    // A branch they look after (§277), or 404.
+    const { businessId } = await this.access.requireMemberBranch(userId, locationId);
 
     const media = await this.prisma.locationMedia.findFirst({
       where: { id: mediaId, locationId },

@@ -16,6 +16,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { InviteMemberDto } from './dto/invite-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
+import { MemberBranchesDto } from './dto/member-branches.dto';
+import { BranchScope, EVERY_BRANCH, scopeOf, seesBranch } from './branch-scope';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import {
   BUSINESS_INVITATION_SELECT,
@@ -26,6 +28,17 @@ import {
 
 /** How long an invitation stays acceptable. */
 export const INVITATION_TTL_DAYS = 7;
+
+/** One select for a member, so the listing and every change answer in one shape (§128.18). */
+const MEMBER_SELECT = {
+  id: true,
+  role: true,
+  status: true,
+  createdAt: true,
+  allLocations: true,
+  locations: { select: { locationId: true } },
+  user: { select: { id: true, email: true } },
+} as const;
 
 @Injectable()
 export class MembersService {
@@ -110,11 +123,16 @@ export class MembersService {
       );
     }
 
+    const branches = await this.checkBranches(businessId, dto);
+
     const invitation = await this.prisma.businessInvitation.create({
       data: {
         businessProfileId: businessId,
         email,
         role: dto.role,
+        // Copied onto the membership when they accept (§277).
+        allLocations: branches.allLocations,
+        locationIds: branches.locationIds,
         invitedByUserId: inviterUserId,
         expiresAt: new Date(Date.now() + INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000),
       },
@@ -193,28 +211,31 @@ export class MembersService {
 
   // ---------- Members ----------
 
-  /** Visible to any active member — everyone can see who they work with. */
-  async listMembers(businessId: string): Promise<BusinessMemberDto[]> {
+  /**
+   * Visible to any active member — everyone can see who they work with.
+   *
+   * Someone who looks after some branches sees the people they work WITH
+   * (§277): the owner, those who look after every branch, and those who share
+   * one of their branches — and of anyone's branches, only the ones they share.
+   * The rest of the business is not theirs to see.
+   */
+  async listMembers(businessId: string, viewer: BranchScope = EVERY_BRANCH): Promise<BusinessMemberDto[]> {
     const members = await this.prisma.businessMembership.findMany({
-      where: { businessProfileId: businessId },
-      orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
-      select: {
-        id: true,
-        role: true,
-        status: true,
-        createdAt: true,
-        user: { select: { id: true, email: true } },
+      where: {
+        businessProfileId: businessId,
+        ...(!viewer.allLocations && {
+          OR: [
+            { role: BusinessMemberRole.OWNER },
+            { allLocations: true },
+            { locations: { some: { locationId: { in: viewer.locationIds } } } },
+          ],
+        }),
       },
+      orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
+      select: MEMBER_SELECT,
     });
 
-    return members.map((member) => ({
-      id: member.id,
-      userId: member.user.id,
-      email: member.user.email,
-      role: member.role,
-      status: member.status,
-      createdAt: member.createdAt.toISOString(),
-    }));
+    return members.map((member) => this.toDto(member, viewer));
   }
 
   /**
@@ -245,25 +266,53 @@ export class MembersService {
     const updated = await this.prisma.businessMembership.update({
       where: { id: membershipId },
       data: { role: dto.role },
-      select: {
-        id: true,
-        role: true,
-        status: true,
-        // Returned so this answers with the SAME shape the listing does. It
-        // did not, and the console typed both as one member (§128.18).
-        createdAt: true,
-        user: { select: { id: true, email: true } },
-      },
+      // The listing's select, so this answers with the SAME shape. It did not,
+      // and the console typed both as one member (§128.18).
+      select: MEMBER_SELECT,
     });
 
-    return {
-      id: updated.id,
-      userId: updated.user.id,
-      email: updated.user.email,
-      role: updated.role,
-      status: updated.status,
-      createdAt: updated.createdAt.toISOString(),
-    };
+    return this.toDto(updated);
+  }
+
+  /**
+   * Chooses which branches a member looks after (§277): every branch —
+   * including ones opened later — or the ones ticked. Their bookings,
+   * messages, reviews and hours follow at once: access is read from the
+   * database on every request (§14.2), so nobody has to sign in again.
+   */
+  async setMemberBranches(
+    businessId: string,
+    membershipId: string,
+    dto: MemberBranchesDto,
+  ): Promise<BusinessMemberDto> {
+    const membership = await this.requireMembership(businessId, membershipId);
+
+    if (membership.role === BusinessMemberRole.OWNER) {
+      throw new BadRequestException('The owner always looks after every branch.');
+    }
+    if (membership.status !== BusinessMemberStatus.ACTIVE) {
+      throw new BadRequestException(
+        'This member has been removed. Re-invite them instead of changing their branches.',
+      );
+    }
+
+    const branches = await this.checkBranches(businessId, dto);
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.membershipLocation.deleteMany({ where: { membershipId } });
+      if (!branches.allLocations) {
+        await tx.membershipLocation.createMany({
+          data: branches.locationIds.map((locationId) => ({ membershipId, locationId })),
+        });
+      }
+      return tx.businessMembership.update({
+        where: { id: membershipId },
+        data: { allLocations: branches.allLocations },
+        select: MEMBER_SELECT,
+      });
+    });
+
+    return this.toDto(updated);
   }
 
   /**
@@ -298,6 +347,60 @@ export class MembersService {
     return {
       message: `${removed.user.email} has been removed from the business.`,
       membership: { id: removed.id, status: removed.status },
+    };
+  }
+
+  /**
+   * The branches asked for, made safe (§277). Left out means every branch. A
+   * choice of some must name at least one, and each must be one of this
+   * business's open branches — a closed branch has nothing to look after, and
+   * another business's is never ours to hand out.
+   */
+  private async checkBranches(
+    businessId: string,
+    dto: { allLocations?: boolean; locationIds?: string[] },
+  ): Promise<BranchScope> {
+    if (dto.allLocations ?? true) return EVERY_BRANCH;
+
+    const ids = [...new Set(dto.locationIds ?? [])];
+    if (ids.length === 0) {
+      throw new BadRequestException('Choose at least one branch, or every branch.');
+    }
+    const found = await this.prisma.location.count({
+      where: { id: { in: ids }, businessId, isActive: true },
+    });
+    if (found !== ids.length) {
+      throw new BadRequestException('One of those branches is closed or is not one of yours.');
+    }
+    return { allLocations: false, locationIds: ids };
+  }
+
+  /**
+   * A member as the screens see them. For a viewer of some branches, only the
+   * branches they share are listed — the others' names are not theirs to know.
+   */
+  private toDto(
+    member: {
+      id: string;
+      role: BusinessMemberRole;
+      status: BusinessMemberStatus;
+      createdAt: Date;
+      allLocations: boolean;
+      locations: Array<{ locationId: string }>;
+      user: { id: string; email: string };
+    },
+    viewer: BranchScope = EVERY_BRANCH,
+  ): BusinessMemberDto {
+    const scope = scopeOf(member);
+    return {
+      id: member.id,
+      userId: member.user.id,
+      email: member.user.email,
+      role: member.role,
+      status: member.status,
+      createdAt: member.createdAt.toISOString(),
+      allLocations: scope.allLocations,
+      locationIds: scope.locationIds.filter((id) => seesBranch(viewer, id)),
     };
   }
 

@@ -7,6 +7,7 @@ import { addDays, sameDay, shortDay, startOfDay } from '../lib/time';
 import { Icon, type IconName } from '../ui/Icon';
 import { Stars } from '../ui/Stars';
 import './analytics.css';
+import { useAccess } from '../access';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -41,6 +42,7 @@ export function AnalyticsPage() {
   const [days, setDays] = useState(30);
   const [locationId, setLocationId] = useState('');
   const money = useMoney();
+  const { allBranches } = useAccess();
 
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
@@ -112,7 +114,8 @@ export function AnalyticsPage() {
               className={`bpill${locationId === '' ? ' is-active' : ''}`}
               onClick={() => setLocationId('')}
             >
-              <Icon name="layers" size={16} /> All branches
+              {/* A manager of some branches sees theirs, together (§277). */}
+              <Icon name="layers" size={16} /> {allBranches ? 'All branches' : 'All your branches'}
             </button>
             {branches.map((b) => (
               <button

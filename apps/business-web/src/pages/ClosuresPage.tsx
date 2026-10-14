@@ -16,6 +16,7 @@ import {
 import { BranchPills } from '../ui/BranchPills';
 import { Icon } from '../ui/Icon';
 import './closures.css';
+import { useAccess } from '../access';
 
 /** A local calendar day as YYYY-MM-DD — the seller's today, not UTC's. */
 const ymdOf = (d: Date) =>
@@ -53,6 +54,9 @@ export function ClosuresPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [date, setDate] = useState(today());
 
+  // Staff see the days off at their branches; the owner or a manager changes
+  // them (§277).
+  const canChange = useAccess().runsBranches;
   const branches = locations.data ?? [];
   const locationId = selected ?? branches[0]?.id ?? null;
   const branch = branches.find((b) => b.id === locationId) ?? null;
@@ -75,8 +79,9 @@ export function ClosuresPage() {
           <div>
             <h1>Closures &amp; breaks</h1>
             <p className="muted">
-              Days that do not follow your usual week. Pick a day, then close it, change its hours or take a
-              break out of it — customers cannot book the times you take out.
+              {canChange
+                ? 'Days that do not follow your usual week. Pick a day, then close it, change its hours or take a break out of it — customers cannot book the times you take out.'
+                : 'Days that do not follow the usual week, and breaks taken out of a day. The owner or a manager changes them.'}
             </p>
           </div>
         </header>
@@ -88,7 +93,7 @@ export function ClosuresPage() {
       {branches.length === 0 && !locations.isLoading && (
         <div className="cl-empty">
           <Icon name="pin" size={26} />
-          <p>Add a branch first, under Branches &amp; hours.</p>
+          <p>{canChange ? 'Add a branch first, under Branches & hours.' : 'You have no branch yet — ask the owner to choose yours.'}</p>
         </div>
       )}
 
@@ -108,6 +113,7 @@ export function ClosuresPage() {
               date={date}
               closures={exceptions.data ?? []}
               breaks={blocks.data ?? []}
+              canChange={canChange}
             />
           </article>
           <ComingUp
@@ -116,6 +122,7 @@ export function ClosuresPage() {
             breaks={blocks.data ?? []}
             selected={date}
             onPick={setDate}
+            canChange={canChange}
           />
         </>
       )}
@@ -299,11 +306,13 @@ function DayPanel({
   date,
   closures,
   breaks,
+  canChange,
 }: {
   branch: Location;
   date: string;
   closures: ScheduleException[];
   breaks: TimeBlock[];
+  canChange: boolean;
 }) {
   const queryClient = useQueryClient();
   const locationId = branch.id;
@@ -415,14 +424,16 @@ function DayPanel({
               </strong>
               {closure.reason && <em>{closure.reason}</em>}
             </span>
-            <button
-              type="button"
-              className="cl-remove"
-              disabled={remove.busy}
-              onClick={() => remove.closure.mutate(closure.id)}
-            >
-              Remove
-            </button>
+            {canChange && (
+              <button
+                type="button"
+                className="cl-remove"
+                disabled={remove.busy}
+                onClick={() => remove.closure.mutate(closure.id)}
+              >
+                Remove
+              </button>
+            )}
           </li>
         )}
         {dayBreaks.map((b) => (
@@ -434,9 +445,11 @@ function DayPanel({
               </strong>
               {b.reason && <em>{b.reason}</em>}
             </span>
-            <button type="button" className="cl-remove" disabled={remove.busy} onClick={() => remove.pause.mutate(b.id)}>
-              Remove
-            </button>
+            {canChange && (
+              <button type="button" className="cl-remove" disabled={remove.busy} onClick={() => remove.pause.mutate(b.id)}>
+                Remove
+              </button>
+            )}
           </li>
         ))}
         {!closure && dayBreaks.length === 0 && (
@@ -447,14 +460,20 @@ function DayPanel({
               <em>
                 {usual.open
                   ? 'Customers can book this day as usual.'
-                  : 'Customers cannot book it. “Open, but different hours” opens it just this once.'}
+                  : canChange
+                    ? 'Customers cannot book it. “Open, but different hours” opens it just this once.'
+                    : 'Customers cannot book it.'}
               </em>
             </span>
           </li>
         )}
       </ul>
 
-      {past ? (
+      {!canChange ? (
+        <p className="cl-past-note">
+          <Icon name="shield" size={15} /> The owner or a manager closes days and adds breaks.
+        </p>
+      ) : past ? (
         <p className="cl-past-note">
           <Icon name="info" size={15} /> This day has passed. Pick today or a day ahead to change it.
         </p>
@@ -602,12 +621,14 @@ function ComingUp({
   breaks,
   selected,
   onPick,
+  canChange,
 }: {
   branch: Location;
   closures: ScheduleException[];
   breaks: TimeBlock[];
   selected: string;
   onPick: (ymd: string) => void;
+  canChange: boolean;
 }) {
   const remove = useRemove(branch.id);
   const [showPast, setShowPast] = useState(false);
@@ -653,14 +674,16 @@ function ComingUp({
             </span>
           </span>
         </button>
-        <button
-          type="button"
-          className="cl-remove"
-          disabled={remove.busy}
-          onClick={() => (row.kind === 'closure' ? remove.closure : remove.pause).mutate(row.id)}
-        >
-          Remove
-        </button>
+        {canChange && (
+          <button
+            type="button"
+            className="cl-remove"
+            disabled={remove.busy}
+            onClick={() => (row.kind === 'closure' ? remove.closure : remove.pause).mutate(row.id)}
+          >
+            Remove
+          </button>
+        )}
       </li>
     );
   };

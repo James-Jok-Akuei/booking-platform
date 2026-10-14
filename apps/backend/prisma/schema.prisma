@@ -446,7 +446,7 @@ model BusinessProfile {
   /// type, phone, a branch with hours and a service are in. The admin queue is
   /// the shops that have asked; an account that signed up and stopped is
   /// "setting up", not waiting on anyone.
-  submittedAt DateTime?
+  submittedAt         DateTime?
   /// What the last rejection said, kept once the shop has fixed things and
   /// sent itself back (§255): `statusReason` describes the current status.
   lastRejectionReason String?
@@ -645,6 +645,10 @@ model Location {
   scheduleExceptions LocationScheduleException[]
   timeBlocks         LocationTimeBlock[]
   appointments       Appointment[]
+  /// The members who look after this branch, when not all of them do (§277).
+  members            MembershipLocation[]
+  /// Questions customers asked from this branch's page (§277).
+  inquiries          Thread[]                    @relation("InquiryLocation")
 
   /// Which services this branch offers, and at what price (§72).
   services ServiceLocation[]
@@ -731,12 +735,12 @@ model Service {
   businessId String
   business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  name        String
+  name         String
   /// The headline on the service's own page, under its photos (§185) —
   /// "Ninety minutes to melt the week away". The NAME stays the short label
   /// cards and bookings use. Null when the shop has not written one.
-  title       String?
-  description String?
+  title        String?
+  description  String?
   /// What a customer should know before they come — arrive ten minutes early,
   /// bring something, where to park (§180). Shown on the service before booking
   /// and on the reservation after. Null when the shop has nothing to say.
@@ -954,6 +958,13 @@ model BusinessMembership {
   // that row rather than inserting a second one.
   status BusinessMemberStatus @default(ACTIVE)
 
+  /// Which branches this person looks after (§277). True: every branch,
+  /// including ones added later — always true for the OWNER. False: only the
+  /// branches in `locations`, chosen by the owner. A person sees, and acts on,
+  /// nothing at a branch that is not theirs.
+  allLocations Boolean              @default(true)
+  locations    MembershipLocation[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -965,6 +976,22 @@ model BusinessMembership {
   @@index([businessProfileId, status])
   @@index([userId, status])
   @@map("business_memberships")
+}
+
+/// One branch a member looks after, when they do not look after all (§277).
+/// Rows of a member with `allLocations` are ignored — and cleared — so the
+/// flag alone answers "every branch?".
+model MembershipLocation {
+  membershipId String
+  membership   BusinessMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  locationId   String
+  location     Location           @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([membershipId, locationId])
+  @@index([locationId])
+  @@map("membership_locations")
 }
 
 /// A pending invitation for an email address to join a business.
@@ -984,6 +1011,13 @@ model BusinessInvitation {
   // MANAGER or STAFF only — never OWNER. Ownership transfer does not exist in
   // MVP, so there is no path by which an invitation can create a second OWNER.
   role BusinessMemberRole
+
+  /// The branches they will look after once they join (§277), copied onto the
+  /// membership when the invitation is accepted. Ids rather than a relation:
+  /// an invitation is a short-lived offer, and a branch closed meanwhile is
+  /// dropped at acceptance.
+  allLocations Boolean  @default(true)
+  locationIds  String[] @default([])
 
   invitedByUserId String
   invitedBy       User   @relation("InvitedBy", fields: [invitedByUserId], references: [id], onDelete: Cascade)
@@ -1457,6 +1491,13 @@ model Thread {
   /// appointment. Inquiry threads are unaffected — they have no appointment.
   appointmentId String?      @unique
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  /// The branch whose page a question was asked from (§277), so the people
+  /// who look after that branch see it. Null on booking threads (their branch
+  /// is the booking's) and on questions asked before this existed, which go to
+  /// those who look after every branch.
+  locationId String?
+  location   Location? @relation("InquiryLocation", fields: [locationId], references: [id], onDelete: SetNull)
 
   /// Denormalised so the thread list can sort by recency without joining and
   /// aggregating messages on every request. Updated on each new message.
@@ -2243,7 +2284,7 @@ model ServiceDraft {
   discountPercent   Int?
   discountEndsOn    DateTime? @db.Date
   durationMinutes   Int?
-  depositPercentage Decimal? @db.Decimal(5, 2)
+  depositPercentage Decimal?  @db.Decimal(5, 2)
 
   /// The per-branch prices, as written so far: `[{ locationId, priceMinor }]`.
   ///

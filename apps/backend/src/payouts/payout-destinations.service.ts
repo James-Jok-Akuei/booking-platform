@@ -25,6 +25,7 @@ import {
   VerifyPayoutDestinationDto,
 } from './dto/verify-payout-destination.dto';
 import { ListPayoutDestinationsDto } from './dto/list-payout-destinations.dto';
+import { MEMBERSHIP_SCOPE_SELECT, MONEY_READERS_ONLY, mayReadMoney, scopeOf } from '../business/branch-scope';
 
 /**
  * What a caller gets back about a destination.
@@ -181,6 +182,8 @@ export class PayoutDestinationsService {
    */
   async findForBusiness(userId: string) {
     const membership = await this.requireActiveMember(userId);
+    // Where the money goes is part of the money (§277).
+    if (!mayReadMoney(membership.role, scopeOf(membership))) throw new ForbiddenException(MONEY_READERS_ONLY);
 
     const destination = await this.prisma.payoutDestination.findFirst({
       where: {
@@ -482,7 +485,7 @@ export class PayoutDestinationsService {
   private async requireActiveMember(userId: string) {
     const membership = await this.prisma.businessMembership.findFirst({
       where: { userId, status: BusinessMemberStatus.ACTIVE },
-      select: { businessProfileId: true, role: true },
+      select: { businessProfileId: true, ...MEMBERSHIP_SCOPE_SELECT },
     });
     if (!membership) {
       throw new ForbiddenException(
@@ -549,6 +552,8 @@ export class PayoutDestinationsService {
     await this.notifications.notifyBusiness({
       businessId,
       type,
+      // Where the money goes is for those who may see the money (§277).
+      moneyOnly: true,
       context: {
         serviceName: 'Payout destination',
         locationName: 'your business',

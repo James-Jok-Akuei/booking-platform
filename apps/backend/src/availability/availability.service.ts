@@ -21,6 +21,7 @@ import {
   zonedWallTimeToInstant,
 } from './time.util';
 import { assertQuantityAllowed } from '../appointments/quantity';
+import { MEMBERSHIP_SCOPE_SELECT, scopeOf, seesBranch } from '../business/branch-scope';
 
 /**
  * Statuses that occupy a unit of a location's capacity.
@@ -145,7 +146,7 @@ export class AvailabilityService {
             status: true,
             members: {
               where: { status: BusinessMemberStatus.ACTIVE },
-              select: { userId: true },
+              select: { userId: true, ...MEMBERSHIP_SCOPE_SELECT },
             },
           },
         },
@@ -168,9 +169,12 @@ export class AvailabilityService {
     // does not exist.
     // Any ACTIVE member may preview, not just the owner: a manager setting up
     // the schedule needs the same view of it that the owner has.
+    // A member who looks after this branch (§277).
     const isMember =
       Boolean(viewerUserId) &&
-      location.business.members.some((member) => member.userId === viewerUserId);
+      location.business.members.some(
+        (member) => member.userId === viewerUserId && seesBranch(scopeOf(member), locationId),
+      );
 
     if (!isMember && location.business.status !== BusinessStatus.APPROVED) {
       throw new NotFoundException('Location not found.');

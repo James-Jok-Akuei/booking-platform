@@ -16,6 +16,7 @@ import { MessagesPage } from './pages/MessagesPage';
 import { LegalPage } from './pages/LegalPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { Welcome } from './onboarding/Welcome';
+import { Allowed } from './components/Allowed';
 
 export function App() {
   return (
@@ -41,13 +42,27 @@ export function App() {
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/hours" element={<HoursPage />} />
-        <Route path="/getting-paid" element={<GettingPaidPage />} />
+        <Route
+          path="/getting-paid"
+          element={
+            <Allowed need="money">
+              <GettingPaidPage />
+            </Allowed>
+          }
+        />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/people" element={<StaffPage />} />
         <Route path="/closures" element={<ClosuresPage />} />
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route
+          path="/analytics"
+          element={
+            <Allowed need="insights">
+              <AnalyticsPage />
+            </Allowed>
+          }
+        />
         <Route path="/help" element={<SupportPage />} />
         <Route path="/legal" element={<LegalPage />} />
       </Route>

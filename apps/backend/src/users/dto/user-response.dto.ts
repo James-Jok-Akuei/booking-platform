@@ -36,6 +36,9 @@ export const ME_SELECT = {
       id: true,
       role: true,
       status: true,
+      // Which branches they look after (§277), flattened before it goes out.
+      allLocations: true,
+      locations: { select: { locationId: true } },
       businessProfile: { select: { id: true, name: true, status: true } },
     },
   },
@@ -54,6 +57,10 @@ export class MeMembershipDto {
   id!: string;
   role!: BusinessMemberRole;
   status!: BusinessMemberStatus;
+  /** Every branch, including ones added later (§277). Always true for the owner. */
+  allLocations!: boolean;
+  /** The branches they look after when not every one; empty otherwise. */
+  locationIds!: string[];
   businessProfile!: MeBusinessDto;
 }
 

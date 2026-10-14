@@ -110,6 +110,8 @@
 }
 .svc-cover:hover:not(:disabled) { background: var(--sunken); border: none; }
 .svc-cover:active:not(:disabled) { transform: none; }
+/* Looked at, not changed (§277): the picture stays at full strength. */
+.svc-cover:disabled { opacity: 1; cursor: default; }
 .svc-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 600ms var(--ease); }
 .svc:hover .svc-cover img { transform: scale(1.045); }
 .svc-cover::after { content: ''; position: absolute; inset: auto 0 0 0; height: 46%; background: linear-gradient(0deg, rgba(31, 42, 31, 0.45), transparent); pointer-events: none; }
@@ -394,3 +396,9 @@
   .sv-price { grid-template-columns: 1fr; gap: 8px; padding: 12px; }
   .sv-price-dep { text-align: left; }
 }
+
+/* Someone who may look but not change the menu (§277). */
+.sv-scope { display: flex; align-items: flex-start; gap: 9px; margin: -4px 0 20px; padding: 12px 16px; border-radius: 16px; background: var(--ask-soft); color: var(--ask); font-size: 13.5px; font-weight: 600; line-height: 1.5; }
+.sv-scope svg { flex: none; margin-top: 2px; }
+.svc-state { flex: none; padding: 4px 10px; border-radius: 99px; background: var(--sunken-2); color: var(--muted); font-size: 11.5px; font-weight: 750; }
+.svc-state.is-on { background: var(--ok-soft); color: var(--ok-deep); }

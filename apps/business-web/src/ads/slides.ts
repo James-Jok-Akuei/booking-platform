@@ -56,7 +56,7 @@ export function buildSlides(d: AdData): Slide[] {
 
   // Money first: nothing else matters if the seller cannot be paid. Only the
   // owner can set the number (§48), so only the owner is asked to.
-  if (d.role === 'OWNER' && d.payoutStatus && d.payoutStatus !== 'VERIFIED' && d.payoutStatus !== 'SUPERSEDED') {
+  if (d.access.isOwner && d.payoutStatus && d.payoutStatus !== 'VERIFIED' && d.payoutStatus !== 'SUPERSEDED') {
     slides.push({
       key: 'payout',
       effect: 'coins',
@@ -82,17 +82,22 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'best',
       effect: 'confetti',
-      gist: `${d.best.count} ${d.best.count === 1 ? 'booking' : 'bookings'} in 30 days · ${d.best.onSale ? 'on sale now' : 'try a sale'}`,
+      gist: `${d.best.count} ${d.best.count === 1 ? 'booking' : 'bookings'} in 30 days${d.best.onSale ? ' · on sale now' : d.access.runsBusiness ? ' · try a sale' : ''}`,
       look: 'coral',
       icon: 'trendUp',
       eyebrow: 'Your best seller',
       title: d.best.name,
       text: d.best.onSale
         ? 'Your most booked service of the last 30 days — and it has a sale on.'
-        : 'Your most booked service of the last 30 days. A short sale could bring in even more.',
+        : d.access.runsBusiness
+          ? 'Your most booked service of the last 30 days. A short sale could bring in even more.'
+          : 'Your most booked service of the last 30 days.',
       image: d.best.service?.images[0]?.url ?? null,
       stat: { value: String(d.best.count), label: d.best.count === 1 ? 'booking' : 'bookings' },
-      cta: { label: d.best.onSale ? 'See your services' : 'Put it on sale', to: '/services' },
+      cta: {
+        label: d.best.onSale || !d.access.runsBusiness ? 'See your services' : 'Put it on sale',
+        to: '/services',
+      },
     });
   }
 
@@ -114,7 +119,8 @@ export function buildSlides(d: AdData): Slide[] {
     });
   }
 
-  if (d.missing.length > 0) {
+  // Filling in the shop is for those who may change it (§277).
+  if (d.missing.length > 0 && d.access.runsBusiness) {
     slides.push({
       key: 'health',
       effect: 'constellation',
@@ -143,8 +149,9 @@ export function buildSlides(d: AdData): Slide[] {
     });
   }
 
-  // More than one shop (§206). Only an owner or a manager can add a branch.
-  if (d.role === 'OWNER' || d.role === 'MANAGER') {
+  // More than one shop (§206). Only the owner, or a manager of every branch,
+  // can add one (§277).
+  if (d.access.runsBusiness) {
     slides.push({
       key: 'branches',
       effect: 'waves',
@@ -187,10 +194,10 @@ export function buildSlides(d: AdData): Slide[] {
     eyebrow: 'How customers find you',
     title: 'Popular shops are shown first',
     text: 'The app ranks shops by their bookings, weighted by their rating. Good reviews and a full page move you up.',
-    cta: { label: 'See how it is going', to: '/analytics' },
+    cta: d.access.insights ? { label: 'See how it is going', to: '/analytics' } : undefined,
   });
 
-  if (d.hasServices && !d.saleRunning) {
+  if (d.hasServices && !d.saleRunning && d.access.runsBusiness) {
     slides.push({
       key: 'sale',
       effect: 'glitter',

@@ -1,11 +1,14 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { BusinessMemberRole } from '@prisma/client';
+import type { BranchScope } from '../../business/branch-scope';
 
 /** The caller's resolved place within their business, attached by BusinessRolesGuard. */
 export interface BusinessContext {
   membershipId: string;
   businessId: string;
   role: BusinessMemberRole;
+  /** The branches they look after (§277). */
+  scope: BranchScope;
 }
 
 export const BUSINESS_CONTEXT_KEY = 'businessContext';

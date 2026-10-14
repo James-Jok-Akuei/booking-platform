@@ -1209,12 +1209,12 @@ describe('Guard chain over HTTP (§23.3)', () => {
       expect(JSON.stringify(res.body)).toContain('msisdn');
     });
 
-    it('a STAFF member reading sees the status but not the number', async () => {
+    it('a STAFF member reading is refused — the money is not theirs to see (§277)', async () => {
       const res = await request(url, '/business/payout-destination', {
         token: tokenAlphaStaff,
       });
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(403);
       expect(JSON.stringify(res.body)).not.toMatch(/\+2507\d{8}/);
     });
 

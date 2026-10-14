@@ -28,6 +28,7 @@ import {
   findTransition,
   isPastResolutionWindow,
 } from './ticket-status';
+import { MEMBERSHIP_SCOPE_SELECT, branchIn, scopeOf } from '../business/branch-scope';
 
 /** Fields a reporter is allowed to see. Internal notes are excluded by query. */
 // One select, shared with the DTO that describes its result (§128.5).
@@ -201,12 +202,17 @@ export class TicketsService {
     if (user.role === UserRole.BUSINESS) {
       const membership = await this.prisma.businessMembership.findFirst({
         where: { userId: user.userId, status: BusinessMemberStatus.ACTIVE },
-        select: { businessProfileId: true },
+        select: { businessProfileId: true, ...MEMBERSHIP_SCOPE_SELECT },
       });
       // A business member sees the whole business's queue, not only tickets
-      // they personally raised.
+      // they personally raised — unless they look after some branches only
+      // (§277): then their own tickets, and those about their branches' bookings.
       if (!membership) return { id: '__none__' };
-      return { businessId: membership.businessProfileId };
+      const only = branchIn(scopeOf(membership));
+      return {
+        businessId: membership.businessProfileId,
+        ...(only ? { OR: [{ reporterId: user.userId }, { appointment: { locationId: only } }] } : {}),
+      };
     }
 
     return { reporterId: user.userId };

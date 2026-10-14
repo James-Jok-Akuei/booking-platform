@@ -22,6 +22,7 @@ import { HideReviewDto } from './dto/hide-review.dto';
 import { ListReviewsDto, ReviewOrder } from './dto/list-reviews.dto';
 import { ListAdminReviewsDto } from './dto/list-admin-reviews.dto';
 import { REVIEW_EDIT_WINDOW_DAYS, isPastEditWindow } from './review-window';
+import { MEMBERSHIP_SCOPE_SELECT, branchIn, scopeOf, seesBranch } from '../business/branch-scope';
 
 /** What everyone may see about a review. Customer identity is added separately. */
 const REVIEW_SELECT = {
@@ -289,7 +290,7 @@ export class ReviewsService {
   private async requireBusinessReview(userId: string, reviewId: string) {
     const membership = await this.prisma.businessMembership.findFirst({
       where: { userId, status: BusinessMemberStatus.ACTIVE },
-      select: { businessProfileId: true },
+      select: { businessProfileId: true, ...MEMBERSHIP_SCOPE_SELECT },
     });
     if (!membership) {
       throw new ForbiddenException(
@@ -297,9 +298,11 @@ export class ReviewsService {
       );
     }
 
+    const only = branchIn(scopeOf(membership));
     const review = await this.prisma.review.findFirst({
-      // Scoped by business, so another business's review simply never matches.
-      where: { id: reviewId, businessId: membership.businessProfileId },
+      // Scoped by business, so another business's review simply never matches —
+      // and by branch, for someone who looks after only some (§277).
+      where: { id: reviewId, businessId: membership.businessProfileId, ...(only ? { locationId: only } : {}) },
       select: {
         id: true,
         customerId: true,
@@ -437,7 +440,7 @@ export class ReviewsService {
             status: true,
             members: {
               where: { status: BusinessMemberStatus.ACTIVE },
-              select: { userId: true },
+              select: { userId: true, ...MEMBERSHIP_SCOPE_SELECT },
             },
           },
         },
@@ -445,8 +448,13 @@ export class ReviewsService {
     });
     if (!location) throw new NotFoundException('Location not found.');
 
+    // A member who looks after this branch (§277); one who does not reads it
+    // as the public does.
     const isMember = Boolean(
-      viewer && location.business.members.some((m) => m.userId === viewer.userId),
+      viewer &&
+        location.business.members.some(
+          (m) => m.userId === viewer.userId && seesBranch(scopeOf(m), locationId),
+        ),
     );
     const isAdmin = viewer?.role === UserRole.ADMIN;
 
@@ -715,6 +723,8 @@ export class ReviewsService {
     await this.notifications.notifyBusiness({
       businessId,
       type,
+      // Those who look after the branch it is about (§277).
+      locationId: meta.locationId,
       context: this.reviewContext(
         type === NotificationType.REVIEW_CREATED
           ? `A customer left a ${meta.rating}-star review.`

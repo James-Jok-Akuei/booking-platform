@@ -41,7 +41,8 @@ export type Actions = {
   /** Asks first (§232); true when it was marked done. */
   complete: (a: Appointment) => Promise<boolean>;
   noShow: (a: Appointment) => void;
-  cancel: (a: Appointment) => void;
+  /** Absent for staff: cancelling refunds the customer, so it is the owner's or a manager's (§277). */
+  cancel?: (a: Appointment) => void;
   open: (a: Appointment) => void;
 };
 

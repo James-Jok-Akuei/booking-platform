@@ -79,7 +79,7 @@ export class ChatController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateInquiryThreadDto,
   ) {
-    return this.chat.createInquiryThread(user.userId, dto.businessProfileId);
+    return this.chat.createInquiryThread(user.userId, dto.businessProfileId, dto.locationId);
   }
 
   @Get()

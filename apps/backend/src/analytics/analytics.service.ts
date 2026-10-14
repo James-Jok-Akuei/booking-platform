@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   AppointmentStatus,
+  BusinessMemberRole,
   BusinessMemberStatus,
   Prisma,
   UserRole,
@@ -14,6 +15,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
+import { EVERY_BRANCH, MEMBERSHIP_SCOPE_SELECT, assertBranch, branchIn, scopeOf } from '../business/branch-scope';
 
 export const DEFAULT_RANGE_DAYS = 30;
 export const MAX_RANGE_DAYS = 365;
@@ -61,12 +63,18 @@ export class AnalyticsService {
     query: AnalyticsQueryDto,
   ) {
     const { from, to } = this.resolveRange(query);
-    await this.assertMayRead(viewer, businessId);
+    const scope = await this.assertMayRead(viewer, businessId);
+
+    // The branches counted (§277): the one asked for — which must be one they
+    // look after — or, with none asked for, every branch they look after.
+    // `undefined` is the whole business.
+    if (query.locationId) assertBranch(scope, query.locationId);
+    const ids = query.locationId ? [query.locationId] : branchIn(scope)?.in;
 
     // The whole scope in one place. Omitting locationId gives the business-wide
     // roll-up — the same aggregate over more rows, never a loop over locations.
     const where: Prisma.AppointmentWhereInput = {
-      location: { businessId, ...(query.locationId ? { id: query.locationId } : {}) },
+      location: { businessId, ...(ids ? { id: { in: ids } } : {}) },
       // Half-open [from, to), matching the convention already used by
       // GET /appointments: `gte` on from, `lt` on to.
       startTime: { gte: from, lt: to },
@@ -84,8 +92,8 @@ export class AnalyticsService {
     const [counts, money, reviews, busiest] = await Promise.all([
       this.countsByStatus(where),
       this.moneyCollected(where),
-      this.reviewStats(businessId, query.locationId, from, to),
-      this.busiestPeriods(businessId, query.locationId, from, to),
+      this.reviewStats(businessId, ids, from, to),
+      this.busiestPeriods(businessId, ids, from, to),
     ]);
 
     const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
@@ -94,6 +102,8 @@ export class AnalyticsService {
       businessId,
       locationId: query.locationId ?? null,
       scope: query.locationId ? ('LOCATION' as const) : ('BUSINESS' as const),
+      /** The branches counted when not one and not all (§277); null otherwise. */
+      locationIds: !query.locationId && ids ? ids : null,
       range: { from, to, days: Math.round((+to - +from) / 86_400_000) },
 
       appointments: {
@@ -118,22 +128,25 @@ export class AnalyticsService {
     viewer: { userId: string; role: string },
     businessId: string,
   ) {
-    if (viewer.role === UserRole.ADMIN) return;
+    if (viewer.role === UserRole.ADMIN) return EVERY_BRANCH;
 
-    const membership = await this.prisma.businessMembership.count({
-      where: {
-        userId: viewer.userId,
-        businessProfileId: businessId,
-        status: BusinessMemberStatus.ACTIVE,
-      },
+    const row = await this.prisma.businessMembership.findFirst({
+      where: { userId: viewer.userId, businessProfileId: businessId, status: BusinessMemberStatus.ACTIVE },
+      select: MEMBERSHIP_SCOPE_SELECT,
     });
+    const membership = row ? { role: row.role, scope: scopeOf(row) } : null;
 
     // Forbidden rather than 404: the caller is asking about a business id they
     // supplied, and every business profile is discoverable through public
     // browsing anyway, so there is no existence to protect here.
-    if (membership === 0) {
+    if (!membership) {
       throw new ForbiddenException('You cannot read analytics for this business.');
     }
+    // Takings and rates are for whoever runs the place, not the front desk (§277).
+    if (membership.role === BusinessMemberRole.STAFF) {
+      throw new ForbiddenException('How the business is going is for the owner and managers.');
+    }
+    return membership.scope;
   }
 
   // ---------- Range ----------
@@ -325,14 +338,14 @@ export class AnalyticsService {
 
   private async reviewStats(
     businessId: string,
-    locationId: string | undefined,
+    locationIds: string[] | undefined,
     from: Date,
     to: Date,
   ) {
     const aggregate = await this.prisma.review.aggregate({
       where: {
         businessId,
-        ...(locationId ? { locationId } : {}),
+        ...(locationIds ? { locationId: { in: locationIds } } : {}),
         hiddenAt: null, // hidden reviews never count, here or in §28's aggregates
         createdAt: { gte: from, lt: to },
       },
@@ -362,7 +375,7 @@ export class AnalyticsService {
    */
   private async busiestPeriods(
     businessId: string,
-    locationId: string | undefined,
+    locationIds: string[] | undefined,
     from: Date,
     to: Date,
   ) {
@@ -376,7 +389,7 @@ export class AnalyticsService {
       FROM "appointments" a
       JOIN "locations" l ON l."id" = a."locationId"
       WHERE l."businessId" = ${businessId}
-        AND (${locationId ?? null}::text IS NULL OR a."locationId" = ${locationId ?? null}::text)
+        AND (${locationIds ? 1 : 0} = 0 OR a."locationId" = ANY(${locationIds ?? []}::text[]))
         AND a."startTime" >= ${from}
         AND a."startTime" <  ${to}
       GROUP BY dow, hour

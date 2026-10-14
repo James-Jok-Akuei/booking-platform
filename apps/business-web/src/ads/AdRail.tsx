@@ -20,7 +20,7 @@ export function AdRail({ folded, onFold }: { folded: boolean; onFold: () => void
   const data = useAdData();
 
   if (folded) {
-    const left = data.missing.length;
+    const left = data.access.runsBusiness ? data.missing.length : 0;
     return (
       <aside className="ads is-folded">
         <button type="button" className="ads-unfold" onClick={onFold} aria-label="Open For you" title="Open For you">
@@ -61,7 +61,8 @@ export function ForYouContent({ data, banner = true }: { data: AdData; banner?: 
   return (
     <>
       {banner && (data.ready ? <AdCarousel slides={buildSlides(data)} /> : <div className="skeleton ads-skel" />)}
-      {data.ready && data.checks.length > 0 && <HealthCard data={data} />}
+      {/* Filling in the shop is for those who may change it (§277). */}
+      {data.ready && data.access.runsBusiness && data.checks.length > 0 && <HealthCard data={data} />}
       <Guide data={data} />
       <Trending data={data} />
       <article className="ads-tip" key={pathname}>

@@ -204,7 +204,7 @@ export default function Book() {
   // A question before booking (§167): the thing most people have, and the
   // reason they do not book when there is nowhere to ask it.
   const openChat = useMutation({
-    mutationFn: () => openInquiry(shop.data!.business.id),
+    mutationFn: () => openInquiry(shop.data!.business.id, id),
     onSuccess: (thread) => router.push(`/thread/${thread.id}`),
     onError: (error) =>
       showProblem('Could not open that', error),

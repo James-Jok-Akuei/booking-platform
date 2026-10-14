@@ -17,3 +17,13 @@ export const BUSINESS_ROLES_KEY = 'businessRoles';
  */
 export const BusinessRoles = (...roles: BusinessMemberRole[]) =>
   SetMetadata(BUSINESS_ROLES_KEY, roles);
+
+export const ALL_BRANCHES_KEY = 'businessAllBranches';
+
+/**
+ * The handler changes the whole business — its shopfront, catalogue or
+ * branches — so the caller must look after every branch (§277), on top of
+ * whatever `@BusinessRoles` asks. A manager of two branches runs those two;
+ * they do not rename the shop or reprice the menu for the others.
+ */
+export const AllBranches = () => SetMetadata(ALL_BRANCHES_KEY, true);

@@ -568,10 +568,22 @@ export const listMembers = () => api<Member[]>('/business/members');
 
 export const listInvitations = () => api<Invitation[]>('/business/invitations');
 
-export const inviteMember = (email: string, role: StaffRole) =>
+/**
+ * Where someone works (§277): every branch — including ones opened later — or
+ * the ones chosen. The owner always has every branch.
+ */
+export type MemberBranches = { allLocations: boolean; locationIds: string[] };
+
+export const inviteMember = (email: string, role: StaffRole, branches: MemberBranches) =>
   api<Invitation>('/business/members/invite', {
     method: 'POST',
-    body: { email, role },
+    body: { email, role, ...branches },
+  });
+
+export const setMemberBranches = (membershipId: string, branches: MemberBranches) =>
+  api<Member>(`/business/members/${membershipId}/branches`, {
+    method: 'PATCH',
+    body: branches,
   });
 
 export const revokeInvitation = (id: string) =>

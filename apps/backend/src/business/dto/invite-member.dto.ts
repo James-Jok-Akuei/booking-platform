@@ -1,4 +1,4 @@
-import { IsEmail, IsIn } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsIn, IsOptional, IsUUID } from 'class-validator';
 import { BusinessMemberRole } from '@prisma/client';
 
 export class InviteMemberDto {
@@ -11,4 +11,16 @@ export class InviteMemberDto {
     message: 'role must be MANAGER or STAFF.',
   })
   role!: typeof BusinessMemberRole.MANAGER | typeof BusinessMemberRole.STAFF;
+
+  /** Every branch, including ones added later (§277). Left out: every branch. */
+  @IsOptional()
+  @IsBoolean()
+  allLocations?: boolean;
+
+  /** The branches they will look after, when not every one. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(200)
+  @IsUUID('all', { each: true })
+  locationIds?: string[];
 }
