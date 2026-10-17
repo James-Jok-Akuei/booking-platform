@@ -136,6 +136,8 @@ export class ServiceDiscountDto {
   percent!: number;
   /** The last day it runs (YYYY-MM-DD, platform time), or null: until turned off. */
   endsOn!: string | null;
+  /** The moment it ends — midnight after the last day, platform time — for a countdown (§283). */
+  endsAt!: string | null;
   /** One unit's price before the sale. */
   listPriceMinor!: number;
 }

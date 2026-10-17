@@ -4,6 +4,18 @@ import { useEffect, useRef } from 'react';
 export type CodeState = 'idle' | 'busy' | 'error' | 'ok';
 
 /**
+ * The code in whatever was pasted (§283). Copied from the email's six boxes it
+ * arrives as "1 2 3 4 5 6" — digits with gaps — and from the subject as
+ * "Your sign-in code: 123456". A run of exactly `length` digits wins, so other
+ * numbers around it are left out; otherwise every digit is taken, in order.
+ * Fewer digits than boxes fill as many boxes as there are digits.
+ */
+export function codeFrom(text: string, length: number): string {
+  const run = text.match(new RegExp(`(?<!\\d)\\d{${length}}(?!\\d)`));
+  return run ? run[0] : text.replace(/\D/g, '').slice(0, length);
+}
+
+/**
  * Six boxes for a six-digit code (§191) — the same shape the customer sees the
  * code in, in their email and their app (§183), so what they read out and
  * what is typed look alike.
@@ -55,11 +67,11 @@ export function CodeBoxes({
   };
 
   const typeAt = (index: number, raw: string) => {
-    const typed = raw.replace(/\D/g, '');
+    const typed = codeFrom(raw, length);
     if (!typed) return;
-    // One digit typed, or a whole code pasted / auto-filled into this box.
-    const before = value.slice(0, index);
-    const next = set(before + typed);
+    // A whole code — pasted, or auto-filled by the phone — replaces what is
+    // there; one digit typed (or a few pasted) goes in from this box on.
+    const next = set(typed.length >= length ? typed : value.slice(0, index) + typed);
     boxes.current[Math.min(next.length, length - 1)]?.focus();
   };
 
@@ -101,11 +113,17 @@ export function CodeBoxes({
           value={digit}
           inputMode="numeric"
           autoComplete={index === 0 ? 'one-time-code' : 'off'}
-          maxLength={length}
+          // No maxLength: the browser cut a pasted "1 2 3 4 5 6" to its first
+          // six characters — three digits — before the code ever saw it (§283).
           disabled={disabled}
           aria-label={`Digit ${index + 1}`}
           onFocus={(event) => event.target.select()}
           onChange={(event) => typeAt(index, event.target.value)}
+          // A paste is read from the clipboard itself, all of it (§283).
+          onPaste={(event) => {
+            event.preventDefault();
+            typeAt(index, event.clipboardData.getData('text'));
+          }}
           onKeyDown={onKeyDown(index)}
           // Never start typing past the first empty box.
           onMouseDown={(event) => {

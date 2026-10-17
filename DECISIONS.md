@@ -18188,3 +18188,57 @@ payout refused); the existing transient-failure test now expects the 503 and
 the plain words. Full suite: 68 suites, 1,440 tests. Live against the real
 (down) sandbox: the API answered 503 with the sentence, and the customer
 app's checkout showed it in its dialog. The test booking was removed.
+
+## 283. Pasting a code takes all of it; a sale counts down to its end (2026-10-18)
+
+Asked: (1) pasting the six-digit code into the code boxes put in only the
+first three digits — let a paste fill as many boxes as digits were copied;
+(2) a sale has a last day, so show the customer how long is left — days,
+hours, minutes and seconds — for urgency.
+
+### 283.1 The code, pasted
+
+Cause: the email shows the code in six boxes, so copying it gives the digits
+with gaps — "1 2 3 4 5 6", tabs or spaces between. Every code box had
+`maxLength` 6, so the browser (or the phone's field) kept the first six
+characters — "1 2 3 " — three digits, before our code saw the text.
+
+- `codeFrom(text, length)` in all three apps (`ui/CodeBoxes.tsx` in the
+  seller and admin apps, identical; `src/auth/CodeBoxes.tsx` in the customer
+  app): a run of exactly six digits wins, so the code is found inside "Your
+  sign-in code: 482913" and the 24 of "Booking 24, code 482913" is left out;
+  otherwise every digit is taken, in order. Fewer digits fill as many boxes.
+- The web boxes read a paste from the clipboard itself (`onPaste`) and have
+  no `maxLength`; the customer app's one hidden field has none either. A whole
+  code pasted over a half-typed one replaces it.
+- Every code box benefits: signing in, "confirm it is you" (§279) and the
+  seller's check-in.
+
+Checked in the browser: the seller sign-in took "1⇥2⇥3⇥4⇥5⇥6" as 123···
+before and as 123456 after; a real paste of "Your sign-in code: 482913" in
+the admin console filled 482913; the customer app's field took the tabbed
+code as 123456.
+
+### 283.2 A sale's countdown
+
+- The server sends the moment a sale ends — `discount.endsAt`, midnight after
+  its last day in the platform's time zone (`liveDiscount` now takes the
+  zone) — so the countdown reaches zero exactly when the price changes back,
+  not when the customer's own clock thinks the day is over.
+- **The service's page**: "Sale ends in" with four boxes — days, hrs, min,
+  sec — each number dropping in as it changes. On the last day it turns the
+  deepest coral with a pulsing dot: "Last day of the sale — ends in". At zero
+  it says the sale has ended and fetches the price again. At most 460 wide.
+- **Cards** (Home's shelves, "On sale"): a small "1d 22:20:01" on the photo's
+  bottom corner, the length raised above it so a narrow card holds both.
+  **The shop's list**: "Ends in 1d 22:22:40" under the price. Both coral
+  when under a day; gone at zero.
+- One shared once-a-second clock for every countdown on the screen.
+- A sale with no last day ("until you end it") shows no countdown — there is
+  nothing to count down to.
+
+Checked: GrowthPath's 10% sale (until Mon 19 Oct) at 390 and 1280 — ticking
+16 → 14 → 12 seconds two seconds apart; the shop list and the Home shelf; the
+last-day look on Kimironko Spa's massage, its last day set to today for the
+picture and put back to 12 Oct straight after. Sale tests updated (the end is
+22:00 UTC — midnight in Kigali). Full suite: 68 suites, 1,440 tests.

@@ -6,6 +6,7 @@ import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { SaveButton } from './SaveButton';
 import { SaleBadge } from './Sale';
+import { SaleEndsChip } from './SaleCountdown';
 import { distanceLabel } from '../distance';
 import { duration } from '../duration';
 
@@ -97,9 +98,13 @@ export function ServiceCard({
           </View>
         )}
 
+        {/* How long the sale has left, ticking (§283) — on the picture, so a
+            shelf of cards keeps one straight line along the bottom. */}
+        {sale?.endsAt && <SaleEndsChip endsAt={sale.endsAt} onPhoto style={styles.saleClock} />}
+
         {/* How long it takes, on the picture: it is the second thing people
             ask after the price, and it costs no row of its own here. */}
-        <View style={styles.duration}>
+        <View style={[styles.duration, sale?.endsAt && styles.durationAboveClock]}>
           <Icon name="time-outline" size={11} color="#FFFFFF" />
           <Text style={styles.durationText}>{duration(service.durationMinutes)}</Text>
         </View>
@@ -206,6 +211,9 @@ const styles = StyleSheet.create({
   price: { fontFamily: font.extrabold, fontSize: 14, color: theme.ink, marginTop: 4 },
   priceSale: { color: theme.accentDeep },
   sale: { position: 'absolute', left: 7, top: 7 },
+  saleClock: { position: 'absolute', left: 7, bottom: 7 },
+  // A card this narrow cannot hold the countdown and the length side by side.
+  durationAboveClock: { bottom: 33 },
   logoUnderSale: { top: 34 },
   proof: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 16 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 3 },

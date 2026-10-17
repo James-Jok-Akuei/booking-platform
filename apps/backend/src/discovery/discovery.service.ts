@@ -428,7 +428,7 @@ export class DiscoveryService {
     // Each offer at the price paid today (§186): after a sale, if one is on.
     const today = this.localToday().date;
     const priced = new Map(
-      offers.map((o) => [o, priceFor(o.priceMinor, liveDiscount(o.service, today))]),
+      offers.map((o) => [o, priceFor(o.priceMinor, liveDiscount(o.service, today, this.timeZone))]),
     );
     const paid = (o: (typeof offers)[number]) => priced.get(o)!;
 
@@ -690,7 +690,10 @@ export class DiscoveryService {
         // The stored sale columns stay inside; the customer gets the sale as
         // it stands today (§186).
         const { discountPercent, discountEndsOn, ...service } = offer.service;
-        const price = priceFor(offer.priceMinor, liveDiscount({ discountPercent, discountEndsOn }, today.date));
+        const price = priceFor(
+          offer.priceMinor,
+          liveDiscount({ discountPercent, discountEndsOn }, today.date, this.timeZone),
+        );
         return {
         ...service,
         priceMinor: price.priceMinor,

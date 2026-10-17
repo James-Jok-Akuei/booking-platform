@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { instantToZonedParts } from '../availability/time.util';
+import { instantToZonedParts, zonedWallTimeToInstant } from '../availability/time.util';
 
 /** The smallest and largest sale a shop may run, in whole percent (§186). */
 export const MIN_DISCOUNT_PERCENT = 1;
@@ -11,13 +11,16 @@ export type DiscountColumns = {
   discountEndsOn: Date | null;
 };
 
-/** A sale running today: how much off, and the last day it runs (YYYY-MM-DD). */
-export type LiveDiscount = { percent: number; endsOn: string | null };
+/**
+ * A sale running today: how much off, the last day it runs (YYYY-MM-DD), and
+ * the moment it ends — midnight after that day, where the platform is (§283).
+ */
+export type LiveDiscount = { percent: number; endsOn: string | null; endsAt: string | null };
 
 /** What a customer is shown for a price: what they pay, and the sale if there is one. */
 export type Priced = {
   priceMinor: number;
-  discount: { percent: number; endsOn: string | null; listPriceMinor: number } | null;
+  discount: { percent: number; endsOn: string | null; endsAt: string | null; listPriceMinor: number } | null;
 };
 
 /** A calendar date as the YYYY-MM-DD it is stored as (a @db.Date reads back as UTC midnight). */
@@ -32,13 +35,21 @@ export const platformToday = (timeZone: string, now = new Date()) =>
  * no end or its last day has not passed. The last day counts in full — a sale
  * "until Sunday" can be booked all of Sunday, in the platform's own time zone.
  */
-export function liveDiscount(service: DiscountColumns, today: Date): LiveDiscount | null {
+export function liveDiscount(service: DiscountColumns, today: Date, timeZone: string): LiveDiscount | null {
   const percent = service.discountPercent;
   if (percent === null || percent < MIN_DISCOUNT_PERCENT || percent > MAX_DISCOUNT_PERCENT) {
     return null;
   }
-  if (service.discountEndsOn && service.discountEndsOn.getTime() < today.getTime()) return null;
-  return { percent, endsOn: service.discountEndsOn ? ymd(service.discountEndsOn) : null };
+  const last = service.discountEndsOn;
+  if (last && last.getTime() < today.getTime()) return null;
+  return {
+    percent,
+    endsOn: last ? ymd(last) : null,
+    // The instant the last day is over, so a countdown reaches zero exactly
+    // when the price changes back (§283) — not when the customer's own
+    // clock thinks the day ends.
+    endsAt: last ? zonedWallTimeToInstant(new Date(last.getTime() + 86_400_000), 0, timeZone).toISOString() : null,
+  };
 }
 
 /**
@@ -60,6 +71,6 @@ export function priceFor(listPriceMinor: number, discount: LiveDiscount | null):
   if (!discount) return { priceMinor: listPriceMinor, discount: null };
   return {
     priceMinor: discountedPrice(listPriceMinor, discount.percent),
-    discount: { percent: discount.percent, endsOn: discount.endsOn, listPriceMinor },
+    discount: { percent: discount.percent, endsOn: discount.endsOn, endsAt: discount.endsAt, listPriceMinor },
   };
 }

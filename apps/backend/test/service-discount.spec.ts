@@ -105,11 +105,17 @@ describe('Sales on services (§186)', () => {
     it('is on through its last day, and off the day after', () => {
       const today = new Date('2026-10-08T00:00:00Z');
       const on = (endsOn: string | null) =>
-        liveDiscount({ discountPercent: 20, discountEndsOn: endsOn ? new Date(`${endsOn}T00:00:00Z`) : null }, today);
-      expect(on(null)).toEqual({ percent: 20, endsOn: null });
-      expect(on('2026-10-08')).toEqual({ percent: 20, endsOn: '2026-10-08' });
+        liveDiscount(
+          { discountPercent: 20, discountEndsOn: endsOn ? new Date(`${endsOn}T00:00:00Z`) : null },
+          today,
+          'Africa/Kigali',
+        );
+      expect(on(null)).toEqual({ percent: 20, endsOn: null, endsAt: null });
+      // Ends at midnight after its last day, Kigali time (UTC+2) — the moment
+      // a countdown reaches zero (§283).
+      expect(on('2026-10-08')).toEqual({ percent: 20, endsOn: '2026-10-08', endsAt: '2026-10-08T22:00:00.000Z' });
       expect(on('2026-10-07')).toBeNull();
-      expect(liveDiscount({ discountPercent: null, discountEndsOn: null }, today)).toBeNull();
+      expect(liveDiscount({ discountPercent: null, discountEndsOn: null }, today, 'Africa/Kigali')).toBeNull();
       expect(priceFor(7000, null)).toEqual({ priceMinor: 7000, discount: null });
     });
   });
@@ -171,7 +177,9 @@ describe('Sales on services (§186)', () => {
       const found = await discovery.searchServices({});
       const listed = found.services.find((s) => s.id === business.serviceId)!;
       expect(listed.priceMinor).toBe(5250);
-      expect(listed.discount).toEqual({ percent: 25, endsOn: day(3), listPriceMinor: 7000 });
+      expect(listed.discount).toMatchObject({ percent: 25, endsOn: day(3), listPriceMinor: 7000 });
+      // The end, as a moment: the platform's midnight after the last day (§283).
+      expect(new Date(listed.discount!.endsAt!).getTime()).toBeGreaterThan(new Date(`${day(3)}T00:00:00Z`).getTime());
 
       const shopfront: any = await discovery.findOne(business.locationId);
       const onShop = shopfront.services.find((s: any) => s.id === business.serviceId);

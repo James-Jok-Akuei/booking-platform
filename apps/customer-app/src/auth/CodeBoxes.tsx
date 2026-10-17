@@ -5,6 +5,17 @@ import { font, theme } from '../theme';
 export type CodeState = 'idle' | 'busy' | 'error' | 'ok';
 
 /**
+ * The code in whatever was pasted (§283). Copied from the email's six boxes it
+ * arrives as "1 2 3 4 5 6" — digits with gaps — and from the subject as
+ * "Your sign-in code: 123456". A run of exactly `length` digits wins, so other
+ * numbers around it are left out; otherwise every digit is taken, in order.
+ */
+export function codeFrom(text: string, length: number): string {
+  const run = text.match(new RegExp(`(?<!\\d)\\d{${length}}(?!\\d)`));
+  return run ? run[0] : text.replace(/\D/g, '').slice(0, length);
+}
+
+/**
  * The six boxes a code is typed into (§183).
  *
  * Six boxes drawn over ONE real field, as before (§133): the field takes the
@@ -79,7 +90,12 @@ export function CodeBoxes({
           ref={input}
           style={styles.hidden}
           value={value}
-          onChangeText={(text) => onChange(text.replace(/\D/g, '').slice(0, length))}
+          onChangeText={(text) => {
+            // What was just added — typed, pasted or filled in by the phone. A
+            // whole code replaces a half-typed one; otherwise it adds on (§283).
+            const added = codeFrom(text.startsWith(value) ? text.slice(value.length) : text, length);
+            onChange(added.length >= length ? added : codeFrom(text, length));
+          }}
           onFocus={() => {
             setFocused(true);
             onFocus?.();
@@ -88,7 +104,8 @@ export function CodeBoxes({
           keyboardType="number-pad"
           textContentType="oneTimeCode"
           autoComplete="one-time-code"
-          maxLength={length}
+          // No maxLength: it cut a pasted "1 2 3 4 5 6" to its first six
+          // characters — three digits — before the code ever saw it (§283).
           autoFocus
           caretHidden
           editable={open}

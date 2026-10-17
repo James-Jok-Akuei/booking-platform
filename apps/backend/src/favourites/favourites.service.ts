@@ -267,10 +267,11 @@ export class FavouritesService {
     const bookings = new Map(grouped.map((g) => [`${g.serviceId}:${g.locationId}`, g._count._all]));
 
     // At the price paid today: after a sale, if one is on (§186).
-    const today = platformToday(this.config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba');
+    const timeZone = this.config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
+    const today = platformToday(timeZone);
     const services: SavedServiceDto[] = kept.map((r) => {
       const offer = r.service.locations.find((o) => o.locationId === r.locationId)!;
-      const price = priceFor(offer.priceMinor, liveDiscount(r.service, today));
+      const price = priceFor(offer.priceMinor, liveDiscount(r.service, today, timeZone));
       const { status, pausedAt, publishedAt, ...business } = r.location.business;
       return {
         id: r.service.id,

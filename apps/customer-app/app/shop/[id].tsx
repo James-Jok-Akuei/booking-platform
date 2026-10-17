@@ -12,6 +12,7 @@ import { useSavedService } from '../../src/useSavedService';
 import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
 import { SaleBadge } from '../../src/components/Sale';
+import { SaleEndsChip } from '../../src/components/SaleCountdown';
 import { useSignedIn } from '../../src/api/client';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
@@ -537,6 +538,8 @@ function ServiceRow({
           )}
           <Text style={styles.deposit}>pay {format(depositMinor, service.currency)} now</Text>
         </View>
+        {/* How long the sale has left, ticking (§283). */}
+        {service.discount?.endsAt && <SaleEndsChip endsAt={service.discount.endsAt} style={styles.saleClock} />}
       </View>
       <View style={styles.serviceSide}>
         {/* Draws nothing signed out: `saved` is absent then (§120.2). */}
@@ -610,6 +613,7 @@ const styles = StyleSheet.create({
   thumbSale: { position: 'absolute', left: 5, top: 5 },
   serviceMain: { flex: 1, gap: 4, paddingVertical: 2 },
   serviceName: { fontFamily: font.bold, fontSize: 15.5, lineHeight: 20, color: theme.ink },
+  saleClock: { marginTop: 4 },
   servicePrice: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 3 },
   price: { fontFamily: font.extrabold, fontSize: 15.5, color: theme.ink },
   priceSale: { color: theme.accentDeep },

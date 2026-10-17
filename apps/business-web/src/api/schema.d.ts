@@ -5996,6 +5996,8 @@ export interface components {
             percent: number;
             /** @description The last day it runs (YYYY-MM-DD, platform time), or null: until turned off. */
             endsOn: string | null;
+            /** @description The moment it ends — midnight after the last day, platform time — for a countdown (§283). */
+            endsAt: string | null;
             /** @description One unit's price before the sale. */
             listPriceMinor: number;
         };

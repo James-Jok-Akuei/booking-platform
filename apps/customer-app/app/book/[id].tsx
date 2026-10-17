@@ -8,7 +8,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 import { getAvailability, getRoute, getShop } from '../../src/api/discovery';
@@ -19,6 +19,7 @@ import { BeforeYouCome } from '../../src/booking/BeforeYouCome';
 import { endOf, groupByPeriod } from '../../src/booking/periods';
 import { PhotoMosaic } from '../../src/components/PhotoMosaic';
 import { SaleBadge, saleUntil } from '../../src/components/Sale';
+import { SaleCountdown } from '../../src/components/SaleCountdown';
 import { SaveButton } from '../../src/components/SaveButton';
 import { distanceLabel } from '../../src/distance';
 import { duration } from '../../src/duration';
@@ -115,6 +116,7 @@ const CARD_PAD = 18;
 export default function Book() {
   const { id, serviceId } = useLocalSearchParams<{ id: string; serviceId: string }>();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const money = useMoney();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
@@ -522,6 +524,14 @@ export default function Book() {
                     </Text>
                   </View>
                 </View>
+              )}
+              {/* How long the sale has left, ticking (§283). At zero the
+                  price is fetched again: the sale is over. */}
+              {sale?.endsAt && (
+                <SaleCountdown
+                  endsAt={sale.endsAt}
+                  onEnded={() => void queryClient.invalidateQueries({ queryKey: ['shop', id] })}
+                />
               )}
               {split ? (
                 <>

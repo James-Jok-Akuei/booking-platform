@@ -406,7 +406,11 @@ export class AppointmentsService {
     // One unit's price as the customer was shown it: after the sale, if one
     // is on today (§186). The sale is taken off ONE and then multiplied, so
     // the card's price times three is exactly what three cost.
-    const sale = liveDiscount(service, platformToday(this.availability.platformTimeZone));
+    const sale = liveDiscount(
+      service,
+      platformToday(this.availability.platformTimeZone),
+      this.availability.platformTimeZone,
+    );
     const unit = priceFor(offer.priceMinor, sale);
 
     // The price of the whole booking. Multiplied BEFORE the percentages are
