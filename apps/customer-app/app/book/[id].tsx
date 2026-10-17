@@ -516,7 +516,7 @@ export default function Book() {
                   <View style={styles.flex}>
                     <Text style={styles.saleText}>
                       Was <Text style={styles.was}>{format(sale.listPriceMinor)}</Text>
-                      {sale.endsOn ? ` · sale ${saleUntil(sale)}` : ' · on sale now'}
+                      {sale.endsOn ? ` · discount ${saleUntil(sale)}` : ' · discount on now'}
                     </Text>
                     <Text style={styles.saleSave}>
                       You save {format(savedMinor)}

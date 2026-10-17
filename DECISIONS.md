@@ -18242,3 +18242,44 @@ Checked: GrowthPath's 10% sale (until Mon 19 Oct) at 390 and 1280 — ticking
 last-day look on Kimironko Spa's massage, its last day set to today for the
 picture and put back to 12 Oct straight after. Sale tests updated (the end is
 22:00 UTC — midnight in Kigali). Full suite: 68 suites, 1,440 tests.
+
+## 284. "Discount", not "sale"; and every kind of place in the sign-in headline (2026-10-18)
+
+Asked: "sale" is not an easy word for some users — say "discount"; and the
+sign-in screens' rotating word ("Book your next braids.") leaves out kinds of
+service the admin console offers, such as consultancy — add them, on both
+apps.
+
+### 284.1 Discount
+
+Where "sale" meant a price cut, it now says **discount** — in the customer
+app (the countdown, "discount until Mon 19 Oct", Home's **Discounts** shelf
+and banner, checkout and the booking's "Discount · 10% off") and in the
+seller app (the service form's **Discount** section, "End the discount", "1
+with a discount", the adverts and the guide). Where "on sale" means
+*available to book* — "6 on sale", "Not on sale", "Put back on sale" — it is
+unchanged: that is a different thing. The server's emails already said "%
+OFF". Code names (`SaleBadge`, `discount` fields) are unchanged.
+
+### 284.2 The rotating word follows the categories
+
+- **Customer app**: "Book your next ___." — short phrases for each of the 16
+  categories (`src/auth/bookWords.ts`): haircut, car service, consultation,
+  workout, photo shoot, table, yoga class, gorilla trek, getaway, home
+  cleaning, pet grooming, fitting, class, concert, event… and a second and
+  third round (braids, car wash, coaching call…).
+- **Seller app**: "Grow your ___." (`src/auth/growWords.ts`): barbershop,
+  garage, consultancy, gym, photo studio, restaurant, yoga studio, tour
+  company, hotel, cleaning firm…
+- Keyed by the category's icon word (stable through a rename), and shown only
+  for categories **switched on** in the admin console (`GET /categories`) —
+  Health & Medical, off today, does not appear until it is switched on. A
+  category added later with no words of its own appears by its name.
+- One category at a time, so the first words already show the range.
+- Every phrase is measured to stay on one line: the widest customer phrase is
+  272 of 342px on a phone; two seller phrases that wrapped ("coaching
+  practice", "cleaning business") became "practice" and "cleaning firm".
+
+Fixed on the way: the seller app's shopfront preview built a discount
+without §283's `endsAt` and no longer compiled; it sends null (no countdown
+in the preview).

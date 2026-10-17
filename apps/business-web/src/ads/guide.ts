@@ -98,16 +98,16 @@ export function guideTopics(feePercent: string | null): GuideTopic[] {
       key: 'sales',
       icon: 'percent',
       tone: 'violet',
-      title: 'Sales and discounts',
+      title: 'Discounts',
       short: '1–90% off, until a day you choose or until you end it.',
       points: [
-        'Put any service on sale from 1% to 90% off, at every branch at once.',
+        'Give any service a discount from 1% to 90% off, at every branch at once.',
         'Choose a last day (the whole day counts) or leave it to run until you end it.',
-        'Customers see a −% badge and the old price crossed out. The deposit is worked out on the sale price.',
+        'Customers see a −% badge and the old price crossed out. The deposit is worked out on the discounted price.',
         'Bookings already made keep the price they were made at.',
-        'Customers who asked for it get a Friday email of services near them, with sales shown at their sale price.',
+        'Customers who asked for it get a Friday email of services near them, with discounts shown at their discounted price.',
       ],
-      link: { label: 'Start a sale', to: '/services' },
+      link: { label: 'Start a discount', to: '/services' },
     },
     {
       // §132, §165, §187, storage limits

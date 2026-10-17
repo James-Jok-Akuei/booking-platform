@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Animated,
   Easing,
@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { requestOtp, signOut, verifyOtp } from '../src/api/auth';
 import { ApiError } from '../src/api/client';
@@ -23,6 +23,8 @@ import { AuthWall } from '../src/auth/AuthWall';
 import { CodeBoxes, type CodeState } from '../src/auth/CodeBoxes';
 import { looksLikeEmail, suggestEmail } from '../src/auth/email';
 import { RotatingWord } from '../src/auth/RotatingWord';
+import { bookWords } from '../src/auth/bookWords';
+import { listCategories } from '../src/api/discovery';
 import { font, radius, theme } from '../src/theme';
 import { useKeyboardScroll } from '../src/useKeyboardScroll';
 import { Button } from '../src/ui/Button';
@@ -36,7 +38,6 @@ import { PressableScale } from '../src/ui/PressableScale';
 import { RwandaFlag } from '../src/ui/RwandaFlag';
 
 /** What the headline says can be booked, one after another. */
-const WORDS = ['haircut.', 'massage.', 'braids.', 'car service.', 'photo shoot.', 'workout.'];
 /** The server's own wait between codes (`OTP_RESEND_COOLDOWN_SECONDS`). */
 const RESEND_SECONDS = 60;
 /** How long a code works (`OTP_EXPIRES_IN_MINUTES`). */
@@ -78,6 +79,9 @@ export default function SignIn() {
   const insets = useSafeAreaInsets();
   const window = useWindowDimensions();
   const queryClient = useQueryClient();
+  // Every kind of place that is switched on in the admin console (§284).
+  const categories = useQuery({ queryKey: ['categories'], queryFn: listCategories, staleTime: 10 * 60_000 });
+  const words = useMemo(() => bookWords(categories.data), [categories.data]);
   // Keeps the field being typed into above the keyboard (§168).
   const keys = useKeyboardScroll();
 
@@ -284,7 +288,7 @@ export default function SignIn() {
           accessibilityLabel="Book your next appointment at real shops near you, in a few taps."
         >
           <Text style={styles.h1}>Book your next</Text>
-          <RotatingWord words={WORDS} style={styles.h1Gold} />
+          <RotatingWord words={words} style={styles.h1Gold} />
           <Text style={styles.h1Sub}>Real shops near you, booked in a few taps.</Text>
         </Animated.View>
       </Animated.View>

@@ -578,7 +578,7 @@ export function ServicesPage() {
           </span>
           {withSale > 0 && (
             <span className="sv-chip is-accent">
-              <Icon name="percent" size={14} stroke={2.2} /> {withSale} with a sale on
+              <Icon name="percent" size={14} stroke={2.2} /> {withSale} with a discount
             </span>
           )}
           {noPhotos > 0 && (
@@ -1282,8 +1282,8 @@ function ServiceForm({
     }
     if (discount.trim() && (percentOff === null || percentOff < 1 || percentOff > 90)) {
       void alertDialog({
-        title: 'Check the sale',
-        body: <p>A sale is a whole number from 1 to 90 percent off — or leave it empty for no sale.</p>,
+        title: 'Check the discount',
+        body: <p>A discount is a whole number from 1 to 90 percent off — or leave it empty for no discount.</p>,
         tone: 'warn',
         icon: 'percent',
       });
@@ -1454,7 +1454,7 @@ function ServiceForm({
         {/* A sale (§186): a percentage off every branch's price, until a last
             day or until it is ended. What customers will pay is worked out as
             it is typed, branch by branch. */}
-        <Section icon="percent" title="Sale" hint="Optional — customers see the old price crossed out">
+        <Section icon="percent" title="Discount" hint="Optional — customers see the old price crossed out">
           <div className="sv-two">
             <div className="sv-field">
               <label htmlFor="sdisc">Percent off</label>
@@ -1502,7 +1502,7 @@ function ServiceForm({
                 })}
               <p>
                 {saleEndsOn
-                  ? `${percentOff}% off until the end of ${niceDay(saleEndsOn)}. Bookings made before then keep the sale price.`
+                  ? `${percentOff}% off until the end of ${niceDay(saleEndsOn)}. Bookings made before then keep the discounted price.`
                   : `${percentOff}% off until you end it. Bookings already made keep the price they were made at.`}
               </p>
             </div>
@@ -1518,7 +1518,7 @@ function ServiceForm({
                 setSaleEndsOn('');
               }}
             >
-              End the sale
+              End the discount
             </button>
           )}
         </Section>

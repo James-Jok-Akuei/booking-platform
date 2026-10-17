@@ -224,10 +224,10 @@ export function Spotlights({
       out.push({
         ...service(d),
         kind: 'deal',
-        kicker: 'On sale',
+        kicker: 'Discount',
         stat: `−${d.discount.percent}%`,
         line: `${shopOf(d)} · now ${now}, was ${was}`,
-        label: `On sale: ${d.name} at ${shopOf(d)}, ${d.discount.percent}% off, now ${now}.`,
+        label: `Discount: ${d.name} at ${shopOf(d)}, ${d.discount.percent}% off, now ${now}.`,
       });
     }
     if (r) {

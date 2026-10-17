@@ -79,7 +79,7 @@ export function SaleCountdown({
     return (
       <View style={[styles.ended, style]}>
         <Icon name="time-outline" size={15} color={theme.ink2} />
-        <Text style={styles.endedText}>This sale has ended — the price is back to normal.</Text>
+        <Text style={styles.endedText}>This discount has ended — the price is back to normal.</Text>
       </View>
     );
   }
@@ -91,12 +91,12 @@ export function SaleCountdown({
     <View
       style={[styles.box, urgent && styles.boxUrgent, style]}
       accessible
-      accessibilityLabel={`Sale ends in ${d} days, ${h} hours and ${m} minutes`}
+      accessibilityLabel={`Discount ends in ${d} days, ${h} hours and ${m} minutes`}
     >
       <View style={styles.head}>
         {urgent ? <Pulse color="#FFFFFF" size={8} /> : <Icon name="flash" size={14} color={theme.accentDeep} />}
         <Text style={[styles.headText, urgent && styles.onUrgent]}>
-          {urgent ? 'Last day of the sale — ends in' : 'Sale ends in'}
+          {urgent ? 'Last day of the discount — ends in' : 'Discount ends in'}
         </Text>
       </View>
       <View style={styles.segments}>
@@ -182,7 +182,7 @@ export function SaleEndsChip({
     <View
       style={[styles.chip, onPhoto ? styles.chipPhoto : styles.chipList, urgent && styles.chipUrgent, style]}
       accessible
-      accessibilityLabel={`Sale ends in ${d > 0 ? `${d} days, ` : ''}${h} hours and ${m} minutes`}
+      accessibilityLabel={`Discount ends in ${d > 0 ? `${d} days, ` : ''}${h} hours and ${m} minutes`}
     >
       <Icon name="time" size={onPhoto ? 10 : 12} color={onPhoto || urgent ? '#FFFFFF' : theme.accentDeep} />
       <Text style={[styles.chipText, onPhoto ? styles.chipTextPhoto : styles.chipTextList, urgent && styles.onUrgent]}>

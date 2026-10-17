@@ -30,7 +30,8 @@ export function RotatingWord({ words, every = 2300, className = '' }: { words: s
 
   return (
     <span className={`au-word ${leaving ? 'is-leaving' : 'is-coming'} ${className}`} aria-hidden="true">
-      {words[index]}
+      {/* The list can grow once the categories arrive (§284). */}
+      {words[index % words.length]}
     </span>
   );
 }

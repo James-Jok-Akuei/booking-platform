@@ -82,20 +82,20 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'best',
       effect: 'confetti',
-      gist: `${d.best.count} ${d.best.count === 1 ? 'booking' : 'bookings'} in 30 days${d.best.onSale ? ' · on sale now' : d.access.runsBusiness ? ' · try a sale' : ''}`,
+      gist: `${d.best.count} ${d.best.count === 1 ? 'booking' : 'bookings'} in 30 days${d.best.onSale ? ' · discount on now' : d.access.runsBusiness ? ' · try a discount' : ''}`,
       look: 'coral',
       icon: 'trendUp',
       eyebrow: 'Your best seller',
       title: d.best.name,
       text: d.best.onSale
-        ? 'Your most booked service of the last 30 days — and it has a sale on.'
+        ? 'Your most booked service of the last 30 days — and it has a discount on.'
         : d.access.runsBusiness
-          ? 'Your most booked service of the last 30 days. A short sale could bring in even more.'
+          ? 'Your most booked service of the last 30 days. A short discount could bring in even more.'
           : 'Your most booked service of the last 30 days.',
       image: d.best.service?.images[0]?.url ?? null,
       stat: { value: String(d.best.count), label: d.best.count === 1 ? 'booking' : 'bookings' },
       cta: {
-        label: d.best.onSale || !d.access.runsBusiness ? 'See your services' : 'Put it on sale',
+        label: d.best.onSale || !d.access.runsBusiness ? 'See your services' : 'Give it a discount',
         to: '/services',
       },
     });
@@ -205,9 +205,9 @@ export function buildSlides(d: AdData): Slide[] {
       look: 'coral',
       icon: 'percent',
       eyebrow: 'Idea',
-      title: 'Run a sale this week',
-      text: 'A service on sale shows its −% badge and the old price crossed out, and the app has a spotlight for deals.',
-      cta: { label: 'Start a sale', to: '/services' },
+      title: 'Run a discount this week',
+      text: 'A discounted service shows its −% badge and the old price crossed out, and the app has a spotlight for discounts.',
+      cta: { label: 'Start a discount', to: '/services' },
     });
   }
 

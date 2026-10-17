@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent, type PointerEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent, type ReactNode } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError, requestOtp, signedOutWhy } from '../api/client';
 import { lengthWords } from '../session/words';
-import { getMe, getReadiness, publishedLegal, wallPlaces, type LegalDocument } from '../api/business';
+import { getCategories, getMe, getReadiness, publishedLegal, wallPlaces, type LegalDocument } from '../api/business';
+import { growWords } from './growWords';
 import { CodeBoxes, type CodeState } from '../ui/CodeBoxes';
 import { Icon, type IconName } from '../ui/Icon';
 import { NetworkMark } from '../ui/NetworkMark';
@@ -18,7 +19,6 @@ import './login.css';
 import { accessOf } from '../access';
 
 /** What the headline says a seller can grow, one after another. */
-const WORDS = ['barbershop.', 'salon.', 'spa.', 'garage.', 'nail studio.', 'photo studio.'];
 /** The server's own wait between codes (`OTP_RESEND_COOLDOWN_SECONDS`). */
 const RESEND_SECONDS = 60;
 /** How long a code works (`OTP_EXPIRES_IN_MINUTES`). */
@@ -76,6 +76,9 @@ export function LoginPage() {
   // arrive only: signing in on this page sets the user too, and the "You
   // are in" moment has to play before leaving.
   const [arrivedSignedIn] = useState(() => user?.role === 'BUSINESS');
+  // Every kind of shop that is switched on in the admin console (§284).
+  const categories = useQuery({ queryKey: ['categories'], queryFn: getCategories, staleTime: 10 * 60_000 });
+  const words = useMemo(() => growWords(categories.data), [categories.data]);
   // A session that is not a business's (left from before this screen signed
   // such sessions back out) has no place in this app: closed quietly.
   useEffect(() => {
@@ -296,9 +299,9 @@ export function LoginPage() {
         <Moments />
 
         <div className="au-hero">
-          <h2 className="au-h1" aria-label="Grow your barbershop, salon, spa or garage — bookings, deposits and check-ins in one place.">
+          <h2 className="au-h1" aria-label="Grow your business — bookings, deposits and check-ins in one place.">
             <span aria-hidden="true">Grow your</span>
-            <RotatingWord words={WORDS} className="au-gold" />
+            <RotatingWord words={words} className="au-gold" />
           </h2>
           <p className="au-sub">Customers book and pay a deposit. You check them in with a code.</p>
           <Proof />

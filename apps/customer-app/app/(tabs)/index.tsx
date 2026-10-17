@@ -728,8 +728,9 @@ export default function Discover() {
         {browsing && onSale.length > 0 && (
           <FadeIn delay={75}>
             <SectionHead
-              title="On sale"
-              note={`${deals.data?.total ?? onSale.length} ${(deals.data?.total ?? onSale.length) === 1 ? 'deal' : 'deals'}`}
+              // "Discounts", not "On sale" (§284): the plainer word for everyone.
+              title="Discounts"
+              note={`${deals.data?.total ?? onSale.length} ${(deals.data?.total ?? onSale.length) === 1 ? 'service' : 'services'}`}
             />
             <ScrollView
               horizontal

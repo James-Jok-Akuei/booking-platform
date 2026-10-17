@@ -520,7 +520,13 @@ function fromOwnRecords(
           depositPercentage: sv.depositPercentage,
           priceMinor: price,
           discount: live
-            ? { percent: sv.discountPercent!, endsOn: sv.discountEndsOn?.slice(0, 10) ?? null, listPriceMinor: offer.priceMinor }
+            ? {
+                percent: sv.discountPercent!,
+                endsOn: sv.discountEndsOn?.slice(0, 10) ?? null,
+                // The preview shows no countdown; the server says when it ends (§283).
+                endsAt: null,
+                listPriceMinor: offer.priceMinor,
+              }
             : null,
           images: sv.images,
         },

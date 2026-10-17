@@ -135,7 +135,7 @@ export function Checkout({
         {/* The sale it was booked under (§186), said as a saving. */}
         {a.discountPercent !== null && a.listPriceMinor !== null && a.servicePriceMinor !== null && (
           <Line
-            label={`Sale · ${a.discountPercent}% off`}
+            label={`Discount · ${a.discountPercent}% off`}
             hint={`Was ${format(a.listPriceMinor, a.currency)}`}
             value={`−${format(a.listPriceMinor - a.servicePriceMinor, a.currency)}`}
             saving

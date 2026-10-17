@@ -62,7 +62,8 @@ export function RotatingWord({
         },
       ]}
     >
-      {words[index]}
+      {/* The list can grow once the categories arrive (§284). */}
+      {words[index % words.length]}
     </Animated.Text>
   );
 }
