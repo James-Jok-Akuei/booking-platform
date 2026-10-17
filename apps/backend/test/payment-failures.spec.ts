@@ -162,14 +162,18 @@ describe('Payment failures (§52)', () => {
       });
     });
 
-    it('asks the customer to try again, and says they were not charged', async () => {
+    it('says MoMo is not answering, that they were not charged, and to try again (§282)', async () => {
       const appointment = await pending();
 
       const error = await initiate(appointment.id).catch((e) => e);
 
-      expect(error).toBeInstanceOf(BadRequestException);
+      // Not the operator's own words ("HTTP 503: no code given"), and a 503,
+      // because the operator is what is unavailable.
+      expect(error).toBeInstanceOf(ServiceUnavailableException);
+      expect(error.message).toMatch(/MTN MoMo is not answering/);
       expect(error.message).toMatch(/try again/i);
       expect(error.message).toMatch(/not been charged/i);
+      expect(error.message).not.toMatch(/HTTP/);
     });
 
     it('does NOT notify admins — nobody needs waking for a busy provider', async () => {

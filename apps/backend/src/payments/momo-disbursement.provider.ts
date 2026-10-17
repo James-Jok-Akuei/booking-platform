@@ -27,6 +27,16 @@ import { formatMajorUnits } from './currency';
  * MTN rejects the duplicate rather than sending twice. That is the whole reason
  * the reference is written to the payout first (§64.3).
  */
+/** MTN refused a token, or could not be reached for one (§282). */
+class TokenRefused extends Error {
+  constructor(
+    readonly httpStatus: number | null,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
 @Injectable()
 export class MomoDisbursementProvider implements DisbursementProvider, OnModuleInit {
   readonly key = MobileMoneyProvider.MTN_MOMO;
@@ -94,17 +104,23 @@ export class MomoDisbursementProvider implements DisbursementProvider, OnModuleI
     }
 
     const basic = Buffer.from(`${this.apiUser}:${this.apiKey}`).toString('base64');
-    const response = await fetch(`${this.baseUrl}/disbursement/token/`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${basic}`,
-        'Ocp-Apim-Subscription-Key': this.subscriptionKey,
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/disbursement/token/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${basic}`,
+          'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+        },
+      });
+    } catch (error) {
+      throw new TokenRefused(null, `MoMo disbursement token request could not reach MTN: ${(error as Error).message}`);
+    }
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(
+      throw new TokenRefused(
+        response.status,
         `MoMo disbursement token request failed (${response.status}): ${body.slice(0, 300)}`,
       );
     }
@@ -128,7 +144,21 @@ export class MomoDisbursementProvider implements DisbursementProvider, OnModuleI
       };
     }
 
-    const token = await this.getAccessToken();
+    // No token means nothing was sent (§282): a refusal, so the payout goes
+    // back to waiting for another attempt rather than sitting "being sent"
+    // for a transfer MTN never saw. Wrong keys (401/403) are ours to fix.
+    let token: string;
+    try {
+      token = await this.getAccessToken();
+    } catch (error) {
+      const httpStatus = error instanceof TokenRefused ? error.httpStatus : null;
+      this.logger.error(`MoMo transfer ${params.externalReferenceId} not sent: ${(error as Error).message}`);
+      return {
+        status: 'FAILED',
+        failureKind: httpStatus === 401 || httpStatus === 403 ? 'CONFIGURATION' : 'TRANSIENT',
+        failureReason: httpStatus ? `MTN MoMo did not answer (HTTP ${httpStatus}).` : 'MTN MoMo could not be reached.',
+      };
+    }
 
     // Resolved once, and the amount is formatted against THIS, not against the
     // configured currency — the §55.2 mistake, which would send a figure a

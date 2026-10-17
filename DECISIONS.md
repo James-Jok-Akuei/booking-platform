@@ -18148,3 +18148,43 @@ as cover: unchanged on the server while open, then on Save — DELETE, POST,
 cover — leading with the new one; "Cancel" → "Leave without saving?" →
 photos as they were; at 390 on a touch screen, the buttons on every photo.
 The throwaway shop was removed.
+
+## 282. MTN not answering: said plainly, and never a stuck payment (2026-10-18)
+
+Reported: the customer app's checkout said "Could not start the payment —
+Internal server error".
+
+Cause: **MTN's MoMo sandbox was down** from about 00:19 on 2026-10-18 —
+every authenticated call, even asking about a made-up user, answered MTN's
+own `500 Internal server error`, while a wrong key was still refused
+normally (401). Nothing in our keys or code had broken. But our side let it
+through badly: a refused **token** was thrown as a plain error, so the
+customer read "Internal server error".
+
+- **Starting a deposit**: MTN refusing a token, or not being reachable, is
+  now a failed start — `TRANSIENT`, or `CONFIGURATION` when MTN says our keys
+  are wrong (401/403, and the admins are told, as §52.2). A `TRANSIENT`
+  failure is answered **503**: "MTN MoMo is not answering right now, so the
+  payment could not start. You have NOT been charged, and your booking is
+  still held for a few minutes — please try again shortly." — never the
+  operator's own words ("HTTP 503: no code given") as before.
+- **A request lost on the way after the token** is NOT called "not started":
+  MTN may have queued it and be prompting the customer, and calling it not
+  started could let them pay with no booking to show. It is kept as under
+  way with its reference; the poll asks MTN, and the unpaid-hold expiry
+  bounds the wait.
+- **Checking a payment under way**: no token, or no answer, is "not known
+  yet" (PENDING) — the same rule a 5xx already had — never failed.
+- **Payouts**: an admin sending a payout while MTN refused tokens left it
+  "being sent" for a transfer MTN never saw (the row is marked before the
+  call). No token now means nothing was sent: a refusal, and the payout goes
+  back to PENDING for another attempt. A transfer lost after the token is
+  left as before — "being sent" — because it may have arrived, and paying
+  twice is worse than waiting.
+
+Verified: `test/momo-unavailable.spec.ts` (7, MTN faked: token 500, no
+network, 401, lost request, status checks while down, a normal start, a
+payout refused); the existing transient-failure test now expects the 503 and
+the plain words. Full suite: 68 suites, 1,440 tests. Live against the real
+(down) sandbox: the API answered 503 with the sentence, and the customer
+app's checkout showed it in its dialog. The test booking was removed.

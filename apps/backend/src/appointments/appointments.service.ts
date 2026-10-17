@@ -714,6 +714,15 @@ export class AppointmentsService {
         );
       }
 
+      // The operator not answering (§282): said in words a customer can act
+      // on, not as the operator's own error — and as 503, because it is.
+      if (result.failureKind === 'TRANSIENT') {
+        throw new ServiceUnavailableException(
+          'MTN MoMo is not answering right now, so the payment could not start. You have NOT been ' +
+            'charged, and your booking is still held for a few minutes — please try again shortly.',
+        );
+      }
+
       throw new BadRequestException(
         `Could not start the payment: ${result.failureReason ?? 'the payment provider rejected the request.'} ` +
           'You have not been charged. Please try again.',

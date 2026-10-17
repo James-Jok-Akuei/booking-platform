@@ -37,6 +37,19 @@ const TERMINAL_FAILURE_STATUSES: string[] = ['FAILED', 'REJECTED', 'TIMEOUT', 'E
 const TOKEN_EXPIRY_SAFETY_MARGIN_MS = 60_000;
 
 /**
+ * MTN could not be asked at all (§282): its token service refused, or it
+ * could not be reached. `httpStatus` is null when there was no answer.
+ */
+class MomoUnreachable extends Error {
+  constructor(
+    readonly httpStatus: number | null,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+/**
  * MTN MoMo Collections.
  *
  * Three things about MoMo shape this class:
@@ -145,17 +158,23 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
     }
 
     const basic = Buffer.from(`${this.apiUser}:${this.apiKey}`).toString('base64');
-    const response = await fetch(`${this.baseUrl}/collection/token/`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${basic}`,
-        'Ocp-Apim-Subscription-Key': this.subscriptionKey,
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/collection/token/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${basic}`,
+          'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+        },
+      });
+    } catch (error) {
+      throw new MomoUnreachable(null, `MoMo token request could not reach MTN: ${(error as Error).message}`);
+    }
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(
+      throw new MomoUnreachable(
+        response.status,
         `MoMo token request failed (${response.status}): ${body.slice(0, 300)}`,
       );
     }
@@ -183,7 +202,12 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
 
     // We choose the transaction id; MTN keys the status endpoint on it.
     const referenceId = crypto.randomUUID();
-    const token = await this.getAccessToken();
+    let token: string;
+    try {
+      token = await this.getAccessToken();
+    } catch (error) {
+      return this.notStarted(error, params.externalReferenceId);
+    }
 
     // The currency actually put on the wire, resolved ONCE. The sandbox
     // override (§52.1) replaces it, so the amount has to be formatted against
@@ -197,28 +221,41 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
     // sent "117.00" where a currency with no minor unit wanted "11700".
     const amount = formatMajorUnits(params.amountMinor, outboundCurrency);
 
-    const response = await fetch(`${this.baseUrl}/collection/v1_0/requesttopay`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'X-Reference-Id': referenceId,
-        'X-Target-Environment': this.targetEnvironment,
-        'Ocp-Apim-Subscription-Key': this.subscriptionKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        amount,
-        // The override applies HERE and nowhere else (§52.1).
-        currency: outboundCurrency,
-        externalId: params.externalReferenceId,
-        payer: {
-          partyIdType: 'MSISDN',
-          partyId: params.phoneNumber,
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/collection/v1_0/requesttopay`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-Reference-Id': referenceId,
+          'X-Target-Environment': this.targetEnvironment,
+          'Ocp-Apim-Subscription-Key': this.subscriptionKey,
+          'Content-Type': 'application/json',
         },
-        payerMessage: params.payerMessage ?? 'Appointment deposit',
-        payeeNote: params.payeeNote ?? 'Appointment deposit',
-      }),
-    });
+        body: JSON.stringify({
+          amount,
+          // The override applies HERE and nowhere else (§52.1).
+          currency: outboundCurrency,
+          externalId: params.externalReferenceId,
+          payer: {
+            partyIdType: 'MSISDN',
+            partyId: params.phoneNumber,
+          },
+          payerMessage: params.payerMessage ?? 'Appointment deposit',
+          payeeNote: params.payeeNote ?? 'Appointment deposit',
+        }),
+      });
+    } catch (error) {
+      // Lost on the way, after the token: MTN may well have queued it and be
+      // prompting the customer now. Saying "not started" could let them pay
+      // with no booking to show for it, so it is "under way" — the poll asks
+      // MTN about this reference, and the unpaid-hold expiry bounds the wait.
+      this.logger.error(
+        `MoMo requesttopay for appointment ${params.externalReferenceId} got no answer ` +
+          `(${(error as Error).message}); kept as ${referenceId}, under way, for the poll to settle.`,
+      );
+      return { providerReferenceId: referenceId, status: 'PENDING' };
+    }
 
     // 202 Accepted is the documented success: the request is queued and the
     // payer will be prompted. Anything else means it never started.
@@ -277,6 +314,27 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
    * A 4xx is the platform's fault by definition. A 5xx is normally MTN's — but
    * MTN returns 500 with an INVALID_CURRENCY body, so the body is read too.
    */
+  /**
+   * MTN could not be asked to take a deposit at all (§282) — it refused a
+   * token, or did not answer. It used to throw, and the customer read
+   * "Internal server error". Wrong credentials (401/403) are ours to fix and
+   * the admins are told; anything else is MTN's, passes, and the customer is
+   * asked to try again shortly.
+   */
+  private notStarted(error: unknown, appointmentId: string): InitiatePaymentResult {
+    const httpStatus = error instanceof MomoUnreachable ? error.httpStatus : null;
+    const kind: PaymentFailureKind = httpStatus === 401 || httpStatus === 403 ? 'CONFIGURATION' : 'TRANSIENT';
+    this.logger.error(
+      `MoMo could not be asked for the deposit of appointment ${appointmentId} (${kind}): ${(error as Error).message}`,
+    );
+    return {
+      providerReferenceId: '',
+      status: 'FAILED',
+      failureKind: kind,
+      failureReason: httpStatus ? `MTN MoMo did not answer (HTTP ${httpStatus}).` : 'MTN MoMo could not be reached.',
+    };
+  }
+
   private classifyFailure(httpStatus: number, body: string): PaymentFailureKind {
     const code = this.providerCode(body);
     if (code && MomoPaymentProvider.CONFIGURATION_CODES.includes(code)) {
@@ -301,18 +359,23 @@ export class MomoPaymentProvider implements PaymentProvider, OnModuleInit {
       return { status: 'FAILED', failureReason: 'Payment provider is not configured.' };
     }
 
-    const token = await this.getAccessToken();
-    const response = await fetch(
-      `${this.baseUrl}/collection/v1_0/requesttopay/${providerReferenceId}`,
-      {
+    // MTN not answering — no token, or no reply — is "not known yet", never
+    // "failed" (§282): the same rule as a 5xx below. The poll asks again.
+    let response: Response;
+    try {
+      const token = await this.getAccessToken();
+      response = await fetch(`${this.baseUrl}/collection/v1_0/requesttopay/${providerReferenceId}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
           'X-Target-Environment': this.targetEnvironment,
           'Ocp-Apim-Subscription-Key': this.subscriptionKey,
         },
-      },
-    );
+      });
+    } catch (error) {
+      this.logger.warn(`MoMo status check could not ask MTN about ${providerReferenceId}: ${(error as Error).message}`);
+      return { status: 'PENDING' };
+    }
 
     if (!response.ok) {
       const body = await response.text();
