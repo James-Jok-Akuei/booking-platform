@@ -20,10 +20,8 @@ import {
   type Service,
 } from '../api/business';
 import { useMoney } from '../money';
-import { ImageButton } from '../components/ImageButton';
 import {
   addServiceImage,
-  getServiceImages,
   removeServiceImage,
   setServiceImageCover,
 } from '../api/business';
@@ -336,8 +334,22 @@ export function ServicesPage() {
   const [posting, setPosting] = useState<string | null>(null);
   const [postProblem, setPostProblem] = useState<string | null>(null);
   const save = useMutation({
-    mutationFn: async (input: { id?: string; body: Record<string, unknown>; files?: File[] }) => {
-      if (input.id) return updateService(input.id, input.body);
+    mutationFn: async (input: {
+      id?: string;
+      body: Record<string, unknown>;
+      files?: File[];
+      /** An existing service's photos as the form left them, cover first (§281). */
+      photos?: PhotoItem[];
+      /** …and as they were when it opened. */
+      before?: Service['images'];
+    }) => {
+      if (input.id) {
+        setPostProblem(null);
+        setPosting('Saving…');
+        const updated = await updateService(input.id, input.body);
+        if (input.photos) await applyPhotos(input.id, input.before ?? [], input.photos);
+        return updated;
+      }
       setPostProblem(null);
       setPosting('Posting the service…');
       const created = await createService(input.body as never);
@@ -379,6 +391,63 @@ export function ServicesPage() {
       refresh();
     },
   });
+
+  /**
+   * The photo changes made in an open form, sent when it is saved (§281):
+   * the removed ones go, the new ones go up, and the first becomes the cover.
+   * Until then customers see the photos as they were.
+   */
+  const applyPhotos = async (serviceId: string, before: Service['images'], after: PhotoItem[]) => {
+    const kept = new Set(after.filter((p) => p.id).map((p) => p.id!));
+    const failed: string[] = [];
+    const said = (error: unknown, fallback: string) => (error instanceof ApiError ? error.message : fallback);
+
+    // Removed first, so a full service has room for the new ones.
+    const gone = before.filter((image) => !kept.has(image.id));
+    for (const image of gone) {
+      setPosting('Removing photos…');
+      try {
+        await removeServiceImage(serviceId, image.id);
+      } catch (error) {
+        failed.push(said(error, 'a photo was not removed'));
+      }
+    }
+
+    const fresh = after.filter((p) => p.file);
+    const uploaded = new Map<string, string>();
+    for (const [index, photo] of fresh.entries()) {
+      setPosting(`Uploading photo ${index + 1} of ${fresh.length}…`);
+      try {
+        uploaded.set(photo.key, (await addServiceImage(serviceId, photo.file!)).id);
+      } catch (error) {
+        failed.push(said(error, photo.file!.name));
+      }
+    }
+
+    // The cover is the first photo in the form; new photos go up last, so it
+    // is moved to the front only when the stored order would not already
+    // lead with it.
+    const first = after[0];
+    const coverId = first ? (first.id ?? uploaded.get(first.key)) : undefined;
+    const storedFirst =
+      [...before].sort((a, b) => a.displayOrder - b.displayOrder).find((image) => kept.has(image.id))?.id ??
+      (fresh[0] ? uploaded.get(fresh[0].key) : undefined);
+    if (coverId && coverId !== storedFirst) {
+      try {
+        await setServiceImageCover(serviceId, coverId);
+      } catch (error) {
+        failed.push(said(error, 'the cover was not changed'));
+      }
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['service-images', serviceId] });
+    if (failed.length > 0) {
+      setPostProblem(
+        `Saved, but ${failed.length} photo ${failed.length === 1 ? 'change' : 'changes'} did not go through: ` +
+          `${failed[0]}. Open Edit on the service to try again.`,
+      );
+    }
+  };
 
   /** Every branch at once. Acts on the branches, never on the retired flag. */
   const everywhere = useMutation({
@@ -717,7 +786,8 @@ export function ServicesPage() {
               canDraft={draftSave.kind !== 'new' || Boolean(resumed)}
               onSaveDraft={() => void saveAsDraft()}
               problem={saveProblem}
-              onSubmit={(body, files) => {
+              onSubmit={(body, photos) => {
+                const files = photos.flatMap((p) => (p.file ? [p.file] : []));
                 // However the form was opened, the agreement is asked before posting (§280).
                 if (needAgreement(() => save.mutate({ body, files }))) return;
                 save.mutate({ body, files });
@@ -732,12 +802,14 @@ export function ServicesPage() {
               locations={locations.data ?? []}
               busy={save.isPending}
               initial={editor.service}
+              busyLabel={posting ?? undefined}
               focus={editor.focus}
               onCancel={() => void requestClose()}
               onDirtyChange={setDirty}
               problem={saveProblem}
-              onSubmit={(body) => save.mutate({ id: editor.service.id, body })}
-              photos={<ServicePhotos serviceId={editor.service.id} />}
+              onSubmit={(body, photos) =>
+                save.mutate({ id: editor.service.id, body, photos, before: editor.service.images })
+              }
             />
           )}
         </EditorPanel>
@@ -997,6 +1069,12 @@ function ServiceCard({
   );
 }
 
+/**
+ * A photo in the form (§281): one already on the service (`id`), or one chosen
+ * here and not sent yet (`file`). `key` tells them apart in a list.
+ */
+type PhotoItem = { key: string; url: string; id?: string; file?: File };
+
 type FormValues = {
   name: string;
   title: string;
@@ -1034,7 +1112,6 @@ function ServiceForm({
   creating = false,
   initial,
   focus,
-  photos,
   hiddenUntil = null,
   canDraft = false,
   onSaveDraft,
@@ -1054,8 +1131,6 @@ function ServiceForm({
   initial?: Service;
   /** Open scrolled to a section — the cover's "Photos" lands on the photos. */
   focus?: 'photos';
-  /** An existing service's live photo manager, shown as the last section. */
-  photos?: ReactNode;
   /** When customers will see a new service, if not at once (§268) — e.g. "you post your shop". */
   hiddenUntil?: string | null;
   /** Something is written, so "Save as draft" has something to keep. */
@@ -1064,8 +1139,8 @@ function ServiceForm({
   onSaveDraft?: () => void;
   /** Why the last post or save was refused, said beside the button (§280). */
   problem?: string | null;
-  /** `files` are the photos chosen for a NEW service, cover first (§165). */
-  onSubmit: (body: Record<string, unknown>, files: File[]) => void;
+  /** The photos as the form leaves them, cover first (§165, §281). */
+  onSubmit: (body: Record<string, unknown>, photos: PhotoItem[]) => void;
   onCancel?: () => void;
   /**
    * Called whenever anything in the form changes, so a NEW service can be kept
@@ -1096,13 +1171,36 @@ function ServiceForm({
   const percentOff = /^\d+$/.test(discount.trim()) ? Number(discount.trim()) : null;
   const [duration, setDuration] = useState(String(initial?.durationMinutes ?? 30));
   const [deposit, setDeposit] = useState(initial?.depositPercentage ?? '20');
-  // Photos chosen while writing a NEW service (§165). Held as files until
-  // "Post", because a photo needs a service to belong to and there is none
-  // yet; an existing service has its live photo manager instead.
-  const [files, setFiles] = useState<File[]>([]);
-  const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
-  useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
+  // The photos, cover first. Every change waits for the button (§281) —
+  // "Post" for a new service, "Save changes" for one already on sale — so
+  // customers see nothing until the seller says so. A new photo is held as a
+  // file until then (§165).
   const PHOTO_LIMIT = 11;
+  const startPhotos = useMemo<PhotoItem[]>(
+    () =>
+      [...(initial?.images ?? [])]
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map((image) => ({ key: image.id, url: image.url, id: image.id })),
+    // What the form opened with, once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+  const [photos, setPhotos] = useState<PhotoItem[]>(startPhotos);
+  const madeUrls = useRef<string[]>([]);
+  useEffect(() => () => madeUrls.current.forEach((url) => URL.revokeObjectURL(url)), []);
+  const addFiles = (picked: File[]) =>
+    setPhotos((was) =>
+      [
+        ...was,
+        ...picked.map((file) => {
+          const url = URL.createObjectURL(file);
+          madeUrls.current.push(url);
+          return { key: url, url, file };
+        }),
+      ].slice(0, PHOTO_LIMIT),
+    );
+  const photoSig = photos.map((p) => p.key).join('|');
+  const photosChanged = photoSig !== startPhotos.map((p) => p.key).join('|');
 
   const body = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -1150,11 +1248,12 @@ function ServiceForm({
     if (baseline.current === null) baseline.current = snapshot;
     const changed = snapshot !== baseline.current;
     onChange?.(values, changed);
-    onDirtyChange?.(changed);
+    // A photo added, removed or made the cover is a change too (§281).
+    onDirtyChange?.(changed || photosChanged);
     // `offers` is derived from `prices` and rebuilt each render, so watching it
     // directly would fire this on every render rather than on every change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, title, description, instructions, discount, saleEndsOn, duration, deposit, prices]);
+  }, [name, title, description, instructions, discount, saleEndsOn, duration, deposit, prices, photoSig]);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -1204,7 +1303,7 @@ function ServiceForm({
         depositPercentage: Number(deposit),
         offers,
       },
-      files,
+      photos,
     );
   };
 
@@ -1424,59 +1523,62 @@ function ServiceForm({
           )}
         </Section>
 
-        {creating ? (
-          <Section
-            id="sv-photos"
-            icon="camera"
-            title="Photos"
-            hint={`${files.length} of ${PHOTO_LIMIT} · choose the cover with “Make cover”`}
-          >
-            <p className="sv-help">
-              Customers see these when they pick this service. Add them now and they go up with it; you
-              can change them later from Edit.
-            </p>
-            <div className="sv-photo-grid">
-              {previews.map((url, index) => (
-                <PhotoTile
-                  key={url}
-                  url={url}
-                  cover={index === 0}
-                  // The cover is simply the first: choosing one moves it there,
-                  // and it goes up first when the service is posted (§187).
-                  onCover={() => setFiles((was) => [was[index], ...was.filter((_, i) => i !== index)])}
-                  onRemove={() => setFiles((was) => was.filter((_, i) => i !== index))}
+        <Section
+          id="sv-photos"
+          icon="camera"
+          title="Photos"
+          hint={`${photos.length} of ${PHOTO_LIMIT} · choose the cover with “Make cover”`}
+        >
+          <p className="sv-help">
+            {creating
+              ? 'Customers see these when they pick this service. Add them now and they go up with it; you can change them later from Edit.'
+              : 'Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it.'}
+          </p>
+          <div className="sv-photo-grid">
+            {photos.map((photo, index) => (
+              <PhotoTile
+                key={photo.key}
+                url={photo.url}
+                cover={index === 0}
+                fresh={!creating && !photo.id}
+                busy={busy}
+                // The cover is simply the first: choosing one moves it there,
+                // and it leads once the form is saved (§187).
+                onCover={() => setPhotos((was) => [was[index], ...was.filter((_, i) => i !== index)])}
+                onRemove={() => setPhotos((was) => was.filter((_, i) => i !== index))}
+              />
+            ))}
+            {photos.length < PHOTO_LIMIT && (
+              <>
+                <input
+                  id="service-photos-pick"
+                  type="file"
+                  multiple
+                  className="visually-hidden"
+                  accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                  disabled={busy}
+                  onChange={(event) => {
+                    addFiles(Array.from(event.target.files ?? []));
+                    event.target.value = '';
+                  }}
                 />
-              ))}
-              {files.length < PHOTO_LIMIT && (
-                <>
-                  <input
-                    id="new-service-photos"
-                    type="file"
-                    multiple
-                    className="visually-hidden"
-                    accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
-                    disabled={busy}
-                    onChange={(event) => {
-                      const picked = Array.from(event.target.files ?? []);
-                      setFiles((was) => [...was, ...picked].slice(0, PHOTO_LIMIT));
-                      event.target.value = '';
-                    }}
-                  />
-                  <label htmlFor="new-service-photos" className={`sv-photo-add${busy ? ' is-disabled' : ''}`}>
-                    <Icon name="upload" size={22} />
-                    {files.length === 0 ? 'Add photos' : 'Add more photos'}
-                  </label>
-                </>
-              )}
-            </div>
-          </Section>
-        ) : (
-          photos && (
-            <Section id="sv-photos" icon="camera" title="Photos" hint="Changes here are saved straight away">
-              {photos}
-            </Section>
-          )
-        )}
+                <label htmlFor="service-photos-pick" className={`sv-photo-add${busy ? ' is-disabled' : ''}`}>
+                  <Icon name="upload" size={22} />
+                  {photos.length === 0 ? 'Add photos' : 'Add more photos'}
+                </label>
+              </>
+            )}
+          </div>
+          {photos.length === 0 && !creating && (
+            <p className="sv-help">No photos. A service with a photo is easier to choose than one without.</p>
+          )}
+          {!creating && photosChanged && (
+            <p className="sv-photo-pending" role="status">
+              <Icon name="info" size={15} /> Photo changes are not saved yet — customers still see the photos as they
+              were until you press “Save changes”.
+            </p>
+          )}
+        </Section>
       </div>
 
       <footer className="sv-form-foot">
@@ -1492,7 +1594,7 @@ function ServiceForm({
             {hiddenUntil
               ? `Ready at ${offers.length} ${offers.length === 1 ? 'branch' : 'branches'} — customers see it once ${hiddenUntil}.`
               : `Goes live at ${offers.length} ${offers.length === 1 ? 'branch' : 'branches'}${
-                  files.length > 0 ? ` with ${files.length} ${files.length === 1 ? 'photo' : 'photos'}` : ''
+                  photos.length > 0 ? ` with ${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}` : ''
                 }.`}
           </span>
         )}
@@ -1520,125 +1622,6 @@ function ServiceForm({
         </div>
       </footer>
     </form>
-  );
-}
-
-/**
- * Photos of one service (§132).
- *
- * The limit and the room left come from the SERVER, never from a constant
- * here: a number hardcoded in a client is a number that disagrees with the
- * server the first time either changes (§132.3).
- */
-function ServicePhotos({ serviceId }: { serviceId: string }) {
-  const queryClient = useQueryClient();
-  const [problem, setProblem] = useState<string | null>(null);
-
-  const photos = useQuery({
-    queryKey: ['service-images', serviceId],
-    queryFn: () => getServiceImages(serviceId),
-  });
-
-  // Both lists change: this one, and the service list that carries the cover.
-  const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['service-images', serviceId] });
-    queryClient.invalidateQueries({ queryKey: ['services'] });
-  };
-
-  const add = useMutation({
-    mutationFn: (file: File) => addServiceImage(serviceId, file),
-    onSuccess: refresh,
-    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
-  });
-
-  // The cover (§187): the listing that comes back is drawn at once, and the
-  // services list is refreshed for its thumbnail.
-  const cover = useMutation({
-    mutationFn: (imageId: string) => setServiceImageCover(serviceId, imageId),
-    onSuccess: (listing) => {
-      queryClient.setQueryData(['service-images', serviceId], listing);
-      queryClient.invalidateQueries({ queryKey: ['services'] });
-    },
-    onError: (error) =>
-      setProblem(error instanceof ApiError ? error.message : 'That did not change the cover.'),
-  });
-
-  const drop = useMutation({
-    mutationFn: (imageId: string) => removeServiceImage(serviceId, imageId),
-    onSuccess: refresh,
-    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not delete.'),
-  });
-
-  const full = (photos.data?.remaining ?? 1) <= 0;
-
-  return (
-    <div className="sv-photos">
-      <p className="sv-help">
-        Customers see these when they pick this service. The <strong>cover</strong> is the one on the
-        service’s card in the app — choose it with “Make cover”.
-        {photos.data && (
-          <span className="sv-photo-count">
-            {' '}
-            {photos.data.count} of {photos.data.limit}
-          </span>
-        )}
-      </p>
-
-      <div className="sv-photo-grid">
-        {photos.data?.images.map((photo, index) => (
-          <PhotoTile
-            key={photo.id}
-            url={photo.url}
-            cover={index === 0}
-            busy={cover.isPending || drop.isPending}
-            onCover={() => {
-              setProblem(null);
-              cover.mutate(photo.id);
-            }}
-            onRemove={async () => {
-              if (
-                await confirmDialog({
-                  title: 'Remove this photo?',
-                  body: <p>It cannot be brought back.</p>,
-                  tone: 'danger',
-                  icon: 'trash',
-                  confirmLabel: 'Remove',
-                })
-              ) {
-                setProblem(null);
-                drop.mutate(photo.id);
-              }
-            }}
-          />
-        ))}
-      </div>
-
-      {photos.data?.count === 0 && (
-        <p className="sv-help">No photos yet. A service with a photo is easier to choose than one without.</p>
-      )}
-
-      {full ? (
-        <p className="sv-help">
-          This service is at its {photos.data?.limit} photo limit. Remove one to add another.
-        </p>
-      ) : (
-        <ImageButton
-          id={`service-photo-${serviceId}`}
-          label="Add a photo"
-          busy={add.isPending}
-          onPick={(file) => {
-            setProblem(null);
-            if (file) add.mutate(file);
-          }}
-        />
-      )}
-
-      {problem && (
-        <p className="error small" role="alert">
-          {problem}
-        </p>
-      )}
-    </div>
   );
 }
 
@@ -1674,12 +1657,15 @@ function salePrice(priceMinor: number, percent: number) {
 function PhotoTile({
   url,
   cover,
+  fresh = false,
   busy,
   onCover,
   onRemove,
 }: {
   url: string;
   cover: boolean;
+  /** Added in this form and not saved yet (§281). */
+  fresh?: boolean;
   busy?: boolean;
   onCover: () => void;
   onRemove: () => void;
@@ -1688,6 +1674,7 @@ function PhotoTile({
     <figure className={cover ? 'sv-photo is-cover' : 'sv-photo'}>
       <img src={url} alt="" />
       {cover && <span className="sv-cover-badge">★ Cover</span>}
+      {fresh && <span className="sv-new-badge">Not saved</span>}
       <figcaption>
         {cover ? (
           <span className="sv-on-card">On the card</span>

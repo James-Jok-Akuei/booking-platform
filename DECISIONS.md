@@ -14436,11 +14436,12 @@ a seller thinks about what they sell:
 - **Adding and editing happen in a panel from the right**, in four sections —
   Name and words, Price and time (each branch's price with the deposit it
   means worked out beside it), Sale (each branch's "customers pay X instead
-  of Y" as it is typed), Photos (chosen ones for a new service; the live
-  manager for an existing one, "saved straight away") — with the action
+  of Y" as it is typed), Photos (chosen ones for a new service; ~~the live
+  manager for an existing one, "saved straight away"~~ — since §281 an
+  existing one's wait for "Save changes" too) — with the action
   buttons fixed at the foot. Clicking a card's cover opens it on Photos.
 - Photos are larger tiles with "★ Cover" on the picture; Make cover and
-  Remove appear on hover.
+  Remove appear on hover (and always, on a touch screen — §281).
 - Every browser pop-up on the page is now the dialog: pausing the last branch
   (the server's own message), stopping everywhere, discarding a draft,
   removing a photo, and the two form checks (a price somewhere; a sale of
@@ -18107,3 +18108,43 @@ agree", and the service posted by itself (POST 403 → accept 200 → POST 201,
 its draft discarded); a price over the maximum shows the server's sentence
 beside the button. The throwaway shop was removed. Full suite: 67 suites,
 1,433 tests (one added: the refusal carries its code).
+
+## 281. A service's photos change only when "Save changes" is pressed (2026-10-18)
+
+Reported: editing a service in the seller app — removing or adding a photo —
+showed in the customer app before "Save changes" was pressed. The seller
+wants to be the one to say when a change goes out.
+
+The photo section of an existing service was a live manager: each add,
+remove and "Make cover" went to the server at once (§132, §194). Everything
+else in the form already waited for the button.
+
+- **The photos are now part of the form**, the same way a new service's
+  always were (§165): added, removed and made the cover in the form, and sent
+  only on **Save changes** — the removed ones first (so a full service has
+  room), then the new ones, then the cover, with "Uploading photo 1 of 2…" on
+  the button. If one of them fails, the rest are still saved and the page
+  says which did not go through.
+- While a change waits, a new photo is marked **Not saved**, the panel says
+  **Unsaved changes**, and a line under the photos says customers still see
+  them as they were. Closing asks "Leave without saving?" and throws the
+  photo changes away with the rest.
+- Removing a photo no longer asks "cannot be brought back" — until Save it can.
+- The live photo manager (`ServicePhotos`) is gone; one photo section serves
+  a new service and an existing one.
+- **Fixed on the way:** on a touch screen, "Make cover" and Remove appeared
+  only on hover, which a phone does not have — so a non-cover photo could not
+  be removed or made the cover. They are always shown there now.
+
+Not changed, on purpose: a service's on/off switch per branch on its card
+still acts at once — a switch is the control that does (§194) — and the
+shopfront's photos (logo, cover, branch galleries) still save as they are
+added; the same could be done there if wanted.
+
+Verified in the browser: on Kigali Barbers, a photo removed, one added and
+made the cover — the server still had the same three photos, the panel said
+Unsaved changes; on a throwaway shop with two photos, one removed, one added
+as cover: unchanged on the server while open, then on Save — DELETE, POST,
+cover — leading with the new one; "Cancel" → "Leave without saving?" →
+photos as they were; at 390 on a touch screen, the buttons on every photo.
+The throwaway shop was removed.
