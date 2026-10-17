@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -18,6 +19,8 @@ import {
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
 import { PayoutDestinationsService } from './payout-destinations.service';
+import { AuthService } from '../auth/auth.service';
+import { assertRecentlyConfirmed } from '../auth/guards/recent-auth.guard';
 import { CreatePayoutDestinationDto } from './dto/create-payout-destination.dto';
 import {
   RejectPayoutDestinationDto,
@@ -46,14 +49,24 @@ import {
 @Roles(UserRole.BUSINESS)
 @ApiErrors({ auth: true, roles: true, validation: true })
 export class BusinessPayoutDestinationController {
-  constructor(private readonly destinations: PayoutDestinationsService) {}
+  constructor(
+    private readonly destinations: PayoutDestinationsService,
+    private readonly auth: AuthService,
+  ) {}
 
+  /**
+   * Where the money goes, so a code typed in the last few minutes is needed
+   * (§279) — asked only once it is known this is the owner, who alone may.
+   */
   @Post()
   @ApiCreatedResponse({ type: PayoutDestinationDto })
-  submit(
+  async submit(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreatePayoutDestinationDto,
+    @Headers('x-step-up') stepUp?: string,
   ) {
+    await this.destinations.requireOwner(user.userId);
+    assertRecentlyConfirmed(this.auth, user, stepUp);
     return this.destinations.submit(user.userId, dto);
   }
 

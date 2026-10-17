@@ -42,6 +42,14 @@ export class ApiErrorDto {
    */
   @ApiProperty({ required: false, example: 'Not Found' })
   error?: string;
+
+  /**
+   * A machine-readable reason, on the few refusals a client answers by doing
+   * something rather than by showing the sentence: `STEP_UP_REQUIRED` means
+   * "ask for a code, then send the same request again" (§279).
+   */
+  @ApiProperty({ required: false, example: 'STEP_UP_REQUIRED' })
+  code?: string;
 }
 
 /**

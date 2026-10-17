@@ -17964,3 +17964,107 @@ bottom bar is unchanged.
 Checked in the web preview at 390 and 1280 on two shops (one rated, one
 not), the checkout of a test booking (cancelled and removed afterwards), and
 the Account sheet.
+
+## 279. How long a sign-in lasts, per app, and confirming it is you (2026-10-18)
+
+Asked: after how long should people be signed out for safety, in each of the
+three apps. Recommended, agreed ("yes build it"):
+
+| App | Signed out after unused for | Signed out after, however busy |
+|---|---|---|
+| Admin console | **30 minutes** | **12 hours** |
+| Seller app | **12 hours** | **30 days** |
+| Customer app | **30 days** (as before) | — |
+
+Why: the console can approve shops and mark payouts paid; the seller app
+sits on a shop's shared front-desk computer (a working day, signed out by the
+next morning); the customer app is on a person's own locked phone and nothing
+can be paid without their MoMo PIN — signing customers out mostly loses
+bookings. Before this, all three were the same: 30 days unused, renewed for
+ever by use.
+
+### 279.1 The server
+
+- One table, `src/auth/session-policy.ts`, replaces `JWT_REFRESH_EXPIRES_IN`.
+- **Unused**: the refresh token lives as long as the app's idle time, and is
+  rotated on each use, as before.
+- **However busy**: `RefreshToken.sessionStartedAt` — when the code was typed —
+  is carried through every rotation. Past `start + most`, the refresh is
+  refused ("For your safety, this sign-in has ended"), and no token is ever
+  issued to outlive that moment (the access token is shortened to fit).
+  Sign-ins that existed before are counted from the migration.
+- Token pairs now say `session: { idleMinutes, maxMinutes, endsAt }`, so the
+  screens never keep their own copy of the rules.
+- Refresh tokens carry a random `jti`: two issued in the same second were the
+  same token, and the stored hash is unique.
+
+### 279.2 The screens (admin console and seller app)
+
+- **The app keeps its own clock**, because the seller app checks for new
+  bookings and messages every minute and those checks would keep a forgotten
+  tab signed in for ever. It counts real clicks, keys, scrolling and touches,
+  written to `localStorage` at most every 5 seconds — **shared by every tab**,
+  so one busy tab keeps the others open.
+- **"Still there?"** 2 minutes before the end in the console, 5 in the seller
+  app: a ring running down, the time left, *Stay signed in* or *Sign out now*.
+  Moving the mouse does not dismiss it; a button does. A sign-in's fixed end
+  is said 2 minutes before ("Time to sign in again").
+- A tab or browser opened again after too long is signed out at once, before
+  anything shows. Opening a page counts as using it.
+- While someone is busy without the screen asking the server for anything,
+  the sign-in is renewed in the background (after half the idle time), so
+  the server's clock agrees with the screen's.
+- **Every tab is one sign-in**: signing out in one signs out the others, and
+  two tabs renewing at the same moment no longer sign each other out (the
+  loser uses the winner's new tokens).
+- The sign-in page says why: "You were signed out after 30 minutes without
+  use, to keep the console safe. Sign in again to carry on."
+- `IdleGuard.tsx` and `words.ts` are identical copies in both apps (`cmp`).
+
+### 279.3 Confirm it is you
+
+The changes that move a shop's money or let someone in need a code typed in
+the last **10 minutes** — a sign-in that recent, or a fresh "confirm it is
+you" code:
+
+- setting the **payout number**;
+- **inviting** someone, changing their **role** or **branches**, **removing**
+  them.
+
+The server refuses with 403 and `code: STEP_UP_REQUIRED` (now part of
+`ApiErrorDto`). The seller app then shows *Confirm it is you*, emails a
+code of its own kind (`OtpPurpose.STEP_UP`, "Confirm it is you: 123456" —
+it cannot sign anybody in, and a sign-in code cannot be used here), and on
+the right code sends the same request again with an `X-Step-Up` pass; the
+page that made the change never knows it was asked. The pass lasts 10
+minutes, is kept in memory only, names its person, and is signed with a key
+of its own (derived from the access key), so it can never stand in for a
+sign-in. Who may do the change is answered first: staff are refused for
+being staff, not asked for a code; the payout route checks the owner before
+asking.
+
+Tests that mint tokens now mint fresh sign-ins (`auth_time` = now), and can
+mint older ones (`ctx.token(…, signedInMinutesAgo)`).
+
+### 279.4 Fixed on the way
+
+The console's Overview chart: the hover label on the first and last bars
+stuck out past the chart, so on a phone the whole page — and every sheet that
+slides up — was 18px wider than the screen. The end labels now lean inwards.
+
+### 279.5 Verified
+
+- `test/sessions.e2e.spec.ts`, 15 cases over HTTP through the real sign-in:
+  each app's lengths; a refresh keeps its start; past the end it is refused;
+  near the end no token outlives it; unused past idle it is refused; a fresh
+  sign-in is enough; an older one is asked and a code lets the same change
+  through (twice in a row, asked once); a wrong code; a confirm code cannot
+  sign in, cannot be borrowed by another owner, and is not a sign-in; staff
+  refused without being asked; role, branches and removal ask; the payout
+  number asks the owner only. Full suite: 67 suites, 1,432 tests.
+- In the browser: the console's warning at 1440, 1024 and 390, *Stay signed
+  in* resetting the clock, the automatic sign-out with its note and the old
+  sign-in refused by the server; the seller app's 12-hour warning at 390; the
+  owner of Kigali Barbers with a 20-minute-old sign-in inviting someone — asked,
+  the emailed code typed, the invitation sent by itself — at 1440 and 390. The
+  test invitation was removed.

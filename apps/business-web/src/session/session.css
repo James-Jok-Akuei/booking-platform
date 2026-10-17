@@ -1,0 +1,24 @@
+/* Signing out an unused screen, and confirming it is you (§279). */
+
+.dlg.idle { text-align: left; }
+.idle-ring { position: relative; width: 72px; height: 72px; display: grid; place-items: center; margin-bottom: 14px; color: var(--warn); }
+.idle-ring-dial { position: absolute; inset: 0; transform: rotate(-90deg); }
+.idle-ring > :not(.idle-ring-dial) { position: relative; }
+.idle-ring-track { fill: var(--warn-soft); stroke: var(--warn-soft); stroke-width: 6; }
+.idle-ring-fill { fill: none; stroke: var(--warn); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.idle-time { font-variant-numeric: tabular-nums; color: var(--ink); }
+.idle-small { font-size: 13px; color: var(--muted); }
+.dlg-actions button svg { margin-right: 2px; }
+
+.cy-sent { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--ask-soft); color: var(--ask); font-size: 13.5px; font-weight: 650; }
+.cy-sent svg { flex: none; }
+.cy-boxes { margin: 16px 0 6px; }
+.cy-problem { margin: 8px 0 0; font-size: 13px; font-weight: 650; color: var(--danger); }
+.cy-again { min-height: 0; padding: 0; border: none; background: none; font-size: 13px; font-weight: 700; color: var(--accent-deep); }
+.cy-again:hover:not(:disabled) { background: none; text-decoration: underline; }
+.cy-again:disabled { color: var(--muted); opacity: 1; }
+.cy-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .idle-ring-fill { transition: none; }
+}

@@ -4,6 +4,8 @@ export interface AuthenticatedUser {
   userId: string;
   email: string;
   role: 'BUSINESS' | 'CUSTOMER' | 'ADMIN';
+  /** When this sign-in's code was typed, in seconds (§279); null on older tokens. */
+  authTime?: number | null;
 }
 
 // Returns undefined on routes guarded by OptionalJwtAuthGuard when the caller

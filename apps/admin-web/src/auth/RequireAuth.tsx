@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAuth } from './auth-context';
+import { IdleGuard } from '../session/IdleGuard';
 
 /**
  * Keeps unauthenticated people out of the app shell.
@@ -18,5 +19,11 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  return <>{children}</>;
+  // Every signed-in screen signs itself out when nobody is using it (§279).
+  return (
+    <>
+      {children}
+      <IdleGuard />
+    </>
+  );
 }

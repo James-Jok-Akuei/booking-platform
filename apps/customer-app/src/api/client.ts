@@ -124,7 +124,9 @@ export const tokens = {
     return cache.user;
   },
 
-  async set(pair: TokenPair, user?: AuthenticatedUser) {
+  // Only the two tokens are kept: on a phone a sign-in lasts 30 days unused and
+  // has no other end (§279), so there is nothing for the app to count down.
+  async set(pair: Pick<TokenPair, 'accessToken' | 'refreshToken'>, user?: AuthenticatedUser) {
     cache.access = pair.accessToken;
     cache.refresh = pair.refreshToken;
     authChanged();

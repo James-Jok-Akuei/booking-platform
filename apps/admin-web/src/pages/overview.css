@@ -206,6 +206,12 @@
 }
 .bar-tip em { font-style: normal; font-weight: 600; color: rgba(255, 255, 255, 0.6); font-size: 11px; }
 .bar-col:hover .bar-tip { opacity: 1; transform: translate(-50%, 0); }
+/* At the two ends, the label leans inwards: centred, it stuck out past the
+   chart and made the whole page wider than a phone (§279). */
+.bar-col:nth-child(-n + 2) .bar-tip { left: 0; transform: translate(0, 4px); align-items: flex-start; }
+.bar-col:nth-last-child(-n + 2) .bar-tip { left: auto; right: 0; transform: translate(0, 4px); align-items: flex-end; }
+.bar-col:nth-child(-n + 2):hover .bar-tip,
+.bar-col:nth-last-child(-n + 2):hover .bar-tip { transform: none; }
 /* The week before, a step lighter, so this week stands out. */
 .bar-col.is-before .bar { background: linear-gradient(180deg, #8a968a, #6f7b6f); }
 

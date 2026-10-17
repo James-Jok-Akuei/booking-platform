@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent, type ReactNode } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ApiError, requestOtp } from '../api/client';
+import { ApiError, requestOtp, signedOutWhy } from '../api/client';
+import { lengthWords } from '../session/words';
 import { getMe, getReadiness, publishedLegal, wallPlaces, type LegalDocument } from '../api/business';
 import { CodeBoxes, type CodeState } from '../ui/CodeBoxes';
 import { Icon, type IconName } from '../ui/Icon';
@@ -84,6 +85,8 @@ export function LoginPage() {
   }, []);
 
   const [step, setStep] = useState<Step>('email');
+  // Why the last sign-in ended, when the app ended it for safety (§279).
+  const [why] = useState(signedOutWhy);
   const [email, setEmail] = useState('');
   const [isNew, setIsNew] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -313,6 +316,17 @@ export function LoginPage() {
               }}
               noValidate
             >
+              {why && (
+                <p className="au-note is-info" role="status">
+                  <Icon name="lock" size={16} />
+                  <span>
+                    {why.why === 'idle'
+                      ? `You were signed out after ${lengthWords(why.idleMinutes)} without use, to keep the account safe.`
+                      : `For your safety, a sign-in lasts ${lengthWords(why.maxMinutes ?? why.idleMinutes)}.`}{' '}
+                    Sign in again to carry on.
+                  </span>
+                </p>
+              )}
               {start === 'signup' ? (
                 <>
                   <h1 className="au-title">

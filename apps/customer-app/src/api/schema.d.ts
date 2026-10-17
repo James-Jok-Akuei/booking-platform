@@ -65,6 +65,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/step-up/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Emails a signed-in person a code to confirm a risky change (§279). */
+        post: operations["AuthController_requestStepUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/step-up/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The code, for a pass the app sends as `X-Step-Up` for the next few minutes. */
+        post: operations["AuthController_verifyStepUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/logout": {
         parameters: {
             query?: never;
@@ -2618,6 +2652,10 @@ export interface paths {
         };
         get: operations["BusinessPayoutDestinationController_find"];
         put?: never;
+        /**
+         * Where the money goes, so a code typed in the last few minutes is needed
+         *     (§279) — asked only once it is known this is the owner, who alone may.
+         */
         post: operations["BusinessPayoutDestinationController_submit"];
         delete?: never;
         options?: never;
@@ -2819,6 +2857,13 @@ export interface components {
              * @example Not Found
              */
             error?: string;
+            /**
+             * @description A machine-readable reason, on the few refusals a client answers by doing
+             *     something rather than by showing the sentence: `STEP_UP_REQUIRED` means
+             *     "ask for a code, then send the same request again" (§279).
+             * @example STEP_UP_REQUIRED
+             */
+            code?: string;
             statusCode: number;
         };
         RequestOtpDto: {
@@ -2853,10 +2898,20 @@ export interface components {
             /** @enum {string} */
             role: "BUSINESS" | "CUSTOMER" | "ADMIN";
         };
+        SessionDto: {
+            /** @description Unused for this long, the sign-in ends. */
+            idleMinutes: number;
+            /** @description The most it lasts however busy, in minutes; null when only idleness ends it. */
+            maxMinutes: number | null;
+            /** @description However busy, it ends at this moment; null when only idleness ends it. */
+            endsAt: string | null;
+        };
         SignedInDto: {
             user: components["schemas"]["AuthenticatedUserDto"];
             accessToken: string;
             refreshToken: string;
+            /** @description How long this sign-in lasts (§279), so a screen can warn before it ends. */
+            session: components["schemas"]["SessionDto"];
         };
         RefreshTokenDto: {
             refreshToken: string;
@@ -2864,6 +2919,16 @@ export interface components {
         TokenPairDto: {
             accessToken: string;
             refreshToken: string;
+            /** @description How long this sign-in lasts (§279), so a screen can warn before it ends. */
+            session: components["schemas"]["SessionDto"];
+        };
+        StepUpCodeDto: {
+            code: string;
+        };
+        StepUpDto: {
+            stepUpToken: string;
+            /** @description Until when risky changes go through without asking again. */
+            expiresAt: string;
         };
         ActionMessageDto: {
             message: string;
@@ -6345,6 +6410,84 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokenPairDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description Under a narrower limit than the platform-wide one. The message says how long to wait. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AuthController_requestStepUp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OtpRequestedDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description Under a narrower limit than the platform-wide one. The message says how long to wait. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AuthController_verifyStepUp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepUpCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StepUpDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
@@ -15829,7 +15972,9 @@ export interface operations {
     BusinessPayoutDestinationController_submit: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "x-step-up": string;
+            };
             path?: never;
             cookie?: never;
         };

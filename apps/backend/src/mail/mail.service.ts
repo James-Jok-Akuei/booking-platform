@@ -75,9 +75,32 @@ export class MailService {
    * fall back to squares where rounded corners are not supported, and the
    * plain-text part says the same thing for clients that draw nothing.
    */
-  async sendOtpEmail(email: string, code: string): Promise<void> {
+  /**
+   * A six-digit code. `sign-in` to sign in or register; `confirm` to confirm
+   * it is you before a risky change while signed in (§279) — said differently,
+   * because a code arriving out of the blue for "a change" is exactly what
+   * someone should notice.
+   */
+  async sendOtpEmail(email: string, code: string, kind: 'sign-in' | 'confirm' = 'sign-in'): Promise<void> {
     const from = this.config.get<string>('SMTP_FROM');
     const minutes = this.config.get<string>('OTP_EXPIRES_IN_MINUTES') ?? '10';
+    const words =
+      kind === 'confirm'
+        ? {
+            eyebrow: 'Confirm it is you',
+            title: 'Your code to confirm',
+            lead: 'You are making an important change — the payout number, or who works at the shop. Enter this code to confirm it is you.',
+            ignore:
+              'Did not ask for this? Someone may be using your account. Do not share the code: sign out on every device and contact us.',
+            subject: `Confirm it is you: ${code}`,
+          }
+        : {
+            eyebrow: 'Sign-in code',
+            title: 'Here is your code',
+            lead: 'Enter it in the app to sign in. If you are new, the same code creates your account.',
+            ignore: 'Did not ask for this? You can ignore this email. Nobody can sign in without the code, and we will never ask you for it.',
+            subject: `Your sign-in code: ${code}`,
+          };
 
     // In development, don't hard-fail the signup/login flow if SMTP isn't
     // configured yet — log the code so you can keep testing the flow locally.
@@ -105,28 +128,23 @@ export class MailService {
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:#FFFFFF;border-radius:24px">' +
       '<tr><td style="height:8px;background:#F0532D;border-radius:24px 24px 0 0;font-size:0;line-height:0">&nbsp;</td></tr>' +
       `<tr><td style="padding:30px 28px 8px;${font}">` +
-      '<div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#F0532D">Sign-in code</div>' +
-      '<div style="font-size:26px;font-weight:800;color:#15171C;letter-spacing:-0.4px;padding-top:6px">Here is your code</div>' +
-      '<div style="font-size:15px;line-height:22px;color:#4B505B;padding-top:8px">Enter it in the app to sign in. If you are new, the same code creates your account.</div>' +
+      `<div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#F0532D">${words.eyebrow}</div>` +
+      `<div style="font-size:26px;font-weight:800;color:#15171C;letter-spacing:-0.4px;padding-top:6px">${words.title}</div>` +
+      `<div style="font-size:15px;line-height:22px;color:#4B505B;padding-top:8px">${words.lead}</div>` +
       '</td></tr>' +
       `<tr><td align="center" style="padding:22px 8px"><table role="presentation" cellpadding="0" cellspacing="0"><tr>${boxes}</tr></table></td></tr>` +
       `<tr><td style="padding:0 28px 28px;${font}">` +
       `<div style="font-size:14px;line-height:21px;color:#4B505B">It works for <strong style="color:#15171C">${minutes} minutes</strong>, and only once.</div>` +
       '<div style="font-size:13px;line-height:20px;color:#8B909B;padding-top:14px;border-top:1px solid #ECE9E3;margin-top:18px">' +
-      'Did not ask for this? You can ignore this email. Nobody can sign in without the code, and we will never ask you for it.' +
+      words.ignore +
       '</div></td></tr></table></td></tr></table></body></html>';
 
     try {
       await this.transporter.sendMail({
         from,
         to: email,
-        subject: `Your sign-in code: ${code}`,
-        text:
-          `Your sign-in code is ${code}.\n\n` +
-          `Enter it in the app to sign in. If you are new, the same code creates your account. ` +
-          `It works for ${minutes} minutes, and only once.\n\n` +
-          'Did not ask for this? You can ignore this email. Nobody can sign in without the code, ' +
-          'and we will never ask you for it.',
+        subject: words.subject,
+        text: `${words.title}: ${code}.\n\n${words.lead} It works for ${minutes} minutes, and only once.\n\n${words.ignore}`,
         html,
       });
     } catch (err) {

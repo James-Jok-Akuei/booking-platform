@@ -12,8 +12,12 @@ export interface E2eContext {
   prisma: PrismaService;
   /** Base URL of the listening server, e.g. http://127.0.0.1:54321 */
   url: string;
-  /** Mints a real access token, bypassing the OTP flow but not the guards. */
-  token(userId: string, email: string, role: string): string;
+  /**
+   * Mints a real access token, bypassing the OTP flow but not the guards. It
+   * reads as a sign-in that just happened (§279); `signedInMinutesAgo` makes it
+   * an older one, for the changes that need a recent code.
+   */
+  token(userId: string, email: string, role: string, signedInMinutesAgo?: number): string;
   /** A correctly signed token that has already expired. */
   expiredToken(userId: string, email: string, role: string): string;
   close(): Promise<void>;
@@ -52,8 +56,11 @@ export async function createE2eApp(): Promise<E2eContext> {
     app,
     prisma: app.get(PrismaService),
     url,
-    token: (userId, email, role) =>
-      jwt.sign({ sub: userId, email, role }, { secret, expiresIn: '1h' }),
+    token: (userId, email, role, signedInMinutesAgo = 0) =>
+      jwt.sign(
+        { sub: userId, email, role, auth_time: Math.floor(Date.now() / 1000) - signedInMinutesAgo * 60 },
+        { secret, expiresIn: '1h' },
+      ),
     expiredToken: (userId, email, role) =>
       jwt.sign({ sub: userId, email, role }, { secret, expiresIn: '-1h' }),
     close: async () => {

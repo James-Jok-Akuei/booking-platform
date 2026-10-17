@@ -23,6 +23,28 @@ export class AuthenticatedUserDto {
 export class TokenPairDto {
   accessToken!: string;
   refreshToken!: string;
+  /** How long this sign-in lasts (§279), so a screen can warn before it ends. */
+  session!: SessionDto;
+}
+
+/**
+ * How long a sign-in lasts (§279). The rules are per app — see
+ * `session-policy.ts` — and said here so the screens never keep their own copy.
+ */
+export class SessionDto {
+  /** Unused for this long, the sign-in ends. */
+  idleMinutes!: number;
+  /** The most it lasts however busy, in minutes; null when only idleness ends it. */
+  maxMinutes!: number | null;
+  /** However busy, it ends at this moment; null when only idleness ends it. */
+  endsAt!: string | null;
+}
+
+/** A "confirm it is you" that went through (§279): send it as `X-Step-Up`. */
+export class StepUpDto {
+  stepUpToken!: string;
+  /** Until when risky changes go through without asking again. */
+  expiresAt!: string;
 }
 
 /** What signing in answers: the tokens, and who they belong to. */

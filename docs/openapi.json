@@ -156,6 +156,100 @@
         ]
       }
     },
+    "/auth/step-up/request": {
+      "post": {
+        "operationId": "AuthController_requestStepUp",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpRequestedDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Under a narrower limit than the platform-wide one. The message says how long to wait.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Emails a signed-in person a code to confirm a risky change (§279).",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/step-up/verify": {
+      "post": {
+        "operationId": "AuthController_verifyStepUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StepUpCodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StepUpDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Under a narrower limit than the platform-wide one. The message says how long to wait.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The code, for a pass the app sends as `X-Step-Up` for the next few minutes.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
     "/auth/logout": {
       "post": {
         "operationId": "AuthController_logout",
@@ -12494,7 +12588,16 @@
     "/business/payout-destination": {
       "post": {
         "operationId": "BusinessPayoutDestinationController_submit",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "x-step-up",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -12547,6 +12650,7 @@
             }
           }
         },
+        "summary": "Where the money goes, so a code typed in the last few minutes is needed\n(§279) — asked only once it is known this is the owner, who alone may.",
         "tags": [
           "BusinessPayoutDestination"
         ]
@@ -13736,6 +13840,11 @@
             "description": "The status text, e.g. \"Not Found\". ABSENT on a 401 — see above.",
             "example": "Not Found"
           },
+          "code": {
+            "type": "string",
+            "description": "A machine-readable reason, on the few refusals a client answers by doing\nsomething rather than by showing the sentence: `STEP_UP_REQUIRED` means\n\"ask for a code, then send the same request again\" (§279).",
+            "example": "STEP_UP_REQUIRED"
+          },
           "statusCode": {
             "type": "number"
           }
@@ -13818,6 +13927,30 @@
           "role"
         ]
       },
+      "SessionDto": {
+        "type": "object",
+        "properties": {
+          "idleMinutes": {
+            "type": "number",
+            "description": "Unused for this long, the sign-in ends."
+          },
+          "maxMinutes": {
+            "type": "number",
+            "nullable": true,
+            "description": "The most it lasts however busy, in minutes; null when only idleness ends it."
+          },
+          "endsAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "However busy, it ends at this moment; null when only idleness ends it."
+          }
+        },
+        "required": [
+          "idleMinutes",
+          "maxMinutes",
+          "endsAt"
+        ]
+      },
       "SignedInDto": {
         "type": "object",
         "properties": {
@@ -13829,12 +13962,21 @@
           },
           "refreshToken": {
             "type": "string"
+          },
+          "session": {
+            "description": "How long this sign-in lasts (§279), so a screen can warn before it ends.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SessionDto"
+              }
+            ]
           }
         },
         "required": [
           "user",
           "accessToken",
-          "refreshToken"
+          "refreshToken",
+          "session"
         ]
       },
       "RefreshTokenDto": {
@@ -13856,11 +13998,49 @@
           },
           "refreshToken": {
             "type": "string"
+          },
+          "session": {
+            "description": "How long this sign-in lasts (§279), so a screen can warn before it ends.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SessionDto"
+              }
+            ]
           }
         },
         "required": [
           "accessToken",
-          "refreshToken"
+          "refreshToken",
+          "session"
+        ]
+      },
+      "StepUpCodeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 6
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "StepUpDto": {
+        "type": "object",
+        "properties": {
+          "stepUpToken": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Until when risky changes go through without asking again."
+          }
+        },
+        "required": [
+          "stepUpToken",
+          "expiresAt"
         ]
       },
       "ActionMessageDto": {

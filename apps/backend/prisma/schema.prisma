@@ -35,6 +35,7 @@ enum BusinessStatus {
 
 enum OtpPurpose {
   LOGIN // covers both signup and login since OTP-only auth treats them the same
+  STEP_UP // "confirm it is you" before a risky change, while signed in (§279)
 }
 
 // Who a person is within a business. Exactly one OWNER per business is an
@@ -2032,6 +2033,12 @@ model RefreshToken {
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
+
+  /// When the code was typed that began this sign-in (§279). Carried unchanged
+  /// through every rotation, so a sign-in has an end that use cannot push back
+  /// (12 hours for an administrator, 30 days for a business), and so a change
+  /// made soon after signing in does not ask for a second code.
+  sessionStartedAt DateTime @default(now())
 
   @@index([userId])
   @@map("refresh_tokens")

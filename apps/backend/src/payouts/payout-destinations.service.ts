@@ -502,7 +502,7 @@ export class PayoutDestinationsService {
    * running the shop day to day — a MANAGER can change prices and hours, but
    * not who gets paid.
    */
-  private async requireOwner(userId: string) {
+  async requireOwner(userId: string) {
     const membership = await this.requireActiveMember(userId);
     if (membership.role !== BusinessMemberRole.OWNER) {
       throw new ForbiddenException(

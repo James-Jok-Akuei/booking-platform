@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { RequestOtpDto } from './dto/request-otp.dto';
@@ -10,8 +10,12 @@ import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   OtpRequestedDto,
   SignedInDto,
+  StepUpDto,
   TokenPairDto,
 } from './dto/auth-response.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
+import { StepUpCodeDto } from './dto/step-up.dto';
 
 @Controller('auth')
 @ApiErrors({ validation: true, rateLimited: true })
@@ -50,6 +54,24 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   refresh(@Body() dto: RefreshTokenDto) {
     return this.authService.refreshTokens(dto.refreshToken);
+  }
+
+  /** Emails a signed-in person a code to confirm a risky change (§279). */
+  @Post('step-up/request')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: OtpRequestedDto })
+  @HttpCode(HttpStatus.OK)
+  requestStepUp(@CurrentUser() user: AuthenticatedUser) {
+    return this.authService.requestStepUp(user.userId);
+  }
+
+  /** The code, for a pass the app sends as `X-Step-Up` for the next few minutes. */
+  @Post('step-up/verify')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ type: StepUpDto })
+  @HttpCode(HttpStatus.OK)
+  verifyStepUp(@CurrentUser() user: AuthenticatedUser, @Body() dto: StepUpCodeDto) {
+    return this.authService.verifyStepUp(user.userId, dto.code);
   }
 
   @Post('logout')

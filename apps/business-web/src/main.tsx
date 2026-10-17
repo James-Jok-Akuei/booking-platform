@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App } from './App';
 import { AuthProvider } from './auth/auth-context';
 import { DialogHost } from './ui/Dialog';
+import { ConfirmHost } from './session/ConfirmItsYou';
 import './styles.css';
 
 const queryClient = new QueryClient({
@@ -31,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <App />
           <DialogHost />
+          <ConfirmHost />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

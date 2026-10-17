@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LegalService } from '../legal/legal.service';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import {
@@ -20,13 +20,22 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { RECENT_AUTH_MINUTES, SESSION_POLICY, sessionEndsAt } from './session-policy';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 
 const BCRYPT_ROUNDS = 10;
+
+/** Said when a sign-in has reached the most it may last (§279). */
+const SIGN_IN_ENDED = 'For your safety, this sign-in has ended. Please sign in again.';
 
 export interface TokenPair {
   accessToken: string;
   refreshToken: string;
+  session: { idleMinutes: number; maxMinutes: number | null; endsAt: string | null };
 }
+
+/** An OTP row, as far as checking a typed code needs it. */
+type CodeRow = { id: string; codeHash: string; expiresAt: Date; attempts: number; maxAttempts: number };
 
 @Injectable()
 export class AuthService {
@@ -126,12 +135,12 @@ export class AuthService {
     return { message: 'Verification code sent to your email.' };
   }
 
-  private async enforceRateLimits(email: string): Promise<void> {
+  private async enforceRateLimits(email: string, purpose: OtpPurpose = OtpPurpose.LOGIN): Promise<void> {
     const cooldownSeconds = Number(this.config.get('OTP_RESEND_COOLDOWN_SECONDS') ?? 60);
     const maxPerHour = Number(this.config.get('OTP_MAX_REQUESTS_PER_HOUR') ?? 5);
 
     const lastOtp = await this.prisma.otpCode.findFirst({
-      where: { email, purpose: OtpPurpose.LOGIN },
+      where: { email, purpose },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -146,7 +155,7 @@ export class AuthService {
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const requestsInLastHour = await this.prisma.otpCode.count({
-      where: { email, purpose: OtpPurpose.LOGIN, createdAt: { gte: oneHourAgo } },
+      where: { email, purpose, createdAt: { gte: oneHourAgo } },
     });
 
     if (requestsInLastHour >= maxPerHour) {
@@ -178,31 +187,10 @@ export class AuthService {
       orderBy: { createdAt: 'desc' },
     });
 
-    if (!otp || otp.expiresAt < new Date()) {
-      throw new BadRequestException('Invalid or expired verification code.');
-    }
+    const used = await this.consumeCode(otp, code);
 
-    if (otp.attempts >= otp.maxAttempts) {
-      throw new BadRequestException('Too many incorrect attempts. Please request a new code.');
-    }
-
-    const isMatch = await bcrypt.compare(code, otp.codeHash);
-    if (!isMatch) {
-      await this.prisma.otpCode.update({
-        where: { id: otp.id },
-        data: { attempts: { increment: 1 } },
-      });
-      throw new BadRequestException('Invalid or expired verification code.');
-    }
-
-    // Mark OTP consumed so it can't be replayed.
-    await this.prisma.otpCode.update({
-      where: { id: otp.id },
-      data: { consumedAt: new Date() },
-    });
-
-    const wasRegistration = otp.registrationRole !== null;
-    const user = await this.findOrCreateUser(normalizedEmail, otp.registrationRole);
+    const wasRegistration = used.registrationRole !== null;
+    const user = await this.findOrCreateUser(normalizedEmail, used.registrationRole);
 
     /**
      * A brand-new account accepts the published documents as it is created
@@ -468,17 +456,42 @@ export class AuthService {
 
   // ---------- Token issuance / refresh / logout ----------
 
-  private async issueTokenPair(userId: string, email: string, role: UserRole): Promise<TokenPair> {
-    const payload: JwtPayload = { sub: userId, email, role };
+  /**
+   * A new token pair for a sign-in that began at `sessionStartedAt` (§279).
+   *
+   * The refresh token lives as long as the app's idle time, so a sign-in left
+   * unused ends by itself; neither token outlives the most a sign-in may last,
+   * however it is used. Both carry `auth_time`, the moment the code was typed.
+   */
+  private async issueTokenPair(
+    userId: string,
+    email: string,
+    role: UserRole,
+    sessionStartedAt: Date = new Date(),
+  ): Promise<TokenPair> {
+    const { idleMinutes, maxMinutes } = SESSION_POLICY[role];
+    const endsAt = sessionEndsAt(role, sessionStartedAt);
+    const secondsLeft = endsAt ? Math.floor((endsAt.getTime() - Date.now()) / 1000) : Infinity;
+    if (secondsLeft <= 0) throw new UnauthorizedException(SIGN_IN_ENDED);
+
+    const payload: JwtPayload = {
+      sub: userId,
+      email,
+      role,
+      auth_time: Math.floor(sessionStartedAt.getTime() / 1000),
+    };
 
     const accessToken = this.jwt.sign(payload, {
       secret: this.config.get<string>('JWT_ACCESS_SECRET'),
-      expiresIn: this.expiresIn('JWT_ACCESS_EXPIRES_IN', '15m'),
+      expiresIn: Math.min(this.accessSeconds(), secondsLeft),
     });
 
     const refreshToken = this.jwt.sign(payload, {
       secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.expiresIn('JWT_REFRESH_EXPIRES_IN', '30d'),
+      expiresIn: Math.min(idleMinutes * 60, secondsLeft),
+      // Two pairs issued in the same second would otherwise be the same token,
+      // and the stored hash is unique.
+      jwtid: crypto.randomUUID(),
     });
 
     const tokenHash = this.hashToken(refreshToken);
@@ -489,17 +502,24 @@ export class AuthService {
         userId,
         tokenHash,
         expiresAt: new Date(decoded.exp * 1000),
+        sessionStartedAt,
       },
     });
 
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+      session: { idleMinutes, maxMinutes, endsAt: endsAt?.toISOString() ?? null },
+    };
   }
 
-  // @nestjs/jwt types `expiresIn` as `number | StringValue`, where StringValue is
-  // a template literal type ('15m', '30d', ...). Env vars are plain `string |
-  // undefined`, so they need a cast through the option type to satisfy it.
-  private expiresIn(key: string, fallback: string): JwtSignOptions['expiresIn'] {
-    return (this.config.get<string>(key) ?? fallback) as JwtSignOptions['expiresIn'];
+  /** The access token's life, from `JWT_ACCESS_EXPIRES_IN` ("15m", "900", "1h"). */
+  private accessSeconds(): number {
+    const raw = String(this.config.get<string>('JWT_ACCESS_EXPIRES_IN') ?? '15m').trim();
+    const match = /^(\d+)\s*([smhd]?)$/.exec(raw);
+    if (!match) return 15 * 60;
+    const unit = { '': 1, s: 1, m: 60, h: 3600, d: 86400 }[match[2] as '' | 's' | 'm' | 'h' | 'd'];
+    return Number(match[1]) * unit;
   }
 
   private hashToken(token: string): string {
@@ -532,7 +552,120 @@ export class AuthService {
       data: { revokedAt: new Date() },
     });
 
-    return this.issueTokenPair(payload.sub, payload.email, payload.role);
+    // The same sign-in, continued: its start — and so its end — does not move
+    // (§279). Past its end, it is over however recently it was used.
+    const endsAt = sessionEndsAt(payload.role as UserRole, stored.sessionStartedAt);
+    if (endsAt && endsAt <= new Date()) throw new UnauthorizedException(SIGN_IN_ENDED);
+
+    return this.issueTokenPair(payload.sub, payload.email, payload.role as UserRole, stored.sessionStartedAt);
+  }
+
+  // ---------- Confirm it is you (§279) ----------
+
+  /**
+   * Emails a signed-in person a code to confirm a risky change — the payout
+   * number, who works at the shop. A code of its own kind: it cannot sign
+   * anybody in, and a sign-in code cannot be used here.
+   */
+  async requestStepUp(userId: string): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, closedAt: true },
+    });
+    if (!user || user.closedAt) throw new UnauthorizedException('Not signed in.');
+
+    await this.enforceRateLimits(user.email, OtpPurpose.STEP_UP);
+
+    const code = this.generateOtpCode();
+    const expiresInMinutes = Number(this.config.get('OTP_EXPIRES_IN_MINUTES') ?? 10);
+    await this.prisma.otpCode.create({
+      data: {
+        email: user.email,
+        codeHash: await bcrypt.hash(code, BCRYPT_ROUNDS),
+        purpose: OtpPurpose.STEP_UP,
+        expiresAt: new Date(Date.now() + expiresInMinutes * 60 * 1000),
+        maxAttempts: Number(this.config.get('OTP_MAX_ATTEMPTS') ?? 5),
+        userId,
+      },
+    });
+
+    await this.mail.sendOtpEmail(user.email, code, 'confirm');
+    return { message: `We emailed a code to ${user.email}.` };
+  }
+
+  /**
+   * Checks the code, and answers with a short-lived pass the app sends as
+   * `X-Step-Up` with the change. It is signed with a key of its own, so it can
+   * never stand in for an access token, and it names the person it was given to.
+   */
+  async verifyStepUp(userId: string, code: string): Promise<{ stepUpToken: string; expiresAt: string }> {
+    const otp = await this.prisma.otpCode.findFirst({
+      where: { userId, purpose: OtpPurpose.STEP_UP, consumedAt: null },
+      orderBy: { createdAt: 'desc' },
+    });
+    await this.consumeCode(otp, code);
+
+    const seconds = RECENT_AUTH_MINUTES * 60;
+    const stepUpToken = this.jwt.sign(
+      { sub: userId, typ: 'step-up' },
+      { secret: this.stepUpSecret(), expiresIn: seconds },
+    );
+    return { stepUpToken, expiresAt: new Date(Date.now() + seconds * 1000).toISOString() };
+  }
+
+  /**
+   * Whether this person typed a code recently enough for a risky change
+   * (§279): they signed in within the last few minutes, or they confirmed it
+   * was them and sent the pass for it.
+   */
+  isRecentlyConfirmed(user: AuthenticatedUser, stepUpToken?: string): boolean {
+    const window = RECENT_AUTH_MINUTES * 60 * 1000;
+    if (user.authTime && Date.now() - user.authTime * 1000 <= window) return true;
+    if (!stepUpToken) return false;
+    try {
+      const pass = this.jwt.verify<{ sub: string; typ: string }>(stepUpToken, { secret: this.stepUpSecret() });
+      return pass.typ === 'step-up' && pass.sub === user.userId;
+    } catch {
+      return false;
+    }
+  }
+
+  /** A key of its own for the pass, derived from the access key so there is nothing new to configure. */
+  private stepUpSecret(): string {
+    return crypto
+      .createHmac('sha256', this.config.get<string>('JWT_ACCESS_SECRET') ?? '')
+      .update('step-up')
+      .digest('hex');
+  }
+
+  /**
+   * Checks a typed code against its row and uses it up — the same rules for
+   * signing in and for confirming: unknown or expired, too many tries, wrong.
+   */
+  private async consumeCode<T extends CodeRow>(otp: T | null, code: string): Promise<T> {
+    if (!otp || otp.expiresAt < new Date()) {
+      throw new BadRequestException('Invalid or expired verification code.');
+    }
+
+    if (otp.attempts >= otp.maxAttempts) {
+      throw new BadRequestException('Too many incorrect attempts. Please request a new code.');
+    }
+
+    const isMatch = await bcrypt.compare(code, otp.codeHash);
+    if (!isMatch) {
+      await this.prisma.otpCode.update({
+        where: { id: otp.id },
+        data: { attempts: { increment: 1 } },
+      });
+      throw new BadRequestException('Invalid or expired verification code.');
+    }
+
+    // Mark OTP consumed so it can't be replayed.
+    await this.prisma.otpCode.update({
+      where: { id: otp.id },
+      data: { consumedAt: new Date() },
+    });
+    return otp;
   }
 
   async logout(refreshToken: string): Promise<{ message: string }> {

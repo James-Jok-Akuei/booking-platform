@@ -46,10 +46,17 @@ const BASE_URL = import.meta.env.VITE_API_URL || '/api';
  * Namespaced so it cannot collide with another app served from the same origin
  * during development.
  */
-const ACCESS_KEY = 'booking-business.accessToken';
+export const ACCESS_KEY = 'booking-business.accessToken';
 const REFRESH_KEY = 'booking-business.refreshToken';
+/** How long this sign-in lasts (§279), as the server last said, and when it was renewed. */
+const SESSION_KEY = 'booking-business.session';
+/** The last click or key in ANY tab of this app (§279), so one busy tab keeps them all signed in. */
+export const ACTIVE_KEY = 'booking-business.lastActive';
+/** Why the last sign-in ended, for the sign-in page to say. */
+const WHY_KEY = 'booking-business.signedOutWhy';
 
 export type TokenPair = components['schemas']['TokenPairDto'];
+export type Session = components['schemas']['SessionDto'] & { renewedAt: number };
 
 export type AuthenticatedUser = components['schemas']['AuthenticatedUserDto'];
 
@@ -63,12 +70,47 @@ export const tokens = {
   save(pair: TokenPair) {
     localStorage.setItem(ACCESS_KEY, pair.accessToken);
     localStorage.setItem(REFRESH_KEY, pair.refreshToken);
+    if (pair.session) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...pair.session, renewedAt: Date.now() }));
+    }
   },
   clear() {
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
+    localStorage.removeItem(SESSION_KEY);
   },
 };
+
+/** How long this sign-in lasts (§279), or null before the server has said. */
+export function currentSession(): Session | null {
+  try {
+    return JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null') as Session | null;
+  } catch {
+    return null;
+  }
+}
+
+/** Why a sign-in ended (§279): unused too long, or past the most it lasts. */
+export type SignedOutWhy = { why: 'idle' | 'ended'; idleMinutes: number; maxMinutes: number | null; at: number };
+
+export function rememberWhy(why: SignedOutWhy['why']) {
+  const session = currentSession();
+  if (!session) return;
+  const note: SignedOutWhy = { why, idleMinutes: session.idleMinutes, maxMinutes: session.maxMinutes, at: Date.now() };
+  localStorage.setItem(WHY_KEY, JSON.stringify(note));
+}
+
+/** The last reason, if it is from the last day; cleared by signing in. */
+export function signedOutWhy(): SignedOutWhy | null {
+  try {
+    const note = JSON.parse(localStorage.getItem(WHY_KEY) ?? 'null') as SignedOutWhy | null;
+    return note && Date.now() - note.at < 24 * 60 * 60 * 1000 ? note : null;
+  } catch {
+    return null;
+  }
+}
+
+export const forgetWhy = () => localStorage.removeItem(WHY_KEY);
 
 /**
  * Raised when the server refuses. Carries the status and the server's own
@@ -91,6 +133,11 @@ export class ApiError extends Error {
 export const SESSION_ENDED = 'booking-business:session-ended';
 
 function endSession() {
+  // Said on the sign-in page (§279): past its end, or unused too long.
+  const session = currentSession();
+  if (session?.endsAt && Date.parse(session.endsAt) <= Date.now()) rememberWhy('ended');
+  else if (session && Date.now() - Number(localStorage.getItem(ACTIVE_KEY) ?? Date.now()) >= session.idleMinutes * 60_000)
+    rememberWhy('idle');
   tokens.clear();
   window.dispatchEvent(new Event(SESSION_ENDED));
 }
@@ -103,9 +150,9 @@ function endSession() {
  * that the first has already rotated, and the user would be logged out in the
  * middle of a working session. One promise, everybody waits on it.
  */
-let refreshInFlight: Promise<TokenPair> | null = null;
+let refreshInFlight: Promise<Pick<TokenPair, 'accessToken' | 'refreshToken'>> | null = null;
 
-async function refreshTokens(): Promise<TokenPair> {
+async function refreshTokens(): Promise<Pick<TokenPair, 'accessToken' | 'refreshToken'>> {
   if (refreshInFlight) return refreshInFlight;
 
   const refreshToken = tokens.refresh;
@@ -118,7 +165,13 @@ async function refreshTokens(): Promise<TokenPair> {
       body: JSON.stringify({ refreshToken }),
     });
 
-    if (!response.ok) throw new ApiError(response.status, 'Session expired.');
+    if (!response.ok) {
+      // Another tab of this app may have renewed it a moment ago — renewing
+      // retires the old token — so use theirs rather than sign everyone out.
+      const now = tokens.refresh;
+      if (now && now !== refreshToken && tokens.access) return { accessToken: tokens.access, refreshToken: now };
+      throw new ApiError(response.status, 'Session expired.');
+    }
 
     const pair = (await response.json()) as TokenPair;
     tokens.save(pair);
@@ -130,6 +183,52 @@ async function refreshTokens(): Promise<TokenPair> {
   } finally {
     refreshInFlight = null;
   }
+}
+
+/**
+ * Renews the sign-in while someone is using the screen without it asking the
+ * server for anything (§279) — reading, scrolling — so the server's idle clock
+ * agrees with the screen's. A network failure is not the end of a sign-in.
+ */
+export async function keepAlive(): Promise<void> {
+  try {
+    await refreshTokens();
+  } catch (error) {
+    if (error instanceof ApiError) endSession();
+  }
+}
+
+/**
+ * Confirming it is you (§279). The server refuses a risky change with
+ * `STEP_UP_REQUIRED` unless a code was typed in the last few minutes; the app
+ * then asks for one — through whatever screen registered itself here — and
+ * sends the same request again with the pass. The pass is kept in memory only,
+ * and sent with every request until it runs out, so several changes in a row
+ * ask once.
+ */
+type Confirm = () => Promise<string | null>;
+let confirmer: Confirm | null = null;
+let confirming: Promise<string | null> | null = null;
+let stepUp: { token: string; until: number } | null = null;
+
+export const setConfirmer = (fn: Confirm | null) => {
+  confirmer = fn;
+};
+
+export const rememberStepUp = (token: string, expiresAt: string) => {
+  // A few seconds early, so a pass is never sent as it runs out.
+  stepUp = { token, until: Date.parse(expiresAt) - 5000 };
+};
+
+const validStepUp = () => (stepUp && stepUp.until > Date.now() ? stepUp.token : null);
+
+async function askToConfirm(): Promise<string | null> {
+  if (!confirmer) return null;
+  // Two changes at once ask once.
+  confirming ??= confirmer().finally(() => {
+    confirming = null;
+  });
+  return confirming;
 }
 
 interface RequestOptions {
@@ -165,18 +264,21 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
   // here would produce a boundary-less header the server cannot parse.
   const isForm = body instanceof FormData;
 
-  const send = async (token: string | null): Promise<Response> =>
-    fetch(url.toString(), {
+  const send = async (token: string | null): Promise<Response> => {
+    const pass = anonymous ? null : validStepUp();
+    return fetch(url.toString(), {
       method,
       signal,
       headers: {
         ...(body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(pass ? { 'X-Step-Up': pass } : {}),
       },
       ...(body !== undefined
         ? { body: isForm ? (body as FormData) : JSON.stringify(body) }
         : {}),
     });
+  };
 
   let response = await send(anonymous ? null : tokens.access);
 
@@ -193,6 +295,25 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
   if (response.status === 401 && !anonymous) {
     endSession();
     throw new ApiError(401, 'Your session has expired. Please sign in again.');
+  }
+
+  // A risky change, and no code typed lately (§279): ask, then send it again — once.
+  if (response.status === 403 && !anonymous) {
+    const payload = (await response.clone().json().catch(() => null)) as { code?: string } | null;
+    if (payload?.code === 'STEP_UP_REQUIRED') {
+      const pass = await askToConfirm();
+      if (!pass) throw new ApiError(403, 'Not confirmed, so nothing was changed.', payload);
+      response = await send(tokens.access);
+      // Typing the code can outlast the access token.
+      if (response.status === 401 && tokens.refresh) {
+        try {
+          response = await send((await refreshTokens()).accessToken);
+        } catch {
+          endSession();
+          throw new ApiError(401, 'Your session has expired. Please sign in again.');
+        }
+      }
+    }
   }
 
   if (!response.ok) {
@@ -274,4 +395,19 @@ export async function download(path: string, filename: string): Promise<void> {
   anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(url);
+}
+
+// ---------------------------------------------------------------------------
+// Confirm it is you (§279)
+// ---------------------------------------------------------------------------
+
+export const requestStepUp = () => api<OtpRequested>('/auth/step-up/request', { method: 'POST' });
+
+export async function verifyStepUp(code: string): Promise<string> {
+  const pass = await api<components['schemas']['StepUpDto']>('/auth/step-up/verify', {
+    method: 'POST',
+    body: { code },
+  });
+  rememberStepUp(pass.stepUpToken, pass.expiresAt);
+  return pass.stepUpToken;
 }

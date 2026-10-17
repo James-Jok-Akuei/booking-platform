@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { BusinessRoles } from '../common/decorators/business-roles.decorator';
+import { RecentAuth } from '../common/decorators/recent-auth.decorator';
 import {
   BusinessContext,
   CurrentBusiness,
@@ -51,9 +52,11 @@ import {
 export class MembersController {
   constructor(private readonly members: MembersService) {}
 
+  // Who may get in, and where, needs a code typed in the last few minutes (§279).
   @Post('members/invite')
   @ApiCreatedResponse({ type: BusinessInvitationDto })
   @BusinessRoles(BusinessMemberRole.OWNER)
+  @RecentAuth()
   invite(
     @CurrentBusiness() business: BusinessContext,
     @CurrentUser() user: AuthenticatedUser,
@@ -76,6 +79,7 @@ export class MembersController {
   @Patch('members/:membershipId/role')
   @ApiOkResponse({ type: BusinessMemberDto })
   @BusinessRoles(BusinessMemberRole.OWNER)
+  @RecentAuth()
   updateMemberRole(
     @CurrentBusiness() business: BusinessContext,
     @Param('membershipId', ParseUUIDPipe) membershipId: string,
@@ -88,6 +92,7 @@ export class MembersController {
   @Patch('members/:membershipId/branches')
   @ApiOkResponse({ type: BusinessMemberDto })
   @BusinessRoles(BusinessMemberRole.OWNER)
+  @RecentAuth()
   setMemberBranches(
     @CurrentBusiness() business: BusinessContext,
     @Param('membershipId', ParseUUIDPipe) membershipId: string,
@@ -100,6 +105,7 @@ export class MembersController {
   @Delete('members/:membershipId')
   @ApiOkResponse({ type: RemovedMemberDto })
   @BusinessRoles(BusinessMemberRole.OWNER)
+  @RecentAuth()
   removeMember(
     @CurrentBusiness() business: BusinessContext,
     @CurrentUser() user: AuthenticatedUser,

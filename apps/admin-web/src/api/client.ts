@@ -46,10 +46,17 @@ const BASE_URL = import.meta.env.VITE_API_URL || '/api';
  * Namespaced so it cannot collide with another app served from the same origin
  * during development.
  */
-const ACCESS_KEY = 'booking-admin.accessToken';
+export const ACCESS_KEY = 'booking-admin.accessToken';
 const REFRESH_KEY = 'booking-admin.refreshToken';
+/** How long this sign-in lasts (§279), as the server last said, and when it was renewed. */
+const SESSION_KEY = 'booking-admin.session';
+/** The last click or key in ANY tab of this app (§279), so one busy tab keeps them all signed in. */
+export const ACTIVE_KEY = 'booking-admin.lastActive';
+/** Why the last sign-in ended, for the sign-in page to say. */
+const WHY_KEY = 'booking-admin.signedOutWhy';
 
 export type TokenPair = components['schemas']['TokenPairDto'];
+export type Session = components['schemas']['SessionDto'] & { renewedAt: number };
 
 export type AuthenticatedUser = components['schemas']['AuthenticatedUserDto'];
 
@@ -63,12 +70,47 @@ export const tokens = {
   save(pair: TokenPair) {
     localStorage.setItem(ACCESS_KEY, pair.accessToken);
     localStorage.setItem(REFRESH_KEY, pair.refreshToken);
+    if (pair.session) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ ...pair.session, renewedAt: Date.now() }));
+    }
   },
   clear() {
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
+    localStorage.removeItem(SESSION_KEY);
   },
 };
+
+/** How long this sign-in lasts (§279), or null before the server has said. */
+export function currentSession(): Session | null {
+  try {
+    return JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null') as Session | null;
+  } catch {
+    return null;
+  }
+}
+
+/** Why a sign-in ended (§279): unused too long, or past the most it lasts. */
+export type SignedOutWhy = { why: 'idle' | 'ended'; idleMinutes: number; maxMinutes: number | null; at: number };
+
+export function rememberWhy(why: SignedOutWhy['why']) {
+  const session = currentSession();
+  if (!session) return;
+  const note: SignedOutWhy = { why, idleMinutes: session.idleMinutes, maxMinutes: session.maxMinutes, at: Date.now() };
+  localStorage.setItem(WHY_KEY, JSON.stringify(note));
+}
+
+/** The last reason, if it is from the last day; cleared by signing in. */
+export function signedOutWhy(): SignedOutWhy | null {
+  try {
+    const note = JSON.parse(localStorage.getItem(WHY_KEY) ?? 'null') as SignedOutWhy | null;
+    return note && Date.now() - note.at < 24 * 60 * 60 * 1000 ? note : null;
+  } catch {
+    return null;
+  }
+}
+
+export const forgetWhy = () => localStorage.removeItem(WHY_KEY);
 
 /**
  * Raised when the server refuses. Carries the status and the server's own
@@ -91,6 +133,11 @@ export class ApiError extends Error {
 export const SESSION_ENDED = 'booking-admin:session-ended';
 
 function endSession() {
+  // Said on the sign-in page (§279): past its end, or unused too long.
+  const session = currentSession();
+  if (session?.endsAt && Date.parse(session.endsAt) <= Date.now()) rememberWhy('ended');
+  else if (session && Date.now() - Number(localStorage.getItem(ACTIVE_KEY) ?? Date.now()) >= session.idleMinutes * 60_000)
+    rememberWhy('idle');
   tokens.clear();
   window.dispatchEvent(new Event(SESSION_ENDED));
 }
@@ -103,9 +150,9 @@ function endSession() {
  * that the first has already rotated, and the user would be logged out in the
  * middle of a working session. One promise, everybody waits on it.
  */
-let refreshInFlight: Promise<TokenPair> | null = null;
+let refreshInFlight: Promise<Pick<TokenPair, 'accessToken' | 'refreshToken'>> | null = null;
 
-async function refreshTokens(): Promise<TokenPair> {
+async function refreshTokens(): Promise<Pick<TokenPair, 'accessToken' | 'refreshToken'>> {
   if (refreshInFlight) return refreshInFlight;
 
   const refreshToken = tokens.refresh;
@@ -118,7 +165,13 @@ async function refreshTokens(): Promise<TokenPair> {
       body: JSON.stringify({ refreshToken }),
     });
 
-    if (!response.ok) throw new ApiError(response.status, 'Session expired.');
+    if (!response.ok) {
+      // Another tab of this app may have renewed it a moment ago — renewing
+      // retires the old token — so use theirs rather than sign everyone out.
+      const now = tokens.refresh;
+      if (now && now !== refreshToken && tokens.access) return { accessToken: tokens.access, refreshToken: now };
+      throw new ApiError(response.status, 'Session expired.');
+    }
 
     const pair = (await response.json()) as TokenPair;
     tokens.save(pair);
@@ -129,6 +182,19 @@ async function refreshTokens(): Promise<TokenPair> {
     return await refreshInFlight;
   } finally {
     refreshInFlight = null;
+  }
+}
+
+/**
+ * Renews the sign-in while someone is using the screen without it asking the
+ * server for anything (§279) — reading, scrolling — so the server's idle clock
+ * agrees with the screen's. A network failure is not the end of a sign-in.
+ */
+export async function keepAlive(): Promise<void> {
+  try {
+    await refreshTokens();
+  } catch (error) {
+    if (error instanceof ApiError) endSession();
   }
 }
 

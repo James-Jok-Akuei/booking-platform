@@ -1,0 +1,16 @@
+/* Signing out an unused screen (§279). */
+
+.dlg.idle { text-align: left; }
+.idle-ring { position: relative; width: 72px; height: 72px; display: grid; place-items: center; margin-bottom: 14px; color: var(--warn); }
+.idle-ring-dial { position: absolute; inset: 0; transform: rotate(-90deg); }
+.idle-ring > :not(.idle-ring-dial) { position: relative; }
+.idle-ring-track { fill: var(--warn-soft); stroke: var(--warn-soft); stroke-width: 6; }
+.idle-ring-fill { fill: none; stroke: var(--warn); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.idle-time { font-variant-numeric: tabular-nums; color: var(--ink); }
+.idle-small { font-size: 13px; color: var(--muted); }
+.dlg-actions button svg { margin-right: 2px; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .idle-ring-fill { transition: none; }
+}
