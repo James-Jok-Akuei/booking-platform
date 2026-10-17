@@ -2860,7 +2860,9 @@ export interface components {
             /**
              * @description A machine-readable reason, on the few refusals a client answers by doing
              *     something rather than by showing the sentence: `STEP_UP_REQUIRED` means
-             *     "ask for a code, then send the same request again" (§279).
+             *     "ask for a code, then send the same request again" (§279);
+             *     `AGREEMENT_REQUIRED` means "show the document to accept, then send it
+             *     again" (§280).
              * @example STEP_UP_REQUIRED
              */
             code?: string;

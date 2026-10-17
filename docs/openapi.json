@@ -13842,7 +13842,7 @@
           },
           "code": {
             "type": "string",
-            "description": "A machine-readable reason, on the few refusals a client answers by doing\nsomething rather than by showing the sentence: `STEP_UP_REQUIRED` means\n\"ask for a code, then send the same request again\" (§279).",
+            "description": "A machine-readable reason, on the few refusals a client answers by doing\nsomething rather than by showing the sentence: `STEP_UP_REQUIRED` means\n\"ask for a code, then send the same request again\" (§279);\n`AGREEMENT_REQUIRED` means \"show the document to accept, then send it\nagain\" (§280).",
             "example": "STEP_UP_REQUIRED"
           },
           "statusCode": {

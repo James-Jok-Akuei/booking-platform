@@ -18068,3 +18068,42 @@ slides up — was 18px wider than the screen. The end labels now lean inwards.
   owner of Kigali Barbers with a 20-minute-old sign-in inviting someone — asked,
   the emailed code typed, the invitation sent by itself — at 1440 and 390. The
   test invitation was removed.
+
+## 280. "Post this service" did nothing — the agreement, asked where the person is (2026-10-18)
+
+Reported: in the seller app, a service filled in completely and "Post this
+service" pressed — nothing happens, and it cannot be posted.
+
+What happened (GrowthPath Consulting, from its saved draft): the shop's owner
+had agreed to Seller Agreement version 2; version 3 was published on
+2026-10-12 (§275). The server refuses to list a service until the current
+version is accepted (§126.4) — and it did, with a 403. But:
+
+1. **The refusal was shown behind the form.** It went to the page's notice
+   line, under the panel the form sits in, so "Posting the service…" flashed
+   and nothing seemed to happen.
+2. **The agreement was asked only by "Add a service"**, and only once the
+   app had finished checking. "Carry on" on a saved draft opened the form
+   without asking; so did "Add a service" pressed before the check came back.
+
+Fixed:
+
+- **Asked before posting, however the form was opened** — new, carried on
+  from a draft, or open since before a new version was published. The
+  agreement opens over the form; agreeing carries on with what the person was
+  doing (opens the form, opens the draft, or **posts the service** — nothing
+  retyped).
+- **The server's refusal says so with `code: AGREEMENT_REQUIRED`** (in
+  `ApiErrorDto`), and the seller app answers it the same way: the agreement,
+  in place, then the post again. This is the backstop for a version published
+  while the form was open.
+- **Any refusal of a post or save is said inside the form**, beside the
+  button, in red — never on the page behind it. Closing the form clears it.
+
+Verified in the browser: "Carry on" on a Kigali Barbers draft now shows the
+agreement first; on a throwaway shop, the agreement taken away while the form
+was open — Post refused, the agreement shown over the still-open form, "I
+agree", and the service posted by itself (POST 403 → accept 200 → POST 201,
+its draft discarded); a price over the maximum shows the server's sentence
+beside the button. The throwaway shop was removed. Full suite: 67 suites,
+1,433 tests (one added: the refusal carries its code).

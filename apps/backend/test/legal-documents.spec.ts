@@ -197,6 +197,17 @@ describe('Legal documents (§122)', () => {
       ).rejects.toThrow(/version 2/);
     });
 
+    it('says so with a code a screen can answer — by showing the document (§280)', async () => {
+      await publish(LegalDocumentKind.SELLER_AGREEMENT, 'Trade fairly.');
+
+      const refusal = await legal
+        .requireAccepted(customer.userId, LegalDocumentKind.SELLER_AGREEMENT)
+        .catch((error: { getStatus(): number; getResponse(): unknown }) => error);
+
+      expect((refusal as { getStatus(): number }).getStatus()).toBe(403);
+      expect((refusal as { getResponse(): unknown }).getResponse()).toMatchObject({ code: 'AGREEMENT_REQUIRED' });
+    });
+
     it('blocks NOTHING while no version is published', async () => {
       // Refusing here would lock a business out of its own catalogue over a
       // document that does not exist.

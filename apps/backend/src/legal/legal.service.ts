@@ -8,6 +8,9 @@ import {
 import { LegalDocumentKind, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
+/** The refusal a screen answers by showing the document to accept (§280). */
+export const AGREEMENT_REQUIRED = 'AGREEMENT_REQUIRED';
+
 /** What the apps read. A draft is nobody's business but the admin's. */
 const PUBLIC_SELECT = {
   id: true,
@@ -131,10 +134,14 @@ export class LegalService {
     });
     if (accepted) return;
 
-    throw new ForbiddenException(
-      `Please read and accept the ${current.title} (version ${current.version}) first. ` +
-        'It is on the Legal page.',
-    );
+    // `code` lets a screen answer by showing the document where the person is,
+    // rather than leaving them to find the Legal page (§280).
+    throw new ForbiddenException({
+      statusCode: 403,
+      error: 'Forbidden',
+      code: AGREEMENT_REQUIRED,
+      message: `Please read and accept the ${current.title} (version ${current.version}) first. It is on the Legal page.`,
+    });
   }
 
   /**

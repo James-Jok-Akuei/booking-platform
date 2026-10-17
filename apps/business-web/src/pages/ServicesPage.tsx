@@ -179,6 +179,13 @@ export function ServicesPage() {
 
   /** Reopens the form with a draft's contents, and keeps saving into it. */
   const resume = (draft: ServiceDraft) => {
+    // A draft is a service about to be listed, so the agreement comes first
+    // here too (§280) — it used to be asked only by "Add a service".
+    if (needAgreement(() => openDraft(draft))) return;
+    openDraft(draft);
+  };
+
+  const openDraft = (draft: ServiceDraft) => {
     setDraftId(draft.id);
     setResumed({
       id: draft.id,
@@ -201,16 +208,29 @@ export function ServicesPage() {
 
   const { sellerAgreement } = useOutstandingLegal();
   const [gateOpen, setGateOpen] = useState(false);
+  /**
+   * What to do once the Seller Agreement is accepted (§280): open a new form,
+   * carry on with a draft, or post the service that was waiting on it — so
+   * agreeing carries on with what the person was doing.
+   */
+  const afterAgreeing = useRef<(() => void) | null>(null);
+  const needAgreement = (then: () => void) => {
+    if (!sellerAgreement) return false;
+    afterAgreeing.current = then;
+    setGateOpen(true);
+    return true;
+  };
 
-  const startNew = async () => {
+  const startNew = () => {
     setResumed(undefined);
     // Asked BEFORE the form opens, not after it is filled in (§126.4).
     // Making somebody write a whole service and then telling them they
     // cannot post it is the worst possible moment to raise this.
-    if (sellerAgreement) {
-      setGateOpen(true);
-      return;
-    }
+    if (needAgreement(() => void openNew())) return;
+    void openNew();
+  };
+
+  const openNew = async () => {
     // Started BEFORE the form opens, so the first keystroke has somewhere
     // to go rather than being the one that gets lost.
     const draft = await startServiceDraft().catch(() => null);
@@ -223,6 +243,7 @@ export function ServicesPage() {
     // Closing a new one keeps the draft. That is the whole point: the text is
     // still there under Drafts when they come back.
     if (timer.current) clearTimeout(timer.current);
+    save.reset();
     timer.current = null;
     setEditor(null);
     setDraftId(null);
@@ -339,6 +360,16 @@ export function ServicesPage() {
       return created;
     },
     onSettled: () => setPosting(null),
+    // Refused because the Seller Agreement changed since it was last read
+    // (§280): show it right here, and post once it is accepted.
+    onError: (error, input) => {
+      if (input.id || !(error instanceof ApiError)) return;
+      if ((error.body as { code?: string } | undefined)?.code !== 'AGREEMENT_REQUIRED') return;
+      save.reset();
+      afterAgreeing.current = () => save.mutate(input);
+      void queryClient.invalidateQueries({ queryKey: ['legal-status'] });
+      setGateOpen(true);
+    },
     onSuccess: () => {
       // The draft became a service. Keeping it would leave Drafts describing
       // something that already exists.
@@ -418,22 +449,26 @@ export function ServicesPage() {
     if (ok) everywhere.mutate({ id: service.id, isOffered: false });
   };
 
-  const error = save.error ?? everywhere.error ?? toggle.error ?? unretire.error;
+  // A refused save is said inside the open form, where the person is (§280).
+  const error = (editor ? null : save.error) ?? everywhere.error ?? toggle.error ?? unretire.error;
+  const saveProblem = save.error ? (save.error instanceof ApiError ? save.error.message : 'That did not save. Check your connection and try again.') : null;
 
   return (
     <section className="sv">
       {gateOpen && sellerAgreement && (
         <SellerAgreementGate
           document={sellerAgreement}
-          onCancel={() => setGateOpen(false)}
-          onAccepted={async () => {
+          onCancel={() => {
+            afterAgreeing.current = null;
+            setGateOpen(false);
+          }}
+          onAccepted={() => {
             setGateOpen(false);
             // Straight on to what they were trying to do. Accepting and then
             // being returned to where they started is a second thing to do.
-            const draft = await startServiceDraft().catch(() => null);
-            setDraftId(draft?.id ?? null);
-            setEditor({ mode: 'new' });
-            refreshDrafts();
+            const next = afterAgreeing.current;
+            afterAgreeing.current = null;
+            next?.();
           }}
         />
       )}
@@ -681,7 +716,12 @@ export function ServicesPage() {
               hiddenUntil={hiddenUntil}
               canDraft={draftSave.kind !== 'new' || Boolean(resumed)}
               onSaveDraft={() => void saveAsDraft()}
-              onSubmit={(body, files) => save.mutate({ body, files })}
+              problem={saveProblem}
+              onSubmit={(body, files) => {
+                // However the form was opened, the agreement is asked before posting (§280).
+                if (needAgreement(() => save.mutate({ body, files }))) return;
+                save.mutate({ body, files });
+              }}
               onChange={queueDraftSave}
               onCancel={() => void requestClose()}
             />
@@ -695,6 +735,7 @@ export function ServicesPage() {
               focus={editor.focus}
               onCancel={() => void requestClose()}
               onDirtyChange={setDirty}
+              problem={saveProblem}
               onSubmit={(body) => save.mutate({ id: editor.service.id, body })}
               photos={<ServicePhotos serviceId={editor.service.id} />}
             />
@@ -997,6 +1038,7 @@ function ServiceForm({
   hiddenUntil = null,
   canDraft = false,
   onSaveDraft,
+  problem = null,
   onSubmit,
   onCancel,
   onChange,
@@ -1020,6 +1062,8 @@ function ServiceForm({
   canDraft?: boolean;
   /** "Save as draft" on a NEW service: saved now, and the panel closes (§269). */
   onSaveDraft?: () => void;
+  /** Why the last post or save was refused, said beside the button (§280). */
+  problem?: string | null;
   /** `files` are the photos chosen for a NEW service, cover first (§165). */
   onSubmit: (body: Record<string, unknown>, files: File[]) => void;
   onCancel?: () => void;
@@ -1436,7 +1480,13 @@ function ServiceForm({
       </div>
 
       <footer className="sv-form-foot">
-        {creating && !busy && offers.length > 0 && (
+        {problem && !busy && (
+          <p className="sv-form-problem" role="alert">
+            <Icon name="alert" size={16} />
+            <span>{problem}</span>
+          </p>
+        )}
+        {creating && !busy && !problem && offers.length > 0 && (
           <span className="sv-golive">
             <i className={hiddenUntil ? 'dot-off' : 'dot-ok'} />
             {hiddenUntil
