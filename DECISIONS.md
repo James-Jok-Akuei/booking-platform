@@ -13784,8 +13784,9 @@ The service page now reads, top to bottom:
    as a pair~~ (the icons removed at the user's request, §183). The description shows four lines and "Read more" past 200
    characters. Either is simply absent when the shop wrote nothing.
 3. The deal card: name, price and deposit, how many, day, time, read-back.
-4. The place: the shop card and "Have a question? Message the shop".
-5. **Safe to book**, last.
+4. ~~The place: the shop card and "Have a question? Message the shop".~~
+   Moved up, made one slim line under the photos (§278).
+5. ~~**Safe to book**, last.~~ Taken off this page (§278).
 
 **Reviews are gone from this page** — the section, its request and its
 components. The shop card keeps its one-line "★ 5.0 (1)" as a fact about the
@@ -13805,7 +13806,8 @@ colour and a full sentence:
   the number that paid* (Terms 6.1 and 6.6).
 
 The row component is `Assurance`; it was first written as `Promise`, which
-would have hidden JavaScript's own `Promise` in that file.
+would have hidden JavaScript's own `Promise` in that file. (§278: it lives on
+as `Pledge` in `src/booking/PayingPromises.tsx`.)
 
 ## 183. Signing in, redesigned (2026-10-07)
 
@@ -17924,3 +17926,41 @@ Access is now two things, not one. The **role** says *what* someone may do
   the panel (the staff member's branches followed at once), the branch
   manager's Services and Getting paid, the staff member's Branches & hours,
   People and shopfront. The two test accounts were removed afterwards.
+
+## 278. The service page, cleaner: the shop under the photos, the promises where the money moves (2026-10-17)
+
+The user, looking at the end of the service page (the shop card, then "Safe
+to book"): it is not clean; the link to the shop could go on top, just under
+or above the photos, and smaller; the rest may not belong on this page — find
+it a professional place elsewhere.
+
+**The page now ends where the choosing ends.** Photos, then who does it, then
+the shop's words, then the one card with price, people, day and time. The
+bottom bar is unchanged.
+
+- **Who does it, one slim line under the photos** — the way listing pages
+  everywhere name the seller under the pictures. The logo (36), the shop's
+  name with a small chevron, and under it the rating "★ 3.5 (4)" and the
+  drive time when known; with neither, "View their shop". No card: it sits on
+  the page like the shop's own words. The branch is not repeated — the card
+  below already says it. The whole line opens the shop's page.
+- **"Ask"**, a small blue pill at the end of that line (signed in only),
+  replaces the full-width "Have a question? Message the shop" row.
+- **"Safe to book" is gone from this page.** Its promises are about paying,
+  so each is said where the paying is:
+  - at **checkout**, under the MoMo number: a green lock and "Your PIN goes
+    only into your phone. This app never asks for it." — the place payment
+    pages put their security line;
+  - the refund rule was already at checkout, beside the amount;
+  - "confirmed the moment you pay" is now the line under **Pay now**:
+    "15% deposit · confirms your time";
+  - and the whole set, with a fourth ("The rest is paid at the shop"), in
+    **Account → About → How paying works**, a sheet (`PayingPromises`).
+- **Fixed on the way:** in a browser, a shop that serves more than 20 people
+  at once showed "How many people?" squeezed to one letter a line — the typed
+  number box took the browser's default width (~150px). It now has a set
+  width (`Stepper`).
+
+Checked in the web preview at 390 and 1280 on two shops (one rated, one
+not), the checkout of a test booking (cancelled and removed afterwards), and
+the Account sheet.

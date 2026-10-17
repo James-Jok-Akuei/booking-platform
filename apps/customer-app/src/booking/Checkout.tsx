@@ -160,8 +160,8 @@ export function Checkout({
             <Text style={styles.dueLabel}>Pay now</Text>
             <Text style={type.small}>
               {a.depositPercentage !== null
-                ? `${Number(a.depositPercentage)}% deposit to hold your slot`
-                : 'Deposit to hold your slot'}
+                ? `${Number(a.depositPercentage)}% deposit · confirms your time`
+                : 'Deposit · confirms your time'}
             </Text>
           </View>
           <Text style={styles.dueValue}>{format(a.depositAmountMinor, a.currency)}</Text>
@@ -227,6 +227,17 @@ export function Checkout({
             <Icon name="checkmark-circle" size={20} color={theme.ok} />
           )}
         </View>
+
+        {/* Said beside the number, where people decide whether to trust it
+            (§278) — it used to be a card on the service page. */}
+        {stage !== 'PENDING' && (
+          <View style={styles.secure}>
+            <Icon name="lock-closed" size={13} color={theme.ok} />
+            <Text style={styles.secureText}>
+              Your PIN goes only into your phone. This app never asks for it.
+            </Text>
+          </View>
+        )}
 
         {/* Approval happens on the handset, not here. Saying so, step by step,
             stops the screen looking stuck while someone types their PIN. */}
@@ -508,6 +519,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.sunken,
     marginTop: -5,
   },
+  secure: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -2 },
+  secureText: { flex: 1, fontFamily: font.semibold, fontSize: 12, lineHeight: 17, color: theme.ink2 },
   input: {
     flex: 1,
     fontFamily: font.bold,

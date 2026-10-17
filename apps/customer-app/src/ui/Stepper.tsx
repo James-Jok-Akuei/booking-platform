@@ -104,7 +104,9 @@ const styles = StyleSheet.create({
   plus: { backgroundColor: theme.accent },
   off: { opacity: 0.35 },
   input: {
-    minWidth: 56,
+    // A set width: in a browser a text box otherwise takes the browser's own
+    // default (about 150px) and squeezes the words beside it to one letter a line.
+    width: 64,
     paddingVertical: 4,
     paddingHorizontal: 6,
     borderRadius: 10,

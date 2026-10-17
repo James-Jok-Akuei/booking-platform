@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -33,10 +33,9 @@ import { Button } from '../../src/ui/Button';
 import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
 import { cheer, tick } from '../../src/ui/haptic';
-import { Icon, type IconName } from '../../src/ui/Icon';
+import { Icon } from '../../src/ui/Icon';
 import { IconButton } from '../../src/ui/IconButton';
 import { useLayout } from '../../src/ui/layout';
-import { MomoLogo } from '../../src/ui/Momo';
 import { PopIn } from '../../src/ui/Motion';
 import { PhotoViewer, type ViewerOrigin } from '../../src/ui/PhotoViewer';
 import { Pill } from '../../src/ui/Pill';
@@ -89,16 +88,20 @@ const CARD_PAD = 18;
  * In the order the user asked for, so a buyer is never confused about what
  * belongs to what:
  *
- * 1. **The photos**, several at once — one large and a grid of small ones.
+ * 1. **The photos**, several at once — one large and a grid of small ones —
+ *    and right under them, in one slim line, **who does it**: the shop, its
+ *    rating and how far, a tap from their page, with a small button to ask
+ *    them something (§278).
  * 2. **The title** the shop wrote (§185), then **About this service** and
  *    **Before you come** — the shop's own words, on the page itself rather
  *    than in a card, read before anything is chosen.
  * 3. **The deal, in ONE card**: what it is, what it costs (the deposit drawn
  *    as a share of it), how many, which day and what time — grouped into
  *    morning, afternoon and evening — and the booking read back the moment a
- *    time is chosen.
- * 4. **The place**: who is doing it, with their rating and how far they are.
- * 5. **Safe to book**, last: three promises, each true of every booking.
+ *    time is chosen. Nothing after it: the page ends where the choosing does.
+ *
+ * How paying works is not on this page (§278): it is said at checkout, where
+ * the money moves, and in full under Account → How paying works.
  *
  * Reviews are on the shop's page, not here (§182).
  *
@@ -141,11 +144,11 @@ export default function Book() {
     queryFn: () => getRoute(id, { lat: position!.lat, lng: position!.lng }),
     enabled: position !== null && shop.data?.latitude !== null && shop.data !== undefined,
   });
-  // Short, for a card: "8.5 km · 14 min by car", or the straight line as such.
+  // Short, for one line under the photos: "14 min by car", or the distance.
   const way = route.data
     ? route.data.by === 'road' && route.data.minutes !== null
-      ? `${distanceLabel(route.data.distanceKm)} · ${route.data.minutes} min by car`
-      : `${distanceLabel(route.data.distanceKm)} in a straight line`
+      ? `${route.data.minutes} min by car`
+      : distanceLabel(route.data.distanceKm)
     : null;
 
   /**
@@ -378,6 +381,65 @@ export default function Book() {
               wide={layout.wide}
               onOpen={(index, origin) => setViewer({ index, origin })}
             />
+          </FadeIn>
+
+          {/* WHO DOES IT, in one slim line under the photos (§278): the way to
+              their page (§135.5) with what decides whether to trust them — the
+              rating and how far — and a small button to ask them. */}
+          <FadeIn delay={10} style={styles.byline}>
+            {/* The tap target's own box does not stretch, so this one does. */}
+            <View style={styles.flex}>
+              <PressableScale
+                onPress={() => router.push(`/shop/${id}`)}
+                haptic
+                scaleTo={0.98}
+                accessibilityRole="button"
+                accessibilityLabel={`${businessName}. View the shop`}
+                style={styles.bylineShop}
+              >
+                <Avatar uri={s.business.logoUrl} name={businessName} size={36} />
+                <View style={styles.flex}>
+                  <View style={styles.bylineTop}>
+                    <Text style={styles.bylineName} numberOfLines={1}>
+                      {businessName}
+                    </Text>
+                    <Icon name="chevron-forward" size={14} color={theme.muted} />
+                  </View>
+                  {/* The branch is said in the card below; this line is about
+                      them — what others rate them and how far they are. */}
+                  <View style={styles.bylineFacts}>
+                    {s.rating.count > 0 && (
+                      <>
+                        <Icon name="star" size={12} color={theme.star} />
+                        <Text style={styles.bylineStrong}>{s.rating.average?.toFixed(1)}</Text>
+                        <Text style={styles.bylineText}>({s.rating.count})</Text>
+                      </>
+                    )}
+                    {s.rating.count > 0 && way && <Text style={styles.bylineDot}>·</Text>}
+                    {(way || s.rating.count === 0) && (
+                      <Text style={styles.bylineText} numberOfLines={1}>
+                        {way ?? 'View their shop'}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              </PressableScale>
+            </View>
+
+            {signedIn && (
+              <PressableScale
+                onPress={() => openChat.mutate()}
+                disabled={openChat.isPending}
+                haptic
+                scaleTo={0.94}
+                accessibilityRole="button"
+                accessibilityLabel="Message the shop with a question"
+                style={styles.bylineAsk}
+              >
+                <Icon name="chatbubble-ellipses-outline" size={16} color={theme.ask} />
+                <Text style={styles.bylineAskText}>{openChat.isPending ? '…' : 'Ask'}</Text>
+              </PressableScale>
+            )}
           </FadeIn>
 
           {/* 2. THE SHOP'S OWN WORDS, on the page and not in a card (§182):
@@ -703,111 +765,6 @@ export default function Book() {
                 </PopIn>
               )}
             </View>
-
-          </FadeIn>
-
-          {/* 4. THE PLACE. The way to their page (§135.5), with the two things
-              that decide whether to trust them: what others rate them, and
-              how far they are. Their reviews are one tap away, on that page. */}
-          <FadeIn delay={120} style={styles.who}>
-            <PressableScale
-              onPress={() => router.push(`/shop/${id}`)}
-              haptic
-              scaleTo={0.98}
-              accessibilityRole="button"
-              accessibilityLabel={`${businessName}, view shop`}
-              style={styles.shop}
-            >
-              <Avatar uri={s.business.logoUrl} name={businessName} size={50} />
-              <View style={styles.flex}>
-                <Text style={type.subheading} numberOfLines={1}>
-                  {businessName}
-                </Text>
-                <Text style={type.small} numberOfLines={1}>
-                  {s.name}
-                  {district ? ` · ${district}` : ''}
-                </Text>
-                {(s.rating.count > 0 || way) && (
-                  <View style={styles.shopFacts}>
-                    {s.rating.count > 0 && (
-                      <View style={styles.fact}>
-                        <Icon name="star" size={13} color={theme.star} />
-                        <Text style={styles.factStrong}>{s.rating.average?.toFixed(1)}</Text>
-                        <Text style={type.tiny}>({s.rating.count})</Text>
-                      </View>
-                    )}
-                    {way && (
-                      <View style={styles.fact}>
-                        <Icon name="car-outline" size={13} color={theme.accent} />
-                        <Text style={styles.way} numberOfLines={1}>
-                          {way}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                )}
-              </View>
-              <View style={styles.shopGo}>
-                <Icon name="chevron-forward" size={16} color={theme.accent} />
-              </View>
-            </PressableScale>
-
-            {signedIn && (
-              <PressableScale
-                onPress={() => openChat.mutate()}
-                disabled={openChat.isPending}
-                haptic
-                scaleTo={0.98}
-                accessibilityRole="button"
-                accessibilityLabel="Message the shop with a question"
-                style={styles.ask}
-              >
-                <Icon name="chatbubble-ellipses-outline" size={16} color={theme.ask} />
-                <Text style={styles.askText} numberOfLines={1}>
-                  {openChat.isPending
-                    ? 'Opening…'
-                    : layout.compact
-                      ? 'Ask the shop a question'
-                      : 'Have a question? Message the shop'}
-                </Text>
-                <Icon name="chevron-forward" size={14} color={theme.ask} />
-              </PressableScale>
-            )}
-          </FadeIn>
-
-          {/* 5. SAFE TO BOOK, last (§182). Three promises, each true of every
-              booking, in one card read top to bottom — each with room for
-              its own sentence, and its own colour so the three are told
-              apart at a glance. */}
-          <FadeIn delay={150} style={styles.promises}>
-            <View style={styles.promisesHead}>
-              <View style={styles.promisesShield}>
-                <Icon name="shield-checkmark" size={18} color="#FFFFFF" />
-              </View>
-              <View style={styles.flex}>
-                <Text style={type.heading}>Safe to book</Text>
-                <Text style={type.small}>Every booking here comes with these</Text>
-              </View>
-            </View>
-            <Assurance
-              mark={<MomoLogo size={40} />}
-              title="Pay with MTN MoMo"
-              text="You approve the deposit on your own phone. This app never asks for your PIN."
-            />
-            <Assurance
-              icon="flash"
-              color={theme.ok}
-              tint={theme.okSoft}
-              title="Confirmed the moment you pay"
-              text="The time is yours as soon as the deposit goes through."
-            />
-            <Assurance
-              icon="refresh"
-              color={theme.ask}
-              tint={theme.askSoft}
-              title="Refunded if the shop cancels"
-              text="Your whole deposit goes back to the number that paid."
-            />
           </FadeIn>
         </ScrollView>
       </View>
@@ -865,41 +822,6 @@ export default function Book() {
             }}
           />
         </View>
-      </View>
-    </View>
-  );
-}
-
-/**
- * One assurance (§182): its mark in its own colour, what it is, and what it
- * means for the customer in one sentence.
- */
-function Assurance({
-  mark,
-  icon,
-  color,
-  tint,
-  title,
-  text,
-}: {
-  /** A ready-made mark, such as the MoMo logo, in place of an icon. */
-  mark?: ReactNode;
-  icon?: IconName;
-  color?: string;
-  tint?: string;
-  title: string;
-  text: string;
-}) {
-  return (
-    <View style={styles.promise}>
-      {mark ?? (
-        <View style={[styles.promiseMark, { backgroundColor: tint }]}>
-          <Icon name={icon!} size={20} color={color} />
-        </View>
-      )}
-      <View style={styles.flex}>
-        <Text style={styles.promiseTitle}>{title}</Text>
-        <Text style={styles.promiseText}>{text}</Text>
       </View>
     </View>
   );
@@ -1087,81 +1009,25 @@ const styles = StyleSheet.create({
   summaryNow: { color: '#FFB59E' },
   summarySave: { fontFamily: font.bold, fontSize: 12, color: '#7CE8BF', marginTop: 2 },
 
-  // ---- 4. the place ----
-  who: { gap: 8 },
-  shop: {
+  // ---- who does it, under the photos (§278) ----
+  byline: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: -6, paddingHorizontal: 2 },
+  bylineShop: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 2 },
+  bylineTop: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  bylineName: { flexShrink: 1, fontFamily: font.bold, fontSize: 14.5, color: theme.ink },
+  bylineFacts: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
+  bylineStrong: { fontFamily: font.bold, fontSize: 12.5, color: theme.ink },
+  bylineDot: { fontFamily: font.bold, fontSize: 12.5, color: theme.muted },
+  bylineText: { flexShrink: 1, fontFamily: font.medium, fontSize: 12.5, color: theme.muted },
+  bylineAsk: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: theme.panel,
-    borderRadius: radius.lg,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    ...shadow.card,
-  },
-  shopFacts: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 4 },
-  fact: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  factStrong: { fontFamily: font.bold, fontSize: 13, color: theme.ink },
-  way: { fontFamily: font.semibold, fontSize: 12, color: theme.accent },
-  shopGo: {
-    width: 34,
+    gap: 5,
     height: 34,
+    paddingHorizontal: 12,
     borderRadius: 17,
-    backgroundColor: theme.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ask: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
     backgroundColor: theme.askSoft,
-    borderRadius: radius.md,
-    paddingVertical: 11,
-    paddingHorizontal: 14,
   },
-  askText: { flex: 1, fontFamily: font.semibold, fontSize: 13, color: theme.ask },
-
-  // ---- 5. safe to book ----
-  promises: {
-    backgroundColor: theme.panel,
-    borderRadius: radius.lg,
-    padding: CARD_PAD,
-    gap: 16,
-    ...shadow.card,
-  },
-  promisesHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.line,
-  },
-  promisesShield: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.ok,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  promise: { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
-  promiseMark: {
-    width: 40,
-    height: 40,
-    borderRadius: 10.4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  promiseTitle: { fontFamily: font.bold, fontSize: 15, lineHeight: 20, color: theme.ink },
-  promiseText: {
-    fontFamily: font.medium,
-    fontSize: 13,
-    lineHeight: 18.5,
-    color: theme.ink2,
-    marginTop: 2,
-  },
+  bylineAskText: { fontFamily: font.bold, fontSize: 13, color: theme.ask },
 
   // ---- the bar ----
   footer: {

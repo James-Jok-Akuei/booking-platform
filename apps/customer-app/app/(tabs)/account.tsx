@@ -38,6 +38,7 @@ import { Sheet } from '../../src/ui/Sheet';
 import { listMyAppointments } from '../../src/api/booking';
 import { listFavourites } from '../../src/api/discovery';
 import { OffersCard } from '../../src/components/OffersCard';
+import { PayingPromises } from '../../src/booking/PayingPromises';
 import { pickImage } from '../../src/pickImage';
 import { useSignedIn } from '../../src/api/client';
 import { shareApp } from '../../src/share';
@@ -230,6 +231,8 @@ export default function Account() {
 
   // ---- The name on their reviews (§144) ----
   const [naming, setNaming] = useState(false);
+  // How paying works (§278): the promises that used to close every service page.
+  const [paying, setPaying] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const rename = useMutation({
     mutationFn: setMyDisplayName,
@@ -616,6 +619,13 @@ export default function Account() {
             <Text style={styles.group}>About</Text>
             <View style={styles.card}>
               <Row
+                icon="shield-checkmark-outline"
+                label="How paying works"
+                note="Deposits, MoMo, and when you get your money back."
+                onPress={() => setPaying(true)}
+              />
+              <View style={styles.divider} />
+              <Row
                 icon="document-text-outline"
                 label="Terms and privacy"
                 onPress={() => router.push('/legal')}
@@ -718,6 +728,12 @@ export default function Account() {
               </Text>
             </View>
           )}
+        </View>
+      </Sheet>
+
+      <Sheet open={paying} title="How paying works" onClose={() => setPaying(false)}>
+        <View style={styles.payingSheet}>
+          <PayingPromises />
         </View>
       </Sheet>
 
@@ -1036,6 +1052,7 @@ const styles = StyleSheet.create({
     color: theme.ink,
   },
   nameSheet: { gap: 12, paddingBottom: 8 },
+  payingSheet: { paddingTop: 4, paddingBottom: 12 },
   nameInput: {
     fontFamily: font.semibold,
     backgroundColor: theme.sunken,
