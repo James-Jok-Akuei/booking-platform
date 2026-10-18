@@ -55,6 +55,13 @@ export const SECTIONS: NavGroup[] = [
         hint: 'What customers see first',
       },
       {
+        to: '/stories',
+        label: 'Stories',
+        icon: 'stories',
+        keywords: 'story photo today post 24 hours instagram status advert',
+        hint: 'A photo for today, at the top of the app',
+      },
+      {
         to: '/services',
         label: 'Services',
         icon: 'tag',

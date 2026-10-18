@@ -14,6 +14,10 @@ import { SaveButton } from '../../src/components/SaveButton';
 import { SaleBadge } from '../../src/components/Sale';
 import { SaleEndsChip } from '../../src/components/SaleCountdown';
 import { useSignedIn } from '../../src/api/client';
+import { listStories } from '../../src/api/stories';
+import { StoryPlayer, type StoryStart } from '../../src/stories/StoryPlayer';
+import { StoryRing } from '../../src/stories/StoryRing';
+import { allSeen, firstUnseen, useSeenStories } from '../../src/stories/seen';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, theme, type } from '../../src/theme';
@@ -73,6 +77,10 @@ export default function Shop() {
     openOn === 'reviews' || openOn === 'hours' ? openOn : 'services',
   );
   const [photo, setPhoto] = useState<number | null>(null);
+  /** The shop's stories today (§285), from the same list as Home's row. */
+  const stories = useQuery({ queryKey: ['story-feed'], queryFn: listStories, staleTime: 60_000 });
+  const seenStories = useSeenStories();
+  const [storyAt, setStoryAt] = useState<StoryStart | null>(null);
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const reviews = useQuery({
@@ -140,6 +148,7 @@ export default function Shop() {
   const s = shop.data;
   const today = new Date().getDay();
   const displayName = s.business.name ?? s.name;
+  const storyShop = stories.data?.shops.find((x) => x.business.id === s.business.id);
 
   const share = () =>
     shareShop({
@@ -220,8 +229,23 @@ export default function Shop() {
 
               <View style={styles.titleRow}>
                 <Text style={[type.title, styles.flex]}>{displayName}</Text>
-                {s.business.logoUrl && (
-                  <Avatar uri={s.business.logoUrl} name={displayName} size={52} />
+                {/* With a story up, the logo wears the ring and plays it (§285). */}
+                {storyShop ? (
+                  <PressableScale
+                    onPress={() => setStoryAt({ shop: 0, story: firstUnseen(seenStories, storyShop) })}
+                    haptic
+                    scaleTo={0.92}
+                    accessibilityRole="button"
+                    accessibilityLabel={`See ${displayName}'s story`}
+                  >
+                    <StoryRing size={52} seen={allSeen(seenStories, storyShop)}>
+                      <View style={styles.storyLogo}>
+                        <Avatar uri={s.business.logoUrl} name={displayName} size={52} />
+                      </View>
+                    </StoryRing>
+                  </PressableScale>
+                ) : (
+                  s.business.logoUrl && <Avatar uri={s.business.logoUrl} name={displayName} size={52} />
                 )}
               </View>
 
@@ -446,6 +470,18 @@ export default function Shop() {
 
       <PhotoViewer photos={s.gallery} openAt={photo} onClose={() => setPhoto(null)} />
 
+      {storyShop && (
+        <StoryPlayer
+          shops={[storyShop]}
+          openAt={storyAt}
+          onClose={() => setStoryAt(null)}
+          // A story about another branch of the same shop leads there; this one is already open.
+          onBook={(locationId) => {
+            if (locationId !== id) router.push(`/shop/${locationId}`);
+          }}
+        />
+      )}
+
       {/* The bar that appears once the title has scrolled away. */}
       <Animated.View
         pointerEvents="none"
@@ -570,6 +606,7 @@ const styles = StyleSheet.create({
   loadingGap: { marginVertical: 8 },
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
+  storyLogo: { borderRadius: 26, overflow: 'hidden', backgroundColor: theme.panel },
   line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   indent: { marginLeft: 22, marginTop: 2 },
   ratingLine: { marginTop: 10 },

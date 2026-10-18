@@ -173,6 +173,15 @@ export function renderNotification(
           'If you believe this is a mistake, raise a support ticket.',
       };
 
+    case NotificationType.STORY_REMOVED:
+      return {
+        subject: 'One of your stories was taken down',
+        body:
+          'An administrator took down one of your stories, so customers no longer see it.\n\n' +
+          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
+          'If you believe this is a mistake, raise a support ticket.',
+      };
+
     case NotificationType.DISPLAY_NAME_CLEARED:
       return {
         subject: 'Your review display name was removed',

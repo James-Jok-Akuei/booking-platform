@@ -879,3 +879,23 @@ export type FoundAddress = components['schemas']['AddressDto'];
  */
 export const searchAddresses = (q: string, signal?: AbortSignal) =>
   api<components['schemas']['AddressSearchDto']>('/addresses', { query: { q }, signal });
+
+// ---------------------------------------------------------------------------
+// Stories (§285): a photo and a few words, up for 24 hours
+// ---------------------------------------------------------------------------
+
+export type MyStories = components['schemas']['MyStoriesDto'];
+export type BusinessStory = components['schemas']['BusinessStoryDto'];
+
+export const listMyStories = () => api<MyStories>('/business/stories');
+
+/** One photo, a few words, and the branch it is about (null: the whole shop). */
+export const postStory = (file: File, caption: string, locationId: string | null) => {
+  const form = new FormData();
+  form.set('file', file);
+  if (caption.trim()) form.set('caption', caption.trim());
+  if (locationId) form.set('locationId', locationId);
+  return api<BusinessStory>('/business/stories', { method: 'POST', body: form });
+};
+
+export const deleteStory = (id: string) => api<ActionMessage>(`/business/stories/${id}`, { method: 'DELETE' });

@@ -136,6 +136,7 @@ enum NotificationType {
   PAYOUT_DESTINATION_REJECTED // an admin refused it, with a reason
   PAYMENT_PROVIDER_MISCONFIGURED // the platform cannot take payments; admins only
   APPOINTMENT_MANUALLY_VERIFIED // a business verified an arrival without the code; admins only
+  STORY_REMOVED // an admin took down a shop's story, with a reason (§285)
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in
@@ -347,6 +348,9 @@ model User {
   publishedLegalDocuments LegalDocument[]      @relation("PublishedLegalDocuments")
   reviews                 Review[]             @relation("CustomerReviews")
   hiddenReviews           Review[]             @relation("HiddenReviews")
+  storiesPosted           Story[]              @relation("StoriesPosted")
+  storiesRemoved          Story[]              @relation("StoriesRemoved")
+  storyReports            StoryReport[]
   reviewResponses         Review[]             @relation("ReviewResponses")
 
   /// The platform settings row, when this user was the last to set its
@@ -458,6 +462,7 @@ model BusinessProfile {
   locations   Location[]
   services    Service[]
   members     BusinessMembership[]
+  stories     Story[]
   invitations BusinessInvitation[]
   threads     Thread[]
   tickets     Ticket[]
@@ -643,6 +648,7 @@ model Location {
   hours              LocationHours[]
   reviews            Review[]
   media              LocationMedia[]
+  stories            Story[]
   scheduleExceptions LocationScheduleException[]
   timeBlocks         LocationTimeBlock[]
   appointments       Appointment[]
@@ -2343,4 +2349,61 @@ model SavedPaymentNumber {
   @@unique([userId, phoneNumber])
   @@index([userId, lastUsedAt])
   @@map("saved_payment_numbers")
+}
+
+/// A shop's story (§285): one photo and a few words, for everyone to see for 24
+/// hours — the shop window of the day. Images only: small to upload on mobile
+/// data, and quick to check. Live as soon as it is posted; a customer can
+/// report one and an administrator can take it down.
+model Story {
+  id         String          @id @default(uuid())
+  businessId String
+  business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// The branch it is about, and where its "Book" button leads. Null: the
+  /// whole shop, which leads to its first branch.
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("StoriesPosted", fields: [createdById], references: [id], onDelete: SetNull)
+
+  imageUrl String
+  caption  String?
+
+  /// How many times it was opened. A count, not a list of who: a story is
+  /// shop-window advertising, and who looked at a window is nobody's business.
+  views Int @default(0)
+
+  createdAt DateTime @default(now())
+  /// 24 hours after posting. Gone from every screen after this; the row and
+  /// its picture are cleared a few days later.
+  expiresAt DateTime
+
+  removedAt     DateTime?
+  removedById   String?
+  removedBy     User?     @relation("StoriesRemoved", fields: [removedById], references: [id], onDelete: SetNull)
+  removedReason String?
+
+  reports StoryReport[]
+
+  @@index([expiresAt])
+  @@index([businessId, createdAt])
+  @@map("stories")
+}
+
+/// A customer saying a story should not be there (§285). One per person per
+/// story, so a report count is a count of people.
+model StoryReport {
+  id         String   @id @default(uuid())
+  storyId    String
+  story      Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reason     String
+  createdAt  DateTime @default(now())
+
+  @@unique([storyId, reporterId])
+  @@index([storyId])
+  @@map("story_reports")
 }

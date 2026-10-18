@@ -18283,3 +18283,88 @@ OFF". Code names (`SaleBadge`, `discount` fields) are unchanged.
 Fixed on the way: the seller app's shopfront preview built a discount
 without §283's `endsAt` and no longer compiled; it sends null (no countdown
 in the preview).
+
+## 285. Stories: a photo for today, at the top of the customer app (2026-10-18)
+
+Asked: shops add photos to a story from the seller app, and customers see
+them in the customer app, the way social apps do. Proposed on 6 October and
+built now with the choices recommended then.
+
+### 285.1 What a story is
+
+- **One photo and up to 150 characters**, posted by the shop. Photos only —
+  no video (upload size, data cost for customers, and a moderation load the
+  platform is not staffed for).
+- **Up 24 hours**, then gone from the customer app. The shop can take one
+  down sooner. Three days after it ends, the row and the picture are deleted
+  (a 03:30 job, `stories-clear-old`).
+- **Ten a day per shop**, counted over the last 24 hours. One the shop
+  deletes itself is gone and frees its place; one an administrator took down
+  still counts.
+- **Live the moment it is posted** — no approval queue. A story is
+  low-stakes and short-lived; an approval step would make most of them
+  stale before they showed. Customers report; administrators take down.
+- **Only live shops' stories are shown** (approved, published, not paused —
+  the same rule as the shop itself). A shop not yet live can post; its
+  stories appear once it is.
+- **Every story ends in "Book at <branch>"**: a story about a branch books
+  that branch; one about the whole shop books the shop's first active
+  branch. The point of a story is a booking.
+
+### 285.2 Who posts (§277)
+
+The owner and managers post and take down; staff see the page but do not
+post. A manager of some branches posts only about one of their branches and
+cannot take down a whole-shop story (403, `ALL_BRANCHES_ONLY`). A closed
+branch cannot be chosen.
+
+### 285.3 Seller app — Stories (under Your shop)
+
+A phone beside the form shows exactly what customers will see: the photo
+(a wide one sits whole on a blurred fill), the bars, the logo, the words and
+the Book button. Drag a photo in or choose one; a few words (with four
+tap-to-use ideas written for any kind of shop); which branch, when there is
+more than one; "3 of 10 today"; **Post story**. Below: **Live now** (time
+left, views, branch, delete) and **Ended** (the last two days, with the
+reason if an administrator took it down).
+
+### 285.4 Customer app
+
+- **Home**: a row of round logos under the search, while browsing, only when
+  a shop has a story. A coral ring means something new; it turns thin grey
+  once seen, and seen shops move to the end. Shown to everyone, signed in or
+  not.
+- **The player** works the way every stories app does, so nobody has to
+  learn it: bars along the top; five seconds a photo, counted from when it
+  has loaded (a slow connection never skips one); tap right for the next,
+  left for the one before; hold to pause (the words clear away); swipe
+  sideways for the next shop, down to close. A shop's stories end and the
+  next shop's begin. On a wide screen it plays in a phone-shaped frame with
+  arrows either side.
+- **Seen** is remembered on the phone as "seen up to" one time per shop
+  (`src/stories/seen.ts`), because the phone's secure store holds about 2 KB
+  a value. Opening a shop again starts at its first unseen story.
+- **Views** are counted once per story per sitting, when the photo shows.
+- **Report** (the ••• button) is inside the player rather than a separate
+  sheet, which on a phone could open behind it: four reasons, signed in
+  only, once per person per story. "The shop is not told who reported it."
+- **Shop page**: with a story up, the logo wears the ring; tapping it plays
+  that shop's stories.
+
+### 285.5 Admin console — Stories (under Moderation)
+
+**Reported** (still up, most reported first, with the reasons) and **Up
+now**. **Take it down** asks for a reason, which the shop is sent
+(`STORY_REMOVED`, with "raise a support ticket" if they disagree) and which
+shows on the shop's ended story. **Keep it up** clears its reports so it
+leaves the queue; a new report brings it back. A reported story that ends
+leaves the queue by itself — it is no longer in front of anyone. The count
+of reported stories is a badge on the menu and a row in "Waiting".
+
+### 285.6 Server
+
+`Story` and `StoryReport` (migration `…_stories`); `POST/GET/DELETE
+/business/stories`; public `GET /stories` and `POST /stories/:id/view`;
+`POST /stories/:id/report` (customers); `GET /admin/stories?view=`, `POST
+/admin/stories/:id/remove` and `/keep`. 12 tests in
+`test/stories.e2e.spec.ts`, which also remove the pictures they upload.

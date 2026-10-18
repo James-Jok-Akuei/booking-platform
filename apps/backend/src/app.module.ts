@@ -18,6 +18,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { ChatModule } from './chat/chat.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { StoriesModule } from './stories/stories.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { LedgerModule } from './ledger/ledger.module';
 import { PayoutsModule } from './payouts/payouts.module';
@@ -59,6 +60,7 @@ import { RoutingModule } from './routing/routing.module';
     ChatModule,
     TicketsModule,
     ReviewsModule,
+    StoriesModule,
     AnalyticsModule,
     LedgerModule,
     PayoutsModule,

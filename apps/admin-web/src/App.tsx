@@ -10,6 +10,7 @@ import { PlacesPage } from './pages/PlacesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LedgerPage } from './pages/LedgerPage';
 import { ReviewsPage } from './pages/ReviewsPage';
+import { StoriesPage } from './pages/StoriesPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { UsersPage } from './pages/UsersPage';
 import { LegalPage } from './pages/LegalPage';
@@ -33,6 +34,7 @@ export function App() {
         <Route path="/payouts" element={<PayoutsPage />} />
         <Route path="/ledger" element={<LedgerPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
+        <Route path="/stories" element={<StoriesPage />} />
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/tickets" element={<TicketsPage />} />

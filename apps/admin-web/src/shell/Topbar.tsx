@@ -81,7 +81,7 @@ export function Topbar({
 /**
  * Everything waiting for an administrator, in one place (§242): the coral
  * button that, in the business app, checks a customer in. Its number is the
- * sum of the four queues; it opens on each queue with its own count.
+ * sum of the queues; it opens on each queue with its own count.
  */
 function WaitingMenu({ data }: { data: ShellData }) {
   const [open, setOpen] = useState(false);
@@ -95,6 +95,7 @@ function WaitingMenu({ data }: { data: ShellData }) {
     { to: '/payout-destinations', icon: 'wallet', n: waiting.destinations, one: 'payout number to check', many: 'payout numbers to check' },
     { to: '/payouts', icon: 'send', n: waiting.payouts, one: 'payout to send', many: 'payouts to send' },
     { to: '/tickets', icon: 'help', n: waiting.tickets, one: 'new support ticket', many: 'new support tickets' },
+    { to: '/stories', icon: 'stories', n: waiting.stories, one: 'reported story', many: 'reported stories' },
   ];
   const total = rows.reduce((sum, row) => sum + row.n, 0);
 

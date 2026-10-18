@@ -17,7 +17,7 @@ export type NavItem = {
   /** Said under the label in the search, so a page is found by what it is FOR. */
   hint: string;
   /** Which "waiting" count, if any, this page's badge shows (§242). */
-  badge?: 'businesses' | 'destinations' | 'payouts' | 'tickets';
+  badge?: 'businesses' | 'destinations' | 'payouts' | 'tickets' | 'stories';
 };
 
 export type NavGroup = { group: string | null; items: NavItem[] };
@@ -54,6 +54,14 @@ export const SECTIONS: NavGroup[] = [
         icon: 'star',
         keywords: 'moderation hide unhide ratings comments abuse',
         hint: 'Hide a review that breaks the rules',
+      },
+      {
+        to: '/stories',
+        label: 'Stories',
+        icon: 'stories',
+        keywords: 'story photo reported report take down remove 24 hours instagram status',
+        hint: 'Take down a story customers reported',
+        badge: 'stories',
       },
       {
         to: '/appointments',

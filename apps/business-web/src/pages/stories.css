@@ -1,0 +1,117 @@
+/* Stories (§285). */
+
+.sto { display: flex; flex-direction: column; }
+.sto-note { display: flex; align-items: center; gap: 9px; margin: -4px 0 18px; padding: 12px 16px; border-radius: 16px; background: var(--ask-soft); color: var(--ask); font-size: 13.5px; font-weight: 600; }
+.sto-note svg { flex: none; }
+
+.sto-layout { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 20px; align-items: start; }
+.sto-lists { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+.sto-card { padding: 20px 22px; border-radius: 26px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.05); box-shadow: var(--shadow-sm); animation: rise-in 460ms var(--ease) both; }
+.sto-card.is-quiet { background: #fbfaf8; box-shadow: none; }
+.sto-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.sto-card-head h2 { margin: 0; font-size: 17px; }
+.sto-card-head span { min-width: 22px; height: 22px; padding: 0 7px; display: grid; place-items: center; border-radius: 99px; background: var(--sunken-2); font-size: 11.5px; font-weight: 800; }
+.sto-skeleton { height: 220px; border-radius: 18px; }
+.sto-readonly { display: flex; align-items: flex-start; gap: 10px; color: var(--ask); background: var(--ask-soft); box-shadow: none; }
+.sto-readonly p { margin: 0; font-size: 13.5px; font-weight: 600; line-height: 1.5; }
+
+/* ---- the composer: a phone showing what customers will see, and the words ---- */
+
+.sto-composer { display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: 26px; background: radial-gradient(260px 180px at 50% 0%, rgba(240, 83, 45, 0.12), transparent 70%), var(--panel); border: 1px solid rgba(31, 42, 31, 0.05); box-shadow: var(--shadow-sm); position: sticky; top: 96px; }
+
+.sto-phone {
+  position: relative;
+  width: min(100%, 260px);
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+  border-radius: 30px;
+  overflow: hidden;
+  background: var(--night);
+  box-shadow: 0 0 0 6px #1b231c, 0 22px 40px -18px rgba(31, 42, 31, 0.55);
+  transition: box-shadow 200ms var(--ease), transform 200ms var(--ease);
+}
+.sto-phone.is-dragging { box-shadow: 0 0 0 6px var(--accent), 0 22px 40px -18px rgba(240, 83, 45, 0.6); transform: scale(1.01); }
+.sto-phone-blur { position: absolute; inset: -20px; width: calc(100% + 40px); height: calc(100% + 40px); object-fit: cover; filter: blur(22px) brightness(0.7); }
+.sto-phone-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; animation: sto-in 420ms var(--ease) both; }
+@keyframes sto-in { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
+
+.sto-pick { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; color: rgba(255, 255, 255, 0.82); background: radial-gradient(180px 180px at 50% 45%, rgba(240, 83, 45, 0.28), transparent 70%); }
+.sto-pick:hover .sto-pick-icon { transform: scale(1.06); }
+.sto-pick-icon { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; margin-bottom: 6px; color: #fff; background: conic-gradient(from 210deg, #f0532d, #ffb547, #f0532d); box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.08); transition: transform 200ms var(--ease); }
+.sto-pick strong { font-size: 15px; color: #fff; }
+.sto-pick > span:last-child { font-size: 12.5px; }
+
+.sto-phone-top { position: absolute; inset: 0 0 auto; padding: 10px 12px 26px; background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent); pointer-events: none; }
+.sto-bars { display: flex; gap: 3px; }
+.sto-bars i { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.35); overflow: hidden; }
+.sto-bars i.is-on { background: linear-gradient(90deg, #fff 45%, rgba(255, 255, 255, 0.35) 45%); }
+.sto-phone-who { display: flex; align-items: center; gap: 8px; margin-top: 9px; color: #fff; }
+.sto-phone-who span { display: flex; flex-direction: column; line-height: 1.2; }
+.sto-phone-who b { font-size: 12.5px; }
+.sto-phone-who small { font-size: 10.5px; opacity: 0.8; }
+.sto-phone-foot { position: absolute; inset: auto 0 0; padding: 34px 14px 14px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(0deg, rgba(0, 0, 0, 0.62), transparent); pointer-events: none; }
+.sto-phone-foot p { margin: 0; color: #fff; font-size: 13px; font-weight: 650; line-height: 1.4; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+.sto-book { align-self: stretch; text-align: center; padding: 9px 12px; border-radius: 99px; background: #fff; color: var(--ink); font-size: 12.5px; font-weight: 800; }
+.sto-change { position: absolute; top: 52px; right: 10px; display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 99px; background: rgba(0, 0, 0, 0.45); color: #fff; font-size: 11.5px; font-weight: 700; cursor: pointer; backdrop-filter: blur(6px); }
+.sto-change:hover { background: rgba(0, 0, 0, 0.6); }
+
+.sto-form { display: flex; flex-direction: column; gap: 12px; }
+.sto-field { display: flex; flex-direction: column; gap: 6px; }
+.sto-field > span { display: flex; justify-content: space-between; font-size: 13px; font-weight: 650; color: var(--ink-2); }
+.sto-field em { font-style: normal; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sto-field textarea { width: 100%; resize: none; }
+.sto-where { display: flex; flex-wrap: wrap; gap: 6px; }
+.sto-where button { min-height: 34px; padding: 0 12px; border-radius: 99px; font-size: 12.5px; gap: 6px; }
+.sto-where button.is-on, .sto-where button.is-on:hover:not(:disabled) { background: var(--night); border-color: var(--night); color: #fff; }
+.sto-meter { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 650; color: var(--muted); }
+.sto-meter i { flex: 1; height: 6px; border-radius: 6px; background: var(--sunken-2); overflow: hidden; }
+.sto-meter b { display: block; height: 100%; border-radius: 6px; background: var(--accent-grad); transition: width 300ms var(--ease); }
+.sto-problem { display: flex; align-items: flex-start; gap: 7px; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--danger-soft); color: var(--danger); font-size: 13px; font-weight: 650; }
+.sto-problem svg { flex: none; margin-top: 1px; }
+.sto-done { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13px; font-weight: 700; color: var(--ok-deep); animation: rise-in 300ms var(--ease) both; }
+.sto-post { min-height: 48px; border-radius: 15px; }
+.sto-ideas { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.sto-ideas > span { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.sto-ideas > span svg { color: var(--accent); }
+.sto-ideas > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.sto-ideas button { min-height: 32px; padding: 0 11px; border-radius: 99px; border-style: dashed; background: transparent; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.sto-ideas button:hover:not(:disabled) { border-style: solid; border-color: var(--accent); color: var(--accent-deep); background: var(--accent-soft); }
+
+/* ---- the shop's stories ---- */
+
+.sto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.sto-tile { position: relative; margin: 0; aspect-ratio: 9 / 16; border-radius: 20px; overflow: hidden; background: var(--night); box-shadow: 0 0 0 2.5px var(--panel), 0 0 0 4.5px var(--accent); animation: rise-in 420ms var(--ease) both; }
+.sto-tile.is-ended { box-shadow: none; opacity: 0.72; }
+.sto-tile.is-ended img { filter: grayscale(0.7); }
+.sto-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sto-tile-time { position: absolute; top: 9px; left: 9px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 99px; background: rgba(0, 0, 0, 0.5); color: #fff; font-size: 11px; font-weight: 750; backdrop-filter: blur(6px); }
+.sto-tile-remove { position: absolute; top: 7px; right: 7px; width: 30px; height: 30px; min-height: 0; padding: 0; border: none; border-radius: 50%; background: rgba(255, 255, 255, 0.92); color: var(--danger); }
+.sto-tile-remove:hover:not(:disabled) { background: #fff; border: none; }
+.sto-tile figcaption { position: absolute; inset: auto 0 0; padding: 48px 10px 10px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(0deg, rgba(0, 0, 0, 0.82) 30%, transparent); color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); }
+.sto-tile figcaption p { margin: 0; font-size: 12px; font-weight: 650; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sto-tile-facts { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11px; font-weight: 700; opacity: 0.92; }
+.sto-tile-facts span { display: inline-flex; align-items: center; gap: 4px; }
+.sto-tile-removed { padding: 4px 8px; border-radius: 8px; background: var(--danger); font-size: 11px; font-weight: 700; }
+
+.sto-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 12px; text-align: center; color: var(--muted); }
+.sto-empty-ring { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; margin-bottom: 6px; color: var(--accent-deep); background: var(--accent-soft); box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--accent); animation: sto-pulse 2.4s var(--ease) infinite; }
+@keyframes sto-pulse { 50% { box-shadow: 0 0 0 3px var(--panel), 0 0 0 8px rgba(240, 83, 45, 0.25); } }
+.sto-empty strong { color: var(--ink); font-size: 15px; }
+.sto-empty p { margin: 0; max-width: 340px; font-size: 13px; line-height: 1.5; }
+
+/* Narrower: the lists go below, and the phone stands beside the words. */
+@container page (max-width: 900px) {
+  .sto-layout { grid-template-columns: minmax(0, 1fr); }
+  .sto-composer { position: static; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 22px; align-items: start; }
+  .sto-composer .sto-phone { width: 100%; margin: 0; }
+}
+@container page (max-width: 640px) {
+  .sto-card, .sto-composer { padding: 16px; border-radius: 24px; }
+  .sto-composer { grid-template-columns: minmax(0, 1fr); }
+  .sto-composer .sto-phone { width: min(100%, 250px); margin: 0 auto; }
+  .sto-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sto-empty-ring { animation: none; }
+}

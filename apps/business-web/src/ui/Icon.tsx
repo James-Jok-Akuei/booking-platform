@@ -338,6 +338,17 @@ const PATHS = {
     </>
   ),
   play: <path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5" />,
+  // A story (§285): the broken ring a shop with a story wears, round a picture.
+  stories: (
+    <>
+      <path d="M12 2.8a9.2 9.2 0 0 1 6.5 2.7" />
+      <path d="M20.9 9.6a9.2 9.2 0 0 1-.3 5.9" />
+      <path d="M18.3 19.1a9.2 9.2 0 0 1-6.3 2.1" />
+      <path d="M8.2 20.4a9.2 9.2 0 0 1-4.7-4.8" />
+      <path d="M2.9 10.4a9.2 9.2 0 0 1 2.8-5.2" />
+      <rect x="8.4" y="8.4" width="7.2" height="7.2" rx="1.6" />
+    </>
+  ),
   userX: (
     <>
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />

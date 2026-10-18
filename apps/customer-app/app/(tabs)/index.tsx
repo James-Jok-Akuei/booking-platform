@@ -21,6 +21,7 @@ import {
   type DiscoverySort,
 } from '../../src/api/discovery';
 import { useSignedIn } from '../../src/api/client';
+import { listStories } from '../../src/api/stories';
 import { useMoney } from '../../src/money';
 import { useNearMe } from '../../src/useNearMe';
 import { useUnread } from '../../src/useUnread';
@@ -30,6 +31,9 @@ import { PlaceBubble } from '../../src/components/PlaceBubble';
 import { Spotlights } from '../../src/components/Spotlights';
 import { ServiceCard } from '../../src/components/ServiceCard';
 import { WithinBar } from '../../src/components/WithinBar';
+import { StoriesRow } from '../../src/stories/StoriesRow';
+import { StoryPlayer, type StoryStart } from '../../src/stories/StoryPlayer';
+import { firstUnseen, unseenFirst, useSeenStories } from '../../src/stories/seen';
 import {
   DEFAULT_WITHIN,
   reach,
@@ -146,6 +150,17 @@ export default function Discover() {
   }, [params.categoryId, params.subcategoryId]);
 
   const categories = useQuery({ queryKey: ['categories'], queryFn: listCategories });
+
+  /** Today's stories (§285): the shops with something new first. */
+  const stories = useQuery({
+    queryKey: ['story-feed'],
+    queryFn: listStories,
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
+  const seenStories = useSeenStories();
+  const storyShops = unseenFirst(seenStories, stories.data?.shops ?? []);
+  const [storyAt, setStoryAt] = useState<StoryStart | null>(null);
   const provinces = useQuery({
     queryKey: ['provinces'],
     queryFn: listProvinces,
@@ -503,6 +518,17 @@ export default function Discover() {
         )}
       </FadeIn>
 
+      {/* Today's stories (§285), first, the way every app with stories has
+          them — while browsing, like the spotlights below. */}
+      {browsing && (
+        <StoriesRow
+          shops={storyShops}
+          onOpen={(i) => setStoryAt({ shop: i, story: firstUnseen(seenStories, storyShops[i]) })}
+          style={bleed}
+          contentStyle={bleedPad}
+        />
+      )}
+
       {/* The spotlights (§176): only while browsing — someone who has typed
           or picked a category has said what they want, and a banner would
           push it down. */}
@@ -632,6 +658,7 @@ export default function Discover() {
             onRefresh={() => {
               results.refetch();
               services.refetch();
+              void stories.refetch();
             }}
             tintColor={theme.accent}
             colors={[theme.accent]}
@@ -851,6 +878,13 @@ export default function Discover() {
           />
         ) : null}
       </ScrollView>
+
+      <StoryPlayer
+        shops={storyShops}
+        openAt={storyAt}
+        onClose={() => setStoryAt(null)}
+        onBook={(locationId) => router.push(`/shop/${locationId}`)}
+      />
 
       <Sheet open={placeSheet} title="Where in Rwanda" onClose={() => setPlaceSheet(false)}>
         <ScrollView contentContainerStyle={styles.sheetBody} showsVerticalScrollIndicator={false}>

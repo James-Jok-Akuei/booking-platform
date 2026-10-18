@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { listBusinesses, listPayoutDestinations, listPayouts, listTickets } from '../api/admin';
+import { listAdminStories, listBusinesses, listPayoutDestinations, listPayouts, listTickets } from '../api/admin';
 import { useAuth } from '../auth/auth-context';
 
 /**
@@ -30,17 +30,20 @@ export function useShellData() {
   const payouts = count('payouts', () => listPayouts({ status: 'PENDING', limit: 1 }));
   // New tickets nobody has picked up yet (§24).
   const tickets = count('tickets', () => listTickets({ status: 'OPEN', limit: 1 }));
+  // Stories customers reported, still up (§285).
+  const stories = count('stories', async () => ({ total: (await listAdminStories('reported')).reported }));
 
   return {
     email: user?.email ?? '',
     // Until every queue has answered, the frame says nothing about them rather
     // than "All clear" — which, a second later, may not be true.
-    known: [businesses, destinations, payouts, tickets].every((q) => q.data !== undefined),
+    known: [businesses, destinations, payouts, tickets, stories].every((q) => q.data !== undefined),
     waiting: {
       businesses: businesses.data ?? 0,
       destinations: destinations.data ?? 0,
       payouts: payouts.data ?? 0,
       tickets: tickets.data ?? 0,
+      stories: stories.data ?? 0,
     },
   };
 }

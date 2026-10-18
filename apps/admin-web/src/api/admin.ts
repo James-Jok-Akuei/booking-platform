@@ -657,3 +657,17 @@ export type OverviewDay = components['schemas']['OverviewDayDto'];
 export type OverviewPeriod = components['schemas']['OverviewPeriodDto'];
 
 export const getOverview = () => api<AdminOverview>('/admin/overview');
+
+/** Shops' stories (§285): the reported ones, most reported first, or every one up now. */
+export type AdminStory = components['schemas']['AdminStoryDto'];
+export type AdminStories = components['schemas']['AdminStoriesDto'];
+export type StoryView = 'reported' | 'live';
+
+export const listAdminStories = (view: StoryView) => api<AdminStories>('/admin/stories', { query: { view } });
+
+/** Takes one down at once; the shop is told, with the reason. */
+export const removeStory = (id: string, reason: string) =>
+  api<ActionMessage>(`/admin/stories/${id}/remove`, { method: 'POST', body: { reason } });
+
+/** Looked at and fine: the reports are cleared and it stays up. */
+export const keepStory = (id: string) => api<ActionMessage>(`/admin/stories/${id}/keep`, { method: 'POST' });
