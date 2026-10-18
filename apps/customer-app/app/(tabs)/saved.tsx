@@ -128,8 +128,10 @@ export default function Saved() {
     />
   );
 
+  // A new list when the columns change (FlatList cannot change them in place).
+  // The key goes on the list itself: React does not take one inside a spread.
+  const listKey = `${kind}-${layout.columns}`;
   const listProps = {
-    key: `${kind}-${layout.columns}`,
     numColumns: layout.columns,
     showsVerticalScrollIndicator: false,
     contentContainerStyle: [
@@ -158,6 +160,7 @@ export default function Saved() {
       <BigTitle title="Saved" />
       {kind === 'places' ? (
         <FlatList
+          key={listKey}
           {...listProps}
           data={placeRows}
           keyExtractor={(item) => item.id}
@@ -191,6 +194,7 @@ export default function Saved() {
         />
       ) : (
         <FlatList
+          key={listKey}
           {...listProps}
           data={serviceRows}
           keyExtractor={(item) => `${item.id}:${item.location.id}`}

@@ -2,6 +2,7 @@ import { useRef, type ReactNode } from 'react';
 import {
   Animated,
   Pressable,
+  View,
   type GestureResponderEvent,
   type PressableProps,
   type StyleProp,
@@ -28,6 +29,7 @@ export function PressableScale({
   disabled,
   scaleTo = 0.97,
   haptic = false,
+  overlay,
   ...rest
 }: Omit<PressableProps, 'style' | 'children'> & {
   children: ReactNode;
@@ -35,6 +37,12 @@ export function PressableScale({
   /** How far it sinks. Big cards barely move; small chips move more. */
   scaleTo?: number;
   haptic?: boolean;
+  /**
+   * Buttons of their own on top — the heart on a card. They sink with it but
+   * are not inside it: on the web a button is a `<button>`, and one inside
+   * another is not allowed. Placed by the caller, from the top-left corner.
+   */
+  overlay?: ReactNode;
 }) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -46,23 +54,34 @@ export function PressableScale({
       bounciness: 6,
     }).start();
 
+  const handlers = {
+    onPressIn: (event: GestureResponderEvent) => {
+      to(scaleTo);
+      onPressIn?.(event);
+    },
+    onPressOut: (event: GestureResponderEvent) => {
+      to(1);
+      onPressOut?.(event);
+    },
+    onPress: (event: GestureResponderEvent) => {
+      if (haptic) tick();
+      onPress?.(event);
+    },
+  };
+
+  if (overlay) {
+    return (
+      <Animated.View style={{ transform: [{ scale }] }}>
+        <Pressable {...rest} disabled={disabled} {...handlers}>
+          <View style={style}>{children}</View>
+        </Pressable>
+        {overlay}
+      </Animated.View>
+    );
+  }
+
   return (
-    <Pressable
-      {...rest}
-      disabled={disabled}
-      onPressIn={(event: GestureResponderEvent) => {
-        to(scaleTo);
-        onPressIn?.(event);
-      }}
-      onPressOut={(event: GestureResponderEvent) => {
-        to(1);
-        onPressOut?.(event);
-      }}
-      onPress={(event: GestureResponderEvent) => {
-        if (haptic) tick();
-        onPress?.(event);
-      }}
-    >
+    <Pressable {...rest} disabled={disabled} {...handlers}>
       <Animated.View style={[style, { transform: [{ scale }] }]}>{children}</Animated.View>
     </Pressable>
   );

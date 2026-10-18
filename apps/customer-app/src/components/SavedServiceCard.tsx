@@ -40,11 +40,14 @@ export function SavedServiceCard({
   const money = useMoney();
 
   return (
+    // The whole card opens it to a tap, but is not itself a button: it holds
+    // three (the heart, the shop, Book), which a screen reader must reach one
+    // by one, and on the web a button inside a button is not allowed. Book and
+    // the shop between them do everything the card does.
     <PressableScale
       onPress={service.bookable ? onPress : onShop}
       scaleTo={0.98}
-      accessibilityRole="button"
-      accessibilityLabel={`${service.name} at ${shop}, ${price}${service.bookable ? '' : ', not bookable right now'}`}
+      accessible={false}
       style={[styles.card, width !== undefined && { width }]}
     >
       <View>

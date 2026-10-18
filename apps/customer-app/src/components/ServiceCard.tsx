@@ -62,6 +62,16 @@ export function ServiceCard({
       accessibilityRole="button"
       accessibilityLabel={`${service.name} at ${service.business.name ?? service.location.name}, ${price}${sale ? `, ${sale.percent} percent off` : ''}`}
       style={[styles.card, { width }]}
+      // The heart (§158), only for a signed-in reader — `saved` is absent
+      // otherwise, and the button draws nothing for undefined. On top of the
+      // card rather than in it: it is a button of its own.
+      overlay={
+        onSave && (
+          <View style={styles.heart}>
+            <SaveButton saved={service.saved} onPress={onSave} onPhoto small />
+          </View>
+        )
+      }
     >
       <View>
         <Cover
@@ -80,14 +90,6 @@ export function ServiceCard({
           </View>
         )}
 
-
-        {/* The heart (§158), only for a signed-in reader — `saved` is absent
-            otherwise, and the button draws nothing for undefined. */}
-        {onSave && (
-          <View style={styles.heart}>
-            <SaveButton saved={service.saved} onPress={onSave} onPhoto small />
-          </View>
-        )}
 
         {/* On sale (§186): the percentage in the top corner, the logo under
             it. The crossed-out old price is on the service's own page — a card
@@ -176,7 +178,8 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   cover: { borderRadius: radius.md, width: '100%' },
-  heart: { position: 'absolute', top: 7, right: 7 },
+  // The card's padding (6) and the photo's corner inset (7).
+  heart: { position: 'absolute', top: 13, right: 13 },
   logo: {
     position: 'absolute',
     top: 7,

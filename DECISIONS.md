@@ -18368,3 +18368,38 @@ of reported stories is a badge on the menu and a row in "Waiting".
 `POST /stories/:id/report` (customers); `GET /admin/stories?view=`, `POST
 /admin/stories/:id/remove` and `/keep`. 12 tests in
 `test/stories.e2e.spec.ts`, which also remove the pictures they upload.
+
+## 286. No button inside a button; a story's photo types said up front (2026-10-18)
+
+Asked: fix the web warning "a button cannot contain a nested button"; and
+which kinds of file a story takes.
+
+### 286.1 No button inside a button
+
+On the web every element marked as a button becomes a real `<button>`, and a
+button inside another is not allowed (React warns; screen readers and
+keyboards trip over it). Two cards did it:
+
+- **The service card** (Home's shelves) had its heart inside the card's
+  button. `PressableScale` now takes an `overlay`: buttons of their own that
+  sit on top and sink with the card when it is pressed, but are not inside
+  it. The heart is there, in exactly the same corner.
+- **The saved-service card** (Saved → Services) held three buttons — the
+  heart, the shop and Book. The card still opens to a tap but is no longer a
+  button itself (`accessible={false}`): Book and the shop do everything it
+  did, and a phone's screen reader can now reach each of the three, which it
+  could not while the card was read as one block.
+
+The place card and the shop page's service rows were never marked as
+buttons, so they were fine. A second warning on the Saved page — the list's
+`key` passed inside a spread, which React no longer accepts — is fixed too:
+the key goes on the list itself. Home, Saved and a shop page now log no
+errors.
+
+### 286.2 What a story takes
+
+The same photos as a shop's gallery: **JPG, PNG or WebP, up to 15 MB**. No
+video, no GIF. The composer now says so under "Choose a photo", and a wrong
+file is refused there and then in plain words ("A story is a photo — a video
+cannot go up", "This one is a .svg file", "That photo is 22 MB") instead of
+after an upload. The server checks the same rules regardless.

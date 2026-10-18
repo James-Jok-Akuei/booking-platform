@@ -17,6 +17,22 @@ const IDEAS = [
   'Open late tonight',
 ];
 const ACCEPT = 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp';
+/** What the server takes for a story: the same photos as a shop's gallery. */
+const TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_MB = 15;
+
+/** Why a file cannot be a story, in words — or null when it can. */
+function refusal(file: File): string | null {
+  if (file.type.startsWith('video/')) return 'A story is a photo — a video cannot go up. Choose a JPG, PNG or WebP.';
+  if (!TYPES.includes(file.type)) {
+    const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : null;
+    return `A story takes a JPG, PNG or WebP photo.${ext ? ` This one is a .${ext} file.` : ''}`;
+  }
+  if (file.size > MAX_MB * 1024 * 1024) {
+    return `That photo is ${Math.ceil(file.size / (1024 * 1024))} MB. A story takes one up to ${MAX_MB} MB.`;
+  }
+  return null;
+}
 
 /** "13h 20m left", "45m left". */
 function left(expiresAt: string, now: number) {
@@ -195,6 +211,7 @@ function Composer({
   const [where, setWhere] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [done, setDone] = useState(false);
+  const [refused, setRefused] = useState<string | null>(null);
   const preview = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
 
@@ -213,16 +230,19 @@ function Composer({
     },
   });
 
+  // Checked here, so a wrong file is explained at once rather than after an upload.
   const pick = (picked: File | undefined) => {
     if (!picked) return;
     setDone(false);
     post.reset();
-    setFile(picked);
+    const why = refusal(picked);
+    setRefused(why);
+    if (!why) setFile(picked);
   };
   const onDrop = (event: DragEvent) => {
     event.preventDefault();
     setDragging(false);
-    pick(Array.from(event.dataTransfer.files).find((f) => f.type.startsWith('image/')));
+    pick(event.dataTransfer.files[0]);
   };
 
   const place = branchId ? branches.find((b) => b.id === branchId)?.name : null;
@@ -251,6 +271,7 @@ function Composer({
             </span>
             <strong>Choose a photo</strong>
             <span>or drop one here</span>
+            <small>JPG, PNG or WebP · up to {MAX_MB} MB</small>
           </label>
         )}
         <div className="sto-phone-top">
@@ -345,10 +366,11 @@ function Composer({
           </i>
         </div>
 
-        {post.error && (
+        {(refused || post.error) && (
           <p className="sto-problem" role="alert">
             <Icon name="alert" size={15} />
-            {post.error instanceof ApiError ? post.error.message : 'That did not post. Check your connection.'}
+            {refused ??
+              (post.error instanceof ApiError ? post.error.message : 'That did not post. Check your connection.')}
           </p>
         )}
         {done && (
