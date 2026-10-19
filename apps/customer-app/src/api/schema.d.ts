@@ -6541,6 +6541,9 @@ export interface components {
             unresolvedMinor: number;
             lifetimePaidMinor: number;
             payoutCount: number;
+            /** @description Worked out into a payment, not yet arrived: waiting to be sent or with the operator (§291). */
+            onTheWayMinor: number;
+            onTheWayCount: number;
             pendingPayouts: components["schemas"]["PendingPayoutsDto"];
             entryCounts: components["schemas"]["LedgerEntryCountsDto"];
             /** @description Plain-language explanation of the figures above, including why a payout is held. */

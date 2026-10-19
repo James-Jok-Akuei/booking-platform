@@ -13,13 +13,30 @@ import {
 import { useMoney } from '../money';
 import { Icon, type IconName } from '../ui/Icon';
 import { NETWORK_NAME, NetworkMark, networkOf } from '../ui/NetworkMark';
-import { PayoutDetail } from './PayoutDetail';
+import { PayoutDetail, overdue } from './PayoutDetail';
 import './payouts.css';
 
 const PAGE = 25;
 
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+
+/** "+250788100001" → "+250 788 100 001": read in threes, as people say it (§245). */
+const spaced = (msisdn: string) => {
+  const digits = msisdn.replace(/\D/g, '');
+  if (digits.startsWith('250') && digits.length === 12) return `+250 ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9)}`;
+  return msisdn;
+};
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** The number's state in the page's own words (§291), not the enum. */
+const NUMBER_STATE: Record<string, string> = {
+  VERIFIED: 'Confirmed',
+  UNVERIFIED: 'Being checked',
+  REJECTED: 'Refused',
+  SUPERSEDED: 'Replaced',
+};
 
 const PAYOUT: Record<string, { label: string; cls: string }> = {
   PAID: { label: 'Paid', cls: 'paid' },
@@ -65,6 +82,7 @@ export function GettingPaidPage() {
   const number = destination.data?.destination ?? null;
   // Payouts go out through MTN MoMo (the one network the platform sends with, §219).
   const network = number?.provider ?? 'MTN_MOMO';
+  const coming = b ? b.pendingMinor + b.availableNowMinor + b.onTheWayMinor : 0;
 
   return (
     <section className="gp">
@@ -83,9 +101,9 @@ export function GettingPaidPage() {
             <Icon name="pause" size={20} />
           </span>
           <p>
-            <strong>Payouts are paused.</strong>{' '}
+            <strong>Your payments are paused.</strong>{' '}
             {b.payoutsPausedReason === 'DESTINATION_NOT_VERIFIED'
-              ? 'Your payout number has not been confirmed yet. Nothing is lost — the balance is held and goes out with the first payment after it is.'
+              ? 'Your mobile money number has not been confirmed yet. Nothing is lost — your money is kept and goes out with the first payment after it is.'
               : 'This business is suspended. Nothing is written off; the balance is held until it is reinstated.'}
           </p>
         </div>
@@ -95,20 +113,33 @@ export function GettingPaidPage() {
         <article className="gp-wallet">
           <div className="gp-wallet-head">
             <span className="gp-wallet-label">
-              <Icon name="wallet" size={16} /> Ready to send
+              <Icon name="wallet" size={16} /> Coming to you
             </span>
             {/* Where it goes, as a card shows its network (§219). */}
             <NetworkMark network={network} shape="wide" size={34} className="gp-brand" />
           </div>
-          <strong className="gp-wallet-amount">{b ? money.format(b.availableNowMinor) : '–'}</strong>
-          <p className="gp-wallet-note">Goes into your next payment, worked out each night at 2 a.m.</p>
+          {/* Everything earned that is not in their mobile money yet — held,
+              ready, or worked out and on its way (§291). It used to show only
+              "ready", so a shop with two payments waiting saw RWF 0. */}
+          <strong className="gp-wallet-amount">{b ? money.format(coming) : '–'}</strong>
+          <p className="gp-wallet-note">
+            {!b
+              ? ' '
+              : b.onTheWayCount > 0
+                ? b.onTheWayMinor === coming
+                  ? `All of it is on its way to you, in ${plural(b.onTheWayCount, 'payment', 'payments')}.`
+                  : `${money.format(b.onTheWayMinor)} of it is on its way to you, in ${plural(b.onTheWayCount, 'payment', 'payments')}.`
+                : coming > 0
+                  ? 'Earned, and not in your mobile money yet.'
+                  : 'Nothing waiting. Money from new bookings shows here.'}
+          </p>
           <div className="gp-wallet-foot">
             <div>
               <span>Paid to you so far</span>
               <strong>{b ? money.format(b.lifetimePaidMinor) : '–'}</strong>
             </div>
             <div>
-              <span>Payouts</span>
+              <span>Payments</span>
               <strong>{b ? b.payoutCount : '–'}</strong>
             </div>
             <div className="gp-wallet-to">
@@ -134,8 +165,15 @@ export function GettingPaidPage() {
         <article className="gp-flow">
           <header>
             <h2>Your money</h2>
-            <p>{b.note}</p>
+            <p>Where every franc of your deposits is, from a booking to your mobile money.</p>
           </header>
+          {/* The one case the steps cannot say by themselves (§35.3). */}
+          {b.availableNowMinor < 0 && (
+            <p className="gp-negative">
+              <Icon name="alert" size={15} />
+              {b.note}
+            </p>
+          )}
           {/* Where each franc is, left to right: the order money moves in. */}
           <ol className="gp-steps">
             <Step
@@ -143,29 +181,38 @@ export function GettingPaidPage() {
               tone="grey"
               label="Not yours yet"
               value={money.format(b.unresolvedMinor)}
-              note="Appointments that have not been completed or cancelled."
+              note="Bookings not yet done or cancelled."
             />
             <Step
               icon="clock"
               tone="amber"
               label="Still held"
               value={money.format(b.pendingMinor)}
-              note={`Earned, and waiting ${b.holdDays} ${b.holdDays === 1 ? 'day' : 'days'} after the visit.`}
+              note={`Earned, waiting ${plural(b.holdDays, 'day', 'days')} after the visit.`}
             />
             <Step
               icon="wallet"
               tone="green"
               label="Ready to send"
               value={money.format(b.availableNowMinor)}
-              note="Goes into your next payment, worked out each night at 2 a.m."
-              strong
+              note="Goes into the next payment."
+              strong={b.onTheWayCount === 0}
+            />
+            {/* Worked out into a payment, not yet arrived (§291). */}
+            <Step
+              icon="send"
+              tone="blue"
+              label="On its way"
+              value={money.format(b.onTheWayMinor)}
+              note={b.onTheWayCount > 0 ? `${plural(b.onTheWayCount, 'payment', 'payments')} being sent to you.` : 'Nothing being sent just now.'}
+              strong={b.onTheWayCount > 0}
             />
             <Step
               icon="checkCircle"
               tone="night"
               label="Paid to you so far"
               value={money.format(b.lifetimePaidMinor)}
-              note={`${b.payoutCount} payout(s).`}
+              note={`${plural(b.payoutCount, 'payment', 'payments')}.`}
             />
           </ol>
           {/* The deposit is not the price. Saying so here stops a business
@@ -226,6 +273,12 @@ export function GettingPaidPage() {
                     <span className="gp-row-side">
                       <span className={`pill ${look.cls}`}>{look.label}</span>
                       {payout.paidAt && <span>Arrived {when(payout.paidAt)}</span>}
+                      {overdue(payout) && (
+                        <span className="gp-late">
+                          <Icon name="alert" size={13} />
+                          {overdue(payout)}
+                        </span>
+                      )}
                     </span>
                     <Icon name="chevronRight" size={18} />
                   </button>
@@ -255,7 +308,7 @@ function Step({
   strong,
 }: {
   icon: IconName;
-  tone: 'grey' | 'amber' | 'green' | 'night';
+  tone: 'grey' | 'amber' | 'green' | 'blue' | 'night';
   label: string;
   value: string;
   note: string;
@@ -311,9 +364,9 @@ function Destination({
         <div>
           <h2>Where your money goes</h2>
           <p>
-            Payouts are sent by <strong>MTN MoMo</strong> to this number. Changing it <strong>pauses payouts</strong>{' '}
-            until an administrator confirms the new one — that check is what stops money going to a number
-            nobody verified.
+            Your payments are sent by <strong>MTN MoMo</strong> to this number. Changing it{' '}
+            <strong>pauses your payments</strong> until our team confirms the new one — that check is what stops
+            money going to a number nobody checked.
           </p>
         </div>
       </header>
@@ -324,14 +377,18 @@ function Destination({
             <span className="gp-number-label">
               <NetworkMark network={destination.provider} size={16} /> {NETWORK_NAME[destination.provider]} number
             </span>
-            <code>{destination.msisdn ?? destination.msisdnLast3}</code>
+            <strong className="gp-number-value">
+              {destination.msisdn ? spaced(destination.msisdn) : `•••• ${destination.msisdnLast3 ?? ''}`}
+            </strong>
           </div>
-          <span className={`pill ${destination.status.toLowerCase()}`}>{destination.status.toLowerCase()}</span>
+          <span className={`pill ${destination.status.toLowerCase()}`}>
+            {NUMBER_STATE[destination.status] ?? destination.status}
+          </span>
           <p>
             {destination.status === 'VERIFIED'
-              ? `Confirmed ${when(destination.verifiedAt)}. Payouts can go out.`
+              ? `Confirmed ${when(destination.verifiedAt)}. Your payments go here.`
               : destination.status === 'UNVERIFIED'
-                ? 'Waiting on an administrator. Payouts are paused until then.'
+                ? 'Our team is checking it. Your payments wait until then — nothing is lost.'
                 : destination.status === 'REJECTED'
                   ? (destination.rejectionReason ?? 'Refused. Submit another number.')
                   : 'Replaced by a newer number.'}
@@ -371,8 +428,8 @@ function Destination({
             <p className={`gp-typed ${typed === 'MTN_MOMO' ? 'is-ok' : 'is-warn'}`}>
               <NetworkMark network={typed} size={22} />
               {typed === 'MTN_MOMO'
-                ? 'An MTN MoMo number — payouts can be sent to it.'
-                : 'An Airtel number. Payouts are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079).'}
+                ? 'An MTN MoMo number — your payments can be sent to it.'
+                : 'An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079).'}
             </p>
           )}
           {destination && (

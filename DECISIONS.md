@@ -18717,3 +18717,46 @@ services the money is for, and more.
 Checked at 1440 (list, a paid payment opened), 1024 (a booking opened from
 it) and 390 (a pending payment, scrolled to the bookings). The spreadsheet
 was read back from the server: four bookings and the total, matching.
+
+## 291. Getting paid, tidied: what is on its way, payments that wait too long, one word (2026-10-19)
+
+Asked what else the page needed, I listed six things and the user said go
+ahead.
+
+1. **Money already worked out was in no figure at the top.** Two Pending
+   payments (RWF 14,800) and the dark card said "Ready to send RWF 0". The
+   balance now carries **`onTheWayMinor` / `onTheWayCount`** — payments
+   waiting to be sent *or with the operator* (the older `pendingPayouts`
+   counts only the first; a payment with MTN was in no figure at all). The
+   page gets a fifth step, **On its way**, between Ready to send and Paid to
+   you so far, highlighted in blue when there is any; the dark card becomes
+   **Coming to you** — held + ready + on its way, everything earned that is
+   not in their mobile money yet — with "All of it is on its way to you, in
+   2 payments" (or how much of it is).
+2. **A payment that waits too long now says so**: waiting to be sent for 3
+   days or more, or with MTN for a day or more, shows "Waiting 15 days" in
+   amber on its row; opened, it explains and offers **Ask us about it**,
+   which opens Help with a conversation already written (category Getting
+   paid, the amount, the date, how long, the payment's id) — the seller reads
+   it and presses Send. Every payment also has a quiet "Something wrong with
+   this payment? Ask us about it". Help takes `?new=&subject=&body=` for this.
+3. **The number reads like a number**: "+250 788 100 001", not
+   "+250788100001" in code type; its state in words — Confirmed, Being
+   checked, Refused, Replaced — not "verified".
+4. **Said once**: "worked out each night at 2 a.m." lives in the note above
+   the payments; the card and the steps say shorter things ("Goes into the
+   next payment"). "Your money" opens with what it is, and shows the
+   server's note only for a negative balance (the one case the steps cannot
+   explain); a paused shop already has the banner.
+5. **One word, "payments"**, on the page and in its For you topic: "Your
+   payments are paused", "Payments 2", "2 payments", not "Payouts" and
+   "2 payout(s)". The emails and alerts still say "payout" (§287's
+   templates) — not changed here.
+6. **On a phone** the steps sit in pairs (the last across both) and a size
+   smaller; on a narrower computer page the five stay in one row, a size
+   smaller, rather than dropping into pairs. On a phone the number's state
+   goes under it, so a long number is never cut.
+
+`test/payout-detail.spec.ts` gained the on-its-way test (6). Checked at 1440
+(page, five in a row), 1024 (a payment waiting 15 days opened; Ask us about
+it → the Help form filled in) and 390 (whole page). Nothing was sent.

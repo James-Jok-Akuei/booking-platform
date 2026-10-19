@@ -889,7 +889,7 @@ export class PayoutsService {
     await this.assertMayRead(actor, businessId);
     const now = new Date();
 
-    const [available, pending, paid, unresolved, inFlight, settlement] = await Promise.all([
+    const [available, pending, paid, unresolved, inFlight, settlement, onTheWay] = await Promise.all([
       this.prisma.ledgerEntry.aggregate({
         where: { businessId, payoutId: null, availableAt: { not: null, lte: now } },
         _sum: { amountMinor: true },
@@ -932,6 +932,15 @@ export class PayoutsService {
         },
         _sum: { settlementAmountMinor: true },
       }),
+      // On its way (§291): worked out into a payment and not yet arrived —
+      // waiting to be sent, or with the operator. `pendingPayouts` above
+      // predates sending through the operator (§64) and counts only the
+      // first; a payment with MTN was in no figure on the seller's page.
+      this.prisma.payout.aggregate({
+        where: { businessId, status: { in: [PayoutStatus.PENDING, PayoutStatus.PROCESSING] } },
+        _sum: { amountMinor: true },
+        _count: { _all: true },
+      }),
     ]);
 
     const availableMinor = available._sum.amountMinor ?? 0;
@@ -970,6 +979,8 @@ export class PayoutsService {
       unresolvedMinor: unresolved._sum.amountMinor ?? 0,
       lifetimePaidMinor: paid._sum.amountMinor ?? 0,
       payoutCount: paid._count._all,
+      onTheWayMinor: onTheWay._sum.amountMinor ?? 0,
+      onTheWayCount: onTheWay._count._all,
       /** Payouts created and not yet sent. Money on its way, not lost. */
       pendingPayouts: {
         count: inFlight.reduce((sum, row) => sum + row._count._all, 0),

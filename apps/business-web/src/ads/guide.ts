@@ -133,8 +133,8 @@ export function guideTopics(feePercent: string | null): GuideTopic[] {
       short: 'Your share waits a short while after each visit, then goes to your mobile money.',
       points: [
         'Your share of a deposit becomes yours when the booking is done, marked a no-show, or cancelled by the customer.',
-        'It is held for a short waiting period, then paid in the daily payout run to your mobile money number.',
-        'Payouts need a confirmed number. Changing it pauses payouts until an administrator confirms the new one — nothing you earned is lost.',
+        'It waits a couple of days after the visit, then goes out in that night’s payment to your mobile money number.',
+        'Payments need a confirmed number. Changing it pauses them until our team confirms the new one — nothing you earned is lost.',
       ],
       link: { label: 'See your money', to: '/getting-paid' },
     },

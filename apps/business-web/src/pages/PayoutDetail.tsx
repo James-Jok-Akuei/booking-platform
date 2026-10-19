@@ -21,6 +21,19 @@ const LINE: Record<string, string> = {
   ADJUSTMENT: 'Manual adjustment',
 };
 
+/**
+ * How long a payment has been stuck, when that is longer than it should be
+ * (§291): waiting to be sent for 3 days or more, or with MTN for a day or
+ * more. Null when it is not.
+ */
+export function overdue(payout: Payout): string | null {
+  const days = (iso: string | null) => (iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000) : 0);
+  if (payout.status === 'PENDING' && days(payout.runAt) >= 3) return `Waiting ${days(payout.runAt)} days`;
+  if (payout.status === 'PROCESSING' && days(payout.sentAt) >= 1)
+    return `With MTN for ${days(payout.sentAt)} ${days(payout.sentAt) === 1 ? 'day' : 'days'}`;
+  return null;
+}
+
 const STATUS_LABEL: Record<string, string> = {
   PENDING: 'Pending',
   PROCESSING: 'Processing',
@@ -85,6 +98,18 @@ export function PayoutDetail({
     } finally {
       setSaving(false);
     }
+  };
+
+  const late = overdue(payout);
+  const amount = money.format(payout.settlementAmountMinor, currency);
+  const ask = () => {
+    const subject = `My payment of ${amount}, worked out on ${at(payout.runAt)}`;
+    const body =
+      `My payment of ${amount}, worked out on ${at(payout.runAt)}, ` +
+      `${late ? `says "${STATUS_LABEL[payout.status] ?? payout.status}" — ${late.toLowerCase()}` : `says "${STATUS_LABEL[payout.status] ?? payout.status}"`}. ` +
+      `Could you check it?\n\nPayment ${payout.id}`;
+    onClose();
+    navigate(`/help?${new URLSearchParams({ new: 'PAYMENT_ISSUE', subject, body }).toString()}`);
   };
 
   const sendTo = first?.sendTo;
@@ -157,6 +182,25 @@ export function PayoutDetail({
           </p>
         )}
       </section>
+
+      {/* Where is my money? — asked in one tap, about this payment (§291). */}
+      {late ? (
+        <div className="gpd-late" role="status">
+          <Icon name="alert" size={18} />
+          <p>
+            <strong>{late}.</strong> If that is longer than you expected, ask us — we will check this payment and reply
+            on the Help page and by email.
+          </p>
+          <button type="button" className="primary" onClick={ask}>
+            Ask us about it
+          </button>
+        </div>
+      ) : (
+        <button type="button" className="link gpd-ask" onClick={ask}>
+          <Icon name="help" size={15} />
+          Something wrong with this payment? Ask us about it
+        </button>
+      )}
 
       <section className="gpd-sum">
         <h3>What is in it</h3>

@@ -26996,6 +26996,13 @@
           "payoutCount": {
             "type": "number"
           },
+          "onTheWayMinor": {
+            "type": "number",
+            "description": "Worked out into a payment, not yet arrived: waiting to be sent or with the operator (§291)."
+          },
+          "onTheWayCount": {
+            "type": "number"
+          },
           "pendingPayouts": {
             "$ref": "#/components/schemas/PendingPayoutsDto"
           },
@@ -27022,6 +27029,8 @@
           "unresolvedMinor",
           "lifetimePaidMinor",
           "payoutCount",
+          "onTheWayMinor",
+          "onTheWayCount",
           "pendingPayouts",
           "entryCounts",
           "note",

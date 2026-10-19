@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import {
@@ -105,7 +106,16 @@ const withinReopenWindow = (resolvedAt: string | null) => {
 /** Asking for help, and the answers (§79, §80, §202). */
 export function SupportPage() {
   const [openId, setOpenId] = useState<string | null>(null);
-  const [composing, setComposing] = useState<TicketCategory | null>(null);
+  // Started from elsewhere with its words already written (§291): `?new=`,
+  // `subject=`, `body=`. Nothing is sent until the seller presses Send.
+  const [params, setParams] = useSearchParams();
+  const asked = TICKET_CATEGORIES.find((c) => c.value === params.get('new'))?.value ?? null;
+  const [composing, setComposing] = useState<TicketCategory | null>(asked);
+  const [draft] = useState({ subject: params.get('subject') ?? '', body: params.get('body') ?? '' });
+  const stopComposing = () => {
+    setComposing(null);
+    if (params.get('new')) setParams({}, { replace: true });
+  };
 
   const tickets = useQuery({ queryKey: ['my-tickets'], queryFn: () => listMyTickets() });
   const rows = tickets.data?.tickets ?? [];
@@ -168,9 +178,11 @@ export function SupportPage() {
       {composing && (
         <NewTicket
           initialCategory={composing}
-          onClose={() => setComposing(null)}
+          initialSubject={asked === composing ? draft.subject : ''}
+          initialBody={asked === composing ? draft.body : ''}
+          onClose={stopComposing}
           onCreated={(id) => {
-            setComposing(null);
+            stopComposing();
             setOpenId(id);
           }}
         />
@@ -360,17 +372,21 @@ function Attachments({ files }: { files: TicketAttachment[] }) {
 
 function NewTicket({
   initialCategory,
+  initialSubject = '',
+  initialBody = '',
   onClose,
   onCreated,
 }: {
   initialCategory: TicketCategory;
+  initialSubject?: string;
+  initialBody?: string;
   onClose: () => void;
   onCreated: (id: string) => void;
 }) {
   const queryClient = useQueryClient();
   const [category, setCategory] = useState<TicketCategory>(initialCategory);
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
+  const [subject, setSubject] = useState(initialSubject.slice(0, 200));
+  const [body, setBody] = useState(initialBody);
   const [attachments, setAttachments] = useState<File[]>([]);
 
   const create = useMutation({

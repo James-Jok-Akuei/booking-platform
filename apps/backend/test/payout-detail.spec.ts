@@ -149,6 +149,19 @@ describe('A payout, opened by its shop (§290)', () => {
     ).rejects.toThrow(ForbiddenException);
   });
 
+  it('counts a payment on its way until it arrives — waiting to be sent or with the operator (§291)', async () => {
+    expect(await payouts.balance(owner(), shop.businessId)).toMatchObject({ onTheWayMinor: 1570, onTheWayCount: 1 });
+    await prisma.payout.update({ where: { id: payoutId }, data: { status: 'PROCESSING', sentAt: new Date() } });
+    expect(await payouts.balance(owner(), shop.businessId)).toMatchObject({ onTheWayMinor: 1570, onTheWayCount: 1 });
+    await prisma.payout.update({ where: { id: payoutId }, data: { status: 'PAID', paidAt: new Date(), reference: 'T-1' } });
+    expect(await payouts.balance(owner(), shop.businessId)).toMatchObject({
+      onTheWayMinor: 0,
+      onTheWayCount: 0,
+      lifetimePaidMinor: 1570,
+    });
+    await prisma.payout.update({ where: { id: payoutId }, data: { status: 'PENDING', sentAt: null, paidAt: null, reference: null } });
+  });
+
   it('says how long money waits on the balance too', async () => {
     const balance = await payouts.balance(owner(), shop.businessId);
     expect(balance.holdDays).toBeGreaterThan(0);

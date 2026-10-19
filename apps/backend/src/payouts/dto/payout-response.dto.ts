@@ -191,6 +191,9 @@ export class BusinessBalanceDto {
   unresolvedMinor!: number;
   lifetimePaidMinor!: number;
   payoutCount!: number;
+  /** Worked out into a payment, not yet arrived: waiting to be sent or with the operator (§291). */
+  onTheWayMinor!: number;
+  onTheWayCount!: number;
 
   pendingPayouts!: PendingPayoutsDto;
   entryCounts!: LedgerEntryCountsDto;
