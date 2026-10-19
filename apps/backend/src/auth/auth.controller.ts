@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Ip, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { RequestOtpDto } from './dto/request-otp.dto';
@@ -9,6 +9,7 @@ import { ActionMessageDto } from '../common/dto/action-message.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   OtpRequestedDto,
+  SignInSessionDto,
   SignedInDto,
   StepUpDto,
   TokenPairDto,
@@ -45,8 +46,8 @@ export class AuthController {
   @Post('otp/verify')
   @ApiOkResponse({ type: SignedInDto })
   @HttpCode(HttpStatus.OK)
-  verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto.email, dto.code);
+  verifyOtp(@Body() dto: VerifyOtpDto, @Headers('user-agent') userAgent?: string, @Ip() ip?: string) {
+    return this.authService.verifyOtp(dto.email, dto.code, { userAgent, ip, twoStepCode: dto.twoStepCode });
   }
 
   @Post('refresh')
@@ -79,5 +80,34 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   logout(@Body() dto: RefreshTokenDto) {
     return this.authService.logout(dto.refreshToken);
+  }
+
+  /** Where you are signed in (§298): each phone and browser, this one marked. */
+  @Get('sessions')
+  @UseGuards(JwtAuthGuard)
+  @ApiErrors({ auth: true })
+  @ApiOkResponse({ type: SignInSessionDto, isArray: true })
+  sessions(@CurrentUser() user: AuthenticatedUser) {
+    return this.authService.listSessions(user);
+  }
+
+  /** Signs one of them out — a phone left somewhere, a shared computer. */
+  @Post('sessions/:id/end')
+  @UseGuards(JwtAuthGuard)
+  @ApiErrors({ auth: true, notFound: true })
+  @ApiOkResponse({ type: ActionMessageDto })
+  @HttpCode(HttpStatus.OK)
+  endSession(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.authService.endOneSession(user, id);
+  }
+
+  /** Signs out everywhere but here. */
+  @Post('sessions/end-others')
+  @UseGuards(JwtAuthGuard)
+  @ApiErrors({ auth: true })
+  @ApiOkResponse({ type: ActionMessageDto })
+  @HttpCode(HttpStatus.OK)
+  endOthers(@CurrentUser() user: AuthenticatedUser) {
+    return this.authService.endOtherSessions(user);
   }
 }

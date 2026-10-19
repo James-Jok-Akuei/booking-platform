@@ -56,7 +56,16 @@
     "/auth/otp/verify": {
       "post": {
         "operationId": "AuthController_verifyOtp",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "user-agent",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -298,6 +307,360 @@
         },
         "tags": [
           "Auth"
+        ]
+      }
+    },
+    "/auth/sessions": {
+      "get": {
+        "operationId": "AuthController_sessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SignInSessionDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Under a narrower limit than the platform-wide one. The message says how long to wait.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Where you are signed in (§298): each phone and browser, this one marked.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/sessions/{id}/end": {
+      "post": {
+        "operationId": "AuthController_endSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Under a narrower limit than the platform-wide one. The message says how long to wait.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Signs one of them out — a phone left somewhere, a shared computer.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/sessions/end-others": {
+      "post": {
+        "operationId": "AuthController_endOthers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Under a narrower limit than the platform-wide one. The message says how long to wait.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Signs out everywhere but here.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/two-step": {
+      "get": {
+        "operationId": "TwoStepController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoStepStatusDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "TwoStep"
+        ]
+      }
+    },
+    "/auth/two-step/start": {
+      "post": {
+        "operationId": "TwoStepController_start",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoStepSetupDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "A new secret for the app — the start of setting it up, or of moving it to a new phone.",
+        "tags": [
+          "TwoStep"
+        ]
+      }
+    },
+    "/auth/two-step/confirm": {
+      "post": {
+        "operationId": "TwoStepController_confirm",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StepUpCodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoStepEnabledDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The app's first code: turns it on.",
+        "tags": [
+          "TwoStep"
+        ]
+      }
+    },
+    "/auth/two-step/recovery-codes": {
+      "post": {
+        "operationId": "TwoStepController_recoveryCodes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodesDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "TwoStep"
         ]
       }
     },
@@ -1546,6 +1909,77 @@
             }
           }
         },
+        "tags": [
+          "AdminUsers"
+        ]
+      }
+    },
+    "/admin/users/{id}/two-step/reset": {
+      "post": {
+        "operationId": "AdminUsersController_resetTwoStep",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionMessageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "An administrator lost their phone and recovery codes: the primary administrator turns two-step off for them (§298).",
         "tags": [
           "AdminUsers"
         ]
@@ -10842,9 +11276,9 @@
               "type": "string",
               "enum": [
                 "IN_PROGRESS",
-                "OPEN",
                 "RESOLVED",
-                "CLOSED"
+                "CLOSED",
+                "OPEN"
               ]
             }
           },
@@ -11246,9 +11680,9 @@
               "type": "string",
               "enum": [
                 "IN_PROGRESS",
-                "OPEN",
                 "RESOLVED",
-                "CLOSED"
+                "CLOSED",
+                "OPEN"
               ]
             }
           },
@@ -17706,6 +18140,12 @@
             "type": "string",
             "minLength": 6,
             "maxLength": 6
+          },
+          "twoStepCode": {
+            "type": "string",
+            "description": "An administrator's second step (§298): the 6 digits from their\nauthenticator app, or one of their recovery codes (\"xxxx-xxxx\"). Sent\nonce the server has asked for it with TWO_STEP_REQUIRED.",
+            "minLength": 6,
+            "maxLength": 12
           }
         },
         "required": [
@@ -17864,6 +18304,46 @@
           "message"
         ]
       },
+      "SignInSessionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "device": {
+            "type": "string",
+            "description": "\"Chrome on Mac\", \"the app on an iPhone\"."
+          },
+          "ip": {
+            "type": "string",
+            "nullable": true,
+            "description": "The address it signed in from."
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "lastUsedAt": {
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean",
+            "description": "The one this request came from."
+          },
+          "twoStep": {
+            "type": "boolean",
+            "description": "An administrator's sign-in with an authenticator code."
+          }
+        },
+        "required": [
+          "id",
+          "device",
+          "ip",
+          "createdAt",
+          "lastUsedAt",
+          "current",
+          "twoStep"
+        ]
+      },
       "UnauthorizedErrorDto": {
         "type": "object",
         "properties": {
@@ -17879,6 +18359,87 @@
         "required": [
           "statusCode",
           "message"
+        ]
+      },
+      "TwoStepStatusDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "enabledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "recoveryCodesLeft": {
+            "type": "number"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Every administrator must have it before using the console."
+          },
+          "thisSignIn": {
+            "type": "boolean",
+            "description": "This sign-in was made with the code."
+          }
+        },
+        "required": [
+          "enabled",
+          "enabledAt",
+          "recoveryCodesLeft",
+          "required",
+          "thisSignIn"
+        ]
+      },
+      "TwoStepSetupDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "In groups of four, for typing in by hand."
+          },
+          "otpauthUrl": {
+            "type": "string",
+            "description": "What the QR code holds."
+          }
+        },
+        "required": [
+          "secret",
+          "otpauthUrl"
+        ]
+      },
+      "TwoStepEnabledDto": {
+        "type": "object",
+        "properties": {
+          "tokens": {
+            "$ref": "#/components/schemas/TokenPairDto"
+          },
+          "recoveryCodes": {
+            "description": "Shown once. Each works once, in place of the app's code.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "tokens",
+          "recoveryCodes"
+        ]
+      },
+      "RecoveryCodesDto": {
+        "type": "object",
+        "properties": {
+          "recoveryCodes": {
+            "description": "Shown once. Each works once, in place of the app's code.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "recoveryCodes"
         ]
       },
       "LegalStatusDto": {
@@ -18754,9 +19315,9 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "OPEN",
               "RESOLVED",
-              "CLOSED"
+              "CLOSED",
+              "OPEN"
             ]
           },
           "createdAt": {
@@ -18899,6 +19460,10 @@
             "type": "boolean",
             "description": "So the console can stop offering an action the server refuses (§118).\nMeaningless on a CUSTOMER or BUSINESS row, where it is simply false."
           },
+          "twoStepOn": {
+            "type": "boolean",
+            "description": "An administrator has two-step sign-in on (§298). False for everyone else."
+          },
           "appointmentCount": {
             "type": "number"
           },
@@ -18927,6 +19492,7 @@
           "lastSeenAt",
           "homeArea",
           "isPrimaryAdmin",
+          "twoStepOn",
           "appointmentCount",
           "reviewCount",
           "ticketCount",
@@ -23334,9 +23900,9 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "OPEN",
               "RESOLVED",
-              "CLOSED"
+              "CLOSED",
+              "OPEN"
             ]
           },
           "createdAt": {
@@ -25271,7 +25837,8 @@
               "ANNOUNCEMENT",
               "SHOP_MESSAGE",
               "SHOP_DISCOUNT",
-              "SUPPORT_UPDATE"
+              "SUPPORT_UPDATE",
+              "NEW_SIGN_IN"
             ]
           },
           "category": {
@@ -25543,9 +26110,9 @@
           "status": {
             "enum": [
               "IN_PROGRESS",
-              "OPEN",
               "RESOLVED",
-              "CLOSED"
+              "CLOSED",
+              "OPEN"
             ],
             "type": "string"
           },
@@ -25765,9 +26332,9 @@
           "status": {
             "enum": [
               "IN_PROGRESS",
-              "OPEN",
               "RESOLVED",
-              "CLOSED"
+              "CLOSED",
+              "OPEN"
             ],
             "type": "string"
           },
@@ -26046,9 +26613,9 @@
           "status": {
             "enum": [
               "IN_PROGRESS",
-              "OPEN",
               "RESOLVED",
-              "CLOSED"
+              "CLOSED",
+              "OPEN"
             ],
             "type": "string"
           },
@@ -26276,9 +26843,9 @@
           "status": {
             "enum": [
               "IN_PROGRESS",
-              "OPEN",
               "RESOLVED",
-              "CLOSED"
+              "CLOSED",
+              "OPEN"
             ],
             "type": "string"
           },
@@ -26451,9 +27018,9 @@
             "type": "string",
             "enum": [
               "IN_PROGRESS",
-              "OPEN",
               "RESOLVED",
-              "CLOSED"
+              "CLOSED",
+              "OPEN"
             ]
           },
           "resolutionNote": {

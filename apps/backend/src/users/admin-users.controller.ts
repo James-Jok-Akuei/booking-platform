@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -26,6 +27,8 @@ import { AdminInvitationsService } from './admin-invitations.service';
 import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
+import { RecentAuth } from '../common/decorators/recent-auth.decorator';
+import { TwoStepService } from '../auth/two-step.service';
 import {
   AdminInvitationDto,
   AdminUserPageDto,
@@ -47,6 +50,7 @@ export class AdminUsersController {
   constructor(
     private readonly users: UsersService,
     private readonly invitations: AdminInvitationsService,
+    private readonly twoStep: TwoStepService,
   ) {}
 
   /**
@@ -83,6 +87,15 @@ export class AdminUsersController {
     @Param('invitationId', ParseUUIDPipe) invitationId: string,
   ) {
     return this.invitations.revokeInvitation(user, invitationId);
+  }
+
+  /** An administrator lost their phone and recovery codes: the primary administrator turns two-step off for them (§298). */
+  @Post(':id/two-step/reset')
+  @HttpCode(200)
+  @RecentAuth()
+  @ApiOkResponse({ type: ActionMessageDto })
+  resetTwoStep(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.twoStep.reset(user, id);
   }
 
   @Delete(':id/admin-access')

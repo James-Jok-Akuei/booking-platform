@@ -664,6 +664,13 @@ export default function Account() {
               />
               <View style={styles.divider} />
               <Row
+                icon="phone-portrait-outline"
+                label="Where you are signed in"
+                note="Every phone and browser with your account open — sign out any you do not know."
+                onPress={() => router.push('/sessions')}
+              />
+              <View style={styles.divider} />
+              <Row
                 icon="log-out-outline"
                 label="Sign out"
                 note="Only on this phone. Come back any time with a new code."

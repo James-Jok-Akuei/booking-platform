@@ -104,6 +104,8 @@ export class UsersService {
            * Meaningless on a CUSTOMER or BUSINESS row, where it is simply false.
            */
           isPrimaryAdmin: true,
+          // Whether an administrator has two-step sign-in on (§298).
+          totpEnabledAt: true,
           _count: {
             select: {
               appointments: true,
@@ -139,6 +141,7 @@ export class UsersService {
         lastSeenAt: user.refreshTokens[0]?.createdAt.toISOString() ?? null,
         homeArea: user.homeDistrict?.name ?? null,
         isPrimaryAdmin: user.isPrimaryAdmin,
+        twoStepOn: user.totpEnabledAt !== null,
         appointmentCount: user._count.appointments,
         reviewCount: user._count.reviews,
         ticketCount: user._count.reportedTickets,

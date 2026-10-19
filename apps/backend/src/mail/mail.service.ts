@@ -151,7 +151,7 @@ export class MailService {
           eyebrow: confirm ? 'Confirm it is you' : 'Sign-in code',
           title: confirm ? 'Your code to confirm' : 'Here is your code',
           lead: confirm
-            ? 'You are making an important change — your payment number, or who works at the shop. Enter this code to confirm it is you.'
+            ? 'You are making an important change — your payment number, who works at the shop, or something that cannot be undone. Enter this code to confirm it is you.'
             : 'Enter it in the app to sign in. If you are new here, the same code creates your account.',
           inside: codeBoxes(code, { onDark: true, note: `It works for ${minutes} minutes, and only once.` }),
         },

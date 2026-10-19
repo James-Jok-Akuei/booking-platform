@@ -8,6 +8,7 @@ import {
   inviteAdmin,
   listAdminInvitations,
   listUsers,
+  resetTwoStep,
   revokeAdminAccess,
   revokeAdminInvitation,
   type DirectoryUser,
@@ -419,7 +420,8 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['users'] });
   const clear = useMutation({ mutationFn: (reason: string) => clearDisplayName(u.id, reason), onSuccess: refresh });
   const revoke = useMutation({ mutationFn: () => revokeAdminAccess(u.id), onSuccess: refresh });
-  const error = clear.error ?? revoke.error;
+  const reset = useMutation({ mutationFn: () => resetTwoStep(u.id), onSuccess: refresh });
+  const error = clear.error ?? revoke.error ?? reset.error;
   const self = u.id === me;
   const [act, setAct] = useState<PersonAct | null>(null);
 
@@ -576,6 +578,44 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
               {canManage && !self && !u.isPrimaryAdmin && (
                 <button type="button" className="danger" disabled={revoke.isPending} onClick={() => void onRevoke()}>
                   <Icon name="userX" size={15} /> Remove access
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Two-step sign-in (§298): on or off, and turning it off for someone who lost their phone. */}
+          {u.role === 'ADMIN' && (
+            <div className="up-decision">
+              <span>
+                <strong>Two-step sign-in</strong>
+                <em>
+                  {u.twoStepOn
+                    ? 'On — they sign in with the emailed code and their authenticator app.'
+                    : 'Not set up yet. They are asked to set it up when they next open the console.'}
+                </em>
+              </span>
+              {canManage && !self && u.twoStepOn && (
+                <button
+                  type="button"
+                  disabled={reset.isPending}
+                  onClick={async () => {
+                    const ok = await confirmDialog({
+                      title: 'Turn off their two-step sign-in?',
+                      body: (
+                        <p>
+                          Only when <strong>{u.email}</strong> lost their phone and their recovery codes. They are signed out everywhere, and set
+                          it up again on their next sign-in. You will be asked for a code first.
+                        </p>
+                      ),
+                      tone: 'warn',
+                      icon: 'shield',
+                      confirmLabel: 'Turn it off',
+                      cancelLabel: 'Leave it on',
+                    });
+                    if (ok) reset.mutate();
+                  }}
+                >
+                  <Icon name="shield" size={15} /> Turn it off
                 </button>
               )}
             </div>

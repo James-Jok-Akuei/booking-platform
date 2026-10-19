@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent, type ReactNode } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ApiError, requestOtp, signedOutWhy } from '../api/client';
+import { ApiError, isTwoStepRequired, requestOtp, signedOutWhy } from '../api/client';
 import { lengthWords } from '../session/words';
 import { wallPlaces } from '../api/admin';
 import { CodeBoxes, type CodeState } from '../ui/CodeBoxes';
@@ -22,7 +22,7 @@ const RESEND_SECONDS = 60;
 /** How long a code works (`OTP_EXPIRES_IN_MINUTES`). */
 const CODE_MINUTES = 10;
 
-type Step = 'email' | 'not-invited' | 'code' | 'done';
+type Step = 'email' | 'not-invited' | 'code' | 'two-step' | 'done';
 
 /** The server's sentences, said the way a person would (§183). */
 function friendly(caught: unknown, fallback: string): string {
@@ -31,6 +31,7 @@ function friendly(caught: unknown, fallback: string): string {
   if (/invalid or expired/i.test(m)) return 'That code is not right, or it has run out. Check it and try again.';
   if (/too many incorrect/i.test(m)) return 'Too many wrong tries. Ask for a new code below.';
   if (/too many verification code requests/i.test(m)) return 'That is a lot of codes for one hour. Please try again a little later.';
+  if (/too many incorrect/i.test(m)) return 'Too many wrong tries. Start again with a new email code.';
   return m;
 }
 
@@ -76,6 +77,10 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
+  // The second step (§298): the authenticator's six digits, or a recovery code.
+  const [appCode, setAppCode] = useState('');
+  const [useRecovery, setUseRecovery] = useState(false);
+  const [recovery, setRecovery] = useState('');
 
   const clean = email.trim().toLowerCase();
   const valid = looksLikeEmail(clean);
@@ -145,12 +150,12 @@ export function LoginPage() {
     }
   };
 
-  const verify = async (entered: string) => {
+  const verify = async (entered: string, second?: string) => {
     setError(null);
     setInfo(null);
     setCodeState('busy');
     try {
-      const signedIn = await signIn(clean, entered);
+      const signedIn = await signIn(clean, entered, second);
       if (signedIn.role !== 'ADMIN') {
         await signOut();
         setCodeState('error');
@@ -168,13 +173,26 @@ export function LoginPage() {
       later(() => setStep('done'), 450);
       later(() => navigate(next, { replace: true }), 1700);
     } catch (caught) {
+      // The email code was right; now the app's (§298). It stays usable until both are.
+      if (isTwoStepRequired(caught)) {
+        setCodeState('idle');
+        setAppCode('');
+        setStep('two-step');
+        return;
+      }
       setCodeState('error');
       setShake(true);
       setError(friendly(caught, 'That code did not work. Please try again.'));
+      // On the second step, only the app's code is typed again; the email code still holds.
       later(() => {
-        setCode('');
+        if (second) setAppCode('');
+        else setCode('');
         setCodeState('idle');
       }, 700);
+      // Too many tries spends the email code: back to the start.
+      if (second && caught instanceof ApiError && /too many incorrect|invalid or expired/i.test(caught.message)) {
+        later(() => setStep('email'), 1600);
+      }
     }
   };
 
@@ -388,6 +406,92 @@ export function LoginPage() {
                 )}
               </p>
               <p className="au-small">Look in your spam folder too. Each code works for {CODE_MINUTES} minutes.</p>
+            </form>
+          )}
+
+          {step === 'two-step' && (
+            <form
+              onSubmit={(event: FormEvent) => {
+                event.preventDefault();
+                if (useRecovery ? recovery.trim().length >= 8 : appCode.length === 6) {
+                  if (codeState === 'idle') void verify(code, useRecovery ? recovery.trim() : appCode);
+                }
+              }}
+            >
+              <Pill tone="night" icon="shield">
+                Step 2 of 2
+              </Pill>
+              <h1 className="au-title">
+                Now your <span className="au-hot">app.</span>
+              </h1>
+              {!useRecovery ? (
+                <>
+                  <p className="au-lead au-lead-tight">
+                    Open your authenticator app on your phone and type the 6 digits it shows for BwanguReservations.
+                  </p>
+                  <CodeBoxes
+                    value={appCode}
+                    onChange={(value) => {
+                      setAppCode(value);
+                      if (error) setError(null);
+                    }}
+                    onComplete={(value) => codeState === 'idle' && void verify(code, value)}
+                    state={codeState}
+                    shake={shake}
+                    onShakeEnd={() => setShake(false)}
+                    disabled={codeState === 'busy' || codeState === 'ok'}
+                    autoFocus
+                  />
+                </>
+              ) : (
+                <>
+                  <p className="au-lead au-lead-tight">Type one of the recovery codes you saved when you set it up. Each works once.</p>
+                  <label className="au-field">
+                    <span className="au-field-icon">
+                      <Icon name="key" size={18} />
+                    </span>
+                    <input
+                      value={recovery}
+                      onChange={(event) => {
+                        setRecovery(event.target.value);
+                        if (error) setError(null);
+                      }}
+                      placeholder="abcd-2345"
+                      autoComplete="one-time-code"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      aria-label="Recovery code"
+                      autoFocus
+                    />
+                  </label>
+                </>
+              )}
+
+              {problem}
+
+              <Go
+                busy={codeState === 'busy'}
+                disabled={(useRecovery ? recovery.trim().length < 8 : appCode.length !== 6) || codeState !== 'idle'}
+                done={codeState === 'ok'}
+                busyLabel="Checking…"
+              >
+                {codeState === 'ok' ? 'Signed in' : 'Sign in'}
+              </Go>
+
+              <p className="au-resend">
+                <span>{useRecovery ? 'Have your phone?' : 'No phone with you?'}</span>
+                <button
+                  type="button"
+                  className="au-link"
+                  onClick={() => {
+                    setUseRecovery((on) => !on);
+                    setError(null);
+                  }}
+                >
+                  {useRecovery ? 'Use the app' : 'Use a recovery code'}
+                </button>
+              </p>
+              <p className="au-small">Lost both? The primary administrator can turn it off for you, so you can set it up again.</p>
             </form>
           )}
 

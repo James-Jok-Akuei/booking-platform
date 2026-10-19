@@ -1,5 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+// Browser protections, and where to report a weakness (§298).
+import { securityTxt, webSecurity } from '../../scripts/web-security.mjs';
 
 /**
  * The public site (§239): the landing page at the root domain.
@@ -16,11 +18,19 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   // Where the site lives, for the share picture's full address (§273). Unset
   // in development, where nothing reads it, so the tags fall back to "/og.jpg".
-  const siteUrl = (loadEnv(mode, process.cwd(), 'VITE_').VITE_SITE_URL ?? '').replace(/\/$/, '');
+  const vite = loadEnv(mode, process.cwd(), 'VITE_');
+  const siteUrl = (vite.VITE_SITE_URL ?? '').replace(/\/$/, '');
+  // The address people already write to (links.ts), for a weakness too.
+  const contact = vite.VITE_SECURITY_EMAIL || vite.VITE_CONTACT_EMAIL || 'jokditakeerleek@gmail.com';
   return {
     plugins: [
       react(),
       { name: 'site-url', transformIndexHtml: (html: string) => html.replaceAll('%SITE_URL%', siteUrl) },
+      webSecurity({
+        apiUrl: vite.VITE_API_URL,
+        selfHostedFonts: true,
+        extraFiles: { '.well-known/security.txt': securityTxt({ contact, siteUrl }) },
+      }),
     ],
     server: {
       port: 5175,

@@ -1,0 +1,38 @@
+/* Where you are signed in (§298). */
+
+.sec-card { max-width: 760px; padding: 20px; border-radius: 24px; }
+.sec-card h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 16px; letter-spacing: -0.01em; }
+.sec-card h2 svg { color: var(--accent); }
+.sec-skel { height: 120px; border-radius: 16px; }
+
+.sec-sessions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sec-sessions li { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 16px; border: 1px solid var(--line); animation: sec-in 300ms var(--ease) both; }
+.sec-sessions li:nth-child(2) { animation-delay: 40ms; }
+.sec-sessions li:nth-child(3) { animation-delay: 80ms; }
+.sec-sessions li.is-current { border-color: rgba(11, 125, 66, 0.3); background: #f6fbf8; }
+.sec-sessions li > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sec-sessions strong { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 14px; }
+.sec-sessions li > div > span { font-size: 12px; color: var(--muted); font-weight: 600; overflow-wrap: anywhere; }
+.sec-sessions button { flex: none; min-height: 34px; padding: 0 12px; border-radius: 11px; font-size: 13px; }
+.sec-device { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: var(--sunken); color: var(--ink-2); }
+.sec-here { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 99px; background: var(--ok-soft); color: var(--ok-deep, #0b7d42); font-size: 11.5px; font-weight: 800; }
+.sec-here::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.sec-empty { justify-content: center; color: var(--muted); font-size: 13px; }
+
+.sec-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.sec-actions button { gap: 6px; }
+.sec-actions button.danger:not(:disabled) { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+.sec-tips { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.sec-tips p { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: 12.5px; color: var(--muted); font-weight: 550; line-height: 1.5; }
+.sec-tips svg { flex: none; margin-top: 2px; color: var(--accent); }
+@keyframes sec-in { from { opacity: 0; transform: translateY(4px); } }
+
+@media (max-width: 520px) {
+  .sec-sessions li { flex-wrap: wrap; }
+  .sec-sessions button { width: 100%; }
+  .sec-actions button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sec-sessions li { animation: none; }
+}

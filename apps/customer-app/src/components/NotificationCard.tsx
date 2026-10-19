@@ -36,6 +36,8 @@ export const LOOKS: Partial<Record<Notification['type'], Look>> = {
   ANNOUNCEMENT: { icon: 'megaphone', fg: theme.ink, bg: theme.sunken, label: 'From our team' },
   // Support acted for them (§297): checked in, cancelled, signed out.
   SUPPORT_UPDATE: { icon: 'help-buoy', fg: theme.accent, bg: theme.accentSoft, label: 'Support' },
+  // A phone or browser not seen before signed in (§298).
+  NEW_SIGN_IN: { icon: 'shield-checkmark', fg: theme.warn, bg: theme.warnSoft, label: 'Sign-in' },
 };
 export const FALLBACK: Look = { icon: 'notifications', fg: theme.accent, bg: theme.accentSoft, label: 'News' };
 

@@ -115,6 +115,123 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Where you are signed in (§298): each phone and browser, this one marked. */
+        get: operations["AuthController_sessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/sessions/{id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Signs one of them out — a phone left somewhere, a shared computer. */
+        post: operations["AuthController_endSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/sessions/end-others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Signs out everywhere but here. */
+        post: operations["AuthController_endOthers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/two-step": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TwoStepController_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/two-step/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A new secret for the app — the start of setting it up, or of moving it to a new phone. */
+        post: operations["TwoStepController_start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/two-step/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The app's first code: turns it on. */
+        post: operations["TwoStepController_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/two-step/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TwoStepController_recoveryCodes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/legal/me": {
         parameters: {
             query?: never;
@@ -449,6 +566,23 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["AdminUsersController_revokeInvitation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{id}/two-step/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** An administrator lost their phone and recovery codes: the primary administrator turns two-step off for them (§298). */
+        post: operations["AdminUsersController_resetTwoStep"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -3601,6 +3735,12 @@ export interface components {
             /** Format: email */
             email: string;
             code: string;
+            /**
+             * @description An administrator's second step (§298): the 6 digits from their
+             *     authenticator app, or one of their recovery codes ("xxxx-xxxx"). Sent
+             *     once the server has asked for it with TWO_STEP_REQUIRED.
+             */
+            twoStepCode?: string;
         };
         AuthenticatedUserDto: {
             id: string;
@@ -3643,11 +3783,48 @@ export interface components {
         ActionMessageDto: {
             message: string;
         };
+        SignInSessionDto: {
+            id: string;
+            /** @description "Chrome on Mac", "the app on an iPhone". */
+            device: string;
+            /** @description The address it signed in from. */
+            ip: string | null;
+            createdAt: string;
+            lastUsedAt: string;
+            /** @description The one this request came from. */
+            current: boolean;
+            /** @description An administrator's sign-in with an authenticator code. */
+            twoStep: boolean;
+        };
         UnauthorizedErrorDto: {
             /** @example 401 */
             statusCode: number;
             /** @example Unauthorized */
             message: string;
+        };
+        TwoStepStatusDto: {
+            enabled: boolean;
+            enabledAt: string | null;
+            recoveryCodesLeft: number;
+            /** @description Every administrator must have it before using the console. */
+            required: boolean;
+            /** @description This sign-in was made with the code. */
+            thisSignIn: boolean;
+        };
+        TwoStepSetupDto: {
+            /** @description In groups of four, for typing in by hand. */
+            secret: string;
+            /** @description What the QR code holds. */
+            otpauthUrl: string;
+        };
+        TwoStepEnabledDto: {
+            tokens: components["schemas"]["TokenPairDto"];
+            /** @description Shown once. Each works once, in place of the app's code. */
+            recoveryCodes: string[];
+        };
+        RecoveryCodesDto: {
+            /** @description Shown once. Each works once, in place of the app's code. */
+            recoveryCodes: string[];
         };
         LegalStatusDto: {
             /** @description The HIGHEST version they ever agreed to, not the most recent tap (§122.3). */
@@ -3888,7 +4065,7 @@ export interface components {
             id: string;
             subject: string;
             /** @enum {string} */
-            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
             createdAt: string;
             /**
              * @description Internal notes are excluded: they are support's working-out, not a record
@@ -3934,6 +4111,8 @@ export interface components {
              *     Meaningless on a CUSTOMER or BUSINESS row, where it is simply false.
              */
             isPrimaryAdmin: boolean;
+            /** @description An administrator has two-step sign-in on (§298). False for everyone else. */
+            twoStepOn: boolean;
             appointmentCount: number;
             reviewCount: number;
             ticketCount: number;
@@ -5399,7 +5578,7 @@ export interface components {
             reference: string;
             subject: string;
             /** @enum {string} */
-            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
             createdAt: string;
         };
         AdminAppointmentLedgerDto: {
@@ -5918,7 +6097,7 @@ export interface components {
         NotificationDto: {
             id: string;
             /** @enum {string} */
-            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED" | "STORY_REMOVED" | "APPOINTMENT_COMPLETED" | "PAYOUT_SENT" | "PAYOUT_FAILED" | "ANNOUNCEMENT" | "SHOP_MESSAGE" | "SHOP_DISCOUNT" | "SUPPORT_UPDATE";
+            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED" | "STORY_REMOVED" | "APPOINTMENT_COMPLETED" | "PAYOUT_SENT" | "PAYOUT_FAILED" | "ANNOUNCEMENT" | "SHOP_MESSAGE" | "SHOP_DISCOUNT" | "SUPPORT_UPDATE" | "NEW_SIGN_IN";
             /**
              * @description What it is about, for choosing what you get (§287).
              * @enum {string}
@@ -6000,7 +6179,7 @@ export interface components {
             category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
             subject: string;
             /** @enum {string} */
-            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
             assignedAdminId: string | null;
             resolutionNote: string | null;
             resolvedAt: string | null;
@@ -6058,7 +6237,7 @@ export interface components {
             category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
             subject: string;
             /** @enum {string} */
-            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
             assignedAdminId: string | null;
             resolutionNote: string | null;
             resolvedAt: string | null;
@@ -6145,7 +6324,7 @@ export interface components {
             category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
             subject: string;
             /** @enum {string} */
-            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
             assignedAdminId: string | null;
             resolutionNote: string | null;
             resolvedAt: string | null;
@@ -6199,7 +6378,7 @@ export interface components {
             category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
             subject: string;
             /** @enum {string} */
-            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
             assignedAdminId: string | null;
             resolutionNote: string | null;
             resolvedAt: string | null;
@@ -6240,7 +6419,7 @@ export interface components {
         };
         UpdateTicketStatusDto: {
             /** @enum {string} */
-            status: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+            status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
             /** @description Required when moving to RESOLVED; enforced in the service. */
             resolutionNote?: string;
             billingAdjustment?: components["schemas"]["BillingAdjustmentDto"];
@@ -7669,7 +7848,9 @@ export interface operations {
     AuthController_verifyOtp: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "user-agent": string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -7863,6 +8044,307 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AuthController_sessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignInSessionDto"][];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Under a narrower limit than the platform-wide one. The message says how long to wait. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AuthController_endSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Under a narrower limit than the platform-wide one. The message says how long to wait. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AuthController_endOthers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Under a narrower limit than the platform-wide one. The message says how long to wait. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    TwoStepController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoStepStatusDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+        };
+    };
+    TwoStepController_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoStepSetupDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+        };
+    };
+    TwoStepController_confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepUpCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoStepEnabledDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+        };
+    };
+    TwoStepController_recoveryCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCodesDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
                 };
             };
         };
@@ -8829,6 +9311,63 @@ export interface operations {
             header?: never;
             path: {
                 invitationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionMessageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminUsersController_resetTwoStep: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
             };
             cookie?: never;
         };
@@ -16026,7 +16565,7 @@ export interface operations {
     TicketsController_list: {
         parameters: {
             query?: {
-                status?: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+                status?: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
                 category?: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
                 limit?: number;
                 offset?: number;
@@ -16379,7 +16918,7 @@ export interface operations {
     AdminTicketsController_list: {
         parameters: {
             query?: {
-                status?: "IN_PROGRESS" | "OPEN" | "RESOLVED" | "CLOSED";
+                status?: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
                 category?: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
                 limit?: number;
                 offset?: number;

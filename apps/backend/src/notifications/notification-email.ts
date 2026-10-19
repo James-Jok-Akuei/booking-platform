@@ -104,6 +104,8 @@ const LOOKS: Partial<Record<NotificationType, Look>> = {
   [T.ANNOUNCEMENT]: { tone: 'accent', glyph: '&#10022;', eyebrow: 'From our team' },
   // Support acted for them (§297): what was done, and why, from a person.
   [T.SUPPORT_UPDATE]: { tone: 'info', glyph: HELP, eyebrow: 'From our support team' },
+  // A sign-in not seen before (§298): worth a look, not an alarm.
+  [T.NEW_SIGN_IN]: { tone: 'warn', glyph: BANG, eyebrow: 'Your account' },
   [T.SHOP_MESSAGE]: { tone: 'accent', eyebrow: 'From a shop you follow' },
 };
 

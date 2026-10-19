@@ -1,5 +1,7 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+// Browser protections — framing, scripts, sniffing, referrers (§298).
+import { webSecurity } from '../../scripts/web-security.mjs';
 
 /**
  * Static build, no server of its own.
@@ -13,8 +15,8 @@ import react from '@vitejs/plugin-react';
  * wherever it is deployed and `VITE_API_URL` points at the real backend, which
  * is the point at which `enableCors()` has to be tightened (§4).
  */
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), webSecurity({ apiUrl: loadEnv(mode, process.cwd(), 'VITE_').VITE_API_URL, selfHostedFonts: true })],
   server: {
     port: 5173,
     proxy: {
@@ -32,4 +34,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

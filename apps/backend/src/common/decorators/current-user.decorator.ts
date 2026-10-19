@@ -6,6 +6,10 @@ export interface AuthenticatedUser {
   role: 'BUSINESS' | 'CUSTOMER' | 'ADMIN';
   /** When this sign-in's code was typed, in seconds (§279); null on older tokens. */
   authTime?: number | null;
+  /** The sign-in this request belongs to (§298); null on older tokens. */
+  sessionId?: string | null;
+  /** An administrator typed an authenticator code for this sign-in (§298). */
+  twoStep?: boolean;
 }
 
 // Returns undefined on routes guarded by OptionalJwtAuthGuard when the caller

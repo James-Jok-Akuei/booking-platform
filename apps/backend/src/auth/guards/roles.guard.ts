@@ -1,8 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '@prisma/client';
 import { ROLES_KEY } from '../../common/decorators/roles.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TWO_STEP_SETUP_REQUIRED, TwoStepService } from '../two-step.service';
 
 /**
  * Role checks, from the token — except for ADMIN, which is read live (§99.4).
@@ -27,6 +28,7 @@ export class RolesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly prisma: PrismaService,
+    private readonly twoStep: TwoStepService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -46,9 +48,32 @@ export class RolesGuard implements CanActivate {
     if (user?.role === UserRole.ADMIN) {
       const live = await this.prisma.user.findUnique({
         where: { id: user.userId },
-        select: { role: true },
+        select: { role: true, totpEnabledAt: true },
       });
-      return live?.role === UserRole.ADMIN;
+      if (live?.role !== UserRole.ADMIN) return false;
+
+      // A sign-in ended elsewhere stops here at once, not when its token runs out (§298).
+      if (user.sessionId) {
+        const session = await this.prisma.authSession.findUnique({
+          where: { id: user.sessionId },
+          select: { endedAt: true },
+        });
+        if (!session || session.endedAt) throw new UnauthorizedException('This sign-in was ended. Please sign in again.');
+      }
+      // Two-step sign-in (§298): a token from before it was turned on is not enough…
+      if (live.totpEnabledAt && !user.twoStep) {
+        throw new UnauthorizedException('Sign in again, with the code from your authenticator app.');
+      }
+      // …and until it is set up, the console shows only the setup.
+      if (!live.totpEnabledAt && this.twoStep.required()) {
+        throw new ForbiddenException({
+          statusCode: 403,
+          error: 'Forbidden',
+          code: TWO_STEP_SETUP_REQUIRED,
+          message: 'Set up two-step sign-in first: administrators use an authenticator app as well as the emailed code.',
+        });
+      }
+      return true;
     }
 
     return true;

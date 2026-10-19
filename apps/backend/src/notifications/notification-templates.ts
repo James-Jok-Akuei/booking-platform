@@ -461,6 +461,17 @@ export function renderNotification(
           '\n\nNothing is lost: the money is back in your balance and goes out with your next payment. If your number has changed, update it under Getting paid.',
       };
 
+    // A sign-in on a phone or browser not seen before (§298). `serviceName` is the device.
+    case NotificationType.NEW_SIGN_IN:
+      return {
+        subject: `New sign-in on ${ctx.serviceName}`,
+        body:
+          `Your account was just signed in to on ${ctx.serviceName}.\n\n` +
+          details([`Device: ${ctx.serviceName}`, short && `When: ${short}`]) +
+          '\n\nWas it you? Then there is nothing to do.\n\n' +
+          'If it was not you, open "Where you are signed in" in your account, sign that one out, and write to us from Help.',
+      };
+
     // Written by a person, not a template: the title and the words are theirs (§287).
     // A support update is composed where support acts (§297), the same way.
     case NotificationType.SUPPORT_UPDATE:

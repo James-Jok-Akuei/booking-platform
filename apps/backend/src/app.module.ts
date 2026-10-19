@@ -29,6 +29,7 @@ import { FavouritesModule } from './favourites/favourites.module';
 import { LegalModule } from './legal/legal.module';
 import { SupportLogModule } from './support/support-log.module';
 import { SupportModule } from './support/support.module';
+import { WellKnownModule } from './well-known/well-known.module';
 import { OffersModule } from './offers/offers.module';
 import { RoutingModule } from './routing/routing.module';
 
@@ -54,7 +55,15 @@ import { RoutingModule } from './routing/routing.module';
       {
         rootPath: join(process.cwd(), 'assets', 'email'),
         serveRoot: '/email',
-        serveStaticOptions: { index: false, fallthrough: false, maxAge: '30d' },
+        serveStaticOptions: {
+          index: false,
+          fallthrough: false,
+          maxAge: '30d',
+          // The font (§299) is read by webmail on another address, which a browser allows only when told.
+          setHeaders: (res: { setHeader: (name: string, value: string) => void }, path: string) => {
+            if (path.endsWith('.woff2')) res.setHeader('Access-Control-Allow-Origin', '*');
+          },
+        },
       },
     ),
 
@@ -86,6 +95,7 @@ import { RoutingModule } from './routing/routing.module';
     RoutingModule,
     SupportLogModule,
     SupportModule,
+    WellKnownModule,
   ],
 })
 export class AppModule {}

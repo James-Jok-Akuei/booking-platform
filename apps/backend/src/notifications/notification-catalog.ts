@@ -238,6 +238,7 @@ export function categoryOf(type: T, audience: Audience): C {
       return C.SHOP_OFFERS;
     // Usually given its kind where it is raised (a booking's is BOOKINGS, §297).
     case T.SUPPORT_UPDATE:
+    case T.NEW_SIGN_IN:
       return C.ACCOUNT;
     default:
       return C.ACCOUNT;
@@ -279,6 +280,9 @@ export function linkFor(type: T, audience: Audience, ref: NotificationRef): stri
       case T.SHOP_MESSAGE:
       case T.SHOP_DISCOUNT:
         return ref.locationId ? `/shop/${ref.locationId}` : null;
+      // Where you are signed in (§298).
+      case T.NEW_SIGN_IN:
+        return '/sessions';
       default:
         return null;
     }
@@ -321,6 +325,8 @@ export function linkFor(type: T, audience: Audience, ref: NotificationRef): stri
       case T.PAYOUT_SENT:
       case T.PAYOUT_FAILED:
         return '/getting-paid';
+      case T.NEW_SIGN_IN:
+        return '/security';
       default:
         return null;
     }
@@ -340,6 +346,8 @@ export function linkFor(type: T, audience: Audience, ref: NotificationRef): stri
       return '/settings';
     case T.APPOINTMENT_MANUALLY_VERIFIED:
       return '/appointments';
+    case T.NEW_SIGN_IN:
+      return '/security';
     default:
       return null;
   }

@@ -144,6 +144,7 @@ enum NotificationType {
   SHOP_MESSAGE // a shop wrote to the customers who follow it (§287)
   SHOP_DISCOUNT // a shop you follow started a discount — in the app only (§288)
   SUPPORT_UPDATE // our support team did something for you or about your booking (§297)
+  NEW_SIGN_IN // the account was signed in to on a phone or browser not seen before (§298)
 }
 
 /// What a notification is about, for choosing what you get and how (§287).
@@ -369,6 +370,17 @@ model User {
   /// false" too, which would allow a single administrator and nobody else.
   isPrimaryAdmin Boolean @default(false)
 
+  /// Two-step sign-in with an authenticator app (§298) — administrators. The
+  /// secret is sealed (AES-256-GCM) before it is stored; the pending one waits
+  /// for its first code during setup. `totpLastStep` is the 30-second step of
+  /// the last code used, so a code cannot be used twice. Recovery codes are
+  /// kept as digests, each crossed off as it is used.
+  totpSecret        String?
+  totpPendingSecret String?
+  totpEnabledAt     DateTime?
+  totpLastStep      Int?
+  totpRecovery      String[]  @default([])
+
   sentAdminInvitations AdminInvitation[] @relation("AdminInvitedBy")
 
   // Appointments booked by this user. Only populated when role = CUSTOMER.
@@ -435,6 +447,7 @@ model User {
   verifiedPayoutDestinations  PayoutDestination[] @relation("VerifiedPayoutDestinations")
 
   refreshTokens RefreshToken[]
+  authSessions  AuthSession[]
   otpCodes      OtpCode[]
 
   // ---- Emails about services nearby (§140). All null until they say yes. ----
@@ -2330,8 +2343,41 @@ model RefreshToken {
   /// made soon after signing in does not ask for a second code.
   sessionStartedAt DateTime @default(now())
 
+  /// The sign-in it belongs to (§298): every refresh makes a new token, and
+  /// they all point at one session — the row "where you are signed in" lists.
+  /// Null on tokens from before sessions existed.
+  sessionId String?
+  session   AuthSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
   @@index([userId])
+  @@index([sessionId])
   @@map("refresh_tokens")
+}
+
+/// One sign-in on one phone or browser (§298): begun by typing a code, kept
+/// alive by refreshing, ended by signing out, by its time running out (§279),
+/// or from "where you are signed in". What a person sees there.
+model AuthSession {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The browser or app, as it describes itself, cut to a sensible length.
+  userAgent String?
+  /// The address it signed in from. Shown to the person themselves only.
+  ip        String?
+  /// An administrator who also typed an authenticator code (§298).
+  twoStep   Boolean @default(false)
+
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime  @default(now())
+  /// Signed out — by them, by support, or by "sign out everywhere".
+  endedAt    DateTime?
+
+  refreshTokens RefreshToken[]
+
+  @@index([userId, endedAt])
+  @@map("auth_sessions")
 }
 
 /// An invitation to become an administrator (§99).

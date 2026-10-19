@@ -314,6 +314,7 @@ export class AccountService {
         where: { userId, revokedAt: null },
         data: { revokedAt: closedAt },
       });
+      await tx.authSession.updateMany({ where: { userId, endedAt: null }, data: { endedAt: closedAt } });
     });
 
     this.logger.log(`Account ${userId} closed at the owner's request${options.bySupport ? ', by our support team' : ''}.`);

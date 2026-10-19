@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -13,6 +15,8 @@ import {
   BusinessMemberRole,
   BusinessMemberStatus,
   InvitationStatus,
+  NotificationCategory,
+  NotificationType,
   OtpPurpose,
   Prisma,
   UserRole,
@@ -22,6 +26,20 @@ import { MailService } from '../mail/mail.service';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { RECENT_AUTH_MINUTES, SESSION_POLICY, sessionEndsAt } from './session-policy';
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
+import { NotificationsService } from '../notifications/notifications.service';
+import { checkTotp, openSecret, recoveryDigest } from './totp';
+import { describeDevice, trimUserAgent } from './device';
+
+/** The refusal the console answers by asking for the authenticator code (§298). */
+export const TWO_STEP_REQUIRED = 'TWO_STEP_REQUIRED';
+
+/** Where a sign-in came from (§298): what its browser or app says, and its address. */
+export interface SignInContext {
+  userAgent?: string | null;
+  ip?: string | null;
+  /** An administrator's authenticator code, or one of their recovery codes. */
+  twoStepCode?: string | null;
+}
 
 const BCRYPT_ROUNDS = 10;
 
@@ -47,6 +65,8 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly legal: LegalService,
+    // Optional so the auth flow never depends on a notice being sent (§298).
+    @Optional() private readonly notifications?: NotificationsService,
   ) {}
 
   // ---------- OTP request ----------
@@ -179,6 +199,7 @@ export class AuthService {
   async verifyOtp(
     email: string,
     code: string,
+    context: SignInContext = {},
   ): Promise<TokenPair & { user: { id: string; email: string; role: UserRole } }> {
     const normalizedEmail = email.trim().toLowerCase();
 
@@ -187,7 +208,12 @@ export class AuthService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const used = await this.consumeCode(otp, code);
+    const checked = await this.checkCode(otp, code);
+    // An administrator with an authenticator app types its code too (§298) —
+    // asked for only once the email code is right, which stays usable until
+    // both are. A wrong app code counts against the email code's tries.
+    const twoStep = await this.secondStep(normalizedEmail, checked, context.twoStepCode);
+    const used = await this.useUp(checked);
 
     const wasRegistration = used.registrationRole !== null;
     const user = await this.findOrCreateUser(normalizedEmail, used.registrationRole);
@@ -213,8 +239,112 @@ export class AuthService {
       await this.legal.acceptCurrentAtRegistration(user.id).catch(() => undefined);
     }
 
-    const tokens = await this.issueTokenPair(user.id, user.email, user.role);
+    const session = await this.startSession(user.id, context, twoStep);
+    const tokens = await this.issueTokenPair(user.id, user.email, user.role, new Date(), {
+      sessionId: session.id,
+      twoStep,
+    });
+    if (!wasRegistration) await this.tellAboutNewSignIn(user.id, session.id, context);
     return { ...tokens, user: { id: user.id, email: user.email, role: user.role } };
+  }
+
+  /**
+   * The second step for an administrator who turned it on (§298): the six
+   * digits from their authenticator app, or one of their recovery codes.
+   * Nothing for anyone else. True when it was passed.
+   */
+  private async secondStep(email: string, otp: CodeRow, typed?: string | null): Promise<boolean> {
+    const admin = await this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, role: true, totpEnabledAt: true, totpSecret: true, totpLastStep: true, totpRecovery: true },
+    });
+    if (!admin || admin.role !== UserRole.ADMIN || !admin.totpEnabledAt || !admin.totpSecret) return false;
+
+    if (!typed?.trim()) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'Forbidden',
+        code: TWO_STEP_REQUIRED,
+        message: 'Now the 6-digit code from your authenticator app.',
+      });
+    }
+
+    const wrong = async (message: string): Promise<never> => {
+      await this.prisma.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
+      throw new BadRequestException(message);
+    };
+
+    // A recovery code: "xxxx-xxxx", used once.
+    if (/[a-z]/i.test(typed)) {
+      const digest = recoveryDigest(typed);
+      if (!admin.totpRecovery.includes(digest)) return wrong('That recovery code does not work. Each one works only once.');
+      await this.prisma.user.update({
+        where: { id: admin.id },
+        data: { totpRecovery: admin.totpRecovery.filter((d) => d !== digest) },
+      });
+      this.logger.warn(`Administrator ${admin.id} signed in with a recovery code.`);
+      return true;
+    }
+
+    const step = checkTotp(openSecret(admin.totpSecret, this.sealKey()), typed);
+    if (step === null) return wrong('That is not the code in your authenticator app. Type the one showing now.');
+    // Each code once: a code seen over someone's shoulder is no good a second time.
+    const claimed = await this.prisma.user.updateMany({
+      where: { id: admin.id, OR: [{ totpLastStep: null }, { totpLastStep: { lt: step } }] },
+      data: { totpLastStep: step },
+    });
+    if (claimed.count === 0) return wrong('That code was used already. Wait for the next one.');
+    return true;
+  }
+
+  /** The key the authenticator secrets are sealed with — from the access key, nothing new to set. */
+  sealKey(): string {
+    return this.config.get<string>('JWT_ACCESS_SECRET') ?? '';
+  }
+
+  // ---------- Sessions (§298) ----------
+
+  /** One sign-in on one phone or browser: what "where you are signed in" lists. */
+  startSession(userId: string, context: SignInContext, twoStep: boolean) {
+    return this.prisma.authSession.create({
+      data: { userId, userAgent: trimUserAgent(context.userAgent), ip: context.ip?.slice(0, 64) ?? null, twoStep },
+      select: { id: true },
+    });
+  }
+
+  /**
+   * Tells someone their account was signed in to on a phone or browser it has
+   * not been used on before (§298) — by email, and by push to the phones
+   * already signed in. Not on the first sign-in of a new account, and not for
+   * a device it has been seen on: an alarm every time is one nobody reads.
+   */
+  private async tellAboutNewSignIn(userId: string, sessionId: string, context: SignInContext) {
+    if (!this.notifications) return;
+    try {
+      const device = describeDevice(context.userAgent);
+      const earlier = await this.prisma.authSession.findMany({
+        where: { userId, id: { not: sessionId } },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        select: { userAgent: true },
+      });
+      // Nobody signed in before sessions were kept: no history to compare with yet.
+      if (earlier.length === 0) return;
+      if (earlier.some((s) => describeDevice(s.userAgent) === device)) return;
+      await this.notifications.notify({
+        recipientId: userId,
+        type: NotificationType.NEW_SIGN_IN,
+        context: {
+          serviceName: device,
+          locationName: '',
+          businessName: '',
+          startTime: new Date(),
+        },
+        category: NotificationCategory.ACCOUNT,
+      });
+    } catch (error) {
+      this.logger.error(`Could not send the new sign-in notice to ${userId}: ${String(error)}`);
+    }
   }
 
   /**
@@ -463,11 +593,13 @@ export class AuthService {
    * unused ends by itself; neither token outlives the most a sign-in may last,
    * however it is used. Both carry `auth_time`, the moment the code was typed.
    */
-  private async issueTokenPair(
+  async issueTokenPair(
     userId: string,
     email: string,
     role: UserRole,
     sessionStartedAt: Date = new Date(),
+    /** The sign-in it belongs to, and whether an authenticator code was typed for it (§298). */
+    session: { sessionId?: string | null; twoStep?: boolean } = {},
   ): Promise<TokenPair> {
     const { idleMinutes, maxMinutes } = SESSION_POLICY[role];
     const endsAt = sessionEndsAt(role, sessionStartedAt);
@@ -479,6 +611,8 @@ export class AuthService {
       email,
       role,
       auth_time: Math.floor(sessionStartedAt.getTime() / 1000),
+      ...(session.sessionId ? { sid: session.sessionId } : {}),
+      ...(session.twoStep ? { tsv: true } : {}),
     };
 
     const accessToken = this.jwt.sign(payload, {
@@ -503,6 +637,7 @@ export class AuthService {
         tokenHash,
         expiresAt: new Date(decoded.exp * 1000),
         sessionStartedAt,
+        sessionId: session.sessionId ?? null,
       },
     });
 
@@ -546,6 +681,15 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token is no longer valid.');
     }
 
+    // Signed out from "where you are signed in", or everywhere (§298).
+    if (stored.sessionId) {
+      const session = await this.prisma.authSession.findUnique({
+        where: { id: stored.sessionId },
+        select: { endedAt: true },
+      });
+      if (!session || session.endedAt) throw new UnauthorizedException('This sign-in was ended. Please sign in again.');
+    }
+
     // Rotate: revoke the old one, issue a brand new pair.
     await this.prisma.refreshToken.update({
       where: { id: stored.id },
@@ -557,7 +701,13 @@ export class AuthService {
     const endsAt = sessionEndsAt(payload.role as UserRole, stored.sessionStartedAt);
     if (endsAt && endsAt <= new Date()) throw new UnauthorizedException(SIGN_IN_ENDED);
 
-    return this.issueTokenPair(payload.sub, payload.email, payload.role as UserRole, stored.sessionStartedAt);
+    if (stored.sessionId) {
+      await this.prisma.authSession.update({ where: { id: stored.sessionId }, data: { lastUsedAt: new Date() } });
+    }
+    return this.issueTokenPair(payload.sub, payload.email, payload.role as UserRole, stored.sessionStartedAt, {
+      sessionId: stored.sessionId,
+      twoStep: payload.tsv === true,
+    });
   }
 
   // ---------- Confirm it is you (§279) ----------
@@ -643,6 +793,11 @@ export class AuthService {
    * signing in and for confirming: unknown or expired, too many tries, wrong.
    */
   private async consumeCode<T extends CodeRow>(otp: T | null, code: string): Promise<T> {
+    return this.useUp(await this.checkCode(otp, code));
+  }
+
+  /** The checks alone, leaving the code usable — for a sign-in that has a second step (§298). */
+  private async checkCode<T extends CodeRow>(otp: T | null, code: string): Promise<T> {
     if (!otp || otp.expiresAt < new Date()) {
       throw new BadRequestException('Invalid or expired verification code.');
     }
@@ -659,21 +814,86 @@ export class AuthService {
       });
       throw new BadRequestException('Invalid or expired verification code.');
     }
+    return otp;
+  }
 
-    // Mark OTP consumed so it can't be replayed.
-    await this.prisma.otpCode.update({
-      where: { id: otp.id },
+  /** Marks a checked code used, so it cannot be replayed. Only one request can. */
+  private async useUp<T extends CodeRow>(otp: T): Promise<T> {
+    const used = await this.prisma.otpCode.updateMany({
+      where: { id: otp.id, consumedAt: null },
       data: { consumedAt: new Date() },
     });
+    if (used.count === 0) throw new BadRequestException('Invalid or expired verification code.');
     return otp;
   }
 
   async logout(refreshToken: string): Promise<{ message: string }> {
     const tokenHash = this.hashToken(refreshToken);
+    const stored = await this.prisma.refreshToken.findUnique({ where: { tokenHash }, select: { sessionId: true } });
     await this.prisma.refreshToken.updateMany({
       where: { tokenHash, revokedAt: null },
       data: { revokedAt: new Date() },
     });
+    // The sign-in is over, so it leaves "where you are signed in" (§298).
+    if (stored?.sessionId) await this.endSessions({ id: stored.sessionId });
     return { message: 'Logged out.' };
+  }
+
+  /** Where this person is signed in (§298): sign-ins not ended, with a token still alive. Newest use first. */
+  async listSessions(user: AuthenticatedUser) {
+    const now = new Date();
+    const sessions = await this.prisma.authSession.findMany({
+      where: { userId: user.userId, endedAt: null, refreshTokens: { some: { revokedAt: null, expiresAt: { gt: now } } } },
+      orderBy: { lastUsedAt: 'desc' },
+      take: 50,
+      select: { id: true, userAgent: true, ip: true, createdAt: true, lastUsedAt: true, twoStep: true },
+    });
+    return sessions.map((s) => ({
+      id: s.id,
+      device: describeDevice(s.userAgent),
+      ip: s.ip,
+      createdAt: s.createdAt.toISOString(),
+      lastUsedAt: s.lastUsedAt.toISOString(),
+      current: s.id === user.sessionId,
+      twoStep: s.twoStep,
+    }));
+  }
+
+  async endOneSession(user: AuthenticatedUser, sessionId: string) {
+    const ended = await this.endSessions({ id: sessionId, userId: user.userId });
+    if (ended === 0) throw new BadRequestException('That sign-in has already ended.');
+    return { message: 'Signed out there.' };
+  }
+
+  async endOtherSessions(user: AuthenticatedUser) {
+    // Tokens from before sessions were kept are ended too — unless this is one of them.
+    const ended = await this.endSessions(
+      { userId: user.userId, ...(user.sessionId ? { id: { not: user.sessionId } } : {}) },
+      user.sessionId ? user.userId : undefined,
+    );
+    return { message: ended === 1 ? 'Signed out on 1 other place.' : `Signed out on ${ended} other places.` };
+  }
+
+  /**
+   * Ends sign-ins (§298): the sessions named, and every refresh token they
+   * have — and, when the filter is a whole person, their tokens from before
+   * sessions were kept too. An access token already issued lasts out its
+   * minutes; an administrator's is refused at once (RolesGuard).
+   */
+  async endSessions(where: Prisma.AuthSessionWhereInput, alsoLegacyOf?: string): Promise<number> {
+    const now = new Date();
+    const sessions = await this.prisma.authSession.findMany({ where: { ...where, endedAt: null }, select: { id: true } });
+    const ids = sessions.map((s) => s.id);
+    await this.prisma.$transaction([
+      this.prisma.authSession.updateMany({ where: { id: { in: ids } }, data: { endedAt: now } }),
+      this.prisma.refreshToken.updateMany({
+        where: {
+          revokedAt: null,
+          OR: [{ sessionId: { in: ids } }, ...(alsoLegacyOf ? [{ userId: alsoLegacyOf, sessionId: null }] : [])],
+        },
+        data: { revokedAt: now },
+      }),
+    ]);
+    return ids.length;
   }
 }

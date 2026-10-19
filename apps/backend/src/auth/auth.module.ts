@@ -3,6 +3,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { TwoStepController } from './two-step.controller';
+import { TwoStepService } from './two-step.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { MailModule } from '../mail/mail.module';
 // A new account accepts the published documents as it is created (§126.1).
@@ -24,8 +26,8 @@ import { LegalModule } from '../legal/legal.module';
     JwtModule.register({}), // secrets/expiry are set per-sign-call in AuthService
     MailModule,
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, PassportModule, JwtModule],
+  controllers: [AuthController, TwoStepController],
+  providers: [AuthService, JwtStrategy, TwoStepService],
+  exports: [AuthService, TwoStepService, PassportModule, JwtModule],
 })
 export class AuthModule {}

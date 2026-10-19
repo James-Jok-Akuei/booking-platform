@@ -1,6 +1,6 @@
 PRIVACY POLICY
 
-Last updated: 12 October 2026
+Last updated: 19 October 2026
 
 This Privacy Policy explains what personal data BwanguReservations ("we", "us") collects when you use the BwanguReservations app, why we collect it, who we share it with, and the rights you have.
 
@@ -73,6 +73,7 @@ The Data Protection Law allows us to use personal data only where there is a law
 - [EMAIL DELIVERY PROVIDER], to deliver emails.
 - [HOSTING AND STORAGE PROVIDER], to host the Platform and store files.
 - [ROUTE-FINDING SERVICE], to measure distances by road. It receives points on a map only, never your name or email.
+- OpenStreetMap, whose servers draw the map pictures on our websites. Your browser fetches them directly, so OpenStreetMap sees your internet address, nothing else.
 - [ADDRESS SEARCH SERVICE], to find an address you type on the map. It receives only the words you typed, never your name or email.
 
 4.4 Authorities. We share data with a public authority or a court where the law requires it.
@@ -152,7 +153,17 @@ We send marketing emails only to people who have turned on "Weekly offers by ema
 
 11. COOKIES AND SIMILAR TOOLS
 
-The mobile app does not use advertising cookies or trackers. It stores a sign-in token securely on your phone so you stay signed in; signing out removes it.
+We do not use advertising cookies, tracking cookies or analytics — not in the app, and not on our websites (our home page, the business app and our team's console). That is why you are never asked to accept or refuse cookies: there are none that need your choice.
+
+What is kept on your device is only what the service needs to work:
+
+- Your sign-in. The phone app keeps it in your phone's secure storage. On our websites it is kept in your browser's storage on your computer. Signing out removes it.
+- Small settings you chose, such as a tab you opened or a tip you closed. They stay in your browser or phone and are not sent to anyone.
+- Notifications. If you allow them, your phone or browser gives us an address to send them to. Turning notifications off, or signing out of that phone, removes it.
+
+Our websites load their letters (fonts) from our own servers, not from another company's. Maps on our websites are drawn from OpenStreetMap: when a map shows, your browser asks their servers for the map pictures, so they see your internet address — not your name or anything else about you. Directions open in a maps app or website you choose.
+
+If we ever add something optional, such as counting how many people visit a page, we will ask you first, and you will be able to say no.
 
 
 12. CHANGES TO THIS POLICY

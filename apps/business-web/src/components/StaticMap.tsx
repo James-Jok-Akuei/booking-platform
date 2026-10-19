@@ -10,6 +10,18 @@
  */
 const TILE = 256;
 
+/**
+ * Where the map pictures come from (§299): OpenStreetMap's own servers unless
+ * `VITE_MAP_TILES` names a provider ("https://…/{z}/{x}/{y}.png"). Their own
+ * servers are for light use; a busy platform sets a provider before launch,
+ * and its credit with `VITE_MAP_CREDIT`. The visitor's browser fetches the
+ * pictures, so that server sees its address — said in the privacy policy.
+ */
+const TILES = (import.meta.env.VITE_MAP_TILES as string | undefined)?.trim() || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const CREDIT = (import.meta.env.VITE_MAP_CREDIT as string | undefined)?.trim() || '© OpenStreetMap contributors';
+const tileUrl = (z: number, x: number, y: number) =>
+  TILES.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y));
+
 function worldPixel(latitude: number, longitude: number, zoom: number) {
   const scale = TILE * 2 ** zoom;
   const x = ((longitude + 180) / 360) * scale;
@@ -54,21 +66,25 @@ export function StaticMap({
     }
   }
   return (
-    <div className="static-map" aria-hidden="true">
+    <div className="static-map">
       {tiles.map((t) => (
         <img
           key={`${t.x}-${t.y}-${t.left}`}
-          src={`https://tile.openstreetmap.org/${zoom}/${t.x}/${t.y}.png`}
+          src={tileUrl(zoom, t.x, t.y)}
+          aria-hidden="true"
           alt=""
           loading="lazy"
           draggable={false}
           style={{ left: `calc(${focusX * 100}% + ${t.left}px)`, top: `calc(50% + ${t.top}px)` }}
         />
       ))}
-      <span className="static-map-pin" style={{ left: `${focusX * 100}%` }}>
+      <span className="static-map-pin" style={{ left: `${focusX * 100}%` }} aria-hidden="true">
         <i />
       </span>
-      <span className="static-map-credit">© OpenStreetMap contributors</span>
+      {/* The credit the map's terms ask for, linking to them. */}
+      <a className="static-map-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+        {CREDIT}
+      </a>
     </div>
   );
 }

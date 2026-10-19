@@ -13,6 +13,10 @@ export interface JwtPayload {
    * on tokens from before it existed, which then count as not recent.
    */
   auth_time?: number;
+  /** The sign-in this token belongs to (§298) — "where you are signed in". */
+  sid?: string;
+  /** An administrator typed an authenticator code for this sign-in (§298). */
+  tsv?: boolean;
 }
 
 @Injectable()
@@ -27,6 +31,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   // Whatever we return here becomes `request.user`.
   async validate(payload: JwtPayload) {
-    return { userId: payload.sub, email: payload.email, role: payload.role, authTime: payload.auth_time ?? null };
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      role: payload.role,
+      authTime: payload.auth_time ?? null,
+      sessionId: payload.sid ?? null,
+      twoStep: payload.tsv === true,
+    };
   }
 }

@@ -6,6 +6,7 @@ import { App } from './App';
 import { AuthProvider } from './auth/auth-context';
 import { DialogHost } from './ui/Dialog';
 import { ConfirmHost } from './session/ConfirmItsYou';
+import { TwoStepGate } from './session/TwoStepSetup';
 import './styles.css';
 
 const queryClient: QueryClient = new QueryClient({
@@ -42,6 +43,7 @@ createRoot(document.getElementById('root')!).render(
           <App />
           <DialogHost />
           <ConfirmHost />
+          <TwoStepGate />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

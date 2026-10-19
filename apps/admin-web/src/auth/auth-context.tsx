@@ -22,7 +22,7 @@ import {
 
 interface AuthState {
   user: AuthenticatedUser | null;
-  signIn: (email: string, code: string) => Promise<AuthenticatedUser>;
+  signIn: (email: string, code: string, twoStepCode?: string) => Promise<AuthenticatedUser>;
   /** `why`, when the app ended it for safety (§279), is said on the sign-in page. */
   signOut: (why?: SignedOutWhy['why']) => Promise<void>;
 }
@@ -73,8 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  const signIn = useCallback(async (email: string, code: string) => {
-    const result = await verifyOtp(email, code);
+  const signIn = useCallback(async (email: string, code: string, twoStepCode?: string) => {
+    const result = await verifyOtp(email, code, twoStepCode);
     tokens.save(result);
     // A new sign-in starts its idle clock now, and the old reason is spent.
     localStorage.setItem(ACTIVE_KEY, String(Date.now()));

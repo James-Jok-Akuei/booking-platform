@@ -9,6 +9,7 @@ import { GettingPaidPage } from './pages/PayoutsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { StoriesPage } from './pages/StoriesPage';
 import { NotificationSettingsPage } from './pages/NotificationSettingsPage';
+import { SecurityPage } from './pages/SecurityPage';
 import { FollowersPage } from './pages/FollowersPage';
 import { ClosuresPage } from './pages/ClosuresPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
@@ -57,6 +58,7 @@ export function App() {
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/followers" element={<FollowersPage />} />
         <Route path="/notifications" element={<NotificationSettingsPage />} />
+        <Route path="/security" element={<SecurityPage />} />
         <Route path="/people" element={<StaffPage />} />
         <Route path="/closures" element={<ClosuresPage />} />
         <Route path="/messages" element={<MessagesPage />} />

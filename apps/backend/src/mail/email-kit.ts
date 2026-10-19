@@ -539,6 +539,18 @@ export interface Email {
 /** Where the mark lives, so the email can load it (§292). */
 export const markUrl = (assetBase: string) => `${assetBase.replace(/\/$/, '')}/email/mark.png`;
 
+/** Plus Jakarta Sans, every weight in one file per alphabet, served with the emails' pictures (§299). */
+const fontFaces = (assetBase: string) => {
+  const base = `${assetBase.replace(/\/$/, '')}/email/fonts/plus-jakarta-sans`;
+  const face = (file: string, range: string) =>
+    `@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:400 800;font-display:swap;` +
+    `src:url('${base}-${file}.woff2') format('woff2');unicode-range:${range}}`;
+  return (
+    face('latin-ext', 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+20A0-20AB,U+20AD-20C4,U+2C60-2C7F,U+A720-A7FF') +
+    face('latin', 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212,U+FEFF,U+FFFD')
+  );
+};
+
 function badgeHtml(badge: Badge, tone: Tone, assetBase: string) {
   const t = TONES[tone];
   const night = tone === 'night';
@@ -706,7 +718,9 @@ export function renderEmail(
     '<meta name="x-apple-disable-message-reformatting">' +
     '<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">' +
     `<title>${esc(opts.subject)}</title>` +
-    '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">' +
+    // The brand's letters from our own server (§299), not Google's: opening an
+    // email tells nobody else. Mail apps that do not load fonts use the fallbacks.
+    `<style>${fontFaces(opts.assetBase)}</style>` +
     `<style>${style.replace(/\s+/g, ' ')}</style>` +
     `</head><body class="em-bg" style="margin:0;padding:0;background:${C.canvas}">` +
     // What inboxes show after the subject, then spacing so nothing else leaks in.

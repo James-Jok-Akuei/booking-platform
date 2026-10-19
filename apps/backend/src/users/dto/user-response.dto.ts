@@ -173,6 +173,9 @@ export class AdminUserDto {
    */
   isPrimaryAdmin!: boolean;
 
+  /** An administrator has two-step sign-in on (§298). False for everyone else. */
+  twoStepOn!: boolean;
+
   appointmentCount!: number;
   reviewCount!: number;
   ticketCount!: number;

@@ -308,6 +308,10 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
 
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
+    // Two-step sign-in is not set up yet (§298): the gate shows the setup.
+    if (response.status === 403 && (payload as { code?: string } | null)?.code === 'TWO_STEP_SETUP_REQUIRED') {
+      window.dispatchEvent(new Event(TWO_STEP_SETUP));
+    }
     // Nest puts the useful sentence in `message`, which is a string for most
     // errors and an array for validation failures.
     const raw = (payload as ApiErrorBody | null)?.message;
@@ -345,12 +349,45 @@ export const requestOtp = (email: string) =>
     anonymous: true,
   });
 
-export const verifyOtp = (email: string, code: string) =>
+/** With `twoStepCode` once the server has asked for it (TWO_STEP_REQUIRED, §298). */
+export const verifyOtp = (email: string, code: string, twoStepCode?: string) =>
   api<TokenPair & { user: AuthenticatedUser }>('/auth/otp/verify', {
     method: 'POST',
-    body: { email, code },
+    body: { email, code, ...(twoStepCode ? { twoStepCode } : {}) },
     anonymous: true,
   });
+
+/** Asked for, after the emailed code, of an administrator with an authenticator app (§298). */
+export const isTwoStepRequired = (caught: unknown) =>
+  caught instanceof ApiError && (caught.body as { code?: string } | undefined)?.code === 'TWO_STEP_REQUIRED';
+
+// ---------------------------------------------------------------------------
+// Two-step sign-in and where you are signed in (§298)
+// ---------------------------------------------------------------------------
+
+/** Said by any admin route until two-step sign-in is set up; ConfirmTwoStep's gate listens. */
+export const TWO_STEP_SETUP = 'booking-admin:two-step-setup';
+
+export type TwoStepStatus = components['schemas']['TwoStepStatusDto'];
+export type TwoStepSetup = components['schemas']['TwoStepSetupDto'];
+export type SignInSession = components['schemas']['SignInSessionDto'];
+
+export const getTwoStep = () => api<TwoStepStatus>('/auth/two-step');
+export const startTwoStep = () => api<TwoStepSetup>('/auth/two-step/start', { method: 'POST' });
+/** Turns it on; the new tokens are kept at once, since the old ones no longer open the console. */
+export async function confirmTwoStep(code: string): Promise<string[]> {
+  const done = await api<components['schemas']['TwoStepEnabledDto']>('/auth/two-step/confirm', {
+    method: 'POST',
+    body: { code },
+  });
+  tokens.save(done.tokens as TokenPair);
+  return done.recoveryCodes;
+}
+export const newRecoveryCodes = () =>
+  api<components['schemas']['RecoveryCodesDto']>('/auth/two-step/recovery-codes', { method: 'POST' });
+export const listSessions = () => api<SignInSession[]>('/auth/sessions');
+export const endSignIn = (id: string) => api<{ message: string }>(`/auth/sessions/${id}/end`, { method: 'POST' });
+export const endOtherSessions = () => api<{ message: string }>('/auth/sessions/end-others', { method: 'POST' });
 
 export async function logout(): Promise<void> {
   const refreshToken = tokens.refresh;

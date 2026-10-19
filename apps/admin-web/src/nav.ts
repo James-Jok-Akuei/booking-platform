@@ -154,6 +154,13 @@ export const SECTIONS: NavGroup[] = [
         hint: 'The documents everyone agrees to',
       },
       {
+        to: '/security',
+        label: 'Security',
+        icon: 'shield',
+        keywords: 'two-step two factor 2fa authenticator app sign in sessions devices sign out everywhere recovery codes',
+        hint: 'Your two-step sign-in, and where you are signed in',
+      },
+      {
         to: '/notifications',
         label: 'Notifications',
         icon: 'bell',

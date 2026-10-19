@@ -142,6 +142,13 @@ export const SECTIONS: NavGroup[] = [
         hint: 'Who works here with you',
       },
       {
+        to: '/security',
+        label: 'Sign-in and security',
+        icon: 'shield',
+        keywords: 'sessions devices phones signed in sign out everywhere login security lost phone',
+        hint: 'Where you are signed in, and signing out there',
+      },
+      {
         to: '/notifications',
         label: 'Notifications',
         icon: 'bell',

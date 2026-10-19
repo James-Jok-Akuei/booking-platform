@@ -185,6 +185,25 @@ describe('The emails, in the platform design (§292)', () => {
     save('06-morning-summary', html, text);
   });
 
+  it('takes its font from our own server, never Google’s (§299)', () => {
+    const { email } = noticeEmail({
+      type: NotificationType.TICKET_CREATED,
+      audience: 'ADMIN',
+      subject: 'A question',
+      body: 'Someone asked something.',
+      button: null,
+      footer: { reason: 'Because.' },
+      booking: null,
+      arrivalCode: null,
+      author: null,
+      timeZone: TZ,
+    });
+    const { html } = renderEmail(email, { assetBase: BASE, subject: 'x' });
+    expect(html).toContain(`${BASE}/email/fonts/plus-jakarta-sans-latin.woff2`);
+    expect(html).not.toContain('googleapis');
+    expect(html).not.toContain('gstatic');
+  });
+
   it('escapes every word a person wrote', () => {
     const { email } = noticeEmail({
       type: NotificationType.NEW_MESSAGE,

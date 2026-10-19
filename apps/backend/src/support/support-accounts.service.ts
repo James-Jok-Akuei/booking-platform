@@ -358,7 +358,7 @@ export class SupportAccountsService {
     });
     if (!user) throw new NotFoundException('Person not found.');
     const [signedIn, devices, marketing, shopOffers] = await Promise.all([
-      this.prisma.refreshToken.count({ where: { userId, revokedAt: null, expiresAt: { gt: new Date() } } }),
+      this.openSignIns(userId),
       this.prisma.pushDevice.count({ where: { userId } }),
       this.prisma.notificationPreference.count({ where: { userId, category: { in: MARKETING }, enabled: true } }),
       this.prisma.shopFollow.count({ where: { userId, offersAt: { not: null } } }),
@@ -387,10 +387,14 @@ export class SupportAccountsService {
     const ticket = await this.support.ticket(dto.ticketId);
     const user = await this.personFor(userId);
     const now = new Date();
-    const [tokens, devices] = await this.prisma.$transaction([
+    const places = await this.openSignIns(userId);
+    const [, , devices] = await this.prisma.$transaction([
       this.prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: now } }),
+      // Off "where you are signed in" too (§298).
+      this.prisma.authSession.updateMany({ where: { userId, endedAt: null }, data: { endedAt: now } }),
       this.prisma.pushDevice.deleteMany({ where: { userId } }),
     ]);
+    const tokens = { count: places };
     await this.support.record(actor, {
       kind: SupportActionKind.SIGN_OUT_EVERYWHERE,
       reason: dto.reason,
@@ -514,6 +518,20 @@ export class SupportAccountsService {
   }
 
   // ---------- Helpers ----------
+
+  /**
+   * How many places someone is signed in (§298): sign-ins not ended with a
+   * token still alive, plus live tokens from before sign-ins were kept.
+   */
+  private async openSignIns(userId: string) {
+    const now = new Date();
+    const live = { revokedAt: null, expiresAt: { gt: now } };
+    const [sessions, legacy] = await Promise.all([
+      this.prisma.authSession.count({ where: { userId, endedAt: null, refreshTokens: { some: live } } }),
+      this.prisma.refreshToken.count({ where: { userId, sessionId: null, ...live } }),
+    ]);
+    return sessions + legacy;
+  }
 
   /** A shop's team or invitations are notified like the shop's own changes: everyone, or the owner only. */
   private async tellShop(

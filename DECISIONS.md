@@ -19108,3 +19108,128 @@ Tests: `support-bookings.spec.ts` (11), `support-accounts.spec.ts` (13), two
 more emails in `email-design.spec.ts`. Checked in the console at 1440, 1024
 and 390: a missed booking's help, the cancel-for-the-shop form, a shop's
 help with two lapsed invitations, the pause form, a customer's help.
+
+## 298. Security, part 2: two-step sign-in for administrators; where you are signed in; new sign-in notices; browser protections; security.txt (2026-10-19)
+
+### 298.1 Two-step sign-in for administrators
+
+An administrator can move money and close accounts, and an email inbox is
+one password away from someone else. So signing in to the console takes two
+things: the emailed code, and **the 6 digits from an authenticator app** on
+their phone (Google Authenticator, Microsoft Authenticator, 1Password, Authy —
+any; the standard TOTP, `src/auth/totp.ts`, checked against the standard's
+own examples).
+
+- **Required** for every administrator (`ADMIN_TWO_STEP_REQUIRED`, on unless
+  set to `false`; off in the tests). Until it is set up, every admin route
+  answers `TWO_STEP_SETUP_REQUIRED` and the console shows only the setup
+  (`TwoStepGate`): why, the QR code (drawn in the browser — `toqr`, tiny, the
+  one the Expo tools already use), the key to type if the camera cannot scan,
+  the app's first code, then **ten recovery codes**, shown once, to download
+  or copy, with "I have saved them" before Done.
+- **Signing in:** the email code first; when it is right, the server answers
+  `TWO_STEP_REQUIRED` without using it up, and the console asks for the app's
+  code ("Now your app.") or a recovery code. A wrong app code counts against
+  the email code's five tries. Each app code works once (the 30-second step
+  is remembered); each recovery code works once.
+- **Turning it on signs out every other place** (they were signed in without
+  it) and hands this one new tokens marked as made with the code. A token
+  from before it was on is refused at once.
+- The secret is sealed (AES-256-GCM, key derived from the access-token key)
+  before it is stored; a copy of the database alone cannot make codes.
+- **Security** (new page, under Platform): on since when, recovery codes left,
+  move it to a new phone (the same setup), new recovery codes. In Users, each
+  administrator shows whether it is on, and **the primary administrator can
+  turn it off** for one who lost their phone and their codes — with a fresh
+  code; they are signed out everywhere and set it up again. If the primary
+  administrator loses both, whoever runs the server clears the five `totp`
+  columns on their row; there is deliberately no way round it from outside.
+
+### 298.2 Where you are signed in
+
+A sign-in is now a row of its own (`AuthSession`): which browser or app (from
+how it describes itself — "Chrome on Mac", "Safari on an iPhone", "the app on
+Android"), its address, when it began and was last used. Every refresh token
+belongs to one. All three apps list them — the console's Security, the seller
+app's **Sign-in and security** (Manage account), the customer app's **Where
+you are signed in** (Account → Your data) — this one marked, each other
+signed out with one click, and "Sign out everywhere else". Signing out ends
+the sign-in; support's "sign out everywhere" (§297) and closing an account
+end them all. For an administrator an ended sign-in stops at once (the
+console's guard reads it); for others within the access token's minutes.
+Sign-ins from before this have no row: they still end with "everywhere".
+
+### 298.3 New sign-in notices
+
+When an account is signed in to on a kind of device it has not been used on
+before, they are told — an email, and a push to the phones already signed in
+— "New sign-in on Safari on an iPhone … Was it you? Then there is nothing to
+do. If not, sign it out…", opening where they are signed in. Not on a new
+account's first sign-in, and not for the same kind of device again: an alarm
+every time is one nobody reads. (Always emailed: it is an account notice.)
+
+### 298.4 Browser protections for the web apps
+
+One Vite plugin for the console, the seller app and the website
+(`scripts/web-security.mjs`): a Content Security Policy that lets scripts come
+only from our own files (none of the apps has an inline script), styles and
+fonts from us (and Google Fonts until §299 self-hosts the font), photos from
+https, connections only to us and the API, frames only for the seller app's
+map pin (OpenStreetMap), no plugins, forms and base address our own. In a
+build it is written into every page as a `<meta>` — so it holds on any host —
+and the full set, with what a `<meta>` cannot carry (no framing by another
+site, HSTS, nosniff, referrer, camera/microphone/payment off), goes to
+`_headers` for Netlify or Cloudflare Pages; another host is given the same
+lines. In development only the harmless headers are sent (the policy would
+stop Vite's reload). Checked on built copies served locally: the website and
+the console's Businesses page load with nothing blocked but photos from the
+local test server over plain http, which production does not have. The API
+already sends its own headers (helmet, §116). The phone app's web build is
+not covered.
+
+### 298.5 security.txt
+
+`/.well-known/security.txt` (RFC 9116) on the website and on the API: whom to
+tell about a weakness (`SECURITY_CONTACT_EMAIL`, else the contact address the
+Terms give), expiring a year after it was built.
+
+Tests: `totp.spec.ts` (6), `two-step-sessions.e2e.spec.ts` (9). With them the
+full run outgrew Node's default 2 GB (each test file loads the server's code
+afresh); `npm test` now gives it 4 GB. Checked in the
+console (the gate at 1440, the QR at 390, the recovery codes, Security, the
+second sign-in step at 390), the seller app at 1024 and the customer app at
+390.
+
+## 299. Cookies and outside services: nothing to accept, and said so (2026-10-19)
+
+The user asked what cookies are and why sites ask about them. The answer for
+us: a banner is needed when a site sets cookies it does not strictly need —
+advertising, tracking, analytics. **We have none**, in the phone app or on the
+websites (checked: no analytics library, no `document.cookie`, the sign-in
+kept in storage, not a cookie). So there is **no cookie banner**: asking
+"accept or refuse?" about nothing would teach people to click yes without
+reading. What remained was to say it plainly, and to stop the few places
+where a visitor's browser was talking to another company without need.
+
+- **Privacy policy, §11 rewritten** for the app and the websites: no
+  advertising, tracking or analytics cookies; what is kept on the device and
+  why (the sign-in, small settings, the notification address) and how each
+  goes; fonts served by us; maps drawn by OpenStreetMap, which sees the
+  browser's internet address and nothing else; and that anything optional,
+  such as counting visits, would be asked about first, with a no. OpenStreetMap
+  is listed among the services in §4.3. Together with §297's two lines about
+  support, published as a new version (everyone is asked to accept once).
+- **The font is ours.** Plus Jakarta Sans came from Google's servers on every
+  page and in every email, telling Google each visitor's address. It is now
+  served by each app (`public/fonts/`, one variable file per alphabet, every
+  weight 400–800, Latin and extended Latin — 49 KB in all) and by the API for
+  the emails (`/email/fonts/`). The browser policy (§298.4) no longer allows
+  Google at all.
+- **Maps.** The map pictures (StaticMap in the console and the seller app)
+  come from `VITE_MAP_TILES` when set, else OpenStreetMap's own servers —
+  which are for light use, so a busy platform should set a provider before
+  launch, with its credit in `VITE_MAP_CREDIT`. The credit stays on every map
+  and now links to OpenStreetMap's copyright page, as their terms ask. The
+  seller app's pin map is OpenStreetMap's own embed (its credit is inside it).
+- **No banner, unless that changes.** If analytics are ever wanted, they come
+  with a choice — off until yes — not before.

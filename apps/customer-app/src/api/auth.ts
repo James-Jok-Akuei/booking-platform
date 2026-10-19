@@ -174,3 +174,12 @@ export const setMyDisplayName = (displayName: string | null) =>
     method: 'PATCH',
     body: { displayName },
   });
+
+// ---------------------------------------------------------------------------
+// Where you are signed in (§298)
+// ---------------------------------------------------------------------------
+
+export type SignInSession = components['schemas']['SignInSessionDto'];
+export const listSessions = () => api<SignInSession[]>('/auth/sessions');
+export const endSignIn = (id: string) => api<{ message: string }>(`/auth/sessions/${id}/end`, { method: 'POST' });
+export const endOtherSessions = () => api<{ message: string }>('/auth/sessions/end-others', { method: 'POST' });

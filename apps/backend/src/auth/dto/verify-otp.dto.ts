@@ -1,4 +1,4 @@
-import { IsEmail, Length } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
 
 /**
  * Email and code, and nothing else.
@@ -14,4 +14,14 @@ export class VerifyOtpDto {
 
   @Length(6, 6)
   code: string;
+
+  /**
+   * An administrator's second step (§298): the 6 digits from their
+   * authenticator app, or one of their recovery codes ("xxxx-xxxx"). Sent
+   * once the server has asked for it with TWO_STEP_REQUIRED.
+   */
+  @IsOptional()
+  @IsString()
+  @Length(6, 12)
+  twoStepCode?: string;
 }

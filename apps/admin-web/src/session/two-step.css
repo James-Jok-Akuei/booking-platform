@@ -1,0 +1,64 @@
+/* Two-step sign-in (§298): the gate before the console, and its setup. */
+
+.ts-gate {
+  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 24px 16px; overflow-y: auto;
+  background: radial-gradient(120% 90% at 10% 0%, rgba(240, 83, 45, 0.16), transparent 55%), rgba(31, 42, 31, 0.62);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  animation: ts-fade 260ms var(--ease) both;
+}
+.ts-card {
+  width: min(520px, 100%); padding: 26px 26px 22px; border-radius: 28px; background: var(--panel);
+  box-shadow: 0 30px 80px -24px rgba(20, 28, 20, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+  animation: ts-rise 420ms var(--ease) both;
+}
+@keyframes ts-fade { from { opacity: 0; } }
+@keyframes ts-rise { from { opacity: 0; transform: translateY(14px) scale(0.98); } }
+
+.ts-flow { display: flex; flex-direction: column; }
+.ts-dots { list-style: none; display: flex; gap: 6px; margin: 0 0 18px; padding: 0; }
+.ts-dots li { width: 22px; height: 5px; border-radius: 99px; background: var(--sunken-2); transition: background 260ms var(--ease), width 260ms var(--ease); }
+.ts-dots li.is-done { background: var(--ok); }
+.ts-dots li.is-on { width: 36px; background: var(--accent); }
+
+.ts-stage { display: flex; flex-direction: column; animation: ts-in 320ms var(--ease) both; }
+@keyframes ts-in { from { opacity: 0; transform: translateX(10px); } }
+.ts-stage h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.02em; line-height: 1.2; }
+.ts-lead { margin: 0 0 16px; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+.ts-mark { width: 56px; height: 56px; display: grid; place-items: center; margin-bottom: 14px; border-radius: 18px; background: var(--night); color: #fff; box-shadow: 0 10px 24px -10px rgba(31, 42, 31, 0.6); }
+.ts-mark.is-ok { background: var(--ok); }
+
+.ts-points { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ts-points li { display: flex; gap: 10px; padding: 12px 14px; border-radius: 16px; background: var(--sunken); font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+.ts-points li > svg { flex: none; margin-top: 2px; color: var(--accent); }
+.ts-points strong { color: var(--ink); }
+
+.ts-qr { align-self: center; padding: 12px; margin-bottom: 14px; border-radius: 22px; background: #fff; border: 1px solid var(--line); box-shadow: 0 12px 30px -16px rgba(31, 42, 31, 0.35); }
+.ts-qr svg { display: block; }
+.ts-secret { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 18px; font-size: 12.5px; color: var(--muted); font-weight: 600; text-align: center; }
+.ts-secret button { height: auto; min-height: 0; max-width: 100%; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; white-space: normal; }
+.ts-secret code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 13.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--ink); overflow-wrap: anywhere; text-align: left; }
+
+.ts-boxes { margin: 4px 0 8px; }
+.ts-problem { margin: 6px 0 0; font-size: 13px; font-weight: 650; color: var(--danger); }
+
+.ts-codes { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0 0 12px; padding: 14px; border-radius: 18px; background: var(--sunken); counter-reset: ts; }
+.ts-codes li { display: flex; align-items: center; gap: 8px; counter-increment: ts; }
+.ts-codes li::before { content: counter(ts); width: 18px; font-size: 11px; font-weight: 800; color: var(--faint); text-align: right; }
+.ts-codes code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 14.5px; font-weight: 700; letter-spacing: 0.04em; }
+.ts-code-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+.ts-code-actions button { flex: 1; gap: 6px; }
+.ts-saved { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.ts-saved input { flex: none; width: 18px; height: 18px; min-height: 0; margin: 1px 0 0; accent-color: var(--accent); }
+
+.ts-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.ts-actions button { gap: 6px; }
+
+@media (max-width: 520px) {
+  .ts-card { padding: 22px 18px 18px; border-radius: 24px; }
+  .ts-codes { grid-template-columns: 1fr 1fr; padding: 12px; }
+  .ts-actions { flex-direction: column-reverse; }
+  .ts-actions button { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ts-gate, .ts-card, .ts-stage { animation: none; }
+}

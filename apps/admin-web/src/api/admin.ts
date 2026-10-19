@@ -654,6 +654,10 @@ export const listAdminInvitations = () =>
 export const revokeAdminInvitation = (id: string) =>
   api<ActionMessage>(`/admin/users/invitations/${id}`, { method: 'DELETE' });
 
+/** For an administrator who lost their phone and recovery codes (§298). The primary administrator only, with a fresh code. */
+export const resetTwoStep = (userId: string) =>
+  api<{ message: string }>(`/admin/users/${userId}/two-step/reset`, { method: 'POST' });
+
 export const revokeAdminAccess = (userId: string) =>
   api<ActionMessage>(`/admin/users/${userId}/admin-access`, { method: 'DELETE' });
 

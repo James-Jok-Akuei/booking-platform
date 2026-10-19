@@ -38,6 +38,8 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   ANNOUNCEMENT: { icon: 'megaphone', tone: 'ask', to: '/' },
   // Support acted for the shop (§297). Each carries its own page: the booking, Team, Your shop.
   SUPPORT_UPDATE: { icon: 'help', tone: 'accent', to: '/help' },
+  // A phone or browser not seen before signed in (§298).
+  NEW_SIGN_IN: { icon: 'shield', tone: 'warn', to: '/security' },
 };
 
 /** News about the shop itself — drawn with the shop's own logo, its icon a badge on the corner (§231). */

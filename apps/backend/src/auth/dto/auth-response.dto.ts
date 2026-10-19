@@ -62,3 +62,47 @@ export class SignedInDto extends TokenPairDto {
 export class OtpRequestedDto {
   message!: string;
 }
+
+/** One sign-in, as "where you are signed in" lists it (§298). */
+export class SignInSessionDto {
+  id!: string;
+  /** "Chrome on Mac", "the app on an iPhone". */
+  device!: string;
+  /** The address it signed in from. */
+  ip!: string | null;
+  createdAt!: string;
+  lastUsedAt!: string;
+  /** The one this request came from. */
+  current!: boolean;
+  /** An administrator's sign-in with an authenticator code. */
+  twoStep!: boolean;
+}
+
+/** An administrator's two-step sign-in, as Security shows it (§298). */
+export class TwoStepStatusDto {
+  enabled!: boolean;
+  enabledAt!: string | null;
+  recoveryCodesLeft!: number;
+  /** Every administrator must have it before using the console. */
+  required!: boolean;
+  /** This sign-in was made with the code. */
+  thisSignIn!: boolean;
+}
+
+/** The secret for the authenticator app, shown once (§298). */
+export class TwoStepSetupDto {
+  /** In groups of four, for typing in by hand. */
+  secret!: string;
+  /** What the QR code holds. */
+  otpauthUrl!: string;
+}
+
+export class RecoveryCodesDto {
+  /** Shown once. Each works once, in place of the app's code. */
+  recoveryCodes!: string[];
+}
+
+/** Turned on: the recovery codes, and new tokens for this sign-in, made with the code. */
+export class TwoStepEnabledDto extends RecoveryCodesDto {
+  tokens!: TokenPairDto;
+}

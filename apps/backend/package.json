@@ -9,7 +9,7 @@
     "start:dev": "nest start --watch",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "NODE_OPTIONS='--experimental-vm-modules --max-old-space-size=4096' jest",
     "start:debug": "nest start --debug --watch",
     "prisma:seed": "prisma db seed",
     "momo:provision": "ts-node --project tsconfig.seed.json scripts/momo-provision.ts",

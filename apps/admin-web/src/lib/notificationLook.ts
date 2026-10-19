@@ -21,6 +21,8 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   BUSINESS_SUBMITTED: { icon: 'store', tone: 'accent', to: '/businesses' },
   // §287: an announcement's test, sent to yourself.
   ANNOUNCEMENT: { icon: 'megaphone', tone: 'accent', to: '/announcements' },
+  // A phone or browser not seen before signed in (§298).
+  NEW_SIGN_IN: { icon: 'shield', tone: 'warn', to: '/security' },
 };
 
 export const lookFor = (type: string) =>

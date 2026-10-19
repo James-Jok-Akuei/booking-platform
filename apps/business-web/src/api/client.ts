@@ -411,3 +411,12 @@ export async function verifyStepUp(code: string): Promise<string> {
   rememberStepUp(pass.stepUpToken, pass.expiresAt);
   return pass.stepUpToken;
 }
+
+// ---------------------------------------------------------------------------
+// Where you are signed in (§298)
+// ---------------------------------------------------------------------------
+
+export type SignInSession = components['schemas']['SignInSessionDto'];
+export const listSessions = () => api<SignInSession[]>('/auth/sessions');
+export const endSignIn = (id: string) => api<{ message: string }>(`/auth/sessions/${id}/end`, { method: 'POST' });
+export const endOtherSessions = () => api<{ message: string }>('/auth/sessions/end-others', { method: 'POST' });

@@ -18,6 +18,7 @@ import { UsersPage } from './pages/UsersPage';
 import { LegalPage } from './pages/LegalPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { TicketsPage } from './pages/TicketsPage';
+import { SecurityPage } from './pages/SecurityPage';
 
 export function App() {
   return (
@@ -39,6 +40,7 @@ export function App() {
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
         <Route path="/notifications" element={<NotificationSettingsPage />} />
+        <Route path="/security" element={<SecurityPage />} />
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/tickets" element={<TicketsPage />} />

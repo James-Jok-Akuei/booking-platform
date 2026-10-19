@@ -73,11 +73,12 @@ export async function createE2eApp(): Promise<E2eContext> {
 export async function request(
   url: string,
   path: string,
-  options: { method?: string; token?: string; body?: unknown } = {},
+  options: { method?: string; token?: string; body?: unknown; headers?: Record<string, string> } = {},
 ): Promise<{ status: number; body: Record<string, unknown> }> {
   const response = await fetch(`${url}${path}`, {
     method: options.method ?? 'GET',
     headers: {
+      ...options.headers,
       ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     },
