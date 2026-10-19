@@ -37,6 +37,7 @@ import { ListAdminTicketsDto } from './dto/list-tickets.dto';
 import { AssignTicketDto } from './dto/assign-ticket.dto';
 import { StartTicketDto, StartedTicketDto } from './dto/start-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
+import { SupportLinkTicketDto } from '../support/support.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
 /**
@@ -78,6 +79,17 @@ export class AdminTicketsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.tickets.findOneForAdmin(user, id);
+  }
+
+  /** Ties it to the booking it is about, or unties it (§297). */
+  @Patch(':id/link')
+  @ApiOkResponse({ type: AdminTicketDetailDto })
+  link(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SupportLinkTicketDto,
+  ) {
+    return this.tickets.linkBooking(user, id, dto.appointmentId);
   }
 
   @Patch(':id/assign')

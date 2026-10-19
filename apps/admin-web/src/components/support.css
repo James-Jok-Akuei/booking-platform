@@ -1,0 +1,103 @@
+/* Support acting for a shop or a customer (§297). */
+
+.sa-acts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.sa-act {
+  display: flex; align-items: center; gap: 12px; height: auto; min-height: 0; padding: 12px; border-radius: 16px; white-space: normal;
+  border: 1px solid var(--line); background: var(--panel); text-align: left; color: var(--ink);
+  transition: border-color 160ms var(--ease), background 160ms var(--ease), transform 160ms var(--ease);
+}
+.sa-act:hover:not(:disabled) { border-color: rgba(240, 83, 45, 0.35); background: var(--accent-tint); transform: translateY(-1px); }
+.sa-act:active:not(:disabled) { transform: translateY(0); }
+.sa-act > svg { flex: none; color: var(--faint); }
+.sa-act-icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: var(--accent-soft); color: var(--accent-deep); }
+.sa-act.is-danger .sa-act-icon { background: var(--danger-soft); color: var(--danger); }
+.sa-act.is-danger:hover:not(:disabled) { border-color: rgba(217, 45, 32, 0.35); background: #fff7f6; }
+.sa-act-words { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; white-space: normal; }
+.sa-act-words strong { font-size: 13.5px; font-weight: 750; }
+.sa-act-words span { font-size: 12px; font-weight: 550; color: var(--muted); line-height: 1.35; }
+
+.sa-intro { margin: 0 0 10px; font-size: 13px; color: var(--muted); font-weight: 550; line-height: 1.5; }
+.sa-note { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; font-weight: 600; color: var(--ask); }
+.sa-empty { margin: 0; font-size: 13px; color: var(--muted); font-weight: 550; }
+.sa-skel { height: 64px; border-radius: 16px; }
+
+.sa-history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sa-history li { display: flex; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--sunken); animation: sa-in 320ms var(--ease) both; }
+.sa-history li:nth-child(2) { animation-delay: 40ms; }
+.sa-history li:nth-child(3) { animation-delay: 80ms; }
+.sa-history-mark { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 9px; background: var(--ask-soft); color: var(--ask); }
+.sa-history li > div { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sa-history strong { font-size: 13.5px; font-weight: 750; }
+.sa-history-why { font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
+.sa-history-meta { font-size: 12px; color: var(--muted); font-weight: 600; overflow-wrap: anywhere; }
+.sa-history-meta a { color: var(--accent-deep); font-weight: 700; text-decoration: none; }
+@keyframes sa-in { from { opacity: 0; transform: translateY(4px); } }
+
+.sa-code { max-width: 220px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 18px; letter-spacing: 0.3em; }
+
+/* The conversation, read by support. */
+.sa-chat { display: flex; flex-direction: column; gap: 8px; }
+.sa-chat-day { align-self: center; margin: 8px 0 2px; padding: 3px 10px; border-radius: 99px; background: var(--sunken); font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.sa-bubble { max-width: 78%; display: flex; flex-direction: column; gap: 4px; padding: 10px 13px; border-radius: 18px; font-size: 14px; line-height: 1.5; animation: sa-in 260ms var(--ease) both; }
+.sa-bubble.is-customer { align-self: flex-start; background: var(--sunken); border-bottom-left-radius: 6px; }
+.sa-bubble.is-shop { align-self: flex-end; background: var(--ask-soft); border-bottom-right-radius: 6px; }
+.sa-bubble p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sa-bubble img { max-width: 220px; border-radius: 12px; display: block; }
+.sa-bubble small { font-size: 11px; font-weight: 650; color: var(--muted); }
+.sa-chat-who { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 12px; font-size: 12.5px; font-weight: 650; color: var(--muted); }
+.sa-chat-who i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 4px; vertical-align: -1px; }
+
+/* A shop's team, and a person's account, in the support sections. */
+.sa-team { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sa-team li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); }
+.sa-team li > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.sa-team strong { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sa-team li > div > span { font-size: 12px; color: var(--muted); font-weight: 600; }
+.sa-team .sa-team-acts { display: flex; gap: 6px; flex: none; }
+.sa-team .sa-team-acts button { min-height: 32px; padding: 0 10px; font-size: 12.5px; }
+.sa-team .is-late { color: var(--warn); }
+
+.sa-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 0 0 10px; }
+.sa-facts > div { display: flex; flex-direction: column; gap: 2px; padding: 11px 13px; border-radius: 14px; background: var(--sunken); }
+.sa-facts dt { font-size: 12px; font-weight: 650; color: var(--muted); }
+.sa-facts dd { margin: 0; font-size: 14.5px; font-weight: 800; }
+
+@media (max-width: 720px) {
+  .sa-acts { grid-template-columns: 1fr; }
+  .sa-bubble { max-width: 90%; }
+  .sa-team li { flex-wrap: wrap; }
+  .sa-team .sa-team-acts { width: 100%; }
+  .sa-team .sa-team-acts button { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sa-history li, .sa-bubble { animation: none; }
+}
+.ad-consequences b.is-ok { color: var(--ok-deep); }
+
+/* Choosing the booking a help request is about (§297). */
+.sa-find { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; margin-bottom: 12px; border-radius: 13px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--muted); }
+.sa-find:focus-within { border-color: var(--accent); box-shadow: var(--ring); }
+.sa-find input { flex: 1; min-width: 0; min-height: 0; padding: 0; border: none; box-shadow: none !important; background: transparent; }
+.sa-picks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sa-picks button { width: 100%; height: auto; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); text-align: left; white-space: normal; }
+.sa-picks button:hover:not(:disabled) { border-color: rgba(240, 83, 45, 0.35); background: var(--accent-tint); }
+.sa-picks button.is-on { border-color: var(--ok); background: var(--ok-soft); opacity: 1; }
+.sa-picks button > svg { flex: none; color: var(--faint); }
+.sa-picks button.is-on > svg { color: var(--ok-deep); }
+.sa-pick-when { flex: none; width: 74px; display: flex; flex-direction: column; }
+.sa-pick-when b { font-size: 13px; font-weight: 800; }
+.sa-pick-when em { font-style: normal; font-size: 12px; color: var(--muted); font-weight: 650; }
+.sa-pick-what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.sa-pick-what strong { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sa-pick-what span { font-size: 12px; color: var(--muted); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* On a help request: its booking, and tying one. */
+.sa-ticket-booking { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sa-ticket-booking button { min-height: 32px; padding: 0 10px; border-radius: 10px; font-size: 12.5px; gap: 6px; }
+.sa-tie { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 16px; border: 1px dashed var(--line-strong); font-size: 13px; color: var(--muted); font-weight: 600; }
+.sa-tie > span { flex: 1; min-width: 0; }
+.sa-tie button { flex: none; min-height: 34px; padding: 0 12px; border-radius: 11px; font-size: 13px; gap: 6px; }
+@media (max-width: 720px) {
+  .sa-pick-when { width: 60px; }
+  .sa-picks .pill { display: none; }
+}

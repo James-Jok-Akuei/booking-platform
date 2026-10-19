@@ -40,13 +40,19 @@ const roleWords = (role?: string) =>
 const cancelledBy = (reason?: string) =>
   !reason
     ? null
-    : reason.startsWith('Cancelled by the customer')
+    : reason.startsWith('Cancelled by the customer') || reason.startsWith('Cancelled by support for the customer')
       ? 'customer'
-      : reason.startsWith('Cancelled by the business') || reason.startsWith('Reclassified')
+      : reason.startsWith('Cancelled by the business') ||
+          reason.startsWith('Reclassified') ||
+          reason.startsWith('Cancelled by support for the shop')
         ? 'business'
         : reason.startsWith('The deposit was not paid')
           ? 'unpaid'
           : null;
+
+/** Whether our support team did it, on the side named (§297). */
+const bySupport = (reason?: string) =>
+  Boolean(reason && (reason.startsWith('Cancelled by support') || reason.startsWith('Reclassified by support')));
 
 /**
  * Copy for each notification type, rendered once at send time.
@@ -125,12 +131,17 @@ export function renderNotification(
       // Nothing was paid, so there is nothing to refund or keep.
       const by = ctx.depositPaid === false && cancelledBy(ctx.reason) !== 'unpaid' ? 'nothing-paid' : cancelledBy(ctx.reason);
       const who = cancelledBy(ctx.reason);
-      const why = by === 'business' && ctx.reason ? ctx.reason.replace(/^.*?Reason: /, '') : null;
+      const support = bySupport(ctx.reason);
+      const why = (who === 'business' || support) && ctx.reason?.includes('Reason: ') ? ctx.reason.replace(/^.*?Reason: /, '') : null;
       if (customer) {
         return {
           subject: `Cancelled: ${ctx.serviceName}, ${short}`,
           body:
-            (who === 'customer'
+            (support && who === 'customer'
+              ? `Our support team cancelled your booking at ${ctx.businessName}, as you asked.`
+              : support && who === 'business'
+                ? `Your booking at ${ctx.businessName} was cancelled on the shop's side by our support team.`
+                : who === 'customer'
               ? `You cancelled your booking at ${ctx.businessName}.`
               : who === 'business'
                 ? `${ctx.businessName} cancelled your booking.`
@@ -150,7 +161,11 @@ export function renderNotification(
       return {
         subject: `Cancelled: ${ctx.serviceName}, ${short}`,
         body:
-          (who === 'customer'
+          (support && who === 'customer'
+            ? 'Our support team cancelled this booking for the customer, as they asked.'
+            : support && who === 'business'
+              ? 'Our support team cancelled this booking on your shop\'s side.'
+              : who === 'customer'
             ? 'The customer cancelled this booking.'
             : who === 'business'
               ? 'This booking was cancelled by your shop.'
@@ -447,6 +462,8 @@ export function renderNotification(
       };
 
     // Written by a person, not a template: the title and the words are theirs (§287).
+    // A support update is composed where support acts (§297), the same way.
+    case NotificationType.SUPPORT_UPDATE:
     case NotificationType.ANNOUNCEMENT:
     case NotificationType.SHOP_MESSAGE:
     case NotificationType.SHOP_DISCOUNT:

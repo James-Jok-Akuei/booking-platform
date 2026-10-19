@@ -27,6 +27,8 @@ import { PayoutsModule } from './payouts/payouts.module';
 import { DiscoveryModule } from './discovery/discovery.module';
 import { FavouritesModule } from './favourites/favourites.module';
 import { LegalModule } from './legal/legal.module';
+import { SupportLogModule } from './support/support-log.module';
+import { SupportModule } from './support/support.module';
 import { OffersModule } from './offers/offers.module';
 import { RoutingModule } from './routing/routing.module';
 
@@ -82,6 +84,8 @@ import { RoutingModule } from './routing/routing.module';
     LegalModule,
     OffersModule,
     RoutingModule,
+    SupportLogModule,
+    SupportModule,
   ],
 })
 export class AppModule {}

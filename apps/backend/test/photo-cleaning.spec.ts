@@ -15,7 +15,12 @@ describe('Cleaning uploaded pictures (§296)', () => {
         orientation: 6,
         exif: {
           IFD0: { Make: 'PhoneMaker', Model: 'Phone 12', Software: 'Camera 1.0' },
-          IFD3: { GPSLatitudeRef: 'S', GPSLatitude: '1/1 56/1 49/1', GPSLongitudeRef: 'E', GPSLongitude: '30/1 3/1 32/1' },
+          IFD3: {
+            GPSLatitudeRef: 'S',
+            GPSLatitude: '1/1 56/1 49/1',
+            GPSLongitudeRef: 'E',
+            GPSLongitude: '30/1 3/1 32/1',
+          },
         },
       })
       .jpeg()
@@ -57,7 +62,9 @@ describe('Cleaning uploaded pictures (§296)', () => {
   });
 
   it('refuses a file that only says it is a picture', async () => {
-    await expect(cleanImage(Buffer.from('%PDF-1.7 not a photo at all'), 'image/jpeg')).rejects.toThrow(BadRequestException);
+    await expect(cleanImage(Buffer.from('%PDF-1.7 not a photo at all'), 'image/jpeg')).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it('leaves other files — a PDF for a help request — as they were', async () => {

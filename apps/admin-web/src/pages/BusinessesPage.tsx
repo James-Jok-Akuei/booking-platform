@@ -21,6 +21,7 @@ import { NetworkMark } from '../ui/NetworkMark';
 import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import { StaticMap } from '../ui/StaticMap';
+import { ShopActPanel, ShopSupportSection, type ShopAct } from './ShopSupport';
 import './businesses.css';
 import { WriteFirst } from '../components/WriteFirst';
 import { RichText } from '../ui/RichText';
@@ -517,6 +518,7 @@ function ReviewPanel({
 }) {
   const money = useMoney();
   const business = useQuery({ queryKey: ['business', id], queryFn: () => getBusiness(id) });
+  const [act, setAct] = useState<ShopAct | null>(null);
   const b = business.data;
   const name = b ? nameOf(b) : null;
   // What the server would refuse an approval for (§255): a shop no customer could book.
@@ -557,6 +559,9 @@ function ReviewPanel({
       )}
     </>
   ) : undefined;
+
+  if (b && act)
+    return <ShopActPanel businessId={b.id} shopName={name ?? 'A shop'} act={act} onBack={() => setAct(null)} onClose={onClose} />;
 
   return (
     <Panel
@@ -764,6 +769,9 @@ function ReviewPanel({
               )}
             </Section>
           </div>
+
+          {/* Support acting for the shop (§297). */}
+          <ShopSupportSection businessId={b.id} onAct={setAct} onClose={onClose} />
         </div>
       )}
     </Panel>

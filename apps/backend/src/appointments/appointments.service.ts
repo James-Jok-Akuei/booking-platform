@@ -14,6 +14,8 @@ import {
   BusinessMemberStatus,
   Prisma,
   MobileMoneyProvider,
+  NotificationCategory,
+  SupportActionKind,
   UserRole,
   VerificationMethod,
 } from '@prisma/client';
@@ -65,6 +67,8 @@ import {
   PaymentStatusResponseDto,
 } from './dto/payment-status.dto';
 import { MEMBERSHIP_SCOPE_SELECT, branchIn, scopeOf, seesBranch } from '../business/branch-scope';
+import { SupportActor, SupportLogService } from '../support/support-log.service';
+import { SupportCancelForShopDto, SupportCheckInDto, SupportReasonDto } from '../support/support.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -142,6 +146,34 @@ const ADMIN_APPOINTMENT_SELECT = {
 
 type AdminAppointmentRow = Prisma.AppointmentGetPayload<{ select: typeof ADMIN_APPOINTMENT_SELECT }>;
 
+/**
+ * What our support team may do on a booking now (§297) — one rule, used by
+ * each action to refuse and by the console to offer, so the two never
+ * disagree (§118).
+ */
+export function supportOptions(a: {
+  status: AppointmentStatus;
+  cancelledBy: CancelledBy | null;
+  depositPaidAt: Date | null;
+  verifiedAt: Date | null;
+}) {
+  const live = a.status === AppointmentStatus.PENDING_PAYMENT || a.status === AppointmentStatus.BOOKED;
+  return {
+    checkIn: a.status === AppointmentStatus.BOOKED,
+    complete: a.status === AppointmentStatus.BOOKED || a.status === AppointmentStatus.IN_PROGRESS,
+    fixNoShow: a.status === AppointmentStatus.NO_SHOW,
+    cancelForCustomer: live,
+    // On the shop's side: a booking still to come; a no-show the shop caused;
+    // or a cancellation that was really the shop's, when a deposit was paid.
+    cancelForShop:
+      live ||
+      a.status === AppointmentStatus.NO_SHOW ||
+      (a.status === AppointmentStatus.CANCELLED && a.cancelledBy !== CancelledBy.BUSINESS && a.depositPaidAt !== null),
+    resendCode: live && !a.verifiedAt,
+    checkPayment: a.status === AppointmentStatus.PENDING_PAYMENT,
+  };
+}
+
 const toAdminAppointment = (appointment: AdminAppointmentRow) => ({
   id: appointment.id,
   status: appointment.status,
@@ -185,6 +217,8 @@ const toAdminAppointment = (appointment: AdminAppointmentRow) => ({
     appointment.status === AppointmentStatus.CANCELLED &&
     appointment.cancelledBy !== CancelledBy.BUSINESS &&
     appointment.depositPaidAt !== null,
+  /** What support may do on it now (§297). */
+  support: supportOptions(appointment),
 });
 
 @Injectable()
@@ -200,6 +234,7 @@ export class AppointmentsService {
     private readonly notifications: NotificationsService,
     private readonly chat: ChatService,
     private readonly ledger: LedgerService,
+    private readonly support: SupportLogService,
   ) {}
 
   /**
@@ -253,7 +288,7 @@ export class AppointmentsService {
    * One helper rather than widening each call site's select, so adding a field
    * to a template does not mean hunting through five queries.
    */
-  private async notificationContext(appointmentId: string) {
+  async notificationContext(appointmentId: string) {
     const appointment = await this.prisma.appointment.findUnique({
       where: { id: appointmentId },
       select: {
@@ -829,18 +864,10 @@ export class AppointmentsService {
       };
     }
 
-    // The operator that ISSUED this reference, not whichever is configured now.
-    // Asking the wrong one returns "no such transaction", which reads exactly
-    // like a genuine failure and would cancel a paid booking (§57.2).
-    const result = await this.providerFor(full).checkPaymentStatus(
-      full.paymentProviderReferenceId,
-    );
-    const applied = await this.applyPaymentResult(
-      appointmentId,
-      full.paymentProviderReferenceId,
-      result.status,
-      result.failureReason,
-    );
+    const { result, applied } = await this.askOperator(appointmentId, {
+      paymentProviderReferenceId: full.paymentProviderReferenceId,
+      paymentProvider: full.paymentProvider,
+    });
 
     return {
       appointmentId,
@@ -850,6 +877,27 @@ export class AppointmentsService {
         result.status === 'FAILED' ? null : full.paymentProviderReferenceId,
       failureReason: result.failureReason,
     };
+  }
+
+  /**
+   * Asks the operator about a deposit now, and applies what it says (§57.2).
+   * Shared by the parties' status read and support's "ask MTN" (§297).
+   */
+  private async askOperator(
+    appointmentId: string,
+    full: { paymentProviderReferenceId: string; paymentProvider: MobileMoneyProvider | null },
+  ) {
+    // The operator that ISSUED this reference, not whichever is configured now.
+    // Asking the wrong one returns "no such transaction", which reads exactly
+    // like a genuine failure and would cancel a paid booking (§57.2).
+    const result = await this.providerFor(full).checkPaymentStatus(full.paymentProviderReferenceId);
+    const applied = await this.applyPaymentResult(
+      appointmentId,
+      full.paymentProviderReferenceId,
+      result.status,
+      result.failureReason,
+    );
+    return { result, applied };
   }
 
   /**
@@ -1045,6 +1093,25 @@ export class AppointmentsService {
       );
     }
 
+    await this.issueFreshCode(appointmentId);
+    const updated = await this.prisma.appointment.findUniqueOrThrow({
+      where: { id: appointmentId },
+      select: CUSTOMER_APPOINTMENT_SELECT,
+    });
+
+    this.logger.log(
+      `Arrival code resent for appointment ${appointmentId} ` +
+        `(send ${appointment.verificationCodeSentCount + 1} of ${MAX_VERIFICATION_CODE_SENDS}).`,
+    );
+
+    return this.withApproxSettlement(updated, await this.rateContext());
+  }
+
+  /**
+   * A new arrival code, emailed to the customer; the old one stops working
+   * (§54.1). Shared by the customer's own "send it again" and support's (§297).
+   */
+  private async issueFreshCode(appointmentId: string) {
     const context = await this.prisma.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
       select: { ...BOOKING_FACTS_SELECT, customer: { select: { email: true } } },
@@ -1069,20 +1136,12 @@ export class AppointmentsService {
     await this.mail.sendAppointmentVerificationEmail(context.customer.email, code, bookingFacts(context));
 
     // Stamped after the send, so it keeps meaning "an email went out" (§53.2) —
-    // which is also what the cooldown above must measure from. A failed send
+    // which is also what the cooldown must measure from. A failed send
     // therefore does not start the clock, and the customer may retry at once.
-    const updated = await this.prisma.appointment.update({
+    await this.prisma.appointment.update({
       where: { id: appointmentId },
       data: { verificationCodeSentAt: new Date() },
-      select: CUSTOMER_APPOINTMENT_SELECT,
     });
-
-    this.logger.log(
-      `Arrival code resent for appointment ${appointmentId} ` +
-        `(send ${appointment.verificationCodeSentCount + 1} of ${MAX_VERIFICATION_CODE_SENDS}).`,
-    );
-
-    return this.withApproxSettlement(updated, await this.rateContext());
   }
 
   /**
@@ -1555,20 +1614,29 @@ export class AppointmentsService {
     };
   }
 
+  /**
+   * Cancelling on the shop's side, by support (§36.4, §297) — the refund §25
+   * requires when a deposit was paid, through the same ledger call a shop's
+   * own cancellation makes.
+   *
+   * From a booking still to come (the shop asked us to, or cannot sign in), a
+   * no-show the shop caused (it was closed), or a cancellation that was really
+   * the shop's. Refused from IN_PROGRESS (the service has started), COMPLETED,
+   * one already on the shop, and an unpaid cancellation (nothing to give back)
+   * — the rule `supportOptions` publishes (§297 closed the gap where the route
+   * took more than the console offered).
+   */
   async reclassifyAsBusinessCancellation(
     actor: { userId: string; role: UserRole | string },
     appointmentId: string,
-    dto: ReclassifyCancellationDto,
+    dto: ReclassifyCancellationDto | SupportCancelForShopDto,
   ) {
-    if (actor.role !== UserRole.ADMIN) {
-      throw new ForbiddenException(
-        'Only an administrator can reclassify a cancellation.',
-      );
-    }
+    this.support.check(actor, dto);
+    const ticket = await this.support.ticket(dto.ticketId);
 
     const appointment = await this.prisma.appointment.findUnique({
       where: { id: appointmentId },
-      select: { id: true, status: true, cancelledBy: true, depositPaidAt: true },
+      select: { id: true, status: true, cancelledBy: true, depositPaidAt: true, verifiedAt: true },
     });
     if (!appointment) throw new NotFoundException('Appointment not found.');
 
@@ -1582,12 +1650,21 @@ export class AppointmentsService {
         'A completed appointment cannot be reclassified as cancelled.',
       );
     }
-
-    if (dto.ticketId) {
-      const ticket = await this.prisma.ticket.count({ where: { id: dto.ticketId } });
-      if (ticket === 0) throw new NotFoundException('Ticket not found.');
+    if (!supportOptions(appointment).cancelForShop) {
+      throw new BadRequestException(
+        appointment.status === AppointmentStatus.IN_PROGRESS
+          ? 'The customer is already checked in. Mark it done, or answer the dispute another way.'
+          : 'This cancellation had no paid deposit, so there is nothing to give back.',
+      );
+    }
+    if (appointment.depositPaidAt && dto.gatewayChargeMinor === undefined) {
+      throw new BadRequestException(
+        "Say what the operator charges to send the refund back (gatewayChargeMinor) — the shop bears it.",
+      );
     }
 
+    const wasLive =
+      appointment.status === AppointmentStatus.PENDING_PAYMENT || appointment.status === AppointmentStatus.BOOKED;
     const updated = await this.prisma.$transaction(async (tx) => {
       const row = await tx.appointment.update({
         where: { id: appointmentId },
@@ -1609,10 +1686,26 @@ export class AppointmentsService {
         await this.ledger.recordBusinessCancellationRefund(
           tx,
           appointmentId,
-          dto.gatewayChargeMinor,
+          dto.gatewayChargeMinor!,
         );
+      } else {
+        await this.ledger.releaseOnResolution(tx, appointmentId);
       }
 
+      await this.support.record(
+        actor,
+        {
+          kind: SupportActionKind.CANCEL_FOR_SHOP,
+          reason: dto.reason,
+          appointmentId,
+          ticketId: ticket?.id,
+          details: { from: appointment.status, refunded: Boolean(appointment.depositPaidAt) },
+          ticketNote: appointment.depositPaidAt
+            ? 'We cancelled this booking on the shop’s side. The customer gets their whole deposit back.'
+            : 'We cancelled this booking on the shop’s side. No deposit had been paid.',
+        },
+        tx,
+      );
       return row;
     });
 
@@ -1624,10 +1717,438 @@ export class AppointmentsService {
     await this.notifyBothParties(
       appointmentId,
       NotificationType.APPOINTMENT_CANCELLED,
-      `Reclassified by support as a business cancellation. Reason: ${dto.reason}`,
+      wasLive
+        ? `Cancelled by support for the shop. Reason: ${dto.reason}`
+        : `Reclassified by support as a business cancellation. Reason: ${dto.reason}`,
     );
 
     return updated;
+  }
+
+  // ---------- Support, on someone's behalf (§297) ----------
+
+  /** "Tuesday 20 October at 11:15", as the shop and the customer know the time. */
+  private spokenTime(at: Date) {
+    const zone = process.env.PLATFORM_TIMEZONE ?? 'Africa/Kigali';
+    const day = new Intl.DateTimeFormat('en-GB', { timeZone: zone, weekday: 'long', day: 'numeric', month: 'long' })
+      .format(at)
+      .replace(',', '');
+    const clock = new Intl.DateTimeFormat('en-GB', { timeZone: zone, hour: '2-digit', minute: '2-digit' }).format(at);
+    return `${day} at ${clock}`;
+  }
+
+  /** The booking, as support's actions need it. */
+  private async forSupport(appointmentId: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      select: {
+        id: true,
+        status: true,
+        customerId: true,
+        startTime: true,
+        verificationCodeHash: true,
+        verifiedAt: true,
+        verificationCodeSentAt: true,
+        depositPaidAt: true,
+        cancelledBy: true,
+        paymentProviderReferenceId: true,
+        paymentProvider: true,
+        service: { select: { name: true } },
+        location: { select: { businessId: true, business: { select: { name: true } } } },
+      },
+    });
+    if (!appointment) throw new NotFoundException('Appointment not found.');
+    return appointment;
+  }
+
+  /**
+   * Tells the shop and the customer what support did (§297), in the words
+   * given — each side its own. The person whose help request it answers has
+   * a reply in it already, so they are not told twice.
+   */
+  private async tellAboutSupport(
+    appointmentId: string,
+    words: { customer?: { title: string; body: string }; shop?: { title: string; body: string } },
+    ticket: { reporterId: string } | null,
+  ) {
+    const loaded = await this.notificationContext(appointmentId);
+    if (!loaded) return;
+    const except = ticket?.reporterId ?? null;
+    if (words.customer && loaded.customerId !== except) {
+      await this.notifications.notify({
+        recipientId: loaded.customerId,
+        type: NotificationType.SUPPORT_UPDATE,
+        context: { ...loaded.context, serviceName: words.customer.title, reason: words.customer.body },
+        appointmentId,
+        category: NotificationCategory.BOOKINGS,
+        link: `/booking/${appointmentId}`,
+      });
+    }
+    if (words.shop) {
+      await this.notifications.notifyBusiness({
+        businessId: loaded.businessId,
+        type: NotificationType.SUPPORT_UPDATE,
+        context: { ...loaded.context, serviceName: words.shop.title, reason: words.shop.body },
+        appointmentId,
+        category: NotificationCategory.BOOKINGS,
+        link: `/appointments?tab=all&open=${appointmentId}`,
+        except,
+      });
+    }
+  }
+
+  /**
+   * Checks a customer in for the shop (§297): when the shop's app failed, or
+   * five wrong codes locked it. With the customer's code, read out to us; or
+   * without it, the reason saying how we know they are there — recorded as a
+   * manual check-in, like a shop's own (§54.3). Attempts do not count here:
+   * a wrong code is said plainly and nothing is locked.
+   */
+  async supportCheckIn(actor: SupportActor, appointmentId: string, dto: SupportCheckInDto) {
+    this.support.check(actor, dto);
+    const ticket = await this.support.ticket(dto.ticketId);
+    const appointment = await this.forSupport(appointmentId);
+    if (!supportOptions(appointment).checkIn) {
+      throw new BadRequestException(`Only a booking that is expected can be checked in. This one is ${appointment.status}.`);
+    }
+    const updated = await this.checkInBySupport(actor, appointment, dto, ticket?.id ?? null);
+    await this.tellAboutSupport(
+      appointmentId,
+      {
+        shop: {
+          title: 'Our support team checked a customer in',
+          body:
+            `We checked the customer in for ${appointment.service.name} on ${this.spokenTime(appointment.startTime)}, ` +
+            'because it could not be done in the app. Mark it done when the service is finished, as usual.',
+        },
+        customer: {
+          title: 'You are checked in',
+          body: `Our support team checked you in at ${appointment.location.business.name ?? 'the shop'} for ${appointment.service.name}.`,
+        },
+      },
+      ticket,
+    );
+    return updated;
+  }
+
+  /** The check-in itself, with the code or without, written down. */
+  private async checkInBySupport(
+    actor: SupportActor,
+    appointment: { id: string; verificationCodeHash: string | null; service: { name: string } },
+    dto: SupportCheckInDto,
+    ticketId: string | null,
+    tx: Prisma.TransactionClient = this.prisma,
+  ) {
+    if (dto.code) {
+      if (!appointment.verificationCodeHash || !(await bcrypt.compare(dto.code, appointment.verificationCodeHash))) {
+        throw new BadRequestException(
+          "That is not this booking's code. Ask the customer to read it from their booking in the app — or check them in without it, saying how you know they came.",
+        );
+      }
+    } else if (dto.reason.trim().length < 10) {
+      throw new BadRequestException('Without the code, say how you know the customer came — a sentence at least.');
+    }
+    const updated = await tx.appointment.update({
+      where: { id: appointment.id },
+      data: {
+        status: AppointmentStatus.IN_PROGRESS,
+        verifiedAt: new Date(),
+        verificationMethod: dto.code ? VerificationMethod.CODE : VerificationMethod.MANUAL,
+        verifiedById: actor.userId,
+        ...(dto.code ? {} : { manualVerificationNote: `By support: ${dto.reason.trim()}` }),
+      },
+      select: APPOINTMENT_SELECT,
+    });
+    await this.support.record(
+      actor,
+      {
+        kind: SupportActionKind.CHECK_IN,
+        reason: dto.reason,
+        appointmentId: appointment.id,
+        ticketId,
+        details: { withCode: Boolean(dto.code) },
+        ticketNote: `We checked the customer in for ${appointment.service.name}.`,
+      },
+      tx,
+    );
+    return updated;
+  }
+
+  /**
+   * Marks a booking done for the shop (§297) — after the visit, when the app
+   * failed on the day. From BOOKED it checks the customer in first, with the
+   * code or the reason, then marks it done: the money becomes the shop's as
+   * a shop's own "done" makes it, and the customer is asked how it was.
+   */
+  async supportComplete(actor: SupportActor, appointmentId: string, dto: SupportCheckInDto) {
+    this.support.check(actor, dto);
+    const ticket = await this.support.ticket(dto.ticketId);
+    const appointment = await this.forSupport(appointmentId);
+    if (!supportOptions(appointment).complete) {
+      throw new BadRequestException(`Only a booking that is expected or in progress can be marked done. This one is ${appointment.status}.`);
+    }
+    const completed = await this.prisma.$transaction(async (tx) => {
+      if (appointment.status === AppointmentStatus.BOOKED) {
+        await this.checkInBySupport(actor, appointment, dto, ticket?.id ?? null, tx);
+      }
+      const row = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: { status: AppointmentStatus.COMPLETED, completedAt: new Date() },
+        select: APPOINTMENT_SELECT,
+      });
+      await this.ledger.releaseOnResolution(tx, appointmentId);
+      await this.support.record(
+        actor,
+        {
+          kind: SupportActionKind.COMPLETE,
+          reason: dto.reason,
+          appointmentId,
+          ticketId: ticket?.id,
+          ticketNote: `We marked ${appointment.service.name} as done. The shop is paid for it as usual.`,
+        },
+        tx,
+      );
+      return row;
+    });
+    await askHowItWent(this.prisma, this.notifications, appointmentId);
+    await this.tellAboutSupport(
+      appointmentId,
+      {
+        shop: {
+          title: 'Our support team marked a booking done',
+          body:
+            `We marked ${appointment.service.name} on ${this.spokenTime(appointment.startTime)} as done, ` +
+            'because it could not be done in the app. Your share of the deposit is paid to you as usual.',
+        },
+      },
+      ticket,
+    );
+    return completed;
+  }
+
+  /**
+   * Puts right a booking wrongly marked as missed (§297): the customer came,
+   * but nobody checked them in, and it became a no-show by itself (§20) or by
+   * the shop's mistake. It becomes done: the customer's record is right again
+   * and they can review the visit. The money does not move — a no-show's
+   * deposit was already the shop's, as a done booking's is.
+   */
+  async supportFixNoShow(actor: SupportActor, appointmentId: string, dto: SupportReasonDto) {
+    this.support.check(actor, dto);
+    const ticket = await this.support.ticket(dto.ticketId);
+    const appointment = await this.forSupport(appointmentId);
+    if (!supportOptions(appointment).fixNoShow) {
+      throw new BadRequestException(`Only a booking marked as missed can be put right this way. This one is ${appointment.status}.`);
+    }
+    const now = new Date();
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          status: AppointmentStatus.COMPLETED,
+          completedAt: now,
+          noShowAt: null,
+          verifiedAt: now,
+          verificationMethod: VerificationMethod.MANUAL,
+          verifiedById: actor.userId,
+          manualVerificationNote: `By support, after the visit: ${dto.reason.trim()}`,
+        },
+        select: APPOINTMENT_SELECT,
+      });
+      await this.support.record(
+        actor,
+        {
+          kind: SupportActionKind.FIX_NO_SHOW,
+          reason: dto.reason,
+          appointmentId,
+          ticketId: ticket?.id,
+          details: { from: AppointmentStatus.NO_SHOW, to: AppointmentStatus.COMPLETED },
+          ticketNote: `We corrected ${appointment.service.name}: it was marked as missed, but the customer came. It now counts as done.`,
+        },
+        tx,
+      );
+      return row;
+    });
+    await askHowItWent(this.prisma, this.notifications, appointmentId);
+    await this.tellAboutSupport(
+      appointmentId,
+      {
+        customer: {
+          title: 'Your booking is corrected',
+          body:
+            `Your visit to ${appointment.location.business.name ?? 'the shop'} for ${appointment.service.name} was marked as missed, ` +
+            'but you came. Our support team corrected it: it now counts as done, and you can leave a review.',
+        },
+        shop: {
+          title: 'Our support team corrected a missed booking',
+          body:
+            `${appointment.service.name} on ${this.spokenTime(appointment.startTime)} was marked as missed, but the customer came. ` +
+            'It now counts as done. Nothing changes in your money.',
+        },
+      },
+      ticket,
+    );
+    return updated;
+  }
+
+  /**
+   * Cancels for a customer who asked us to (§297) — their app would not let
+   * them. A customer's cancellation in every way: the deposit is not given
+   * back (§2), and the shop keeps its share.
+   */
+  async supportCancelForCustomer(actor: SupportActor, appointmentId: string, dto: SupportReasonDto) {
+    this.support.check(actor, dto);
+    const ticket = await this.support.ticket(dto.ticketId);
+    const appointment = await this.forSupport(appointmentId);
+    if (!supportOptions(appointment).cancelForCustomer) {
+      throw new BadRequestException(`Only a booking still to come can be cancelled. This one is ${appointment.status}.`);
+    }
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          status: AppointmentStatus.CANCELLED,
+          cancelledAt: new Date(),
+          cancelledBy: CancelledBy.CUSTOMER,
+          cancelledByUserId: actor.userId,
+          cancellationReason: dto.reason,
+          cancellationTicketId: ticket?.id ?? null,
+        },
+        select: APPOINTMENT_SELECT,
+      });
+      await this.ledger.releaseOnResolution(tx, appointmentId);
+      await this.support.record(
+        actor,
+        {
+          kind: SupportActionKind.CANCEL_FOR_CUSTOMER,
+          reason: dto.reason,
+          appointmentId,
+          ticketId: ticket?.id,
+          ticketNote: appointment.depositPaidAt
+            ? 'We cancelled your booking, as you asked. As agreed when you booked, the deposit is not given back.'
+            : 'We cancelled your booking, as you asked. No deposit had been paid.',
+        },
+        tx,
+      );
+      return row;
+    });
+    await this.notifyBothParties(appointmentId, NotificationType.APPOINTMENT_CANCELLED, 'Cancelled by support for the customer.');
+    return updated;
+  }
+
+  /**
+   * Emails the customer a new arrival code (§297) — theirs did not arrive, or
+   * was lost. The old one stops working. The code is never shown to us. The
+   * five-send limit a customer has does not apply; the minute between sends does.
+   */
+  async supportResendCode(actor: SupportActor, appointmentId: string, dto: SupportReasonDto) {
+    this.support.check(actor, dto);
+    const ticket = await this.support.ticket(dto.ticketId);
+    const appointment = await this.forSupport(appointmentId);
+    if (!supportOptions(appointment).resendCode) {
+      throw new BadRequestException(
+        appointment.verifiedAt
+          ? 'The customer is already checked in, so the code is spent.'
+          : `A code is only useful while the booking is still to come. This one is ${appointment.status}.`,
+      );
+    }
+    const sentAt = appointment.verificationCodeSentAt;
+    if (sentAt && Date.now() - sentAt.getTime() < RESEND_COOLDOWN_MS) {
+      throw new BadRequestException('A code was sent less than a minute ago. Ask them to check their spam folder first.');
+    }
+    await this.issueFreshCode(appointmentId);
+    await this.support.record(actor, {
+      kind: SupportActionKind.RESEND_CODE,
+      reason: dto.reason,
+      appointmentId,
+      ticketId: ticket?.id,
+      ticketNote: 'We emailed you a new arrival code. The old one no longer works.',
+    });
+    return { message: 'A new arrival code is on its way to the customer. The old one no longer works.' };
+  }
+
+  /**
+   * Asks MTN about a deposit now (§297) — "I paid but it says unpaid". What
+   * MTN answers is applied exactly as the app's own check applies it: paid
+   * confirms the booking, failed frees the customer to try again.
+   */
+  async supportCheckPayment(actor: SupportActor, appointmentId: string, ticketId?: string) {
+    const input = { reason: 'Asked MTN about the deposit', ticketId };
+    this.support.check(actor, input);
+    const ticket = await this.support.ticket(ticketId);
+    const appointment = await this.forSupport(appointmentId);
+    if (!appointment.paymentProviderReferenceId) {
+      return {
+        appointmentStatus: appointment.status,
+        paymentStatus: appointment.depositPaidAt ? ('SUCCESSFUL' as const) : ('NOT_STARTED' as const),
+        failureReason: null,
+      };
+    }
+    if (appointment.status !== AppointmentStatus.PENDING_PAYMENT) {
+      return {
+        appointmentStatus: appointment.status,
+        paymentStatus: appointment.depositPaidAt ? ('SUCCESSFUL' as const) : ('FAILED' as const),
+        failureReason: null,
+      };
+    }
+    const { result, applied } = await this.askOperator(appointmentId, {
+      paymentProviderReferenceId: appointment.paymentProviderReferenceId,
+      paymentProvider: appointment.paymentProvider,
+    });
+    await this.support.record(actor, {
+      kind: SupportActionKind.CHECK_PAYMENT,
+      reason: input.reason,
+      appointmentId,
+      ticketId: ticket?.id,
+      details: { answer: result.status },
+      ticketNote:
+        result.status === 'SUCCESSFUL'
+          ? 'We checked with MTN: your deposit went through, and the booking is confirmed.'
+          : result.status === 'FAILED'
+            ? 'We checked with MTN: the deposit did not go through. You can try paying again from the booking.'
+            : null,
+    });
+    return { appointmentStatus: applied, paymentStatus: result.status, failureReason: result.failureReason ?? null };
+  }
+
+  /**
+   * A booking's conversation, read by support to answer a question about it
+   * (§297, and the privacy policy says so). Read-only, and every reading is
+   * written down with its reason — and shown on the booking to both sides.
+   */
+  async supportReadMessages(actor: SupportActor, appointmentId: string, dto: SupportReasonDto) {
+    this.support.check(actor, dto);
+    const ticket = await this.support.ticket(dto.ticketId);
+    const appointment = await this.forSupport(appointmentId);
+    const thread = await this.prisma.thread.findUnique({
+      where: { appointmentId },
+      select: {
+        id: true,
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          take: 500,
+          select: { id: true, body: true, photoUrl: true, createdAt: true, senderId: true, sender: { select: { email: true } } },
+        },
+      },
+    });
+    await this.support.record(actor, {
+      kind: SupportActionKind.READ_MESSAGES,
+      reason: dto.reason,
+      appointmentId,
+      ticketId: ticket?.id,
+      details: { messages: thread?.messages.length ?? 0 },
+    });
+    return {
+      threadId: thread?.id ?? null,
+      messages: (thread?.messages ?? []).map((m) => ({
+        id: m.id,
+        from: m.senderId === appointment.customerId ? ('customer' as const) : ('shop' as const),
+        senderEmail: m.sender.email,
+        body: m.body,
+        photoUrl: m.photoUrl,
+        createdAt: m.createdAt.toISOString(),
+      })),
+    };
   }
 
   /**

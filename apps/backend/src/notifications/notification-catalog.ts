@@ -236,6 +236,9 @@ export function categoryOf(type: T, audience: Audience): C {
     case T.SHOP_MESSAGE:
     case T.SHOP_DISCOUNT:
       return C.SHOP_OFFERS;
+    // Usually given its kind where it is raised (a booking's is BOOKINGS, §297).
+    case T.SUPPORT_UPDATE:
+      return C.ACCOUNT;
     default:
       return C.ACCOUNT;
   }

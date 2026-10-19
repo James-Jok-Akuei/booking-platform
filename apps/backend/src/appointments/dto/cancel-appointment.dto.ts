@@ -48,8 +48,10 @@ export class ReclassifyCancellationDto {
   @IsUUID()
   ticketId?: string;
 
+  /** Needed when a deposit was paid (§297): the operator's charge for sending it back, borne by the shop. */
+  @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'gatewayChargeMinor must be a whole number of minor units.' })
   @Min(0)
-  gatewayChargeMinor!: number;
+  gatewayChargeMinor?: number;
 }

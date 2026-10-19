@@ -65,7 +65,9 @@ export async function createBusiness(
       // And, once approved, posted by its owner (§268) — a complete shop is
       // one customers can find.
       // A suspended shop was approved and posted before it was suspended.
-      publishedAt: [BusinessStatus.APPROVED, BusinessStatus.SUSPENDED].includes(options.status ?? BusinessStatus.APPROVED)
+      publishedAt: ([BusinessStatus.APPROVED, BusinessStatus.SUSPENDED] as BusinessStatus[]).includes(
+        options.status ?? BusinessStatus.APPROVED,
+      )
         ? new Date()
         : null,
       members: {

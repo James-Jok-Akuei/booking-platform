@@ -11,6 +11,7 @@ import {
   NotificationType,
   Prisma,
   ReporterType,
+  SupportActionKind,
   TicketAuthorType,
   TicketCategory,
   TicketStatus,
@@ -31,6 +32,7 @@ import {
   isPastResolutionWindow,
 } from './ticket-status';
 import { MEMBERSHIP_SCOPE_SELECT, branchIn, scopeOf } from '../business/branch-scope';
+import { SupportActor, SupportLogService } from '../support/support-log.service';
 
 /** Fields a reporter is allowed to see. Internal notes are excluded by query. */
 // One select, shared with the DTO that describes its result (§128.5).
@@ -44,6 +46,7 @@ export class TicketsService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly notifications: NotificationsService,
+    private readonly support: SupportLogService,
   ) {}
 
   // ---------- Creation ----------
@@ -344,6 +347,9 @@ export class TicketsService {
       ...(query.status ? { status: query.status } : {}),
       ...(query.category ? { category: query.category } : {}),
       ...(query.assignedAdminId ? { assignedAdminId: query.assignedAdminId } : {}),
+      ...(query.reporterId ? { reporterId: query.reporterId } : {}),
+      ...(query.businessId ? { businessId: query.businessId } : {}),
+      ...(query.open === 'true' ? { status: { in: [TicketStatus.OPEN, TicketStatus.IN_PROGRESS] } } : {}),
       ...(q
         ? {
             OR: [
@@ -802,6 +808,41 @@ export class TicketsService {
       startTime: undefined as unknown as Date,
       reason: detail,
     };
+  }
+
+  /**
+   * Ties a help request to the booking it is about, after it was raised
+   * (§297) — someone wrote "my booking at 3" without choosing it. The booking
+   * must be the reporter's own, by the same rule as when they choose it
+   * (assertPartyToAppointment): a customer's, or one at their shop. Null
+   * unties it. Logged, with no note to the reporter — it changes nothing for
+   * them but what support can see beside it.
+   */
+  async linkBooking(actor: SupportActor, ticketId: string, appointmentId: string | null) {
+    if (actor.role !== UserRole.ADMIN) throw new ForbiddenException('Only administrators can do this.');
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id: ticketId },
+      select: { id: true, reporterId: true, reporterType: true, businessId: true, appointmentId: true },
+    });
+    if (!ticket) throw new NotFoundException('Ticket not found.');
+    if (appointmentId) {
+      try {
+        await this.assertPartyToAppointment(ticket.reporterId, ticket.reporterType, ticket.businessId, appointmentId);
+      } catch {
+        throw new BadRequestException('That booking is not one of theirs, so it cannot be tied to this request.');
+      }
+    }
+    if (ticket.appointmentId === appointmentId) return this.findOneForAdmin(actor, ticketId);
+
+    await this.prisma.ticket.update({ where: { id: ticketId }, data: { appointmentId } });
+    await this.support.record(actor, {
+      kind: SupportActionKind.LINK_TICKET,
+      reason: appointmentId ? 'Tied to the booking it is about.' : 'Untied from a booking.',
+      ticketId,
+      appointmentId,
+      details: { from: ticket.appointmentId, to: appointmentId },
+    });
+    return this.findOneForAdmin(actor, ticketId);
   }
 
   private async notifyAdmins(type: NotificationType, reference: string, subject: string) {

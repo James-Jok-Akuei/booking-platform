@@ -109,7 +109,7 @@ describe('Profile images (§88)', () => {
         throw new Error('R2 is down');
       },
     };
-    const service = new BusinessProfileService(prisma, failing as never);
+    const service = new BusinessProfileService(prisma, failing as never, { notify: async () => null } as never);
 
     await expect(
       service.setImage(business.businessId, 'logo', file()),

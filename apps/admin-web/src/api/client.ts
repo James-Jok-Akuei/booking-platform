@@ -198,6 +198,39 @@ export async function keepAlive(): Promise<void> {
   }
 }
 
+/**
+ * Confirming it is you (§279, §297). The server refuses the gravest support
+ * changes — handing a shop to a new owner, closing an account — with
+ * `STEP_UP_REQUIRED` unless a code was typed in the last few minutes; the
+ * console then asks for one through ConfirmHost and sends the same request
+ * again with the pass. Kept in memory only, and sent until it runs out, so
+ * several changes in a row ask once. The seller app's, for the console.
+ */
+type Confirm = () => Promise<string | null>;
+let confirmer: Confirm | null = null;
+let confirming: Promise<string | null> | null = null;
+let stepUp: { token: string; until: number } | null = null;
+
+export const setConfirmer = (fn: Confirm | null) => {
+  confirmer = fn;
+};
+
+const rememberStepUp = (token: string, expiresAt: string) => {
+  // A few seconds early, so a pass is never sent as it runs out.
+  stepUp = { token, until: Date.parse(expiresAt) - 5000 };
+};
+
+const validStepUp = () => (stepUp && stepUp.until > Date.now() ? stepUp.token : null);
+
+async function askToConfirm(): Promise<string | null> {
+  if (!confirmer) return null;
+  // Two changes at once ask once.
+  confirming ??= confirmer().finally(() => {
+    confirming = null;
+  });
+  return confirming;
+}
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
@@ -224,15 +257,18 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     }
   }
 
-  const send = async (token: string | null): Promise<Response> =>
-    fetch(url.toString(), {
+  const send = async (token: string | null): Promise<Response> => {
+    const pass = anonymous ? null : validStepUp();
+    return fetch(url.toString(), {
       method,
       headers: {
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(pass ? { 'X-Step-Up': pass } : {}),
       },
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
+  };
 
   let response = await send(anonymous ? null : tokens.access);
 
@@ -251,6 +287,25 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     throw new ApiError(401, 'Your session has expired. Please sign in again.');
   }
 
+  // A grave change, and no code typed lately (§279): ask, then send it again — once.
+  if (response.status === 403 && !anonymous) {
+    const payload = (await response.clone().json().catch(() => null)) as { code?: string } | null;
+    if (payload?.code === 'STEP_UP_REQUIRED') {
+      const pass = await askToConfirm();
+      if (!pass) throw new ApiError(403, 'Not confirmed, so nothing was changed.', payload);
+      response = await send(tokens.access);
+      // Typing the code can outlast the access token.
+      if (response.status === 401 && tokens.refresh) {
+        try {
+          response = await send((await refreshTokens()).accessToken);
+        } catch {
+          endSession();
+          throw new ApiError(401, 'Your session has expired. Please sign in again.');
+        }
+      }
+    }
+  }
+
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
     // Nest puts the useful sentence in `message`, which is a string for most
@@ -267,6 +322,17 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
 // ---------------------------------------------------------------------------
 // Auth
 // ---------------------------------------------------------------------------
+
+export const requestStepUp = () => api<OtpRequested>('/auth/step-up/request', { method: 'POST' });
+
+export async function verifyStepUp(code: string): Promise<string> {
+  const pass = await api<components['schemas']['StepUpDto']>('/auth/step-up/verify', {
+    method: 'POST',
+    body: { code },
+  });
+  rememberStepUp(pass.stepUpToken, pass.expiresAt);
+  return pass.stepUpToken;
+}
 
 /**
  * Step one of signing in. No role is sent: role belongs to REGISTRATION, and an

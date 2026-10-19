@@ -5,6 +5,7 @@ import { Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { SupportLogService } from '../../src/support/support-log.service';
 import { LedgerService } from '../../src/ledger/ledger.service';
 import { PlatformSettingsService } from '../../src/settings/platform-settings.service';
 import { MailService } from '../../src/mail/mail.service';
@@ -51,10 +52,13 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
     // the honest default — a test database has no operator credentials, so
     // "cannot pay out" is exactly true, and any suite testing the send path
     // supplies its own populated one.
+    // SupportLogService too (§297): the booking service writes to it, and it
+    // reaches nothing but the database.
     providers: [
       PrismaService,
       LedgerService,
       PlatformSettingsService,
+      SupportLogService,
       { provide: DisbursementProviderRegistry, useValue: new DisbursementProviderRegistry([]) },
       ...providers,
     ],

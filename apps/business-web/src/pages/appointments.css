@@ -333,6 +333,8 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 .ap-steps i { position: relative; flex: none; width: 14px; height: 14px; margin-top: 3px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px var(--ok-soft); }
 .ap-steps li.is-bad i { background: var(--danger); box-shadow: 0 0 0 4px var(--danger-soft); }
 .ap-steps li.is-wait i { background: var(--panel); border: 2px dashed var(--faint); box-shadow: none; }
+/* Our support team acted (§297). */
+.ap-steps li.is-support i { background: var(--ask, #2456c7); box-shadow: 0 0 0 4px var(--ask-soft, #eaf1ff); }
 .ap-steps div { display: flex; flex-direction: column; gap: 1px; }
 .ap-steps strong { font-size: 14px; }
 .ap-steps span { font-size: 12.5px; color: var(--muted); }

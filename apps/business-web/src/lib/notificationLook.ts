@@ -36,6 +36,8 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   PAYOUT_SENT: { icon: 'banknote', tone: 'ok', to: '/getting-paid' },
   PAYOUT_FAILED: { icon: 'wallet', tone: 'danger', to: '/getting-paid' },
   ANNOUNCEMENT: { icon: 'megaphone', tone: 'ask', to: '/' },
+  // Support acted for the shop (§297). Each carries its own page: the booking, Team, Your shop.
+  SUPPORT_UPDATE: { icon: 'help', tone: 'accent', to: '/help' },
 };
 
 /** News about the shop itself — drawn with the shop's own logo, its icon a badge on the corner (§231). */

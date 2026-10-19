@@ -320,6 +320,11 @@ export class NotificationsService {
     /** Only those who may read the money — the owner and every-branch managers. */
     moneyOnly?: boolean;
     ref?: NotificationRef;
+    /** What kind it counts as, and where it opens, when the type alone cannot say (§297). */
+    category?: NotificationCategory;
+    link?: string | null;
+    /** Somebody already told another way — the person whose help request it answers. */
+    except?: string | null;
   }): Promise<void> {
     const branch =
       params.locationId !== undefined
@@ -347,15 +352,19 @@ export class NotificationsService {
     // the problem this module exists to fix — and a booking at another
     // branch is noise to them (§277). How each hears is their own choice (§287).
     await Promise.all(
-      members.map((member) =>
-        this.notify({
-          recipientId: member.userId,
-          type: params.type,
-          context: params.context,
-          appointmentId: params.appointmentId,
-          ref: params.ref,
-        }),
-      ),
+      members
+        .filter((member) => member.userId !== params.except)
+        .map((member) =>
+          this.notify({
+            recipientId: member.userId,
+            type: params.type,
+            context: params.context,
+            appointmentId: params.appointmentId,
+            ref: params.ref,
+            ...(params.category ? { category: params.category } : {}),
+            ...(params.link !== undefined ? { link: params.link } : {}),
+          }),
+        ),
     );
   }
 

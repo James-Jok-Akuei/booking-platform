@@ -904,6 +904,17 @@ function EmptyTab({ tab, searching }: { tab: TabKey; searching: boolean }) {
   );
 }
 
+/** What our support team did on a booking (§297), as the shop reads it. */
+const SUPPORT_STEP: Partial<Record<string, string>> = {
+  CHECK_IN: 'Our support team checked them in',
+  COMPLETE: 'Our support team marked it done',
+  FIX_NO_SHOW: 'Our support team changed “did not come” to done',
+  CANCEL_FOR_CUSTOMER: 'Our support team cancelled it for the customer',
+  CANCEL_FOR_SHOP: 'Our support team cancelled it on your side',
+  RESEND_CODE: 'Our support team sent the customer a new code',
+  READ_MESSAGES: 'Our support team read your conversation',
+};
+
 /**
  * Everything about one booking (§96): what was booked, the money, and the
  * payment trail — when the deposit landed, the operator's reference, the rate
@@ -951,9 +962,17 @@ function AppointmentDetail({
               },
             ]
           : []),
+        // What our support team did, in its place in time (§297) — what and when, not who.
+        ...d.supportActions.map((step) => ({ label: SUPPORT_STEP[step.kind] ?? 'Our support team helped', at: step.createdAt, tone: 'support' })),
         ...(d.status === 'BOOKED' ? [{ label: 'Waiting for them to arrive', at: null, tone: 'wait' }] : []),
         ...(d.status === 'IN_PROGRESS' ? [{ label: 'With you now', at: null, tone: 'wait' }] : []),
       ]
+        // Dated steps in order of time; what is still to come stays last.
+        .map((step, i) => ({ step, i }))
+        .sort((x, y) =>
+          x.step.at && y.step.at ? Date.parse(x.step.at) - Date.parse(y.step.at) || x.i - y.i : x.i - y.i,
+        )
+        .map(({ step }) => step)
     : [];
 
   const due =

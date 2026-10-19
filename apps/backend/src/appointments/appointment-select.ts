@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { SHOWN_ON_BOOKING } from '../support/support-kinds';
 
 /**
  * The projections every appointment read uses, in one file (§128).
@@ -61,6 +62,12 @@ export const APPOINTMENT_SELECT = {
     select: { id: true, name: true, durationMinutes: true, instructions: true },
   },
   customer: { select: { id: true, email: true } },
+  // What our support team did on this booking, and when — never who (§297).
+  supportActions: {
+    where: { kind: { in: SHOWN_ON_BOOKING } },
+    orderBy: { createdAt: 'asc' },
+    select: { kind: true, createdAt: true },
+  },
 } as const;
 
 /**

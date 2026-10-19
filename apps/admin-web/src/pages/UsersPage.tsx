@@ -18,6 +18,7 @@ import { confirmDialog, promptDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
+import { PersonActPanel, PersonSupportSection, type PersonAct } from './PersonSupport';
 import './users.css';
 import { WriteFirst } from '../components/WriteFirst';
 
@@ -420,6 +421,7 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
   const revoke = useMutation({ mutationFn: () => revokeAdminAccess(u.id), onSuccess: refresh });
   const error = clear.error ?? revoke.error;
   const self = u.id === me;
+  const [act, setAct] = useState<PersonAct | null>(null);
 
   const onClear = async () => {
     const reason = await promptDialog({
@@ -461,6 +463,8 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
   };
 
   const linkFor = (to: string) => ({ to, onClick: onClose });
+
+  if (act) return <PersonActPanel user={u} act={act} onBack={() => setAct(null)} onClose={onClose} />;
 
   return (
     <Panel eyebrow={u.isPrimaryAdmin ? 'Primary administrator' : ROLE_WORD[u.role]} title={u.displayName ?? u.email} onClose={onClose} width={640}>
@@ -532,6 +536,9 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
           </ul>
         </section>
       )}
+
+      {/* Support acting for them (§297). */}
+      {u.role !== 'ADMIN' && !u.closedAt && <PersonSupportSection userId={u.id} onAct={setAct} onClose={onClose} />}
 
       <section className="up-section">
         <h4>

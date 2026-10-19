@@ -225,7 +225,14 @@ export class AccountService {
    * and the address is moved to a reserved domain so it holds nothing and
    * releases the real one for reuse.
    */
-  async close(userId: string): Promise<ActionMessageDto> {
+  async close(
+    userId: string,
+    // Support closing it for them (§297): the refusals speak about "they", and
+    // the person is told before the address is gone.
+    options: { bySupport?: boolean; beforeClosing?: () => Promise<void> } = {},
+  ): Promise<ActionMessageDto> {
+    const you = options.bySupport ? 'They have' : 'You have';
+    const youAre = options.bySupport ? 'They are' : 'You are';
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, closedAt: true },
@@ -245,8 +252,8 @@ export class AccountService {
     });
     if (upcoming > 0) {
       throw new BadRequestException(
-        `You have ${upcoming} booking(s) still to come. Cancel them first, or ` +
-          'wait until they have happened — a shop is expecting you, and closing ' +
+        `${you} ${upcoming} booking(s) still to come. Cancel them first, or ` +
+          `wait until they have happened — a shop is expecting ${options.bySupport ? 'them' : 'you'}, and closing ` +
           'now would leave them with a slot held for nobody.',
       );
     }
@@ -272,12 +279,14 @@ export class AccountService {
       });
       if (otherOwners === 0) {
         throw new BadRequestException(
-          `You are the only owner of ${ownership.businessProfile.name ?? 'a business'}. ` +
+          `${youAre} the only owner of ${ownership.businessProfile.name ?? 'a business'}. ` +
             'Make someone else an owner first, or it would be left with nobody ' +
             'who can change anything.',
         );
       }
     }
+
+    await options.beforeClosing?.();
 
     const closedAt = new Date();
     await this.prisma.$transaction(async (tx) => {
@@ -307,7 +316,7 @@ export class AccountService {
       });
     });
 
-    this.logger.log(`Account ${userId} closed at the owner's request.`);
+    this.logger.log(`Account ${userId} closed at the owner's request${options.bySupport ? ', by our support team' : ''}.`);
     return {
       message:
         'Your account is closed. Your bookings and reviews stay with the shops ' +
@@ -326,7 +335,7 @@ export class AccountService {
    * a business into with a reason the business is told. Reusing it would make a
    * holiday indistinguishable from a sanction in every admin listing.
    */
-  async setPaused(businessId: string, paused: boolean) {
+  async setPaused(businessId: string, paused: boolean, by = 'its own members') {
     const business = await this.prisma.businessProfile.findUnique({
       where: { id: businessId },
       select: { id: true, name: true, pausedAt: true },
@@ -347,7 +356,7 @@ export class AccountService {
     });
 
     this.logger.log(
-      `Business ${businessId} ${paused ? 'paused' : 'resumed'} by its own members.`,
+      `Business ${businessId} ${paused ? 'paused' : 'resumed'} by ${by}.`,
     );
     return updated;
   }

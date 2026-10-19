@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { useMoney } from '../money';
 import {
   getAdminAppointment,
   listAdminAppointments,
-  reclassifyAsBusinessCancellation,
   type AdminAppointment,
   type AdminAppointmentDetail,
   type AppointmentStatus,
@@ -20,6 +19,8 @@ import { NETWORK_NAME, NetworkMark } from '../ui/NetworkMark';
 import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import { Stars } from '../ui/Stars';
+import { BookingActPanel, BookingSupportSection, ConversationPanel, type BookingAct } from './BookingSupport';
+import type { SupportConversation } from '../api/admin';
 import './appointments.css';
 
 type TabKey = 'all' | 'expected' | 'in-progress' | 'unpaid' | 'done' | 'no-show' | 'cancelled';
@@ -500,7 +501,8 @@ function stepsOf(a: AdminAppointmentDetail): Step[] {
 function Detail({ id, onClose }: { id: string; onClose: () => void }) {
   const money = useMoney();
   const one = useQuery({ queryKey: ['admin-appointment', id], queryFn: () => getAdminAppointment(id) });
-  const [reclassifying, setReclassifying] = useState(false);
+  const [act, setAct] = useState<BookingAct | null>(null);
+  const [conversation, setConversation] = useState<SupportConversation | null>(null);
   const a = one.data;
 
   if (!a) {
@@ -519,7 +521,21 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
     );
   }
 
-  if (reclassifying) return <Reclassify a={a} onBack={() => setReclassifying(false)} onDone={() => setReclassifying(false)} onClose={onClose} />;
+  if (conversation)
+    return <ConversationPanel a={a} conversation={conversation} onBack={() => setConversation(null)} onClose={onClose} />;
+  if (act)
+    return (
+      <BookingActPanel
+        a={a}
+        act={act}
+        onBack={() => setAct(null)}
+        onClose={onClose}
+        onRead={(read) => {
+          setAct(null);
+          setConversation(read);
+        }}
+      />
+    );
 
   const look = BOOKING_STATUS[a.status];
   const who = a.customerDisplayName || a.customerEmail;
@@ -537,7 +553,7 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
         a.canReclassify ? (
           <>
             <span className="ad-foot-note">The customer cancelled after paying. If it was really the shop’s doing, they get everything back.</span>
-            <button type="button" className="danger" onClick={() => setReclassifying(true)}>
+            <button type="button" className="danger" onClick={() => setAct('cancelForShop')}>
               <Icon name="refresh" size={16} /> It was the shop…
             </button>
           </>
@@ -609,6 +625,8 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
           </span>
         </div>
       )}
+
+      <BookingSupportSection a={a} onAct={setAct} onClose={onClose} />
 
       <Section icon="banknote" title="Money">
         <dl className="ad-money">
@@ -763,151 +781,6 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
           </ul>
         </Section>
       )}
-    </Panel>
-  );
-}
-
-/**
- * Putting a cancellation on the shop (§25, §95): the one change an
- * administrator may make to a booking, and the only action in the console that
- * pays a customer. It cannot be undone, so the consequences are spelled out in
- * money before anything else, and the decision is recorded with its reason and
- * the ticket it came from.
- */
-function Reclassify({
-  a,
-  onBack,
-  onDone,
-  onClose,
-}: {
-  a: AdminAppointmentDetail;
-  onBack: () => void;
-  onDone: () => void;
-  onClose: () => void;
-}) {
-  const queryClient = useQueryClient();
-  const money = useMoney();
-  const [reason, setReason] = useState('');
-  const [ticketId, setTicketId] = useState<string>(a.tickets[0]?.id ?? '');
-  const [charge, setCharge] = useState('0');
-  const factor = 10 ** money.exponent;
-  const chargeMinor = Math.round(Number(charge) * factor);
-  const chargeValid = charge.trim() !== '' && Number.isFinite(Number(charge)) && Number(charge) >= 0 && Number.isInteger(chargeMinor);
-
-  const run = useMutation({
-    mutationFn: () =>
-      reclassifyAsBusinessCancellation(a.id, {
-        reason: reason.trim(),
-        gatewayChargeMinor: chargeMinor,
-        ...(ticketId ? { ticketId } : {}),
-      }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin-appointments'] });
-      void queryClient.invalidateQueries({ queryKey: ['admin-appointment', a.id] });
-      void queryClient.invalidateQueries({ queryKey: ['ledger'] });
-      void queryClient.invalidateQueries({ queryKey: ['held'] });
-      onDone();
-    },
-  });
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (reason.trim().length >= 3 && chargeValid) run.mutate();
-  };
-
-  return (
-    <Panel
-      eyebrow={`Booking No. ${reservationNo(a.id)}`}
-      title="Put this cancellation on the shop"
-      onClose={onClose}
-      width={640}
-      footer={
-        <>
-          <button type="button" onClick={onBack} disabled={run.isPending}>
-            Back
-          </button>
-          <button type="submit" form="ad-reclassify" className="danger" disabled={run.isPending || reason.trim().length < 3 || !chargeValid}>
-            {run.isPending ? 'Refunding…' : `Refund ${money.format(a.depositAmountMinor, a.currency)}`}
-          </button>
-        </>
-      }
-    >
-      <div className="ad-banner is-danger">
-        <Icon name="alert" size={18} />
-        <span>
-          <strong>This moves money, and cannot be undone.</strong> There is no way to put it back on the customer afterwards.
-        </span>
-      </div>
-
-      <ul className="ad-consequences">
-        <li>
-          <Avatar label={a.customerDisplayName || a.customerEmail} size={30} />
-          <span>
-            <strong>{a.customerEmail}</strong> gets back <b>{money.format(a.depositAmountMinor, a.currency)}</b> — the whole deposit, the platform fee
-            of {money.format(a.platformFeeAmountMinor, a.currency)} included.
-          </span>
-        </li>
-        <li>
-          <ShopMark name={a.businessName} logoUrl={a.businessLogoUrl} size={30} />
-          <span>
-            <strong>{a.businessName ?? 'The shop'}</strong> loses the {money.format(a.businessAmountMinor, a.currency)} it was owed, and carries the
-            gateway fee — what the operator charges to send the refund.
-          </span>
-        </li>
-        <li>
-          <span className="ad-consequence-icon">
-            <Icon name="mail" size={15} />
-          </span>
-          <span>Both are told, with the reason you write below.</span>
-        </li>
-      </ul>
-
-      <form id="ad-reclassify" className="ad-form" onSubmit={submit}>
-        <label>
-          <span>What actually happened</span>
-          <textarea
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            rows={3}
-            maxLength={500}
-            autoFocus
-            placeholder="The shop was closed when the customer arrived, and asked them to cancel."
-          />
-        </label>
-
-        <fieldset>
-          <legend>The ticket this was decided on</legend>
-          <div className="ad-ticket-picks">
-            {a.tickets.map((t) => (
-              <label key={t.id} className={ticketId === t.id ? 'is-on' : ''}>
-                <input type="radio" name="ticket" checked={ticketId === t.id} onChange={() => setTicketId(t.id)} />
-                <span className="ad-ref">{t.reference}</span>
-                <span>{t.subject}</span>
-              </label>
-            ))}
-            <label className={ticketId === '' ? 'is-on' : ''}>
-              <input type="radio" name="ticket" checked={ticketId === ''} onChange={() => setTicketId('')} />
-              <span>{a.tickets.length === 0 ? 'No ticket was raised about it' : 'None of these'}</span>
-            </label>
-          </div>
-          {a.tickets.length === 0 && <small>The ticket is the evidence. If someone wrote in about it, find it under Support first.</small>}
-        </fieldset>
-
-        <label>
-          <span>The gateway fee: what the operator charged to send the refund</span>
-          <div className="ad-amount">
-            <b>{money.code || a.currency}</b>
-            <input value={charge} onChange={(event) => setCharge(event.target.value)} inputMode="decimal" aria-label="The operator's charge" />
-          </div>
-          <small>From the operator’s statement. Write 0 if there was none — a guess here is carried by the shop.</small>
-        </label>
-
-        {run.error && (
-          <p className="error small" role="alert">
-            {run.error instanceof ApiError ? run.error.message : 'That did not work.'}
-          </p>
-        )}
-      </form>
     </Panel>
   );
 }

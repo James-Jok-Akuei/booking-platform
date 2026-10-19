@@ -107,6 +107,8 @@ We keep personal data only for as long as we need it for the purposes above.
 - We sign you in with one-time codes sent to your email, so there is no password of yours for anyone to steal from us.
 - Sign-in codes are stored in protected form, not as readable text.
 - Only staff who need your data to do their work can access it.
+- Our support team does not read your messages with a business. They read the messages about one booking only when you or the business ask us for help with that booking, or a problem with it is reported to us. Each time is recorded, and the booking shows that our support team read the conversation.
+- When our support team acts on your behalf — checking you in, cancelling a booking you asked us to cancel, signing you out of a lost phone — it is recorded with the reason, and you are told what was done.
 - Payments are approved on your own phone. A saved mobile money number cannot be charged without that approval.
 
 No system is perfectly secure. If a breach of personal data happens that is likely to put your rights at risk, we will report it to the NCSA within 48 hours of becoming aware of it, as the Data Protection Law requires, and we will tell you without delay where the law requires that too.

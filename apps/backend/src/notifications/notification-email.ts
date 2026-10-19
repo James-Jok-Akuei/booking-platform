@@ -102,6 +102,8 @@ const LOOKS: Partial<Record<NotificationType, Look>> = {
   [T.PAYMENT_PROVIDER_MISCONFIGURED]: { tone: 'danger', glyph: BANG, eyebrow: 'Platform problem' },
   [T.BUSINESS_INVITATION]: { tone: 'accent', glyph: '+', eyebrow: 'An invitation' },
   [T.ANNOUNCEMENT]: { tone: 'accent', glyph: '&#10022;', eyebrow: 'From our team' },
+  // Support acted for them (§297): what was done, and why, from a person.
+  [T.SUPPORT_UPDATE]: { tone: 'info', glyph: HELP, eyebrow: 'From our support team' },
   [T.SHOP_MESSAGE]: { tone: 'accent', eyebrow: 'From a shop you follow' },
 };
 
@@ -115,6 +117,8 @@ const ABOUT_A_BOOKING = new Set<NotificationType>([
   T.APPOINTMENT_REMINDER,
   T.APPOINTMENT_COMPLETED,
   T.APPOINTMENT_MANUALLY_VERIFIED,
+  // Only when it is about one: a shop paused by support has no booking (§297).
+  T.SUPPORT_UPDATE,
 ]);
 
 /** Details the ticket already shows, so they are not said twice. */

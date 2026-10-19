@@ -23,6 +23,7 @@ import { Avatar } from '../ui/Avatar';
 import { confirmDialog, promptDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 import { ShopMark } from '../ui/ShopMark';
+import { LinkBookingPanel } from './TicketSupport';
 import './tickets.css';
 
 type Tab = TicketStatus | 'ALL' | 'MINE';
@@ -334,6 +335,7 @@ function Conversation({ id, onBack }: { id: string; onBack: () => void }) {
   const money = useMoney();
   const [reply, setReply] = useState('');
   const [internal, setInternal] = useState(false);
+  const [linking, setLinking] = useState(false);
   const end = useRef<HTMLDivElement>(null);
 
   const ticket = useQuery({ queryKey: ['ticket', id], queryFn: () => getTicket(id), refetchInterval: 20_000 });
@@ -487,8 +489,28 @@ function Conversation({ id, onBack }: { id: string; onBack: () => void }) {
       </div>
 
       <div className="sp-thread">
+        {data.appointment ? (
+          <div className="sa-ticket-booking">
+            <span className="sa-intro" style={{ margin: 0, flex: 1 }}>
+              The booking it is about — open it to act for the shop or the customer; this request can be the one each thing answers.
+            </span>
+            <button type="button" onClick={() => setLinking(true)}>
+              <Icon name="pencil" size={13} /> Change
+            </button>
+          </div>
+        ) : (
+          data.status !== 'CLOSED' && (
+            <div className="sa-tie">
+              <Icon name="calendar" size={17} />
+              <span>Not tied to a booking. If it is about one, tie it — then what you do there answers here.</span>
+              <button type="button" onClick={() => setLinking(true)}>
+                <Icon name="ticket" size={14} /> Tie to a booking
+              </button>
+            </div>
+          )
+        )}
         {data.appointment && (
-          <Link className="sp-booking" to={`/appointments?open=${data.appointment.id}`}>
+          <Link className="sp-booking" to={`/appointments?tab=all&open=${data.appointment.id}`}>
             <Icon name="calendarCheck" size={18} />
             <span>
               <strong>{data.appointment.service.name}</strong> at {data.appointment.location.name}
@@ -541,6 +563,8 @@ function Conversation({ id, onBack }: { id: string; onBack: () => void }) {
           {error instanceof ApiError ? error.message : 'That did not work.'}
         </p>
       )}
+
+      {linking && <LinkBookingPanel ticket={data} onClose={() => setLinking(false)} />}
 
       {data.status !== 'CLOSED' ? (
         <form className={`sp-compose${internal ? ' is-note' : ''}`} onSubmit={onSend}>

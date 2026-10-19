@@ -30,6 +30,17 @@ const WHO_CANCELLED: Record<string, string> = {
   SYSTEM_EXPIRY: 'It was not paid in time',
 };
 
+/** What our support team did on a booking (§297), as the customer reads it. */
+const SUPPORT_STEP: Partial<Record<string, string>> = {
+  CHECK_IN: 'Checked you in',
+  COMPLETE: 'Marked it done',
+  FIX_NO_SHOW: 'Changed “missed” to done — you came',
+  CANCEL_FOR_CUSTOMER: 'Cancelled it, as you asked',
+  CANCEL_FOR_SHOP: 'Cancelled it on the shop’s side',
+  RESEND_CODE: 'Sent you a new arrival code',
+  READ_MESSAGES: 'Read your conversation with the shop, to help',
+};
+
 /**
  * A reservation, as the thing you come back to (§137).
  *
@@ -284,6 +295,25 @@ export function Reservation({
             <Button kind="quietDanger" label="Cancel this reservation" onPress={onCancel} />
           </FadeIn>
         )
+      )}
+
+      {/* What our support team did on it (§297) — said, so nothing on a
+          booking changes without the customer seeing why. */}
+      {a.supportActions.length > 0 && (
+        <FadeIn delay={240} style={styles.card}>
+          <Text style={type.heading}>Our support team helped</Text>
+          {a.supportActions.map((step, i) => (
+            <View key={i} style={styles.rule}>
+              <Icon name="help-buoy-outline" size={17} color={theme.accent} />
+              <View style={styles.flex}>
+                <Text style={type.body}>{SUPPORT_STEP[step.kind] ?? 'Helped with this booking'}</Text>
+                <Text style={type.small}>
+                  {dayOf(step.createdAt)}, {timeOf(step.createdAt)}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </FadeIn>
       )}
 
       {/* The visit is over, so what the customer thought is the useful thing

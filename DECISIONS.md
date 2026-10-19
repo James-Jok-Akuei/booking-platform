@@ -1297,7 +1297,11 @@ Deliberate non-transitions, each tested:
 
 `complete` accepts **only** IN_PROGRESS, and the sole route into IN_PROGRESS is
 entering a 6-digit code emailed to the customer. There is no override, no
-force flag, and no admin path.
+force flag, ~~and no admin path.~~ — superseded by §297.1: our support team
+may check a customer in and mark it done when the shop's app fails — with
+the customer's code read to us, or a reason saying how we know they came
+(recorded as a manual check-in, §54.3) — and every such act is logged and
+shown on the booking.
 
 **Why this is the hard gate:** completion is what the business's money hangs
 on. If a business could mark an appointment COMPLETED directly from BOOKED,
@@ -8629,8 +8633,10 @@ case-insensitively, and narrows to accounts that **have** a display name —
 which is the filter that turns a directory into a queue, since clearing one is
 the only action here.
 
-Deliberately not added: editing, suspending or deleting a user. §16.9's note
-still holds — there is no admin edit of a byline, because replacing a name with
+Deliberately not added: editing, suspending or ~~deleting a user~~ —
+superseded by §297.3 (support may sign someone out everywhere, stop their
+marketing, and close an account at the person's request, by the rules a
+person closing their own follows). §16.9's note still holds — there is no admin edit of a byline, because replacing a name with
 wording an administrator preferred would publish words under that customer's
 byline that they never wrote. Clearing is the whole of it, and that asymmetry is
 the point rather than an omission.
@@ -16627,8 +16633,10 @@ up rather than run a day, with a panel that tells one booking's whole story.
   reference to copy; **what happened** as steps (booked, paid, checked in —
   with or without a code, by whom — done, no-show or cancelled and why, and
   what is still to come); the review; the tickets, each opening in Support.
-- **Putting a cancellation on the shop** stays the one change an
-  administrator may make (§25, §95), offered only when the server would
+- ~~**Putting a cancellation on the shop** stays the one change an
+  administrator may make (§25, §95)~~ — superseded by §297.1 (it is one of
+  several things support may do to a booking, all under "Help with this
+  booking", in the same form), offered only when the server would
   accept it. It opens in the same panel: in red, that it moves money and
   cannot be undone; then, in money, what each side gets — the customer back
   the whole deposit with our fee, the shop losing its share and carrying the
@@ -18976,3 +18984,127 @@ again before storing it (`cleanImage`, with `sharp` 0.34):
   a profile picture with a GPS spot and "SecretPhone" came back 511 bytes
   with neither, 200×300 from a sideways 300×200; a text file named .jpg was
   refused. The test picture was removed.
+
+## 297. Support can act for a shop or a customer (2026-10-19)
+
+The user: when a shop's app fails and it writes to us, our admins should be
+able to do what it could not — check a customer in, for one — and the same
+for anything else a shop or a customer may need us to do for them; look at
+how other apps handle it. The plan had 19 pieces; the user said build them
+all, with three defaults: **(A)** a booking that went wrong because of us is
+cancelled as the shop's (the customer gets everything back); **(B)** support
+may read a booking's conversation, and the privacy policy says so; **(C)**
+handing a shop to a new owner is for the primary administrator only, with a
+fresh code.
+
+The rule for every piece: **support does the same change the shop or the
+customer could make, by the same rules, plus a reason** — the only record of
+why — **a line in the support log, a note in the help request it answers,
+and a notice to whoever it concerns.** Nothing is done quietly.
+
+### 297.1 On a booking — "Help with this booking"
+
+In the console's booking panel, from the booking's state (the server's own
+`supportOptions`, so no button is shown for something it would refuse):
+
+- **Check the customer in** — the shop's app failed, or five wrong codes
+  locked it. With the customer's six digits read to us (a wrong one is said
+  plainly; nothing is counted or locked), or without, the reason saying how
+  we know they came (10 letters at least) — then it is recorded as a check-in
+  without a code (§54.3), "By support: …".
+- **Mark it done** — checks in first if needed; the shop's share is paid with
+  its next payout, after the usual wait; the customer is asked how it went.
+- **They came — change "missed" to done.** The money stays as it is (the
+  shop keeps its share either way).
+- **Cancel for the customer** — as if they did it: a paid deposit is not
+  given back.
+- **Cancel for the shop** — a live booking, a no-show the shop got wrong, or
+  a customer's paid cancellation that was really the shop's (§95, now one of
+  these). A paid deposit goes back in full, our fee included; the shop
+  carries the operator's charge, typed from the statement. Unpaid: no money
+  moves, it counts as the shop's.
+- **Send a new arrival code** — the old one stops working; we never see it.
+  The customer's limit of five sends does not apply; the minute between
+  sends does.
+- **Ask the operator about the payment** — a question, not a change: no
+  reason asked, the answer said at once and applied.
+- **Read their conversation** — read-only, with a reason; the reading is
+  written down and shows on the booking for both of them (B).
+
+### 297.2 For a shop — "Help with this shop"
+
+Pause it or open it again (the shop can open it itself); take someone out of
+the team (never the owner); send an invitation again with a fresh week, or
+take it back; **hand the shop to someone already in its team** — the primary
+administrator only, with a code typed in the last few minutes (C). The new
+owner looks after every branch; the old one stays, as a manager of every
+branch, for the new owner to keep or remove; both are told. The team list
+shows only when there is someone besides the owner (the owner alone is
+already under People).
+
+### 297.3 For a person — "Help with this account"
+
+- **Sign them out everywhere** — every sign-in ends, and notifications to
+  those phones stop too (a stolen phone stops showing their bookings).
+- **Stop the marketing** — news, the weekly email and offers from shops
+  they follow; still following. Each "no" is kept as a consent record like
+  one they gave, marked "support".
+- **Close the account**, at their request, by the rules of closing your own
+  (nothing still to come; no shop left without an owner) — with a fresh code;
+  never an administrator's (that is Admins). They are emailed first, since
+  the address goes when it closes.
+- The console shows how many sign-ins are still open and which marketing is
+  on — "sign-ins", not "phones": a phone signed in twice counts twice.
+
+### 297.4 Help requests
+
+- Each form offers the help requests it can answer: the booking's own; for a
+  shop or a person, theirs still open (`/admin/tickets?businessId=…` or
+  `reporterId=…`, `open=true`). The one chosen gets a note saying what was
+  done, written as our reply; the person who asked is not also sent the
+  notice (they have the reply).
+- **Tie a request to its booking** (`PATCH /admin/tickets/:id/link`):
+  someone wrote "my booking at 3" without choosing it. Only the reporter's
+  own bookings are offered — the same rule as when they choose one — and it
+  can be untied. A shop's id is not set on a customer's request: that would
+  let the shop's team read it.
+- Not built: the money correction on resolving (`billingAdjustment`). It only
+  writes down a decision and moves nothing (§25); the booking's "Cancel for
+  the shop" is the real refund. It stays in the API.
+
+### 297.5 The record
+
+`SupportAction`: what, who, why, when, and the booking, shop, person and help
+request it was about. The console shows all of it under each booking, shop
+and person. **The shop and the customer see what and when, never who** —
+"Our support team checked them in", "Our support team read your
+conversation" — among the booking's steps in the seller app, and in "Our
+support team helped" on the customer's booking.
+
+### 297.6 Telling them
+
+A new kind of notice, `SUPPORT_UPDATE` ("From our support team"): written
+where support acts, with the reason on its own line (the email shows it as a
+detail), about a booking (the email shows the booking) or about the shop or
+account. It opens where it is about: the booking, Team, Your shop. A help
+mark in the customer app, the seller app and the email.
+
+### 297.7 Confirm it is you, in the console
+
+The seller app's "confirm it is you" (§279) now runs in the console too: a
+change that needs a fresh code asks for one, and goes through by itself once
+typed. Used for handing a shop over and closing an account.
+
+### 297.8 What this replaces
+
+§16.2 ("no admin path" to done), §94.1 ("no deleting a user") and §249.2
+("putting a cancellation on the shop is the one change") are marked
+superseded. The privacy policy gains two lines (support reads a booking's
+conversation only when asked about it, and each time shows; support acting
+for you is recorded and you are told); it is published with the cookies
+changes (§299), so everyone is asked to accept once.
+
+Tests: `support-bookings.spec.ts` (11), `support-accounts.spec.ts` (13), two
+more emails in `email-design.spec.ts`. Checked in the console at 1440, 1024
+and 390: a missed booking's help, the cancel-for-the-shop form, a shop's
+help with two lapsed invitations, the pause form, a customer's help.

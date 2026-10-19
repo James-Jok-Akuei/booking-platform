@@ -93,21 +93,24 @@ describe('Upload allow-lists (§81)', () => {
     });
   });
 
+  /** The limits as set — an object here; the type also allows a function since multer 2.4. */
+  const limitsOf = (options: { limits?: unknown }) => options.limits as { fileSize?: number; files?: number } | undefined;
+
   it('shares one size limit across all three', () => {
     for (const options of [galleryUploadOptions, ticketUploadOptions, chatUploadOptions]) {
-      expect(options.limits?.fileSize).toBe(MAX_UPLOAD_BYTES);
+      expect(limitsOf(options)?.fileSize).toBe(MAX_UPLOAD_BYTES);
     }
   });
 
   describe('how many files (§83)', () => {
     it('lets a ticket carry several', () => {
-      expect(ticketUploadOptions.limits?.files).toBe(MAX_TICKET_ATTACHMENTS);
+      expect(limitsOf(ticketUploadOptions)?.files).toBe(MAX_TICKET_ATTACHMENTS);
       expect(MAX_TICKET_ATTACHMENTS).toBeGreaterThan(1);
     });
 
     it('keeps the gallery and chat at one — a photo replaces a slot', () => {
-      expect(galleryUploadOptions.limits?.files).toBe(1);
-      expect(chatUploadOptions.limits?.files).toBe(1);
+      expect(limitsOf(galleryUploadOptions)?.files).toBe(1);
+      expect(limitsOf(chatUploadOptions)?.files).toBe(1);
     });
   });
 });

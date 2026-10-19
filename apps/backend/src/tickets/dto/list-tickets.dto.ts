@@ -40,4 +40,19 @@ export class ListAdminTicketsDto extends ListTicketsDto {
   @IsString()
   @MaxLength(100)
   q?: string;
+
+  /** One person's requests — to choose the one a support action answers (§297). */
+  @IsOptional()
+  @IsUUID()
+  reporterId?: string;
+
+  /** One shop's requests. */
+  @IsOptional()
+  @IsUUID()
+  businessId?: string;
+
+  /** 'true' leaves out the resolved and closed — the ones still being dealt with. */
+  @IsOptional()
+  @IsString()
+  open?: string;
 }

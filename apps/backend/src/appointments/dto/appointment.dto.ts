@@ -4,6 +4,7 @@ import {
   LedgerEntryType,
   MobileMoneyProvider,
   Prisma,
+  SupportActionKind,
   TicketStatus,
   VerificationMethod,
 } from '@prisma/client';
@@ -61,6 +62,12 @@ export class AppointmentCustomerDto {
 }
 
 /** The customer's own review of this visit, when they left one (§111). */
+/** A step our support team took on a booking (§297): what, and when — not who. */
+export class AppointmentSupportStepDto {
+  kind!: SupportActionKind;
+  createdAt!: string;
+}
+
 export class AppointmentReviewDto {
   id!: string;
   rating!: number;
@@ -131,6 +138,9 @@ export class AppointmentDto implements AppointmentPayload {
   location!: AppointmentLocationDto;
   service!: AppointmentServiceDto;
   customer!: AppointmentCustomerDto;
+
+  /** What our support team did on this booking, and when (§297). */
+  supportActions!: AppointmentSupportStepDto[];
 }
 
 /**
@@ -262,6 +272,19 @@ export class AdminAppointmentDto {
    * server will decline (§118).
    */
   canReclassify!: boolean;
+
+  /** What our support team may do on it now (§297) — the rule each action enforces. */
+  support!: AdminAppointmentSupportDto;
+}
+
+export class AdminAppointmentSupportDto {
+  checkIn!: boolean;
+  complete!: boolean;
+  fixNoShow!: boolean;
+  cancelForCustomer!: boolean;
+  cancelForShop!: boolean;
+  resendCode!: boolean;
+  checkPayment!: boolean;
 }
 
 export class AdminAppointmentPageDto {

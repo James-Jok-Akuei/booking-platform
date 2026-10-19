@@ -236,6 +236,10 @@ export const listTickets = (params: {
   /** A reference, subject, reporter's email or shop name (§247). */
   q?: string;
   assignedAdminId?: string;
+  /** One person's or one shop's, still being dealt with — for a support action to answer (§297). */
+  reporterId?: string;
+  businessId?: string;
+  open?: 'true';
   limit?: number;
   offset?: number;
 }) => api<components['schemas']['AdminTicketPageDto']>('/admin/tickets', { query: params });
@@ -479,6 +483,74 @@ export const reclassifyAsBusinessCancellation = (
     method: 'PATCH',
     body,
   });
+
+// ---------------------------------------------------------------------------
+// Support acting for a shop or a customer (§297)
+//
+// Each takes a reason — the only record of why — and, when it answers a help
+// request, that request: a note saying what was done is written into it.
+// ---------------------------------------------------------------------------
+
+export type SupportBody = { reason: string; ticketId?: string };
+export type SupportAction = components['schemas']['SupportActionDto'];
+export type SupportConversation = components['schemas']['SupportConversationDto'];
+export type SupportPaymentCheck = components['schemas']['SupportPaymentCheckDto'];
+export type SupportShop = components['schemas']['SupportShopDto'];
+export type SupportPerson = components['schemas']['SupportPersonDto'];
+type Done = components['schemas']['SupportDoneDto'];
+
+const supportPost = <T>(path: string, body: object) => api<T>(path, { method: 'POST', body });
+
+export const supportCheckIn = (id: string, body: SupportBody & { code?: string }) =>
+  supportPost<unknown>(`/admin/appointments/${id}/check-in`, body);
+export const supportComplete = (id: string, body: SupportBody & { code?: string }) =>
+  supportPost<unknown>(`/admin/appointments/${id}/complete`, body);
+export const supportFixNoShow = (id: string, body: SupportBody) =>
+  supportPost<unknown>(`/admin/appointments/${id}/fix-no-show`, body);
+export const supportCancelForCustomer = (id: string, body: SupportBody) =>
+  supportPost<unknown>(`/admin/appointments/${id}/cancel-for-customer`, body);
+/** Cancels for the shop: a live booking, or a cancellation the shop caused. Refunds when a deposit was paid. */
+export const supportCancelForShop = (id: string, body: SupportBody & { gatewayChargeMinor?: number }) =>
+  api<unknown>(`/admin/appointments/${id}/business-cancellation`, { method: 'PATCH', body });
+export const supportResendCode = (id: string, body: SupportBody) =>
+  supportPost<Done>(`/admin/appointments/${id}/resend-code`, body);
+export const supportCheckPayment = (id: string, ticketId?: string) =>
+  supportPost<SupportPaymentCheck>(`/admin/appointments/${id}/check-payment`, ticketId ? { ticketId } : {});
+/** The booking's conversation. Reading it is written down, and shown on the booking. */
+export const supportReadMessages = (id: string, body: SupportBody) =>
+  supportPost<SupportConversation>(`/admin/appointments/${id}/messages`, body);
+
+export const supportHistory = (filter: { appointmentId?: string; businessId?: string; userId?: string; ticketId?: string }) =>
+  api<components['schemas']['SupportHistoryDto']>('/admin/support-actions', { query: filter });
+
+export const getSupportShop = (id: string) => api<SupportShop>(`/admin/support/businesses/${id}`);
+export const supportPauseShop = (id: string, paused: boolean, body: SupportBody) =>
+  supportPost<components['schemas']['SupportPausedDto']>(
+    `/admin/support/businesses/${id}/${paused ? 'pause' : 'resume'}`,
+    body,
+  );
+export const supportRevokeInvitation = (id: string, invitationId: string, body: SupportBody) =>
+  supportPost<Done>(`/admin/support/businesses/${id}/invitations/${invitationId}/revoke`, body);
+export const supportResendInvitation = (id: string, invitationId: string, body: SupportBody) =>
+  supportPost<Done>(`/admin/support/businesses/${id}/invitations/${invitationId}/resend`, body);
+export const supportRemoveMember = (id: string, membershipId: string, body: SupportBody) =>
+  supportPost<Done>(`/admin/support/businesses/${id}/members/${membershipId}/remove`, body);
+/** The primary administrator only, with a fresh code (§279). */
+export const supportTransferOwnership = (id: string, body: SupportBody & { membershipId: string }) =>
+  supportPost<Done>(`/admin/support/businesses/${id}/transfer-ownership`, body);
+
+export const getSupportPerson = (id: string) => api<SupportPerson>(`/admin/support/people/${id}`);
+export const supportSignOutEverywhere = (id: string, body: SupportBody) =>
+  supportPost<Done>(`/admin/support/people/${id}/sign-out-everywhere`, body);
+export const supportStopMarketing = (id: string, body: SupportBody) =>
+  supportPost<Done>(`/admin/support/people/${id}/stop-marketing`, body);
+/** Cannot be undone; needs a fresh code (§279). */
+export const supportCloseAccount = (id: string, body: SupportBody) =>
+  supportPost<Done>(`/admin/support/people/${id}/close`, body);
+
+/** Ties a help request to the booking it is about, or unties it (null). */
+export const linkTicketBooking = (ticketId: string, appointmentId: string | null) =>
+  api<AdminTicketDetail>(`/admin/tickets/${ticketId}/link`, { method: 'PATCH', body: { appointmentId } });
 
 // ---------------------------------------------------------------------------
 // Notifications (§96)

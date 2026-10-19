@@ -277,6 +277,25 @@ describe('The emails, in the platform design (§292)', () => {
       },
     ],
     [NotificationType.BUSINESS_INVITATION, 'BUSINESS', { inviterEmail: 'owner@kigalibarbers.rw', role: 'MANAGER' }],
+    // Support acted for them (§297): about a booking, and about the shop.
+    [
+      NotificationType.SUPPORT_UPDATE,
+      'BUSINESS',
+      {
+        serviceName: 'Our support team checked a customer in',
+        reason:
+          'We checked the customer in for Cut and beard on Tue 20 Oct at 11:15, because it could not be done in the app. Mark it done when the service is finished, as usual.',
+      },
+    ],
+    [
+      NotificationType.SUPPORT_UPDATE,
+      'BUSINESS',
+      {
+        serviceName: 'Our support team paused your shop',
+        reason:
+          'Customers cannot make new bookings while it is paused. Bookings already made still happen. You can open it again yourself in Your shop.\n\nReason: The owner asked us by phone while travelling.',
+      },
+    ],
   ];
 
   it.each(NOTICES.map(([type, audience, extra], i) => [i, type, audience, extra ?? {}] as const))(
@@ -303,7 +322,9 @@ describe('The emails, in the platform design (§292)', () => {
         'NEW_MESSAGE',
         'REVIEW',
         'PAYMENT_',
-      ].some((p) => type.startsWith(p));
+      ].some((p) => type.startsWith(p)) &&
+        // A shop paused by support is about the shop, not a booking.
+        !String((extra as { serviceName?: string }).serviceName ?? '').includes('paused');
       const status =
         type === NotificationType.APPOINTMENT_CANCELLED
           ? AppointmentStatus.CANCELLED

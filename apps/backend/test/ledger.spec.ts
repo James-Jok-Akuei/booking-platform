@@ -723,10 +723,12 @@ describe('Ledger (§34)', () => {
       const sites = writeSites();
 
       // If this number changes, a path was added or removed and the test below
-      // needs to have seen it. It has already earned its keep once: §36's admin
-      // reclassification showed up here as a third site.
-      expect(sites.length).toBe(3);
+      // needs to have seen it. It has already earned its keep twice: §36's admin
+      // reclassification showed up here as a third site, and support cancelling
+      // for a customer (§297) as a fourth.
+      expect(sites.length).toBe(4);
       expect(sites.map((s) => s.file).sort()).toEqual([
+        '/src/appointments/appointments.service.ts',
         '/src/appointments/appointments.service.ts',
         '/src/appointments/appointments.service.ts',
         '/src/appointments/payments.scheduler.ts',

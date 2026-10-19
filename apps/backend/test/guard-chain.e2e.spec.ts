@@ -715,15 +715,24 @@ describe('Guard chain over HTTP (§23.3)', () => {
       expect(res.status).toBe(403);
     });
 
-    it('reclassifying without a gateway charge -> 400 from the ValidationPipe', async () => {
+    it('refunding a paid deposit without a gateway charge -> 400', async () => {
+      // A booking of its own: appointmentA is used further down.
+      const paid = await createAppointment(prisma, {
+        business: alpha,
+        customerId: customerA.userId,
+        status: AppointmentStatus.BOOKED,
+      });
+      await prisma.appointment.update({ where: { id: paid.id }, data: { depositPaidAt: new Date() } });
       const res = await request(
         url,
-        `/admin/appointments/${appointmentA}/business-cancellation`,
+        `/admin/appointments/${paid.id}/business-cancellation`,
         { method: 'PATCH', token: tokenAdmin, body: { reason: 'No figure given.' } },
       );
 
       // The charge is supplied, never guessed (§36.2), so its absence is a
-      // request error rather than a silent zero.
+      // request error rather than a silent zero. Without a paid deposit there
+      // is no refund and nothing to charge (§297), so the field is optional to
+      // the ValidationPipe and required here, by the service.
       expect(res.status).toBe(400);
       expect(JSON.stringify(res.body)).toContain('gatewayChargeMinor');
     });

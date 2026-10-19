@@ -143,6 +143,7 @@ enum NotificationType {
   ANNOUNCEMENT // a message from the platform's team (§287)
   SHOP_MESSAGE // a shop wrote to the customers who follow it (§287)
   SHOP_DISCOUNT // a shop you follow started a discount — in the app only (§288)
+  SUPPORT_UPDATE // our support team did something for you or about your booking (§297)
 }
 
 /// What a notification is about, for choosing what you get and how (§287).
@@ -451,6 +452,10 @@ model User {
   offersToken      String?   @unique
   offersLastSentAt DateTime?
 
+  /// What support did, and for whom (§297).
+  supportActionsTaken SupportAction[] @relation("SupportActionActor")
+  supportActionsAbout SupportAction[] @relation("SupportActionPerson")
+
   @@index([homeDistrictId, offersOptInAt])
   @@map("users")
 }
@@ -528,18 +533,19 @@ model BusinessProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  locations     Location[]
-  services      Service[]
-  members       BusinessMembership[]
-  stories       Story[]
-  followers     ShopFollow[]
-  shopMessages  ShopMessage[]
-  announcements Announcement[]
-  invitations   BusinessInvitation[]
-  threads       Thread[]
-  tickets       Ticket[]
-  adjustments   BillingAdjustment[]
-  reviews       Review[]
+  locations      Location[]
+  services       Service[]
+  members        BusinessMembership[]
+  stories        Story[]
+  followers      ShopFollow[]
+  shopMessages   ShopMessage[]
+  supportActions SupportAction[]
+  announcements  Announcement[]
+  invitations    BusinessInvitation[]
+  threads        Thread[]
+  tickets        Ticket[]
+  adjustments    BillingAdjustment[]
+  reviews        Review[]
 
   ledgerEntries      LedgerEntry[]
   payouts            Payout[]
@@ -1474,14 +1480,15 @@ model Appointment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  notifications Notification[]
-  thread        Thread?
+  notifications  Notification[]
+  thread         Thread?
   // Named because there are now TWO relations to Ticket: tickets raised ABOUT
   // this appointment, and the single ticket a cancellation came out of.
-  tickets       Ticket[]            @relation("TicketAppointment")
-  adjustments   BillingAdjustment[]
-  review        Review?
-  ledgerEntries LedgerEntry[]
+  tickets        Ticket[]            @relation("TicketAppointment")
+  supportActions SupportAction[]
+  adjustments    BillingAdjustment[]
+  review         Review?
+  ledgerEntries  LedgerEntry[]
 
   // Availability counts overlapping appointments at one location for one day.
   @@index([locationId, startTime])
@@ -1912,7 +1919,8 @@ model Ticket {
   adjustments BillingAdjustment[]
 
   /// Cancellations that cite this ticket as their reason.
-  citedByCancellations Appointment[] @relation("CancellationTickets")
+  citedByCancellations Appointment[]   @relation("CancellationTickets")
+  supportActions       SupportAction[]
 
   /// The admin queue: open work, most recently active first.
   @@index([status, lastMessageAt])
@@ -2695,4 +2703,63 @@ model DiscountNote {
   toldAt    DateTime  @default(now())
 
   @@map("discount_notes")
+}
+
+/// What our support team did, on whose behalf (§297).
+///
+/// Support acts the way shops and customers would — checks someone in,
+/// cancels, signs a person out — and every such act is written here with who
+/// did it, why, and which help request it answered. Append-only: a mistake is
+/// put right by another action, never by editing this one. The affected
+/// people see the booking ones on their booking ("by BwanguReservations
+/// support"); the admin who acted is not named to them.
+enum SupportActionKind {
+  CHECK_IN
+  COMPLETE
+  FIX_NO_SHOW
+  CANCEL_FOR_CUSTOMER
+  CANCEL_FOR_SHOP
+  RESEND_CODE
+  CHECK_PAYMENT
+  READ_MESSAGES
+  PAUSE_SHOP
+  RESUME_SHOP
+  REVOKE_INVITATION
+  RESEND_INVITATION
+  REMOVE_MEMBER
+  TRANSFER_OWNERSHIP
+  SIGN_OUT_EVERYWHERE
+  STOP_MARKETING
+  CLOSE_ACCOUNT
+  LINK_TICKET
+}
+
+model SupportAction {
+  id      String            @id @default(uuid())
+  kind    SupportActionKind
+  actorId String
+  actor   User              @relation("SupportActionActor", fields: [actorId], references: [id], onDelete: Restrict)
+  /// Why, in the admin's words. Required for every action.
+  reason  String
+
+  appointmentId String?
+  appointment   Appointment?     @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  businessId    String?
+  business      BusinessProfile? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  /// The person it was done for or about.
+  userId        String?
+  user          User?            @relation("SupportActionPerson", fields: [userId], references: [id], onDelete: SetNull)
+  ticketId      String?
+  ticket        Ticket?          @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  /// What changed, for the record: before and after, a membership, a count.
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([appointmentId, createdAt])
+  @@index([businessId, createdAt])
+  @@index([userId, createdAt])
+  @@index([ticketId])
+  @@index([actorId, createdAt])
+  @@map("support_actions")
 }
