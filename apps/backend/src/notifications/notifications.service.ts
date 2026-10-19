@@ -20,6 +20,8 @@ import {
   RestoredManyDto,
 } from './dto/notification-response.dto';
 import { NOTIFICATION_CHANNEL, NotificationChannelDriver, OutboundMessage } from './notification-channel.interface';
+import { BOOKING_FACTS_SELECT, bookingFacts } from '../mail/booking-email';
+import { noticeEmail, summaryEmail } from './notification-email';
 import { AppointmentContext, renderNotification } from './notification-templates';
 import { MONEY_READERS, membersOfBranch } from '../business/branch-scope';
 import {
@@ -277,17 +279,22 @@ export class NotificationsService {
         timeZone: this.timeZone,
       });
       const app = params.context.role === 'ADMIN' ? this.adminAppUrl : this.businessAppUrl;
-      await this.driver.send({
-        destination: params.email,
+      const { email } = noticeEmail({
+        type: params.type,
+        audience: params.context.role === 'ADMIN' ? 'ADMIN' : 'BUSINESS',
         subject,
         body,
-        dressing: {
-          eyebrow: 'An invitation',
-          button: { label: 'Sign in', url: `${app}/login` },
+        button: { label: 'Sign in to accept', url: `${app}/login` },
+        footer: {
           reason: 'You get this because someone invited this address.',
           manage: { label: 'If you did not expect it, you can ignore it.' },
         },
+        booking: null,
+        arrivalCode: null,
+        author: null,
+        timeZone: this.timeZone,
       });
+      await this.driver.send({ destination: params.email, subject, body, email: { design: email } });
       this.logger.log(`Sent ${params.type} to ${params.email} (no account yet, so no inbox row).`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -396,7 +403,9 @@ export class NotificationsService {
             threadId: true,
             readAt: true,
             createdAt: true,
+            appointmentId: true,
             announcement: { select: { linkLabel: true } },
+            shopMessage: { select: { business: { select: { name: true, logoUrl: true } } } },
             recipient: { select: { id: true, email: true, role: true } },
           },
         },
@@ -440,7 +449,7 @@ export class NotificationsService {
       }
       if (!this.driver.isConfigured()) return this.fail(delivery.id, delivery.attempts, 'Channel not configured.');
 
-      await this.driver.send(this.emailFor(n));
+      await this.driver.send(await this.emailFor(n));
       await this.prisma.notificationDelivery.update({
         where: { id: delivery.id },
         data: { status: NotificationStatus.SENT, sentAt: new Date(), lastError: null },
@@ -452,41 +461,67 @@ export class NotificationsService {
     }
   }
 
-  /** The email for one notification: the app's look, why it came, how to stop it. */
-  private emailFor(n: {
+  /**
+   * The email for one notification (§287, §292): in the platform's design,
+   * with the booking it is about drawn as a ticket, why it came, and how to
+   * stop it.
+   */
+  private async emailFor(n: {
     id: string;
     type: NotificationType;
     category: NotificationCategory;
     subject: string;
     body: string;
     link: string | null;
+    appointmentId: string | null;
     announcement: { linkLabel: string | null } | null;
+    shopMessage: { business: { name: string | null; logoUrl: string | null } } | null;
     recipient: { id: string; email: string; role: UserRole };
-  }): OutboundMessage {
+  }): Promise<OutboundMessage> {
     const audience = audienceOf(n.recipient.role);
     const rule = ruleFor(audience, n.category);
     const app = audience === 'ADMIN' ? this.adminAppUrl : audience === 'BUSINESS' ? this.businessAppUrl : null;
-    const title = n.type === NotificationType.ANNOUNCEMENT ? 'From our team' : (rule?.title ?? 'Notice');
+    const topic = n.type === NotificationType.ANNOUNCEMENT ? 'news from us' : (rule?.title ?? 'this').toLowerCase();
     const locked = Boolean(rule?.email?.locked);
-    return {
-      destination: n.recipient.email,
+
+    // The booking as it is now, so the ticket says where it stands; the
+    // customer's arrival code beside it, where they will need it (§54.2).
+    const row = n.appointmentId
+      ? await this.prisma.appointment.findUnique({
+          where: { id: n.appointmentId },
+          select: { ...BOOKING_FACTS_SELECT, verificationCode: true },
+        })
+      : null;
+
+    const { email, calendar } = noticeEmail({
+      type: n.type,
+      audience,
       subject: n.subject,
       body: n.body,
-      dressing: {
-        eyebrow: title,
-        // Customers open the phone app; a link would only open a browser.
-        button:
-          app && n.link
-            ? { label: n.announcement?.linkLabel || BUTTON[n.category] || 'Open', url: `${app}${n.link}` }
-            : null,
-        reason: locked
-          ? `You always get emails about ${title.toLowerCase()}.`
-          : `You get emails about ${title.toLowerCase()} because they are turned on.`,
+      // Customers open the phone app; a link would only open a browser.
+      button:
+        app && n.link
+          ? { label: n.announcement?.linkLabel || BUTTON[n.category] || 'Open', url: `${app}${n.link}` }
+          : null,
+      footer: {
+        reason: locked ? `You always get emails about ${topic}.` : `You get emails about ${topic} because they are turned on.`,
         manage: app
           ? { label: 'Change what we send', url: `${app}/notifications` }
           : { label: 'Change what we send in the app, under Account → Notifications.' },
         unsubscribeUrl: locked ? null : this.preferences.unsubscribeUrl(n.recipient.id, n.category),
       },
+      booking: row ? bookingFacts(row) : null,
+      arrivalCode: audience === 'CUSTOMER' ? (row?.verificationCode ?? null) : null,
+      author: n.shopMessage
+        ? { name: n.shopMessage.business.name ?? 'A shop you follow', logoUrl: n.shopMessage.business.logoUrl }
+        : null,
+      timeZone: this.timeZone,
+    });
+    return {
+      destination: n.recipient.email,
+      subject: n.subject,
+      body: n.body,
+      email: { design: email, unsubscribeUrl: email.footer.unsubscribeUrl ?? null, calendar },
     };
   }
 
@@ -593,18 +628,16 @@ export class NotificationsService {
         hour: '2-digit',
         minute: '2-digit',
       });
-      const lines = list.map((d) => `${clock.format(d.notification.createdAt)} — ${d.notification.subject}`).join('\n');
+      const summary = summaryEmail({
+        items: list.map((d) => ({ at: clock.format(d.notification.createdAt), subject: d.notification.subject })),
+        appUrl: this.businessAppUrl,
+      });
       try {
         await this.driver.send({
           destination: email,
-          subject: `${list.length} booking update${list.length === 1 ? '' : 's'} since yesterday`,
-          body: `Here is what happened with your bookings.\n\n${lines}\n\nEach one is in your notifications, and all of them under Appointments.`,
-          dressing: {
-            eyebrow: 'Your morning summary',
-            button: { label: 'See bookings', url: `${this.businessAppUrl}/appointments` },
-            reason: 'You chose one booking summary each morning instead of an email for each.',
-            manage: { label: 'Change what we send', url: `${this.businessAppUrl}/notifications` },
-          },
+          subject: summary.subject,
+          body: summary.body,
+          email: { design: summary.email },
         });
         await this.prisma.notificationDelivery.updateMany({
           where: { id: { in: list.map((d) => d.id) } },

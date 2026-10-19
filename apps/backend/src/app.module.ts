@@ -41,11 +41,20 @@ import { RoutingModule } from './routing/routing.module';
     // Serves the local-disk upload fallback at /uploads. Harmless when R2 is
     // configured — nothing is written to the folder in that case. See
     // StorageService for why the fallback exists at all.
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
-      serveStaticOptions: { index: false, fallthrough: false },
-    }),
+    ServeStaticModule.forRoot(
+      {
+        rootPath: join(process.cwd(), 'uploads'),
+        serveRoot: '/uploads',
+        serveStaticOptions: { index: false, fallthrough: false },
+      },
+      // The emails' own pictures — the mark (§292). Loaded by mail apps from
+      // APP_BASE_URL, so they are kept with the server that sends the emails.
+      {
+        rootPath: join(process.cwd(), 'assets', 'email'),
+        serveRoot: '/email',
+        serveStaticOptions: { index: false, fallthrough: false, maxAge: '30d' },
+      },
+    ),
 
     PrismaModule,
     StorageModule,

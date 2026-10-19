@@ -18760,3 +18760,84 @@ ahead.
 `test/payout-detail.spec.ts` gained the on-its-way test (6). Checked at 1440
 (page, five in a row), 1024 (a payment waiting 15 days opened; Ask us about
 it → the Help form filled in) and 390 (whole page). Nothing was sent.
+
+## 292. Every email, redesigned in the brand (2026-10-19)
+
+The user: "Design the email message with the brand's design, make it a
+million dollar ui/ux for all emails … i don't like what we have right now."
+What there was: a plain card for notices (§287), six boxes for the sign-in
+code (§183), a list for the weekly picks (§140), and — the most important
+email a customer gets — the arrival code as three lines of raw text with the
+time as "2026-10-20T09:15:00.000Z".
+
+### 292.1 One design (`src/mail/email-kit.ts`)
+
+- **The frame**: the mark and the name — Bwangu in the ink, Reservations in
+  the logo's orange — above a white card on warm paper; a chip saying "For
+  your shop" or "Admin console" when it is not for a customer. The card opens
+  with a **coloured top** that says what kind of news it is before a word is
+  read — coral for bookings and messages, green for good news, amber for
+  something to watch, red for a problem, blue for help, and the logo's dark
+  green with an orange glow for codes — with a round badge (✓, +, ×, !, ★, “)
+  or a shop's logo, a small label, a large title and one sentence. Then the
+  thing itself, one coral button, and a quiet footer: the mark, why it came,
+  "Change what we send", "Stop emails like this".
+- **Blocks**: a booking as a **ticket** (the service's photo, a date tile,
+  its state, the shop with its logo, when, a perforation, then where, the
+  booking number, the deposit and what is left to pay at the shop, and for a
+  customer **Get directions** and **Add to calendar**); a code as **six
+  boxes**; money as **one big figure**; **details** as a soft two-column
+  card; someone's words as a **quote**; a shop's or our own message as a
+  signed **letter**; a morning's bookings as a timed **list**; the weekly
+  picks as **picture cards**; a coloured **notice**.
+- Built the way email needs: tables and inline styles (Gmail, Outlook,
+  phone apps), a fixed 600 px column for Outlook, the brand's font (Plus
+  Jakarta Sans) where the mail app allows it and the system's elsewhere,
+  **dark mode** for the apps that offer it, stacking on a phone, a hidden
+  **preview line** for the inbox, and a plain-text part that says the same
+  as the picture. Every word a person wrote is escaped. The largest is
+  16 KB (Gmail cuts at about 100).
+- The mark is a PNG served by the API at **`/email/mark.png`**
+  (`apps/backend/assets/email/`), loaded from `APP_BASE_URL`.
+
+### 292.2 Every email
+
+- **Sign-in code / Confirm it is you**: a dark top with the six boxes in it;
+  "Did not ask for this?" said calmly (sign-in) or as a warning (confirm).
+- **The arrival code** (sent when the booking is made, and on a new code):
+  when the deposit is still being paid it says so — "Your time is held …
+  for 5 minutes" — rather than "confirmed"; the ticket, then the code. A new
+  code for a paid booking carries a **calendar event** (.ics).
+- **Every notice** (`notifications/notification-email.ts`) is composed from
+  its text and the booking it is about: the first paragraph under the title,
+  "Label: value" lines as details, quoted words as a quote, an amount as the
+  big figure, and — for a booking — the ticket, loaded as it is now. A
+  customer's **confirmation and reminder** carry the **arrival code** and a
+  calendar event. Notices about bookings have their own titles ("You are all
+  set", "See you tomorrow at 11:15", "You have a new booking").
+- **The weekly picks**, **the seller's morning summary**, **the invitation**
+  ("Sign in to accept") and **announcements and shops' messages** (the words
+  as written, signed) are in the same design.
+
+### 292.3 What the notices say
+
+Rewritten for the reader (`notification-templates.ts`): most booking notices
+now have a customer's version and a shop's. A cancellation says what happens
+to the deposit, from who cancelled and whether anything was paid (the shop
+cancelled → all of it back; the customer → it stays; never paid → nothing
+taken). No shouting capitals or section numbers; money as "RWF 5,200"
+(`formatMoney`, now in `payments/currency.ts`); "payment" rather than
+"payout" for sellers; a ticket's state in words ("We marked your question as
+solved…"). A seller's booking notices now open that booking (`?open=`).
+Sender name in `.env.example`: "BwanguReservations".
+
+### 292.4 Checked
+
+`test/email-design.spec.ts` (29) draws every email — sign-in, confirm,
+arrival held and new, weekly picks, morning summary, and 23 notices for each
+side that gets them — and checks for gaps, escaping, the text part and the
+preview line; with `EMAIL_PREVIEW_DIR` it writes each out to look at. Looked
+at in a browser at 700 and 390 wide and in dark mode, then through the real
+pipeline into Mailhog: a sign-in code, a booking (arrival code to the
+customer, "New booking" to the shop) and its cancellation to both. That test
+booking and its notices were deleted.

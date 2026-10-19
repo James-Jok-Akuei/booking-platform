@@ -7,7 +7,7 @@ import { DiscoverySort } from '../discovery/dto/discover-locations.dto';
 import { DiscoveredServiceDto } from '../discovery/dto/discovery-response.dto';
 import { MailService } from '../mail/mail.service';
 import { RoutingService } from '../routing/routing.service';
-import { minorUnitExponent } from '../payments/currency';
+import { formatMoney } from '../payments/currency';
 import { PrismaService } from '../prisma/prisma.service';
 import { OffersPreferenceDto, UpdateOffersPreferenceDto } from './dto/offers.dto';
 
@@ -350,12 +350,3 @@ type Pick = { place: string; services: DiscoveredServiceDto[]; away?: string[] }
 const formatKm = (km: number) =>
   km < 1 ? `${Math.max(50, Math.round(km * 20) * 50)} m` : km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`;
 
-/** "RWF 7,000" — minor units to what a person reads, by the currency's own exponent. */
-export function formatMoney(minor: number, currency: string): string {
-  const exponent = minorUnitExponent(currency);
-  const major = minor / 10 ** exponent;
-  return `${currency} ${major.toLocaleString('en-US', {
-    minimumFractionDigits: exponent,
-    maximumFractionDigits: exponent,
-  })}`;
-}

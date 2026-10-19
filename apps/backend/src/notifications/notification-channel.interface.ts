@@ -1,4 +1,5 @@
 import { NotificationChannel } from '@prisma/client';
+import type { Email } from '../mail/email-kit';
 
 /**
  * One way of getting a message to a person.
@@ -31,14 +32,12 @@ export interface OutboundMessage {
   destination: string;
   subject: string;
   body: string;
-  /** For email: the branded layout's extras (§287). A driver that cannot use them ignores them. */
-  dressing?: {
-    eyebrow: string;
-    button?: { label: string; url: string } | null;
-    reason: string;
-    manage: { label: string; url?: string | null };
-    unsubscribeUrl?: string | null;
-  };
+  /**
+   * For email: the whole email in the platform's design (§292), its
+   * one-click unsubscribe, and a booking as a calendar event. A driver that
+   * cannot use them sends the subject and body.
+   */
+  email?: { design: Email; unsubscribeUrl?: string | null; calendar?: string | null };
 }
 
 /** DI token — an interface has no runtime identity. */

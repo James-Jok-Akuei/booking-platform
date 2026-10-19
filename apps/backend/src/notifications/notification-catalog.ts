@@ -282,15 +282,18 @@ export function linkFor(type: T, audience: Audience, ref: NotificationRef): stri
   }
   if (audience === 'BUSINESS') {
     switch (type) {
+      // The booking itself, opened (§290's `?open=`), when it is known.
       case T.APPOINTMENT_BOOKED:
       case T.DEPOSIT_CONFIRMED:
       case T.APPOINTMENT_REMINDER:
-        return '/appointments';
+        return ref.appointmentId ? `/appointments?open=${ref.appointmentId}` : '/appointments';
       case T.APPOINTMENT_CANCELLED:
       case T.APPOINTMENT_NO_SHOW:
-        return '/appointments?tab=all';
+        return ref.appointmentId ? `/appointments?tab=all&open=${ref.appointmentId}` : '/appointments?tab=all';
       case T.DEPOSIT_FAILED:
-        return '/appointments?tab=awaiting-payment';
+        return ref.appointmentId
+          ? `/appointments?tab=awaiting-payment&open=${ref.appointmentId}`
+          : '/appointments?tab=awaiting-payment';
       case T.NEW_MESSAGE:
         return ref.threadId ? `/messages?thread=${ref.threadId}` : '/messages';
       case T.TICKET_MESSAGE:

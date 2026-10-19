@@ -27,6 +27,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { askHowItWent } from './how-it-went';
 import { MailService } from '../mail/mail.service';
+import { BOOKING_FACTS_SELECT, bookingFacts } from '../mail/booking-email';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
 import { inferOperator } from '../payments/operator-routing';
@@ -261,6 +262,7 @@ export class AppointmentsService {
         customerId: true,
         depositAmountMinor: true,
         currency: true,
+        depositPaidAt: true,
         service: { select: { name: true } },
         location: {
           select: { id: true, name: true, businessId: true, business: { select: { name: true } } },
@@ -280,6 +282,9 @@ export class AppointmentsService {
         startTime: appointment.startTime,
         depositAmountMinor: appointment.depositAmountMinor,
         currency: appointment.currency,
+        // Whether any money changed hands: a booking cancelled before its
+        // deposit was paid has nothing to refund or keep (§292).
+        depositPaid: Boolean(appointment.depositPaidAt),
       },
     };
   }
@@ -487,11 +492,12 @@ export class AppointmentsService {
       where: { id: customerId },
       select: { email: true },
     });
-    await this.mail.sendAppointmentVerificationEmail(customer.email, code, {
-      serviceName: service.name,
-      locationName: location.name,
-      startTime,
+    // The whole booking, so the email can show it as a ticket (§292).
+    const booked = await this.prisma.appointment.findUniqueOrThrow({
+      where: { id: appointment.id },
+      select: BOOKING_FACTS_SELECT,
     });
+    await this.mail.sendAppointmentVerificationEmail(customer.email, code, bookingFacts(booked));
 
     // Recorded AFTER the send, so it means "an email went out" rather than "we
     // intended to send one" (§53.2). A timestamp, never the code.
@@ -1041,12 +1047,7 @@ export class AppointmentsService {
 
     const context = await this.prisma.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
-      select: {
-        startTime: true,
-        service: { select: { name: true } },
-        location: { select: { name: true } },
-        customer: { select: { email: true } },
-      },
+      select: { ...BOOKING_FACTS_SELECT, customer: { select: { email: true } } },
     });
 
     const code = this.generateVerificationCode();
@@ -1065,11 +1066,7 @@ export class AppointmentsService {
       },
     });
 
-    await this.mail.sendAppointmentVerificationEmail(context.customer.email, code, {
-      serviceName: context.service.name,
-      locationName: context.location.name,
-      startTime: context.startTime,
-    });
+    await this.mail.sendAppointmentVerificationEmail(context.customer.email, code, bookingFacts(context));
 
     // Stamped after the send, so it keeps meaning "an email went out" (§53.2) —
     // which is also what the cooldown above must measure from. A failed send

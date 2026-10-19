@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AppointmentStatus } from '@prisma/client';
 import * as nodemailer from 'nodemailer';
+import { BookingFacts, bookingTicket, icsFile } from './booking-email';
+import { Email, codeBoxes, notice, prose, renderEmail, serviceCards } from './email-kit';
 
 /** "45 min", "1 h 30 min" — as a person says it, the same as the app (§163). */
 const lengthOf = (minutes: number) => {
@@ -10,10 +13,22 @@ const lengthOf = (minutes: number) => {
   return m === 0 ? `${h} h` : `${h} h ${m} min`;
 };
 
+/**
+ * Sends the platform's email, every one in the same design (§292).
+ *
+ * The design lives in `email-kit.ts` and a booking's look in
+ * `booking-email.ts`; this owns the transport, what each email says, and what
+ * happens when a send fails — a sign-in code in development is logged rather
+ * than lost, while a notice or the weekly email learns that it failed so it
+ * can be tried again.
+ */
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter: nodemailer.Transporter;
+  /** Where the email's own pictures — the mark — are loaded from. */
+  private readonly assetBase: string;
+  private readonly timeZone: string;
 
   constructor(private readonly config: ConfigService) {
     const user = this.config.get<string>('SMTP_USER');
@@ -28,6 +43,8 @@ export class MailService {
       // AUTH handshake anyway and fail, so only send auth when it's configured.
       ...(user ? { auth: { user, pass } } : {}),
     });
+    this.assetBase = (this.config.get<string>('APP_BASE_URL') ?? 'http://localhost:4100').replace(/\/$/, '');
+    this.timeZone = this.config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Kigali';
   }
 
   /** Whether an SMTP host is configured at all. */
@@ -36,123 +53,40 @@ export class MailService {
     return Boolean(host && host.trim().length > 0);
   }
 
-  /**
-   * Sends an arbitrary subject/body.
-   *
-   * Used by the notifications module, which renders its own copy. Unlike the
-   * two methods below it does NOT swallow failures: a notification's delivery
-   * result is recorded on its row and retried, so the caller has to learn that
-   * the send failed.
-   */
-  async sendGenericEmail(email: string, subject: string, body: string): Promise<void> {
-    const from = this.config.get<string>('SMTP_FROM');
-
-    if (this.config.get<string>('NODE_ENV') !== 'production') {
-      this.logger.log(`[DEV] Email to ${email}: ${subject}`);
-    }
-
-    await this.transporter.sendMail({
-      from,
-      to: email,
-      subject,
-      text: body,
-      html: body
-        .split('\n\n')
-        .map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br/>')}</p>`)
-        .join(''),
-    });
+  /** The platform's time zone, for anyone composing an email about a time. */
+  get zone() {
+    return this.timeZone;
   }
 
   /**
-   * A notification, as an email that looks like the app (§287).
-   *
-   * Every word is escaped: a notice carries what people typed — a message's
-   * first line, a reason, a ticket's subject — and none of it may become a
-   * link or markup in an email that comes from our address. The footer says
-   * why it came and where to change that; a kind that can be turned off has a
-   * one-click unsubscribe, in the body and in the headers mail apps read.
+   * Any email, drawn in the platform's design and sent. Throws when the send
+   * fails; the callers that must not fail catch it themselves.
    */
-  async sendNotificationEmail(
-    email: string,
-    message: {
-      subject: string;
-      body: string;
-      /** Small capitals above the title: what kind of notice this is. */
-      eyebrow: string;
-      button?: { label: string; url: string } | null;
-      /** Why this came, in one sentence. */
-      reason: string;
-      /** Where to change what is sent, as words (an app screen) or a link. */
-      manage: { label: string; url?: string | null };
-      unsubscribeUrl?: string | null;
-    },
+  async send(
+    to: string,
+    subject: string,
+    email: Email,
+    extras: { unsubscribeUrl?: string | null; calendar?: string | null } = {},
   ): Promise<void> {
-    const from = this.config.get<string>('SMTP_FROM');
+    const { html, text } = renderEmail(email, { assetBase: this.assetBase, subject });
     if (this.config.get<string>('NODE_ENV') !== 'production') {
-      this.logger.log(`[DEV] Email to ${email}: ${message.subject}`);
+      this.logger.log(`[DEV] Email to ${to}: ${subject}`);
     }
-
-    const esc = (value: string) =>
-      value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    const font = 'font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
-    const paragraphs = message.body
-      .split('\n\n')
-      .filter((p) => p.trim())
-      .map(
-        (p) =>
-          `<p style="margin:0 0 14px;font-size:15px;line-height:23px;color:#4B505B">${esc(p).replace(/\n/g, '<br>')}</p>`,
-      )
-      .join('');
-    const button = message.button
-      ? '<tr><td style="padding:4px 28px 26px">' +
-        `<a href="${esc(message.button.url)}" style="display:inline-block;${font};font-size:15px;font-weight:700;color:#FFFFFF;background:#F0532D;border-radius:999px;padding:13px 24px;text-decoration:none">${esc(message.button.label)} &rarr;</a>` +
-        '</td></tr>'
-      : '';
-    const manage = message.manage.url
-      ? `<a href="${esc(message.manage.url)}" style="color:#8B909B">${esc(message.manage.label)}</a>`
-      : esc(message.manage.label);
-    const unsubscribe = message.unsubscribeUrl
-      ? ` &middot; <a href="${esc(message.unsubscribeUrl)}" style="color:#8B909B">Stop emails like this</a>`
-      : '';
-
-    const html =
-      '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
-      '<meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
-      '<body style="margin:0;background:#F6F4F0">' +
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F4F0"><tr><td align="center" style="padding:32px 14px">' +
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#FFFFFF;border-radius:24px">' +
-      '<tr><td style="height:8px;background:#F0532D;border-radius:24px 24px 0 0;font-size:0;line-height:0">&nbsp;</td></tr>' +
-      `<tr><td style="padding:28px 28px 6px;${font}">` +
-      `<div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#F0532D">${esc(message.eyebrow)}</div>` +
-      `<div style="font-size:22px;line-height:28px;font-weight:800;color:#15171C;letter-spacing:-0.3px;padding:6px 0 14px">${esc(message.subject)}</div>` +
-      paragraphs +
-      '</td></tr>' +
-      button +
-      `<tr><td style="padding:0 28px 26px;${font}">` +
-      '<div style="font-size:12px;line-height:19px;color:#8B909B;padding-top:14px;border-top:1px solid #ECE9E3">' +
-      `${esc(message.reason)} ${manage}${unsubscribe}` +
-      '</div></td></tr></table></td></tr></table></body></html>';
-
-    const text =
-      `${message.subject}\n\n${message.body}` +
-      (message.button ? `\n\n${message.button.label}: ${message.button.url}` : '') +
-      `\n\n${message.reason} ${message.manage.label}${message.manage.url ? `: ${message.manage.url}` : ''}` +
-      (message.unsubscribeUrl ? `\nStop emails like this: ${message.unsubscribeUrl}` : '');
-
     await this.transporter.sendMail({
-      from,
-      to: email,
-      subject: message.subject,
+      from: this.config.get<string>('SMTP_FROM'),
+      to,
+      subject,
       text,
       html,
-      ...(message.unsubscribeUrl
+      // A booking as an event the mail app offers to add (§292).
+      ...(extras.calendar ? { icalEvent: { filename: 'booking.ics', method: 'PUBLISH', content: extras.calendar } } : {}),
+      // nodemailer writes the List-* headers itself from `list` and drops a
+      // hand-written one, so the address goes here and only the one-click
+      // marker is a plain header — together they put a mail app's own
+      // "unsubscribe" button on the email.
+      ...(extras.unsubscribeUrl
         ? {
-            list: { unsubscribe: { url: message.unsubscribeUrl, comment: 'Stop emails like this' } },
+            list: { unsubscribe: { url: extras.unsubscribeUrl, comment: 'Stop emails like this' } },
             headers: { 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
           }
         : {}),
@@ -160,43 +94,48 @@ export class MailService {
   }
 
   /**
-   * The code, as an email that looks like the app it opens (§183).
-   *
-   * The six digits are drawn as six boxes, the way the app asks for them, so
-   * the email and the screen read as two halves of one step. The code is in
-   * the SUBJECT too: on most phones the notification alone is then enough,
-   * and the app need not be left at all.
-   *
-   * Tables and inline styles, because that is what email clients draw; boxes
-   * fall back to squares where rounded corners are not supported, and the
-   * plain-text part says the same thing for clients that draw nothing.
+   * A subject and some words, with nothing else known about them — still in
+   * the platform's design. Throws on failure, like a notice: a caller that
+   * records deliveries has to learn that it did not go.
    */
+  async sendGenericEmail(email: string, subject: string, body: string): Promise<void> {
+    await this.send(email, subject, {
+      preheader: body.split('\n')[0] ?? subject,
+      hero: { tone: 'info', badge: { kind: 'glyph', glyph: 'i' }, eyebrow: 'A notice', title: subject },
+      blocks: [prose(body)],
+      footer: { reason: `You get this because this address has an account with us.` },
+    });
+  }
+
+  /**
+   * A notice that has been composed already (§287, §292): its words, its
+   * look, why it came and how to stop it. Throws on failure — a delivery is
+   * recorded and tried again.
+   */
+  async sendNotificationEmail(
+    to: string,
+    message: { subject: string; email: Email; unsubscribeUrl?: string | null; calendar?: string | null },
+  ): Promise<void> {
+    await this.send(to, message.subject, message.email, {
+      unsubscribeUrl: message.unsubscribeUrl,
+      calendar: message.calendar,
+    });
+  }
+
   /**
    * A six-digit code. `sign-in` to sign in or register; `confirm` to confirm
    * it is you before a risky change while signed in (§279) — said differently,
    * because a code arriving out of the blue for "a change" is exactly what
    * someone should notice.
+   *
+   * Six boxes on a dark top, the way the apps ask for it (§183, §292). The
+   * code is in the subject and the inbox preview too: on most phones the
+   * notification alone is then enough.
    */
   async sendOtpEmail(email: string, code: string, kind: 'sign-in' | 'confirm' = 'sign-in'): Promise<void> {
-    const from = this.config.get<string>('SMTP_FROM');
     const minutes = this.config.get<string>('OTP_EXPIRES_IN_MINUTES') ?? '10';
-    const words =
-      kind === 'confirm'
-        ? {
-            eyebrow: 'Confirm it is you',
-            title: 'Your code to confirm',
-            lead: 'You are making an important change — the payout number, or who works at the shop. Enter this code to confirm it is you.',
-            ignore:
-              'Did not ask for this? Someone may be using your account. Do not share the code: sign out on every device and contact us.',
-            subject: `Confirm it is you: ${code}`,
-          }
-        : {
-            eyebrow: 'Sign-in code',
-            title: 'Here is your code',
-            lead: 'Enter it in the app to sign in. If you are new, the same code creates your account.',
-            ignore: 'Did not ask for this? You can ignore this email. Nobody can sign in without the code, and we will never ask you for it.',
-            subject: `Your sign-in code: ${code}`,
-          };
+    const confirm = kind === 'confirm';
+    const subject = confirm ? `Confirm it is you: ${code}` : `Your sign-in code: ${code}`;
 
     // In development, don't hard-fail the signup/login flow if SMTP isn't
     // configured yet — log the code so you can keep testing the flow locally.
@@ -204,44 +143,36 @@ export class MailService {
       this.logger.warn(`[DEV ONLY] OTP for ${email}: ${code}`);
     }
 
-    const font = 'font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
-    const boxes = code
-      .split('')
-      .map(
-        (digit) =>
-          // 40 wide with the border inside it, 3 a side: six fit a 320 phone.
-          '<td style="padding:0 3px"><div style="box-sizing:border-box;width:40px;height:52px;line-height:48px;' +
-          'border-radius:12px;background:#FFEEE8;border:2px solid #FBDCD2;text-align:center;' +
-          `${font};font-size:24px;font-weight:800;color:#15171C">${digit}</div></td>`,
-      )
-      .join('');
-
-    const html =
-      '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
-      '<meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
-      '<body style="margin:0;background:#F6F4F0">' +
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F4F0"><tr><td align="center" style="padding:32px 14px">' +
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:#FFFFFF;border-radius:24px">' +
-      '<tr><td style="height:8px;background:#F0532D;border-radius:24px 24px 0 0;font-size:0;line-height:0">&nbsp;</td></tr>' +
-      `<tr><td style="padding:30px 28px 8px;${font}">` +
-      `<div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#F0532D">${words.eyebrow}</div>` +
-      `<div style="font-size:26px;font-weight:800;color:#15171C;letter-spacing:-0.4px;padding-top:6px">${words.title}</div>` +
-      `<div style="font-size:15px;line-height:22px;color:#4B505B;padding-top:8px">${words.lead}</div>` +
-      '</td></tr>' +
-      `<tr><td align="center" style="padding:22px 8px"><table role="presentation" cellpadding="0" cellspacing="0"><tr>${boxes}</tr></table></td></tr>` +
-      `<tr><td style="padding:0 28px 28px;${font}">` +
-      `<div style="font-size:14px;line-height:21px;color:#4B505B">It works for <strong style="color:#15171C">${minutes} minutes</strong>, and only once.</div>` +
-      '<div style="font-size:13px;line-height:20px;color:#8B909B;padding-top:14px;border-top:1px solid #ECE9E3;margin-top:18px">' +
-      words.ignore +
-      '</div></td></tr></table></td></tr></table></body></html>';
-
     try {
-      await this.transporter.sendMail({
-        from,
-        to: email,
-        subject: words.subject,
-        text: `${words.title}: ${code}.\n\n${words.lead} It works for ${minutes} minutes, and only once.\n\n${words.ignore}`,
-        html,
+      await this.send(email, subject, {
+        preheader: `${code} — it works for ${minutes} minutes, and only once.`,
+        hero: {
+          tone: 'night',
+          eyebrow: confirm ? 'Confirm it is you' : 'Sign-in code',
+          title: confirm ? 'Your code to confirm' : 'Here is your code',
+          lead: confirm
+            ? 'You are making an important change — your payment number, or who works at the shop. Enter this code to confirm it is you.'
+            : 'Enter it in the app to sign in. If you are new here, the same code creates your account.',
+          inside: codeBoxes(code, { onDark: true, note: `It works for ${minutes} minutes, and only once.` }),
+        },
+        blocks: [
+          confirm
+            ? notice(
+                'danger',
+                'Someone may be using your account. Do not share this code with anyone: sign out on every device and write to us from Help.',
+                'Did not ask for this?',
+              )
+            : notice(
+                'info',
+                'You can ignore this email. Nobody can sign in without the code, and we will never ask you for it.',
+                'Did not ask for this?',
+              ),
+        ],
+        footer: {
+          reason: confirm
+            ? 'You get this because a change was made while signed in to this account.'
+            : 'You get this because someone asked to sign in with this email address.',
+        },
       });
     } catch (err) {
       this.logger.error(`Failed to send OTP email to ${email}`, err as Error);
@@ -258,11 +189,6 @@ export class MailService {
    * Unlike the OTP email this does NOT swallow a failure: the caller marks a
    * customer as written-to only when this returns, so a send that failed is
    * tried again next run instead of counting as this week's email.
-   *
-   * Built from tables and inline styles because that is what email clients
-   * draw; the plain-text part says the same thing for the ones that draw
-   * nothing. The unsubscribe link is in the body AND in the List-Unsubscribe
-   * header, which is what puts a mail app's own "unsubscribe" button on it.
    */
   async sendOffersDigest(
     email: string,
@@ -286,9 +212,8 @@ export class MailService {
       }>;
     },
   ): Promise<void> {
-    const from = this.config.get<string>('SMTP_FROM');
     // From a district: "in Gasabo". From an exact spot: "near KG 11 Ave", or
-    // just "near you" when the phone gave the place no name (§169).
+    // just "around you" when the phone gave the place no name (§169).
     const around = digest.nearSpot
       ? digest.place === 'you'
         ? 'around you'
@@ -298,140 +223,104 @@ export class MailService {
     // The footer says which address this is for (§172), so a wrong one is
     // noticed — and says where to change it.
     const sentFor = digest.nearSpot && digest.place === 'you' ? 'your saved address' : digest.place;
+    const onSale = digest.services.filter((s) => s.sale).length;
 
-    if (this.config.get<string>('NODE_ENV') !== 'production') {
-      this.logger.log(`[DEV] Offers email to ${email}: ${subject}`);
-    }
-
-    const esc = (value: string) =>
-      value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-
-    const rows = digest.services
-      .map((service) => {
-        const facts = [
-          service.shop,
-          service.away ?? service.where,
-          `${lengthOf(service.minutes)}`,
-          service.rating !== null ? `★ ${service.rating.toFixed(1)}` : null,
-        ]
-          .filter((fact): fact is string => Boolean(fact))
-          .map(esc)
-          .join(' · ');
-        const picture = service.imageUrl
-          ? `<img src="${esc(service.imageUrl)}" width="84" height="84" alt="" style="display:block;width:84px;height:84px;border-radius:14px;object-fit:cover">`
-          : '<div style="width:84px;height:84px;border-radius:14px;background:#FFEEE8"></div>';
-        return (
-          '<tr><td style="padding:0 0 12px">' +
-          '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px"><tr>' +
-          `<td width="84" style="padding:12px">${picture}</td>` +
-          '<td style="padding:12px 14px 12px 2px;font-family:-apple-system,Segoe UI,Roboto,sans-serif">' +
-          `<div style="font-size:16px;font-weight:700;color:#15171C">${esc(service.name)}</div>` +
-          `<div style="font-size:13px;color:#8B909B;padding:3px 0 7px">${facts}</div>` +
-          `<div style="font-size:16px;font-weight:800;color:#F0532D">${esc(service.price)}` +
-          (service.sale
-            ? ` <span style="font-size:13px;font-weight:600;color:#8B909B;text-decoration:line-through">${esc(service.sale.was)}</span>` +
-              ` <span style="font-size:11px;font-weight:800;color:#FFFFFF;background:#D7421E;border-radius:999px;padding:2px 7px">${service.sale.percent}% OFF</span>`
-            : '') +
-          '</div>' +
-          '</td></tr></table></td></tr>'
-        );
-      })
-      .join('');
-
-    const html =
-      '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
-      '<meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
-      '<body style="margin:0;background:#F6F4F0">' +
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F4F0"><tr><td align="center" style="padding:28px 14px">' +
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px">' +
-      '<tr><td style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:0 4px 18px">' +
-      `<div style="font-size:24px;font-weight:800;color:#15171C;letter-spacing:-0.4px">Popular near you</div>` +
-      `<div style="font-size:15px;color:#4B505B;padding-top:6px">What people ${esc(around)} are booking this week.</div>` +
-      '</td></tr>' +
-      rows +
-      '<tr><td align="center" style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:10px 4px 0">' +
-      '<div style="font-size:15px;font-weight:700;color:#15171C">Open the app to book any of these.</div>' +
-      '<div style="font-size:12px;line-height:1.6;color:#8B909B;padding-top:18px">' +
-      `You get this because you turned on "Weekly offers by email" in the app, for ${esc(sentFor)}. ` +
-      'To change the address, open Account in the app.<br>' +
-      `<a href="${esc(digest.unsubscribeUrl)}" style="color:#8B909B">Unsubscribe</a>` +
-      '</div></td></tr></table></td></tr></table></body></html>';
-
-    const text =
-      `Popular near you — what people ${around} are booking this week.\n\n` +
-      digest.services
-        .map(
-          (service) =>
-            `${service.name} — ${service.price}${service.sale ? ` (${service.sale.percent}% off, was ${service.sale.was})` : ''}\n${service.shop}${service.away ? `, ${service.away}` : service.where ? `, ${service.where}` : ''} · ${lengthOf(service.minutes)}`,
-        )
-        .join('\n\n') +
-      '\n\nOpen the app to book any of these.\n\n' +
-      `You get this because you turned on "Weekly offers by email" in the app, for ${sentFor}. ` +
-      `To change the address, open Account in the app. Unsubscribe: ${digest.unsubscribeUrl}`;
-
-    await this.transporter.sendMail({
-      from,
-      to: email,
+    await this.send(
+      email,
       subject,
-      text,
-      html,
-      // nodemailer writes the List-* headers itself from `list` and drops a
-      // hand-written one, so the address goes here and only the one-click
-      // marker is a plain header.
-      list: { unsubscribe: { url: digest.unsubscribeUrl, comment: 'Unsubscribe' } },
-      headers: { 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
-    });
+      {
+        preheader: digest.services
+          .slice(0, 3)
+          .map((s) => s.name)
+          .join(', ') + (digest.services.length > 3 ? ' and more' : ''),
+        hero: {
+          tone: 'accent',
+          badge: { kind: 'glyph', glyph: '&#9733;' },
+          eyebrow: 'This week',
+          title: digest.nearSpot ? 'Popular near you' : `Popular in ${digest.place}`,
+          lead:
+            `What people ${around} are booking this week` +
+            (onSale ? ` — ${onSale === 1 ? 'one of them is' : `${onSale} of them are`} on sale.` : '.'),
+        },
+        blocks: [
+          serviceCards(
+            digest.services.map((s) => ({
+              photoUrl: s.imageUrl,
+              name: s.name,
+              shop: s.shop,
+              facts: [s.away ?? s.where, lengthOf(s.minutes), s.rating !== null ? `★ ${s.rating.toFixed(1)}` : null]
+                .filter(Boolean)
+                .join(' · '),
+              price: s.price,
+              was: s.sale?.was ?? null,
+              off: s.sale?.percent ?? null,
+            })),
+          ),
+          prose('Open the app to book any of these — a deposit holds your time, and the rest is paid at the shop.'),
+        ],
+        footer: {
+          reason: `You get this because you turned on "Weekly offers by email" in the app, for ${sentFor}.`,
+          manage: { label: 'Change the address in the app, under Account.' },
+          unsubscribeUrl: digest.unsubscribeUrl,
+        },
+      },
+      { unsubscribeUrl: digest.unsubscribeUrl },
+    );
   }
 
   /**
-   * Sends a customer their appointment arrival code.
+   * A customer's arrival code, with the booking it is for (§53, §54, §292).
    *
-   * Deliberately NOT an extra branch inside sendOtpEmail: this code has a
-   * different lifetime (until the appointment happens, not ten minutes), a
-   * different audience, and different copy. Folding it in would mean one method
-   * whose subject line and expiry text depend on a flag, which is how the login
-   * email eventually ends up telling someone about a haircut.
+   * Sent when the booking is made — while the deposit is still being paid —
+   * and again whenever the customer asks for a new code. It says which: a
+   * booking still waiting for its deposit is "held", and says so, rather
+   * than "confirmed". Deliberately not a branch of the sign-in email: this
+   * code lives until the appointment, not ten minutes, and says different
+   * things.
    */
-  async sendAppointmentVerificationEmail(
-    email: string,
-    code: string,
-    details: { serviceName: string; locationName: string; startTime: Date },
-  ): Promise<void> {
-    const from = this.config.get<string>('SMTP_FROM');
-    const when = details.startTime.toISOString();
-
+  async sendAppointmentVerificationEmail(email: string, code: string, booking: BookingFacts): Promise<void> {
     if (this.config.get<string>('NODE_ENV') !== 'production') {
       this.logger.warn(`[DEV ONLY] Appointment code for ${email}: ${code}`);
     }
-
-    const text =
-      `Your booking for ${details.serviceName} at ${details.locationName} is confirmed for ${when}.\n\n` +
-      `Your arrival code is ${code}.\n\n` +
-      'Give this code to the business when you arrive. They cannot complete your appointment without it, ' +
-      'so do not share it with anyone beforehand.';
+    const held = booking.status === AppointmentStatus.PENDING_PAYMENT;
+    const subject = held
+      ? `Your booking at ${booking.shopName} — arrival code ${code}`
+      : `Your new arrival code for ${booking.serviceName}: ${code}`;
 
     try {
-      await this.transporter.sendMail({
-        from,
-        to: email,
-        subject: `Your arrival code for ${details.serviceName}`,
-        text,
-        html:
-          `<p>Your booking for <strong>${details.serviceName}</strong> at ` +
-          `<strong>${details.locationName}</strong> is confirmed for ${when}.</p>` +
-          `<p>Your arrival code is <strong>${code}</strong>.</p>` +
-          '<p>Give this code to the business when you arrive. They cannot complete your ' +
-          'appointment without it, so do not share it with anyone beforehand.</p>',
-      });
-    } catch (err) {
-      this.logger.error(
-        `Failed to send appointment verification email to ${email}`,
-        err as Error,
+      await this.send(
+        email,
+        subject,
+        {
+          preheader: held
+            ? `Pay the deposit in the app to confirm it. Your arrival code is ${code}.`
+            : `Any earlier code no longer works. Your arrival code is ${code}.`,
+          audience: 'CUSTOMER',
+          hero: {
+            tone: held ? 'accent' : 'ok',
+            badge: held ? null : { kind: 'glyph', glyph: '&#10003;' },
+            eyebrow: held ? 'Your booking' : 'A new arrival code',
+            title: held ? 'Your time is held' : 'Here is your new code',
+            lead: held
+              ? `Pay the deposit in the app to confirm your booking at ${booking.shopName}. The time is held for you for 5 minutes.`
+              : 'You asked for a new arrival code, so any earlier one no longer works.',
+          },
+          blocks: [
+            bookingTicket(booking, { timeZone: this.timeZone, audience: 'CUSTOMER' }),
+            codeBoxes(code, {
+              label: 'Your arrival code',
+              note: 'Give it to the shop when you arrive — they need it to start your appointment. Do not share it before.',
+            }),
+          ],
+          footer: {
+            reason: 'You get this because you booked with this email address.',
+            manage: { label: 'Your bookings are in the app, under Bookings.' },
+          },
+        },
+        { calendar: held ? null : icsFile(booking) },
       );
+    } catch (err) {
+      this.logger.error(`Failed to send appointment verification email to ${email}`, err as Error);
       if (this.config.get<string>('NODE_ENV') === 'production') {
         throw err;
       }

@@ -140,6 +140,18 @@ export function formatMajorUnits(amountMinor: number, currency: string): string 
     .toFixed(exponent);
 }
 
+/**
+ * Money as a person reads it, "RWF 5,200" or "USD 12.50" (§292): the code,
+ * then the amount with its thousands marked. `formatMajorUnits` stays bare
+ * for files and sums; this is for words.
+ */
+export function formatMoney(amountMinor: number, currency: string): string {
+  const exponent = minorUnitExponent(currency);
+  const major = Number(formatMajorUnits(Math.abs(amountMinor), currency));
+  const words = major.toLocaleString('en-US', { minimumFractionDigits: exponent, maximumFractionDigits: exponent });
+  return `${amountMinor < 0 ? '−' : ''}${currency} ${words}`;
+}
+
 /** Major units back to minor, for values that arrive as decimals (§24). */
 export function toMinorUnits(amountMajor: Prisma.Decimal | number, currency: string): number {
   return new Prisma.Decimal(amountMajor)

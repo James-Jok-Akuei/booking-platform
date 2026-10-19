@@ -26,12 +26,13 @@ export class EmailNotificationChannel implements NotificationChannelDriver {
   }
 
   async send(message: OutboundMessage): Promise<void> {
-    // In the app's own look, with why it came and how to stop it (§287).
-    if (message.dressing) {
+    // In the platform's design, with why it came and how to stop it (§287, §292).
+    if (message.email) {
       await this.mail.sendNotificationEmail(message.destination, {
         subject: message.subject,
-        body: message.body,
-        ...message.dressing,
+        email: message.email.design,
+        unsubscribeUrl: message.email.unsubscribeUrl,
+        calendar: message.email.calendar,
       });
       return;
     }
