@@ -104,6 +104,8 @@
 .csp-pill.tone-ok { background: var(--csp-ok-soft); color: var(--csp-ok); }
 .csp-pill.tone-neutral { background: var(--csp-sunken); color: var(--csp-ink2); }
 .csp-pill.tone-accent { background: var(--csp-accent-soft); color: var(--csp-accent); }
+/* The Follow button under the pictures (§288): solid, at the row's end, like the app. */
+.csp-pill.csp-follow { margin-left: auto; padding: 6px 13px; font-size: 12.5px; font-weight: 800; background: var(--csp-accent); color: #fff; box-shadow: var(--csp-card); }
 
 .csp-title-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .csp-screen .csp-title { flex: 1; min-width: 0; font-size: 24px; line-height: 30px; font-weight: 800; letter-spacing: -0.4px; color: var(--csp-ink); overflow-wrap: anywhere; }

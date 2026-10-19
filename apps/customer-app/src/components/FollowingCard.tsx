@@ -132,7 +132,7 @@ export function FollowingCard({
             accessibilityLabel={`Following ${shop.name}. Tap to unfollow`}
             style={styles.following}
           >
-            <Icon name="heart" size={15} color="#FFFFFF" />
+            <Icon name="heart" size={15} color={theme.accentDeep} />
             <Text style={styles.followingText}>Following</Text>
           </PressableScale>
         </View>
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: theme.accent,
+    backgroundColor: theme.accentSoft,
   },
-  followingText: { fontFamily: font.bold, fontSize: 12.5, color: '#FFFFFF' },
+  followingText: { fontFamily: font.bold, fontSize: 12.5, color: theme.accentDeep },
 });

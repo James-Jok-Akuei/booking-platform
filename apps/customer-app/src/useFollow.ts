@@ -53,11 +53,19 @@ export function useFollow(businessId: string | undefined, shopName = 'this shop'
         unfollow.mutate();
         return;
       }
+      // Why it is worth it, said before the choice — following is only kept
+      // if it gives something back (§288).
       showDialog({
         title: `Follow ${shopName}?`,
-        message:
-          `Its new services, discounts and stories come together for you under Saved → Following.\n\n` +
-          `Do you also want its offers as notifications — one a week at most? “${followWords(shopName)}”`,
+        message: 'You will not miss a thing from them:',
+        points: [
+          { icon: 'pricetag', text: 'Its discounts as they start' },
+          { icon: 'sparkles', text: 'New services as they are added' },
+          { icon: 'home', text: 'A row of its services on Home' },
+          { icon: 'aperture', text: 'Its stories first' },
+          { icon: 'heart', text: 'All of it in Saved → Following' },
+        ],
+        note: `Offers as alerts or emails are a separate yes, one a week at most: “${followWords(shopName)}”`,
         tone: 'accent',
         icon: 'heart',
         actions: [

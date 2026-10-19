@@ -18586,7 +18586,24 @@ it (§287) were two hearts for nearly the same wish, so they became one.
 - `/favourites` for places is no longer used by the app; it stays on the
   server for now.
 
-### 288.3 Not done
+### 288.3 The Follow button and why to follow (user's ask, same day)
+
+- The user wanted Follow **right under the shop's pictures**, not a heart at
+  the top, and the popup to **say plainly why following is worth it**;
+  services keep their hearts on Home and on the shop page.
+- Follow is now a **real button at the end of that row**: solid coral while
+  not followed, soft once followed — so it no longer reads like the "Nails"
+  tag beside it. The Saved card's Following button uses the same soft look.
+  The seller's phone preview matches.
+- The popup lists the reasons, each with its icon: its discounts as they
+  start, new services as they are added, a row of its services on Home, its
+  stories first, all of it in Saved → Following. The dialog gained `points`
+  (a list with icons) and `note` (fine print).
+- The **offer words are never scrolled out of sight**: the note sits outside
+  the scrolling part, because "Follow, and send me offers" agrees to them. On
+  a small phone (375×667) everything shows without scrolling.
+
+### 288.4 Not done
 
 - No "new from places you follow" badge on the Saved tab.
 - Following a shop does not change the order of its services anywhere else.

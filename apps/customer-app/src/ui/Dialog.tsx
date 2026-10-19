@@ -36,6 +36,13 @@ export type DialogAction = {
 export type DialogSpec = {
   title: string;
   message?: string;
+  /** Reasons, each with its icon, under the message — for "why do this". */
+  points?: Array<{ icon: IconName; text: string }>;
+  /**
+   * A small line after the points: the fine print, said plainly. Never
+   * scrolled away — it is what a button's yes agrees to.
+   */
+  note?: string;
   tone?: DialogTone;
   icon?: IconName;
   /** Left out: a single "OK". */
@@ -230,15 +237,28 @@ export function DialogHost() {
           <Text style={styles.title} accessibilityRole="header">
             {entry.title}
           </Text>
-          {entry.message ? (
+          {entry.message || entry.points?.length ? (
             <ScrollView
-              style={{ maxHeight: window.height * 0.42 }}
+              style={{ maxHeight: window.height * 0.42, alignSelf: 'stretch' }}
               contentContainerStyle={styles.messageBox}
               showsVerticalScrollIndicator={false}
             >
-              <Text style={styles.message}>{entry.message}</Text>
+              {entry.message ? <Text style={styles.message}>{entry.message}</Text> : null}
+              {entry.points?.length ? (
+                <View style={styles.points}>
+                  {entry.points.map((point) => (
+                    <View key={point.text} style={styles.point}>
+                      <View style={[styles.pointIcon, { backgroundColor: tone.soft }]}>
+                        <Icon name={point.icon} size={16} color={tone.solid} />
+                      </View>
+                      <Text style={styles.pointText}>{point.text}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
             </ScrollView>
           ) : null}
+          {entry.note ? <Text style={styles.note}>{entry.note}</Text> : null}
 
           <View style={[styles.actions, sideBySide && styles.actionsRow]}>
             {ordered.map((action) => {
@@ -332,6 +352,18 @@ const styles = StyleSheet.create({
     lineHeight: 21.5,
     color: theme.ink2,
     textAlign: 'center',
+  },
+  points: { gap: 10, marginTop: 14 },
+  point: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  pointIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  pointText: { flex: 1, fontFamily: font.semibold, fontSize: 14, lineHeight: 19, color: theme.ink },
+  note: {
+    fontFamily: font.medium,
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: theme.muted,
+    textAlign: 'center',
+    marginTop: 16,
   },
   actions: { alignSelf: 'stretch', gap: 10, marginTop: 22 },
   actionsRow: { flexDirection: 'row' },

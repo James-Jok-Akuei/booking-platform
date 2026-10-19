@@ -226,26 +226,29 @@ export default function Shop() {
                   .map((kind, i) => (
                     <Pill key={kind.id} label={kind.name} tone={i === 0 ? 'accent' : 'neutral'} />
                   ))}
-                {/* The one heart for a shop (§288): following brings its news into
-                    Saved → Following; its offers as alerts are asked as well. */}
-                <PressableScale
-                  onPress={follow.toggle}
-                  disabled={follow.pending}
-                  haptic
-                  scaleTo={0.94}
-                  style={[styles.followPill, follow.following && styles.followPillOn]}
-                  accessibilityRole="button"
-                  accessibilityLabel={follow.following ? `Following ${displayName}. Tap to unfollow` : `Follow ${displayName}`}
-                >
-                  <Icon
-                    name={follow.following ? 'heart' : 'heart-outline'}
-                    size={14}
-                    color={follow.following ? '#FFFFFF' : theme.accentDeep}
-                  />
-                  <Text style={[styles.followText, follow.following && styles.followTextOn]}>
-                    {follow.following ? 'Following' : 'Follow'}
-                  </Text>
-                </PressableScale>
+                {/* The one heart for a shop (§288), right under its pictures: a
+                    button, not another tag — solid until followed, soft after,
+                    the way every app with Follow draws it. The popup says why. */}
+                <View style={styles.followSlot}>
+                  <PressableScale
+                    onPress={follow.toggle}
+                    disabled={follow.pending}
+                    haptic
+                    scaleTo={0.94}
+                    style={[styles.followButton, follow.following && styles.followButtonOn]}
+                    accessibilityRole="button"
+                    accessibilityLabel={follow.following ? `Following ${displayName}. Tap to unfollow` : `Follow ${displayName}`}
+                  >
+                    <Icon
+                      name={follow.following ? 'heart' : 'heart-outline'}
+                      size={16}
+                      color={follow.following ? theme.accentDeep : '#FFFFFF'}
+                    />
+                    <Text style={[styles.followText, follow.following && styles.followTextOn]}>
+                      {follow.following ? 'Following' : 'Follow'}
+                    </Text>
+                  </PressableScale>
+                </View>
               </View>
 
               <View style={styles.titleRow}>
@@ -627,19 +630,22 @@ const styles = StyleSheet.create({
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
   storyLogo: { borderRadius: 26, overflow: 'hidden', backgroundColor: theme.panel },
-  followPill: {
-    marginLeft: 'auto',
+  // The press wrapper draws its style on an inner view, so the push to the
+  // right goes on a plain view around it.
+  followSlot: { marginLeft: 'auto', marginTop: -3 },
+  followButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: theme.accentSoft,
+    backgroundColor: theme.accent,
+    ...shadow.card,
   },
-  followPillOn: { backgroundColor: theme.accent },
-  followText: { fontFamily: font.bold, fontSize: 13, color: theme.accentDeep },
-  followTextOn: { color: '#FFFFFF' },
+  followButtonOn: { backgroundColor: theme.accentSoft, shadowOpacity: 0, elevation: 0 },
+  followText: { fontFamily: font.extrabold, fontSize: 14, color: '#FFFFFF' },
+  followTextOn: { color: theme.accentDeep },
   followers: { fontFamily: font.semibold, fontSize: 13, color: theme.muted, marginTop: -4, marginBottom: 8 },
   line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   indent: { marginLeft: 22, marginTop: 2 },
