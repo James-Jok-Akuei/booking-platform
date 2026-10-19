@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
@@ -15,9 +14,8 @@ import {
   useFonts,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import * as Notifications from 'expo-notifications';
 import { onSessionEnded, tokens, useSignedIn } from '../src/api/client';
-import { configurePush, linkOf, refreshPush } from '../src/push';
+import { configurePush, onAlertOpened, refreshPush } from '../src/push';
 import { useLiveNotifications } from '../src/useLive';
 import { LegalPrompt } from '../src/components/LegalPrompt';
 import { DialogHost } from '../src/ui/Dialog';
@@ -132,14 +130,6 @@ function Alerts() {
   useEffect(() => {
     if (signedIn) void refreshPush();
   }, [signedIn]);
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    const open = (link: string | null) => link && router.push(link as never);
-    void Notifications.getLastNotificationResponseAsync()
-      .then((r) => open(linkOf(r)))
-      .catch(() => undefined);
-    const sub = Notifications.addNotificationResponseReceivedListener((r) => open(linkOf(r)));
-    return () => sub.remove();
-  }, []);
+  useEffect(() => onAlertOpened((link) => router.push(link as never)), []);
   return null;
 }

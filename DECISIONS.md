@@ -18841,3 +18841,24 @@ at in a browser at 700 and 390 wide and in dark mode, then through the real
 pipeline into Mailhog: a sign-in code, a booking (arrival code to the
 customer, "New booking" to the shop) and its cancellation to both. That test
 booking and its notices were deleted.
+
+## 293. The customer app crashed in Expo Go on Android (2026-10-19)
+
+The user ran the app on an Android phone through Expo Go and it would not
+open: "Cannot find native module 'ExpoTopicSubscriptionModule'", then
+"Route … is missing the required default export" for most screens, then
+"Cannot read property 'ErrorBoundary' of undefined".
+
+- **Why**: Expo Go on Android has had no push since SDK 53, and in SDK 57
+  `expo-notifications` asks for its topic module the moment it is loaded —
+  which throws in Expo Go. `src/push.ts` and the root layout (§287) loaded it
+  at the top, so the root layout failed to load, every screen that reached
+  it failed with it ("missing the required default export" is that failure,
+  not a real missing export), and the router fell over.
+- **Fix**: `push.ts` loads `expo-notifications` only where push can work — a
+  real build, or Expo Go on an iPhone — with a guarded `require`, never in a
+  browser or in Expo Go on Android; there, phone alerts read as unavailable
+  and everything else works. Opening a tapped alert moved into
+  `onAlertOpened` in the same file, so nothing else loads the module.
+- Phone alerts on Android still need a development build (§287's note).
+  Checked by bundling the Android app (`expo export --platform android`).

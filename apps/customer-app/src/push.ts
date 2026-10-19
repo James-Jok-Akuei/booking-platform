@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import type * as NotificationsModule from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { deviceStore } from './api/client';
 import { registerPushDevice, unregisterPushDevice } from './api/notifications';
 
@@ -19,11 +19,35 @@ import { registerPushDevice, unregisterPushDevice } from './api/notifications';
 export type PushState = 'unavailable' | 'undecided' | 'denied' | 'on';
 
 const TOKEN_KEY = 'booking.pushToken';
-const available = Platform.OS !== 'web';
+
+/**
+ * Expo Go on Android has had no push since SDK 53, and from SDK 57 merely
+ * loading `expo-notifications` there throws ("Cannot find native module
+ * 'ExpoTopicSubscriptionModule'") — which, loaded by the root layout, took
+ * the whole app down with it. So the module is loaded only where it can work:
+ * a real build, or Expo Go on an iPhone — never in a browser (§293).
+ */
+const expoGoAndroid =
+  Platform.OS === 'android' && Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+const available = Platform.OS !== 'web' && !expoGoAndroid;
+
+let loaded: typeof NotificationsModule | null | undefined;
+function notifications(): typeof NotificationsModule | null {
+  if (loaded !== undefined) return loaded;
+  try {
+    // A require, not an import: it runs only here, and only where push can work.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    loaded = available ? (require('expo-notifications') as typeof NotificationsModule) : null;
+  } catch {
+    loaded = null;
+  }
+  return loaded;
+}
 
 /** How an alert shows while the app is open: as a banner, quietly. */
 export function configurePush() {
-  if (!available) return;
+  const Notifications = notifications();
+  if (!Notifications) return;
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowBanner: true,
@@ -42,7 +66,8 @@ export function configurePush() {
 }
 
 export async function pushState(): Promise<PushState> {
-  if (!available || !Device.isDevice) return 'unavailable';
+  const Notifications = notifications();
+  if (!Notifications || !Device.isDevice) return 'unavailable';
   const { status, canAskAgain } = await Notifications.getPermissionsAsync();
   if (status === 'granted') return 'on';
   if (status === 'denied' && !canAskAgain) return 'denied';
@@ -56,9 +81,10 @@ const projectId = () =>
 /** Tells the server where this phone's alerts go. Never throws. */
 async function register(): Promise<boolean> {
   try {
+    const Notifications = notifications();
     const id = projectId();
     // Without the app's Expo project there is no token to have (§287: set at `eas init`).
-    if (!id) return false;
+    if (!Notifications || !id) return false;
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId: id });
     const result = await registerPushDevice({
       kind: 'EXPO',
@@ -77,7 +103,7 @@ export async function askForPush(): Promise<PushState> {
   const now = await pushState();
   if (now === 'unavailable' || now === 'denied') return now;
   if (now !== 'on') {
-    const { status } = await Notifications.requestPermissionsAsync();
+    const { status } = await notifications()!.requestPermissionsAsync();
     if (status !== 'granted') return (await pushState()) === 'denied' ? 'denied' : 'undecided';
   }
   await register();
@@ -103,7 +129,25 @@ export async function forgetThisPhone() {
 }
 
 /** Where a tapped alert should open. */
-export function linkOf(response: Notifications.NotificationResponse | null): string | null {
+export function linkOf(response: NotificationsModule.NotificationResponse | null): string | null {
   const link = response?.notification.request.content.data?.link;
   return typeof link === 'string' && link.startsWith('/') ? link : null;
+}
+
+/**
+ * Opens what a tapped alert is about — including the alert that started the
+ * app. Returns how to stop listening; does nothing where there is no push.
+ */
+export function onAlertOpened(open: (link: string) => void): () => void {
+  const Notifications = notifications();
+  if (!Notifications) return () => undefined;
+  const go = (response: NotificationsModule.NotificationResponse | null) => {
+    const link = linkOf(response);
+    if (link) open(link);
+  };
+  void Notifications.getLastNotificationResponseAsync()
+    .then(go)
+    .catch(() => undefined);
+  const sub = Notifications.addNotificationResponseReceivedListener(go);
+  return () => sub.remove();
 }
