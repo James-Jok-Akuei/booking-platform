@@ -18609,3 +18609,54 @@ it (§287) were two hearts for nearly the same wish, so they became one.
 - Following a shop does not change the order of its services anywhere else.
 
 25 tests in `test/notification-choices.e2e.spec.ts` (6 for this); 1477 in all.
+
+## 289. Searching the money pages: payouts and payout numbers (2026-10-19)
+
+The user asked for a search on **Payouts** and **Payout numbers** so an admin
+can find one by place, name, number and so on. Both pages were a queue in
+tabs with no way to find one shop.
+
+### 289.1 The server
+
+- **`GET /admin/payouts?q=`** and **`GET /admin/payout-destinations?q=`** — one
+  word, matched by the database with the tab and the paging (§216), any case:
+  - the shop: its **name**, its **phone**, an active member's **email**;
+  - where it is: a branch's **name**, **street**, **district** or **province**
+    ("Gasabo", "Northern", "KG 17");
+  - a **number typed any way people type it** — "0788 100 004", "+250 788…",
+    in threes, or only the end they remember. The leading 0 is dropped and
+    the digits are looked for inside the stored "+250…" form; fewer than
+    three digits is not a search (`numberPart`, `payout-search.ts`).
+  - Payouts also match **any payout number the shop has ever given** (a
+    statement names the number the money went to, which may since have been
+    replaced) and the **transfer reference** (ours or the operator's).
+  - Payout numbers match **that row's own number** (the shop's other numbers
+    are rows of their own) and **who gave it**.
+- Each row now carries **`places`**: the districts of the shop's open branches
+  (a branch's name where it has no district), so a card found by a place
+  shows the place.
+- `test/money-search.spec.ts`, 5 tests.
+
+### 289.2 The page
+
+- **A search icon at the end of the tabs row**, as asked, rather than a box
+  that takes a row on a page whose work is the tabs. It opens into a field
+  with a smooth widening; asks once typing pauses; **×** clears and closes;
+  **Escape** clears, then closes; **"/"** opens it from anywhere on the page.
+  It stays open while a search is in force, and the search is kept in the
+  address (`?q=`), like the tab. `ui/SearchToggle.tsx`, styles in
+  `styles.css` (`.sx-*`), for any other list page that wants it.
+- Where the tabs and an open field do not both fit (a tablet, a phone), the
+  field takes its own line **above** the tabs instead of squeezing them — a
+  container query on the bar, so it follows the space, not the screen.
+- While searching, **the tabs count what was found**; the wallet on Payouts
+  and the "not being paid" warning on Payout numbers keep the whole, since
+  they are about the platform, not the search. The warning hides during a
+  search.
+- Each card shows **where the shop is** (pin + districts) under its name.
+- Nothing found: "Nothing matches “…”", what to try, and **Clear the
+  search**. Under a list: "4 of 4 for “gasabo”".
+
+Checked at 1440, 1024 and 390 with the demo data: closed and open, a place
+("gasabo"), a number with its 0 ("0788 100 001"), a search that finds
+nothing. Nothing was sent, checked or refused.

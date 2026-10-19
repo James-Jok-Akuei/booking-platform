@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 import { PayoutStatus } from '@prisma/client';
 
 export class ListPayoutsDto {
@@ -11,6 +11,16 @@ export class ListPayoutsDto {
   @IsOptional()
   @IsEnum(PayoutStatus)
   status?: PayoutStatus;
+
+  /**
+   * A word to find payouts by (§289): a shop's name, phone or a member's
+   * email; a branch's name, street, district or province; a payout number,
+   * typed any way; or the transfer's reference.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
 
   @IsOptional()
   @Type(() => Number)

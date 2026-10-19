@@ -84,6 +84,8 @@ export type DestinationPage = components['schemas']['AdminPayoutDestinationPageD
 
 export const listPayoutDestinations = (params: {
   status?: PayoutDestinationStatus;
+  /** A number (any form), a shop, a place, or who gave it (§289). */
+  q?: string;
   limit?: number;
   offset?: number;
 }) => api<DestinationPage>('/admin/payout-destinations', { query: params });
@@ -124,7 +126,8 @@ export type BusinessBalance = components['schemas']['BusinessBalanceDto'];
 
 export type HeldTotals = components['schemas']['HeldTotalsDto'];
 
-export const listPayouts = (params: { status?: PayoutStatus; limit?: number; offset?: number }) =>
+/** `q`: a shop, a place, a payout number (any form) or a reference (§289). */
+export const listPayouts = (params: { status?: PayoutStatus; q?: string; limit?: number; offset?: number }) =>
   api<PayoutPage>('/admin/payouts', { query: params });
 
 export const heldTotals = () => api<HeldTotals>('/admin/ledger/held');

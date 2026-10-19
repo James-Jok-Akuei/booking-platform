@@ -13705,6 +13705,16 @@
             }
           },
           {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "A word to find payouts by (§289): a shop's name, phone or a member's\nemail; a branch's name, street, district or province; a payout number,\ntyped any way; or the transfer's reference.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -14190,6 +14200,16 @@
             }
           },
           {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "A word to find payouts by (§289): a shop's name, phone or a member's\nemail; a branch's name, street, district or province; a payout number,\ntyped any way; or the transfer's reference.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -14282,6 +14302,16 @@
                 "VERIFIED",
                 "SUPERSEDED"
               ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "A word to find payout numbers by (§289): the number itself, typed any way;\na shop's name, phone or a member's email; a branch's name, street,\ndistrict or province; or the email of the person who gave it.",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
             }
           },
           {
@@ -26455,6 +26485,13 @@
               "AIRTEL_MONEY"
             ]
           },
+          "places": {
+            "description": "Where the shop is: its open branches' districts (§289).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "id": {
             "type": "string"
           },
@@ -26518,6 +26555,7 @@
           "businessName",
           "destinationMsisdn",
           "destinationProvider",
+          "places",
           "id",
           "businessId",
           "amountMinor",
@@ -27011,6 +27049,13 @@
                 "$ref": "#/components/schemas/DestinationPersonDto"
               }
             ]
+          },
+          "places": {
+            "description": "Where the shop is: its open branches' districts (§289).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -27031,7 +27076,8 @@
           "replacedBy",
           "replaces",
           "submittedBy",
-          "verifiedBy"
+          "verifiedBy",
+          "places"
         ]
       },
       "AdminPayoutDestinationPageDto": {

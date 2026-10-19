@@ -18,6 +18,7 @@ type AdminPayoutWire = AdminPayoutRow & {
   businessName: string | null;
   destinationMsisdn: string | null;
   destinationProvider: MobileMoneyProvider | null;
+  places: string[];
 };
 
 /**
@@ -87,6 +88,9 @@ export class AdminPayoutDto extends PayoutDto implements AdminPayoutWire {
    */
   destinationMsisdn!: string | null;
   destinationProvider!: MobileMoneyProvider | null;
+
+  /** Where the shop is: its open branches' districts (§289). */
+  places!: string[];
 }
 
 export class AdminPayoutPageDto {

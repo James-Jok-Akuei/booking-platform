@@ -123,6 +123,8 @@ export class AdminPayoutDestinationDto {
   submittedBy!: DestinationPersonDto;
   /** Who checked it, once checked. */
   verifiedBy!: DestinationPersonDto | null;
+  /** Where the shop is: its open branches' districts (§289). */
+  places!: string[];
 }
 
 export class AdminPayoutDestinationPageDto {

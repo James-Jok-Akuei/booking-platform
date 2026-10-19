@@ -6403,6 +6403,8 @@ export interface components {
             destinationMsisdn: string | null;
             /** @enum {string|null} */
             destinationProvider: "MTN_MOMO" | "AIRTEL_MONEY" | null;
+            /** @description Where the shop is: its open branches' districts (§289). */
+            places: string[];
             id: string;
             businessId: string;
             /**
@@ -6572,6 +6574,8 @@ export interface components {
             submittedBy: components["schemas"]["DestinationPersonDto"];
             /** @description Who checked it, once checked. */
             verifiedBy: components["schemas"]["DestinationPersonDto"] | null;
+            /** @description Where the shop is: its open branches' districts (§289). */
+            places: string[];
         };
         AdminPayoutDestinationPageDto: {
             total: number;
@@ -17652,6 +17656,12 @@ export interface operations {
                 /** @description Admin listing only; the business-scoped route takes it from the path. */
                 businessId?: string;
                 status?: "PENDING" | "FAILED" | "PROCESSING" | "PAID";
+                /**
+                 * @description A word to find payouts by (§289): a shop's name, phone or a member's
+                 *     email; a branch's name, street, district or province; a payout number,
+                 *     typed any way; or the transfer's reference.
+                 */
+                q?: string;
                 limit?: number;
                 offset?: number;
             };
@@ -18006,6 +18016,12 @@ export interface operations {
                 /** @description Admin listing only; the business-scoped route takes it from the path. */
                 businessId?: string;
                 status?: "PENDING" | "FAILED" | "PROCESSING" | "PAID";
+                /**
+                 * @description A word to find payouts by (§289): a shop's name, phone or a member's
+                 *     email; a branch's name, street, district or province; a payout number,
+                 *     typed any way; or the transfer's reference.
+                 */
+                q?: string;
                 limit?: number;
                 offset?: number;
             };
@@ -18067,6 +18083,12 @@ export interface operations {
         parameters: {
             query?: {
                 status?: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+                /**
+                 * @description A word to find payout numbers by (§289): the number itself, typed any way;
+                 *     a shop's name, phone or a member's email; a branch's name, street,
+                 *     district or province; or the email of the person who gave it.
+                 */
+                q?: string;
                 limit?: number;
                 offset?: number;
             };

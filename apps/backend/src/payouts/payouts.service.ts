@@ -25,6 +25,7 @@ import { INTERNAL_CURRENCY } from '../payments/currency';
 import { ListPayoutsDto } from './dto/list-payouts.dto';
 import { csvTextCell, toCsvRow } from './payout-csv';
 import { PayoutDestinationsService } from './payout-destinations.service';
+import { placesOf, shopMatching } from './payout-search';
 import { DisbursementProviderRegistry } from '../payments/disbursement-provider.registry';
 import { maskMsisdn } from './msisdn';
 import { MarkPaidDto, MarkFailedDto } from './dto/mark-payout.dto';
@@ -368,9 +369,19 @@ export class PayoutsService {
   async list(actor: { role: UserRole | string }, query: ListPayoutsDto) {
     this.assertAdmin(actor);
 
+    const q = query.q?.trim();
     const where: Prisma.PayoutWhereInput = {
       ...(query.businessId ? { businessId: query.businessId } : {}),
       ...(query.status ? { status: query.status } : {}),
+      ...(q
+        ? {
+            OR: [
+              ...shopMatching(q, { numbers: true }).map((shop) => ({ businessProfile: shop })),
+              { reference: { contains: q, mode: Prisma.QueryMode.insensitive } },
+              { providerReferenceId: { contains: q, mode: Prisma.QueryMode.insensitive } },
+            ],
+          }
+        : {}),
     };
     const limit = query.limit ?? 25;
     const offset = query.offset ?? 0;
@@ -392,9 +403,10 @@ export class PayoutsService {
     // which is not enough to pay anyone — so an admin had to export the CSV
     // just to read a name and a number that the screen could have shown. The
     // export then looked load-bearing when it was really covering a gap here.
-    const destinations = await this.destinations.verifiedFor(
-      rows.map((row) => row.businessId),
-    );
+    const [destinations, places] = await Promise.all([
+      this.destinations.verifiedFor(rows.map((row) => row.businessId)),
+      placesOf(this.prisma, rows.map((row) => row.businessId)),
+    ]);
 
     const payouts = rows.map((row) => ({
       ...row,
@@ -403,6 +415,7 @@ export class PayoutsService {
       // payout cannot be sent. The console reads it to say so.
       destinationMsisdn: destinations.get(row.businessId)?.msisdn ?? null,
       destinationProvider: destinations.get(row.businessId)?.provider ?? null,
+      places: places.get(row.businessId) ?? [],
     }));
 
     return { total, limit, offset, payouts };

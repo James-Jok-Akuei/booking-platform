@@ -19,6 +19,7 @@ import {
 import { confirmDialog, promptDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { NETWORK_NAME, NetworkMark } from '../ui/NetworkMark';
+import { NothingFound, SearchToggle } from '../ui/SearchToggle';
 import { ShopMark } from '../ui/ShopMark';
 import './payouts.css';
 
@@ -66,6 +67,18 @@ export function PayoutsPage() {
   const { format: money } = useMoney();
   const [params, setParams] = useSearchParams();
   const tab = (params.get('status') as Tab | null) ?? 'PENDING';
+  // A shop, a place, a payout number or a reference (§289), kept in the address.
+  const q = params.get('q') ?? '';
+  const setQ = (next: string) =>
+    setParams(
+      (now) => {
+        const out = new URLSearchParams(now);
+        if (next) out.set('q', next);
+        else out.delete('q');
+        return out;
+      },
+      { replace: true },
+    );
   const [lastRun, setLastRun] = useState<RunSummary | null>(null);
   const queryClient = useQueryClient();
 
@@ -74,8 +87,9 @@ export function PayoutsPage() {
   const overview = useQuery({ queryKey: ['admin-overview'], queryFn: getOverview });
 
   const list = useInfiniteQuery({
-    queryKey: ['payouts', tab],
-    queryFn: ({ pageParam }) => listPayouts({ ...(tab === 'ALL' ? {} : { status: tab }), limit: PAGE, offset: pageParam }),
+    queryKey: ['payouts', tab, q],
+    queryFn: ({ pageParam }) =>
+      listPayouts({ ...(tab === 'ALL' ? {} : { status: tab }), ...(q ? { q } : {}), limit: PAGE, offset: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.offset + last.payouts.length < last.total ? last.offset + PAGE : undefined),
   });
@@ -91,6 +105,18 @@ export function PayoutsPage() {
         ),
       ) as Record<Tab, number>,
   });
+  // While searching, the tabs count what was found; the wallet keeps the whole.
+  const found = useQuery({
+    queryKey: ['payouts', 'counts', q],
+    enabled: Boolean(q),
+    queryFn: async () =>
+      Object.fromEntries(
+        await Promise.all(
+          TABS.map(async (t) => [t.value, (await listPayouts({ ...(t.value === 'ALL' ? {} : { status: t.value }), q, limit: 1 })).total] as const),
+        ),
+      ) as Record<Tab, number>,
+  });
+  const tabCounts = q ? found.data : counts.data;
 
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ['payouts'] });
@@ -246,34 +272,44 @@ export function PayoutsPage() {
 
       {lastRun && <RunResult run={lastRun} money={money} onClose={() => setLastRun(null)} />}
 
-      <div className="qtabs" role="tablist" aria-label="Show">
-        {TABS.map((t) => (
-          <button
-            key={t.value}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.value}
-            className={`qtab${tab === t.value ? ' is-on' : ''}`}
-            onClick={() =>
-              setParams(
-                (now) => {
-                  const out = new URLSearchParams(now);
-                  if (t.value === 'PENDING') out.delete('status');
-                  else out.set('status', t.value);
-                  return out;
-                },
-                { replace: true },
-              )
-            }
-          >
-            {t.label}
-            {counts.data && (
-              <span className={(t.value === 'PENDING' || t.value === 'FAILED') && counts.data[t.value] > 0 ? 'is-hot' : ''}>
-                {counts.data[t.value]}
-              </span>
-            )}
-          </button>
-        ))}
+      <div className="sx-bar">
+        <div className="sx-row">
+          <div className="qtabs" role="tablist" aria-label="Show">
+            {TABS.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.value}
+                className={`qtab${tab === t.value ? ' is-on' : ''}`}
+                onClick={() =>
+                  setParams(
+                    (now) => {
+                      const out = new URLSearchParams(now);
+                      if (t.value === 'PENDING') out.delete('status');
+                      else out.set('status', t.value);
+                      return out;
+                    },
+                    { replace: true },
+                  )
+                }
+              >
+                {t.label}
+                {tabCounts && (
+                  <span className={(t.value === 'PENDING' || t.value === 'FAILED') && tabCounts[t.value] > 0 ? 'is-hot' : ''}>
+                    {tabCounts[t.value]}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          <SearchToggle
+            value={q}
+            onChange={setQ}
+            placeholder="A shop, a place, a number or a reference"
+            label="Search payouts"
+          />
+        </div>
       </div>
 
       {error && (
@@ -291,7 +327,9 @@ export function PayoutsPage() {
         </div>
       )}
 
-      {list.data && rows.length === 0 && (
+      {list.data && rows.length === 0 && q && <NothingFound q={q} onClear={() => setQ('')} />}
+
+      {list.data && rows.length === 0 && !q && (
         <div className="q-empty">
           <span>
             <Icon name={tab === 'PENDING' ? 'checkCircle' : 'send'} size={26} />
@@ -323,6 +361,7 @@ export function PayoutsPage() {
         <div className="q-more">
           <span className="muted small">
             {rows.length} of {total}
+            {q && <span className="sx-for"> for “{q}”</span>}
           </span>
           {list.hasNextPage && (
             <button type="button" onClick={() => void list.fetchNextPage()} disabled={list.isFetchingNextPage}>
@@ -358,6 +397,12 @@ function Row({
         <ShopMark name={p.businessName} logoUrl={p.businessProfile.logoUrl} size={46} />
         <span>
           <strong>{p.businessName ?? <em className="muted">No name</em>}</strong>
+          {p.places.length > 0 && (
+            <span className="po-places">
+              <Icon name="pin" size={13} />
+              <span>{p.places.join(' · ')}</span>
+            </span>
+          )}
           {p.destinationMsisdn ? (
             <span className="po-to">
               <NetworkMark network={network} size={18} />

@@ -12,6 +12,7 @@ import {
 import { promptDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { NETWORK_NAME, NetworkMark, networkOf, type Network } from '../ui/NetworkMark';
+import { NothingFound, SearchToggle } from '../ui/SearchToggle';
 import { ShopMark } from '../ui/ShopMark';
 import './destinations.css';
 
@@ -68,11 +69,24 @@ const same = (a: string | null, b: string) => Boolean(a) && a!.replace(/\D/g, ''
 export function PayoutDestinationsPage() {
   const [params, setParams] = useSearchParams();
   const tab = (params.get('status') as Tab | null) ?? 'UNVERIFIED';
+  // A number (any form), a shop, a place, or who gave it (§289), kept in the address.
+  const q = params.get('q') ?? '';
+  const setQ = (next: string) =>
+    setParams(
+      (now) => {
+        const out = new URLSearchParams(now);
+        if (next) out.set('q', next);
+        else out.delete('q');
+        return out;
+      },
+      { replace: true },
+    );
   const queryClient = useQueryClient();
 
   const list = useInfiniteQuery({
-    queryKey: ['payout-destinations', tab],
-    queryFn: ({ pageParam }) => listPayoutDestinations({ ...(tab === 'ALL' ? {} : { status: tab }), limit: PAGE, offset: pageParam }),
+    queryKey: ['payout-destinations', tab, q],
+    queryFn: ({ pageParam }) =>
+      listPayoutDestinations({ ...(tab === 'ALL' ? {} : { status: tab }), ...(q ? { q } : {}), limit: PAGE, offset: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.offset + last.destinations.length < last.total ? last.offset + PAGE : undefined),
   });
@@ -88,6 +102,18 @@ export function PayoutDestinationsPage() {
         ),
       ) as Record<Tab, number>,
   });
+  // While searching, the tabs count what was found; the warning keeps the whole.
+  const found = useQuery({
+    queryKey: ['payout-destinations', 'counts', q],
+    enabled: Boolean(q),
+    queryFn: async () =>
+      Object.fromEntries(
+        await Promise.all(
+          TABS.map(async (t) => [t.value, (await listPayoutDestinations({ ...(t.value === 'ALL' ? {} : { status: t.value }), q, limit: 1 })).total] as const),
+        ),
+      ) as Record<Tab, number>,
+  });
+  const tabCounts = q ? found.data : counts.data;
 
   const act = useMutation({
     mutationFn: (input: { id: string; action: 'verify' | 'reject'; text: string }) =>
@@ -144,34 +170,39 @@ export function PayoutDestinationsPage() {
             <p className="muted">The mobile money numbers shops are paid to, checked before money goes there.</p>
           </div>
         </header>
-        <div className="qtabs pin-from" role="tablist" aria-label="Show">
-          {TABS.map((t) => (
-            <button
-              key={t.value}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.value}
-              className={`qtab${tab === t.value ? ' is-on' : ''}`}
-              onClick={() =>
-                setParams(
-                  (now) => {
-                    const out = new URLSearchParams(now);
-                    if (t.value === 'UNVERIFIED') out.delete('status');
-                    else out.set('status', t.value);
-                    return out;
-                  },
-                  { replace: true },
-                )
-              }
-            >
-              {t.label}
-              {counts.data && <span className={t.value === 'UNVERIFIED' && counts.data.UNVERIFIED > 0 ? 'is-hot' : ''}>{counts.data[t.value]}</span>}
-            </button>
-          ))}
+        <div className="sx-bar pin-from">
+          <div className="sx-row">
+            <div className="qtabs" role="tablist" aria-label="Show">
+              {TABS.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === t.value}
+                  className={`qtab${tab === t.value ? ' is-on' : ''}`}
+                  onClick={() =>
+                    setParams(
+                      (now) => {
+                        const out = new URLSearchParams(now);
+                        if (t.value === 'UNVERIFIED') out.delete('status');
+                        else out.set('status', t.value);
+                        return out;
+                      },
+                      { replace: true },
+                    )
+                  }
+                >
+                  {t.label}
+                  {tabCounts && <span className={t.value === 'UNVERIFIED' && tabCounts.UNVERIFIED > 0 ? 'is-hot' : ''}>{tabCounts[t.value]}</span>}
+                </button>
+              ))}
+            </div>
+            <SearchToggle value={q} onChange={setQ} placeholder="A number, a shop, a place or an email" label="Search payout numbers" />
+          </div>
         </div>
       </div>
 
-      {tab === 'UNVERIFIED' && (counts.data?.UNVERIFIED ?? 0) > 0 && (
+      {tab === 'UNVERIFIED' && !q && (counts.data?.UNVERIFIED ?? 0) > 0 && (
         <p className="pd-why">
           <Icon name="alert" size={18} />
           <span>
@@ -202,7 +233,9 @@ export function PayoutDestinationsPage() {
         </div>
       )}
 
-      {list.data && rows.length === 0 && (
+      {list.data && rows.length === 0 && q && <NothingFound q={q} onClear={() => setQ('')} />}
+
+      {list.data && rows.length === 0 && !q && (
         <div className="q-empty">
           <span>
             <Icon name={tab === 'UNVERIFIED' ? 'checkCircle' : 'wallet'} size={26} />
@@ -228,6 +261,7 @@ export function PayoutDestinationsPage() {
         <div className="q-more">
           <span className="muted small">
             {rows.length} of {total}
+            {q && <span className="sx-for"> for “{q}”</span>}
           </span>
           {list.hasNextPage && (
             <button type="button" onClick={() => void list.fetchNextPage()} disabled={list.isFetchingNextPage}>
@@ -257,6 +291,12 @@ function Card({ d, busy, onVerify, onReject }: { d: PayoutDestination; busy: boo
           <span>
             Given by {d.submittedBy.email} · {waiting ? `waiting since ${sinceDay(d.submittedAt)}` : day(d.submittedAt)}
           </span>
+          {d.places.length > 0 && (
+            <span className="pd-places">
+              <Icon name="pin" size={13} />
+              <span>{d.places.join(' · ')}</span>
+            </span>
+          )}
         </span>
         <span className={`pill ${look.cls}`}>{look.label}</span>
       </header>

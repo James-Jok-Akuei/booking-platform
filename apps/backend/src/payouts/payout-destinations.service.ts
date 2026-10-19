@@ -25,6 +25,7 @@ import {
   VerifyPayoutDestinationDto,
 } from './dto/verify-payout-destination.dto';
 import { ListPayoutDestinationsDto } from './dto/list-payout-destinations.dto';
+import { numberPart, placesOf, shopMatching } from './payout-search';
 import { MEMBERSHIP_SCOPE_SELECT, MONEY_READERS_ONLY, mayReadMoney, scopeOf } from '../business/branch-scope';
 
 /**
@@ -221,8 +222,20 @@ export class PayoutDestinationsService {
   async list(actor: { role: UserRole | string }, query: ListPayoutDestinationsDto) {
     this.assertAdmin(actor);
 
+    const q = query.q?.trim();
+    const digits = q ? numberPart(q) : null;
     const where: Prisma.PayoutDestinationWhereInput = {
       ...(query.status ? { status: query.status } : {}),
+      ...(q
+        ? {
+            OR: [
+              // This row's own number; the shop's other numbers are rows of their own.
+              ...(digits ? [{ msisdn: { contains: digits } }] : []),
+              ...shopMatching(q, { numbers: false }).map((shop) => ({ businessProfile: shop })),
+              { submittedBy: { email: { contains: q, mode: Prisma.QueryMode.insensitive } } },
+            ],
+          }
+        : {}),
     };
     const limit = query.limit ?? 25;
     const offset = query.offset ?? 0;
@@ -310,7 +323,13 @@ export class PayoutDestinationsService {
       };
     });
 
-    return { total, limit, offset, destinations: withHistory };
+    const places = await placesOf(this.prisma, businessesOnPage);
+    return {
+      total,
+      limit,
+      offset,
+      destinations: withHistory.map((row) => ({ ...row, places: places.get(row.businessId) ?? [] })),
+    };
   }
 
   async verify(

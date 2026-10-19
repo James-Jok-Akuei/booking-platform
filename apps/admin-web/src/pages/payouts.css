@@ -72,6 +72,10 @@
 .po-shop { display: flex; align-items: center; gap: 13px; min-width: 0; }
 .po-shop > span:last-child { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .po-shop strong { font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-places { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.po-places { max-width: 100%; }
+.po-places svg { color: var(--accent); flex: none; }
+.po-places > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .po-to { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .po-to .network-mark { border-radius: 5px; }
 .po-nonumber { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--danger); text-decoration: none; }
