@@ -18862,3 +18862,24 @@ open: "Cannot find native module 'ExpoTopicSubscriptionModule'", then
   `onAlertOpened` in the same file, so nothing else loads the module.
 - Phone alerts on Android still need a development build (§287's note).
   Checked by bundling the Android app (`expo export --platform android`).
+
+## 294. "Your data", explained; the technical copy as a second choice (2026-10-19)
+
+The user: "The data section needs explanations, the question is why do we
+need the technical copy of the data?"
+
+- **Why it exists** (§144): a PDF is for reading; the JSON file is for
+  *moving* data to another service — data portability, the right to have
+  your data in a form a computer can read and take elsewhere (Rwanda's Law
+  n° 058/2021, like Europe's GDPR). Few people will use it; the law expects
+  it to be possible.
+- **What changed** (customer app, Account → Your data): a line under the
+  heading ("What we keep about you is yours…"); one row, "Get a copy of my
+  data", opening a sheet that lists what is in it (account, every booking,
+  reviews, messages, questions to us — said as the export really holds them),
+  says it is made on the phone and goes only where they send it, and offers
+  **Get it as a PDF** ("what most people want") and, below, **Get it as a
+  data file** with what it is for and that the law gives this right. The
+  separate "Technical copy" row with a code icon is gone. Sign out says it
+  is only this phone; the line under Close my account says to take a copy
+  first. The PDF's own footer points to the data file in the same words.

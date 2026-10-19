@@ -208,8 +208,8 @@ export function exportDocumentHtml(
   ${section('Your support requests', data.supportTickets.length, tickets, 'You have not asked support for help yet.')}
 
   <div class="foot">
-    This document was made on your phone from your account. A technical copy of the same
-    data (JSON) is available from the same place in the app.
+    This document was made on your phone from your account. The same data is also available as
+    a file another service can read (JSON): in the app, Account → Your data → Get a copy of my data.
   </div>
 </body>
 </html>`;

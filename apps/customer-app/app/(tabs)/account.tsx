@@ -229,6 +229,8 @@ export default function Account() {
   const [naming, setNaming] = useState(false);
   // How paying works (§278): the promises that used to close every service page.
   const [paying, setPaying] = useState(false);
+  // A copy of their data, explained before it is made (§294).
+  const [copying, setCopying] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const rename = useMutation({
     mutationFn: setMyDisplayName,
@@ -649,25 +651,25 @@ export default function Account() {
               moment someone is leaving is the only moment they want this. */}
           <FadeIn delay={280}>
             <Text style={styles.group}>Your data</Text>
+            <Text style={[type.small, styles.groupNote]}>
+              What we keep about you is yours. You can take a copy of it at any time.
+            </Text>
             <View style={styles.card}>
               <Row
                 icon="download-outline"
-                label={exportData.isPending ? 'Preparing…' : 'Get a copy of my data'}
-                note="A PDF you can read: your bookings, reviews, messages and support tickets."
-                onPress={() => exportData.mutate()}
-                off={exportData.isPending}
+                label={exportData.isPending || exportJson.isPending ? 'Preparing…' : 'Get a copy of my data'}
+                note="Your account, bookings, reviews, messages and questions to us — to read, print or keep."
+                onPress={() => setCopying(true)}
+                off={exportData.isPending || exportJson.isPending}
               />
               <View style={styles.divider} />
               <Row
-                icon="code-slash-outline"
-                label={exportJson.isPending ? 'Preparing…' : 'Technical copy'}
-                note="The same data as a JSON file, for moving it to another service."
-                onPress={() => exportJson.mutate()}
-                off={exportJson.isPending}
-                plain
+                icon="log-out-outline"
+                label="Sign out"
+                note="Only on this phone. Come back any time with a new code."
+                onPress={leave}
+                danger
               />
-              <View style={styles.divider} />
-              <Row icon="log-out-outline" label="Sign out" onPress={leave} danger />
             </View>
           </FadeIn>
 
@@ -683,8 +685,7 @@ export default function Account() {
             </Text>
           </PressableScale>
           <Text style={[type.small, styles.centre]}>
-            Closing is permanent. Signing out is not — you can come back any time
-            with a new code.
+            Closing is permanent. If you want a copy of your data, take it first.
           </Text>
 
           {Constants.expoConfig?.version && (
@@ -737,6 +738,65 @@ export default function Account() {
               </Text>
             </View>
           )}
+        </View>
+      </Sheet>
+
+      {/* What the copy holds, how it leaves the phone, and the two ways to have
+          it — a page to read, which is what nearly everyone wants, or a file
+          another service can read, which the law lets people ask for (§294). */}
+      <Sheet open={copying} title="A copy of your data" onClose={() => setCopying(false)}>
+        <View style={styles.copySheet}>
+          <Text style={type.body}>Everything we keep about you, in one place:</Text>
+          <View style={styles.copyList}>
+            {[
+              ['person-outline', 'Your account', 'Your email, the name on your reviews, when you joined, and your home area if you set one.'],
+              ['calendar-outline', 'Every booking', 'The shop, the service, the time, what you paid and what happened.'],
+              ['star-outline', 'Your reviews', 'The stars you gave and what you wrote.'],
+              ['chatbubbles-outline', 'Your messages', 'Your conversations with shops.'],
+              ['help-buoy-outline', 'Your questions to us', 'Help requests and our answers.'],
+            ].map(([icon, title, line]) => (
+              <View key={title} style={styles.copyItem}>
+                <View style={styles.copyIcon}>
+                  <Icon name={icon as never} size={17} color={theme.accentDeep} />
+                </View>
+                <View style={styles.flex}>
+                  <Text style={styles.copyTitle}>{title}</Text>
+                  <Text style={type.small}>{line}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+          <View style={styles.copyNote}>
+            <Icon name="lock-closed-outline" size={16} color={theme.ink2} />
+            <Text style={[type.small, styles.flex]}>
+              It is made on this phone and goes only where you send it. We do not email it to anyone.
+            </Text>
+          </View>
+          <Button
+            icon="document-text-outline"
+            label={exportData.isPending ? 'Preparing…' : 'Get it as a PDF'}
+            busy={exportData.isPending}
+            onPress={() => {
+              setCopying(false);
+              exportData.mutate();
+            }}
+          />
+          <Text style={[type.small, styles.centre]}>Easy to read and print. This is what most people want.</Text>
+          <View style={styles.copyRule} />
+          <Button
+            kind="outline"
+            icon="swap-horizontal-outline"
+            label={exportJson.isPending ? 'Preparing…' : 'Get it as a data file'}
+            busy={exportJson.isPending}
+            onPress={() => {
+              setCopying(false);
+              exportJson.mutate();
+            }}
+          />
+          <Text style={[type.small, styles.centre]}>
+            Only if you are moving to another app or service: the same data as a file (JSON) a computer can read
+            and bring in. The law gives you the right to take your data with you this way.
+          </Text>
         </View>
       </Sheet>
 
@@ -1061,6 +1121,29 @@ const styles = StyleSheet.create({
     color: theme.ink,
   },
   nameSheet: { gap: 12, paddingBottom: 8 },
+  groupNote: { marginTop: -4, marginBottom: 10, marginHorizontal: 4 },
+  copySheet: { gap: 12, paddingBottom: 8 },
+  copyList: { gap: 12, paddingVertical: 4 },
+  copyItem: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  copyIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    backgroundColor: theme.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  copyTitle: { fontFamily: font.bold, fontSize: 14.5, color: theme.ink, marginBottom: 1 },
+  copyNote: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'flex-start',
+    backgroundColor: theme.sunken,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 4,
+  },
+  copyRule: { height: 1, backgroundColor: theme.line, marginVertical: 6 },
   payingSheet: { paddingTop: 4, paddingBottom: 12 },
   nameInput: {
     fontFamily: font.semibold,
