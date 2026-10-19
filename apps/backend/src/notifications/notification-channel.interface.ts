@@ -31,6 +31,14 @@ export interface OutboundMessage {
   destination: string;
   subject: string;
   body: string;
+  /** For email: the branded layout's extras (§287). A driver that cannot use them ignores them. */
+  dressing?: {
+    eyebrow: string;
+    button?: { label: string; url: string } | null;
+    reason: string;
+    manage: { label: string; url?: string | null };
+    unsubscribeUrl?: string | null;
+  };
 }
 
 /** DI token — an interface has no runtime identity. */

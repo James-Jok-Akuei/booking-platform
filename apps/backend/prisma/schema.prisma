@@ -137,6 +137,27 @@ enum NotificationType {
   PAYMENT_PROVIDER_MISCONFIGURED // the platform cannot take payments; admins only
   APPOINTMENT_MANUALLY_VERIFIED // a business verified an arrival without the code; admins only
   STORY_REMOVED // an admin took down a shop's story, with a reason (§285)
+  APPOINTMENT_COMPLETED // the visit is done; the customer is asked how it was (§287)
+  PAYOUT_SENT // money reached the shop's payout number (§287)
+  PAYOUT_FAILED // a payout did not go through; it is tried again (§287)
+  ANNOUNCEMENT // a message from the platform's team (§287)
+  SHOP_MESSAGE // a shop wrote to the customers who follow it (§287)
+}
+
+/// What a notification is about, for choosing what you get and how (§287).
+/// The in-app list always has everything; these decide push and email.
+enum NotificationCategory {
+  BOOKINGS // booked, confirmed, cancelled, missed, done
+  REMINDERS // before an appointment
+  MESSAGES // chat
+  REVIEWS // reviews and replies
+  MONEY // payouts and the payout number (sellers who see money)
+  ACCOUNT // the account, the shop's standing, support, service notices
+  NEWS // news and offers from the platform — only with a yes
+  SHOP_OFFERS // offers from shops the customer follows
+  ADMIN_TICKETS // administrators: support tickets
+  ADMIN_QUEUE // administrators: things waiting to be checked
+  ADMIN_SYSTEM // administrators: the platform is not working properly
 }
 
 /// How it was delivered. EMAIL is the only implementation today; SMS exists in
@@ -145,12 +166,43 @@ enum NotificationType {
 enum NotificationChannel {
   EMAIL
   SMS
+  PUSH // a phone or a browser (§287)
 }
 
+/// Where one delivery of a notification stands (§287).
 enum NotificationStatus {
-  PENDING // created, not yet dispatched
+  PENDING // waiting to go: now, or at its dueAt
+  SENDING // claimed by a sender
   SENT
-  FAILED // dispatch failed; retried by the sweep
+  FAILED // tried and failed; tried again by the sweep
+  SKIPPED // not sent, on purpose: turned off, already seen, a limit
+  HELD // waiting for the morning summary
+}
+
+enum PushDeviceKind {
+  EXPO // the customer app on a phone
+  WEB // a browser: the seller app
+}
+
+enum AnnouncementKind {
+  SERVICE // something people need to know — reaches everyone it is for
+  NEWS // news or an offer — only people who said yes
+}
+
+enum AnnouncementAudience {
+  EVERYONE
+  CUSTOMERS
+  SELLERS
+  ONE_PERSON
+  ONE_SHOP
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
 }
 
 // Gallery media kind. Only PHOTO is produced today — the enum exists so VIDEO
@@ -351,7 +403,23 @@ model User {
   storiesPosted           Story[]              @relation("StoriesPosted")
   storiesRemoved          Story[]              @relation("StoriesRemoved")
   storyReports            StoryReport[]
-  reviewResponses         Review[]             @relation("ReviewResponses")
+
+  // ---- Notifications: what to send and how (§287) ----
+  notificationPreferences NotificationPreference[]
+  pushDevices             PushDevice[]
+  consentRecords          ConsentRecord[]
+  shopFollows             ShopFollow[]
+  announcementsReceived   Announcement[]           @relation("AnnouncementRecipient")
+  announcementsCreated    Announcement[]           @relation("AnnouncementsCreated")
+  announcementsSent       Announcement[]           @relation("AnnouncementsSent")
+  shopMessagesSent        ShopMessage[]            @relation("ShopMessagesSent")
+  /// No pushes that can wait between these times, Kigali time (minutes after midnight).
+  quietHoursOn            Boolean                  @default(true)
+  quietFrom               Int                      @default(1260)
+  quietTo                 Int                      @default(420)
+  /// A seller's booking emails as one summary each morning instead of one each (§287).
+  bookingEmailDigest      Boolean                  @default(false)
+  reviewResponses         Review[]                 @relation("ReviewResponses")
 
   /// The platform settings row, when this user was the last to set its
   /// exchange rate. A list because Prisma models it as one, but there is a
@@ -459,15 +527,18 @@ model BusinessProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  locations   Location[]
-  services    Service[]
-  members     BusinessMembership[]
-  stories     Story[]
-  invitations BusinessInvitation[]
-  threads     Thread[]
-  tickets     Ticket[]
-  adjustments BillingAdjustment[]
-  reviews     Review[]
+  locations     Location[]
+  services      Service[]
+  members       BusinessMembership[]
+  stories       Story[]
+  followers     ShopFollow[]
+  shopMessages  ShopMessage[]
+  announcements Announcement[]
+  invitations   BusinessInvitation[]
+  threads       Thread[]
+  tickets       Ticket[]
+  adjustments   BillingAdjustment[]
+  reviews       Review[]
 
   ledgerEntries      LedgerEntry[]
   payouts            Payout[]
@@ -509,6 +580,7 @@ model Category {
   subcategories Subcategory[]
   businesses    BusinessProfile[]
   kinds         BusinessKind[]
+  announcements Announcement[]
 
   @@map("categories")
 }
@@ -649,6 +721,7 @@ model Location {
   reviews            Review[]
   media              LocationMedia[]
   stories            Story[]
+  shopMessages       ShopMessage[]
   scheduleExceptions LocationScheduleException[]
   timeBlocks         LocationTimeBlock[]
   appointments       Appointment[]
@@ -1433,9 +1506,9 @@ model Notification {
   recipientId String
   recipient   User   @relation("UserNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
 
-  type    NotificationType
-  channel NotificationChannel @default(EMAIL)
-  status  NotificationStatus  @default(PENDING)
+  type     NotificationType
+  /// What it is about, for the recipient's choices (§287). Set once, at creation.
+  category NotificationCategory @default(ACCOUNT)
 
   /// Rendered at send time and kept, so the inbox shows exactly what was sent
   /// rather than re-rendering against data that has since changed — a
@@ -1455,9 +1528,18 @@ model Notification {
   /// Taken off the list by its recipient (§159). Kept: the row is also the delivery record.
   dismissedAt DateTime?
 
-  sentAt       DateTime?
-  failureCount Int       @default(0)
-  lastError    String?
+  /// Where it opens, in the recipient's own app — "/booking/…", "/reviews" (§287).
+  link     String?
+  /// The conversation it is about, so an email is skipped once it has been read (§287).
+  threadId String?
+
+  announcementId String?
+  announcement   Announcement? @relation(fields: [announcementId], references: [id], onDelete: SetNull)
+  shopMessageId  String?
+  shopMessage    ShopMessage?  @relation(fields: [shopMessageId], references: [id], onDelete: SetNull)
+
+  /// One per way it is sent — email, push — each with its own state (§287).
+  deliveries NotificationDelivery[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1465,9 +1547,195 @@ model Notification {
   /// The inbox query: one recipient, newest first.
   @@index([recipientId, createdAt])
   @@index([recipientId, dismissedAt, readAt])
-  /// The retry sweep: everything not yet delivered.
-  @@index([status])
+  @@index([announcementId])
   @@map("notifications")
+}
+
+/// One way a notification is sent — by email, or as a push — and how it went
+/// (§287). The notification is the inbox entry; this is the post.
+model NotificationDelivery {
+  id String @id @default(uuid())
+
+  notificationId String
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  channel   NotificationChannel
+  status    NotificationStatus  @default(PENDING)
+  /// When it may go: now, after quiet hours, the next morning's summary, or
+  /// after a short wait to see whether it was read in the app first.
+  dueAt     DateTime            @default(now())
+  attempts  Int                 @default(0)
+  lastError String?
+  sentAt    DateTime?
+
+  /// Push: what the push service handed back for each device, checked later.
+  pushTickets       Json?
+  receiptsCheckedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([notificationId, channel])
+  /// The sender's sweep: what is due.
+  @@index([status, dueAt])
+  @@map("notification_deliveries")
+}
+
+/// One person's choice for one kind of notification on one channel (§287).
+/// Only choices that differ from the default are stored.
+model NotificationPreference {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  category NotificationCategory
+  channel  NotificationChannel
+  enabled  Boolean
+
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, category, channel])
+  @@map("notification_preferences")
+}
+
+/// A phone or a browser that may be sent push notifications (§287).
+model PushDevice {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  kind   PushDeviceKind
+  /// The Expo push token, or a browser's push endpoint.
+  token  String         @unique
+  /// A browser's keys, for web push.
+  p256dh String?
+  auth   String?
+  /// "iPhone", "Chrome on Mac" — so a person can tell their devices apart.
+  label  String?
+
+  lastSeenAt     DateTime  @default(now())
+  /// The push service said it is gone, or its person signed out there.
+  disabledAt     DateTime?
+  disabledReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("push_devices")
+}
+
+/// A yes or a no to being sent marketing, with the words they were shown
+/// (§287). Kept, not overwritten: Rwanda's data law asks that consent can be
+/// shown, and taken back as easily as it was given.
+model ConsentRecord {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// "news.push", "news.email", "shop:<businessId>", …
+  purpose String
+  granted Boolean
+  /// The words on the screen when they chose.
+  wording String
+  /// Where they chose: "customer-app", "seller-app", "email-link".
+  source  String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, purpose])
+  @@map("consent_records")
+}
+
+/// A message from the platform's team to many people at once (§287).
+model Announcement {
+  id String @id @default(uuid())
+
+  kind       AnnouncementKind
+  audience   AnnouncementAudience
+  /// Narrowing the audience: customers in a district, sellers of a category.
+  districtId String?
+  district   District?            @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  categoryId String?
+  category   Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  /// One person, or one shop's team.
+  userId     String?
+  user       User?                @relation("AnnouncementRecipient", fields: [userId], references: [id], onDelete: SetNull)
+  businessId String?
+  business   BusinessProfile?     @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  title     String
+  body      String
+  /// Where its button leads, inside the app it arrives in.
+  linkPath  String?
+  linkLabel String?
+
+  sendPush    Boolean   @default(true)
+  sendEmail   Boolean   @default(false)
+  /// Also a strip across the top of the app, until `bannerUntil`.
+  banner      Boolean   @default(false)
+  bannerUntil DateTime?
+
+  status       AnnouncementStatus @default(DRAFT)
+  scheduledFor DateTime?
+  sentAt       DateTime?
+  /// How many people it was sent to.
+  recipients   Int                @default(0)
+
+  createdById String?
+  createdBy   User?     @relation("AnnouncementsCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  sentById    String?
+  sentBy      User?     @relation("AnnouncementsSent", fields: [sentById], references: [id], onDelete: SetNull)
+  cancelledAt DateTime?
+
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, scheduledFor])
+  @@map("announcements")
+}
+
+/// A customer who asked to hear a shop's offers (§287). Following IS the yes;
+/// unfollowing is the no, and either is one tap.
+model ShopFollow {
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId String
+  business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, businessId])
+  @@index([businessId])
+  @@map("shop_follows")
+}
+
+/// A shop's message to the customers who follow it (§287).
+model ShopMessage {
+  id String @id @default(uuid())
+
+  businessId String
+  business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  /// The branch it is about; its "Book" opens there. Null is the whole shop.
+  locationId String?
+  location   Location?       @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  sentById   String?
+  sentBy     User?           @relation("ShopMessagesSent", fields: [sentById], references: [id], onDelete: SetNull)
+
+  title String
+  body  String
+
+  /// How many followers it was sent to.
+  recipients Int @default(0)
+
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId, createdAt])
+  @@map("shop_messages")
 }
 
 // ---------- Chat ----------
@@ -2130,8 +2398,9 @@ model District {
   provinceId String
   province   Province @relation(fields: [provinceId], references: [id], onDelete: Restrict)
 
-  locations Location[]
-  residents User[]     @relation("HomeDistrict")
+  locations     Location[]
+  residents     User[]         @relation("HomeDistrict")
+  announcements Announcement[]
 
   @@unique([provinceId, name])
   @@index([provinceId])

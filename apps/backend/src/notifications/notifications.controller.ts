@@ -4,11 +4,16 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   Query,
   UseGuards,
   Delete,
   Body,
+  Header,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   AuthenticatedUser,
@@ -17,7 +22,17 @@ import {
 import { NotificationsService } from './notifications.service';
 import { ListNotificationsDto } from './dto/list-notifications.dto';
 import { NotificationIdsDto } from './dto/notification-ids.dto';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiOkResponse } from '@nestjs/swagger';
+import { NotificationPreferencesService } from './notification-preferences.service';
+import { PushService } from './push.service';
+import {
+  NotificationSettingsDto,
+  RegisterDeviceDto,
+  RegisterDeviceResultDto,
+  UnregisterDeviceDto,
+  UnregisterDeviceResultDto,
+  UpdateNotificationSettingsDto,
+} from './dto/notification-settings.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   MarkAllReadDto,
@@ -40,7 +55,62 @@ import {
 @UseGuards(JwtAuthGuard)
 @ApiErrors({ auth: true, validation: true, notFound: true })
 export class NotificationsController {
-  constructor(private readonly notifications: NotificationsService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly preferences: NotificationPreferencesService,
+    private readonly push: PushService,
+  ) {}
+
+  // ---------- What to send, and where (§287). Declared before ':id'. ----------
+
+  @Get('settings')
+  @ApiOkResponse({ type: NotificationSettingsDto })
+  async settings(@CurrentUser() user: AuthenticatedUser): Promise<NotificationSettingsDto> {
+    return this.withDevices(user.userId, await this.preferences.settings(user.userId));
+  }
+
+  @Patch('settings')
+  @ApiOkResponse({ type: NotificationSettingsDto })
+  async updateSettings(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: UpdateNotificationSettingsDto,
+  ): Promise<NotificationSettingsDto> {
+    const source =
+      dto.source ??
+      (user.role === UserRole.ADMIN ? 'admin-console' : user.role === UserRole.BUSINESS ? 'seller-app' : 'customer-app');
+    return this.withDevices(user.userId, await this.preferences.update(user.userId, { ...dto, source }));
+  }
+
+  /** A phone or a browser that may now be sent pushes. */
+  @Post('devices')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: RegisterDeviceResultDto })
+  registerDevice(@CurrentUser() user: AuthenticatedUser, @Body() dto: RegisterDeviceDto) {
+    return this.push.register(user.userId, dto);
+  }
+
+  /** Forgets one — on sign-out there, or when alerts are turned off there. */
+  @Delete('devices')
+  @ApiOkResponse({ type: UnregisterDeviceResultDto })
+  unregisterDevice(@CurrentUser() user: AuthenticatedUser, @Body() dto: UnregisterDeviceDto) {
+    return this.push.unregister(user.userId, dto.token);
+  }
+
+  private async withDevices(
+    userId: string,
+    settings: Awaited<ReturnType<NotificationPreferencesService['settings']>>,
+  ): Promise<NotificationSettingsDto> {
+    const devices = await this.push.devicesOf(userId);
+    return {
+      ...settings,
+      devices: devices.map((d) => ({
+        ...d,
+        lastSeenAt: d.lastSeenAt.toISOString(),
+        createdAt: d.createdAt.toISOString(),
+      })),
+      webPushKey: this.push.vapidPublicKey,
+    };
+  }
 
   @Get()
   @ApiOkResponse({ type: NotificationPageDto })
@@ -107,5 +177,50 @@ export class NotificationsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.notifications.markRead(user.userId, id);
+  }
+}
+
+/**
+ * "Stop emails like this", from an email's footer (§287). No sign-in, on
+ * purpose — like the offers link (§140): a way out behind a password is one
+ * people do not finish, and report as spam instead. The link is signed, and
+ * only ever turns email OFF for one kind.
+ */
+@Controller('notifications/unsubscribe')
+export class NotificationUnsubscribeController {
+  constructor(private readonly preferences: NotificationPreferencesService) {}
+
+  /** What a mail app's own "Unsubscribe" button sends (RFC 8058). */
+  @Post()
+  @ApiExcludeEndpoint()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async oneClick(@Query('u') u: string, @Query('c') c: string, @Query('t') t: string): Promise<void> {
+    await this.preferences.unsubscribe(u, c, t);
+  }
+
+  @Get()
+  @ApiExcludeEndpoint()
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Cache-Control', 'no-store')
+  async page(@Query('u') u: string, @Query('c') c: string, @Query('t') t: string): Promise<string> {
+    const result = await this.preferences.unsubscribe(u, c, t).catch(() => ({ ok: false, title: undefined }));
+    const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const [title, words] = result.ok
+      ? [
+          'Done — no more of those emails',
+          `We will not email you about ${esc((result.title ?? 'that').toLowerCase())}. You will still see it in the app. ` +
+            'You can turn the emails back on any time under Notifications.',
+        ]
+      : ['That link did not work', 'It may be old or cut short. Change what we send in the app, under Notifications.'];
+    return (
+      '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      `<title>${title}</title></head>` +
+      '<body style="margin:0;background:#F6F4F0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#15171C">' +
+      '<div style="max-width:420px;margin:12vh auto;padding:28px;background:#fff;border-radius:22px;text-align:center">' +
+      `<h1 style="font-size:22px;margin:0 0 10px">${title}</h1>` +
+      `<p style="font-size:15px;line-height:1.5;color:#4B505B;margin:0">${words}</p>` +
+      '</div></body></html>'
+    );
   }
 }

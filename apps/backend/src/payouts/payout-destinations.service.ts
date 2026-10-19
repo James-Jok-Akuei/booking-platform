@@ -521,7 +521,7 @@ export class PayoutDestinationsService {
 
   private async notifyAdmins(businessId: string, msisdn: string) {
     const admins = await this.prisma.user.findMany({
-      where: { role: UserRole.ADMIN },
+      where: { role: UserRole.ADMIN, closedAt: null },
       select: { id: true },
     });
 

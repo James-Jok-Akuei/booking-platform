@@ -149,7 +149,7 @@ export class BusinessProfileService {
 
   private async notifyAdmins(name: string, resubmitted: boolean) {
     const admins = await this.prisma.user.findMany({
-      where: { role: UserRole.ADMIN },
+      where: { role: UserRole.ADMIN, closedAt: null },
       select: { id: true },
     });
     await Promise.all(
@@ -302,7 +302,7 @@ export class BusinessProfileService {
   }
 
   private async notifyAdminsOfWriteIn(name: string, label: string, category: string) {
-    const admins = await this.prisma.user.findMany({ where: { role: UserRole.ADMIN }, select: { id: true } });
+    const admins = await this.prisma.user.findMany({ where: { role: UserRole.ADMIN, closedAt: null }, select: { id: true } });
     await Promise.all(
       admins.map((admin) =>
         this.notifications.notify({

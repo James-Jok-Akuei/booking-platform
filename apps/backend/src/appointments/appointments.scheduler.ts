@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { AppointmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { LedgerService } from '../ledger/ledger.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { askHowItWent } from './how-it-went';
 
 /** How long after an appointment ends before it is resolved automatically. */
 export const AUTO_TRANSITION_GRACE_HOURS = 24;
@@ -31,6 +33,8 @@ export class AppointmentsScheduler {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ledger: LedgerService,
+    // Optional so suites about the money alone need not stand up the inbox.
+    @Optional() private readonly notifications?: NotificationsService,
   ) {}
 
   // Every 15 minutes. Written as a raw expression because @nestjs/schedule's
@@ -90,6 +94,10 @@ export class AppointmentsScheduler {
         });
         await this.ledger.releaseOnResolution(tx, appointment.id);
       });
+      // A visit done is a visit to ask about (§287).
+      if (to === AppointmentStatus.COMPLETED) {
+        await askHowItWent(this.prisma, this.notifications, appointment.id);
+      }
       this.logger.log(
         `Auto-transition: appointment ${appointment.id} (location ${appointment.locationId}) ` +
           `${from} -> ${to}; ended ${appointment.endTime.toISOString()}, ` +

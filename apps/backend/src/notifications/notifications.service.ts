@@ -1,9 +1,12 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import {
+  BusinessMemberStatus,
+  NotificationCategory,
+  NotificationChannel,
   NotificationStatus,
   NotificationType,
-  BusinessMemberStatus,
   Prisma,
+  UserRole,
 } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,66 +22,242 @@ import {
 import {
   NOTIFICATION_CHANNEL,
   NotificationChannelDriver,
+  OutboundMessage,
 } from './notification-channel.interface';
 import { AppointmentContext, renderNotification } from './notification-templates';
 import { MONEY_READERS, membersOfBranch } from '../business/branch-scope';
+import {
+  Audience,
+  MARKETING,
+  MARKETING_PUSHES_PER_WEEK,
+  NotificationRef,
+  audienceOf,
+  categoryOf,
+  inWindow,
+  linkFor,
+  localMinutes,
+  nextLocalTime,
+  ruleFor,
+} from './notification-catalog';
+import { NotificationPreferencesService } from './notification-preferences.service';
+import { PushService } from './push.service';
+import { NotificationsGateway } from './notifications.gateway';
 
-/** Give up after this many failed sends; the row stays FAILED for inspection. */
+/** Give up after this many failed sends; the delivery stays FAILED for inspection. */
 export const MAX_NOTIFICATION_ATTEMPTS = 5;
+
+/** How long a message's email waits for it to be read in the app first (§287). */
+export const MESSAGE_EMAIL_WAIT_MS = 10 * 60 * 1000;
+
+/** The morning summary of a seller's bookings goes at this local time (§287). */
+export const DIGEST_AT_MINUTES = 7 * 60;
+
+type NotifyContext = AppointmentContext & { inviterEmail?: string; role?: string };
+
+/** One planned way of sending a notification. */
+type Plan = { channel: NotificationChannel; status: NotificationStatus; dueAt: Date; lastError?: string };
+
+/** The button on a seller's or an administrator's email, by what the notice is about. */
+const BUTTON: Partial<Record<NotificationCategory, string>> = {
+  BOOKINGS: 'See bookings',
+  MESSAGES: 'Read and reply',
+  REVIEWS: 'See reviews',
+  MONEY: 'Getting paid',
+  ADMIN_TICKETS: 'Open the ticket',
+  ADMIN_QUEUE: 'Open the queue',
+  ADMIN_SYSTEM: 'Open settings',
+};
 
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
   private readonly timeZone: string;
+  private readonly businessAppUrl: string;
+  private readonly adminAppUrl: string;
 
   constructor(
     private readonly prisma: PrismaService,
     config: ConfigService,
     @Inject(NOTIFICATION_CHANNEL) private readonly driver: NotificationChannelDriver,
+    private readonly preferences: NotificationPreferencesService,
+    private readonly push: PushService,
+    @Optional() private readonly live?: NotificationsGateway,
   ) {
-    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
+    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Kigali';
+    this.businessAppUrl = (config.get<string>('BUSINESS_APP_URL') ?? 'http://localhost:5174').replace(/\/$/, '');
+    this.adminAppUrl = (config.get<string>('ADMIN_APP_URL') ?? 'http://localhost:5173').replace(/\/$/, '');
   }
 
   /**
-   * Records a notification and attempts to deliver it.
+   * Records a notification in the person's list, and sends it the ways they
+   * chose (§287): by email, as a push, both, or neither — the list always has
+   * it. What can wait for the morning waits; a message's email waits a little
+   * to see whether it was read in the app first.
    *
    * NEVER throws. A notification is a side effect of something that already
    * happened — a booking, a payment, a cancellation — and none of those should
-   * roll back because SMTP was briefly unreachable. Delivery failures are
-   * recorded on the row and retried by the sweep.
+   * roll back because a mail server was briefly unreachable. Failures are
+   * recorded on the delivery and tried again by the sweep. Returns the new
+   * notification's id, or null when there was nobody to tell.
    */
   async notify(params: {
     recipientId: string;
     type: NotificationType;
-    context: AppointmentContext & { inviterEmail?: string; role?: string };
+    context: NotifyContext;
     appointmentId?: string;
-  }): Promise<void> {
+    /** What it is about, for where it opens. */
+    ref?: NotificationRef;
+    /** For announcements and shops' messages: what kind it counts as. */
+    category?: NotificationCategory;
+    /** Where it opens, when the type alone cannot say. */
+    link?: string | null;
+    /** The email button's words, with `link`. */
+    linkLabel?: string | null;
+    announcementId?: string;
+    shopMessageId?: string;
+    /** Narrower than the person's own choices: an announcement sent without email. */
+    channels?: { email?: boolean; push?: boolean };
+    /** Made now, sent by the sweep: for one message going to many people. */
+    deferSend?: boolean;
+  }): Promise<string | null> {
     try {
+      const recipient = await this.prisma.user.findUnique({
+        where: { id: params.recipientId },
+        select: {
+          id: true,
+          role: true,
+          closedAt: true,
+          quietHoursOn: true,
+          quietFrom: true,
+          quietTo: true,
+          bookingEmailDigest: true,
+        },
+      });
+      // A closed account is told nothing more.
+      if (!recipient || recipient.closedAt) return null;
+
+      const audience = audienceOf(recipient.role);
+      const category = params.category ?? categoryOf(params.type, audience);
       const { subject, body } = renderNotification(params.type, {
         ...params.context,
         timeZone: this.timeZone,
+        audience,
       });
+      const ref: NotificationRef = { appointmentId: params.appointmentId, ...params.ref };
+      const link = params.link !== undefined ? params.link : linkFor(params.type, audience, ref);
+
+      const plans = await this.plan(recipient, audience, category, ref.threadId ?? null, params.channels);
 
       const notification = await this.prisma.notification.create({
         data: {
           recipientId: params.recipientId,
           type: params.type,
-          channel: this.driver.channel,
+          category,
           subject,
           body,
+          link,
+          threadId: ref.threadId ?? null,
           appointmentId: params.appointmentId,
+          announcementId: params.announcementId,
+          shopMessageId: params.shopMessageId,
+          deliveries: { create: plans },
         },
-        select: { id: true },
+        select: { id: true, deliveries: { select: { id: true, status: true, dueAt: true } } },
       });
 
-      await this.dispatch(notification.id);
+      this.live?.announce(params.recipientId, { id: notification.id, type: params.type, subject });
+
+      if (!params.deferSend) {
+        const now = Date.now();
+        for (const delivery of notification.deliveries) {
+          if (delivery.status === NotificationStatus.PENDING && delivery.dueAt.getTime() <= now) {
+            await this.deliver(delivery.id);
+          }
+        }
+      }
+      return notification.id;
     } catch (error) {
       // Even creating the row must not break the caller.
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
         `Failed to raise ${params.type} notification for ${params.recipientId}: ${message}`,
       );
+      return null;
     }
+  }
+
+  /**
+   * Which ways one notification goes, and when (§287). A channel the person
+   * turned off is simply not planned; a push that can wait out quiet hours is
+   * planned for the morning; a seller's booking emails can wait for one
+   * morning summary; marketing pushes stop at a few a week.
+   */
+  private async plan(
+    recipient: { id: string; quietHoursOn: boolean; quietFrom: number; quietTo: number; bookingEmailDigest: boolean },
+    audience: Audience,
+    category: NotificationCategory,
+    threadId: string | null,
+    only?: { email?: boolean; push?: boolean },
+  ): Promise<Plan[]> {
+    const now = new Date();
+    const choices = await this.preferences.choicesOf(recipient.id);
+    const rule = ruleFor(audience, category);
+    const plans: Plan[] = [];
+
+    let pushPlanned = false;
+    if (only?.push !== false && this.preferences.isOn(choices, audience, category, NotificationChannel.PUSH)) {
+      if (await this.push.hasDevices(recipient.id)) {
+        if (MARKETING.includes(category) && (await this.marketingPushesThisWeek(recipient.id)) >= MARKETING_PUSHES_PER_WEEK) {
+          plans.push({
+            channel: NotificationChannel.PUSH,
+            status: NotificationStatus.SKIPPED,
+            dueAt: now,
+            lastError: 'A few marketing pushes a week at most.',
+          });
+        } else {
+          const quiet =
+            rule?.canWait &&
+            recipient.quietHoursOn &&
+            inWindow(localMinutes(now, this.timeZone), recipient.quietFrom, recipient.quietTo);
+          plans.push({
+            channel: NotificationChannel.PUSH,
+            status: NotificationStatus.PENDING,
+            dueAt: quiet ? nextLocalTime(now, this.timeZone, recipient.quietTo) : now,
+          });
+          pushPlanned = true;
+        }
+      }
+    }
+
+    if (only?.email !== false && this.preferences.isOn(choices, audience, category, NotificationChannel.EMAIL)) {
+      if (audience === 'BUSINESS' && category === NotificationCategory.BOOKINGS && recipient.bookingEmailDigest) {
+        plans.push({
+          channel: NotificationChannel.EMAIL,
+          status: NotificationStatus.HELD,
+          dueAt: nextLocalTime(now, this.timeZone, DIGEST_AT_MINUTES),
+        });
+      } else if (category === NotificationCategory.MESSAGES && threadId && pushPlanned) {
+        plans.push({
+          channel: NotificationChannel.EMAIL,
+          status: NotificationStatus.PENDING,
+          dueAt: new Date(now.getTime() + MESSAGE_EMAIL_WAIT_MS),
+        });
+      } else {
+        plans.push({ channel: NotificationChannel.EMAIL, status: NotificationStatus.PENDING, dueAt: now });
+      }
+    }
+    return plans;
+  }
+
+  private marketingPushesThisWeek(userId: string) {
+    return this.prisma.notificationDelivery.count({
+      where: {
+        channel: NotificationChannel.PUSH,
+        status: { in: [NotificationStatus.PENDING, NotificationStatus.SENDING, NotificationStatus.SENT] },
+        createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        notification: { recipientId: userId, category: { in: MARKETING } },
+      },
+    });
   }
 
   /**
@@ -93,14 +272,25 @@ export class NotificationsService {
   async notifyUnregisteredEmail(params: {
     email: string;
     type: NotificationType;
-    context: AppointmentContext & { inviterEmail?: string; role?: string };
+    context: NotifyContext;
   }): Promise<void> {
     try {
       const { subject, body } = renderNotification(params.type, {
         ...params.context,
         timeZone: this.timeZone,
       });
-      await this.driver.send({ destination: params.email, subject, body });
+      const app = params.context.role === 'ADMIN' ? this.adminAppUrl : this.businessAppUrl;
+      await this.driver.send({
+        destination: params.email,
+        subject,
+        body,
+        dressing: {
+          eyebrow: 'An invitation',
+          button: { label: 'Sign in', url: `${app}/login` },
+          reason: 'You get this because someone invited this address.',
+          manage: { label: 'If you did not expect it, you can ignore it.' },
+        },
+      });
       this.logger.log(
         `Sent ${params.type} to ${params.email} (no account yet, so no inbox row).`,
       );
@@ -117,7 +307,8 @@ export class NotificationsService {
   /**
    * Notifies the ACTIVE members of a business who should hear it (§277): about
    * a booking or a review, those who look after its branch; about the money,
-   * those who may read it; about the business itself, everyone.
+   * those who may read it; about the business itself, everyone. Each then
+   * gets it the ways they chose (§287).
    */
   async notifyBusiness(params: {
     businessId: string;
@@ -128,6 +319,7 @@ export class NotificationsService {
     locationId?: string | null;
     /** Only those who may read the money — the owner and every-branch managers. */
     moneyOnly?: boolean;
+    ref?: NotificationRef;
   }): Promise<void> {
     const branch =
       params.locationId !== undefined
@@ -156,7 +348,7 @@ export class NotificationsService {
     // Everyone it concerns, not just the owner: staff run the day's
     // appointments (§16.6), so a booking nobody on that floor hears about is
     // the problem this module exists to fix — and a booking at another
-    // branch is noise to them (§277). Per-person preferences are a later concern.
+    // branch is noise to them (§277). How each hears is their own choice (§287).
     await Promise.all(
       members.map((member) =>
         this.notify({
@@ -164,66 +356,300 @@ export class NotificationsService {
           type: params.type,
           context: params.context,
           appointmentId: params.appointmentId,
+          ref: params.ref,
         }),
       ),
     );
   }
 
-  /** Sends one stored notification, recording the outcome either way. */
-  async dispatch(notificationId: string): Promise<boolean> {
-    const notification = await this.prisma.notification.findUnique({
-      where: { id: notificationId },
+  /** Every administrator whose account is open (§287: one place, closed accounts left out). */
+  async notifyAdmins(params: { type: NotificationType; context: NotifyContext; ref?: NotificationRef }) {
+    const admins = await this.prisma.user.findMany({
+      where: { role: UserRole.ADMIN, closedAt: null },
+      select: { id: true },
+    });
+    await Promise.all(
+      admins.map((admin) =>
+        this.notify({ recipientId: admin.id, type: params.type, context: params.context, ref: params.ref }),
+      ),
+    );
+    return admins.length;
+  }
+
+  // ---------- Sending ----------
+
+  /**
+   * Sends one delivery, recording the outcome either way (§287). Claimed
+   * first, so the sweep and an inline send can never both send it.
+   */
+  async deliver(deliveryId: string): Promise<boolean> {
+    const { count } = await this.prisma.notificationDelivery.updateMany({
+      where: { id: deliveryId, status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] } },
+      data: { status: NotificationStatus.SENDING, attempts: { increment: 1 } },
+    });
+    if (count === 0) return false;
+
+    const delivery = await this.prisma.notificationDelivery.findUnique({
+      where: { id: deliveryId },
       select: {
         id: true,
-        subject: true,
-        body: true,
-        type: true,
-        failureCount: true,
-        recipient: { select: { email: true } },
+        channel: true,
+        attempts: true,
+        notification: {
+          select: {
+            id: true,
+            type: true,
+            category: true,
+            subject: true,
+            body: true,
+            link: true,
+            threadId: true,
+            readAt: true,
+            createdAt: true,
+            announcement: { select: { linkLabel: true } },
+            recipient: { select: { id: true, email: true, role: true } },
+          },
+        },
       },
     });
-    if (!notification) return false;
-
-    if (!this.driver.isConfigured()) {
-      await this.recordFailure(notification.id, notification.failureCount, 'Channel not configured.');
-      return false;
-    }
+    if (!delivery) return false;
+    const n = delivery.notification;
 
     try {
-      await this.driver.send({
-        destination: notification.recipient.email,
-        subject: notification.subject,
-        body: notification.body,
-      });
+      if (delivery.channel === NotificationChannel.PUSH) {
+        if (n.readAt) return this.finish(delivery.id, NotificationStatus.SKIPPED, 'Read in the app before it went.');
+        const unread = await this.prisma.notification.count({
+          where: { recipientId: n.recipient.id, readAt: null, dismissedAt: null },
+        });
+        const result = await this.push.sendToUser(n.recipient.id, {
+          title: n.subject,
+          body: pushText(n.type, n.body),
+          link: n.link,
+          notificationId: n.id,
+          badge: unread,
+        });
+        if (result.devices === 0) return this.finish(delivery.id, NotificationStatus.SKIPPED, 'No phone or browser to send to.');
+        if (result.sent === 0) return this.fail(delivery.id, delivery.attempts, result.errors.join('; ') || 'Not sent.');
+        await this.prisma.notificationDelivery.update({
+          where: { id: delivery.id },
+          data: {
+            status: NotificationStatus.SENT,
+            sentAt: new Date(),
+            lastError: result.errors.length ? result.errors.join('; ').slice(0, 500) : null,
+            pushTickets: result.tickets.length ? result.tickets : Prisma.JsonNull,
+          },
+        });
+        return true;
+      }
 
-      await this.prisma.notification.update({
-        where: { id: notification.id },
+      // Email. A message read in the app since needs no email after it (§287).
+      if (n.category === NotificationCategory.MESSAGES && (n.readAt || (await this.threadReadSince(n)))) {
+        return this.finish(delivery.id, NotificationStatus.SKIPPED, 'Read in the app before the email went.');
+      }
+      if (!this.driver.isConfigured()) return this.fail(delivery.id, delivery.attempts, 'Channel not configured.');
+
+      await this.driver.send(this.emailFor(n));
+      await this.prisma.notificationDelivery.update({
+        where: { id: delivery.id },
         data: { status: NotificationStatus.SENT, sentAt: new Date(), lastError: null },
       });
-      this.logger.log(
-        `Sent ${notification.type} to ${notification.recipient.email} (${notification.id}).`,
-      );
+      this.logger.log(`Sent ${n.type} by email to ${n.recipient.email} (${n.id}).`);
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      await this.recordFailure(notification.id, notification.failureCount, message);
-      return false;
+      return this.fail(delivery.id, delivery.attempts, error instanceof Error ? error.message : String(error));
     }
   }
 
-  private async recordFailure(id: string, failureCount: number, error: string) {
-    const attempts = failureCount + 1;
-    await this.prisma.notification.update({
+  /** The email for one notification: the app's look, why it came, how to stop it. */
+  private emailFor(n: {
+    id: string;
+    type: NotificationType;
+    category: NotificationCategory;
+    subject: string;
+    body: string;
+    link: string | null;
+    announcement: { linkLabel: string | null } | null;
+    recipient: { id: string; email: string; role: UserRole };
+  }): OutboundMessage {
+    const audience = audienceOf(n.recipient.role);
+    const rule = ruleFor(audience, n.category);
+    const app = audience === 'ADMIN' ? this.adminAppUrl : audience === 'BUSINESS' ? this.businessAppUrl : null;
+    const title = n.type === NotificationType.ANNOUNCEMENT ? 'From our team' : (rule?.title ?? 'Notice');
+    const locked = Boolean(rule?.email?.locked);
+    return {
+      destination: n.recipient.email,
+      subject: n.subject,
+      body: n.body,
+      dressing: {
+        eyebrow: title,
+        // Customers open the phone app; a link would only open a browser.
+        button:
+          app && n.link
+            ? { label: n.announcement?.linkLabel || BUTTON[n.category] || 'Open', url: `${app}${n.link}` }
+            : null,
+        reason: locked
+          ? `You always get emails about ${title.toLowerCase()}.`
+          : `You get emails about ${title.toLowerCase()} because they are turned on.`,
+        manage: app
+          ? { label: 'Change what we send', url: `${app}/notifications` }
+          : { label: 'Change what we send in the app, under Account → Notifications.' },
+        unsubscribeUrl: locked ? null : this.preferences.unsubscribeUrl(n.recipient.id, n.category),
+      },
+    };
+  }
+
+  private async threadReadSince(n: { threadId: string | null; createdAt: Date; recipient: { id: string } }) {
+    if (!n.threadId) return false;
+    const state = await this.prisma.threadReadState.findUnique({
+      where: { threadId_userId: { threadId: n.threadId, userId: n.recipient.id } },
+      select: { lastReadAt: true },
+    });
+    return Boolean(state && state.lastReadAt >= n.createdAt);
+  }
+
+  private async finish(id: string, status: NotificationStatus, note: string) {
+    await this.prisma.notificationDelivery.update({
+      where: { id },
+      data: { status, lastError: note },
+    });
+    return false;
+  }
+
+  private async fail(id: string, attempts: number, error: string) {
+    // Tried again later, waiting longer each time, up to an hour.
+    const wait = Math.min(2 ** attempts, 60) * 60 * 1000;
+    await this.prisma.notificationDelivery.update({
       where: { id },
       data: {
         status: NotificationStatus.FAILED,
-        failureCount: attempts,
         lastError: error.slice(0, 500),
+        dueAt: new Date(Date.now() + wait),
       },
     });
-    this.logger.warn(
-      `Notification ${id} failed (attempt ${attempts}/${MAX_NOTIFICATION_ATTEMPTS}): ${error}`,
-    );
+    this.logger.warn(`Delivery ${id} failed (attempt ${attempts}/${MAX_NOTIFICATION_ATTEMPTS}): ${error}`);
+    return false;
+  }
+
+  /**
+   * The sweep (§287): everything due — a push held for the morning, a
+   * message's email after its wait, a failure ready for another try, a send
+   * interrupted half-way — and then the morning summaries.
+   */
+  async deliverDue(limit = 200): Promise<{ attempted: number; delivered: number; summaries: number }> {
+    const now = new Date();
+    // A send interrupted half-way (a restart) is tried again, not lost.
+    await this.prisma.notificationDelivery.updateMany({
+      where: { status: NotificationStatus.SENDING, updatedAt: { lt: new Date(now.getTime() - 5 * 60 * 1000) } },
+      data: { status: NotificationStatus.PENDING },
+    });
+    const due = await this.prisma.notificationDelivery.findMany({
+      where: {
+        dueAt: { lte: now },
+        OR: [
+          { status: NotificationStatus.PENDING },
+          { status: NotificationStatus.FAILED, attempts: { lt: MAX_NOTIFICATION_ATTEMPTS } },
+        ],
+      },
+      orderBy: { dueAt: 'asc' },
+      take: limit,
+      select: { id: true },
+    });
+    let delivered = 0;
+    for (const delivery of due) {
+      if (await this.deliver(delivery.id)) delivered++;
+    }
+    const summaries = await this.sendSummaries(now);
+    return { attempted: due.length, delivered, summaries };
+  }
+
+  /**
+   * The morning summary (§287): every booking email a seller asked to have
+   * together, as one email, listing each.
+   */
+  private async sendSummaries(now: Date): Promise<number> {
+    const held = await this.prisma.notificationDelivery.findMany({
+      where: { status: NotificationStatus.HELD, channel: NotificationChannel.EMAIL, dueAt: { lte: now } },
+      orderBy: { createdAt: 'asc' },
+      take: 500,
+      select: {
+        id: true,
+        attempts: true,
+        notification: {
+          select: {
+            subject: true,
+            createdAt: true,
+            recipient: { select: { id: true, email: true } },
+          },
+        },
+      },
+    });
+    if (held.length === 0 || !this.driver.isConfigured()) return 0;
+
+    const byPerson = new Map<string, typeof held>();
+    for (const d of held) {
+      const list = byPerson.get(d.notification.recipient.id) ?? [];
+      list.push(d);
+      byPerson.set(d.notification.recipient.id, list);
+    }
+
+    let sent = 0;
+    for (const [, list] of byPerson) {
+      const email = list[0].notification.recipient.email;
+      const clock = new Intl.DateTimeFormat('en-GB', { timeZone: this.timeZone, weekday: 'short', hour: '2-digit', minute: '2-digit' });
+      const lines = list.map((d) => `${clock.format(d.notification.createdAt)} — ${d.notification.subject}`).join('\n');
+      try {
+        await this.driver.send({
+          destination: email,
+          subject: `${list.length} booking update${list.length === 1 ? '' : 's'} since yesterday`,
+          body: `Here is what happened with your bookings.\n\n${lines}\n\nEach one is in your notifications, and all of them under Appointments.`,
+          dressing: {
+            eyebrow: 'Your morning summary',
+            button: { label: 'See bookings', url: `${this.businessAppUrl}/appointments` },
+            reason: 'You chose one booking summary each morning instead of an email for each.',
+            manage: { label: 'Change what we send', url: `${this.businessAppUrl}/notifications` },
+          },
+        });
+        await this.prisma.notificationDelivery.updateMany({
+          where: { id: { in: list.map((d) => d.id) } },
+          data: { status: NotificationStatus.SENT, sentAt: new Date(), lastError: null },
+        });
+        sent++;
+      } catch (error) {
+        await this.prisma.notificationDelivery.updateMany({
+          where: { id: { in: list.map((d) => d.id) } },
+          data: {
+            attempts: { increment: 1 },
+            lastError: (error instanceof Error ? error.message : String(error)).slice(0, 500),
+            dueAt: new Date(Date.now() + 10 * 60 * 1000),
+          },
+        });
+      }
+    }
+    return sent;
+  }
+
+  /** Expo's receipts for pushes sent 15 minutes to a day ago (§287). */
+  async checkPushReceipts(): Promise<number> {
+    const now = Date.now();
+    const sent = await this.prisma.notificationDelivery.findMany({
+      where: {
+        channel: NotificationChannel.PUSH,
+        status: NotificationStatus.SENT,
+        receiptsCheckedAt: null,
+        pushTickets: { not: Prisma.AnyNull },
+        sentAt: { lte: new Date(now - 15 * 60 * 1000), gte: new Date(now - 24 * 60 * 60 * 1000) },
+      },
+      take: 300,
+      select: { id: true, pushTickets: true },
+    });
+    if (sent.length === 0) return 0;
+    const tickets = sent.flatMap((d) => (d.pushTickets as Array<{ deviceId: string; ticketId: string }> | null) ?? []);
+    const gone = await this.push.checkReceipts(tickets);
+    await this.prisma.notificationDelivery.updateMany({
+      where: { id: { in: sent.map((d) => d.id) } },
+      data: { receiptsCheckedAt: new Date() },
+    });
+    return gone;
   }
 
   // ---------- Inbox ----------
@@ -359,4 +785,12 @@ export class NotificationsService {
     });
     return { updated: count };
   }
+}
+
+/** A push's words: a message's own first line, or the notice's first paragraph. */
+export function pushText(type: NotificationType, body: string): string {
+  const paragraphs = body.split('\n\n').map((p) => p.trim()).filter(Boolean);
+  const quoted = type === NotificationType.NEW_MESSAGE ? paragraphs.find((p) => p.startsWith('"')) : undefined;
+  const text = quoted ? quoted.replace(/^"|"$/g, '') : (paragraphs[0] ?? '');
+  return text.length > 178 ? `${text.slice(0, 175)}…` : text;
 }

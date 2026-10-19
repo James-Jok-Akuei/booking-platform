@@ -26,10 +26,15 @@ export class EmailNotificationChannel implements NotificationChannelDriver {
   }
 
   async send(message: OutboundMessage): Promise<void> {
-    await this.mail.sendGenericEmail(
-      message.destination,
-      message.subject,
-      message.body,
-    );
+    // In the app's own look, with why it came and how to stop it (§287).
+    if (message.dressing) {
+      await this.mail.sendNotificationEmail(message.destination, {
+        subject: message.subject,
+        body: message.body,
+        ...message.dressing,
+      });
+      return;
+    }
+    await this.mail.sendGenericEmail(message.destination, message.subject, message.body);
   }
 }

@@ -1,5 +1,6 @@
 import { NotificationType } from '@prisma/client';
 import { INTERNAL_CURRENCY, formatMajorUnits } from '../payments/currency';
+import { Audience, dayWord } from './notification-catalog';
 
 export interface AppointmentContext {
   serviceName: string;
@@ -33,7 +34,13 @@ const money = (minor?: number, currency = INTERNAL_CURRENCY) =>
  */
 export function renderNotification(
   type: NotificationType,
-  ctx: AppointmentContext & { timeZone: string; inviterEmail?: string; role?: string },
+  ctx: AppointmentContext & {
+    timeZone: string;
+    inviterEmail?: string;
+    role?: string;
+    /** Who is reading it — the same event reads differently to each side (§287). */
+    audience?: Audience;
+  },
 ): { subject: string; body: string } {
   const when = ctx.startTime
     ? new Intl.DateTimeFormat('en-GB', {
@@ -96,17 +103,32 @@ export function renderNotification(
           'confirm the booking.',
       };
 
-    case NotificationType.APPOINTMENT_REMINDER:
+    case NotificationType.APPOINTMENT_REMINDER: {
+      // "Today" or "Tomorrow" as it really is: a booking made in the morning
+      // for the afternoon is reminded the same day (§287).
+      const day = ctx.startTime ? dayWord(ctx.startTime, ctx.timeZone) : 'Soon';
       return {
-        subject: `Tomorrow: ${ctx.serviceName} at ${ctx.locationName}`,
+        subject: `${day}: ${ctx.serviceName} at ${ctx.locationName}`,
         body:
-          `A reminder about your appointment tomorrow.\n\n` +
+          `A reminder about your appointment ${day === 'Today' || day === 'Tomorrow' ? day.toLowerCase() : `on ${day}`}.\n\n` +
           `Service: ${ctx.serviceName}\nWhere: ${ctx.locationName}\nWhen: ${when}\n\n` +
           'Bring the arrival code from your booking email — the business needs it ' +
           'to start your appointment.',
       };
+    }
 
     case NotificationType.NEW_MESSAGE:
+      // To the shop it is a customer writing, not the shop itself (§287).
+      if (ctx.audience === 'BUSINESS') {
+        return {
+          subject: 'New message from a customer',
+          body:
+            `A customer wrote to ${ctx.businessName}.\n\n` +
+            (ctx.reason ? `"${ctx.reason}"\n\n` : '') +
+            'Open Messages to read it and reply. Further messages in this ' +
+            'conversation will not email you again straight away.',
+        };
+      }
       return {
         subject: `New message from ${ctx.businessName}`,
         body:
@@ -326,6 +348,39 @@ export function renderNotification(
           'way an appointment can be completed on the business\'s word alone, so ' +
           'a business that uses it often is worth a look.',
       };
+
+    case NotificationType.APPOINTMENT_COMPLETED:
+      return {
+        subject: `How was ${ctx.serviceName} at ${ctx.businessName}?`,
+        body:
+          `Thank you for visiting ${ctx.businessName}.\n\n` +
+          'A few words about how it went help other people choose, and help the ' +
+          'shop do better. It takes a minute.',
+      };
+
+    case NotificationType.PAYOUT_SENT:
+      return {
+        subject: `Payout sent: ${money(ctx.depositAmountMinor, ctx.currency)}`,
+        body:
+          `${money(ctx.depositAmountMinor, ctx.currency)} has been sent to your payout number.\n\n` +
+          (ctx.reason ? `Reference: ${ctx.reason}\n\n` : '') +
+          'The full list of what it covers is under Getting paid.',
+      };
+
+    case NotificationType.PAYOUT_FAILED:
+      return {
+        subject: 'A payout did not go through',
+        body:
+          `A payout of ${money(ctx.depositAmountMinor, ctx.currency)} did not reach your payout number.\n\n` +
+          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
+          'Nothing is lost: the money is back in your balance and goes out on the next ' +
+          'payout run. If your number has changed, update it under Getting paid.',
+      };
+
+    // Written by a person, not a template: the title and the words are theirs (§287).
+    case NotificationType.ANNOUNCEMENT:
+    case NotificationType.SHOP_MESSAGE:
+      return { subject: ctx.serviceName, body: ctx.reason ?? '' };
 
     case NotificationType.BUSINESS_INVITATION:
       return {

@@ -2,6 +2,8 @@ import { NotificationType } from '@prisma/client';
 import { TestingModule } from '@nestjs/testing';
 import { NotificationsService } from '../src/notifications/notifications.service';
 import { NOTIFICATION_CHANNEL } from '../src/notifications/notification-channel.interface';
+import { NotificationPreferencesService } from '../src/notifications/notification-preferences.service';
+import { PushService } from '../src/notifications/push.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestModule, resetDatabase } from './setup/test-module';
 import { createCustomer } from './setup/factories';
@@ -21,6 +23,8 @@ describe('Dismissing notifications (§159)', () => {
   beforeAll(async () => {
     moduleRef = await createTestModule([
       NotificationsService,
+      NotificationPreferencesService,
+      PushService,
       { provide: NOTIFICATION_CHANNEL, useValue: { send: async () => undefined } },
     ]);
     prisma = moduleRef.get(PrismaService);

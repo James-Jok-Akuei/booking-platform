@@ -1,10 +1,13 @@
 import { Global, Module } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
-import { NotificationsController } from './notifications.controller';
+import { NotificationsController, NotificationUnsubscribeController } from './notifications.controller';
 import { NotificationsScheduler } from './notifications.scheduler';
 import { EmailNotificationChannel } from './channels/email-notification.channel';
 import { NOTIFICATION_CHANNEL } from './notification-channel.interface';
 import { MailModule } from '../mail/mail.module';
+import { NotificationPreferencesService } from './notification-preferences.service';
+import { PushService } from './push.service';
+import { NotificationsGateway } from './notifications.gateway';
 
 /**
  * Global, because notifications are raised from the appointments, payments and
@@ -17,10 +20,13 @@ import { MailModule } from '../mail/mail.module';
 @Global()
 @Module({
   imports: [MailModule],
-  controllers: [NotificationsController],
+  controllers: [NotificationsController, NotificationUnsubscribeController],
   providers: [
     NotificationsService,
     NotificationsScheduler,
+    NotificationPreferencesService,
+    PushService,
+    NotificationsGateway,
     EmailNotificationChannel,
     {
       provide: NOTIFICATION_CHANNEL,
@@ -28,6 +34,6 @@ import { MailModule } from '../mail/mail.module';
       useFactory: (email: EmailNotificationChannel) => email,
     },
   ],
-  exports: [NotificationsService],
+  exports: [NotificationsService, NotificationPreferencesService, PushService],
 })
 export class NotificationsModule {}

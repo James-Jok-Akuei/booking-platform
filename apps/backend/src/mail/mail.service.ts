@@ -64,6 +64,102 @@ export class MailService {
   }
 
   /**
+   * A notification, as an email that looks like the app (§287).
+   *
+   * Every word is escaped: a notice carries what people typed — a message's
+   * first line, a reason, a ticket's subject — and none of it may become a
+   * link or markup in an email that comes from our address. The footer says
+   * why it came and where to change that; a kind that can be turned off has a
+   * one-click unsubscribe, in the body and in the headers mail apps read.
+   */
+  async sendNotificationEmail(
+    email: string,
+    message: {
+      subject: string;
+      body: string;
+      /** Small capitals above the title: what kind of notice this is. */
+      eyebrow: string;
+      button?: { label: string; url: string } | null;
+      /** Why this came, in one sentence. */
+      reason: string;
+      /** Where to change what is sent, as words (an app screen) or a link. */
+      manage: { label: string; url?: string | null };
+      unsubscribeUrl?: string | null;
+    },
+  ): Promise<void> {
+    const from = this.config.get<string>('SMTP_FROM');
+    if (this.config.get<string>('NODE_ENV') !== 'production') {
+      this.logger.log(`[DEV] Email to ${email}: ${message.subject}`);
+    }
+
+    const esc = (value: string) =>
+      value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    const font = 'font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+    const paragraphs = message.body
+      .split('\n\n')
+      .filter((p) => p.trim())
+      .map(
+        (p) =>
+          `<p style="margin:0 0 14px;font-size:15px;line-height:23px;color:#4B505B">${esc(p).replace(/\n/g, '<br>')}</p>`,
+      )
+      .join('');
+    const button = message.button
+      ? '<tr><td style="padding:4px 28px 26px">' +
+        `<a href="${esc(message.button.url)}" style="display:inline-block;${font};font-size:15px;font-weight:700;color:#FFFFFF;background:#F0532D;border-radius:999px;padding:13px 24px;text-decoration:none">${esc(message.button.label)} &rarr;</a>` +
+        '</td></tr>'
+      : '';
+    const manage = message.manage.url
+      ? `<a href="${esc(message.manage.url)}" style="color:#8B909B">${esc(message.manage.label)}</a>`
+      : esc(message.manage.label);
+    const unsubscribe = message.unsubscribeUrl
+      ? ` &middot; <a href="${esc(message.unsubscribeUrl)}" style="color:#8B909B">Stop emails like this</a>`
+      : '';
+
+    const html =
+      '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
+      '<body style="margin:0;background:#F6F4F0">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F4F0"><tr><td align="center" style="padding:32px 14px">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#FFFFFF;border-radius:24px">' +
+      '<tr><td style="height:8px;background:#F0532D;border-radius:24px 24px 0 0;font-size:0;line-height:0">&nbsp;</td></tr>' +
+      `<tr><td style="padding:28px 28px 6px;${font}">` +
+      `<div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#F0532D">${esc(message.eyebrow)}</div>` +
+      `<div style="font-size:22px;line-height:28px;font-weight:800;color:#15171C;letter-spacing:-0.3px;padding:6px 0 14px">${esc(message.subject)}</div>` +
+      paragraphs +
+      '</td></tr>' +
+      button +
+      `<tr><td style="padding:0 28px 26px;${font}">` +
+      '<div style="font-size:12px;line-height:19px;color:#8B909B;padding-top:14px;border-top:1px solid #ECE9E3">' +
+      `${esc(message.reason)} ${manage}${unsubscribe}` +
+      '</div></td></tr></table></td></tr></table></body></html>';
+
+    const text =
+      `${message.subject}\n\n${message.body}` +
+      (message.button ? `\n\n${message.button.label}: ${message.button.url}` : '') +
+      `\n\n${message.reason} ${message.manage.label}${message.manage.url ? `: ${message.manage.url}` : ''}` +
+      (message.unsubscribeUrl ? `\nStop emails like this: ${message.unsubscribeUrl}` : '');
+
+    await this.transporter.sendMail({
+      from,
+      to: email,
+      subject: message.subject,
+      text,
+      html,
+      ...(message.unsubscribeUrl
+        ? {
+            list: { unsubscribe: { url: message.unsubscribeUrl, comment: 'Stop emails like this' } },
+            headers: { 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
+          }
+        : {}),
+    });
+  }
+
+  /**
    * The code, as an email that looks like the app it opens (§183).
    *
    * The six digits are drawn as six boxes, the way the app asks for them, so

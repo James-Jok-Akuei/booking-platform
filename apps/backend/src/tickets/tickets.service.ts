@@ -11,6 +11,7 @@ import {
   Prisma,
   ReporterType,
   TicketAuthorType,
+  TicketCategory,
   TicketStatus,
   UserRole,
 } from '@prisma/client';
@@ -45,6 +46,58 @@ export class TicketsService {
   ) {}
 
   // ---------- Creation ----------
+
+  /**
+   * An administrator writes first (§287): a conversation with one customer or
+   * seller, held as a support ticket so they can reply and both sides keep the
+   * record — not a one-way email that cannot be answered. Assigned to the
+   * administrator who started it; the person is told the usual way.
+   */
+  async startByAdmin(adminId: string, dto: { userId: string; subject: string; body: string; category?: TicketCategory }) {
+    const person = await this.prisma.user.findFirst({
+      where: { id: dto.userId, closedAt: null, role: { in: [UserRole.CUSTOMER, UserRole.BUSINESS] } },
+      select: { id: true, role: true },
+    });
+    if (!person) throw new NotFoundException('That person was not found, or their account is closed.');
+
+    const reporterType = person.role === UserRole.BUSINESS ? ReporterType.BUSINESS : ReporterType.CUSTOMER;
+    const businessId =
+      reporterType === ReporterType.BUSINESS
+        ? ((
+            await this.prisma.businessMembership.findFirst({
+              where: { userId: person.id, status: BusinessMemberStatus.ACTIVE },
+              select: { businessProfileId: true },
+            })
+          )?.businessProfileId ?? null)
+        : null;
+
+    const ticket = await this.prisma.$transaction(async (tx) => {
+      const [{ reference }] = await tx.$queryRaw<Array<{ reference: string }>>`
+        SELECT 'TKT-' || LPAD(nextval('ticket_reference_seq')::text, 6, '0') AS reference
+      `;
+      return tx.ticket.create({
+        data: {
+          reference,
+          reporterId: person.id,
+          reporterType,
+          businessId,
+          category: dto.category ?? TicketCategory.OTHER,
+          subject: dto.subject.trim(),
+          status: TicketStatus.IN_PROGRESS,
+          assignedAdminId: adminId,
+          lastMessageAt: new Date(),
+          messages: {
+            create: { authorId: adminId, authorType: TicketAuthorType.ADMIN, body: dto.body, isInternal: false },
+          },
+        },
+        select: { id: true, reference: true, subject: true, reporterId: true, assignedAdminId: true },
+      });
+    });
+
+    await this.notifyOnMessage(ticket, true, false);
+    this.logger.log(`Ticket ${ticket.reference} started by admin ${adminId} with ${person.id}.`);
+    return { id: ticket.id, reference: ticket.reference };
+  }
 
   /**
    * Raises a ticket.
@@ -481,7 +534,7 @@ export class TicketsService {
 
     await this.attach(ticketId, message.id, user.userId, files);
 
-    await this.notifyOnMessage(ticket, isAdmin, isInternal);
+    await this.notifyOnMessage({ ...ticket, id: ticketId }, isAdmin, isInternal);
 
     return message;
   }
@@ -590,6 +643,7 @@ export class TicketsService {
       recipientId: ticket.reporterId,
       type: NotificationType.TICKET_STATUS_CHANGED,
       context: this.ticketContext(ticket.reference, ticket.subject, `Now ${params.to}.`),
+      ref: { ticketId: params.ticketId, ticketReference: ticket.reference },
     });
 
     this.logger.log(
@@ -732,7 +786,7 @@ export class TicketsService {
 
   private async notifyAdmins(type: NotificationType, reference: string, subject: string) {
     const admins = await this.prisma.user.findMany({
-      where: { role: UserRole.ADMIN },
+      where: { role: UserRole.ADMIN, closedAt: null },
       select: { id: true },
     });
 
@@ -742,6 +796,7 @@ export class TicketsService {
           recipientId: admin.id,
           type,
           context: this.ticketContext(reference, subject),
+          ref: { ticketReference: reference },
         }),
       ),
     );
@@ -749,6 +804,7 @@ export class TicketsService {
 
   private async notifyOnMessage(
     ticket: {
+      id: string;
       reference: string;
       subject: string;
       reporterId: string;
@@ -766,6 +822,7 @@ export class TicketsService {
         recipientId: ticket.reporterId,
         type: NotificationType.TICKET_MESSAGE,
         context: this.ticketContext(ticket.reference, ticket.subject),
+        ref: { ticketId: ticket.id, ticketReference: ticket.reference },
       });
       return;
     }
@@ -777,6 +834,7 @@ export class TicketsService {
         recipientId: ticket.assignedAdminId,
         type: NotificationType.TICKET_MESSAGE,
         context: this.ticketContext(ticket.reference, ticket.subject),
+        ref: { ticketReference: ticket.reference },
       });
       return;
     }

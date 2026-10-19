@@ -1,22 +1,16 @@
-import {
-  NotificationChannel,
-  NotificationStatus,
-  NotificationType,
-  Prisma,
-} from '@prisma/client';
+import { NotificationCategory, NotificationType, Prisma } from '@prisma/client';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 
 /** One select, shared with the DTO describing its result (§128.5). */
 export const NOTIFICATION_SELECT = {
   id: true,
   type: true,
-  channel: true,
-  status: true,
+  category: true,
   subject: true,
   body: true,
   appointmentId: true,
+  link: true,
   readAt: true,
-  sentAt: true,
   createdAt: true,
 } as const satisfies Prisma.NotificationSelect;
 
@@ -34,19 +28,19 @@ type NotificationRow = Serialised<
 export class NotificationDto implements NotificationRow {
   id!: string;
   type!: NotificationType;
-  channel!: NotificationChannel;
-  /** Whether the platform managed to deliver it, not whether it was read. */
-  status!: NotificationStatus;
+  /** What it is about, for choosing what you get (§287). */
+  category!: NotificationCategory;
 
   subject!: string;
   body!: string;
 
   /** What it is about, when it is about a booking. */
   appointmentId!: string | null;
+  /** Where it opens, in the recipient's own app — the same place a push and an email lead (§287). */
+  link!: string | null;
 
   /** Null until read. The only field this inbox lets anyone change. */
   readAt!: string | null;
-  sentAt!: string | null;
   createdAt!: string;
 }
 

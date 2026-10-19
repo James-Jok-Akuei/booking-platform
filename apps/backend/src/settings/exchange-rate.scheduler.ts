@@ -44,7 +44,7 @@ export class ExchangeRateScheduler {
     if (!dueAgain) return { stale: true, notified: 0 };
 
     const admins = await this.prisma.user.findMany({
-      where: { role: UserRole.ADMIN },
+      where: { role: UserRole.ADMIN, closedAt: null },
       select: { id: true },
     });
 

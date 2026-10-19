@@ -441,6 +441,9 @@ export class ChatService {
           reason: preview,
         },
         appointmentId: thread.appointmentId ?? undefined,
+        // Opens the conversation itself, and lets the email wait to see
+        // whether it is read in the app first (§287).
+        ref: { threadId: thread.id },
       });
     }
   }

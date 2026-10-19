@@ -260,6 +260,7 @@ export class ReviewsService {
       recipientId: review.customerId,
       type: NotificationType.REVIEW_RESPONSE,
       context: this.reviewContext('The business replied to your review.'),
+      ref: { locationId: updated.locationId },
     });
 
     return withByline(updated);
@@ -358,6 +359,7 @@ export class ReviewsService {
       recipientId: review.customerId,
       type: NotificationType.REVIEW_HIDDEN,
       context: this.reviewContext(dto.hiddenReason),
+      ref: { locationId: review.locationId },
     });
     await this.notifyBusiness(review.businessId, NotificationType.REVIEW_HIDDEN, {
       rating: 0,

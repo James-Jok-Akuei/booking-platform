@@ -25,6 +25,7 @@ import {
   CUSTOMER_LIST_SELECT,
 } from './appointment-select';
 import { PrismaService } from '../prisma/prisma.service';
+import { askHowItWent } from './how-it-went';
 import { MailService } from '../mail/mail.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
@@ -1159,7 +1160,7 @@ export class AppointmentsService {
       if (!loaded) return;
 
       const admins = await this.prisma.user.findMany({
-        where: { role: UserRole.ADMIN },
+        where: { role: UserRole.ADMIN, closedAt: null },
         select: { id: true },
       });
 
@@ -1221,7 +1222,7 @@ export class AppointmentsService {
 
     this.logger.log(`Appointment ${appointmentId} -> COMPLETED.`);
 
-    return this.prisma.$transaction(async (tx) => {
+    const completed = await this.prisma.$transaction(async (tx) => {
       const updated = await tx.appointment.update({
         where: { id: appointmentId },
         data: { status: AppointmentStatus.COMPLETED, completedAt: new Date() },
@@ -1232,6 +1233,9 @@ export class AppointmentsService {
       await this.ledger.releaseOnResolution(tx, appointmentId);
       return updated;
     });
+    // "How was it?" (§287).
+    await askHowItWent(this.prisma, this.notifications, appointmentId);
+    return completed;
   }
 
   /**
@@ -1642,7 +1646,7 @@ export class AppointmentsService {
     reason?: string,
   ) {
     const admins = await this.prisma.user.findMany({
-      where: { role: UserRole.ADMIN },
+      where: { role: UserRole.ADMIN, closedAt: null },
       select: { id: true },
     });
 

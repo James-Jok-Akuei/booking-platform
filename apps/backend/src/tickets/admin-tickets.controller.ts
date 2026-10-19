@@ -35,6 +35,7 @@ import {
 import { CreateTicketMessageDto } from './dto/create-ticket-message.dto';
 import { ListAdminTicketsDto } from './dto/list-tickets.dto';
 import { AssignTicketDto } from './dto/assign-ticket.dto';
+import { StartTicketDto, StartedTicketDto } from './dto/start-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
@@ -52,6 +53,13 @@ import { ApiErrors } from '../common/decorators/api-errors.decorator';
 @ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
 export class AdminTicketsController {
   constructor(private readonly tickets: TicketsService) {}
+
+  /** Writes first, to one customer or seller (§287). */
+  @Post('start')
+  @ApiCreatedResponse({ type: StartedTicketDto })
+  start(@CurrentUser() user: AuthenticatedUser, @Body() dto: StartTicketDto) {
+    return this.tickets.startByAdmin(user.userId, dto);
+  }
 
   @Get()
   @ApiOkResponse({ type: AdminTicketPageDto })

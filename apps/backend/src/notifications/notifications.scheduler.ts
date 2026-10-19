@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { AppointmentStatus, NotificationStatus, NotificationType } from '@prisma/client';
+import { AppointmentStatus, NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificationsService, MAX_NOTIFICATION_ATTEMPTS } from './notifications.service';
+import { NotificationsService } from './notifications.service';
 
 /** How far ahead of an appointment the reminder goes out. */
 export const REMINDER_LEAD_TIME_MS = 24 * 60 * 60 * 1000;
@@ -90,33 +90,28 @@ export class NotificationsScheduler {
   }
 
   /**
-   * Retries notifications whose delivery failed.
-   *
-   * Every 5 minutes, giving up after MAX_NOTIFICATION_ATTEMPTS so a permanently
-   * bad address cannot be retried forever. The row stays FAILED with its
+   * The sweep (§287), every minute: whatever is due goes — a push held for
+   * the morning, a message's email after its wait, a failed send's next try
+   * (up to MAX_NOTIFICATION_ATTEMPTS), one interrupted half-way — and the
+   * morning summaries. A delivery that keeps failing stays FAILED with its
    * lastError, which is what makes "why didn't they get told?" answerable.
    */
-  @Cron('0 */5 * * * *', { name: 'notification-retry' })
-  async retryFailed(): Promise<{ retried: number; recovered: number }> {
-    const failed = await this.prisma.notification.findMany({
-      where: {
-        status: NotificationStatus.FAILED,
-        failureCount: { lt: MAX_NOTIFICATION_ATTEMPTS },
-      },
-      select: { id: true },
-      take: 100,
-    });
-
-    if (failed.length === 0) return { retried: 0, recovered: 0 };
-
-    let recovered = 0;
-    for (const notification of failed) {
-      if (await this.notifications.dispatch(notification.id)) recovered++;
+  @Cron('0 * * * * *', { name: 'notification-sweep' })
+  async sweep() {
+    const result = await this.notifications.deliverDue();
+    if (result.attempted + result.summaries > 0) {
+      this.logger.log(
+        `Notification sweep: ${result.attempted} attempted, ${result.delivered} delivered, ${result.summaries} summaries.`,
+      );
     }
+    return result;
+  }
 
-    this.logger.log(
-      `Notification retry: ${failed.length} attempted, ${recovered} delivered.`,
-    );
-    return { retried: failed.length, recovered };
+  /** Phones Apple or Google say are gone, from Expo's receipts (§287). */
+  @Cron('0 */15 * * * *', { name: 'push-receipts' })
+  async receipts() {
+    const gone = await this.notifications.checkPushReceipts();
+    if (gone > 0) this.logger.log(`Push receipts: ${gone} phone(s) no longer take pushes.`);
+    return gone;
   }
 }

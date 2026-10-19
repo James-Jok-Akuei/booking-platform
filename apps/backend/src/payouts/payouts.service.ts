@@ -5,10 +5,12 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import {
   BusinessMemberStatus,
   BusinessStatus,
+  NotificationType,
   PayoutStatus,
   Prisma,
   UserRole,
@@ -16,6 +18,7 @@ import {
 } from '@prisma/client';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 // One include, shared with the DTO describing its result (§128.5).
 import { BusinessBalanceDto, PAYOUT_INCLUDE } from './dto/payout-response.dto';
 import { INTERNAL_CURRENCY } from '../payments/currency';
@@ -68,7 +71,37 @@ export class PayoutsService {
     private readonly prisma: PrismaService,
     private readonly destinations: PayoutDestinationsService,
     private readonly disbursements: DisbursementProviderRegistry,
+    // Optional so suites about the money alone need not stand up the inbox.
+    @Optional() private readonly notifications?: NotificationsService,
   ) {}
+
+  /**
+   * Tells the shop's money people a payout went, or did not (§287). Never
+   * throws: the payout is already a fact.
+   */
+  private async tellShop(
+    payout: { businessId: string; settlementAmountMinor: number; settlementCurrency: string },
+    outcome: 'SENT' | 'FAILED',
+    detail: string | null,
+  ) {
+    await this.notifications
+      ?.notifyBusiness({
+        businessId: payout.businessId,
+        type: outcome === 'SENT' ? NotificationType.PAYOUT_SENT : NotificationType.PAYOUT_FAILED,
+        moneyOnly: true,
+        locationId: null,
+        context: {
+          serviceName: '',
+          locationName: '',
+          businessName: '',
+          startTime: undefined as unknown as Date,
+          depositAmountMinor: payout.settlementAmountMinor,
+          currency: payout.settlementCurrency,
+          reason: detail ?? undefined,
+        },
+      })
+      .catch(() => undefined);
+  }
 
   // ---------- The run ----------
 
@@ -408,6 +441,7 @@ export class PayoutsService {
       `Payout ${payoutId} (${payout.amountMinor}c to business ${payout.businessId}) ` +
         `marked PAID by admin ${actor.userId}, reference ${dto.reference}.`,
     );
+    await this.tellShop(payout, 'SENT', dto.reference);
 
     return updated;
   }
@@ -452,6 +486,7 @@ export class PayoutsService {
       `Payout ${payoutId} marked FAILED by admin ${actor.userId}: ${dto.reason}. ` +
         `${payout.amountMinor}c returned to the pool.`,
     );
+    await this.tellShop(payout, 'FAILED', dto.reason);
 
     return updated;
   }
@@ -580,7 +615,13 @@ export class PayoutsService {
   async pollInFlightTransfers(): Promise<{ paid: number; failed: number }> {
     const inFlight = await this.prisma.payout.findMany({
       where: { status: PayoutStatus.PROCESSING, providerReferenceId: { not: null } },
-      select: { id: true, providerReferenceId: true, businessId: true, settlementAmountMinor: true },
+      select: {
+        id: true,
+        providerReferenceId: true,
+        businessId: true,
+        settlementAmountMinor: true,
+        settlementCurrency: true,
+      },
     });
 
     if (inFlight.length === 0) return { paid: 0, failed: 0 };
@@ -624,6 +665,7 @@ export class PayoutsService {
           });
           paid++;
           this.logger.log(`Payout ${payout.id} confirmed PAID by the operator.`);
+          await this.tellShop(payout, 'SENT', result.providerReference ?? payout.providerReferenceId);
           continue;
         }
 
@@ -644,6 +686,7 @@ export class PayoutsService {
           });
         });
         failed++;
+        await this.tellShop(payout, 'FAILED', result.failureReason ?? null);
         this.logger.warn(
           `Payout ${payout.id} FAILED at the operator: ${result.failureReason}. ` +
             `${payout.settlementAmountMinor} minor returned to the pool.`,
