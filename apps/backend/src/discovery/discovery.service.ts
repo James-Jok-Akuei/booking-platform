@@ -334,8 +334,16 @@ export class DiscoveryService {
       distance?.radiusKm !== undefined ? (nearby?.map((r) => r.id) ?? null) : null;
 
     // The branch rules, minus the filters that belong to the offer.
-    const { q, maxPriceMinor, onSale, ...branchQuery } = query;
+    const { q, maxPriceMinor, onSale, following, ...branchQuery } = query;
     const locationWhere = this.buildWhere(branchQuery as DiscoverLocationsDto, restrictTo);
+    // Only shops this customer follows (§288): Home's "From places you follow".
+    if (following) {
+      if (!viewerId) return { total: 0, limit, offset, services: [] };
+      locationWhere.business = {
+        ...(locationWhere.business as Prisma.BusinessProfileWhereInput),
+        followers: { some: { userId: viewerId } },
+      };
+    }
     const contains = q ? { contains: q, mode: 'insensitive' as const } : null;
 
     const offers = await this.prisma.serviceLocation.findMany({
@@ -575,6 +583,7 @@ export class DiscoveryService {
             category: { select: { id: true, name: true, icon: true } },
             subcategory: { select: { id: true, name: true } },
             kinds: KINDS_SELECT,
+            _count: { select: { followers: true } },
           },
         },
         hours: {
@@ -678,6 +687,7 @@ export class DiscoveryService {
         category: location.business.category,
         subcategory: location.business.subcategory,
         kinds: location.business.kinds,
+        followers: location.business._count.followers,
       },
       rating: {
         average: location.ratingAvg ? Number(location.ratingAvg) : null,

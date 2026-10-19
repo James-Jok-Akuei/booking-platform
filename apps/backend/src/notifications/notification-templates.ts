@@ -379,6 +379,7 @@ export function renderNotification(
     // Written by a person, not a template: the title and the words are theirs (§287).
     case NotificationType.ANNOUNCEMENT:
     case NotificationType.SHOP_MESSAGE:
+    case NotificationType.SHOP_DISCOUNT:
       return { subject: ctx.serviceName, body: ctx.reason ?? '' };
 
     case NotificationType.BUSINESS_INVITATION:

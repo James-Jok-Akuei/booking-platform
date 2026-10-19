@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -20,13 +21,20 @@ import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-use
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import { BusinessRolesGuard } from '../business/guards/business-roles.guard';
 import { ShopMessagesService } from './shop-messages.service';
-import { FollowListDto, FollowStateDto, SendShopMessageDto, ShopMessagesDto } from './dto/shop-message.dto';
+import {
+  FollowListDto,
+  FollowOffersDto,
+  FollowRequestDto,
+  FollowStateDto,
+  SendShopMessageDto,
+  ShopMessagesDto,
+} from './dto/shop-message.dto';
 
 /** The shops a customer follows (§287). */
 @Controller('follows')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.CUSTOMER)
-@ApiErrors({ auth: true, roles: true, notFound: true })
+@ApiErrors({ auth: true, roles: true, notFound: true, validation: true })
 export class FollowsController {
   constructor(private readonly shopMessages: ShopMessagesService) {}
 
@@ -36,12 +44,27 @@ export class FollowsController {
     return this.shopMessages.follows(user.userId);
   }
 
-  /** Following is the yes to that shop's offers, kept with its words. */
+  /** Following brings its news into the app; `offers` is the separate yes to its offers as notifications (§288). */
   @Post(':businessId')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FollowStateDto })
-  follow(@CurrentUser() user: AuthenticatedUser, @Param('businessId', ParseUUIDPipe) businessId: string) {
-    return this.shopMessages.follow(user.userId, businessId);
+  follow(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('businessId', ParseUUIDPipe) businessId: string,
+    @Body() dto: FollowRequestDto,
+  ) {
+    return this.shopMessages.follow(user.userId, businessId, dto.offers ?? false);
+  }
+
+  /** Its offers as notifications, yes or no. */
+  @Patch(':businessId')
+  @ApiOkResponse({ type: FollowStateDto })
+  setOffers(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('businessId', ParseUUIDPipe) businessId: string,
+    @Body() dto: FollowOffersDto,
+  ) {
+    return this.shopMessages.setOffers(user.userId, businessId, dto.offers);
   }
 
   @Delete(':businessId')

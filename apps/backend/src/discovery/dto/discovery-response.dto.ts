@@ -206,6 +206,8 @@ export class ShopfrontBusinessDto {
   subcategory!: ShopfrontSubcategoryDto | null;
   /** Every kind of place it is, the main one first (§265). */
   kinds!: ShopfrontKindDto[];
+  /** How many customers follow it (§288). */
+  followers!: number;
 }
 
 /** One kind of place a business is (§265). */

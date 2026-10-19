@@ -79,7 +79,7 @@ export const CATEGORY_RULES: Record<Audience, CategoryRule[]> = {
     {
       category: C.SHOP_OFFERS,
       title: 'Offers from places you follow',
-      hint: 'Only from shops you chose to follow. Unfollow a shop to stop hearing from it.',
+      hint: 'Only from shops you follow and said yes to. Change it per shop under Saved → Following.',
       email: { on: false },
       push: { on: true },
       canWait: true,
@@ -234,6 +234,7 @@ export function categoryOf(type: T, audience: Audience): C {
     case T.PAYOUT_FAILED:
       return C.MONEY;
     case T.SHOP_MESSAGE:
+    case T.SHOP_DISCOUNT:
       return C.SHOP_OFFERS;
     default:
       return C.ACCOUNT;
@@ -273,6 +274,7 @@ export function linkFor(type: T, audience: Audience, ref: NotificationRef): stri
       case T.REVIEW_RESPONSE:
       case T.REVIEW_HIDDEN:
       case T.SHOP_MESSAGE:
+      case T.SHOP_DISCOUNT:
         return ref.locationId ? `/shop/${ref.locationId}` : null;
       default:
         return null;

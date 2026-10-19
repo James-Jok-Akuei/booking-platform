@@ -142,6 +142,7 @@ enum NotificationType {
   PAYOUT_FAILED // a payout did not go through; it is tried again (§287)
   ANNOUNCEMENT // a message from the platform's team (§287)
   SHOP_MESSAGE // a shop wrote to the customers who follow it (§287)
+  SHOP_DISCOUNT // a shop you follow started a discount — in the app only (§288)
 }
 
 /// What a notification is about, for choosing what you get and how (§287).
@@ -831,7 +832,9 @@ model Service {
   discountPercent Int?
   /// The LAST day the sale runs, in the platform's time zone; null runs until
   /// the shop turns it off. Only meaningful with a percentage (CHECK).
-  discountEndsOn  DateTime? @db.Date
+  discountEndsOn  DateTime?     @db.Date
+  /// The discount its followers were last told about (§288).
+  discountNote    DiscountNote?
 
   // Money is stored as integer cents, never a float. Binary floating point
   // cannot represent most decimal money values exactly, and the deposit /
@@ -1697,13 +1700,18 @@ model Announcement {
   @@map("announcements")
 }
 
-/// A customer who asked to hear a shop's offers (§287). Following IS the yes;
-/// unfollowing is the no, and either is one tap.
+/// A customer following a shop (§287, §288): its new services, discounts,
+/// stories and messages gathered for them in the app. Its offers as alerts and
+/// emails are a separate yes — `offersAt` — kept with its words in
+/// ConsentRecord. Unfollowing is one tap.
 model ShopFollow {
   userId     String
   user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   businessId String
   business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  /// When they said yes to this shop's offers as notifications; null is following without.
+  offersAt DateTime?
 
   createdAt DateTime @default(now())
 
@@ -2675,4 +2683,16 @@ model StoryReport {
   @@unique([storyId, reporterId])
   @@index([storyId])
   @@map("story_reports")
+}
+
+/// The discount a service's followers were last told about (§288), so each
+/// discount is told once. Its own table, so the service's API never carries it.
+model DiscountNote {
+  serviceId String    @id
+  service   Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  percent   Int
+  endsOn    DateTime? @db.Date
+  toldAt    DateTime  @default(now())
+
+  @@map("discount_notes")
 }

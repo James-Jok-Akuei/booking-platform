@@ -12,6 +12,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { NotificationsService } from '../src/notifications/notifications.service';
 import { NotificationPreferencesService } from '../src/notifications/notification-preferences.service';
 import { PushService } from '../src/notifications/push.service';
+import { ShopMessagesService } from '../src/shop-messages/shop-messages.service';
 import { E2eContext, createE2eApp, request } from './setup/e2e-app';
 import { resetDatabase } from './setup/test-module';
 import { TestBusiness, addMember, createAdmin, createBusiness, createCustomer } from './setup/factories';
@@ -368,25 +369,44 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
   });
 
   // ------------------------------------------------------------------
-  describe('shops writing to their followers', () => {
-    it('a customer follows; the yes is kept; the shop writes once a week', async () => {
-      const follow = await request(url, `/follows/${shop.businessId}`, { method: 'POST', token: customerToken });
-      expect(follow.body).toEqual({ following: true });
+  describe('following shops (§288)', () => {
+    let other: { userId: string; email: string };
+    let otherToken: string;
+
+    beforeAll(async () => {
+      other = await createCustomer(prisma);
+      otherToken = ctx.token(other.userId, other.email, UserRole.CUSTOMER);
+    });
+
+    it('following alone asks nothing; offers are a separate yes, kept with its words', async () => {
+      const plain = await request(url, `/follows/${shop.businessId}`, { method: 'POST', token: otherToken });
+      expect(plain.body).toEqual({ following: true, offers: false });
+      expect(await prisma.consentRecord.count({ where: { userId: other.userId } })).toBe(0);
+
+      const yes = await request(url, `/follows/${shop.businessId}`, {
+        method: 'POST',
+        token: customerToken,
+        body: { offers: true },
+      });
+      expect(yes.body).toEqual({ following: true, offers: true });
       expect(
         await prisma.consentRecord.count({
           where: { userId: customer.userId, purpose: `shop:${shop.businessId}`, granted: true },
         }),
       ).toBe(1);
-      const mine = await request(url, '/follows', { token: customerToken });
-      expect((mine.body.follows as Array<{ business: { id: string } }>)[0].business.id).toBe(shop.businessId);
 
+      const shopfront = await request(url, `/discover/locations/${shop.locationId}`);
+      expect((shopfront.body.business as { followers: number }).followers).toBe(2);
+    });
+
+    it('a shop writes once a week: everyone following sees it, those who said yes are told', async () => {
       const sent = await request(url, '/business/shop-messages', {
         method: 'POST',
         token: owner,
         body: { title: 'Half price on Tuesday', body: 'Every haircut, all day.' },
       });
       expect(sent.status).toBe(200);
-      expect(sent.body).toMatchObject({ followers: 1 });
+      expect(sent.body).toMatchObject({ followers: 2, withOffers: 1 });
       await until(
         async () =>
           (await prisma.notification.count({
@@ -397,6 +417,13 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
         where: { recipientId: customer.userId, type: NotificationType.SHOP_MESSAGE },
       });
       expect(got).toMatchObject({ category: NotificationCategory.SHOP_OFFERS, link: `/shop/${shop.locationId}` });
+      expect(await prisma.notification.count({ where: { recipientId: other.userId, type: NotificationType.SHOP_MESSAGE } })).toBe(0);
+
+      // In the app, under Following, for both.
+      const mine = await request(url, '/follows', { token: otherToken });
+      const card = (mine.body.follows as Array<{ business: { id: string }; offers: boolean; news: Array<{ kind: string; title: string }> }>)[0];
+      expect(card).toMatchObject({ business: { id: shop.businessId }, offers: false });
+      expect(card.news[0]).toMatchObject({ kind: 'MESSAGE', title: 'Half price on Tuesday' });
 
       const again = await request(url, '/business/shop-messages', {
         method: 'POST',
@@ -405,6 +432,58 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
       });
       expect(again.status).toBe(400);
       expect(JSON.stringify(again.body)).toMatch(/One message a week/);
+    });
+
+    it('offers can be turned on and off per shop', async () => {
+      const on = await request(url, `/follows/${shop.businessId}`, {
+        method: 'PATCH',
+        token: otherToken,
+        body: { offers: true },
+      });
+      expect(on.body).toEqual({ following: true, offers: true });
+      const off = await request(url, `/follows/${shop.businessId}`, {
+        method: 'PATCH',
+        token: otherToken,
+        body: { offers: false },
+      });
+      expect(off.body).toEqual({ following: true, offers: false });
+      const records = await prisma.consentRecord.findMany({ where: { userId: other.userId }, orderBy: { createdAt: 'asc' } });
+      expect(records.map((r) => r.granted)).toEqual([true, false]);
+    });
+
+    it('a new discount is noted in the app once — not as an alert or an email', async () => {
+      await prisma.service.update({ where: { id: shop.serviceId }, data: { discountPercent: 20, discountEndsOn: null } });
+      const shopMessages = ctx.app.get(ShopMessagesService);
+      expect(await shopMessages.tellFollowersOfDiscounts()).toBe(2);
+      expect(await shopMessages.tellFollowersOfDiscounts()).toBe(0);
+      const note = await prisma.notification.findFirstOrThrow({
+        where: { recipientId: other.userId, type: NotificationType.SHOP_DISCOUNT },
+        include: { deliveries: true },
+      });
+      expect(note.subject).toMatch(/20% off/);
+      expect(note.deliveries).toHaveLength(0);
+
+      // Under Following too.
+      const mine = await request(url, '/follows', { token: otherToken });
+      const news = (mine.body.follows as Array<{ news: Array<{ kind: string }> }>)[0].news;
+      expect(news.some((n) => n.kind === 'DISCOUNT')).toBe(true);
+
+      // Ended, and set again: news again.
+      await prisma.service.update({ where: { id: shop.serviceId }, data: { discountPercent: null } });
+      await shopMessages.tellFollowersOfDiscounts();
+      await prisma.service.update({ where: { id: shop.serviceId }, data: { discountPercent: 30 } });
+      expect(await shopMessages.tellFollowersOfDiscounts()).toBe(2);
+      await prisma.service.update({ where: { id: shop.serviceId }, data: { discountPercent: null } });
+    });
+
+    it('"From places you follow": only followed shops, and nothing signed out', async () => {
+      const elsewhere = await createBusiness(prisma);
+      const mine = await request(url, '/discover/services?following=true', { token: otherToken });
+      const ids = (mine.body.services as Array<{ id: string }>).map((x) => x.id);
+      expect(ids).toContain(shop.serviceId);
+      expect(ids).not.toContain(elsewhere.serviceId);
+      const anon = await request(url, '/discover/services?following=true');
+      expect(anon.body).toMatchObject({ total: 0, services: [] });
     });
 
     it('staff do not write to followers; unfollowing is one tap', async () => {
@@ -418,7 +497,7 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
       expect(res.status).toBe(403);
 
       const off = await request(url, `/follows/${shop.businessId}`, { method: 'DELETE', token: customerToken });
-      expect(off.body).toEqual({ following: false });
+      expect(off.body).toEqual({ following: false, offers: false });
       expect(await prisma.shopFollow.count({ where: { userId: customer.userId } })).toBe(0);
     });
   });

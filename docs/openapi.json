@@ -13072,6 +13072,16 @@
               }
             }
           },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
           "401": {
             "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
             "content": {
@@ -13121,6 +13131,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowRequestDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -13128,6 +13148,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FollowStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
                 }
               }
             }
@@ -13163,7 +13193,86 @@
             }
           }
         },
-        "summary": "Following is the yes to that shop's offers, kept with its words.",
+        "summary": "Following brings its news into the app; `offers` is the separate yes to its offers as notifications (§288).",
+        "tags": [
+          "Follows"
+        ]
+      },
+      "patch": {
+        "operationId": "FollowsController_setOffers",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowOffersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Its offers as notifications, yes or no.",
         "tags": [
           "Follows"
         ]
@@ -13187,6 +13296,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FollowStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
                 }
               }
             }
@@ -14613,6 +14732,15 @@
             }
           },
           {
+            "name": "following",
+            "required": false,
+            "in": "query",
+            "description": "Services only: just the shops this signed-in customer follows (§288).\nNothing for someone signed out.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "lat",
             "required": false,
             "in": "query",
@@ -14796,6 +14924,15 @@
             "required": false,
             "in": "query",
             "description": "Services only: just the ones on sale today (§186), biggest sale first\nunless another order is asked for. Ignored by the place search.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "following",
+            "required": false,
+            "in": "query",
+            "description": "Services only: just the shops this signed-in customer follows (§288).\nNothing for someone signed out.",
             "schema": {
               "type": "boolean"
             }
@@ -23030,7 +23167,8 @@
               "PAYOUT_SENT",
               "PAYOUT_FAILED",
               "ANNOUNCEMENT",
-              "SHOP_MESSAGE"
+              "SHOP_MESSAGE",
+              "SHOP_DISCOUNT"
             ]
           },
           "category": {
@@ -25370,12 +25508,23 @@
           "logoUrl": {
             "type": "string",
             "nullable": true
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryIcon": {
+            "type": "string",
+            "nullable": true,
+            "description": "The category's icon word, for a shop with no cover."
           }
         },
         "required": [
           "id",
           "name",
-          "logoUrl"
+          "logoUrl",
+          "coverImageUrl",
+          "categoryIcon"
         ]
       },
       "FollowPlaceDto": {
@@ -25391,6 +25540,41 @@
         "required": [
           "id",
           "name"
+        ]
+      },
+      "FollowNewsDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "DISCOUNT",
+              "NEW_SERVICE",
+              "MESSAGE"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The service it is about, when it is about one."
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "detail",
+          "serviceId",
+          "at"
         ]
       },
       "FollowDto": {
@@ -25409,14 +25593,46 @@
               }
             ]
           },
+          "district": {
+            "type": "string",
+            "nullable": true,
+            "description": "The district it is in, for the card."
+          },
+          "ratingAvg": {
+            "type": "number",
+            "nullable": true
+          },
+          "ratingCount": {
+            "type": "number"
+          },
           "followedAt": {
             "type": "string"
+          },
+          "offers": {
+            "type": "boolean",
+            "description": "Whether its offers come as notifications too — a separate yes."
+          },
+          "hasStory": {
+            "type": "boolean",
+            "description": "A story up now."
+          },
+          "news": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FollowNewsDto"
+            }
           }
         },
         "required": [
           "business",
           "bookAt",
-          "followedAt"
+          "district",
+          "ratingAvg",
+          "ratingCount",
+          "followedAt",
+          "offers",
+          "hasStory",
+          "news"
         ]
       },
       "FollowListDto": {
@@ -25433,15 +25649,39 @@
           "follows"
         ]
       },
+      "FollowRequestDto": {
+        "type": "object",
+        "properties": {
+          "offers": {
+            "type": "boolean",
+            "description": "Yes to this shop's offers as notifications as well."
+          }
+        }
+      },
       "FollowStateDto": {
         "type": "object",
         "properties": {
           "following": {
             "type": "boolean"
+          },
+          "offers": {
+            "type": "boolean"
           }
         },
         "required": [
-          "following"
+          "following",
+          "offers"
+        ]
+      },
+      "FollowOffersDto": {
+        "type": "object",
+        "properties": {
+          "offers": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "offers"
         ]
       },
       "ShopMessageDto": {
@@ -25467,7 +25707,7 @@
           },
           "recipients": {
             "type": "number",
-            "description": "Followers it was sent to."
+            "description": "Followers told by notification (those who said yes to offers)."
           },
           "read": {
             "type": "number",
@@ -25498,6 +25738,10 @@
           "followers": {
             "type": "number"
           },
+          "withOffers": {
+            "type": "number",
+            "description": "Of those, who said yes to your offers as notifications; the rest see them in the app."
+          },
           "everyDays": {
             "type": "number",
             "description": "One message a week, so following stays worth it."
@@ -25516,6 +25760,7 @@
         },
         "required": [
           "followers",
+          "withOffers",
           "everyDays",
           "nextAt",
           "messages"
@@ -27573,6 +27818,10 @@
             "items": {
               "$ref": "#/components/schemas/ShopfrontKindDto"
             }
+          },
+          "followers": {
+            "type": "number",
+            "description": "How many customers follow it (§288)."
           }
         },
         "required": [
@@ -27584,7 +27833,8 @@
           "coverImageUrl",
           "category",
           "subcategory",
-          "kinds"
+          "kinds",
+          "followers"
         ]
       },
       "ShopfrontRatingDto": {

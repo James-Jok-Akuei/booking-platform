@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -84,6 +84,15 @@ export class DiscoverLocationsDto {
   @Type(() => Boolean)
   @IsBoolean()
   onSale?: boolean;
+
+  /**
+   * Services only: just the shops this signed-in customer follows (§288).
+   * Nothing for someone signed out.
+   */
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  following?: boolean;
 
   // All three together or none — enforced in the service, which is the only
   // layer that can see the combination.
