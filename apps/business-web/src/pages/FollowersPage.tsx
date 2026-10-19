@@ -20,10 +20,12 @@ const day = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
 
 /**
- * Your followers (§287): the customers who follow the shop hear its offers —
- * the way Booksy and Fresha let a business reach its own clients, but only
- * those who asked, and once a week so following stays worth it. What they get
- * is exactly the alert in the phone beside the form.
+ * Your followers (§287, §288): the customers who follow the shop see what is
+ * new there in the app — a message sits on the shop's card under their Saved →
+ * Following — and those who also said yes to its offers get it as an alert or
+ * email. The way Booksy and Fresha let a business reach its own clients, but
+ * only those who asked, and once a week so following stays worth it. What
+ * they get is exactly the alert in the phone beside the form.
  */
 export function FollowersPage() {
   const access = useAccess();
@@ -55,6 +57,7 @@ export function FollowersPage() {
 
   const data = messages.data;
   const followers = data?.followers ?? 0;
+  const withOffers = data?.withOffers ?? 0;
   const shopName = profile.data?.name ?? 'Your shop';
   const branches = (locations.data ?? []).filter((l) => l.isActive);
   const live = profile.data ? profile.data.status === 'APPROVED' && Boolean(profile.data.publishedAt) && !profile.data.pausedAt : true;
@@ -74,8 +77,13 @@ export function FollowersPage() {
         title: `Send to ${followers} ${followers === 1 ? 'follower' : 'followers'}?`,
         body: (
           <p>
-            It arrives as an alert or in their notifications, the way each of them chose. You can send one message a
-            week, so make it count.
+            All of them see it on your shop in the app.{' '}
+            {withOffers === 0
+              ? 'Nobody has said yes to your offers as alerts yet, so it goes without a notification.'
+              : withOffers === 1
+                ? 'One of them said yes to your offers, so that person also gets it as an alert or email.'
+                : `${withOffers} of them said yes to your offers, so they also get it as an alert or email.`}{' '}
+            You can send one message a week, so make it count.
           </p>
         ),
         icon: 'megaphone',
@@ -94,8 +102,9 @@ export function FollowersPage() {
           <div>
             <h1>Followers</h1>
             <p className="muted">
-              Customers who follow your shop in the app hear your offers. They chose to — and can stop with one tap — so
-              one good message a week keeps them following.
+              Customers who follow your shop see your new services, discounts and messages in the app. Those who also
+              said yes to your offers get your message as an alert. They chose to — and can stop with one tap — so one
+              good message a week keeps them following.
             </p>
           </div>
         </header>
@@ -109,6 +118,12 @@ export function FollowersPage() {
             <div>
               <strong>{messages.isLoading ? '—' : followers.toLocaleString()}</strong>
               <span>{followers === 1 ? 'person follows' : 'people follow'} {shopName}</span>
+              {!messages.isLoading && followers > 0 && (
+                <span className="fl-count-offers">
+                  <Icon name="bell" size={13} /> {withOffers.toLocaleString()} {withOffers === 1 ? 'gets' : 'get'} your
+                  offers as alerts
+                </span>
+              )}
             </div>
             <p className="muted small">
               Customers follow from your page in the app, and after they book. The more good stories and offers you post,
@@ -183,7 +198,7 @@ export function FollowersPage() {
               )}
               {sent && (
                 <p className="fl-done" role="status">
-                  <Icon name="checkCircle" size={16} /> Sent — it is on its way to your followers.
+                  <Icon name="checkCircle" size={16} /> Sent — your followers will see it.
                 </p>
               )}
               {blocked ? (
@@ -246,7 +261,7 @@ function Sent({ message, index }: { message: ShopMessage; index: number }) {
       <p>{message.body}</p>
       <div className="fl-reach">
         <span>
-          Sent to <b>{message.recipients}</b> · opened by <b>{message.read}</b>
+          Alerted <b>{message.recipients}</b> · opened by <b>{message.read}</b>
         </span>
         <i aria-hidden="true">
           <b style={{ width: `${share}%` }} />

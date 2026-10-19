@@ -2746,12 +2746,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Following is the yes to that shop's offers, kept with its words. */
+        /** Following brings its news into the app; `offers` is the separate yes to its offers as notifications (§288). */
         post: operations["FollowsController_follow"];
         delete: operations["FollowsController_unfollow"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Its offers as notifications, yes or no. */
+        patch: operations["FollowsController_setOffers"];
         trace?: never;
     };
     "/business/shop-messages": {
@@ -5493,7 +5494,7 @@ export interface components {
         NotificationDto: {
             id: string;
             /** @enum {string} */
-            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED" | "STORY_REMOVED" | "APPOINTMENT_COMPLETED" | "PAYOUT_SENT" | "PAYOUT_FAILED" | "ANNOUNCEMENT" | "SHOP_MESSAGE";
+            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED" | "STORY_REMOVED" | "APPOINTMENT_COMPLETED" | "PAYOUT_SENT" | "PAYOUT_FAILED" | "ANNOUNCEMENT" | "SHOP_MESSAGE" | "SHOP_DISCOUNT";
             /**
              * @description What it is about, for choosing what you get (§287).
              * @enum {string}
@@ -6126,29 +6127,58 @@ export interface components {
             id: string;
             name: string;
             logoUrl: string | null;
+            coverImageUrl: string | null;
+            /** @description The category's icon word, for a shop with no cover. */
+            categoryIcon: string | null;
         };
         FollowPlaceDto: {
             id: string;
             name: string;
         };
+        FollowNewsDto: {
+            /** @enum {string} */
+            kind: "DISCOUNT" | "NEW_SERVICE" | "MESSAGE";
+            title: string;
+            detail: string | null;
+            /** @description The service it is about, when it is about one. */
+            serviceId: string | null;
+            at: string;
+        };
         FollowDto: {
             business: components["schemas"]["FollowShopDto"];
             /** @description Where its page opens. Null when it has no open branch. */
             bookAt: components["schemas"]["FollowPlaceDto"] | null;
+            /** @description The district it is in, for the card. */
+            district: string | null;
+            ratingAvg: number | null;
+            ratingCount: number;
             followedAt: string;
+            /** @description Whether its offers come as notifications too — a separate yes. */
+            offers: boolean;
+            /** @description A story up now. */
+            hasStory: boolean;
+            news: components["schemas"]["FollowNewsDto"][];
         };
         FollowListDto: {
             follows: components["schemas"]["FollowDto"][];
         };
+        FollowRequestDto: {
+            /** @description Yes to this shop's offers as notifications as well. */
+            offers?: boolean;
+        };
         FollowStateDto: {
             following: boolean;
+            offers: boolean;
+        };
+        FollowOffersDto: {
+            offers: boolean;
         };
         ShopMessageDto: {
             id: string;
             title: string;
             body: string;
             location: components["schemas"]["FollowPlaceDto"] | null;
-            /** @description Followers it was sent to. */
+            /** @description Followers told by notification (those who said yes to offers). */
             recipients: number;
             /** @description Of those, who opened it. */
             read: number;
@@ -6157,6 +6187,8 @@ export interface components {
         };
         ShopMessagesDto: {
             followers: number;
+            /** @description Of those, who said yes to your offers as notifications; the rest see them in the app. */
+            withOffers: number;
             /** @description One message a week, so following stays worth it. */
             everyDays: number;
             /** @description When the next one may go; null when it may go now. */
@@ -6770,6 +6802,8 @@ export interface components {
             subcategory: components["schemas"]["ShopfrontSubcategoryDto"] | null;
             /** @description Every kind of place it is, the main one first (§265). */
             kinds: components["schemas"]["ShopfrontKindDto"][];
+            /** @description How many customers follow it (§288). */
+            followers: number;
         };
         ShopfrontRatingDto: {
             /** @description Null when nothing has been reviewed. Not zero — zero is a rating. */
@@ -17125,6 +17159,15 @@ export interface operations {
                     "application/json": components["schemas"]["FollowListDto"];
                 };
             };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
             /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
             401: {
                 headers: {
@@ -17163,7 +17206,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowRequestDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -17171,6 +17218,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FollowStateDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
                 };
             };
             /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
@@ -17219,6 +17275,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FollowStateDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    FollowsController_setOffers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowOffersDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowStateDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
                 };
             };
             /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
@@ -18239,6 +18365,11 @@ export interface operations {
                  *     unless another order is asked for. Ignored by the place search.
                  */
                 onSale?: boolean;
+                /**
+                 * @description Services only: just the shops this signed-in customer follows (§288).
+                 *     Nothing for someone signed out.
+                 */
+                following?: boolean;
                 lat?: number;
                 lng?: number;
                 radiusKm?: number;
@@ -18303,6 +18434,11 @@ export interface operations {
                  *     unless another order is asked for. Ignored by the place search.
                  */
                 onSale?: boolean;
+                /**
+                 * @description Services only: just the shops this signed-in customer follows (§288).
+                 *     Nothing for someone signed out.
+                 */
+                following?: boolean;
                 lat?: number;
                 lng?: number;
                 radiusKm?: number;

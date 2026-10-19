@@ -248,6 +248,11 @@ function ShopScreen({
                 <span className="csp-pill tone-neutral">Closed</span>
               )}
               {live.subcategory && <span className="csp-pill tone-accent">{live.subcategory}</span>}
+              {/* The one heart for a shop (§288): customers follow it here. */}
+              <span className="csp-pill tone-accent csp-follow">
+                <Ion name="heart-outline" size={12} color="currentColor" />
+                Follow
+              </span>
             </div>
 
             <div className="csp-title-row">
@@ -417,9 +422,6 @@ function ShopScreen({
           <span className="csp-round">
             <Ion name="share-outline" size={20} color="#15171C" />
           </span>
-          <span className="csp-round is-heart">
-            <Ion name="heart-outline" size={23} color="#15171C" />
-          </span>
         </span>
       </div>
     </>
@@ -545,7 +547,7 @@ function fromOwnRecords(
     longitude: branch.longitude,
     phone: branch.phone,
     capacity: branch.capacity,
-    business: { id: branch.businessId, name: null, description: null, phone: null, logoUrl: null, coverImageUrl: null, category: null, subcategory: null, kinds: [] },
+    business: { id: branch.businessId, name: null, description: null, phone: null, logoUrl: null, coverImageUrl: null, category: null, subcategory: null, kinds: [], followers: 0 },
     rating: { average: branch.ratingAvg ? Number(branch.ratingAvg) : null, count: branch.ratingCount },
     services: offered,
     district: branch.district

@@ -15,6 +15,7 @@
 .fl-count > div { display: flex; flex-direction: column; }
 .fl-count strong { font-size: 34px; line-height: 1; letter-spacing: -0.6px; font-variant-numeric: tabular-nums; }
 .fl-count > div span { font-size: 14px; font-weight: 650; opacity: 0.92; }
+.fl-count > div .fl-count-offers { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: 8px; padding: 4px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 700; opacity: 1; background: rgba(255, 255, 255, 0.18); }
 .fl-count p { grid-column: 1 / -1; margin: 8px 0 0; color: rgba(255, 255, 255, 0.85); line-height: 1.5; }
 
 .fl-compose { display: flex; flex-direction: column; gap: 12px; }
