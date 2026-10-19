@@ -2,6 +2,22 @@ import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 import { PayoutStatus } from '@prisma/client';
 
+/** A page of the bookings inside one payout (§290). */
+export class PayoutDetailQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  offset?: number;
+}
+
 export class ListPayoutsDto {
   /** Admin listing only; the business-scoped route takes it from the path. */
   @IsOptional()

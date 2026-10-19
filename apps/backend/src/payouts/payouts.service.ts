@@ -10,6 +10,7 @@ import {
 import {
   BusinessMemberStatus,
   BusinessStatus,
+  LedgerEntryType,
   NotificationType,
   PayoutStatus,
   Prisma,
@@ -17,12 +18,14 @@ import {
   MobileMoneyProvider,
 } from '@prisma/client';
 import * as crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { DEFAULT_PAYOUT_HOLD_DAYS, PLATFORM_SETTING_ID } from '../settings/platform-settings.service';
 import { NotificationsService } from '../notifications/notifications.service';
 // One include, shared with the DTO describing its result (§128.5).
-import { BusinessBalanceDto, PAYOUT_INCLUDE } from './dto/payout-response.dto';
+import { BusinessBalanceDto, BusinessPayoutDetailDto, PAYOUT_INCLUDE } from './dto/payout-response.dto';
 import { INTERNAL_CURRENCY } from '../payments/currency';
-import { ListPayoutsDto } from './dto/list-payouts.dto';
+import { ListPayoutsDto, PayoutDetailQueryDto } from './dto/list-payouts.dto';
 import { csvTextCell, toCsvRow } from './payout-csv';
 import { PayoutDestinationsService } from './payout-destinations.service';
 import { placesOf, shopMatching } from './payout-search';
@@ -68,13 +71,18 @@ export interface RunSummary {
 export class PayoutsService {
   private readonly logger = new Logger(PayoutsService.name);
 
+  private readonly timeZone: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly destinations: PayoutDestinationsService,
     private readonly disbursements: DisbursementProviderRegistry,
+    config: ConfigService,
     // Optional so suites about the money alone need not stand up the inbox.
     @Optional() private readonly notifications?: NotificationsService,
-  ) {}
+  ) {
+    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Kigali';
+  }
 
   /**
    * Tells the shop's money people a payout went, or did not (§287). Never
@@ -976,19 +984,20 @@ export class PayoutsService {
         pending: pending._count._all,
         unresolved: unresolved._count._all,
       },
+      holdDays: await this.holdDays(),
       note: suspended
         ? 'Payouts are paused while this business is suspended. Nothing has been ' +
-          'written off — the balance is held and goes out on the first run after ' +
+          'written off — the balance is held and goes out with the first payment after ' +
           `reinstatement.${business?.statusReason ? ` Reason: ${business.statusReason}` : ''}`
         : unverifiedDestination
           ? 'Payouts are paused until a verified payout number is on file. ' +
-            'Nothing is written off — the balance is held and goes out on the ' +
-            'first run after the number is confirmed.'
+            'Nothing is written off — the balance is held and goes out with the ' +
+            'first payment after the number is confirmed.'
         : availableMinor < 0
           ? 'This balance is negative, which happens after a cancellation the ' +
             'business was responsible for. No payout is made while it is; it ' +
             'nets against future earnings instead.'
-          : 'Available funds go out on the next payout run.',
+          : 'What is ready goes into your next payment, worked out each night at 2 a.m.',
     };
   }
 
@@ -1020,6 +1029,213 @@ export class PayoutsService {
     ]);
 
     return { businessId, total, limit, offset, payouts };
+  }
+
+  /**
+   * One payout, opened by its shop (§290): every booking whose money is in
+   * it — the service, the branch, when, for whom — with its deposit, the
+   * platform's share, anything else on it, and what it adds. Totals are over
+   * the whole payout; the bookings come a page at a time, as a busy shop's
+   * payout after a pause can hold hundreds.
+   */
+  async detailForBusiness(
+    actor: { userId: string; role: UserRole | string },
+    businessId: string,
+    payoutId: string,
+    query: PayoutDetailQueryDto,
+  ): Promise<BusinessPayoutDetailDto> {
+    await this.assertMayRead(actor, businessId);
+    // Scoped to the business: another shop's payout is "not found", never "forbidden".
+    const payout = await this.prisma.payout.findFirst({ where: { id: payoutId, businessId } });
+    if (!payout) throw new NotFoundException('Payout not found.');
+
+    const limit = query.limit ?? 50;
+    const offset = query.offset ?? 0;
+    const [byType, bookingsTotal, appointments, adjustments, verified, holdDays] = await Promise.all([
+      this.prisma.ledgerEntry.groupBy({
+        by: ['type'],
+        where: { payoutId },
+        _sum: { settlementAmountMinor: true },
+      }),
+      this.prisma.appointment.count({ where: { ledgerEntries: { some: { payoutId } } } }),
+      this.payoutBookings(payoutId, { take: limit, skip: offset }),
+      this.prisma.ledgerEntry.findMany({
+        where: { payoutId, appointmentId: null },
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          settlementAmountMinor: true,
+          amountMinor: true,
+          createdAt: true,
+          billingAdjustment: { select: { reason: true } },
+        },
+      }),
+      payout.status === PayoutStatus.PENDING ? this.destinations.verifiedFor([businessId]) : null,
+      this.holdDays(),
+    ]);
+
+    const sum = (...types: LedgerEntryType[]) =>
+      byType.filter((row) => types.includes(row.type)).reduce((total, row) => total + (row._sum.settlementAmountMinor ?? 0), 0);
+    const destination = verified?.get(businessId);
+
+    return {
+      payout: {
+        ...payout,
+        sentAt: payout.sentAt?.toISOString() ?? null,
+        runAt: payout.runAt.toISOString(),
+        paidAt: payout.paidAt?.toISOString() ?? null,
+        createdAt: payout.createdAt.toISOString(),
+      },
+      holdDays,
+      // Only for money not yet sent: a payout already sent went to whatever
+      // number was checked then, which the payout does not record.
+      sendTo: destination
+        ? { provider: destination.provider as MobileMoneyProvider, last3: destination.msisdn.slice(-3) }
+        : null,
+      totals: {
+        bookings: bookingsTotal,
+        depositsMinor: sum(LedgerEntryType.DEPOSIT_RECEIVED),
+        platformFeesMinor: sum(LedgerEntryType.PLATFORM_FEE),
+        refundsMinor: sum(LedgerEntryType.DEPOSIT_REFUND),
+        feesReturnedMinor: sum(LedgerEntryType.PLATFORM_FEE_REVERSAL),
+        gatewayFeesMinor: sum(LedgerEntryType.GATEWAY_FEE_DEBIT),
+        adjustmentsMinor: sum(LedgerEntryType.ADJUSTMENT),
+        netMinor: byType.reduce((total, row) => total + (row._sum.settlementAmountMinor ?? 0), 0),
+      },
+      limit,
+      offset,
+      bookings: appointments,
+      adjustments: adjustments.map((entry) => ({
+        id: entry.id,
+        amountMinor: entry.settlementAmountMinor ?? entry.amountMinor,
+        reason: entry.billingAdjustment?.reason ?? null,
+        createdAt: entry.createdAt.toISOString(),
+      })),
+    };
+  }
+
+  /**
+   * The same payout as a spreadsheet, for the shop's own books (§290): every
+   * booking, not a page of them (§216.1), and the corrections, then the total.
+   * Times are the platform's local time, as the shop knows them.
+   */
+  async exportForBusiness(
+    actor: { userId: string; role: UserRole | string },
+    businessId: string,
+    payoutId: string,
+  ): Promise<{ csv: string; filename: string }> {
+    const detail = await this.detailForBusiness(actor, businessId, payoutId, { limit: 1, offset: 0 });
+    const bookings = await this.payoutBookings(payoutId, {});
+    const currency = detail.payout.settlementCurrency;
+    const day = new Intl.DateTimeFormat('en-CA', { timeZone: this.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
+    const time = new Intl.DateTimeFormat('en-GB', { timeZone: this.timeZone, hour: '2-digit', minute: '2-digit' });
+    // The seller app's own words for a booking's state (§213), not the enum.
+    const said: Record<string, string> = {
+      BOOKED: 'Expected',
+      IN_PROGRESS: 'In progress',
+      COMPLETED: 'Done',
+      NO_SHOW: 'No-show',
+      CANCELLED: 'Cancelled',
+      PENDING_PAYMENT: 'Unpaid',
+    };
+    const reservation = (id: string) => {
+      const s = id.replace(/-/g, '').slice(0, 8).toUpperCase();
+      return `${s.slice(0, 4)}-${s.slice(4)}`;
+    };
+
+    const lines = [
+      toCsvRow([
+        'Reservation No.',
+        'Date',
+        'Time',
+        'Service',
+        'Quantity',
+        'Branch',
+        'Customer',
+        'Booking status',
+        'Deposit',
+        'Platform fee',
+        'Other',
+        'You get',
+        'Currency',
+      ]),
+      ...bookings.map((b) =>
+        toCsvRow([
+          csvTextCell(reservation(b.appointmentId)),
+          day.format(new Date(b.startTime)),
+          time.format(new Date(b.startTime)),
+          b.serviceName,
+          b.quantity,
+          b.branchName,
+          b.customerEmail,
+          said[b.status] ?? b.status,
+          b.depositMinor,
+          b.platformFeeMinor,
+          b.others.reduce((total, line) => total + line.amountMinor, 0),
+          b.netMinor,
+          currency,
+        ]),
+      ),
+      ...detail.adjustments.map((a) =>
+        toCsvRow(['', day.format(new Date(a.createdAt)), '', `Correction: ${a.reason ?? ''}`, '', '', '', '', '', '', a.amountMinor, a.amountMinor, currency]),
+      ),
+      toCsvRow(['Total', '', '', '', '', '', '', '', detail.totals.depositsMinor, detail.totals.platformFeesMinor, detail.totals.netMinor - detail.totals.depositsMinor - detail.totals.platformFeesMinor, detail.totals.netMinor, currency]),
+    ];
+    return { csv: `${lines.join('\r\n')}\r\n`, filename: `payout-${day.format(new Date(detail.payout.runAt))}.csv` };
+  }
+
+  /** The bookings in a payout, each with only this payout's money on it (§290). */
+  private async payoutBookings(payoutId: string, page: { take?: number; skip?: number }) {
+    const rows = await this.prisma.appointment.findMany({
+      where: { ledgerEntries: { some: { payoutId } } },
+      orderBy: [{ startTime: 'asc' }, { id: 'asc' }],
+      ...page,
+      select: {
+        id: true,
+        startTime: true,
+        status: true,
+        quantity: true,
+        serviceId: true,
+        service: { select: { name: true } },
+        location: { select: { name: true } },
+        customer: { select: { email: true } },
+        ledgerEntries: { where: { payoutId }, select: { type: true, settlementAmountMinor: true, amountMinor: true } },
+      },
+    });
+    return rows.map((row) => {
+      const amount = (entry: (typeof row.ledgerEntries)[number]) => entry.settlementAmountMinor ?? entry.amountMinor;
+      const of = (type: LedgerEntryType) =>
+        row.ledgerEntries.filter((entry) => entry.type === type).reduce((total, entry) => total + amount(entry), 0);
+      const others = new Map<LedgerEntryType, number>();
+      for (const entry of row.ledgerEntries) {
+        if (entry.type === LedgerEntryType.DEPOSIT_RECEIVED || entry.type === LedgerEntryType.PLATFORM_FEE) continue;
+        others.set(entry.type, (others.get(entry.type) ?? 0) + amount(entry));
+      }
+      return {
+        appointmentId: row.id,
+        startTime: row.startTime.toISOString(),
+        status: row.status,
+        serviceId: row.serviceId,
+        serviceName: row.service.name,
+        quantity: row.quantity,
+        branchName: row.location.name,
+        // As Appointments shows them (§213), so the same person can be found there.
+        customerEmail: row.customer.email,
+        depositMinor: of(LedgerEntryType.DEPOSIT_RECEIVED),
+        platformFeeMinor: of(LedgerEntryType.PLATFORM_FEE),
+        others: [...others].map(([type, amountMinor]) => ({ type, amountMinor })),
+        netMinor: row.ledgerEntries.reduce((total, entry) => total + amount(entry), 0),
+      };
+    });
+  }
+
+  /** How long a booking's money waits after the visit before it can be paid (§290). */
+  private async holdDays() {
+    const row = await this.prisma.platformSetting.findUnique({
+      where: { id: PLATFORM_SETTING_ID },
+      select: { payoutHoldDays: true },
+    });
+    return row?.payoutHoldDays ?? DEFAULT_PAYOUT_HOLD_DAYS;
   }
 
   // ---------- Access ----------

@@ -309,8 +309,19 @@ export const submitPayoutDestination = (msisdn: string) =>
 export const getBalance = (businessId: string) =>
   api<Balance>(`/businesses/${businessId}/balance`);
 
-export const listMyPayouts = (businessId: string) =>
-  api<{ total: number; payouts: Payout[] }>(`/businesses/${businessId}/payouts`);
+export const listMyPayouts = (businessId: string, page: { limit?: number; offset?: number } = {}) =>
+  api<{ total: number; limit: number; offset: number; payouts: Payout[] }>(`/businesses/${businessId}/payouts`, {
+    query: page,
+  });
+
+/** One payment, opened: the bookings whose money is in it (§290). */
+export type PayoutDetail = components['schemas']['BusinessPayoutDetailDto'];
+export type PayoutBooking = components['schemas']['PayoutBookingDto'];
+export const getMyPayout = (businessId: string, payoutId: string, page: { limit?: number; offset?: number } = {}) =>
+  api<PayoutDetail>(`/businesses/${businessId}/payouts/${payoutId}`, { query: page });
+/** Every booking in it, as a spreadsheet. */
+export const myPayoutExportPath = (businessId: string, payoutId: string) =>
+  `/businesses/${businessId}/payouts/${payoutId}/export`;
 
 // ---------------------------------------------------------------------------
 // Support tickets (§80)

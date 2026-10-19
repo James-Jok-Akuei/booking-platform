@@ -1,4 +1,4 @@
-import { MobileMoneyProvider, PayoutStatus, Prisma } from '@prisma/client';
+import { AppointmentStatus, LedgerEntryType, MobileMoneyProvider, PayoutStatus, Prisma } from '@prisma/client';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import type { PauseReason, RunSummary } from '../payouts.service';
 
@@ -197,6 +197,80 @@ export class BusinessBalanceDto {
 
   /** Plain-language explanation of the figures above, including why a payout is held. */
   note!: string;
+
+  /** Days a booking's money waits after the visit before it can be paid (§290). */
+  holdDays!: number;
+}
+
+/** One kind of money line on a booking, beyond its deposit and fee (§290). */
+export class PayoutLineDto {
+  type!: LedgerEntryType;
+  /** In the payout's settlement currency, signed: what it adds or takes. */
+  amountMinor!: number;
+}
+
+/** One booking whose money is in a payout, as its shop reads it (§290). */
+export class PayoutBookingDto {
+  appointmentId!: string;
+  startTime!: string;
+  status!: AppointmentStatus;
+  /** For the service's photo. */
+  serviceId!: string;
+  serviceName!: string;
+  quantity!: number;
+  branchName!: string;
+  /** The customer, by email, as Appointments shows them (§213). */
+  customerEmail!: string;
+  /** What the customer paid at booking. */
+  depositMinor!: number;
+  /** The platform's share of it, as a negative number. */
+  platformFeeMinor!: number;
+  /** Anything else on this booking: a refund, a fee returned, a correction. */
+  others!: PayoutLineDto[];
+  /** What this booking adds to the payout. */
+  netMinor!: number;
+}
+
+/** A correction not tied to one booking (§290). */
+export class PayoutAdjustmentDto {
+  id!: string;
+  amountMinor!: number;
+  reason!: string | null;
+  createdAt!: string;
+}
+
+/** The money in a payout, added up across all of it — not just the page shown. */
+export class PayoutTotalsDto {
+  bookings!: number;
+  depositsMinor!: number;
+  platformFeesMinor!: number;
+  /** Deposits given back to customers (negative). */
+  refundsMinor!: number;
+  /** The platform fee returned on those refunds (positive). */
+  feesReturnedMinor!: number;
+  /** What the operator charged to move those refunds. */
+  gatewayFeesMinor!: number;
+  adjustmentsMinor!: number;
+  /** All of it: what the payout is. */
+  netMinor!: number;
+}
+
+/** Where a payout not yet sent will go: the shop's checked number, by its end. */
+export class PayoutSendToDto {
+  provider!: MobileMoneyProvider;
+  last3!: string;
+}
+
+/** One payout, opened (§290): what it is made of, booking by booking. */
+export class BusinessPayoutDetailDto {
+  payout!: PayoutDto;
+  holdDays!: number;
+  sendTo!: PayoutSendToDto | null;
+  totals!: PayoutTotalsDto;
+  limit!: number;
+  offset!: number;
+  bookings!: PayoutBookingDto[];
+  adjustments!: PayoutAdjustmentDto[];
 }
 
 /**

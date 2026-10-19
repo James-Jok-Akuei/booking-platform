@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState, type FormEvent } from 'react';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import {
   getBalance,
@@ -7,12 +7,16 @@ import {
   getPayoutDestination,
   listMyPayouts,
   submitPayoutDestination,
+  type Payout,
   type PayoutDestination,
 } from '../api/business';
 import { useMoney } from '../money';
 import { Icon, type IconName } from '../ui/Icon';
 import { NETWORK_NAME, NetworkMark, networkOf } from '../ui/NetworkMark';
+import { PayoutDetail } from './PayoutDetail';
 import './payouts.css';
+
+const PAGE = 25;
 
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
@@ -44,11 +48,17 @@ export function GettingPaidPage() {
     queryFn: () => getBalance(businessId!),
     enabled: Boolean(businessId),
   });
-  const payouts = useQuery({
+  const payouts = useInfiniteQuery({
     queryKey: ['my-payouts', businessId],
-    queryFn: () => listMyPayouts(businessId!),
+    queryFn: ({ pageParam }) => listMyPayouts(businessId!, { limit: PAGE, offset: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (last) => (last.offset + last.payouts.length < last.total ? last.offset + PAGE : undefined),
     enabled: Boolean(businessId),
   });
+  const payoutRows = useMemo(() => payouts.data?.pages.flatMap((p) => p.payouts) ?? [], [payouts.data]);
+  const payoutTotal = payouts.data?.pages[0]?.total ?? 0;
+  // The payment opened, with every booking in it (§290).
+  const [open, setOpen] = useState<Payout | null>(null);
 
   const isOwner = me.data?.businessMembership?.role === 'OWNER';
   const b = balance.data;
@@ -75,7 +85,7 @@ export function GettingPaidPage() {
           <p>
             <strong>Payouts are paused.</strong>{' '}
             {b.payoutsPausedReason === 'DESTINATION_NOT_VERIFIED'
-              ? 'Your payout number has not been confirmed yet. Nothing is lost — the balance is held and goes out on the first run after it is.'
+              ? 'Your payout number has not been confirmed yet. Nothing is lost — the balance is held and goes out with the first payment after it is.'
               : 'This business is suspended. Nothing is written off; the balance is held until it is reinstated.'}
           </p>
         </div>
@@ -91,7 +101,7 @@ export function GettingPaidPage() {
             <NetworkMark network={network} shape="wide" size={34} className="gp-brand" />
           </div>
           <strong className="gp-wallet-amount">{b ? money.format(b.availableNowMinor) : '–'}</strong>
-          <p className="gp-wallet-note">Goes out on the next payout run.</p>
+          <p className="gp-wallet-note">Goes into your next payment, worked out each night at 2 a.m.</p>
           <div className="gp-wallet-foot">
             <div>
               <span>Paid to you so far</span>
@@ -140,14 +150,14 @@ export function GettingPaidPage() {
               tone="amber"
               label="Still held"
               value={money.format(b.pendingMinor)}
-              note="Earned, inside the waiting period after an appointment."
+              note={`Earned, and waiting ${b.holdDays} ${b.holdDays === 1 ? 'day' : 'days'} after the visit.`}
             />
             <Step
               icon="wallet"
               tone="green"
               label="Ready to send"
               value={money.format(b.availableNowMinor)}
-              note="Goes out on the next payout run."
+              note="Goes into your next payment, worked out each night at 2 a.m."
               strong
             />
             <Step
@@ -171,10 +181,21 @@ export function GettingPaidPage() {
       <article className="gp-history">
         <header>
           <h2>Payments to you</h2>
-          {payouts.data && payouts.data.payouts.length > 0 && <span>{payouts.data.payouts.length}</span>}
+          {payoutTotal > 0 && <span>{payoutTotal}</span>}
         </header>
+        {/* How long it takes, said once, where the payments are (§290). */}
+        {b && (
+          <p className="gp-how">
+            <Icon name="clock" size={15} />
+            <span>
+              Money from a booking waits <strong>{b.holdDays} {b.holdDays === 1 ? 'day' : 'days'}</strong> after the
+              visit. Each night at 2 a.m. what is ready is worked out into one payment, and our team sends it to your
+              mobile money number. Open a payment to see the bookings in it.
+            </span>
+          </p>
+        )}
         {payouts.isLoading && <div className="skeleton gp-skeleton" />}
-        {payouts.data?.payouts.length === 0 && (
+        {payouts.data && payoutRows.length === 0 && (
           <div className="gp-empty">
             <span>
               <Icon name="banknote" size={26} />
@@ -182,31 +203,45 @@ export function GettingPaidPage() {
             <p>Nothing sent yet.</p>
           </div>
         )}
-        {payouts.data && payouts.data.payouts.length > 0 && (
+        {payoutRows.length > 0 && (
           <ul className="gp-list">
-            {payouts.data.payouts.map((payout) => {
+            {payoutRows.map((payout) => {
               const look = PAYOUT[payout.status] ?? { label: payout.status, cls: '' };
               return (
-                <li key={payout.id} className={`gp-row is-${look.cls}`}>
-                  <span className="gp-row-icon">
-                    <Icon name={payout.status === 'FAILED' ? 'xCircle' : payout.status === 'PAID' ? 'arrowUpRight' : 'clock'} size={18} />
-                  </span>
-                  <div className="gp-row-main">
-                    <strong>{money.format(payout.settlementAmountMinor)}</strong>
-                    <span>Run {when(payout.runAt)}</span>
-                    {payout.failureReason && <span className="gp-fail">{payout.failureReason}</span>}
-                  </div>
-                  <div className="gp-row-side">
-                    <span className={`pill ${look.cls}`}>{look.label}</span>
-                    {payout.paidAt && <span>{when(payout.paidAt)}</span>}
-                    {payout.reference && <code>{payout.reference}</code>}
-                  </div>
+                <li key={payout.id}>
+                  <button
+                    type="button"
+                    className={`gp-row is-${look.cls}`}
+                    onClick={() => setOpen(payout)}
+                    aria-label={`${money.format(payout.settlementAmountMinor)}, ${look.label}. See the bookings in it`}
+                  >
+                    <span className="gp-row-icon">
+                      <Icon name={payout.status === 'FAILED' ? 'xCircle' : payout.status === 'PAID' ? 'arrowUpRight' : 'clock'} size={18} />
+                    </span>
+                    <span className="gp-row-main">
+                      <strong>{money.format(payout.settlementAmountMinor)}</strong>
+                      <span>Worked out on {when(payout.runAt)}</span>
+                      {payout.failureReason && <span className="gp-fail">{payout.failureReason}</span>}
+                    </span>
+                    <span className="gp-row-side">
+                      <span className={`pill ${look.cls}`}>{look.label}</span>
+                      {payout.paidAt && <span>Arrived {when(payout.paidAt)}</span>}
+                    </span>
+                    <Icon name="chevronRight" size={18} />
+                  </button>
                 </li>
               );
             })}
           </ul>
         )}
+        {payouts.hasNextPage && (
+          <button type="button" className="gp-more" onClick={() => void payouts.fetchNextPage()} disabled={payouts.isFetchingNextPage}>
+            {payouts.isFetchingNextPage ? 'Loading…' : `Show more (${payoutRows.length} of ${payoutTotal})`}
+          </button>
+        )}
       </article>
+
+      {open && businessId && <PayoutDetail businessId={businessId} payout={open} onClose={() => setOpen(null)} />}
     </section>
   );
 }

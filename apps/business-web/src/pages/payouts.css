@@ -137,8 +137,16 @@
 .gp-empty > span { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 16px; background: var(--panel); }
 .gp-empty p { margin: 0; }
 .gp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.gp-row { display: flex; align-items: center; gap: 14px; padding: 14px 4px; border-bottom: 1px solid var(--line); }
-.gp-row:last-child { border-bottom: none; }
+.gp-list > li { border-bottom: 1px solid var(--line); }
+.gp-list > li:last-child { border-bottom: none; }
+/* Each payment opens to the bookings in it (§290). */
+.gp-row { width: 100%; min-height: 0; display: flex; align-items: center; gap: 14px; padding: 14px 10px 14px 4px; border: none; border-radius: 16px; background: none; text-align: left; font-weight: 500; transition: background 160ms var(--ease, ease); }
+.gp-row:hover:not(:disabled) { background: var(--sunken); border: none; }
+.gp-row > svg { flex: none; color: var(--muted); transition: transform 200ms var(--ease, ease); }
+.gp-row:hover > svg { transform: translateX(3px); color: var(--ink); }
+.gp-how { display: flex; align-items: flex-start; gap: 8px; margin: -4px 0 10px; padding: 10px 12px; border-radius: 14px; background: var(--sunken); font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.gp-how svg { flex: none; margin-top: 2px; color: var(--accent); }
+.gp-more { margin-top: 10px; width: 100%; border-radius: 14px; }
 .gp-row-icon { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 14px; background: var(--ok-soft); color: var(--ok-deep); }
 .gp-row.is-failed .gp-row-icon { background: var(--danger-soft); color: var(--danger); }
 .gp-row.is-pending .gp-row-icon, .gp-row.is-processing .gp-row-icon { background: var(--ask-soft); color: var(--ask); }
@@ -160,5 +168,6 @@
   .gp-steps { grid-template-columns: minmax(0, 1fr); }
   .gp-wallet-to { margin-left: 0; text-align: left; }
   .gp-row { flex-wrap: wrap; }
+  .gp-row > svg { display: none; }
   .gp-row-side { align-items: flex-start; width: 100%; padding-left: 56px; }
 }

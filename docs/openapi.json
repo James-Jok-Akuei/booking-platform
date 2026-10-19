@@ -14286,6 +14286,183 @@
         ]
       }
     },
+    "/businesses/{id}/payouts/{payoutId}": {
+      "get": {
+        "operationId": "BusinessPayoutsController_detail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payoutId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessPayoutDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "One payout, opened: the bookings whose money is in it (§290).",
+        "tags": [
+          "BusinessPayouts"
+        ]
+      }
+    },
+    "/businesses/{id}/payouts/{payoutId}/export": {
+      "get": {
+        "operationId": "BusinessPayoutsController_export",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payoutId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The same payout as a spreadsheet, every booking in it (§290).",
+        "tags": [
+          "BusinessPayouts"
+        ]
+      }
+    },
     "/admin/payout-destinations": {
       "get": {
         "operationId": "AdminPayoutDestinationsController_list",
@@ -26828,6 +27005,10 @@
           "note": {
             "type": "string",
             "description": "Plain-language explanation of the figures above, including why a payout is held."
+          },
+          "holdDays": {
+            "type": "number",
+            "description": "Days a booking's money waits after the visit before it can be paid (§290)."
           }
         },
         "required": [
@@ -26843,7 +27024,8 @@
           "payoutCount",
           "pendingPayouts",
           "entryCounts",
-          "note"
+          "note",
+          "holdDays"
         ]
       },
       "BusinessPayoutPageDto": {
@@ -26874,6 +27056,239 @@
           "limit",
           "offset",
           "payouts"
+        ]
+      },
+      "PayoutSendToDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          },
+          "last3": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "last3"
+        ]
+      },
+      "PayoutTotalsDto": {
+        "type": "object",
+        "properties": {
+          "bookings": {
+            "type": "number"
+          },
+          "depositsMinor": {
+            "type": "number"
+          },
+          "platformFeesMinor": {
+            "type": "number"
+          },
+          "refundsMinor": {
+            "type": "number",
+            "description": "Deposits given back to customers (negative)."
+          },
+          "feesReturnedMinor": {
+            "type": "number",
+            "description": "The platform fee returned on those refunds (positive)."
+          },
+          "gatewayFeesMinor": {
+            "type": "number",
+            "description": "What the operator charged to move those refunds."
+          },
+          "adjustmentsMinor": {
+            "type": "number"
+          },
+          "netMinor": {
+            "type": "number",
+            "description": "All of it: what the payout is."
+          }
+        },
+        "required": [
+          "bookings",
+          "depositsMinor",
+          "platformFeesMinor",
+          "refundsMinor",
+          "feesReturnedMinor",
+          "gatewayFeesMinor",
+          "adjustmentsMinor",
+          "netMinor"
+        ]
+      },
+      "PayoutLineDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT_RECEIVED",
+              "PLATFORM_FEE",
+              "DEPOSIT_REFUND",
+              "PLATFORM_FEE_REVERSAL",
+              "GATEWAY_FEE_DEBIT",
+              "ADJUSTMENT"
+            ]
+          },
+          "amountMinor": {
+            "type": "number",
+            "description": "In the payout's settlement currency, signed: what it adds or takes."
+          }
+        },
+        "required": [
+          "type",
+          "amountMinor"
+        ]
+      },
+      "PayoutBookingDto": {
+        "type": "object",
+        "properties": {
+          "appointmentId": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_PAYMENT",
+              "BOOKED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "CANCELLED",
+              "NO_SHOW"
+            ]
+          },
+          "serviceId": {
+            "type": "string",
+            "description": "For the service's photo."
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "branchName": {
+            "type": "string"
+          },
+          "customerEmail": {
+            "type": "string",
+            "description": "The customer, by email, as Appointments shows them (§213)."
+          },
+          "depositMinor": {
+            "type": "number",
+            "description": "What the customer paid at booking."
+          },
+          "platformFeeMinor": {
+            "type": "number",
+            "description": "The platform's share of it, as a negative number."
+          },
+          "others": {
+            "description": "Anything else on this booking: a refund, a fee returned, a correction.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayoutLineDto"
+            }
+          },
+          "netMinor": {
+            "type": "number",
+            "description": "What this booking adds to the payout."
+          }
+        },
+        "required": [
+          "appointmentId",
+          "startTime",
+          "status",
+          "serviceId",
+          "serviceName",
+          "quantity",
+          "branchName",
+          "customerEmail",
+          "depositMinor",
+          "platformFeeMinor",
+          "others",
+          "netMinor"
+        ]
+      },
+      "PayoutAdjustmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "amountMinor",
+          "reason",
+          "createdAt"
+        ]
+      },
+      "BusinessPayoutDetailDto": {
+        "type": "object",
+        "properties": {
+          "payout": {
+            "$ref": "#/components/schemas/PayoutDto"
+          },
+          "holdDays": {
+            "type": "number"
+          },
+          "sendTo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PayoutSendToDto"
+              }
+            ]
+          },
+          "totals": {
+            "$ref": "#/components/schemas/PayoutTotalsDto"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "bookings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayoutBookingDto"
+            }
+          },
+          "adjustments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayoutAdjustmentDto"
+            }
+          }
+        },
+        "required": [
+          "payout",
+          "holdDays",
+          "sendTo",
+          "totals",
+          "limit",
+          "offset",
+          "bookings",
+          "adjustments"
         ]
       },
       "DestinationBusinessDto": {

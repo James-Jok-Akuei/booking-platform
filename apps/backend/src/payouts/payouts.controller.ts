@@ -23,13 +23,14 @@ import {
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
 import { PayoutsService } from './payouts.service';
-import { ListPayoutsDto } from './dto/list-payouts.dto';
+import { ListPayoutsDto, PayoutDetailQueryDto } from './dto/list-payouts.dto';
 import { MarkFailedDto, MarkPaidDto } from './dto/mark-payout.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdminPayoutPageDto,
   BusinessBalanceDto,
+  BusinessPayoutDetailDto,
   BusinessPayoutPageDto,
   PayoutDto,
   PayoutRunSummaryDto,
@@ -148,5 +149,31 @@ export class BusinessPayoutsController {
     @Query() query: ListPayoutsDto,
   ) {
     return this.payouts.listForBusiness(user, businessId, query);
+  }
+
+  /** One payout, opened: the bookings whose money is in it (§290). */
+  @Get(':id/payouts/:payoutId')
+  @ApiOkResponse({ type: BusinessPayoutDetailDto })
+  detail(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) businessId: string,
+    @Param('payoutId', ParseUUIDPipe) payoutId: string,
+    @Query() query: PayoutDetailQueryDto,
+  ) {
+    return this.payouts.detailForBusiness(user, businessId, payoutId, query);
+  }
+
+  /** The same payout as a spreadsheet, every booking in it (§290). */
+  @Get(':id/payouts/:payoutId/export')
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  async export(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) businessId: string,
+    @Param('payoutId', ParseUUIDPipe) payoutId: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { csv, filename } = await this.payouts.exportForBusiness(user, businessId, payoutId);
+    response.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return csv;
   }
 }

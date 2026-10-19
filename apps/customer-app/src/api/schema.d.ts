@@ -2941,6 +2941,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/businesses/{id}/payouts/{payoutId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One payout, opened: the bookings whose money is in it (§290). */
+        get: operations["BusinessPayoutsController_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/businesses/{id}/payouts/{payoutId}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The same payout as a spreadsheet, every booking in it (§290). */
+        get: operations["BusinessPayoutsController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/payout-destinations": {
         parameters: {
             query?: never;
@@ -6511,6 +6545,8 @@ export interface components {
             entryCounts: components["schemas"]["LedgerEntryCountsDto"];
             /** @description Plain-language explanation of the figures above, including why a payout is held. */
             note: string;
+            /** @description Days a booking's money waits after the visit before it can be paid (§290). */
+            holdDays: number;
         };
         BusinessPayoutPageDto: {
             businessId: string;
@@ -6518,6 +6554,68 @@ export interface components {
             limit: number;
             offset: number;
             payouts: components["schemas"]["PayoutDto"][];
+        };
+        PayoutSendToDto: {
+            /** @enum {string} */
+            provider: "MTN_MOMO" | "AIRTEL_MONEY";
+            last3: string;
+        };
+        PayoutTotalsDto: {
+            bookings: number;
+            depositsMinor: number;
+            platformFeesMinor: number;
+            /** @description Deposits given back to customers (negative). */
+            refundsMinor: number;
+            /** @description The platform fee returned on those refunds (positive). */
+            feesReturnedMinor: number;
+            /** @description What the operator charged to move those refunds. */
+            gatewayFeesMinor: number;
+            adjustmentsMinor: number;
+            /** @description All of it: what the payout is. */
+            netMinor: number;
+        };
+        PayoutLineDto: {
+            /** @enum {string} */
+            type: "DEPOSIT_RECEIVED" | "PLATFORM_FEE" | "DEPOSIT_REFUND" | "PLATFORM_FEE_REVERSAL" | "GATEWAY_FEE_DEBIT" | "ADJUSTMENT";
+            /** @description In the payout's settlement currency, signed: what it adds or takes. */
+            amountMinor: number;
+        };
+        PayoutBookingDto: {
+            appointmentId: string;
+            startTime: string;
+            /** @enum {string} */
+            status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+            /** @description For the service's photo. */
+            serviceId: string;
+            serviceName: string;
+            quantity: number;
+            branchName: string;
+            /** @description The customer, by email, as Appointments shows them (§213). */
+            customerEmail: string;
+            /** @description What the customer paid at booking. */
+            depositMinor: number;
+            /** @description The platform's share of it, as a negative number. */
+            platformFeeMinor: number;
+            /** @description Anything else on this booking: a refund, a fee returned, a correction. */
+            others: components["schemas"]["PayoutLineDto"][];
+            /** @description What this booking adds to the payout. */
+            netMinor: number;
+        };
+        PayoutAdjustmentDto: {
+            id: string;
+            amountMinor: number;
+            reason: string | null;
+            createdAt: string;
+        };
+        BusinessPayoutDetailDto: {
+            payout: components["schemas"]["PayoutDto"];
+            holdDays: number;
+            sendTo: components["schemas"]["PayoutSendToDto"] | null;
+            totals: components["schemas"]["PayoutTotalsDto"];
+            limit: number;
+            offset: number;
+            bookings: components["schemas"]["PayoutBookingDto"][];
+            adjustments: components["schemas"]["PayoutAdjustmentDto"][];
         };
         DestinationBusinessDto: {
             id: string;
@@ -18039,6 +18137,125 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BusinessPayoutPageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessPayoutsController_detail: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+                payoutId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessPayoutDetailDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessPayoutsController_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                payoutId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

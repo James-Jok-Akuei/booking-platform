@@ -1,0 +1,81 @@
+/* One payment to the shop, opened (§290). Prefix gpd- (Getting paid, detail). */
+
+.gpd-state { padding: 16px 18px; border-radius: 20px; background: var(--sunken); display: flex; flex-direction: column; gap: 14px; }
+.gpd-state-head { display: flex; align-items: flex-start; gap: 12px; }
+.gpd-state-head .pill { flex: none; margin-top: 1px; }
+.gpd-state-head p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.gpd-reason { display: block; padding: 10px 12px; border-radius: 12px; background: var(--danger-soft); color: var(--danger); font-size: 13.5px; }
+
+.gpd-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; position: relative; }
+.gpd-steps li { position: relative; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+/* The line from each step to the next, filled once the next has happened. */
+.gpd-steps li:not(:last-child)::after { content: ''; position: absolute; top: 15px; left: 36px; right: 6px; height: 2px; border-radius: 2px; background: var(--line-strong); }
+.gpd-steps li.is-done:not(:last-child)::after { background: linear-gradient(90deg, var(--ok), var(--line-strong)); }
+.gpd-steps li.is-done:has(+ li.is-done)::after { background: var(--ok); }
+.gpd-dot { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--panel); color: var(--faint, #9aa19a); box-shadow: inset 0 0 0 1.5px var(--line-strong); }
+.gpd-steps li.is-done .gpd-dot { background: var(--ok); color: #fff; box-shadow: none; animation: gpd-pop 360ms var(--spring, ease) both; }
+.gpd-steps li.is-bad .gpd-dot { background: var(--danger); color: #fff; box-shadow: none; }
+.gpd-steps strong { font-size: 13px; margin-top: 6px; }
+.gpd-steps em { font-style: normal; font-size: 12px; color: var(--muted); }
+@keyframes gpd-pop { from { transform: scale(0.6); opacity: 0; } }
+.gpd-ref { margin: 0; font-size: 12.5px; color: var(--muted); }
+.gpd-ref code { font-size: 12.5px; color: var(--ink); background: var(--panel); padding: 2px 7px; border-radius: 7px; }
+
+.gpd-sum, .gpd-bookings { margin-top: 22px; }
+.gpd-sum h3, .gpd-bookings h3 { margin: 0 0 10px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.gpd-bookings h3 span { min-width: 22px; height: 21px; padding: 0 7px; display: grid; place-items: center; border-radius: 99px; background: var(--sunken-2); font-size: 11.5px; font-weight: 800; }
+.gpd-bookings h3 span:empty { display: none; }
+.gpd-sum dl { margin: 0; padding: 4px 16px; border-radius: 18px; border: 1px solid var(--line); }
+.gpd-sum dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.gpd-sum dl > div:last-child { border-bottom: none; }
+.gpd-sum dt span { color: var(--muted); font-weight: 500; }
+.gpd-sum dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.gpd-sum .gpd-total { border-top: 1.5px solid var(--ink); border-bottom: none; margin-top: 2px; padding-top: 12px; }
+.gpd-sum .gpd-total dt, .gpd-sum .gpd-total dd { font-size: 16px; font-weight: 800; }
+.gpd-note { display: flex; align-items: center; gap: 6px; margin: 10px 2px 0; font-size: 12.5px; color: var(--muted); }
+.gpd-skel { height: 150px; border-radius: 18px; }
+
+.gpd-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.gpd-list > li { animation: gpd-in 320ms var(--ease, ease) both; }
+@keyframes gpd-in { from { opacity: 0; transform: translateY(6px); } }
+.gpd-row-skel { height: 76px; border-radius: 16px; }
+.gpd-booking {
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 12px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  text-align: left;
+  font-weight: 500;
+  transition: border-color 160ms var(--ease, ease), box-shadow 160ms var(--ease, ease), transform 160ms var(--ease, ease);
+}
+.gpd-booking:hover:not(:disabled) { background: var(--panel); border-color: var(--line-strong); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.gpd-booking > svg { flex: none; color: var(--muted); }
+.gpd-thumb { width: 46px; height: 46px; flex: none; display: grid; place-items: center; overflow: hidden; border-radius: 13px; background: linear-gradient(145deg, #ffe6dc, #ffcdb9); color: var(--accent-deep); }
+.gpd-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.gpd-thumb.is-adjust { background: var(--sunken-2); color: var(--ink-2); }
+.gpd-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gpd-main strong { font-size: 14.5px; font-weight: 750; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gpd-main > span { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gpd-qty { color: var(--muted); font-weight: 600; }
+.gpd-money { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; text-align: right; }
+.gpd-money > span { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.gpd-money .gpd-other { color: var(--ink-2); }
+.gpd-money .pill { margin-top: 2px; }
+.gpd-net { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ok-deep); }
+.gpd-net.is-minus { color: var(--danger); }
+.gpd-adjustments { margin-top: 8px; }
+.gpd-adjustment { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: var(--sunken); }
+.gpd-more { margin-top: 10px; width: 100%; border-radius: 14px; }
+.gpd-save-error { margin-right: auto; font-size: 13px; color: var(--danger); }
+
+@media (max-width: 560px) {
+  .gpd-booking { flex-wrap: wrap; }
+  .gpd-booking > svg { display: none; }
+  .gpd-money { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 4px 10px; padding-left: 58px; text-align: left; }
+  .gpd-steps em { font-size: 11px; }
+}

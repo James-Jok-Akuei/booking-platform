@@ -18660,3 +18660,60 @@ tabs with no way to find one shop.
 Checked at 1440, 1024 and 390 with the demo data: closed and open, a place
 ("gasabo"), a number with its 0 ("0788 100 001"), a search that finds
 nothing. Nothing was sent, checked or refused.
+
+## 290. Getting paid: each payment opens to the bookings in it (2026-10-19)
+
+The user asked what "Payments to you" on the seller's Getting paid page is,
+then: say "worked out" instead of "Run", keep **Pending** as it is, say how
+long a payment takes — and let a seller open a payment to see exactly which
+services the money is for, and more.
+
+### 290.1 The server
+
+- **`GET /businesses/:id/payouts/:payoutId`** — one payment, for the shop's
+  money people only (the same rule as the balance, §277; another shop's
+  payment is "not found"): the payout; **totals over all of it** (bookings,
+  deposits received, platform fee, deposits refunded, platform fee returned,
+  gateway fee, manual adjustments, and what the shop gets); **each booking**
+  with its service, branch, time, customer (by email, as Appointments shows
+  them, §213), booking state, deposit, platform fee, any other line, and what
+  it adds — 50 at a time, as a payment after a long pause can hold hundreds;
+  corrections not tied to a booking; and, for a payment **not yet sent**,
+  the checked number it will go to, by its last three digits. A payment
+  already sent does not say the number: the payout does not record which
+  number was checked when it went.
+- **`GET /businesses/:id/payouts/:payoutId/export`** — the same payment as a
+  spreadsheet: every booking (not a page, §216.1), the corrections, and a
+  total row; times in the platform's local time; booking states in the
+  app's words (Done, No-show, Cancelled), not the enum.
+- **The balance carries `holdDays`** (§38's setting), so the page can say how
+  long money waits instead of "a short waiting period".
+- `GET /businesses/:id/payouts` takes `limit`/`offset` (it always could; the
+  page now uses them, "Show more").
+- `test/payout-detail.spec.ts`, 5 tests.
+
+### 290.2 The page
+
+- Each payment is a row that opens; "Run 18 Oct" now reads **"Worked out on
+  18 Oct 2026, 02:00"**, a paid one also "Arrived …". **Pending** stays.
+- Above the list, once: "Money from a booking waits **2 days** after the
+  visit. Each night at 2 a.m. what is ready is worked out into one payment,
+  and our team sends it to your mobile money number. Open a payment to see
+  the bookings in it." The wallet's and the steps' "payout run" became "your
+  next payment, worked out each night at 2 a.m.", and the server's notes say
+  "payment", not "run".
+- **The payment, opened** (a side panel): its state in a sentence (Pending:
+  "Our team sends it next, to your MTN MoMo number ending 001"; Processing:
+  "Waiting for MTN MoMo to confirm — that usually takes minutes"; Paid: when
+  it arrived; Failed: the reason, and that the money goes out with the next
+  payment); three steps **Worked out → Sent → Arrived** lit as they happen;
+  the MTN MoMo reference; **What is in it** — the ledger's own words (§85),
+  lines shown only when not zero, ending in **You get**; then **The
+  bookings**, each with the service's photo, when, which branch, the
+  customer and booking number, what it adds, deposit − fee, any refund
+  lines, and its state. **A booking opens in Appointments** (new `?open=` on
+  that page). **Download as a spreadsheet** at the foot.
+
+Checked at 1440 (list, a paid payment opened), 1024 (a booking opened from
+it) and 390 (a pending payment, scrolled to the bookings). The spreadsheet
+was read back from the server: four bookings and the total, matching.

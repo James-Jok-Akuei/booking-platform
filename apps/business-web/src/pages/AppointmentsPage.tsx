@@ -143,7 +143,8 @@ export function AppointmentsPage() {
   };
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
-  const [detail, setDetail] = useState<string | null>(null);
+  // A booking opened from elsewhere — a payment's list of bookings (§290) — by `?open=`.
+  const [detail, setDetail] = useState<string | null>(params.get('open'));
   const queryClient = useQueryClient();
   const money = useMoney();
   const covers = useServiceCovers();
@@ -522,7 +523,10 @@ export function AppointmentsPage() {
       {detail && (
         <AppointmentDetail
           id={detail}
-          onClose={() => setDetail(null)}
+          onClose={() => {
+            setDetail(null);
+            if (params.get('open')) patch({ open: null });
+          }}
           canVerifyManually={canVerifyManually}
           actions={actions}
         />
