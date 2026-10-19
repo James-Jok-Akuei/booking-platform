@@ -597,6 +597,8 @@ body {
 .nf-close { position: absolute; z-index: 2; top: 18px; right: 18px; width: 38px; height: 38px; min-height: 0; padding: 0; border-radius: 50%; border: none; background: var(--sunken); color: var(--ink-2); }
 .nf-close:hover:not(:disabled) { background: var(--sunken-2); border: none; color: var(--ink); }
 .nf-foot { display: flex; align-items: center; gap: 6px; padding: 12px 22px; border-top: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--muted); }
+.nf-settings { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); font-weight: 700; text-decoration: none; }
+.nf-settings:hover { color: var(--accent-deep); }
 .nf-flyout .bell-body { -webkit-line-clamp: 3; }
 .bell-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 30px 0 34px; color: var(--muted); }
 .bell-empty span { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: var(--sunken); }
@@ -905,4 +907,19 @@ body {
   .tb-shop-text span { color: rgba(255, 255, 255, 0.6); }
   .tb-shop .shop-logo-dot { border-color: #1d251d; }
   .tb-checkin { box-shadow: 0 8px 20px -8px rgba(240, 83, 45, 0.7); }
+}
+
+/* A service notice from the platform's team (§287). */
+.notice-banner { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; padding: 12px 12px 12px 14px; border-radius: 18px; color: #fff; background: radial-gradient(220px 120px at 100% 0%, rgba(255, 181, 71, 0.35), transparent 70%), var(--night); box-shadow: 0 14px 30px -18px rgba(31, 42, 31, 0.6); animation: rise-in 420ms var(--ease) both; }
+.notice-banner-mark { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: rgba(255, 255, 255, 0.12); color: #ffb547; }
+.notice-banner > div { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.notice-banner strong { font-size: 14px; }
+.notice-banner > div span { font-size: 13px; line-height: 1.45; color: rgba(255, 255, 255, 0.82); }
+.notice-banner-link { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border-radius: 99px; background: #fff; color: var(--ink); font-size: 12.5px; font-weight: 750; text-decoration: none; }
+.notice-banner-close { flex: none; width: 32px; height: 32px; min-height: 0; padding: 0; border: none; border-radius: 50%; background: transparent; color: rgba(255, 255, 255, 0.75); }
+.notice-banner-close:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); border: none; color: #fff; }
+@media (max-width: 600px) {
+  .notice-banner { flex-wrap: wrap; }
+  .notice-banner > div { flex-basis: calc(100% - 96px); }
+  .notice-banner-link { order: 4; margin-left: 48px; }
 }

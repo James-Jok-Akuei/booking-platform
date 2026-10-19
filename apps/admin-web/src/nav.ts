@@ -90,6 +90,13 @@ export const SECTIONS: NavGroup[] = [
         hint: 'Questions and problems from customers and shops',
         badge: 'tickets',
       },
+      {
+        to: '/announcements',
+        label: 'Announcements',
+        icon: 'megaphone',
+        keywords: 'announce broadcast message everyone customers sellers notice email push banner news offers',
+        hint: 'Write to many people at once',
+      },
     ],
   },
   {
@@ -145,6 +152,13 @@ export const SECTIONS: NavGroup[] = [
         icon: 'legal',
         keywords: 'terms privacy seller agreement documents publish versions',
         hint: 'The documents everyone agrees to',
+      },
+      {
+        to: '/notifications',
+        label: 'Notifications',
+        icon: 'bell',
+        keywords: 'alerts email settings what we send',
+        hint: 'What you are sent, and how',
       },
       {
         to: '/settings',

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLiveNotifications } from '../notify/useLive';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/auth-context';
 import { CommandPalette } from '../shell/CommandPalette';
@@ -32,6 +33,8 @@ const typing = (target: EventTarget | null) => {
  */
 export function Layout() {
   const { signOut } = useAuth();
+  // The bell, live (§287).
+  useLiveNotifications(true);
   const navigate = useNavigate();
   const location = useLocation();
   const data = useShellData();

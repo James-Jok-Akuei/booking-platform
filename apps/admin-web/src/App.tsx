@@ -11,6 +11,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { LedgerPage } from './pages/LedgerPage';
 import { ReviewsPage } from './pages/ReviewsPage';
 import { StoriesPage } from './pages/StoriesPage';
+import { AnnouncementsPage } from './pages/AnnouncementsPage';
+import { NotificationSettingsPage } from './pages/NotificationSettingsPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { UsersPage } from './pages/UsersPage';
 import { LegalPage } from './pages/LegalPage';
@@ -35,6 +37,8 @@ export function App() {
         <Route path="/ledger" element={<LedgerPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/stories" element={<StoriesPage />} />
+        <Route path="/announcements" element={<AnnouncementsPage />} />
+        <Route path="/notifications" element={<NotificationSettingsPage />} />
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/tickets" element={<TicketsPage />} />

@@ -6,9 +6,15 @@ import { TicketCategory } from '@prisma/client';
  * support ticket, so the person can reply and both sides keep the record.
  */
 export class StartTicketDto {
-  /** The customer or seller to write to. */
+  /** The customer or seller to write to. Or `businessId`, for a shop's owner. */
+  @IsOptional()
   @IsUUID()
-  userId!: string;
+  userId?: string;
+
+  /** A shop: the conversation is with its owner. */
+  @IsOptional()
+  @IsUUID()
+  businessId?: string;
 
   @IsString()
   @Length(3, 200)

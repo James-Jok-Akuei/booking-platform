@@ -19,6 +19,7 @@ import { Icon, type IconName } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import './users.css';
+import { WriteFirst } from '../components/WriteFirst';
 
 type Role = 'ALL' | 'CUSTOMER' | 'BUSINESS' | 'ADMIN';
 
@@ -502,6 +503,13 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
           <span>{u.ticketCount === 1 ? 'ticket' : 'tickets'}</span>
         </Link>
       </div>
+
+      {/* Writing first (§287): a support conversation they can answer. */}
+      {u.role !== 'ADMIN' && !u.closedAt && (
+        <section className="up-section">
+          <WriteFirst userId={u.id} who={u.displayName ?? 'them'} />
+        </section>
+      )}
 
       {u.businesses.length > 0 && (
         <section className="up-section">

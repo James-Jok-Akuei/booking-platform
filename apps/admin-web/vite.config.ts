@@ -23,6 +23,13 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      // The live bell's socket (§287): socket.io's handshake is at a fixed
+      // path, so it cannot go through `/api`.
+      '/socket.io': {
+        target: 'http://localhost:4100',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 });

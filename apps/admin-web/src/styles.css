@@ -442,7 +442,11 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 /* On/off switch (§194). */
 .switch { position: relative; display: inline-flex; flex: none; cursor: pointer; }
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; width: 100%; height: 100%; cursor: pointer; }
-
+.switch-track { width: 42px; height: 25px; padding: 3px; border-radius: 99px; background: var(--line-strong, #dcd8d0); transition: background 200ms var(--ease); }
+.switch-thumb { display: block; width: 19px; height: 19px; border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(31, 42, 31, 0.22); transition: transform 260ms var(--ease); }
+.switch.is-on .switch-track { background: var(--ok); }
+.switch.is-on .switch-thumb { transform: translateX(17px); }
+.switch input:focus-visible + .switch-track { box-shadow: var(--ring); }
 .switch.is-disabled { opacity: 0.5; cursor: not-allowed; }
 .switch.is-disabled input { cursor: not-allowed; }
 

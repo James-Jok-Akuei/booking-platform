@@ -59,7 +59,7 @@ export class PushService {
     this.vapidPublicKey = publicKey || null;
   }
 
-  /** Handed to browsers so they can subscribe; null while web push is not set up. */
+  /** Handed to browsers so they can subscribe; null while web push is not set up (no VAPID keys). */
   readonly vapidPublicKey: string | null;
 
   /** Whether this person has anywhere a push can go. */

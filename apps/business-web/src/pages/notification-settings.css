@@ -1,0 +1,86 @@
+/* What we send you, and how (§287). */
+
+.ns { display: flex; flex-direction: column; }
+.ns-error { display: flex; align-items: center; gap: 7px; margin: 0 0 14px; }
+.ns-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+.ns-main, .ns-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.ns-card { padding: 20px 22px; border-radius: 26px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.05); box-shadow: var(--shadow-sm); animation: rise-in 460ms var(--ease) both; }
+.ns-card h2 { margin: 0; font-size: 17px; }
+.ns-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.ns-cols { display: grid; grid-template-columns: 72px 72px; text-align: center; font-size: 12px; font-weight: 750; color: var(--muted); }
+.ns-cols span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.ns-skeleton { height: 280px; margin-top: 14px; border-radius: 18px; }
+
+.ns-rows { list-style: none; margin: 0; padding: 0; }
+.ns-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 72px 72px; gap: 14px; align-items: start; padding: 16px 0; animation: rise-in 420ms var(--ease) both; }
+.ns-row + .ns-row { border-top: 1px solid var(--line); }
+.ns-row.is-news { margin: 6px -12px 0; padding: 16px 12px; border-top: none; border-radius: 18px; background: linear-gradient(135deg, var(--accent-soft), #fff6f1); }
+.ns-mark { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; background: var(--sunken); color: var(--ink-2); }
+.ns-mark.tone-ask { background: var(--ask-soft); color: var(--ask); }
+.ns-mark.tone-accent { background: var(--accent-soft); color: var(--accent-deep); }
+.ns-mark.tone-star { background: #fff4d9; color: #c98a00; }
+.ns-mark.tone-ok { background: var(--ok-soft); color: var(--ok-deep); }
+.ns-mark.tone-night { background: var(--sunken-2); color: var(--ink); }
+.ns-row.is-news .ns-mark { background: #fff; }
+.ns-what { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ns-what strong { font-size: 15px; }
+.ns-what > span { font-size: 13px; line-height: 1.45; color: var(--muted); }
+.ns-what em { font-style: normal; font-size: 12px; font-weight: 650; color: var(--ink-2); }
+.ns-what .ns-consent { color: var(--accent-deep); }
+.ns-switch { display: flex; justify-content: center; padding-top: 6px; }
+.ns-lock { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 99px; background: var(--sunken-2); font-size: 11.5px; font-weight: 750; color: var(--ink-2); cursor: help; }
+.ns-none { color: var(--muted); }
+.ns-digest { display: inline-flex; align-self: flex-start; gap: 2px; margin-top: 8px; padding: 3px; border-radius: 12px; background: var(--sunken-2); }
+.ns-digest button { min-height: 30px; padding: 0 11px; border: none; border-radius: 9px; background: transparent; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.ns-digest button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.6); border: none; color: var(--ink); }
+.ns-digest button.is-on, .ns-digest button.is-on:hover:not(:disabled) { background: var(--panel); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+/* ---- this computer ---- */
+.ns-here { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; background: radial-gradient(240px 160px at 100% 0%, rgba(36, 86, 199, 0.12), transparent 70%), var(--panel); }
+.ns-here.is-on { background: radial-gradient(240px 160px at 100% 0%, rgba(14, 159, 84, 0.14), transparent 70%), var(--panel); }
+.ns-here p { margin: 0; line-height: 1.5; }
+.ns-here-ring { position: relative; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 16px; background: var(--ask-soft); color: var(--ask); margin-bottom: 4px; }
+.ns-here.is-on .ns-here-ring { background: var(--ok-soft); color: var(--ok-deep); }
+.ns-here.is-on .ns-here-ring::after { content: ''; position: absolute; top: 9px; right: 10px; width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 2px var(--ok-soft); animation: ns-ping 1.8s var(--ease) infinite; }
+@keyframes ns-ping { 50% { box-shadow: 0 0 0 6px rgba(14, 159, 84, 0.12); } }
+.ns-here.is-blocked .ns-here-ring, .ns-here.is-unsupported .ns-here-ring { background: var(--sunken-2); color: var(--muted); }
+.ns-here-btn { margin-top: 6px; min-height: 44px; border-radius: 14px; }
+.ns-here-btn.is-quiet { background: transparent; }
+.ns-here-note, .ns-here-problem { margin: 4px 0 0; font-size: 12.5px; font-weight: 650; color: var(--ink-2); }
+.ns-here-problem { color: var(--danger); }
+
+/* ---- quiet hours ---- */
+.ns-quiet-head { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.ns-quiet-head p { margin: 4px 0 0; line-height: 1.5; }
+.ns-quiet-moon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; background: var(--night); color: #fff; }
+.ns-quiet-times { display: flex; align-items: flex-end; gap: 10px; margin-top: 14px; transition: opacity 200ms; }
+.ns-quiet-times.is-off { opacity: 0.45; }
+.ns-quiet-times label { flex: 1; display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.ns-quiet-times select { min-height: 42px; border-radius: 12px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ns-quiet-to { padding-bottom: 11px; color: var(--muted); }
+
+/* ---- devices ---- */
+.ns-devices ul { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ns-devices li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--sunken); color: var(--ink-2); }
+.ns-devices li span { display: flex; flex-direction: column; }
+.ns-devices strong { font-size: 13.5px; color: var(--ink); }
+.ns-devices small { font-size: 11.5px; color: var(--muted); }
+
+@container page (max-width: 980px) {
+  .ns-layout { grid-template-columns: minmax(0, 1fr); }
+  .ns-side { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+}
+@container page (max-width: 600px) {
+  .ns-card { padding: 16px; border-radius: 22px; }
+  .ns-row { grid-template-columns: 34px minmax(0, 1fr) 54px 54px; gap: 10px; }
+  .ns-cols { grid-template-columns: 54px 54px; }
+  .ns-mark { width: 34px; height: 34px; border-radius: 11px; }
+  .ns-row.is-news { margin: 6px -8px 0; padding: 14px 8px; }
+  /* Only the lock, where there is no room for the word. */
+  .ns-lock { padding: 6px 8px; }
+  .ns-lock span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ns-here.is-on .ns-here-ring::after { animation: none; }
+}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getProfile,
@@ -25,8 +25,8 @@ const when = (iso: string) => {
 /**
  * The inbox, as a bell in the top bar (§96, §190).
  *
- * Polled rather than pushed: there is no websocket in this platform, and a
- * count that is a minute stale is worth more than a connection to maintain.
+ * Live (§287): told over a socket the moment something new is made, with the
+ * minute's check kept underneath for a connection that dropped.
  *
  * Opening a notification marks it read — the alternative is a separate control
  * per row for an action nobody deliberately performs.
@@ -46,6 +46,7 @@ export function Notifications() {
   useDismiss(open && !wide, wrap, close);
   const { pathname } = useLocation();
   useEffect(close, [pathname, close]);
+  const navigate = useNavigate();
 
   const inbox = useQuery({
     queryKey: ['notifications'],
@@ -100,6 +101,10 @@ export function Notifications() {
             className={notification.readAt ? 'read' : 'unread'}
             onClick={() => {
               if (!notification.readAt) readOne.mutate(notification.id);
+              // Opens what it is about (§287) — the same place its alert and email lead.
+              const to = notification.link ?? lookFor(notification.type).to;
+              if (to && to !== pathname) navigate(to);
+              else close();
             }}
           >
             {ABOUT_THE_SHOP.has(notification.type) ? (
@@ -177,7 +182,10 @@ function Flyout({ onClose, unread, children }: { onClose: () => void; unread: nu
         <div className="nf-scroll bell-panel-body">{children}</div>
         <footer className="nf-foot">
           <Icon name="bell" size={14} />
-          {unread > 0 ? `${unread} unread · ` : ''}checked every minute
+          {unread > 0 ? `${unread} unread · ` : ''}arrives as it happens
+          <Link to="/notifications" className="nf-settings" onClick={onClose}>
+            <Icon name="sliders" size={14} /> Choose what you get
+          </Link>
         </footer>
       </aside>
     </Portal>

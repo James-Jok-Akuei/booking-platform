@@ -22,6 +22,7 @@ import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import { StaticMap } from '../ui/StaticMap';
 import './businesses.css';
+import { WriteFirst } from '../components/WriteFirst';
 import { RichText } from '../ui/RichText';
 import { hasRichText } from '../lib/richText';
 
@@ -601,6 +602,9 @@ function ReviewPanel({
               </p>
             </div>
           </div>
+
+          {/* Writing first to the owner (§287): a support conversation they can answer. */}
+          <WriteFirst businessId={b.id} who="the owner" />
 
           {b.statusReason && b.status !== 'APPROVED' && (
             <div className={`bz-reason tone-${b.status === 'PENDING' ? 'warn' : 'danger'}`}>

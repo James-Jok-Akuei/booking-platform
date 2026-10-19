@@ -5671,9 +5671,14 @@ export interface components {
         StartTicketDto: {
             /**
              * Format: uuid
-             * @description The customer or seller to write to.
+             * @description The customer or seller to write to. Or `businessId`, for a shop's owner.
              */
-            userId: string;
+            userId?: string;
+            /**
+             * Format: uuid
+             * @description A shop: the conversation is with its owner.
+             */
+            businessId?: string;
             subject: string;
             /** @description The first message, from the administrator. */
             body: string;

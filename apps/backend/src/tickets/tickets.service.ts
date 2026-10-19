@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  BusinessMemberRole,
   BusinessMemberStatus,
   NotificationType,
   Prisma,
@@ -53,9 +54,28 @@ export class TicketsService {
    * record — not a one-way email that cannot be answered. Assigned to the
    * administrator who started it; the person is told the usual way.
    */
-  async startByAdmin(adminId: string, dto: { userId: string; subject: string; body: string; category?: TicketCategory }) {
+  async startByAdmin(
+    adminId: string,
+    dto: { userId?: string; businessId?: string; subject: string; body: string; category?: TicketCategory },
+  ) {
+    // A shop means its owner.
+    const userId =
+      dto.userId ??
+      (dto.businessId
+        ? (
+            await this.prisma.businessMembership.findFirst({
+              where: {
+                businessProfileId: dto.businessId,
+                role: BusinessMemberRole.OWNER,
+                status: BusinessMemberStatus.ACTIVE,
+              },
+              select: { userId: true },
+            })
+          )?.userId
+        : undefined);
+    if (!userId) throw new BadRequestException('Choose the person, or the shop, to write to.');
     const person = await this.prisma.user.findFirst({
-      where: { id: dto.userId, closedAt: null, role: { in: [UserRole.CUSTOMER, UserRole.BUSINESS] } },
+      where: { id: userId, closedAt: null, role: { in: [UserRole.CUSTOMER, UserRole.BUSINESS] } },
       select: { id: true, role: true },
     });
     if (!person) throw new NotFoundException('That person was not found, or their account is closed.');

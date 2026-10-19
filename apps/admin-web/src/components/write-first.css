@@ -1,0 +1,9 @@
+/* Writing first to one person (§287). */
+.wf-open { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; min-height: 38px; border-radius: 12px; }
+.wf { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 18px; background: var(--ask-soft); animation: rise-in 300ms var(--ease) both; }
+.wf-head { display: flex; flex-direction: column; gap: 2px; }
+.wf-head strong { font-size: 14.5px; }
+.wf-head span { font-size: 12.5px; color: var(--ink-2); }
+.wf textarea { resize: vertical; }
+.wf-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.wf-actions button { min-height: 38px; border-radius: 12px; }

@@ -23654,7 +23654,12 @@
         "properties": {
           "userId": {
             "type": "string",
-            "description": "The customer or seller to write to.",
+            "description": "The customer or seller to write to. Or `businessId`, for a shop's owner.",
+            "format": "uuid"
+          },
+          "businessId": {
+            "type": "string",
+            "description": "A shop: the conversation is with its owner.",
             "format": "uuid"
           },
           "subject": {
@@ -23680,7 +23685,6 @@
           }
         },
         "required": [
-          "userId",
           "subject",
           "body"
         ]

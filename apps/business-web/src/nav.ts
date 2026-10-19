@@ -101,6 +101,13 @@ export const SECTIONS: NavGroup[] = [
         keywords: 'ratings stars feedback reply',
         hint: 'What customers said',
       },
+      {
+        to: '/followers',
+        label: 'Followers',
+        icon: 'megaphone',
+        keywords: 'followers offers message customers blast promotion marketing send',
+        hint: 'Write to customers who follow your shop',
+      },
     ],
   },
   {
@@ -133,6 +140,13 @@ export const SECTIONS: NavGroup[] = [
         icon: 'users',
         keywords: 'staff team colleagues invite manager',
         hint: 'Who works here with you',
+      },
+      {
+        to: '/notifications',
+        label: 'Notifications',
+        icon: 'bell',
+        keywords: 'alerts email push quiet hours settings summary unsubscribe',
+        hint: 'What we send you, and how',
       },
       {
         to: '/legal',

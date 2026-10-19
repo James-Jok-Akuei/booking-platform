@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from '../api/admin';
 import { destinationFor, lookFor } from '../lib/notificationLook';
@@ -147,7 +147,10 @@ function Flyout({ onClose, unread, children }: { onClose: () => void; unread: nu
         <div className="nf-scroll bell-panel-body">{children}</div>
         <footer className="nf-foot">
           <Icon name="bell" size={14} />
-          {unread > 0 ? `${unread} unread · ` : ''}checked every minute
+          {unread > 0 ? `${unread} unread · ` : ''}arrives as it happens
+          <Link to="/notifications" className="nf-settings" onClick={onClose}>
+            <Icon name="sliders" size={14} /> Choose what you get
+          </Link>
         </footer>
       </aside>
     </Portal>

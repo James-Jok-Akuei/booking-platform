@@ -719,6 +719,37 @@ export const markNotificationRead = (id: string) =>
 export const markAllNotificationsRead = () =>
   api<{ updated: number }>('/notifications/read-all', { method: 'PATCH' });
 
+// What to send, and how (§287).
+export type NotificationSettings = components['schemas']['NotificationSettingsDto'];
+export type NotificationCategorySetting = components['schemas']['CategorySettingDto'];
+export type NotificationSettingsChange = components['schemas']['UpdateNotificationSettingsDto'];
+
+export const getNotificationSettings = () => api<NotificationSettings>('/notifications/settings');
+
+export const updateNotificationSettings = (change: NotificationSettingsChange) =>
+  api<NotificationSettings>('/notifications/settings', { method: 'PATCH', body: change });
+
+export const registerPushDevice = (device: components['schemas']['RegisterDeviceDto']) =>
+  api<components['schemas']['RegisterDeviceResultDto']>('/notifications/devices', { method: 'POST', body: device });
+
+export const unregisterPushDevice = (token: string) =>
+  api<components['schemas']['UnregisterDeviceResultDto']>('/notifications/devices', {
+    method: 'DELETE',
+    body: { token },
+  });
+
+// Service notices from the platform's team, across the top (§287).
+export type Banner = components['schemas']['BannerDto'];
+export const listBanners = () =>
+  api<components['schemas']['BannersDto']>('/announcements/banner', { query: { for: 'sellers' } });
+
+// Writing to the customers who follow the shop (§287).
+export type ShopMessages = components['schemas']['ShopMessagesDto'];
+export type ShopMessage = components['schemas']['ShopMessageDto'];
+export const listShopMessages = () => api<ShopMessages>('/business/shop-messages');
+export const sendShopMessage = (message: components['schemas']['SendShopMessageDto']) =>
+  api<ShopMessages>('/business/shop-messages', { method: 'POST', body: message });
+
 // ---------------------------------------------------------------------------
 // Analytics (§96)
 // ---------------------------------------------------------------------------

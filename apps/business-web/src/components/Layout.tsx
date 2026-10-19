@@ -12,6 +12,9 @@ import { useMediaQuery } from '../shell/useMediaQuery';
 import { useShellData } from '../shell/useShellData';
 import { confirmDialog } from '../ui/Dialog';
 import { LegalBanner } from './LegalGate';
+import { NoticeBanner } from '../shell/NoticeBanner';
+import { useLiveNotifications } from '../notify/useLive';
+import { turnOffHere } from '../notify/webPush';
 import '../shell/shell.css';
 
 const RAIL_KEY = 'booking-business.sidebar-rail';
@@ -61,7 +64,9 @@ export function Layout() {
 }
 
 function Frame() {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  // The bell, live (§287).
+  useLiveNotifications(Boolean(user));
   const navigate = useNavigate();
   const location = useLocation();
   const data = useShellData();
@@ -185,6 +190,8 @@ function Frame() {
       cancelLabel: 'Stay signed in',
     });
     if (!sure) return;
+    // This computer stops getting this account's alerts (§287).
+    await turnOffHere();
     await signOut();
     navigate('/login', { replace: true });
   }, [navigate, signOut, data.business?.name]);
@@ -236,6 +243,7 @@ function Frame() {
         />
         <main className="content" key={location.pathname}>
           <LegalBanner />
+          <NoticeBanner />
           {/* No room for the "For you" column: a slim banner opens every page
               but Overview, which has its own (§221). */}
           {!wide && location.pathname !== '/' && <AdStrip />}

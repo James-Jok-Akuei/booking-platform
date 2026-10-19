@@ -671,3 +671,36 @@ export const removeStory = (id: string, reason: string) =>
 
 /** Looked at and fine: the reports are cleared and it stays up. */
 export const keepStory = (id: string) => api<ActionMessage>(`/admin/stories/${id}/keep`, { method: 'POST' });
+
+// ---------------------------------------------------------------------------
+// Writing to people (§287)
+// ---------------------------------------------------------------------------
+
+export type Announcement = components['schemas']['AnnouncementDto'];
+export type AnnouncementReach = components['schemas']['AnnouncementReachDto'];
+export type AnnouncementDraft = components['schemas']['SaveAnnouncementDto'];
+
+export const listAnnouncements = () => api<components['schemas']['AnnouncementListDto']>('/admin/announcements');
+export const getAnnouncement = (id: string) => api<Announcement>(`/admin/announcements/${id}`);
+export const announcementReach = (draft: AnnouncementDraft) =>
+  api<AnnouncementReach>('/admin/announcements/reach', { method: 'POST', body: draft });
+export const createAnnouncement = (draft: AnnouncementDraft) =>
+  api<Announcement>('/admin/announcements', { method: 'POST', body: draft });
+export const updateAnnouncement = (id: string, draft: AnnouncementDraft) =>
+  api<Announcement>(`/admin/announcements/${id}`, { method: 'PATCH', body: draft });
+export const testAnnouncement = (id: string) =>
+  api<ActionMessage>(`/admin/announcements/${id}/test`, { method: 'POST' });
+export const sendAnnouncement = (id: string, body: { at?: string; confirmCount?: number }) =>
+  api<Announcement>(`/admin/announcements/${id}/send`, { method: 'POST', body });
+export const cancelAnnouncement = (id: string) =>
+  api<Announcement>(`/admin/announcements/${id}/cancel`, { method: 'POST' });
+
+/** Writes first to one customer or seller — as a support conversation they can answer. */
+export const startConversation = (body: components['schemas']['StartTicketDto']) =>
+  api<components['schemas']['StartedTicketDto']>('/admin/tickets/start', { method: 'POST', body });
+
+// What this administrator is sent, and how.
+export type NotificationSettings = components['schemas']['NotificationSettingsDto'];
+export const getNotificationSettings = () => api<NotificationSettings>('/notifications/settings');
+export const updateNotificationSettings = (change: components['schemas']['UpdateNotificationSettingsDto']) =>
+  api<NotificationSettings>('/notifications/settings', { method: 'PATCH', body: change });
