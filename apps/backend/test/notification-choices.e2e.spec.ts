@@ -199,7 +199,11 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
     });
 
     it('a seller can have bookings as one summary each morning', async () => {
-      await request(url, '/notifications/settings', { method: 'PATCH', token: owner, body: { bookingEmailDigest: true } });
+      await request(url, '/notifications/settings', {
+        method: 'PATCH',
+        token: owner,
+        body: { bookingEmailDigest: true },
+      });
       const id = await notifications.notify({
         recipientId: shop.userId,
         type: NotificationType.APPOINTMENT_BOOKED,
@@ -209,7 +213,11 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
       const email = (await deliveriesOf(id)).find((d) => d.channel === NotificationChannel.EMAIL)!;
       expect(email.status).toBe(NotificationStatus.HELD);
       expect(email.dueAt.getTime()).toBeGreaterThan(Date.now());
-      await request(url, '/notifications/settings', { method: 'PATCH', token: owner, body: { bookingEmailDigest: false } });
+      await request(url, '/notifications/settings', {
+        method: 'PATCH',
+        token: owner,
+        body: { bookingEmailDigest: false },
+      });
     });
 
     it('a closed account is told nothing more', async () => {
@@ -279,7 +287,11 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
     };
 
     it('says how many it reaches, sends, and reports', async () => {
-      const reach = await request(url, '/admin/announcements/reach', { method: 'POST', token: adminToken, body: draft });
+      const reach = await request(url, '/admin/announcements/reach', {
+        method: 'POST',
+        token: adminToken,
+        body: draft,
+      });
       expect(reach.status).toBe(200);
       expect(reach.body).toMatchObject({ people: 1, push: 1, email: 0 });
 
@@ -287,9 +299,15 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
       expect(created.status).toBe(201);
       const id = created.body.id as string;
 
-      const sent = await request(url, `/admin/announcements/${id}/send`, { method: 'POST', token: adminToken, body: {} });
+      const sent = await request(url, `/admin/announcements/${id}/send`, {
+        method: 'POST',
+        token: adminToken,
+        body: {},
+      });
       expect(sent.status).toBe(200);
-      await until(async () => (await prisma.announcement.findUniqueOrThrow({ where: { id } })).status === AnnouncementStatus.SENT);
+      await until(
+        async () => (await prisma.announcement.findUniqueOrThrow({ where: { id } })).status === AnnouncementStatus.SENT,
+      );
 
       const got = await prisma.notification.findFirst({
         where: { recipientId: customer.userId, announcementId: id },
@@ -355,7 +373,9 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
       const follow = await request(url, `/follows/${shop.businessId}`, { method: 'POST', token: customerToken });
       expect(follow.body).toEqual({ following: true });
       expect(
-        await prisma.consentRecord.count({ where: { userId: customer.userId, purpose: `shop:${shop.businessId}`, granted: true } }),
+        await prisma.consentRecord.count({
+          where: { userId: customer.userId, purpose: `shop:${shop.businessId}`, granted: true },
+        }),
       ).toBe(1);
       const mine = await request(url, '/follows', { token: customerToken });
       expect((mine.body.follows as Array<{ business: { id: string } }>)[0].business.id).toBe(shop.businessId);
@@ -367,7 +387,12 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
       });
       expect(sent.status).toBe(200);
       expect(sent.body).toMatchObject({ followers: 1 });
-      await until(async () => (await prisma.notification.count({ where: { recipientId: customer.userId, type: NotificationType.SHOP_MESSAGE } })) === 1);
+      await until(
+        async () =>
+          (await prisma.notification.count({
+            where: { recipientId: customer.userId, type: NotificationType.SHOP_MESSAGE },
+          })) === 1,
+      );
       const got = await prisma.notification.findFirstOrThrow({
         where: { recipientId: customer.userId, type: NotificationType.SHOP_MESSAGE },
       });
@@ -409,11 +434,39 @@ describe('Notification choices, push, announcements and shop messages (§287)', 
       expect(res.status).toBe(201);
       const ticketId = res.body.id as string;
       const ticket = await prisma.ticket.findUniqueOrThrow({ where: { id: ticketId } });
-      expect(ticket).toMatchObject({ reporterId: customer.userId, assignedAdminId: admin.userId, status: 'IN_PROGRESS' });
+      expect(ticket).toMatchObject({
+        reporterId: customer.userId,
+        assignedAdminId: admin.userId,
+        status: 'IN_PROGRESS',
+      });
       const told = await prisma.notification.findFirstOrThrow({
         where: { recipientId: customer.userId, type: NotificationType.TICKET_MESSAGE },
       });
       expect(told.link).toBe(`/ticket/${ticketId}`);
+    });
+
+    it('writing to a shop reaches its owner', async () => {
+      const res = await request(url, '/admin/tickets/start', {
+        method: 'POST',
+        token: adminToken,
+        body: { businessId: shop.businessId, subject: 'Your photos', body: 'One of your photos looks blurry.' },
+      });
+      expect(res.status).toBe(201);
+      const ticket = await prisma.ticket.findUniqueOrThrow({ where: { id: res.body.id as string } });
+      expect(ticket).toMatchObject({ reporterId: shop.userId, reporterType: 'BUSINESS', businessId: shop.businessId });
+      const told = await prisma.notification.findFirstOrThrow({
+        where: { recipientId: shop.userId, type: NotificationType.TICKET_MESSAGE },
+      });
+      expect(told.link).toBe('/help');
+    });
+
+    it('needs someone to write to', async () => {
+      const res = await request(url, '/admin/tickets/start', {
+        method: 'POST',
+        token: adminToken,
+        body: { subject: 'Nobody', body: 'Hello?' },
+      });
+      expect(res.status).toBe(400);
     });
   });
 });

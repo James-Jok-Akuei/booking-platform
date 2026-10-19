@@ -130,18 +130,16 @@ export class ShopMessagesService {
       followers,
       everyDays: SHOP_MESSAGE_EVERY_DAYS,
       nextAt: next && next.getTime() > Date.now() ? next.toISOString() : null,
-      messages: rows.map(
-        (r): ShopMessageDto => ({
-          id: r.id,
-          title: r.title,
-          body: r.body,
-          location: r.location,
-          recipients: r.recipients,
-          read: r._count.notifications,
-          sentBy: r.sentBy?.email ?? null,
-          createdAt: r.createdAt.toISOString(),
-        }),
-      ),
+      messages: rows.map((r): ShopMessageDto => ({
+        id: r.id,
+        title: r.title,
+        body: r.body,
+        location: r.location,
+        recipients: r.recipients,
+        read: r._count.notifications,
+        sentBy: r.sentBy?.email ?? null,
+        createdAt: r.createdAt.toISOString(),
+      })),
     };
   }
 
@@ -203,7 +201,13 @@ export class ShopMessagesService {
     });
 
     // In the background: the shop should not wait on a spinning button.
-    void this.deliver(message.id, shop.name ?? 'A shop', dto, location, followers.map((f) => f.userId));
+    void this.deliver(
+      message.id,
+      shop.name ?? 'A shop',
+      dto,
+      location,
+      followers.map((f) => f.userId),
+    );
     this.logger.log(`Shop ${businessId} wrote to ${followers.length} follower(s): ${message.id}.`);
     return this.listForShop(userId);
   }

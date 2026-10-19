@@ -19,6 +19,8 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   DISPLAY_NAME_CLEARED: { icon: 'user', tone: 'warn', to: '/users' },
   BUSINESS_KIND_WRITTEN: { icon: 'pencil', tone: 'warn', to: '/categories' },
   BUSINESS_SUBMITTED: { icon: 'store', tone: 'accent', to: '/businesses' },
+  // §287: an announcement's test, sent to yourself.
+  ANNOUNCEMENT: { icon: 'megaphone', tone: 'accent', to: '/announcements' },
 };
 
 export const lookFor = (type: string) =>

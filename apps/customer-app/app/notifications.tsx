@@ -27,7 +27,7 @@ import { font, radius, shadow, theme, type } from '../src/theme';
 import { Button } from '../src/ui/Button';
 import { EmptyState } from '../src/ui/EmptyState';
 import { FadeIn } from '../src/ui/FadeIn';
-import { Icon } from '../src/ui/Icon';
+import { Icon, type IconName } from '../src/ui/Icon';
 import { useLayout } from '../src/ui/layout';
 import { PressableScale } from '../src/ui/PressableScale';
 import { Segmented } from '../src/ui/Segmented';
@@ -472,13 +472,14 @@ export default function Notifications() {
               </View>
             </View>
             <Text style={styles.body}>{open.body}</Text>
-            {open.appointmentId && (
+            {/* Where it opens (§287) — the same place its alert leads. */}
+            {(open.link || open.appointmentId) && (
               <Button
-                icon="ticket-outline"
-                label="Open the reservation"
+                icon={openAction(open.link).icon}
+                label={openAction(open.link).label}
                 onPress={() => {
                   setOpenId(null);
-                  router.push(`/booking/${open.appointmentId}`);
+                  router.push((open.link ?? `/booking/${open.appointmentId}`) as never);
                 }}
               />
             )}
@@ -550,3 +551,13 @@ const styles = StyleSheet.create({
   },
   body: { fontFamily: font.regular, fontSize: 15, lineHeight: 23, color: theme.ink2 },
 });
+
+/** The button's words for where a notification opens (§287). */
+function openAction(link: string | null): { icon: IconName; label: string } {
+  if (!link || link.startsWith('/booking')) return { icon: 'ticket-outline', label: 'Open the reservation' };
+  if (link.startsWith('/review')) return { icon: 'star-outline', label: 'Write a review' };
+  if (link.startsWith('/thread')) return { icon: 'chatbubble-outline', label: 'Open the conversation' };
+  if (link.startsWith('/ticket')) return { icon: 'help-buoy-outline', label: 'Open the support request' };
+  if (link.startsWith('/shop')) return { icon: 'storefront-outline', label: 'Open the shop' };
+  return { icon: 'arrow-forward', label: 'Open' };
+}

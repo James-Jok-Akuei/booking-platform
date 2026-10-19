@@ -608,6 +608,19 @@ export default function Account() {
             </View>
           </FadeIn>
 
+          {/* ---- What we send, and how (§287). ---- */}
+          <FadeIn delay={190}>
+            <Text style={styles.group}>Notifications</Text>
+            <View style={styles.card}>
+              <Row
+                icon="notifications-outline"
+                label="Notifications"
+                note="Alerts on this phone, what comes by email, quiet hours, the shops you follow."
+                onPress={() => router.push('/notification-settings')}
+              />
+            </View>
+          </FadeIn>
+
           {/* ---- Emails about services nearby, for those who want them (§140). ---- */}
           <FadeIn delay={200}>
             <Text style={styles.group}>Offers</Text>

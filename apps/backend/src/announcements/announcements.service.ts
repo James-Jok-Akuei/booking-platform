@@ -14,7 +14,12 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AnnouncementAudienceDto, SaveAnnouncementDto, SendAnnouncementDto } from './dto/announcement-request.dto';
-import { AnnouncementDto, AnnouncementReachDto, AnnouncementStatsDto, BannersDto } from './dto/announcement-response.dto';
+import {
+  AnnouncementDto,
+  AnnouncementReachDto,
+  AnnouncementStatsDto,
+  BannersDto,
+} from './dto/announcement-response.dto';
 
 /** Above this many people, sending asks for the number typed back (§287). */
 export const CONFIRM_ABOVE = 100;
@@ -86,10 +91,7 @@ export class AnnouncementsService {
           role: UserRole.CUSTOMER,
           ...(districtId
             ? {
-                OR: [
-                  { homeDistrictId: districtId },
-                  { appointments: { some: { location: { districtId } } } },
-                ],
+                OR: [{ homeDistrictId: districtId }, { appointments: { some: { location: { districtId } } } }],
               }
             : {}),
         },
@@ -333,9 +335,9 @@ export class AnnouncementsService {
       const a = await this.require(id);
       const { ids } = await this.recipients(a);
       const done = new Set(
-        (
-          await this.prisma.notification.findMany({ where: { announcementId: id }, select: { recipientId: true } })
-        ).map((n) => n.recipientId),
+        (await this.prisma.notification.findMany({ where: { announcementId: id }, select: { recipientId: true } })).map(
+          (n) => n.recipientId,
+        ),
       );
       const todo = ids.filter((uid) => !done.has(uid));
       const category = this.categoryFor(a.kind);

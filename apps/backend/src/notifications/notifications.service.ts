@@ -19,11 +19,7 @@ import {
   ReadManyDto,
   RestoredManyDto,
 } from './dto/notification-response.dto';
-import {
-  NOTIFICATION_CHANNEL,
-  NotificationChannelDriver,
-  OutboundMessage,
-} from './notification-channel.interface';
+import { NOTIFICATION_CHANNEL, NotificationChannelDriver, OutboundMessage } from './notification-channel.interface';
 import { AppointmentContext, renderNotification } from './notification-templates';
 import { MONEY_READERS, membersOfBranch } from '../business/branch-scope';
 import {
@@ -179,9 +175,7 @@ export class NotificationsService {
     } catch (error) {
       // Even creating the row must not break the caller.
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(
-        `Failed to raise ${params.type} notification for ${params.recipientId}: ${message}`,
-      );
+      this.logger.error(`Failed to raise ${params.type} notification for ${params.recipientId}: ${message}`);
       return null;
     }
   }
@@ -207,7 +201,10 @@ export class NotificationsService {
     let pushPlanned = false;
     if (only?.push !== false && this.preferences.isOn(choices, audience, category, NotificationChannel.PUSH)) {
       if (await this.push.hasDevices(recipient.id)) {
-        if (MARKETING.includes(category) && (await this.marketingPushesThisWeek(recipient.id)) >= MARKETING_PUSHES_PER_WEEK) {
+        if (
+          MARKETING.includes(category) &&
+          (await this.marketingPushesThisWeek(recipient.id)) >= MARKETING_PUSHES_PER_WEEK
+        ) {
           plans.push({
             channel: NotificationChannel.PUSH,
             status: NotificationStatus.SKIPPED,
@@ -291,16 +288,12 @@ export class NotificationsService {
           manage: { label: 'If you did not expect it, you can ignore it.' },
         },
       });
-      this.logger.log(
-        `Sent ${params.type} to ${params.email} (no account yet, so no inbox row).`,
-      );
+      this.logger.log(`Sent ${params.type} to ${params.email} (no account yet, so no inbox row).`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       // No row exists to retry from, so this is logged and dropped. An owner
       // whose invitee never received an email can revoke and re-invite.
-      this.logger.error(
-        `Failed to send ${params.type} to unregistered ${params.email}: ${message}`,
-      );
+      this.logger.error(`Failed to send ${params.type} to unregistered ${params.email}: ${message}`);
     }
   }
 
@@ -337,10 +330,7 @@ export class NotificationsService {
       where: {
         businessProfileId: params.businessId,
         status: BusinessMemberStatus.ACTIVE,
-        AND: [
-          ...(branch !== undefined ? [membersOfBranch(branch)] : []),
-          ...(params.moneyOnly ? [MONEY_READERS] : []),
-        ],
+        AND: [...(branch !== undefined ? [membersOfBranch(branch)] : []), ...(params.moneyOnly ? [MONEY_READERS] : [])],
       },
       select: { userId: true },
     });
@@ -428,8 +418,10 @@ export class NotificationsService {
           notificationId: n.id,
           badge: unread,
         });
-        if (result.devices === 0) return this.finish(delivery.id, NotificationStatus.SKIPPED, 'No phone or browser to send to.');
-        if (result.sent === 0) return this.fail(delivery.id, delivery.attempts, result.errors.join('; ') || 'Not sent.');
+        if (result.devices === 0)
+          return this.finish(delivery.id, NotificationStatus.SKIPPED, 'No phone or browser to send to.');
+        if (result.sent === 0)
+          return this.fail(delivery.id, delivery.attempts, result.errors.join('; ') || 'Not sent.');
         await this.prisma.notificationDelivery.update({
           where: { id: delivery.id },
           data: {
@@ -595,7 +587,12 @@ export class NotificationsService {
     let sent = 0;
     for (const [, list] of byPerson) {
       const email = list[0].notification.recipient.email;
-      const clock = new Intl.DateTimeFormat('en-GB', { timeZone: this.timeZone, weekday: 'short', hour: '2-digit', minute: '2-digit' });
+      const clock = new Intl.DateTimeFormat('en-GB', {
+        timeZone: this.timeZone,
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
       const lines = list.map((d) => `${clock.format(d.notification.createdAt)} — ${d.notification.subject}`).join('\n');
       try {
         await this.driver.send({
@@ -749,7 +746,10 @@ export class NotificationsService {
       where: { recipientId, readAt: { not: null }, dismissedAt: null },
       select: { id: true },
     });
-    return this.dismissMany(recipientId, rows.map((r) => r.id));
+    return this.dismissMany(
+      recipientId,
+      rows.map((r) => r.id),
+    );
   }
 
   /** Several at once, from a selection (§162). Only the caller's own rows move. */
@@ -789,7 +789,10 @@ export class NotificationsService {
 
 /** A push's words: a message's own first line, or the notice's first paragraph. */
 export function pushText(type: NotificationType, body: string): string {
-  const paragraphs = body.split('\n\n').map((p) => p.trim()).filter(Boolean);
+  const paragraphs = body
+    .split('\n\n')
+    .map((p) => p.trim())
+    .filter(Boolean);
   const quoted = type === NotificationType.NEW_MESSAGE ? paragraphs.find((p) => p.startsWith('"')) : undefined;
   const text = quoted ? quoted.replace(/^"|"$/g, '') : (paragraphs[0] ?? '');
   return text.length > 178 ? `${text.slice(0, 175)}…` : text;

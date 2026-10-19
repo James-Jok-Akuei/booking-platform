@@ -29,6 +29,10 @@ export const LOOKS: Partial<Record<Notification['type'], Look>> = {
   REVIEW_RESPONSE: { icon: 'star', fg: theme.warn, bg: theme.warnSoft, label: 'Review' },
   REVIEW_HIDDEN: { icon: 'eye-off', fg: theme.warn, bg: theme.warnSoft, label: 'Review' },
   DISPLAY_NAME_CLEARED: { icon: 'eye-off', fg: theme.warn, bg: theme.warnSoft, label: 'Account' },
+  // §287
+  APPOINTMENT_COMPLETED: { icon: 'star', fg: theme.warn, bg: theme.warnSoft, label: 'How was it?' },
+  SHOP_MESSAGE: { icon: 'storefront', fg: theme.ok, bg: theme.okSoft, label: 'Offer' },
+  ANNOUNCEMENT: { icon: 'megaphone', fg: theme.ink, bg: theme.sunken, label: 'From our team' },
 };
 export const FALLBACK: Look = { icon: 'notifications', fg: theme.accent, bg: theme.accentSoft, label: 'News' };
 

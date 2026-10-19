@@ -2161,15 +2161,15 @@ token returned 401.
 
 - **SMS is not wired**, only anticipated (§20.6). Needs a provider account and
   has a per-message cost, which matters when deposits are small.
-- **No per-user preferences or quiet hours.** Deliberately skipped: there is no
+- ~~**No per-user preferences or quiet hours.**~~ Built in §287. Deliberately skipped: there is no
   frontend or admin portal to reach such settings, so they would be API-only
   and untestable by a real user.
-- **Every active member gets every booking notification.** Fine at one or two
+- ~~**Every active member gets every booking notification.**~~ Narrowed by branch (§277); each chooses how (§287). Fine at one or two
   staff; a busy salon will want this narrowed, which is the same feature as
   preferences above.
-- **No digest or batching.** Ten bookings send ten emails.
+- ~~**No digest or batching.**~~ A seller's bookings can come as one morning summary (§287). Ten bookings send ten emails.
 - **The reminder lead time is a constant**, not per-business configurable.
-- **No notification for `COMPLETED`**, or for the §16.8 auto-transitions —
+- ~~**No notification for `COMPLETED`**~~ — now "How was it?", completed by hand or by the §16.8 sweep (§287). Still none for the sweep's automatic no-show —
   arguably a customer should be told their appointment was auto-completed or
   auto-marked a no-show 24h later.
 
@@ -8739,7 +8739,7 @@ service, so customers, business members and admins share one implementation. The
 bell is therefore the same component in both apps, differing only in which API
 module it imports.
 
-**Polled, not pushed.** There is no websocket in this platform, and a count that
+~~**Polled, not pushed.**~~ Live since §287, the poll kept underneath. There is no websocket in this platform, and a count that
 is a minute stale is worth more than a connection to maintain. Opening a
 notification marks it read, because the alternative is a per-row control for
 something nobody deliberately does.
@@ -18403,3 +18403,129 @@ video, no GIF. The composer now says so under "Choose a photo", and a wrong
 file is refused there and then in plain words ("A story is a photo — a video
 cannot go up", "This one is a .svg file", "That photo is 22 MB") instead of
 after an upload. The server checks the same rules regardless.
+
+## 287. Notifications people choose; push; announcements; shops writing to followers (2026-10-19)
+
+Asked: how do notifications work today, how do other apps do it (push,
+marketing toggles, in-app), how should admins reach buyers and sellers —
+research it and suggest the best way; then "go ahead with everything else
+but leave out SMS".
+
+Found: every notice was in the bell and also emailed, to everyone, with no
+way to turn anything off; no push of any kind; nothing admins could send; and
+four faults — user text put into emails without escaping, a notice stuck as
+"pending" after a crash never retried, the reminder always saying "Tomorrow",
+the seller's bell not opening anything. Research: Airbnb's kinds (booking,
+account and security always on; promotions off-able), Fresha and Booksy
+(reminders separate from marketing; a client's yes kept), Rwanda's data law
+058/2021 (marketing can be refused at any time, free), Apple 4.5.4 (marketing
+push only after a yes in the app), Gmail/Yahoo (one-click unsubscribe),
+Google (ask for push when its use is plain, not at launch), quiet hours and a
+weekly cap (common practice).
+
+### 287.1 The rule
+
+The in-app list always has everything — it is the record. A person chooses,
+per kind, whether it also comes **as an alert** (push) and **by email**. The
+kinds (`notification-catalog.ts`, one place for screens, sender and emails):
+
+- **Customers:** Bookings and payments (email locked on), Reminders,
+  Messages, Reviews ("How was it?" and replies), Offers from places you
+  follow, News and offers from us (off until a yes), Account and support
+  (email locked on).
+- **Sellers:** Bookings (email locked on — one by one, or one 7:00 summary),
+  Messages, Reviews, Money (payouts sent or failed, the payout number), Your
+  shop and support (email locked on), News and tips (off until a yes).
+- **Administrators:** Support tickets, Waiting for a check, Platform problems
+  (locked on), Your account — by email (no push for the console).
+
+Each team member chooses their own. Only choices that differ from the default
+are stored (`NotificationPreference`); a yes or no to marketing is kept with
+the words shown (`ConsentRecord`), because the law asks that consent can be
+shown and withdrawn as easily as given.
+
+### 287.2 How it is sent
+
+- **One row per way it is sent** (`NotificationDelivery`: email or push, its
+  own state, attempts and error). The notification is the inbox entry; the
+  delivery is the post. Old rows' email state was moved over by the migration.
+- **A sweep every minute** sends what is due and retries failures with a
+  growing wait (2, 4, 8… minutes, up to an hour, five tries), and picks up a
+  send interrupted half-way — the stuck-"pending" fault.
+- **Quiet hours** (default 21:00–07:00 Kigali, per person): an alert that can
+  wait (reviews, money, offers, news, account) waits; bookings, reminders and
+  messages do not. Email is not held.
+- **A message's email waits ten minutes** when an alert went too, and is
+  skipped if the conversation was read in the app meanwhile.
+- **A seller's morning summary**: booking emails held and sent as one at 7:00.
+- **Marketing pushes: three a week at most** per person, whatever was sent;
+  the rest stay in the list.
+- **Emails** in the app's look, every word escaped, with why it came, where
+  to change it, and — for anything not locked — a signed one-click "Stop
+  emails like this" (RFC 8058 headers too), no sign-in needed.
+- **A closed account is told nothing more**; administrators' alerts leave
+  closed admin accounts out.
+
+### 287.3 Push
+
+- **Phones** (customer app): `expo-notifications`, through Expo's push
+  service (free). Asked **after the first payment** ("Remind me before it"),
+  or from Notifications in Account — never at launch. Tapping an alert opens
+  what it is about. Signing out forgets the phone. Expo's receipts are read
+  15 minutes later and a phone that is gone is switched off.
+  **To go live:** run `eas init` (the project id is what a token is made
+  from), add Android's FCM credentials and Apple's push key in EAS, and test
+  on a development build — Expo Go and the browser preview cannot receive.
+- **Browsers** (seller app): web push with VAPID keys and a small service
+  worker; "Alerts on this computer" on the Notifications page. Chrome, Edge,
+  Firefox and Safari on a Mac; an iPhone only from the home screen. Checked
+  against Google's push service (it accepted, 201). Signing out turns it off
+  there. **To go live:** generate a production pair (`.env.example`).
+- **The bell is live** in all three apps over a socket (`/live`), the minute's
+  poll kept underneath.
+
+### 287.4 New notices
+
+Payout sent / failed (to those who see the money), "How was it?" after a visit
+(opens the review), announcements, shop offers. Every notice now carries
+`link`, where it opens in its recipient's app — the bell, a push and an
+email's button go to the same place. Fixed: the reminder says Today, Tomorrow
+or the day; a chat message to a shop says "from a customer".
+
+### 287.5 Announcements (admin console, People)
+
+- **Two kinds.** A *service notice* reaches everyone it is for (category
+  Account; email locked on, so use sparingly). *News and offers* reaches only
+  people who said yes to news, and every one can stop.
+- **Audience:** everyone, all customers (or a district — home area or where
+  they booked), all sellers (or one category), one shop's team, one person.
+  Never administrators.
+- Live **reach** (people, by alert, by email, left out), alert and email
+  previews, **a test to yourself**, **now or later**, and above 100 people the
+  number must be typed back. A **report** per announcement: reached, read,
+  alerts, emails, failed, waiting for quiet hours.
+- A service notice can also be a **banner** across Home and the seller app
+  until a date (a week if none), closable.
+- **Write to them**: on a person's or a shop's panel, an administrator starts
+  a **support conversation** (a ticket, assigned to them) rather than a
+  one-way email — the person can answer. A shop means its owner.
+
+### 287.6 Shops writing to their followers
+
+- A customer **follows** a shop from its page or right after booking; the
+  follow is the yes, kept with its words ("Yes, send me X's offers. I can
+  stop at any time."), and unfollowing is one tap, also from Notifications.
+- The seller's **Followers** page: how many follow, a message (title 60,
+  message 300, which branch it opens), the follower's lock screen beside it,
+  and what was sent with how many opened it. **One a week** per shop; only the
+  owner and every-branch managers; only a live shop. It arrives as "Offers
+  from places you follow" — quiet hours and the weekly cap apply.
+
+### 287.7 Not done
+
+- **SMS**, as asked — still the seam from §20.6.
+- The **automatic no-show** is still silent.
+- No per-business reminder lead time; no admin view of every delivery outside
+  an announcement's report.
+
+21 tests in `test/notification-choices.e2e.spec.ts`.

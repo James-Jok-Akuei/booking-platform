@@ -32,6 +32,7 @@ import { Spotlights } from '../../src/components/Spotlights';
 import { ServiceCard } from '../../src/components/ServiceCard';
 import { WithinBar } from '../../src/components/WithinBar';
 import { StoriesRow } from '../../src/stories/StoriesRow';
+import { NoticeBanner } from '../../src/components/NoticeBanner';
 import { StoryPlayer, type StoryStart } from '../../src/stories/StoryPlayer';
 import { firstUnseen, unseenFirst, useSeenStories } from '../../src/stories/seen';
 import {
@@ -493,6 +494,9 @@ export default function Discover() {
           Find a place
         </Text>
       </FadeIn>
+
+      {/* A service notice from the platform's team (§287). Nothing, almost always. */}
+      <NoticeBanner />
 
       <FadeIn delay={60} style={styles.search}>
         <Icon name="search" size={19} color={theme.muted} />

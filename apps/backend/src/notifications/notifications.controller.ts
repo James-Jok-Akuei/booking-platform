@@ -15,10 +15,7 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import {
-  AuthenticatedUser,
-  CurrentUser,
-} from '../common/decorators/current-user.decorator';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from './notifications.service';
 import { ListNotificationsDto } from './dto/list-notifications.dto';
 import { NotificationIdsDto } from './dto/notification-ids.dto';
@@ -77,7 +74,11 @@ export class NotificationsController {
   ): Promise<NotificationSettingsDto> {
     const source =
       dto.source ??
-      (user.role === UserRole.ADMIN ? 'admin-console' : user.role === UserRole.BUSINESS ? 'seller-app' : 'customer-app');
+      (user.role === UserRole.ADMIN
+        ? 'admin-console'
+        : user.role === UserRole.BUSINESS
+          ? 'seller-app'
+          : 'customer-app');
     return this.withDevices(user.userId, await this.preferences.update(user.userId, { ...dto, source }));
   }
 
@@ -114,16 +115,8 @@ export class NotificationsController {
 
   @Get()
   @ApiOkResponse({ type: NotificationPageDto })
-  list(
-    @CurrentUser() user: AuthenticatedUser,
-    @Query() query: ListNotificationsDto,
-  ) {
-    return this.notifications.list(
-      user.userId,
-      query.unreadOnly ?? false,
-      query.limit ?? 25,
-      query.offset ?? 0,
-    );
+  list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListNotificationsDto) {
+    return this.notifications.list(user.userId, query.unreadOnly ?? false, query.limit ?? 25, query.offset ?? 0);
   }
 
   @Patch('read-all')
@@ -172,10 +165,7 @@ export class NotificationsController {
 
   @Patch(':id/read')
   @ApiOkResponse({ type: MarkReadDto })
-  markRead(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  markRead(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.notifications.markRead(user.userId, id);
   }
 }

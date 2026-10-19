@@ -182,8 +182,7 @@ export function renderNotification(
       return {
         subject: 'The business replied to your review',
         body:
-          `${ctx.reason ?? 'The business has replied to your review.'}\n\n` +
-          'Open the location to read their reply.',
+          `${ctx.reason ?? 'The business has replied to your review.'}\n\n` + 'Open the location to read their reply.',
       };
 
     case NotificationType.REVIEW_HIDDEN:
@@ -329,7 +328,7 @@ export function renderNotification(
           'A customer tried to pay a deposit and the payment provider refused ' +
           'the request for a reason that will not fix itself.\n\n' +
           (ctx.reason ? `${ctx.reason}\n\n` : '') +
-          'This is a PLATFORM fault, not the customer\'s. Every deposit will ' +
+          "This is a PLATFORM fault, not the customer's. Every deposit will " +
           'keep failing until it is corrected — check the provider currency, ' +
           'the credentials and the target environment.\n\n' +
           'No customer has been charged.',
@@ -345,7 +344,7 @@ export function renderNotification(
           (ctx.reason ? `${ctx.reason}\n\n` : '') +
           'This is a permitted path, not an error: a customer with no phone and ' +
           'no email still has to be served. It is reported because it is the one ' +
-          'way an appointment can be completed on the business\'s word alone, so ' +
+          "way an appointment can be completed on the business's word alone, so " +
           'a business that uses it often is worth a look.',
       };
 

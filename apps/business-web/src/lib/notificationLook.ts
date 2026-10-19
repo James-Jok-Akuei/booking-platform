@@ -32,6 +32,10 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   PAYOUT_DESTINATION_SUBMITTED: { icon: 'wallet', tone: 'warn', to: '/getting-paid' },
   PAYOUT_DESTINATION_VERIFIED: { icon: 'wallet', tone: 'ok', to: '/getting-paid' },
   PAYOUT_DESTINATION_REJECTED: { icon: 'wallet', tone: 'danger', to: '/getting-paid' },
+  // §287
+  PAYOUT_SENT: { icon: 'banknote', tone: 'ok', to: '/getting-paid' },
+  PAYOUT_FAILED: { icon: 'wallet', tone: 'danger', to: '/getting-paid' },
+  ANNOUNCEMENT: { icon: 'megaphone', tone: 'ask', to: '/' },
 };
 
 /** News about the shop itself — drawn with the shop's own logo, its icon a badge on the corner (§231). */

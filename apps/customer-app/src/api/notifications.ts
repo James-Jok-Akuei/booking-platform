@@ -52,3 +52,38 @@ export const markNotificationsRead = (ids: string[]) =>
     method: 'PATCH',
     body: { ids },
   });
+
+// ---------- What to send, and how (§287) ----------
+
+export type NotificationSettings = components['schemas']['NotificationSettingsDto'];
+export type NotificationCategorySetting = components['schemas']['CategorySettingDto'];
+export type NotificationSettingsChange = components['schemas']['UpdateNotificationSettingsDto'];
+
+export const getNotificationSettings = () => api<NotificationSettings>('/notifications/settings');
+
+export const updateNotificationSettings = (change: NotificationSettingsChange) =>
+  api<NotificationSettings>('/notifications/settings', { method: 'PATCH', body: change });
+
+export const registerPushDevice = (device: components['schemas']['RegisterDeviceDto']) =>
+  api<components['schemas']['RegisterDeviceResultDto']>('/notifications/devices', { method: 'POST', body: device });
+
+export const unregisterPushDevice = (token: string) =>
+  api<components['schemas']['UnregisterDeviceResultDto']>('/notifications/devices', {
+    method: 'DELETE',
+    body: { token },
+  });
+
+// ---------- Shops you follow (§287) ----------
+
+export type Follow = components['schemas']['FollowDto'];
+export const listFollows = () => api<components['schemas']['FollowListDto']>('/follows');
+export const followShop = (businessId: string) =>
+  api<components['schemas']['FollowStateDto']>(`/follows/${businessId}`, { method: 'POST' });
+export const unfollowShop = (businessId: string) =>
+  api<components['schemas']['FollowStateDto']>(`/follows/${businessId}`, { method: 'DELETE' });
+
+// ---------- Service notices across the top (§287) ----------
+
+export type Banner = components['schemas']['BannerDto'];
+export const listBanners = () =>
+  api<components['schemas']['BannersDto']>('/announcements/banner', { query: { for: 'customers' }, anonymous: true });

@@ -31,7 +31,13 @@
           "locationWhenInUsePermission": "Allow Booking to use your location while the app is open, to show places near you and how far each one is. It is never saved. You can browse everything without it."
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "color": "#F0532D"
+        }
+      ]
     ],
     "scheme": "booking",
     "experiments": {

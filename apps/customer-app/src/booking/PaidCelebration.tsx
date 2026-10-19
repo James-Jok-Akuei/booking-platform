@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Appointment } from '../api/booking';
@@ -8,6 +8,10 @@ import { Cover } from '../ui/Cover';
 import { FadeIn } from '../ui/FadeIn';
 import { Icon } from '../ui/Icon';
 import { dayOf, howMany, reservationNo, timeRange, type Bought } from './format';
+import { askForPush, pushState, type PushState } from '../push';
+import { followWords, useFollow } from '../useFollow';
+import { PressableScale } from '../ui/PressableScale';
+import { AppSwitch } from '../ui/AppSwitch';
 
 const CONFETTI = ['#F0532D', '#FFB020', '#0E9F54', '#2456C7', '#D03A6E', '#6B3FD4'];
 
@@ -185,6 +189,12 @@ export function PaidCelebration({
         <Row label="Reservation no." value={reservationNo(a.id)} strong />
       </FadeIn>
 
+      {/* The moment the reason is plain (§287): a reminder before it, and the
+          shop's offers — asked here, not when the app first opened. */}
+      <FadeIn delay={420}>
+        <StayInTouch shop={bought.businessName} businessId={a.location.businessId} />
+      </FadeIn>
+
       <FadeIn delay={460} style={styles.actions}>
         <Button label="View my reservation" icon="ticket-outline" onPress={onView} />
         <Button kind="ghost" label="Explore more services" onPress={onExplore} />
@@ -205,6 +215,15 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
 }
 
 const styles = StyleSheet.create({
+  touch: { marginTop: 18, borderRadius: radius.lg, backgroundColor: theme.panel, ...shadow.card, overflow: 'hidden' },
+  touchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+  touchDivider: { height: StyleSheet.hairlineWidth, backgroundColor: theme.line, marginLeft: 64 },
+  touchIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  touchTitle: { fontFamily: font.bold, fontSize: 15, color: theme.ink },
+  touchBtn: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill, backgroundColor: theme.ask },
+  touchBtnText: { fontFamily: font.extrabold, fontSize: 13.5, color: '#FFFFFF' },
+  touchOn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 11, paddingVertical: 7, borderRadius: radius.pill, backgroundColor: theme.okSoft },
+  touchOnText: { fontFamily: font.bold, fontSize: 13, color: theme.ok },
   screen: { flex: 1, backgroundColor: theme.bg },
   flex: { flex: 1 },
   centre: { textAlign: 'center' },
@@ -257,3 +276,59 @@ const styles = StyleSheet.create({
   rowStrong: { fontFamily: font.extrabold, fontSize: 15, letterSpacing: 1.2 },
   actions: { gap: 6, marginTop: 'auto' },
 });
+
+/** A reminder before the appointment, and this shop's offers (§287). */
+function StayInTouch({ shop, businessId }: { shop: string; businessId: string }) {
+  const [push, setPush] = useState<PushState | null>(null);
+  const follow = useFollow(businessId);
+  useEffect(() => {
+    void pushState().then(setPush);
+  }, []);
+  const showPush = push === 'undecided' || push === 'on';
+  return (
+    <View style={styles.touch}>
+      {showPush && (
+        <View style={styles.touchRow}>
+          <View style={[styles.touchIcon, { backgroundColor: theme.askSoft }]}>
+            <Icon name="alarm-outline" size={18} color={theme.ask} />
+          </View>
+          <View style={styles.flex}>
+            <Text style={styles.touchTitle}>Remind me before it</Text>
+            <Text style={type.small}>An alert on this phone the day before.</Text>
+          </View>
+          {push === 'on' ? (
+            <View style={styles.touchOn}>
+              <Icon name="checkmark" size={14} color={theme.ok} />
+              <Text style={styles.touchOnText}>On</Text>
+            </View>
+          ) : (
+            <PressableScale
+              onPress={async () => setPush(await askForPush())}
+              haptic
+              style={styles.touchBtn}
+              accessibilityRole="button"
+            >
+              <Text style={styles.touchBtnText}>Turn on</Text>
+            </PressableScale>
+          )}
+        </View>
+      )}
+      {showPush && <View style={styles.touchDivider} />}
+      <View style={styles.touchRow}>
+        <View style={[styles.touchIcon, { backgroundColor: theme.accentSoft }]}>
+          <Icon name="storefront-outline" size={18} color={theme.accentDeep} />
+        </View>
+        <View style={styles.flex}>
+          <Text style={styles.touchTitle}>Hear {shop}’s offers</Text>
+          <Text style={type.small}>“{followWords(shop)}”</Text>
+        </View>
+        <AppSwitch
+          value={follow.following}
+          disabled={follow.pending}
+          accessibilityLabel={`Follow ${shop}`}
+          onValueChange={() => follow.toggle()}
+        />
+      </View>
+    </View>
+  );
+}

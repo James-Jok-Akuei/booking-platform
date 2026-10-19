@@ -3,14 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NotificationCategory, NotificationChannel } from '@prisma/client';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  Audience,
-  CATEGORY_RULES,
-  CHOICE_CHANNELS,
-  ChoiceChannel,
-  audienceOf,
-  ruleFor,
-} from './notification-catalog';
+import { Audience, CATEGORY_RULES, CHOICE_CHANNELS, ChoiceChannel, audienceOf, ruleFor } from './notification-catalog';
 
 /** On or off, for one kind on one channel. */
 export type Choices = Map<string, boolean>;
@@ -153,7 +146,10 @@ export class NotificationPreferencesService {
   // ---------- "Stop emails like this", without signing in ----------
 
   private sign(userId: string, category: NotificationCategory) {
-    return createHmac('sha256', this.secret).update(`unsubscribe:${userId}:${category}`).digest('base64url').slice(0, 32);
+    return createHmac('sha256', this.secret)
+      .update(`unsubscribe:${userId}:${category}`)
+      .digest('base64url')
+      .slice(0, 32);
   }
 
   /** The link in an email's footer, for a kind that may be turned off. */

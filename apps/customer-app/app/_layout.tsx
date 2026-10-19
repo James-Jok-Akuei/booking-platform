@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
@@ -14,10 +15,15 @@ import {
   useFonts,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { onSessionEnded, tokens } from '../src/api/client';
+import * as Notifications from 'expo-notifications';
+import { onSessionEnded, tokens, useSignedIn } from '../src/api/client';
+import { configurePush, linkOf, refreshPush } from '../src/push';
+import { useLiveNotifications } from '../src/useLive';
 import { LegalPrompt } from '../src/components/LegalPrompt';
 import { DialogHost } from '../src/ui/Dialog';
 import { theme } from '../src/theme';
+
+configurePush();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +91,7 @@ export default function RootLayout() {
             happens to be (§126.3). It renders nothing when there is nothing to
             say, which is almost always. */}
         <LegalPrompt />
+        <Alerts />
         {/* No native headers anywhere (§133): every screen draws its own top
             bar, so the back button, the title and the type are the app's and
             are the same on every screen. */}
@@ -112,4 +119,27 @@ export default function RootLayout() {
       </QueryClientProvider>
     </SafeAreaProvider>
   );
+}
+
+/**
+ * Alerts (§287): the bell kept live while signed in; this phone's note on the
+ * server refreshed; a tapped alert opening what it is about — including the
+ * one that started the app.
+ */
+function Alerts() {
+  const signedIn = useSignedIn();
+  useLiveNotifications();
+  useEffect(() => {
+    if (signedIn) void refreshPush();
+  }, [signedIn]);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const open = (link: string | null) => link && router.push(link as never);
+    void Notifications.getLastNotificationResponseAsync()
+      .then((r) => open(linkOf(r)))
+      .catch(() => undefined);
+    const sub = Notifications.addNotificationResponseReceivedListener((r) => open(linkOf(r)));
+    return () => sub.remove();
+  }, []);
+  return null;
 }

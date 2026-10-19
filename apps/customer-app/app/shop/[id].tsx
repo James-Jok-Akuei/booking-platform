@@ -38,7 +38,8 @@ import { Stars } from '../../src/ui/Stars';
 import { RichText } from '../../src/ui/RichText';
 import { hasRichText, richToPlain } from '../../src/richText';
 import { TopBar } from '../../src/ui/TopBar';
-import { showProblem } from '../../src/ui/Dialog';
+import { confirmDialog, showProblem } from '../../src/ui/Dialog';
+import { followWords, useFollow } from '../../src/useFollow';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -83,6 +84,7 @@ export default function Shop() {
   const [storyAt, setStoryAt] = useState<StoryStart | null>(null);
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
+  const follow = useFollow(shop.data?.business.id);
   const reviews = useQuery({
     queryKey: ['shop-reviews', id],
     queryFn: () => getShopReviews(id),
@@ -149,6 +151,19 @@ export default function Shop() {
   const today = new Date().getDay();
   const displayName = s.business.name ?? s.name;
   const storyShop = stories.data?.shops.find((x) => x.business.id === s.business.id);
+  const onFollow = async () => {
+    if (!follow.following && signedIn) {
+      const yes = await confirmDialog({
+        title: `Follow ${displayName}?`,
+        message: `You will hear their offers — one a week at most — the way you chose in Notifications. You can unfollow any time.\n\n“${followWords(displayName)}”`,
+        confirm: 'Follow',
+        tone: 'accent',
+        icon: 'notifications',
+      });
+      if (!yes) return;
+    }
+    follow.toggle();
+  };
 
   const share = () =>
     shareShop({
@@ -225,6 +240,25 @@ export default function Shop() {
                   .map((kind, i) => (
                     <Pill key={kind.id} label={kind.name} tone={i === 0 ? 'accent' : 'neutral'} />
                   ))}
+                {/* Following is the yes to this shop's offers (§287). */}
+                <PressableScale
+                  onPress={() => void onFollow()}
+                  disabled={follow.pending}
+                  haptic
+                  scaleTo={0.94}
+                  style={[styles.followPill, follow.following && styles.followPillOn]}
+                  accessibilityRole="button"
+                  accessibilityLabel={follow.following ? `Following ${displayName}. Tap to unfollow` : `Follow ${displayName}`}
+                >
+                  <Icon
+                    name={follow.following ? 'checkmark' : 'notifications-outline'}
+                    size={14}
+                    color={follow.following ? theme.ok : theme.accentDeep}
+                  />
+                  <Text style={[styles.followText, follow.following && styles.followTextOn]}>
+                    {follow.following ? 'Following' : 'Follow'}
+                  </Text>
+                </PressableScale>
               </View>
 
               <View style={styles.titleRow}>
@@ -607,6 +641,19 @@ const styles = StyleSheet.create({
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
   storyLogo: { borderRadius: 26, overflow: 'hidden', backgroundColor: theme.panel },
+  followPill: {
+    marginLeft: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: theme.accentSoft,
+  },
+  followPillOn: { backgroundColor: theme.okSoft },
+  followText: { fontFamily: font.bold, fontSize: 13, color: theme.accentDeep },
+  followTextOn: { color: theme.ok },
   line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   indent: { marginLeft: 22, marginTop: 2 },
   ratingLine: { marginTop: 10 },

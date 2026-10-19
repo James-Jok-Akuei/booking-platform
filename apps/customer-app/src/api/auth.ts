@@ -1,4 +1,5 @@
 import { api, tokens, type AuthenticatedUser, type TokenPair } from './client';
+import { forgetThisPhone } from '../push';
 import { uploadFile } from '../upload';
 import type { components } from './schema';
 /** Derived from the contract (§128). The same message whether or not the address has an account (§3.2). */
@@ -45,6 +46,8 @@ export async function verifyOtp(email: string, code: string): Promise<Authentica
 }
 
 export async function signOut(): Promise<void> {
+  // This phone stops getting the account's alerts (§287) — while still signed in to say so.
+  await forgetThisPhone();
   try {
     await api('/auth/logout', { method: 'POST', body: { refreshToken: tokens.refresh } });
   } catch {

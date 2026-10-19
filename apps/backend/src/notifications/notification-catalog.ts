@@ -1,9 +1,4 @@
-import {
-  NotificationCategory as C,
-  NotificationChannel,
-  NotificationType as T,
-  UserRole,
-} from '@prisma/client';
+import { NotificationCategory as C, NotificationChannel, NotificationType as T, UserRole } from '@prisma/client';
 
 /**
  * What each notification is, and what its recipient may choose about it
