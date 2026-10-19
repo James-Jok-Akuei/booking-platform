@@ -18,24 +18,6 @@ export type Province = components['schemas']['ProvinceDto'];
 export const listProvinces = () =>
   api<Province[]>('/places/provinces', { anonymous: true });
 
-/** From the contract (§128). */
-export type SavedPlace = components['schemas']['SavedPlaceDto'];
-
-
-export const listFavourites = () =>
-  api<{ total: number; favourites: SavedPlace[] }>('/favourites');
-
-export const saveFavourite = (locationId: string) =>
-  api<{ locationId: string; saved: boolean }>('/favourites', {
-    method: 'POST',
-    body: { locationId },
-  });
-
-export const unsaveFavourite = (locationId: string) =>
-  api<{ locationId: string; saved: boolean }>(`/favourites/${locationId}`, {
-    method: 'DELETE',
-  });
-
 /**
  * From the contract (§128.4). Discovery's response is assembled rather than
  * selected, so the SERVICE declares this shape as its return type and the class
@@ -73,6 +55,8 @@ export const discoverLocations = (params: {
   openNow?: boolean;
   /** Services only: just what is on sale today, biggest sale first (§186). */
   onSale?: boolean;
+  /** Services only, signed in: just the shops this person follows (§288). */
+  following?: boolean;
   minRating?: number;
   maxPriceMinor?: number;
   /** districtId is the narrower of the two and wins if both are sent. */

@@ -92,8 +92,17 @@ export function firstUnseen(state: Seen, shop: StoryShop | undefined) {
   return i < 0 ? 0 : i;
 }
 
-/** The shops with something new first, as the server ordered them; the rest after. */
-export const unseenFirst = (state: Seen, shops: StoryShop[]) => [
-  ...shops.filter((shop) => !allSeen(state, shop)),
-  ...shops.filter((shop) => allSeen(state, shop)),
-];
+/**
+ * The shops with something new first, as the server ordered them; the rest
+ * after. Within each, the shops this person follows lead (§288).
+ */
+export function unseenFirst(state: Seen, shops: StoryShop[], followed: ReadonlySet<string> = new Set()) {
+  const lead = (list: StoryShop[]) => [
+    ...list.filter((shop) => followed.has(shop.business.id)),
+    ...list.filter((shop) => !followed.has(shop.business.id)),
+  ];
+  return [
+    ...lead(shops.filter((shop) => !allSeen(state, shop))),
+    ...lead(shops.filter((shop) => allSeen(state, shop))),
+  ];
+}

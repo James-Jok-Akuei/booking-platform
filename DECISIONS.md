@@ -18512,9 +18512,10 @@ or the day; a chat message to a shop says "from a customer".
 
 ### 287.6 Shops writing to their followers
 
-- A customer **follows** a shop from its page or right after booking; the
+- ~~A customer **follows** a shop from its page or right after booking; the
   follow is the yes, kept with its words ("Yes, send me X's offers. I can
-  stop at any time."), and unfollowing is one tap, also from Notifications.
+  stop at any time."), and unfollowing is one tap, also from Notifications.~~
+  *Superseded by §288: following and the yes to offers are now two things.*
 - The seller's **Followers** page: how many follow, a message (title 60,
   message 300, which branch it opens), the follower's lock screen beside it,
   and what was sent with how many opened it. **One a week** per shop; only the
@@ -18529,3 +18530,65 @@ or the day; a chat message to a shop says "from a customer".
   an announcement's report.
 
 21 tests in `test/notification-choices.e2e.spec.ts`.
+
+## 288. Following: one heart for a shop, and what it brings (2026-10-19)
+
+The user asked whether following should give more than a weekly message —
+seeing the services of shops you follow easily — and whether customers need a
+list of the shops they follow. Both yes. Saving a place (§120) and following
+it (§287) were two hearts for nearly the same wish, so they became one.
+
+### 288.1 The rule
+
+- **A shop has one heart: Follow.** It is the pill beside the shop's name.
+  The heart that saved a place in the top bar is gone. Services keep their own
+  heart (§158) — a haircut is saved, a shop is followed.
+- **Following brings things into the app at once**, with no further yes:
+  - its card under **Saved → Following**, with what is new there — a discount
+    on now, a service added in the last 14 days, this week's message;
+  - a **"From places you follow"** shelf on Home, newest first, not narrowed
+    by area or chips (following is not about where you are);
+  - its **stories first** in the stories row;
+  - a **note in the notification list** when it starts a discount
+    (`SHOP_DISCOUNT`) — in the list only, never an alert or email, once per
+    discount (`discount_notes` remembers which were told; checked every 15
+    minutes).
+- **Offers as alerts or emails stay a separate yes**, per shop
+  (`shop_follows.offersAt`), with its words kept in `consent_records`. Asked
+  in the same moment as following: "Follow, and send me offers" / "Just
+  follow" / "Not now". Changed on the card's bell under Saved → Following.
+  The payment screen's switch is that yes, and says so.
+- **Moved over:** everyone who had saved a place now follows its business,
+  with offers off. Everyone who already followed keeps offers on — they had
+  said yes to exactly that.
+- **Follower count on a shop's page only from 20 up.** "3 people follow"
+  reads worse than nothing.
+- **Search order is not changed by follows.** A shop does not rank higher for
+  being followed; that would reward the big ones and is not what search is for.
+
+### 288.2 Where things are
+
+- Customer app: `app/(tabs)/saved.tsx` (Following · N and Services · N),
+  `src/components/FollowingCard.tsx`, `src/useFollow.ts` (`useFollows`,
+  `useFollow`, `whose` for "Barbers'" not "Barbers's"), the Home shelf, and
+  the stories order in `src/stories/seen.ts`. Notifications now links to
+  Saved → Following instead of listing shops. Unfollowing from the card has
+  Undo, which puts back the yes too. The Account tab counts Following.
+- The dialog gained a `secondary` button (soft colour), so "Just follow" does
+  not shout as loud as the main choice.
+- Seller app: Followers says how many follow and how many get offers as
+  alerts; the confirm says everyone sees the message in the app and only those
+  who said yes are alerted; history reads "Alerted N". The phone preview shows
+  the Follow pill.
+- Backend: `GET /follows` is the rich list; `POST /follows/:id {offers}`,
+  `PATCH /follows/:id {offers}`, `DELETE`. `GET /discover/services?following=true`
+  (signed in). The shopfront carries `business.followers`.
+- `/favourites` for places is no longer used by the app; it stays on the
+  server for now.
+
+### 288.3 Not done
+
+- No "new from places you follow" badge on the Saved tab.
+- Following a shop does not change the order of its services anywhere else.
+
+25 tests in `test/notification-choices.e2e.spec.ts` (6 for this); 1477 in all.

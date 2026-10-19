@@ -22,11 +22,13 @@ export type DialogTone = 'danger' | 'warn' | 'ok' | 'info' | 'accent';
 export type DialogAction = {
   label: string;
   /**
-   * `primary` is the filled button. `cancel` is the quiet one, and also what
-   * the back button and a tap outside do. A dialog without a `cancel` and
-   * with more than one action can only be left by choosing.
+   * `primary` is the filled button. `secondary` is a real choice drawn in the
+   * tone's soft colour, for when two of them would otherwise shout equally.
+   * `cancel` is the quiet one, and also what the back button and a tap
+   * outside do. A dialog without a `cancel` and with more than one action can
+   * only be left by choosing.
    */
-  role?: 'primary' | 'cancel';
+  role?: 'primary' | 'secondary' | 'cancel';
   /** May return a promise: the button then spins until it settles, and the dialog closes after. */
   onPress?: () => unknown;
 };
@@ -241,7 +243,8 @@ export function DialogHost() {
           <View style={[styles.actions, sideBySide && styles.actionsRow]}>
             {ordered.map((action) => {
               const index = actions.indexOf(action);
-              const primary = action.role !== 'cancel';
+              const primary = action.role !== 'cancel' && action.role !== 'secondary';
+              const secondary = action.role === 'secondary';
               const spinning = busy === index;
               return (
                 // The press wrapper draws its style on an inner view, so the
@@ -255,7 +258,11 @@ export function DialogHost() {
                   accessibilityState={{ busy: spinning, disabled: busy !== null }}
                   style={[
                     styles.button,
-                    primary ? { backgroundColor: tone.solid } : styles.buttonQuiet,
+                    primary
+                      ? { backgroundColor: tone.solid }
+                      : secondary
+                        ? { backgroundColor: tone.soft }
+                        : styles.buttonQuiet,
                     busy !== null && !spinning && styles.dim,
                   ]}
                 >
@@ -264,7 +271,10 @@ export function DialogHost() {
                   ) : (
                     <Text
                       numberOfLines={1}
-                      style={[styles.buttonText, primary ? styles.buttonTextOn : null]}
+                      style={[
+                        styles.buttonText,
+                        primary ? styles.buttonTextOn : secondary ? { color: tone.solid } : null,
+                      ]}
                     >
                       {action.label}
                     </Text>

@@ -1,21 +1,24 @@
 import { useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  listFavourites,
-  listSavedServices,
-  type SavedPlace,
-  type SavedService,
-} from '../../src/api/discovery';
+import { listSavedServices, type SavedService } from '../../src/api/discovery';
 import { useSignedIn } from '../../src/api/client';
-import { useSaved } from '../../src/useSaved';
+import {
+  followShop,
+  setFollowOffers,
+  unfollowShop,
+  type Follow,
+  type FollowNews,
+} from '../../src/api/notifications';
+import { followWords, useFollows, whose } from '../../src/useFollow';
 import { useSavedService } from '../../src/useSavedService';
-import { PlaceCard } from '../../src/components/PlaceCard';
+import { FollowingCard } from '../../src/components/FollowingCard';
 import { SavedServiceCard } from '../../src/components/SavedServiceCard';
 import { useMoney } from '../../src/money';
 import { radius, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
+import { showDialog, showProblem } from '../../src/ui/Dialog';
 import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon } from '../../src/ui/Icon';
@@ -23,39 +26,71 @@ import { useLayout } from '../../src/ui/layout';
 import { Segmented } from '../../src/ui/Segmented';
 import { PlaceCardSkeleton } from '../../src/ui/Skeleton';
 import { BigTitle } from '../../src/ui/TopBar';
+import { Undo } from '../../src/ui/Undo';
 
-type Kind = 'places' | 'services';
+type Kind = 'following' | 'services';
+type FollowList = { follows: Follow[] };
 
 /**
- * Places and services kept to come back to (§120, §158).
+ * The shops you follow and the services you saved (§120, §158, §288).
  *
  * Not a cart, and the screen says so by what it does not have: no total, no
  * checkout, no quantity. Saving reserves nothing — a slot is held by booking it,
  * and a basket that held slots would take them from somebody ready to book.
  *
- * Two lists under one heading, switched rather than mixed: a saved shop and a
- * saved haircut are different kinds of thing, and a list that interleaved them
- * would read as neither.
+ * Two lists under one heading, switched rather than mixed: a shop and a haircut
+ * are different kinds of thing. A shop is followed rather than saved (§288) —
+ * one heart, one idea — and following brings what is new there onto its card:
+ * a discount on now, a service just added, this week's message.
  */
 export default function Saved() {
   const router = useRouter();
   const money = useMoney();
-  const saved = useSaved();
+  const queryClient = useQueryClient();
   const savedService = useSavedService();
   const insets = useSafeAreaInsets();
   const layout = useLayout();
   const signedIn = useSignedIn();
-  const [kind, setKind] = useState<Kind>('places');
+  const [kind, setKind] = useState<Kind>('following');
+  const [undo, setUndo] = useState<{ follow: Follow; token: number } | null>(null);
 
-  const places = useQuery({
-    queryKey: ['favourites'],
-    queryFn: listFavourites,
-    enabled: signedIn,
-  });
+  const follows = useFollows();
   const services = useQuery({
     queryKey: ['saved-services'],
     queryFn: listSavedServices,
     enabled: signedIn,
+  });
+
+  // Written into the list straight away, like the heart (§120.2): a switch
+  // that waits for a round trip feels broken.
+  const patch = (change: (rows: Follow[]) => Follow[]) =>
+    queryClient.setQueryData<FollowList>(['follows'], (list) => (list ? { ...list, follows: change(list.follows) } : list));
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['follows'] });
+
+  const offers = useMutation({
+    mutationFn: ({ follow, on }: { follow: Follow; on: boolean }) => setFollowOffers(follow.business.id, on),
+    onMutate: ({ follow, on }) =>
+      patch((rows) => rows.map((r) => (r.business.id === follow.business.id ? { ...r, offers: on } : r))),
+    onError: (error) => showProblem('Not changed', error),
+    onSettled: refresh,
+  });
+  const unfollow = useMutation({
+    mutationFn: (follow: Follow) => unfollowShop(follow.business.id),
+    onMutate: (follow) => {
+      patch((rows) => rows.filter((r) => r.business.id !== follow.business.id));
+      setUndo({ follow, token: Date.now() });
+    },
+    onError: (error) => {
+      setUndo(null);
+      showProblem('Still following', error);
+    },
+    onSettled: refresh,
+  });
+  // Undo puts back exactly what was there, the yes to offers included.
+  const refollow = useMutation({
+    mutationFn: (follow: Follow) => followShop(follow.business.id, follow.offers),
+    onError: (error) => showProblem('Not followed', error),
+    onSettled: refresh,
   });
 
   if (!signedIn) {
@@ -65,7 +100,7 @@ export default function Saved() {
         <EmptyState
           icon="heart-outline"
           title="Sign in to keep a list"
-          text="Places and services you save are kept with your account, so they follow you to any phone."
+          text="Shops you follow and services you save are kept with your account, so they follow you to any phone."
           action="Sign in"
           onAction={() => router.push('/sign-in?next=/saved')}
         />
@@ -73,12 +108,36 @@ export default function Saved() {
     );
   }
 
-  const placeRows = places.data?.favourites ?? [];
+  const followRows = follows.data?.follows ?? [];
   const serviceRows = services.data?.services ?? [];
-  const active = kind === 'places' ? places : services;
+  const active = kind === 'following' ? follows : services;
   const removed = services.data?.removed ?? 0;
 
   const count = (n: number | undefined) => (n === undefined ? '' : ` · ${n}`);
+
+  const openShop = (follow: Follow) => follow.bookAt && router.push(`/shop/${follow.bookAt.id}`);
+  const openNews = (follow: Follow, news: FollowNews) => {
+    if (!follow.bookAt) return;
+    if (news.serviceId) router.push(`/book/${follow.bookAt.id}?serviceId=${news.serviceId}`);
+    else router.push(`/shop/${follow.bookAt.id}`);
+  };
+  const toggleOffers = (follow: Follow) => {
+    if (follow.offers) {
+      offers.mutate({ follow, on: false });
+      return;
+    }
+    // A yes to marketing is asked in its own words, every time (§287).
+    showDialog({
+      title: `Hear ${whose(follow.business.name)} offers?`,
+      message: `“${followWords(follow.business.name)}”\n\nOne a week at most, as a phone alert or an email — whichever you allow under Notifications.`,
+      tone: 'accent',
+      icon: 'notifications',
+      actions: [
+        { label: 'Yes, send them', role: 'primary', onPress: () => offers.mutate({ follow, on: true }) },
+        { label: 'Not now', role: 'cancel' },
+      ],
+    });
+  };
 
   const header = (
     <View style={styles.header}>
@@ -86,7 +145,7 @@ export default function Saved() {
         value={kind}
         onChange={setKind}
         options={[
-          { value: 'places', label: `Places${count(places.data?.total)}` },
+          { value: 'following', label: `Following${count(follows.data?.follows.length)}` },
           { value: 'services', label: `Services${count(services.data?.total)}` },
         ]}
       />
@@ -110,11 +169,11 @@ export default function Saved() {
       <PlaceCardSkeleton />
       <PlaceCardSkeleton />
     </View>
-  ) : kind === 'places' ? (
+  ) : kind === 'following' ? (
     <EmptyState
       icon="heart-outline"
-      title="No places saved yet"
-      text="Tap the heart on a place to keep it here. Saving holds nothing — it is just somewhere to put the ones you liked."
+      title="Not following anyone yet"
+      text="Tap Follow on a shop's page. Its new services, discounts and stories then come together here."
       action="Find a place"
       onAction={() => router.push('/')}
     />
@@ -158,36 +217,21 @@ export default function Saved() {
   return (
     <View style={styles.screen}>
       <BigTitle title="Saved" />
-      {kind === 'places' ? (
+      {kind === 'following' ? (
         <FlatList
           key={listKey}
           {...listProps}
-          data={placeRows}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item, index }: { item: SavedPlace; index: number }) => (
+          data={followRows}
+          keyExtractor={(item) => item.business.id}
+          renderItem={({ item, index }: { item: Follow; index: number }) => (
             <FadeIn index={index}>
-              <PlaceCard
-                name={item.business.name ?? item.name}
-                where={`${item.district ? `${item.district.name} · ` : ''}${item.address}`}
-                coverUrl={item.business.coverImageUrl}
-                logoUrl={item.business.logoUrl}
-                ratingAvg={item.ratingAvg}
-                ratingCount={item.ratingCount}
-                price={
-                  item.fromPriceMinor !== null ? `from ${money.format(item.fromPriceMinor)}` : null
-                }
-                // Kept in the list rather than hidden, and marked. A customer
-                // whose barber vanished would decide the app lost it; this says
-                // what happened, and it comes back on its own.
-                note={
-                  item.bookable
-                    ? null
-                    : 'Not taking bookings right now. It stays here until it does.'
-                }
-                saved
-                onSave={() => saved.toggle(item.id, true, '/saved')}
-                onPress={() => router.push(`/shop/${item.id}`)}
+              <FollowingCard
+                follow={item}
                 width={layout.columns > 1 ? layout.cardWidth : undefined}
+                onOpen={() => openShop(item)}
+                onNews={(news) => openNews(item, news)}
+                onOffers={() => toggleOffers(item)}
+                onUnfollow={() => unfollow.mutate(item)}
               />
             </FadeIn>
           )}
@@ -212,6 +256,19 @@ export default function Saved() {
           )}
         />
       )}
+
+      <Undo
+        message={undo ? `Unfollowed ${undo.follow.business.name}` : null}
+        token={undo?.token ?? 0}
+        onUndo={() => {
+          if (!undo) return;
+          refollow.mutate(undo.follow);
+          setUndo(null);
+        }}
+        onExpire={() => setUndo(null)}
+        icon="heart-dislike-outline"
+        lift={TAB_BAR_CLEARANCE - 24}
+      />
     </View>
   );
 }

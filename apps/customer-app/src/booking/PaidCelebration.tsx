@@ -277,10 +277,14 @@ const styles = StyleSheet.create({
   actions: { gap: 6, marginTop: 'auto' },
 });
 
-/** A reminder before the appointment, and this shop's offers (§287). */
+/**
+ * A reminder before the appointment, and this shop's offers (§287). The
+ * switch is the yes to offers; saying it follows the shop too (§288), and
+ * turning it off keeps the follow — that is undone from Saved.
+ */
 function StayInTouch({ shop, businessId }: { shop: string; businessId: string }) {
   const [push, setPush] = useState<PushState | null>(null);
-  const follow = useFollow(businessId);
+  const follow = useFollow(businessId, shop);
   useEffect(() => {
     void pushState().then(setPush);
   }, []);
@@ -316,17 +320,17 @@ function StayInTouch({ shop, businessId }: { shop: string; businessId: string })
       {showPush && <View style={styles.touchDivider} />}
       <View style={styles.touchRow}>
         <View style={[styles.touchIcon, { backgroundColor: theme.accentSoft }]}>
-          <Icon name="storefront-outline" size={18} color={theme.accentDeep} />
+          <Icon name="heart-outline" size={18} color={theme.accentDeep} />
         </View>
         <View style={styles.flex}>
-          <Text style={styles.touchTitle}>Hear {shop}’s offers</Text>
+          <Text style={styles.touchTitle}>Follow {shop} for its offers</Text>
           <Text style={type.small}>“{followWords(shop)}”</Text>
         </View>
         <AppSwitch
-          value={follow.following}
+          value={follow.following && follow.offers}
           disabled={follow.pending}
-          accessibilityLabel={`Follow ${shop}`}
-          onValueChange={() => follow.toggle()}
+          accessibilityLabel={`Follow ${shop} and get its offers`}
+          onValueChange={(on) => (on ? follow.follow(true) : follow.setOffers(false))}
         />
       </View>
     </View>

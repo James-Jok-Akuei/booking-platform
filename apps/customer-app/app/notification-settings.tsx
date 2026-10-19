@@ -5,18 +5,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
   getNotificationSettings,
-  listFollows,
-  unfollowShop,
   updateNotificationSettings,
   type NotificationCategorySetting,
   type NotificationSettings,
   type NotificationSettingsChange,
 } from '../src/api/notifications';
 import { ApiError, useSignedIn } from '../src/api/client';
+import type { Follow } from '../src/api/notifications';
 import { askForPush, pushState, type PushState } from '../src/push';
+import { useFollows } from '../src/useFollow';
 import { font, radius, shadow, theme, type } from '../src/theme';
 import { AppSwitch } from '../src/ui/AppSwitch';
-import { Avatar } from '../src/ui/Avatar';
 import { EmptyState } from '../src/ui/EmptyState';
 import { FadeIn } from '../src/ui/FadeIn';
 import { Icon, type IconName } from '../src/ui/Icon';
@@ -39,6 +38,15 @@ const MARK: Record<string, { icon: IconName; bg: string; fg: string }> = {
 const clock = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 const TIMES = Array.from({ length: 48 }, (_, i) => i * 30);
 
+/** "2 of the 5 shops you follow send you offers. Change it under Saved." */
+function offersFrom(follows: Follow[]) {
+  const on = follows.filter((f) => f.offers).length;
+  const all = follows.length;
+  const shops = all === 1 ? 'the shop you follow' : `the ${all} shops you follow`;
+  const said = on === 0 ? `None of ${shops} send you offers` : on === all ? `All of ${shops} send you offers` : `${on} of ${shops} send you offers`;
+  return `${all === 1 ? (on ? 'The shop you follow sends you offers' : 'The shop you follow does not send you offers') : said}. Choose under Saved → Following.`;
+}
+
 /**
  * What we send you, and how (§287). Your notifications in the app always have
  * everything; here you choose what also comes as an alert on this phone or an
@@ -56,7 +64,7 @@ export default function NotificationSettingsScreen() {
     queryFn: getNotificationSettings,
     enabled: signedIn,
   });
-  const follows = useQuery({ queryKey: ['follows'], queryFn: listFollows, enabled: signedIn });
+  const follows = useFollows();
   const [push, setPush] = useState<PushState | null>(null);
   const [picking, setPicking] = useState<'from' | 'to' | null>(null);
 
@@ -79,10 +87,6 @@ export default function NotificationSettingsScreen() {
       if (context?.before) queryClient.setQueryData(['notification-settings'], context.before);
     },
     onSuccess: (next) => queryClient.setQueryData(['notification-settings'], next),
-  });
-  const unfollow = useMutation({
-    mutationFn: unfollowShop,
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['follows'] }),
   });
 
   if (!signedIn) {
@@ -138,26 +142,19 @@ export default function NotificationSettingsScreen() {
               <View key={row.category}>
                 {i > 0 && <View style={styles.divider} />}
                 <KindRow row={row} wording={s.newsWording} pushOn={push === 'on'} onChoose={choose} />
+                {/* Which shops, and whether each may send offers, live with the
+                    shops themselves (§288): one place to change it. */}
                 {row.category === 'SHOP_OFFERS' && (follows.data?.follows.length ?? 0) > 0 && (
-                  <View style={styles.follows}>
-                    {follows.data!.follows.map((f) => (
-                      <View key={f.business.id} style={styles.follow}>
-                        <Avatar uri={f.business.logoUrl} name={f.business.name} size={30} />
-                        <Text style={styles.followName} numberOfLines={1}>
-                          {f.business.name}
-                        </Text>
-                        <PressableScale
-                          onPress={() => unfollow.mutate(f.business.id)}
-                          disabled={unfollow.isPending}
-                          style={styles.unfollow}
-                          accessibilityRole="button"
-                          accessibilityLabel={`Stop following ${f.business.name}`}
-                        >
-                          <Text style={styles.unfollowText}>Unfollow</Text>
-                        </PressableScale>
-                      </View>
-                    ))}
-                  </View>
+                  <PressableScale
+                    onPress={() => router.push('/saved')}
+                    style={styles.follows}
+                    accessibilityRole="link"
+                    accessibilityLabel="Choose which shops send you offers, under Saved, Following"
+                  >
+                    <Icon name="heart" size={16} color={theme.accent} />
+                    <Text style={styles.followsText}>{offersFrom(follows.data!.follows)}</Text>
+                    <Icon name="chevron-forward" size={16} color={theme.muted} />
+                  </PressableScale>
                 )}
               </View>
             ))}
@@ -441,19 +438,19 @@ const styles = StyleSheet.create({
   },
   locked: { fontFamily: font.semibold, fontSize: 12.5, color: theme.ink2, marginTop: 4 },
 
-  follows: { marginHorizontal: 16, marginBottom: 14, marginLeft: 66, gap: 8 },
-  follow: {
+  follows: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    padding: 8,
-    paddingRight: 8,
+    marginHorizontal: 16,
+    marginBottom: 14,
+    marginLeft: 66,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
     borderRadius: 14,
     backgroundColor: theme.sunken,
   },
-  followName: { flex: 1, fontFamily: font.semibold, fontSize: 14, color: theme.ink },
-  unfollow: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 99, backgroundColor: theme.panel },
-  unfollowText: { fontFamily: font.bold, fontSize: 12.5, color: theme.ink2 },
+  followsText: { flex: 1, fontFamily: font.semibold, fontSize: 13.5, lineHeight: 19, color: theme.ink },
 
   quiet: { padding: 16, gap: 14 },
   quietHead: { flexDirection: 'row', alignItems: 'center', gap: 12 },

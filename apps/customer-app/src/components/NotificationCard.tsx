@@ -32,6 +32,7 @@ export const LOOKS: Partial<Record<Notification['type'], Look>> = {
   // §287
   APPOINTMENT_COMPLETED: { icon: 'star', fg: theme.warn, bg: theme.warnSoft, label: 'How was it?' },
   SHOP_MESSAGE: { icon: 'storefront', fg: theme.ok, bg: theme.okSoft, label: 'Offer' },
+  SHOP_DISCOUNT: { icon: 'pricetag', fg: theme.accentDeep, bg: theme.accentSoft, label: 'Discount' },
   ANNOUNCEMENT: { icon: 'megaphone', fg: theme.ink, bg: theme.sunken, label: 'From our team' },
 };
 export const FALLBACK: Look = { icon: 'notifications', fg: theme.accent, bg: theme.accentSoft, label: 'News' };

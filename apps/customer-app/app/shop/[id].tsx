@@ -7,7 +7,6 @@ import { getRoute, getShop, getShopReviews, type ShopService } from '../../src/a
 import { routeLabel } from '../../src/routeLabel';
 import { useNearMe } from '../../src/useNearMe';
 import { openInquiry } from '../../src/api/chat';
-import { useSaved } from '../../src/useSaved';
 import { useSavedService } from '../../src/useSavedService';
 import { shareShop } from '../../src/share';
 import { SaveButton } from '../../src/components/SaveButton';
@@ -38,8 +37,8 @@ import { Stars } from '../../src/ui/Stars';
 import { RichText } from '../../src/ui/RichText';
 import { hasRichText, richToPlain } from '../../src/richText';
 import { TopBar } from '../../src/ui/TopBar';
-import { confirmDialog, showProblem } from '../../src/ui/Dialog';
-import { followWords, useFollow } from '../../src/useFollow';
+import { showProblem } from '../../src/ui/Dialog';
+import { useFollow, whose } from '../../src/useFollow';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -84,13 +83,12 @@ export default function Shop() {
   const [storyAt, setStoryAt] = useState<StoryStart | null>(null);
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
-  const follow = useFollow(shop.data?.business.id);
+  const follow = useFollow(shop.data?.business.id, shop.data?.business.name ?? shop.data?.name);
   const reviews = useQuery({
     queryKey: ['shop-reviews', id],
     queryFn: () => getShopReviews(id),
   });
 
-  const saved = useSaved();
   const signedIn = useSignedIn();
   const savedService = useSavedService();
 
@@ -151,19 +149,7 @@ export default function Shop() {
   const today = new Date().getDay();
   const displayName = s.business.name ?? s.name;
   const storyShop = stories.data?.shops.find((x) => x.business.id === s.business.id);
-  const onFollow = async () => {
-    if (!follow.following && signedIn) {
-      const yes = await confirmDialog({
-        title: `Follow ${displayName}?`,
-        message: `You will hear their offers — one a week at most — the way you chose in Notifications. You can unfollow any time.\n\n“${followWords(displayName)}”`,
-        confirm: 'Follow',
-        tone: 'accent',
-        icon: 'notifications',
-      });
-      if (!yes) return;
-    }
-    follow.toggle();
-  };
+
 
   const share = () =>
     shareShop({
@@ -240,9 +226,10 @@ export default function Shop() {
                   .map((kind, i) => (
                     <Pill key={kind.id} label={kind.name} tone={i === 0 ? 'accent' : 'neutral'} />
                   ))}
-                {/* Following is the yes to this shop's offers (§287). */}
+                {/* The one heart for a shop (§288): following brings its news into
+                    Saved → Following; its offers as alerts are asked as well. */}
                 <PressableScale
-                  onPress={() => void onFollow()}
+                  onPress={follow.toggle}
                   disabled={follow.pending}
                   haptic
                   scaleTo={0.94}
@@ -251,9 +238,9 @@ export default function Shop() {
                   accessibilityLabel={follow.following ? `Following ${displayName}. Tap to unfollow` : `Follow ${displayName}`}
                 >
                   <Icon
-                    name={follow.following ? 'checkmark' : 'notifications-outline'}
+                    name={follow.following ? 'heart' : 'heart-outline'}
                     size={14}
-                    color={follow.following ? theme.ok : theme.accentDeep}
+                    color={follow.following ? '#FFFFFF' : theme.accentDeep}
                   />
                   <Text style={[styles.followText, follow.following && styles.followTextOn]}>
                     {follow.following ? 'Following' : 'Follow'}
@@ -270,7 +257,7 @@ export default function Shop() {
                     haptic
                     scaleTo={0.92}
                     accessibilityRole="button"
-                    accessibilityLabel={`See ${displayName}'s story`}
+                    accessibilityLabel={`See ${whose(displayName)} story`}
                   >
                     <StoryRing size={52} seen={allSeen(seenStories, storyShop)}>
                       <View style={styles.storyLogo}>
@@ -282,6 +269,11 @@ export default function Shop() {
                   s.business.logoUrl && <Avatar uri={s.business.logoUrl} name={displayName} size={52} />
                 )}
               </View>
+
+              {/* Only once it means something: "3 followers" reads worse than nothing (§288). */}
+              {s.business.followers >= 20 && (
+                <Text style={styles.followers}>{s.business.followers.toLocaleString()} people follow {displayName}</Text>
+              )}
 
               <View style={styles.line}>
                 <Icon name="location-outline" size={16} color={theme.muted} />
@@ -536,12 +528,6 @@ export default function Shop() {
         />
         <View style={styles.floatingRight}>
           <IconButton icon="share-outline" label="Share this place" onPress={share} />
-          <SaveButton
-            saved={s.saved}
-            large
-            onPhoto
-            onPress={() => saved.toggle(s.id, s.saved ?? false, `/shop/${s.id}`)}
-          />
         </View>
       </View>
     </View>
@@ -651,9 +637,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: theme.accentSoft,
   },
-  followPillOn: { backgroundColor: theme.okSoft },
+  followPillOn: { backgroundColor: theme.accent },
   followText: { fontFamily: font.bold, fontSize: 13, color: theme.accentDeep },
-  followTextOn: { color: theme.ok },
+  followTextOn: { color: '#FFFFFF' },
+  followers: { fontFamily: font.semibold, fontSize: 13, color: theme.muted, marginTop: -4, marginBottom: 8 },
   line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   indent: { marginLeft: 22, marginTop: 2 },
   ratingLine: { marginTop: 10 },

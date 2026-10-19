@@ -35,6 +35,7 @@ import { StoriesRow } from '../../src/stories/StoriesRow';
 import { NoticeBanner } from '../../src/components/NoticeBanner';
 import { StoryPlayer, type StoryStart } from '../../src/stories/StoryPlayer';
 import { firstUnseen, unseenFirst, useSeenStories } from '../../src/stories/seen';
+import { useFollows } from '../../src/useFollow';
 import {
   DEFAULT_WITHIN,
   reach,
@@ -160,7 +161,9 @@ export default function Discover() {
     refetchInterval: 120_000,
   });
   const seenStories = useSeenStories();
-  const storyShops = unseenFirst(seenStories, stories.data?.shops ?? []);
+  const follows = useFollows();
+  const followed = new Set((follows.data?.follows ?? []).map((f) => f.business.id));
+  const storyShops = unseenFirst(seenStories, stories.data?.shops ?? [], followed);
   const [storyAt, setStoryAt] = useState<StoryStart | null>(null);
   const provinces = useQuery({
     queryKey: ['provinces'],
@@ -354,6 +357,17 @@ export default function Discover() {
     placeholderData: steady(filterKey),
   });
   const onSale = deals.data?.services ?? [];
+  /**
+   * "From places you follow" (§288): what the shops this person follows sell,
+   * newest first, wherever they are — following is not about this area, so
+   * the area and the chips do not narrow it.
+   */
+  const fromFollowed = useQuery({
+    queryKey: ['discover-services-following', followed.size],
+    queryFn: () => discoverServices({ following: true, sort: 'newest', limit: SHELF_SIZE }),
+    enabled: signedIn && followed.size > 0,
+  });
+  const followedOffers = followed.size > 0 ? (fromFollowed.data?.services ?? []) : [];
 
   const nearOffers = (nearby.data?.services ?? []).filter(
     (o) => o.location.distanceKm !== undefined && o.location.distanceKm !== null,
@@ -743,6 +757,33 @@ export default function Discover() {
               contentContainerStyle={[styles.shelf, bleedPad]}
             >
               {offers.slice(0, SHELF_SIZE).map((service) => (
+                <ServiceCard
+                  key={offerKey(service)}
+                  service={service}
+                  price={money.format(service.priceMinor)}
+                  width={shelfCard}
+                  onPress={() => openService(service)}
+                  onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
+                />
+              ))}
+            </ScrollView>
+          </FadeIn>
+        )}
+
+        {browsing && followedOffers.length > 0 && (
+          <FadeIn delay={70}>
+            <SectionHead
+              title="From places you follow"
+              action="See them"
+              onAction={() => router.push('/saved')}
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={bleed}
+              contentContainerStyle={[styles.shelf, bleedPad]}
+            >
+              {followedOffers.map((service) => (
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}

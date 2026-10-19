@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { font, radius, shadow, theme } from '../theme';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 import { PressableScale } from './PressableScale';
 
 export const UNDO_MS = 5000;
@@ -20,12 +20,17 @@ export function Undo({
   token,
   onUndo,
   onExpire,
+  icon = 'trash-outline',
+  lift = 0,
 }: {
   message: string | null;
   /** Changes with each new removal, so the timer restarts. */
   token: number;
   onUndo: () => void;
   onExpire: () => void;
+  icon?: IconName;
+  /** Room to leave underneath, on a screen with the tab bar. */
+  lift?: number;
 }) {
   const insets = useSafeAreaInsets();
   const rise = useRef(new Animated.Value(0)).current;
@@ -50,7 +55,7 @@ export function Undo({
       pointerEvents={message ? 'auto' : 'none'}
       style={[
         styles.wrap,
-        { bottom: insets.bottom + 16 },
+        { bottom: insets.bottom + 16 + lift },
         {
           opacity: rise,
           transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) }],
@@ -58,7 +63,7 @@ export function Undo({
       ]}
     >
       <View style={styles.bar}>
-        <Icon name="trash-outline" size={16} color="rgba(255,255,255,0.8)" />
+        <Icon name={icon} size={16} color="rgba(255,255,255,0.8)" />
         <Text style={styles.text} numberOfLines={1}>
           {message ?? ''}
         </Text>

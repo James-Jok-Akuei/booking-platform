@@ -76,11 +76,15 @@ export const unregisterPushDevice = (token: string) =>
 // ---------- Shops you follow (§287) ----------
 
 export type Follow = components['schemas']['FollowDto'];
+export type FollowNews = components['schemas']['FollowNewsDto'];
+export type FollowState = components['schemas']['FollowStateDto'];
 export const listFollows = () => api<components['schemas']['FollowListDto']>('/follows');
-export const followShop = (businessId: string) =>
-  api<components['schemas']['FollowStateDto']>(`/follows/${businessId}`, { method: 'POST' });
-export const unfollowShop = (businessId: string) =>
-  api<components['schemas']['FollowStateDto']>(`/follows/${businessId}`, { method: 'DELETE' });
+/** Following brings a shop's news into the app; `offers` is the separate yes to its offers as notifications (§288). */
+export const followShop = (businessId: string, offers = false) =>
+  api<FollowState>(`/follows/${businessId}`, { method: 'POST', body: { offers } });
+export const setFollowOffers = (businessId: string, offers: boolean) =>
+  api<FollowState>(`/follows/${businessId}`, { method: 'PATCH', body: { offers } });
+export const unfollowShop = (businessId: string) => api<FollowState>(`/follows/${businessId}`, { method: 'DELETE' });
 
 // ---------- Service notices across the top (§287) ----------
 

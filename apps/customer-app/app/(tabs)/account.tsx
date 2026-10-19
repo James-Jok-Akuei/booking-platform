@@ -6,6 +6,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboardScroll } from '../../src/useKeyboardScroll';
+import { useFollows } from '../../src/useFollow';
 /**
  * The LEGACY entry point, deliberately.
  *
@@ -36,7 +37,6 @@ import { exportDocumentHtml } from '../../src/exportDocument';
 import { useMoney } from '../../src/money';
 import { Sheet } from '../../src/ui/Sheet';
 import { listMyAppointments } from '../../src/api/booking';
-import { listFavourites } from '../../src/api/discovery';
 import { OffersCard } from '../../src/components/OffersCard';
 import { PayingPromises } from '../../src/booking/PayingPromises';
 import { pickImage } from '../../src/pickImage';
@@ -167,11 +167,7 @@ export default function Account() {
       listMyAppointments({ from: new Date().toISOString(), sort: 'soonest', limit: 50 }),
     enabled: signedIn,
   });
-  const favourites = useQuery({
-    queryKey: ['favourites'],
-    queryFn: listFavourites,
-    enabled: signedIn,
-  });
+  const follows = useFollows();
   // "To come" means somebody is expecting them: not a hold nobody paid for,
   // and not one that was called off.
   const upcoming = toCome.data?.appointments.filter(
@@ -463,8 +459,8 @@ export default function Account() {
             <Stat value={upcoming} label="To come" onPress={() => router.push('/bookings')} />
             <View style={styles.statRule} />
             <Stat
-              value={favourites.data?.total}
-              label="Saved"
+              value={follows.data?.follows.length}
+              label="Following"
               onPress={() => router.push('/saved')}
             />
           </FadeIn>
