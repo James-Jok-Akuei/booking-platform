@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { RefreshControl, SectionList, StyleSheet, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, SectionList, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -461,7 +461,8 @@ export default function Notifications() {
       {/* The whole message, with the way to what it is about. */}
       <Sheet open={open !== null} title={openLook?.label ?? ''} onClose={() => setOpenId(null)}>
         {open && openLook && (
-          <View style={styles.sheet}>
+          // Scrolls inside the sheet, so a long message never runs off the screen (§294).
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sheet}>
             <View style={styles.sheetHead}>
               <View style={[styles.sheetDisc, { backgroundColor: openLook.bg }]}>
                 <Icon name={openLook.icon} size={24} color={openLook.fg} />
@@ -492,7 +493,7 @@ export default function Notifications() {
                 remove.mutate(open.id);
               }}
             />
-          </View>
+          </ScrollView>
         )}
       </Sheet>
     </View>

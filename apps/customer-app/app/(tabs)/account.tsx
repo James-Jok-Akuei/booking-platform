@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Animated, Easing, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -745,7 +745,9 @@ export default function Account() {
           it — a page to read, which is what nearly everyone wants, or a file
           another service can read, which the law lets people ask for (§294). */}
       <Sheet open={copying} title="A copy of your data" onClose={() => setCopying(false)}>
-        <View style={styles.copySheet}>
+        {/* Scrolls inside the sheet: on a small phone it is taller than the
+            sheet may grow, and the last lines were cut off (§294). */}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.copySheet}>
           <Text style={type.body}>Everything we keep about you, in one place:</Text>
           <View style={styles.copyList}>
             {[
@@ -797,13 +799,13 @@ export default function Account() {
             Only if you are moving to another app or service: the same data as a file (JSON) a computer can read
             and bring in. The law gives you the right to take your data with you this way.
           </Text>
-        </View>
+        </ScrollView>
       </Sheet>
 
       <Sheet open={paying} title="How paying works" onClose={() => setPaying(false)}>
-        <View style={styles.payingSheet}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.payingSheet}>
           <PayingPromises />
-        </View>
+        </ScrollView>
       </Sheet>
 
       {/* The bar that appears once the header has scrolled away. */}

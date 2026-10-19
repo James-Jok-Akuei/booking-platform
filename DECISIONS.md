@@ -18883,3 +18883,10 @@ need the technical copy of the data?"
   separate "Technical copy" row with a code icon is gone. Sign out says it
   is only this phone; the line under Close my account says to take a copy
   first. The PDF's own footer points to the data file in the same words.
+
+**§294.1 (same day):** on a phone the data sheet was taller than a sheet may
+grow (82% of the screen), so its last lines were cut off and could not be
+reached. Its content now scrolls inside the sheet, and so do "How paying
+works" and a notification opened from the list (a long announcement could
+run off the screen the same way). Checked on a small phone (375×667): the
+sheet opens at the top and scrolls to its last line.
