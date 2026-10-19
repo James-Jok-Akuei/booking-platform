@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   DeleteObjectCommand,
@@ -8,6 +8,7 @@ import {
 import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import sharp from 'sharp';
 
 /** Hard upload ceiling, enforced by multer before the file is fully buffered. */
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15MB
@@ -82,6 +83,44 @@ const EXTENSION_BY_MIME: Record<string, string> = {
 };
 
 const LOCAL_UPLOAD_DIR = 'uploads';
+
+/**
+ * Every picture is saved again before it is stored, without what it hid
+ * (§296).
+ *
+ * A phone photo carries more than the picture: often the exact GPS spot it
+ * was taken (a shop owner's home, a customer's street), the phone's make and
+ * serial, the time. That is invisible on screen and readable by anyone who
+ * downloads the file — and these pictures are shown to the public. Saving the
+ * picture again keeps only the pixels: the turn the phone recorded is applied
+ * first, so nothing comes out sideways, and everything else is dropped.
+ *
+ * It also means only real pictures are stored. A file that says it is a JPEG
+ * but is something else fails to open here and is refused, which closes the
+ * trick of hiding another kind of file behind a picture's name.
+ *
+ * HEIC (iPhone) photos cannot be opened by the image library and are allowed
+ * only as private help attachments, read by our team (§81); they are stored
+ * as sent.
+ */
+export async function cleanImage(buffer: Buffer, mimeType: string): Promise<Buffer> {
+  try {
+    switch (mimeType) {
+      case 'image/jpeg':
+        return await sharp(buffer, { failOn: 'error' }).rotate().jpeg({ quality: 88, mozjpeg: true }).toBuffer();
+      case 'image/png':
+        return await sharp(buffer, { failOn: 'error' }).rotate().png({ compressionLevel: 9 }).toBuffer();
+      case 'image/webp':
+        return await sharp(buffer, { failOn: 'error', animated: true }).webp({ quality: 88 }).toBuffer();
+      case 'image/gif':
+        return await sharp(buffer, { failOn: 'error', animated: true }).gif().toBuffer();
+      default:
+        return buffer;
+    }
+  } catch {
+    throw new BadRequestException('That file is not a picture we can open. Try a JPG, PNG or WebP photo.');
+  }
+}
 
 /**
  * File storage with two drivers behind one interface.
@@ -168,6 +207,8 @@ export class StorageService implements OnModuleInit {
     // Random filename, never the client-supplied one: it avoids collisions and
     // stops a caller steering the object key with a crafted upload name.
     const key = `${keyPrefix}/${crypto.randomUUID()}.${extension}`;
+    // Pictures without their hidden details — location, phone, time (§296).
+    buffer = await cleanImage(buffer, mimeType);
 
     if (this.driver === 'r2') {
       await this.s3!.send(

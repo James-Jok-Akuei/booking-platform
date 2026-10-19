@@ -18919,3 +18919,60 @@ shop.
 Checked at 390 and 1024 with two shops' stories faked in the test browser
 (no story was posted): the ringed circles first, the question, and Watch
 opening the right shop's story.
+
+## 296. Security, part 1: weak libraries fixed; pictures saved without their hidden details (2026-10-19)
+
+The user asked what cookies and security mean for our apps; I listed what
+exists and what to add (cookies: §299; security: here, §298, §297 for the
+admin side), and they said go ahead with all of it, the admin support plan
+included.
+
+### 296.1 Known weaknesses in the libraries we use
+
+`npm audit` found 40 (1 critical, 25 high). Updated, each within what its
+parent accepts, plus three direct upgrades:
+
+- **The server:** `proxy-addr` 2.0.8 (the critical one — a forged address
+  could dodge the request limits), `multer` 2.4.0 (uploads: oversized field
+  names, aborted uploads), `qs` 6.16.1, `engine.io` 6.6.11 (the live bell),
+  `nodemailer` 9 → 10.1.7 (address parsing), and NestJS 12.0 → 12.2 together
+  (`common`, `core`, `platform-express`, `platform-socket.io`, `websockets`,
+  `testing`) — `platform-express` 12.2 needs `core` 12.2 and the server would
+  not start otherwise.
+- **The seller app and admin console:** `react-router-dom` 6 → 7.18 (an open
+  redirect through a backslash in a link). The apps needed no change; checked
+  on a fresh Vite at 1440 (Appointments, Getting paid → a booking, Payouts
+  with a search). A running Vite keeps the old copy until it is restarted.
+- **Left, and why:** 30 remain, all in the phone app's build tools (Metro,
+  the Expo command line, code signing, the iOS project tools) and
+  `decode-uri-component` under `expo-router` (a slow-down on a malformed
+  link, on the person's own phone). They run on the developer's computer, not
+  on the server or in people's hands; their fix is the next Expo release.
+  Forcing it now would downgrade Expo.
+- `npm audit fix` (automatic) made it worse — it moved the Expo toolchain —
+  and was undone. Root `overrides` did not take for already-locked packages;
+  `npm update <name>` did.
+
+### 296.2 Pictures without their hidden details
+
+Every upload goes through `StorageService.upload`, which now saves a picture
+again before storing it (`cleanImage`, with `sharp` 0.34):
+
+- **What is dropped:** everything but the pixels — EXIF (the GPS spot a phone
+  writes into a photo, the phone's make and model, the time), XMP, IPTC. These
+  pictures are public (shops, services, stories, profile pictures).
+- **The turn is applied first,** so a photo the phone saved "sideways with a
+  note to turn it" comes out the right way up.
+- **Only real pictures are stored:** a file that claims to be a JPEG, PNG,
+  WebP or GIF but will not open is refused ("That file is not a picture we
+  can open…"), which closes hiding another kind of file behind a picture's
+  name.
+- Formats are kept (JPEG quality 88 with mozjpeg; PNG; animated WebP and GIF
+  stay animated). HEIC (iPhone) cannot be opened by the library; it is
+  allowed only as a private help attachment (§81) and is stored as sent. PDFs
+  and documents are untouched.
+- `test/photo-cleaning.spec.ts` (5): GPS and make gone, turned right, format
+  kept, a fake refused, a PDF untouched. Checked through the running server:
+  a profile picture with a GPS spot and "SecretPhone" came back 511 bytes
+  with neither, 200×300 from a sideways 300×200; a text file named .jpg was
+  refused. The test picture was removed.
