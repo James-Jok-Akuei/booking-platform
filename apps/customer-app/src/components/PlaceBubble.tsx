@@ -1,5 +1,6 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
-import type { DiscoveredLocation } from '../api/discovery';
+import { LinearGradient } from 'expo-linear-gradient';
+import { RING } from '../stories/StoryRing';
 import { font, shadow, theme } from '../theme';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
@@ -13,71 +14,106 @@ const SIZE = 66;
  *
  * The row of these is the answer to "who is here" in the height of one line —
  * the way a messaging app shows people across the top. Its picture is the
- * shop's logo, then its cover, then a tile in its category's colour, so a shop
- * that has uploaded nothing is still recognisably a salon and not a blank.
+ * shop's logo, and only the logo (§150): with none, the initial — which reads
+ * as "no logo yet", the way every messaging app's blank contact does.
  *
  * The rating rides on the bottom edge of the circle. The small dot is whether it is OPEN NOW, borrowed from the "online" dot
  * everybody already reads without being told. Green and present, or absent —
  * never a grey dot, which would be one more thing to decode.
+ *
+ * A shop with a story today wears the stories' ring around the circle (§295):
+ * coral while there is something new, a thin grey line once it has all been
+ * seen — so a shop shows once on Home, not once as a place and again as a
+ * story.
  */
 export function PlaceBubble({
-  place,
+  name,
+  logoUrl,
+  openNow,
+  ratingAvg,
+  ratingCount,
+  distanceKm,
+  story,
   onPress,
 }: {
-  place: DiscoveredLocation;
+  name: string;
+  logoUrl: string | null;
+  openNow?: boolean;
+  ratingAvg?: number | null;
+  ratingCount?: number;
+  distanceKm?: number | null;
+  /** A story up today, and whether all of it has been seen. Null for none. */
+  story?: { seen: boolean; count: number } | null;
   onPress: () => void;
 }) {
-  const name = place.business.name ?? place.name;
-  const away = distanceLabel(place.distanceKm);
+  const away = distanceLabel(distanceKm ?? null);
+  const label = [
+    name,
+    story ? `${story.count} ${story.count === 1 ? 'story' : 'stories'} today${story.seen ? ', seen' : ', new'}` : null,
+    openNow ? 'open now' : null,
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  const circle = (
+    <View style={[styles.circle, story && styles.circleInRing]}>
+      {logoUrl ? <Image source={{ uri: logoUrl }} style={styles.picture} /> : <Avatar name={name} size={SIZE} />}
+      {openNow && <View style={styles.open} />}
+      {(ratingCount ?? 0) > 0 && ratingAvg !== null && ratingAvg !== undefined && (
+        <View style={styles.rating}>
+          <Icon name="star" size={9} color={theme.star} />
+          <Text style={styles.ratingText}>{ratingAvg.toFixed(1)}</Text>
+        </View>
+      )}
+    </View>
+  );
+
   return (
     <PressableScale
       onPress={onPress}
       haptic
       scaleTo={0.93}
       accessibilityRole="button"
-      accessibilityLabel={`${name}${place.openNow ? ', open now' : ''}`}
+      accessibilityLabel={label}
       style={styles.wrap}
     >
-      <View style={styles.ring}>
-        {/* The LOGO, and only the logo (§150). A circle used to fall back to
-            the cover photo and then to the category's icon, and both read as
-            a logo the business never chose. With none, the initial — which
-            reads as "no logo yet", the way every messaging app's blank
-            contact does. */}
-        {place.business.logoUrl ? (
-          <Image source={{ uri: place.business.logoUrl }} style={styles.picture} />
-        ) : (
-          <Avatar name={name} size={SIZE} />
-        )}
-        {place.openNow && <View style={styles.open} />}
-        {place.ratingCount > 0 && place.ratingAvg !== null && (
-          <View style={styles.rating}>
-            <Icon name="star" size={9} color={theme.star} />
-            <Text style={styles.ratingText}>{place.ratingAvg.toFixed(1)}</Text>
-          </View>
-        )}
-      </View>
+      {!story ? (
+        circle
+      ) : story.seen ? (
+        <View style={[styles.ring, styles.ringSeen]}>{circle}</View>
+      ) : (
+        <LinearGradient colors={RING} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.ring}>
+          {circle}
+        </LinearGradient>
+      )}
 
-      <Text style={styles.name} numberOfLines={2}>
+      <Text style={[styles.name, story && !story.seen && styles.nameNew]} numberOfLines={2}>
         {name}
       </Text>
       {away && <Text style={styles.away}>{away}</Text>}
-
     </PressableScale>
   );
 }
 
+const OUTER = SIZE + 8;
+const INNER = SIZE + 3;
+
 const styles = StyleSheet.create({
   wrap: { width: 76, alignItems: 'center', gap: 7 },
-  ring: {
-    width: SIZE + 8,
-    height: SIZE + 8,
-    borderRadius: (SIZE + 8) / 2,
+  circle: {
+    width: OUTER,
+    height: OUTER,
+    borderRadius: OUTER / 2,
     backgroundColor: theme.panel,
     alignItems: 'center',
     justifyContent: 'center',
     ...shadow.card,
   },
+  // Inside a ring: a little smaller, so the ring and the circle together are
+  // the size of a plain circle and the row stays even.
+  circleInRing: { width: INNER, height: INNER, borderRadius: INNER / 2, shadowOpacity: 0, elevation: 0 },
+  ring: { width: OUTER + 4, height: OUTER + 4, borderRadius: (OUTER + 4) / 2, alignItems: 'center', justifyContent: 'center' },
+  ringSeen: { borderWidth: 1.5, borderColor: theme.line, backgroundColor: theme.panel },
   picture: { width: SIZE, height: SIZE, borderRadius: SIZE / 2, backgroundColor: theme.sunken },
   open: {
     position: 'absolute',
@@ -97,6 +133,7 @@ const styles = StyleSheet.create({
     color: theme.ink,
     textAlign: 'center',
   },
+  nameNew: { fontFamily: font.bold },
   away: { fontFamily: font.bold, fontSize: 10.5, color: theme.ink2, marginTop: -4 },
   // Sits on the bottom edge of the circle, the way a "live" tag does.
   rating: {

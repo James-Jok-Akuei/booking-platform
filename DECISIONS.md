@@ -18330,10 +18330,11 @@ reason if an administrator took it down).
 
 ### 285.4 Customer app
 
-- **Home**: a row of round logos under the search, while browsing, only when
+- ~~**Home**: a row of round logos under the search, while browsing, only when
   a shop has a story. A coral ring means something new; it turns thin grey
   once seen, and seen shops move to the end. Shown to everyone, signed in or
-  not.
+  not.~~ *Superseded by §295: the ring is worn by the shop's circle in
+  Places, so a shop is not shown twice.*
 - **The player** works the way every stories app does, so nobody has to
   learn it: bars along the top; five seconds a photo, counted from when it
   has loaded (a slow connection never skips one); tap right for the next,
@@ -18890,3 +18891,31 @@ reached. Its content now scrolls inside the sheet, and so do "How paying
 works" and a notification opened from the list (a long announcement could
 run off the screen the same way). Checked on a small phone (375×667): the
 sheet opens at the top and scrolls to its last line.
+
+## 295. Stories on the Places circles, not a row of their own (2026-10-19)
+
+The user: the places' icons looked duplicated on Home, once in the stories
+row (§285) and again in Places; put the stories on the Places circles, and
+let a tap on a place with a story ask whether to watch the story or see the
+shop.
+
+- **One row.** The separate stories row is gone (`StoriesRow` deleted). A
+  place with a story today wears the same ring around its circle — coral
+  while something is new, a thin grey line once seen — and the ringed places
+  come **first**: something new first, shops the customer follows first
+  within that (§288), then the rest in the chosen order.
+- **A tap on a ringed place asks** (the shop's name, "2 new stories from
+  today" or "You have seen today's story…"): **Watch the stories** (opens the
+  player at that shop; swiping goes on to the next ringed place, in the same
+  order as the row), **See the shop**, or **Not now**. A place with no story
+  opens its page straight away, as before.
+- **The stories feed is the whole platform's**, the Places row is the
+  customer's area and filters. A shop with a story that is not one of the
+  places shown is not added — with one exception: while browsing, a shop the
+  customer **follows** is added at the front with its story, so following
+  keeps its promise of "its stories first" (§288) wherever the shop is.
+- The shop's own page keeps its ringed logo (§285).
+
+Checked at 390 and 1024 with two shops' stories faked in the test browser
+(no story was posted): the ringed circles first, the question, and Watch
+opening the right shop's story.

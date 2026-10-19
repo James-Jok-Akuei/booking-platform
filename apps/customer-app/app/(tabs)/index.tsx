@@ -21,7 +21,8 @@ import {
   type DiscoverySort,
 } from '../../src/api/discovery';
 import { useSignedIn } from '../../src/api/client';
-import { listStories } from '../../src/api/stories';
+import { listStories, type StoryShop } from '../../src/api/stories';
+import { showDialog } from '../../src/ui/Dialog';
 import { useMoney } from '../../src/money';
 import { useNearMe } from '../../src/useNearMe';
 import { useUnread } from '../../src/useUnread';
@@ -31,10 +32,9 @@ import { PlaceBubble } from '../../src/components/PlaceBubble';
 import { Spotlights } from '../../src/components/Spotlights';
 import { ServiceCard } from '../../src/components/ServiceCard';
 import { WithinBar } from '../../src/components/WithinBar';
-import { StoriesRow } from '../../src/stories/StoriesRow';
 import { NoticeBanner } from '../../src/components/NoticeBanner';
 import { StoryPlayer, type StoryStart } from '../../src/stories/StoryPlayer';
-import { firstUnseen, unseenFirst, useSeenStories } from '../../src/stories/seen';
+import { allSeen, firstUnseen, unseenFirst, useSeenStories } from '../../src/stories/seen';
 import { useFollows } from '../../src/useFollow';
 import {
   DEFAULT_WITHIN,
@@ -153,7 +153,7 @@ export default function Discover() {
 
   const categories = useQuery({ queryKey: ['categories'], queryFn: listCategories });
 
-  /** Today's stories (§285): the shops with something new first. */
+  /** Today's stories (§285), worn as a ring on the shops in Places (§295). */
   const stories = useQuery({
     queryKey: ['story-feed'],
     queryFn: listStories,
@@ -163,7 +163,6 @@ export default function Discover() {
   const seenStories = useSeenStories();
   const follows = useFollows();
   const followed = new Set((follows.data?.follows ?? []).map((f) => f.business.id));
-  const storyShops = unseenFirst(seenStories, stories.data?.shops ?? [], followed);
   const [storyAt, setStoryAt] = useState<StoryStart | null>(null);
   const provinces = useQuery({
     queryKey: ['provinces'],
@@ -381,10 +380,97 @@ export default function Discover() {
   // no number.
   const shopCount =
     results.data && results.data.total <= branches.length ? shops.length : undefined;
-  const offers = services.data?.services ?? [];
 
   /** Nothing narrowed by word or by kind: show the shop window, not a list. */
   const browsing = !query.trim() && !categoryId && !subcategoryId;
+
+  /**
+   * Places, with today's stories on them (§295, replacing §285's separate
+   * row): each shop once. A place with a story wears the ring and comes first —
+   * something new first, then shops you follow — and while browsing, a shop
+   * you follow is there with its story even when it is not one of the places
+   * nearby. Tapping a ringed place asks: watch the story, or see the shop.
+   */
+  const storyOf = new Map((stories.data?.shops ?? []).map((shop) => [shop.business.id, shop] as const));
+  type Bubble = {
+    key: string;
+    businessId: string;
+    name: string;
+    logoUrl: string | null;
+    openNow?: boolean;
+    ratingAvg?: number | null;
+    ratingCount?: number;
+    distanceKm?: number | null;
+    /** The branch its page opens at. */
+    pageId: string;
+    story: StoryShop | null;
+  };
+  const nearbyBubbles: Bubble[] = shops.map((shop) => ({
+    key: shop.id,
+    businessId: shop.business.id,
+    name: shop.business.name ?? shop.name,
+    logoUrl: shop.business.logoUrl,
+    openNow: shop.openNow,
+    ratingAvg: shop.ratingAvg,
+    ratingCount: shop.ratingCount,
+    distanceKm: shop.distanceKm,
+    pageId: shop.id,
+    story: storyOf.get(shop.business.id) ?? null,
+  }));
+  const followedElsewhere: Bubble[] = browsing
+    ? (stories.data?.shops ?? [])
+        .filter((s) => followed.has(s.business.id) && !shops.some((shop) => shop.business.id === s.business.id))
+        .map((s) => ({
+          key: `story-${s.business.id}`,
+          businessId: s.business.id,
+          name: s.business.name,
+          logoUrl: s.business.logoUrl,
+          pageId: s.stories[0].bookAt.id,
+          story: s,
+        }))
+    : [];
+  const withStory = [...nearbyBubbles, ...followedElsewhere].filter((b) => b.story);
+  // The order the player goes through them in: the same as the ringed circles.
+  const storyShops = unseenFirst(
+    seenStories,
+    withStory.map((b) => b.story!),
+    followed,
+  );
+  const ringOrder = new Map(storyShops.map((shop, i) => [shop.business.id, i] as const));
+  const placeRow = [
+    ...withStory.sort((a, b) => ringOrder.get(a.businessId)! - ringOrder.get(b.businessId)!),
+    ...nearbyBubbles.filter((b) => !b.story),
+  ];
+
+  const openPlace = (bubble: Bubble) => {
+    const story = bubble.story;
+    if (!story) {
+      router.push(`/shop/${bubble.pageId}`);
+      return;
+    }
+    const index = storyShops.findIndex((shop) => shop.business.id === bubble.businessId);
+    const seen = allSeen(seenStories, story);
+    const count = story.stories.length;
+    showDialog({
+      title: bubble.name,
+      message: seen
+        ? 'You have seen today’s story. Watch it again, or open the shop.'
+        : `${count === 1 ? 'A new story' : `${count} new stories`} from today.`,
+      tone: 'accent',
+      icon: 'aperture',
+      actions: [
+        {
+          label: seen ? 'Watch again' : count === 1 ? 'Watch the story' : 'Watch the stories',
+          role: 'primary',
+          onPress: () => setStoryAt({ shop: index, story: firstUnseen(seenStories, story) }),
+        },
+        { label: 'See the shop', role: 'secondary', onPress: () => router.push(`/shop/${bubble.pageId}`) },
+        { label: 'Not now', role: 'cancel' },
+      ],
+    });
+  };
+  const offers = services.data?.services ?? [];
+
 
   /**
    * One shelf per category, in the order the categories are listed everywhere
@@ -535,17 +621,6 @@ export default function Discover() {
           </PressableScale>
         )}
       </FadeIn>
-
-      {/* Today's stories (§285), first, the way every app with stories has
-          them — while browsing, like the spotlights below. */}
-      {browsing && (
-        <StoriesRow
-          shops={storyShops}
-          onOpen={(i) => setStoryAt({ shop: i, story: firstUnseen(seenStories, storyShops[i]) })}
-          style={bleed}
-          contentStyle={bleedPad}
-        />
-      )}
 
       {/* The spotlights (§176): only while browsing — someone who has typed
           or picked a category has said what they want, and a banner would
@@ -701,7 +776,7 @@ export default function Discover() {
           </View>
         )}
 
-        {shops.length > 0 && (
+        {placeRow.length > 0 && (
           <FadeIn>
             <SectionHead
               title="Places"
@@ -717,11 +792,17 @@ export default function Discover() {
               style={bleed}
               contentContainerStyle={[styles.bubbles, bleedPad]}
             >
-              {shops.map((shop) => (
+              {placeRow.map((bubble) => (
                 <PlaceBubble
-                  key={shop.id}
-                  place={shop}
-                  onPress={() => router.push(`/shop/${shop.id}`)}
+                  key={bubble.key}
+                  name={bubble.name}
+                  logoUrl={bubble.logoUrl}
+                  openNow={bubble.openNow}
+                  ratingAvg={bubble.ratingAvg}
+                  ratingCount={bubble.ratingCount}
+                  distanceKm={bubble.distanceKm}
+                  story={bubble.story ? { seen: allSeen(seenStories, bubble.story), count: bubble.story.stories.length } : null}
+                  onPress={() => openPlace(bubble)}
                 />
               ))}
             </ScrollView>
