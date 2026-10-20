@@ -19443,10 +19443,11 @@ browser policy allows none inline, §298). Every element's own style is the
 finished picture and each animation says only where it comes from, so
 "reduce motion" just switches the animations off. The font is served by us
 (§299) and preloaded. When the app is ready (`src/ui/webIntro.ts`,
-`src/intro.ts`): in full **once every 12 hours** per browser — the night
+`src/intro.ts`): ~~in full **once every 12 hours** per browser — the night
 lifts away (302.5); otherwise (a reload, the third shop link of the day,
-another tab), or with "reduce motion", a plain fade at once. The browser's
-bar is the night, then the paper once the picture has gone.
+another tab), or with "reduce motion", a plain fade at once.~~ (superseded:
+in full every time, 302.6) The browser's bar is the night, then the paper
+once the picture has gone.
 
 Three copies of one picture — the phone's, and the two pages — with the same
 timings and hills: change them together.
@@ -19467,3 +19468,14 @@ the mark and the name with it, its hilly edge sweeping up the screen. What
 appears under it is the app itself, from the first moment; there is no
 blank screen at any point. Same on the phone, the customer web and the
 seller app.
+
+### 302.6 The web plays it in full every time
+
+The user: on the phone it is perfect, but on the web it "shows for a second
+and lands on the home page". The once-every-12-hours rule (302.4) meant a
+browser that had already seen it got the quick fade the moment the app was
+ready — which looks like a picture that never finished. Now both web apps
+play it in full every time the page opens, as the phone does every time the
+app starts; a click, a tap or a key still ends it early, and with "reduce
+motion" the still picture still simply fades. (Moving between pages inside
+the app never shows it: only opening or reloading the page does.)
