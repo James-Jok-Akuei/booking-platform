@@ -32,12 +32,13 @@ async function leave() {
   if (typeof document === 'undefined') return;
   const intro = document.getElementById('intro');
   if (!intro) return;
-  const full = welcomeDue();
+  // "Reduce motion": the picture was still, so it goes without moving too.
+  const full = welcomeDue() && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   if (full) await complete(intro);
   document.documentElement.classList.add('intro-gone');
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', PAPER);
   intro.classList.add(full ? 'in-leave' : 'in-quick');
-  await new Promise((resolve) => setTimeout(resolve, full ? 700 : 260));
+  await new Promise((resolve) => setTimeout(resolve, full ? 660 : 260));
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', PAPER);
   intro.remove();
 }
 

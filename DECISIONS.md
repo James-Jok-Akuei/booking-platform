@@ -19403,9 +19403,10 @@ hills come up from below (two pale veils and the paper in front, echoing the
 website's paper bands), and the name comes in — "Bwangu" white,
 "Reservations" orange, one word as it is always written (§239) — with "Book
 your next appointment, easily." (customers) or a "For businesses" pill
-(sellers). About 1.7 seconds. To leave, the paper hill rises over everything
+(sellers). About 1.7 seconds. ~~To leave, the paper hill rises over everything
 and **becomes the app's own background**, the mark and words lifting away;
-then it fades into the first screen. About two and a half seconds in all, and:
+then it fades into the first screen.~~ (superseded: the night lifts away
+instead, 302.5) About two and a half seconds in all, and:
 
 - **Never a wait.** A tap (or a key) ends it once the app is ready; if the app
   is still loading at the end, the rings pulse slowly so it never looks stuck;
@@ -19425,8 +19426,8 @@ then it fades into the first screen. About two and a half seconds in all, and:
 - The lines are drawn by the JavaScript side, so **the app is built
   underneath only once they are drawn**; everything after runs on the phone's
   own side and cannot stutter while the first screen is put together. The
-  status bar is light on the night, dark on the paper; the "documents have
-  changed" notice waits until the picture has gone.
+  status bar is light on the night, dark once the picture has gone; the
+  "documents have changed" notice waits until then.
 - The app's icons were Expo's placeholders: now the mark (white tile, ink
   "b", orange check), with Android's adaptive and one-colour versions, and the
   web's tab icon.
@@ -19442,9 +19443,27 @@ browser policy allows none inline, §298). Every element's own style is the
 finished picture and each animation says only where it comes from, so
 "reduce motion" just switches the animations off. The font is served by us
 (§299) and preloaded. When the app is ready (`src/ui/webIntro.ts`,
-`src/intro.ts`): in full **once every 12 hours** per browser — the paper
-rises; otherwise (a reload, the third shop link of the day, another tab) a
-plain fade at once. The browser's bar is the night, then the paper.
+`src/intro.ts`): in full **once every 12 hours** per browser — the night
+lifts away (302.5); otherwise (a reload, the third shop link of the day,
+another tab), or with "reduce motion", a plain fade at once. The browser's
+bar is the night, then the paper once the picture has gone.
 
 Three copies of one picture — the phone's, and the two pages — with the same
 timings and hills: change them together.
+
+### 302.5 The ending, redone: the night lifts away
+
+The user, after seeing it on the phone: the last thing before the home page
+was "really plain white with no better design" — improve it or remove it.
+The paper hill covered the whole screen and only then faded into the app,
+so for a moment there was nothing but flat paper.
+
+Now the night is a curtain whose lower edge is the front hill, with the
+paper ground underneath it (the resting picture is unchanged: below the
+front hill the pale veils lie on the paper, where paper on paper cannot be
+seen). To leave, the ground melts into the app in a fifth of a second while
+the curtain lifts away — slow to start, then gone, 0.6 s — taking the sun,
+the mark and the name with it, its hilly edge sweeping up the screen. What
+appears under it is the app itself, from the first moment; there is no
+blank screen at any point. Same on the phone, the customer web and the
+seller app.

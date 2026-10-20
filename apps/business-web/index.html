@@ -19,6 +19,10 @@
       "reduce motion" on, the animations are simply switched off and the
       finished picture is what shows.
 
+      The night is a curtain whose lower edge is the front hill; the paper
+      under it is the ground. To leave, the ground melts into the app while the
+      curtain lifts away — so the app is what appears, never a blank page.
+
       The same picture, timings and hills as the customer app's
       (apps/customer-app/public/index.html, src/ui/Intro.tsx), on this app's
       porcelain: change them together.
@@ -42,13 +46,15 @@
       #intro {
         --tile: 110px;
         --lift: -50px;
+        --hill-h: clamp(150px, 27vh, 270px);
+        /* Far enough up that the curtain's edge has left the screen. */
+        --away: calc(-100vh - var(--hill-h));
         --paper: #f9f8f6;
         --orange: #fd7511;
         position: fixed;
         inset: 0;
         z-index: 2147483000;
         overflow: hidden;
-        background: #1f2a1f;
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
         -webkit-font-smoothing: antialiased;
         user-select: none;
@@ -56,7 +62,48 @@
         -webkit-tap-highlight-color: transparent;
       }
 
+      /* The ground, under the curtain: what shows below the front hill. */
+      .in-ground {
+        position: absolute;
+        inset: 0;
+        background: var(--paper);
+      }
+
+      /* The night: a curtain from above the screen down to the front hill,
+         which comes up from below when the booking is made. */
+      .in-sky {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: calc(100vh + var(--hill-h));
+      }
+      .in-sky-rise {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        animation: in-dawn 0.66s cubic-bezier(0.33, 1, 0.68, 1) 1.1s both;
+      }
+      .in-night {
+        flex: 1;
+        margin-bottom: -1px;
+        background: #1f2a1f;
+      }
+      .in-sky svg {
+        display: block;
+        flex: none;
+        width: 100%;
+        height: var(--hill-h);
+      }
+      .in-sky path {
+        fill: #1f2a1f;
+      }
+
       /* The sun behind the tile, up when the booking is made. */
+      .in-sun {
+        position: absolute;
+        inset: 0;
+      }
       .in-glow {
         position: absolute;
         inset: 0;
@@ -69,14 +116,14 @@
         animation: in-glow 0.8s cubic-bezier(0.33, 1, 0.68, 1) 0.94s both;
       }
 
-      /* A thousand hills: two veils and the paper in front, which rises at
-         the end and becomes the app's own background. */
+      /* A thousand hills: two pale veils on the night. (Below the front hill
+         they lie on the paper, where paper on paper cannot be seen.) */
       .in-hills {
         position: absolute;
         left: 0;
         right: 0;
         bottom: 0;
-        height: clamp(150px, 27vh, 270px);
+        height: var(--hill-h);
       }
       .in-hill {
         position: absolute;
@@ -90,9 +137,6 @@
       .in-hill-2 .in-rise {
         animation-delay: 1.02s;
       }
-      .in-hill-3 .in-rise {
-        animation-delay: 1.1s;
-      }
       .in-hill svg {
         display: block;
         width: 100%;
@@ -103,17 +147,6 @@
       }
       .in-hill-2 path {
         fill: rgba(246, 244, 240, 0.14);
-      }
-      .in-hill-3 path {
-        fill: var(--paper);
-      }
-      .in-paper {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: calc(100% - 1px);
-        height: calc(100vh + 2px);
-        background: var(--paper);
       }
 
       /* The mark: the tile the phone's launch screen shows, then the "b"
@@ -268,6 +301,11 @@
           transform: translateY(100%);
         }
       }
+      @keyframes in-dawn {
+        from {
+          transform: translateY(var(--hill-h));
+        }
+      }
       @keyframes in-up {
         from {
           opacity: 0;
@@ -275,33 +313,27 @@
         }
       }
 
-      /* Leaving, once the picture is complete: the paper rises over
-         everything and becomes the app's background; the rest goes up and away. */
-      .in-leave {
+      /* Leaving, once the picture is complete: the ground melts into the app
+         underneath while the night lifts away like a curtain, the hills its
+         edge, taking the sun, the mark and the name with it. */
+      .in-leave .in-ground {
         opacity: 0;
-        transition: opacity 0.2s linear 0.44s;
+        transition: opacity 0.22s cubic-bezier(0.33, 1, 0.68, 1);
       }
-      .in-leave .in-hill-3 {
-        transform: translateY(-100vh);
-        transition: transform 0.52s cubic-bezier(0.65, 0, 0.35, 1);
+      .in-leave .in-sky,
+      .in-leave .in-sun,
+      .in-leave .in-center {
+        transform: translateY(var(--away));
+        transition: transform 0.6s cubic-bezier(0.32, 0, 0.67, 0);
       }
-      .in-leave .in-hill-1,
-      .in-leave .in-hill-2 {
+      .in-leave .in-hill {
         opacity: 0;
-        transform: translateY(-40vh);
+        transform: translateY(var(--away));
         transition:
-          transform 0.52s cubic-bezier(0.65, 0, 0.35, 1),
-          opacity 0.4s linear;
+          transform 0.6s cubic-bezier(0.32, 0, 0.67, 0),
+          opacity 0.22s ease-out;
       }
-      .in-leave .in-center,
-      .in-leave .in-glow {
-        opacity: 0;
-        transform: translateY(-48px);
-        transition:
-          transform 0.42s cubic-bezier(0.5, 0, 0.75, 0),
-          opacity 0.3s linear;
-      }
-      /* Leaving before it is complete (seen already in this tab): a plain fade. */
+      /* Leaving before it is complete, or with "reduce motion": a plain fade. */
       .in-quick {
         opacity: 0;
         transition: opacity 0.22s ease;
@@ -313,18 +345,22 @@
         #intro *::after {
           animation: none !important;
         }
-        #intro.in-leave *,
-        #intro.in-leave {
-          transform: none !important;
-          transition: opacity 0.25s linear !important;
-        }
       }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <div id="intro" aria-hidden="true">
-      <div class="in-glow"></div>
+      <div class="in-ground"></div>
+      <div class="in-sky">
+        <div class="in-sky-rise">
+          <div class="in-night"></div>
+          <svg viewBox="0 0 600 200" preserveAspectRatio="none">
+            <path d="M0 0H600V150C566 142 516 130 456 134C396 138 362 160 300 160C240 160 210 139 150 132C96 126 40 134 0 146Z" />
+          </svg>
+        </div>
+      </div>
+      <div class="in-sun"><div class="in-glow"></div></div>
       <div class="in-hills">
         <div class="in-hill in-hill-1">
           <div class="in-rise">
@@ -338,14 +374,6 @@
             <svg viewBox="0 0 600 200" preserveAspectRatio="none">
               <path d="M0 112C24 104 44 100 66 102C110 106 140 134 190 132C232 130 250 94 300 92C356 90 384 128 432 132C470 135 494 118 524 116C556 114 580 124 600 130V200H0Z" />
             </svg>
-          </div>
-        </div>
-        <div class="in-hill in-hill-3">
-          <div class="in-rise">
-            <svg viewBox="0 0 600 200" preserveAspectRatio="none">
-              <path d="M0 146C40 134 96 126 150 132C210 139 240 160 300 160C362 160 396 138 456 134C516 130 566 142 600 150V200H0Z" />
-            </svg>
-            <div class="in-paper"></div>
           </div>
         </div>
       </div>

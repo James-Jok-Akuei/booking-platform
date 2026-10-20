@@ -49,13 +49,12 @@ export default function RootLayout() {
 
   // The opening picture (§302) says when to build the app underneath it — once
   // its lines are drawn, so putting the first screen together never makes them
-  // stutter — and when it is leaving, and gone. The web's page draws its own
-  // picture, apart from the app, so there the app goes in at once.
+  // stutter — and when it has gone. The web's page draws its own picture,
+  // apart from the app, so there the app goes in at once.
   const [begun, setBegun] = useState(Platform.OS === 'web');
-  const [intro, setIntro] = useState<'showing' | 'leaving' | 'gone'>('showing');
+  const [introGone, setIntroGone] = useState(false);
   const begin = useCallback(() => setBegun(true), []);
-  const leave = useCallback(() => setIntro('leaving'), []);
-  const gone = useCallback(() => setIntro('gone'), []);
+  const gone = useCallback(() => setIntroGone(true), []);
 
   // The app's typeface (§133). Text drawn before it loads would be drawn in the
   // system font and then jump, so nothing renders until it is in — the intro
@@ -113,21 +112,21 @@ export default function RootLayout() {
   const appIn = ready && fontsReady && begun;
 
   useEffect(() => {
-    if (!appIn || intro === 'gone') return;
+    if (!appIn || introGone) return;
     const timer = setTimeout(gone, 5000);
     return () => clearTimeout(timer);
-  }, [appIn, intro, gone]);
+  }, [appIn, introGone, gone]);
 
   return (
     <SafeAreaProvider>
       {/* Light on the intro's night, dark on the app's paper. */}
-      <StatusBar style={intro === 'showing' ? 'light' : 'dark'} />
+      <StatusBar style={introGone ? 'dark' : 'light'} />
       {appIn && (
         <QueryClientProvider client={queryClient}>
           {/* Above the navigator, so a replaced document is seen wherever somebody
               happens to be (§126.3). It renders nothing when there is nothing to
               say, which is almost always — and nothing over the intro. */}
-          {intro === 'gone' && <LegalPrompt />}
+          {introGone && <LegalPrompt />}
           <Alerts />
           {/* No native headers anywhere (§133): every screen draws its own top
               bar, so the back button, the title and the type are the app's and
@@ -155,9 +154,7 @@ export default function RootLayout() {
           <DialogHost />
         </QueryClientProvider>
       )}
-      {intro !== 'gone' && (
-        <Intro fontsReady={fontsReady} appReady={appIn} onBegin={begin} onLeave={leave} onGone={gone} />
-      )}
+      {!introGone && <Intro fontsReady={fontsReady} appReady={appIn} onBegin={begin} onGone={gone} />}
     </SafeAreaProvider>
   );
 }

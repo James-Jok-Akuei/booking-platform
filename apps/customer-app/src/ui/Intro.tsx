@@ -30,17 +30,22 @@ const B = 'M30 18 C28 40 27 62 29 88 C31 100 40 106 50 104 C66 100 74 86 70 70 C
 const CHECK = 'M72 70 L82 82 L106 46';
 const ORANGE = '#FD7511';
 
-/** A thousand hills, back to front: two veils, and the paper that becomes the app. */
-const HILLS = [
+/**
+ * A thousand hills: two pale veils on the night, and the night's own lower
+ * edge — the front hill — with the paper ground below it. (Below the front
+ * hill the veils lie on the paper, where paper on paper cannot be seen.)
+ */
+const VEILS = [
   'M0 80C40 64 76 54 112 56C156 58 186 88 232 90C276 92 320 34 400 30C470 26 520 58 560 66C578 70 590 72 600 72V200H0Z',
   'M0 112C24 104 44 100 66 102C110 106 140 134 190 132C232 130 250 94 300 92C356 90 384 128 432 132C470 135 494 118 524 116C556 114 580 124 600 130V200H0Z',
-  'M0 146C40 134 96 126 150 132C210 139 240 160 300 160C362 160 396 138 456 134C516 130 566 142 600 150V200H0Z',
 ];
-const HILL_FILLS = ['rgba(246,244,240,0.07)', 'rgba(246,244,240,0.14)', theme.bg];
+const VEIL_FILLS = ['rgba(246,244,240,0.07)', 'rgba(246,244,240,0.14)'];
+const SKY = 'M0 0H600V150C566 142 516 130 456 134C396 138 362 160 300 160C240 160 210 139 150 132C96 126 40 134 0 146Z';
 
 const out = Easing.bezier(0.33, 1, 0.68, 1);
 const writing = Easing.bezier(0.45, 0.05, 0.3, 1);
-const across = Easing.bezier(0.65, 0, 0.35, 1);
+/** A curtain flown out: slow to start, then away. */
+const lifting = Easing.bezier(0.32, 0, 0.67, 0);
 
 export type IntroProps = {
   /** The typeface is in, so the name can be written in it. */
@@ -49,8 +54,6 @@ export type IntroProps = {
   appReady: boolean;
   /** A good moment to build the app underneath. */
   onBegin: () => void;
-  /** It has started to go: the paper is coming. */
-  onLeave: () => void;
   onGone: () => void;
 };
 
@@ -63,8 +66,9 @@ export type IntroProps = {
  * seen. Then the "b" is written, the orange check lands with a pop, two rings
  * and a small tick under the finger; the sun comes up behind, the mark rises,
  * a thousand hills come up from below, and the name and the line come in.
- * To leave, the paper hill in front rises over everything and becomes the
- * app's own background.
+ * To leave, the paper ground melts into the app underneath while the night
+ * lifts away like a curtain, the hills its edge — so what appears is the
+ * app itself, never a blank screen.
  *
  * About two and a half seconds, and a tap ends it early once the app is
  * ready. The lines are drawn by the JavaScript side, so the app is built
@@ -94,9 +98,12 @@ const values = () => ({
   rings: [new Animated.Value(0), new Animated.Value(0)],
   glow: new Animated.Value(0),
   lift: new Animated.Value(0),
-  hills: HILLS.map(() => new Animated.Value(0)),
+  veils: VEILS.map(() => new Animated.Value(0)),
+  /** The night's hilly edge coming up from below the screen. */
+  dawn: new Animated.Value(0),
   name: new Animated.Value(0),
   line: new Animated.Value(0),
+  ground: new Animated.Value(1),
   away: new Animated.Value(0),
   fade: new Animated.Value(1),
 });
@@ -109,7 +116,7 @@ const hideLaunchScreen = () => {
   SplashScreen.hideAsync().catch(() => undefined);
 };
 
-function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroProps) {
+function PhoneIntro({ fontsReady, appReady, onBegin, onGone }: IntroProps) {
   // Measured, not read from the window: on some Androids the window leaves out
   // the bars, and the tile must sit exactly where the launch screen put it.
   const [box, setBox] = useState<{ width: number; height: number } | null>(null);
@@ -142,7 +149,7 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
   useEffect(() => {
     if (still === null) return;
     if (still) {
-      for (const value of [v.b, v.check, v.glow, v.lift, ...v.hills, v.name, v.line]) value.setValue(1);
+      for (const value of [v.b, v.check, v.glow, v.lift, ...v.veils, v.dawn, v.name, v.line]) value.setValue(1);
       setLanded(true);
       // Long enough to be seen, rather than a flash.
       const timer = setTimeout(() => setPosed(true), 700);
@@ -176,8 +183,8 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
       ),
       Animated.timing(v.glow, { toValue: 1, duration: 800, easing: out, useNativeDriver: true }),
       Animated.timing(v.lift, { toValue: 1, delay: 80, duration: 560, easing: out, useNativeDriver: true }),
-      ...v.hills.map((hill, i) =>
-        Animated.timing(hill, { toValue: 1, delay: i * 80, duration: 660, easing: out, useNativeDriver: true }),
+      ...[...v.veils, v.dawn].map((layer, i) =>
+        Animated.timing(layer, { toValue: 1, delay: i * 80, duration: 660, easing: out, useNativeDriver: true }),
       ),
     ]);
     scene.start();
@@ -220,16 +227,15 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
 
   useEffect(() => {
     if (!leaving) return;
-    onLeave();
     const go = still
       ? Animated.timing(v.fade, { toValue: 0, duration: 260, easing: Easing.linear, useNativeDriver: true })
       : Animated.parallel([
-          Animated.timing(v.away, { toValue: 1, duration: 520, easing: across, useNativeDriver: true }),
-          Animated.timing(v.fade, { toValue: 0, delay: 440, duration: 200, easing: Easing.linear, useNativeDriver: true }),
+          Animated.timing(v.ground, { toValue: 0, duration: 220, easing: out, useNativeDriver: true }),
+          Animated.timing(v.away, { toValue: 1, duration: 600, easing: lifting, useNativeDriver: true }),
         ]);
     go.start(() => onGone());
     return () => go.stop();
-  }, [leaving, still, v, onLeave, onGone]);
+  }, [leaving, still, v, onGone]);
 
   const skip = () => {
     if (leaving) return;
@@ -245,9 +251,6 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
 
   const from = (value: Animated.Value, distance: number) =>
     value.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] });
-  // Leaving: what is on the night goes up and away as the paper comes.
-  const awayUp = v.away.interpolate({ inputRange: [0, 1], outputRange: [0, -48] });
-  const awayFade = v.away.interpolate({ inputRange: [0, 0.6], outputRange: [1, 0], extrapolate: 'clamp' });
 
   let picture = null;
   if (box) {
@@ -256,15 +259,35 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
     const hillHeight = Math.round(Math.min(270, Math.max(150, height * 0.27)));
     const nameSize = Math.min(36, Math.max(24, Math.round(width * 0.082)));
     const lineSize = Math.min(16, Math.max(13, Math.round(width * 0.038)));
+    // Leaving: everything on the night goes up with it, far enough for its
+    // hilly edge to clear the top.
+    const up = v.away.interpolate({ inputRange: [0, 1], outputRange: [0, -(height + hillHeight)] });
     picture = (
       <>
+        <Animated.View style={[StyleSheet.absoluteFill, styles.ground, { opacity: v.ground }]} />
+        <Animated.View
+          style={[
+            styles.sky,
+            {
+              top: -hillHeight,
+              height: height + hillHeight,
+              transform: [{ translateY: Animated.add(from(v.dawn, hillHeight), up) }],
+            },
+          ]}
+        >
+          <View style={styles.night} />
+          <Svg width={width} height={hillHeight} viewBox="0 0 600 200" preserveAspectRatio="none">
+            <Path d={SKY} fill={theme.night} />
+          </Svg>
+        </Animated.View>
+
         <Animated.View
           style={[
             StyleSheet.absoluteFill,
             {
-              opacity: Animated.multiply(v.glow, awayFade),
+              opacity: v.glow,
               transform: [
-                { translateY: awayUp },
+                { translateY: up },
                 { scale: v.glow.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) },
               ],
             },
@@ -288,34 +311,24 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
           </Svg>
         </Animated.View>
 
-        {HILLS.map((d, i) => {
-          const front = i === HILLS.length - 1;
-          // The front hill carries a screen of paper under it, so rising
-          // covers everything; the veils rise a little and fade.
-          const rise = v.away.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, front ? -(height + hillHeight) : -0.4 * height],
-          });
-          return (
-            <Animated.View
-              key={d}
-              style={[
-                styles.hill,
-                {
-                  top: height - hillHeight,
-                  height: front ? hillHeight + height + 2 : hillHeight,
-                  opacity: front ? 1 : awayFade,
-                  transform: [{ translateY: Animated.add(from(v.hills[i], hillHeight), rise) }],
-                },
-              ]}
-            >
-              <Svg width={width} height={hillHeight} viewBox="0 0 600 200" preserveAspectRatio="none">
-                <Path d={d} fill={HILL_FILLS[i]} />
-              </Svg>
-              {front && <View style={styles.paper} />}
-            </Animated.View>
-          );
-        })}
+        {VEILS.map((d, i) => (
+          <Animated.View
+            key={d}
+            style={[
+              styles.veil,
+              {
+                top: height - hillHeight,
+                height: hillHeight,
+                opacity: v.ground,
+                transform: [{ translateY: Animated.add(from(v.veils[i], hillHeight), up) }],
+              },
+            ]}
+          >
+            <Svg width={width} height={hillHeight} viewBox="0 0 600 200" preserveAspectRatio="none">
+              <Path d={d} fill={VEIL_FILLS[i]} />
+            </Svg>
+          </Animated.View>
+        ))}
 
         <Animated.View
           style={[
@@ -323,12 +336,11 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
             {
               left: width / 2 - TILE / 2,
               top: middle - TILE / 2,
-              opacity: awayFade,
               transform: [
                 {
                   translateY: Animated.add(
                     v.lift.interpolate({ inputRange: [0, 1], outputRange: [0, -LIFT] }),
-                    awayUp,
+                    up,
                   ),
                 },
               ],
@@ -378,7 +390,7 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
           <Animated.View
             style={[
               styles.words,
-              { top: middle - LIFT + TILE / 2 + 26, opacity: awayFade, transform: [{ translateY: awayUp }] },
+              { top: middle - LIFT + TILE / 2 + 26, transform: [{ translateY: up }] },
             ]}
           >
             <Animated.Text
@@ -424,15 +436,21 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onLeave, onGone }: IntroPro
       importantForAccessibility="no-hide-descendants"
       style={StyleSheet.absoluteFill}
     >
-      <Animated.View style={[StyleSheet.absoluteFill, styles.night, { opacity: v.fade }]}>{picture}</Animated.View>
+      {/* The night alone until measured: the launch screen's colour, under the launch screen. */}
+      <Animated.View style={[StyleSheet.absoluteFill, styles.clip, !box && styles.dark, { opacity: v.fade }]}>
+        {picture}
+      </Animated.View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  night: { backgroundColor: theme.night, overflow: 'hidden' },
-  hill: { position: 'absolute', left: 0, right: 0 },
-  paper: { flex: 1, marginTop: -1, backgroundColor: theme.bg },
+  clip: { overflow: 'hidden' },
+  dark: { backgroundColor: theme.night },
+  ground: { backgroundColor: theme.bg },
+  sky: { position: 'absolute', left: 0, right: 0 },
+  night: { flex: 1, marginBottom: -1, backgroundColor: theme.night },
+  veil: { position: 'absolute', left: 0, right: 0 },
   mark: { position: 'absolute', width: TILE, height: TILE },
   tile: { position: 'absolute', inset: 0, borderRadius: CORNER, backgroundColor: '#FFFFFF' },
   ring: { position: 'absolute', inset: 0, borderRadius: CORNER, borderWidth: 2, borderColor: ORANGE },
