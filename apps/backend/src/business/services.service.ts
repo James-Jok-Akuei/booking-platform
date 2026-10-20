@@ -9,7 +9,12 @@ import { Prisma } from '@prisma/client';
  * has to tell an empty description from a missing one.
  */
 const tidyWords = <
-  T extends { title?: string | null; description?: string | null; instructions?: string | null },
+  T extends {
+    title?: string | null;
+    description?: string | null;
+    instructions?: string | null;
+    notePrompt?: string | null;
+  },
 >(
   fields: T,
 ): T => ({
@@ -21,6 +26,7 @@ const tidyWords = <
   ...(fields.instructions !== undefined
     ? { instructions: fields.instructions?.trim() || null }
     : {}),
+  ...(fields.notePrompt !== undefined ? { notePrompt: fields.notePrompt?.trim() || null } : {}),
 });
 import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
@@ -35,6 +41,10 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { recalculateFromPrice } from './from-price';
 import { platformToday, ymd } from './discount';
 import { branchIn } from './branch-scope';
+import { assertFitsInADay, planChoiceGroups } from './service-choices';
+import { loadChoiceGroups, saveChoiceGroups } from './choice-groups';
+import { notePromptFor, priceAtShopFor, suggestionsFor } from './choice-suggestions';
+import { KINDS_SELECT } from './kinds';
 
 /**
  * Services belong to the *business*, not to a location.
@@ -159,14 +169,19 @@ export class ServicesService {
       dto.offers.map((offer) => offer.locationId),
     );
 
-    const { offers, discountPercent, discountEndsOn, ...words } = dto;
+    const { offers, discountPercent, discountEndsOn, choiceGroups, ...words } = dto;
     const fields = { ...tidyWords(words), ...this.discountColumns({ discountPercent, discountEndsOn }) };
+
+    // The questions a customer answers while booking (§300), checked before
+    // anything is written.
+    const groups = planChoiceGroups(choiceGroups ?? [], []);
+    assertFitsInADay(dto.durationMinutes, groups);
 
     // The service, its branch offers and every affected location's headline
     // price commit together (§44). A catalogue that has changed while the
     // listing has not is a listing advertising a price nobody can book at.
     return this.prisma.$transaction(async (tx) => {
-      const service = await tx.service.create({
+      const created = await tx.service.create({
         // The unit of account these prices are denominated in, said explicitly.
         // The column used to default to "USD" in the schema, which silently
         // mislabelled every price in a deployment priced in anything else
@@ -182,10 +197,12 @@ export class ServicesService {
             })),
           },
         },
-        include: SERVICE_INCLUDE,
+        select: { id: true },
       });
+      await saveChoiceGroups(tx, created.id, groups, []);
+      // After the questions: a required one can raise the cheapest price (§300.3).
       await recalculateFromPrice(tx, businessId);
-      return service;
+      return tx.service.findUniqueOrThrow({ where: { id: created.id }, include: SERVICE_INCLUDE });
     });
   }
 
@@ -218,7 +235,7 @@ export class ServicesService {
     // patch: an update can also flip `isActive` back on, which changes the
     // cheapest price without touching a price field. Checking which fields
     // moved would be a second place to get the rule right.
-    const { offers, discountPercent, discountEndsOn, ...patch } = dto;
+    const { offers, discountPercent, discountEndsOn, choiceGroups, ...patch } = dto;
     const sale =
       discountPercent === undefined && discountEndsOn === undefined
         ? {}
@@ -238,7 +255,24 @@ export class ServicesService {
       );
     }
 
+    // The questions (§300): sent, they replace what is there; a new length
+    // is checked against the ones that stay.
+    const existing =
+      choiceGroups !== undefined || dto.durationMinutes !== undefined
+        ? await loadChoiceGroups(this.prisma, serviceId)
+        : [];
+    const groups = choiceGroups !== undefined ? planChoiceGroups(choiceGroups, existing) : null;
+    if (groups || dto.durationMinutes !== undefined) {
+      const length =
+        dto.durationMinutes ??
+        (await this.prisma.service.findUniqueOrThrow({ where: { id: serviceId }, select: { durationMinutes: true } }))
+          .durationMinutes;
+      assertFitsInADay(length, groups ?? existing);
+    }
+
     return this.prisma.$transaction(async (tx) => {
+      if (groups) await saveChoiceGroups(tx, serviceId, groups, existing);
+
       // Listed branches are on sale at the price given; any branch left out is
       // PAUSED, never deleted (§74). Deleting would discard that branch's price
       // the moment someone edited the service without thinking about it — and
@@ -407,6 +441,24 @@ export class ServicesService {
       message:
         'Service deactivated. It is hidden from customers but kept so past appointments still resolve.',
       service,
+    };
+  }
+
+  /**
+   * Ready-made questions for the shop's kinds (§300.2), its main kind first,
+   * and the note box's words — for the service form to offer. Nothing is
+   * added to any service until the shop saves it.
+   */
+  async choiceSuggestions(userId: string) {
+    const businessId = await this.access.requireBusinessId(userId);
+    const { kinds } = await this.prisma.businessProfile.findUniqueOrThrow({
+      where: { id: businessId },
+      select: { kinds: KINDS_SELECT },
+    });
+    return {
+      sections: suggestionsFor(kinds),
+      notePrompt: notePromptFor(kinds),
+      priceAtShop: priceAtShopFor(kinds),
     };
   }
 

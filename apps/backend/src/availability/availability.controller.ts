@@ -70,6 +70,7 @@ export class AvailabilityController {
         query.serviceId,
         query.quantity ?? 1,
         user?.userId,
+        query.options ?? [],
       );
     }
 

@@ -1,6 +1,10 @@
+import { ChoiceKind } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
+  IsBoolean,
+  IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
@@ -12,6 +16,93 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { CHOICE_LIMITS, LOWEST_CHOICE_PRICE_MINOR } from '../service-choices';
+import { ChoiceShowIfDto } from './service-choices.dto';
+
+/** An answer being written (§300): any part may be missing yet. */
+export class DraftChoiceOptionDto {
+  @IsOptional()
+  @IsUUID()
+  id?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(CHOICE_LIMITS.label)
+  label?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(CHOICE_LIMITS.description)
+  description?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(LOWEST_CHOICE_PRICE_MINOR)
+  @Max(CHOICE_LIMITS.priceMinor)
+  priceMinor?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(CHOICE_LIMITS.extraMinutes)
+  extraMinutes?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  available?: boolean;
+}
+
+/** A question being written (§300), in the shape the service form sends. */
+export class DraftChoiceGroupDto {
+  @IsOptional()
+  @IsUUID()
+  id?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(CHOICE_LIMITS.name)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(CHOICE_LIMITS.question)
+  question?: string | null;
+
+  @IsOptional()
+  @IsEnum(ChoiceKind)
+  kind?: ChoiceKind;
+
+  @IsOptional()
+  @IsBoolean()
+  required?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(CHOICE_LIMITS.options)
+  maxPicks?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  healthRelated?: boolean;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ChoiceShowIfDto)
+  showIf?: ChoiceShowIfDto | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  suggestionKey?: string | null;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(CHOICE_LIMITS.options)
+  @ValidateNested({ each: true })
+  @Type(() => DraftChoiceOptionDto)
+  options?: DraftChoiceOptionDto[];
+}
 
 export class DraftOfferDto {
   @IsUUID()
@@ -82,4 +173,25 @@ export class UpdateServiceDraftDto {
   @ValidateNested({ each: true })
   @Type(() => DraftOfferDto)
   offers?: DraftOfferDto[];
+
+  /** The questions as written so far (§300). Checked when the service is posted. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(CHOICE_LIMITS.groups)
+  @ValidateNested({ each: true })
+  @Type(() => DraftChoiceGroupDto)
+  choices?: DraftChoiceGroupDto[];
+
+  @IsOptional()
+  @IsBoolean()
+  noteEnabled?: boolean | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(CHOICE_LIMITS.notePrompt)
+  notePrompt?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  priceConfirmedAtShop?: boolean | null;
 }

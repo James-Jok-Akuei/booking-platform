@@ -373,3 +373,7 @@
   .ci-done-actions { grid-template-columns: 1fr; }
 }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+
+/* What they chose (§300), on the receipt once they are checked in. */
+.ci-choices { width: 100%; text-align: left; }
+.ci-choices .ap-drawer-h { margin-top: 4px; }

@@ -113,6 +113,21 @@ export class SupportConversationDto {
   messages!: SupportMessageDto[];
 }
 
+/** One private answer on a booking, as support reads it (§300.6). */
+export class SupportPrivateAnswerDto {
+  /** The question, by the shop's name for it. */
+  group!: string;
+  option!: string;
+}
+
+/** The private answers on a booking, read with a reason — the reading is written down (§300.6). */
+export class SupportPrivateAnswersDto {
+  /** Null when there were none, or they have been removed. */
+  answers!: SupportPrivateAnswerDto[] | null;
+  /** When they were removed, 30 days after the visit; null while kept. */
+  removedAt!: string | null;
+}
+
 /** What asking MTN found (§297). */
 export class SupportPaymentCheckDto {
   appointmentStatus!: string;

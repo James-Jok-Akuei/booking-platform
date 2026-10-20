@@ -145,6 +145,7 @@ enum NotificationType {
   SHOP_DISCOUNT // a shop you follow started a discount — in the app only (§288)
   SUPPORT_UPDATE // our support team did something for you or about your booking (§297)
   NEW_SIGN_IN // the account was signed in to on a phone or browser not seen before (§298)
+  BOOKING_CHOICES_CHANGED // a customer changed their wishes or note after booking (§300); the shop is told
 }
 
 /// What a notification is about, for choosing what you get and how (§287).
@@ -796,6 +797,97 @@ model LocationHours {
 /// Removing a link never touches history. An appointment snapshots the price it
 /// was booked at (§30), so a past booking stays reconstructable at a branch that
 /// no longer offers the service.
+/// Pick one, or pick several (§300).
+enum ChoiceKind {
+  ONE
+  MANY
+}
+
+/// A question a customer answers while booking a service (§300) — "How long
+/// is your hair?", "What size is the car?", "Any food allergies?". The shop
+/// names it for itself ("Hair length"); the customer is asked the question.
+///
+/// Rows, not JSON on the service: a booking names its answers by id, a
+/// question can depend on another question's answer, and a branch's headline
+/// price reads the cheapest required answer in SQL (§300.3).
+model ServiceChoiceGroup {
+  id        String  @id @default(uuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  /// Order on the form and while booking, smallest first.
+  position Int
+
+  /// The shop's own short name for it, on its screens and on the booking.
+  name     String
+  /// What the customer is asked. Null: the name is asked as it is.
+  question String?
+
+  kind     ChoiceKind @default(ONE)
+  /// Must be answered before a time can be chosen.
+  required Boolean    @default(false)
+  /// Pick-several only: the most that may be picked. Null: any number.
+  maxPicks Int?
+
+  /// Allergies, pregnancy, an injury (§300.6). The answers are sealed, kept
+  /// apart from the booking's other choices, seen only by that customer and
+  /// that shop, never put in an email or a phone alert, and removed 30 days
+  /// after the visit. Its answers can never change the price or the time, so
+  /// nothing about them can show on a receipt either.
+  healthRelated Boolean @default(false)
+
+  /// "Show only if" this answer to an EARLIER question is picked — one level,
+  /// never a chain. SetNull: saving never leaves it pointing at a removed
+  /// answer, and if anything did, asking the question always is the safer way
+  /// to be wrong.
+  showIfOptionId String?
+  showIfOption   ServiceChoiceOption? @relation("ChoiceShowIf", fields: [showIfOptionId], references: [id], onDelete: SetNull)
+
+  /// The ready-made suggestion it began as (§300.2), so the list of
+  /// suggestions can say it is already added. Null for the shop's own.
+  suggestionKey String?
+
+  options ServiceChoiceOption[] @relation("ChoiceOptions")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([serviceId, position])
+  @@map("service_choice_groups")
+}
+
+/// One answer to a question (§300): its name, a line about it, what it adds.
+model ServiceChoiceOption {
+  id      String             @id @default(uuid())
+  groupId String
+  group   ServiceChoiceGroup @relation("ChoiceOptions", fields: [groupId], references: [id], onDelete: Cascade)
+
+  position    Int
+  label       String
+  description String?
+
+  /// Added to the booking's price, in minor units, once per booking — not per
+  /// person (§300.3). Negative takes money off ("I'll come with my hair
+  /// washed"). A sale never touches it; the sale is on the service (§186).
+  priceMinor   Int @default(0)
+  /// Added to how long the booking takes, so the times offered fit (§300.4).
+  /// Only for time the customer is there: editing photos or sewing afterwards
+  /// adds to the price, never to the minutes.
+  extraMinutes Int @default(0)
+
+  /// "Not available now": shown greyed, cannot be picked, kept for later.
+  available Boolean @default(true)
+
+  /// Questions that show only when this answer is picked.
+  reveals ServiceChoiceGroup[] @relation("ChoiceShowIf")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([groupId, position])
+  @@map("service_choice_options")
+}
+
 model ServiceLocation {
   id String @id @default(uuid())
 
@@ -906,6 +998,20 @@ model Service {
   /// Photos of the service itself (§132), capped in ServiceImagesService.
   images     ServiceMedia[]
   favourites ServiceFavourite[] @relation("ServiceFavourites")
+
+  /// The questions a customer answers while booking it (§300): hair length,
+  /// car size, "no salt". Empty for most services, which is fine.
+  choiceGroups ServiceChoiceGroup[]
+
+  /// Whether the customer may write the shop a short note while booking
+  /// (§300.5). On unless the shop switches it off.
+  noteEnabled          Boolean @default(true)
+  /// The words above the note box. Null: the ones written for the shop's kind.
+  notePrompt           String?
+  /// The final price is agreed at the shop after seeing the job — a repair,
+  /// a party (§300.3). The listed price is where it starts: cards say "from",
+  /// and the deposit is on that.
+  priceConfirmedAtShop Boolean @default(false)
 
   @@index([businessId])
   @@map("services")
@@ -1489,6 +1595,27 @@ model Appointment {
   /// Null until the appointment resolves, and for appointments resolved before
   /// the hold became configurable.
   payoutHoldDaysApplied Int?
+
+  // ---- What the customer chose (§300), copied at booking ----
+  //
+  // Each answer's question, name, price and minutes as they were when booked,
+  // so a shop changing its questions later never rewrites a booking. Null
+  // when there was nothing to choose.
+  choices                Json?
+  /// What the choices added — already inside `servicePriceMinor` and
+  /// `endTime`, recorded so a receipt can show them as their own lines.
+  choicesPriceMinor      Int       @default(0)
+  choicesMinutes         Int       @default(0)
+  /// Health-related answers (§300.6): sealed (AES-256-GCM), kept apart from
+  /// `choices`, and never in the shared projection — reading them takes
+  /// naming them. Removed 30 days after the visit, and `healthChoicesRemovedAt`
+  /// says when, so a screen can say why they are gone.
+  healthChoicesSealed    String?
+  healthChoicesRemovedAt DateTime?
+  /// The customer's short note to the shop (§300.5), at most 250 characters.
+  customerNote           String?
+  /// When the customer last changed their wishes or note after booking.
+  choicesChangedAt       DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2637,6 +2764,13 @@ model ServiceDraft {
   /// cleanup for data that is thrown away the moment the service is created.
   offers Json @default("[]")
 
+  /// The questions as written so far (§300), in the shape the service form
+  /// sends — checked when the service is posted, like everything else here.
+  choices              Json     @default("[]")
+  noteEnabled          Boolean?
+  notePrompt           String?
+  priceConfirmedAtShop Boolean?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2778,6 +2912,7 @@ enum SupportActionKind {
   STOP_MARKETING
   CLOSE_ACCOUNT
   LINK_TICKET
+  READ_HEALTH_CHOICES // the private answers on a booking, read with a reason (§300.6)
 }
 
 model SupportAction {

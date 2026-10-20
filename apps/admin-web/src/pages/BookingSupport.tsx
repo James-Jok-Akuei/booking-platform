@@ -9,10 +9,12 @@ import {
   supportComplete,
   supportFixNoShow,
   supportReadMessages,
+  supportReadPrivateAnswers,
   supportResendCode,
   type AdminAppointmentDetail,
   type SupportBody,
   type SupportConversation,
+  type SupportPrivateAnswers,
 } from '../api/admin';
 import { SupportActButton, SupportHistory, SupportPanel, type Consequence } from '../components/SupportPanel';
 import { reservationNo } from '../lib/bookingLook';
@@ -32,7 +34,8 @@ export type BookingAct =
   | 'cancelForCustomer'
   | 'cancelForShop'
   | 'resendCode'
-  | 'readMessages';
+  | 'readMessages'
+  | 'readPrivate';
 
 /**
  * "Help with this booking" (§297): what support may do for the shop or the
@@ -126,6 +129,11 @@ export function BookingSupportSection({
   acts.push(
     <SupportActButton key="chat" icon="eye" label="Read their conversation" note="What the customer and the shop said — it is written down" onClick={() => onAct('readMessages')} />,
   );
+  // Allergies, a health matter (§300.6): only with a reason, and both are told.
+  if (a.hasHealthChoices)
+    acts.push(
+      <SupportActButton key="private" icon="lock" label="Read the private answers" note="Health or personal — only with a reason; it is written down" onClick={() => onAct('readPrivate')} />,
+    );
 
   return (
     <>
@@ -153,12 +161,15 @@ export function BookingActPanel({
   onBack,
   onClose,
   onRead,
+  onReadPrivate,
 }: {
   a: AdminAppointmentDetail;
-  act: Exclude<BookingAct, 'readMessages'> | 'readMessages';
+  act: BookingAct;
   onBack: () => void;
   onClose: () => void;
   onRead: (conversation: SupportConversation) => void;
+  /** The private answers, once read (§300.6). */
+  onReadPrivate: (answers: SupportPrivateAnswers) => void;
 }) {
   const money = useMoney();
   const queryClient = useQueryClient();
@@ -416,7 +427,73 @@ export function BookingActPanel({
           }}
         />
       );
+    case 'readPrivate':
+      return (
+        <SupportPanel
+          {...common}
+          title="Read the private answers"
+          consequences={[
+            { mark: 'lock', text: 'Allergies, health or something personal the customer told the shop — sealed, and kept only 30 days after the visit.' },
+            { mark: 'shield', text: 'That you read them is written down, with your reason, and shows on the booking for both of them.' },
+          ]}
+          placeholder="The shop asks what allergy the customer said; the booking will not open for them."
+          confirmLabel="Read them"
+          busyLabel="Opening…"
+          run={(body) => supportReadPrivateAnswers(a.id, body)}
+          onDone={(result) => {
+            refresh();
+            onReadPrivate(result as SupportPrivateAnswers);
+          }}
+        />
+      );
   }
+}
+
+/** The private answers on a booking, as support reads them (§300.6). */
+export function PrivateAnswersPanel({
+  a,
+  read,
+  onBack,
+  onClose,
+}: {
+  a: AdminAppointmentDetail;
+  read: SupportPrivateAnswers;
+  onBack: () => void;
+  onClose: () => void;
+}) {
+  const byGroup = new Map<string, string[]>();
+  for (const answer of read.answers ?? []) byGroup.set(answer.group, [...(byGroup.get(answer.group) ?? []), answer.option]);
+  return (
+    <Panel
+      eyebrow={`Booking No. ${reservationNo(a.id)} · read by support`}
+      title="The private answers"
+      onClose={onClose}
+      width={560}
+      footer={
+        <button type="button" onClick={onBack}>
+          Back to the booking
+        </button>
+      }
+    >
+      {byGroup.size === 0 ? (
+        <p className="sa-empty">
+          {read.removedAt ? 'They were removed 30 days after the visit, as promised.' : 'There are none on this booking.'}
+        </p>
+      ) : (
+        <div className="sa-private">
+          <p>
+            <Icon name="lock" size={15} /> For helping with this booking only — never copy them into a message or a note.
+          </p>
+          {[...byGroup.entries()].map(([group, options]) => (
+            <div key={group}>
+              <span>{group}</span>
+              <strong>{options.join(', ')}</strong>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panel>
+  );
 }
 
 /** The conversation, read-only, as support reads it (§297). */

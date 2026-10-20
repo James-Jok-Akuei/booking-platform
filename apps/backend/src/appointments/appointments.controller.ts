@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -28,6 +29,7 @@ import { VerifyAppointmentDto } from './dto/verify-appointment.dto';
 import { ManualVerifyAppointmentDto } from './dto/manual-verify-appointment.dto';
 import { ListAppointmentsDto } from './dto/list-appointments.dto';
 import { CancelAppointmentDto } from './dto/cancel-appointment.dto';
+import { UpdateBookingChoicesDto } from './dto/update-booking-choices.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   InitiateDepositPaymentResponseDto,
@@ -76,6 +78,20 @@ export class AppointmentsCustomerController {
    * on demand is a code the business controls, and its only job is to be
    * something the business does not have.
    */
+  /**
+   * Changes wishes and the note, until 2 hours before (§300.7). Answers that
+   * changed the price or the time stay as booked. The shop is told.
+   */
+  @Patch(':id/choices')
+  @ApiOkResponse({ type: CustomerAppointmentDetailDto })
+  changeChoices(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateBookingChoicesDto,
+  ) {
+    return this.appointments.changeChoices(user.userId, id, dto);
+  }
+
   @Post(':id/resend-verification-code')
   @ApiOkResponse({ type: CustomerAppointmentDetailDto })
   @HttpCode(HttpStatus.OK)

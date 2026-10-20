@@ -114,6 +114,16 @@ export type ServiceOffer = components['schemas']['ServiceOfferedAtDto'];
  * the offers rather than a number sitting on the service.
  */
 export type Service = components['schemas']['BusinessServiceDto'];
+/** A question a customer answers while booking (§300), as stored. */
+export type ChoiceGroup = components['schemas']['ServiceChoiceGroupDto'];
+export type ChoiceOption = components['schemas']['ServiceChoiceOptionDto'];
+/** …and as the service form sends it: "show only if" by position. */
+export type ChoiceGroupInput = components['schemas']['ServiceChoiceGroupInputDto'];
+export type ChoiceSuggestions = components['schemas']['ChoiceSuggestionsDto'];
+export type ChoiceSuggestion = components['schemas']['ChoiceSuggestionDto'];
+
+/** Ready-made questions for this shop's kinds, and the note box's words (§300.2). */
+export const getChoiceSuggestions = () => api<ChoiceSuggestions>('/business/services/choice-suggestions');
 
 
 export type Hours = components['schemas']['LocationHoursDto'];
@@ -199,6 +209,11 @@ export const createService = (body: {
   durationMinutes: number;
   depositPercentage: number;
   offers: Array<{ locationId: string; priceMinor: number }>;
+  /** The questions customers answer while booking (§300), in order. */
+  choiceGroups?: ChoiceGroupInput[];
+  noteEnabled?: boolean;
+  notePrompt?: string | null;
+  priceConfirmedAtShop?: boolean;
 }) => api<Service>('/business/services', { method: 'POST', body });
 
 export const updateService = (
@@ -215,6 +230,11 @@ export const updateService = (
     isActive: boolean;
     /** REPLACES the branch list wholesale, like the week of hours. */
     offers: Array<{ locationId: string; priceMinor: number }>;
+    /** REPLACES the questions wholesale; one sent with its `id` keeps it (§300). */
+    choiceGroups: ChoiceGroupInput[];
+    noteEnabled: boolean;
+    notePrompt: string | null;
+    priceConfirmedAtShop: boolean;
   }>,
 ) => api<Service>(`/business/services/${id}`, { method: 'PATCH', body });
 
@@ -905,6 +925,11 @@ export const saveServiceDraft = (
     durationMinutes?: number | null;
     depositPercentage?: number | null;
     offers?: Array<{ locationId: string; priceMinor: number }>;
+    /** The questions as written so far (§300), unchecked. */
+    choices?: unknown[];
+    noteEnabled?: boolean | null;
+    notePrompt?: string | null;
+    priceConfirmedAtShop?: boolean | null;
   },
 ) => api<ServiceDraft>(`/business/service-drafts/${id}`, { method: 'PATCH', body });
 

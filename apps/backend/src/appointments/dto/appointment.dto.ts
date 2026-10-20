@@ -8,6 +8,7 @@ import {
   TicketStatus,
   VerificationMethod,
 } from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import {
   APPOINTMENT_SELECT,
@@ -28,9 +29,17 @@ import {
  * this class fails the build. A DTO that merely sits beside a query is the same
  * hand-written guess the clients were already making, moved one directory.
  */
+/**
+ * Health-related answers (§300.6), opened from their sealed column by the
+ * reads of the customer and the shop — present there, absent on the answer
+ * to an action, and on every admin read.
+ */
+type HealthOnRead = { healthChoices?: AppointmentChoiceDto[] | null };
+
 type AppointmentPayload = Serialised<
   Prisma.AppointmentGetPayload<{ select: typeof APPOINTMENT_SELECT }>
->;
+> &
+  HealthOnRead;
 
 /**
  * The nested shapes, as named classes.
@@ -59,6 +68,24 @@ export class AppointmentServiceDto {
 export class AppointmentCustomerDto {
   id!: string;
   email!: string;
+}
+
+/**
+ * One answer the customer picked (§300), as it was when booked — later
+ * changes to the shop's questions never rewrite it.
+ */
+export class AppointmentChoiceDto {
+  /** The question and answer ids then; they may no longer exist. */
+  groupId!: string;
+  optionId!: string;
+  /** The question, by the shop's name for it — "Hair length". */
+  group!: string;
+  /** The answer — "Long". */
+  option!: string;
+  /** What it added to the booking's price, once (not per person). */
+  priceMinor!: number;
+  /** What it added to the booking's length. */
+  extraMinutes!: number;
 }
 
 /** The customer's own review of this visit, when they left one (§111). */
@@ -111,6 +138,31 @@ export class AppointmentDto implements AppointmentPayload {
   depositPercentage!: string | null;
   platformFeePercentage!: string | null;
 
+  /**
+   * What the customer picked (§300), in the order the shop asks: question,
+   * answer, and what each added. Null when there was nothing to choose.
+   * Health-related answers are never here — see `healthChoices`.
+   */
+  @ApiProperty({ type: () => [AppointmentChoiceDto], nullable: true })
+  choices!: Prisma.JsonValue;
+  /** What the answers added — already inside `servicePriceMinor` and `endTime` (§300). */
+  choicesPriceMinor!: number;
+  choicesMinutes!: number;
+  /** The customer's note to the shop (§300.5). */
+  customerNote!: string | null;
+  /** When the customer last changed their wishes or note after booking (§300.7). */
+  choicesChangedAt!: string | null;
+  /** When the health-related answers were removed, 30 days after the visit (§300.6). */
+  healthChoicesRemovedAt!: string | null;
+  /**
+   * Health-related answers (§300.6) — allergies, pregnancy, an injury. On
+   * the customer's and the shop's READS only, one booking or a list; absent
+   * on the answer to an action. Null: none were given. Show them in red to
+   * the shop; never put them in an email, a notice or a calendar invite.
+   */
+  @ApiProperty({ required: false, type: () => [AppointmentChoiceDto], nullable: true })
+  healthChoices?: AppointmentChoiceDto[] | null;
+
   paymentProviderReferenceId!: string | null;
   paymentInitiatedAt!: string | null;
 
@@ -151,7 +203,8 @@ export class AppointmentDto implements AppointmentPayload {
  */
 type CustomerAppointmentPayload = Serialised<
   Prisma.AppointmentGetPayload<{ select: typeof CUSTOMER_LIST_SELECT }>
->;
+> &
+  HealthOnRead;
 
 export class CustomerAppointmentDto
   extends AppointmentDto
@@ -172,7 +225,8 @@ export class CustomerAppointmentDto
  */
 type CustomerAppointmentDetailPayload = Serialised<
   Prisma.AppointmentGetPayload<{ select: typeof CUSTOMER_APPOINTMENT_SELECT }>
->;
+> &
+  HealthOnRead;
 
 export class CustomerAppointmentDetailDto
   extends CustomerAppointmentDto
@@ -328,6 +382,19 @@ export class AdminAppointmentReviewDto {
  * how, who cancelled, the ledger's lines, the review and the tickets.
  */
 export class AdminAppointmentDetailDto extends AdminAppointmentDto {
+  /**
+   * What the customer picked (§300), as booked — never the private answers,
+   * which are read only through support, with a reason (§300.6).
+   */
+  @ApiProperty({ type: () => [AppointmentChoiceDto], nullable: true })
+  choices!: Prisma.JsonValue;
+  choicesPriceMinor!: number;
+  choicesMinutes!: number;
+  customerNote!: string | null;
+  choicesChangedAt!: string | null;
+  /** Whether the booking holds private answers — not what they are. */
+  hasHealthChoices!: boolean;
+  healthChoicesRemovedAt!: string | null;
   unitPriceMinor!: number | null;
   discountPercent!: number | null;
   listPriceMinor!: number | null;

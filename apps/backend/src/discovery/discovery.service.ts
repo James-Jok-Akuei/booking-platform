@@ -16,6 +16,9 @@ import { liveDiscount, priceFor } from '../business/discount';
 import { isOpenAt } from './open-now';
 import { DiscoverLocationsDto, DiscoverySort } from './dto/discover-locations.dto';
 import { DiscoveredServicePageDto, DiscoveryPageDto } from './dto/discovery-response.dto';
+import { CHOICE_GROUPS_SELECT, STARTING_PRICE_GROUPS_SELECT } from '../business/dto/service-choices.dto';
+import { startingPriceMinor } from '../business/service-choices';
+import { notePromptFor } from '../business/choice-suggestions';
 import { COUNTED_BOOKING_STATUSES, byPopularity } from './popularity';
 
 /** Rows the bounding-box + haversine query returns. */
@@ -385,6 +388,9 @@ export class DiscoveryService {
               take: 1,
               select: { url: true },
             },
+            // Enough for a "from" price (§300.3).
+            priceConfirmedAtShop: true,
+            choiceGroups: STARTING_PRICE_GROUPS_SELECT,
           },
         },
         location: {
@@ -439,6 +445,15 @@ export class DiscoveryService {
       offers.map((o) => [o, priceFor(o.priceMinor, liveDiscount(o.service, today, this.timeZone))]),
     );
     const paid = (o: (typeof offers)[number]) => priced.get(o)!;
+    // The least a booking can cost once the questions that must be answered
+    // are (§300.3) — what a price filter and a price sort mean.
+    const starting = new Map(
+      offers.map((o) => [
+        o,
+        startingPriceMinor(o.service.choiceGroups, priced.get(o)!.priceMinor, o.service.priceConfirmedAtShop),
+      ]),
+    );
+    const cheapest = (o: (typeof offers)[number]) => starting.get(o) ?? paid(o).priceMinor;
 
     // `openNow` is a filter on the BRANCH, resolved the way the place search
     // resolves it: from the one function that knows the rule (§114.2).
@@ -446,7 +461,7 @@ export class DiscoveryService {
       (o) =>
         (!query.openNow || openNow.get(o.locationId)) &&
         (!onSale || paid(o).discount !== null) &&
-        (maxPriceMinor === undefined || paid(o).priceMinor <= maxPriceMinor),
+        (maxPriceMinor === undefined || cheapest(o) <= maxPriceMinor),
     );
 
     const rating = (o: (typeof offers)[number]) =>
@@ -465,7 +480,7 @@ export class DiscoveryService {
     const sorted = [...candidates].sort((a, b) => {
       switch (query.sort) {
         case DiscoverySort.PRICE:
-          return paid(a).priceMinor - paid(b).priceMinor || popular(a, b);
+          return cheapest(a) - cheapest(b) || popular(a, b);
         case DiscoverySort.RATING:
           return (rating(b) ?? -1) - (rating(a) ?? -1) || popular(a, b);
         case DiscoverySort.NEWEST:
@@ -503,6 +518,7 @@ export class DiscoveryService {
         currency: o.service.currency,
         priceMinor: paid(o).priceMinor,
         discount: paid(o).discount,
+        startingPriceMinor: starting.get(o) ?? null,
         depositPercentage: o.service.depositPercentage.toFixed(2),
         imageUrl: o.service.images[0]?.url ?? null,
         bookingCount: bookings.get(key(o.serviceId, o.locationId)) ?? 0,
@@ -636,6 +652,11 @@ export class DiscoveryService {
                 orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
                 select: { id: true, url: true, displayOrder: true },
               },
+              // What the customer answers while booking (§300).
+              choiceGroups: CHOICE_GROUPS_SELECT,
+              noteEnabled: true,
+              notePrompt: true,
+              priceConfirmedAtShop: true,
             },
           },
         },
@@ -699,7 +720,7 @@ export class DiscoveryService {
       services: services.map((offer) => {
         // The stored sale columns stay inside; the customer gets the sale as
         // it stands today (§186).
-        const { discountPercent, discountEndsOn, ...service } = offer.service;
+        const { discountPercent, discountEndsOn, notePrompt, ...service } = offer.service;
         const price = priceFor(
           offer.priceMinor,
           liveDiscount({ discountPercent, discountEndsOn }, today.date, this.timeZone),
@@ -708,6 +729,9 @@ export class DiscoveryService {
         ...service,
         priceMinor: price.priceMinor,
         discount: price.discount,
+        startingPriceMinor: startingPriceMinor(service.choiceGroups, price.priceMinor, service.priceConfirmedAtShop),
+        // The shop's own words, else the ones for its kind (§300.5).
+        notePrompt: notePrompt ?? notePromptFor(location.business.kinds),
         depositPercentage: offer.service.depositPercentage.toFixed(2),
         ...(viewerId ? { saved: savedServices.has(`${offer.service.id}:${locationId}`) } : {}),
         ...(rate

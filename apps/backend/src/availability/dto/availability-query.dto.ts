@@ -1,5 +1,7 @@
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsUUID, Matches, Max, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsUUID, Matches, Max, Min } from 'class-validator';
+import { CHOICE_LIMITS } from '../../business/service-choices';
 import { MINUTES_PER_DAY, SLOT_GRID_MINUTES } from '../time.util';
 
 export class AvailabilityQueryDto {
@@ -40,4 +42,24 @@ export class AvailabilityQueryDto {
   @Min(1)
   @Max(1000)
   quantity?: number;
+
+  /**
+   * The answers picked so far (§300), as option ids separated by commas.
+   * Only read alongside `serviceId`: their extra minutes are added to the
+   * service's length, so every time offered fits what was chosen.
+   */
+  @ApiProperty({
+    required: false,
+    type: String,
+    description: 'Option ids, separated by commas.',
+    example: '3f2a9c1e-5b7d-4e8a-9c21-7d4e5f6a8b90,9d1e4c2b-7a3f-4b8e-8c11-2f6e5d4c3b2a',
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.split(',').map((id) => id.trim()).filter(Boolean) : value,
+  )
+  @IsArray()
+  @ArrayMaxSize(CHOICE_LIMITS.groups * CHOICE_LIMITS.options)
+  @IsUUID('all', { each: true })
+  options?: string[];
 }

@@ -13,6 +13,8 @@ import { BusinessModule } from '../business/business.module';
 import { MailModule } from '../mail/mail.module';
 import { ChatModule } from '../chat/chat.module';
 import { LedgerModule } from '../ledger/ledger.module';
+import { HealthChoices } from './health-choices';
+import { HealthChoicesSweep } from './health-choices.sweep';
 
 // AvailabilityModule for the booking-time slot re-check, BusinessModule for
 // BusinessRolesGuard, MailModule for the verification email.
@@ -24,7 +26,7 @@ import { LedgerModule } from '../ledger/ledger.module';
     AppointmentsSharedController,
     AdminAppointmentsController,
   ],
-  providers: [AppointmentsService, AppointmentsScheduler, PaymentsScheduler],
-  exports: [AppointmentsService],
+  providers: [AppointmentsService, AppointmentsScheduler, PaymentsScheduler, HealthChoices, HealthChoicesSweep],
+  exports: [AppointmentsService, HealthChoices],
 })
 export class AppointmentsModule {}

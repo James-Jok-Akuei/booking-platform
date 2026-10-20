@@ -218,6 +218,7 @@ export function categoryOf(type: T, audience: Audience): C {
     case T.APPOINTMENT_CANCELLED:
     case T.APPOINTMENT_NO_SHOW:
     case T.DEPOSIT_FAILED:
+    case T.BOOKING_CHOICES_CHANGED:
       return C.BOOKINGS;
     case T.APPOINTMENT_REMINDER:
       return C.REMINDERS;
@@ -293,6 +294,7 @@ export function linkFor(type: T, audience: Audience, ref: NotificationRef): stri
       case T.APPOINTMENT_BOOKED:
       case T.DEPOSIT_CONFIRMED:
       case T.APPOINTMENT_REMINDER:
+      case T.BOOKING_CHOICES_CHANGED:
         return ref.appointmentId ? `/appointments?open=${ref.appointmentId}` : '/appointments';
       case T.APPOINTMENT_CANCELLED:
       case T.APPOINTMENT_NO_SHOW:

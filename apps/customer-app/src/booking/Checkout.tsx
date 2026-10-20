@@ -12,6 +12,7 @@ import { MomoLogo } from '../ui/Momo';
 import { Pulse } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
 import { balanceMinor, dayOf, howMany, minutesOf, timeRange, type Bought } from './format';
+import { BookedChoices } from './BookedChoices';
 
 /** How long the server holds an unpaid slot (`PENDING_PAYMENT_TTL_MS`). */
 const HOLD_MS = 5 * 60 * 1000;
@@ -119,19 +120,38 @@ export function Checkout({
 
         <Fact icon="calendar-outline" main={dayOf(a.startTime)} sub={timeRange(a)} />
         <Fact icon="location-outline" main={a.location.name} sub={a.location.address} />
+
+        {/* What was picked (§300), so nobody pays for a booking they cannot see. */}
+        {(a.choices?.length || a.healthChoices?.length || a.customerNote) && (
+          <>
+            <View style={styles.rule} />
+            <BookedChoices a={a} format={format} />
+          </>
+        )}
       </FadeIn>
 
       {/* THE SUM. Every line a person would otherwise work out in their head. */}
       <FadeIn delay={60} style={styles.card}>
         <Text style={type.heading}>Payment summary</Text>
 
-        {a.unitPriceMinor !== null && a.quantity > 1 && (
+        {a.unitPriceMinor !== null && (a.quantity > 1 || a.choicesPriceMinor !== 0) && (
           <Line
-            label={`${a.service.name} × ${a.quantity}`}
-            hint={`${format(a.unitPriceMinor, a.currency)} each`}
-            value={format(a.servicePriceMinor, a.currency)}
+            label={a.quantity > 1 ? `${a.service.name} × ${a.quantity}` : a.service.name}
+            hint={a.quantity > 1 ? `${format(a.unitPriceMinor, a.currency)} each` : undefined}
+            value={format(a.unitPriceMinor * a.quantity, a.currency)}
           />
         )}
+        {/* Each answer that moved the price (§300.3), once for the booking. */}
+        {(a.choices ?? [])
+          .filter((pick) => pick.priceMinor !== 0)
+          .map((pick) => (
+            <Line
+              key={pick.optionId}
+              label={pick.option}
+              hint={pick.group}
+              value={`${pick.priceMinor < 0 ? '−' : '+'}${format(Math.abs(pick.priceMinor), a.currency)}`}
+            />
+          ))}
         {/* The sale it was booked under (§186), said as a saving. */}
         {a.discountPercent !== null && a.listPriceMinor !== null && a.servicePriceMinor !== null && (
           <Line

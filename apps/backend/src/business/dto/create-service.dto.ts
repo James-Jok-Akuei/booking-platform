@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   ArrayMinSize,
   IsArray,
   IsBoolean,
@@ -17,6 +18,8 @@ import {
 } from 'class-validator';
 import { MAX_DISCOUNT_PERCENT, MIN_DISCOUNT_PERCENT } from '../discount';
 import { MaxDecimalPlaces } from '../../common/validators/max-decimal-places.validator';
+import { CHOICE_LIMITS } from '../service-choices';
+import { ServiceChoiceGroupInputDto } from './service-choices.dto';
 
 /** One branch's offer of a service, at that branch's price (§72). */
 export class ServiceOfferDto {
@@ -130,4 +133,39 @@ export class CreateServiceDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  /**
+   * The questions a customer answers while booking (§300), in order. On an
+   * edit, left out means unchanged; sent, it is the whole list as it should
+   * be — a question or answer sent with its `id` is kept, one left out is
+   * removed. Bookings already made keep what was picked either way.
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(CHOICE_LIMITS.groups, {
+    message: `A service can ask up to ${CHOICE_LIMITS.groups} questions.`,
+  })
+  @ValidateNested({ each: true })
+  @Type(() => ServiceChoiceGroupInputDto)
+  choiceGroups?: ServiceChoiceGroupInputDto[];
+
+  /** Whether the customer may write a short note while booking (§300.5). */
+  @IsOptional()
+  @IsBoolean()
+  noteEnabled?: boolean;
+
+  /** The words above the note box; blank goes back to the ones for the shop's kind. */
+  @IsOptional()
+  @Transform(blankToNull)
+  @IsString()
+  @MaxLength(CHOICE_LIMITS.notePrompt)
+  notePrompt?: string | null;
+
+  /**
+   * The final price is agreed at the shop after seeing the job — a repair,
+   * a party (§300.3). Cards say "from", and the deposit is on the price here.
+   */
+  @IsOptional()
+  @IsBoolean()
+  priceConfirmedAtShop?: boolean;
 }

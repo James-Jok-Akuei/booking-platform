@@ -16,6 +16,8 @@ import { createAppointment } from '../../src/api/booking';
 import { openInquiry } from '../../src/api/chat';
 import { useSignedIn } from '../../src/api/client';
 import { BeforeYouCome } from '../../src/booking/BeforeYouCome';
+import { ChoicePicker, NoteBox } from '../../src/booking/ChoicePicker';
+import { askedAs, bookingDraft, tally, toggle } from '../../src/booking/choices';
 import { endOf, groupByPeriod } from '../../src/booking/periods';
 import { PhotoMosaic } from '../../src/components/PhotoMosaic';
 import { SaleBadge, saleUntil } from '../../src/components/Sale';
@@ -131,13 +133,27 @@ export default function Book() {
   const [date, setDate] = useState(days[0]);
   const [slot, setSlot] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  // What the customer picked (§300), and their note to the shop — as they
+  // left them, if they went to sign in and came back.
+  const draftKey = `${id}:${serviceId}`;
+  const [picked, setPicked] = useState<Set<string>>(() => new Set(bookingDraft.get(draftKey)?.picked));
+  const [note, setNote] = useState(() => bookingDraft.get(draftKey)?.note ?? '');
+  useEffect(() => {
+    bookingDraft.set(draftKey, { picked, note });
+  }, [draftKey, picked, note]);
+  // Set by trying to go on with a required question unanswered.
+  const [flagMissing, setFlagMissing] = useState(false);
 
   const offset = useRef(0);
   const frameRef = useRef<View>(null);
   const timesRef = useRef<View>(null);
+  const choicesRef = useRef<View>(null);
 
   const shop = useQuery({ queryKey: ['shop', id], queryFn: () => getShop(id) });
   const service = shop.data?.services.find((s) => s.id === serviceId);
+  // The questions, and what the answers add (§300) — the server's own rules.
+  const groups = service?.choiceGroups ?? [];
+  const chosen = tally(groups, picked);
 
   // The real road from here, once the phone has said where here is (§157).
   const position = nearMe.state.status === 'on' ? nearMe.state : null;
@@ -162,9 +178,13 @@ export default function Book() {
   const availability = useQuery({
     // Asked again for every quantity: three people need three places, and a
     // time with two left is free for two but not for three (§189).
-    queryKey: ['availability', id, date, serviceId, quantity],
-    queryFn: () => getAvailability(id, date, { serviceId, quantity }),
-    enabled: Boolean(service),
+    // …and again when the answers change how long it takes (§300.4). Keyed by
+    // the minutes, so a free wish does not ask again.
+    queryKey: ['availability', id, date, serviceId, quantity, chosen.minutes],
+    queryFn: () => getAvailability(id, date, { serviceId, quantity, options: chosen.optionIds }),
+    // Choices come first (§300): until the required ones are answered, the
+    // length — and so which times fit — is not known yet.
+    enabled: Boolean(service) && chosen.missing.length === 0,
     // Same day, different number of people: the times stay on screen while
     // the new answer comes, instead of flashing back to grey boxes. A new DAY
     // waits for its own times — the old day's would be wrong.
@@ -188,6 +208,9 @@ export default function Book() {
     setDate(days[1]);
   }, [availability.data, date, days]);
 
+  // A time that fitted a shorter booking may not fit this one.
+  useEffect(() => setSlot(null), [chosen.minutes]);
+
   const book = useMutation({
     mutationFn: () =>
       createAppointment({
@@ -197,9 +220,13 @@ export default function Book() {
         // zone and resolves it; converting here would shift the booking.
         startTime: `${date}T${slot}:00`,
         ...(quantity > 1 ? { quantity } : {}),
+        // The answers and the note (§300). The server checks them again.
+        ...(chosen.optionIds.length > 0 ? { optionIds: chosen.optionIds } : {}),
+        ...(service?.noteEnabled && note.trim() ? { note: note.trim() } : {}),
       }),
     onSuccess: (appointment) => {
       cheer();
+      bookingDraft.clear(draftKey);
       router.replace(`/booking/${appointment.id}`);
     },
     onError: (error) =>
@@ -249,7 +276,10 @@ export default function Book() {
   // many, and the deposit is its share of that total.
   const unitWord = several ? 'per person' : null;
   const countWord = (n: number) => `${n} ${n === 1 ? 'person' : 'people'}`;
-  const totalMinor = service.priceMinor * quantity;
+  // The answers are added once, whatever the number of people, and never
+  // discounted (§300.3).
+  const extraMinor = chosen.priceMinor;
+  const totalMinor = Math.max(0, service.priceMinor * quantity + extraMinor);
   const depositPct = Math.max(0, Math.min(100, Math.round(Number(service.depositPercentage))));
   const depositMinor = Math.round((totalMinor * Number(service.depositPercentage)) / 100);
   const restMinor = Math.max(0, totalMinor - depositMinor);
@@ -260,8 +290,9 @@ export default function Book() {
   const savedMinor = sale ? (sale.listPriceMinor - service.priceMinor) * quantity : 0;
 
   // Everyone in a booking is served at the same time (§189), so it lasts the
-  // service's own length however many come.
-  const minutes = service.durationMinutes;
+  // service's own length however many come — and the answers' minutes (§300.4).
+  const minutes = service.durationMinutes + chosen.minutes;
+  const missing = chosen.missing;
   const slots = availability.data?.slots ?? [];
   // Every open time, booked ones too (§189): a full time says "Booked" rather
   // than vanishing, and a nearly full one says how many places are left.
@@ -305,9 +336,16 @@ export default function Book() {
   };
 
   /** With no time chosen, the button takes you to the times instead of doing nothing. */
-  const goToTimes = () => {
+  const goToTimes = () => scrollTo(timesRef);
+  /** …or, with a question still to answer, to the questions (§300). */
+  const goToChoices = () => {
+    setFlagMissing(true);
+    scrollTo(choicesRef);
+  };
+
+  const scrollTo = (ref: typeof timesRef) => {
     tick();
-    const section = timesRef.current;
+    const section = ref.current;
     const frame = frameRef.current;
     if (!section || !frame) return;
     frame.measureInWindow((_fx, frameY) =>
@@ -501,6 +539,8 @@ export default function Book() {
                 wrong, and a bar is read faster than a sentence. */}
             <View style={styles.section}>
               <View style={styles.priceRow}>
+                {/* Priced after the shop sees the job (§300.3): this is where it starts. */}
+                {service.priceConfirmedAtShop && <Text style={styles.priceFrom}>from</Text>}
                 <Text
                   style={[styles.price, layout.compact && styles.priceCompact, sale && styles.priceSale]}
                 >
@@ -508,6 +548,33 @@ export default function Book() {
                 </Text>
                 {unitWord && <Text style={styles.priceUnit}>{unitWord}</Text>}
               </View>
+              {/* What the answers add (§300), as they are picked. */}
+              {(extraMinor !== 0 || chosen.minutes > 0) && (
+                <PopIn key={`${extraMinor}-${chosen.minutes}`} style={styles.extraLine}>
+                  <Icon name="options-outline" size={15} color={theme.accentDeep} />
+                  <Text style={styles.extraText}>
+                    Your choices{' '}
+                    <Text style={styles.extraStrong}>
+                      {[
+                        extraMinor > 0 && `+${format(extraMinor)}`,
+                        extraMinor < 0 && `−${format(-extraMinor)}`,
+                        chosen.minutes > 0 && `+${duration(chosen.minutes)}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </Text>
+                    {quantity > 1 && extraMinor !== 0 ? ' · once, not per person' : ''}
+                  </Text>
+                </PopIn>
+              )}
+              {service.priceConfirmedAtShop && (
+                <View style={styles.atShop}>
+                  <Icon name="information-circle-outline" size={15} color={theme.ink2} />
+                  <Text style={styles.atShopText}>
+                    The shop confirms the final price after seeing the job. The deposit is on this price.
+                  </Text>
+                </View>
+              )}
               {/* On sale (§186): how much off, for how long, and what it saves
                   on THIS booking — the saving grows as "how many" does. */}
               {sale && (
@@ -565,6 +632,37 @@ export default function Book() {
               )}
             </View>
 
+            {/* YOUR CHOICES (§300), before the time: the answers can make it
+                longer, and the times offered are the ones that fit. */}
+            {(groups.length > 0 || service.noteEnabled) && (
+              <>
+                <View style={styles.rule} />
+                <View ref={choicesRef} collapsable={false} style={styles.section}>
+                  {groups.length > 0 && (
+                    <>
+                      <Text style={type.heading}>Your choices</Text>
+                      <ChoicePicker
+                        groups={groups}
+                        picked={picked}
+                        onToggle={(group, option) => setPicked((was) => toggle(groups, was, group, option))}
+                        format={format}
+                        flagMissing={flagMissing}
+                      />
+                    </>
+                  )}
+                  {service.noteEnabled && (
+                    <NoteBox
+                      value={note}
+                      onChange={setNote}
+                      prompt={service.notePrompt}
+                      privateAsked={groups.some((group) => group.healthRelated)}
+                      onFocus={keys.reveal}
+                    />
+                  )}
+                </View>
+              </>
+            )}
+
             <View style={styles.rule} />
 
             {/* CHOOSE A TIME: how many, which day, what time. */}
@@ -596,6 +694,28 @@ export default function Book() {
                 </View>
               )}
 
+              {/* Choices first (§300): the times depend on the answers. */}
+              {missing.length > 0 && (
+                <PressableScale
+                  haptic
+                  scaleTo={0.98}
+                  onPress={goToChoices}
+                  accessibilityRole="button"
+                  style={styles.closed}
+                >
+                  <View style={styles.closedIcon}>
+                    <Icon name="arrow-up" size={18} color={theme.accentDeep} />
+                  </View>
+                  <Text style={[type.body, styles.flex]}>
+                    Answer “{askedAs(missing[0])}” first
+                    {missing.length > 1 ? ` and ${missing.length - 1} more` : ''} — the times depend on your
+                    answers.
+                  </Text>
+                </PressableScale>
+              )}
+
+              {missing.length === 0 && (
+              <>
               <Text style={type.label}>Day</Text>
               <ScrollView
                 horizontal
@@ -734,6 +854,8 @@ export default function Book() {
                   Times are local to the shop ({availability.data.timeZone}).
                 </Text>
               )}
+              </>
+              )}
 
               {/* READ BACK. The booking in one card the moment a time is
                   chosen: where the customer checks they have what they meant. */}
@@ -754,6 +876,15 @@ export default function Book() {
                     {quantity > 1 ? ` · ${countWord(quantity)}` : ''} · {duration(minutes)} ·{' '}
                     {businessName}
                   </Text>
+                  {/* What was picked (§300); private answers counted, not named. */}
+                  {chosen.lines.length > 0 && (
+                    <Text style={styles.summaryWhat} numberOfLines={3}>
+                      {[
+                        ...chosen.lines.filter((l) => !l.group.healthRelated).map((l) => l.option.label),
+                        ...(chosen.lines.some((l) => l.group.healthRelated) ? ['private answers for the shop'] : []),
+                      ].join(' · ')}
+                    </Text>
+                  )}
                   <View style={styles.summaryRule} />
                   <View style={styles.summaryMoney}>
                     <View style={styles.flex}>
@@ -786,6 +917,7 @@ export default function Book() {
             <Text style={styles.footerLabel} numberOfLines={1}>
               {quantity > 1 ? `Total for ${countWord(quantity)}` : 'Total'}
               {sale ? ` · ${sale.percent}% off` : ''}
+              {extraMinor !== 0 ? ' · with choices' : ''}
             </Text>
             <Ticker
               value={totalMinor}
@@ -800,27 +932,32 @@ export default function Book() {
           </View>
           <Button
             style={[styles.cta, layout.compact && styles.ctaCompact]}
-            kind={slot ? 'primary' : 'dark'}
+            kind={slot && missing.length === 0 ? 'primary' : 'dark'}
             busy={book.isPending}
             icon={
               layout.compact
                 ? undefined
-                : !slot
-                  ? 'calendar-outline'
-                  : signedIn
-                    ? undefined
-                    : 'log-in-outline'
+                : missing.length > 0
+                  ? 'arrow-up'
+                  : !slot
+                    ? 'calendar-outline'
+                    : signedIn
+                      ? undefined
+                      : 'log-in-outline'
             }
             label={
-              !slot
-                ? layout.compact
-                  ? 'Pick a time'
-                  : 'Choose a time'
-                : signedIn
-                  ? `Book ${slot}`
-                  : 'Sign in to book'
+              missing.length > 0
+                ? 'Answer first'
+                : !slot
+                  ? layout.compact
+                    ? 'Pick a time'
+                    : 'Choose a time'
+                  : signedIn
+                    ? `Book ${slot}`
+                    : 'Sign in to book'
             }
             onPress={() => {
+              if (missing.length > 0) return goToChoices();
               if (!slot) return goToTimes();
               // Signing in is required to hold a slot, but not to get here —
               // asking earlier loses people who were only looking (§170).
@@ -881,6 +1018,22 @@ const styles = StyleSheet.create({
   price: { fontFamily: font.extrabold, fontSize: 30, color: theme.ink, letterSpacing: -0.7 },
   priceCompact: { fontSize: 26 },
   priceUnit: { fontFamily: font.semibold, fontSize: 13.5, color: theme.muted },
+  priceFrom: { fontFamily: font.bold, fontSize: 15, color: theme.muted },
+  extraLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    alignSelf: 'flex-start',
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+    borderRadius: radius.pill,
+    backgroundColor: theme.accentSoft,
+    marginTop: -2,
+  },
+  extraText: { fontFamily: font.semibold, fontSize: 12.5, color: theme.accentDeep },
+  extraStrong: { fontFamily: font.extrabold },
+  atShop: { flexDirection: 'row', alignItems: 'flex-start', gap: 7 },
+  atShopText: { flex: 1, fontFamily: font.semibold, fontSize: 12.5, lineHeight: 18, color: theme.ink2 },
   priceSale: { color: theme.accentDeep },
   was: { fontFamily: font.bold, color: theme.muted, textDecorationLine: 'line-through' },
   saleLine: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: -2 },

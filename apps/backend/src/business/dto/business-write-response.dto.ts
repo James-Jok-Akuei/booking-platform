@@ -2,6 +2,7 @@ import { MediaStatus, MediaType, Prisma } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import { BusinessServiceDto } from './business-response.dto';
+import { ServiceChoiceGroupInputDto } from './service-choices.dto';
 
 // ---------------------------------------------------------------------------
 // Service drafts (§123)
@@ -19,6 +20,10 @@ export const SERVICE_DRAFT_SELECT = {
   durationMinutes: true,
   depositPercentage: true,
   offers: true,
+  choices: true,
+  noteEnabled: true,
+  notePrompt: true,
+  priceConfirmedAtShop: true,
   createdAt: true,
   updatedAt: true,
   createdBy: { select: { id: true, email: true } },
@@ -65,6 +70,16 @@ export class ServiceDraftDto implements ServiceDraftRow {
    */
   @ApiProperty({ type: () => [ServiceDraftOfferDto] })
   offers!: Prisma.JsonValue;
+
+  /**
+   * The questions as written so far (§300), in the shape the service form
+   * sends — "show only if" by position. Unchecked until the service is posted.
+   */
+  @ApiProperty({ type: () => [ServiceChoiceGroupInputDto] })
+  choices!: Prisma.JsonValue;
+  noteEnabled!: boolean | null;
+  notePrompt!: string | null;
+  priceConfirmedAtShop!: boolean | null;
 
   createdBy!: ServiceDraftAuthorDto;
   createdAt!: string;
@@ -170,6 +185,11 @@ export class ServiceDto implements ServiceRow {
   depositPercentage!: string;
   /** False once retired. The row is kept so past appointments still resolve. */
   isActive!: boolean;
+  /** Whether the customer may write a short note (§300.5). */
+  noteEnabled!: boolean;
+  notePrompt!: string | null;
+  /** The final price is agreed at the shop (§300.3). */
+  priceConfirmedAtShop!: boolean;
   createdAt!: string;
   updatedAt!: string;
 }

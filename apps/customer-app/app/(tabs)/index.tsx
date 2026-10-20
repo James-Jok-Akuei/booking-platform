@@ -23,6 +23,7 @@ import {
 import { useSignedIn } from '../../src/api/client';
 import { listStories, type StoryShop } from '../../src/api/stories';
 import { showDialog } from '../../src/ui/Dialog';
+import { cardPrice } from '../../src/booking/choices';
 import { useMoney } from '../../src/money';
 import { useNearMe } from '../../src/useNearMe';
 import { useUnread } from '../../src/useUnread';
@@ -841,7 +842,7 @@ export default function Discover() {
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}
-                  price={money.format(service.priceMinor)}
+                  price={cardPrice(service, money.format)}
                   width={shelfCard}
                   onPress={() => openService(service)}
                   onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
@@ -868,7 +869,7 @@ export default function Discover() {
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}
-                  price={money.format(service.priceMinor)}
+                  price={cardPrice(service, money.format)}
                   width={shelfCard}
                   onPress={() => openService(service)}
                   onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
@@ -895,7 +896,7 @@ export default function Discover() {
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}
-                  price={money.format(service.priceMinor)}
+                  price={cardPrice(service, money.format)}
                   width={shelfCard}
                   onPress={() => openService(service)}
                   onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
@@ -918,7 +919,7 @@ export default function Discover() {
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}
-                  price={money.format(service.priceMinor)}
+                  price={cardPrice(service, money.format)}
                   width={shelfCard}
                   onPress={() => openService(service)}
                   onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
@@ -948,7 +949,7 @@ export default function Discover() {
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}
-                  price={money.format(service.priceMinor)}
+                  price={cardPrice(service, money.format)}
                   width={shelfCard}
                   onPress={() => openService(service)}
                   onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}
@@ -969,7 +970,7 @@ export default function Discover() {
                 <ServiceCard
                   key={offerKey(service)}
                   service={service}
-                  price={money.format(service.priceMinor)}
+                  price={cardPrice(service, money.format)}
                   width={gridCard}
                   onPress={() => openService(service)}
                   onSave={() => savedService.toggle(service.id, service.location.id, service.saved ?? false, '/')}

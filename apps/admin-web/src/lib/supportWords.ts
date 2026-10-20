@@ -25,4 +25,5 @@ export const SUPPORT_KIND: Record<SupportAction['kind'], { label: string; icon: 
   STOP_MARKETING: { label: 'Stopped the marketing', icon: 'bell' },
   CLOSE_ACCOUNT: { label: 'Closed the account', icon: 'lock' },
   LINK_TICKET: { label: 'Tied a help request to a booking', icon: 'ticket' },
+  READ_HEALTH_CHOICES: { label: 'Read the private answers', icon: 'lock' },
 };

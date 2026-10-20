@@ -552,8 +552,10 @@ function ServiceRow({
 }) {
   // Rounded the way the server does it, so the figure shown is the figure
   // charged — the deposit is a percentage of the price, taken at booking.
+  // "From" when an answer or the shop decides the rest (§300.3).
+  const shownMinor = service.startingPriceMinor ?? service.priceMinor;
   const depositMinor = Math.round(
-    (service.priceMinor * Number(service.depositPercentage)) / 100,
+    (shownMinor * Number(service.depositPercentage)) / 100,
   );
 
   return (
@@ -589,7 +591,8 @@ function ServiceRow({
         </View>
         <View style={styles.servicePrice}>
           <Text style={[styles.price, service.discount && styles.priceSale]}>
-            {format(service.priceMinor, service.currency)}
+            {service.startingPriceMinor !== null && <Text style={styles.priceFrom}>from </Text>}
+            {format(shownMinor, service.currency)}
           </Text>
           {/* On sale (§186): the old price crossed out, and how much off. */}
           {service.discount && (
@@ -612,6 +615,7 @@ function ServiceRow({
 }
 
 const styles = StyleSheet.create({
+  priceFrom: { fontFamily: font.semibold, fontSize: 12.5, color: theme.muted },
   screen: { flex: 1, backgroundColor: theme.bg },
   flex: { flex: 1 },
   hero: { position: 'absolute', top: 0, left: 0, right: 0, height: HERO },

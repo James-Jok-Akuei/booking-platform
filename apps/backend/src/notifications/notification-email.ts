@@ -107,6 +107,8 @@ const LOOKS: Partial<Record<NotificationType, Look>> = {
   // A sign-in not seen before (§298): worth a look, not an alarm.
   [T.NEW_SIGN_IN]: { tone: 'warn', glyph: BANG, eyebrow: 'Your account' },
   [T.SHOP_MESSAGE]: { tone: 'accent', eyebrow: 'From a shop you follow' },
+  // What they changed is on the booking, never in the email (§300.7).
+  [T.BOOKING_CHOICES_CHANGED]: { tone: 'info', glyph: '&#9998;', eyebrow: 'A booking changed', title: () => 'New wishes for a booking' },
 };
 
 /** A notice whose email shows the booking it is about. */
@@ -119,6 +121,7 @@ const ABOUT_A_BOOKING = new Set<NotificationType>([
   T.APPOINTMENT_REMINDER,
   T.APPOINTMENT_COMPLETED,
   T.APPOINTMENT_MANUALLY_VERIFIED,
+  T.BOOKING_CHOICES_CHANGED,
   // Only when it is about one: a shop paused by support has no booking (§297).
   T.SUPPORT_UPDATE,
 ]);

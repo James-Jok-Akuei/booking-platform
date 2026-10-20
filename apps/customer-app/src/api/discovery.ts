@@ -150,9 +150,16 @@ export const getAvailability = (
    * WHAT is being booked and how many (§136). The server works out how long
    * that takes and how many places it needs; this screen never does.
    */
-  what: { serviceId: string; quantity: number },
+  what: { serviceId: string; quantity: number; options?: string[] },
 ) =>
   api<Availability>(`/locations/${locationId}/availability`, {
-    query: { date, ...what },
+    query: {
+      date,
+      serviceId: what.serviceId,
+      quantity: what.quantity,
+      // The answers picked (§300): their extra minutes lengthen the booking,
+      // so the server offers only times that fit. Worked out there, not here.
+      ...(what.options && what.options.length > 0 ? { options: what.options.join(',') } : {}),
+    },
     anonymous: true,
   });

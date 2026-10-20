@@ -5016,6 +5016,68 @@
         ]
       }
     },
+    "/business/services/choice-suggestions": {
+      "get": {
+        "operationId": "BusinessController_choiceSuggestions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChoiceSuggestionsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ready-made questions for this shop's kinds, for the service form (§300.2).",
+        "tags": [
+          "Business"
+        ]
+      }
+    },
     "/business/services/{id}": {
       "patch": {
         "operationId": "BusinessController_updateService",
@@ -6643,6 +6705,17 @@
             }
           },
           {
+            "name": "options",
+            "required": false,
+            "in": "query",
+            "description": "Option ids, separated by commas.",
+            "schema": {
+              "format": "uuid",
+              "example": "3f2a9c1e-5b7d-4e8a-9c21-7d4e5f6a8b90,9d1e4c2b-7a3f-4b8e-8c11-2f6e5d4c3b2a",
+              "type": "string"
+            }
+          },
+          {
             "name": "date",
             "required": true,
             "in": "query",
@@ -7876,6 +7949,97 @@
         ]
       }
     },
+    "/appointments/{id}/choices": {
+      "patch": {
+        "operationId": "AppointmentsCustomerController_changeChoices",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBookingChoicesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAppointmentDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Under a narrower limit than the platform-wide one. The message says how long to wait.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Starts collecting the deposit through the payment provider.\n\nReplaced the temporary `mark-deposit-paid` seam, which moved the status\nwithout moving money. The appointment stays PENDING_PAYMENT until the\npayment is confirmed — see AppointmentsService.initiateDepositPayment.",
+        "tags": [
+          "AppointmentsCustomer"
+        ]
+      }
+    },
     "/appointments/{id}/resend-verification-code": {
       "post": {
         "operationId": "AppointmentsCustomerController_resendVerificationCode",
@@ -7951,7 +8115,6 @@
             }
           }
         },
-        "summary": "Starts collecting the deposit through the payment provider.\n\nReplaced the temporary `mark-deposit-paid` seam, which moved the status\nwithout moving money. The appointment stays PENDING_PAYMENT until the\npayment is confirmed — see AppointmentsService.initiateDepositPayment.",
         "tags": [
           "AppointmentsCustomer"
         ]
@@ -9364,6 +9527,87 @@
           }
         },
         "summary": "Ask MTN about the deposit now, and apply what it says.",
+        "tags": [
+          "AdminAppointments"
+        ]
+      }
+    },
+    "/admin/appointments/{id}/private-answers": {
+      "post": {
+        "operationId": "AdminAppointmentsController_readPrivateAnswers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportPrivateAnswersDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The booking's private answers (§300.6), read with a reason — written\ndown, and shown on the booking, like reading the conversation.",
         "tags": [
           "AdminAppointments"
         ]
@@ -20521,6 +20765,134 @@
           "priceMinor"
         ]
       },
+      "ChoiceShowIfDto": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "option": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 11
+          }
+        },
+        "required": [
+          "group",
+          "option"
+        ]
+      },
+      "ServiceChoiceOptionInputDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Keeps an answer that already exists. Left out: a new one.",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 140
+          },
+          "priceMinor": {
+            "type": "number",
+            "minimum": -100000000,
+            "maximum": 100000000
+          },
+          "extraMinutes": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 480
+          },
+          "available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "priceMinor",
+          "extraMinutes",
+          "available"
+        ]
+      },
+      "ServiceChoiceGroupInputDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Keeps a question that already exists. Left out: a new one.",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "question": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 120
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ONE",
+              "MANY"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "maxPicks": {
+            "type": "number",
+            "nullable": true,
+            "description": "Pick-several only. Left out or null: any number.",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "healthRelated": {
+            "type": "boolean"
+          },
+          "showIf": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChoiceShowIfDto"
+              }
+            ]
+          },
+          "suggestionKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "The ready-made suggestion it began as (§300.2).",
+            "maxLength": 80,
+            "pattern": "^[a-z0-9.-]+$"
+          },
+          "options": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceChoiceOptionInputDto"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "kind",
+          "required",
+          "healthRelated",
+          "options"
+        ]
+      },
       "ServiceDraftAuthorDto": {
         "type": "object",
         "properties": {
@@ -20544,6 +20916,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ServiceDraftOfferDto"
+            }
+          },
+          "choices": {
+            "description": "The questions as written so far (§300), in the shape the service form\nsends — \"show only if\" by position. Unchecked until the service is posted.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceChoiceGroupInputDto"
             }
           },
           "id": {
@@ -20583,6 +20962,18 @@
             "nullable": true,
             "description": "A decimal string, like every other percentage here (§128.20)."
           },
+          "noteEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "notePrompt": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceConfirmedAtShop": {
+            "type": "boolean",
+            "nullable": true
+          },
           "createdBy": {
             "$ref": "#/components/schemas/ServiceDraftAuthorDto"
           },
@@ -20595,6 +20986,7 @@
         },
         "required": [
           "offers",
+          "choices",
           "id",
           "name",
           "title",
@@ -20604,6 +20996,9 @@
           "discountEndsOn",
           "durationMinutes",
           "depositPercentage",
+          "noteEnabled",
+          "notePrompt",
+          "priceConfirmedAtShop",
           "createdBy",
           "createdAt",
           "updatedAt"
@@ -20626,6 +21021,96 @@
           "locationId",
           "priceMinor"
         ]
+      },
+      "DraftChoiceOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 140
+          },
+          "priceMinor": {
+            "type": "number",
+            "minimum": -100000000,
+            "maximum": 100000000
+          },
+          "extraMinutes": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 480
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DraftChoiceGroupDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "question": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 120
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ONE",
+              "MANY"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "maxPicks": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 12
+          },
+          "healthRelated": {
+            "type": "boolean"
+          },
+          "showIf": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChoiceShowIfDto"
+              }
+            ]
+          },
+          "suggestionKey": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 80
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftChoiceOptionDto"
+            }
+          }
+        }
       },
       "UpdateServiceDraftDto": {
         "type": "object",
@@ -20679,6 +21164,26 @@
             "items": {
               "$ref": "#/components/schemas/DraftOfferDto"
             }
+          },
+          "choices": {
+            "description": "The questions as written so far (§300). Checked when the service is posted.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftChoiceGroupDto"
+            }
+          },
+          "noteEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "notePrompt": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 120
+          },
+          "priceConfirmedAtShop": {
+            "type": "boolean",
+            "nullable": true
           }
         }
       },
@@ -21182,6 +21687,27 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "choiceGroups": {
+            "description": "The questions a customer answers while booking (§300), in order. On an\nedit, left out means unchanged; sent, it is the whole list as it should\nbe — a question or answer sent with its `id` is kept, one left out is\nremoved. Bookings already made keep what was picked either way.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceChoiceGroupInputDto"
+            }
+          },
+          "noteEnabled": {
+            "type": "boolean",
+            "description": "Whether the customer may write a short note while booking (§300.5)."
+          },
+          "notePrompt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The words above the note box; blank goes back to the ones for the shop's kind.",
+            "maxLength": 120
+          },
+          "priceConfirmedAtShop": {
+            "type": "boolean",
+            "description": "The final price is agreed at the shop after seeing the job — a repair,\na party (§300.3). Cards say \"from\", and the deposit is on the price here."
           }
         },
         "required": [
@@ -21247,6 +21773,108 @@
           "id",
           "url",
           "displayOrder"
+        ]
+      },
+      "ServiceChoiceOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "A line about it, under the name."
+          },
+          "priceMinor": {
+            "type": "number",
+            "description": "Added to the booking's price, in minor units — once per booking, not per\nperson; negative takes money off. Never discounted by a sale (§300.3)."
+          },
+          "extraMinutes": {
+            "type": "number",
+            "description": "Added to the booking's length, so the times offered fit (§300.4)."
+          },
+          "available": {
+            "type": "boolean",
+            "description": "False: \"not available now\" — shown greyed, and cannot be picked."
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "description",
+          "priceMinor",
+          "extraMinutes",
+          "available"
+        ]
+      },
+      "ServiceChoiceGroupDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "The shop's short name for it — \"Hair length\". Used on the booking."
+          },
+          "question": {
+            "type": "string",
+            "nullable": true,
+            "description": "What the customer is asked — \"How long is your hair?\". Null: ask the name."
+          },
+          "kind": {
+            "type": "string",
+            "description": "Pick one answer, or several.",
+            "enum": [
+              "ONE",
+              "MANY"
+            ]
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Must be answered before a time can be chosen."
+          },
+          "maxPicks": {
+            "type": "number",
+            "nullable": true,
+            "description": "Pick-several only: the most that may be picked. Null: any number."
+          },
+          "healthRelated": {
+            "type": "boolean",
+            "description": "Allergies, pregnancy, an injury (§300.6): tap to pick, never typed; the\nanswers are sealed, shown to the shop in red, never in an email or a\nphone alert, and removed 30 days after the visit. Always free."
+          },
+          "showIfOptionId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Shows only when this answer to an earlier question is picked. Null: always."
+          },
+          "suggestionKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "The ready-made suggestion it began as (§300.2). Null for the shop's own."
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceChoiceOptionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "question",
+          "kind",
+          "required",
+          "maxPicks",
+          "healthRelated",
+          "showIfOptionId",
+          "suggestionKey",
+          "options"
         ]
       },
       "BusinessServiceDto": {
@@ -21317,6 +21945,26 @@
             "items": {
               "$ref": "#/components/schemas/ServiceImageRefDto"
             }
+          },
+          "choiceGroups": {
+            "description": "The questions a customer answers while booking it (§300), in order.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceChoiceGroupDto"
+            }
+          },
+          "noteEnabled": {
+            "type": "boolean",
+            "description": "Whether the customer may write a short note (§300.5)."
+          },
+          "notePrompt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The words above the note box. Null: the ones written for the shop's kind."
+          },
+          "priceConfirmedAtShop": {
+            "type": "boolean",
+            "description": "The final price is agreed at the shop after seeing the job; cards say \"from\" (§300.3)."
           }
         },
         "required": [
@@ -21335,7 +21983,150 @@
           "createdAt",
           "updatedAt",
           "locations",
-          "images"
+          "images",
+          "choiceGroups",
+          "noteEnabled",
+          "notePrompt",
+          "priceConfirmedAtShop"
+        ]
+      },
+      "SuggestionShowIfDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The suggestion it depends on — add that one first."
+          },
+          "option": {
+            "type": "string",
+            "description": "Its answer, by name."
+          }
+        },
+        "required": [
+          "key",
+          "option"
+        ]
+      },
+      "SuggestedOptionDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "extraMinutes": {
+            "type": "number",
+            "description": "A typical extra time, to be checked by the shop."
+          },
+          "paid": {
+            "type": "boolean",
+            "description": "Shops usually charge for this: ask for a price. Prices are never suggested."
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "ChoiceSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Stable: saved on the question as `suggestionKey`, so the list can say \"added\"."
+          },
+          "name": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ONE",
+              "MANY"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "maxPicks": {
+            "type": "number"
+          },
+          "healthRelated": {
+            "type": "boolean",
+            "description": "Health and other private answers — sealed, never emailed, always free (§300.6)."
+          },
+          "showIf": {
+            "$ref": "#/components/schemas/SuggestionShowIfDto"
+          },
+          "hint": {
+            "type": "string",
+            "description": "A word to the shop about using it."
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuggestedOptionDto"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "question",
+          "kind",
+          "required",
+          "options"
+        ]
+      },
+      "ChoiceSuggestionSectionDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "subcategory": {
+            "type": "string"
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChoiceSuggestionDto"
+            }
+          }
+        },
+        "required": [
+          "category",
+          "subcategory",
+          "suggestions"
+        ]
+      },
+      "ChoiceSuggestionsDto": {
+        "type": "object",
+        "properties": {
+          "sections": {
+            "description": "The shop's kinds, its main one first; a question suggested for two is listed once.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChoiceSuggestionSectionDto"
+            }
+          },
+          "notePrompt": {
+            "type": "string",
+            "description": "The words above the customer's note box unless the shop writes its own (§300.5)."
+          },
+          "priceAtShop": {
+            "type": "boolean",
+            "description": "Shops of this kind usually confirm the price after seeing the job (§300.3)."
+          }
+        },
+        "required": [
+          "sections",
+          "notePrompt",
+          "priceAtShop"
         ]
       },
       "UpdateServiceDto": {
@@ -21398,6 +22189,27 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "choiceGroups": {
+            "description": "The questions a customer answers while booking (§300), in order. On an\nedit, left out means unchanged; sent, it is the whole list as it should\nbe — a question or answer sent with its `id` is kept, one left out is\nremoved. Bookings already made keep what was picked either way.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceChoiceGroupInputDto"
+            }
+          },
+          "noteEnabled": {
+            "type": "boolean",
+            "description": "Whether the customer may write a short note while booking (§300.5)."
+          },
+          "notePrompt": {
+            "type": "string",
+            "nullable": true,
+            "description": "The words above the note box; blank goes back to the ones for the shop's kind.",
+            "maxLength": 120
+          },
+          "priceConfirmedAtShop": {
+            "type": "boolean",
+            "description": "The final price is agreed at the shop after seeing the job — a repair,\na party (§300.3). Cards say \"from\", and the deposit is on the price here."
           }
         }
       },
@@ -21485,6 +22297,18 @@
             "type": "boolean",
             "description": "False once retired. The row is kept so past appointments still resolve."
           },
+          "noteEnabled": {
+            "type": "boolean",
+            "description": "Whether the customer may write a short note (§300.5)."
+          },
+          "notePrompt": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceConfirmedAtShop": {
+            "type": "boolean",
+            "description": "The final price is agreed at the shop (§300.3)."
+          },
           "createdAt": {
             "type": "string"
           },
@@ -21505,6 +22329,9 @@
           "currency",
           "depositPercentage",
           "isActive",
+          "noteEnabled",
+          "notePrompt",
+          "priceConfirmedAtShop",
           "createdAt",
           "updatedAt"
         ]
@@ -22898,12 +23725,62 @@
             "description": "How many people (§136, §189). Left out, it is one — what every booking was.\n\nEach person takes one of the branch's places, so the most is the places\nthe branch has; that is checked in the service, where the branch is\nloaded. The 1000 here only bounds the type.",
             "minimum": 1,
             "maximum": 1000
+          },
+          "optionIds": {
+            "description": "The answers picked (§300): ids of this service's options. Checked\nagainst its questions — each one that must be answered is, one answer\nwhere one is asked, nothing \"not available now\". Their prices are added\nonce to the booking and their minutes to its length; both are worked\nout here, never sent.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "note": {
+            "type": "string",
+            "nullable": true,
+            "description": "A short note to the shop (§300.5), when the service takes one.",
+            "maxLength": 250
           }
         },
         "required": [
           "locationId",
           "serviceId",
           "startTime"
+        ]
+      },
+      "AppointmentChoiceDto": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "description": "The question and answer ids then; they may no longer exist."
+          },
+          "optionId": {
+            "type": "string"
+          },
+          "group": {
+            "type": "string",
+            "description": "The question, by the shop's name for it — \"Hair length\"."
+          },
+          "option": {
+            "type": "string",
+            "description": "The answer — \"Long\"."
+          },
+          "priceMinor": {
+            "type": "number",
+            "description": "What it added to the booking's price, once (not per person)."
+          },
+          "extraMinutes": {
+            "type": "number",
+            "description": "What it added to the booking's length."
+          }
+        },
+        "required": [
+          "groupId",
+          "optionId",
+          "group",
+          "option",
+          "priceMinor",
+          "extraMinutes"
         ]
       },
       "AppointmentLocationDto": {
@@ -22993,7 +23870,8 @@
               "SIGN_OUT_EVERYWHERE",
               "STOP_MARKETING",
               "CLOSE_ACCOUNT",
-              "LINK_TICKET"
+              "LINK_TICKET",
+              "READ_HEALTH_CHOICES"
             ]
           },
           "createdAt": {
@@ -23008,6 +23886,22 @@
       "AppointmentDto": {
         "type": "object",
         "properties": {
+          "choices": {
+            "description": "What the customer picked (§300), in the order the shop asks: question,\nanswer, and what each added. Null when there was nothing to choose.\nHealth-related answers are never here — see `healthChoices`.",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentChoiceDto"
+            }
+          },
+          "healthChoices": {
+            "nullable": true,
+            "description": "Health-related answers (§300.6) — allergies, pregnancy, an injury. On\nthe customer's and the shop's READS only, one booking or a list; absent\non the answer to an action. Null: none were given. Show them in red to\nthe shop; never put them in an email, a notice or a calendar invite.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentChoiceDto"
+            }
+          },
           "id": {
             "type": "string"
           },
@@ -23070,6 +23964,28 @@
           "platformFeePercentage": {
             "type": "string",
             "nullable": true
+          },
+          "choicesPriceMinor": {
+            "type": "number",
+            "description": "What the answers added — already inside `servicePriceMinor` and `endTime` (§300)."
+          },
+          "choicesMinutes": {
+            "type": "number"
+          },
+          "customerNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "The customer's note to the shop (§300.5)."
+          },
+          "choicesChangedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the customer last changed their wishes or note after booking (§300.7)."
+          },
+          "healthChoicesRemovedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the health-related answers were removed, 30 days after the visit (§300.6)."
           },
           "paymentProviderReferenceId": {
             "type": "string",
@@ -23160,6 +24076,7 @@
           }
         },
         "required": [
+          "choices",
           "id",
           "status",
           "startTime",
@@ -23175,6 +24092,11 @@
           "listPriceMinor",
           "depositPercentage",
           "platformFeePercentage",
+          "choicesPriceMinor",
+          "choicesMinutes",
+          "customerNote",
+          "choicesChangedAt",
+          "healthChoicesRemovedAt",
           "paymentProviderReferenceId",
           "paymentInitiatedAt",
           "providerCurrency",
@@ -23195,6 +24117,28 @@
           "service",
           "customer",
           "supportActions"
+        ]
+      },
+      "UpdateBookingChoicesDto": {
+        "type": "object",
+        "properties": {
+          "optionIds": {
+            "description": "Every answer wanted now to the questions that can still change — the\nwhole set for those, so leaving one out takes it off. Answers to the\nothers are kept as booked and need not be sent.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "note": {
+            "type": "string",
+            "nullable": true,
+            "description": "The note to the shop. Blank or null takes it off; left out, it stays.",
+            "maxLength": 250
+          }
+        },
+        "required": [
+          "optionIds"
         ]
       },
       "AppointmentReviewDto": {
@@ -23229,6 +24173,22 @@
       "CustomerAppointmentDetailDto": {
         "type": "object",
         "properties": {
+          "choices": {
+            "description": "What the customer picked (§300), in the order the shop asks: question,\nanswer, and what each added. Null when there was nothing to choose.\nHealth-related answers are never here — see `healthChoices`.",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentChoiceDto"
+            }
+          },
+          "healthChoices": {
+            "nullable": true,
+            "description": "Health-related answers (§300.6) — allergies, pregnancy, an injury. On\nthe customer's and the shop's READS only, one booking or a list; absent\non the answer to an action. Null: none were given. Show them in red to\nthe shop; never put them in an email, a notice or a calendar invite.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentChoiceDto"
+            }
+          },
           "id": {
             "type": "string"
           },
@@ -23291,6 +24251,28 @@
           "platformFeePercentage": {
             "type": "string",
             "nullable": true
+          },
+          "choicesPriceMinor": {
+            "type": "number",
+            "description": "What the answers added — already inside `servicePriceMinor` and `endTime` (§300)."
+          },
+          "choicesMinutes": {
+            "type": "number"
+          },
+          "customerNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "The customer's note to the shop (§300.5)."
+          },
+          "choicesChangedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the customer last changed their wishes or note after booking (§300.7)."
+          },
+          "healthChoicesRemovedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the health-related answers were removed, 30 days after the visit (§300.6)."
           },
           "paymentProviderReferenceId": {
             "type": "string",
@@ -23395,6 +24377,7 @@
           }
         },
         "required": [
+          "choices",
           "id",
           "status",
           "startTime",
@@ -23410,6 +24393,11 @@
           "listPriceMinor",
           "depositPercentage",
           "platformFeePercentage",
+          "choicesPriceMinor",
+          "choicesMinutes",
+          "customerNote",
+          "choicesChangedAt",
+          "healthChoicesRemovedAt",
           "paymentProviderReferenceId",
           "paymentInitiatedAt",
           "providerCurrency",
@@ -23991,6 +24979,121 @@
       "AdminAppointmentDetailDto": {
         "type": "object",
         "properties": {
+          "choices": {
+            "description": "What the customer picked (§300), as booked — never the private answers,\nwhich are read only through support, with a reason (§300.6).",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppointmentChoiceDto"
+            }
+          },
+          "choicesPriceMinor": {
+            "type": "number"
+          },
+          "choicesMinutes": {
+            "type": "number"
+          },
+          "customerNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "choicesChangedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasHealthChoices": {
+            "type": "boolean",
+            "description": "Whether the booking holds private answers — not what they are."
+          },
+          "healthChoicesRemovedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitPriceMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "discountPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "listPriceMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "locationAddress": {
+            "type": "string"
+          },
+          "shopPhone": {
+            "type": "string",
+            "nullable": true,
+            "description": "The branch's own number, else the shop's."
+          },
+          "paymentProvider": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          },
+          "paymentProviderReferenceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentInitiatedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerCurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "providerAmountMinor": {
+            "type": "number",
+            "nullable": true
+          },
+          "exchangeRateUsed": {
+            "type": "number",
+            "nullable": true
+          },
+          "verifiedByEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "manualVerificationNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledByEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationTicketReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "tickets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAppointmentTicketDto"
+            }
+          },
+          "ledger": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminAppointmentLedgerDto"
+            }
+          },
+          "review": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminAppointmentReviewDto"
+              }
+            ]
+          },
           "id": {
             "type": "string"
           },
@@ -24142,94 +25245,34 @@
                 "$ref": "#/components/schemas/AdminAppointmentSupportDto"
               }
             ]
-          },
-          "unitPriceMinor": {
-            "type": "number",
-            "nullable": true
-          },
-          "discountPercent": {
-            "type": "number",
-            "nullable": true
-          },
-          "listPriceMinor": {
-            "type": "number",
-            "nullable": true
-          },
-          "locationAddress": {
-            "type": "string"
-          },
-          "shopPhone": {
-            "type": "string",
-            "nullable": true,
-            "description": "The branch's own number, else the shop's."
-          },
-          "paymentProvider": {
-            "type": "string",
-            "nullable": true,
-            "enum": [
-              "MTN_MOMO",
-              "AIRTEL_MONEY"
-            ]
-          },
-          "paymentProviderReferenceId": {
-            "type": "string",
-            "nullable": true
-          },
-          "paymentInitiatedAt": {
-            "type": "string",
-            "nullable": true
-          },
-          "providerCurrency": {
-            "type": "string",
-            "nullable": true
-          },
-          "providerAmountMinor": {
-            "type": "number",
-            "nullable": true
-          },
-          "exchangeRateUsed": {
-            "type": "number",
-            "nullable": true
-          },
-          "verifiedByEmail": {
-            "type": "string",
-            "nullable": true
-          },
-          "manualVerificationNote": {
-            "type": "string",
-            "nullable": true
-          },
-          "cancelledByEmail": {
-            "type": "string",
-            "nullable": true
-          },
-          "cancellationTicketReference": {
-            "type": "string",
-            "nullable": true
-          },
-          "tickets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminAppointmentTicketDto"
-            }
-          },
-          "ledger": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminAppointmentLedgerDto"
-            }
-          },
-          "review": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AdminAppointmentReviewDto"
-              }
-            ]
           }
         },
         "required": [
+          "choices",
+          "choicesPriceMinor",
+          "choicesMinutes",
+          "customerNote",
+          "choicesChangedAt",
+          "hasHealthChoices",
+          "healthChoicesRemovedAt",
+          "unitPriceMinor",
+          "discountPercent",
+          "listPriceMinor",
+          "locationAddress",
+          "shopPhone",
+          "paymentProvider",
+          "paymentProviderReferenceId",
+          "paymentInitiatedAt",
+          "providerCurrency",
+          "providerAmountMinor",
+          "exchangeRateUsed",
+          "verifiedByEmail",
+          "manualVerificationNote",
+          "cancelledByEmail",
+          "cancellationTicketReference",
+          "tickets",
+          "ledger",
+          "review",
           "id",
           "status",
           "startTime",
@@ -24264,25 +25307,7 @@
           "reviewRating",
           "ticketCount",
           "canReclassify",
-          "support",
-          "unitPriceMinor",
-          "discountPercent",
-          "listPriceMinor",
-          "locationAddress",
-          "shopPhone",
-          "paymentProvider",
-          "paymentProviderReferenceId",
-          "paymentInitiatedAt",
-          "providerCurrency",
-          "providerAmountMinor",
-          "exchangeRateUsed",
-          "verifiedByEmail",
-          "manualVerificationNote",
-          "cancelledByEmail",
-          "cancellationTicketReference",
-          "tickets",
-          "ledger",
-          "review"
+          "support"
         ]
       },
       "ReclassifyCancellationDto": {
@@ -24391,6 +25416,44 @@
           "appointmentStatus",
           "paymentStatus",
           "failureReason"
+        ]
+      },
+      "SupportPrivateAnswerDto": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "string",
+            "description": "The question, by the shop's name for it."
+          },
+          "option": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "group",
+          "option"
+        ]
+      },
+      "SupportPrivateAnswersDto": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "nullable": true,
+            "description": "Null when there were none, or they have been removed.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SupportPrivateAnswerDto"
+            }
+          },
+          "removedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When they were removed, 30 days after the visit; null while kept."
+          }
+        },
+        "required": [
+          "answers",
+          "removedAt"
         ]
       },
       "SupportMessageDto": {
@@ -25838,7 +26901,8 @@
               "SHOP_MESSAGE",
               "SHOP_DISCOUNT",
               "SUPPORT_UPDATE",
-              "NEW_SIGN_IN"
+              "NEW_SIGN_IN",
+              "BOOKING_CHOICES_CHANGED"
             ]
           },
           "category": {
@@ -30596,6 +31660,11 @@
               }
             ]
           },
+          "startingPriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "When set, the card shows \"from\" this price instead (§300.3): a question\nthat must be answered has answers at different prices, or the shop\nagrees the price after seeing the job. Null: the price is the price."
+          },
           "depositPercentage": {
             "type": "string",
             "description": "A decimal string, like every percentage here (§128.20)."
@@ -30624,6 +31693,7 @@
           "currency",
           "priceMinor",
           "discount",
+          "startingPriceMinor",
           "depositPercentage",
           "imageUrl",
           "bookingCount",
@@ -30861,6 +31931,30 @@
               }
             ]
           },
+          "startingPriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "When set, show \"from\" this price instead (§300.3): a question that must\nbe answered has answers at different prices, or the shop agrees the\nprice after seeing the job. Null: the price is the price."
+          },
+          "choiceGroups": {
+            "description": "The questions the customer answers while booking, in order (§300).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceChoiceGroupDto"
+            }
+          },
+          "noteEnabled": {
+            "type": "boolean",
+            "description": "Whether the customer may write the shop a short note (§300.5)."
+          },
+          "notePrompt": {
+            "type": "string",
+            "description": "The words above the note box: the shop's own, or the ones for its kind."
+          },
+          "priceConfirmedAtShop": {
+            "type": "boolean",
+            "description": "The final price is agreed at the shop after seeing the job (§300.3)."
+          },
           "images": {
             "description": "Photos of the service, cover first (§132). Empty is normal — a service\nwithout photos is one nobody has photographed yet, not a broken one, and a\nclient should fall back to the shop's own picture rather than a gap.",
             "type": "array",
@@ -30880,6 +31974,11 @@
           "depositPercentage",
           "priceMinor",
           "discount",
+          "startingPriceMinor",
+          "choiceGroups",
+          "noteEnabled",
+          "notePrompt",
+          "priceConfirmedAtShop",
           "images"
         ]
       },
@@ -31241,6 +32340,11 @@
               }
             ]
           },
+          "startingPriceMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "When set, the card shows \"from\" this price instead (§300.3): a question\nthat must be answered has answers at different prices, or the shop\nagrees the price after seeing the job. Null: the price is the price."
+          },
           "depositPercentage": {
             "type": "string",
             "description": "A decimal string, like every percentage here (§128.20)."
@@ -31276,6 +32380,7 @@
           "currency",
           "priceMinor",
           "discount",
+          "startingPriceMinor",
           "depositPercentage",
           "imageUrl",
           "bookingCount",
@@ -31605,7 +32710,8 @@
               "SIGN_OUT_EVERYWHERE",
               "STOP_MARKETING",
               "CLOSE_ACCOUNT",
-              "LINK_TICKET"
+              "LINK_TICKET",
+              "READ_HEALTH_CHOICES"
             ]
           },
           "reason": {

@@ -461,6 +461,17 @@ export function renderNotification(
           '\n\nNothing is lost: the money is back in your balance and goes out with your next payment. If your number has changed, update it under Getting paid.',
       };
 
+    // A customer changed their wishes or note after booking (§300.7). Never
+    // what to: a health answer may be among them, and the booking shows it.
+    case NotificationType.BOOKING_CHOICES_CHANGED:
+      return {
+        subject: `Choices changed: ${ctx.serviceName}, ${short}`,
+        body:
+          `The customer changed their choices or their note for ${ctx.serviceName}.\n\n` +
+          `${booking}\n\n` +
+          'Open the booking to see what they would like now.',
+      };
+
     // A sign-in on a phone or browser not seen before (§298). `serviceName` is the device.
     case NotificationType.NEW_SIGN_IN:
       return {

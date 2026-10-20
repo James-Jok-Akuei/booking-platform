@@ -101,3 +101,10 @@
   .sa-pick-when { width: 60px; }
   .sa-picks .pill { display: none; }
 }
+
+/* The private answers on a booking, read by support (§300.6). */
+.sa-private { display: flex; flex-direction: column; gap: 10px; }
+.sa-private > p { display: flex; align-items: center; gap: 7px; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--danger-soft); color: var(--danger); font-size: 13px; font-weight: 700; }
+.sa-private > div { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 14px; background: var(--sunken); }
+.sa-private > div span { font-size: 12px; font-weight: 700; color: var(--muted); }
+.sa-private > div strong { font-size: 15px; color: var(--ink); }

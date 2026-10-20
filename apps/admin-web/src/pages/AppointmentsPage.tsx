@@ -19,8 +19,14 @@ import { NETWORK_NAME, NetworkMark } from '../ui/NetworkMark';
 import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import { Stars } from '../ui/Stars';
-import { BookingActPanel, BookingSupportSection, ConversationPanel, type BookingAct } from './BookingSupport';
-import type { SupportConversation } from '../api/admin';
+import {
+  BookingActPanel,
+  BookingSupportSection,
+  ConversationPanel,
+  PrivateAnswersPanel,
+  type BookingAct,
+} from './BookingSupport';
+import type { SupportConversation, SupportPrivateAnswers } from '../api/admin';
 import './appointments.css';
 
 type TabKey = 'all' | 'expected' | 'in-progress' | 'unpaid' | 'done' | 'no-show' | 'cancelled';
@@ -503,6 +509,7 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
   const one = useQuery({ queryKey: ['admin-appointment', id], queryFn: () => getAdminAppointment(id) });
   const [act, setAct] = useState<BookingAct | null>(null);
   const [conversation, setConversation] = useState<SupportConversation | null>(null);
+  const [privateRead, setPrivateRead] = useState<SupportPrivateAnswers | null>(null);
   const a = one.data;
 
   if (!a) {
@@ -523,6 +530,8 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
 
   if (conversation)
     return <ConversationPanel a={a} conversation={conversation} onBack={() => setConversation(null)} onClose={onClose} />;
+  if (privateRead)
+    return <PrivateAnswersPanel a={a} read={privateRead} onBack={() => setPrivateRead(null)} onClose={onClose} />;
   if (act)
     return (
       <BookingActPanel
@@ -533,6 +542,10 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
         onRead={(read) => {
           setAct(null);
           setConversation(read);
+        }}
+        onReadPrivate={(read) => {
+          setAct(null);
+          setPrivateRead(read);
         }}
       />
     );
@@ -624,6 +637,43 @@ function Detail({ id, onClose }: { id: string; onClose: () => void }) {
             )}
           </span>
         </div>
+      )}
+
+      {/* What the customer chose (§300) — the private answers only said to be
+          there; reading them is a support act, with a reason (§300.6). */}
+      {(a.choices?.length || a.customerNote || a.hasHealthChoices || a.healthChoicesRemovedAt) && (
+        <Section icon="sliders" title="What they chose">
+          <ul className="ad-choices">
+            {(a.choices ?? []).map((pick) => (
+              <li key={pick.optionId}>
+                <span>{pick.group}</span>
+                <strong>{pick.option}</strong>
+                {(pick.priceMinor !== 0 || pick.extraMinutes > 0) && (
+                  <em>
+                    {[
+                      pick.priceMinor !== 0 && `${pick.priceMinor > 0 ? '+' : '−'}${money.format(Math.abs(pick.priceMinor), a.currency)}`,
+                      pick.extraMinutes > 0 && `+${pick.extraMinutes} min`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </em>
+                )}
+              </li>
+            ))}
+          </ul>
+          {a.hasHealthChoices && (
+            <p className="ad-choices-private">
+              <Icon name="lock" size={14} /> Private answers too — read them under “Help with this booking”, with a reason.
+            </p>
+          )}
+          {a.healthChoicesRemovedAt && (
+            <p className="ad-choices-private is-gone">
+              <Icon name="lock" size={14} /> Private answers were removed 30 days after the visit.
+            </p>
+          )}
+          {a.customerNote && <blockquote className="ad-choices-note">“{a.customerNote}”</blockquote>}
+          {a.choicesChangedAt && <p className="ad-sub">Wishes changed by the customer {stamp(a.choicesChangedAt)}.</p>}
+        </Section>
       )}
 
       <BookingSupportSection a={a} onAct={setAct} onClose={onClose} />

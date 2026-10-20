@@ -35,6 +35,7 @@ import { BusinessProfileService } from './business-profile.service';
 import { AccountService } from '../users/account.service';
 import { ServiceDraftsService } from './service-drafts.service';
 import { UpdateServiceDraftDto } from './dto/service-draft.dto';
+import { ChoiceSuggestionsDto } from './dto/service-choices.dto';
 import { SetBusinessKindsDto } from './dto/set-kinds.dto';
 import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import {
@@ -424,6 +425,14 @@ export class BusinessController {
     @Body() dto: CreateServiceDto,
   ) {
     return this.services.create(user.userId, dto);
+  }
+
+  /** Ready-made questions for this shop's kinds, for the service form (§300.2). */
+  @Get('services/choice-suggestions')
+  @ApiOkResponse({ type: ChoiceSuggestionsDto })
+  @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
+  choiceSuggestions(@CurrentUser() user: AuthenticatedUser) {
+    return this.services.choiceSuggestions(user.userId);
   }
 
   @Get('services')

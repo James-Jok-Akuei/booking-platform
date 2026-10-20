@@ -9,6 +9,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { AppointmentStatus } from '@prisma/client';
+import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 
 // ---------------------------------------------------------------------------
@@ -265,6 +266,10 @@ export const EXPORT_BOOKING_SELECT = {
   cancelledAt: true,
   cancellationReason: true,
   createdAt: true,
+  // What they chose and wrote (§300). Their private answers are opened into
+  // `privateAnswers` — theirs to have — and the sealed column is not sent.
+  choices: true,
+  customerNote: true,
   service: { select: { name: true } },
   location: { select: { name: true, address: true } },
 } as const satisfies Prisma.AppointmentSelect;
@@ -308,9 +313,12 @@ export class ExportedLocationDto {
   address!: string;
 }
 
-export class ExportedBookingDto
-  implements Serialised<Prisma.AppointmentGetPayload<{ select: typeof EXPORT_BOOKING_SELECT }>>
-{
+/** A booking as exported: the select, and the private answers opened from their seal (§300.6). */
+type ExportedBookingWire = Serialised<Prisma.AppointmentGetPayload<{ select: typeof EXPORT_BOOKING_SELECT }>> & {
+  privateAnswers: ExportedChoiceDto[] | null;
+};
+
+export class ExportedBookingDto implements ExportedBookingWire {
   id!: string;
   status!: AppointmentStatus;
   startTime!: string;
@@ -322,8 +330,26 @@ export class ExportedBookingDto
   cancelledAt!: string | null;
   cancellationReason!: string | null;
   createdAt!: string;
+  /** What they picked when booking (§300): the question, the answer, what it added. */
+  @ApiProperty({ type: () => [ExportedChoiceDto], nullable: true })
+  choices!: Prisma.JsonValue;
+  /** Their note to the shop (§300.5). */
+  customerNote!: string | null;
+  /**
+   * Their private answers (§300.6), while kept — removed 30 days after the
+   * visit. Null when there were none.
+   */
+  privateAnswers!: ExportedChoiceDto[] | null;
   service!: ExportedServiceDto;
   location!: ExportedLocationDto;
+}
+
+/** One answer, as a booking kept it (§300). */
+export class ExportedChoiceDto {
+  group!: string;
+  option!: string;
+  priceMinor!: number;
+  extraMinutes!: number;
 }
 
 export class ExportedReviewLocationDto {
@@ -409,10 +435,7 @@ export const __exportedAccountDtoIsExact: NoExtraFields<
   Serialised<Prisma.UserGetPayload<{ select: typeof EXPORT_ACCOUNT_SELECT }>>
 > = true;
 
-export const __exportedBookingDtoIsExact: NoExtraFields<
-  ExportedBookingDto,
-  Serialised<Prisma.AppointmentGetPayload<{ select: typeof EXPORT_BOOKING_SELECT }>>
-> = true;
+export const __exportedBookingDtoIsExact: NoExtraFields<ExportedBookingDto, ExportedBookingWire> = true;
 
 export const __exportedReviewDtoIsExact: NoExtraFields<
   ExportedReviewDto,

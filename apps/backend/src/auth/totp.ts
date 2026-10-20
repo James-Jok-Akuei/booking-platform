@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import { seal, unseal } from '../common/seal';
 
 /**
  * Codes from an authenticator app (§298): the six digits Google
@@ -58,30 +59,16 @@ export function otpauthUrl(secret: string, account: string, issuer = 'BwanguRese
   return `otpauth://totp/${label}?${params.toString()}`;
 }
 
+/** The word the key is made with — the one it has always been, so secrets already set up still open. */
+const PURPOSE = 'authenticator-secret';
+
 /**
- * The secret, sealed before it is stored (AES-256-GCM): a copy of the
- * database alone is not enough to make someone's codes. The key is derived
- * from the access-token key, so there is nothing new to configure.
+ * The secret, sealed before it is stored (AES-256-GCM, `common/seal.ts`): a
+ * copy of the database alone is not enough to make someone's codes.
  */
-export function sealSecret(secret: string, keyMaterial: string): string {
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', sealKey(keyMaterial), iv);
-  const sealed = Buffer.concat([cipher.update(secret, 'utf8'), cipher.final()]);
-  return ['v1', iv.toString('base64url'), cipher.getAuthTag().toString('base64url'), sealed.toString('base64url')].join(
-    '.',
-  );
-}
+export const sealSecret = (secret: string, keyMaterial: string) => seal(secret, keyMaterial, PURPOSE);
 
-export function openSecret(stored: string, keyMaterial: string): string {
-  const [version, iv, tag, sealed] = stored.split('.');
-  if (version !== 'v1' || !iv || !tag || !sealed) throw new Error('Unreadable authenticator secret.');
-  const decipher = crypto.createDecipheriv('aes-256-gcm', sealKey(keyMaterial), Buffer.from(iv, 'base64url'));
-  decipher.setAuthTag(Buffer.from(tag, 'base64url'));
-  return Buffer.concat([decipher.update(Buffer.from(sealed, 'base64url')), decipher.final()]).toString('utf8');
-}
-
-const sealKey = (keyMaterial: string) =>
-  crypto.createHmac('sha256', keyMaterial).update('authenticator-secret').digest();
+export const openSecret = (stored: string, keyMaterial: string) => unseal(stored, keyMaterial, PURPOSE);
 
 /** Ten one-time codes for when the phone is lost: "xxxx-xxxx", easy to read out and type. */
 export function newRecoveryCodes(count = 10): string[] {

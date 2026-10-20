@@ -1,0 +1,81 @@
+/* What a customer chose (§300), on the shop's screens. */
+
+.bc { display: flex; flex-direction: column; gap: 10px; }
+.bc-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bc-changed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--ask-soft);
+  color: var(--ask);
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.bc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.bc-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--sunken);
+  text-align: left;
+  animation: rise-in 280ms var(--ease) both;
+}
+.bc-list em { justify-self: end; }
+.bc-q { font-size: 12.5px; font-weight: 650; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bc-list strong { font-size: 14px; color: var(--ink); }
+.bc-list em { font-style: normal; font-size: 12.5px; font-weight: 750; color: var(--accent-deep); white-space: nowrap; }
+.bc-private {
+  display: flex;
+  gap: 10px;
+  padding: 11px 13px;
+  border-radius: 13px;
+  background: var(--danger-soft);
+  border: 1px solid #f6c8c3;
+  color: var(--danger);
+}
+.bc-private svg { flex: none; margin-top: 2px; }
+.bc-private > div { display: flex; flex-direction: column; gap: 3px; text-align: left; }
+.bc-private span { font-size: 11.5px; font-weight: 800; letter-spacing: 0.02em; }
+.bc-private strong { font-size: 14px; color: #8f2219; }
+.bc-removed { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; color: var(--muted); }
+.bc-note {
+  display: flex;
+  gap: 9px;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 13px;
+  background: var(--accent-tint);
+  border-left: 3px solid var(--accent);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  font-style: italic;
+  text-align: left;
+}
+.bc-note svg { flex: none; margin-top: 3px; color: var(--accent-deep); }
+
+.bc-marks { display: inline-flex; gap: 4px; margin-left: 6px; vertical-align: 1px; }
+.bc-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--sunken-2);
+  color: var(--ink-2);
+  font-size: 11px;
+  font-weight: 800;
+}
+.bc-mark.is-private { background: var(--danger-soft); color: var(--danger); }
+
+@media (max-width: 560px) {
+  .bc-list li { grid-template-columns: minmax(0, 1fr) auto; }
+  .bc-q { grid-column: 1 / -1; }
+}

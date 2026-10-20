@@ -6,6 +6,8 @@ import {
   BusinessStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { loadChoiceGroups } from '../business/choice-groups';
+import { resolvePicks } from '../business/service-choices';
 import {
   MinuteInterval,
   WeightedInterval,
@@ -304,6 +306,7 @@ export class AvailabilityService {
     serviceId: string,
     quantity: number,
     viewerUserId?: string | null,
+    optionIds: readonly string[] = [],
   ): Promise<AvailabilityResult> {
     const [service, location] = await Promise.all([
       this.prisma.service.findUnique({
@@ -323,10 +326,18 @@ export class AvailabilityService {
 
     assertQuantityAllowed(quantity, location.capacity);
 
+    // The answers' extra minutes (§300.4), worked out here rather than sent,
+    // by the rules the booking uses — so a time offered is a time that books.
+    // Partial: required questions may not all be answered yet.
+    const extra =
+      optionIds.length === 0
+        ? 0
+        : resolvePicks(await loadChoiceGroups(this.prisma, serviceId), optionIds, { partial: true }).minutes;
+
     return this.getAvailability(
       locationId,
       date,
-      service.durationMinutes,
+      service.durationMinutes + extra,
       viewerUserId,
       quantity,
     );

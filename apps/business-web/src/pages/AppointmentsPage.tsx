@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
+import { BookingChoices, ChoiceMarks } from '../lib/BookingChoices';
 import { useMoney } from '../money';
 import { useCheckIn } from '../checkin/CheckIn';
 import {
@@ -714,6 +715,7 @@ function Row({
           <strong title={a.service.name}>
             {a.service.name}
             {a.quantity > 1 && <em className="ap-qty">×{a.quantity}</em>}
+            <ChoiceMarks a={a} />
           </strong>
           <span className="sub-branch">
             <Icon name="pin" size={12} /> {a.location.name}
@@ -913,6 +915,7 @@ const SUPPORT_STEP: Partial<Record<string, string>> = {
   CANCEL_FOR_SHOP: 'Our support team cancelled it on your side',
   RESEND_CODE: 'Our support team sent the customer a new code',
   READ_MESSAGES: 'Our support team read your conversation',
+  READ_HEALTH_CHOICES: 'Our support team read the private answers, to help',
 };
 
 /**
@@ -1056,6 +1059,10 @@ function AppointmentDetail({
               </div>
             </div>
 
+            {/* What the customer chose (§300), before anything else about the
+                visit: it is what the shop prepares for. */}
+            <BookingChoices a={d} money={money} />
+
             <h3 className="ap-drawer-h">What happened</h3>
             <ol className="ap-steps">
               {steps.map((step, i) => (
@@ -1089,6 +1096,17 @@ function AppointmentDetail({
                 <dt>Platform fee</dt>
                 <dd>{money.format(d.platformFeeAmountMinor, d.currency)}</dd>
               </div>
+              {d.choicesPriceMinor !== 0 && (
+                <div>
+                  <dt>Their choices</dt>
+                  <dd>
+                    {d.choicesPriceMinor > 0 ? '+' : '−'}
+                    {money.format(Math.abs(d.choicesPriceMinor), d.currency)}
+                    {d.choicesMinutes > 0 && <span className="muted"> · +{d.choicesMinutes} min</span>}
+                    <div className="muted small">Already in the full price below.</div>
+                  </dd>
+                </div>
+              )}
               {d.servicePriceMinor !== null && (
                 <div>
                   <dt>Full price</dt>

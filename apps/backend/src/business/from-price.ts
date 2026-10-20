@@ -25,6 +25,12 @@ import { Prisma } from '@prisma/client';
  * advertise different headline prices. The update still runs over every
  * location of the business in one statement, because one service write can
  * change several branches at once.
+ *
+ * Since §300 a service's cheapest price includes the cheapest available
+ * answer to each question that must be answered and always shows — a car
+ * wash whose every size costs extra is not bookable at the bare price, so
+ * the branch must not advertise it. Never below nothing: an answer can take
+ * money off.
  */
 export function recalculateFromPrice(
   tx: Prisma.TransactionClient,
@@ -33,7 +39,19 @@ export function recalculateFromPrice(
   return tx.$executeRaw`
     UPDATE "locations" l
        SET "fromPriceMinor" = (
-         SELECT MIN(sl."priceMinor")
+         SELECT MIN(GREATEST(0, sl."priceMinor" + COALESCE((
+                  SELECT SUM(cheapest."priceMinor")
+                    FROM (
+                      SELECT MIN(o."priceMinor") AS "priceMinor"
+                        FROM "service_choice_groups" g
+                        JOIN "service_choice_options" o
+                          ON o."groupId" = g."id" AND o."available" = true
+                       WHERE g."serviceId" = s."id"
+                         AND g."required" = true
+                         AND g."showIfOptionId" IS NULL
+                       GROUP BY g."id"
+                    ) cheapest
+                ), 0)))
            FROM "service_locations" sl
            JOIN "services" s ON s."id" = sl."serviceId"
           WHERE sl."locationId" = l."id"

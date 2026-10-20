@@ -9,6 +9,7 @@ import {
   verifyManually,
   type Appointment,
 } from '../api/business';
+import { BookingChoices } from '../lib/BookingChoices';
 import { useMoney } from '../money';
 import { Avatar } from '../ui/Avatar';
 import { CodeBoxes } from '../ui/CodeBoxes';
@@ -436,6 +437,11 @@ function CheckInDialog({
                   </div>
                 )}
               </dl>
+
+              {/* What they chose (§300) — what to do for them, now they are here. */}
+              <div className="ci-choices">
+                <BookingChoices a={done} money={money} />
+              </div>
 
               <p className="muted small ci-done-next">
                 When they are finished, mark it done on{' '}

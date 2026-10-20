@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { SupportLogService } from '../../src/support/support-log.service';
+import { HealthChoices } from '../../src/appointments/health-choices';
 import { LedgerService } from '../../src/ledger/ledger.service';
 import { PlatformSettingsService } from '../../src/settings/platform-settings.service';
 import { MailService } from '../../src/mail/mail.service';
@@ -53,12 +54,14 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
     // "cannot pay out" is exactly true, and any suite testing the send path
     // supplies its own populated one.
     // SupportLogService too (§297): the booking service writes to it, and it
-    // reaches nothing but the database.
+    // reaches nothing but the database. HealthChoices (§300.6) reaches nothing
+    // at all — it seals and opens with the configured key.
     providers: [
       PrismaService,
       LedgerService,
       PlatformSettingsService,
       SupportLogService,
+      HealthChoices,
       { provide: DisbursementProviderRegistry, useValue: new DisbursementProviderRegistry([]) },
       ...providers,
     ],

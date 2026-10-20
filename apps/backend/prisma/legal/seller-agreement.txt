@@ -1,6 +1,6 @@
 SELLER AGREEMENT
 
-Last updated: 12 October 2026
+Last updated: 20 October 2026
 
 This Seller Agreement is the agreement between your business and BwanguReservations ("we", "us", "the Platform") when your business takes bookings through BwanguReservations. It applies to every business that is listed on the Platform, to all of its branches, and to everyone who works in its account.
 
@@ -139,11 +139,13 @@ BwanguReservations is a company registered in Rwanda with the Rwanda Development
 
 9.2 How you may use it. Use a customer's personal data only to provide and follow up the booking they made, and as the law allows. Do not use it for marketing, sell it, share it, or copy it out of the Platform, unless the customer has clearly agreed. Keep it confidential and let only the people who need it see it.
 
-9.3 The law. You must handle personal data as Law n° 058/2021 of 13/10/2021 relating to the protection of personal data and privacy requires, including registering with the National Cyber Security Authority (NCSA) if the law requires it of your business.
+9.3 Private answers. Some questions you ask while customers book touch on their health or another private matter — an allergy, a pregnancy, an injury — and are marked private. Use those answers only to serve that customer at that booking: do not write them anywhere else, send them on, or ask for more than you need. Never ask for a diagnosis, medical history, test results, medicines, or an ID, passport or insurance number. The Platform deletes private answers 30 days after the visit.
 
-9.4 If something goes wrong. If you learn that customers' personal data from the Platform has been lost, stolen or seen by someone who should not see it, tell us at once at jokditakeerleek@gmail.com.
+9.4 The law. You must handle personal data as Law n° 058/2021 of 13/10/2021 relating to the protection of personal data and privacy requires, including registering with the National Cyber Security Authority (NCSA) if the law requires it of your business.
 
-9.5 Your own data. We handle your personal data, and that of your team, as our Privacy Policy describes.
+9.5 If something goes wrong. If you learn that customers' personal data from the Platform has been lost, stolen or seen by someone who should not see it, tell us at once at jokditakeerleek@gmail.com.
+
+9.6 Your own data. We handle your personal data, and that of your team, as our Privacy Policy describes.
 
 
 10. LICENCES AND THE LAW

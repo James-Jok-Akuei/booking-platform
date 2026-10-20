@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { HealthChoices } from '../appointments/health-choices';
 import { UsersController } from './users.controller';
 import { AccountController } from './account.controller';
 import { AdminUsersController } from './admin-users.controller';
@@ -13,7 +14,9 @@ import { StorageModule } from '../storage/storage.module';
 @Module({
   imports: [StorageModule],
   controllers: [UsersController, AccountController, AdminUsersController],
-  providers: [UsersService, AdminInvitationsService, AccountService, SavedNumbersService],
+  // HealthChoices (§300.6) for the copy of someone's own data: it reaches
+  // nothing but the configured key.
+  providers: [UsersService, AdminInvitationsService, AccountService, SavedNumbersService, HealthChoices],
   exports: [UsersService, AccountService, SavedNumbersService],
 })
 export class UsersModule {}

@@ -1181,6 +1181,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/business/services/choice-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ready-made questions for this shop's kinds, for the service form (§300.2). */
+        get: operations["BusinessController_choiceSuggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/business/services/{id}": {
         parameters: {
             query?: never;
@@ -1742,6 +1759,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/appointments/{id}/choices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Starts collecting the deposit through the payment provider.
+         *
+         *     Replaced the temporary `mark-deposit-paid` seam, which moved the status
+         *     without moving money. The appointment stays PENDING_PAYMENT until the
+         *     payment is confirmed — see AppointmentsService.initiateDepositPayment.
+         */
+        patch: operations["AppointmentsCustomerController_changeChoices"];
+        trace?: never;
+    };
     "/appointments/{id}/resend-verification-code": {
         parameters: {
             query?: never;
@@ -1751,13 +1791,6 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Starts collecting the deposit through the payment provider.
-         *
-         *     Replaced the temporary `mark-deposit-paid` seam, which moved the status
-         *     without moving money. The appointment stays PENDING_PAYMENT until the
-         *     payment is confirmed — see AppointmentsService.initiateDepositPayment.
-         */
         post: operations["AppointmentsCustomerController_resendVerificationCode"];
         delete?: never;
         options?: never;
@@ -2065,6 +2098,26 @@ export interface paths {
         put?: never;
         /** Ask MTN about the deposit now, and apply what it says. */
         post: operations["AdminAppointmentsController_checkPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/appointments/{id}/private-answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * The booking's private answers (§300.6), read with a reason — written
+         *     down, and shown on the booking, like reading the conversation.
+         */
+        post: operations["AdminAppointmentsController_readPrivateAnswers"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4405,6 +4458,41 @@ export interface components {
             locationId: string;
             priceMinor: number;
         };
+        ChoiceShowIfDto: {
+            group: number;
+            option: number;
+        };
+        ServiceChoiceOptionInputDto: {
+            /**
+             * Format: uuid
+             * @description Keeps an answer that already exists. Left out: a new one.
+             */
+            id?: string | null;
+            label: string;
+            description?: string | null;
+            priceMinor: number;
+            extraMinutes: number;
+            available: boolean;
+        };
+        ServiceChoiceGroupInputDto: {
+            /**
+             * Format: uuid
+             * @description Keeps a question that already exists. Left out: a new one.
+             */
+            id?: string | null;
+            name: string;
+            question?: string | null;
+            /** @enum {string} */
+            kind: "ONE" | "MANY";
+            required: boolean;
+            /** @description Pick-several only. Left out or null: any number. */
+            maxPicks?: number | null;
+            healthRelated: boolean;
+            showIf?: components["schemas"]["ChoiceShowIfDto"] | null;
+            /** @description The ready-made suggestion it began as (§300.2). */
+            suggestionKey?: string | null;
+            options: components["schemas"]["ServiceChoiceOptionInputDto"][];
+        };
         ServiceDraftAuthorDto: {
             id: string;
             email: string;
@@ -4416,6 +4504,11 @@ export interface components {
              *     the time anybody finishes it.
              */
             offers: components["schemas"]["ServiceDraftOfferDto"][];
+            /**
+             * @description The questions as written so far (§300), in the shape the service form
+             *     sends — "show only if" by position. Unchecked until the service is posted.
+             */
+            choices: components["schemas"]["ServiceChoiceGroupInputDto"][];
             id: string;
             name: string | null;
             title: string | null;
@@ -4427,6 +4520,9 @@ export interface components {
             durationMinutes: number | null;
             /** @description A decimal string, like every other percentage here (§128.20). */
             depositPercentage: string | null;
+            noteEnabled: boolean | null;
+            notePrompt: string | null;
+            priceConfirmedAtShop: boolean | null;
             createdBy: components["schemas"]["ServiceDraftAuthorDto"];
             createdAt: string;
             updatedAt: string;
@@ -4435,6 +4531,29 @@ export interface components {
             /** Format: uuid */
             locationId: string;
             priceMinor: number;
+        };
+        DraftChoiceOptionDto: {
+            /** Format: uuid */
+            id?: string | null;
+            label?: string;
+            description?: string | null;
+            priceMinor?: number;
+            extraMinutes?: number;
+            available?: boolean;
+        };
+        DraftChoiceGroupDto: {
+            /** Format: uuid */
+            id?: string | null;
+            name?: string;
+            question?: string | null;
+            /** @enum {string} */
+            kind?: "ONE" | "MANY";
+            required?: boolean;
+            maxPicks?: number | null;
+            healthRelated?: boolean;
+            showIf?: components["schemas"]["ChoiceShowIfDto"] | null;
+            suggestionKey?: string | null;
+            options?: components["schemas"]["DraftChoiceOptionDto"][];
         };
         UpdateServiceDraftDto: {
             name?: string | null;
@@ -4447,6 +4566,11 @@ export interface components {
             durationMinutes?: number | null;
             depositPercentage?: number | null;
             offers?: components["schemas"]["DraftOfferDto"][];
+            /** @description The questions as written so far (§300). Checked when the service is posted. */
+            choices?: components["schemas"]["DraftChoiceGroupDto"][];
+            noteEnabled?: boolean | null;
+            notePrompt?: string | null;
+            priceConfirmedAtShop?: boolean | null;
         };
         CreateLocationDto: {
             /**
@@ -4645,6 +4769,22 @@ export interface components {
              */
             depositPercentage?: number;
             isActive?: boolean;
+            /**
+             * @description The questions a customer answers while booking (§300), in order. On an
+             *     edit, left out means unchanged; sent, it is the whole list as it should
+             *     be — a question or answer sent with its `id` is kept, one left out is
+             *     removed. Bookings already made keep what was picked either way.
+             */
+            choiceGroups?: components["schemas"]["ServiceChoiceGroupInputDto"][];
+            /** @description Whether the customer may write a short note while booking (§300.5). */
+            noteEnabled?: boolean;
+            /** @description The words above the note box; blank goes back to the ones for the shop's kind. */
+            notePrompt?: string | null;
+            /**
+             * @description The final price is agreed at the shop after seeing the job — a repair,
+             *     a party (§300.3). Cards say "from", and the deposit is on the price here.
+             */
+            priceConfirmedAtShop?: boolean;
         };
         ServiceOfferLocationDto: {
             id: string;
@@ -4665,6 +4805,48 @@ export interface components {
             id: string;
             url: string;
             displayOrder: number;
+        };
+        ServiceChoiceOptionDto: {
+            id: string;
+            label: string;
+            /** @description A line about it, under the name. */
+            description: string | null;
+            /**
+             * @description Added to the booking's price, in minor units — once per booking, not per
+             *     person; negative takes money off. Never discounted by a sale (§300.3).
+             */
+            priceMinor: number;
+            /** @description Added to the booking's length, so the times offered fit (§300.4). */
+            extraMinutes: number;
+            /** @description False: "not available now" — shown greyed, and cannot be picked. */
+            available: boolean;
+        };
+        ServiceChoiceGroupDto: {
+            id: string;
+            /** @description The shop's short name for it — "Hair length". Used on the booking. */
+            name: string;
+            /** @description What the customer is asked — "How long is your hair?". Null: ask the name. */
+            question: string | null;
+            /**
+             * @description Pick one answer, or several.
+             * @enum {string}
+             */
+            kind: "ONE" | "MANY";
+            /** @description Must be answered before a time can be chosen. */
+            required: boolean;
+            /** @description Pick-several only: the most that may be picked. Null: any number. */
+            maxPicks: number | null;
+            /**
+             * @description Allergies, pregnancy, an injury (§300.6): tap to pick, never typed; the
+             *     answers are sealed, shown to the shop in red, never in an email or a
+             *     phone alert, and removed 30 days after the visit. Always free.
+             */
+            healthRelated: boolean;
+            /** @description Shows only when this answer to an earlier question is picked. Null: always. */
+            showIfOptionId: string | null;
+            /** @description The ready-made suggestion it began as (§300.2). Null for the shop's own. */
+            suggestionKey: string | null;
+            options: components["schemas"]["ServiceChoiceOptionDto"][];
         };
         BusinessServiceDto: {
             id: string;
@@ -4694,6 +4876,57 @@ export interface components {
              *     not broken.
              */
             images: components["schemas"]["ServiceImageRefDto"][];
+            /** @description The questions a customer answers while booking it (§300), in order. */
+            choiceGroups: components["schemas"]["ServiceChoiceGroupDto"][];
+            /** @description Whether the customer may write a short note (§300.5). */
+            noteEnabled: boolean;
+            /** @description The words above the note box. Null: the ones written for the shop's kind. */
+            notePrompt: string | null;
+            /** @description The final price is agreed at the shop after seeing the job; cards say "from" (§300.3). */
+            priceConfirmedAtShop: boolean;
+        };
+        SuggestionShowIfDto: {
+            /** @description The suggestion it depends on — add that one first. */
+            key: string;
+            /** @description Its answer, by name. */
+            option: string;
+        };
+        SuggestedOptionDto: {
+            label: string;
+            description?: string;
+            /** @description A typical extra time, to be checked by the shop. */
+            extraMinutes?: number;
+            /** @description Shops usually charge for this: ask for a price. Prices are never suggested. */
+            paid?: boolean;
+        };
+        ChoiceSuggestionDto: {
+            /** @description Stable: saved on the question as `suggestionKey`, so the list can say "added". */
+            key: string;
+            name: string;
+            question: string;
+            /** @enum {string} */
+            kind: "ONE" | "MANY";
+            required: boolean;
+            maxPicks?: number;
+            /** @description Health and other private answers — sealed, never emailed, always free (§300.6). */
+            healthRelated?: boolean;
+            showIf?: components["schemas"]["SuggestionShowIfDto"];
+            /** @description A word to the shop about using it. */
+            hint?: string;
+            options: components["schemas"]["SuggestedOptionDto"][];
+        };
+        ChoiceSuggestionSectionDto: {
+            category: string;
+            subcategory: string;
+            suggestions: components["schemas"]["ChoiceSuggestionDto"][];
+        };
+        ChoiceSuggestionsDto: {
+            /** @description The shop's kinds, its main one first; a question suggested for two is listed once. */
+            sections: components["schemas"]["ChoiceSuggestionSectionDto"][];
+            /** @description The words above the customer's note box unless the shop writes its own (§300.5). */
+            notePrompt: string;
+            /** @description Shops of this kind usually confirm the price after seeing the job (§300.3). */
+            priceAtShop: boolean;
         };
         UpdateServiceDto: {
             name?: string;
@@ -4737,6 +4970,22 @@ export interface components {
              */
             depositPercentage?: number;
             isActive?: boolean;
+            /**
+             * @description The questions a customer answers while booking (§300), in order. On an
+             *     edit, left out means unchanged; sent, it is the whole list as it should
+             *     be — a question or answer sent with its `id` is kept, one left out is
+             *     removed. Bookings already made keep what was picked either way.
+             */
+            choiceGroups?: components["schemas"]["ServiceChoiceGroupInputDto"][];
+            /** @description Whether the customer may write a short note while booking (§300.5). */
+            noteEnabled?: boolean;
+            /** @description The words above the note box; blank goes back to the ones for the shop's kind. */
+            notePrompt?: string | null;
+            /**
+             * @description The final price is agreed at the shop after seeing the job — a repair,
+             *     a party (§300.3). Cards say "from", and the deposit is on the price here.
+             */
+            priceConfirmedAtShop?: boolean;
         };
         SetServiceOfferedDto: {
             isOffered: boolean;
@@ -4766,6 +5015,11 @@ export interface components {
             depositPercentage: string;
             /** @description False once retired. The row is kept so past appointments still resolve. */
             isActive: boolean;
+            /** @description Whether the customer may write a short note (§300.5). */
+            noteEnabled: boolean;
+            notePrompt: string | null;
+            /** @description The final price is agreed at the shop (§300.3). */
+            priceConfirmedAtShop: boolean;
             createdAt: string;
             updatedAt: string;
         };
@@ -5229,6 +5483,29 @@ export interface components {
              *     loaded. The 1000 here only bounds the type.
              */
             quantity?: number;
+            /**
+             * @description The answers picked (§300): ids of this service's options. Checked
+             *     against its questions — each one that must be answered is, one answer
+             *     where one is asked, nothing "not available now". Their prices are added
+             *     once to the booking and their minutes to its length; both are worked
+             *     out here, never sent.
+             */
+            optionIds?: string[];
+            /** @description A short note to the shop (§300.5), when the service takes one. */
+            note?: string | null;
+        };
+        AppointmentChoiceDto: {
+            /** @description The question and answer ids then; they may no longer exist. */
+            groupId: string;
+            optionId: string;
+            /** @description The question, by the shop's name for it — "Hair length". */
+            group: string;
+            /** @description The answer — "Long". */
+            option: string;
+            /** @description What it added to the booking's price, once (not per person). */
+            priceMinor: number;
+            /** @description What it added to the booking's length. */
+            extraMinutes: number;
         };
         AppointmentLocationDto: {
             id: string;
@@ -5250,10 +5527,23 @@ export interface components {
         };
         AppointmentSupportStepDto: {
             /** @enum {string} */
-            kind: "CHECK_IN" | "COMPLETE" | "FIX_NO_SHOW" | "CANCEL_FOR_CUSTOMER" | "CANCEL_FOR_SHOP" | "RESEND_CODE" | "CHECK_PAYMENT" | "READ_MESSAGES" | "PAUSE_SHOP" | "RESUME_SHOP" | "REVOKE_INVITATION" | "RESEND_INVITATION" | "REMOVE_MEMBER" | "TRANSFER_OWNERSHIP" | "SIGN_OUT_EVERYWHERE" | "STOP_MARKETING" | "CLOSE_ACCOUNT" | "LINK_TICKET";
+            kind: "CHECK_IN" | "COMPLETE" | "FIX_NO_SHOW" | "CANCEL_FOR_CUSTOMER" | "CANCEL_FOR_SHOP" | "RESEND_CODE" | "CHECK_PAYMENT" | "READ_MESSAGES" | "PAUSE_SHOP" | "RESUME_SHOP" | "REVOKE_INVITATION" | "RESEND_INVITATION" | "REMOVE_MEMBER" | "TRANSFER_OWNERSHIP" | "SIGN_OUT_EVERYWHERE" | "STOP_MARKETING" | "CLOSE_ACCOUNT" | "LINK_TICKET" | "READ_HEALTH_CHOICES";
             createdAt: string;
         };
         AppointmentDto: {
+            /**
+             * @description What the customer picked (§300), in the order the shop asks: question,
+             *     answer, and what each added. Null when there was nothing to choose.
+             *     Health-related answers are never here — see `healthChoices`.
+             */
+            choices: components["schemas"]["AppointmentChoiceDto"][] | null;
+            /**
+             * @description Health-related answers (§300.6) — allergies, pregnancy, an injury. On
+             *     the customer's and the shop's READS only, one booking or a list; absent
+             *     on the answer to an action. Null: none were given. Show them in red to
+             *     the shop; never put them in an email, a notice or a calendar invite.
+             */
+            healthChoices?: components["schemas"]["AppointmentChoiceDto"][] | null;
             id: string;
             /** @enum {string} */
             status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
@@ -5286,6 +5576,15 @@ export interface components {
             listPriceMinor: number | null;
             depositPercentage: string | null;
             platformFeePercentage: string | null;
+            /** @description What the answers added — already inside `servicePriceMinor` and `endTime` (§300). */
+            choicesPriceMinor: number;
+            choicesMinutes: number;
+            /** @description The customer's note to the shop (§300.5). */
+            customerNote: string | null;
+            /** @description When the customer last changed their wishes or note after booking (§300.7). */
+            choicesChangedAt: string | null;
+            /** @description When the health-related answers were removed, 30 days after the visit (§300.6). */
+            healthChoicesRemovedAt: string | null;
             paymentProviderReferenceId: string | null;
             paymentInitiatedAt: string | null;
             /** @description What the operator actually charged, and in what (§45). */
@@ -5314,6 +5613,16 @@ export interface components {
             /** @description What our support team did on this booking, and when (§297). */
             supportActions: components["schemas"]["AppointmentSupportStepDto"][];
         };
+        UpdateBookingChoicesDto: {
+            /**
+             * @description Every answer wanted now to the questions that can still change — the
+             *     whole set for those, so leaving one out takes it off. Answers to the
+             *     others are kept as booked and need not be sent.
+             */
+            optionIds: string[];
+            /** @description The note to the shop. Blank or null takes it off; left out, it stays. */
+            note?: string | null;
+        };
         AppointmentReviewDto: {
             id: string;
             rating: number;
@@ -5322,6 +5631,19 @@ export interface components {
             editedAt: string | null;
         };
         CustomerAppointmentDetailDto: {
+            /**
+             * @description What the customer picked (§300), in the order the shop asks: question,
+             *     answer, and what each added. Null when there was nothing to choose.
+             *     Health-related answers are never here — see `healthChoices`.
+             */
+            choices: components["schemas"]["AppointmentChoiceDto"][] | null;
+            /**
+             * @description Health-related answers (§300.6) — allergies, pregnancy, an injury. On
+             *     the customer's and the shop's READS only, one booking or a list; absent
+             *     on the answer to an action. Null: none were given. Show them in red to
+             *     the shop; never put them in an email, a notice or a calendar invite.
+             */
+            healthChoices?: components["schemas"]["AppointmentChoiceDto"][] | null;
             id: string;
             /** @enum {string} */
             status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
@@ -5354,6 +5676,15 @@ export interface components {
             listPriceMinor: number | null;
             depositPercentage: string | null;
             platformFeePercentage: string | null;
+            /** @description What the answers added — already inside `servicePriceMinor` and `endTime` (§300). */
+            choicesPriceMinor: number;
+            choicesMinutes: number;
+            /** @description The customer's note to the shop (§300.5). */
+            customerNote: string | null;
+            /** @description When the customer last changed their wishes or note after booking (§300.7). */
+            choicesChangedAt: string | null;
+            /** @description When the health-related answers were removed, 30 days after the visit (§300.6). */
+            healthChoicesRemovedAt: string | null;
             paymentProviderReferenceId: string | null;
             paymentInitiatedAt: string | null;
             /** @description What the operator actually charged, and in what (§45). */
@@ -5600,6 +5931,38 @@ export interface components {
             createdAt: string;
         };
         AdminAppointmentDetailDto: {
+            /**
+             * @description What the customer picked (§300), as booked — never the private answers,
+             *     which are read only through support, with a reason (§300.6).
+             */
+            choices: components["schemas"]["AppointmentChoiceDto"][] | null;
+            choicesPriceMinor: number;
+            choicesMinutes: number;
+            customerNote: string | null;
+            choicesChangedAt: string | null;
+            /** @description Whether the booking holds private answers — not what they are. */
+            hasHealthChoices: boolean;
+            healthChoicesRemovedAt: string | null;
+            unitPriceMinor: number | null;
+            discountPercent: number | null;
+            listPriceMinor: number | null;
+            locationAddress: string;
+            /** @description The branch's own number, else the shop's. */
+            shopPhone: string | null;
+            /** @enum {string|null} */
+            paymentProvider: "MTN_MOMO" | "AIRTEL_MONEY" | null;
+            paymentProviderReferenceId: string | null;
+            paymentInitiatedAt: string | null;
+            providerCurrency: string | null;
+            providerAmountMinor: number | null;
+            exchangeRateUsed: number | null;
+            verifiedByEmail: string | null;
+            manualVerificationNote: string | null;
+            cancelledByEmail: string | null;
+            cancellationTicketReference: string | null;
+            tickets: components["schemas"]["AdminAppointmentTicketDto"][];
+            ledger: components["schemas"]["AdminAppointmentLedgerDto"][];
+            review: components["schemas"]["AdminAppointmentReviewDto"] | null;
             id: string;
             /** @enum {string} */
             status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
@@ -5656,26 +6019,6 @@ export interface components {
             canReclassify: boolean;
             /** @description What our support team may do on it now (§297) — the rule each action enforces. */
             support: components["schemas"]["AdminAppointmentSupportDto"];
-            unitPriceMinor: number | null;
-            discountPercent: number | null;
-            listPriceMinor: number | null;
-            locationAddress: string;
-            /** @description The branch's own number, else the shop's. */
-            shopPhone: string | null;
-            /** @enum {string|null} */
-            paymentProvider: "MTN_MOMO" | "AIRTEL_MONEY" | null;
-            paymentProviderReferenceId: string | null;
-            paymentInitiatedAt: string | null;
-            providerCurrency: string | null;
-            providerAmountMinor: number | null;
-            exchangeRateUsed: number | null;
-            verifiedByEmail: string | null;
-            manualVerificationNote: string | null;
-            cancelledByEmail: string | null;
-            cancellationTicketReference: string | null;
-            tickets: components["schemas"]["AdminAppointmentTicketDto"][];
-            ledger: components["schemas"]["AdminAppointmentLedgerDto"][];
-            review: components["schemas"]["AdminAppointmentReviewDto"] | null;
         };
         ReclassifyCancellationDto: {
             reason: string;
@@ -5711,6 +6054,17 @@ export interface components {
             /** @enum {string} */
             paymentStatus: "PENDING" | "FAILED" | "SUCCESSFUL" | "NOT_STARTED";
             failureReason: string | null;
+        };
+        SupportPrivateAnswerDto: {
+            /** @description The question, by the shop's name for it. */
+            group: string;
+            option: string;
+        };
+        SupportPrivateAnswersDto: {
+            /** @description Null when there were none, or they have been removed. */
+            answers: components["schemas"]["SupportPrivateAnswerDto"][] | null;
+            /** @description When they were removed, 30 days after the visit; null while kept. */
+            removedAt: string | null;
         };
         SupportMessageDto: {
             id: string;
@@ -6097,7 +6451,7 @@ export interface components {
         NotificationDto: {
             id: string;
             /** @enum {string} */
-            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED" | "STORY_REMOVED" | "APPOINTMENT_COMPLETED" | "PAYOUT_SENT" | "PAYOUT_FAILED" | "ANNOUNCEMENT" | "SHOP_MESSAGE" | "SHOP_DISCOUNT" | "SUPPORT_UPDATE" | "NEW_SIGN_IN";
+            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED" | "STORY_REMOVED" | "APPOINTMENT_COMPLETED" | "PAYOUT_SENT" | "PAYOUT_FAILED" | "ANNOUNCEMENT" | "SHOP_MESSAGE" | "SHOP_DISCOUNT" | "SUPPORT_UPDATE" | "NEW_SIGN_IN" | "BOOKING_CHOICES_CHANGED";
             /**
              * @description What it is about, for choosing what you get (§287).
              * @enum {string}
@@ -7440,6 +7794,12 @@ export interface components {
             priceMinor: number;
             /** @description The sale on today, or null (§186). */
             discount: components["schemas"]["ServiceDiscountDto"] | null;
+            /**
+             * @description When set, the card shows "from" this price instead (§300.3): a question
+             *     that must be answered has answers at different prices, or the shop
+             *     agrees the price after seeing the job. Null: the price is the price.
+             */
+            startingPriceMinor: number | null;
             /** @description A decimal string, like every percentage here (§128.20). */
             depositPercentage: string;
             /** @description The cover photo (§132), or null — a client falls back to a category tile. */
@@ -7516,6 +7876,20 @@ export interface components {
             priceMinor: number;
             /** @description The sale on today, or null (§186). */
             discount: components["schemas"]["ServiceDiscountDto"] | null;
+            /**
+             * @description When set, show "from" this price instead (§300.3): a question that must
+             *     be answered has answers at different prices, or the shop agrees the
+             *     price after seeing the job. Null: the price is the price.
+             */
+            startingPriceMinor: number | null;
+            /** @description The questions the customer answers while booking, in order (§300). */
+            choiceGroups: components["schemas"]["ServiceChoiceGroupDto"][];
+            /** @description Whether the customer may write the shop a short note (§300.5). */
+            noteEnabled: boolean;
+            /** @description The words above the note box: the shop's own, or the ones for its kind. */
+            notePrompt: string;
+            /** @description The final price is agreed at the shop after seeing the job (§300.3). */
+            priceConfirmedAtShop: boolean;
             /**
              * @description Photos of the service, cover first (§132). Empty is normal — a service
              *     without photos is one nobody has photographed yet, not a broken one, and a
@@ -7617,6 +7991,12 @@ export interface components {
             priceMinor: number;
             /** @description The sale on today, or null (§186). */
             discount: components["schemas"]["ServiceDiscountDto"] | null;
+            /**
+             * @description When set, the card shows "from" this price instead (§300.3): a question
+             *     that must be answered has answers at different prices, or the shop
+             *     agrees the price after seeing the job. Null: the price is the price.
+             */
+            startingPriceMinor: number | null;
             /** @description A decimal string, like every percentage here (§128.20). */
             depositPercentage: string;
             /** @description The cover photo (§132), or null — a client falls back to a category tile. */
@@ -7727,7 +8107,7 @@ export interface components {
         SupportActionDto: {
             id: string;
             /** @enum {string} */
-            kind: "CHECK_IN" | "COMPLETE" | "FIX_NO_SHOW" | "CANCEL_FOR_CUSTOMER" | "CANCEL_FOR_SHOP" | "RESEND_CODE" | "CHECK_PAYMENT" | "READ_MESSAGES" | "PAUSE_SHOP" | "RESUME_SHOP" | "REVOKE_INVITATION" | "RESEND_INVITATION" | "REMOVE_MEMBER" | "TRANSFER_OWNERSHIP" | "SIGN_OUT_EVERYWHERE" | "STOP_MARKETING" | "CLOSE_ACCOUNT" | "LINK_TICKET";
+            kind: "CHECK_IN" | "COMPLETE" | "FIX_NO_SHOW" | "CANCEL_FOR_CUSTOMER" | "CANCEL_FOR_SHOP" | "RESEND_CODE" | "CHECK_PAYMENT" | "READ_MESSAGES" | "PAUSE_SHOP" | "RESUME_SHOP" | "REVOKE_INVITATION" | "RESEND_INVITATION" | "REMOVE_MEMBER" | "TRANSFER_OWNERSHIP" | "SIGN_OUT_EVERYWHERE" | "STOP_MARKETING" | "CLOSE_ACCOUNT" | "LINK_TICKET" | "READ_HEALTH_CHOICES";
             reason: string;
             createdAt: string;
             appointmentId: string | null;
@@ -11897,6 +12277,61 @@ export interface operations {
             };
         };
     };
+    BusinessController_choiceSuggestions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChoiceSuggestionsDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
     BusinessController_deleteService: {
         parameters: {
             query?: never;
@@ -13144,6 +13579,8 @@ export interface operations {
     AvailabilityController_getAvailability: {
         parameters: {
             query: {
+                /** @description Option ids, separated by commas. */
+                options?: string;
                 date: string;
                 /**
                  * @description Optional, defaulting to the grid unit. A caller who has not yet picked a
@@ -14042,6 +14479,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AppointmentDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Under a narrower limit than the platform-wide one. The message says how long to wait. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AppointmentsCustomerController_changeChoices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBookingChoicesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAppointmentDetailDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
@@ -15153,6 +15660,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SupportPaymentCheckDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminAppointmentsController_readPrivateAnswers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupportReasonDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportPrivateAnswersDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

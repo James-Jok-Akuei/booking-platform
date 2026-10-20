@@ -25,6 +25,15 @@ export const APPOINTMENT_SELECT = {
   // The sale it was booked under, and the price before it (§186).
   discountPercent: true,
   listPriceMinor: true,
+  // What the customer picked and wrote (§300) — never the health-related
+  // answers, which are sealed in a column of their own and opened only by
+  // the reads that name it (HEALTH_CHOICES_SELECT).
+  choices: true,
+  choicesPriceMinor: true,
+  choicesMinutes: true,
+  customerNote: true,
+  choicesChangedAt: true,
+  healthChoicesRemovedAt: true,
   depositPercentage: true,
   platformFeePercentage: true,
   paymentProviderReferenceId: true,
@@ -115,6 +124,14 @@ export const CUSTOMER_LIST_SELECT = {
   ...APPOINTMENT_SELECT,
   ...OWN_REVIEW_SELECT,
 } as const;
+
+/**
+ * The sealed health-related answers (§300.6). Named only by the reads of the
+ * two people they are for — the customer, and the shop's team for that
+ * branch — which open them into `healthChoices` and drop this column.
+ * Never by an admin read, an action's answer, an email or a notice.
+ */
+export const HEALTH_CHOICES_SELECT = { healthChoicesSealed: true } as const;
 
 export const CUSTOMER_APPOINTMENT_SELECT = {
   ...APPOINTMENT_SELECT,

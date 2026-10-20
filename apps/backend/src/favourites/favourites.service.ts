@@ -11,6 +11,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { liveDiscount, platformToday, priceFor } from '../business/discount';
+import { STARTING_PRICE_GROUPS_SELECT } from '../business/dto/service-choices.dto';
+import { startingPriceMinor } from '../business/service-choices';
 import {
   FavouriteStateDto,
   SavedPlacePageDto,
@@ -217,6 +219,9 @@ export class FavouritesService {
               select: { url: true },
             },
             locations: { select: { locationId: true, priceMinor: true, isOffered: true } },
+            // Enough for a "from" price (§300.3).
+            priceConfirmedAtShop: true,
+            choiceGroups: STARTING_PRICE_GROUPS_SELECT,
           },
         },
         location: {
@@ -281,6 +286,7 @@ export class FavouritesService {
         currency: r.service.currency,
         priceMinor: price.priceMinor,
         discount: price.discount,
+        startingPriceMinor: startingPriceMinor(r.service.choiceGroups, price.priceMinor, r.service.priceConfirmedAtShop),
         depositPercentage: r.service.depositPercentage.toFixed(2),
         imageUrl: r.service.images[0]?.url ?? null,
         bookingCount: bookings.get(`${r.serviceId}:${r.locationId}`) ?? 0,

@@ -25,6 +25,7 @@ import {
   SupportConversationDto,
   SupportDoneDto,
   SupportPaymentCheckDto,
+  SupportPrivateAnswersDto,
   SupportReasonDto,
   SupportTicketOnlyDto,
 } from '../support/support.dto';
@@ -140,6 +141,21 @@ export class AdminAppointmentsController {
     @Body() dto: SupportTicketOnlyDto,
   ) {
     return this.appointments.supportCheckPayment(user, id, dto.ticketId);
+  }
+
+  /**
+   * The booking's private answers (§300.6), read with a reason — written
+   * down, and shown on the booking, like reading the conversation.
+   */
+  @Post(':id/private-answers')
+  @HttpCode(200)
+  @ApiOkResponse({ type: SupportPrivateAnswersDto })
+  readPrivateAnswers(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SupportReasonDto,
+  ) {
+    return this.appointments.supportReadHealthChoices(user, id, dto);
   }
 
   /** The booking's conversation, read-only — the reading is written down and shown on the booking. */

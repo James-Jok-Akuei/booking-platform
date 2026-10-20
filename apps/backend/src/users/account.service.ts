@@ -12,6 +12,7 @@ import {
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { HealthChoices } from '../appointments/health-choices';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import {
   EXPORT_ACCOUNT_SELECT,
@@ -45,6 +46,7 @@ export class AccountService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly health: HealthChoices,
   ) {}
 
   /**
@@ -135,7 +137,7 @@ export class AccountService {
       this.prisma.appointment.findMany({
         where: { customerId: userId },
         orderBy: { startTime: 'desc' },
-        select: EXPORT_BOOKING_SELECT,
+        select: { ...EXPORT_BOOKING_SELECT, healthChoicesSealed: true },
       }),
       this.prisma.review.findMany({
         where: { customerId: userId },
@@ -184,7 +186,18 @@ export class AccountService {
       exportedAt: new Date().toISOString(),
       account: user,
       // Named so a reader can tell whose words are whose without a key.
-      bookings: appointments,
+      // Their private answers are theirs to have (§300.6): opened here, and
+      // the sealed form never leaves.
+      bookings: appointments.map(({ healthChoicesSealed, ...booking }) => ({
+        ...booking,
+        privateAnswers:
+          this.health.open(healthChoicesSealed)?.map((pick) => ({
+            group: pick.group,
+            option: pick.option,
+            priceMinor: pick.priceMinor,
+            extraMinutes: pick.extraMinutes,
+          })) ?? null,
+      })),
       reviews,
       conversations: threads.map((thread): ExportedConversationDto => ({
         id: thread.id,

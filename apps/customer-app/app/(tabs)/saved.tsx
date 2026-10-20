@@ -16,6 +16,7 @@ import { followWords, useFollows, whose } from '../../src/useFollow';
 import { useSavedService } from '../../src/useSavedService';
 import { FollowingCard } from '../../src/components/FollowingCard';
 import { SavedServiceCard } from '../../src/components/SavedServiceCard';
+import { cardPrice } from '../../src/booking/choices';
 import { useMoney } from '../../src/money';
 import { radius, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
 import { showDialog, showProblem } from '../../src/ui/Dialog';
@@ -246,7 +247,7 @@ export default function Saved() {
             <FadeIn index={index}>
               <SavedServiceCard
                 service={item}
-                price={money.format(item.priceMinor, item.currency)}
+                price={cardPrice(item, (minor) => money.format(minor, item.currency))}
                 width={layout.columns > 1 ? layout.cardWidth : undefined}
                 onPress={() => router.push(`/book/${item.location.id}?serviceId=${item.id}`)}
                 onShop={() => router.push(`/shop/${item.location.id}`)}

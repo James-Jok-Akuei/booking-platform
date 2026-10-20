@@ -35,6 +35,14 @@ import { Switch } from '../ui/Switch';
 import { RichTextBox } from '../ui/RichTextBox';
 import './services.css';
 import { useAccess } from '../access';
+import {
+  ChoicesEditor,
+  choicesProblem,
+  groupsFromDraft,
+  groupsFromService,
+  groupsToInput,
+  type GroupDraft,
+} from './choices/ChoicesEditor';
 
 type Editor = { mode: 'new' } | { mode: 'edit'; service: Service; focus?: 'photos' };
 
@@ -87,6 +95,8 @@ export function ServicesPage() {
     setDraftIdState(id);
   };
   const [resumed, setResumed] = useState<Service | undefined>(undefined);
+  // A draft's questions, in the shape the form sends (§300).
+  const [resumedChoices, setResumedChoices] = useState<unknown>(undefined);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [draftSave, setDraftSave] = useState<DraftSave>({ kind: 'new' });
   // What was typed last, and whether anything has been typed at all: the form
@@ -121,6 +131,11 @@ export function ServicesPage() {
       durationMinutes: values.durationMinutes,
       depositPercentage: values.depositPercentage,
       offers: values.offers,
+      // The questions as written so far (§300), unchecked like the rest.
+      choices: values.choices,
+      noteEnabled: values.noteEnabled,
+      notePrompt: values.notePrompt,
+      priceConfirmedAtShop: values.priceConfirmedAtShop,
     }).then(() => {
       if (draftRef.current === id) setDraftSave({ kind: 'saved', at: new Date() });
       void refreshDrafts();
@@ -200,7 +215,12 @@ export function ServicesPage() {
         locationId: offer.locationId,
         priceMinor: offer.priceMinor,
       })),
+      choiceGroups: [],
+      noteEnabled: draft.noteEnabled ?? true,
+      notePrompt: draft.notePrompt,
+      priceConfirmedAtShop: draft.priceConfirmedAtShop ?? false,
     } as unknown as Service);
+    setResumedChoices(draft.choices);
     setEditor({ mode: 'new' });
   };
 
@@ -221,6 +241,7 @@ export function ServicesPage() {
 
   const startNew = () => {
     setResumed(undefined);
+    setResumedChoices(undefined);
     // Asked BEFORE the form opens, not after it is filled in (§126.4).
     // Making somebody write a whole service and then telling them they
     // cannot post it is the worst possible moment to raise this.
@@ -246,6 +267,7 @@ export function ServicesPage() {
     setEditor(null);
     setDraftId(null);
     setResumed(undefined);
+    setResumedChoices(undefined);
     setDirty(false);
     setDraftSave({ kind: 'new' });
     edited.current = false;
@@ -780,6 +802,7 @@ export function ServicesPage() {
               locations={locations.data ?? []}
               busy={save.isPending}
               initial={resumed}
+              draftChoices={resumedChoices}
               busyLabel={posting ?? undefined}
               creating
               hiddenUntil={hiddenUntil}
@@ -981,6 +1004,18 @@ function ServiceCard({
           <span>
             <Icon name="wallet" size={15} /> {service.depositPercentage}% deposit
           </span>
+          {/* The questions customers answer (§300), and a price agreed later. */}
+          {service.choiceGroups.length > 0 && (
+            <span title={service.choiceGroups.map((g) => g.name).join(', ')}>
+              <Icon name="sliders" size={15} /> {service.choiceGroups.length}{' '}
+              {service.choiceGroups.length === 1 ? 'question' : 'questions'}
+            </span>
+          )}
+          {service.priceConfirmedAtShop && (
+            <span>
+              <Icon name="tag" size={15} /> price at the shop
+            </span>
+          )}
         </div>
         {depositMinor !== null && (
           <p className="svc-dep">from {money.format(depositMinor)} up front</p>
@@ -1085,6 +1120,11 @@ type FormValues = {
   durationMinutes: number | null;
   depositPercentage: number | null;
   offers: Array<{ locationId: string; priceMinor: number }>;
+  /** The questions customers answer while booking (§300), as they are sent. */
+  choices: ReturnType<typeof groupsToInput>;
+  noteEnabled: boolean;
+  notePrompt: string | null;
+  priceConfirmedAtShop: boolean;
 };
 
 function Section({ icon, title, hint, children, id }: { icon: IconName; title: string; hint?: string; children: ReactNode; id?: string }) {
@@ -1111,6 +1151,7 @@ function ServiceForm({
   busyLabel,
   creating = false,
   initial,
+  draftChoices,
   focus,
   hiddenUntil = null,
   canDraft = false,
@@ -1129,6 +1170,8 @@ function ServiceForm({
   /** A NEW service (or a draft of one): photos are chosen here and the button posts. */
   creating?: boolean;
   initial?: Service;
+  /** A draft's questions (§300), when carrying on with one. */
+  draftChoices?: unknown;
   /** Open scrolled to a section — the cover's "Photos" lands on the photos. */
   focus?: 'photos';
   /** When customers will see a new service, if not at once (§268) — e.g. "you post your shop". */
@@ -1171,6 +1214,18 @@ function ServiceForm({
   const percentOff = /^\d+$/.test(discount.trim()) ? Number(discount.trim()) : null;
   const [duration, setDuration] = useState(String(initial?.durationMinutes ?? 30));
   const [deposit, setDeposit] = useState(initial?.depositPercentage ?? '20');
+  // What customers answer while booking (§300), and the note. Saved with the
+  // rest, never before (§281).
+  const [groups, setGroups] = useState<GroupDraft[]>(() =>
+    draftChoices !== undefined
+      ? groupsFromDraft(draftChoices, money)
+      : groupsFromService(initial?.choiceGroups ?? [], money),
+  );
+  const [noteEnabled, setNoteEnabled] = useState(initial?.noteEnabled ?? true);
+  const [notePrompt, setNotePrompt] = useState(initial?.notePrompt ?? '');
+  const [priceAtShop, setPriceAtShop] = useState(initial?.priceConfirmedAtShop ?? false);
+  const choiceInput = groupsToInput(groups, money);
+  const choiceSig = JSON.stringify(choiceInput);
   // The photos, cover first. Every change waits for the button (§281) —
   // "Post" for a new service, "Save changes" for one already on sale — so
   // customers see nothing until the seller says so. A new photo is held as a
@@ -1243,6 +1298,10 @@ function ServiceForm({
       durationMinutes: Number(duration) || null,
       depositPercentage: deposit === '' ? null : Number(deposit),
       offers,
+      choices: choiceInput,
+      noteEnabled,
+      notePrompt: notePrompt.trim() || null,
+      priceConfirmedAtShop: priceAtShop,
     };
     const snapshot = JSON.stringify(values);
     if (baseline.current === null) baseline.current = snapshot;
@@ -1253,7 +1312,7 @@ function ServiceForm({
     // `offers` is derived from `prices` and rebuilt each render, so watching it
     // directly would fire this on every render rather than on every change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [name, title, description, instructions, discount, saleEndsOn, duration, deposit, prices, photoSig]);
+  }, [name, title, description, instructions, discount, saleEndsOn, duration, deposit, prices, photoSig, choiceSig, noteEnabled, notePrompt, priceAtShop]);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -1280,6 +1339,17 @@ function ServiceForm({
       });
       return;
     }
+    const choiceTrouble = choicesProblem(groups);
+    if (choiceTrouble) {
+      setGroups((was) => was.map((g, i) => ({ ...g, open: i === firstTroubled(was) })));
+      void alertDialog({
+        title: 'Finish the choices',
+        body: <p>{choiceTrouble}</p>,
+        tone: 'warn',
+        icon: 'sliders',
+      });
+      return;
+    }
     if (discount.trim() && (percentOff === null || percentOff < 1 || percentOff > 90)) {
       void alertDialog({
         title: 'Check the discount',
@@ -1302,6 +1372,11 @@ function ServiceForm({
         durationMinutes: Number(duration),
         depositPercentage: Number(deposit),
         offers,
+        // The whole list as it should be (§300): kept ones by id, the rest new.
+        choiceGroups: choiceInput,
+        noteEnabled,
+        notePrompt: notePrompt.trim() || null,
+        priceConfirmedAtShop: priceAtShop,
       },
       photos,
     );
@@ -1449,6 +1524,33 @@ function ServiceForm({
               <Link to="/hours">Branches &amp; hours</Link> → “People served at once”.
             </span>
           </div>
+        </Section>
+
+        {/* What customers answer while booking (§300): each answer can add to
+            the price and the time. After the price, because it builds on it. */}
+        <Section
+          id="sv-choices"
+          icon="sliders"
+          title="Choices"
+          hint={
+            groups.length > 0
+              ? `${groups.length} ${groups.length === 1 ? 'question' : 'questions'} customers answer while booking`
+              : 'Questions customers answer while booking — optional'
+          }
+        >
+          <ChoicesEditor
+            money={money}
+            groups={groups}
+            onGroups={setGroups}
+            noteEnabled={noteEnabled}
+            onNoteEnabled={setNoteEnabled}
+            notePrompt={notePrompt}
+            onNotePrompt={setNotePrompt}
+            priceAtShop={priceAtShop}
+            onPriceAtShop={setPriceAtShop}
+            basePriceMinor={offers.length ? Math.min(...offers.map((o) => o.priceMinor)) : null}
+            durationMinutes={Number(duration) || 0}
+          />
         </Section>
 
         {/* A sale (§186): a percentage off every branch's price, until a last
@@ -1623,6 +1725,11 @@ function ServiceForm({
       </footer>
     </form>
   );
+}
+
+/** The first question that would stop the form saving, to open it. */
+function firstTroubled(groups: GroupDraft[]) {
+  return groups.findIndex((g) => choicesProblem([g]) !== null);
 }
 
 /** Today in the seller's own calendar, as YYYY-MM-DD. */

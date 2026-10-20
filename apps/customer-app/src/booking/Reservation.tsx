@@ -23,6 +23,7 @@ import {
   type Bought,
 } from './format';
 import { BeforeYouCome } from './BeforeYouCome';
+import { BookedChoices } from './BookedChoices';
 
 const WHO_CANCELLED: Record<string, string> = {
   CUSTOMER: 'You cancelled this',
@@ -39,6 +40,7 @@ const SUPPORT_STEP: Partial<Record<string, string>> = {
   CANCEL_FOR_SHOP: 'Cancelled it on the shop’s side',
   RESEND_CODE: 'Sent you a new arrival code',
   READ_MESSAGES: 'Read your conversation with the shop, to help',
+  READ_HEALTH_CHOICES: 'Read your private answers, to help',
 };
 
 /**
@@ -66,6 +68,7 @@ export function Reservation({
   resendLabel,
   resendOff,
   onExplore,
+  onChangeChoices,
 }: {
   a: Appointment;
   bought: Bought;
@@ -84,6 +87,8 @@ export function Reservation({
   resendLabel: string;
   resendOff: boolean;
   onExplore: () => void;
+  /** Offered while wishes and the note can still change (§300.7). */
+  onChangeChoices?: () => void;
 }) {
   const layout = useLayout();
   const status = BOOKING_STATUS[a.status];
@@ -190,6 +195,23 @@ export function Reservation({
         <BeforeYouCome text={a.service.instructions} delay={120} />
       )}
 
+      {/* WHAT YOU CHOSE (§300): the answers as the booking keeps them, the
+          private ones apart, and the note — with a way to change the wishes
+          while there is time. */}
+      {(a.choices?.length || a.healthChoices?.length || a.customerNote || a.healthChoicesRemovedAt || onChangeChoices) && (
+        <FadeIn delay={130} style={styles.card}>
+          {a.choices?.length || a.healthChoices?.length || a.customerNote || a.healthChoicesRemovedAt ? (
+            <BookedChoices a={a} format={format} onChange={onChangeChoices} />
+          ) : (
+            <PressableScale haptic scaleTo={0.98} onPress={onChangeChoices} accessibilityRole="button" style={styles.addWish}>
+              <Icon name="create-outline" size={17} color={theme.accentDeep} />
+              <Text style={[type.subheading, styles.flex]}>Add a wish or a note for the shop</Text>
+              <Icon name="chevron-forward" size={16} color={theme.muted} />
+            </PressableScale>
+          )}
+        </FadeIn>
+      )}
+
       {/* THE FACTS. */}
       <FadeIn delay={140} style={styles.card}>
         <Text style={type.heading}>Reservation details</Text>
@@ -208,12 +230,22 @@ export function Reservation({
       {/* THE MONEY. */}
       <FadeIn delay={180} style={styles.card}>
         <Text style={type.heading}>Payment</Text>
-        {a.unitPriceMinor !== null && a.quantity > 1 && (
+        {a.unitPriceMinor !== null && (a.quantity > 1 || a.choicesPriceMinor !== 0) && (
           <Row
-            label={`${a.quantity} × ${format(a.unitPriceMinor, a.currency)}`}
-            value={format(a.servicePriceMinor, a.currency)}
+            label={a.quantity > 1 ? `${a.quantity} × ${format(a.unitPriceMinor, a.currency)}` : a.service.name}
+            value={format(a.unitPriceMinor * a.quantity, a.currency)}
           />
         )}
+        {/* Each answer that moved the price (§300.3), once for the booking. */}
+        {(a.choices ?? [])
+          .filter((pick) => pick.priceMinor !== 0)
+          .map((pick) => (
+            <Row
+              key={pick.optionId}
+              label={pick.option}
+              value={`${pick.priceMinor < 0 ? '−' : '+'}${format(Math.abs(pick.priceMinor), a.currency)}`}
+            />
+          ))}
         {/* The sale it was booked under (§186). */}
         {a.discountPercent !== null && a.listPriceMinor !== null && a.servicePriceMinor !== null && (
           <Row
@@ -399,6 +431,7 @@ function Rule({ icon, text }: { icon: IconName; text: string }) {
 }
 
 const styles = StyleSheet.create({
+  addWish: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   flex: { flex: 1 },
   off: { opacity: 0.45 },
   hero: {

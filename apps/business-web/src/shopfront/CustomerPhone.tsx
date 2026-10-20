@@ -487,6 +487,25 @@ function Stars({ rating, size }: { rating: number; size: number }) {
   );
 }
 
+/**
+ * "From" this price on a card (§300.3), by the server's rule: a question that
+ * must be answered and always shows, with answers at different prices — or a
+ * price agreed at the shop. Null when the price is the price.
+ */
+function startingPrice(sv: Service, priceMinor: number): number | null {
+  let lowest = 0;
+  let varies = false;
+  for (const g of sv.choiceGroups) {
+    if (!g.required || g.showIfOptionId) continue;
+    const prices = g.options.filter((o) => o.available).map((o) => o.priceMinor);
+    if (prices.length === 0) continue;
+    lowest += Math.min(...prices);
+    if (Math.max(...prices) !== Math.min(...prices)) varies = true;
+  }
+  if (!varies && !sv.priceConfirmedAtShop && lowest === 0) return null;
+  return Math.max(0, priceMinor + lowest);
+}
+
 const listPrice = (sv: Service, locationId: string) =>
   sv.locations.find((o) => o.locationId === locationId)?.priceMinor ?? 0;
 
@@ -531,6 +550,12 @@ function fromOwnRecords(
               }
             : null,
           images: sv.images,
+          // What the customer answers while booking (§300), as the server sends it.
+          startingPriceMinor: startingPrice(sv, price),
+          choiceGroups: sv.choiceGroups,
+          noteEnabled: sv.noteEnabled,
+          notePrompt: sv.notePrompt ?? 'Anything the shop should know?',
+          priceConfirmedAtShop: sv.priceConfirmedAtShop,
         },
       ];
     });

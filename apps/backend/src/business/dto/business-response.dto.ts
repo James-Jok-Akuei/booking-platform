@@ -1,6 +1,7 @@
 import { BusinessStatus, Prisma } from '@prisma/client';
 import { KINDS_SELECT } from '../kinds';
 import { NoExtraFields, Serialised } from '../../common/serialised';
+import { CHOICE_GROUPS_SELECT, ServiceChoiceGroupDto } from './service-choices.dto';
 
 /**
  * What a business sees of its own branches and services (§128.5).
@@ -109,6 +110,8 @@ export const SERVICE_INCLUDE = {
     orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
     select: { id: true, url: true, displayOrder: true },
   },
+  // The questions a customer answers while booking (§300), in order.
+  choiceGroups: CHOICE_GROUPS_SELECT,
 } as const satisfies Prisma.ServiceInclude;
 
 type ServicePayload = Serialised<
@@ -176,6 +179,15 @@ export class BusinessServiceDto implements ServicePayload {
    * not broken.
    */
   images!: ServiceImageRefDto[];
+
+  /** The questions a customer answers while booking it (§300), in order. */
+  choiceGroups!: ServiceChoiceGroupDto[];
+  /** Whether the customer may write a short note (§300.5). */
+  noteEnabled!: boolean;
+  /** The words above the note box. Null: the ones written for the shop's kind. */
+  notePrompt!: string | null;
+  /** The final price is agreed at the shop after seeing the job; cards say "from" (§300.3). */
+  priceConfirmedAtShop!: boolean;
 }
 
 

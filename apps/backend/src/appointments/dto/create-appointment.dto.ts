@@ -1,4 +1,19 @@
-import { IsDateString, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
+import { CHOICE_LIMITS } from '../../business/service-choices';
+
+/** Every answer a service could have picked at once: six questions of twelve. */
+export const MAX_PICKS_SENT = CHOICE_LIMITS.groups * CHOICE_LIMITS.options;
 
 export class CreateAppointmentDto {
   @IsUUID()
@@ -29,4 +44,23 @@ export class CreateAppointmentDto {
   @Min(1)
   @Max(1000)
   quantity?: number;
+
+  /**
+   * The answers picked (§300): ids of this service's options. Checked
+   * against its questions — each one that must be answered is, one answer
+   * where one is asked, nothing "not available now". Their prices are added
+   * once to the booking and their minutes to its length; both are worked
+   * out here, never sent.
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_PICKS_SENT)
+  @IsUUID('all', { each: true })
+  optionIds?: string[];
+
+  /** A short note to the shop (§300.5), when the service takes one. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(CHOICE_LIMITS.note)
+  note?: string | null;
 }

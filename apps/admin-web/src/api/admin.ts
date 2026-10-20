@@ -520,6 +520,11 @@ export const supportCheckPayment = (id: string, ticketId?: string) =>
 export const supportReadMessages = (id: string, body: SupportBody) =>
   supportPost<SupportConversation>(`/admin/appointments/${id}/messages`, body);
 
+/** A booking's private answers (§300.6), read with a reason — written down and shown on the booking. */
+export type SupportPrivateAnswers = components['schemas']['SupportPrivateAnswersDto'];
+export const supportReadPrivateAnswers = (id: string, body: SupportBody) =>
+  supportPost<SupportPrivateAnswers>(`/admin/appointments/${id}/private-answers`, body);
+
 export const supportHistory = (filter: { appointmentId?: string; businessId?: string; userId?: string; ticketId?: string }) =>
   api<components['schemas']['SupportHistoryDto']>('/admin/support-actions', { query: filter });
 

@@ -59,6 +59,11 @@ export class ServiceDraftsService {
       durationMinutes?: number | null;
       depositPercentage?: number | null;
       offers?: Array<{ locationId: string; priceMinor: number }>;
+      /** The questions as written so far (§300), unchecked. */
+      choices?: unknown[];
+      noteEnabled?: boolean | null;
+      notePrompt?: string | null;
+      priceConfirmedAtShop?: boolean | null;
     },
   ) {
     const businessId = await this.access.requireBusinessId(userId);
@@ -84,6 +89,14 @@ export class ServiceDraftsService {
           : {}),
         ...(data.offers !== undefined
           ? { offers: data.offers as unknown as Prisma.InputJsonValue }
+          : {}),
+        ...(data.choices !== undefined
+          ? { choices: data.choices as unknown as Prisma.InputJsonValue }
+          : {}),
+        ...(data.noteEnabled !== undefined ? { noteEnabled: data.noteEnabled } : {}),
+        ...(data.notePrompt !== undefined ? { notePrompt: data.notePrompt } : {}),
+        ...(data.priceConfirmedAtShop !== undefined
+          ? { priceConfirmedAtShop: data.priceConfirmedAtShop }
           : {}),
       },
     });

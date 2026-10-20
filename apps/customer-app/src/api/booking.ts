@@ -23,7 +23,19 @@ export const createAppointment = (input: {
   startTime: string;
   /** How many (§136). Left out, it is one. */
   quantity?: number;
+  /** The answers picked (§300): the server checks them and works out what they add. */
+  optionIds?: string[];
+  /** A short note to the shop (§300.5), when the service takes one. */
+  note?: string | null;
 }) => api<Appointment>('/appointments', { method: 'POST', body: input });
+
+/**
+ * Changes wishes and the note, until 2 hours before (§300.7): the answers to
+ * the questions that change neither the price nor the time — all of them, as
+ * they should be now. The rest stay as booked. The shop is told.
+ */
+export const changeChoices = (id: string, body: { optionIds: string[]; note?: string | null }) =>
+  api<Appointment>(`/appointments/${id}/choices`, { method: 'PATCH', body });
 
 /**
  * The caller's own bookings. The query shape comes from the contract, so a

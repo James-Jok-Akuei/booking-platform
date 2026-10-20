@@ -1,5 +1,6 @@
 import { MediaType } from '@prisma/client';
 import { ServiceImageRefDto } from '../../business/dto/business-response.dto';
+import { ServiceChoiceGroupDto } from '../../business/dto/service-choices.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import type { ApproxSettlement } from '../../payments/approx-settlement';
@@ -152,6 +153,12 @@ export class DiscoveredServiceDto {
   priceMinor!: number;
   /** The sale on today, or null (§186). */
   discount!: ServiceDiscountDto | null;
+  /**
+   * When set, the card shows "from" this price instead (§300.3): a question
+   * that must be answered has answers at different prices, or the shop
+   * agrees the price after seeing the job. Null: the price is the price.
+   */
+  startingPriceMinor!: number | null;
   /** A decimal string, like every percentage here (§128.20). */
   depositPercentage!: string;
   /** The cover photo (§132), or null — a client falls back to a category tile. */
@@ -251,6 +258,21 @@ export class ShopfrontServiceDto {
   priceMinor!: number;
   /** The sale on today, or null (§186). */
   discount!: ServiceDiscountDto | null;
+  /**
+   * When set, show "from" this price instead (§300.3): a question that must
+   * be answered has answers at different prices, or the shop agrees the
+   * price after seeing the job. Null: the price is the price.
+   */
+  startingPriceMinor!: number | null;
+
+  /** The questions the customer answers while booking, in order (§300). */
+  choiceGroups!: ServiceChoiceGroupDto[];
+  /** Whether the customer may write the shop a short note (§300.5). */
+  noteEnabled!: boolean;
+  /** The words above the note box: the shop's own, or the ones for its kind. */
+  notePrompt!: string;
+  /** The final price is agreed at the shop after seeing the job (§300.3). */
+  priceConfirmedAtShop!: boolean;
 
   /** Whether this customer saved it at this branch (§158). Absent for a signed-out reader. */
   @ApiProperty({ required: false, description: 'Absent entirely for a signed-out reader.' })

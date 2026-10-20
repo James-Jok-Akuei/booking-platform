@@ -320,6 +320,11 @@ export interface Ticket {
   reservation: string;
   status?: { label: string; tone: Exclude<Tone, 'night'> } | null;
   money?: Array<{ label: string; value: string }>;
+  /**
+   * What was chosen (§300), under the money: the answers, a line saying
+   * private answers are in the app — never what they are — and the note.
+   */
+  extras?: { label: string; lines: string[]; privateNote: string | null; note: string | null } | null;
   links?: Array<{ label: string; url: string }>;
 }
 
@@ -404,6 +409,28 @@ export function ticket(t: Ticket): Block {
     );
   }
   const stub = `<tr><td style="padding:18px 22px 4px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${pairs.join('')}</table></td></tr>`;
+  const extras = t.extras
+    ? `<tr><td style="padding:0 22px 18px;font-family:${FONT}">` +
+      p(
+        `font-size:11.5px;line-height:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:${C.faint}`,
+        esc(t.extras.label),
+      ) +
+      t.extras.lines
+        .map((line) =>
+          p(`font-size:15px;line-height:22px;font-weight:700;color:${C.ink};padding-top:3px`, `<span class="em-ink">${esc(line)}</span>`),
+        )
+        .join('') +
+      (t.extras.privateNote
+        ? p(`font-size:13.5px;line-height:20px;font-weight:700;color:${C.danger};padding-top:6px`, `&#128274;&nbsp;${esc(t.extras.privateNote)}`)
+        : '') +
+      (t.extras.note
+        ? p(
+            `font-size:14px;line-height:21px;font-style:italic;color:${C.ink2};padding-top:6px`,
+            `<span class="em-ink2">&ldquo;${esc(t.extras.note)}&rdquo;</span>`,
+          )
+        : '') +
+      '</td></tr>'
+    : '';
   const links = t.links?.length
     ? `<tr><td class="em-sunken" style="padding:14px 22px;background:${C.sunken};border-radius:0 0 20px 20px;font-family:${FONT};font-size:14px;line-height:20px;font-weight:700">` +
       t.links
@@ -420,6 +447,7 @@ export function ticket(t: Ticket): Block {
       head +
       tear +
       stub +
+      extras +
       links +
       '</table>',
   );
@@ -430,6 +458,9 @@ export function ticket(t: Ticket): Block {
     `Where: ${t.branch}${t.address ? `, ${t.address}` : ''}`,
     `Booking no.: ${t.reservation}`,
     ...(t.money ?? []).map((m) => `${m.label}: ${m.value}`),
+    ...(t.extras ? [`${t.extras.label}:`, ...t.extras.lines.map((line) => `  ${line}`)] : []),
+    t.extras?.privateNote ?? null,
+    t.extras?.note ? `Note: “${t.extras.note}”` : null,
     ...(t.links ?? []).map((l) => `${l.label}: ${l.url}`),
   ]
     .filter(Boolean)

@@ -19233,3 +19233,132 @@ where a visitor's browser was talking to another company without need.
   seller app's pin map is OpenStreetMap's own embed (its credit is inside it).
 - **No banner, unless that changes.** If analytics are ever wanted, they come
   with a choice — off until yes — not before.
+
+## 300. Service choices: what customers pick while booking (2026-10-20)
+
+The user asked for bookings tailored per kind of service — "no salt" at a
+restaurant, long hair costing more and taking longer, an SUV at a car wash —
+and for research first. The research (five passes over Square, Toast, Uber
+Eats, Fresha, Booksy, Acuity, OpenTable, Booking.com, Viator, Eventbrite,
+Zocdoc, SweepSouth and Rwandan shops, 19–20 October) is the Claude Doc
+"Service choices — research and design"; this records what was built from it.
+
+### 300.1 The shape
+
+- A service has up to **6 questions** (`ServiceChoiceGroup`), each with up to
+  **12 answers** (`ServiceChoiceOption`). Rows, not JSON on the service: a
+  booking names its answers by id, a question can depend on another's answer,
+  and a branch's headline price reads the cheapest required answer in SQL.
+- A question has a **name for the shop** ("Hair length") and a **question for
+  the customer** ("How long is your hair?"); **pick one** or **pick several**
+  (with a most); **required** or not; **private** (`healthRelated`); and
+  **"show only if"** an answer to a question above it — one step, never a
+  chain. Saving refuses anything else, with words a shop can act on.
+- An answer has a name, a line about it, a **price it adds** (once per booking,
+  not per person; may be negative — "I'll come washed"), **minutes it adds**,
+  and "**not available now**". A required question needs an available answer.
+- The rules live in one pure module, `src/business/service-choices.ts`, used
+  by saving, booking, the times offered and changing wishes alike. The
+  customer app keeps a copy of the booking-side rules (`src/booking/choices.ts`)
+  so the total it shows is the total booked; the server checks again.
+- Saving keeps the ids of questions and answers sent back with them and
+  removes what was left out (`choice-groups.ts`). Drafts (§123) keep the
+  questions as typed, unchecked, in the shape the form sends.
+
+### 300.2 Ready-made questions
+
+`src/business/choice-suggestions.ts`: suggestions for all 16 categories and
+the types where they differ (e.g. Braiding & Locs: braid size, length, who
+brings the hair, before we start; Car Wash: vehicle, wash, extras; Tours:
+guide language, group, pick-up, who is coming, fee category, permit), with the
+words above the note box for each. **Prices are never suggested** — `paid`
+only makes the form say "usually costs more"; minutes are typical, to check.
+`GET /business/services/choice-suggestions` gives the shop's kinds, main one
+first. A test keeps every category and type name matching the seed, every
+suggestion saveable, and one key meaning one thing.
+
+### 300.3 Money
+
+- Price = the service's price after any sale × people + the answers, once. A
+  sale never touches an answer. The deposit is on that total.
+  `servicePriceMinor` includes the answers; `choicesPriceMinor` says how much;
+  `listPriceMinor` (with a sale) includes them too, so the saving stays right.
+  A total below nothing is refused.
+- **"From" prices** (`startingPriceMinor`) on the shop page, search, saved
+  services and the seller's preview: when a required, always-shown question
+  has answers at different prices, or the shop ticks **"price confirmed at
+  the shop"** (repairs, events — suggested for those kinds). The number is
+  the cheapest a booking for one can be. Search filters and sorts by it, and
+  a branch's headline `fromPriceMinor` adds the cheapest required answers.
+
+### 300.4 Time
+
+The answers' minutes are added to the booking's length: `endTime` and the slot
+check use it, and `GET /locations/:id/availability?serviceId&options=a,b`
+offers only times that fit — worked out on the server from the ids. Work done
+after the visit (editing, mixing, sewing) adds price, never minutes.
+
+### 300.5 The customer's note
+
+Up to 250 letters, folded away until wanted, with words written for the
+shop's kind (the shop can write its own, or switch the note off). "A request,
+not a promise"; allergies go in the questions, never the note. A note sent to
+a service that no longer takes one is refused, not dropped.
+
+### 300.6 Private answers
+
+For allergies, diet, a pregnancy, an injury, a body area, the kind of legal
+help — anything sensitive. They are:
+
+- **always free** (no price, no minutes), so nothing about them reaches a
+  receipt; a question shown only after a private answer is private too;
+- **sealed** (AES-256-GCM, `common/seal.ts`, its own key purpose) in their own
+  column, never in the shared booking projection — opened only by the
+  customer's and the shop's own reads (`healthChoices`), shown to the shop in
+  red, **never in an email, a push or a calendar invite** (the ticket says
+  "see them in the app");
+- **readable by support only with a reason** (`POST /admin/appointments/:id/
+  private-answers`, logged as `READ_HEALTH_CHOICES` and said on the booking,
+  like reading the conversation); the console otherwise only knows they exist;
+- **removed 30 days after the visit** (`HealthChoicesSweep`, hourly), with
+  `healthChoicesRemovedAt` so screens can say why;
+- in the person's **copy of their data**, opened.
+
+The privacy policy (2.1, a new 2.4, 3, 4.1, 6, 7; v8) and the seller
+agreement (new 9.3: use them only to serve that booking, never ask for a
+diagnosis, ID or insurance number; v4) say so, published together.
+
+### 300.7 After booking
+
+Until **2 hours before**, the customer changes **wishes** (questions whose
+answers change neither price nor time, private ones included) and the note:
+`PATCH /appointments/:id/choices`. Answers that changed the price or the time
+stay as booked, from the moment of booking — the request to pay may already be
+on the phone. The shop gets `BOOKING_CHOICES_CHANGED`: that something changed,
+never what. (The research said "locked once the deposit is paid"; locking at
+booking is simpler and loses nothing — an unpaid booking can be cancelled and
+made again.)
+
+### 300.8 Where it shows
+
+- **Seller app:** a Choices section in the service form (ready-made questions,
+  the editor, the note and price-at-the-shop switches, and a "how customers
+  see it" preview to tap through), saved only with the service (§281); "N
+  questions" on the card; the booking panel's "What they chose" (private in
+  red, the note, "changed since booking"); marks on the booking rows; the
+  check-in receipt.
+- **Customer app:** "Your choices" between the price and the time; the times
+  wait until required questions are answered; a live total and length; the
+  read-back; checkout and the reservation list each answer and add them up;
+  "Change" opens a sheet for wishes. Answers and note survive going to sign
+  in (in memory only).
+- **Console:** "What they chose" on a booking, and the private-answers read.
+- **Emails:** the booking ticket lists the answers and the note.
+
+### 300.9 Not now
+
+Questionnaires and patch tests, answers per person in a group, counts on an
+answer, choosing a staff member, photos with a booking, processing time,
+dishes from a menu, services in several visits, a one-tap "we can't do this",
+and "from" prices in the weekly offers email. The morning summary lists
+events, not answers; each booking shows them.

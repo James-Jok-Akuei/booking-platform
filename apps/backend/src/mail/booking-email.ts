@@ -27,6 +27,14 @@ export interface BookingFacts {
   currency: string;
   status: AppointmentStatus;
   depositPaid: boolean;
+  /**
+   * What was chosen (§300), "Hair length: Long" — never a private answer:
+   * those are only said to be there, and read in the app (§300.6).
+   */
+  choices: string[];
+  hasPrivateAnswers: boolean;
+  /** The customer's note to the shop (§300.5). */
+  note: string | null;
 }
 
 /** The select that loads a booking's facts, in one query. */
@@ -40,6 +48,11 @@ export const BOOKING_FACTS_SELECT = {
   servicePriceMinor: true,
   currency: true,
   depositPaidAt: true,
+  // What was chosen (§300). The sealed column only to say there is something
+  // private — it is never opened for an email.
+  choices: true,
+  customerNote: true,
+  healthChoicesSealed: true,
   service: {
     select: {
       name: true,
@@ -67,6 +80,9 @@ type Loaded = {
   servicePriceMinor: number | null;
   currency: string;
   depositPaidAt: Date | null;
+  choices: Prisma.JsonValue;
+  customerNote: string | null;
+  healthChoicesSealed: string | null;
   service: { name: string; images: Array<{ url: string }> };
   location: {
     name: string;
@@ -96,6 +112,11 @@ export function bookingFacts(row: Loaded): BookingFacts {
     currency: row.currency,
     status: row.status,
     depositPaid: Boolean(row.depositPaidAt) || row.status === AppointmentStatus.BOOKED,
+    choices: ((row.choices as Array<{ group: string; option: string }> | null) ?? []).map(
+      (pick) => `${pick.group}: ${pick.option}`,
+    ),
+    hasPrivateAnswers: row.healthChoicesSealed !== null,
+    note: row.customerNote,
   };
 }
 
@@ -243,6 +264,20 @@ export function bookingTicket(
     reservation: reservationNo(b.id),
     status: statusOf(b, opts.audience),
     money,
+    // What was chosen (§300); a private answer only as "in the app" (§300.6).
+    extras:
+      b.choices.length > 0 || b.hasPrivateAnswers || b.note
+        ? {
+            label: opts.audience === 'CUSTOMER' ? 'Your choices' : 'What they chose',
+            lines: b.choices,
+            privateNote: b.hasPrivateAnswers
+              ? opts.audience === 'CUSTOMER'
+                ? 'Your private answers are with the shop — see them in the app.'
+                : 'Private answers — open the booking to read them.'
+              : null,
+            note: b.note,
+          }
+        : null,
     // The way there and a place in the calendar, for someone going to it.
     links:
       opts.links !== false && opts.audience === 'CUSTOMER' && live

@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboardScroll } from '../../src/useKeyboardScroll';
 import {
   cancelAppointment,
+  changeChoices,
   explainFailedDeposit,
   getAppointment,
   getPaymentStatus,
@@ -28,6 +29,8 @@ import { routeLabel } from '../../src/routeLabel';
 import { useNearMe } from '../../src/useNearMe';
 import { listSavedNumbers, saveNumber } from '../../src/api/auth';
 import { Checkout } from '../../src/booking/Checkout';
+import { ChangeChoicesSheet } from '../../src/booking/BookedChoices';
+import { isWish } from '../../src/booking/choices';
 import type { Bought } from '../../src/booking/format';
 import { PaidCelebration } from '../../src/booking/PaidCelebration';
 import { Reservation } from '../../src/booking/Reservation';
@@ -74,6 +77,16 @@ function Booking() {
   /** True from the moment the payment is SEEN to succeed until it is dismissed. */
   const [celebrating, setCelebrating] = useState(false);
   const [photo, setPhoto] = useState<number | null>(null);
+  // Changing wishes after booking (§300.7).
+  const [changing, setChanging] = useState(false);
+  const changeWishes = useMutation({
+    mutationFn: (input: { optionIds: string[]; note: string | null }) => changeChoices(id, input),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(['appointment', id], updated);
+      setChanging(false);
+    },
+    onError: (error) => showProblem('Could not change that', error),
+  });
 
   const appointment = useQuery({
     queryKey: ['appointment', id],
@@ -242,6 +255,13 @@ function Booking() {
   const paid = a.depositPaidAt !== null;
 
   const listed = shop.data?.services.find((s) => s.id === a.service.id);
+  // Wishes and the note can change until 2 hours before (§300.7) — the
+  // service's wish questions as it asks them now.
+  const wishes = (listed?.choiceGroups ?? []).filter(isWish);
+  const canChangeWishes =
+    (a.status === 'BOOKED' || a.status === 'PENDING_PAYMENT') &&
+    new Date(a.startTime).getTime() - Date.now() >= 2 * 60 * 60 * 1000 &&
+    (wishes.length > 0 || Boolean(listed?.noteEnabled));
   const bought: Bought = {
     images: listed?.images ?? [],
     cover: listed?.images[0]?.url ?? shop.data?.business.coverImageUrl ?? null,
@@ -439,8 +459,21 @@ function Booking() {
                 : 'Email me this code again'
           }
           onExplore={explore}
+          onChangeChoices={canChangeWishes ? () => setChanging(true) : undefined}
         />
       </ScrollView>
+      {listed && changing && (
+        <ChangeChoicesSheet
+          open={changing}
+          onClose={() => setChanging(false)}
+          a={a}
+          wishes={wishes}
+          noteEnabled={listed.noteEnabled}
+          notePrompt={listed.notePrompt}
+          busy={changeWishes.isPending}
+          onSave={(input) => changeWishes.mutate(input)}
+        />
+      )}
     </View>
   );
 }

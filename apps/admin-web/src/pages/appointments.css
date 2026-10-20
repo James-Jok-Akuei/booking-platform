@@ -381,3 +381,13 @@
   .ad-hero { align-items: flex-start; }
   .panel-foot .ad-foot-note { display: none; }
 }
+
+/* What the customer chose (§300). */
+.ad-choices { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ad-choices li { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) auto; align-items: baseline; gap: 10px; padding: 9px 12px; border-radius: 12px; background: var(--sunken); text-align: left; }
+.ad-choices span { font-size: 12.5px; font-weight: 650; color: var(--muted); }
+.ad-choices strong { font-size: 14px; }
+.ad-choices em { font-style: normal; font-size: 12.5px; font-weight: 750; color: var(--accent-deep); white-space: nowrap; }
+.ad-choices-private { display: flex; align-items: center; gap: 7px; margin: 8px 0 0; padding: 9px 12px; border-radius: 12px; background: var(--danger-soft); color: var(--danger); font-size: 13px; font-weight: 700; }
+.ad-choices-private.is-gone { background: var(--sunken); color: var(--muted); }
+.ad-choices-note { text-align: left; margin: 8px 0 0; padding: 10px 13px; border-left: 3px solid var(--accent); border-radius: 10px; background: var(--accent-soft); font-style: italic; color: var(--ink-2); }

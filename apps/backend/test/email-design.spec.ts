@@ -64,6 +64,9 @@ const booking = (over: Partial<BookingFacts> = {}): BookingFacts => ({
   currency: 'RWF',
   status: AppointmentStatus.BOOKED,
   depositPaid: true,
+  choices: [],
+  hasPrivateAnswers: false,
+  note: null,
   ...over,
 });
 
@@ -123,6 +126,27 @@ describe('The emails, in the platform design (§292)', () => {
     expect(last().icalEvent).toBeDefined();
     expect(last().html).toContain('google.com/maps/dir');
     save('04-arrival-code-new', last().html, last().text);
+  });
+
+  it('puts what was chosen on the ticket — a private answer only as "in the app" (§300)', async () => {
+    await mail.sendAppointmentVerificationEmail(
+      'ama@example.com',
+      '204117',
+      booking({
+        choices: ['Cut: Fade', 'Extras: Beard trim and line-up'],
+        hasPrivateAnswers: true,
+        note: 'Please keep the top a little longer.',
+      }),
+    );
+    expect(last().html).toContain('Your choices');
+    expect(last().html).toContain('Extras: Beard trim and line-up');
+    expect(last().html).toContain('see them in the app');
+    expect(last().html).toContain('Please keep the top a little longer.');
+    expect(last().text).toContain('  Cut: Fade');
+    // Never into the calendar invite, where anyone the event is shared with reads it.
+    expect(JSON.stringify(last().icalEvent)).not.toContain('Fade');
+    sound('choices', last().html, last().text);
+    save('04b-arrival-code-choices', last().html, last().text);
   });
 
   it('draws the weekly picks as picture cards, with a working unsubscribe', async () => {

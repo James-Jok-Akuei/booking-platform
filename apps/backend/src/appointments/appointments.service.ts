@@ -25,7 +25,18 @@ import {
   APPOINTMENT_SELECT,
   CUSTOMER_APPOINTMENT_SELECT,
   CUSTOMER_LIST_SELECT,
+  HEALTH_CHOICES_SELECT,
 } from './appointment-select';
+import { HealthChoices } from './health-choices';
+import { CHOICE_GROUPS_SELECT } from '../business/dto/service-choices.dto';
+import {
+  CHOICES_EDITABLE_UNTIL_MINUTES,
+  ChoicePick,
+  isWish,
+  resolvePicks,
+  tidyNote,
+} from '../business/service-choices';
+import { UpdateBookingChoicesDto } from './dto/update-booking-choices.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { askHowItWent } from './how-it-went';
 import { MailService } from '../mail/mail.service';
@@ -235,6 +246,7 @@ export class AppointmentsService {
     private readonly chat: ChatService,
     private readonly ledger: LedgerService,
     private readonly support: SupportLogService,
+    private readonly health: HealthChoices,
   ) {}
 
   /**
@@ -383,6 +395,9 @@ export class AppointmentsService {
           where: { locationId: dto.locationId, isOffered: true },
           select: { priceMinor: true },
         },
+        // What the customer answers while booking (§300), and whether a note is taken.
+        choiceGroups: CHOICE_GROUPS_SELECT,
+        noteEnabled: true,
       },
     });
     if (!service) throw new NotFoundException('Service not found.');
@@ -441,8 +456,21 @@ export class AppointmentsService {
     const quantity = dto.quantity ?? 1;
     assertQuantityAllowed(quantity, location.capacity);
 
-    // endTime is derived, never taken from the client.
-    const endTime = new Date(startTime.getTime() + service.durationMinutes * 60_000);
+    // What was picked (§300), checked against the service's questions as they
+    // are now, and what it adds. A note only where the service takes one —
+    // refused rather than dropped, because the customer wrote it for the shop.
+    const choices = resolvePicks(service.choiceGroups, dto.optionIds ?? []);
+    const note = tidyNote(dto.note);
+    if (note && !service.noteEnabled) {
+      throw new BadRequestException(
+        'This service no longer takes a note. Remove yours, and send it in a message after booking.',
+      );
+    }
+
+    // endTime is derived, never taken from the client — the service's length
+    // and the answers' extra minutes (§300.4).
+    const durationMinutes = service.durationMinutes + choices.minutes;
+    const endTime = new Date(startTime.getTime() + durationMinutes * 60_000);
 
     // One unit's price as the customer was shown it: after the sale, if one
     // is on today (§186). The sale is taken off ONE and then multiplied, so
@@ -459,7 +487,16 @@ export class AppointmentsService {
     // three separately rounded deposits that can differ from it by a unit.
     // The deposit and the platform fee are both shares of THIS — the price
     // after the sale — so the fee still fits inside the deposit (§40).
-    const totalPriceMinor = unit.priceMinor * quantity;
+    //
+    // The answers are added after that, once per booking (§300.3): long hair
+    // costs the same extra whether one person comes or three, and a sale is
+    // on the service's own price, never on what the answers add.
+    const totalPriceMinor = unit.priceMinor * quantity + choices.priceMinor;
+    if (totalPriceMinor < 0) {
+      throw new BadRequestException(
+        'With these answers the price would be below nothing. Please pick other answers, or ask the shop.',
+      );
+    }
 
     // Read live, at this instant: the fee an admin sets later must not change
     // what this customer agreed to.
@@ -483,7 +520,7 @@ export class AppointmentsService {
       await this.assertSlotBookable(
         dto.locationId,
         startTime,
-        service.durationMinutes,
+        durationMinutes,
         quantity,
       );
 
@@ -503,7 +540,9 @@ export class AppointmentsService {
           unitPriceMinor: unit.priceMinor,
           // What it was before the sale, and how much off (§186).
           discountPercent: unit.discount?.percent ?? null,
-          listPriceMinor: unit.discount ? unit.discount.listPriceMinor * quantity : null,
+          listPriceMinor: unit.discount
+            ? unit.discount.listPriceMinor * quantity + choices.priceMinor
+            : null,
           quantity,
           capacityUnits: quantity,
           depositPercentage: service.depositPercentage,
@@ -518,6 +557,13 @@ export class AppointmentsService {
           currency: INTERNAL_CURRENCY,
           verificationCodeHash,
           verificationCode: code,
+          // What was picked, copied as it is now (§300): a shop changing its
+          // questions later never rewrites this booking.
+          ...(choices.picks.length > 0 ? { choices: choices.picks as unknown as Prisma.InputJsonValue } : {}),
+          choicesPriceMinor: choices.priceMinor,
+          choicesMinutes: choices.minutes,
+          healthChoicesSealed: this.health.seal(choices.healthPicks),
+          customerNote: note,
         },
         select: APPOINTMENT_SELECT,
       });
@@ -575,6 +621,108 @@ export class AppointmentsService {
 
     // Always a customer: only @Roles(CUSTOMER) reaches this route.
     return this.withApproxSettlement(withCodeSent, await this.rateContext());
+  }
+
+  /**
+   * Changing wishes after booking (§300.7), until 2 hours before.
+   *
+   * Only the questions whose answers change neither the price nor the time
+   * — "no salt", a quiet room, allergies — read as the service asks them now,
+   * and the note. Every other answer stays exactly as booked: the deposit was
+   * worked out from it, and the request to pay may already be on the phone.
+   * So the price, the deposit and the length never move here.
+   *
+   * The shop is told that something changed, never what — a health answer
+   * may be among them, and the booking shows it.
+   */
+  async changeChoices(customerId: string, appointmentId: string, dto: UpdateBookingChoicesDto) {
+    await this.requireCustomerAppointment(customerId, appointmentId);
+    const booking = await this.prisma.appointment.findUniqueOrThrow({
+      where: { id: appointmentId },
+      select: {
+        status: true,
+        startTime: true,
+        choices: true,
+        customerNote: true,
+        healthChoicesSealed: true,
+        service: { select: { noteEnabled: true, choiceGroups: CHOICE_GROUPS_SELECT } },
+      },
+    });
+
+    if (booking.status !== AppointmentStatus.PENDING_PAYMENT && booking.status !== AppointmentStatus.BOOKED) {
+      throw new BadRequestException('This booking can no longer be changed.');
+    }
+    if (booking.startTime.getTime() - Date.now() < CHOICES_EDITABLE_UNTIL_MINUTES * 60_000) {
+      throw new BadRequestException(
+        'Wishes can be changed until 2 hours before. Send the shop a message instead.',
+      );
+    }
+
+    const groups = booking.service.choiceGroups;
+    const wishes = groups.filter(isWish);
+    const wishIds = new Set(wishes.map((group) => group.id));
+    const asBooked = (booking.choices as unknown as ChoicePick[] | null) ?? [];
+    const healthAsBooked = this.health.open(booking.healthChoicesSealed) ?? [];
+
+    // An answer to a question that changes the price or the time stays as booked.
+    const fixed = new Set(groups.filter((group) => !wishIds.has(group.id)).flatMap((g) => g.options.map((o) => o.id)));
+    if (dto.optionIds.some((id) => fixed.has(id))) {
+      throw new BadRequestException(
+        'Answers that change the price or the time can’t be changed after booking. Message the shop if you need to.',
+      );
+    }
+
+    const kept = asBooked.filter((pick) => !wishIds.has(pick.groupId));
+    const keptHealth = healthAsBooked.filter((pick) => !wishIds.has(pick.groupId));
+    const before = new Set([...asBooked, ...healthAsBooked].map((pick) => pick.optionId));
+    const now = resolvePicks(wishes, dto.optionIds, {
+      alsoPicked: kept.map((pick) => pick.optionId),
+      stillPicked: before,
+    });
+
+    // In the order the shop asks now; answers to questions since removed last.
+    const order = new Map(groups.map((group, index) => [group.id, index]));
+    const inOrder = (picks: ChoicePick[]) =>
+      picks
+        .map((pick, index) => ({ pick, index }))
+        .sort((a, b) => (order.get(a.pick.groupId) ?? groups.length) - (order.get(b.pick.groupId) ?? groups.length) || a.index - b.index)
+        .map(({ pick }) => pick);
+    const choices = inOrder([...kept, ...now.picks]);
+    const healthChoices = inOrder([...keptHealth, ...now.healthPicks]);
+
+    let note = booking.customerNote;
+    if (dto.note !== undefined) {
+      note = tidyNote(dto.note);
+      if (note && note !== booking.customerNote && !booking.service.noteEnabled) {
+        throw new BadRequestException('This service no longer takes a note. Send the shop a message instead.');
+      }
+    }
+
+    const ids = (picks: ChoicePick[]) => picks.map((pick) => pick.optionId).sort().join(',');
+    const changed =
+      ids(choices) !== ids(asBooked) || ids(healthChoices) !== ids(healthAsBooked) || note !== booking.customerNote;
+    if (!changed) return this.findOne(customerId, appointmentId);
+
+    await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        choices: choices.length > 0 ? (choices as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
+        healthChoicesSealed: this.health.seal(healthChoices),
+        customerNote: note,
+        choicesChangedAt: new Date(),
+      },
+    });
+
+    const loaded = await this.notificationContext(appointmentId);
+    if (loaded) {
+      await this.notifications.notifyBusiness({
+        businessId: loaded.businessId,
+        type: NotificationType.BOOKING_CHOICES_CHANGED,
+        context: loaded.context,
+        appointmentId,
+      });
+    }
+    return this.findOne(customerId, appointmentId);
   }
 
   /**
@@ -1557,6 +1705,15 @@ export class AppointmentsService {
         unitPriceMinor: true,
         discountPercent: true,
         listPriceMinor: true,
+        // What was chosen (§300). The sealed column only to say there IS
+        // something private — it is opened by support, with a reason.
+        choices: true,
+        choicesPriceMinor: true,
+        choicesMinutes: true,
+        customerNote: true,
+        choicesChangedAt: true,
+        healthChoicesSealed: true,
+        healthChoicesRemovedAt: true,
         paymentProvider: true,
         paymentProviderReferenceId: true,
         paymentInitiatedAt: true,
@@ -1588,10 +1745,18 @@ export class AppointmentsService {
       ledgerEntries,
       review,
       exchangeRateUsed,
+      healthChoicesSealed,
       ...rest
     } = appointment;
     return {
       ...toAdminAppointment({ ...rest, review }),
+      choices: rest.choices,
+      choicesPriceMinor: rest.choicesPriceMinor,
+      choicesMinutes: rest.choicesMinutes,
+      customerNote: rest.customerNote,
+      choicesChangedAt: rest.choicesChangedAt,
+      hasHealthChoices: healthChoicesSealed !== null,
+      healthChoicesRemovedAt: rest.healthChoicesRemovedAt,
       unitPriceMinor: rest.unitPriceMinor,
       discountPercent: rest.discountPercent,
       listPriceMinor: rest.listPriceMinor,
@@ -2152,6 +2317,34 @@ export class AppointmentsService {
   }
 
   /**
+   * The private answers on a booking (§300.6) — allergies, a health matter —
+   * read by support with a reason, when a customer or a shop asks for help
+   * with them. Written down, and said on the booking (what and when, not
+   * who), like reading the conversation.
+   */
+  async supportReadHealthChoices(actor: SupportActor, appointmentId: string, dto: SupportReasonDto) {
+    this.support.check(actor, dto);
+    const ticket = await this.support.ticket(dto.ticketId);
+    await this.forSupport(appointmentId);
+    const booking = await this.prisma.appointment.findUniqueOrThrow({
+      where: { id: appointmentId },
+      select: { healthChoicesSealed: true, healthChoicesRemovedAt: true },
+    });
+    const answers = this.health.open(booking.healthChoicesSealed);
+    await this.support.record(actor, {
+      kind: SupportActionKind.READ_HEALTH_CHOICES,
+      reason: dto.reason,
+      appointmentId,
+      ticketId: ticket?.id,
+      details: { answers: answers?.length ?? 0 },
+    });
+    return {
+      answers: answers?.map((pick) => ({ group: pick.group, option: pick.option })) ?? null,
+      removedAt: booking.healthChoicesRemovedAt?.toISOString() ?? null,
+    };
+  }
+
+  /**
    * Tells every admin the platform cannot take payments.
    *
    * Deliberately not rate-limited or debounced: a configuration failure means
@@ -2238,6 +2431,15 @@ export class AppointmentsService {
     };
   }
 
+  /**
+   * The health-related answers opened, for the customer's or the shop's own
+   * read (§300.6), and the sealed column dropped so it never leaves.
+   */
+  private withHealthChoices<T extends { healthChoicesSealed: string | null }>(row: T) {
+    const { healthChoicesSealed, ...rest } = row;
+    return { ...rest, healthChoices: this.health.open(healthChoicesSealed) };
+  }
+
   // ---------- Reads ----------
 
   async findOne(userId: string, appointmentId: string) {
@@ -2252,16 +2454,20 @@ export class AppointmentsService {
     // would invite them to reconcile a payout against a number that means
     // nothing (§39.3).
     if (scope.customerId !== userId) {
-      return this.prisma.appointment.findUniqueOrThrow({
-        where: { id: appointmentId },
-        select: APPOINTMENT_SELECT,
-      });
+      return this.withHealthChoices(
+        await this.prisma.appointment.findUniqueOrThrow({
+          where: { id: appointmentId },
+          select: { ...APPOINTMENT_SELECT, ...HEALTH_CHOICES_SELECT },
+        }),
+      );
     }
 
-    const appointment = await this.prisma.appointment.findUniqueOrThrow({
-      where: { id: appointmentId },
-      select: CUSTOMER_APPOINTMENT_SELECT,
-    });
+    const appointment = this.withHealthChoices(
+      await this.prisma.appointment.findUniqueOrThrow({
+        where: { id: appointmentId },
+        select: { ...CUSTOMER_APPOINTMENT_SELECT, ...HEALTH_CHOICES_SELECT },
+      }),
+    );
 
     return this.withApproxSettlement(
       {
@@ -2356,7 +2562,9 @@ export class AppointmentsService {
         // The customer's own rows carry their own review, so the list can say
         // "leave a review" or "you rated this" without a second request per row.
         select:
-          role === UserRole.CUSTOMER ? CUSTOMER_LIST_SELECT : APPOINTMENT_SELECT,
+          role === UserRole.CUSTOMER
+            ? { ...CUSTOMER_LIST_SELECT, ...HEALTH_CHOICES_SELECT }
+            : { ...APPOINTMENT_SELECT, ...HEALTH_CHOICES_SELECT },
       }),
     ]);
 
@@ -2368,7 +2576,7 @@ export class AppointmentsService {
       total,
       limit,
       offset,
-      appointments: appointments.map((a) => this.withApproxSettlement(a, context)),
+      appointments: appointments.map((a) => this.withApproxSettlement(this.withHealthChoices(a), context)),
     };
   }
 
