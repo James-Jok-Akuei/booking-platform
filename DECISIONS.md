@@ -19378,3 +19378,73 @@ and tablets in the native app, are unchanged.
   the column instead of at the window's edge.
 - Bookings: a cancelled booking that was never paid says "Nothing paid", not
   "deposit due".
+
+## 302. The opening picture: a welcome in every app but the console (2026-10-20)
+
+The user asked for a splash screen on both apps, whether all three need one,
+and for it to be "the most attractive part of the apps since it is the first
+spot users land on".
+
+### 302.1 Which apps
+
+- **Customer app (phone and web): yes.** The first thing a customer ever
+  sees of the platform.
+- **Seller app: yes**, the same picture with "For businesses".
+- **Admin console: no.** Staff open it to work, many times a day, already
+  knowing whose it is; a welcome there is only a wait.
+- (The website already opens on its hero, and has to load in a blink.)
+
+### 302.2 The picture
+
+On the night (#1F2A1F): the white tile, then the "b" is written, the orange
+check lands with a pop, two rings and — on a phone — a small tick under the
+finger; a warm glow comes up behind ("booked"), the mark rises, a thousand
+hills come up from below (two pale veils and the paper in front, echoing the
+website's paper bands), and the name comes in — "Bwangu" white,
+"Reservations" orange, one word as it is always written (§239) — with "Book
+your next appointment, easily." (customers) or a "For businesses" pill
+(sellers). About 1.7 seconds. To leave, the paper hill rises over everything
+and **becomes the app's own background**, the mark and words lifting away;
+then it fades into the first screen. About two and a half seconds in all, and:
+
+- **Never a wait.** A tap (or a key) ends it once the app is ready; if the app
+  is still loading at the end, the rings pulse slowly so it never looks stuck;
+  if anything goes wrong, the app goes in after 3 seconds and the picture is
+  gone 5 seconds after the app is ready, whatever happens.
+- **Reduce motion**: the finished picture, still, then a fade.
+
+### 302.3 The phone
+
+- The phone's own launch screen (`expo-splash-screen`, `app.json`) is the
+  night with the empty white tile — 240 wide with the tile 46% of it, so the
+  tile is 110 points on both iPhone and Android and inside Android 12's round
+  mask. The intro's first frame (`src/ui/Intro.tsx`) is that picture to the
+  dot, measured from its own box rather than the window; the launch screen is
+  hidden on that frame (the router is told not to hide it itself), so the
+  handover cannot be seen.
+- The lines are drawn by the JavaScript side, so **the app is built
+  underneath only once they are drawn**; everything after runs on the phone's
+  own side and cannot stutter while the first screen is put together. The
+  status bar is light on the night, dark on the paper; the "documents have
+  changed" notice waits until the picture has gone.
+- The app's icons were Expo's placeholders: now the mark (white tile, ink
+  "b", orange check), with Android's adaptive and one-colour versions, and the
+  web's tab icon.
+- Expo Go shows its own launch screen; the intro plays there as in the app.
+  The launch screen itself is seen only in a real build.
+
+### 302.4 The web (customer and seller)
+
+The page draws the picture itself, in plain CSS (`public/index.html`,
+`apps/business-web/index.html`), so it starts the moment the page arrives and
+plays **while the app downloads**, not after; no script is needed (the
+browser policy allows none inline, §298). Every element's own style is the
+finished picture and each animation says only where it comes from, so
+"reduce motion" just switches the animations off. The font is served by us
+(§299) and preloaded. When the app is ready (`src/ui/webIntro.ts`,
+`src/intro.ts`): in full **once every 12 hours** per browser — the paper
+rises; otherwise (a reload, the third shop link of the day, another tab) a
+plain fade at once. The browser's bar is the night, then the paper.
+
+Three copies of one picture — the phone's, and the two pages — with the same
+timings and hills: change them together.

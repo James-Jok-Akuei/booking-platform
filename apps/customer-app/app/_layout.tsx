@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
+import { isRunningInExpoGo } from 'expo';
 import { Stack, router } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -19,9 +22,16 @@ import { configurePush, onAlertOpened, refreshPush } from '../src/push';
 import { useLiveNotifications } from '../src/useLive';
 import { LegalPrompt } from '../src/components/LegalPrompt';
 import { DialogHost } from '../src/ui/Dialog';
+import { Intro } from '../src/ui/Intro';
 import { theme } from '../src/theme';
 
 configurePush();
+
+// The launch screen stays up until the intro's first frame, which is the same
+// picture to the dot (§302); the intro hides it then. A short fade covers any
+// pixel of difference. (Expo Go shows its own launch screen and refuses options.)
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
+if (!isRunningInExpoGo()) SplashScreen.setOptions({ duration: 200, fade: true });
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,11 +47,21 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
 
+  // The opening picture (§302) says when to build the app underneath it — once
+  // its lines are drawn, so putting the first screen together never makes them
+  // stutter — and when it is leaving, and gone. The web's page draws its own
+  // picture, apart from the app, so there the app goes in at once.
+  const [begun, setBegun] = useState(Platform.OS === 'web');
+  const [intro, setIntro] = useState<'showing' | 'leaving' | 'gone'>('showing');
+  const begin = useCallback(() => setBegun(true), []);
+  const leave = useCallback(() => setIntro('leaving'), []);
+  const gone = useCallback(() => setIntro('gone'), []);
+
   // The app's typeface (§133). Text drawn before it loads would be drawn in the
-  // system font and then jump, so nothing renders until it is in — the splash
-  // screen covers the wait, which is a few hundred milliseconds from the bundle.
+  // system font and then jump, so nothing renders until it is in — the intro
+  // covers the wait, which is a few hundred milliseconds from the bundle.
   // An ERROR counts as done: a phone that cannot load a font still gets an app,
-  // in the system face, rather than a splash screen forever.
+  // in the system face, rather than an intro forever.
   const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
@@ -52,6 +72,16 @@ export default function RootLayout() {
     PlusJakartaSans_500Medium_Italic,
     PlusJakartaSans_700Bold_Italic,
   });
+
+  // Whatever becomes of the picture, nobody is kept behind it: the app goes in
+  // after three seconds at the latest, and the picture is gone five after that.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      begin();
+      SplashScreen.hideAsync().catch(() => undefined);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [begin]);
 
   // SecureStore is async, so the token cache is filled once before anything
   // that depends on being signed in renders.
@@ -79,42 +109,55 @@ export default function RootLayout() {
     [],
   );
 
-  if (!ready || (!fontsLoaded && !fontError)) return null;
+  const fontsReady = fontsLoaded || !!fontError;
+  const appIn = ready && fontsReady && begun;
+
+  useEffect(() => {
+    if (!appIn || intro === 'gone') return;
+    const timer = setTimeout(gone, 5000);
+    return () => clearTimeout(timer);
+  }, [appIn, intro, gone]);
 
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <StatusBar style="dark" />
-        {/* Above the navigator, so a replaced document is seen wherever somebody
-            happens to be (§126.3). It renders nothing when there is nothing to
-            say, which is almost always. */}
-        <LegalPrompt />
-        <Alerts />
-        {/* No native headers anywhere (§133): every screen draws its own top
-            bar, so the back button, the title and the type are the app's and
-            are the same on every screen. */}
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: theme.bg },
-            animation: 'slide_from_right',
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="categories" />
-          <Stack.Screen name="legal" />
-          <Stack.Screen name="notifications" />
-          {/* Rises from the bottom: signing in is an interruption to whatever
-              was being done, and it should look like one that can be put away. */}
-          <Stack.Screen
-            name="sign-in"
-            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-          />
-        </Stack>
-        {/* Every question and message the app asks (§184), in its own design
-            rather than the phone's grey alert. One host, so they queue. */}
-        <DialogHost />
-      </QueryClientProvider>
+      {/* Light on the intro's night, dark on the app's paper. */}
+      <StatusBar style={intro === 'showing' ? 'light' : 'dark'} />
+      {appIn && (
+        <QueryClientProvider client={queryClient}>
+          {/* Above the navigator, so a replaced document is seen wherever somebody
+              happens to be (§126.3). It renders nothing when there is nothing to
+              say, which is almost always — and nothing over the intro. */}
+          {intro === 'gone' && <LegalPrompt />}
+          <Alerts />
+          {/* No native headers anywhere (§133): every screen draws its own top
+              bar, so the back button, the title and the type are the app's and
+              are the same on every screen. */}
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: theme.bg },
+              animation: 'slide_from_right',
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="categories" />
+            <Stack.Screen name="legal" />
+            <Stack.Screen name="notifications" />
+            {/* Rises from the bottom: signing in is an interruption to whatever
+                was being done, and it should look like one that can be put away. */}
+            <Stack.Screen
+              name="sign-in"
+              options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+            />
+          </Stack>
+          {/* Every question and message the app asks (§184), in its own design
+              rather than the phone's grey alert. One host, so they queue. */}
+          <DialogHost />
+        </QueryClientProvider>
+      )}
+      {intro !== 'gone' && (
+        <Intro fontsReady={fontsReady} appReady={appIn} onBegin={begin} onLeave={leave} onGone={gone} />
+      )}
     </SafeAreaProvider>
   );
 }

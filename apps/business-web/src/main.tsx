@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -6,6 +6,7 @@ import { App } from './App';
 import { AuthProvider } from './auth/auth-context';
 import { DialogHost } from './ui/Dialog';
 import { ConfirmHost } from './session/ConfirmItsYou';
+import { leaveIntro } from './intro';
 import './styles.css';
 
 const queryClient = new QueryClient({
@@ -25,6 +26,12 @@ const queryClient = new QueryClient({
   },
 });
 
+/** The opening picture goes once the app has drawn underneath it (§302). */
+function IntroLeaves() {
+  useEffect(() => void leaveIntro(), []);
+  return null;
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
@@ -33,6 +40,7 @@ createRoot(document.getElementById('root')!).render(
           <App />
           <DialogHost />
           <ConfirmHost />
+          <IntroLeaves />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
