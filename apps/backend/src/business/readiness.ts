@@ -1,4 +1,5 @@
 import { BusinessStatus, PayoutDestinationStatus, Prisma } from '@prisma/client';
+import { adviceItems, readApprovalAdvice } from './shop-advice';
 
 /**
  * What a shop needs before it can go live, in one place (§255).
@@ -26,20 +27,29 @@ export const READINESS_SELECT = {
   submittedAt: true,
   lastRejectionReason: true,
   publishedAt: true,
+  // What would make it easier to book, beyond going live (§303).
+  coverImageUrl: true,
+  description: true,
+  approvalAdvice: true,
   locations: {
     where: { isActive: true },
+    orderBy: { createdAt: 'asc' },
     select: {
       id: true,
+      name: true,
       districtId: true,
       latitude: true,
       longitude: true,
       hours: { where: { isClosed: false }, select: { id: true }, take: 1 },
+      _count: { select: { media: true } },
     },
   },
   services: {
     where: { isActive: true },
     select: {
       id: true,
+      description: true,
+      _count: { select: { images: true } },
       locations: {
         where: { isOffered: true, location: { isActive: true } },
         select: { locationId: true },
@@ -157,5 +167,8 @@ export function readinessView(shop: ReadinessShop) {
     canSubmit: canSubmit(shop),
     goLiveGaps: goLiveGaps(shop),
     canPublish: canPublish(shop),
+    // What would make it easier to book (§303), and what we advised on approval.
+    advice: adviceItems(shop),
+    approvalAdvice: readApprovalAdvice(shop.approvalAdvice),
   };
 }

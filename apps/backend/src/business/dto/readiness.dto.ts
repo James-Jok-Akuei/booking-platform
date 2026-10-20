@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BusinessStatus } from '@prisma/client';
+import { ADVICE_KEYS, type AdviceKey } from '../shop-advice';
 
 const KEYS = ['name', 'type', 'phone', 'branch', 'hours', 'service', 'logo', 'payout'] as const;
 
@@ -10,6 +11,27 @@ export class ReadinessItemDto {
   /** Whether the shop can be sent for review without it. */
   required!: boolean;
   done!: boolean;
+}
+
+/** One thing that would make the shop easier to book (§303), in the shop's words. */
+export class AdviceItemDto {
+  @ApiProperty({ enum: ADVICE_KEYS })
+  key!: AdviceKey;
+  done!: boolean;
+  /** "Photos of Kimironko", "A description on 3 services". */
+  title!: string;
+  /** Why it matters, as the shop reads it. */
+  why!: string;
+}
+
+/** What we advised when we approved the shop (§303). */
+export class ApprovalAdviceDto {
+  @ApiProperty({ enum: ADVICE_KEYS, isArray: true })
+  keys!: AdviceKey[];
+  /** The reviewer's own words, if they wrote any. */
+  note!: string | null;
+  /** When the shop was approved with it. */
+  at!: string;
 }
 
 /**
@@ -36,4 +58,9 @@ export class BusinessReadinessDto {
   goLiveGaps!: Array<(typeof KEYS)[number]>;
   /** Approved, not yet posted, and still bookable — "Post my shop" can be pressed. */
   canPublish!: boolean;
+  /** What would make it easier to book, done or not (§303). */
+  advice!: AdviceItemDto[];
+  /** What we advised on approval; null when nothing was. */
+  @ApiProperty({ type: () => ApprovalAdviceDto, nullable: true })
+  approvalAdvice!: ApprovalAdviceDto | null;
 }

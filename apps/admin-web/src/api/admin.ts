@@ -49,8 +49,9 @@ export type AdminBusinessDetail = components['schemas']['AdminBusinessDetailDto'
 export const getBusiness = (id: string) =>
   api<AdminBusinessDetail>(`/admin/businesses/${id}`);
 
-export const approveBusiness = (id: string) =>
-  api<AdminBusiness>(`/admin/businesses/${id}/approve`, { method: 'PATCH' });
+/** With advice for the shop, if any is sent (§303): which things still missing to mention, and a note. */
+export const approveBusiness = (id: string, advice: components['schemas']['ApproveBusinessDto'] = {}) =>
+  api<AdminBusiness>(`/admin/businesses/${id}/approve`, { method: 'PATCH', body: advice });
 
 export const reinstateBusiness = (id: string) =>
   api<AdminBusiness>(`/admin/businesses/${id}/reinstate`, { method: 'PATCH' });

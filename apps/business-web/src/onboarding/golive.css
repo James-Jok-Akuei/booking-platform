@@ -140,3 +140,34 @@
   .gl-track li > span { width: 24px; height: 24px; }
   .gl-meanwhile > span { width: 100%; }
 }
+
+/* What our review team advised on approval (§303). */
+.gl-advice { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--r-lg); background: rgba(255, 255, 255, 0.82); border: 1px solid var(--line); box-shadow: var(--shadow-xs); animation: gl-advice-in 420ms var(--ease) both; }
+.gl-advice-head { display: flex; align-items: center; gap: 12px; }
+.gl-advice-head > div { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gl-advice-head strong { font-size: 15px; font-weight: 750; color: var(--ink); }
+.gl-advice-head span { font-size: 13px; line-height: 1.45; color: var(--muted); font-weight: 550; }
+.gl-advice-mark { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--accent-soft); color: var(--accent-deep); }
+.gl-advice.is-done .gl-advice-mark { background: var(--ok-soft); color: var(--ok-deep); }
+.gl-advice-note { margin: 0; padding: 12px 14px; border-left: 4px solid var(--accent); border-radius: 4px var(--r-md) var(--r-md) 4px; background: var(--sunken); font-size: 14px; font-weight: 600; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; }
+.gl-advice-note cite { display: block; margin-top: 4px; font-style: normal; font-size: 12px; font-weight: 600; color: var(--muted); }
+.gl-advice-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.gl-advice-list li { min-width: 0; }
+.gl-advice-row { height: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--r-md); background: var(--panel); border: 1px solid var(--line); color: inherit; text-decoration: none; transition: background 200ms var(--ease), border-color 200ms var(--ease), transform 160ms var(--ease); }
+a.gl-advice-row:hover { border-color: rgba(240, 83, 45, 0.35); }
+a.gl-advice-row:active { transform: scale(0.99); }
+.gl-advice-list li.is-done .gl-advice-row { background: var(--ok-soft); border-color: transparent; }
+.gl-advice-icon { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: var(--sunken); color: var(--ink-2); }
+.gl-advice-list li.is-done .gl-advice-icon { background: var(--ok); color: #fff; }
+.gl-advice-words { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.gl-advice-words strong { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.gl-advice-list li.is-done .gl-advice-words strong { color: var(--ok-deep); }
+.gl-advice-words em { font-style: normal; font-size: 12px; line-height: 1.35; color: var(--muted); font-weight: 550; }
+.gl-advice-go { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 11px; border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent-deep); font-size: 12.5px; font-weight: 750; text-decoration: none; transition: background 160ms var(--ease), transform 160ms var(--ease); }
+a.gl-advice-row:hover .gl-advice-go { background: #ffe1d6; transform: translateX(2px); }
+@keyframes gl-advice-in { from { opacity: 0; transform: translateY(6px); } }
+@media (max-width: 720px) {
+  .gl-advice-list { grid-template-columns: minmax(0, 1fr); }
+  .gl-advice-go { padding: 7px; }
+  .gl-advice-go-word { display: none; }
+}

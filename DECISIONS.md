@@ -19479,3 +19479,89 @@ play it in full every time the page opens, as the phone does every time the
 app starts; a click, a tap or a key still ends it early, and with "reduce
 motion" the still picture still simply fades. (Moving between pages inside
 the app never shows it: only opening or reloading the page does.)
+
+## 303. Approving a shop with advice: what is still missing, sent with the approval (2026-10-21)
+
+The user: can the console approve a shop that still has things missing, with
+an automatic text listing what the seller has not done yet — a description,
+photos, a cover — sent on approval as advice: shops with high-quality,
+high-resolution photos and full details get booked easily, so finish your
+profile by adding the following.
+
+### 303.1 What counts as advice (`business/shop-advice.ts`)
+
+Going live needs only a name, an open branch with hours and a service
+(§255). Everything else decides whether somebody books, and is now one list
+on the server, in the shop's words, each with why: **a cover photo, the
+logo, a few lines about what it does** (40 characters, as the business app
+counts), **its category and type, a phone, photos of each open branch,
+opening hours and a map pin with its district at each, a photo and a
+description on every service on sale, and a payout number.** Branch items
+name the branches ("Photos of Kimironko and Remera"; "your 4 branches" past
+three); service items count ("A description on 3 services"). It mirrors the
+business app's own "Make your shop stand out" checks (`useAdData.ts`), which
+stay computed in the app — the two are kept in step by hand. Photo
+*resolution* is not measured (image sizes are not stored); the advice says
+it in words.
+
+The shop's readiness (§255) now carries the list live (`advice`) and what
+was advised (`approvalAdvice`), so the seller app and the console read the
+same thing.
+
+### 303.2 The console
+
+**Approve** — in the review panel, "Approve after all", and the quick
+Approve on a queue row — now opens its own step (`ApproveShop.tsx`,
+`?step=approve`) instead of a yes/no box (whose words, "book straight
+away", had been wrong since shops post themselves, §268):
+
+- what happens: they are told in the app and by email; customers see
+  nothing until the shop posts itself;
+- **Advice to send with it**: everything not in yet, **ticked**, in the
+  words the shop will read — untick what is not worth mentioning (Tick all /
+  Untick all), or "Nothing to add" for a complete shop;
+- **a note from you**, optional, up to 600 characters, sent as written;
+- **What they will read**: the message drawn like the email, changing as you
+  tick and type;
+- the button says **Approve and send advice** when there is any, **Approve**
+  when there is none.
+
+Afterwards the shop's panel shows **Advice sent with the approval** — the
+date, each item marked Done (since) or Not yet, live, and the note — for the
+next reviewer.
+
+### 303.3 The rules
+
+`PATCH /admin/businesses/:id/approve` takes `{ advice?: keys[], note? }`.
+Of the keys chosen, only those **still missing when approving** are sent —
+a photo added while the panel was open is not asked for. The note is tidied
+into one paragraph. The advice is kept on the shop
+(`business_profiles.approvalAdvice`: keys, note, when), replaced by the next
+approval's (none clears it); reinstatement sends none and keeps what was
+said. Unknown or repeated keys and a note over 600 characters are refused.
+
+### 303.4 What the seller gets
+
+- **The approval notice** gains, after its usual words: "Shops with clear,
+  high-resolution photos and full details get booked far more often. Before
+  you post, finish your shop by adding:", one line per item ("• A cover photo
+  — the first thing customers see on your page."), and the note in quotes.
+- **The email** draws the list as a **checklist** — an empty box beside
+  each, the title in bold and why under it (a new `todo` block in the email
+  kit, used for any notice paragraph of "• " lines) — and the note last,
+  signed "— Our review team".
+- **The dashboard**: the Overview's "Approved · not posted yet" card has
+  **Our advice before you post** — the note, and each item **ticking itself
+  off as it is added** (read live from the shop), "n of m done", the whole
+  row a link to where it is added (Your shopfront, Branches & hours,
+  Services, Getting paid); on a phone the button is its arrow. When all are
+  in: "All done — thank you". The card's "everything you change is saved as
+  you go" now says "change anything you like first" (§281: changes are saved
+  with Save).
+
+Seven tests in `approval-advice.spec.ts` and an approval-with-advice email in
+the email gallery; the full suite (80 suites, 1,604 tests) passes. Checked in
+the console at 1440 (choosing, the preview, approving, the panel after),
+the email in the mail catcher, and the seller's card at 1440, 1024 and 390
+(and an item turning Done). The demo shop Kicukiro Tailors was approved with
+advice to show it.

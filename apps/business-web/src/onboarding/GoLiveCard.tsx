@@ -292,7 +292,7 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
           <h2>Your shop is approved. Post it when you are ready</h2>
           <p>
             Customers cannot see <b>{name}</b> yet. Look it over the way they will, then post it — and from that moment they
-            can find you and book. No rush: everything you change is saved as you go.
+            can find you and book. No rush: change anything you like first.
           </p>
         </div>
         {canAct ? (
@@ -315,6 +315,8 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
         )}
       </div>
 
+      {readiness.approvalAdvice && <AdviceFromUs readiness={readiness} canAct={canAct} />}
+
       {gaps.length > 0 && (
         <p className="gl-problem" role="status">
           <Icon name="alert" size={16} />
@@ -333,6 +335,97 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
 
       <Track at={2} />
     </section>
+  );
+}
+
+type AdviceKey = Readiness['advice'][number]['key'];
+
+/** Where each piece of advice is added, and its mark (the same as "Make your shop stand out"). */
+const ADVICE_AT: Record<AdviceKey, { to: string; icon: IconName }> = {
+  cover: { to: '/profile', icon: 'image' },
+  logo: { to: '/profile', icon: 'store' },
+  about: { to: '/profile', icon: 'pencil' },
+  type: { to: '/profile', icon: 'tag' },
+  phone: { to: '/profile', icon: 'phone' },
+  gallery: { to: '/profile', icon: 'camera' },
+  hours: { to: '/hours', icon: 'clock' },
+  where: { to: '/hours', icon: 'pin' },
+  'service-photos': { to: '/services', icon: 'image' },
+  'service-words': { to: '/services', icon: 'pencil' },
+  payout: { to: '/getting-paid', icon: 'wallet' },
+};
+
+/**
+ * What our review team advised when it approved the shop (§303): their note,
+ * and the things they asked for, each ticked off by itself as it is added —
+ * read live from the shop, not from what was true on the day.
+ */
+function AdviceFromUs({ readiness, canAct }: { readiness: Readiness; canAct: boolean }) {
+  const sent = readiness.approvalAdvice!;
+  const now = new Map(readiness.advice.map((item) => [item.key, item]));
+  const items = sent.keys.map((key) => now.get(key)).filter((item): item is Readiness['advice'][number] => Boolean(item));
+  const done = items.filter((item) => item.done).length;
+  const allDone = items.length > 0 && done === items.length;
+  return (
+    <div className={`gl-advice${allDone ? ' is-done' : ''}`}>
+      <div className="gl-advice-head">
+        <span className="gl-advice-mark">
+          <Icon name={allDone ? 'checkCircle' : 'bulb'} size={18} />
+        </span>
+        <div>
+          <strong>{allDone ? 'All done — thank you' : 'Our advice before you post'}</strong>
+          <span>
+            {items.length === 0
+              ? 'From our review team'
+              : allDone
+                ? 'Everything we suggested is in. Shops like yours get booked far more often.'
+                : `Shops with clear, high-resolution photos and full details get booked far more often · ${done} of ${items.length} done`}
+          </span>
+        </div>
+      </div>
+      {sent.note && (
+        <blockquote className="gl-advice-note">
+          “{sent.note}”<cite>— Our review team</cite>
+        </blockquote>
+      )}
+      {items.length > 0 && (
+        <ul className="gl-advice-list">
+          {items.map((item) => {
+            const at = ADVICE_AT[item.key];
+            const go = !item.done && canAct;
+            const row = (
+              <>
+                <span className="gl-advice-icon">
+                  <Icon name={item.done ? 'check' : at.icon} size={15} stroke={item.done ? 3 : 2} />
+                </span>
+                <span className="gl-advice-words">
+                  <strong>{item.title}</strong>
+                  <em>{item.done ? 'Done' : `${item.why.charAt(0).toUpperCase()}${item.why.slice(1)}`}</em>
+                </span>
+                {go && (
+                  <span className="gl-advice-go">
+                    <span className="gl-advice-go-word">Add</span>
+                    <Icon name="arrowRight" size={14} />
+                  </span>
+                )}
+              </>
+            );
+            // The whole row goes there: on a phone the button is only its arrow.
+            return (
+              <li key={item.key} className={item.done ? 'is-done' : ''}>
+                {go ? (
+                  <Link to={at.to} className="gl-advice-row" aria-label={`Add ${item.title.toLowerCase()}`}>
+                    {row}
+                  </Link>
+                ) : (
+                  <div className="gl-advice-row">{row}</div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
 

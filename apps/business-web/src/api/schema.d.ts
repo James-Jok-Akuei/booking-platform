@@ -1360,6 +1360,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        /** With advice for the shop, if the reviewer sends some (§303). */
         patch: operations["AdminBusinessController_approve"];
         trace?: never;
     };
@@ -4055,6 +4056,12 @@ export interface components {
             homeLongitude: number | null;
             homeLabel: string | null;
         };
+        ExportedChoiceDto: {
+            group: string;
+            option: string;
+            priceMinor: number;
+            extraMinutes: number;
+        };
         ExportedServiceDto: {
             name: string;
         };
@@ -4063,6 +4070,8 @@ export interface components {
             address: string;
         };
         ExportedBookingDto: {
+            /** @description What they picked when booking (§300): the question, the answer, what it added. */
+            choices: components["schemas"]["ExportedChoiceDto"][] | null;
             id: string;
             /** @enum {string} */
             status: "PENDING_PAYMENT" | "BOOKED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
@@ -4075,6 +4084,13 @@ export interface components {
             cancelledAt: string | null;
             cancellationReason: string | null;
             createdAt: string;
+            /** @description Their note to the shop (§300.5). */
+            customerNote: string | null;
+            /**
+             * @description Their private answers (§300.6), while kept — removed 30 days after the
+             *     visit. Null when there were none.
+             */
+            privateAnswers: components["schemas"]["ExportedChoiceDto"][] | null;
             service: components["schemas"]["ExportedServiceDto"];
             location: components["schemas"]["ExportedLocationDto"];
         };
@@ -4421,6 +4437,13 @@ export interface components {
             /** @description For a kind that is a category's "Other": what it actually is (§267). */
             otherLabels?: components["schemas"]["OtherLabelDto"][];
         };
+        ApprovalAdviceDto: {
+            keys: ("cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout")[];
+            /** @description The reviewer's own words, if they wrote any. */
+            note: string | null;
+            /** @description When the shop was approved with it. */
+            at: string;
+        };
         ReadinessItemDto: {
             /** @enum {string} */
             key: "name" | "type" | "phone" | "branch" | "hours" | "service" | "logo" | "payout";
@@ -4428,9 +4451,20 @@ export interface components {
             required: boolean;
             done: boolean;
         };
+        AdviceItemDto: {
+            /** @enum {string} */
+            key: "cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout";
+            done: boolean;
+            /** @description "Photos of Kimironko", "A description on 3 services". */
+            title: string;
+            /** @description Why it matters, as the shop reads it. */
+            why: string;
+        };
         BusinessReadinessDto: {
             /** @description What an administrator cannot approve without; empty when it could go live. */
             goLiveGaps: ("name" | "type" | "phone" | "branch" | "hours" | "service" | "logo" | "payout")[];
+            /** @description What we advised on approval; null when nothing was. */
+            approvalAdvice: components["schemas"]["ApprovalAdviceDto"] | null;
             /** @enum {string} */
             status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
             statusReason: string | null;
@@ -4447,6 +4481,8 @@ export interface components {
             canSubmit: boolean;
             /** @description Approved, not yet posted, and still bookable — "Post my shop" can be pressed. */
             canPublish: boolean;
+            /** @description What would make it easier to book, done or not (§303). */
+            advice: components["schemas"]["AdviceItemDto"][];
         };
         BusinessPauseStateDto: {
             id: string;
@@ -5199,6 +5235,11 @@ export interface components {
             payoutDestinations: components["schemas"]["AdminPayoutNumberDto"][];
             /** @description Its checklist, worked out by the same rules the shop sees (§255). */
             readiness: components["schemas"]["BusinessReadinessDto"];
+        };
+        ApproveBusinessDto: {
+            advice?: ("cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout")[];
+            /** @description Sent to the shop as it is written, so write it for them to read. */
+            note?: string;
         };
         ChangeBusinessStatusDto: {
             reason: string;
@@ -12944,7 +12985,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveBusinessDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {

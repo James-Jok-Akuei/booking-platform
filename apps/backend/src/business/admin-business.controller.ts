@@ -23,6 +23,7 @@ import {
   AdminBusinessDto,
   AdminBusinessPageDto,
 } from './dto/admin-business-response.dto';
+import { ApproveBusinessDto } from './dto/approve-business.dto';
 import { ChangeBusinessStatusDto } from './dto/change-business-status.dto';
 import { ListBusinessesDto } from './dto/list-businesses.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
@@ -56,13 +57,15 @@ export class AdminBusinessController {
     return this.moderation.findOne(user, id);
   }
 
+  /** With advice for the shop, if the reviewer sends some (§303). */
   @Patch(':id/approve')
   @ApiOkResponse({ type: AdminBusinessDto })
   approve(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ApproveBusinessDto,
   ) {
-    return this.moderation.approve(user, id);
+    return this.moderation.approve(user, id, { keys: dto.advice, note: dto.note });
   }
 
   @Patch(':id/reject')

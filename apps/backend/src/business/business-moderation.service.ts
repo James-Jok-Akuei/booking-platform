@@ -19,6 +19,7 @@ import { ADMIN_BUSINESS_SELECT } from './dto/admin-business-response.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { findBusinessTransition } from './business-status';
 import { GO_LIVE_WORDS, READINESS_SELECT, goLiveGaps, listInWords, readinessView } from './readiness';
+import { adviceItems, adviceToSend, type AdviceItem } from './shop-advice';
 import { ListBusinessesDto } from './dto/list-businesses.dto';
 
 /** What an admin reviewing an application needs to see. */
@@ -151,8 +152,17 @@ export class BusinessModerationService {
     return { ...business, readiness: readinessView(shop) };
   }
 
-  approve(actor: { userId: string; role: UserRole | string }, businessId: string) {
-    return this.transition(actor, businessId, BusinessStatus.APPROVED);
+  /**
+   * With advice, if the reviewer sends some (§303): of the things still
+   * missing, the ones they chose, and their own note — in the approval notice,
+   * and kept on the shop for its dashboard and the next reviewer.
+   */
+  approve(
+    actor: { userId: string; role: UserRole | string },
+    businessId: string,
+    advice: { keys?: string[]; note?: string | null } = {},
+  ) {
+    return this.transition(actor, businessId, BusinessStatus.APPROVED, undefined, false, advice);
   }
 
   reject(
@@ -189,6 +199,7 @@ export class BusinessModerationService {
     to: BusinessStatus,
     reason?: string,
     isReinstatement = false,
+    advice: { keys?: string[]; note?: string | null } = {},
   ) {
     this.assertAdmin(actor);
 
@@ -213,6 +224,10 @@ export class BusinessModerationService {
       );
     }
 
+    // What the approval sends as advice (§303): worked out from the shop as it
+    // is now, so nothing it has added since the panel opened is asked for.
+    let advised: { items: AdviceItem[]; note: string | null } = { items: [], note: null };
+
     // An APPROVED business may be listed — the moment it posts itself (§268)
     // — so it must be one a customer can use (§53.1, §255): a name — a nameless listing is a blank in
     // search — and an open branch with hours and a service to book there. The
@@ -223,6 +238,7 @@ export class BusinessModerationService {
         where: { id: businessId },
         select: READINESS_SELECT,
       });
+      if (!isReinstatement) advised = adviceToSend(adviceItems(shop), advice.keys, advice.note);
       const gaps = goLiveGaps(shop);
       if (gaps.includes('name')) {
         throw new BadRequestException(
@@ -255,6 +271,15 @@ export class BusinessModerationService {
         // Kept after the shop fixes things and sends itself back (§255), so
         // whoever reviews it next can see what was asked.
         ...(to === BusinessStatus.REJECTED ? { lastRejectionReason: reason!.trim() } : {}),
+        // What this approval advised, replacing any earlier one; none is none.
+        ...(to === BusinessStatus.APPROVED && !isReinstatement
+          ? {
+              approvalAdvice:
+                advised.items.length || advised.note
+                  ? { keys: advised.items.map((item) => item.key), note: advised.note, at: new Date().toISOString() }
+                  : Prisma.DbNull,
+            }
+          : {}),
         statusChangedAt: new Date(),
         statusChangedById: actor.userId,
       },
@@ -263,10 +288,13 @@ export class BusinessModerationService {
 
     this.logger.warn(
       `Business ${businessId} moved ${business.status} -> ${to} by admin ${actor.userId}` +
-        (reason ? `: ${reason.trim()}` : '.'),
+        (reason ? `: ${reason.trim()}` : '.') +
+        (advised.items.length || advised.note
+          ? ` Advised: ${advised.items.map((item) => item.key).join(', ') || 'a note only'}.`
+          : ''),
     );
 
-    await this.notifyMembers(businessId, to, isReinstatement, updated.statusReason);
+    await this.notifyMembers(businessId, to, isReinstatement, updated.statusReason, advised);
 
     return updated;
   }
@@ -282,6 +310,7 @@ export class BusinessModerationService {
     to: BusinessStatus,
     isReinstatement: boolean,
     reason: string | null,
+    advised: { items: AdviceItem[]; note: string | null },
   ) {
     const type = isReinstatement
       ? NotificationType.BUSINESS_REINSTATED
@@ -297,6 +326,9 @@ export class BusinessModerationService {
         businessName: 'your business',
         startTime: undefined as unknown as Date,
         reason: reason ?? undefined,
+        ...(advised.items.length || advised.note
+          ? { advice: { items: advised.items.map(({ title, why }) => ({ title, why })), note: advised.note } }
+          : {}),
       },
     });
   }

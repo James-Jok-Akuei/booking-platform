@@ -302,6 +302,36 @@ export function list(items: Array<{ when: string; title: string; detail?: string
   );
 }
 
+/**
+ * Things still to do, each with an empty box beside it (§303) — advice, read
+ * down a list and ticked off in the reader's own time.
+ */
+export function todo(items: Array<{ title: string; detail?: string | null }>): Block {
+  if (items.length === 0) return block('', '');
+  const html = items
+    .map(
+      (item, i) =>
+        '<tr>' +
+        `<td class="em-line" valign="top" style="padding:14px 14px 14px 0;${i ? `border-top:1px solid ${C.line};` : ''}width:22px">` +
+        `<div style="width:16px;height:16px;border:2px solid ${C.accent};border-radius:6px;margin-top:1px;font-size:0;line-height:0">&nbsp;</div>` +
+        '</td>' +
+        `<td class="em-line" valign="top" style="padding:14px 0;${i ? `border-top:1px solid ${C.line};` : ''}font-family:${FONT}">` +
+        p(`font-size:15px;line-height:21px;font-weight:700;color:${C.ink}`, `<span class="em-ink">${esc(item.title)}</span>`) +
+        (item.detail
+          ? p(
+              `font-size:13.5px;line-height:20px;color:${C.muted};padding-top:2px`,
+              `<span class="em-muted">${esc(item.detail)}</span>`,
+            )
+          : '') +
+        '</td></tr>',
+    )
+    .join('');
+  return block(
+    row(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${html}</table>`),
+    items.map((item) => `[ ] ${item.title}${item.detail ? ` — ${item.detail}` : ''}`).join('\n'),
+  );
+}
+
 /** A booking, as a ticket: what, where, when, and what is left to pay (§292). */
 export interface Ticket {
   photoUrl?: string | null;

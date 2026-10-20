@@ -1,4 +1,5 @@
 import { NotificationType } from '@prisma/client';
+import { ADVICE_LEAD } from '../business/shop-advice';
 import { INTERNAL_CURRENCY, formatMoney } from '../payments/currency';
 import { Audience, dayWord } from './notification-catalog';
 
@@ -12,7 +13,19 @@ export interface AppointmentContext {
   reason?: string;
   /** Whether the deposit was ever paid; left out where it does not matter. */
   depositPaid?: boolean;
+  /** Sent with an approval (§303): what to add, each with why, and the reviewer's own note. */
+  advice?: { items: Array<{ title: string; why: string }>; note: string | null };
 }
+
+/**
+ * The advice under an approval (§303): the sentence, the list — one "• "
+ * line each, which the email draws as a checklist — and the reviewer's note
+ * in quotes, which it draws as their words.
+ */
+const adviceWords = (advice?: AppointmentContext['advice']) =>
+  (advice?.items.length
+    ? `\n\n${ADVICE_LEAD}\n\n${advice.items.map((item) => `• ${item.title} — ${item.why}.`).join('\n')}`
+    : '') + (advice?.note ? `\n\n“${advice.note}”` : '');
 
 /** Money for a person to read: "RWF 5,200" (§292). */
 const money = (minor?: number, currency = INTERNAL_CURRENCY) =>
@@ -358,7 +371,8 @@ export function renderNotification(
         body:
           'Good news — your shop has been approved.\n\n' +
           'Customers cannot see it yet. When you are ready, press "Post my shop" in your dashboard, and from then ' +
-          'they can find your branches, see your times and book with you. Anything you would like to change first, you can change now.',
+          'they can find your branches, see your times and book with you. Anything you would like to change first, you can change now.' +
+          adviceWords(ctx.advice),
       };
 
     case NotificationType.BUSINESS_REJECTED:

@@ -286,6 +286,21 @@ describe('The emails, in the platform design (§292)', () => {
       { depositAmountMinor: 9400, currency: 'RWF', reason: 'The number is not registered for MoMo.' },
     ],
     [NotificationType.BUSINESS_APPROVED, 'BUSINESS'],
+    // With advice from the reviewer (§303): a checklist, then their note.
+    [
+      NotificationType.BUSINESS_APPROVED,
+      'BUSINESS',
+      {
+        advice: {
+          items: [
+            { title: 'A cover photo', why: 'the first thing customers see on your page' },
+            { title: 'Photos of Kimironko', why: 'customers want to see the place they are walking into' },
+            { title: 'A description on 3 services', why: 'shown under “About this service” before they book' },
+          ],
+          note: 'Your haircuts look great. A bright photo of the shop front would help people find you on the street.',
+        },
+      },
+    ],
     [
       NotificationType.BUSINESS_SUSPENDED,
       'BUSINESS',

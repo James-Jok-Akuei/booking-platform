@@ -5904,6 +5904,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveBusinessDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -5956,6 +5966,7 @@
             }
           }
         },
+        "summary": "With advice for the shop, if the reviewer sends some (§303).",
         "tags": [
           "AdminBusiness"
         ]
@@ -19326,6 +19337,29 @@
           "homeLabel"
         ]
       },
+      "ExportedChoiceDto": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "option": {
+            "type": "string"
+          },
+          "priceMinor": {
+            "type": "number"
+          },
+          "extraMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "group",
+          "option",
+          "priceMinor",
+          "extraMinutes"
+        ]
+      },
       "ExportedServiceDto": {
         "type": "object",
         "properties": {
@@ -19355,6 +19389,14 @@
       "ExportedBookingDto": {
         "type": "object",
         "properties": {
+          "choices": {
+            "description": "What they picked when booking (§300): the question, the answer, what it added.",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedChoiceDto"
+            }
+          },
           "id": {
             "type": "string"
           },
@@ -19399,6 +19441,19 @@
           "createdAt": {
             "type": "string"
           },
+          "customerNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "Their note to the shop (§300.5)."
+          },
+          "privateAnswers": {
+            "nullable": true,
+            "description": "Their private answers (§300.6), while kept — removed 30 days after the\nvisit. Null when there were none.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExportedChoiceDto"
+            }
+          },
           "service": {
             "$ref": "#/components/schemas/ExportedServiceDto"
           },
@@ -19407,6 +19462,7 @@
           }
         },
         "required": [
+          "choices",
           "id",
           "status",
           "startTime",
@@ -19418,6 +19474,8 @@
           "cancelledAt",
           "cancellationReason",
           "createdAt",
+          "customerNote",
+          "privateAnswers",
           "service",
           "location"
         ]
@@ -20618,6 +20676,44 @@
           "subcategoryIds"
         ]
       },
+      "ApprovalAdviceDto": {
+        "type": "object",
+        "properties": {
+          "keys": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "cover",
+                "logo",
+                "about",
+                "type",
+                "phone",
+                "gallery",
+                "hours",
+                "where",
+                "service-photos",
+                "service-words",
+                "payout"
+              ]
+            }
+          },
+          "note": {
+            "type": "string",
+            "nullable": true,
+            "description": "The reviewer's own words, if they wrote any."
+          },
+          "at": {
+            "type": "string",
+            "description": "When the shop was approved with it."
+          }
+        },
+        "required": [
+          "keys",
+          "note",
+          "at"
+        ]
+      },
       "ReadinessItemDto": {
         "type": "object",
         "properties": {
@@ -20648,6 +20744,44 @@
           "done"
         ]
       },
+      "AdviceItemDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "enum": [
+              "cover",
+              "logo",
+              "about",
+              "type",
+              "phone",
+              "gallery",
+              "hours",
+              "where",
+              "service-photos",
+              "service-words",
+              "payout"
+            ],
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string",
+            "description": "\"Photos of Kimironko\", \"A description on 3 services\"."
+          },
+          "why": {
+            "type": "string",
+            "description": "Why it matters, as the shop reads it."
+          }
+        },
+        "required": [
+          "key",
+          "done",
+          "title",
+          "why"
+        ]
+      },
       "BusinessReadinessDto": {
         "type": "object",
         "properties": {
@@ -20667,6 +20801,16 @@
                 "payout"
               ]
             }
+          },
+          "approvalAdvice": {
+            "nullable": true,
+            "description": "What we advised on approval; null when nothing was.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalAdviceDto"
+              }
+            ]
           },
           "status": {
             "enum": [
@@ -20713,10 +20857,18 @@
           "canPublish": {
             "type": "boolean",
             "description": "Approved, not yet posted, and still bookable — \"Post my shop\" can be pressed."
+          },
+          "advice": {
+            "description": "What would make it easier to book, done or not (§303).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdviceItemDto"
+            }
           }
         },
         "required": [
           "goLiveGaps",
+          "approvalAdvice",
           "status",
           "statusReason",
           "submittedAt",
@@ -20725,7 +20877,8 @@
           "items",
           "ready",
           "canSubmit",
-          "canPublish"
+          "canPublish",
+          "advice"
         ]
       },
       "BusinessPauseStateDto": {
@@ -22991,6 +23144,36 @@
           "payoutDestinations",
           "readiness"
         ]
+      },
+      "ApproveBusinessDto": {
+        "type": "object",
+        "properties": {
+          "advice": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "cover",
+                "logo",
+                "about",
+                "type",
+                "phone",
+                "gallery",
+                "hours",
+                "where",
+                "service-photos",
+                "service-words",
+                "payout"
+              ]
+            }
+          },
+          "note": {
+            "type": "string",
+            "description": "Sent to the shop as it is written, so write it for them to read.",
+            "maxLength": 600
+          }
+        }
       },
       "ChangeBusinessStatusDto": {
         "type": "object",

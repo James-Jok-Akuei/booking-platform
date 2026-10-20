@@ -543,6 +543,11 @@ model BusinessProfile {
   /// What the last rejection said, kept once the shop has fixed things and
   /// sent itself back (§255): `statusReason` describes the current status.
   lastRejectionReason String?
+  /// The advice sent with its approval (§303): the things still missing the
+  /// reviewer chose to mention, their own note, and when —
+  /// `{ keys: string[], note: string | null, at: ISO date }`. The shop sees it
+  /// on its dashboard until it posts; the next reviewer sees what was said.
+  approvalAdvice      Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

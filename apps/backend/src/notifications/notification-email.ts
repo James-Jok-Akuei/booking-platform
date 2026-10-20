@@ -1,6 +1,6 @@
 import { AppointmentStatus, NotificationType } from '@prisma/client';
 import { BookingFacts, bookingTicket, clockOf, icsFile } from '../mail/booking-email';
-import { Badge, Block, Email, Tone, amount, codeBoxes, facts, letter, list, prose, quote } from '../mail/email-kit';
+import { Badge, Block, Email, Tone, amount, codeBoxes, facts, letter, list, prose, quote, todo } from '../mail/email-kit';
 import { Audience, dayWord } from './notification-catalog';
 
 const T = NotificationType;
@@ -125,6 +125,36 @@ const ABOUT_A_BOOKING = new Set<NotificationType>([
   // Only when it is about one: a shop paused by support has no booking (§297).
   T.SUPPORT_UPDATE,
 ]);
+
+/**
+ * The words after the lead, in their order: plain paragraphs as prose, and a
+ * paragraph of "• " lines — the advice under an approval (§303) — as a
+ * checklist, each line's "Title — why" split into its two parts.
+ */
+function wordsAndLists(paragraphs: string[]): Block[] {
+  const blocks: Block[] = [];
+  let run: string[] = [];
+  const flush = () => {
+    if (run.length) blocks.push(prose(run.join('\n\n')));
+    run = [];
+  };
+  for (const para of paragraphs) {
+    const lines = para.split('\n');
+    if (lines.every((line) => line.startsWith('• '))) {
+      flush();
+      blocks.push(
+        todo(
+          lines.map((line) => {
+            const [title, ...why] = line.slice(2).split(' — ');
+            return { title: title.trim(), detail: why.length ? why.join(' — ').replace(/\.$/, '') : null };
+          }),
+        ),
+      );
+    } else run.push(para);
+  }
+  flush();
+  return blocks;
+}
 
 /** Details the ticket already shows, so they are not said twice. */
 const ON_THE_TICKET = new Set(['Service', 'Where', 'When', 'Deposit', 'Deposit paid']);
@@ -272,6 +302,20 @@ export function noticeEmail(n: NoticeForEmail): { email: Email; calendar: string
     booking.status === AppointmentStatus.BOOKED &&
     (n.type === T.DEPOSIT_CONFIRMED || n.type === T.APPOINTMENT_REMINDER);
 
+  // Someone's own words. A reviewer's note on an approval (§303) closes the
+  // email, after the advice it goes with, and says who it is from.
+  const noteLast = n.type === T.BUSINESS_APPROVED;
+  const said = quotes.map((q) =>
+    quote(
+      q,
+      n.type === T.NEW_MESSAGE && customer
+        ? n.subject.replace(/^New message from /, '')
+        : noteLast
+          ? 'Our review team'
+          : null,
+    ),
+  );
+
   const blocks: Array<Block | null> = [
     amountRow
       ? amount({
@@ -292,14 +336,11 @@ export function noticeEmail(n: NoticeForEmail): { email: Email; calendar: string
       ? letter(words.join('\n\n'), n.type === T.SHOP_MESSAGE ? (n.author?.name ?? null) : 'The BwanguReservations team')
       : null,
     n.type === T.SHOP_MESSAGE && n.author ? prose(`Open ${n.author.name} in the app to book.`) : null,
-    ...quotes.map((q) =>
-      quote(q, n.type === T.NEW_MESSAGE && customer ? n.subject.replace(/^New message from /, '') : null),
-    ),
+    ...(noteLast ? [] : said),
     shown.length ? facts(shown.map((d) => ({ ...d, strong: d.label === 'Reference' }))) : null,
     // The code is shown above, so the sentence pointing to it is not needed.
-    !written && rest.filter((para) => !(going && n.arrivalCode && /arrival code/i.test(para))).length
-      ? prose(rest.filter((para) => !(going && n.arrivalCode && /arrival code/i.test(para))).join('\n\n'))
-      : null,
+    ...(written ? [] : wordsAndLists(rest.filter((para) => !(going && n.arrivalCode && /arrival code/i.test(para))))),
+    ...(noteLast ? said : []),
   ];
 
   const eyebrow = typeof look.eyebrow === 'function' ? look.eyebrow(n.audience) : look.eyebrow;

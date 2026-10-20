@@ -4,7 +4,6 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { ApiError } from '../api/client';
 import { useMoney } from '../money';
 import {
-  approveBusiness,
   getBusiness,
   listBusinesses,
   reinstateBusiness,
@@ -22,6 +21,7 @@ import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import { StaticMap } from '../ui/StaticMap';
 import { ShopActPanel, ShopSupportSection, type ShopAct } from './ShopSupport';
+import { AdviceSent, ApprovePanel } from './ApproveShop';
 import './businesses.css';
 import { WriteFirst } from '../components/WriteFirst';
 import { RichText } from '../ui/RichText';
@@ -118,13 +118,17 @@ const allKinds = (b: Kinded) =>
  * of that panel, beside the evidence; the row keeps quick buttons for the
  * obvious cases.
  *
- * Approving asks first: it puts the shop in front of every customer at once.
+ * Approving opens its own step (§303): the things that would make the shop
+ * easier to book and are not in yet, ticked, to send as advice with a note —
+ * and a preview of what the shop will read.
  */
 export function BusinessesPage() {
   const [params, setParams] = useSearchParams();
   const tab = tabFrom(params.get('status'));
   const query = TABS.find((t) => t.value === tab)!.query;
   const openId = params.get('open');
+  // Approving is a step of its own in the panel (§303), reachable from a row too.
+  const approving = params.get('step') === 'approve';
   const [typed, setTyped] = useState(params.get('q') ?? '');
   const q = params.get('q') ?? '';
   const queryClient = useQueryClient();
@@ -172,10 +176,8 @@ export function BusinessesPage() {
   });
 
   const act = useMutation({
-    mutationFn: (input: { id: string; action: 'approve' | 'reinstate' | 'reject' | 'suspend'; reason?: string }) => {
+    mutationFn: (input: { id: string; action: 'reinstate' | 'reject' | 'suspend'; reason?: string }) => {
       switch (input.action) {
-        case 'approve':
-          return approveBusiness(input.id);
         case 'reinstate':
           return reinstateBusiness(input.id);
         case 'reject':
@@ -279,7 +281,7 @@ export function BusinessesPage() {
               business={business}
               busy={act.isPending && act.variables?.id === business.id}
               onOpen={() => patch({ open: business.id })}
-              onApprove={() => decide.approve(business)}
+              onApprove={() => patch({ open: business.id, step: 'approve' })}
               onReject={() => decide.reject(business)}
             />
           ))}
@@ -299,31 +301,27 @@ export function BusinessesPage() {
         </div>
       )}
 
-      {openId && <ReviewPanel id={openId} onClose={() => patch({ open: null })} decide={decide} busy={act.isPending} />}
+      {openId && (
+        <ReviewPanel
+          id={openId}
+          onClose={() => patch({ open: null, step: null })}
+          decide={decide}
+          busy={act.isPending}
+          approving={approving}
+          onApproving={(on) => patch({ step: on ? 'approve' : null })}
+        />
+      )}
     </section>
   );
 }
 
-/** The four decisions, each asked first in plain words (§242.4). */
-function useDecisions(run: (input: { id: string; action: 'approve' | 'reinstate' | 'reject' | 'suspend'; reason?: string }) => void) {
+/**
+ * The other three decisions, each asked first in plain words (§242.4).
+ * Approving has its own step, with advice (§303, `ApproveShop.tsx`).
+ */
+function useDecisions(run: (input: { id: string; action: 'reinstate' | 'reject' | 'suspend'; reason?: string }) => void) {
   const label = (b: { name: string | null }) => nameOf(b) ?? 'this business';
   return {
-    approve: async (b: { id: string; name: string | null; status: BusinessStatus }) => {
-      const sure = await confirmDialog({
-        title: `Approve ${label(b)}?`,
-        body: (
-          <p>
-            Customers can find {nameOf(b) ? <strong>{nameOf(b)}</strong> : 'it'} in search and book straight away. The
-            owner is told by email.
-          </p>
-        ),
-        tone: 'ok',
-        icon: 'checkCircle',
-        confirmLabel: 'Approve',
-        cancelLabel: 'Not yet',
-      });
-      if (sure) run({ id: b.id, action: 'approve' });
-    },
     reinstate: async (b: { id: string; name: string | null }) => {
       const sure = await confirmDialog({
         title: `Reinstate ${label(b)}?`,
@@ -510,11 +508,16 @@ function ReviewPanel({
   onClose,
   decide,
   busy,
+  approving,
+  onApproving,
 }: {
   id: string;
   onClose: () => void;
   decide: ReturnType<typeof useDecisions>;
   busy: boolean;
+  /** On the approval step (§303). */
+  approving: boolean;
+  onApproving: (on: boolean) => void;
 }) {
   const money = useMoney();
   const business = useQuery({ queryKey: ['business', id], queryFn: () => getBusiness(id) });
@@ -532,7 +535,7 @@ function ReviewPanel({
             <Icon name="xCircle" size={17} />
             Reject
           </button>
-          <button type="button" className="primary" disabled={busy || blocked} onClick={() => decide.approve(b)}>
+          <button type="button" className="primary" disabled={busy || blocked} onClick={() => onApproving(true)}>
             <Icon name="checkCircle" size={17} />
             {blocked ? 'Cannot go live yet' : 'Approve'}
           </button>
@@ -552,7 +555,7 @@ function ReviewPanel({
       )}
       {b.status === 'REJECTED' && (
         // The appeal path (§42): a rejected shop that fixed things can be approved.
-        <button type="button" className="primary" disabled={busy || blocked} onClick={() => decide.approve(b)}>
+        <button type="button" className="primary" disabled={busy || blocked} onClick={() => onApproving(true)}>
           <Icon name="checkCircle" size={17} />
           Approve after all
         </button>
@@ -562,6 +565,9 @@ function ReviewPanel({
 
   if (b && act)
     return <ShopActPanel businessId={b.id} shopName={name ?? 'A shop'} act={act} onBack={() => setAct(null)} onClose={onClose} />;
+  // Only a shop waiting on a decision, and one that could go live (§255).
+  if (b && approving && !blocked && (b.status === 'PENDING' || b.status === 'REJECTED'))
+    return <ApprovePanel business={b} shopName={name ?? 'A shop'} onBack={() => onApproving(false)} onClose={onClose} />;
 
   return (
     <Panel
@@ -655,6 +661,12 @@ function ReviewPanel({
               ))}
             </ul>
           </Section>
+
+          {b.readiness.approvalAdvice && b.status === 'APPROVED' && (
+            <Section icon="mail" title="Advice sent with the approval">
+              <AdviceSent business={b} />
+            </Section>
+          )}
 
           <Section icon="info" title="About">
             {hasRichText(b.description) ? (

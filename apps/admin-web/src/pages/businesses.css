@@ -168,3 +168,65 @@
 .bz-checks li.is-gate em { color: #9f2318; }
 .bz-gate { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 10px; padding: 10px 12px; border-radius: var(--r-md); background: var(--danger-soft); color: #9f2318; font-size: 13px; font-weight: 600; line-height: 1.45; }
 .bz-gate svg { flex: none; margin-top: 2px; }
+
+/* ---------------------------------------------------------------------------
+   Approving, with advice (§303): what to mention, a note, and the message as
+   the shop will read it. */
+.ap-section { margin-top: 18px; }
+.ap-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.ap-head h3 { margin: 0; font-size: 15px; font-weight: 750; color: var(--ink); }
+.ap-head p { margin: 3px 0 0; font-size: 13px; line-height: 1.45; font-weight: 550; color: var(--muted); }
+.ap-all { flex: none; padding: 6px 12px; border-radius: var(--r-pill); font-size: 12.5px; font-weight: 700; background: var(--sunken); border: 0; color: var(--ink-2); cursor: pointer; }
+.ap-all:hover { background: var(--sunken-2); }
+
+.ap-items { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border-radius: 18px; background: var(--sunken); }
+.ap-item { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border-radius: 14px; background: var(--panel); border: 1.5px solid transparent; cursor: pointer; transition: border-color 160ms var(--ease), background 160ms var(--ease), transform 160ms var(--ease); }
+.ap-item:hover { border-color: rgba(240, 83, 45, 0.25); }
+.ap-item:active { transform: scale(0.99); }
+.ap-item input { position: absolute; opacity: 0; pointer-events: none; }
+.ap-item:has(input:focus-visible) { box-shadow: var(--ring); }
+.ap-box { flex: none; width: 20px; height: 20px; margin-top: 1px; display: grid; place-items: center; border-radius: 7px; border: 2px solid var(--line-strong); color: transparent; transition: background 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease); }
+.ap-item.is-on { border-color: rgba(240, 83, 45, 0.45); background: var(--accent-tint); }
+.ap-item.is-on .ap-box { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ap-words { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ap-words strong { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.ap-words span { font-size: 12px; line-height: 1.4; color: var(--muted); font-weight: 550; }
+
+.ap-note { margin-top: 18px; }
+.ap-note label { position: relative; }
+.ap-count { align-self: flex-end; font-size: 11.5px; color: var(--faint); font-weight: 650; }
+
+/* The message, drawn like the email (§292). */
+.ap-letter { overflow: hidden; border-radius: 22px; border: 1px solid var(--line); background: var(--panel); box-shadow: var(--shadow-sm); }
+.ap-letter-top { display: flex; flex-direction: column; gap: 4px; padding: 20px 22px 18px; background: linear-gradient(180deg, #e8f6ee, #f1faf4); }
+.ap-letter-mark { width: 34px; height: 34px; margin-bottom: 6px; display: grid; place-items: center; border-radius: 50%; background: var(--ok); color: #fff; }
+.ap-letter-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ok-deep); }
+.ap-letter-top strong { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
+.ap-letter-top > span:last-child { font-size: 14px; color: var(--ink-2); }
+.ap-letter-body { display: flex; flex-direction: column; gap: 12px; padding: 18px 22px 22px; font-size: 14px; line-height: 1.6; color: var(--ink-2); }
+.ap-letter-body p { margin: 0; }
+.ap-letter-list { list-style: none; margin: 0; padding: 0; }
+.ap-letter-list li { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); animation: ap-in 260ms var(--ease) both; }
+.ap-letter-list li:first-child { border-top: 0; padding-top: 2px; }
+.ap-letter-list li > span { flex: none; width: 14px; height: 14px; margin-top: 3px; border-radius: 5px; border: 2px solid var(--accent); }
+.ap-letter-list strong { display: block; font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.4; }
+.ap-letter-list em { font-style: normal; font-size: 12.5px; color: var(--muted); }
+.ap-letter blockquote { margin: 2px 0 0; padding: 14px 16px; border-radius: 16px; border-left: 4px solid var(--accent); background: var(--sunken); font-weight: 650; color: var(--ink); animation: ap-in 260ms var(--ease) both; overflow-wrap: anywhere; }
+.ap-letter cite { display: block; margin-top: 6px; font-style: normal; font-size: 12px; font-weight: 600; color: var(--muted); }
+@keyframes ap-in { from { opacity: 0; transform: translateY(4px); } }
+
+/* Sent with the approval, on the shop's panel afterwards. */
+.ap-sent { display: flex; flex-direction: column; gap: 10px; }
+.ap-sent-when { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; font-weight: 650; color: var(--muted); }
+.ap-sent-list { list-style: none; margin: 0; padding: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; border-radius: 18px; background: var(--sunken); }
+.ap-sent-list li { display: flex; gap: 9px; align-items: flex-start; padding: 9px 11px; border-radius: 13px; background: var(--panel); font-size: 13px; font-weight: 650; }
+.ap-sent-list li svg { flex: none; margin-top: 1px; color: var(--warn); }
+.ap-sent-list li.is-done svg { color: var(--ok); }
+.ap-sent-list li span { display: flex; flex-direction: column; gap: 1px; }
+.ap-sent-list em { font-style: normal; font-size: 12px; font-weight: 550; color: var(--muted); }
+.ap-sent-note { margin: 0; padding: 12px 14px; border-radius: 14px; border-left: 4px solid var(--accent); background: var(--sunken); font-size: 13.5px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+
+@media (max-width: 640px) {
+  .ap-items, .ap-sent-list { grid-template-columns: minmax(0, 1fr); }
+  .ap-head { flex-direction: column; }
+}
