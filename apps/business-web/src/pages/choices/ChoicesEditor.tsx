@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   getChoiceSuggestions,
@@ -9,14 +9,21 @@ import {
 import type { useMoney } from '../../money';
 import { confirmDialog } from '../../ui/Dialog';
 import { Icon } from '../../ui/Icon';
+import { MoreMenu } from '../../ui/MoreMenu';
 import { Select } from '../../ui/Select';
 import { Switch } from '../../ui/Switch';
 import './choices.css';
 
 /**
- * Choices (§300): the questions a customer answers while booking this
- * service — hair length, car size, "no salt" — and what each answer adds to
- * the price and the time.
+ * Questions for customers (§300, §304): what a customer answers while
+ * booking this service — the cut, the size of the car, "no salt" — and what
+ * each answer adds to the price and the time.
+ *
+ * Built for a seller who meets it alone, with nobody to explain it (§304):
+ * a ready-made question is one tap to add and one to take back; each question
+ * is three plain steps — what you ask, how many answers, the answers — with
+ * every box labelled where it sits; the rarer settings wait under "More
+ * options"; and a preview shows it as the customer will.
  *
  * Everything here is the form's own until "Save changes" or "Post" (§281):
  * customers see the questions only once the service is saved.
@@ -58,7 +65,16 @@ export type GroupDraft = {
   suggestionKey: string | null;
   options: OptionDraft[];
   open: boolean;
+  /** Just added and not changed since: taking it back asks nothing. */
+  fresh?: boolean;
 };
+
+/** What the customer is asked — or, before the words are written, its short name. */
+export const titleOf = (g: Pick<GroupDraft, 'name' | 'question'>) => g.question.trim() || g.name.trim();
+
+/** A short name for the shop's bookings, from the question when none was written: "Which cut?" → "Which cut". */
+const shortName = (g: Pick<GroupDraft, 'name' | 'question'>) =>
+  g.name.trim() || g.question.trim().replace(/[?？]+$/, '').trim().slice(0, 60);
 
 let made = 0;
 const newKey = (what: string) => `${what}-${Date.now().toString(36)}-${(made += 1)}`;
@@ -160,7 +176,7 @@ export function groupsToInput(groups: GroupDraft[], money: Money): ChoiceGroupIn
     const optionAt = parentAt >= 0 ? groups[parentAt].options.findIndex((o) => o.key === g.showIf!.optionKey) : -1;
     return {
       ...(g.id ? { id: g.id } : {}),
-      name: g.name.trim(),
+      name: shortName(g),
       question: g.question.trim() || null,
       kind: g.kind,
       required: g.required,
@@ -183,13 +199,13 @@ export function groupsToInput(groups: GroupDraft[], money: Money): ChoiceGroupIn
 /** What would stop the questions being saved, in words — or null. */
 export function choicesProblem(groups: GroupDraft[]): string | null {
   for (const [index, g] of groups.entries()) {
-    const name = g.name.trim() || `Question ${index + 1}`;
-    if (!g.name.trim()) return `Question ${index + 1} needs a name.`;
-    if (g.options.length === 0) return `“${name}” needs at least one answer.`;
+    const title = titleOf(g);
+    if (!title) return `Question ${index + 1}: write what you ask customers.`;
+    if (g.options.length === 0) return `“${title}”: add at least one answer.`;
     const blank = g.options.findIndex((o) => !o.label.trim());
-    if (blank >= 0) return `Answer ${blank + 1} of “${name}” needs a name.`;
+    if (blank >= 0) return `“${title}”: answer ${blank + 1} is empty — write it, or remove it.`;
     if (g.required && !g.options.some((o) => o.available)) {
-      return `“${name}” must be answered, so at least one answer has to be available.`;
+      return `“${title}”: customers must answer it, so at least one answer has to be offered.`;
     }
   }
   return null;
@@ -208,6 +224,7 @@ function fromSuggestion(s: ChoiceSuggestion): GroupDraft {
     showIf: null,
     suggestionKey: s.key,
     open: true,
+    fresh: true,
     options: s.options.map((o) => ({
       key: newKey('o'),
       label: o.label,
@@ -274,13 +291,20 @@ export function ChoicesEditor({
   const sections = suggestions.data?.sections ?? [];
   const [sectionAt, setSectionAt] = useState(0);
   const section = sections[Math.min(sectionAt, Math.max(sections.length - 1, 0))];
-  const added = new Set(groups.map((g) => g.suggestionKey).filter(Boolean));
   const full = groups.length >= MAX_GROUPS;
 
   /** Every change, kept sound: "show only if" pointing up one step, private under private. */
   const change = (fn: (was: GroupDraft[]) => GroupDraft[]) => onGroups((was) => normalise(fn(was)));
   const update = (key: string, edit: (g: GroupDraft) => GroupDraft) =>
     change((was) => was.map((g) => (g.key === key ? edit(g) : g)));
+
+  /** Open one question, close the rest, and bring it into view. */
+  const openOnly = (key: string) => {
+    change((was) => was.map((g) => ({ ...g, open: g.key === key })));
+    requestAnimationFrame(() =>
+      document.getElementById(`ch-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }),
+    );
+  };
 
   const addSuggestion = (s: ChoiceSuggestion) => {
     const all = sections.flatMap((x) => x.suggestions);
@@ -302,14 +326,15 @@ export function ChoicesEditor({
     });
   };
 
-  const addOwn = () =>
+  const addOwn = () => {
+    const key = newKey('g');
     change((was) =>
       was.length >= MAX_GROUPS
         ? was
         : [
             ...was.map((g) => ({ ...g, open: false })),
             {
-              key: newKey('g'),
+              key,
               name: '',
               question: '',
               kind: 'ONE',
@@ -319,24 +344,28 @@ export function ChoicesEditor({
               showIf: null,
               suggestionKey: null,
               open: true,
+              fresh: true,
               options: [blankOption(), blankOption()],
             },
           ],
     );
+    requestAnimationFrame(() => document.getElementById(`${key}-q`)?.focus());
+  };
 
   const remove = async (group: GroupDraft) => {
-    if (group.id || group.name.trim() || group.options.some((o) => o.label.trim())) {
-      const children = groups.filter((g) => g.showIf?.groupKey === group.key);
+    const touched = group.id || (!group.fresh && (titleOf(group) || group.options.some((o) => o.label.trim())));
+    const children = groups.filter((g) => g.showIf?.groupKey === group.key);
+    if (touched || children.length > 0) {
       const ok = await confirmDialog({
-        title: `Remove “${group.name.trim() || 'this question'}”?`,
+        title: `Remove “${titleOf(group) || 'this question'}”?`,
         body: (
           <p>
             Customers stop being asked it once you save. Bookings already made keep the answers they had.
             {children.length > 0 && (
               <>
                 {' '}
-                {children.map((c) => `“${c.name}”`).join(' and ')} {children.length === 1 ? 'depends' : 'depend'} on it, so{' '}
-                {children.length === 1 ? 'it will be' : 'they will be'} asked every time.
+                {children.map((c) => `“${titleOf(c)}”`).join(' and ')} {children.length === 1 ? 'was' : 'were'} asked only
+                after an answer here, so {children.length === 1 ? 'it will be' : 'they will be'} asked every time.
               </>
             )}
           </p>
@@ -376,21 +405,12 @@ export function ChoicesEditor({
     return true;
   };
 
+  const ready = groups.some((g) => titleOf(g) && g.options.some((o) => o.label.trim()));
+  const kindName = section ? (section.subcategory === 'Other' ? section.category : section.subcategory) : null;
+
   return (
     <div className="ch">
-      {groups.length === 0 && (
-        <div className="ch-empty">
-          <div className="ch-empty-art" aria-hidden="true">
-            <span style={{ animationDelay: '0ms' }}>Long hair · +30 min</span>
-            <span style={{ animationDelay: '140ms' }}>SUV · +{money.code} 3,000</span>
-            <span style={{ animationDelay: '280ms' }}>No salt</span>
-          </div>
-          <p>
-            Let customers tailor the booking: hair length, car size, “no salt”. An answer can add to the price and the
-            time, and you see every answer on the booking.
-          </p>
-        </div>
-      )}
+      {groups.length === 0 && <HowItWorks money={money} example={section?.suggestions[0]} />}
 
       {groups.length > 0 && (
         <ol className="ch-list">
@@ -403,7 +423,8 @@ export function ChoicesEditor({
               money={money}
               canUp={canMove(index, -1)}
               canDown={canMove(index, 1)}
-              onChange={(change) => update(group.key, change)}
+              onChange={(edit) => update(group.key, edit)}
+              onOpen={() => (group.open ? update(group.key, (g) => ({ ...g, open: false })) : openOnly(group.key))}
               onMove={(by) => move(group.key, by)}
               onRemove={() => void remove(group)}
             />
@@ -411,118 +432,112 @@ export function ChoicesEditor({
         </ol>
       )}
 
-      <button type="button" className="ch-add" onClick={addOwn} disabled={full}>
-        <Icon name="plus" size={17} stroke={2.4} />
-        {full ? `Up to ${MAX_GROUPS} questions per service` : 'Write your own question'}
-      </button>
+      <div className="ch-start">
+        <h4 className="ch-start-title">{groups.length ? 'Add another question' : 'Add your first question'}</h4>
 
-      {section && (
-        <div className="ch-suggest">
-          <div className="ch-suggest-head">
-            <span className="ch-suggest-icon">
-              <Icon name="sparkles" size={16} />
-            </span>
-            <div>
-              <strong>Ready-made for {section.subcategory === 'Other' ? section.category : section.subcategory}</strong>
-              <span>Add one, then change the words and set your prices.</span>
+        {section && (
+          <div className="ch-ready">
+            <div className="ch-ready-head">
+              <span className="ch-ready-icon">
+                <Icon name="sparkles" size={16} />
+              </span>
+              <div>
+                <strong>Ready-made for {kindName}</strong>
+                <span>Add one in a tap, then set your prices. You can change any of the words.</span>
+              </div>
             </div>
-          </div>
-          {sections.length > 1 && (
-            <div className="ch-suggest-tabs" role="tablist">
-              {sections.map((s, i) => (
-                <button
-                  key={`${s.category}/${s.subcategory}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={s === section}
-                  className={s === section ? 'is-on' : ''}
-                  onClick={() => setSectionAt(i)}
-                >
-                  {s.subcategory === 'Other' ? s.category : s.subcategory}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="ch-suggest-list">
-            {section.suggestions.map((s, i) => {
-              const isAdded = added.has(s.key);
-              const needsParent = s.showIf && !added.has(s.showIf.key);
-              const blocked = !isAdded && groups.length + (needsParent ? 2 : 1) > MAX_GROUPS;
-              return (
-                <button
-                  key={s.key}
-                  type="button"
-                  className={`ch-sug${isAdded ? ' is-added' : ''}`}
-                  style={{ animationDelay: `${Math.min(i, 10) * 35}ms` }}
-                  disabled={isAdded || blocked}
-                  title={s.hint ?? (blocked ? `Up to ${MAX_GROUPS} questions per service` : undefined)}
-                  onClick={() => addSuggestion(s)}
-                >
-                  <span className="ch-sug-top">
-                    <strong>{s.name}</strong>
-                    {s.healthRelated && (
-                      <span className="ch-sug-private">
-                        <Icon name="lock" size={11} stroke={2.4} /> Private
-                      </span>
+            {sections.length > 1 && (
+              <div className="ch-ready-tabs" role="tablist" aria-label="Kinds of shop">
+                {sections.map((s, i) => (
+                  <button
+                    key={`${s.category}/${s.subcategory}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={s === section}
+                    className={s === section ? 'is-on' : ''}
+                    onClick={() => setSectionAt(i)}
+                  >
+                    {s.subcategory === 'Other' ? s.category : s.subcategory}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="ch-ready-list">
+              {section.suggestions.map((s, i) => {
+                const group = groups.find((g) => g.suggestionKey === s.key);
+                const needsParent = s.showIf && !groups.some((g) => g.suggestionKey === s.showIf!.key);
+                const blocked = !group && groups.length + (needsParent ? 2 : 1) > MAX_GROUPS;
+                const parentName = s.showIf
+                  ? sections.flatMap((x) => x.suggestions).find((p) => p.key === s.showIf!.key)?.name
+                  : undefined;
+                return (
+                  <article
+                    key={s.key}
+                    className={`ch-card${group ? ' is-added' : ''}`}
+                    style={{ animationDelay: `${Math.min(i, 10) * 35}ms` }}
+                  >
+                    <div className="ch-card-top">
+                      <strong>{s.question}</strong>
+                      {group && (
+                        <span className="ch-card-added">
+                          <Icon name="check" size={12} stroke={3} /> Added
+                        </span>
+                      )}
+                    </div>
+                    <ul className="ch-card-answers" aria-label="Its answers">
+                      {s.options.slice(0, 4).map((o) => (
+                        <li key={o.label}>{o.label}</li>
+                      ))}
+                      {s.options.length > 4 && <li className="is-more">+{s.options.length - 4} more</li>}
+                    </ul>
+                    <p className="ch-card-meta">
+                      {s.kind === 'MANY' ? 'They can pick several' : 'They pick one'}
+                      {s.required ? ' · must answer' : ''}
+                      {s.healthRelated && (
+                        <span className="ch-card-private">
+                          <Icon name="lock" size={11} stroke={2.4} /> Private
+                        </span>
+                      )}
+                    </p>
+                    {needsParent && !group && parentName && (
+                      <p className="ch-card-note">Adds “{parentName}” too — it is asked after an answer there.</p>
                     )}
-                  </span>
-                  <span className="ch-sug-q">{s.question}</span>
-                  <span className="ch-sug-foot">
-                    <span>
-                      {s.kind === 'MANY' ? 'Pick several' : 'Pick one'}
-                      {s.required ? ' · required' : ''} · {s.options.length} answers
-                    </span>
-                    <i>{isAdded ? <Icon name="check" size={14} stroke={2.8} /> : <Icon name="plus" size={14} stroke={2.6} />}</i>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      <div className="ch-settings">
-        <div className="ch-setting">
-          <div>
-            <strong>A note from the customer</strong>
-            <span>
-              Up to 250 letters, shown to you on the booking. Requests are a “we’ll try”; allergies go in the questions,
-              never in the note.
-            </span>
-          </div>
-          <Switch checked={noteEnabled} onChange={onNoteEnabled} label="Let customers write a note" />
-        </div>
-        {noteEnabled && (
-          <div className="sv-field ch-prompt">
-            <label htmlFor="snoteprompt">
-              Words above the box <em>{notePrompt.length}/120</em>
-            </label>
-            <input
-              id="snoteprompt"
-              maxLength={120}
-              value={notePrompt}
-              onChange={(e) => onNotePrompt(e.target.value)}
-              placeholder={suggestions.data?.notePrompt ?? 'Anything the shop should know?'}
-            />
-            <span className="sv-help">Leave it empty to use the words written for shops like yours.</span>
+                    <div className="ch-card-actions">
+                      {group ? (
+                        <>
+                          <button type="button" className="ch-card-btn" onClick={() => openOnly(group.key)}>
+                            <Icon name="pencil" size={14} /> Edit
+                          </button>
+                          <button type="button" className="ch-card-btn is-remove" onClick={() => void remove(group)}>
+                            <Icon name="close" size={14} /> Remove
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="ch-card-btn is-add"
+                          onClick={() => addSuggestion(s)}
+                          disabled={blocked}
+                          title={blocked ? `Up to ${MAX_GROUPS} questions per service` : s.hint}
+                        >
+                          <Icon name="plus" size={14} stroke={2.6} /> Add
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </div>
         )}
-        <div className="ch-setting">
-          <div>
-            <strong>
-              Price confirmed at the shop
-              {suggestions.data?.priceAtShop && <em className="ch-usual">Usual for shops like yours</em>}
-            </strong>
-            <span>
-              For work you can only price after seeing it — a repair, an event. Customers see “from” before the price,
-              and the deposit is on the price you set.
-            </span>
-          </div>
-          <Switch checked={priceAtShop} onChange={onPriceAtShop} label="The price is confirmed at the shop" />
-        </div>
+
+        <button type="button" className="ch-add" onClick={addOwn} disabled={full}>
+          <Icon name="pencil" size={16} />
+          {full ? `That’s the most — ${MAX_GROUPS} questions per service` : 'Write my own question'}
+        </button>
       </div>
 
-      {groups.some((g) => g.name.trim() && g.options.some((o) => o.label.trim())) && (
+      {ready && (
         <ChoicesPreview
           groups={groups}
           money={money}
@@ -531,6 +546,97 @@ export function ChoicesEditor({
           priceAtShop={priceAtShop}
         />
       )}
+
+      <div className="ch-settings">
+        <h4 className="ch-start-title">Also for this service</h4>
+        <div className="ch-setting">
+          <div>
+            <strong>Customers can write a note</strong>
+            <span>
+              A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the
+              booking. Allergies and health go in a private question, never in the note.
+            </span>
+          </div>
+          <Switch checked={noteEnabled} onChange={onNoteEnabled} label="Let customers write a note" />
+        </div>
+        {noteEnabled && (
+          <div className="sv-field ch-prompt">
+            <label htmlFor="snoteprompt">
+              Words above their note box <em>{notePrompt.length}/120</em>
+            </label>
+            <input
+              id="snoteprompt"
+              maxLength={120}
+              value={notePrompt}
+              onChange={(e) => onNotePrompt(e.target.value)}
+              placeholder={suggestions.data?.notePrompt ?? 'Anything the shop should know?'}
+            />
+            <span className="sv-help">Leave it empty to use the words shown here.</span>
+          </div>
+        )}
+        <div className="ch-setting">
+          <div>
+            <strong>
+              The final price is agreed at the shop
+              {suggestions.data?.priceAtShop && <em className="ch-usual">Common for shops like yours</em>}
+            </strong>
+            <span>
+              For work you can only price after seeing it, like a repair. Customers see “from” before your price, and
+              the deposit is taken on that price.
+            </span>
+          </div>
+          <Switch checked={priceAtShop} onChange={onPriceAtShop} label="The final price is agreed at the shop" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Before the first question: what this is, in three lines, beside an example
+ * of what a customer sees — drawn as a picture, never as buttons to press.
+ */
+function HowItWorks({ money, example }: { money: Money; example?: ChoiceSuggestion }) {
+  const extra = money.format(money.toMinor('2000'));
+  const lines = example
+    ? example.options.slice(0, 3).map((o, i) => ({
+        label: o.label,
+        adds: o.extraMinutes ? `+${o.extraMinutes} min` : i === 1 ? `+${extra}` : null,
+      }))
+    : [
+        { label: 'Short', adds: null },
+        { label: 'Medium', adds: '+15 min' },
+        { label: 'Long', adds: `+${extra} · +30 min` },
+      ];
+  return (
+    <div className="ch-how">
+      <div className="ch-how-text">
+        <strong>Let customers say what they want</strong>
+        <p>You ask a question; when customers book, they tap an answer. An answer can cost more or take longer — you decide.</p>
+        <ol>
+          <li>Add a question — a ready-made one below, or your own</li>
+          <li>Set what each answer adds to the price or the time</li>
+          <li>Save the service — customers see it when they book</li>
+        </ol>
+      </div>
+      <figure className="ch-how-example" aria-label="An example of what customers see">
+        <figcaption>
+          <Icon name="eye" size={12} /> Example — what customers see
+        </figcaption>
+        <div className="ch-ex-q">
+          <strong>{example?.question ?? 'How long is your hair?'}</strong>
+          <span>{example?.kind === 'MANY' ? 'Choose any' : 'Pick 1'}</span>
+        </div>
+        <ul>
+          {lines.map((line, i) => (
+            <li key={line.label} style={{ animationDelay: `${120 + i * 110}ms` }}>
+              <i className={example?.kind === 'MANY' ? 'is-many' : ''} aria-hidden="true" />
+              <span>{line.label}</span>
+              {line.adds && <em>{line.adds}</em>}
+            </li>
+          ))}
+        </ul>
+      </figure>
     </div>
   );
 }
@@ -545,6 +651,7 @@ function GroupCard({
   canUp,
   canDown,
   onChange,
+  onOpen,
   onMove,
   onRemove,
 }: {
@@ -555,55 +662,71 @@ function GroupCard({
   canUp: boolean;
   canDown: boolean;
   onChange: (change: (g: GroupDraft) => GroupDraft) => void;
+  onOpen: () => void;
   onMove: (by: -1 | 1) => void;
   onRemove: () => void;
 }) {
-  const set = (fields: Partial<GroupDraft>) => onChange((g) => ({ ...g, ...fields }));
+  // Any change but opening it makes it the seller's own: taking it back then asks first.
+  const set = (fields: Partial<GroupDraft>) => onChange((g) => ({ ...g, ...fields, fresh: false }));
   const setOption = (key: string, fields: Partial<OptionDraft>) =>
-    onChange((g) => ({ ...g, options: g.options.map((o) => (o.key === key ? { ...o, ...fields } : o)) }));
+    onChange((g) => ({ ...g, fresh: false, options: g.options.map((o) => (o.key === key ? { ...o, ...fields } : o)) }));
 
   const parent = group.showIf ? groups.find((g) => g.key === group.showIf!.groupKey) : undefined;
   const parentOption = parent?.options.find((o) => o.key === group.showIf!.optionKey);
   const children = groups.filter((g) => g.showIf?.groupKey === group.key);
 
-  // "Show only if" may point at an answer above, of a question that is not
-  // itself conditional — and, unless this one is private, not a private one,
-  // which would give its answer away (§300.6).
+  // "Only after an answer" may point at an answer above, of a question that is
+  // not itself conditional — and, unless this one is private, not a private
+  // one, which would give its answer away (§300.6).
   const conditions = groups.slice(0, index).flatMap((g) =>
     g.showIf || (g.healthRelated && !group.healthRelated)
       ? []
       : g.options
           .filter((o) => o.label.trim())
-          .map((o) => ({ value: `${g.key}|${o.key}`, label: `When “${o.label.trim()}” is picked`, group: g.name.trim() || 'Untitled question' })),
+          .map((o) => ({
+            value: `${g.key}|${o.key}`,
+            label: `Only when they pick “${o.label.trim()}”`,
+            group: titleOf(g) || 'Untitled question',
+          })),
   );
 
   const prices = group.options.map((o) => minor(o, money));
   const most = Math.max(0, ...prices);
   const longest = Math.max(0, ...group.options.map(minutesOf));
   const summary = [
-    group.kind === 'MANY' ? (group.maxPicks ? `Pick up to ${group.maxPicks}` : 'Pick several') : 'Pick one',
-    group.required ? 'required' : 'optional',
+    group.kind === 'MANY' ? (group.maxPicks ? `They pick up to ${group.maxPicks}` : 'They pick one or more') : 'They pick one',
+    group.required ? 'must answer' : 'can skip',
     `${group.options.length} ${group.options.length === 1 ? 'answer' : 'answers'}`,
     !group.healthRelated && most > 0 && `up to +${money.format(most)}`,
-    !group.healthRelated && longest > 0 && `+${longest} min`,
+    !group.healthRelated && longest > 0 && `up to +${longest} min`,
   ].filter(Boolean);
 
   const makePrivate = (on: boolean) =>
     onChange((g) => ({
       ...g,
+      fresh: false,
       healthRelated: on,
       // A private question's answers never move money or time (§300.6).
       options: on ? g.options.map((o) => ({ ...o, price: '', takesOff: false, minutes: '' })) : g.options,
     }));
 
+  // More options starts open when something in it changes how the question is
+  // asked, so nothing that matters is ever folded away unseen.
+  const moreSet = [group.showIf, group.healthRelated].filter(Boolean).length;
+  const [more, setMore] = useState(moreSet > 0);
+  const title = titleOf(group);
+
   return (
-    <li className={`ch-group${group.open ? ' is-open' : ''}${group.healthRelated ? ' is-private' : ''}`}>
+    <li id={`ch-${group.key}`} className={`ch-group${group.open ? ' is-open' : ''}${group.healthRelated ? ' is-private' : ''}`}>
       <div className="ch-group-head">
-        <button type="button" className="ch-group-toggle" onClick={() => set({ open: !group.open })} aria-expanded={group.open}>
+        <button type="button" className="ch-group-toggle" onClick={onOpen} aria-expanded={group.open}>
           <span className="ch-num">{index + 1}</span>
           <span className="ch-group-title">
-            <strong>{group.name.trim() || 'New question'}</strong>
+            <strong>{title || 'New question'}</strong>
             <span>{summary.join(' · ')}</span>
+          </span>
+          <span className="ch-group-chev" aria-hidden="true">
+            <Icon name="chevronDown" size={18} />
           </span>
         </button>
         <span className="ch-badges">
@@ -614,171 +737,208 @@ function GroupCard({
           )}
           {parentOption && (
             <span className="ch-badge is-if" title={`Asked only when “${parentOption.label}” is picked`}>
-              <Icon name="eye" size={12} /> Only if “{parentOption.label}”
+              <Icon name="eye" size={12} /> After “{parentOption.label}”
             </span>
           )}
         </span>
-        <span className="ch-tools">
-          <button type="button" onClick={() => onMove(-1)} disabled={!canUp} aria-label="Move up">
-            <Icon name="chevronUp" size={16} />
-          </button>
-          <button type="button" onClick={() => onMove(1)} disabled={!canDown} aria-label="Move down">
-            <Icon name="chevronDown" size={16} />
-          </button>
-          <button type="button" className="is-danger" onClick={onRemove} aria-label="Remove question">
-            <Icon name="trash" size={15} />
-          </button>
-        </span>
+        {/* The rarer things, one step away: the only arrow left opens it. */}
+        <MoreMenu
+          label={`More for “${title || 'this question'}”`}
+          items={[
+            ...(canUp ? [{ label: 'Ask it earlier', icon: 'chevronUp' as const, onClick: () => onMove(-1) }] : []),
+            ...(canDown ? [{ label: 'Ask it later', icon: 'chevronDown' as const, onClick: () => onMove(1) }] : []),
+            { label: 'Remove this question', icon: 'trash', onClick: onRemove, danger: true },
+          ]}
+        />
       </div>
 
       <div className="ch-group-fold">
         <div className="ch-group-body">
-          <div className="sv-two">
-            <div className="sv-field">
-              <label htmlFor={`${group.key}-name`}>
-                Name <em>for you</em>
-              </label>
-              <input
-                id={`${group.key}-name`}
-                maxLength={60}
-                value={group.name}
-                onChange={(e) => set({ name: e.target.value })}
-                placeholder="e.g. Hair length"
-              />
-            </div>
-            <div className="sv-field">
-              <label htmlFor={`${group.key}-q`}>
-                Question <em>customers see</em>
-              </label>
-              <input
-                id={`${group.key}-q`}
-                maxLength={120}
-                value={group.question}
-                onChange={(e) => set({ question: e.target.value })}
-                placeholder={group.name.trim() ? `${group.name.trim()}?` : 'e.g. How long is your hair?'}
-              />
-            </div>
-          </div>
+          <Step n={1} title="What do you ask customers?">
+            <input
+              id={`${group.key}-q`}
+              className="ch-question"
+              maxLength={120}
+              value={group.question}
+              onChange={(e) => set({ question: e.target.value })}
+              placeholder="e.g. Which cut would you like?"
+              aria-label="The question customers see"
+            />
+          </Step>
 
-          <div className="ch-rules">
-            <div className="ch-seg" role="radiogroup" aria-label="How many answers">
+          <Step n={2} title="How many answers can they pick?">
+            <div className="ch-pick" role="radiogroup" aria-label="How many answers they can pick">
               {(['ONE', 'MANY'] as const).map((kind) => (
                 <button
                   key={kind}
                   type="button"
                   role="radio"
                   aria-checked={group.kind === kind}
-                  className={group.kind === kind ? 'is-on' : ''}
+                  className={`ch-pick-card${group.kind === kind ? ' is-on' : ''}`}
                   onClick={() => set({ kind, maxPicks: kind === 'ONE' ? null : group.maxPicks })}
                 >
-                  <Icon name={kind === 'ONE' ? 'dot' : 'layers'} size={14} />
-                  {kind === 'ONE' ? 'Pick one' : 'Pick several'}
+                  <i className={kind === 'MANY' ? 'is-many' : ''} aria-hidden="true">
+                    {group.kind === kind && <Icon name="check" size={11} stroke={3} />}
+                  </i>
+                  <span>
+                    <strong>{kind === 'ONE' ? 'Just one' : 'One or more'}</strong>
+                    <em>{kind === 'ONE' ? 'Like the length of hair' : 'Like extras to add'}</em>
+                  </span>
                 </button>
               ))}
             </div>
-            {group.kind === 'MANY' && group.options.length > 1 && (
-              <div className="ch-max">
-                <Select
-                  value={String(group.maxPicks ?? 0)}
-                  onChange={(v) => set({ maxPicks: Number(v) || null })}
-                  label="The most a customer may pick"
-                  options={[
-                    { value: '0', label: 'As many as they like' },
-                    ...Array.from({ length: group.options.length - 1 }, (_, i) => ({
-                      value: String(i + 1),
-                      label: `Up to ${i + 1}`,
-                    })),
-                  ]}
+            <div className="ch-rules">
+              {group.kind === 'MANY' && group.options.length > 1 && (
+                <label className="ch-max">
+                  <span>At most</span>
+                  <Select
+                    value={String(group.maxPicks ?? 0)}
+                    onChange={(v) => set({ maxPicks: Number(v) || null })}
+                    label="The most answers a customer may pick"
+                    options={[
+                      { value: '0', label: 'Any number' },
+                      ...Array.from({ length: group.options.length - 1 }, (_, i) => ({
+                        value: String(i + 1),
+                        label: `${i + 1} ${i === 0 ? 'answer' : 'answers'}`,
+                      })),
+                    ]}
+                  />
+                </label>
+              )}
+              <label className="ch-must">
+                <Switch checked={group.required} onChange={(required) => set({ required })} label="Customers must answer" />
+                <span>
+                  <strong>Customers must answer</strong>
+                  <em>{group.required ? 'They can’t book without picking.' : 'They can skip it.'}</em>
+                </span>
+              </label>
+            </div>
+          </Step>
+
+          <Step
+            n={3}
+            title="The answers"
+            hint={
+              group.healthRelated
+                ? 'Private answers are always free and take no extra time.'
+                : 'Leave the price and time at 0 when an answer costs nothing extra.'
+            }
+          >
+            <div className="ch-options">
+              {group.options.map((option, at) => (
+                <OptionRow
+                  key={option.key}
+                  option={option}
+                  index={at}
+                  money={money}
+                  free={group.healthRelated}
+                  canRemove={group.options.length > 1}
+                  onChange={(fields) => setOption(option.key, fields)}
+                  onRemove={() =>
+                    onChange((g) => ({ ...g, fresh: false, options: g.options.filter((o) => o.key !== option.key) }))
+                  }
                 />
+              ))}
+            </div>
+            <button
+              type="button"
+              className="ch-add-option"
+              disabled={group.options.length >= MAX_OPTIONS}
+              onClick={() => onChange((g) => ({ ...g, fresh: false, options: [...g.options, blankOption()] }))}
+            >
+              <Icon name="plus" size={15} stroke={2.4} />
+              {group.options.length >= MAX_OPTIONS ? `That’s the most — ${MAX_OPTIONS} answers` : 'Add an answer'}
+            </button>
+          </Step>
+
+          <div className={`ch-more${more ? ' is-open' : ''}`}>
+            <button type="button" className="ch-more-toggle" onClick={() => setMore((was) => !was)} aria-expanded={more}>
+              <Icon name="sliders" size={15} />
+              More options
+              {moreSet > 0 && <span className="ch-more-count">{moreSet} set</span>}
+              <Icon name="chevronDown" size={16} />
+            </button>
+            {more && (
+              <div className="ch-more-body">
+                <div className="sv-field">
+                  <label htmlFor={`${group.key}-name`}>
+                    Short name on your bookings <em>optional</em>
+                  </label>
+                  <input
+                    id={`${group.key}-name`}
+                    maxLength={60}
+                    value={group.name}
+                    onChange={(e) => set({ name: e.target.value })}
+                    placeholder={shortName({ name: '', question: group.question }) || 'e.g. Cut'}
+                  />
+                  <span className="sv-help">
+                    Shown on the booking, like “{shortName(group) || 'Cut'}: {group.options.find((o) => o.label.trim())?.label.trim() || 'Skin fade'}”.
+                    Leave it empty to use the question.
+                  </span>
+                </div>
+
+                {(conditions.length > 0 || group.showIf) && (
+                  <div className="sv-field">
+                    <label>When to ask it</label>
+                    <Select
+                      value={group.showIf ? `${group.showIf.groupKey}|${group.showIf.optionKey}` : 'always'}
+                      onChange={(v) => {
+                        if (v === 'always') return set({ showIf: null });
+                        const [groupKey, optionKey] = v.split('|');
+                        set({ showIf: { groupKey, optionKey } });
+                      }}
+                      label="When to ask this question"
+                      options={[{ value: 'always', label: 'Every time' }, ...conditions]}
+                    />
+                    <span className="sv-help">
+                      {children.length > 0
+                        ? `${children.map((c) => `“${titleOf(c)}”`).join(' and ')} ${children.length === 1 ? 'is' : 'are'} asked only after an answer here.`
+                        : 'Ask it only after a certain answer above — like “Colour?” only after “Dye”.'}
+                    </span>
+                  </div>
+                )}
+
+                <label className="ch-must">
+                  <Switch
+                    checked={group.healthRelated}
+                    onChange={makePrivate}
+                    label="A private question: health or personal"
+                    disabled={Boolean(parent?.healthRelated)}
+                  />
+                  <span>
+                    <strong>A private question</strong>
+                    <em>For allergies, health or anything personal.</em>
+                  </span>
+                </label>
+                {group.healthRelated && (
+                  <p className="ch-private-note">
+                    <Icon name="lock" size={15} />
+                    <span>
+                      Only you and the customer see these answers — never in an email or a phone alert — and they are
+                      removed 30 days after the visit. They are always free and take no extra time.
+                    </span>
+                  </p>
+                )}
               </div>
             )}
-            <label className="ch-check">
-              <Switch checked={group.required} onChange={(required) => set({ required })} label="Must be answered" />
-              <span>Must be answered</span>
-            </label>
-            <label className="ch-check" title="Allergies, diet, health, anything personal">
-              <Switch
-                checked={group.healthRelated}
-                onChange={makePrivate}
-                label="Private: health or personal"
-                disabled={Boolean(parent?.healthRelated)}
-              />
-              <span>
-                Private <i>health or personal</i>
-              </span>
-            </label>
           </div>
-
-          {group.healthRelated && (
-            <p className="ch-private-note">
-              <Icon name="lock" size={15} />
-              <span>
-                Sealed: only you and the customer see these answers — never in an email or a phone alert — and they are
-                removed 30 days after the visit. Private answers are always free and take no extra time.
-              </span>
-            </p>
-          )}
-
-          {(conditions.length > 0 || group.showIf) && (
-            <div className="sv-field">
-              <label>Ask it</label>
-              <Select
-                value={group.showIf ? `${group.showIf.groupKey}|${group.showIf.optionKey}` : 'always'}
-                onChange={(v) => {
-                  if (v === 'always') return set({ showIf: null });
-                  const [groupKey, optionKey] = v.split('|');
-                  set({ showIf: { groupKey, optionKey } });
-                }}
-                label="When to ask this question"
-                options={[{ value: 'always', label: 'Every time' }, ...conditions]}
-              />
-              {children.length > 0 && (
-                <span className="sv-help">
-                  {children.map((c) => `“${c.name}”`).join(' and ')} {children.length === 1 ? 'is' : 'are'} asked only
-                  after an answer here.
-                </span>
-              )}
-            </div>
-          )}
-
-          <div className={`ch-options${group.healthRelated ? ' is-free' : ''}`}>
-            <div className="ch-options-head" aria-hidden="true">
-              <span>Answer</span>
-              {!group.healthRelated && (
-                <>
-                  <span>Price</span>
-                  <span>Extra time</span>
-                </>
-              )}
-              <span>Available</span>
-            </div>
-            {group.options.map((option, at) => (
-              <OptionRow
-                key={option.key}
-                option={option}
-                index={at}
-                money={money}
-                free={group.healthRelated}
-                canRemove={group.options.length > 1}
-                onChange={(fields) => setOption(option.key, fields)}
-                onRemove={() =>
-                  onChange((g) => ({ ...g, options: g.options.filter((o) => o.key !== option.key) }))
-                }
-              />
-            ))}
-          </div>
-          <button
-            type="button"
-            className="link ch-add-option"
-            disabled={group.options.length >= MAX_OPTIONS}
-            onClick={() => onChange((g) => ({ ...g, options: [...g.options, blankOption()] }))}
-          >
-            <Icon name="plus" size={15} stroke={2.4} />
-            {group.options.length >= MAX_OPTIONS ? `Up to ${MAX_OPTIONS} answers` : 'Add an answer'}
-          </button>
         </div>
       </div>
     </li>
+  );
+}
+
+/** One step of a question, numbered, with its title in plain words. */
+function Step({ n, title, hint, children }: { n: number; title: string; hint?: string; children: ReactNode }) {
+  return (
+    <section className="ch-step">
+      <h5>
+        <span>{n}</span>
+        {title}
+      </h5>
+      {hint && <p className="ch-step-hint">{hint}</p>}
+      {children}
+    </section>
   );
 }
 
@@ -803,8 +963,9 @@ function OptionRow({
   const [describing, setDescribing] = useState(Boolean(option.description));
   const askPrice = option.paidHint && !option.price.trim();
   return (
-    <div className={`ch-option${option.available ? '' : ' is-off'}`}>
+    <div className={`ch-option${option.available ? '' : ' is-off'}${free ? ' is-free' : ''}`}>
       <div className="ch-option-label">
+        <span className="ch-mini">Answer {index + 1}</span>
         <input
           aria-label={`Answer ${index + 1}`}
           maxLength={60}
@@ -815,48 +976,50 @@ function OptionRow({
         {describing ? (
           <input
             className="ch-option-desc"
-            aria-label={`A line about answer ${index + 1}`}
+            aria-label={`A short description of answer ${index + 1}`}
             maxLength={140}
             value={option.description}
             onChange={(e) => onChange({ description: e.target.value })}
-            placeholder="A line about it — e.g. Below the shoulders"
+            placeholder="A short description — e.g. Below the shoulders"
             autoFocus={!option.description}
           />
         ) : (
           <button type="button" className="link ch-describe" onClick={() => setDescribing(true)}>
-            + a line about it
+            + Add a short description
           </button>
         )}
       </div>
       {!free && (
         <>
-          <div className={`ch-price${askPrice ? ' is-ask' : ''}`}>
-            <button
-              type="button"
-              className={`ch-sign${option.takesOff ? ' is-off' : ''}`}
-              onClick={() => onChange({ takesOff: !option.takesOff })}
-              aria-label={option.takesOff ? 'Takes money off — make it add' : 'Adds money — make it take off'}
-              title={option.takesOff ? 'Takes money off' : 'Adds to the price'}
-            >
-              {option.takesOff ? '−' : '+'}
-            </button>
+          <div className={`ch-price${askPrice ? ' is-ask' : ''}${option.takesOff ? ' is-less' : ''}`}>
+            <span className="ch-mini">{option.takesOff ? 'Takes off the price' : 'Adds to the price'}</span>
             <span className="sv-affix">
-              <span>{money.code}</span>
+              <span>
+                {option.takesOff ? '−' : '+'} {money.code}
+              </span>
               <input
                 type="number"
                 min="0"
                 step={money.exponent === 0 ? '1' : '0.01'}
                 inputMode="decimal"
-                aria-label={`Price for answer ${index + 1}`}
+                aria-label={`${option.takesOff ? 'Taken off the price' : 'Added to the price'} for answer ${index + 1}`}
                 value={option.price}
                 onChange={(e) => onChange({ price: e.target.value.replace('-', '') })}
                 placeholder="0"
               />
             </span>
-            {askPrice && <em>Usually costs more</em>}
+            {askPrice ? (
+              <em>Shops usually charge for this</em>
+            ) : (
+              <button type="button" className="link ch-flip" onClick={() => onChange({ takesOff: !option.takesOff })}>
+                {option.takesOff ? 'or add to the price' : 'or take money off'}
+              </button>
+            )}
           </div>
           <div className="ch-minutes">
+            <span className="ch-mini">Adds time</span>
             <span className="sv-affix">
+              <span>+</span>
               <input
                 type="number"
                 min="0"
@@ -874,13 +1037,26 @@ function OptionRow({
         </>
       )}
       <div className="ch-option-end">
-        <Switch
-          checked={option.available}
-          onChange={(available) => onChange({ available })}
-          label={option.available ? 'Available — switch off for “not available now”' : 'Not available now — switch on to offer it'}
-        />
-        <button type="button" className="ch-option-remove" onClick={onRemove} disabled={!canRemove} aria-label="Remove answer">
-          <Icon name="close" size={14} />
+        <label
+          className="ch-offer"
+          title={option.available ? 'Switch off when you can’t do it for now — customers see “Not available”.' : 'Switch on to offer it again.'}
+        >
+          <Switch
+            checked={option.available}
+            onChange={(available) => onChange({ available })}
+            label={option.available ? 'Offered — switch off for “not available now”' : 'Not available now — switch on to offer it'}
+          />
+          <span>{option.available ? 'Offered' : 'Not now'}</span>
+        </label>
+        <button
+          type="button"
+          className="ch-option-remove"
+          onClick={onRemove}
+          disabled={!canRemove}
+          aria-label={`Remove answer ${index + 1}`}
+          title={canRemove ? 'Remove this answer' : 'A question needs at least one answer'}
+        >
+          <Icon name="trash" size={14} />
         </button>
       </div>
     </div>
@@ -908,7 +1084,7 @@ function ChoicesPreview({
   priceAtShop: boolean;
 }) {
   const [picked, setPicked] = useState<Set<string>>(new Set());
-  const ready = groups.filter((g) => g.name.trim() && g.options.some((o) => o.label.trim()));
+  const ready = groups.filter((g) => titleOf(g) && g.options.some((o) => o.label.trim()));
   const visible = ready.filter((g) => !g.showIf || picked.has(g.showIf.optionKey));
 
   const toggle = (group: GroupDraft, option: OptionDraft) =>
@@ -948,8 +1124,8 @@ function ChoicesPreview({
     <div className="ch-preview">
       <div className="ch-preview-head">
         <Icon name="eye" size={16} />
-        <strong>How customers see it</strong>
-        <span>Tap answers to try it</span>
+        <strong>Try it as a customer</strong>
+        <span>Tap the answers — the total changes</span>
       </div>
       <div className="ch-phone">
         {visible.map((g) => {
@@ -957,7 +1133,7 @@ function ChoicesPreview({
           return (
             <div key={g.key} className="ch-q">
               <div className="ch-q-head">
-                <strong>{g.question.trim() || `${g.name.trim()}?`}</strong>
+                <strong>{titleOf(g)}</strong>
                 <span className={g.required && answered === 0 ? 'is-need' : ''}>
                   {g.kind === 'MANY' ? (g.maxPicks ? `Choose up to ${g.maxPicks}` : 'Choose any') : 'Pick 1'}
                   {g.required ? ' · Required' : ''}

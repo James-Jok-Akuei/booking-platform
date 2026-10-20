@@ -1343,7 +1343,7 @@ function ServiceForm({
     if (choiceTrouble) {
       setGroups((was) => was.map((g, i) => ({ ...g, open: i === firstTroubled(was) })));
       void alertDialog({
-        title: 'Finish the choices',
+        title: 'Finish your questions',
         body: <p>{choiceTrouble}</p>,
         tone: 'warn',
         icon: 'sliders',
@@ -1526,16 +1526,16 @@ function ServiceForm({
           </div>
         </Section>
 
-        {/* What customers answer while booking (§300): each answer can add to
-            the price and the time. After the price, because it builds on it. */}
+        {/* What customers answer while booking (§300, §304): each answer can
+            add to the price and the time. After the price, because it builds on it. */}
         <Section
           id="sv-choices"
           icon="sliders"
-          title="Choices"
+          title="Questions for customers"
           hint={
             groups.length > 0
-              ? `${groups.length} ${groups.length === 1 ? 'question' : 'questions'} customers answer while booking`
-              : 'Questions customers answer while booking — optional'
+              ? `${groups.length} ${groups.length === 1 ? 'question' : 'questions'} customers answer when they book`
+              : 'Optional — ask what they want, like the cut or extras'
           }
         >
           <ChoicesEditor

@@ -19565,3 +19565,54 @@ the console at 1440 (choosing, the preview, approving, the panel after),
 the email in the mail catcher, and the seller's card at 1440, 1024 and 390
 (and an item turning Done). The demo shop Kicukiro Tailors was approved with
 advice to show it.
+
+## 304. Questions for customers, redone so a seller understands it alone (2026-10-21)
+
+The user, about the service form's Choices section (§300.8): a ready-made
+question, once added, could not be taken back; the whole flyout was
+confusing — "no one will lecture them on these things, only them will
+figure out" — make it easy to navigate and understand, change the UI and the
+words as needed. The rules and what is saved are unchanged (§300); only the
+form is new (`pages/choices/ChoicesEditor.tsx`, `choices.css`).
+
+- **The name**: the section is **Questions for customers** — "Optional —
+  ask what they want, like the cut or extras" (the word "choices" is kept
+  for the customer's side, "Your choices").
+- **Before the first question**: three plain lines (add a question, set
+  what each answer adds, save) beside **an example of what customers see**,
+  labelled "Example — what customers see" and drawn as a picture — round
+  marks, nothing pressable. The old example was three pill chips, the first
+  coloured as if chosen, which read as buttons.
+- **Ready-made questions** show the question, its answers and how they pick,
+  with one clear **Add**. Added, the card says **Added** and offers **Edit**
+  (opens that question and scrolls to it) and **Remove** — the take-back that
+  was missing. A question just added and not changed is removed without
+  asking; one changed or saved asks first, as before. A ready-made that hangs
+  on another says it adds that one too.
+- **Each question is three numbered steps**: (1) *What do you ask
+  customers?* — one box; (2) *How many answers can they pick?* — two cards,
+  "Just one (like the length of hair)" and "One or more (like extras to
+  add)", then "At most" when several, and **Customers must answer** with
+  what it means under it; (3) *The answers* — every box labelled where it
+  sits ("Answer 1", "Adds to the price", "Adds time"), the price written
+  "+ RWF", a quiet "or take money off" instead of the unexplained +/− button,
+  **Offered / Not now** beside its switch instead of a bare switch under a
+  far-away "Available" heading, a bin to remove it, and "Add a short
+  description".
+- **More options** (folded, open by itself when something in it is set):
+  a short name for the shop's bookings — optional now, taken from the
+  question when empty ("Which cut?" → "Which cut") — when to ask it ("Only
+  when they pick …"), and a private question.
+- **The question's header**: the question as customers read it, a summary in
+  words ("They pick one · must answer · 5 answers · up to +15 min"), one
+  arrow to open it, and a ⋯ menu for ask it earlier / later / remove — the
+  move arrows had looked like the open arrow.
+- **Try it as a customer** (the preview) and **Also for this service**
+  ("Customers can write a note"; "The final price is agreed at the shop"),
+  in plainer words. Errors read "Question 2: write what you ask customers",
+  "“Which cut?”: answer 3 is empty — write it, or remove it".
+
+Checked on the running seller app with the demo barber shop: adding a
+ready-made, taking it back (the card returns to Add, nothing asked), editing
+a saved question, More options, a private question — at 1440, 1024 and 390.
+Nothing was saved to the demo shop.
