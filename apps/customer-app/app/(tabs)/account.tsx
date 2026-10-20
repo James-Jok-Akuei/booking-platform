@@ -385,7 +385,7 @@ export default function Account() {
             <View style={[styles.glow, styles.glowB, { backgroundColor: sky.glows[1] }]} />
           </Animated.View>
 
-          <View style={[styles.heroBody, { paddingTop: insets.top + 18 }]}>
+          <View style={[styles.heroBody, { paddingTop: insets.top + 18, width: layout.contentWidth, alignSelf: 'center' }]}>
             <Text style={styles.heroLabel}>Account</Text>
 
             {me.isLoading && <Skeleton width={104} height={104} round={52} />}

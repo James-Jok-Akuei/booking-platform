@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { font, theme, type } from '../theme';
 import { IconButton } from './IconButton';
+import { useLayout } from './layout';
 
 /**
  * The top of a screen that was pushed onto the stack (§133).
@@ -77,8 +78,10 @@ export function BigTitle({
   right?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
+  // In line with the page's column, which is centred on a wide screen.
+  const layout = useLayout();
   return (
-    <View style={[styles.big, { paddingTop: insets.top + 14 }]}>
+    <View style={[styles.big, { paddingTop: insets.top + 14, width: layout.contentWidth, alignSelf: 'center' }]}>
       <View style={styles.bigText}>
         <Text style={type.display}>{title}</Text>
         {subtitle && <Text style={[type.small, styles.bigSub]}>{subtitle}</Text>}

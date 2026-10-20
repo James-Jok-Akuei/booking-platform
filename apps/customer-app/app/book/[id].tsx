@@ -323,7 +323,9 @@ export default function Book() {
   // more on a tablet.
   const inner = layout.contentWidth - 40;
   const inCard = inner - CARD_PAD * 2;
-  const perRow = layout.wide ? 6 : inCard < 300 ? 3 : 4;
+  // Wider than a tablet (a desktop window on the web), more times to a row
+  // rather than the same six stretched — about 130 points each.
+  const perRow = layout.wide ? Math.max(6, Math.floor((inCard + 10) / 140)) : inCard < 300 ? 3 : 4;
   const slotWidth = (inCard - 10 * (perRow - 1)) / perRow;
 
   /**

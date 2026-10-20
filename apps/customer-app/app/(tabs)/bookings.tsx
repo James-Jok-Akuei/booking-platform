@@ -200,7 +200,11 @@ function BookingRow({
           {/* The deposit, because it is the half that has been paid and the
               reason a cancellation costs something. */}
           <Text style={styles.money} numberOfLines={1}>
-            {item.depositPaidAt ? `${deposit} deposit paid` : `${deposit} deposit due`}
+            {item.depositPaidAt
+              ? `${deposit} deposit paid`
+              : item.status === 'PENDING_PAYMENT'
+                ? `${deposit} deposit due`
+                : 'Nothing paid'}
           </Text>
         </View>
 

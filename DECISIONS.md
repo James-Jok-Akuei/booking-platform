@@ -19362,3 +19362,19 @@ answer, choosing a staff member, photos with a booking, processing time,
 dishes from a menu, services in several visits, a one-tap "we can't do this",
 and "from" prices in the weekly offers email. The morning summary lists
 events, not answers; each booking shows them.
+
+## 301. The customer app's desktop view: half the empty sides (2026-10-20)
+
+On a computer, the web customer app kept the tablet's reading width (920) and
+left two wide bands of nothing — 260 points a side at 1440. The user asked for
+half of that. `useLayout` now gives the web, past 920, a column of
+`(window + 920) / 2`: at 1440 the sides are 130, at 1024 they are 26. Phones,
+and tablets in the native app, are unchanged.
+
+- A third column of cards (Saved) once the column is 1,100 wide.
+- The booking page's times: as many to a row as fit at about 130 points each,
+  rather than six stretched ones (seven at 1440).
+- The big page titles (My bookings, Saved…) and the Account header now sit in
+  the column instead of at the window's edge.
+- Bookings: a cancelled booking that was never paid says "Nothing paid", not
+  "deposit due".
