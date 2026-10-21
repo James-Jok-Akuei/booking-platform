@@ -1844,6 +1844,10 @@ model Announcement {
   /// Where its button leads, inside the app it arrives in.
   linkPath  String?
   linkLabel String?
+  /// Its title, message and button words in the other languages (§308.4):
+  /// { "rw": { "title": "…", "body": "…", "linkLabel": "…" }, "fr": … }.
+  /// Each person gets theirs; a language not typed gets the English.
+  translations Json?
 
   sendPush    Boolean   @default(true)
   sendEmail   Boolean   @default(false)

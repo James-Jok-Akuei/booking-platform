@@ -39,6 +39,7 @@ import {
 } from './notification-catalog';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 import { DATE_TAGS, asLocale, msg, say } from '../i18n/say';
+import { readTyped, typedIn } from '../i18n/typed-words';
 import { NotificationPreferencesService } from './notification-preferences.service';
 import { PushService } from './push.service';
 import { NotificationsGateway } from './notifications.gateway';
@@ -425,7 +426,7 @@ export class NotificationsService {
             readAt: true,
             createdAt: true,
             appointmentId: true,
-            announcement: { select: { linkLabel: true } },
+            announcement: { select: { linkLabel: true, translations: true } },
             shopMessage: { select: { business: { select: { name: true, logoUrl: true } } } },
             recipient: { select: { id: true, email: true, role: true, locale: true } },
           },
@@ -495,7 +496,7 @@ export class NotificationsService {
     body: string;
     link: string | null;
     appointmentId: string | null;
-    announcement: { linkLabel: string | null } | null;
+    announcement: { linkLabel: string | null; translations: Prisma.JsonValue } | null;
     shopMessage: { business: { name: string | null; logoUrl: string | null } } | null;
     recipient: { id: string; email: string; role: UserRole; locale: string };
   }): Promise<OutboundMessage> {
@@ -527,7 +528,11 @@ export class NotificationsService {
       button:
         app && n.link
           ? {
-              label: n.announcement?.linkLabel || say(l, BUTTON[n.category] ?? msg('Open')),
+              label:
+                (n.announcement &&
+                  typedIn(l, { linkLabel: n.announcement.linkLabel }, readTyped(n.announcement.translations, ['linkLabel']))
+                    .linkLabel) ||
+                say(l, BUTTON[n.category] ?? msg('Open')),
               url: `${app}${n.link}`,
             }
           : null,

@@ -7098,6 +7098,15 @@ export interface components {
             id: string;
             name: string;
         };
+        AnnouncementWordsResponseDto: {
+            title?: string;
+            body?: string;
+            linkLabel?: string;
+        };
+        AnnouncementTranslationsResponseDto: {
+            rw?: components["schemas"]["AnnouncementWordsResponseDto"];
+            fr?: components["schemas"]["AnnouncementWordsResponseDto"];
+        };
         AnnouncementStatsDto: {
             recipients: number;
             read: number;
@@ -7128,6 +7137,8 @@ export interface components {
             body: string;
             linkPath: string | null;
             linkLabel: string | null;
+            /** @description Kinyarwanda and French, where typed (§308.4). */
+            translations: components["schemas"]["AnnouncementTranslationsResponseDto"];
             sendPush: boolean;
             sendEmail: boolean;
             banner: boolean;
@@ -7146,12 +7157,23 @@ export interface components {
         AnnouncementListDto: {
             announcements: components["schemas"]["AnnouncementDto"][];
         };
+        AnnouncementWordsDto: {
+            title?: string;
+            body?: string;
+            linkLabel?: string;
+        };
+        AnnouncementTranslationsDto: {
+            rw?: components["schemas"]["AnnouncementWordsDto"];
+            fr?: components["schemas"]["AnnouncementWordsDto"];
+        };
         SaveAnnouncementDto: {
             title: string;
             body: string;
             /** @description A page inside the app it lands in: "/stories", "/shop/…". */
             linkPath?: string | null;
             linkLabel?: string | null;
+            /** @description The same in Kinyarwanda and French; each person gets theirs (§308.4). */
+            translations?: components["schemas"]["AnnouncementTranslationsDto"];
             sendPush: boolean;
             sendEmail: boolean;
             /** @description Also a strip across the top of the app — service notices only. */

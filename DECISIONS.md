@@ -19967,3 +19967,15 @@ picker. They are said in the reader's language by the server, as it answers:
 
 **Left for later**: searching by a name in Kinyarwanda or French (search
 still matches the English names and the shops' own words).
+
+### 308.4 Announcements in each language (2026-10-21)
+
+An announcement (§287) can be written in Kinyarwanda and French beside the
+English — title, message and button words — in a folded "In Kinyarwanda and
+French" part of the console's form (`announcements.translations`, migration
+`announcement_translations`). Each person gets it in the language they use
+the app in: their notice and email are written from these words when it is
+sent (the same `compose` as support's notices), its email button in their
+words, and its banner in the language the app asks in. A language not typed
+gets the English, never a half-filled message — each field falls back on its
+own. Shared helpers for words typed per language: `src/i18n/typed-words.ts`.

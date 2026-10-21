@@ -23,6 +23,18 @@
 .an-field em { font-style: normal; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
 .an-field textarea { resize: vertical; min-height: 96px; }
 .an-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* The same announcement in Kinyarwanda and French (§308.4), folded away until wanted. */
+.an-langs { border: 1px dashed var(--line); border-radius: 14px; padding: 0 12px; background: var(--sunken); }
+.an-langs[open] { padding-bottom: 12px; }
+.an-langs summary { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-height: 44px; cursor: pointer; list-style: none; font-size: 13px; color: var(--ink-2); }
+.an-langs summary::-webkit-details-marker { display: none; }
+.an-langs summary strong { font-weight: 700; }
+.an-langs summary span { color: var(--muted); font-weight: 550; }
+.an-lang { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; margin-top: 10px; }
+.an-lang-code { padding-top: 11px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: var(--muted); text-align: center; }
+.an-lang-fields { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.an-lang-fields textarea { resize: vertical; min-height: 72px; }
 .an-narrow { display: flex; flex-direction: column; gap: 8px; margin-top: -4px; }
 .an-check { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
 

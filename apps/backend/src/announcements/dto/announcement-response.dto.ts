@@ -32,6 +32,18 @@ export class AnnouncementStatsDto {
   waiting!: number;
 }
 
+/** The announcement in one other language, as typed in the console (§308.4). */
+export class AnnouncementWordsResponseDto {
+  title?: string;
+  body?: string;
+  linkLabel?: string;
+}
+
+export class AnnouncementTranslationsResponseDto {
+  rw?: AnnouncementWordsResponseDto;
+  fr?: AnnouncementWordsResponseDto;
+}
+
 export class AnnouncementDto {
   id!: string;
   kind!: AnnouncementKind;
@@ -44,6 +56,8 @@ export class AnnouncementDto {
   body!: string;
   linkPath!: string | null;
   linkLabel!: string | null;
+  /** Kinyarwanda and French, where typed (§308.4). */
+  translations!: AnnouncementTranslationsResponseDto;
   sendPush!: boolean;
   sendEmail!: boolean;
   banner!: boolean;

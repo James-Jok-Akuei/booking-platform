@@ -178,7 +178,7 @@ msgid "{youAre} the only owner of {value1}. Make someone else an owner first, or
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/announcements/announcements.service.ts:202
+#: src/announcements/announcements.service.ts:208
 msgid "A banner is for service notices — news reaches only people who said yes."
 msgstr ""
 
@@ -271,7 +271,7 @@ msgid "A few words about how it went help other people choose, and help the shop
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/announcements/dto/announcement-request.dto.ts:59
+#: src/announcements/dto/announcement-request.dto.ts:91
 msgid "A link is a page in the app, starting with \"/\"."
 msgstr ""
 
@@ -402,7 +402,7 @@ msgstr ""
 msgid "A shop can post {STORIES_PER_DAY} stories in a day. The next one can go up as the first of today''s ends."
 msgstr ""
 
-#: src/notifications/notifications.service.ts:547
+#: src/notifications/notifications.service.ts:552
 msgid "A shop you follow"
 msgstr ""
 
@@ -527,8 +527,8 @@ msgid "and more"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/announcements/announcements.service.ts:215
-#: src/announcements/announcements.service.ts:474
+#: src/announcements/announcements.service.ts:221
+#: src/announcements/announcements.service.ts:489
 msgid "Announcement not found."
 msgstr ""
 
@@ -730,11 +730,11 @@ msgid "Change the address in the app, under Account."
 msgstr ""
 
 #: src/notifications/notification-email.ts:297
-#: src/notifications/notifications.service.ts:539
+#: src/notifications/notifications.service.ts:544
 msgid "Change what we send"
 msgstr ""
 
-#: src/notifications/notifications.service.ts:540
+#: src/notifications/notifications.service.ts:545
 msgid "Change what we send in the app, under Account → Notifications."
 msgstr ""
 
@@ -773,7 +773,7 @@ msgid "Choose at least one kind of shop."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/announcements/announcements.service.ts:196
+#: src/announcements/announcements.service.ts:202
 msgid "Choose the person to send it to."
 msgstr ""
 
@@ -783,7 +783,7 @@ msgid "Choose the person, or the shop, to write to."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/announcements/announcements.service.ts:199
+#: src/announcements/announcements.service.ts:205
 msgid "Choose the shop to send it to."
 msgstr ""
 
@@ -1458,7 +1458,7 @@ msgstr ""
 msgid "If it was not you, open \"Where you are signed in\" in your account, sign that one out, and write to us from Help."
 msgstr ""
 
-#: src/notifications/notifications.service.ts:301
+#: src/notifications/notifications.service.ts:302
 msgid "If you did not expect it, you can ignore it."
 msgstr ""
 
@@ -1505,17 +1505,17 @@ msgid "IT & Tech Support"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/announcements/announcements.service.ts:276
+#: src/announcements/announcements.service.ts:283
 msgid "It has already been sent."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/announcements/announcements.service.ts:317
+#: src/announcements/announcements.service.ts:324
 msgid "It has already gone out."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/announcements/announcements.service.ts:232
+#: src/announcements/announcements.service.ts:238
 msgid "It has been sent; it cannot be changed now."
 msgstr ""
 
@@ -1757,7 +1757,7 @@ msgstr ""
 msgid "News and tips from us"
 msgstr ""
 
-#: src/notifications/notifications.service.ts:508
+#: src/notifications/notifications.service.ts:509
 msgid "news from us"
 msgstr ""
 
@@ -1819,8 +1819,8 @@ msgid "Nothing is written off — your money is kept. Give a corrected number un
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/notifications/notifications.service.ts:788
-#: src/notifications/notifications.service.ts:802
+#: src/notifications/notifications.service.ts:793
+#: src/notifications/notifications.service.ts:807
 msgid "Notification not found."
 msgstr ""
 
@@ -2064,7 +2064,7 @@ msgstr ""
 msgid "Only the primary administrator can hand a shop to a new owner."
 msgstr ""
 
-#: src/notifications/notifications.service.ts:530
+#: src/notifications/notifications.service.ts:535
 msgid "Open"
 msgstr ""
 
@@ -2467,7 +2467,7 @@ msgstr ""
 msgid "rating must be at most 5."
 msgstr ""
 
-#: src/notifications/notifications.service.ts:63
+#: src/notifications/notifications.service.ts:64
 msgid "Read and reply"
 msgstr ""
 
@@ -2564,11 +2564,11 @@ msgid "Schedule exception not found."
 msgstr ""
 
 #: src/notifications/notification-email.ts:294
-#: src/notifications/notifications.service.ts:62
+#: src/notifications/notifications.service.ts:63
 msgid "See bookings"
 msgstr ""
 
-#: src/notifications/notifications.service.ts:64
+#: src/notifications/notifications.service.ts:65
 msgid "See reviews"
 msgstr ""
 
@@ -2644,7 +2644,7 @@ msgstr ""
 msgid "Sign in again, with the code from your authenticator app."
 msgstr ""
 
-#: src/notifications/notifications.service.ts:298
+#: src/notifications/notifications.service.ts:299
 msgid "Sign in to accept"
 msgstr ""
 
@@ -3088,7 +3088,7 @@ msgstr ""
 msgid "There is nothing written to publish."
 msgstr ""
 
-#: src/notifications/notifications.service.ts:508
+#: src/notifications/notifications.service.ts:509
 msgid "this"
 msgstr ""
 
@@ -3654,7 +3654,7 @@ msgstr ""
 msgid "Yes, send me news and offers. I can stop at any time."
 msgstr ""
 
-#: src/notifications/notifications.service.ts:536
+#: src/notifications/notifications.service.ts:541
 msgid "You always get emails about {topic}."
 msgstr ""
 
@@ -3739,7 +3739,7 @@ msgstr ""
 msgid "You get"
 msgstr ""
 
-#: src/notifications/notifications.service.ts:537
+#: src/notifications/notifications.service.ts:542
 msgid "You get emails about {topic} because they are turned on."
 msgstr ""
 
@@ -3751,7 +3751,7 @@ msgstr ""
 msgid "You get this because someone asked to sign in with this email address."
 msgstr ""
 
-#: src/notifications/notifications.service.ts:300
+#: src/notifications/notifications.service.ts:301
 msgid "You get this because someone invited this address."
 msgstr ""
 

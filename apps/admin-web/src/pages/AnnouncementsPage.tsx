@@ -45,6 +45,7 @@ const EMPTY: AnnouncementDraft = {
   body: '',
   linkPath: null,
   linkLabel: null,
+  translations: {},
   sendPush: true,
   sendEmail: false,
   banner: false,
@@ -222,6 +223,7 @@ export function AnnouncementsPage() {
       body: a.body,
       linkPath: a.linkPath,
       linkLabel: a.linkLabel,
+      translations: a.translations ?? {},
       sendPush: a.sendPush,
       sendEmail: a.sendEmail,
       banner: a.banner,
@@ -390,6 +392,12 @@ export function AnnouncementsPage() {
               <input value={draft.linkLabel ?? ''} maxLength={30} placeholder="Have a look" onChange={(e) => set({ linkLabel: e.target.value })} />
             </label>
           </div>
+
+          <AnnouncementLanguages
+            value={draft.translations ?? {}}
+            withButton={Boolean(draft.linkPath?.trim())}
+            onChange={(translations) => set({ translations })}
+          />
 
           <div className="an-ways">
             <div className="an-way is-locked">
@@ -715,5 +723,75 @@ function Finder({
       )}
       {found.data && found.data.length === 0 && <p className="muted small">Nobody found for “{q}”.</p>}
     </div>
+  );
+}
+
+type Translations = NonNullable<AnnouncementDraft['translations']>;
+
+const LANGUAGES = [
+  { code: 'rw', label: 'Kinyarwanda' },
+  { code: 'fr', label: 'French' },
+] as const;
+
+/**
+ * The announcement in Kinyarwanda and French (§308.4): each person gets it in
+ * the language they use the app in, and the English where one is not typed.
+ * Folded away until wanted.
+ */
+function AnnouncementLanguages({
+  value,
+  withButton,
+  onChange,
+}: {
+  value: Translations;
+  withButton: boolean;
+  onChange: (next: Translations) => void;
+}) {
+  const typed = LANGUAGES.filter(({ code }) => value[code]?.title || value[code]?.body);
+  const set = (code: 'rw' | 'fr', field: 'title' | 'body' | 'linkLabel', text: string) =>
+    onChange({ ...value, [code]: { ...value[code], [field]: text } });
+  return (
+    <details className="an-langs" open={typed.length > 0}>
+      <summary>
+        <Icon name="globe" size={15} />
+        <strong>In Kinyarwanda and French</strong>
+        <span>
+          {typed.length
+            ? `${typed.map((l) => l.label).join(' and ')} written — the rest get English`
+            : 'Optional — each person gets their language, else this English'}
+        </span>
+      </summary>
+      {LANGUAGES.map(({ code, label }) => (
+        <div key={code} className="an-lang">
+          <span className="an-lang-code">{code.toUpperCase()}</span>
+          <div className="an-lang-fields">
+            <input
+              value={value[code]?.title ?? ''}
+              maxLength={80}
+              placeholder={`Title in ${label}`}
+              aria-label={`Title in ${label}`}
+              onChange={(e) => set(code, 'title', e.target.value)}
+            />
+            <textarea
+              rows={3}
+              value={value[code]?.body ?? ''}
+              maxLength={1000}
+              placeholder={`Message in ${label}`}
+              aria-label={`Message in ${label}`}
+              onChange={(e) => set(code, 'body', e.target.value)}
+            />
+            {withButton && (
+              <input
+                value={value[code]?.linkLabel ?? ''}
+                maxLength={30}
+                placeholder={`Button words in ${label}`}
+                aria-label={`Button words in ${label}`}
+                onChange={(e) => set(code, 'linkLabel', e.target.value)}
+              />
+            )}
+          </div>
+        </div>
+      ))}
+    </details>
   );
 }

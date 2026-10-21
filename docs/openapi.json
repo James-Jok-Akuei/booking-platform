@@ -29284,6 +29284,31 @@
           "name"
         ]
       },
+      "AnnouncementWordsResponseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "linkLabel": {
+            "type": "string"
+          }
+        }
+      },
+      "AnnouncementTranslationsResponseDto": {
+        "type": "object",
+        "properties": {
+          "rw": {
+            "$ref": "#/components/schemas/AnnouncementWordsResponseDto"
+          },
+          "fr": {
+            "$ref": "#/components/schemas/AnnouncementWordsResponseDto"
+          }
+        }
+      },
       "AnnouncementStatsDto": {
         "type": "object",
         "properties": {
@@ -29409,6 +29434,14 @@
             "type": "string",
             "nullable": true
           },
+          "translations": {
+            "description": "Kinyarwanda and French, where typed (§308.4).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AnnouncementTranslationsResponseDto"
+              }
+            ]
+          },
           "sendPush": {
             "type": "boolean"
           },
@@ -29477,6 +29510,7 @@
           "body",
           "linkPath",
           "linkLabel",
+          "translations",
           "sendPush",
           "sendEmail",
           "banner",
@@ -29505,6 +29539,34 @@
           "announcements"
         ]
       },
+      "AnnouncementWordsDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "linkLabel": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      },
+      "AnnouncementTranslationsDto": {
+        "type": "object",
+        "properties": {
+          "rw": {
+            "$ref": "#/components/schemas/AnnouncementWordsDto"
+          },
+          "fr": {
+            "$ref": "#/components/schemas/AnnouncementWordsDto"
+          }
+        }
+      },
       "SaveAnnouncementDto": {
         "type": "object",
         "properties": {
@@ -29529,6 +29591,14 @@
             "type": "string",
             "nullable": true,
             "maxLength": 30
+          },
+          "translations": {
+            "description": "The same in Kinyarwanda and French; each person gets theirs (§308.4).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AnnouncementTranslationsDto"
+              }
+            ]
           },
           "sendPush": {
             "type": "boolean"

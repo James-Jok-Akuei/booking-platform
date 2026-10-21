@@ -13,6 +13,8 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { readTyped, typedIn } from '../i18n/typed-words';
 import { AnnouncementAudienceDto, SaveAnnouncementDto, SendAnnouncementDto } from './dto/announcement-request.dto';
 import {
   AnnouncementDto,
@@ -20,6 +22,9 @@ import {
   AnnouncementStatsDto,
   BannersDto,
 } from './dto/announcement-response.dto';
+
+/** What an announcement says, typed per language in the console (§308.4). */
+const WORDS = ['title', 'body', 'linkLabel'] as const;
 
 /** Above this many people, sending asks for the number typed back (§287). */
 export const CONFIRM_ABOVE = 100;
@@ -39,6 +44,7 @@ const SELECT = {
   body: true,
   linkPath: true,
   linkLabel: true,
+  translations: true,
   sendPush: true,
   sendEmail: true,
   banner: true,
@@ -248,6 +254,7 @@ export class AnnouncementsService {
       body: dto.body.trim(),
       linkPath: dto.linkPath?.trim() || null,
       linkLabel: dto.linkLabel?.trim() || null,
+      translations: readTyped(dto.translations, WORDS),
       sendPush: dto.sendPush,
       sendEmail: dto.sendEmail,
       banner: dto.banner,
@@ -406,7 +413,7 @@ export class AnnouncementsService {
   // ---------- Banners ----------
 
   /** Service notices shown across the top of an app, while they last. */
-  async banners(forWho: 'customers' | 'sellers'): Promise<BannersDto> {
+  async banners(forWho: 'customers' | 'sellers', locale: Locale = DEFAULT_LOCALE): Promise<BannersDto> {
     const now = Date.now();
     const rows = await this.prisma.announcement.findMany({
       where: {
@@ -424,16 +431,24 @@ export class AnnouncementsService {
         sentAt: { gte: new Date(now - 60 * 24 * 60 * 60 * 1000) },
       },
       orderBy: { sentAt: 'desc' },
-      select: { id: true, title: true, body: true, linkPath: true, linkLabel: true, bannerUntil: true, sentAt: true },
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        linkPath: true,
+        linkLabel: true,
+        translations: true,
+        bannerUntil: true,
+        sentAt: true,
+      },
     });
     return {
       banners: rows
         .map((r) => ({
           id: r.id,
-          title: r.title,
-          body: r.body,
+          // In the language of the app asking (§308.4).
+          ...typedIn(locale, { title: r.title, body: r.body, linkLabel: r.linkLabel }, readTyped(r.translations, WORDS)),
           linkPath: r.linkPath,
-          linkLabel: r.linkLabel,
           until: (r.bannerUntil ?? new Date(r.sentAt!.getTime() + BANNER_DAYS * 86_400_000)).toISOString(),
         }))
         .filter((b) => Date.parse(b.until) > now)
@@ -475,13 +490,19 @@ export class AnnouncementsService {
     return row;
   }
 
-  private content(a: { title: string; body: string }) {
+  /** Each person's notice in their own language, where it was typed (§308.4). */
+  private content(a: { title: string; body: string; translations?: unknown }) {
+    const typed = readTyped(a.translations, WORDS);
     return {
       serviceName: a.title,
       reason: a.body,
       locationName: '',
       businessName: '',
       startTime: undefined as unknown as Date,
+      compose: (l: Locale) => {
+        const words = typedIn(l, { title: a.title, body: a.body }, typed);
+        return { subject: words.title, body: words.body };
+      },
     };
   }
 
@@ -498,6 +519,7 @@ export class AnnouncementsService {
       body: r.body,
       linkPath: r.linkPath,
       linkLabel: r.linkLabel,
+      translations: readTyped(r.translations, WORDS),
       sendPush: r.sendPush,
       sendEmail: r.sendEmail,
       banner: r.banner,

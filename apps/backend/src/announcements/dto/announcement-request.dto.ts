@@ -11,7 +11,9 @@ import {
   Matches,
   MaxLength,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { AnnouncementAudience, AnnouncementKind } from '@prisma/client';
 
 /** Who an announcement is for (§287). */
@@ -43,6 +45,36 @@ export class AnnouncementAudienceDto {
   businessId?: string | null;
 }
 
+/** The announcement in one other language (§308.4). A field left out is said in English. */
+export class AnnouncementWordsDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  body?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  linkLabel?: string;
+}
+
+export class AnnouncementTranslationsDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AnnouncementWordsDto)
+  rw?: AnnouncementWordsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AnnouncementWordsDto)
+  fr?: AnnouncementWordsDto;
+}
+
 export class SaveAnnouncementDto extends AnnouncementAudienceDto {
   @IsString()
   @Length(3, 80)
@@ -63,6 +95,12 @@ export class SaveAnnouncementDto extends AnnouncementAudienceDto {
   @IsString()
   @MaxLength(30)
   linkLabel?: string | null;
+
+  /** The same in Kinyarwanda and French; each person gets theirs (§308.4). */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AnnouncementTranslationsDto)
+  translations?: AnnouncementTranslationsDto;
 
   @IsBoolean()
   sendPush!: boolean;

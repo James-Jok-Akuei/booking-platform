@@ -21,6 +21,8 @@ import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import { AnnouncementsService } from './announcements.service';
 import { BannerQueryDto, SaveAnnouncementDto, SendAnnouncementDto } from './dto/announcement-request.dto';
+import { RequestLocale } from '../i18n/request-locale.decorator';
+import type { Locale } from '../i18n/locales';
 import {
   AnnouncementDto,
   AnnouncementListDto,
@@ -106,7 +108,7 @@ export class AnnouncementsController {
   @Get('banner')
   @ApiOkResponse({ type: BannersDto })
   @ApiErrors({ validation: true })
-  banner(@Query() query: BannerQueryDto) {
-    return this.announcements.banners(query.for);
+  banner(@Query() query: BannerQueryDto, @RequestLocale() locale: Locale) {
+    return this.announcements.banners(query.for, locale);
   }
 }

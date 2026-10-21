@@ -9,7 +9,7 @@ import { TaxonomyNamesService } from '../src/categories/taxonomy-names.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { E2eContext, createE2eApp, request } from './setup/e2e-app';
 import { resetDatabase } from './setup/test-module';
-import { createCustomer } from './setup/factories';
+import { createAdmin, createCustomer } from './setup/factories';
 
 /**
  * What the server says, in the reader's language (§308): its notices and
@@ -184,6 +184,50 @@ describe('The server, in the reader’s language (§308)', () => {
     // A shop called like a type is a shop, not a type.
     const shop = await names.localise({ business: { name: 'Test Barbershop' } }, 'fr');
     expect(shop.business.name).toBe('Test Barbershop');
+  });
+
+  it('sends an announcement typed in two languages to each person in theirs, and shows its banner in the app’s', async () => {
+    const admin = await createAdmin(prisma);
+    const adminToken = ctx.token(admin.userId, admin.email, 'ADMIN');
+    const french = await createCustomer(prisma);
+    await prisma.user.update({ where: { id: french.userId }, data: { locale: 'fr' } });
+    const english = await createCustomer(prisma);
+    const draft = {
+      kind: 'SERVICE',
+      audience: 'ONE_PERSON',
+      title: 'MTN MoMo is slow this morning',
+      body: 'Payments may take a few minutes to confirm.',
+      translations: { fr: { title: 'MTN MoMo est lent ce matin', body: 'Les paiements peuvent prendre quelques minutes.' } },
+      sendPush: false,
+      sendEmail: false,
+      banner: false,
+    };
+    for (const person of [french, english]) {
+      const created = await request(ctx.url, '/admin/announcements', {
+        method: 'POST',
+        token: adminToken,
+        body: { ...draft, userId: person.userId },
+      });
+      expect(created.status).toBe(201);
+      expect(created.body.translations).toEqual(draft.translations);
+      const sent = await request(ctx.url, `/admin/announcements/${created.body.id as string}/send`, {
+        method: 'POST',
+        token: adminToken,
+        body: {},
+      });
+      expect(sent.status).toBe(200);
+    }
+    const said = async (userId: string) => {
+      for (let i = 0; i < 50; i++) {
+        const n = await prisma.notification.findFirst({ where: { recipientId: userId, type: NotificationType.ANNOUNCEMENT } });
+        if (n) return n;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      throw new Error('not sent');
+    };
+    expect((await said(french.userId)).subject).toBe('MTN MoMo est lent ce matin');
+    expect((await said(french.userId)).body).toBe('Les paiements peuvent prendre quelques minutes.');
+    expect((await said(english.userId)).subject).toBe('MTN MoMo is slow this morning');
   });
 
   it('answers the settings and their refusals in the language the app asks in', async () => {
