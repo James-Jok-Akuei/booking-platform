@@ -5,6 +5,7 @@ import { navItemFor } from '../nav';
 import { RwandaFlag } from '../ui/RwandaFlag';
 import { ShopLogo } from '../ui/ShopLogo';
 import { Icon } from '../ui/Icon';
+import { useTour } from '../tour/Tour';
 import { useDismiss } from '../ui/useDismiss';
 import { clock, useNow } from '../lib/time';
 import { roleLabel, type ShellData } from './useShellData';
@@ -113,6 +114,7 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
 
   const name = data.business?.name ?? 'Your business';
   const live = data.live;
+  const tour = useTour();
 
   const links = [
     { to: '/profile', label: 'Your shopfront', icon: 'store' as const },
@@ -163,6 +165,19 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
               {link.label}
             </Link>
           ))}
+          {/* The welcome tour, from any page (§307.1). */}
+          <button
+            type="button"
+            className="menu-item"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              tour.start();
+            }}
+          >
+            <Icon name="play" size={18} />
+            Take the welcome tour
+          </button>
           <div className="menu-rule" />
           <button type="button" className="menu-item is-danger" role="menuitem" onClick={onSignOut}>
             <Icon name="logout" size={18} />

@@ -19766,3 +19766,24 @@ Checked in the running apps at 1440, 1024, 390 and 320 (seller) and 390, 320
 and 820 (customer, on the web): the film and every mark, skipping (the server
 cleared the owed tour), taking it again from Help and from Account, a new
 shop's first step. On a real phone it has not been seen yet.
+
+### 307.1 Taking the tour again, one tap from where people get stuck (2026-10-21)
+
+The user suggested a button to go through the tour again at any time. It was
+there (seller: Help and the search; customer: Account → How booking works),
+but one step too deep for somebody who is lost, so it now sits where the
+question is asked:
+- **Seller app**: "Take the welcome tour" in the shop menu at the top right,
+  which is on every page, a phone's included. It opens the Overview and the
+  film.
+- **Customer app**: "See how booking works" under "Find a place" when nothing
+  is booked yet, and on the Account tab for somebody not signed in — worth
+  seeing before deciding to make an account. The story plays without the
+  last "Make it yours" step, which is for a new account only.
+
+**On an iPhone (simulator)**: the story draws as on the web — the phone
+frame, the soft light, the ring and the notes. The bars of moments not yet
+reached kept a sliver of an old width there; every bar now reads one number
+for where the story is, so they fill and empty exactly. (Checked with a
+temporary change that opened the story without signing in — the simulator
+cannot be typed into from here — taken out again.)

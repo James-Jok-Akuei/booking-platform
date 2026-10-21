@@ -151,6 +151,10 @@ function Story({ first, me, onClose }: { first: boolean; me: Me | null; onClose:
   const [index, setIndex] = useState(0);
   const [stage, setStage] = useState({ width: 0, height: 0 });
   const progress = useRef(new Animated.Value(0)).current;
+  // Where the story is, as one number (2.4 = the third moment, 40% through):
+  // every bar reads it, so none is ever left holding an old width.
+  const step = useRef(new Animated.Value(0)).current;
+  const along = useRef(Animated.add(step, progress)).current;
   const enter = useRef(new Animated.Value(0)).current;
   const opened = useRef(new Animated.Value(0)).current;
   const paused = useRef(false);
@@ -176,6 +180,7 @@ function Story({ first, me, onClose }: { first: boolean; me: Me | null; onClose:
   // Each moment: in with a lift, then its bar fills, and the next follows.
   useEffect(() => {
     enter.setValue(0);
+    step.setValue(index);
     Animated.timing(enter, { toValue: 1, duration: still ? 0 : 480, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
     progress.setValue(still || !slide ? 1 : 0);
     if (still || !slide) return;
@@ -235,14 +240,7 @@ function Story({ first, me, onClose }: { first: boolean; me: Me | null; onClose:
                 <Animated.View
                   style={[
                     styles.barFill,
-                    {
-                      width:
-                        i < index
-                          ? '100%'
-                          : i > index
-                            ? '0%'
-                            : progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-                    },
+                    { width: along.interpolate({ inputRange: [i, i + 1], outputRange: ['0%', '100%'], extrapolate: 'clamp' }) },
                   ]}
                 />
               </View>

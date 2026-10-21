@@ -9,6 +9,7 @@ import { BOOKING_STATUS } from '../../src/bookingStatus';
 import { useMoney } from '../../src/money';
 import { font, radius, shadow, TAB_BAR_CLEARANCE, theme, type } from '../../src/theme';
 import { EmptyState } from '../../src/ui/EmptyState';
+import { playWelcomeTour } from '../../src/tour/WelcomeTour';
 import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
@@ -134,6 +135,9 @@ export default function Bookings() {
               }
               action={tab === 'upcoming' ? 'Find a place' : undefined}
               onAction={() => router.push('/')}
+              // Nothing booked yet is when "how does this work?" is asked (§307.1).
+              secondary={tab === 'upcoming' ? 'See how booking works' : undefined}
+              onSecondary={playWelcomeTour}
             />
           )
         }

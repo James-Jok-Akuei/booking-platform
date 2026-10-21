@@ -330,6 +330,9 @@ export default function Account() {
           text="Sign in to book and pay, keep your bookings, save places and services, message shops and get your notifications. It follows you to any phone."
           action="Sign in or create an account"
           onAction={() => router.push('/sign-in?next=/')}
+          // Worth seeing before deciding to make an account at all (§307.1).
+          secondary="See how booking works"
+          onSecondary={playWelcomeTour}
         />
       </View>
     );

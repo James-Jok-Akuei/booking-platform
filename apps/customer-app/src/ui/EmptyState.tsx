@@ -18,12 +18,17 @@ export function EmptyState({
   text,
   action,
   onAction,
+  secondary,
+  onSecondary,
 }: {
   icon: IconName;
   title: string;
   text?: string;
   action?: string;
   onAction?: () => void;
+  /** A quieter second way on, under the first. */
+  secondary?: string;
+  onSecondary?: () => void;
 }) {
   return (
     <FadeIn style={styles.wrap}>
@@ -37,6 +42,7 @@ export function EmptyState({
       {action && onAction && (
         <Button label={action} onPress={onAction} style={styles.action} compact />
       )}
+      {secondary && onSecondary && <Button label={secondary} kind="ghost" onPress={onSecondary} compact />}
     </FadeIn>
   );
 }
