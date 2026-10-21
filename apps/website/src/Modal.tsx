@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { t } from '@lingui/core/macro';
 import { Icon } from './Icon';
 
 /** A window over the page: closes on Escape, the backdrop or ✕, and holds the page still while open. */
@@ -33,7 +34,7 @@ export function Modal({
         aria-label={title}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
+        <button type="button" className="modal-close" onClick={onClose} aria-label={t`Close`}>
           <Icon name="close" size={18} stroke={2.2} />
         </button>
         {children}

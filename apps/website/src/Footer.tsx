@@ -1,17 +1,37 @@
 import { useEffect, useState } from 'react';
+import { t } from '@lingui/core/macro';
+import { Trans } from '@lingui/react/macro';
 import { Icon } from './Icon';
 import { Logo, Wordmark } from './Logo';
 import { Modal } from './Modal';
 import { API_URL, CONTACT_EMAIL, CONTACT_PHONE, SOCIAL, businessStart } from './links';
 import { SocialIcon } from './SocialIcon';
+import { LanguageChoice } from './LanguageChoice';
+import { dateLocale } from './i18n';
 
 type Kind = 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
 type Doc = { title: string; version: number; body: string; publishedAt: string };
 
-const DOCS: Array<{ kind: Kind; label: string }> = [
-  { kind: 'TERMS_OF_USE', label: 'Terms of Use' },
-  { kind: 'PRIVACY_POLICY', label: 'Privacy Policy' },
-  { kind: 'SELLER_AGREEMENT', label: 'Seller Agreement' },
+// Read when drawn, in the language then in use (§308).
+const DOCS: Array<{ kind: Kind; readonly label: string }> = [
+  {
+    kind: 'TERMS_OF_USE',
+    get label() {
+      return t`Terms of Use`;
+    },
+  },
+  {
+    kind: 'PRIVACY_POLICY',
+    get label() {
+      return t`Privacy Policy`;
+    },
+  },
+  {
+    kind: 'SELLER_AGREEMENT',
+    get label() {
+      return t`Seller Agreement`;
+    },
+  },
 ];
 
 const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -36,12 +56,16 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
             <Logo size={44} />
             <Wordmark />
           </a>
-          <p>Book real places near you, hold your time with a small MoMo deposit, and show your code at the door.</p>
+          <p>
+            <Trans>
+              Book real places near you, hold your time with a small MoMo deposit, and show your code at the door.
+            </Trans>
+          </p>
           <span className="foot-made">
-            <RwandaFlag /> Made for Rwanda
+            <RwandaFlag /> <Trans>Made for Rwanda</Trans>
           </span>
           {/* Our pages (§276). One whose link is not set yet says so, rather than leading to a guess. */}
-          <ul className="foot-social" aria-label="BwanguReservations on social media">
+          <ul className="foot-social" aria-label={t`BwanguReservations on social media`}>
             {SOCIAL.map((s) => (
               <li key={s.key}>
                 {s.url ? (
@@ -50,7 +74,7 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
                     href={s.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`BwanguReservations on ${s.label}`}
+                    aria-label={t`BwanguReservations on ${s.label}`}
                     title={s.label}
                   >
                     <SocialIcon network={s.key} />
@@ -59,8 +83,8 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
                   <span
                     className={`social is-${s.key} is-soon`}
                     role="img"
-                    aria-label={`${s.label} — coming soon`}
-                    title={`${s.label} — coming soon`}
+                    aria-label={t`${s.label} — coming soon`}
+                    title={t`${s.label} — coming soon`}
                   >
                     <SocialIcon network={s.key} />
                   </span>
@@ -70,29 +94,43 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
           </ul>
         </div>
 
-        <nav className="foot-cols" aria-label="More">
+        <nav className="foot-cols" aria-label={t`More`}>
           <div>
-            <h3>For customers</h3>
+            <h3>
+              <Trans>For customers</Trans>
+            </h3>
             <button type="button" onClick={onGetApp}>
-              Get the app
+              <Trans>Get the app</Trans>
             </button>
             <button type="button" onClick={onHow}>
-              How booking works
+              <Trans>How booking works</Trans>
             </button>
             <button type="button" onClick={() => go('places')}>
-              Places to book
+              <Trans>Places to book</Trans>
             </button>
           </div>
           <div>
-            <h3>For businesses</h3>
-            {signUp && <a href={signUp}>Start selling</a>}
-            {signIn && <a href={signIn}>Sign in</a>}
+            <h3>
+              <Trans>For businesses</Trans>
+            </h3>
+            {signUp && (
+              <a href={signUp}>
+                <Trans>Start selling</Trans>
+              </a>
+            )}
+            {signIn && (
+              <a href={signIn}>
+                <Trans>Sign in</Trans>
+              </a>
+            )}
             <button type="button" onClick={() => go('steps')}>
-              Live in three steps
+              <Trans>Live in three steps</Trans>
             </button>
           </div>
           <div>
-            <h3>Legal</h3>
+            <h3>
+              <Trans>Legal</Trans>
+            </h3>
             {DOCS.map((d) => (
               <button key={d.kind} type="button" onClick={() => setReading(d.kind)}>
                 {d.label}
@@ -101,7 +139,9 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
           </div>
           {(CONTACT_EMAIL || CONTACT_PHONE) && (
             <div className="foot-contact">
-              <h3>Talk to us</h3>
+              <h3>
+                <Trans>Talk to us</Trans>
+              </h3>
               {CONTACT_EMAIL && (
                 <a href={`mailto:${CONTACT_EMAIL}`}>
                   <Icon name="mail" size={16} /> <span>{CONTACT_EMAIL}</span>
@@ -119,7 +159,10 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
 
       <div className="foot-base">
         <span>© {year} BwanguReservations</span>
-        <span>Prices in RWF · Deposits by MTN MoMo</span>
+        <LanguageChoice variant="row" />
+        <span>
+          <Trans>Prices in RWF · Deposits by MTN MoMo</Trans>
+        </span>
       </div>
 
       {reading && <LegalDoc kind={reading} onClose={() => setReading(null)} />}
@@ -132,6 +175,9 @@ function LegalDoc({ kind, onClose }: { kind: Kind; onClose: () => void }) {
   const [doc, setDoc] = useState<Doc | null>(null);
   const [failed, setFailed] = useState(false);
   const label = DOCS.find((d) => d.kind === kind)!.label;
+  const since = doc
+    ? new Date(doc.publishedAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
+    : '';
 
   useEffect(() => {
     const control = new AbortController();
@@ -147,15 +193,20 @@ function LegalDoc({ kind, onClose }: { kind: Kind; onClose: () => void }) {
       <h3>{doc?.title ?? label}</h3>
       {doc && (
         <p className="doc-meta">
-          Version {doc.version} · in force since{' '}
-          {new Date(doc.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          <Trans>
+            Version {doc.version} · in force since {since}
+          </Trans>
         </p>
       )}
       <div className="doc-body">
         {failed ? (
-          <p>This could not be loaded just now. Please try again in a moment.</p>
+          <p>
+            <Trans>This could not be loaded just now. Please try again in a moment.</Trans>
+          </p>
         ) : !doc ? (
-          <p className="doc-wait">Loading…</p>
+          <p className="doc-wait">
+            <Trans>Loading…</Trans>
+          </p>
         ) : (
           paragraphs(doc.body).map((block, i) =>
             block.heading ? <h4 key={i}>{block.text}</h4> : <p key={i}>{block.text}</p>,

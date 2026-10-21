@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { t } from '@lingui/core/macro';
+import { Plural, Trans } from '@lingui/react/macro';
 import { Icon } from './Icon';
 import { useInView } from './inView';
 import { API_URL, CUSTOMER_APP_URL } from './links';
@@ -60,6 +62,7 @@ export function Places({ onGetApp }: { onGetApp: () => void }) {
 
   if (!page || page.total === 0) return null;
 
+  const total = page.total;
   const picture = (s: Found) => s.imageUrl ?? s.business.coverImageUrl;
   const cards = pick(page.services, picture);
 
@@ -103,11 +106,25 @@ export function Places({ onGetApp }: { onGetApp: () => void }) {
           </svg>
         </span>
         <h2 id="places-title">
-          <b>{page.total}</b> services ready to <b>book</b> today.
+          <Plural
+            value={total}
+            one={
+              <Trans>
+                <b>#</b> service ready to <b>book</b> today.
+              </Trans>
+            }
+            other={
+              <Trans>
+                <b>#</b> services ready to <b>book</b> today.
+              </Trans>
+            }
+          />
         </h2>
         <p className="places-flow">
-          Find a place <i aria-hidden="true">-&gt;</i> Pick a free time <i aria-hidden="true">-&gt;</i> Show your code
-          at the door.
+          <Trans>
+            Find a place <i aria-hidden="true">-&gt;</i> Pick a free time <i aria-hidden="true">-&gt;</i> Show your code
+            at the door.
+          </Trans>
         </p>
 
         <ul className="places-grid">
@@ -115,14 +132,14 @@ export function Places({ onGetApp }: { onGetApp: () => void }) {
             const photo = picture(s);
             const kind = s.business.kinds[0];
             const kindName = kind ? kind.otherLabel || kind.subcategory.name : s.business.subcategory?.name;
-            const deposit = Math.round((s.priceMinor * Number(s.depositPercentage)) / 100);
+            const deposit = money(Math.round((s.priceMinor * Number(s.depositPercentage)) / 100), s.currency);
             return (
               <li key={s.id} style={{ '--i': i } as CSSProperties}>
                 <button
                   type="button"
                   className="place"
                   onClick={() => open(s)}
-                  aria-label={`${s.name} at ${s.business.name}`}
+                  aria-label={t`${s.name} at ${s.business.name}`}
                 >
                   <span className={`place-photo${photo ? '' : ' is-empty'}`}>
                     {photo ? (
@@ -154,7 +171,9 @@ export function Places({ onGetApp }: { onGetApp: () => void }) {
                     </span>
                     <span className="place-price">
                       <b>{money(s.priceMinor, s.currency)}</b>
-                      <em>{money(deposit, s.currency)} to book</em>
+                      <em>
+                        <Trans>{deposit} to book</Trans>
+                      </em>
                     </span>
                   </span>
                 </button>
@@ -165,9 +184,11 @@ export function Places({ onGetApp }: { onGetApp: () => void }) {
 
         <div className="places-more">
           <button type="button" className="btn" onClick={onGetApp}>
-            See every place in the app <Icon name="arrowRight" size={17} stroke={2.2} />
+            <Trans>See every place in the app</Trans> <Icon name="arrowRight" size={17} stroke={2.2} />
           </button>
-          <span>Prices are set by each shop. The deposit is part of the price, not extra.</span>
+          <span>
+            <Trans>Prices are set by each shop. The deposit is part of the price, not extra.</Trans>
+          </span>
         </div>
       </div>
     </section>

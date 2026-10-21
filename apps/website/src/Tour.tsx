@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type TouchEvent } from 'react';
+import { t } from '@lingui/core/macro';
+import { Trans } from '@lingui/react/macro';
 import { Icon, type IconName } from './Icon';
 import { businessStart } from './links';
 
@@ -7,10 +9,10 @@ type Spot = { x: number; y: number; w: number; h: number };
 
 type Step = {
   key: 'signup' | 'setup' | 'live';
-  title: string;
-  text: string;
-  alt: string;
-  chip: { icon: IconName; tone: 'orange' | 'cream' | 'green'; title: string; text: string };
+  readonly title: string;
+  readonly text: string;
+  readonly alt: string;
+  chip: { icon: IconName; tone: 'orange' | 'cream' | 'green'; readonly title: string; readonly text: string };
   /** The part of the computer screenshot, and of the phone one, that the step is about. */
   desk: Spot;
   phone: Spot;
@@ -20,33 +22,79 @@ type Step = {
  * The three steps from signing up to taking bookings (§260), each shown on
  * the real screen a seller meets at that moment — captured from the business
  * app itself, at a computer's size and a phone's, so a visitor sees the app
- * they will use on the device they are holding.
+ * they will use on the device they are holding. The words are read when
+ * drawn, in the language then in use (§308).
  */
 const STEPS: Step[] = [
   {
     key: 'signup',
-    title: 'Sign up with your email',
-    text: 'We send a 6-digit code, and that is your account. No password, no card.',
-    alt: 'The business app’s sign-up: a 6-digit code sent to your email, typed into six boxes.',
-    chip: { icon: 'mail', tone: 'orange', title: 'Code sent', text: 'Six digits — no password, ever' },
+    get title() {
+      return t`Sign up with your email`;
+    },
+    get text() {
+      return t`We send a 6-digit code, and that is your account. No password, no card.`;
+    },
+    get alt() {
+      return t`The business app’s sign-up: a 6-digit code sent to your email, typed into six boxes.`;
+    },
+    chip: {
+      icon: 'mail',
+      tone: 'orange',
+      get title() {
+        return t`Code sent`;
+      },
+      get text() {
+        return t`Six digits — no password, ever`;
+      },
+    },
     desk: { x: 64.6, y: 46.6, w: 30.4, h: 9.4 },
     phone: { x: 5, y: 66.2, w: 90, h: 9.2 },
   },
   {
     key: 'setup',
-    title: 'Set up your shop',
-    text: 'Your name, a branch and one service — about five minutes. Skip anything and add it later.',
-    alt: 'Setting up a shop: its name, what kind of shop it is, and how customers will see it.',
-    chip: { icon: 'check', tone: 'cream', title: 'About five minutes', text: 'Skip anything, add it later' },
+    get title() {
+      return t`Set up your shop`;
+    },
+    get text() {
+      return t`Your name, a branch and one service — about five minutes. Skip anything and add it later.`;
+    },
+    get alt() {
+      return t`Setting up a shop: its name, what kind of shop it is, and how customers will see it.`;
+    },
+    chip: {
+      icon: 'check',
+      tone: 'cream',
+      get title() {
+        return t`About five minutes`;
+      },
+      get text() {
+        return t`Skip anything, add it later`;
+      },
+    },
     desk: { x: 41, y: 27.8, w: 40.2, h: 10.6 },
     phone: { x: 8, y: 30, w: 84, h: 12.6 },
   },
   {
     key: 'live',
-    title: 'We check it, you post it',
-    text: 'Usually within one working day. Then you post your shop when you are ready, and customers can find you and book.',
-    alt: 'The business app’s home page the moment a shop is posted: You are live!',
-    chip: { icon: 'shield', tone: 'green', title: 'Approved', text: 'Usually within one working day' },
+    get title() {
+      return t`We check it, you post it`;
+    },
+    get text() {
+      return t`Usually within one working day. Then you post your shop when you are ready, and customers can find you and book.`;
+    },
+    get alt() {
+      return t`The business app’s home page the moment a shop is posted: You are live!`;
+    },
+    chip: {
+      icon: 'shield',
+      tone: 'green',
+      get title() {
+        return t`Approved`;
+      },
+      get text() {
+        return t`Usually within one working day`;
+      },
+    },
     desk: { x: 21.2, y: 29.6, w: 53.8, h: 18.8 },
     phone: { x: 4, y: 37.6, w: 92, h: 27.6 },
   },
@@ -127,16 +175,22 @@ export function Tour() {
       <div className="tour-bg" aria-hidden="true" />
       <div className="tour-inner">
         <header className="tour-head">
-          <p className="tour-eyebrow">From sign-up to your first booking</p>
+          <p className="tour-eyebrow">
+            <Trans>From sign-up to your first booking</Trans>
+          </p>
           <h2 id="tour-title">
-            Live in <span>three steps.</span>
+            <Trans>
+              Live in <span>three steps.</span>
+            </Trans>
           </h2>
-          <p className="tour-lead">Real screens from the app — exactly what you will see.</p>
+          <p className="tour-lead">
+            <Trans>Real screens from the app — exactly what you will see.</Trans>
+          </p>
         </header>
 
         <div className="tour-grid">
           <div className="tour-side">
-            <ol className="tour-steps" role="tablist" aria-label="The three steps">
+            <ol className="tour-steps" role="tablist" aria-label={t`The three steps`}>
               {STEPS.map((step, i) => {
                 const on = i === active;
                 return (
@@ -172,9 +226,11 @@ export function Tour() {
             {signUp && (
               <div className="tour-cta">
                 <a className="btn" href={signUp}>
-                  Start selling <Icon name="arrowRight" size={17} stroke={2.2} />
+                  <Trans>Start selling</Trans> <Icon name="arrowRight" size={17} stroke={2.2} />
                 </a>
-                <span>Free to join · No card needed</span>
+                <span>
+                  <Trans>Free to join · No card needed</Trans>
+                </span>
               </div>
             )}
           </div>
@@ -188,7 +244,7 @@ export function Tour() {
                   <i />
                 </span>
                 <span className="tour-url">
-                  <Icon name="lock" size={13} stroke={2} /> BwanguReservations · For businesses
+                  <Icon name="lock" size={13} stroke={2} /> <Trans>BwanguReservations · For businesses</Trans>
                 </span>
               </div>
               <div className="tour-screen" id="tour-screen" role="tabpanel" aria-labelledby={`tour-tab-${STEPS[active].key}`}>

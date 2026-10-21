@@ -1,4 +1,6 @@
-import { cloneElement, useRef, type CSSProperties, type ReactElement } from 'react';
+import { cloneElement, useRef, type CSSProperties, type ReactElement, type ReactNode } from 'react';
+import { t } from '@lingui/core/macro';
+import { Trans } from '@lingui/react/macro';
 import { useInView } from './inView';
 
 /**
@@ -10,12 +12,24 @@ import { useInView } from './inView';
  * day before.
  *
  * The drawings draw themselves in, one after another, the first time the
- * row is seen.
+ * row is seen. The words are `<Trans>`, said in the language in use when drawn
+ * (§308); where the title breaks is the translator's to choose.
  */
-const FEATURES: Array<{ title: [string, string]; text: string; art: ReactElement[] }> = [
+const FEATURES: Array<{ title: ReactNode; text: ReactNode; art: ReactElement[] }> = [
   {
-    title: ['Real places,', 'checked by us'],
-    text: 'Barbers, salons, spas, garages, clinics and more — with their own photos, prices and opening hours. We check every shop before it is listed.',
+    title: (
+      <Trans>
+        Real places,
+        <br />
+        checked by us
+      </Trans>
+    ),
+    text: (
+      <Trans>
+        Barbers, salons, spas, garages, clinics and more — with their own photos, prices and opening hours. We check
+        every shop before it is listed.
+      </Trans>
+    ),
     art: [
       <path d="M6 54h52" />,
       <path d="M10 24 14 14h36l4 10" />,
@@ -29,8 +43,19 @@ const FEATURES: Array<{ title: [string, string]; text: string; art: ReactElement
     ],
   },
   {
-    title: ['Book in', 'under a minute'],
-    text: 'See the free times for today and the days ahead, pick one, and it is yours. No phone calls, no waiting for a reply.',
+    title: (
+      <Trans>
+        Book in
+        <br />
+        under a minute
+      </Trans>
+    ),
+    text: (
+      <Trans>
+        See the free times for today and the days ahead, pick one, and it is yours. No phone calls, no waiting for a
+        reply.
+      </Trans>
+    ),
     art: [
       <rect x="18" y="6" width="28" height="52" rx="6" />,
       <path d="M29 11h6" />,
@@ -42,8 +67,19 @@ const FEATURES: Array<{ title: [string, string]; text: string; art: ReactElement
     ],
   },
   {
-    title: ['A small deposit', 'holds your time'],
-    text: 'Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. If the shop has to cancel, you get it all back.',
+    title: (
+      <Trans>
+        A small deposit
+        <br />
+        holds your time
+      </Trans>
+    ),
+    text: (
+      <Trans>
+        Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. If the shop has to cancel, you
+        get it all back.
+      </Trans>
+    ),
     art: [
       <ellipse cx="22" cy="36" rx="11" ry="4" />,
       <path d="M11 36v12a11 4 0 0 0 22 0V36" />,
@@ -57,8 +93,19 @@ const FEATURES: Array<{ title: [string, string]; text: string; art: ReactElement
     ],
   },
   {
-    title: ['Your code,', 'not a queue'],
-    text: 'Show your 6-digit code when you arrive and you are checked in. We remind you the day before, so it is never a surprise.',
+    title: (
+      <Trans>
+        Your code,
+        <br />
+        not a queue
+      </Trans>
+    ),
+    text: (
+      <Trans>
+        Show your 6-digit code when you arrive and you are checked in. We remind you the day before, so it is never a
+        surprise.
+      </Trans>
+    ),
     art: [
       <path d="M8 18h48v8a5 5 0 0 0 0 10v8H8v-8a5 5 0 0 0 0-10z" />,
       <path d="M40 20v4M40 28v4M40 36v4" />,
@@ -75,10 +122,10 @@ export function Features() {
   const ref = useRef<HTMLElement>(null);
   const seen = useInView(ref);
   return (
-    <section className={`features${seen ? ' is-in' : ''}`} ref={ref} aria-label="Why book here">
+    <section className={`features${seen ? ' is-in' : ''}`} ref={ref} aria-label={t`Why book here`}>
       <ul className="features-grid">
         {FEATURES.map((f, i) => (
-          <li key={f.text} style={{ '--i': i } as CSSProperties}>
+          <li key={i} style={{ '--i': i } as CSSProperties}>
             <svg
               className="feature-art"
               viewBox="0 0 64 64"
@@ -92,11 +139,7 @@ export function Features() {
                 {f.art.map((stroke, n) => cloneElement(stroke, { key: n, pathLength: 1 }))}
               </g>
             </svg>
-            <h3>
-              {f.title[0]}
-              <br />
-              {f.title[1]}
-            </h3>
+            <h3>{f.title}</h3>
             <p>{f.text}</p>
           </li>
         ))}

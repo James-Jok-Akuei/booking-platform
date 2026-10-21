@@ -19901,3 +19901,38 @@ its email, the settings and a refusal (`test/server-language.e2e.spec.ts`).
 **Left for later**: the website; the console's boxes per language for words
 customers read (categories, legal documents, announcements); the tour's
 screenshots taken again in each language; then the translations themselves.
+
+### 308.2 The website, ready for the same languages (2026-10-21)
+
+The public site (`apps/website`) goes through Lingui like the two apps
+(about 100 sentences, `npm run i18n` in the website's folder). Nobody signs
+in there, so the choice is kept in the browser; it opens in the browser's
+own language when that one is offered. A globe in the top bar opens the list
+(each language by its own name), and the footer shows them in a row — both
+only once a second language is offered, so the page looks exactly as before
+until then. Where a heading breaks is the translator's to choose; counted
+sentences ("12 services ready to book today") are whole sentences per number.
+
+Checked in the "long words" language at 1440, 1024, 390 and 320. What
+broke, and how it now holds up in any language:
+- **The headline** ran into the screenshots beside it and pushed the play
+  button under the paper. Its column now stops where the screens begin; its
+  letters shrink a step at a time until its longest word fits (`fit.ts`,
+  never below 60% of the designed size); the hero grows with taller words so
+  the play button stays above the paper.
+- **The top bar**: with longer words "For businesses" stepped onto the
+  name. When the bar is too narrow, measured, it first hides that link (the
+  rail and the footer have it) and shows the globe alone; if still too
+  narrow, "Get the app" becomes its phone icon.
+- **Buttons** cut long labels at both ends; they now take a second line.
+- **The floating notes** in "Live in three steps" ran off a phone's screen;
+  they now wrap and stay inside it.
+- A word longer than its column breaks rather than spill out — only ever a
+  very long one.
+English is unchanged at every width (same sizes, same heights).
+
+**Left for later**: the page's head (title, description, the share picture)
+is English for search engines — a page per language (`/rw`, `/fr`, with
+`hreflang`) comes with the translations; the walkthrough video's voice is
+English (subtitles or a recording per language then); the legal documents
+open in English until the console has a box per language for them.

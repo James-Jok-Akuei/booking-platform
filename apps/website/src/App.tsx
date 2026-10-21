@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { plural, t } from '@lingui/core/macro';
+import { Plural, Trans } from '@lingui/react/macro';
 import { Icon, type IconName } from './Icon';
 import { Logo, Wordmark } from './Logo';
 import { API_URL, APP_IS_OUT, APP_STORE_URL, CUSTOMER_APP_URL, PLAY_STORE_URL, businessStart } from './links';
@@ -8,6 +10,8 @@ import { Features } from './Features';
 import { Places } from './Places';
 import { Footer } from './Footer';
 import { Modal } from './Modal';
+import { LanguageChoice } from './LanguageChoice';
+import { useFitWords, useTightBar } from './fit';
 
 type Sheet = 'app' | 'how' | null;
 
@@ -22,6 +26,10 @@ type Sheet = 'app' | 'how' | null;
  */
 export function App() {
   const [sheet, setSheet] = useState<Sheet>(null);
+  // The tab's title in the page's language (§308); the page's own head is English, for search.
+  useEffect(() => {
+    document.title = t`BwanguReservations — Book real shops in Rwanda, quickly`;
+  }, []);
   return (
     <>
       <Hero onOpen={setSheet} />
@@ -42,21 +50,59 @@ export function App() {
 // ---------------------------------------------------------------------------
 // The hero
 
+// The descriptions are read when drawn, in the language then in use (§308).
 const SHOTS = [
-  { src: '/shots/overview.jpg', alt: 'The business app: a shop’s day at a glance', kind: 'wide', cls: 's1' },
-  { src: '/shots/calendar.jpg', alt: 'The business app: a week of bookings on a calendar', kind: 'wide', cls: 's2' },
-  { src: '/shots/home.jpg', alt: 'The customer app: find a place', kind: 'phone', cls: 's3' },
-  { src: '/shots/shop.jpg', alt: 'The customer app: a shop’s page', kind: 'phone', cls: 's4' },
+  {
+    src: '/shots/overview.jpg',
+    get alt() {
+      return t`The business app: a shop’s day at a glance`;
+    },
+    kind: 'wide',
+    cls: 's1',
+  },
+  {
+    src: '/shots/calendar.jpg',
+    get alt() {
+      return t`The business app: a week of bookings on a calendar`;
+    },
+    kind: 'wide',
+    cls: 's2',
+  },
+  {
+    src: '/shots/home.jpg',
+    get alt() {
+      return t`The customer app: find a place`;
+    },
+    kind: 'phone',
+    cls: 's3',
+  },
+  {
+    src: '/shots/shop.jpg',
+    get alt() {
+      return t`The customer app: a shop’s page`;
+    },
+    kind: 'phone',
+    cls: 's4',
+  },
 ] as const;
 
 function Hero({ onOpen }: { onOpen: (sheet: Sheet) => void }) {
   const ref = useRef<HTMLElement>(null);
+  const copy = useRef<HTMLDivElement>(null);
+  const title = useRef<HTMLHeadingElement>(null);
   const { w, h } = useSize(ref);
+  const { h: copyH } = useSize(copy);
+  useFitWords(title);
+  const top = useRef<HTMLElement>(null);
+  useTightBar(top);
   const narrow = w > 0 && w < 900;
   // Where the paper's corner sits: in from the left edge, up from the foot,
   // leaving room for the big number on it.
   const edge = narrow ? 20 : Math.min(128, Math.max(20, w * 0.084));
   const cornerY = h - (narrow ? 150 : 190);
+  // Longer words make the words above taller (§308): the hero grows with
+  // them, so the play button always stays above the paper.
+  const needed = !narrow && copy.current ? copy.current.offsetTop + copyH + 70 + 190 : 0;
   const layers =
     w > 0 && h > 0
       ? [
@@ -72,44 +118,60 @@ function Hero({ onOpen }: { onOpen: (sheet: Sheet) => void }) {
   };
 
   return (
-    <section className="hero" ref={ref} style={{ '--edge': `${edge}px` } as CSSProperties}>
+    <section
+      className="hero"
+      ref={ref}
+      style={{ '--edge': `${edge}px`, ...(needed ? { minHeight: `max(var(--hero-h), ${needed}px)` } : {}) } as CSSProperties}
+    >
       <div className="hero-bg" aria-hidden="true" />
 
-      <header className="top">
+      <header className="top" ref={top}>
         <a className="brand" href="/" aria-label="BwanguReservations">
           <Logo size={46} />
           <Wordmark />
         </a>
-        <nav className="top-nav" aria-label="Main">
+        <nav className="top-nav" aria-label={t`Main`}>
           <a className="top-link" href="#businesses">
-            For businesses
+            <Trans>For businesses</Trans>
           </a>
-          <button type="button" className="btn" onClick={openApp}>
-            Get the app
+          <LanguageChoice variant="menu" />
+          <button type="button" className="btn top-app" onClick={openApp} title={t`Get the app`}>
+            <span className="top-app-icon" aria-hidden="true">
+              <Icon name="phone" size={20} />
+            </span>
+            <span className="top-app-label">
+              <Trans>Get the app</Trans>
+            </span>
           </button>
         </nav>
       </header>
 
-      <div className="copy">
-        <p className="eyebrow">Your appointments, without the phone calls.</p>
-        <h1>
-          Book your next
-          <br />
-          appointment, Easily!
+      <div className="copy" ref={copy}>
+        <p className="eyebrow">
+          <Trans>Your appointments, without the phone calls.</Trans>
+        </p>
+        <h1 ref={title}>
+          <Trans>
+            Book your next
+            <br />
+            appointment, Easily!
+          </Trans>
         </h1>
         <button type="button" className="play" onClick={() => onOpen('how')}>
           <span className="play-disc" aria-hidden="true">
             <Icon name="play" size={22} filled stroke={0} />
           </span>
           <span>
-            Watch how to book
-            <br />
-            in under a minute!
+            <Trans>
+              Watch how to book
+              <br />
+              in under a minute!
+            </Trans>
           </span>
         </button>
       </div>
 
-      <div className="stack" aria-label="Screens of the apps">
+      <div className="stack" aria-label={t`Screens of the apps`}>
         {SHOTS.map((shot) => (
           <figure key={shot.src} className={`shot is-${shot.kind} ${shot.cls}`}>
             <img src={shot.src} alt={shot.alt} loading="eager" decoding="async" draggable={false} />
@@ -144,13 +206,27 @@ function Count() {
   if (total === null) return null;
   return (
     <div className="count">
-      <span className="count-num" aria-label={`${total} places`}>
+      <span className="count-num" aria-label={plural(total, { one: '# place', other: '# places' })}>
         {total}
       </span>
       <h2>
-        Places you can
-        <br />
-        book today.
+        <Plural
+          value={total}
+          one={
+            <Trans>
+              Place you can
+              <br />
+              book today.
+            </Trans>
+          }
+          other={
+            <Trans>
+              Places you can
+              <br />
+              book today.
+            </Trans>
+          }
+        />
       </h2>
     </div>
   );
@@ -176,38 +252,44 @@ function ForBusinesses() {
       <div className="biz-grid">
         <div className="biz-copy">
           <p className="biz-eyebrow">
-            <Icon name="store" size={16} /> For businesses
+            <Icon name="store" size={16} /> <Trans>For businesses</Trans>
           </p>
           <h2 id="biz-title">
-            Get booked
-            <br />
-            while you work.
+            <Trans>
+              Get booked
+              <br />
+              while you work.
+            </Trans>
           </h2>
           <p className="biz-lead">
-            Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo
-            deposit. You see your whole day on one screen, and check people in with a code.
+            <Trans>
+              Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo
+              deposit. You see your whole day on one screen, and check people in with a code.
+            </Trans>
           </p>
           {signUp && signIn ? (
             <div className="biz-actions">
               <a className="btn" href={signUp}>
-                Start selling — it is free <Icon name="arrowRight" size={17} stroke={2.2} />
+                <Trans>Start selling — it is free</Trans> <Icon name="arrowRight" size={17} stroke={2.2} />
               </a>
               <a className="btn-line" href={signIn}>
-                <Icon name="logIn" size={18} /> Sign in
+                <Icon name="logIn" size={18} /> <Trans>Sign in</Trans>
               </a>
             </div>
           ) : (
-            <p className="biz-soon">Sign-ups for businesses open soon.</p>
+            <p className="biz-soon">
+              <Trans>Sign-ups for businesses open soon.</Trans>
+            </p>
           )}
           <ul className="biz-ticks">
             <li>
-              <Icon name="check" size={16} stroke={2.6} /> Deposits paid straight to MTN MoMo
+              <Icon name="check" size={16} stroke={2.6} /> <Trans>Deposits paid straight to MTN MoMo</Trans>
             </li>
             <li>
-              <Icon name="check" size={16} stroke={2.6} /> Fewer people who book and do not come
+              <Icon name="check" size={16} stroke={2.6} /> <Trans>Fewer people who book and do not come</Trans>
             </li>
             <li>
-              <Icon name="check" size={16} stroke={2.6} /> Your bookings, messages and money in one place
+              <Icon name="check" size={16} stroke={2.6} /> <Trans>Your bookings, messages and money in one place</Trans>
             </li>
           </ul>
         </div>
@@ -221,8 +303,12 @@ function ForBusinesses() {
               <Icon name="calendarCheck" size={18} />
             </span>
             <span>
-              <strong>New booking</strong>
-              <em>Haircut · Saturday 10:30</em>
+              <strong>
+                <Trans>New booking</Trans>
+              </strong>
+              <em>
+                <Trans>Haircut · Saturday 10:30</Trans>
+              </em>
             </span>
           </span>
           <span className="biz-chip c2">
@@ -230,8 +316,12 @@ function ForBusinesses() {
               <Icon name="shield" size={18} />
             </span>
             <span>
-              <strong>You are live!</strong>
-              <em>Customers can book you now</em>
+              <strong>
+                <Trans>You are live!</Trans>
+              </strong>
+              <em>
+                <Trans>Customers can book you now</Trans>
+              </em>
             </span>
           </span>
         </div>
@@ -246,15 +336,15 @@ function ForBusinesses() {
 
 function Rail({ onOpen }: { onOpen: (sheet: Sheet) => void }) {
   const items: Array<{ icon: IconName; label: string; go: () => void }> = [
-    { icon: 'phone', label: 'Get the app', go: () => onOpen('app') },
-    { icon: 'play', label: 'How it works', go: () => onOpen('how') },
-    { icon: 'store', label: 'For businesses', go: toBusinesses },
-    { icon: 'message', label: 'Help', go: () => onOpen('app') },
+    { icon: 'phone', label: t`Get the app`, go: () => onOpen('app') },
+    { icon: 'play', label: t`How it works`, go: () => onOpen('how') },
+    { icon: 'store', label: t`For businesses`, go: toBusinesses },
+    { icon: 'message', label: t`Help`, go: () => onOpen('app') },
   ];
   return (
-    <nav className="rail" aria-label="Quick links">
+    <nav className="rail" aria-label={t`Quick links`}>
       {items.map((item) => (
-        <button key={item.label} type="button" onClick={item.go} aria-label={item.label} data-label={item.label}>
+        <button key={item.icon} type="button" onClick={item.go} aria-label={item.label} data-label={item.label}>
           <Icon name={item.icon} size={20} />
         </button>
       ))}
@@ -275,7 +365,7 @@ function BackToTop() {
       type="button"
       className={`to-top${shown ? ' is-shown' : ''}`}
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      aria-label="Back to top"
+      aria-label={t`Back to top`}
       tabIndex={shown ? 0 : -1}
     >
       <Icon name="chevronUp" size={20} stroke={2.2} />
@@ -289,23 +379,27 @@ function BackToTop() {
 /** Until the app is in the stores, "Get the app" says so rather than leading nowhere. */
 function GetTheApp({ onClose }: { onClose: () => void }) {
   return (
-    <Modal title="Get the app" onClose={onClose}>
+    <Modal title={t`Get the app`} onClose={onClose}>
       <div className="modal-logo">
         <Logo size={64} />
       </div>
-      <h3>The app is on its way.</h3>
+      <h3>
+        <Trans>The app is on its way.</Trans>
+      </h3>
       <p>
-        BwanguReservations is coming to the App Store and Google Play. Businesses can already sign in on the web and
-        set up their shop.
+        <Trans>
+          BwanguReservations is coming to the App Store and Google Play. Businesses can already sign in on the web and
+          set up their shop.
+        </Trans>
       </p>
       <div className="modal-actions">
         {businessStart('signup') && (
           <a className="btn" href={businessStart('signup')!}>
-            Start selling <Icon name="arrowRight" size={17} stroke={2.2} />
+            <Trans>Start selling</Trans> <Icon name="arrowRight" size={17} stroke={2.2} />
           </a>
         )}
         <button type="button" className="btn-quiet" onClick={onClose}>
-          Close
+          <Trans>Close</Trans>
         </button>
       </div>
     </Modal>
@@ -320,16 +414,28 @@ function GetTheApp({ onClose }: { onClose: () => void }) {
  */
 function HowItWorks({ onClose }: { onClose: () => void }) {
   const steps: Array<{ icon: IconName; title: string; text: string }> = [
-    { icon: 'search', title: 'Find a shop near you', text: 'Barbers, salons, spas, garages — with real photos, prices and open hours.' },
-    { icon: 'banknote', title: 'Hold your time with a small deposit', text: 'Paid with MTN MoMo on your own phone. The rest you pay at the shop.' },
-    { icon: 'ticket', title: 'Show your 6-digit code at the door', text: 'The shop checks you in with it. No password, no printout.' },
+    {
+      icon: 'search',
+      title: t`Find a shop near you`,
+      text: t`Barbers, salons, spas, garages — with real photos, prices and open hours.`,
+    },
+    {
+      icon: 'banknote',
+      title: t`Hold your time with a small deposit`,
+      text: t`Paid with MTN MoMo on your own phone. The rest you pay at the shop.`,
+    },
+    {
+      icon: 'ticket',
+      title: t`Show your 6-digit code at the door`,
+      text: t`The shop checks you in with it. No password, no printout.`,
+    },
   ];
   return (
-    <Modal title="How booking works" onClose={onClose} wide>
+    <Modal title={t`How booking works`} onClose={onClose} wide>
       <video className="walkthrough" src="/video/how-booking-works.mp4" poster="/video/how-booking-works-poster.jpg" controls autoPlay playsInline preload="metadata" />
       <ol className="steps is-row">
         {steps.map((step, i) => (
-          <li key={step.title}>
+          <li key={step.icon}>
             <span className="step-n">{i + 1}</span>
             <span className="step-icon">
               <Icon name={step.icon} size={20} />

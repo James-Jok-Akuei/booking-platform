@@ -50,6 +50,8 @@ body { background: var(--cream); overflow-x: hidden; }
 img { max-width: 100%; }
 button { font: inherit; color: inherit; cursor: pointer; }
 h1, h2, h3 { margin: 0; letter-spacing: -0.03em; }
+/* A word longer than its column breaks rather than spill out (§308) — only ever a very long one. */
+h1, h2, h3, h4, strong, p { overflow-wrap: break-word; }
 p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -88,28 +90,107 @@ p { margin: 0; }
   gap: 20px;
   padding: 34px var(--edge) 0;
 }
-.brand { display: inline-flex; align-items: center; gap: 12px; min-width: 0; color: #fff; text-decoration: none; }
+.brand { display: inline-flex; flex: none; align-items: center; gap: 12px; min-width: 0; color: #fff; text-decoration: none; }
 .brand svg { filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35)); }
 .wordmark { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; white-space: nowrap; }
 .wordmark b { font-weight: 800; color: var(--orange); }
 .top-nav { display: flex; align-items: center; gap: 26px; }
-.top-link { color: rgba(255, 255, 255, 0.82); font-size: 15px; font-weight: 600; text-decoration: none; }
+.top-link { color: rgba(255, 255, 255, 0.82); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+/* Not enough room for the words beside the name (fit.ts): the link steps aside, the globe stays. */
+.top.is-tight .top-link { display: none; }
+.top.is-tight .lang-button { width: 42px; padding: 0; justify-content: center; }
+.top.is-tight .lang-button .lang-now, .top.is-tight .lang-button > svg:last-child { display: none; }
+/* Its words on one line, so a bar too narrow for them is seen and made tighter. */
+.top-app { white-space: nowrap; }
+.top-app-icon { display: none; }
+.top.is-tighter .top-app { width: 44px; padding: 0; }
+.top.is-tighter .top-app-label { display: none; }
+.top.is-tighter .top-app-icon { display: grid; }
 .top-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+
+/* The language (§308): a globe on the dark hero that opens the list, and a row in the footer. */
+.lang-menu { position: relative; }
+.lang-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 12px 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease);
+}
+.lang-button:hover, .lang-button[aria-expanded='true'] { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.3); color: #fff; }
+.lang-button > svg:last-child { opacity: 0.7; transition: transform 200ms var(--ease); }
+.lang-button[aria-expanded='true'] > svg:last-child { transform: rotate(180deg); }
+.lang-list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  min-width: 200px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 50px -18px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  animation: rise 220ms var(--ease) both;
+}
+.lang-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  border: none;
+  border-radius: 11px;
+  background: none;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+}
+.lang-list button:hover { background: var(--cream); }
+.lang-list button.is-on { color: var(--orange-deep); }
+.lang-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.lang-row > svg { margin-right: 4px; }
+.lang-option {
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.lang-option:hover { background: rgba(0, 0, 0, 0.04); color: var(--ink); }
+.lang-option.is-on { background: var(--orange-soft); border-color: rgba(253, 117, 17, 0.25); color: var(--orange-deep); }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 56px;
-  padding: 0 32px;
+  /* At least this tall; a longer language's words take a second line rather than be cut (§308). */
+  min-height: 56px;
+  padding: 8px 32px;
   border: none;
   border-radius: 12px;
   background: var(--orange);
   color: var(--ink);
   font-size: 16px;
   font-weight: 700;
-  white-space: nowrap;
+  line-height: 1.25;
+  text-align: center;
   text-decoration: none;
   box-shadow: 0 14px 30px -14px rgba(253, 117, 17, 0.8);
   transition: transform 200ms var(--ease), box-shadow 200ms var(--ease), background 160ms var(--ease);
@@ -120,17 +201,22 @@ p { margin: 0; }
 .copy {
   position: relative;
   z-index: 5;
-  max-width: calc(760px + var(--edge));
+  /* Up to where the screens begin, so longer words wrap before them (§308). */
+  max-width: min(calc(760px + var(--edge)), calc(47vw + 28px));
   padding: calc(var(--hero-h) * 0.13) 0 0 var(--edge);
 }
 .eyebrow { font-size: clamp(20px, 1.9vw, 29px); font-weight: 400; color: rgba(255, 255, 255, 0.86); }
 .copy h1 {
+  /* Clear of the screens beside it, which begin at 47% (§308). */
+  max-width: calc(47vw - var(--edge) + 4px);
   margin-top: 18px;
   font-size: clamp(38px, 3.9vw, 68px);
   line-height: 1.14;
   font-weight: 500;
   letter-spacing: -0.025em;
   color: #fff;
+  /* Fitted to its column instead (fit.ts): smaller letters, never a word cut in two. */
+  overflow-wrap: normal;
 }
 .play {
   display: inline-flex;
@@ -241,9 +327,9 @@ p { margin: 0; }
 .biz-lead { margin-top: 22px; max-width: 34em; font-size: clamp(16px, 1.25vw, 19px); line-height: 1.6; color: var(--ink-2); }
 .biz-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
 .btn-line {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 56px; padding: 0 26px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 8px 26px;
   border: 1.5px solid rgba(31, 42, 31, 0.16); border-radius: 12px; background: var(--paper); color: var(--ink);
-  font-size: 16px; font-weight: 700; text-decoration: none; white-space: nowrap;
+  font-size: 16px; font-weight: 700; line-height: 1.25; text-align: center; text-decoration: none;
   transition: border-color 160ms var(--ease), background 160ms var(--ease), transform 200ms var(--ease);
 }
 .btn-line:hover { border-color: var(--ink); background: #fff; transform: translateY(-1px); }
@@ -458,7 +544,9 @@ p { margin: 0; }
 .tour-chip.is-on { opacity: 1; transform: none; transition-delay: 450ms; }
 .tour-chip > span:last-child { display: flex; flex-direction: column; line-height: 1.3; }
 .tour-chip strong { font-size: 15px; font-weight: 800; }
-.tour-chip em { font-style: normal; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.tour-chip em { font-style: normal; font-size: 13px; color: var(--muted); }
+/* A note never wider than the screen: longer words take a second line (§308). */
+.tour-chip, .biz-chip { max-width: min(340px, calc(100vw - 40px)); }
 .tour-chip-icon { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 13px; }
 .tour-chip-icon.is-orange { background: var(--orange); color: var(--ink); }
 .tour-chip-icon.is-cream { background: var(--dark); color: var(--orange); }
@@ -636,10 +724,14 @@ p { margin: 0; }
   .brand { gap: 8px; }
   .brand svg { width: 34px; height: 34px; }
   .top-link { display: none; }
-  .btn { height: 44px; padding: 0 14px; font-size: 14px; border-radius: 10px; }
+  .btn { min-height: 44px; padding: 6px 14px; font-size: 14px; border-radius: 10px; }
+  .top-nav { gap: 8px; }
+  /* On a phone the globe alone; the list says each language in full. */
+  .lang-button { height: 44px; width: 44px; padding: 0; justify-content: center; }
+  .lang-button .lang-now, .lang-button > svg:last-child { display: none; }
   .copy { max-width: none; padding: 46px 20px 0; }
   .eyebrow { font-size: 18px; }
-  .copy h1 { font-size: clamp(34px, 9.6vw, 44px); margin-top: 12px; }
+  .copy h1 { max-width: none; font-size: clamp(34px, 9.6vw, 44px); margin-top: 12px; }
   .play { margin-top: 30px; gap: 16px; font-size: 15.5px; }
   .play-disc { width: 60px; height: 60px; }
   .stack { position: relative; top: auto; left: 8%; right: -14%; height: 0; padding-top: 72%; margin-top: 36px; }
@@ -657,7 +749,7 @@ p { margin: 0; }
   .biz-copy h2 { font-size: clamp(36px, 10.5vw, 48px); margin-top: 18px; }
   .biz-lead { font-size: 16px; margin-top: 16px; }
   .biz-actions { flex-direction: column; margin-top: 26px; }
-  .biz-actions .btn, .biz-actions .btn-line { height: 54px; width: 100%; font-size: 16px; }
+  .biz-actions .btn, .biz-actions .btn-line { min-height: 54px; height: auto; width: 100%; font-size: 16px; }
   .biz-ticks li { font-size: 14.5px; align-items: flex-start; }
   .biz-visual { padding: 28px 0 36px 10px; }
   .biz-shot { transform: none; border-radius: 12px; }
@@ -678,7 +770,7 @@ p { margin: 0; }
   .tour-steps li { flex: 1; min-width: 0; }
   .tour-steps button { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 0 0 12px; border: none; border-radius: 0; background: none !important; box-shadow: none !important; opacity: 0.5; }
   .tour-n { display: none; }
-  .tour-step-text strong { padding-top: 0; font-size: 13px; line-height: 1.25; }
+  .tour-step-text strong { padding-top: 0; font-size: 13px; line-height: 1.25; overflow-wrap: anywhere; }
   .tour-step-desc { display: none; }
   .tour-bar { left: 0; right: 0; height: 3px; opacity: 1; }
   .tour-steps li.is-done .tour-bar i { transform: none; }
@@ -699,7 +791,7 @@ p { margin: 0; }
   .tour-caption { order: 3; display: flex; flex-direction: column; gap: 6px; min-height: 96px; margin: 4px 0 0; font-size: 15px; line-height: 1.55; color: rgba(255, 255, 255, 0.7); text-align: center; animation: rise 500ms var(--ease) both; }
   .tour-caption strong { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #fff; }
   .tour-cta { order: 4; flex-direction: column; align-items: stretch; gap: 10px; padding: 0; text-align: center; }
-  .tour-cta .btn { height: 54px; width: 100%; font-size: 16px; }
+  .tour-cta .btn { min-height: 54px; width: 100%; font-size: 16px; }
 }
 
 /* ---------- four reasons to book here (§273) ---------- */

@@ -59,6 +59,13 @@ const PATHS = {
     </>
   ),
   check: <path d="M20 6 9 17l-5-5" />,
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </>
+  ),
+  chevronDown: <path d="m6 9 6 6 6-6" />,
   lock: (
     <>
       <rect width="16" height="11" x="4" y="11" rx="2" />

@@ -1,0 +1,415 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-10-21 17:19+0200\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en-XA\n"
+
+#. placeholder {0}: s.label
+#: src/Footer.tsx:86
+#: src/Footer.tsx:87
+msgid "{0} — coming soon"
+msgstr "{0} — comingmbize soonmbi"
+
+#. placeholder {0}: s.name
+#. placeholder {1}: s.business.name
+#: src/Places.tsx:142
+msgid "{0} at {1}"
+msgstr "{0} at {1}"
+
+#: src/Places.tsx:175
+msgid "{deposit} to book"
+msgstr "{deposit} to bookugundi"
+
+#: src/App.tsx:209
+msgid "{total, plural, one {# place} other {# places}}"
+msgstr "{total, plural, one {# placendi} other {# placeskonya}}"
+
+#: src/Places.tsx:109
+msgid "{total, plural, one {<0>#</0> service ready to <1>book</1> today.} other {<2>#</2> services ready to <3>book</3> today.}}"
+msgstr "{total, plural, one {<0>#</0> serviceuguaba readyaba to <1>bookugundi</1> todaymbi.} other {<2>#</2> servicesrwaho readyaba to <3>bookugundi</3> todaymbi.}}"
+
+#: src/App.tsx:213
+msgid "{total, plural, one {Place you can<0/>book today.} other {Places you can<1/>book today.}}"
+msgstr "{total, plural, one {Placeugu youugu caniki<0/>bookugundi todaymbi.} other {Placesikiugumbi youugu caniki<1/>bookugundi todaymbi.}}"
+
+#: src/Features.tsx:71
+msgid "A small deposit<0/>holds your time"
+msgstr "A smallugu depositikinyambiiki<0/>holdsrwarwaugu yourmbihoiki timendi"
+
+#: src/Tour.tsx:68
+msgid "About five minutes"
+msgstr "Aboutzerwa fiverwaaba minutesmbiiki"
+
+#: src/Tour.tsx:92
+msgid "Approved"
+msgstr "Approvedmwambi"
+
+#: src/App.tsx:368
+msgid "Back to top"
+msgstr "Backze to topugu"
+
+#: src/App.tsx:420
+msgid "Barbers, salons, spas, garages — with real photos, prices and open hours."
+msgstr "Barbersugunya, salonshougu, spasmwa, garageskondi — withikimbi realiki photosndimwa, priceshondi andmwa openrwa hoursugu."
+
+#: src/App.tsx:265
+msgid "Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo deposit. You see your whole day on one screen, and check people in with a code."
+msgstr "Barbersugunya, salonshougu, spasmwa, garageskondi andmwa moreaba: customersmwako findmbi youugu, pickndiugu a freenya timendi andmwa holdugu it withikimbi a smallugu MoMorwa depositikinyambiiki. Youaba seeaba yourmbihoiki wholendi dayko on onenya screenrwauguaba, andmwa checkshya peoplezeshya in withikimbi a codendiugu."
+
+#: src/Features.tsx:28
+msgid "Barbers, salons, spas, garages, clinics and more — with their own photos, prices and opening hours. We check every shop before it is listed."
+msgstr "Barbersugunya, salonshougu, spasmwa, garageskondi, clinicsmwaikizeko andmwa moreaba — withikimbi theirshya ownnya photosndimwa, priceshondi andmwa openinghoiki hoursugu. We checkshya everyndi shopko beforembiho it is listedabaugu."
+
+#: src/Features.tsx:47
+msgid "Book in<0/>under a minute"
+msgstr "Bookugu in<0/>underkoshyako a minutekombi"
+
+#: src/Footer.tsx:60
+msgid "Book real places near you, hold your time with a small MoMo deposit, and show your code at the door."
+msgstr "Bookugu realiki placeskonya nearnya youugu, holdugu yourmbihoiki timendi withikimbi a smallugu MoMorwa depositikinyambiiki, andmwa showugu yourmbihoiki codendiugu at theugumbi dooriki."
+
+#: src/App.tsx:154
+msgid "Book your next<0/>appointment, Easily!"
+msgstr "Bookugu yourmbihoiki nextndi<0/>appointmentmwahomwa, Easilyugunya!"
+
+#: src/App.tsx:31
+msgid "BwanguReservations — Book real shops in Rwanda, quickly"
+msgstr "BwanguReservationsmbiuguabaugu — Bookugu realiki shopsmbi in Rwandamwaiki, quicklynyaze"
+
+#: src/Tour.tsx:247
+msgid "BwanguReservations · For businesses"
+msgstr "BwanguReservationsmbiuguabaugu · Foraba businessesshyarwa"
+
+#: src/App.tsx:390
+msgid "BwanguReservations is coming to the App Store and Google Play. Businesses can already sign in on the web and set up their shop."
+msgstr "BwanguReservationsmbiuguabaugu is comingmbize to theugumbi Appugu Storembi andmwa Googlezerwa Playshya. Businessesshyako caniki alreadynyambi signndi in on theugumbi webikindi andmwa setshya up theirshya shopko."
+
+#. placeholder {0}: s.label
+#: src/Footer.tsx:77
+msgid "BwanguReservations on {0}"
+msgstr "BwanguReservationsmbiuguabaugu on {0}"
+
+#: src/Footer.tsx:68
+msgid "BwanguReservations on social media"
+msgstr "BwanguReservationsmbiuguabaugu on socialmbize mediahomwa"
+
+#: src/App.tsx:402
+#: src/Modal.tsx:37
+msgid "Close"
+msgstr "Closeshya"
+
+#: src/Tour.tsx:44
+msgid "Code sent"
+msgstr "Codendi sentho"
+
+#: src/App.tsx:323
+msgid "Customers can book you now"
+msgstr "Customersmbiiki caniki bookugundi youugu nownya"
+
+#: src/App.tsx:286
+msgid "Deposits paid straight to MTN MoMo"
+msgstr "Depositszerwa paidnya straightshyashya to MTNmwandi MoMorwa"
+
+#: src/App.tsx:289
+msgid "Fewer people who book and do not come"
+msgstr "Fewermbizemwa peoplezeshya whonya bookugundi andmwa do notmwa comeiki"
+
+#: src/Places.tsx:124
+msgid "Find a place <0>-></0> Pick a free time <1>-></1> Show your code at the door."
+msgstr "Findmbi a placendi <0>-></0> Pickaba a freenya timendi <1>-></1> Showugumbi yourmbihoiki codendiugu at theugumbi dooriki."
+
+#: src/App.tsx:419
+msgid "Find a shop near you"
+msgstr "Findmbi a shopko nearnya youugu"
+
+#: src/App.tsx:135
+#: src/App.tsx:255
+#: src/App.tsx:341
+#: src/Footer.tsx:114
+msgid "For businesses"
+msgstr "Foraba businessesshyarwa"
+
+#: src/Footer.tsx:100
+msgid "For customers"
+msgstr "Foraba customersmwako"
+
+#: src/Tour.tsx:232
+msgid "Free to join · No card needed"
+msgstr "Freehondimwa to joiniki · No cardho neededabarwa"
+
+#: src/Tour.tsx:179
+msgid "From sign-up to your first booking"
+msgstr "Fromrwa signndi-up to yourmbihoiki firstkondi bookinguguiki"
+
+#: src/App.tsx:258
+msgid "Get booked<0/>while you work."
+msgstr "Getnya bookedikiikimbi<0/>whilembi youugu workaba."
+
+#: src/App.tsx:138
+#: src/App.tsx:143
+#: src/App.tsx:339
+#: src/App.tsx:382
+#: src/Footer.tsx:103
+msgid "Get the app"
+msgstr "Getnya theugumbi appaba"
+
+#: src/App.tsx:310
+msgid "Haircut · Saturday 10:30"
+msgstr "Haircuthoiki · Saturdayzemwa 10:30"
+
+#: src/App.tsx:342
+msgid "Help"
+msgstr "Helpmbi"
+
+#: src/App.tsx:424
+msgid "Hold your time with a small deposit"
+msgstr "Holdugu yourmbihoiki timendi withikimbi a smallugu depositikinyambiiki"
+
+#: src/App.tsx:434
+#: src/Footer.tsx:106
+msgid "How booking works"
+msgstr "Howrwa bookinguguiki workskomwa"
+
+#: src/App.tsx:340
+msgid "How it works"
+msgstr "Howrwa it workskomwa"
+
+#: src/LanguageChoice.tsx:41
+msgid "Language"
+msgstr "Languageshyarwa"
+
+#. placeholder {0}: now.native
+#: src/LanguageChoice.tsx:67
+msgid "Language: {0}"
+msgstr "Languageshyarwa: {0}"
+
+#: src/Footer.tsx:132
+msgid "Legal"
+msgstr "Legalmwa"
+
+#: src/Tour.tsx:182
+msgid "Live in <0>three steps.</0>"
+msgstr "Livehouguaba in <0>threenya stepsndi.</0>"
+
+#: src/Footer.tsx:127
+msgid "Live in three steps"
+msgstr "Livehouguaba in threenya stepsndi"
+
+#: src/Footer.tsx:208
+msgid "Loading…"
+msgstr "Loadinghoiki…"
+
+#: src/Footer.tsx:65
+msgid "Made for Rwanda"
+msgstr "Madendishya forabaze Rwandamwaiki"
+
+#: src/App.tsx:133
+msgid "Main"
+msgstr "Mainaba"
+
+#: src/Footer.tsx:97
+msgid "More"
+msgstr "Moreaba"
+
+#: src/App.tsx:307
+msgid "New booking"
+msgstr "Newiki bookinguguiki"
+
+#: src/App.tsx:425
+msgid "Paid with MTN MoMo on your own phone. The rest you pay at the shop."
+msgstr "Paidshya withikimbi MTNmwandi MoMorwa on yourmbihoiki ownnya phonehoikize. Theugu resthomwako youugu payko at theugumbi shopko."
+
+#: src/Features.tsx:78
+msgid "Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. If the shop has to cancel, you get it all back."
+msgstr "Payiki partaba of theugumbi pricembiugumbi withikimbi MTNmwandi MoMorwa on yourmbihoiki ownnya phonehoikize, andmwa theugumbi resthomwako at theugumbi shopko. If theugumbi shopko hasshya to cancelhoze, youugu gethoze it allaba backmbi."
+
+#: src/Footer.tsx:109
+msgid "Places to book"
+msgstr "Placesikiugumbi to bookugundi"
+
+#: src/Places.tsx:190
+msgid "Prices are set by each shop. The deposit is part of the price, not extra."
+msgstr "Priceshorwa areiki setshya by eachugu shopko. Theugu depositikinyambiiki is partaba of theugumbi pricembiugumbi, notmwa extraiki."
+
+#: src/Footer.tsx:164
+msgid "Prices in RWF · Deposits by MTN MoMo"
+msgstr "Priceshorwa in RWFndi · Depositszerwa by MTNmwandi MoMorwa"
+
+#: src/Footer.tsx:26
+msgid "Privacy Policy"
+msgstr "Privacyhoiki Policyshyauguiki"
+
+#: src/App.tsx:345
+msgid "Quick links"
+msgstr "Quickaba linksmwa"
+
+#: src/Features.tsx:21
+msgid "Real places,<0/>checked by us"
+msgstr "Realikiiki placeskonya,<0/>checkedmwandi by us"
+
+#: src/Tour.tsx:187
+msgid "Real screens from the app — exactly what you will see."
+msgstr "Realikiiki screensmwanya fromko theugumbi appaba — exactlyshya whatnya youugu willrwa seeaba."
+
+#: src/App.tsx:174
+msgid "Screens of the apps"
+msgstr "Screenszemwa of theugumbi appsikinya"
+
+#: src/Places.tsx:187
+msgid "See every place in the app"
+msgstr "Seeabaugu everyndi placendi in theugumbi appaba"
+
+#: src/Features.tsx:54
+msgid "See the free times for today and the days ahead, pick one, and it is yours. No phone calls, no waiting for a reply."
+msgstr "Seeabaugu theugumbi freenya timesiki forabaze todaymbi andmwa theugumbi daysmbi aheadmwa, pickndiugu onenya, andmwa it is yourshomwa. No phonehoikize callsmwa, no waitingabaugukombi forabaze a replynya."
+
+#: src/Footer.tsx:32
+msgid "Seller Agreement"
+msgstr "Sellermbize Agreementhondi"
+
+#: src/Tour.tsx:56
+msgid "Set up your shop"
+msgstr "Setshya up yourmbihoiki shopko"
+
+#: src/Tour.tsx:62
+msgid "Setting up a shop: its name, what kind of shop it is, and how customers will see it."
+msgstr "Settingshya up a shopko: itsrwa namemwa, whatnya kindshya of shopko it is, andmwa howko customersmwako willrwa seeaba it."
+
+#: src/App.tsx:429
+msgid "Show your 6-digit code at the door"
+msgstr "Showugumbi yourmbihoiki 6-digitmwa codendiugu at theugumbi dooriki"
+
+#: src/Features.tsx:104
+msgid "Show your 6-digit code when you arrive and you are checked in. We remind you the day before, so it is never a surprise."
+msgstr "Showugumbi yourmbihoiki 6-digitmwa codendiugu whenko youugu arrivezeshya andmwa youugu areiki checkedmwandi in. We remindugundi youugu theugumbi dayko beforembiho, so it is neverkoshya a surprisemwaho."
+
+#: src/App.tsx:276
+#: src/Footer.tsx:123
+msgid "Sign in"
+msgstr "Signugu in"
+
+#: src/Tour.tsx:32
+msgid "Sign up with your email"
+msgstr "Signugu up withikimbi yourmbihoiki emailnyakomwa"
+
+#: src/App.tsx:281
+msgid "Sign-ups for businesses open soon."
+msgstr "Signugu-upsiki forabaze businessesshyarwa openrwa soonmbi."
+
+#: src/Tour.tsx:47
+msgid "Six digits — no password, ever"
+msgstr "Sixnya digitsshya — no passwordndiko, everiki"
+
+#: src/Tour.tsx:71
+msgid "Skip anything, add it later"
+msgstr "Skipmbi anythinghougu, addugunya it laterkoshya"
+
+#: src/App.tsx:398
+#: src/Footer.tsx:118
+#: src/Tour.tsx:229
+msgid "Start selling"
+msgstr "Startnya sellingnyakoabaho"
+
+#: src/App.tsx:273
+msgid "Start selling — it is free"
+msgstr "Startnya sellingnyakoabaho — it is freenya"
+
+#: src/Footer.tsx:143
+msgid "Talk to us"
+msgstr "Talkshyaugu to us"
+
+#: src/Footer.tsx:20
+msgid "Terms of Use"
+msgstr "Termsndi of Useugu"
+
+#: src/App.tsx:387
+msgid "The app is on its way."
+msgstr "Theugu appaba is on itsrwa wayndi."
+
+#: src/App.tsx:58
+msgid "The business app: a shop’s day at a glance"
+msgstr "Theugu businessshyarwa appaba: a shopko’s dayko at a glanceikize"
+
+#: src/App.tsx:66
+msgid "The business app: a week of bookings on a calendar"
+msgstr "Theugu businessshyarwa appaba: a weekrwa of bookingskomwa on a calendarshyarwa"
+
+#: src/Tour.tsx:86
+msgid "The business app’s home page the moment a shop is posted: You are live!"
+msgstr "Theugu businessshyarwa appaba’s homemwa pagemwazeko theugumbi momentrwauguko a shopko is postedmwanya: Youaba areiki liveshyako!"
+
+#: src/Tour.tsx:38
+msgid "The business app’s sign-up: a 6-digit code sent to your email, typed into six boxes."
+msgstr "Theugu businessshyarwa appaba’s signndi-up: a 6-digitmwa codendiugu sentho to yourmbihoiki emailnyakomwa, typedshyashya intoshya sixho boxesmwa."
+
+#: src/App.tsx:82
+msgid "The customer app: a shop’s page"
+msgstr "Theugu customerkoshya appaba: a shopko’s pagemwazeko"
+
+#: src/App.tsx:74
+msgid "The customer app: find a place"
+msgstr "Theugu customerkoshya appaba: findmbi a placendi"
+
+#: src/App.tsx:430
+msgid "The shop checks you in with it. No password, no printout."
+msgstr "Theugu shopko checksugumbi youugu in withikimbi it. No passwordndiko, no printoutugushyaugunya."
+
+#: src/Tour.tsx:193
+msgid "The three steps"
+msgstr "Theugu threenya stepsndi"
+
+#: src/Footer.tsx:204
+msgid "This could not be loaded just now. Please try again in a moment."
+msgstr "Thisiki couldmbi notmwa be loadeduguiki justshya nownya. Pleasenyanya trymbi againshyakoshya in a momentrwauguko."
+
+#: src/Tour.tsx:95
+msgid "Usually within one working day"
+msgstr "Usuallyzekokombiugu withinzerwa onenya workinguguiki dayko"
+
+#: src/Tour.tsx:83
+msgid "Usually within one working day. Then you post your shop when you are ready, and customers can find you and book."
+msgstr "Usuallyzekokombiugu withinzerwa onenya workinguguiki dayko. Thenmwa youugu postho yourmbihoiki shopko whenko youugu areiki readyaba, andmwa customersmwako caniki findmbi youugu andmwa bookugundi."
+
+#. placeholder {0}: doc.version
+#: src/Footer.tsx:196
+msgid "Version {0} · in force since {since}"
+msgstr "Versionhoho {0} · in forceaba sincerwa {since}"
+
+#: src/App.tsx:165
+msgid "Watch how to book<0/>in under a minute!"
+msgstr "Watchndi howko to bookugundi<0/>in underkoshyako a minutekombi!"
+
+#: src/Tour.tsx:80
+msgid "We check it, you post it"
+msgstr "We checkshya it, youugu postho it"
+
+#: src/Tour.tsx:35
+msgid "We send a 6-digit code, and that is your account. No password, no card."
+msgstr "We sendshya a 6-digitmwa codendiugu, andmwa thatugu is yourmbihoiki accountabaiki. No passwordndiko, no cardho."
+
+#: src/Features.tsx:125
+msgid "Why book here"
+msgstr "Whyko bookugundi herenya"
+
+#: src/App.tsx:320
+msgid "You are live!"
+msgstr "Youaba areiki liveshyako!"
+
+#: src/App.tsx:151
+msgid "Your appointments, without the phone calls."
+msgstr "Yourmwa appointmentsshyakonyanyandiaba, withoutnyako theugumbi phonehoikize callsmwa."
+
+#: src/App.tsx:292
+msgid "Your bookings, messages and money in one place"
+msgstr "Yourmwa bookingskomwa, messageskoshya andmwa moneynyakoko in onenya placendi"
+
+#: src/Features.tsx:97
+msgid "Your code,<0/>not a queue"
+msgstr "Yourmwa codendiugu,<0/>notmwa a queueugushya"
+
+#: src/Tour.tsx:59
+msgid "Your name, a branch and one service — about five minutes. Skip anything and add it later."
+msgstr "Yourmwa namemwa, a branchkomwa andmwa onenya serviceuguaba — aboutmwa fiverwaaba minutesmbiiki. Skipmbi anythinghougu andmwa addugunya it laterkoshya."

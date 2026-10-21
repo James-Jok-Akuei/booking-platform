@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n:extract": "node ../../scripts/i18n/lingui.mjs extract",
+    "i18n:compile": "node ../../scripts/i18n/long-words.mjs src/locales && node ../../scripts/i18n/lingui.mjs compile",
+    "i18n": "npm run i18n:extract && npm run i18n:compile"
   },
   "dependencies": {
     "@lingui/core": "^6.10.0",

@@ -24,7 +24,8 @@ export default defineConfig(({ mode }) => {
   const contact = vite.VITE_SECURITY_EMAIL || vite.VITE_CONTACT_EMAIL || 'jokditakeerleek@gmail.com';
   return {
     plugins: [
-      react(),
+      // Every sentence through Lingui (§308).
+      react({ babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] } }),
       { name: 'site-url', transformIndexHtml: (html: string) => html.replaceAll('%SITE_URL%', siteUrl) },
       webSecurity({
         apiUrl: vite.VITE_API_URL,
