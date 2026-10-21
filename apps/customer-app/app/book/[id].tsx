@@ -945,6 +945,9 @@ export default function Book() {
               </Text>
             )}
           </View>
+          {/* The size rules on a box of its own: a button's own style sits inside its
+              pressable, where "58%" would mean 58% of the button itself. */}
+          <View style={styles.ctaBox}>
           <Button
             style={[styles.cta, layout.compact && styles.ctaCompact]}
             kind={slot && missing.length === 0 ? 'primary' : 'dark'}
@@ -983,6 +986,7 @@ export default function Book() {
               book.mutate();
             }}
           />
+          </View>
         </View>
       </View>
     </View>
@@ -1225,7 +1229,8 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   // The total keeps its room: the button beside it wraps first (§308).
-  footerTotal: { flexGrow: 1, flexShrink: 0, maxWidth: '55%' },
+  // The total gives way before the button does, so the button keeps its words on one line in any language (§308.7).
+  footerTotal: { flexGrow: 1, flexShrink: 1, minWidth: 0, maxWidth: '55%' },
   footerLabel: {
     fontFamily: font.bold,
     fontSize: 10.5,
@@ -1237,6 +1242,7 @@ const styles = StyleSheet.create({
   footerPriceCompact: { fontSize: 18 },
   footerNow: { fontFamily: font.semibold, fontSize: 12, color: theme.accent, marginTop: 1 },
   // Wide enough to read, never so wide that it squeezes the total (§308).
-  cta: { minWidth: 112, maxWidth: '58%', flexShrink: 1 },
+  ctaBox: { flexShrink: 0, maxWidth: '58%' },
+  cta: { minWidth: 112 },
   ctaCompact: { minWidth: 104, paddingHorizontal: 16 },
 });

@@ -47,7 +47,9 @@ msgstr "· yinjiye {0}"
 msgid "“{words}”\n"
 "\n"
 "One a week at most, as a phone alert or an email — whichever you allow under Notifications."
-msgstr "“{words}”\n\nRimwe mu cyumweru gusa, nk’imenyesha kuri telefoni cyangwa imeyili — icyo wemeye muri Amamenyesha."
+msgstr "“{words}”\n"
+"\n"
+"Rimwe mu cyumweru gusa, nk’imenyesha kuri telefoni cyangwa imeyili — icyo wemeye muri Amamenyesha."
 
 #: src/exportDocument.ts:119
 msgid "[a photo]"
@@ -758,7 +760,7 @@ msgstr "Fata gahunda ya {0}"
 
 #: app/book/[id].tsx:971
 msgid "Book {slot}"
-msgstr "Fata gahunda ya {slot}"
+msgstr "Fata {slot}"
 
 #: src/share.ts:65
 msgid "Book appointments with shops near you — see prices and free times before you go, and pay the deposit from your phone."
@@ -2302,7 +2304,8 @@ msgstr "Konti imwe kuri byose"
 #: app/sign-in.tsx:349
 msgid "One email.\n"
 "<0>No password.</0>"
-msgstr "Imeyili imwe.\n<0>Nta jambo ry’ibanga.</0>"
+msgstr "Imeyili imwe.\n"
+"<0>Nta jambo ry’ibanga.</0>"
 
 #: src/tour/WelcomeTour.tsx:377
 msgid "One more thing"
@@ -2558,7 +2561,7 @@ msgstr "Hitamo amanota"
 
 #: app/book/[id].tsx:968
 msgid "Pick a time"
-msgstr "Hitamo umwanya"
+msgstr "Hitamo isaha"
 
 #: app/sign-in.tsx:443
 msgid "Pick a time and hold it with a small deposit."
@@ -3032,7 +3035,7 @@ msgstr "Injira cyangwa ufungure konti"
 
 #: app/book/[id].tsx:972
 msgid "Sign in to book"
-msgstr "Injira ufate gahunda"
+msgstr "Injira ubanze"
 
 #: app/(tabs)/account.tsx:338
 msgid "Sign in to book and pay, keep your bookings, save places and services, message shops and get your notifications. It follows you to any phone."
@@ -3423,7 +3426,13 @@ msgid "This cannot be undone.\n"
 "Your email is released, so you can sign up again later, but it would be a new account with none of this.\n"
 "\n"
 "Take a copy of your data first if you want one."
-msgstr "Ibi ntibishobora gusubizwa inyuma.\n\nGahunda zawe n’ibitekerezo byawe bigumana n’amaduka bireba, ariko izina ryawe rikurwaho — iduka rigumana inyandiko y’ibyo ryakoze n’ibyo ryishyuwe.\n\nImeyili yawe irarekurwa, ku buryo washobora kongera gufungura konti nyuma, ariko yaba konti nshya itariho ibi byose.\n\nBanza ufate kopi y’amakuru yawe niba uyikeneye."
+msgstr "Ibi ntibishobora gusubizwa inyuma.\n"
+"\n"
+"Gahunda zawe n’ibitekerezo byawe bigumana n’amaduka bireba, ariko izina ryawe rikurwaho — iduka rigumana inyandiko y’ibyo ryakoze n’ibyo ryishyuwe.\n"
+"\n"
+"Imeyili yawe irarekurwa, ku buryo washobora kongera gufungura konti nyuma, ariko yaba konti nshya itariho ibi byose.\n"
+"\n"
+"Banza ufate kopi y’amakuru yawe niba uyikeneye."
 
 #: src/components/SaleCountdown.tsx:84
 msgid "This discount has ended — the price is back to normal."
@@ -3806,7 +3815,8 @@ msgstr "Ikaze kuri BwanguReservations"
 #: app/categories.tsx:140
 msgid "What are you\n"
 "looking for?"
-msgstr "Urashaka\niki?"
+msgstr "Urashaka\n"
+"iki?"
 
 #: src/components/LegalPrompt.tsx:79
 msgid "What changed"

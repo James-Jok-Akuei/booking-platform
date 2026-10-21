@@ -407,7 +407,7 @@ msgid "{0} bookings · {1}–{2}"
 msgstr "{0} réservations · {1}–{2}"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:448
+#: src/pages/HoursPage.tsx:449
 msgid "{0} closes"
 msgstr "{0} : fermeture"
 
@@ -673,7 +673,7 @@ msgstr "{followUps} n’était posée qu’après une réponse ici, elle sera do
 msgid "{followUps} were asked only after an answer here, so they will be asked every time."
 msgstr "{followUps} n’étaient posées qu’après une réponse ici, elles seront donc posées à chaque fois."
 
-#: src/pages/HoursPage.tsx:670
+#: src/pages/HoursPage.tsx:671
 msgid "{fromAddress} Check it below before saving."
 msgstr "{fromAddress} Vérifiez ci-dessous avant d’enregistrer."
 
@@ -1595,7 +1595,7 @@ msgid "Added to the price for answer {0}"
 msgstr "Ajouté au prix pour la réponse {0}"
 
 #: src/components/NewBranchForm.tsx:302
-#: src/pages/HoursPage.tsx:653
+#: src/pages/HoursPage.tsx:654
 msgid "Address"
 msgstr "Adresse"
 
@@ -2189,7 +2189,7 @@ msgstr "Succursale"
 
 #: src/components/NewBranchForm.tsx:278
 #: src/onboarding/Welcome.tsx:967
-#: src/pages/HoursPage.tsx:643
+#: src/pages/HoursPage.tsx:644
 msgid "Branch name"
 msgstr "Nom de la succursale"
 
@@ -2309,7 +2309,7 @@ msgstr "Introuvable ? Collez un lien de carte ou utilisez votre position"
 
 #: src/components/NewBranchForm.tsx:247
 #: src/pages/AppointmentsPage.tsx:1208
-#: src/pages/HoursPage.tsx:625
+#: src/pages/HoursPage.tsx:626
 #: src/pages/PayoutsPage.tsx:475
 #: src/pages/ReviewsPage.tsx:579
 #: src/pages/ServicesPage.tsx:1813
@@ -2885,8 +2885,8 @@ msgstr "Impossible d’obtenir votre position. Autorisez la localisation pour ce
 msgid "Could not load the bookings."
 msgstr "Impossible de charger les réservations."
 
-#: src/pages/HoursPage.tsx:477
-#: src/pages/HoursPage.tsx:565
+#: src/pages/HoursPage.tsx:478
+#: src/pages/HoursPage.tsx:566
 #: src/pages/PayoutsPage.tsx:488
 msgid "Could not save."
 msgstr "Enregistrement impossible."
@@ -3039,7 +3039,7 @@ msgstr "Les clients ne voient votre établissement qu’une fois publié. Prenez
 msgid "Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen."
 msgstr "Les clients filtrent par ce critère. C’est ainsi que cette succursale apparaît quand quelqu’un cherche dans son secteur, il faut donc le choisir."
 
-#: src/pages/HoursPage.tsx:681
+#: src/pages/HoursPage.tsx:682
 msgid "Customers filter by this. Without it, this branch does not appear when someone searches their area."
 msgstr "Les clients filtrent par ce critère. Sans lui, cette succursale n’apparaît pas quand quelqu’un cherche dans son secteur."
 
@@ -3138,7 +3138,7 @@ msgstr "Les clients qui l’ont demandé reçoivent chaque vendredi un e-mail de
 msgid "Customers who follow your shop see your new services, discounts and messages in the app. Those who also said yes to your offers get your message as an alert. They chose to — and can stop with one tap — so one good message a week keeps them following."
 msgstr "Les clients qui suivent votre établissement voient vos nouveaux services, réductions et messages dans l’application. Ceux qui ont aussi accepté vos offres reçoivent votre message en notification. Ils l’ont choisi — et peuvent arrêter d’un geste — alors un bon message par semaine les garde abonnés."
 
-#: src/pages/HoursPage.tsx:676
+#: src/pages/HoursPage.tsx:677
 msgid "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 msgstr "La distance des clients est mesurée depuis ce repère. Collez le lien Google Maps de l’établissement, ou appuyez sur le bouton si vous y êtes en ce moment."
 
@@ -3608,7 +3608,7 @@ msgid "Edit"
 msgstr "Modifier"
 
 #: src/pages/HoursPage.tsx:267
-#: src/pages/HoursPage.tsx:619
+#: src/pages/HoursPage.tsx:620
 msgid "Edit details"
 msgstr "Modifier les détails"
 
@@ -4426,7 +4426,7 @@ msgstr "Combien de réponses peuvent-ils choisir ?"
 msgid "How many answers they can pick"
 msgstr "Nombre de réponses à choisir"
 
-#: src/pages/HoursPage.tsx:556
+#: src/pages/HoursPage.tsx:557
 msgid "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 msgstr "Le nombre de clients que cette succursale peut accueillir en même temps — le même pour tous les services ici. Une réservation pour 3 personnes prend 3 places à cette heure-là ; quand toutes les places sont prises, les clients voient ce créneau comme réservé. C’est aussi le nombre maximal de personnes pour une seule réservation. Le réduire n’annule pas les réservations déjà faites."
 
@@ -5813,7 +5813,7 @@ msgstr "Un seul à la fois ici — le premier a été utilisé."
 msgid "One email.<0/><1>No password.</1>"
 msgstr "Un e-mail.<0/><1>Pas de mot de passe.</1>"
 
-#: src/pages/HoursPage.tsx:526
+#: src/pages/HoursPage.tsx:527
 msgid "One fewer"
 msgstr "Un de moins"
 
@@ -5825,7 +5825,7 @@ msgstr "Résumé en une ligne"
 msgid "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 msgstr "Une ligne qui donne envie — ex. « Dégradés nets et contours impeccables »"
 
-#: src/pages/HoursPage.tsx:540
+#: src/pages/HoursPage.tsx:541
 msgid "One more"
 msgstr "Un de plus"
 
@@ -6359,8 +6359,8 @@ msgid "People close to you see you first"
 msgstr "Les gens près de chez vous vous voient en premier"
 
 #: src/ads/tips.ts:34
-#: src/pages/HoursPage.tsx:523
-#: src/pages/HoursPage.tsx:537
+#: src/pages/HoursPage.tsx:524
+#: src/pages/HoursPage.tsx:538
 msgid "People served at once"
 msgstr "Personnes servies en même temps"
 
@@ -6382,7 +6382,7 @@ msgid "Phone"
 msgstr "Téléphone"
 
 #: src/components/NewBranchForm.tsx:289
-#: src/pages/HoursPage.tsx:647
+#: src/pages/HoursPage.tsx:648
 msgid "Phone for this branch <0>optional</0>"
 msgstr "Téléphone de cette succursale <0>facultatif</0>"
 
@@ -7004,9 +7004,9 @@ msgstr "agence de safari"
 msgid "salon"
 msgstr "salon"
 
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:628
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:629
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/StaffPage.tsx:317
 #: src/ui/Dialog.tsx:144
@@ -7029,12 +7029,12 @@ msgstr "Enregistrer la réponse"
 msgid "Save the service — customers see it when they book"
 msgstr "Enregistrez le service — les clients le voient en réservant"
 
-#: src/pages/HoursPage.tsx:501
+#: src/pages/HoursPage.tsx:502
 msgid "Save the week"
 msgstr "Enregistrer la semaine"
 
-#: src/pages/HoursPage.tsx:487
-#: src/pages/HoursPage.tsx:575
+#: src/pages/HoursPage.tsx:488
+#: src/pages/HoursPage.tsx:576
 msgid "Saved"
 msgstr "Enregistré"
 
@@ -7057,9 +7057,9 @@ msgstr "Enregistrement du brouillon…"
 #: src/components/LegalGate.tsx:113
 #: src/pages/AppointmentsPage.tsx:785
 #: src/pages/ClosuresPage.tsx:610
-#: src/pages/HoursPage.tsx:501
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:628
+#: src/pages/HoursPage.tsx:502
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:629
 #: src/pages/LegalPage.tsx:166
 #: src/pages/LegalPage.tsx:193
 #: src/pages/OverviewPage.tsx:584
@@ -8017,7 +8017,7 @@ msgstr "L’envoi a échoué. Vérifiez votre connexion."
 
 #: src/pages/AppointmentsPage.tsx:485
 #: src/pages/HoursPage.tsx:184
-#: src/pages/HoursPage.tsx:614
+#: src/pages/HoursPage.tsx:615
 #: src/pages/OverviewPage.tsx:291
 #: src/pages/ProfilePage.tsx:777
 #: src/pages/ProfilePage.tsx:808
@@ -8239,7 +8239,7 @@ msgstr "Le téléphone à côté de vos informations montre votre page telle que
 msgid "The pin and the district were filled in from this address."
 msgstr "Le repère et le district ont été remplis d’après cette adresse."
 
-#: src/pages/HoursPage.tsx:667
+#: src/pages/HoursPage.tsx:668
 msgid "The pin and the district were moved to this address."
 msgstr "Le repère et le district ont été déplacés vers cette adresse."
 
@@ -8247,7 +8247,7 @@ msgstr "Le repère et le district ont été déplacés vers cette adresse."
 msgid "The pin was filled in from this address."
 msgstr "Le repère a été placé d’après cette adresse."
 
-#: src/pages/HoursPage.tsx:667
+#: src/pages/HoursPage.tsx:668
 msgid "The pin was moved to this address."
 msgstr "Le repère a été déplacé vers cette adresse."
 
@@ -8312,7 +8312,7 @@ msgstr "Toute la journée"
 msgid "The whole shop"
 msgstr "Tout l’établissement"
 
-#: src/pages/HoursPage.tsx:492
+#: src/pages/HoursPage.tsx:493
 msgid "The whole week is saved together"
 msgstr "Toute la semaine est enregistrée d’un coup"
 
@@ -8540,10 +8540,6 @@ msgstr "Titre <0>{0}/{TITLE_MAX}</0>"
 #: src/pages/ServicesPage.tsx:1467
 msgid "Title <0>{0}/100</0>"
 msgstr "Titre <0>{0}/100</0>"
-
-#: src/pages/HoursPage.tsx:443
-msgid "to"
-msgstr "à"
 
 #. placeholder {0}: NETWORK_NAME[network]
 #: src/pages/PayoutsPage.tsx:169
@@ -9665,7 +9661,7 @@ msgstr "Vous recevez"
 msgid "You get one reply per review, and can edit it for 7 days. Both are public."
 msgstr "Vous avez droit à une réponse par avis, modifiable pendant 7 jours. Les deux sont publics."
 
-#: src/pages/HoursPage.tsx:490
+#: src/pages/HoursPage.tsx:491
 msgid "You have changes that are not saved"
 msgstr "Vous avez des modifications non enregistrées"
 

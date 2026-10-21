@@ -407,7 +407,7 @@ msgid "{0} bookings · {1}–{2}"
 msgstr "{0} bookings · {1}–{2}"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:448
+#: src/pages/HoursPage.tsx:449
 msgid "{0} closes"
 msgstr "{0} closes"
 
@@ -673,7 +673,7 @@ msgstr "{followUps} was asked only after an answer here, so it will be asked eve
 msgid "{followUps} were asked only after an answer here, so they will be asked every time."
 msgstr "{followUps} were asked only after an answer here, so they will be asked every time."
 
-#: src/pages/HoursPage.tsx:670
+#: src/pages/HoursPage.tsx:671
 msgid "{fromAddress} Check it below before saving."
 msgstr "{fromAddress} Check it below before saving."
 
@@ -1595,7 +1595,7 @@ msgid "Added to the price for answer {0}"
 msgstr "Added to the price for answer {0}"
 
 #: src/components/NewBranchForm.tsx:302
-#: src/pages/HoursPage.tsx:653
+#: src/pages/HoursPage.tsx:654
 msgid "Address"
 msgstr "Address"
 
@@ -2189,7 +2189,7 @@ msgstr "Branch"
 
 #: src/components/NewBranchForm.tsx:278
 #: src/onboarding/Welcome.tsx:967
-#: src/pages/HoursPage.tsx:643
+#: src/pages/HoursPage.tsx:644
 msgid "Branch name"
 msgstr "Branch name"
 
@@ -2309,7 +2309,7 @@ msgstr "Can’t find it? Paste a map link or use where you are"
 
 #: src/components/NewBranchForm.tsx:247
 #: src/pages/AppointmentsPage.tsx:1208
-#: src/pages/HoursPage.tsx:625
+#: src/pages/HoursPage.tsx:626
 #: src/pages/PayoutsPage.tsx:475
 #: src/pages/ReviewsPage.tsx:579
 #: src/pages/ServicesPage.tsx:1813
@@ -2885,8 +2885,8 @@ msgstr "Could not get your position. Allow location for this site, or paste a Go
 msgid "Could not load the bookings."
 msgstr "Could not load the bookings."
 
-#: src/pages/HoursPage.tsx:477
-#: src/pages/HoursPage.tsx:565
+#: src/pages/HoursPage.tsx:478
+#: src/pages/HoursPage.tsx:566
 #: src/pages/PayoutsPage.tsx:488
 msgid "Could not save."
 msgstr "Could not save."
@@ -3039,7 +3039,7 @@ msgstr "Customers cannot see your shop until you post it. Take your time — eve
 msgid "Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen."
 msgstr "Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen."
 
-#: src/pages/HoursPage.tsx:681
+#: src/pages/HoursPage.tsx:682
 msgid "Customers filter by this. Without it, this branch does not appear when someone searches their area."
 msgstr "Customers filter by this. Without it, this branch does not appear when someone searches their area."
 
@@ -3138,7 +3138,7 @@ msgstr "Customers who asked for it get a Friday email of services near them, wit
 msgid "Customers who follow your shop see your new services, discounts and messages in the app. Those who also said yes to your offers get your message as an alert. They chose to — and can stop with one tap — so one good message a week keeps them following."
 msgstr "Customers who follow your shop see your new services, discounts and messages in the app. Those who also said yes to your offers get your message as an alert. They chose to — and can stop with one tap — so one good message a week keeps them following."
 
-#: src/pages/HoursPage.tsx:676
+#: src/pages/HoursPage.tsx:677
 msgid "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 msgstr "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 
@@ -3608,7 +3608,7 @@ msgid "Edit"
 msgstr "Edit"
 
 #: src/pages/HoursPage.tsx:267
-#: src/pages/HoursPage.tsx:619
+#: src/pages/HoursPage.tsx:620
 msgid "Edit details"
 msgstr "Edit details"
 
@@ -4426,7 +4426,7 @@ msgstr "How many answers can they pick?"
 msgid "How many answers they can pick"
 msgstr "How many answers they can pick"
 
-#: src/pages/HoursPage.tsx:556
+#: src/pages/HoursPage.tsx:557
 msgid "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 msgstr "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 
@@ -5813,7 +5813,7 @@ msgstr "One at a time here — the first one was used."
 msgid "One email.<0/><1>No password.</1>"
 msgstr "One email.<0/><1>No password.</1>"
 
-#: src/pages/HoursPage.tsx:526
+#: src/pages/HoursPage.tsx:527
 msgid "One fewer"
 msgstr "One fewer"
 
@@ -5825,7 +5825,7 @@ msgstr "One line summary"
 msgid "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 msgstr "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 
-#: src/pages/HoursPage.tsx:540
+#: src/pages/HoursPage.tsx:541
 msgid "One more"
 msgstr "One more"
 
@@ -6359,8 +6359,8 @@ msgid "People close to you see you first"
 msgstr "People close to you see you first"
 
 #: src/ads/tips.ts:34
-#: src/pages/HoursPage.tsx:523
-#: src/pages/HoursPage.tsx:537
+#: src/pages/HoursPage.tsx:524
+#: src/pages/HoursPage.tsx:538
 msgid "People served at once"
 msgstr "People served at once"
 
@@ -6382,7 +6382,7 @@ msgid "Phone"
 msgstr "Phone"
 
 #: src/components/NewBranchForm.tsx:289
-#: src/pages/HoursPage.tsx:647
+#: src/pages/HoursPage.tsx:648
 msgid "Phone for this branch <0>optional</0>"
 msgstr "Phone for this branch <0>optional</0>"
 
@@ -7004,9 +7004,9 @@ msgstr "safari business"
 msgid "salon"
 msgstr "salon"
 
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:628
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:629
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/StaffPage.tsx:317
 #: src/ui/Dialog.tsx:144
@@ -7029,12 +7029,12 @@ msgstr "Save reply"
 msgid "Save the service — customers see it when they book"
 msgstr "Save the service — customers see it when they book"
 
-#: src/pages/HoursPage.tsx:501
+#: src/pages/HoursPage.tsx:502
 msgid "Save the week"
 msgstr "Save the week"
 
-#: src/pages/HoursPage.tsx:487
-#: src/pages/HoursPage.tsx:575
+#: src/pages/HoursPage.tsx:488
+#: src/pages/HoursPage.tsx:576
 msgid "Saved"
 msgstr "Saved"
 
@@ -7057,9 +7057,9 @@ msgstr "Saving draft…"
 #: src/components/LegalGate.tsx:113
 #: src/pages/AppointmentsPage.tsx:785
 #: src/pages/ClosuresPage.tsx:610
-#: src/pages/HoursPage.tsx:501
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:628
+#: src/pages/HoursPage.tsx:502
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:629
 #: src/pages/LegalPage.tsx:166
 #: src/pages/LegalPage.tsx:193
 #: src/pages/OverviewPage.tsx:584
@@ -8017,7 +8017,7 @@ msgstr "That did not send. Check your connection."
 
 #: src/pages/AppointmentsPage.tsx:485
 #: src/pages/HoursPage.tsx:184
-#: src/pages/HoursPage.tsx:614
+#: src/pages/HoursPage.tsx:615
 #: src/pages/OverviewPage.tsx:291
 #: src/pages/ProfilePage.tsx:777
 #: src/pages/ProfilePage.tsx:808
@@ -8239,7 +8239,7 @@ msgstr "The phone beside your details shows your page as customers will see it, 
 msgid "The pin and the district were filled in from this address."
 msgstr "The pin and the district were filled in from this address."
 
-#: src/pages/HoursPage.tsx:667
+#: src/pages/HoursPage.tsx:668
 msgid "The pin and the district were moved to this address."
 msgstr "The pin and the district were moved to this address."
 
@@ -8247,7 +8247,7 @@ msgstr "The pin and the district were moved to this address."
 msgid "The pin was filled in from this address."
 msgstr "The pin was filled in from this address."
 
-#: src/pages/HoursPage.tsx:667
+#: src/pages/HoursPage.tsx:668
 msgid "The pin was moved to this address."
 msgstr "The pin was moved to this address."
 
@@ -8312,7 +8312,7 @@ msgstr "The whole day"
 msgid "The whole shop"
 msgstr "The whole shop"
 
-#: src/pages/HoursPage.tsx:492
+#: src/pages/HoursPage.tsx:493
 msgid "The whole week is saved together"
 msgstr "The whole week is saved together"
 
@@ -8540,10 +8540,6 @@ msgstr "Title <0>{0}/{TITLE_MAX}</0>"
 #: src/pages/ServicesPage.tsx:1467
 msgid "Title <0>{0}/100</0>"
 msgstr "Title <0>{0}/100</0>"
-
-#: src/pages/HoursPage.tsx:443
-msgid "to"
-msgstr "to"
 
 #. placeholder {0}: NETWORK_NAME[network]
 #: src/pages/PayoutsPage.tsx:169
@@ -9665,7 +9661,7 @@ msgstr "You get"
 msgid "You get one reply per review, and can edit it for 7 days. Both are public."
 msgstr "You get one reply per review, and can edit it for 7 days. Both are public."
 
-#: src/pages/HoursPage.tsx:490
+#: src/pages/HoursPage.tsx:491
 msgid "You have changes that are not saved"
 msgstr "You have changes that are not saved"
 

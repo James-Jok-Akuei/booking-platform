@@ -440,7 +440,8 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
                     aria-label={t`${DAYS()[day]} opens`}
                     onChange={(e) => update(day, { openTime: e.target.value })}
                   />
-                  <span><Trans>to</Trans></span>
+                  {/* A dash reads the same in every language and fits the fixed column (§308.7); each box says opens/closes to a screen reader. */}
+                  <span aria-hidden="true">–</span>
                   <input
                     type="time"
                     value={h.closeTime}

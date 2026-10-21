@@ -407,7 +407,7 @@ msgid "{0} bookings · {1}–{2}"
 msgstr "{0} bookingskomwa · {1}–{2}"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:448
+#: src/pages/HoursPage.tsx:449
 msgid "{0} closes"
 msgstr "{0} closesabarwa"
 
@@ -673,7 +673,7 @@ msgstr "{followUps} wasmwa askedshya onlynya afteriki an answershya herenya, so 
 msgid "{followUps} were asked only after an answer here, so they will be asked every time."
 msgstr "{followUps} wereugu askedshya onlynya afteriki an answershya herenya, so theynya willrwa be askedshya everyndi timendi."
 
-#: src/pages/HoursPage.tsx:670
+#: src/pages/HoursPage.tsx:671
 msgid "{fromAddress} Check it below before saving."
 msgstr "{fromAddress} Checkshyambi it belowzenya beforembiho savinghondi."
 
@@ -1595,7 +1595,7 @@ msgid "Added to the price for answer {0}"
 msgstr "Addedrwa to theugumbi pricembiugumbi forabaze answershya {0}"
 
 #: src/components/NewBranchForm.tsx:302
-#: src/pages/HoursPage.tsx:653
+#: src/pages/HoursPage.tsx:654
 msgid "Address"
 msgstr "Addressnyaaba"
 
@@ -2189,7 +2189,7 @@ msgstr "Branchkonya"
 
 #: src/components/NewBranchForm.tsx:278
 #: src/onboarding/Welcome.tsx:967
-#: src/pages/HoursPage.tsx:643
+#: src/pages/HoursPage.tsx:644
 msgid "Branch name"
 msgstr "Branchkonya namemwa"
 
@@ -2309,7 +2309,7 @@ msgstr "Canikiiki’t findmbi it? Pasteugu a maprwa linkiki or useaba wherendi y
 
 #: src/components/NewBranchForm.tsx:247
 #: src/pages/AppointmentsPage.tsx:1208
-#: src/pages/HoursPage.tsx:625
+#: src/pages/HoursPage.tsx:626
 #: src/pages/PayoutsPage.tsx:475
 #: src/pages/ReviewsPage.tsx:579
 #: src/pages/ServicesPage.tsx:1813
@@ -2885,8 +2885,8 @@ msgstr "Couldmbi notmwa gethoze yourmbihoiki positionmwaiki. Allowmwa locationze
 msgid "Could not load the bookings."
 msgstr "Couldmbi notmwa loadiki theugumbi bookingskomwa."
 
-#: src/pages/HoursPage.tsx:477
-#: src/pages/HoursPage.tsx:565
+#: src/pages/HoursPage.tsx:478
+#: src/pages/HoursPage.tsx:566
 #: src/pages/PayoutsPage.tsx:488
 msgid "Could not save."
 msgstr "Couldmbi notmwa saveaba."
@@ -3039,7 +3039,7 @@ msgstr "Customersmbiiki cannotmwako seeaba yourmbihoiki shopko untilhoho youugu 
 msgid "Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen."
 msgstr "Customersmbiiki filterhoiki by thisrwaaba. It is howko thisrwaaba branchkomwa appearskonya whenko someonenyaaba searcheskombi theirshya areaugu, so it hasshya to be chosennyaabaho."
 
-#: src/pages/HoursPage.tsx:681
+#: src/pages/HoursPage.tsx:682
 msgid "Customers filter by this. Without it, this branch does not appear when someone searches their area."
 msgstr "Customersmbiiki filterhoiki by thisrwaaba. Withoutnyanya it, thisrwaaba branchkomwa doesugu notmwa appearndirwa whenko someonenyaaba searcheskombi theirshya areaugu."
 
@@ -3138,7 +3138,7 @@ msgstr "Customersmbiiki whonya askedshya forabaze it gethoze a Fridayzeaba email
 msgid "Customers who follow your shop see your new services, discounts and messages in the app. Those who also said yes to your offers get your message as an alert. They chose to — and can stop with one tap — so one good message a week keeps them following."
 msgstr "Customersmbiiki whonya followabanyaaba yourmbihoiki shopko seeaba yourmbihoiki newrwamwa servicesrwaho, discountsnyako andmwa messageskoshya in theugumbi appaba. Thosemwa whonya alsomwahoiki saidndi yesndi to yourmbihoiki offerszembi gethoze yourmbihoiki messageugumbi as an alertikihougu. Theynya chosenya to — andmwa caniki stopko withikimbi onenya tapmwa — so onenya goodndi messageugumbi a weekrwa keepsrwa themnyaiki followingabaze."
 
-#: src/pages/HoursPage.tsx:676
+#: src/pages/HoursPage.tsx:677
 msgid "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 msgstr "Customersmbiiki' distanceshondiuguabandi areiki measuredrwarwa fromko thisrwaaba pinabanya. Pasteugu theugumbi shopko's Googlezerwa Mapsze linkiki, or pressugu theugumbi buttonrwaaba if youugu areiki at theugumbi shopko nownya."
 
@@ -3608,7 +3608,7 @@ msgid "Edit"
 msgstr "Editrwa"
 
 #: src/pages/HoursPage.tsx:267
-#: src/pages/HoursPage.tsx:619
+#: src/pages/HoursPage.tsx:620
 msgid "Edit details"
 msgstr "Editrwa detailsrwamwambiiki"
 
@@ -4426,7 +4426,7 @@ msgstr "Howrwa manyze answersabaiki caniki theynya pickndiugu?"
 msgid "How many answers they can pick"
 msgstr "Howrwa manyze answersabaiki theynya caniki pickndiugu"
 
-#: src/pages/HoursPage.tsx:556
+#: src/pages/HoursPage.tsx:557
 msgid "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 msgstr "Howrwa manyze customersmwako thisrwaaba branchkomwa caniki lookzembiugu afteriki at theugumbi samehohoze timendi — theugumbi samehohoze numberabarwa forabaze everyndi serviceuguaba herenya. A bookinguguiki forabaze 3 peoplezeshya takeshoho 3 placeskonya at thatugu timendi; whenko everyndi placendi is takenugu, customersmwako seeaba theugumbi timendi as bookedikiikimbi. It is alsomwahoiki theugumbi mostze peoplezeshya onenya bookinguguiki caniki be forabaze. Loweringmbiho it doesugu notmwa cancelhoze bookingskomwa alreadynyambi madendi."
 
@@ -5813,7 +5813,7 @@ msgstr "Onenyako at a timendi herenya — theugumbi firstkondi onenya wasmwa use
 msgid "One email.<0/><1>No password.</1>"
 msgstr "Onenyako emailnyakomwa.<0/><1>No passwordndiko.</1>"
 
-#: src/pages/HoursPage.tsx:526
+#: src/pages/HoursPage.tsx:527
 msgid "One fewer"
 msgstr "Onenyako fewerzemwa"
 
@@ -5825,7 +5825,7 @@ msgstr "Onenyako linenya summarynyanyambize"
 msgid "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 msgstr "Onenyako linenya thatugu makesndi someonenyaaba wantshya it — e.g. “Sharpnya fadesabazembi andmwa cleanmwa linenya-upsiki”"
 
-#: src/pages/HoursPage.tsx:540
+#: src/pages/HoursPage.tsx:541
 msgid "One more"
 msgstr "Onenyako moreaba"
 
@@ -6359,8 +6359,8 @@ msgid "People close to you see you first"
 msgstr "Peoplembihondi closenya to youugu seeaba youugu firstkondi"
 
 #: src/ads/tips.ts:34
-#: src/pages/HoursPage.tsx:523
-#: src/pages/HoursPage.tsx:537
+#: src/pages/HoursPage.tsx:524
+#: src/pages/HoursPage.tsx:538
 msgid "People served at once"
 msgstr "Peoplembihondi servedndirwa at oncendi"
 
@@ -6382,7 +6382,7 @@ msgid "Phone"
 msgstr "Phonenya"
 
 #: src/components/NewBranchForm.tsx:289
-#: src/pages/HoursPage.tsx:647
+#: src/pages/HoursPage.tsx:648
 msgid "Phone for this branch <0>optional</0>"
 msgstr "Phonenya forabaze thisrwaaba branchkomwa <0>optionalrwashyamwaze</0>"
 
@@ -7004,9 +7004,9 @@ msgstr "safarikondi businessshyarwa"
 msgid "salon"
 msgstr "salonmwa"
 
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:628
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:629
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/StaffPage.tsx:317
 #: src/ui/Dialog.tsx:144
@@ -7029,12 +7029,12 @@ msgstr "Saveugu replynya"
 msgid "Save the service — customers see it when they book"
 msgstr "Saveugu theugumbi serviceuguaba — customersmwako seeaba it whenko theynya bookugundi"
 
-#: src/pages/HoursPage.tsx:501
+#: src/pages/HoursPage.tsx:502
 msgid "Save the week"
 msgstr "Saveugu theugumbi weekrwa"
 
-#: src/pages/HoursPage.tsx:487
-#: src/pages/HoursPage.tsx:575
+#: src/pages/HoursPage.tsx:488
+#: src/pages/HoursPage.tsx:576
 msgid "Saved"
 msgstr "Savedugu"
 
@@ -7057,9 +7057,9 @@ msgstr "Savingnyako draftndi…"
 #: src/components/LegalGate.tsx:113
 #: src/pages/AppointmentsPage.tsx:785
 #: src/pages/ClosuresPage.tsx:610
-#: src/pages/HoursPage.tsx:501
-#: src/pages/HoursPage.tsx:575
-#: src/pages/HoursPage.tsx:628
+#: src/pages/HoursPage.tsx:502
+#: src/pages/HoursPage.tsx:576
+#: src/pages/HoursPage.tsx:629
 #: src/pages/LegalPage.tsx:166
 #: src/pages/LegalPage.tsx:193
 #: src/pages/OverviewPage.tsx:584
@@ -8017,7 +8017,7 @@ msgstr "Thatugu didmwa notmwa sendshya. Checkshyambi yourmbihoiki connectionikin
 
 #: src/pages/AppointmentsPage.tsx:485
 #: src/pages/HoursPage.tsx:184
-#: src/pages/HoursPage.tsx:614
+#: src/pages/HoursPage.tsx:615
 #: src/pages/OverviewPage.tsx:291
 #: src/pages/ProfilePage.tsx:777
 #: src/pages/ProfilePage.tsx:808
@@ -8239,7 +8239,7 @@ msgstr "Theugu phonehoikize besidenyaabaze yourmbihoiki detailsrwamwambiiki show
 msgid "The pin and the district were filled in from this address."
 msgstr "Theugu pinabanya andmwa theugumbi districtnyanya wereugu filledrwamwaze in fromko thisrwaaba addressshya."
 
-#: src/pages/HoursPage.tsx:667
+#: src/pages/HoursPage.tsx:668
 msgid "The pin and the district were moved to this address."
 msgstr "Theugu pinabanya andmwa theugumbi districtnyanya wereugu movedaba to thisrwaaba addressshya."
 
@@ -8247,7 +8247,7 @@ msgstr "Theugu pinabanya andmwa theugumbi districtnyanya wereugu movedaba to thi
 msgid "The pin was filled in from this address."
 msgstr "Theugu pinabanya wasmwa filledrwamwaze in fromko thisrwaaba addressshya."
 
-#: src/pages/HoursPage.tsx:667
+#: src/pages/HoursPage.tsx:668
 msgid "The pin was moved to this address."
 msgstr "Theugu pinabanya wasmwa movedaba to thisrwaaba addressshya."
 
@@ -8312,7 +8312,7 @@ msgstr "Theugu wholendi dayko"
 msgid "The whole shop"
 msgstr "Theugu wholendi shopko"
 
-#: src/pages/HoursPage.tsx:492
+#: src/pages/HoursPage.tsx:493
 msgid "The whole week is saved together"
 msgstr "Theugu wholendi weekrwa is savedaba togethernyako"
 
@@ -8540,10 +8540,6 @@ msgstr "Titlekokombi <0>{0}/{TITLE_MAX}</0>"
 #: src/pages/ServicesPage.tsx:1467
 msgid "Title <0>{0}/100</0>"
 msgstr "Titlekokombi <0>{0}/100</0>"
-
-#: src/pages/HoursPage.tsx:443
-msgid "to"
-msgstr "to"
 
 #. placeholder {0}: NETWORK_NAME[network]
 #: src/pages/PayoutsPage.tsx:169
@@ -9665,7 +9661,7 @@ msgstr "Youaba gethoze"
 msgid "You get one reply per review, and can edit it for 7 days. Both are public."
 msgstr "Youaba gethoze onenya replynya perugu reviewikimbiiki, andmwa caniki editkokoko it forabaze 7 daysmbi. Bothmwa areiki publicndishya."
 
-#: src/pages/HoursPage.tsx:490
+#: src/pages/HoursPage.tsx:491
 msgid "You have changes that are not saved"
 msgstr "Youaba havenyanya changesmwaiki thatugu areiki notmwa savedaba"
 

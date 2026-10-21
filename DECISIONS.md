@@ -20119,6 +20119,15 @@ changes for the language where needed, never cutting words:
   their own "your" in Kinyarwanda.
 - The role beside the shop's name ("Owner") and two timestamps were never
   translated; they are.
+- Opening hours put a dash between the two times instead of "to" — the same
+  in every language, and "kugeza" did not fit the fixed column. The setup
+  wizard's step notes wrap inside their column (a button keeps its words on
+  one line, so they had run to the edge). The customer's booking button keeps
+  "Fata 10:30" on one line: its size rules sit on a box around it (on the
+  button itself "58%" meant 58% of the button), and the total gives way first.
+- Every seller page was scanned in English, Kinyarwanda and French at 1440
+  and 390 for words spilling out of their box; nothing is left that English
+  does not also do.
 
 **The ready-made questions** (§300.2) — about 1,180 questions, answers and
 notes a shop can add to a service — are in the translators' files too
