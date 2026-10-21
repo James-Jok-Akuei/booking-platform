@@ -14,6 +14,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { RequestLocale } from '../i18n/request-locale.decorator';
+import { DATE_TAGS, say } from '../i18n/say';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from './notifications.service';
@@ -62,8 +65,8 @@ export class NotificationsController {
 
   @Get('settings')
   @ApiOkResponse({ type: NotificationSettingsDto })
-  async settings(@CurrentUser() user: AuthenticatedUser): Promise<NotificationSettingsDto> {
-    return this.withDevices(user.userId, await this.preferences.settings(user.userId));
+  async settings(@CurrentUser() user: AuthenticatedUser, @RequestLocale() locale: Locale): Promise<NotificationSettingsDto> {
+    return this.withDevices(user.userId, await this.preferences.settings(user.userId, locale));
   }
 
   @Patch('settings')
@@ -71,6 +74,7 @@ export class NotificationsController {
   async updateSettings(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: UpdateNotificationSettingsDto,
+    @RequestLocale() locale: Locale,
   ): Promise<NotificationSettingsDto> {
     const source =
       dto.source ??
@@ -79,7 +83,7 @@ export class NotificationsController {
         : user.role === UserRole.BUSINESS
           ? 'seller-app'
           : 'customer-app');
-    return this.withDevices(user.userId, await this.preferences.update(user.userId, { ...dto, source }));
+    return this.withDevices(user.userId, await this.preferences.update(user.userId, { ...dto, source }, locale));
   }
 
   /** A phone or a browser that may now be sent pushes. */
@@ -193,17 +197,29 @@ export class NotificationUnsubscribeController {
   @Header('Content-Type', 'text/html; charset=utf-8')
   @Header('Cache-Control', 'no-store')
   async page(@Query('u') u: string, @Query('c') c: string, @Query('t') t: string): Promise<string> {
-    const result = await this.preferences.unsubscribe(u, c, t).catch(() => ({ ok: false, title: undefined }));
+    const result: { ok: boolean; title?: string; locale?: Locale } = await this.preferences
+      .unsubscribe(u, c, t)
+      .catch(() => ({ ok: false }));
+    // In the language of the person the link was made for (§308).
+    const l = result.locale ?? DEFAULT_LOCALE;
     const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const [title, words] = result.ok
       ? [
-          'Done — no more of those emails',
-          `We will not email you about ${esc((result.title ?? 'that').toLowerCase())}. You will still see it in the app. ` +
-            'You can turn the emails back on any time under Notifications.',
+          say(l, 'Done — no more of those emails'),
+          esc(
+            say(
+              l,
+              'We will not email you about {kind}. You will still see it in the app. You can turn the emails back on any time under Notifications.',
+              { kind: (result.title ?? say(l, 'that')).toLocaleLowerCase(DATE_TAGS[l]) },
+            ),
+          ),
         ]
-      : ['That link did not work', 'It may be old or cut short. Change what we send in the app, under Notifications.'];
+      : [
+          say(l, 'That link did not work'),
+          say(l, 'It may be old or cut short. Change what we send in the app, under Notifications.'),
+        ];
     return (
-      '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+      `<!doctype html><html lang="${l}"><head><meta charset="utf-8">` +
       '<meta name="viewport" content="width=device-width, initial-scale=1">' +
       `<title>${title}</title></head>` +
       '<body style="margin:0;background:#F6F4F0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#15171C">' +

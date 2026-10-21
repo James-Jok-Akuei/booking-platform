@@ -23,6 +23,7 @@ import { StorageService } from '../storage/storage.service';
 import { UpdateBusinessProfileDto } from './dto/update-profile.dto';
 import { MAX_KIND_CATEGORIES } from './dto/set-kinds.dto';
 import { OTHER, tidyLabel } from './kinds';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 
 @Injectable()
 export class BusinessProfileService {
@@ -37,13 +38,13 @@ export class BusinessProfileService {
   // ---------- Going live (§255) ----------
 
   /** The shop's checklist: what it has, what it still needs, and whether it can send itself for review. */
-  async readiness(businessId: string) {
+  async readiness(businessId: string, locale: Locale = DEFAULT_LOCALE) {
     const shop = await this.prisma.businessProfile.findUnique({
       where: { id: businessId },
       select: READINESS_SELECT,
     });
     if (!shop) throw new NotFoundException('Business not found.');
-    return readinessView(shop);
+    return readinessView(shop, locale);
   }
 
   /**
@@ -55,7 +56,7 @@ export class BusinessProfileService {
    * may decide: a shop can only ask. Asking moves a rejected shop back to
    * PENDING; it never makes anything live. Administrators are told.
    */
-  async submitForReview(businessId: string) {
+  async submitForReview(businessId: string, locale: Locale = DEFAULT_LOCALE) {
     const shop = await this.prisma.businessProfile.findUnique({
       where: { id: businessId },
       select: READINESS_SELECT,
@@ -97,7 +98,7 @@ export class BusinessProfileService {
 
     this.logger.log(`Business ${businessId} ${resubmitted ? 'sent itself back' : 'sent itself'} for review.`);
     await this.notifyAdmins(updated.name ?? 'A shop', resubmitted);
-    return readinessView(updated);
+    return readinessView(updated, locale);
   }
 
   /**
@@ -110,7 +111,7 @@ export class BusinessProfileService {
    * customer could book. A pause set before posting is lifted: posting means
    * "show it", and the dialog the shop confirmed said so.
    */
-  async publish(businessId: string) {
+  async publish(businessId: string, locale: Locale = DEFAULT_LOCALE) {
     const shop = await this.prisma.businessProfile.findUnique({
       where: { id: businessId },
       select: READINESS_SELECT,
@@ -144,7 +145,7 @@ export class BusinessProfileService {
       select: READINESS_SELECT,
     });
     this.logger.log(`Business ${businessId} posted itself for customers.`);
-    return readinessView(updated);
+    return readinessView(updated, locale);
   }
 
   private async notifyAdmins(name: string, resubmitted: boolean) {

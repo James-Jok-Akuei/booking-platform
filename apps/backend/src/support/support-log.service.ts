@@ -1,5 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, SupportActionKind, TicketAuthorType, TicketStatus, UserRole } from '@prisma/client';
+import type { Locale } from '../i18n/locales';
+import { asLocale } from '../i18n/say';
 import { PrismaService } from '../prisma/prisma.service';
 import { SHOWN_ON_BOOKING } from './support-kinds';
 
@@ -60,8 +62,8 @@ export class SupportLogService {
       userId?: string | null;
       ticketId?: string | null;
       details?: Prisma.InputJsonValue;
-      /** The reply written into the help request: plain words for the person who asked. */
-      ticketNote?: string | null;
+      /** The reply written into the help request: plain words for the person who asked, in their language (§308). */
+      ticketNote?: string | ((locale: Locale) => string) | null;
     },
     tx: Prisma.TransactionClient = this.prisma,
   ) {
@@ -79,15 +81,19 @@ export class SupportLogService {
       select: { id: true, createdAt: true },
     });
     if (entry.ticketId && entry.ticketNote) {
-      const ticket = await tx.ticket.findUnique({ where: { id: entry.ticketId }, select: { status: true } });
+      const ticket = await tx.ticket.findUnique({
+        where: { id: entry.ticketId },
+        select: { status: true, reporter: { select: { locale: true } } },
+      });
       // A closed request is not written into; the log still has it.
       if (ticket && ticket.status !== TicketStatus.CLOSED) {
+        const note = entry.ticketNote;
         await tx.ticketMessage.create({
           data: {
             ticketId: entry.ticketId,
             authorId: actor.userId,
             authorType: TicketAuthorType.ADMIN,
-            body: entry.ticketNote,
+            body: typeof note === 'function' ? note(asLocale(ticket.reporter?.locale)) : note,
           },
         });
         await tx.ticket.update({ where: { id: entry.ticketId }, data: { lastMessageAt: new Date() } });

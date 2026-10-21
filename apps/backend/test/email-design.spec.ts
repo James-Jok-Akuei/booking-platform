@@ -278,7 +278,7 @@ describe('The emails, in the platform design (§292)', () => {
       { reason: 'Hi Ama — we can fit you in 30 minutes earlier if that helps?' },
     ],
     [NotificationType.NEW_MESSAGE, 'BUSINESS', { reason: 'Is parking available near the Nyarugenge branch?' }],
-    [NotificationType.REVIEW_CREATED, 'BUSINESS', { reason: 'A customer left a 5-star review.' }],
+    [NotificationType.REVIEW_CREATED, 'BUSINESS', { rating: 5 }],
     [NotificationType.PAYOUT_SENT, 'BUSINESS', { depositAmountMinor: 5200, currency: 'RWF', reason: '2095403027' }],
     [
       NotificationType.PAYOUT_FAILED,
@@ -292,11 +292,20 @@ describe('The emails, in the platform design (§292)', () => {
       'BUSINESS',
       {
         advice: {
-          items: [
-            { title: 'A cover photo', why: 'the first thing customers see on your page' },
-            { title: 'Photos of Kimironko', why: 'customers want to see the place they are walking into' },
-            { title: 'A description on 3 services', why: 'shown under “About this service” before they book' },
-          ],
+          // No cover, a branch with no photos, three services with no words.
+          shop: {
+            coverImageUrl: null,
+            logoUrl: 'https://x/logo.png',
+            description: 'We cut, shave and style in the heart of Kimironko, six days a week.',
+            phone: '0788000000',
+            subcategoryId: 'barber',
+            locations: [
+              { name: 'Kimironko', districtId: 'd', latitude: -1.9, longitude: 30.1, hours: [{}], _count: { media: 0 } },
+            ],
+            services: [1, 2, 3].map(() => ({ description: null, _count: { images: 1 }, locations: [{}] })),
+            payoutDestinations: [{}],
+          },
+          keys: ['cover', 'gallery', 'service-words'],
           note: 'Your haircuts look great. A bright photo of the shop front would help people find you on the street.',
         },
       },

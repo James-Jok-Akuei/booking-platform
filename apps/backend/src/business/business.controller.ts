@@ -73,6 +73,8 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { SetServiceOfferedDto } from './dto/set-service-offered.dto';
 import { UploadMediaDto } from './dto/upload-media.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
+import { RequestLocale } from '../i18n/request-locale.decorator';
+import type { Locale } from '../i18n/locales';
 
 /**
  * Everything a business manages about itself: profile, locations, opening
@@ -159,8 +161,8 @@ export class BusinessController {
     BusinessMemberRole.MANAGER,
     BusinessMemberRole.STAFF,
   )
-  getReadiness(@CurrentBusiness() business: BusinessContext) {
-    return this.profiles.readiness(business.businessId);
+  getReadiness(@CurrentBusiness() business: BusinessContext, @RequestLocale() locale: Locale) {
+    return this.profiles.readiness(business.businessId, locale);
   }
 
   /**
@@ -172,8 +174,8 @@ export class BusinessController {
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   @AllBranches()
-  submitForReview(@CurrentBusiness() business: BusinessContext) {
-    return this.profiles.submitForReview(business.businessId);
+  submitForReview(@CurrentBusiness() business: BusinessContext, @RequestLocale() locale: Locale) {
+    return this.profiles.submitForReview(business.businessId, locale);
   }
 
   /**
@@ -185,8 +187,8 @@ export class BusinessController {
   @HttpCode(HttpStatus.OK)
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
   @AllBranches()
-  publish(@CurrentBusiness() business: BusinessContext) {
-    return this.profiles.publish(business.businessId);
+  publish(@CurrentBusiness() business: BusinessContext, @RequestLocale() locale: Locale) {
+    return this.profiles.publish(business.businessId, locale);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { ApiError, tokens } from './api/client';
+import { ApiError, requestLanguage, tokens } from './api/client';
 import { t } from '@lingui/core/macro';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4100';
@@ -29,7 +29,11 @@ export async function uploadFile<T>(
   const response = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
     body: form,
-    headers: tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {},
+    // A refused file is explained in the chosen language (§308).
+    headers: {
+      'Accept-Language': requestLanguage.current,
+      ...(tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {}),
+    },
   });
   const text = await response.text();
 

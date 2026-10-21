@@ -1,6 +1,6 @@
 import { File } from 'expo-file-system';
 import { UploadType } from 'expo-file-system';
-import { ApiError, tokens } from './api/client';
+import { ApiError, requestLanguage, tokens } from './api/client';
 import { t } from '@lingui/core/macro';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4100';
@@ -37,7 +37,11 @@ export async function uploadFile<T>(
     fieldName: options?.fieldName ?? 'file',
     mimeType: file.mimeType,
     ...(options?.parameters ? { parameters: options.parameters } : {}),
-    headers: tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {},
+    // A refused file is explained in the chosen language (§308).
+    headers: {
+      'Accept-Language': requestLanguage.current,
+      ...(tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {}),
+    },
   });
 
   if (result.status >= 400) {

@@ -37,6 +37,9 @@ import {
   tidyNote,
 } from '../business/service-choices';
 import { UpdateBookingChoicesDto } from './dto/update-booking-choices.dto';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { DATE_TAGS, asLocale, say } from '../i18n/say';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { askHowItWent } from './how-it-went';
 import { MailService } from '../mail/mail.service';
@@ -80,6 +83,9 @@ import {
 import { MEMBERSHIP_SCOPE_SELECT, branchIn, scopeOf, seesBranch } from '../business/branch-scope';
 import { SupportActor, SupportLogService } from '../support/support-log.service';
 import { SupportCancelForShopDto, SupportCheckInDto, SupportReasonDto } from '../support/support.dto';
+
+/** What our support team did, in one reader's language (§297, §308). */
+type SupportWords = (l: Locale) => { title: string; body: string };
 
 const BCRYPT_ROUNDS = 10;
 
@@ -571,14 +577,14 @@ export class AppointmentsService {
 
     const customer = await this.prisma.user.findUniqueOrThrow({
       where: { id: customerId },
-      select: { email: true },
+      select: { email: true, locale: true },
     });
     // The whole booking, so the email can show it as a ticket (§292).
     const booked = await this.prisma.appointment.findUniqueOrThrow({
       where: { id: appointment.id },
       select: BOOKING_FACTS_SELECT,
     });
-    await this.mail.sendAppointmentVerificationEmail(customer.email, code, bookingFacts(booked));
+    await this.mail.sendAppointmentVerificationEmail(customer.email, code, bookingFacts(booked), asLocale(customer.locale));
 
     // Recorded AFTER the send, so it means "an email went out" rather than "we
     // intended to send one" (§53.2). A timestamp, never the code.
@@ -1262,7 +1268,7 @@ export class AppointmentsService {
   private async issueFreshCode(appointmentId: string) {
     const context = await this.prisma.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
-      select: { ...BOOKING_FACTS_SELECT, customer: { select: { email: true } } },
+      select: { ...BOOKING_FACTS_SELECT, customer: { select: { email: true, locale: true } } },
     });
 
     const code = this.generateVerificationCode();
@@ -1281,7 +1287,12 @@ export class AppointmentsService {
       },
     });
 
-    await this.mail.sendAppointmentVerificationEmail(context.customer.email, code, bookingFacts(context));
+    await this.mail.sendAppointmentVerificationEmail(
+      context.customer.email,
+      code,
+      bookingFacts(context),
+      asLocale(context.customer.locale),
+    );
 
     // Stamped after the send, so it keeps meaning "an email went out" (§53.2) —
     // which is also what the cooldown must measure from. A failed send
@@ -1865,9 +1876,10 @@ export class AppointmentsService {
           appointmentId,
           ticketId: ticket?.id,
           details: { from: appointment.status, refunded: Boolean(appointment.depositPaidAt) },
-          ticketNote: appointment.depositPaidAt
-            ? 'We cancelled this booking on the shop’s side. The customer gets their whole deposit back.'
-            : 'We cancelled this booking on the shop’s side. No deposit had been paid.',
+          ticketNote: (l) =>
+            appointment.depositPaidAt
+              ? say(l, 'We cancelled this booking on the shop’s side. The customer gets their whole deposit back.')
+              : say(l, 'We cancelled this booking on the shop’s side. No deposit had been paid.'),
         },
         tx,
       );
@@ -1893,13 +1905,13 @@ export class AppointmentsService {
   // ---------- Support, on someone's behalf (§297) ----------
 
   /** "Tuesday 20 October at 11:15", as the shop and the customer know the time. */
-  private spokenTime(at: Date) {
+  private spokenTime(at: Date, l: Locale = DEFAULT_LOCALE) {
     const zone = process.env.PLATFORM_TIMEZONE ?? 'Africa/Kigali';
-    const day = new Intl.DateTimeFormat('en-GB', { timeZone: zone, weekday: 'long', day: 'numeric', month: 'long' })
+    const day = new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: zone, weekday: 'long', day: 'numeric', month: 'long' })
       .format(at)
       .replace(',', '');
-    const clock = new Intl.DateTimeFormat('en-GB', { timeZone: zone, hour: '2-digit', minute: '2-digit' }).format(at);
-    return `${day} at ${clock}`;
+    const time = new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: zone, hour: '2-digit', minute: '2-digit' }).format(at);
+    return say(l, '{day} at {time}', { day, time });
   }
 
   /** The booking, as support's actions need it. */
@@ -1933,17 +1945,30 @@ export class AppointmentsService {
    */
   private async tellAboutSupport(
     appointmentId: string,
-    words: { customer?: { title: string; body: string }; shop?: { title: string; body: string } },
+    words: { customer?: SupportWords; shop?: SupportWords },
     ticket: { reporterId: string } | null,
   ) {
     const loaded = await this.notificationContext(appointmentId);
     if (!loaded) return;
     const except = ticket?.reporterId ?? null;
+    // Written out for each reader in their own language (§308).
+    const told = (said: SupportWords) => {
+      const english = said(DEFAULT_LOCALE);
+      return {
+        ...loaded.context,
+        serviceName: english.title,
+        reason: english.body,
+        compose: (l: Locale) => {
+          const { title, body } = said(l);
+          return { subject: title, body };
+        },
+      };
+    };
     if (words.customer && loaded.customerId !== except) {
       await this.notifications.notify({
         recipientId: loaded.customerId,
         type: NotificationType.SUPPORT_UPDATE,
-        context: { ...loaded.context, serviceName: words.customer.title, reason: words.customer.body },
+        context: told(words.customer),
         appointmentId,
         category: NotificationCategory.BOOKINGS,
         link: `/booking/${appointmentId}`,
@@ -1953,7 +1978,7 @@ export class AppointmentsService {
       await this.notifications.notifyBusiness({
         businessId: loaded.businessId,
         type: NotificationType.SUPPORT_UPDATE,
-        context: { ...loaded.context, serviceName: words.shop.title, reason: words.shop.body },
+        context: told(words.shop),
         appointmentId,
         category: NotificationCategory.BOOKINGS,
         link: `/appointments?tab=all&open=${appointmentId}`,
@@ -1980,16 +2005,23 @@ export class AppointmentsService {
     await this.tellAboutSupport(
       appointmentId,
       {
-        shop: {
-          title: 'Our support team checked a customer in',
-          body:
-            `We checked the customer in for ${appointment.service.name} on ${this.spokenTime(appointment.startTime)}, ` +
-            'because it could not be done in the app. Mark it done when the service is finished, as usual.',
-        },
-        customer: {
-          title: 'You are checked in',
-          body: `Our support team checked you in at ${appointment.location.business.name ?? 'the shop'} for ${appointment.service.name}.`,
-        },
+        shop: (l) => ({
+          title: say(l, 'Our support team checked a customer in'),
+          body: say(
+            l,
+            'We checked the customer in for {serviceName} on {when}, because it could not be done in the app. Mark it done when the service is finished, as usual.',
+            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l) },
+          ),
+        }),
+        customer: (l) => ({
+          title: say(l, 'You are checked in'),
+          body: appointment.location.business.name
+            ? say(l, 'Our support team checked you in at {shop} for {serviceName}.', {
+                shop: appointment.location.business.name,
+                serviceName: appointment.service.name,
+              })
+            : say(l, 'Our support team checked you in for {serviceName}.', { serviceName: appointment.service.name }),
+        }),
       },
       ticket,
     );
@@ -2032,7 +2064,7 @@ export class AppointmentsService {
         appointmentId: appointment.id,
         ticketId,
         details: { withCode: Boolean(dto.code) },
-        ticketNote: `We checked the customer in for ${appointment.service.name}.`,
+        ticketNote: (l) => say(l, 'We checked the customer in for {serviceName}.', { serviceName: appointment.service.name }),
       },
       tx,
     );
@@ -2069,7 +2101,10 @@ export class AppointmentsService {
           reason: dto.reason,
           appointmentId,
           ticketId: ticket?.id,
-          ticketNote: `We marked ${appointment.service.name} as done. The shop is paid for it as usual.`,
+          ticketNote: (l) =>
+            say(l, 'We marked {serviceName} as done. The shop is paid for it as usual.', {
+              serviceName: appointment.service.name,
+            }),
         },
         tx,
       );
@@ -2079,12 +2114,14 @@ export class AppointmentsService {
     await this.tellAboutSupport(
       appointmentId,
       {
-        shop: {
-          title: 'Our support team marked a booking done',
-          body:
-            `We marked ${appointment.service.name} on ${this.spokenTime(appointment.startTime)} as done, ` +
-            'because it could not be done in the app. Your share of the deposit is paid to you as usual.',
-        },
+        shop: (l) => ({
+          title: say(l, 'Our support team marked a booking done'),
+          body: say(
+            l,
+            'We marked {serviceName} on {when} as done, because it could not be done in the app. Your share of the deposit is paid to you as usual.',
+            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l) },
+          ),
+        }),
       },
       ticket,
     );
@@ -2128,7 +2165,10 @@ export class AppointmentsService {
           appointmentId,
           ticketId: ticket?.id,
           details: { from: AppointmentStatus.NO_SHOW, to: AppointmentStatus.COMPLETED },
-          ticketNote: `We corrected ${appointment.service.name}: it was marked as missed, but the customer came. It now counts as done.`,
+          ticketNote: (l) =>
+            say(l, 'We corrected {serviceName}: it was marked as missed, but the customer came. It now counts as done.', {
+              serviceName: appointment.service.name,
+            }),
         },
         tx,
       );
@@ -2138,18 +2178,28 @@ export class AppointmentsService {
     await this.tellAboutSupport(
       appointmentId,
       {
-        customer: {
-          title: 'Your booking is corrected',
-          body:
-            `Your visit to ${appointment.location.business.name ?? 'the shop'} for ${appointment.service.name} was marked as missed, ` +
-            'but you came. Our support team corrected it: it now counts as done, and you can leave a review.',
-        },
-        shop: {
-          title: 'Our support team corrected a missed booking',
-          body:
-            `${appointment.service.name} on ${this.spokenTime(appointment.startTime)} was marked as missed, but the customer came. ` +
-            'It now counts as done. Nothing changes in your money.',
-        },
+        customer: (l) => ({
+          title: say(l, 'Your booking is corrected'),
+          body: appointment.location.business.name
+            ? say(
+                l,
+                'Your visit to {shop} for {serviceName} was marked as missed, but you came. Our support team corrected it: it now counts as done, and you can leave a review.',
+                { shop: appointment.location.business.name, serviceName: appointment.service.name },
+              )
+            : say(
+                l,
+                'Your visit for {serviceName} was marked as missed, but you came. Our support team corrected it: it now counts as done, and you can leave a review.',
+                { serviceName: appointment.service.name },
+              ),
+        }),
+        shop: (l) => ({
+          title: say(l, 'Our support team corrected a missed booking'),
+          body: say(
+            l,
+            '{serviceName} on {when} was marked as missed, but the customer came. It now counts as done. Nothing changes in your money.',
+            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l) },
+          ),
+        }),
       },
       ticket,
     );
@@ -2189,9 +2239,10 @@ export class AppointmentsService {
           reason: dto.reason,
           appointmentId,
           ticketId: ticket?.id,
-          ticketNote: appointment.depositPaidAt
-            ? 'We cancelled your booking, as you asked. As agreed when you booked, the deposit is not given back.'
-            : 'We cancelled your booking, as you asked. No deposit had been paid.',
+          ticketNote: (l) =>
+            appointment.depositPaidAt
+              ? say(l, 'We cancelled your booking, as you asked. As agreed when you booked, the deposit is not given back.')
+              : say(l, 'We cancelled your booking, as you asked. No deposit had been paid.'),
         },
         tx,
       );
@@ -2227,7 +2278,7 @@ export class AppointmentsService {
       reason: dto.reason,
       appointmentId,
       ticketId: ticket?.id,
-      ticketNote: 'We emailed you a new arrival code. The old one no longer works.',
+      ticketNote: (l) => say(l, 'We emailed you a new arrival code. The old one no longer works.'),
     });
     return { message: 'A new arrival code is on its way to the customer. The old one no longer works.' };
   }
@@ -2268,9 +2319,9 @@ export class AppointmentsService {
       details: { answer: result.status },
       ticketNote:
         result.status === 'SUCCESSFUL'
-          ? 'We checked with MTN: your deposit went through, and the booking is confirmed.'
+          ? (l) => say(l, 'We checked with MTN: your deposit went through, and the booking is confirmed.')
           : result.status === 'FAILED'
-            ? 'We checked with MTN: the deposit did not go through. You can try paying again from the booking.'
+            ? (l) => say(l, 'We checked with MTN: the deposit did not go through. You can try paying again from the booking.')
             : null,
     });
     return { appointmentStatus: applied, paymentStatus: result.status, failureReason: result.failureReason ?? null };

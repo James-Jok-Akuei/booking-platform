@@ -20,7 +20,8 @@
     "legal:publish": "ts-node --project tsconfig.seed.json scripts/publish-legal.ts",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "pretest": "npm run typecheck",
-    "openapi:generate": "nest build && node dist/scripts/generate-openapi.js"
+    "openapi:generate": "nest build && node dist/scripts/generate-openapi.js",
+    "i18n": "node ../../scripts/i18n/server-messages.mjs"
   },
   "keywords": [],
   "author": "",
@@ -47,6 +48,7 @@
     "expo-server-sdk": "^3.15.0",
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
+    "intl-messageformat": "^10.7.18",
     "nodemailer": "^10.1.7",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

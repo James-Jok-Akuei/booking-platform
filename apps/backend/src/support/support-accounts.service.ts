@@ -8,6 +8,8 @@ import {
   SupportActionKind,
   UserRole,
 } from '@prisma/client';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { asLocale, say } from '../i18n/say';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AccountService } from '../users/account.service';
@@ -15,14 +17,29 @@ import { INVITATION_TTL_DAYS } from '../business/members.service';
 import { MARKETING } from '../notifications/notification-catalog';
 import { SupportActor, SupportInput, SupportLogService } from './support-log.service';
 
-/** A notice with no booking in it: a title and the words (§297). */
-const notice = (title: string, body: string, businessName = '') => ({
-  serviceName: title,
-  reason: body,
-  locationName: '',
-  businessName,
-  startTime: undefined as unknown as Date,
-});
+type Words = (l: Locale) => { title: string; body: string };
+
+/**
+ * A notice with no booking in it: a title and the words (§297), written out
+ * for each reader in their own language (§308).
+ */
+const notice = (words: Words, businessName = '') => {
+  const english = words(DEFAULT_LOCALE);
+  return {
+    serviceName: english.title,
+    reason: english.body,
+    locationName: '',
+    businessName,
+    startTime: undefined as unknown as Date,
+    compose: (l: Locale) => {
+      const { title, body } = words(l);
+      return { subject: title, body };
+    },
+  };
+};
+
+/** Our team's reason, as its own paragraph. */
+const because = (l: Locale, reason: string) => say(l, 'Reason: {reason}', { reason: reason.trim() });
 
 /**
  * What our support team can do for a shop or a person when they cannot do it
@@ -107,23 +124,27 @@ export class SupportAccountsService {
       reason: dto.reason,
       businessId,
       ticketId: ticket?.id,
-      ticketNote: paused
-        ? 'We paused your shop: no new bookings until it is opened again. Bookings already made still happen.'
-        : 'We opened your shop again: customers can book it.',
+      ticketNote: (l) =>
+        paused
+          ? say(l, 'We paused your shop: no new bookings until it is opened again. Bookings already made still happen.')
+          : say(l, 'We opened your shop again: customers can book it.'),
     });
     await this.tellShop(
       businessId,
-      paused
-        ? {
-            title: 'Our support team paused your shop',
-            body:
-              'Customers cannot make new bookings while it is paused. Bookings already made still happen. ' +
-              `You can open it again yourself in Your shop.\n\nReason: ${dto.reason.trim()}`,
-          }
-        : {
-            title: 'Our support team opened your shop again',
-            body: `Customers can find and book you again.\n\nReason: ${dto.reason.trim()}`,
-          },
+      (l) =>
+        paused
+          ? {
+              title: say(l, 'Our support team paused your shop'),
+              body:
+                say(
+                  l,
+                  'Customers cannot make new bookings while it is paused. Bookings already made still happen. You can open it again yourself in Your shop.',
+                ) + `\n\n${because(l, dto.reason)}`,
+            }
+          : {
+              title: say(l, 'Our support team opened your shop again'),
+              body: `${say(l, 'Customers can find and book you again.')}\n\n${because(l, dto.reason)}`,
+            },
       ticket,
       '/profile',
     );
@@ -148,14 +169,17 @@ export class SupportAccountsService {
       businessId,
       ticketId: ticket?.id,
       details: { email: invitation.email, role: invitation.role },
-      ticketNote: `We took back the invitation for ${invitation.email}. They can no longer join with it.`,
+      ticketNote: (l) =>
+        say(l, 'We took back the invitation for {email}. They can no longer join with it.', { email: invitation.email }),
     });
     await this.tellShop(
       businessId,
-      {
-        title: 'An invitation was taken back',
-        body: `Our support team took back the invitation for ${invitation.email}.\n\nReason: ${dto.reason.trim()}`,
-      },
+      (l) => ({
+        title: say(l, 'An invitation was taken back'),
+        body:
+          say(l, 'Our support team took back the invitation for {email}.', { email: invitation.email }) +
+          `\n\n${because(l, dto.reason)}`,
+      }),
       ticket,
       '/people',
       true,
@@ -184,7 +208,10 @@ export class SupportAccountsService {
 
     const existing = await this.prisma.user.findUnique({ where: { email: invitation.email }, select: { id: true } });
     const context = {
-      ...notice('', '', invitation.business.name ?? 'a business'),
+      serviceName: '',
+      locationName: '',
+      businessName: invitation.business.name ?? 'a business',
+      startTime: undefined as unknown as Date,
       inviterEmail: invitation.invitedBy.email,
       role: invitation.role,
     };
@@ -199,6 +226,7 @@ export class SupportAccountsService {
         email: invitation.email,
         type: NotificationType.BUSINESS_INVITATION,
         context,
+        locale: asLocale(invitation.invitedBy.locale),
       });
     }
     await this.support.record(actor, {
@@ -207,7 +235,11 @@ export class SupportAccountsService {
       businessId,
       ticketId: ticket?.id,
       details: { email: invitation.email, expiresAt: expiresAt.toISOString() },
-      ticketNote: `We sent the invitation to ${invitation.email} again. It can be accepted for ${INVITATION_TTL_DAYS} days.`,
+      ticketNote: (l) =>
+        say(l, 'We sent the invitation to {email} again. It can be accepted for {days} days.', {
+          email: invitation.email,
+          days: INVITATION_TTL_DAYS,
+        }),
     });
     return { message: `Sent to ${invitation.email} again, good for ${INVITATION_TTL_DAYS} days.` };
   }
@@ -238,25 +270,32 @@ export class SupportAccountsService {
       userId: member.userId,
       ticketId: ticket?.id,
       details: { email: member.user.email, role: member.role },
-      ticketNote: `We took ${member.user.email} out of the team. They can no longer open the shop.`,
+      ticketNote: (l) =>
+        say(l, 'We took {email} out of the team. They can no longer open the shop.', { email: member.user.email }),
     });
     await this.notifications.notify({
       recipientId: member.userId,
       type: NotificationType.SUPPORT_UPDATE,
-      context: notice(
-        `You are no longer in the team at ${member.business.name ?? 'the shop'}`,
-        'Our support team took you out of the team, so you can no longer open this shop. ' +
-          'If you think this is a mistake, ask the shop’s owner.',
-      ),
+      context: notice((l) => ({
+        title: member.business.name
+          ? say(l, 'You are no longer in the team at {shop}', { shop: member.business.name })
+          : say(l, 'You are no longer in the team at the shop'),
+        body: say(
+          l,
+          'Our support team took you out of the team, so you can no longer open this shop. If you think this is a mistake, ask the shop’s owner.',
+        ),
+      })),
       category: NotificationCategory.ACCOUNT,
       link: null,
     });
     await this.tellShop(
       businessId,
-      {
-        title: 'Someone was taken out of your team',
-        body: `Our support team took ${member.user.email} out of your team.\n\nReason: ${dto.reason.trim()}`,
-      },
+      (l) => ({
+        title: say(l, 'Someone was taken out of your team'),
+        body:
+          say(l, 'Our support team took {email} out of your team.', { email: member.user.email }) +
+          `\n\n${because(l, dto.reason)}`,
+      }),
       ticket,
       '/people',
       true,
@@ -313,21 +352,28 @@ export class SupportAccountsService {
           userId: next.userId,
           ticketId: ticket?.id,
           details: { to: next.user.email, from: owners.map((o) => o.user.email) },
-          ticketNote: `We made ${next.user.email} the owner of the shop. The old owner stays in the team as a manager.`,
+          ticketNote: (l) =>
+            say(l, 'We made {email} the owner of the shop. The old owner stays in the team as a manager.', {
+              email: next.user.email,
+            }),
         },
         tx,
       );
     });
 
-    const shopName = next.business.name ?? 'the shop';
+    const shopName = next.business.name;
     await this.notifications.notify({
       recipientId: next.userId,
       type: NotificationType.SUPPORT_UPDATE,
-      context: notice(
-        `You are now the owner of ${shopName}`,
-        'Our support team made you the owner. You can now change the team, the payout number and everything else. ' +
-          'The old owner is still in the team as a manager — keep them or take them out under Team.',
-      ),
+      context: notice((l) => ({
+        title: shopName
+          ? say(l, 'You are now the owner of {shop}', { shop: shopName })
+          : say(l, 'You are now the owner of the shop'),
+        body: say(
+          l,
+          'Our support team made you the owner. You can now change the team, the payout number and everything else. The old owner is still in the team as a manager — keep them or take them out under Team.',
+        ),
+      })),
       category: NotificationCategory.ACCOUNT,
       link: '/people',
     });
@@ -335,11 +381,15 @@ export class SupportAccountsService {
       await this.notifications.notify({
         recipientId: owner.userId,
         type: NotificationType.SUPPORT_UPDATE,
-        context: notice(
-          `${next.user.email} is now the owner of ${shopName}`,
-          `Our support team handed the shop to ${next.user.email}. You are still in the team, as a manager of every branch.` +
-            `\n\nReason: ${dto.reason.trim()}`,
-        ),
+        context: notice((l) => ({
+          title: shopName
+            ? say(l, '{email} is now the owner of {shop}', { email: next.user.email, shop: shopName })
+            : say(l, '{email} is now the owner of the shop', { email: next.user.email }),
+          body:
+            say(l, 'Our support team handed the shop to {email}. You are still in the team, as a manager of every branch.', {
+              email: next.user.email,
+            }) + `\n\n${because(l, dto.reason)}`,
+        })),
         category: NotificationCategory.ACCOUNT,
         link: '/people',
       });
@@ -401,17 +451,19 @@ export class SupportAccountsService {
       userId,
       ticketId: ticket?.id,
       details: { sessions: tokens.count, pushDevices: devices.count },
-      ticketNote: 'We signed you out on every phone and computer. Sign in again with a code sent to your email.',
+      ticketNote: (l) => say(l, 'We signed you out on every phone and computer. Sign in again with a code sent to your email.'),
     });
     if (user.id !== ticket?.reporterId) {
       await this.notifications.notify({
         recipientId: userId,
         type: NotificationType.SUPPORT_UPDATE,
-        context: notice(
-          'You were signed out everywhere',
-          'Our support team signed you out on every phone and computer. ' +
-            'Sign in again with a code sent to this email. If you did not ask for this, reply to us in Help.',
-        ),
+        context: notice((l) => ({
+          title: say(l, 'You were signed out everywhere'),
+          body: say(
+            l,
+            'Our support team signed you out on every phone and computer. Sign in again with a code sent to this email. If you did not ask for this, reply to us in Help.',
+          ),
+        })),
         category: NotificationCategory.ACCOUNT,
         link: null,
       });
@@ -468,9 +520,11 @@ export class SupportAccountsService {
           userId,
           ticketId: ticket?.id,
           details: { shops: follows.length },
-          ticketNote:
-            'We turned off news, offers and the weekly email. You still hear about your bookings and messages. ' +
-            'You can turn any of them back on in Notifications.',
+          ticketNote: (l) =>
+            say(
+              l,
+              'We turned off news, offers and the weekly email. You still hear about your bookings and messages. You can turn any of them back on in Notifications.',
+            ),
         },
         tx,
       );
@@ -497,11 +551,13 @@ export class SupportAccountsService {
         await this.notifications.notify({
           recipientId: userId,
           type: NotificationType.SUPPORT_UPDATE,
-          context: notice(
-            'Your account is closed',
-            'Our support team closed your account, as asked. Your bookings and reviews stay with the shops ' +
-              'they belong to, with your name removed. You can make a new account with this email at any time.',
-          ),
+          context: notice((l) => ({
+            title: say(l, 'Your account is closed'),
+            body: say(
+              l,
+              'Our support team closed your account, as asked. Your bookings and reviews stay with the shops they belong to, with your name removed. You can make a new account with this email at any time.',
+            ),
+          })),
           category: NotificationCategory.ACCOUNT,
           link: null,
         });
@@ -536,7 +592,7 @@ export class SupportAccountsService {
   /** A shop's team or invitations are notified like the shop's own changes: everyone, or the owner only. */
   private async tellShop(
     businessId: string,
-    words: { title: string; body: string },
+    words: Words,
     ticket: { reporterId: string } | null,
     link: string,
     ownerOnly = false,
@@ -555,7 +611,7 @@ export class SupportAccountsService {
         await this.notifications.notify({
           recipientId: owner.userId,
           type: NotificationType.SUPPORT_UPDATE,
-          context: notice(words.title, words.body, business?.name ?? ''),
+          context: notice(words, business?.name ?? ''),
           category: NotificationCategory.ACCOUNT,
           link,
         });
@@ -565,7 +621,7 @@ export class SupportAccountsService {
     await this.notifications.notifyBusiness({
       businessId,
       type: NotificationType.SUPPORT_UPDATE,
-      context: notice(words.title, words.body, business?.name ?? ''),
+      context: notice(words, business?.name ?? ''),
       category: NotificationCategory.ACCOUNT,
       link,
       except,
@@ -581,7 +637,7 @@ export class SupportAccountsService {
         role: true,
         status: true,
         businessProfile: { select: { name: true } },
-        invitedBy: { select: { email: true } },
+        invitedBy: { select: { email: true, locale: true } },
       },
     });
     if (!invitation) throw new NotFoundException('Invitation not found.');

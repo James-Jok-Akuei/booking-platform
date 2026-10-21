@@ -30,6 +30,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { checkTotp, openSecret, recoveryDigest } from './totp';
 import { TOURS } from '../users/tours';
 import { describeDevice, trimUserAgent } from './device';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { say } from '../i18n/say';
 
 /** The refusal the console answers by asking for the authenticator code (§298). */
 export const TWO_STEP_REQUIRED = 'TWO_STEP_REQUIRED';
@@ -88,7 +90,7 @@ export class AuthService {
    * The intended role is carried on the OTP row rather than asked for again at
    * verify time.
    */
-  async requestOtp(email: string, role?: UserRole): Promise<{ message: string }> {
+  async requestOtp(email: string, role?: UserRole, locale: Locale = DEFAULT_LOCALE): Promise<{ message: string }> {
     const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await this.prisma.user.findUnique({
@@ -151,7 +153,8 @@ export class AuthService {
       },
     });
 
-    await this.mail.sendOtpEmail(normalizedEmail, code);
+    // In the language of the app it was asked from (§308).
+    await this.mail.sendOtpEmail(normalizedEmail, code, 'sign-in', locale);
 
     return { message: 'Verification code sent to your email.' };
   }
@@ -340,6 +343,8 @@ export class AuthService {
           locationName: '',
           businessName: '',
           startTime: new Date(),
+          // Named again in the reader's own language (§308).
+          userAgent: context.userAgent ?? null,
         },
         category: NotificationCategory.ACCOUNT,
       });
@@ -722,7 +727,7 @@ export class AuthService {
    * number, who works at the shop. A code of its own kind: it cannot sign
    * anybody in, and a sign-in code cannot be used here.
    */
-  async requestStepUp(userId: string): Promise<{ message: string }> {
+  async requestStepUp(userId: string, locale: Locale = DEFAULT_LOCALE): Promise<{ message: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { email: true, closedAt: true },
@@ -744,7 +749,7 @@ export class AuthService {
       },
     });
 
-    await this.mail.sendOtpEmail(user.email, code, 'confirm');
+    await this.mail.sendOtpEmail(user.email, code, 'confirm', locale);
     return { message: `We emailed a code to ${user.email}.` };
   }
 
@@ -845,7 +850,7 @@ export class AuthService {
   }
 
   /** Where this person is signed in (§298): sign-ins not ended, with a token still alive. Newest use first. */
-  async listSessions(user: AuthenticatedUser) {
+  async listSessions(user: AuthenticatedUser, locale: Locale = DEFAULT_LOCALE) {
     const now = new Date();
     const sessions = await this.prisma.authSession.findMany({
       where: { userId: user.userId, endedAt: null, refreshTokens: { some: { revokedAt: null, expiresAt: { gt: now } } } },
@@ -855,7 +860,7 @@ export class AuthService {
     });
     return sessions.map((s) => ({
       id: s.id,
-      device: describeDevice(s.userAgent),
+      device: describeDevice(s.userAgent, locale),
       ip: s.ip,
       createdAt: s.createdAt.toISOString(),
       lastUsedAt: s.lastUsedAt.toISOString(),
@@ -864,10 +869,10 @@ export class AuthService {
     }));
   }
 
-  async endOneSession(user: AuthenticatedUser, sessionId: string) {
+  async endOneSession(user: AuthenticatedUser, sessionId: string, locale: Locale = DEFAULT_LOCALE) {
     const ended = await this.endSessions({ id: sessionId, userId: user.userId });
     if (ended === 0) throw new BadRequestException('That sign-in has already ended.');
-    return { message: 'Signed out there.' };
+    return { message: say(locale, 'Signed out there.') };
   }
 
   async endOtherSessions(user: AuthenticatedUser) {

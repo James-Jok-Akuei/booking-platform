@@ -1,7 +1,10 @@
 import { NotificationType } from '@prisma/client';
-import { ADVICE_LEAD } from '../business/shop-advice';
+import { adviceItems, adviceLead, type AdviceShop } from '../business/shop-advice';
+import { describeDevice } from '../auth/device';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { DATE_TAGS, msg, say } from '../i18n/say';
 import { INTERNAL_CURRENCY, formatMoney } from '../payments/currency';
-import { Audience, dayWord } from './notification-catalog';
+import { Audience, dayKind } from './notification-catalog';
 
 export interface AppointmentContext {
   serviceName: string;
@@ -13,35 +16,83 @@ export interface AppointmentContext {
   reason?: string;
   /** Whether the deposit was ever paid; left out where it does not matter. */
   depositPaid?: boolean;
-  /** Sent with an approval (§303): what to add, each with why, and the reviewer's own note. */
-  advice?: { items: Array<{ title: string; why: string }>; note: string | null };
+  /**
+   * Sent with an approval (§303): the shop as it is, the items chosen, and the
+   * reviewer's own note — written out in each reader's language (§308).
+   */
+  advice?: { shop: AdviceShop; keys: string[]; note: string | null };
+  /** A new review's stars (§308: the sentence is written in each reader's language). */
+  rating?: number;
+  /** A new sign-in's phone or browser, as it describes itself (§298). */
+  userAgent?: string | null;
+  /**
+   * Words composed where they are raised — what our support team did (§297)
+   * — written out for each reader in their own language (§308).
+   */
+  compose?: (locale: Locale) => { subject: string; body: string };
 }
 
 /**
  * The advice under an approval (§303): the sentence, the list — one "• "
  * line each, which the email draws as a checklist — and the reviewer's note
- * in quotes, which it draws as their words.
+ * in quotes, which it draws as their words. In the reader's language (§308).
  */
-const adviceWords = (advice?: AppointmentContext['advice']) =>
-  (advice?.items.length
-    ? `\n\n${ADVICE_LEAD}\n\n${advice.items.map((item) => `• ${item.title} — ${item.why}.`).join('\n')}`
-    : '') + (advice?.note ? `\n\n“${advice.note}”` : '');
+const adviceWords = (advice: AppointmentContext['advice'], l: Locale) => {
+  if (!advice) return '';
+  const chosen = new Set(advice.keys);
+  const items = adviceItems(advice.shop, l).filter((item) => !item.done && chosen.has(item.key));
+  return (
+    (items.length ? `\n\n${adviceLead(l)}\n\n${items.map((item) => `• ${item.title} — ${item.why}.`).join('\n')}` : '') +
+    (advice.note ? `\n\n“${advice.note}”` : '')
+  );
+};
+
+/**
+ * The "Label: value" lines, one sentence each, which the email reads back and
+ * draws as a card (§292) — in any language, as long as it is "Label: value".
+ */
+export const DETAIL = {
+  service: msg('Service: {serviceName}'),
+  where: msg('Where: {locationName}'),
+  when: msg('When: {when}'),
+  deposit: msg('Deposit: {amount}'),
+  depositPaid: msg('Deposit paid: {amount}'),
+  amount: msg('Amount: {amount}'),
+  reference: msg('Reference: {reference}'),
+};
+
+/** Where the arrival code is — the email shows the code itself instead. */
+export const ARRIVAL = msg('When you arrive, give the shop your 6-digit arrival code. It is in the app, on the booking.');
 
 /** Money for a person to read: "RWF 5,200" (§292). */
 const money = (minor?: number, currency = INTERNAL_CURRENCY) =>
   minor === undefined ? '' : formatMoney(minor, currency);
 
-/** "a manager", "a team member" — a role in a sentence, not a code. */
-const roleWords = (role?: string) =>
-  role === 'OWNER'
-    ? 'an owner'
+/** "You are invited to join … as a manager" — the whole sentence for each role, in the reader's language (§308). */
+const invitation = (l: Locale, role: string | undefined, inviter: string | undefined, businessName: string) => {
+  const values = { businessName };
+  if (inviter) {
+    const who = { ...values, inviter };
+    return role === 'OWNER'
+      ? say(l, '{inviter} invited you to join {businessName} as an owner on BwanguReservations.', who)
+      : role === 'MANAGER'
+        ? say(l, '{inviter} invited you to join {businessName} as a manager on BwanguReservations.', who)
+        : role === 'STAFF'
+          ? say(l, '{inviter} invited you to join {businessName} as a team member on BwanguReservations.', who)
+          : role === 'ADMIN'
+            ? say(l, '{inviter} invited you to join {businessName} as an administrator on BwanguReservations.', who)
+            : say(l, '{inviter} invited you to join {businessName} on BwanguReservations.', who);
+  }
+  return role === 'OWNER'
+    ? say(l, 'The owner invited you to join {businessName} as an owner on BwanguReservations.', values)
     : role === 'MANAGER'
-      ? 'a manager'
+      ? say(l, 'The owner invited you to join {businessName} as a manager on BwanguReservations.', values)
       : role === 'STAFF'
-        ? 'a team member'
+        ? say(l, 'The owner invited you to join {businessName} as a team member on BwanguReservations.', values)
         : role === 'ADMIN'
-          ? 'an administrator'
-          : null;
+          ? say(l, 'The owner invited you to join {businessName} as an administrator on BwanguReservations.', values)
+          : say(l, 'The owner invited you to join {businessName} on BwanguReservations.', values);
+};
 
 /**
  * Who cancelled, read from the sentence the cancellation was raised with
@@ -91,54 +142,66 @@ export function renderNotification(
     role?: string;
     /** Who is reading it — the same event reads differently to each side (§287). */
     audience?: Audience;
+    /** The reader's language (§308); notices only administrators read stay in English. */
+    locale?: Locale;
   },
 ): { subject: string; body: string } {
+  const l = ctx.locale ?? DEFAULT_LOCALE;
+  if (ctx.compose) return ctx.compose(l);
   const fmt = (options: Intl.DateTimeFormatOptions) =>
-    ctx.startTime ? new Intl.DateTimeFormat('en-GB', { timeZone: ctx.timeZone, ...options }).format(ctx.startTime) : '';
+    ctx.startTime ? new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: ctx.timeZone, ...options }).format(ctx.startTime) : '';
+  const clock = fmt({ hour: '2-digit', minute: '2-digit' });
   // "Tuesday 20 October at 11:15" and "Tue 20 Oct, 11:15".
   const when = ctx.startTime
-    ? `${fmt({ weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '')} at ${fmt({ hour: '2-digit', minute: '2-digit' })}`
+    ? say(l, '{day} at {time}', { day: fmt({ weekday: 'long', day: 'numeric', month: 'long' }).replace(',', ''), time: clock })
     : '';
-  const short = ctx.startTime
-    ? `${fmt({ weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '')}, ${fmt({ hour: '2-digit', minute: '2-digit' })}`
-    : '';
-  const clock = fmt({ hour: '2-digit', minute: '2-digit' });
+  const short = ctx.startTime ? `${fmt({ weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '')}, ${clock}` : '';
   const customer = ctx.audience === 'CUSTOMER';
   const details = (lines: Array<string | false | null | undefined>) => lines.filter(Boolean).join('\n');
+  const serviceName = ctx.serviceName;
+  const locationName = ctx.locationName;
+  const businessName = ctx.businessName;
+  // "Label: value" lines: the email draws them as a card (§292), in any language.
   const booking = details([
-    `Service: ${ctx.serviceName}`,
-    `Where: ${ctx.locationName}`,
-    when && `When: ${when}`,
+    say(l, DETAIL.service, { serviceName }),
+    say(l, DETAIL.where, { locationName }),
+    when && say(l, DETAIL.when, { when }),
   ]);
+  const reasonLine = (reason?: string | null) => reason && say(l, 'Reason: {reason}', { reason });
+  const arrival = say(l, ARRIVAL);
 
   switch (type) {
     case NotificationType.APPOINTMENT_BOOKED:
       return {
-        subject: `New booking: ${ctx.serviceName}, ${short}`,
+        subject: say(l, 'New booking: {serviceName}, {short}', { serviceName, short }),
         body:
-          `A customer just booked ${ctx.serviceName} at ${ctx.locationName}.\n\n` +
+          `${say(l, 'A customer just booked {serviceName} at {locationName}.', { serviceName, locationName })}\n\n` +
           `${booking}\n\n` +
-          'The time is held while they pay the deposit, which usually takes a minute or two. ' +
-          'We will tell you when it is paid; if it is not paid within 5 minutes, the time is free again.',
+          say(
+            l,
+            'The time is held while they pay the deposit, which usually takes a minute or two. We will tell you when it is paid; if it is not paid within 5 minutes, the time is free again.',
+          ),
       };
 
-    case NotificationType.DEPOSIT_CONFIRMED:
+    case NotificationType.DEPOSIT_CONFIRMED: {
+      const amount = money(ctx.depositAmountMinor, ctx.currency);
       if (customer) {
         return {
-          subject: `You are booked: ${ctx.serviceName}, ${short}`,
+          subject: say(l, 'You are booked: {serviceName}, {short}', { serviceName, short }),
           body:
-            `Your deposit is paid and your booking at ${ctx.businessName} is confirmed.\n\n` +
-            details([booking, ctx.depositAmountMinor !== undefined && `Deposit paid: ${money(ctx.depositAmountMinor, ctx.currency)}`]) +
-            '\n\nWhen you arrive, give the shop your 6-digit arrival code. It is in the app, on the booking.',
+            `${say(l, 'Your deposit is paid and your booking at {businessName} is confirmed.', { businessName })}\n\n` +
+            details([booking, ctx.depositAmountMinor !== undefined && say(l, DETAIL.depositPaid, { amount })]) +
+            `\n\n${arrival}`,
         };
       }
       return {
-        subject: `Confirmed: ${ctx.serviceName}, ${short}`,
+        subject: say(l, 'Confirmed: {serviceName}, {short}', { serviceName, short }),
         body:
-          'The deposit is paid, so this booking is confirmed.\n\n' +
-          details([booking, ctx.depositAmountMinor !== undefined && `Deposit: ${money(ctx.depositAmountMinor, ctx.currency)}`]) +
-          '\n\nOn the day, the customer gives you a 6-digit arrival code. Enter it to check them in.',
+          `${say(l, 'The deposit is paid, so this booking is confirmed.')}\n\n` +
+          details([booking, ctx.depositAmountMinor !== undefined && say(l, DETAIL.deposit, { amount })]) +
+          `\n\n${say(l, 'On the day, the customer gives you a 6-digit arrival code. Enter it to check them in.')}`,
       };
+    }
 
     case NotificationType.APPOINTMENT_CANCELLED: {
       // Nothing was paid, so there is nothing to refund or keep.
@@ -148,48 +211,48 @@ export function renderNotification(
       const why = (who === 'business' || support) && ctx.reason?.includes('Reason: ') ? ctx.reason.replace(/^.*?Reason: /, '') : null;
       if (customer) {
         return {
-          subject: `Cancelled: ${ctx.serviceName}, ${short}`,
+          subject: say(l, 'Cancelled: {serviceName}, {short}', { serviceName, short }),
           body:
             (support && who === 'customer'
-              ? `Our support team cancelled your booking at ${ctx.businessName}, as you asked.`
+              ? say(l, 'Our support team cancelled your booking at {businessName}, as you asked.', { businessName })
               : support && who === 'business'
-                ? `Your booking at ${ctx.businessName} was cancelled on the shop's side by our support team.`
+                ? say(l, "Your booking at {businessName} was cancelled on the shop's side by our support team.", { businessName })
                 : who === 'customer'
-              ? `You cancelled your booking at ${ctx.businessName}.`
-              : who === 'business'
-                ? `${ctx.businessName} cancelled your booking.`
-                : by === 'unpaid'
-                  ? `Your booking at ${ctx.businessName} was let go, because the deposit was not paid in time.`
-                  : `Your booking at ${ctx.businessName} has been cancelled.`) +
-            `\n\n${details([booking, why && `Reason: ${why}`])}\n\n` +
+                  ? say(l, 'You cancelled your booking at {businessName}.', { businessName })
+                  : who === 'business'
+                    ? say(l, '{businessName} cancelled your booking.', { businessName })
+                    : by === 'unpaid'
+                      ? say(l, 'Your booking at {businessName} was let go, because the deposit was not paid in time.', { businessName })
+                      : say(l, 'Your booking at {businessName} has been cancelled.', { businessName })) +
+            `\n\n${details([booking, reasonLine(why)])}\n\n` +
             (by === 'business'
-              ? 'Your whole deposit comes back to you, the platform fee included.'
+              ? say(l, 'Your whole deposit comes back to you, the platform fee included.')
               : by === 'customer'
-                ? 'As agreed when you booked, a deposit is not refunded when you cancel.'
+                ? say(l, 'As agreed when you booked, a deposit is not refunded when you cancel.')
                 : by === 'unpaid' || by === 'nothing-paid'
-                  ? 'No deposit was taken. You can book again at any time.'
-                  : 'Anything you are owed is shown on the booking in the app.'),
+                  ? say(l, 'No deposit was taken. You can book again at any time.')
+                  : say(l, 'Anything you are owed is shown on the booking in the app.')),
         };
       }
       return {
-        subject: `Cancelled: ${ctx.serviceName}, ${short}`,
+        subject: say(l, 'Cancelled: {serviceName}, {short}', { serviceName, short }),
         body:
           (support && who === 'customer'
-            ? 'Our support team cancelled this booking for the customer, as they asked.'
+            ? say(l, 'Our support team cancelled this booking for the customer, as they asked.')
             : support && who === 'business'
-              ? 'Our support team cancelled this booking on your shop\'s side.'
+              ? say(l, "Our support team cancelled this booking on your shop's side.")
               : who === 'customer'
-            ? 'The customer cancelled this booking.'
-            : who === 'business'
-              ? 'This booking was cancelled by your shop.'
-              : by === 'unpaid'
-                ? 'This booking was let go, because the deposit was not paid in time.'
-                : 'This booking has been cancelled.') +
-          ` The time is free for someone else.\n\n${details([booking, why && `Reason: ${why}`])}` +
+                ? say(l, 'The customer cancelled this booking.')
+                : who === 'business'
+                  ? say(l, 'This booking was cancelled by your shop.')
+                  : by === 'unpaid'
+                    ? say(l, 'This booking was let go, because the deposit was not paid in time.')
+                    : say(l, 'This booking has been cancelled.')) +
+          ` ${say(l, 'The time is free for someone else.')}\n\n${details([booking, reasonLine(why)])}` +
           (by === 'customer'
-            ? '\n\nYour share of the deposit is still paid to you.'
+            ? `\n\n${say(l, 'Your share of the deposit is still paid to you.')}`
             : by === 'business'
-              ? '\n\nThe customer gets their whole deposit back, and the mobile money charge for sending it back is yours.'
+              ? `\n\n${say(l, 'The customer gets their whole deposit back, and the mobile money charge for sending it back is yours.')}`
               : ''),
       };
     }
@@ -197,46 +260,57 @@ export function renderNotification(
     case NotificationType.APPOINTMENT_NO_SHOW:
       if (customer) {
         return {
-          subject: `Marked as missed: ${ctx.serviceName}`,
+          subject: say(l, 'Marked as missed: {serviceName}', { serviceName }),
           body:
-            `${ctx.businessName} marked your booking as missed — you were expected at ${clock}.\n\n` +
+            `${say(l, '{businessName} marked your booking as missed — you were expected at {clock}.', { businessName, clock })}\n\n` +
             `${booking}\n\n` +
-            'As agreed when you booked, the deposit is not refunded for a missed booking. ' +
-            'If you think this is a mistake, write to the shop from the booking in the app.',
+            say(
+              l,
+              'As agreed when you booked, the deposit is not refunded for a missed booking. If you think this is a mistake, write to the shop from the booking in the app.',
+            ),
         };
       }
       return {
-        subject: `Marked as missed: ${ctx.serviceName}`,
-        body: `This booking was marked as missed.\n\n${booking}\n\nYour share of the deposit is paid to you.`,
+        subject: say(l, 'Marked as missed: {serviceName}', { serviceName }),
+        body: `${say(l, 'This booking was marked as missed.')}\n\n${booking}\n\n${say(l, 'Your share of the deposit is paid to you.')}`,
       };
 
     case NotificationType.DEPOSIT_FAILED:
       if (customer) {
         return {
-          subject: `Payment did not go through: ${ctx.serviceName}`,
+          subject: say(l, 'Payment did not go through: {serviceName}', { serviceName }),
           body:
-            `Your deposit for ${ctx.serviceName} at ${ctx.businessName} did not go through.\n\n` +
-            `${details([booking, ctx.reason && `Reason: ${ctx.reason}`])}\n\n` +
-            'Your time is held for a few more minutes — open the booking in the app and try again.',
+            `${say(l, 'Your deposit for {serviceName} at {businessName} did not go through.', { serviceName, businessName })}\n\n` +
+            `${details([booking, reasonLine(ctx.reason)])}\n\n` +
+            say(l, 'Your time is held for a few more minutes — open the booking in the app and try again.'),
         };
       }
       return {
-        subject: `Deposit not paid: ${ctx.serviceName}, ${short}`,
+        subject: say(l, 'Deposit not paid: {serviceName}, {short}', { serviceName, short }),
         body:
-          `A customer's deposit for this booking did not go through.\n\n${details([booking, ctx.reason && `Reason: ${ctx.reason}`])}\n\n` +
-          'The time is held a little longer while they try again, then it is free.',
+          `${say(l, "A customer's deposit for this booking did not go through.")}\n\n${details([booking, reasonLine(ctx.reason)])}\n\n` +
+          say(l, 'The time is held a little longer while they try again, then it is free.'),
       };
 
     case NotificationType.APPOINTMENT_REMINDER: {
       // "Today" or "Tomorrow" as it really is: a booking made in the morning
       // for the afternoon is reminded the same day (§287).
-      const day = ctx.startTime ? dayWord(ctx.startTime, ctx.timeZone) : 'Soon';
-      const said = day === 'Today' || day === 'Tomorrow' ? day.toLowerCase() : `on ${day}`;
+      const kind = ctx.startTime ? dayKind(ctx.startTime, ctx.timeZone) : 'later';
+      const weekday = fmt({ weekday: 'long' });
       return {
-        subject: `${day} at ${clock}: ${ctx.serviceName} at ${ctx.businessName}`,
+        subject:
+          kind === 'today'
+            ? say(l, 'Today at {clock}: {serviceName} at {businessName}', { clock, serviceName, businessName })
+            : kind === 'tomorrow'
+              ? say(l, 'Tomorrow at {clock}: {serviceName} at {businessName}', { clock, serviceName, businessName })
+              : say(l, '{weekday} at {clock}: {serviceName} at {businessName}', { weekday, clock, serviceName, businessName }),
         body:
-          `See you ${said} at ${clock}.\n\n${booking}\n\n` +
-          'When you arrive, give the shop your 6-digit arrival code. It is in the app, on the booking.',
+          (kind === 'today'
+            ? say(l, 'See you today at {clock}.', { clock })
+            : kind === 'tomorrow'
+              ? say(l, 'See you tomorrow at {clock}.', { clock })
+              : say(l, 'See you on {weekday} at {clock}.', { weekday, clock })) +
+          `\n\n${booking}\n\n${arrival}`,
       };
     }
 
@@ -244,23 +318,23 @@ export function renderNotification(
       // To the shop it is a customer writing, not the shop itself (§287).
       if (ctx.audience === 'BUSINESS') {
         return {
-          subject: 'New message from a customer',
+          subject: say(l, 'New message from a customer'),
           body:
-            `A customer wrote to ${ctx.businessName}.\n\n` +
+            `${say(l, 'A customer wrote to {businessName}.', { businessName })}\n\n` +
             (ctx.reason ? `"${ctx.reason}"\n\n` : '') +
-            'Open Messages to read it and reply. More messages in this conversation will not email you again straight away.',
+            say(l, 'Open Messages to read it and reply. More messages in this conversation will not email you again straight away.'),
         };
       }
       return {
-        subject: `New message from ${ctx.businessName}`,
+        subject: say(l, 'New message from {businessName}', { businessName }),
         body:
-          `${ctx.businessName} sent you a message.\n\n` +
+          `${say(l, '{businessName} sent you a message.', { businessName })}\n\n` +
           (ctx.reason ? `"${ctx.reason}"\n\n` : '') +
-          'Open the app to read it and reply. More messages in this conversation will not email you again straight away.',
+          say(l, 'Open the app to read it and reply. More messages in this conversation will not email you again straight away.'),
       };
 
     // Ticket notices reuse the shared context: serviceName carries the
-    // reference and locationName the subject.
+    // reference and locationName the subject. To our team: English (§308).
     case NotificationType.TICKET_CREATED:
       return {
         subject: `New ticket ${ctx.serviceName}: ${ctx.locationName}`,
@@ -275,8 +349,11 @@ export function renderNotification(
         };
       }
       return {
-        subject: `We replied: ${ctx.locationName}`,
-        body: `There is a new reply to your question.\n\nSubject: ${ctx.locationName}\nReference: ${ctx.serviceName}\n\nOpen Help to read it and reply.`,
+        subject: say(l, 'We replied: {subject}', { subject: locationName }),
+        body:
+          `${say(l, 'There is a new reply to your question.')}\n\n` +
+          `${say(l, 'Subject: {subject}', { subject: locationName })}\n${say(l, DETAIL.reference, { reference: serviceName })}\n\n` +
+          say(l, 'Open Help to read it and reply.'),
       };
 
     case NotificationType.TICKET_STATUS_CHANGED: {
@@ -284,61 +361,74 @@ export function renderNotification(
       const now = /^Now (\w+)\.$/.exec(ctx.reason ?? '')?.[1];
       const said =
         now === 'IN_PROGRESS'
-          ? 'We are looking into your question.'
+          ? say(l, 'We are looking into your question.')
           : now === 'RESOLVED'
-            ? 'We marked your question as solved. If it is not, reply within 14 days and it opens again.'
+            ? say(l, 'We marked your question as solved. If it is not, reply within 14 days and it opens again.')
             : now === 'CLOSED'
-              ? 'Your question is now closed.'
+              ? say(l, 'Your question is now closed.')
               : now === 'OPEN'
-                ? 'Your question is open again, and we will reply soon.'
-                : (ctx.reason ?? 'There is news on your question.');
+                ? say(l, 'Your question is open again, and we will reply soon.')
+                : (ctx.reason ?? say(l, 'There is news on your question.'));
       return {
-        subject: `Update on your question: ${ctx.locationName}`,
+        subject: say(l, 'Update on your question: {subject}', { subject: locationName }),
         body:
           `${said}\n\n` +
-          `Subject: ${ctx.locationName}\nReference: ${ctx.serviceName}\n\n` +
-          'Open Help to see the whole conversation.',
+          `${say(l, 'Subject: {subject}', { subject: locationName })}\n${say(l, DETAIL.reference, { reference: serviceName })}\n\n` +
+          say(l, 'Open Help to see the whole conversation.'),
       };
     }
 
     case NotificationType.REVIEW_CREATED:
       return {
-        subject: 'You have a new review',
-        body: `${ctx.reason ?? 'A customer reviewed one of your branches.'}\n\nOpen Reviews to read it. You can post one public reply.`,
+        subject: say(l, 'You have a new review'),
+        body:
+          (ctx.rating
+            ? say(l, '{rating, plural, one {A customer left a #-star review.} other {A customer left a #-star review.}}', {
+                rating: ctx.rating,
+              })
+            : say(l, 'A customer reviewed one of your branches.')) +
+          `\n\n${say(l, 'Open Reviews to read it. You can post one public reply.')}`,
       };
 
     case NotificationType.REVIEW_RESPONSE:
       return {
-        subject: 'The shop replied to your review',
-        body: `${ctx.reason ?? 'The shop replied to your review.'}\n\nOpen the shop in the app to read their reply.`,
+        subject: say(l, 'The shop replied to your review'),
+        body: `${say(l, 'The shop replied to your review.')}\n\n${say(l, 'Open the shop in the app to read their reply.')}`,
       };
 
+    // To the author with our team's reason; to the shop, that its rating moved.
     case NotificationType.REVIEW_HIDDEN:
       return {
-        subject: 'A review was hidden',
+        subject: say(l, 'A review was hidden'),
         body:
-          `${ctx.reason ?? 'A review was hidden by our team and is no longer public.'}\n\n` +
-          'If you think this is a mistake, write to us from Help.',
+          (customer
+            ? say(l, 'Our team hid your review, so it is no longer public.')
+            : ctx.audience === 'BUSINESS'
+              ? say(l, 'Our team hid a review of one of your branches. It is no longer public, and it no longer counts in your rating.')
+              : say(l, 'A review was hidden by our team and is no longer public.')) +
+          (ctx.reason ? `\n\n${reasonLine(ctx.reason)}` : '') +
+          `\n\n${say(l, 'If you think this is a mistake, write to us from Help.')}`,
       };
 
     case NotificationType.STORY_REMOVED:
       return {
-        subject: 'One of your stories was taken down',
+        subject: say(l, 'One of your stories was taken down'),
         body:
-          'Our team took down one of your stories, so customers no longer see it.\n\n' +
-          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
-          'If you think this is a mistake, write to us from Help.',
+          `${say(l, 'Our team took down one of your stories, so customers no longer see it.')}\n\n` +
+          (ctx.reason ? `${reasonLine(ctx.reason)}\n\n` : '') +
+          say(l, 'If you think this is a mistake, write to us from Help.'),
       };
 
     case NotificationType.DISPLAY_NAME_CLEARED:
       return {
-        subject: 'The name on your reviews was removed',
+        subject: say(l, 'The name on your reviews was removed'),
         body:
-          'Our team removed the name shown beside your reviews, so they now show as "Anonymous".\n\n' +
-          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
-          'You can choose a new one the next time you write or edit a review.',
+          `${say(l, 'Our team removed the name shown beside your reviews, so they now show as "Anonymous".')}\n\n` +
+          (ctx.reason ? `${reasonLine(ctx.reason)}\n\n` : '') +
+          say(l, 'You can choose a new one the next time you write or edit a review.'),
       };
 
+    // To our team: English (§308).
     case NotificationType.EXCHANGE_RATE_STALE:
       return {
         subject: 'The exchange rate needs checking',
@@ -367,42 +457,50 @@ export function renderNotification(
 
     case NotificationType.BUSINESS_APPROVED:
       return {
-        subject: 'Your shop is approved',
+        subject: say(l, 'Your shop is approved'),
         body:
-          'Good news — your shop has been approved.\n\n' +
-          'Customers cannot see it yet. When you are ready, press "Post my shop" in your dashboard, and from then ' +
-          'they can find your branches, see your times and book with you. Anything you would like to change first, you can change now.' +
-          adviceWords(ctx.advice),
+          `${say(l, 'Good news — your shop has been approved.')}\n\n` +
+          say(
+            l,
+            'Customers cannot see it yet. When you are ready, press "Post my shop" in your dashboard, and from then they can find your branches, see your times and book with you. Anything you would like to change first, you can change now.',
+          ) +
+          adviceWords(ctx.advice, l),
       };
 
     case NotificationType.BUSINESS_REJECTED:
       return {
-        subject: 'Your shop was not approved yet',
+        subject: say(l, 'Your shop was not approved yet'),
         body:
-          'We reviewed your shop and could not approve it yet.\n\n' +
-          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
-          'Everything you made is kept. Fix what the reason describes and send your shop back for review from your dashboard — ' +
-          'or write to us from Help to talk it through.',
+          `${say(l, 'We reviewed your shop and could not approve it yet.')}\n\n` +
+          (ctx.reason ? `${reasonLine(ctx.reason)}\n\n` : '') +
+          say(
+            l,
+            'Everything you made is kept. Fix what the reason describes and send your shop back for review from your dashboard — or write to us from Help to talk it through.',
+          ),
       };
 
     case NotificationType.BUSINESS_SUSPENDED:
       return {
-        subject: 'Your shop has been suspended',
+        subject: say(l, 'Your shop has been suspended'),
         body:
-          'Our team suspended your shop. While it lasts, new customers cannot find or book with you, and your payments are paused.\n\n' +
-          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
-          'Bookings customers have already made still stand, and you are expected to honour them. Nothing is written off — ' +
-          'money owed to you is kept and paid once this is resolved. Write to us from Help to talk about it.',
+          `${say(l, 'Our team suspended your shop. While it lasts, new customers cannot find or book with you, and your payments are paused.')}\n\n` +
+          (ctx.reason ? `${reasonLine(ctx.reason)}\n\n` : '') +
+          say(
+            l,
+            'Bookings customers have already made still stand, and you are expected to honour them. Nothing is written off — money owed to you is kept and paid once this is resolved. Write to us from Help to talk about it.',
+          ),
       };
 
     case NotificationType.BUSINESS_REINSTATED:
       return {
-        subject: 'Your shop is back',
-        body:
-          'The suspension has been lifted. Customers can find and book with you again, and money kept while you ' +
-          'were suspended goes out with your next payment.',
+        subject: say(l, 'Your shop is back'),
+        body: say(
+          l,
+          'The suspension has been lifted. Customers can find and book with you again, and money kept while you were suspended goes out with your next payment.',
+        ),
       };
 
+    // To our team: English (§308).
     case NotificationType.PAYOUT_DESTINATION_SUBMITTED:
       return {
         subject: 'A payout number needs checking',
@@ -414,21 +512,25 @@ export function renderNotification(
 
     case NotificationType.PAYOUT_DESTINATION_VERIFIED:
       return {
-        subject: 'Your mobile money number is confirmed',
+        subject: say(l, 'Your mobile money number is confirmed'),
         body:
-          'We checked the number you gave, and your payments now go there. Anything kept while it was being checked goes out with your next payment.\n\n' +
-          'If you ever lose that number, give a new one straight away — payments pause until the new one is checked, which is what keeps your money safe.',
+          `${say(l, 'We checked the number you gave, and your payments now go there. Anything kept while it was being checked goes out with your next payment.')}\n\n` +
+          say(
+            l,
+            'If you ever lose that number, give a new one straight away — payments pause until the new one is checked, which is what keeps your money safe.',
+          ),
       };
 
     case NotificationType.PAYOUT_DESTINATION_REJECTED:
       return {
-        subject: 'Your mobile money number was not accepted',
+        subject: say(l, 'Your mobile money number was not accepted'),
         body:
-          'We could not accept the number you gave, so your payments stay paused.\n\n' +
-          (ctx.reason ? `Reason: ${ctx.reason}\n\n` : '') +
-          'Nothing is written off — your money is kept. Give a corrected number under Getting paid to start again.',
+          `${say(l, 'We could not accept the number you gave, so your payments stay paused.')}\n\n` +
+          (ctx.reason ? `${reasonLine(ctx.reason)}\n\n` : '') +
+          say(l, 'Nothing is written off — your money is kept. Give a corrected number under Getting paid to start again.'),
       };
 
+    // To our team: English (§308).
     case NotificationType.PAYMENT_PROVIDER_MISCONFIGURED:
       return {
         subject: 'Urgent: deposits are failing — the payment provider is set up wrongly',
@@ -451,51 +553,60 @@ export function renderNotification(
 
     case NotificationType.APPOINTMENT_COMPLETED:
       return {
-        subject: `How was ${ctx.serviceName} at ${ctx.businessName}?`,
+        subject: say(l, 'How was {serviceName} at {businessName}?', { serviceName, businessName }),
         body:
-          `Thank you for visiting ${ctx.businessName}.\n\n` +
-          'A few words about how it went help other people choose, and help the shop do even better. It takes a minute, in the app.',
+          `${say(l, 'Thank you for visiting {businessName}.', { businessName })}\n\n` +
+          say(l, 'A few words about how it went help other people choose, and help the shop do even better. It takes a minute, in the app.'),
       };
 
-    case NotificationType.PAYOUT_SENT:
+    case NotificationType.PAYOUT_SENT: {
+      const amount = money(ctx.depositAmountMinor, ctx.currency);
       return {
-        subject: `Payment sent: ${money(ctx.depositAmountMinor, ctx.currency)}`,
+        subject: say(l, 'Payment sent: {amount}', { amount }),
         body:
-          'A payment is on its way to your mobile money number.\n\n' +
-          details([`Amount: ${money(ctx.depositAmountMinor, ctx.currency)}`, ctx.reason && `Reference: ${ctx.reason}`]) +
-          '\n\nOpen Getting paid to see every booking it covers.',
+          `${say(l, 'A payment is on its way to your mobile money number.')}\n\n` +
+          details([say(l, DETAIL.amount, { amount }), ctx.reason && say(l, DETAIL.reference, { reference: ctx.reason })]) +
+          `\n\n${say(l, 'Open Getting paid to see every booking it covers.')}`,
       };
+    }
 
-    case NotificationType.PAYOUT_FAILED:
+    case NotificationType.PAYOUT_FAILED: {
+      const amount = money(ctx.depositAmountMinor, ctx.currency);
       return {
-        subject: 'A payment to you did not go through',
+        subject: say(l, 'A payment to you did not go through'),
         body:
-          'A payment could not reach your mobile money number.\n\n' +
-          details([`Amount: ${money(ctx.depositAmountMinor, ctx.currency)}`, ctx.reason && `Reason: ${ctx.reason}`]) +
-          '\n\nNothing is lost: the money is back in your balance and goes out with your next payment. If your number has changed, update it under Getting paid.',
+          `${say(l, 'A payment could not reach your mobile money number.')}\n\n` +
+          details([say(l, DETAIL.amount, { amount }), reasonLine(ctx.reason)]) +
+          `\n\n${say(
+            l,
+            'Nothing is lost: the money is back in your balance and goes out with your next payment. If your number has changed, update it under Getting paid.',
+          )}`,
       };
+    }
 
     // A customer changed their wishes or note after booking (§300.7). Never
     // what to: a health answer may be among them, and the booking shows it.
     case NotificationType.BOOKING_CHOICES_CHANGED:
       return {
-        subject: `Choices changed: ${ctx.serviceName}, ${short}`,
+        subject: say(l, 'Choices changed: {serviceName}, {short}', { serviceName, short }),
         body:
-          `The customer changed their choices or their note for ${ctx.serviceName}.\n\n` +
+          `${say(l, 'The customer changed their choices or their note for {serviceName}.', { serviceName })}\n\n` +
           `${booking}\n\n` +
-          'Open the booking to see what they would like now.',
+          say(l, 'Open the booking to see what they would like now.'),
       };
 
-    // A sign-in on a phone or browser not seen before (§298). `serviceName` is the device.
-    case NotificationType.NEW_SIGN_IN:
+    // A sign-in on a phone or browser not seen before (§298), named in the reader's language.
+    case NotificationType.NEW_SIGN_IN: {
+      const device = ctx.userAgent !== undefined ? describeDevice(ctx.userAgent, l) : serviceName;
       return {
-        subject: `New sign-in on ${ctx.serviceName}`,
+        subject: say(l, 'New sign-in on {device}', { device }),
         body:
-          `Your account was just signed in to on ${ctx.serviceName}.\n\n` +
-          details([`Device: ${ctx.serviceName}`, short && `When: ${short}`]) +
-          '\n\nWas it you? Then there is nothing to do.\n\n' +
-          'If it was not you, open "Where you are signed in" in your account, sign that one out, and write to us from Help.',
+          `${say(l, 'Your account was just signed in to on {device}.', { device })}\n\n` +
+          details([say(l, 'Device: {device}', { device }), short && say(l, DETAIL.when, { when: short })]) +
+          `\n\n${say(l, 'Was it you? Then there is nothing to do.')}\n\n` +
+          say(l, 'If it was not you, open "Where you are signed in" in your account, sign that one out, and write to us from Help.'),
       };
+    }
 
     // Written by a person, not a template: the title and the words are theirs (§287).
     // A support update is composed where support acts (§297), the same way.
@@ -505,14 +616,12 @@ export function renderNotification(
     case NotificationType.SHOP_DISCOUNT:
       return { subject: ctx.serviceName, body: ctx.reason ?? '' };
 
-    case NotificationType.BUSINESS_INVITATION: {
-      const as = roleWords(ctx.role);
+    case NotificationType.BUSINESS_INVITATION:
       return {
-        subject: `You are invited to join ${ctx.businessName}`,
+        subject: say(l, 'You are invited to join {businessName}', { businessName }),
         body:
-          `${ctx.inviterEmail ?? 'The owner'} invited you to join ${ctx.businessName}${as ? ` as ${as}` : ''} on BwanguReservations.\n\n` +
-          'To accept, sign in with this email address — that is all.',
+          `${invitation(l, ctx.role, ctx.inviterEmail, businessName)}\n\n` +
+          say(l, 'To accept, sign in with this email address — that is all.'),
       };
-    }
   }
 }

@@ -1,5 +1,6 @@
 import { BusinessStatus, PayoutDestinationStatus, Prisma } from '@prisma/client';
 import { adviceItems, readApprovalAdvice } from './shop-advice';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 
 /**
  * What a shop needs before it can go live, in one place (§255).
@@ -154,7 +155,7 @@ export const canPublish = (shop: ReadinessShop) =>
   shop.status === BusinessStatus.APPROVED && shop.publishedAt === null && goLiveGaps(shop).length === 0;
 
 /** The readiness as the apps receive it. */
-export function readinessView(shop: ReadinessShop) {
+export function readinessView(shop: ReadinessShop, locale: Locale = DEFAULT_LOCALE) {
   const items = readinessItems(shop);
   return {
     status: shop.status,
@@ -168,7 +169,7 @@ export function readinessView(shop: ReadinessShop) {
     goLiveGaps: goLiveGaps(shop),
     canPublish: canPublish(shop),
     // What would make it easier to book (§303), and what we advised on approval.
-    advice: adviceItems(shop),
+    advice: adviceItems(shop, locale),
     approvalAdvice: readApprovalAdvice(shop.approvalAdvice),
   };
 }

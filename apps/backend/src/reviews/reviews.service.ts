@@ -259,7 +259,7 @@ export class ReviewsService {
     await this.notifications.notify({
       recipientId: review.customerId,
       type: NotificationType.REVIEW_RESPONSE,
-      context: this.reviewContext('The business replied to your review.'),
+      context: this.reviewContext(),
       ref: { locationId: updated.locationId },
     });
 
@@ -727,11 +727,8 @@ export class ReviewsService {
       type,
       // Those who look after the branch it is about (§277).
       locationId: meta.locationId,
-      context: this.reviewContext(
-        type === NotificationType.REVIEW_CREATED
-          ? `A customer left a ${meta.rating}-star review.`
-          : 'A review on your location was hidden by an administrator.',
-      ),
+      // The stars, not a sentence: each member reads it in their language (§308).
+      context: { ...this.reviewContext(), ...(type === NotificationType.REVIEW_CREATED ? { rating: meta.rating } : {}) },
     });
   }
 }

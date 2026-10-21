@@ -19,7 +19,7 @@ import { ADMIN_BUSINESS_SELECT } from './dto/admin-business-response.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { findBusinessTransition } from './business-status';
 import { GO_LIVE_WORDS, READINESS_SELECT, goLiveGaps, listInWords, readinessView } from './readiness';
-import { adviceItems, adviceToSend, type AdviceItem } from './shop-advice';
+import { adviceItems, adviceToSend, type AdviceItem, type AdviceShop } from './shop-advice';
 import { ListBusinessesDto } from './dto/list-businesses.dto';
 
 /** What an admin reviewing an application needs to see. */
@@ -226,7 +226,7 @@ export class BusinessModerationService {
 
     // What the approval sends as advice (§303): worked out from the shop as it
     // is now, so nothing it has added since the panel opened is asked for.
-    let advised: { items: AdviceItem[]; note: string | null } = { items: [], note: null };
+    let advised: { items: AdviceItem[]; note: string | null; shop?: AdviceShop } = { items: [], note: null };
 
     // An APPROVED business may be listed — the moment it posts itself (§268)
     // — so it must be one a customer can use (§53.1, §255): a name — a nameless listing is a blank in
@@ -238,7 +238,7 @@ export class BusinessModerationService {
         where: { id: businessId },
         select: READINESS_SELECT,
       });
-      if (!isReinstatement) advised = adviceToSend(adviceItems(shop), advice.keys, advice.note);
+      if (!isReinstatement) advised = { ...adviceToSend(adviceItems(shop), advice.keys, advice.note), shop };
       const gaps = goLiveGaps(shop);
       if (gaps.includes('name')) {
         throw new BadRequestException(
@@ -310,7 +310,7 @@ export class BusinessModerationService {
     to: BusinessStatus,
     isReinstatement: boolean,
     reason: string | null,
-    advised: { items: AdviceItem[]; note: string | null },
+    advised: { items: AdviceItem[]; note: string | null; shop?: AdviceShop },
   ) {
     const type = isReinstatement
       ? NotificationType.BUSINESS_REINSTATED
@@ -326,8 +326,10 @@ export class BusinessModerationService {
         businessName: 'your business',
         startTime: undefined as unknown as Date,
         reason: reason ?? undefined,
-        ...(advised.items.length || advised.note
-          ? { advice: { items: advised.items.map(({ title, why }) => ({ title, why })), note: advised.note } }
+        // The shop and the chosen items, not their English: each member
+        // reads the list in their own language (§308).
+        ...(advised.shop && (advised.items.length || advised.note)
+          ? { advice: { shop: advised.shop, keys: advised.items.map((item) => item.key), note: advised.note } }
           : {}),
       },
     });

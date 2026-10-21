@@ -1,0 +1,3315 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
+"X-Source: apps/backend (scripts/i18n/server-messages.mjs)\n"
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: date.
+#: src/availability/availability.controller.ts:63
+msgid "\"{date}\" is not a valid calendar date."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value.
+#: src/availability/schedule-management.service.ts:193
+msgid "\"{value}\" is not a valid calendar date."
+msgstr ""
+
+#: src/mail/email-kit.ts:569
+msgid "({off}% off, was {was})"
+msgstr ""
+
+#: src/auth/device.ts:51
+msgid "{browser} on {system, select, iPhone {an iPhone} iPad {an iPad} Chromebook {a Chromebook} other {{system}}}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:223
+msgid "{businessName} cancelled your booking."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:265
+msgid "{businessName} marked your booking as missed — you were expected at {clock}."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:331
+msgid "{businessName} sent you a message."
+msgstr ""
+
+#: src/business/shop-advice.ts:149
+msgid "{count, plural, one {A description on # service} other {A description on # services}}"
+msgstr ""
+
+#: src/business/shop-advice.ts:141
+msgid "{count, plural, one {Photos on # service} other {Photos on # services}}"
+msgstr ""
+
+#: src/appointments/appointments.service.ts:1914
+#: src/notifications/notification-templates.ts:156
+msgid "{day} at {time}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: email.
+#: src/support/support-accounts.service.ts:204
+msgid "{email} is already in a team, so this invitation cannot be used."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:386
+msgid "{email} is now the owner of {shop}"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:387
+msgid "{email} is now the owner of the shop"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: from, to.
+#: src/tickets/tickets.service.ts:615
+msgid "{from} to {to} is not a transition you can make."
+msgstr ""
+
+#: src/mail/mail.service.ts:15
+msgid "{h} h {m} min"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:79
+msgid "{inviter} invited you to join {businessName} as a manager on BwanguReservations."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:81
+msgid "{inviter} invited you to join {businessName} as a team member on BwanguReservations."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:83
+msgid "{inviter} invited you to join {businessName} as an administrator on BwanguReservations."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:77
+msgid "{inviter} invited you to join {businessName} as an owner on BwanguReservations."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:84
+msgid "{inviter} invited you to join {businessName} on BwanguReservations."
+msgstr ""
+
+#: src/offers/offers.service.ts:282
+msgid "{km} away"
+msgstr ""
+
+#: src/offers/offers.service.ts:281
+msgid "{km} by road"
+msgstr ""
+
+#: src/mail/mail.service.ts:14
+msgid "{m} min"
+msgstr ""
+
+#: src/mail/mail.service.ts:151
+msgid "{minutes, plural, one {It works for # minute, and only once.} other {It works for # minutes, and only once.}}"
+msgstr ""
+
+#: src/notifications/notification-email.ts:265
+msgid "{n, plural, one {# booking update since yesterday} other {# booking updates since yesterday}}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: name.
+#: src/business/business-profile.service.ts:256
+msgid "{name} is not offered any more — choose another kind."
+msgstr ""
+
+#: src/mail/mail.service.ts:250
+msgid "{onSale, plural, =0 {What people around you are booking this week.} one {What people around you are booking this week — one of them is on sale.} other {What people around you are booking this week — # of them are on sale.}}"
+msgstr ""
+
+#: src/mail/mail.service.ts:260
+msgid "{onSale, plural, =0 {What people in {place} are booking this week.} one {What people in {place} are booking this week — one of them is on sale.} other {What people in {place} are booking this week — # of them are on sale.}}"
+msgstr ""
+
+#: src/mail/mail.service.ts:255
+msgid "{onSale, plural, =0 {What people near {place} are booking this week.} one {What people near {place} are booking this week — one of them is on sale.} other {What people near {place} are booking this week — # of them are on sale.}}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:386
+msgid "{rating, plural, one {A customer left a #-star review.} other {A customer left a #-star review.}}"
+msgstr ""
+
+#: src/mail/booking-email.ts:211
+msgid "{serviceName} in an hour"
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2199
+msgid "{serviceName} on {when} was marked as missed, but the customer came. It now counts as done. Nothing changes in your money."
+msgstr ""
+
+#: src/business/shop-advice.ts:73
+msgid "{some} and {last}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: targetCurrency, rate.
+#: src/settings/platform-settings.service.ts:441
+msgid "{targetCurrency} is this platform''s internal unit of account, so the exchange rate must be exactly 1, not {rate}. There is nothing to convert: the amount charged IS the amount recorded."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/business/locations.service.ts:188
+msgid "{value0}: closeTime must be later than openTime. Overnight hours are not supported yet."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:306
+msgid "{weekday} at {clock}: {serviceName} at {businessName}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: you, upcoming, value2.
+#: src/users/account.service.ts:278
+msgid "{you} {upcoming} booking(s) still to come. Cancel them first, or wait until they have happened — a shop is expecting {value2}, and closing now would leave them with a slot held for nobody."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: youAre, value1.
+#: src/users/account.service.ts:305
+msgid "{youAre} the only owner of {value1}. Make someone else an owner first, or it would be left with nobody who can change anything."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/announcements/announcements.service.ts:202
+msgid "A banner is for service notices — news reaches only people who said yes."
+msgstr ""
+
+#: src/notifications/notification-email.ts:132
+msgid "A booking changed"
+msgstr ""
+
+#: src/notifications/notification-email.ts:52
+msgid "A booking was cancelled"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/services.service.ts:146
+msgid "A branch is listed twice."
+msgstr ""
+
+#: src/auth/device.ts:53
+msgid "a browser on {system, select, iPhone {an iPhone} iPad {an iPad} Chromebook {a Chromebook} other {{system}}}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status, to.
+#: src/business/business-moderation.service.ts:215
+msgid "A business cannot move from {status} to {to}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/schedule-management.service.ts:54
+msgid "A closed day cannot also have custom opening hours. Set isClosed, or set customOpenTime and customCloseTime — not both."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: verificationCodeSentCount.
+#: src/appointments/appointments.service.ts:1235
+msgid "A code has already been sent {verificationCodeSentCount} times for this appointment. Ask the business to verify you in person instead."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: wait.
+#: src/appointments/appointments.service.ts:1246
+msgid "A code was just sent. Try again in {wait} second(s), and check your spam folder."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:2273
+msgid "A code was sent less than a minute ago. Ask them to check their spam folder first."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1826
+msgid "A completed appointment cannot be reclassified as cancelled."
+msgstr ""
+
+#: src/business/shop-advice.ts:96
+msgid "A cover photo"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:178
+msgid "A customer just booked {serviceName} at {locationName}."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:389
+msgid "A customer reviewed one of your branches."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:323
+msgid "A customer wrote to {businessName}."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:291
+msgid "A customer's deposit for this booking did not go through."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/appointments/appointments.service.ts:807
+msgid "A deposit can only be paid while an appointment is PENDING_PAYMENT. This one is {status}."
+msgstr ""
+
+#: src/business/shop-advice.ts:150
+msgid "A description on every service"
+msgstr ""
+
+#: src/business/shop-advice.ts:103
+msgid "A few lines about what you do"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:559
+msgid "A few words about how it went help other people choose, and help the shop do even better. It takes a minute, in the app."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/announcements/dto/announcement-request.dto.ts:59
+msgid "A link is a page in the app, starting with \"/\"."
+msgstr ""
+
+#: src/business/shop-advice.ts:133
+msgid "A map pin and district for {branches}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/chat/dto/send-message.dto.ts:13
+msgid "A message can be at most 2000 characters."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/chat/chat.service.ts:303
+msgid "A message needs text, a photo, or both. Send \"body\" as a text field, a \"photo\" file, or both."
+msgstr ""
+
+#: src/mail/mail.service.ts:351
+msgid "A new arrival code"
+msgstr ""
+
+#: src/mail/mail.service.ts:108
+#: src/notifications/notification-email.ts:318
+msgid "A notice"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:578
+msgid "A payment could not reach your mobile money number."
+msgstr ""
+
+#: src/notifications/notification-email.ts:117
+msgid "A payment did not go through"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:816
+msgid "A payment for this appointment is already in progress. Approve the prompt on your phone, or wait for it to time out before trying again."
+msgstr ""
+
+#: src/notifications/notification-email.ts:111
+msgid "A payment is on its way"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:567
+msgid "A payment is on its way to your mobile money number."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:576
+msgid "A payment to you did not go through"
+msgstr ""
+
+#: src/business/shop-advice.ts:156
+msgid "A payout number"
+msgstr ""
+
+#: src/business/shop-advice.ts:112
+msgid "A phone number"
+msgstr ""
+
+#: src/business/shop-advice.ts:142
+msgid "A photo on every service"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/legal/legal.service.ts:257
+msgid "A published version cannot be edited. Start a new version instead — what people agreed to has to stay as they read it."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/service-choices.dto.ts:212
+msgid "A question needs at least one answer."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: to.
+#: src/business/business-moderation.service.ts:259
+msgid "A reason is required to move a business to {to}. The business is told what it says, and cannot act on a decision it has not been given."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1546
+msgid "A reason is required when a business cancels an appointment."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:633
+msgid "A resolutionNote is required when resolving a ticket."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: REVIEW_EDIT_WINDOW_DAYS.
+#: src/reviews/reviews.service.ts:277
+msgid "A response can only be edited within {REVIEW_EDIT_WINDOW_DAYS} days of posting."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: REVIEW_EDIT_WINDOW_DAYS.
+#: src/reviews/reviews.service.ts:199
+msgid "A review can only be edited within {REVIEW_EDIT_WINDOW_DAYS} days of posting."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:402
+msgid "A review was hidden"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:408
+msgid "A review was hidden by our team and is no longer public."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/services.service.ts:91
+msgid "A sale needs a percentage off as well as a last day."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: groups.
+#: src/business/dto/create-service.dto.ts:146
+msgid "A service can ask up to {groups} questions."
+msgstr ""
+
+#: src/business/shop-advice.ts:143
+msgid "a service with a photo is easier to choose"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: STORIES_PER_DAY.
+#: src/stories/stories.service.ts:104
+msgid "A shop can post {STORIES_PER_DAY} stories in a day. The next one can go up as the first of today''s ends."
+msgstr ""
+
+#: src/notifications/notifications.service.ts:547
+msgid "A shop you follow"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:123
+msgid "A suspended shop cannot be posted. Raise a support ticket to talk it through."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:71
+msgid "A suspended shop cannot send itself for review. Raise a support ticket to talk it through."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: from, to.
+#: src/tickets/tickets.service.ts:610
+msgid "A ticket cannot move from {from} to {to}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/invite-member.dto.ts:5
+#: src/users/dto/invite-admin.dto.ts:4
+msgid "A valid email address is required."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:266
+msgid "A written-in kind must be one of the kinds chosen."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:102
+msgid "Account and support"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/offers/offers.service.ts:67
+#: src/offers/offers.service.ts:76
+#: src/users/account.service.ts:126
+#: src/users/account.service.ts:135
+msgid "Account not found."
+msgstr ""
+
+#: src/mail/booking-email.ts:304
+msgid "Add to calendar"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/two-step.service.ts:128
+msgid "Administrator not found."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:46
+msgid "Always emailed — it is about your account."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:146
+msgid "Always emailed — it is about your shop."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:45
+msgid "Always emailed — it is the record of your booking."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:114
+msgid "Always emailed — one by one, or as one summary each morning."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/dto/update-ticket-status.dto.ts:35
+msgid "amount must be greater than zero."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:60
+msgid "Amount: {amount}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:546
+msgid "An administrator is removed in Admins, not closed here."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/schedule-management.service.ts:69
+msgid "An exception must either close the day (isClosed: true) or set customOpenTime and customCloseTime."
+msgstr ""
+
+#: src/notifications/notification-email.ts:121
+msgid "An invitation"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:178
+msgid "An invitation was taken back"
+msgstr ""
+
+#: src/auth/device.ts:12
+#: src/auth/device.ts:54
+msgid "an unknown device"
+msgstr ""
+
+#: src/mail/mail.service.ts:275
+msgid "and more"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/announcements/announcements.service.ts:215
+#: src/announcements/announcements.service.ts:474
+msgid "Announcement not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:677
+msgid "Answers that change the price or the time can’t be changed after booking. Message the shop if you need to."
+msgstr ""
+
+#: src/mail/mail.service.ts:346
+msgid "Any earlier code no longer works. Your arrival code is {code}."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:234
+msgid "Anything you are owed is shown on the booking in the app."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1749
+#: src/appointments/appointments.service.ts:1817
+#: src/appointments/appointments.service.ts:1937
+#: src/appointments/appointments.service.ts:2644
+msgid "Appointment not found."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:145
+msgid "Approval, your team, stories taken down, support replies and notices from us."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:231
+msgid "As agreed when you booked, a deposit is not refunded when you cancel."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:269
+msgid "As agreed when you booked, the deposit is not refunded for a missed booking. If you think this is a mistake, write to the shop from the booking in the app."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:78
+msgid "Asking how a visit went, and when a shop replies to your review."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/ledger/ledger.service.ts:399
+msgid "Billing adjustment not found."
+msgstr ""
+
+#: src/notifications/notification-email.ts:50
+msgid "Booking cancelled"
+msgstr ""
+
+#: src/notifications/notification-email.ts:44
+#: src/notifications/notification-email.ts:45
+msgid "Booking confirmed"
+msgstr ""
+
+#: src/mail/email-kit.ts:414
+msgid "Booking no."
+msgstr ""
+
+#: src/mail/booking-email.ts:177
+msgid "Booking no. {number}. Give the shop your arrival code when you arrive."
+msgstr ""
+
+#: src/mail/email-kit.ts:497
+msgid "Booking no.: {number}"
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1170
+msgid "Booking status"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:112
+msgid "Bookings"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:53
+msgid "Bookings and payments"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:490
+msgid "Bookings customers have already made still stand, and you are expected to honour them. Nothing is written off — money owed to you is kept and paid once this is resolved. Write to us from Help to talk about it."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1168
+msgid "Branch"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: businessId, value1.
+#: src/payouts/payouts.service.ts:333
+msgid "Business {businessId} has available entries in more than one settlement currency ({value1}). A payout cannot span currencies."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-moderation.service.ts:146
+#: src/business/business-moderation.service.ts:210
+#: src/business/business-profile.service.ts:46
+#: src/business/business-profile.service.ts:64
+msgid "Business not found."
+msgstr ""
+
+#: src/mail/booking-email.ts:239
+#: src/payouts/payouts.service.ts:1153
+msgid "Cancelled"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:214
+#: src/notifications/notification-templates.ts:238
+msgid "Cancelled: {serviceName}, {short}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/update-capacity.dto.ts:14
+msgid "capacity must be at least 1."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/tickets/dto/create-ticket.dto.ts:6
+msgid "category must be one of: {value0}"
+msgstr ""
+
+#: src/mail/mail.service.ts:304
+msgid "Change the address in the app, under Account."
+msgstr ""
+
+#: src/notifications/notification-email.ts:297
+#: src/notifications/notifications.service.ts:539
+msgid "Change what we send"
+msgstr ""
+
+#: src/notifications/notifications.service.ts:540
+msgid "Change what we send in the app, under Account → Notifications."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:591
+msgid "Choices changed: {serviceName}, {short}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/offers/offers.service.ts:84
+msgid "Choose a district from the list."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/stories/stories.service.ts:85
+msgid "Choose a photo for the story."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/create-service.dto.ts:107
+msgid "Choose at least one branch for this service, with its price there."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:370
+msgid "Choose at least one branch, or every branch."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:242
+msgid "Choose at least one kind of shop."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/announcements/announcements.service.ts:196
+msgid "Choose the person to send it to."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:79
+msgid "Choose the person, or the shop, to write to."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/announcements/announcements.service.ts:199
+msgid "Choose the shop to send it to."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: MAX_KIND_CATEGORIES.
+#: src/business/business-profile.service.ts:259
+msgid "Choose up to {MAX_KIND_CATEGORIES} kinds of shop."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/stories/stories.service.ts:96
+msgid "Choose which of your branches this story is about."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/offers/offers.service.ts:91
+msgid "Choose your district or use your exact location first, so we know what is near you."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/set-hours.dto.ts:29
+msgid "closeTime must be in HH:mm 24-hour format"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/dto/verify-appointment.dto.ts:4
+msgid "code must be a 6-digit verification code."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/places/dto/places.dto.ts:16
+msgid "code must be uppercase letters, digits or underscores, e.g. MUSANZE."
+msgstr ""
+
+#: src/mail/mail.service.ts:166
+msgid "Confirm it is you"
+msgstr ""
+
+#: src/mail/mail.service.ts:150
+msgid "Confirm it is you: {code}"
+msgstr ""
+
+#: src/mail/booking-email.ts:231
+msgid "Confirmed"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:198
+msgid "Confirmed: {serviceName}, {short}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/locations.service.ts:89
+msgid "Coordinates cannot be removed once set. Send corrected values instead — a location without them cannot appear in a distance search."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1195
+msgid "Correction: {reason}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/appointments/appointments.service.ts:927
+msgid "Could not start the payment: {value0} You have not been charged. Please try again."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1175
+msgid "Currency"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/dto/create-schedule-exception.dto.ts:22
+msgid "customCloseTime must be in HH:mm 24-hour format"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/schedule-management.service.ts:77
+msgid "customCloseTime must be later than customOpenTime. Overnight hours are not supported yet."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1169
+msgid "Customer"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:146
+msgid "Customers can find and book you again."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:141
+msgid "Customers cannot make new bookings while it is paused. Bookings already made still happen. You can open it again yourself in Your shop."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:465
+msgid "Customers cannot see it yet. When you are ready, press \"Post my shop\" in your dashboard, and from then they can find your branches, see your times and book with you. Anything you would like to change first, you can change now."
+msgstr ""
+
+#: src/business/shop-advice.ts:104
+msgid "customers read them before they book"
+msgstr ""
+
+#: src/business/shop-advice.ts:119
+msgid "customers want to see the place they are walking into"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/schedule-management.service.ts:61
+msgid "customOpenTime and customCloseTime must be provided together."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/dto/create-schedule-exception.dto.ts:18
+msgid "customOpenTime must be in HH:mm 24-hour format"
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1164
+msgid "Date"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/dto/availability-query.dto.ts:9
+#: src/availability/dto/create-schedule-exception.dto.ts:7
+#: src/availability/dto/create-time-block.dto.ts:7
+msgid "date must be a calendar date in YYYY-MM-DD format"
+msgstr ""
+
+#: src/notifications/notification-email.ts:63
+#: src/payouts/payouts.service.ts:1171
+msgid "Deposit"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:289
+msgid "Deposit not paid: {serviceName}, {short}"
+msgstr ""
+
+#: src/mail/booking-email.ts:258
+#: src/notifications/notification-email.ts:44
+msgid "Deposit paid"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:59
+msgid "Deposit paid: {amount}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0, value1.
+#: src/business/services.service.ts:128
+msgid "Deposit percentage must be at least {value0}% — the platform fee is {value1}% of the service price and is taken out of the deposit. A smaller deposit would leave you owing money on every booking."
+msgstr ""
+
+#: src/mail/booking-email.ts:258
+msgid "Deposit to pay"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:58
+msgid "Deposit: {amount}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:605
+msgid "Device: {device}"
+msgstr ""
+
+#: src/notifications/notification-email.ts:375
+msgid "Did not arrive"
+msgstr ""
+
+#: src/mail/mail.service.ts:184
+#: src/mail/mail.service.ts:189
+msgid "Did not ask for this?"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/create-service.dto.ts:95
+msgid "discountEndsOn must be a date like 2026-10-31"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/services.service.ts:96
+msgid "discountEndsOn must be a real date, like 2026-10-31."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/create-service.dto.ts:85
+msgid "discountPercent must be a whole number, like 20"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/dto/set-display-name.dto.ts:23
+msgid "displayName must be a name, or null to be shown as Anonymous."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/dto/set-display-name.dto.ts:25
+msgid "displayName must be between 2 and 40 characters once whitespace is trimmed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/legal/legal.service.ts:170
+#: src/legal/legal.service.ts:254
+#: src/legal/legal.service.ts:270
+msgid "Document not found."
+msgstr ""
+
+#: src/mail/booking-email.ts:235
+#: src/payouts/payouts.service.ts:1151
+msgid "Done"
+msgstr ""
+
+#: src/notifications/notifications.controller.ts:208
+msgid "Done — no more of those emails"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/service-drafts.service.ts:103
+#: src/business/service-drafts.service.ts:123
+msgid "Draft not found."
+msgstr ""
+
+#: src/mail/booking-email.ts:264
+msgid "Due at the shop"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/business/locations.service.ts:180
+msgid "Duplicate entry for {value0}. Send one row per day."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: MINUTES_PER_DAY.
+#: src/availability/availability.service.ts:133
+msgid "durationMinutes must be between 1 and {MINUTES_PER_DAY}."
+msgstr ""
+
+#: src/notifications/notification-email.ts:271
+msgid "Each one is in your notifications, and all of them under Appointments."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/dto/create-time-block.dto.ts:14
+msgid "endTime must be in HH:mm 24-hour format"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/schedule-management.service.ts:141
+msgid "endTime must be later than startTime."
+msgstr ""
+
+#: src/mail/mail.service.ts:173
+msgid "Enter it in the app to sign in. If you are new here, the same code creates your account."
+msgstr ""
+
+#: src/business/shop-advice.ts:134
+msgid "Every branch on the map"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:478
+msgid "Everything you made is kept. Fix what the reason describes and send your shop back for review from your dashboard — or write to us from Help to talk it through."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: INTERNAL_CURRENCY, providerCurrency.
+#: src/appointments/appointments.service.ts:836
+msgid "Exchange rate not configured. Deposit payments cannot be taken until an administrator sets the {INTERNAL_CURRENCY} to {providerCurrency} exchange rate."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/settings/dto/update-staleness.dto.ts:13
+msgid "exchangeRateStalenessHours must be a whole number of hours."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/settings/dto/update-exchange-rate.dto.ts:29
+msgid "exchangeRateUsdToProviderCurrency must be greater than zero."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1149
+msgid "Expected"
+msgstr ""
+
+#: src/mail/email-kit.ts:664
+msgid "For your shop"
+msgstr ""
+
+#: src/notifications/notification-email.ts:404
+msgid "From {shop}"
+msgstr ""
+
+#: src/notifications/notification-email.ts:127
+msgid "From a shop you follow"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/analytics/analytics.service.ts:161
+msgid "from and to must be valid date-times."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/analytics/dto/analytics-query.dto.ts:11
+#: src/appointments/dto/list-appointments.dto.ts:38
+msgid "from must be an ISO-8601 date-time string."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/analytics/analytics.service.ts:164
+msgid "from must be earlier than to."
+msgstr ""
+
+#: src/notifications/notification-email.ts:124
+msgid "From our support team"
+msgstr ""
+
+#: src/notifications/notification-email.ts:122
+msgid "From our team"
+msgstr ""
+
+#: src/notifications/notification-email.ts:406
+msgid "From the BwanguReservations team"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1558
+msgid "gatewayChargeMinor is required when a business cancels an appointment whose deposit was paid. It is the gateway''s charge on the refund, in minor units of the settlement currency, and it is borne by the business."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/dto/cancel-appointment.dto.ts:32
+#: src/appointments/dto/cancel-appointment.dto.ts:54
+#: src/support/support.dto.ts:32
+msgid "gatewayChargeMinor must be a whole number of minor units."
+msgstr ""
+
+#: src/mail/booking-email.ts:303
+msgid "Get directions"
+msgstr ""
+
+#: src/notifications/notification-email.ts:105
+#: src/notifications/notification-email.ts:106
+#: src/notifications/notification-email.ts:110
+#: src/notifications/notification-email.ts:116
+msgid "Getting paid"
+msgstr ""
+
+#: src/mail/mail.service.ts:365
+msgid "Give it to the shop when you arrive — they need it to start your appointment. Do not share it before."
+msgstr ""
+
+#: src/notifications/notification-email.ts:385
+msgid "Give it to the shop when you arrive. Do not share it before."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:462
+msgid "Good news — your shop has been approved."
+msgstr ""
+
+#: src/notifications/notification-email.ts:96
+#: src/notifications/notification-email.ts:97
+msgid "Help"
+msgstr ""
+
+#: src/notifications/notification-email.ts:270
+msgid "Here is what happened with your bookings."
+msgstr ""
+
+#: src/notifications/notification-email.ts:283
+msgid "Here is what happened with your bookings. Each one is also in your notifications."
+msgstr ""
+
+#: src/mail/mail.service.ts:167
+msgid "Here is your code"
+msgstr ""
+
+#: src/mail/mail.service.ts:352
+msgid "Here is your new code"
+msgstr ""
+
+#: src/business/shop-advice.ts:110
+msgid "how customers find you when they browse"
+msgstr ""
+
+#: src/business/shop-advice.ts:135
+msgid "how customers nearby find you"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/analytics/analytics.service.ts:147
+msgid "How the business is going is for the owner and managers."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:556
+msgid "How was {serviceName} at {businessName}?"
+msgstr ""
+
+#: src/notifications/notification-email.ts:86
+msgid "How was {serviceName}?"
+msgstr ""
+
+#: src/notifications/notification-email.ts:84
+#: src/notifications/notification-email.ts:86
+msgid "How was it?"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:607
+msgid "If it was not you, open \"Where you are signed in\" in your account, sign that one out, and write to us from Help."
+msgstr ""
+
+#: src/notifications/notifications.service.ts:301
+msgid "If you did not expect it, you can ignore it."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:520
+msgid "If you ever lose that number, give a new one straight away — payments pause until the new one is checked, which is what keeps your money safe."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:410
+#: src/notifications/notification-templates.ts:419
+msgid "If you think this is a mistake, write to us from Help."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business.controller.ts:369
+msgid "Image kind must be \"logo\" or \"cover\"."
+msgstr ""
+
+#: src/mail/booking-email.ts:233
+#: src/payouts/payouts.service.ts:1150
+msgid "In progress"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:812
+#: src/auth/auth.service.ts:825
+#: src/auth/auth.service.ts:836
+msgid "Invalid or expired verification code."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:684
+msgid "Invalid refresh token."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:199
+#: src/support/support-accounts.service.ts:643
+msgid "Invitation not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/announcements/announcements.service.ts:276
+msgid "It has already been sent."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/announcements/announcements.service.ts:317
+msgid "It has already gone out."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/announcements/announcements.service.ts:232
+msgid "It has been sent; it cannot be changed now."
+msgstr ""
+
+#: src/notifications/notifications.controller.ts:219
+msgid "It may be old or cut short. Change what we send in the app, under Notifications."
+msgstr ""
+
+#: src/business/shop-advice.ts:99
+msgid "it sits on every card customers see of you"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/legal/dto/legal.dto.ts:6
+msgid "kind must be one of: {value0}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/discovery/discovery.service.ts:794
+msgid "lat and lng must be supplied together."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/locations.service.ts:248
+msgid "latitude and longitude must be provided together, or both omitted."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/payouts/payouts.service.ts:359
+msgid "Ledger entries changed during the payout run. No payout was created."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/users/dto/set-locale.dto.ts:8
+msgid "locale must be one of {value0}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/analytics/analytics.service.ts:89
+#: src/appointments/appointments.service.ts:423
+#: src/appointments/appointments.service.ts:429
+#: src/appointments/appointments.service.ts:441
+msgid "Location not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/dto/list-appointments.dto.ts:51
+msgid "locationId must be a branch id."
+msgstr ""
+
+#: src/notifications/notification-email.ts:58
+msgid "Marked as missed"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:263
+#: src/notifications/notification-templates.ts:274
+msgid "Marked as missed: {serviceName}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:417
+#: src/support/support-accounts.service.ts:662
+msgid "Member not found."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:69
+#: src/notifications/notification-catalog.ts:120
+msgid "Messages"
+msgstr ""
+
+#: src/mail/booking-email.ts:237
+msgid "Missed"
+msgstr ""
+
+#: src/notifications/notification-email.ts:57
+msgid "Missed booking"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:136
+msgid "Money"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: capability, value1.
+#: src/payments/provider-registry.ts:110
+msgid "More than one {capability} provider is available ({value1}), so one has to be chosen rather than defaulted."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: countryPrefix.
+#: src/payouts/payout-destinations.service.ts:443
+msgid "msisdn must be a {countryPrefix} number. Payouts are sent through a local mobile-money provider, and a number outside that country cannot receive them."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/payouts/dto/create-payout-destination.dto.ts:15
+msgid "msisdn must be in E.164 format — a leading +, a country code, then the national number, e.g. +250788123456."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:921
+msgid "MTN MoMo is not answering right now, so the payment could not start. You have NOT been charged, and your booking is still held for a few minutes — please try again shortly."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-log.service.ts:118
+msgid "Name a booking, a shop, a person or a help request."
+msgstr ""
+
+#: src/notifications/notification-email.ts:38
+msgid "New booking"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:176
+msgid "New booking: {serviceName}, {short}"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:113
+msgid "New bookings, deposits paid, cancellations and missed appointments."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:153
+msgid "New features and ideas to get more bookings. A few a month at most."
+msgstr ""
+
+#: src/notifications/notification-email.ts:89
+msgid "New message"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:329
+msgid "New message from {businessName}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:321
+msgid "New message from a customer"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:94
+msgid "New places, deals and tips. A few a month at most."
+msgstr ""
+
+#: src/notifications/notification-email.ts:90
+msgid "New review"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:129
+msgid "New reviews of your branches, and reviews hidden by our team."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:602
+msgid "New sign-in on {device}"
+msgstr ""
+
+#: src/notifications/notification-email.ts:133
+msgid "New wishes for a booking"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:93
+msgid "News and offers from us"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:152
+msgid "News and tips from us"
+msgstr ""
+
+#: src/notifications/notifications.service.ts:508
+msgid "news from us"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: capability.
+#: src/payments/provider-registry.ts:104
+msgid "No {capability} provider is configured. This is a platform fault and has been reported."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:233
+msgid "No deposit was taken. You can book again at any time."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/gallery.service.ts:34
+#: src/business/service-images.service.ts:46
+msgid "No file uploaded. Send the image as multipart/form-data under the field name \"file\"."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:192
+msgid "No file was uploaded."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1152
+msgid "No-show"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/shop-messages/shop-messages.service.ts:392
+msgid "Nobody follows your shop yet. Customers can follow it from your page in the app."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:735
+msgid "Not signed in."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/two-step.service.ts:126
+msgid "Not your own — use Security to move it to a new phone."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/dto/manual-verify-appointment.dto.ts:20
+msgid "note must say what the customer recalled (10-500 characters). It is recorded and reviewed by support."
+msgstr ""
+
+#: src/mail/email-kit.ts:501
+msgid "Note: “{note}”"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:582
+msgid "Nothing is lost: the money is back in your balance and goes out with your next payment. If your number has changed, update it under Getting paid."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:530
+msgid "Nothing is written off — your money is kept. Give a corrected number under Getting paid to start again."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/notifications/notifications.service.ts:788
+#: src/notifications/notifications.service.ts:802
+msgid "Notification not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/saved-numbers.service.ts:63
+msgid "Number not found."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:85
+msgid "Offers from places you follow"
+msgstr ""
+
+#: src/notifications/notification-email.ts:375
+msgid "On its way to you"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:202
+msgid "On the day, the customer gives you a 6-digit arrival code. Enter it to check them in."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/shop-messages/shop-messages.service.ts:373
+msgid "One message a week keeps people following. The next can go on {value0}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/services.service.ts:153
+msgid "One of those branches does not belong to you."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:376
+msgid "One of those branches is closed or is not one of yours."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:248
+msgid "One of those kinds does not exist."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:415
+msgid "One of your stories was taken down"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: OTHER, name.
+#: src/business/business-profile.service.ts:267
+msgid "Only \"{OTHER}\" takes a written-in kind — {name} is already named."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/appointments/appointments.service.ts:1159
+#: src/appointments/appointments.service.ts:1333
+msgid "Only a BOOKED appointment can be verified. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/appointments/appointments.service.ts:2143
+msgid "Only a booking marked as missed can be put right this way. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/appointments/appointments.service.ts:2219
+msgid "Only a booking still to come can be cancelled. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/appointments/appointments.service.ts:2002
+msgid "Only a booking that is expected can be checked in. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/appointments/appointments.service.ts:2085
+msgid "Only a booking that is expected or in progress can be marked done. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/reviews/reviews.service.ts:119
+msgid "Only a completed appointment can be reviewed. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/payouts/payouts.service.ts:490
+msgid "Only a PENDING payout can be marked failed. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/payouts/payouts.service.ts:450
+msgid "Only a PENDING payout can be marked paid. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status, value1.
+#: src/payouts/payouts.service.ts:548
+msgid "Only a PENDING payout can be sent. This one is {status}.{value1}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/appointments/appointments.service.ts:1524
+msgid "Only a PENDING_PAYMENT or BOOKED appointment can be cancelled. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/tickets/tickets.service.ts:693
+msgid "Only a RESOLVED ticket can be reopened. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/business/business-moderation.service.ts:223
+msgid "Only a SUSPENDED business can be reinstated. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:822
+msgid "Only administrators can do this."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:342
+msgid "Only administrators can list all tickets."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:624
+msgid "Only administrators can make that transition."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:409
+msgid "Only administrators can open a ticket this way."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:530
+msgid "Only administrators can post internal notes."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/ledger/reconciliation.service.ts:43
+msgid "Only administrators can read this."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/users.service.ts:164
+msgid "Only an administrator can clear a display name."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-moderation.service.ts:341
+#: src/ledger/ledger.service.ts:672
+#: src/payouts/payout-destinations.service.ts:537
+#: src/payouts/payouts.service.ts:1265
+msgid "Only an administrator can do that."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1644
+msgid "Only an administrator can list appointments."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/users.service.ts:58
+msgid "Only an administrator can list users."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/reviews.service.ts:412
+msgid "Only an administrator can moderate reviews."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1710
+msgid "Only an administrator can read this appointment."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/payouts/payout-destinations.service.ts:387
+msgid "Only an UNVERIFIED destination can be rejected. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/payouts/payout-destinations.service.ts:345
+msgid "Only an UNVERIFIED destination can be verified. This one is {status}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/notifications/notification-preferences.service.ts:102
+msgid "Only email and push can be chosen."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:86
+msgid "Only from shops you follow and said yes to. Change it per shop under Saved → Following."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-log.service.ts:33
+msgid "Only our support team can do this."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-log.service.ts:110
+msgid "Only our support team can read this."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:320
+msgid "Only someone in the team can become the owner. Ask the shop to invite them first."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/payouts/payout-destinations.service.ts:528
+msgid "Only the business owner can set the payout destination."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1540
+msgid "Only the owner or a manager can cancel a booking — cancelling refunds the customer. Ask one of them."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/two-step.service.ts:125
+msgid "Only the primary administrator can do this."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:680
+msgid "Only the primary administrator can hand a shop to a new owner."
+msgstr ""
+
+#: src/notifications/notifications.service.ts:530
+msgid "Open"
+msgstr ""
+
+#: src/notifications/notification-email.ts:391
+msgid "Open {shop} in the app to book."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:569
+msgid "Open Getting paid to see every booking it covers."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:356
+msgid "Open Help to read it and reply."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:377
+msgid "Open Help to see the whole conversation."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:325
+msgid "Open Messages to read it and reply. More messages in this conversation will not email you again straight away."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:390
+msgid "Open Reviews to read it. You can post one public reply."
+msgstr ""
+
+#: src/mail/mail.service.ts:298
+msgid "Open the app to book any of these — a deposit holds your time, and the rest is paid at the shop."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:333
+msgid "Open the app to read it and reply. More messages in this conversation will not email you again straight away."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:595
+msgid "Open the booking to see what they would like now."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:396
+msgid "Open the shop in the app to read their reply."
+msgstr ""
+
+#: src/business/shop-advice.ts:125
+msgid "Opening hours at {branches}"
+msgstr ""
+
+#: src/business/shop-advice.ts:126
+msgid "Opening hours at every branch"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/set-hours.dto.ts:26
+msgid "openTime must be in HH:mm 24-hour format"
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1173
+msgid "Other"
+msgstr ""
+
+#: src/notifications/notification-email.ts:367
+msgid "Our review team"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:241
+msgid "Our support team cancelled this booking for the customer, as they asked."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:243
+msgid "Our support team cancelled this booking on your shop's side."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:217
+msgid "Our support team cancelled your booking at {businessName}, as you asked."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2009
+msgid "Our support team checked a customer in"
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2019
+msgid "Our support team checked you in at {shop} for {serviceName}."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2023
+msgid "Our support team checked you in for {serviceName}."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:558
+msgid "Our support team closed your account, as asked. Your bookings and reviews stay with the shops they belong to, with your name removed. You can make a new account with this email at any time."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2196
+msgid "Our support team corrected a missed booking"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:389
+msgid "Our support team handed the shop to {email}. You are still in the team, as a manager of every branch."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:374
+msgid "Our support team made you the owner. You can now change the team, the payout number and everything else. The old owner is still in the team as a manager — keep them or take them out under Team."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2118
+msgid "Our support team marked a booking done"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:145
+msgid "Our support team opened your shop again"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:137
+msgid "Our support team paused your shop"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:464
+msgid "Our support team signed you out on every phone and computer. Sign in again with a code sent to this email. If you did not ask for this, reply to us in Help."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:296
+msgid "Our support team took {email} out of your team."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:180
+msgid "Our support team took back the invitation for {email}."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:285
+msgid "Our support team took you out of the team, so you can no longer open this shop. If you think this is a mistake, ask the shop’s owner."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:407
+msgid "Our team hid a review of one of your branches. It is no longer public, and it no longer counts in your rating."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:405
+msgid "Our team hid your review, so it is no longer public."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:426
+msgid "Our team removed the name shown beside your reviews, so they now show as \"Anonymous\"."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:486
+msgid "Our team suspended your shop. While it lasts, new customers cannot find or book with you, and your payments are paused."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:417
+msgid "Our team took down one of your stories, so customers no longer see it."
+msgstr ""
+
+#: src/mail/mail.service.ts:345
+msgid "Pay the deposit in the app to confirm it. Your arrival code is {code}."
+msgstr ""
+
+#: src/mail/mail.service.ts:354
+msgid "Pay the deposit in the app to confirm your booking at {shopName}. The time is held for you for 5 minutes."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:281
+msgid "Payment did not go through: {serviceName}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:565
+msgid "Payment sent: {amount}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:911
+msgid "Payments are temporarily unavailable. You have NOT been charged, and your booking is still held — please try again shortly. Our team has been notified."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/payouts/payout-destinations.service.ts:499
+msgid "Payout destination not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/payouts/payouts.service.ts:1063
+#: src/payouts/payouts.service.ts:1293
+msgid "Payout not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/settings/dto/update-payout-hold.dto.ts:18
+msgid "payoutHoldDays must be a whole number of days."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:137
+msgid "Payouts sent or failed, and your payout number checked."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:409
+#: src/support/support-accounts.service.ts:671
+msgid "Person not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/dto/saved-number.dto.ts:11
+msgid "phoneNumber must be 8-15 digits, with no spaces or \"+\"."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/dto/initiate-payment.dto.ts:13
+msgid "phoneNumber must be in MSISDN format: 8-15 digits, country code first, no \"+\" or spaces."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/gallery.service.ts:101
+#: src/business/service-images.service.ts:122
+#: src/business/service-images.service.ts:149
+msgid "Photo not found."
+msgstr ""
+
+#: src/business/shop-advice.ts:117
+msgid "Photos of {branches}"
+msgstr ""
+
+#: src/business/shop-advice.ts:118
+msgid "Photos of every branch"
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1172
+msgid "Platform fee"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/auth/auth.service.ts:175
+msgid "Please wait {value0}s before requesting another code."
+msgstr ""
+
+#: src/mail/mail.service.ts:280
+msgid "Popular in {place}"
+msgstr ""
+
+#: src/mail/mail.service.ts:263
+#: src/mail/mail.service.ts:280
+msgid "Popular near you"
+msgstr ""
+
+#: src/mail/mail.service.ts:263
+msgid "Popular near you in {place}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/service-choices.dto.ts:153
+msgid "priceMinor must be a whole number of minor units"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/create-service.dto.ts:34
+msgid "priceMinor must be a whole number of minor units (e.g. cents), not a decimal amount"
+msgstr ""
+
+#: src/mail/booking-email.ts:294
+msgid "Private answers — open the booking to read them."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/reviews.service.ts:205
+msgid "Provide a rating, a comment, a display name, or any combination."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/settings/dto/update-exchange-rate.dto.ts:14
+msgid "providerCurrency must be a 3-letter uppercase ISO 4217 code, e.g. \"EUR\"."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1167
+msgid "Quantity"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/quantity.ts:21
+msgid "quantity must be a whole number, 1 or more."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/notifications/notification-preferences.service.ts:133
+msgid "Quiet hours are times of day."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/discovery/discovery.service.ts:788
+msgid "radiusKm needs lat and lng — a radius has to be a radius around something."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/dto/create-review.dto.ts:41
+#: src/reviews/dto/create-review.dto.ts:62
+msgid "rating must be a whole number from 1 to 5."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/dto/create-review.dto.ts:42
+#: src/reviews/dto/create-review.dto.ts:63
+msgid "rating must be at least 1."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/dto/create-review.dto.ts:43
+#: src/reviews/dto/create-review.dto.ts:64
+msgid "rating must be at most 5."
+msgstr ""
+
+#: src/notifications/notifications.service.ts:63
+msgid "Read and reply"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:170
+#: src/support/support-accounts.service.ts:42
+msgid "Reason: {reason}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:61
+msgid "Reference: {reference}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:691
+msgid "Refresh token is no longer valid."
+msgstr ""
+
+#: src/notifications/notification-email.ts:69
+msgid "Reminder"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:61
+msgid "Reminders"
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1163
+msgid "Reservation No."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/reviews.service.ts:195
+#: src/reviews/reviews.service.ts:314
+#: src/reviews/reviews.service.ts:333
+#: src/reviews/reviews.service.ts:382
+msgid "Review not found."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:77
+#: src/notifications/notification-catalog.ts:128
+#: src/notifications/notification-email.ts:92
+msgid "Reviews"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/invite-member.dto.ts:11
+#: src/business/dto/update-member-role.dto.ts:7
+msgid "role must be MANAGER or STAFF."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/users/dto/list-users.dto.ts:8
+msgid "role must be one of: {value0}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1838
+msgid "Say what the operator charges to send the refund back (gatewayChargeMinor) — the shop bears it."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-log.service.ts:36
+msgid "Say why, in a few words. It is kept with what you did."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/schedule-management.service.ts:123
+msgid "Schedule exception not found."
+msgstr ""
+
+#: src/notifications/notification-email.ts:294
+#: src/notifications/notifications.service.ts:62
+msgid "See bookings"
+msgstr ""
+
+#: src/notifications/notifications.service.ts:64
+msgid "See reviews"
+msgstr ""
+
+#: src/notifications/notification-email.ts:78
+msgid "See you on {weekday} at {clock}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:312
+msgid "See you on {weekday} at {clock}."
+msgstr ""
+
+#: src/notifications/notification-email.ts:71
+msgid "See you soon"
+msgstr ""
+
+#: src/notifications/notification-email.ts:75
+msgid "See you today at {clock}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:309
+msgid "See you today at {clock}."
+msgstr ""
+
+#: src/notifications/notification-email.ts:77
+msgid "See you tomorrow at {clock}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:311
+msgid "See you tomorrow at {clock}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:365
+msgid "Select a category before selecting a subcategory."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1166
+msgid "Service"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:409
+#: src/availability/availability.service.ts:324
+#: src/business/business-access.service.ts:139
+#: src/favourites/favourites.service.ts:167
+msgid "Service not found."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:55
+msgid "Service: {serviceName}"
+msgstr ""
+
+#: src/business/shop-advice.ts:201
+msgid "Shops with clear, high-resolution photos and full details get booked far more often. Before you post, finish your shop by adding:"
+msgstr ""
+
+#: src/business/shop-advice.ts:151
+msgid "shown under “About this service” before they book"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/guards/roles.guard.ts:65
+msgid "Sign in again, with the code from your authenticator app."
+msgstr ""
+
+#: src/notifications/notifications.service.ts:298
+msgid "Sign in to accept"
+msgstr ""
+
+#: src/mail/mail.service.ts:166
+msgid "Sign-in code"
+msgstr ""
+
+#: src/auth/auth.service.ts:875
+msgid "Signed out there."
+msgstr ""
+
+#: src/business/shop-advice.ts:112
+msgid "so customers can reach you"
+msgstr ""
+
+#: src/mail/mail.service.ts:182
+msgid "Someone may be using your account. Do not share this code with anyone: sign out on every device and write to us from Help."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:294
+msgid "Someone was taken out of your team"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/appointments/dto/list-admin-appointments.dto.ts:46
+#: src/appointments/dto/list-appointments.dto.ts:66
+#: src/discovery/dto/discover-locations.dto.ts:117
+#: src/reviews/dto/list-admin-reviews.dto.ts:47
+msgid "sort must be one of: {value0}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/discovery/discovery.service.ts:87
+#: src/discovery/discovery.service.ts:332
+msgid "sort=distance requires lat and lng."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/two-step.service.ts:75
+msgid "Start the setup first — scan the code with your app."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:278
+#: src/appointments/appointments.service.ts:287
+msgid "startTime is not a valid date-time."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/dto/create-appointment.dto.ts:32
+msgid "startTime must be an ISO-8601 date-time string."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/dto/create-time-block.dto.ts:11
+msgid "startTime must be in HH:mm 24-hour format"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/appointments/dto/list-appointments.dto.ts:32
+#: src/tickets/dto/update-ticket-status.dto.ts:45
+msgid "status must be one of: {value0}"
+msgstr ""
+
+#: src/mail/email-kit.ts:494
+msgid "Status: {status}"
+msgstr ""
+
+#: src/mail/email-kit.ts:665
+#: src/mail/mail.service.ts:92
+msgid "Stop emails like this"
+msgstr ""
+
+#: src/notifications/notification-email.ts:93
+msgid "Stories"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/stories/stories.service.ts:315
+#: src/stories/stories.service.ts:343
+msgid "Story not found, or already taken down."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/stories/stories.service.ts:156
+#: src/stories/stories.service.ts:242
+msgid "Story not found."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:355
+#: src/notifications/notification-templates.ts:376
+msgid "Subject: {subject}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:558
+msgid "Thank you for visiting {businessName}."
+msgstr ""
+
+#: src/notifications/notifications.controller.ts:213
+msgid "that"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:325
+msgid "That account is closed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:774
+msgid "That appointment belongs to a different business than this ticket."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:832
+msgid "That booking is not one of theirs, so it cannot be tied to this request."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/locations.service.ts:121
+msgid "That branch is already closed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/locations.service.ts:154
+msgid "That branch is already open."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/stories/stories.service.ts:94
+msgid "That branch is closed, so it cannot have a story."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/shop-messages/shop-messages.service.ts:380
+msgid "That branch is closed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/legal/legal.service.ts:61
+msgid "That document has not been published yet."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/storage/storage.service.ts:121
+msgid "That file is not a picture we can open. Try a JPG, PNG or WebP photo."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-log.service.ts:47
+msgid "That help request was not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/two-step.service.ts:80
+msgid "That is not the code your app shows. Check the time on your phone is set automatically, and type the newest one."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:2042
+msgid "That is not this booking''s code. Ask the customer to read it from their booking in the app — or check them in without it, saying how you know they came."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/notifications/notification-preferences.service.ts:106
+msgid "That kind of notification is not yours to choose."
+msgstr ""
+
+#: src/notifications/notifications.controller.ts:218
+msgid "That link did not work"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:84
+msgid "That person was not found, or their account is closed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/services.service.ts:346
+msgid "That service has no price at that branch. Add one before turning it on."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:457
+msgid "That service is no longer available."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:450
+msgid "That service is not offered at this location."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/shop-messages/shop-messages.service.ts:176
+msgid "That shop is not open on the app."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:874
+msgid "That sign-in has already ended."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:375
+msgid "That subcategory does not belong to the selected category."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: localStart, locationId.
+#: src/appointments/appointments.service.ts:757
+msgid "That time is not available. Requested {localStart}; check GET /locations/{locationId}/availability for open slots."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:721
+msgid "That user is not an administrator."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/legal/legal.service.ts:174
+msgid "That version has not been published."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/legal/legal.service.ts:272
+msgid "That version is already published."
+msgstr ""
+
+#: src/auth/device.ts:35
+msgid "the app"
+msgstr ""
+
+#: src/auth/device.ts:33
+#: src/auth/device.ts:34
+#: src/auth/device.ts:35
+msgid "the app on {system, select, iPhone {an iPhone} iPad {an iPad} Chromebook {a Chromebook} other {{system}}}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support.dto.ts:23
+msgid "The arrival code is six digits."
+msgstr ""
+
+#: src/notifications/notification-email.ts:389
+msgid "The BwanguReservations team"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:860
+msgid "The configured exchange rate converts this deposit to zero. Check the rate before taking payments."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:245
+msgid "The customer cancelled this booking."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:593
+msgid "The customer changed their choices or their note for {serviceName}."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:255
+msgid "The customer gets their whole deposit back, and the mobile money charge for sending it back is yours."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:62
+msgid "The day before an appointment, so you do not miss it."
+msgstr ""
+
+#: src/notifications/notification-email.ts:65
+msgid "The deposit did not go through"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:200
+msgid "The deposit is paid, so this booking is confirmed."
+msgstr ""
+
+#: src/business/shop-advice.ts:97
+msgid "the first thing customers see on your page"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/services.service.ts:100
+msgid "The last day of a sale cannot be in the past."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: MAX_RANGE_DAYS, value1.
+#: src/analytics/analytics.service.ts:170
+msgid "The maximum reporting range is {MAX_RANGE_DAYS} days. Requested {value1}."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:424
+msgid "The name on your reviews was removed"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:294
+msgid "The owner always looks after every branch."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:332
+msgid "The owner cannot be removed. Every business must have exactly one active owner."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:257
+msgid "The owner cannot be removed. Hand the shop to someone else first."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:89
+msgid "The owner invited you to join {businessName} as a manager on BwanguReservations."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:91
+msgid "The owner invited you to join {businessName} as a team member on BwanguReservations."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:93
+msgid "The owner invited you to join {businessName} as an administrator on BwanguReservations."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:87
+msgid "The owner invited you to join {businessName} as an owner on BwanguReservations."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:94
+msgid "The owner invited you to join {businessName} on BwanguReservations."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:260
+msgid "The owner''s role cannot be changed. Ownership transfer is not supported yet."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:395
+msgid "The shop replied to your review"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:396
+msgid "The shop replied to your review."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:499
+msgid "The suspension has been lifted. Customers can find and book with you again, and money kept while you were suspended goes out with your next payment."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:251
+msgid "The time is free for someone else."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:292
+msgid "The time is held a little longer while they try again, then it is free."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:182
+msgid "The time is held while they pay the deposit, which usually takes a minute or two. We will tell you when it is paid; if it is not paid within 5 minutes, the time is free again."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:354
+msgid "There is a new reply to your question."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:371
+msgid "There is news on your question."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/users.controller.ts:66
+msgid "There is no tour by that name."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/legal/legal.service.ts:275
+msgid "There is nothing written to publish."
+msgstr ""
+
+#: src/notifications/notifications.service.ts:508
+msgid "this"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:127
+msgid "This account has been closed. Sign up again to start a new one."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/account.service.ts:265
+msgid "This account is already closed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:672
+msgid "This account is closed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:2558
+#: src/appointments/appointments.service.ts:2655
+#: src/business/business-access.service.ts:41
+#: src/payouts/payout-destinations.service.ts:511
+msgid "This account is not an active member of any business."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/chat/chat.service.ts:509
+msgid "This account type cannot access chat threads."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:2567
+msgid "This account type cannot list appointments."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/ledger/ledger.service.ts:434
+msgid "This adjustment cannot be settled: the platform collects in a currency it has no exchange rate for, so there is no amount to send. Set the rate before executing adjustments."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/ledger/ledger.service.ts:402
+msgid "This adjustment has already been executed. Record a new adjustment instead."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/ledger/ledger.service.ts:263
+msgid "This appointment has already been refunded."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/reviews.service.ts:176
+msgid "This appointment has already been reviewed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1163
+msgid "This appointment has no verification code."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1821
+msgid "This appointment is already recorded as a business cancellation."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:659
+msgid "This booking can no longer be changed."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:250
+msgid "This booking has been cancelled."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:247
+msgid "This booking was cancelled by your shop."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:249
+msgid "This booking was let go, because the deposit was not paid in time."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:275
+msgid "This booking was marked as missed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: upcoming, value1.
+#: src/business/locations.service.ts:135
+msgid "This branch has {upcoming} booking{value1} still to happen. Cancel or complete them first, then close it."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/business/business-moderation.service.ts:251
+msgid "This business cannot go live yet: it still needs {value0}. Listed without that, no customer could book it — ask the business to finish setting up."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-moderation.service.ts:245
+msgid "This business has no name, so it cannot be approved — it would appear in search as a blank. Ask the business to complete its profile first."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/payouts/payouts.service.ts:563
+msgid "This business has no VERIFIED payout destination, so there is nowhere to send the money. Verify one first."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/account.service.ts:370
+msgid "This business is already paused."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/account.service.ts:373
+msgid "This business is not paused."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:405
+msgid "This code was issued for an account that no longer exists. Request a new one."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:112
+msgid "This email has no account yet. Send `role` as BUSINESS or CUSTOMER to create one."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/business/members.service.ts:93
+msgid "This email is already registered as a {value0} account and cannot join a business."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/business/members.service.ts:203
+msgid "This invitation is already {value0} and cannot be revoked."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/support/support-accounts.service.ts:645
+msgid "This invitation is already {value0}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: MAX_GALLERY_PHOTOS_PER_LOCATION.
+#: src/business/gallery.service.ts:46
+msgid "This location already has the maximum of {MAX_GALLERY_PHOTOS_PER_LOCATION} photos. Delete an existing photo before uploading a new one."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:341
+msgid "This member has already been removed."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:298
+msgid "This member has been removed. Re-invite them instead of changing their branches."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:265
+msgid "This member has been removed. Re-invite them instead of changing their role."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:260
+msgid "This person is already out of the team."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/support/support-accounts.service.ts:323
+msgid "This person is already the owner."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/reviews.service.ts:245
+msgid "This review already has a response. Edit it instead of posting a second one."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/reviews.service.ts:273
+msgid "This review has no response to edit."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/reviews.service.ts:335
+msgid "This review is already hidden."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/reviews/reviews.service.ts:384
+msgid "This review is not hidden."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: MAX_IMAGES_PER_SERVICE.
+#: src/business/service-images.service.ts:58
+msgid "This service already has the maximum of {MAX_IMAGES_PER_SERVICE} photos. Delete one before uploading another."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:472
+msgid "This service no longer takes a note. Remove yours, and send it in a message after booking."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:703
+msgid "This service no longer takes a note. Send the shop a message instead."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:700
+#: src/auth/guards/roles.guard.ts:61
+msgid "This sign-in was ended. Please sign in again."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:522
+msgid "This ticket is closed. Reopen it, or raise a new ticket, to continue."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: TICKET_RESOLUTION_WINDOW_DAYS.
+#: src/tickets/tickets.service.ts:698
+msgid "This ticket was resolved more than {TICKET_RESOLUTION_WINDOW_DAYS} days ago and can no longer be reopened. Raise a new ticket instead."
+msgstr ""
+
+#: src/mail/mail.service.ts:279
+msgid "This week"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/chat/chat.service.ts:536
+msgid "Thread not found."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/tickets/tickets.service.ts:473
+#: src/tickets/tickets.service.ts:515
+#: src/tickets/tickets.service.ts:601
+#: src/tickets/tickets.service.ts:689
+msgid "Ticket not found."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1165
+msgid "Time"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/availability/schedule-management.service.ts:181
+msgid "Time block not found."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:624
+msgid "To accept, sign in with this email address — that is all."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/analytics/dto/analytics-query.dto.ts:16
+#: src/appointments/dto/list-appointments.dto.ts:43
+msgid "to must be an ISO-8601 date-time string."
+msgstr ""
+
+#: src/mail/booking-email.ts:264
+msgid "To pay at the shop"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:303
+msgid "Today at {clock}: {serviceName} at {businessName}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:305
+msgid "Tomorrow at {clock}: {serviceName} at {businessName}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1167
+msgid "Too many incorrect attempts. Contact support to verify this appointment."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:816
+msgid "Too many incorrect attempts. Please request a new code."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/auth.service.ts:186
+msgid "Too many verification code requests. Please try again later."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1197
+msgid "Total"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/two-step.service.ts:112
+msgid "Turn on two-step sign-in first."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/auth/two-step.service.ts:151
+msgid "Two-step sign-in is for administrators."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/tickets/dto/update-ticket-status.dto.ts:28
+msgid "type must be one of: {value0}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:358
+msgid "Unknown category."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1154
+msgid "Unpaid"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: mimetype, label.
+#: src/storage/upload-options.ts:27
+msgid "Unsupported file type \"{mimetype}\". Allowed types: {label}."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:373
+msgid "Update on your question: {subject}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/users/users.service.ts:171
+msgid "User not found."
+msgstr ""
+
+#: src/mail/booking-email.ts:227
+msgid "Waiting for the deposit"
+msgstr ""
+
+#: src/mail/booking-email.ts:227
+msgid "Waiting for your deposit"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:606
+msgid "Was it you? Then there is nothing to do."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:364
+msgid "We are looking into your question."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:1882
+msgid "We cancelled this booking on the shop’s side. No deposit had been paid."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:1881
+msgid "We cancelled this booking on the shop’s side. The customer gets their whole deposit back."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2244
+msgid "We cancelled your booking, as you asked. As agreed when you booked, the deposit is not given back."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2245
+msgid "We cancelled your booking, as you asked. No deposit had been paid."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2012
+msgid "We checked the customer in for {serviceName} on {when}, because it could not be done in the app. Mark it done when the service is finished, as usual."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2067
+msgid "We checked the customer in for {serviceName}."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:517
+msgid "We checked the number you gave, and your payments now go there. Anything kept while it was being checked goes out with your next payment."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2324
+msgid "We checked with MTN: the deposit did not go through. You can try paying again from the booking."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2322
+msgid "We checked with MTN: your deposit went through, and the booking is confirmed."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2169
+msgid "We corrected {serviceName}: it was marked as missed, but the customer came. It now counts as done."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:528
+msgid "We could not accept the number you gave, so your payments stay paused."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2281
+msgid "We emailed you a new arrival code. The old one no longer works."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:356
+msgid "We made {email} the owner of the shop. The old owner stays in the team as a manager."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2105
+msgid "We marked {serviceName} as done. The shop is paid for it as usual."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2121
+msgid "We marked {serviceName} on {when} as done, because it could not be done in the app. Your share of the deposit is paid to you as usual."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:366
+msgid "We marked your question as solved. If it is not, reply within 14 days and it opens again."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:130
+msgid "We opened your shop again: customers can book it."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:129
+msgid "We paused your shop: no new bookings until it is opened again. Bookings already made still happen."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:352
+msgid "We replied: {subject}"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:474
+msgid "We reviewed your shop and could not approve it yet."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:239
+msgid "We sent the invitation to {email} again. It can be accepted for {days} days."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:454
+msgid "We signed you out on every phone and computer. Sign in again with a code sent to your email."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:274
+msgid "We took {email} out of the team. They can no longer open the shop."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:173
+msgid "We took back the invitation for {email}. They can no longer join with it."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:526
+msgid "We turned off news, offers and the weekly email. You still hear about your bookings and messages. You can turn any of them back on in Notifications."
+msgstr ""
+
+#: src/notifications/notifications.controller.ts:212
+msgid "We will not email you about {kind}. You will still see it in the app. You can turn the emails back on any time under Notifications."
+msgstr ""
+
+#: src/mail/booking-email.ts:289
+msgid "What they chose"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:54
+msgid "When a booking is confirmed, changed, cancelled or missed, and when a payment does not go through."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:121
+msgid "When a customer writes. If you read it in the app first, no email follows."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:70
+msgid "When a shop writes to you. If you read it in the app first, no email follows."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:65
+msgid "When you arrive, give the shop your 6-digit arrival code. It is in the app, on the booking."
+msgstr ""
+
+#: src/mail/email-kit.ts:495
+#: src/notifications/notification-templates.ts:57
+msgid "When: {when}"
+msgstr ""
+
+#: src/mail/email-kit.ts:413
+msgid "Where"
+msgstr ""
+
+#: src/mail/email-kit.ts:496
+#: src/notifications/notification-templates.ts:56
+msgid "Where: {locationName}"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:663
+msgid "Wishes can be changed until 2 hours before. Send the shop a message instead."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:503
+msgid "With these answers the price would be below nothing. Please pick other answers, or ask the shop."
+msgstr ""
+
+#: src/business/shop-advice.ts:127
+msgid "without hours, nothing there can be booked"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:2046
+msgid "Without the code, say how you know the customer came — a sentence at least."
+msgstr ""
+
+#: src/notifications/notification-preferences.service.ts:15
+msgid "Yes, send me news and offers. I can stop at any time."
+msgstr ""
+
+#: src/notifications/notifications.service.ts:536
+msgid "You always get emails about {topic}."
+msgstr ""
+
+#: src/notifications/notification-email.ts:45
+msgid "You are all set"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:190
+msgid "You are booked: {serviceName}, {short}"
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2017
+msgid "You are checked in"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:621
+msgid "You are invited to join {businessName}"
+msgstr ""
+
+#: src/mail/mail.service.ts:171
+msgid "You are making an important change — your payment number, who works at the shop, or something that cannot be undone. Enter this code to confirm it is you."
+msgstr ""
+
+#: src/support/support-accounts.service.ts:281
+msgid "You are no longer in the team at {shop}"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:282
+msgid "You are no longer in the team at the shop"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:370
+msgid "You are now the owner of {shop}"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:371
+msgid "You are now the owner of the shop"
+msgstr ""
+
+#: src/mail/mail.service.ts:357
+msgid "You asked for a new arrival code, so any earlier one no longer works."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:428
+msgid "You can choose a new one the next time you write or edit a review."
+msgstr ""
+
+#: src/mail/mail.service.ts:188
+msgid "You can ignore this email. Nobody can sign in without the code, and we will never ask you for it."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: MAX_INQUIRY_THREADS_PER_DAY.
+#: src/chat/chat.service.ts:169
+msgid "You can start at most {MAX_INQUIRY_THREADS_PER_DAY} new conversations per day. You can still reply in conversations you already have."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:221
+msgid "You cancelled your booking at {businessName}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/analytics/analytics.service.ts:143
+msgid "You cannot read analytics for this business."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/members.service.ts:338
+msgid "You cannot remove yourself."
+msgstr ""
+
+#: src/notifications/notification-email.ts:296
+msgid "You chose one booking summary each morning instead of an email for each."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/shop-messages/shop-messages.service.ts:192
+msgid "You do not follow that shop."
+msgstr ""
+
+#: src/payouts/payouts.service.ts:1174
+msgid "You get"
+msgstr ""
+
+#: src/notifications/notifications.service.ts:537
+msgid "You get emails about {topic} because they are turned on."
+msgstr ""
+
+#: src/mail/mail.service.ts:194
+msgid "You get this because a change was made while signed in to this account."
+msgstr ""
+
+#: src/mail/mail.service.ts:195
+msgid "You get this because someone asked to sign in with this email address."
+msgstr ""
+
+#: src/notifications/notifications.service.ts:300
+msgid "You get this because someone invited this address."
+msgstr ""
+
+#: src/mail/mail.service.ts:110
+msgid "You get this because this address has an account with us."
+msgstr ""
+
+#: src/mail/mail.service.ts:370
+msgid "You get this because you booked with this email address."
+msgstr ""
+
+#: src/mail/mail.service.ts:301
+msgid "You get this because you turned on \"Weekly offers by email\" in the app, for {place}."
+msgstr ""
+
+#: src/notifications/notification-email.ts:39
+msgid "You have a new booking"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:383
+msgid "You have a new review"
+msgstr ""
+
+#: src/notifications/notification-email.ts:58
+msgid "You were marked as missed"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:461
+msgid "You were signed out everywhere"
+msgstr ""
+
+#: src/business/shop-advice.ts:70
+msgid "your {count} branches"
+msgstr ""
+
+#: src/notifications/notification-email.ts:126
+msgid "Your account"
+msgstr ""
+
+#: src/support/support-accounts.service.ts:555
+msgid "Your account is closed"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:604
+msgid "Your account was just signed in to on {device}."
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:103
+msgid "Your account, your support requests, and notices about the service."
+msgstr ""
+
+#: src/mail/mail.service.ts:362
+#: src/notifications/notification-email.ts:384
+msgid "Your arrival code"
+msgstr ""
+
+#: src/mail/mail.service.ts:351
+msgid "Your booking"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:226
+msgid "Your booking at {businessName} has been cancelled."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:219
+msgid "Your booking at {businessName} was cancelled on the shop's side by our support team."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:225
+msgid "Your booking at {businessName} was let go, because the deposit was not paid in time."
+msgstr ""
+
+#: src/mail/mail.service.ts:336
+msgid "Your booking at {shopName} — arrival code {code}"
+msgstr ""
+
+#: src/notifications/notification-email.ts:52
+msgid "Your booking is cancelled"
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2182
+msgid "Your booking is corrected"
+msgstr ""
+
+#: src/mail/mail.service.ts:371
+msgid "Your bookings are in the app, under Bookings."
+msgstr ""
+
+#: src/business/shop-advice.ts:109
+msgid "Your category and type"
+msgstr ""
+
+#: src/mail/booking-email.ts:289
+msgid "Your choices"
+msgstr ""
+
+#: src/mail/mail.service.ts:167
+msgid "Your code to confirm"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:283
+msgid "Your deposit for {serviceName} at {businessName} did not go through."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:192
+msgid "Your deposit is paid and your booking at {businessName} is confirmed."
+msgstr ""
+
+#: src/business/shop-advice.ts:99
+msgid "Your logo"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:515
+msgid "Your mobile money number is confirmed"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:526
+msgid "Your mobile money number was not accepted"
+msgstr ""
+
+#: src/notifications/notification-email.ts:281
+msgid "Your morning summary"
+msgstr ""
+
+#: src/mail/mail.service.ts:337
+msgid "Your new arrival code for {serviceName}: {code}"
+msgstr ""
+
+#: src/notifications/notification-email.ts:65
+msgid "Your payment did not go through"
+msgstr ""
+
+#: src/mail/booking-email.ts:293
+msgid "Your private answers are with the shop — see them in the app."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:368
+msgid "Your question is now closed."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:370
+msgid "Your question is open again, and we will reply soon."
+msgstr ""
+
+#: src/notifications/notification-email.ts:91
+msgid "Your review"
+msgstr ""
+
+#: src/notifications/notification-email.ts:94
+msgid "Your reviews"
+msgstr ""
+
+#: src/mail/mail.service.ts:266
+msgid "your saved address"
+msgstr ""
+
+#: src/business/shop-advice.ts:157
+msgid "your share of each deposit is paid to it"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:275
+msgid "Your share of the deposit is paid to you."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:253
+msgid "Your share of the deposit is still paid to you."
+msgstr ""
+
+#: src/notifications/notification-email.ts:100
+#: src/notifications/notification-email.ts:101
+#: src/notifications/notification-email.ts:102
+#: src/notifications/notification-email.ts:103
+msgid "Your shop"
+msgstr ""
+
+#: src/notifications/notification-catalog.ts:144
+msgid "Your shop and support"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/business/business-profile.service.ts:137
+msgid "Your shop cannot be posted yet: it still needs {value0}, or customers would find nothing to book."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:484
+msgid "Your shop has been suspended"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:128
+msgid "Your shop has not been approved yet. We will email you as soon as it is, and then you can post it."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:67
+msgid "Your shop is already live."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:132
+msgid "Your shop is already posted."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/business-profile.service.ts:75
+msgid "Your shop is already waiting for review."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:460
+msgid "Your shop is approved"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:496
+msgid "Your shop is back"
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: value0.
+#: src/business/business-profile.service.ts:82
+msgid "Your shop is not ready to be reviewed yet. Still to add: {value0}."
+msgstr ""
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/shop-messages/shop-messages.service.ts:363
+msgid "Your shop needs to be live on the app to write to its followers."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:472
+msgid "Your shop was not approved yet"
+msgstr ""
+
+#: src/mail/mail.service.ts:150
+msgid "Your sign-in code: {code}"
+msgstr ""
+
+#: src/mail/mail.service.ts:352
+msgid "Your time is held"
+msgstr ""
+
+#: src/notifications/notification-templates.ts:285
+msgid "Your time is held for a few more minutes — open the booking in the app and try again."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2191
+msgid "Your visit for {serviceName} was marked as missed, but you came. Our support team corrected it: it now counts as done, and you can leave a review."
+msgstr ""
+
+#: src/appointments/appointments.service.ts:2186
+msgid "Your visit to {shop} for {serviceName} was marked as missed, but you came. Our support team corrected it: it now counts as done, and you can leave a review."
+msgstr ""
+
+#: src/notifications/notification-templates.ts:229
+msgid "Your whole deposit comes back to you, the platform fee included."
+msgstr ""

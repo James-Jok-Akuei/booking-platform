@@ -19787,3 +19787,117 @@ reached kept a sliver of an old width there; every bar now reads one number
 for where the story is, so they fill and empty exactly. (Checked with a
 temporary change that opened the story without signing in — the simulator
 cannot be typed into from here — taken out again.)
+
+## 308. Kinyarwanda and French: the apps made ready for them (2026-10-21)
+
+The user: the platform opens in Kigali, so the apps should speak Kinyarwanda
+and French beside English — done the way big apps do it, because a wrong
+translation can cause real trouble — and the administrators' console can stay
+English. Long Kinyarwanda words must not spoil how the apps look, at any width.
+
+**What was decided together.** No translation is 100% right by itself, so
+this is done in three steps: (1) make every app *ready* — every sentence in a
+translation file, the language choice, dates and plurals per language, every
+screen checked with very long words — while still only offering English;
+(2) Kinyarwanda, by professional translators with a native speaker checking
+it in the running apps; (3) French the same way. The legal documents get
+their own translations, read by the lawyer. The console stays English; where
+it writes words customers read (categories, legal documents, announcements)
+it will get a box per language. A language is offered only once it is
+finished and checked (`OFFERED = ['en']` in each app), so nobody ever sees
+half a translation.
+
+**How the apps do it** (parts 1 and 2):
+- **Lingui** in both apps: every sentence goes through `t`, `<Trans>`,
+  `plural`/`<Plural>`; `npm run i18n` pulls them into
+  `src/locales/<language>/messages.po` (the files translators work in) and
+  builds what the app reads. About 930 sentences in the customer app, 2,300
+  in the seller app. Sentences that were glued together from pieces were
+  rewritten whole, so each language gets one sentence with its own word
+  order and plurals.
+- **Dates and day names** come from the language itself (`fr-RW`, `rw-RW`;
+  the day before the month, a 24-hour clock). **Money** is written
+  "RWF 12,000" in every language, as mobile money writes it.
+- **The choice**: Account (customer) and the shop menu and sign-in page
+  (seller), shown once a second language is offered. It is kept on the
+  account (`users.locale`, `PATCH /users/me/locale`) so another phone and the
+  server follow it, and every request sends it as `Accept-Language`. The
+  seller app fetches a language's file only for those who use it. Phones
+  that lack plural rules get them (`@formatjs/intl-pluralrules`).
+- **"Long words"** (`en-XA`, made by `scripts/i18n/long-words.mjs`, only in
+  development): every sentence stretched to Kinyarwanda's length. Every
+  screen of both apps was checked in it at 1440, 1024, 390 and 320 and what
+  broke was fixed — rows that now wrap, two-line tabs and buttons, labels
+  that end in "…" with the whole text on hover, titles that may break inside
+  a word rather than widen the page.
+- Lists of words kept outside a screen (the menu, the tour's steps, the
+  search's sections) are read when shown, never copied when the app starts —
+  a copy made then would stay in the first language.
+
+### 308.1 The server, in each reader's language (2026-10-21)
+
+Everything a customer or a seller reads from the server now follows their
+language; what only the console reads stays English.
+- **`say(locale, 'English with {names}')`** (`src/i18n/say.ts`) for every
+  email, notice and label: the English is the key, ICU plurals included; a
+  sentence not translated yet is said in English, never blank. `msg('…')`
+  marks a sentence kept in a list and said later (the notification kinds,
+  the email buttons). `npm run i18n` in apps/backend
+  (`scripts/i18n/server-messages.mjs`) writes `src/i18n/locales/{rw,fr}.po`
+  — about 710 sentences, admin-only files left out — and `catalogs.ts`.
+- **Refusals**: the thousand `throw new …Exception('…')` stay as they are.
+  A global filter (`LocalisedErrorsFilter`) says each message in the
+  request's `Accept-Language`: found whole, or — when it holds values
+  ("Please wait 42s…") — by the shape of its English. Status codes and the
+  error shape do not change; a request in English goes straight through.
+- **Notices** are written once per person, in *their* saved language, when
+  they are raised — the inbox, the push and the email carry those words. So
+  a notice to a team is not written ahead in English: it carries the facts
+  (the stars of a review, the shop and the chosen advice of an approval, the
+  sign-in's device) and each member's copy is written from them. What our
+  support team does (§297) is composed per reader too (`compose`), and the
+  note it writes into a help request is in the language of the person who
+  asked.
+- **Emails**: the frame (headings, the ticket's labels, buttons, "Stop emails
+  like this", `<html lang>`), the sign-in and confirm codes (in the language
+  of the app they were asked from), the arrival-code email, the morning
+  summary, the weekly "Popular near you", the calendar entry. The email reads
+  "Label: value" lines back as a card in any language, French's space before
+  the colon included.
+- Also in the reader's language: notification settings (titles, hints, the
+  "always emailed" notes, and the words of a yes to news, kept with the yes
+  as they were shown), the unsubscribe page, the shop checklist and its
+  approval advice, "where you are signed in", the payout spreadsheet's
+  columns.
+- **Invitations** to somebody with no account yet are written in the
+  inviter's language; an administrator's invitation stays English.
+- The notice "A review was hidden" now says what it means to each side: to
+  its author that it is no longer public, to the shop that it no longer
+  counts in its rating.
+
+**The emails with long words.** Every email was drawn with the server's
+sentences stretched to Kinyarwanda length, at 390, 375 and 320, beside the
+English. What broke, and was fixed so it holds in any language:
+- the ticket's "Get directions" and "Add to calendar" were held on one line
+  and pushed the email wider than a phone — they now sit side by side while
+  they fit and one under the other when not (no dot between them);
+- a booking's status pill never wrapped — it may now take two lines, with
+  rounded corners that suit both;
+- a long label in the details card ("Reference: …") may break inside a word
+  rather than widen the card.
+Two were wrong in English already: the code boxes were 4px too wide on a
+390 phone and more on a 320 one (they now close up, and shrink below 360),
+and "For your shop" was squeezed beside the name on narrow phones (below
+380 it now sits under it).
+
+Kinyarwanda dates come from the phone's and the server's own language data
+("Ukwakira 22 Kuwa kane" for Thursday 22 October); the native reviewer is to
+say whether that order reads right, and the formats can be set by hand if not.
+
+Checked: every notice, for every side, renders the same English as before
+(apart from that one); tests put stand-in French in and see it in a notice,
+its email, the settings and a refusal (`test/server-language.e2e.spec.ts`).
+
+**Left for later**: the website; the console's boxes per language for words
+customers read (categories, legal documents, announcements); the tour's
+screenshots taken again in each language; then the translations themselves.

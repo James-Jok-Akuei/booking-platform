@@ -1,4 +1,5 @@
 import { NotificationCategory as C, NotificationChannel, NotificationType as T, UserRole } from '@prisma/client';
+import { msg } from '../i18n/say';
 
 /**
  * What each notification is, and what its recipient may choose about it
@@ -7,6 +8,9 @@ import { NotificationCategory as C, NotificationChannel, NotificationType as T, 
  *
  * The in-app list always gets everything: it is the record. Choices are about
  * the two things that interrupt — a push, and an email.
+ *
+ * The words are English, marked with msg(): whoever reads them has them said
+ * in their own language, with say(locale, rule.title) (§308).
  */
 
 export type Audience = 'CUSTOMER' | 'BUSINESS' | 'ADMIN';
@@ -38,56 +42,56 @@ export interface CategoryRule {
   needsYes?: boolean;
 }
 
-const ALWAYS_EMAILED = 'Always emailed — it is the record of your booking.';
-const ACCOUNT_EMAILED = 'Always emailed — it is about your account.';
+const ALWAYS_EMAILED = msg('Always emailed — it is the record of your booking.');
+const ACCOUNT_EMAILED = msg('Always emailed — it is about your account.');
 
 /** Each audience's kinds, in the order the settings screen shows them. */
 export const CATEGORY_RULES: Record<Audience, CategoryRule[]> = {
   CUSTOMER: [
     {
       category: C.BOOKINGS,
-      title: 'Bookings and payments',
-      hint: 'When a booking is confirmed, changed, cancelled or missed, and when a payment does not go through.',
+      title: msg('Bookings and payments'),
+      hint: msg('When a booking is confirmed, changed, cancelled or missed, and when a payment does not go through.'),
       email: { on: true, locked: ALWAYS_EMAILED },
       push: { on: true },
       canWait: false,
     },
     {
       category: C.REMINDERS,
-      title: 'Reminders',
-      hint: 'The day before an appointment, so you do not miss it.',
+      title: msg('Reminders'),
+      hint: msg('The day before an appointment, so you do not miss it.'),
       email: { on: true },
       push: { on: true },
       canWait: false,
     },
     {
       category: C.MESSAGES,
-      title: 'Messages',
-      hint: 'When a shop writes to you. If you read it in the app first, no email follows.',
+      title: msg('Messages'),
+      hint: msg('When a shop writes to you. If you read it in the app first, no email follows.'),
       email: { on: true },
       push: { on: true },
       canWait: false,
     },
     {
       category: C.REVIEWS,
-      title: 'Reviews',
-      hint: 'Asking how a visit went, and when a shop replies to your review.',
+      title: msg('Reviews'),
+      hint: msg('Asking how a visit went, and when a shop replies to your review.'),
       email: { on: true },
       push: { on: true },
       canWait: true,
     },
     {
       category: C.SHOP_OFFERS,
-      title: 'Offers from places you follow',
-      hint: 'Only from shops you follow and said yes to. Change it per shop under Saved → Following.',
+      title: msg('Offers from places you follow'),
+      hint: msg('Only from shops you follow and said yes to. Change it per shop under Saved → Following.'),
       email: { on: false },
       push: { on: true },
       canWait: true,
     },
     {
       category: C.NEWS,
-      title: 'News and offers from us',
-      hint: 'New places, deals and tips. A few a month at most.',
+      title: msg('News and offers from us'),
+      hint: msg('New places, deals and tips. A few a month at most.'),
       email: { on: false },
       push: { on: false },
       canWait: true,
@@ -95,8 +99,8 @@ export const CATEGORY_RULES: Record<Audience, CategoryRule[]> = {
     },
     {
       category: C.ACCOUNT,
-      title: 'Account and support',
-      hint: 'Your account, your support requests, and notices about the service.',
+      title: msg('Account and support'),
+      hint: msg('Your account, your support requests, and notices about the service.'),
       email: { on: true, locked: ACCOUNT_EMAILED },
       push: { on: true },
       canWait: true,
@@ -105,54 +109,55 @@ export const CATEGORY_RULES: Record<Audience, CategoryRule[]> = {
   BUSINESS: [
     {
       category: C.BOOKINGS,
-      title: 'Bookings',
-      hint: 'New bookings, deposits paid, cancellations and missed appointments.',
-      email: { on: true, locked: 'Always emailed — one by one, or as one summary each morning.' },
+      title: msg('Bookings'),
+      hint: msg('New bookings, deposits paid, cancellations and missed appointments.'),
+      email: { on: true, locked: msg('Always emailed — one by one, or as one summary each morning.') },
       push: { on: true },
       canWait: false,
     },
     {
       category: C.MESSAGES,
-      title: 'Messages',
-      hint: 'When a customer writes. If you read it in the app first, no email follows.',
+      title: msg('Messages'),
+      hint: msg('When a customer writes. If you read it in the app first, no email follows.'),
       email: { on: true },
       push: { on: true },
       canWait: false,
     },
     {
       category: C.REVIEWS,
-      title: 'Reviews',
-      hint: 'New reviews of your branches, and reviews hidden by our team.',
+      title: msg('Reviews'),
+      hint: msg('New reviews of your branches, and reviews hidden by our team.'),
       email: { on: true },
       push: { on: true },
       canWait: true,
     },
     {
       category: C.MONEY,
-      title: 'Money',
-      hint: 'Payouts sent or failed, and your payout number checked.',
+      title: msg('Money'),
+      hint: msg('Payouts sent or failed, and your payout number checked.'),
       email: { on: true },
       push: { on: true },
       canWait: true,
     },
     {
       category: C.ACCOUNT,
-      title: 'Your shop and support',
-      hint: 'Approval, your team, stories taken down, support replies and notices from us.',
-      email: { on: true, locked: 'Always emailed — it is about your shop.' },
+      title: msg('Your shop and support'),
+      hint: msg('Approval, your team, stories taken down, support replies and notices from us.'),
+      email: { on: true, locked: msg('Always emailed — it is about your shop.') },
       push: { on: true },
       canWait: true,
     },
     {
       category: C.NEWS,
-      title: 'News and tips from us',
-      hint: 'New features and ideas to get more bookings. A few a month at most.',
+      title: msg('News and tips from us'),
+      hint: msg('New features and ideas to get more bookings. A few a month at most.'),
       email: { on: false },
       push: { on: false },
       canWait: true,
       needsYes: true,
     },
   ],
+  // The console's own kinds stay English, like the console (§308).
   ADMIN: [
     {
       category: C.ADMIN_TICKETS,
@@ -391,4 +396,13 @@ export function dayWord(at: Date, timeZone: string, now = new Date()): string {
   if (day(at) === day(now)) return 'Today';
   if (day(at) === day(new Date(now.getTime() + 86_400_000))) return 'Tomorrow';
   return new Intl.DateTimeFormat('en-GB', { timeZone, weekday: 'long' }).format(at);
+}
+
+/** Whether a time is today, tomorrow or later, in `timeZone` — for words in any language (§308). */
+export function dayKind(at: Date, timeZone: string, now = new Date()): 'today' | 'tomorrow' | 'later' {
+  const day = (d: Date) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  if (day(at) === day(now)) return 'today';
+  if (day(at) === day(new Date(now.getTime() + 86_400_000))) return 'tomorrow';
+  return 'later';
 }

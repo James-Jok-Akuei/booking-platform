@@ -16,6 +16,9 @@
  * never become markup in an email from our address.
  */
 
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { say } from '../i18n/say';
+
 // ---------------------------------------------------------------------------
 // The brand
 // ---------------------------------------------------------------------------
@@ -119,7 +122,7 @@ export function facts(rows: Array<{ label: string; value: string; strong?: boole
     .map(
       (r, i) =>
         '<tr>' +
-        `<td class="em-muted em-line" valign="top" style="padding:13px 0;${i ? `border-top:1px solid ${C.line};` : ''}font-family:${FONT};font-size:14px;line-height:20px;color:${C.muted};width:38%">${esc(r.label)}</td>` +
+        `<td class="em-muted em-line" valign="top" style="padding:13px 0;${i ? `border-top:1px solid ${C.line};` : ''}font-family:${FONT};font-size:14px;line-height:20px;color:${C.muted};width:38%;padding-right:12px;overflow-wrap:anywhere;word-break:break-word">${esc(r.label)}</td>` +
         `<td class="em-ink em-line" valign="top" align="right" style="padding:13px 0;${i ? `border-top:1px solid ${C.line};` : ''}font-family:${FONT};font-size:${r.strong ? 16 : 14.5}px;line-height:20px;font-weight:${r.strong ? 800 : 650};color:${C.ink}">${esc(r.value)}</td>` +
         '</tr>',
     )
@@ -217,8 +220,8 @@ export function codeBoxes(code: string, opts: { onDark?: boolean; label?: string
     .split('')
     .map(
       (digit) =>
-        '<td style="padding:0 4px">' +
-        `<div class="${dark ? '' : 'em-codebox'}" style="box-sizing:border-box;width:46px;height:60px;line-height:56px;border-radius:14px;text-align:center;` +
+        '<td class="em-codecell" style="padding:0 4px">' +
+        `<div class="em-code${dark ? '' : ' em-codebox'}" style="box-sizing:border-box;width:46px;height:60px;line-height:56px;border-radius:14px;text-align:center;` +
         (dark
           ? `background:#FFFFFF;border:2px solid #FFFFFF;color:${C.ink};`
           : `background:${C.accentSoft};border:2px solid #FBD9CD;color:${C.ink};`) +
@@ -356,9 +359,12 @@ export interface Ticket {
    */
   extras?: { label: string; lines: string[]; privateNote: string | null; note: string | null } | null;
   links?: Array<{ label: string; url: string }>;
+  /** The language of its own labels (§308). */
+  locale?: Locale;
 }
 
 export function ticket(t: Ticket): Block {
+  const l = t.locale ?? DEFAULT_LOCALE;
   const tone = t.status ? TONES[t.status.tone] : null;
   const photo = t.photoUrl
     ? `<tr><td style="padding:0;font-size:0;line-height:0"><img src="${esc(t.photoUrl)}" width="520" alt="" class="em-photo" style="display:block;width:100%;max-width:520px;height:200px;object-fit:cover;border-radius:20px 20px 0 0;border:0"></td></tr>`
@@ -380,7 +386,7 @@ export function ticket(t: Ticket): Block {
       ? `<img src="${esc(t.shopLogoUrl)}" width="20" height="20" alt="" style="display:inline-block;width:20px;height:20px;border-radius:6px;vertical-align:-5px;margin-right:6px;border:0;object-fit:cover">`
       : '') + esc(t.shop);
   const chip = t.status
-    ? `<span style="display:inline-block;padding:5px 11px;border-radius:999px;background:${tone!.soft};color:${tone!.deep};font-family:${FONT};font-size:12px;line-height:14px;font-weight:800;white-space:nowrap">&#9679;&nbsp;${esc(t.status.label)}</span>`
+    ? `<span style="display:inline-block;padding:5px 11px;border-radius:14px;background:${tone!.soft};color:${tone!.deep};font-family:${FONT};font-size:12px;line-height:14px;font-weight:800">&#9679;&nbsp;${esc(t.status.label)}</span>`
     : '';
   const head =
     '<tr><td style="padding:20px 22px 18px">' +
@@ -404,8 +410,8 @@ export function ticket(t: Ticket): Block {
   // The perforation between the ticket and its stub.
   const tear = `<tr><td style="padding:0 22px"><div class="em-line" style="border-top:2px dashed ${C.line};height:0;line-height:0;font-size:0">&nbsp;</div></td></tr>`;
   const cells = [
-    { label: 'Where', value: t.branch, sub: t.address ?? null },
-    { label: 'Booking no.', value: t.reservation, sub: null },
+    { label: say(l, 'Where'), value: t.branch, sub: t.address ?? null },
+    { label: say(l, 'Booking no.'), value: t.reservation, sub: null },
     ...(t.money ?? []).map((m) => ({ label: m.label, value: m.value, sub: null })),
   ];
   const pairs: string[] = [];
@@ -462,13 +468,15 @@ export function ticket(t: Ticket): Block {
       '</td></tr>'
     : '';
   const links = t.links?.length
-    ? `<tr><td class="em-sunken" style="padding:14px 22px;background:${C.sunken};border-radius:0 0 20px 20px;font-family:${FONT};font-size:14px;line-height:20px;font-weight:700">` +
+    ? `<tr><td class="em-sunken" style="padding:11px 22px;background:${C.sunken};border-radius:0 0 20px 20px;font-family:${FONT};font-size:14px;line-height:20px;font-weight:700">` +
+      // Side by side while they fit, one under the other when the words are
+      // long (§308) — never wider than a phone.
       t.links
         .map(
-          (l) =>
-            `<a href="${esc(l.url)}" style="color:${C.accentDeep};text-decoration:none;white-space:nowrap">${esc(l.label)}&nbsp;&rarr;</a>`,
+          (l, i, all) =>
+            `<a href="${esc(l.url)}" style="display:inline-block;margin:3px ${i < all.length - 1 ? 16 : 0}px 3px 0;color:${C.accentDeep};text-decoration:none">${esc(l.label)}&nbsp;&rarr;</a>`,
         )
-        .join(`<span style="color:${C.faint}">&nbsp;&nbsp;&middot;&nbsp;&nbsp;</span>`) +
+        .join(' ') +
       '</td></tr>'
     : '';
   const html = row(
@@ -483,14 +491,14 @@ export function ticket(t: Ticket): Block {
   );
   const text = [
     `${t.service}${t.quantity && t.quantity > 1 ? ` × ${t.quantity}` : ''} — ${t.shop}`,
-    t.status ? `Status: ${t.status.label}` : null,
-    `When: ${t.when}`,
-    `Where: ${t.branch}${t.address ? `, ${t.address}` : ''}`,
-    `Booking no.: ${t.reservation}`,
+    t.status ? say(l, 'Status: {status}', { status: t.status.label }) : null,
+    say(l, 'When: {when}', { when: t.when }),
+    say(l, 'Where: {locationName}', { locationName: `${t.branch}${t.address ? `, ${t.address}` : ''}` }),
+    say(l, 'Booking no.: {number}', { number: t.reservation }),
     ...(t.money ?? []).map((m) => `${m.label}: ${m.value}`),
     ...(t.extras ? [`${t.extras.label}:`, ...t.extras.lines.map((line) => `  ${line}`)] : []),
     t.extras?.privateNote ?? null,
-    t.extras?.note ? `Note: “${t.extras.note}”` : null,
+    t.extras?.note ? say(l, 'Note: “{note}”', { note: t.extras.note }) : null,
     ...(t.links ?? []).map((l) => `${l.label}: ${l.url}`),
   ]
     .filter(Boolean)
@@ -509,6 +517,7 @@ export function serviceCards(
     was?: string | null;
     off?: number | null;
   }>,
+  locale: Locale = DEFAULT_LOCALE,
 ): Block {
   const card = (s: (typeof items)[number]) =>
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="em-card em-line" style="background:${C.panel};border:1px solid ${C.line};border-radius:20px">` +
@@ -555,7 +564,10 @@ export function serviceCards(
       '0 40px 8px',
     ),
     items
-      .map((s) => `${s.name} — ${s.price}${s.off ? ` (${s.off}% off, was ${s.was})` : ''}\n${s.shop} · ${s.facts}`)
+      .map(
+        (s) =>
+          `${s.name} — ${s.price}${s.off ? ` ${say(locale, '({off}% off, was {was})', { off: s.off, was: s.was })}` : ''}\n${s.shop} · ${s.facts}`,
+      )
       .join('\n\n'),
   );
 }
@@ -595,6 +607,8 @@ export interface Email {
     manage?: { label: string; url?: string | null } | null;
     unsubscribeUrl?: string | null;
   };
+  /** The language it is written in, for its own few words and `lang` (§308). */
+  locale?: Locale;
 }
 
 /** Where the mark lives, so the email can load it (§292). */
@@ -645,19 +659,21 @@ export function renderEmail(
   const t = TONES[email.hero.tone];
   const night = email.hero.tone === 'night';
   const blocks = email.blocks.filter((b): b is Block => Boolean(b && (b.html || b.text)));
+  const l = email.locale ?? DEFAULT_LOCALE;
   const audienceLabel =
-    email.audience === 'BUSINESS' ? 'For your shop' : email.audience === 'ADMIN' ? 'Admin console' : '';
+    email.audience === 'BUSINESS' ? say(l, 'For your shop') : email.audience === 'ADMIN' ? 'Admin console' : '';
+  const stop = say(l, 'Stop emails like this');
 
   const header =
     '<tr><td class="em-px" style="padding:0 6px 18px">' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' +
-    `<td valign="middle" style="font-family:${FONT}">` +
+    `<td class="em-hcell" valign="middle" style="font-family:${FONT}">` +
     '<table role="presentation" cellpadding="0" cellspacing="0"><tr>' +
     `<td valign="middle" style="padding-right:10px"><img src="${esc(markUrl(opts.assetBase))}" width="36" height="36" alt="" style="display:block;width:36px;height:36px;border-radius:10px;border:0"></td>` +
     `<td valign="middle" class="em-ink" style="font-family:${FONT};font-size:18px;line-height:22px;font-weight:800;letter-spacing:-0.4px;color:${C.ink}">Bwangu<span style="color:${C.logo}">Reservations</span></td>` +
     '</tr></table></td>' +
     (audienceLabel
-      ? `<td align="right" valign="middle"><span class="em-chip" style="display:inline-block;padding:6px 12px;border-radius:999px;background:#EAE6DE;font-family:${FONT};font-size:12px;line-height:14px;font-weight:700;color:${C.ink2}">${esc(audienceLabel)}</span></td>`
+      ? `<td class="em-hcell em-aud" align="right" valign="middle"><span class="em-chip" style="display:inline-block;padding:6px 12px;border-radius:999px;background:#EAE6DE;font-family:${FONT};font-size:12px;line-height:14px;font-weight:700;color:${C.ink2}">${esc(audienceLabel)}</span></td>`
       : '') +
     '</tr></table></td></tr>';
 
@@ -714,7 +730,7 @@ export function renderEmail(
       : esc(email.footer.manage.label)
     : '';
   const unsubscribe = email.footer.unsubscribeUrl
-    ? `<a href="${esc(email.footer.unsubscribeUrl)}" style="color:${C.ink2};text-decoration:underline">Stop emails like this</a>`
+    ? `<a href="${esc(email.footer.unsubscribeUrl)}" style="color:${C.ink2};text-decoration:underline">${esc(stop)}</a>`
     : '';
   const footer =
     `<tr><td align="center" class="em-px" style="padding:30px 24px 8px;font-family:${FONT}">` +
@@ -749,6 +765,14 @@ export function renderEmail(
       .em-btn-wrap, .em-btn-wrap td { width:100% !important; }
       .em-btn { display:block !important; text-align:center !important; }
       .em-photo { height:170px !important; }
+      .em-codecell { padding:0 2px !important; }
+    }
+    @media (max-width: 380px) {
+      .em-hcell { display:block !important; width:100% !important; }
+      .em-aud { text-align:left !important; padding-top:10px !important; }
+    }
+    @media (max-width: 360px) {
+      .em-code { width:37px !important; height:50px !important; line-height:46px !important; font-size:24px !important; }
     }
     @media (prefers-color-scheme: dark) {
       .em-bg { background:#0E130E !important; }
@@ -774,7 +798,7 @@ export function renderEmail(
     }`;
 
   const html =
-    '<!doctype html><html lang="en" xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8">' +
+    `<!doctype html><html lang="${l}" xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8">` +
     '<meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<meta name="x-apple-disable-message-reformatting">' +
     '<meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark">' +
@@ -818,7 +842,7 @@ export function renderEmail(
     email.footer.manage
       ? `${email.footer.manage.label}${email.footer.manage.url ? `: ${email.footer.manage.url}` : ''}`
       : null,
-    email.footer.unsubscribeUrl ? `Stop emails like this: ${email.footer.unsubscribeUrl}` : null,
+    email.footer.unsubscribeUrl ? `${stop}: ${email.footer.unsubscribeUrl}` : null,
   ]
     .filter((line): line is string => line !== null)
     .join('\n\n')

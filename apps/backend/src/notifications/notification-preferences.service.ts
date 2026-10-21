@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { NotificationCategory, NotificationChannel } from '@prisma/client';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { asLocale, msg, say } from '../i18n/say';
 import { Audience, CATEGORY_RULES, CHOICE_CHANNELS, ChoiceChannel, audienceOf, ruleFor } from './notification-catalog';
 
 /** On or off, for one kind on one channel. */
@@ -10,7 +12,7 @@ export type Choices = Map<string, boolean>;
 const key = (category: NotificationCategory, channel: NotificationChannel) => `${category}:${channel}`;
 
 /** The words a person agrees to for news and offers, kept with their yes (§287). */
-export const NEWS_YES = 'Yes, send me news and offers. I can stop at any time.';
+export const NEWS_YES = msg('Yes, send me news and offers. I can stop at any time.');
 
 /**
  * What each person has chosen to receive, and how (§287).
@@ -50,8 +52,8 @@ export class NotificationPreferencesService {
     return choices.get(key(category, channel)) ?? channelRule.on;
   }
 
-  /** Everything the settings screen shows. */
-  async settings(userId: string) {
+  /** Everything the settings screen shows, in the reader's language (§308). */
+  async settings(userId: string, locale: Locale = DEFAULT_LOCALE) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
       select: { role: true, quietHoursOn: true, quietFrom: true, quietTo: true, bookingEmailDigest: true },
@@ -62,14 +64,14 @@ export class NotificationPreferencesService {
       const rule = ruleFor(audience, category)!;
       const channelRule = ch === NotificationChannel.EMAIL ? rule.email : rule.push;
       if (!channelRule) return null;
-      return { on: this.isOn(choices, audience, category, ch), locked: channelRule.locked ?? null };
+      return { on: this.isOn(choices, audience, category, ch), locked: channelRule.locked ? say(locale, channelRule.locked) : null };
     };
     return {
       audience,
       categories: CATEGORY_RULES[audience].map((rule) => ({
         category: rule.category,
-        title: rule.title,
-        hint: rule.hint,
+        title: say(locale, rule.title),
+        hint: say(locale, rule.hint),
         email: channel(rule.category, NotificationChannel.EMAIL),
         push: channel(rule.category, NotificationChannel.PUSH),
         canWait: rule.canWait,
@@ -77,7 +79,7 @@ export class NotificationPreferencesService {
       })),
       quietHours: { on: user.quietHoursOn, from: user.quietFrom, to: user.quietTo },
       bookingEmailDigest: audience === 'BUSINESS' ? user.bookingEmailDigest : null,
-      newsWording: NEWS_YES,
+      newsWording: say(locale, NEWS_YES),
     };
   }
 
@@ -90,6 +92,7 @@ export class NotificationPreferencesService {
       bookingEmailDigest?: boolean;
       source: string;
     },
+    locale: Locale = DEFAULT_LOCALE,
   ) {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { role: true } });
     const audience = audienceOf(user.role);
@@ -117,7 +120,8 @@ export class NotificationPreferencesService {
               userId,
               purpose: `${choice.category.toLowerCase()}.${choice.channel.toLowerCase()}`,
               granted: choice.on,
-              wording: choice.on ? NEWS_YES : 'Turned off.',
+              // The words as they were shown, in the language they were read in.
+              wording: choice.on ? say(locale, NEWS_YES) : 'Turned off.',
               source: change.source,
             },
           });
@@ -140,7 +144,7 @@ export class NotificationPreferencesService {
       }
     });
 
-    return this.settings(userId);
+    return this.settings(userId, locale);
   }
 
   // ---------- "Stop emails like this", without signing in ----------
@@ -158,23 +162,28 @@ export class NotificationPreferencesService {
     return `${this.apiBase}/notifications/unsubscribe?${params.toString()}`;
   }
 
-  /** Turns email off for that kind. True when the link was genuine. */
-  async unsubscribe(userId: string, category: string, token: string): Promise<{ ok: boolean; title?: string }> {
+  /** Turns email off for that kind. True when the link was genuine; the kind named in the person's language. */
+  async unsubscribe(
+    userId: string,
+    category: string,
+    token: string,
+  ): Promise<{ ok: boolean; title?: string; locale?: Locale }> {
     if (!(Object.values(NotificationCategory) as string[]).includes(category)) return { ok: false };
     const expected = Buffer.from(this.sign(userId, category as NotificationCategory));
     const given = Buffer.from(token ?? '');
     if (expected.length !== given.length || !timingSafeEqual(expected, given)) return { ok: false };
 
-    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true, locale: true } });
     if (!user) return { ok: false };
+    const locale = asLocale(user.locale);
     const audience = audienceOf(user.role);
     const rule = ruleFor(audience, category as NotificationCategory);
-    if (!rule?.email || rule.email.locked) return { ok: false };
+    if (!rule?.email || rule.email.locked) return { ok: false, locale };
 
     await this.update(userId, {
       choices: [{ category: category as NotificationCategory, channel: NotificationChannel.EMAIL, on: false }],
       source: 'email-link',
     });
-    return { ok: true, title: rule.title };
+    return { ok: true, title: say(locale, rule.title), locale };
   }
 }

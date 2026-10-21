@@ -12,6 +12,7 @@ import {
   NotificationType,
   UserRole,
 } from '@prisma/client';
+import { asLocale } from '../i18n/say';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { InviteMemberDto } from './dto/invite-member.dto';
@@ -146,7 +147,7 @@ export class MembersService {
     // there is no inbox entry to create, only a message to send.
     const inviter = await this.prisma.user.findUnique({
       where: { id: inviterUserId },
-      select: { email: true },
+      select: { email: true, locale: true },
     });
 
     const context = {
@@ -169,6 +170,8 @@ export class MembersService {
         email,
         type: NotificationType.BUSINESS_INVITATION,
         context,
+        // Nobody to ask yet: the language of the person inviting them (§308).
+        locale: asLocale(inviter?.locale),
       });
     }
 

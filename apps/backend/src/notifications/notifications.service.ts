@@ -37,6 +37,8 @@ import {
   nextLocalTime,
   ruleFor,
 } from './notification-catalog';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { DATE_TAGS, asLocale, msg, say } from '../i18n/say';
 import { NotificationPreferencesService } from './notification-preferences.service';
 import { PushService } from './push.service';
 import { NotificationsGateway } from './notifications.gateway';
@@ -57,10 +59,10 @@ type Plan = { channel: NotificationChannel; status: NotificationStatus; dueAt: D
 
 /** The button on a seller's or an administrator's email, by what the notice is about. */
 const BUTTON: Partial<Record<NotificationCategory, string>> = {
-  BOOKINGS: 'See bookings',
-  MESSAGES: 'Read and reply',
-  REVIEWS: 'See reviews',
-  MONEY: 'Getting paid',
+  BOOKINGS: msg('See bookings'),
+  MESSAGES: msg('Read and reply'),
+  REVIEWS: msg('See reviews'),
+  MONEY: msg('Getting paid'),
   ADMIN_TICKETS: 'Open the ticket',
   ADMIN_QUEUE: 'Open the queue',
   ADMIN_SYSTEM: 'Open settings',
@@ -129,6 +131,7 @@ export class NotificationsService {
           quietFrom: true,
           quietTo: true,
           bookingEmailDigest: true,
+          locale: true,
         },
       });
       // A closed account is told nothing more.
@@ -136,10 +139,13 @@ export class NotificationsService {
 
       const audience = audienceOf(recipient.role);
       const category = params.category ?? categoryOf(params.type, audience);
+      // Written once, in the language this person reads (§308): the list,
+      // the push and the email all carry these words.
       const { subject, body } = renderNotification(params.type, {
         ...params.context,
         timeZone: this.timeZone,
         audience,
+        locale: asLocale(recipient.locale),
       });
       const ref: NotificationRef = { appointmentId: params.appointmentId, ...params.ref };
       const link = params.link !== undefined ? params.link : linkFor(params.type, audience, ref);
@@ -272,11 +278,16 @@ export class NotificationsService {
     email: string;
     type: NotificationType;
     context: NotifyContext;
+    /** Nobody to ask yet: the language of the person inviting them (§308). */
+    locale?: Locale;
   }): Promise<void> {
     try {
+      // An administrator's invitation is to the English-only console.
+      const l = params.context.role === 'ADMIN' ? DEFAULT_LOCALE : (params.locale ?? DEFAULT_LOCALE);
       const { subject, body } = renderNotification(params.type, {
         ...params.context,
         timeZone: this.timeZone,
+        locale: l,
       });
       const app = params.context.role === 'ADMIN' ? this.adminAppUrl : this.businessAppUrl;
       const { email } = noticeEmail({
@@ -284,11 +295,12 @@ export class NotificationsService {
         audience: params.context.role === 'ADMIN' ? 'ADMIN' : 'BUSINESS',
         subject,
         body,
-        button: { label: 'Sign in to accept', url: `${app}/login` },
+        button: { label: say(l, 'Sign in to accept'), url: `${app}/login` },
         footer: {
-          reason: 'You get this because someone invited this address.',
-          manage: { label: 'If you did not expect it, you can ignore it.' },
+          reason: say(l, 'You get this because someone invited this address.'),
+          manage: { label: say(l, 'If you did not expect it, you can ignore it.') },
         },
+        locale: l,
         booking: null,
         arrivalCode: null,
         author: null,
@@ -415,7 +427,7 @@ export class NotificationsService {
             appointmentId: true,
             announcement: { select: { linkLabel: true } },
             shopMessage: { select: { business: { select: { name: true, logoUrl: true } } } },
-            recipient: { select: { id: true, email: true, role: true } },
+            recipient: { select: { id: true, email: true, role: true, locale: true } },
           },
         },
       },
@@ -485,12 +497,16 @@ export class NotificationsService {
     appointmentId: string | null;
     announcement: { linkLabel: string | null } | null;
     shopMessage: { business: { name: string | null; logoUrl: string | null } } | null;
-    recipient: { id: string; email: string; role: UserRole };
+    recipient: { id: string; email: string; role: UserRole; locale: string };
   }): Promise<OutboundMessage> {
     const audience = audienceOf(n.recipient.role);
     const rule = ruleFor(audience, n.category);
     const app = audience === 'ADMIN' ? this.adminAppUrl : audience === 'BUSINESS' ? this.businessAppUrl : null;
-    const topic = n.type === NotificationType.ANNOUNCEMENT ? 'news from us' : (rule?.title ?? 'this').toLowerCase();
+    // The email around the words in the reader's language too (§308); the console's people read English.
+    const l = audience === 'ADMIN' ? DEFAULT_LOCALE : asLocale(n.recipient.locale);
+    const topic = (
+      n.type === NotificationType.ANNOUNCEMENT ? say(l, 'news from us') : rule ? say(l, rule.title) : say(l, 'this')
+    ).toLocaleLowerCase(DATE_TAGS[l]);
     const locked = Boolean(rule?.email?.locked);
 
     // The booking as it is now, so the ticket says where it stands; the
@@ -510,19 +526,25 @@ export class NotificationsService {
       // Customers open the phone app; a link would only open a browser.
       button:
         app && n.link
-          ? { label: n.announcement?.linkLabel || BUTTON[n.category] || 'Open', url: `${app}${n.link}` }
+          ? {
+              label: n.announcement?.linkLabel || say(l, BUTTON[n.category] ?? msg('Open')),
+              url: `${app}${n.link}`,
+            }
           : null,
       footer: {
-        reason: locked ? `You always get emails about ${topic}.` : `You get emails about ${topic} because they are turned on.`,
+        reason: locked
+          ? say(l, 'You always get emails about {topic}.', { topic })
+          : say(l, 'You get emails about {topic} because they are turned on.', { topic }),
         manage: app
-          ? { label: 'Change what we send', url: `${app}/notifications` }
-          : { label: 'Change what we send in the app, under Account → Notifications.' },
+          ? { label: say(l, 'Change what we send'), url: `${app}/notifications` }
+          : { label: say(l, 'Change what we send in the app, under Account → Notifications.') },
         unsubscribeUrl: locked ? null : this.preferences.unsubscribeUrl(n.recipient.id, n.category),
       },
+      locale: l,
       booking: row ? bookingFacts(row) : null,
       arrivalCode: audience === 'CUSTOMER' ? (row?.verificationCode ?? null) : null,
       author: n.shopMessage
-        ? { name: n.shopMessage.business.name ?? 'A shop you follow', logoUrl: n.shopMessage.business.logoUrl }
+        ? { name: n.shopMessage.business.name ?? say(l, 'A shop you follow'), logoUrl: n.shopMessage.business.logoUrl }
         : null,
       timeZone: this.timeZone,
     });
@@ -614,7 +636,7 @@ export class NotificationsService {
           select: {
             subject: true,
             createdAt: true,
-            recipient: { select: { id: true, email: true } },
+            recipient: { select: { id: true, email: true, locale: true } },
           },
         },
       },
@@ -631,7 +653,8 @@ export class NotificationsService {
     let sent = 0;
     for (const [, list] of byPerson) {
       const email = list[0].notification.recipient.email;
-      const clock = new Intl.DateTimeFormat('en-GB', {
+      const locale = asLocale(list[0].notification.recipient.locale);
+      const clock = new Intl.DateTimeFormat(DATE_TAGS[locale], {
         timeZone: this.timeZone,
         weekday: 'short',
         hour: '2-digit',
@@ -640,6 +663,7 @@ export class NotificationsService {
       const summary = summaryEmail({
         items: list.map((d) => ({ at: clock.format(d.notification.createdAt), subject: d.notification.subject })),
         appUrl: this.businessAppUrl,
+        locale,
       });
       try {
         await this.driver.send({

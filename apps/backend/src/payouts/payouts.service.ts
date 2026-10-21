@@ -26,6 +26,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { BusinessBalanceDto, BusinessPayoutDetailDto, PAYOUT_INCLUDE } from './dto/payout-response.dto';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { ListPayoutsDto, PayoutDetailQueryDto } from './dto/list-payouts.dto';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { DATE_TAGS, say } from '../i18n/say';
 import { csvTextCell, toCsvRow } from './payout-csv';
 import { PayoutDestinationsService } from './payout-destinations.service';
 import { placesOf, shopMatching } from './payout-search';
@@ -1134,20 +1136,22 @@ export class PayoutsService {
     actor: { userId: string; role: UserRole | string },
     businessId: string,
     payoutId: string,
+    locale: Locale = DEFAULT_LOCALE,
   ): Promise<{ csv: string; filename: string }> {
+    const l = locale;
     const detail = await this.detailForBusiness(actor, businessId, payoutId, { limit: 1, offset: 0 });
     const bookings = await this.payoutBookings(payoutId, {});
     const currency = detail.payout.settlementCurrency;
     const day = new Intl.DateTimeFormat('en-CA', { timeZone: this.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
-    const time = new Intl.DateTimeFormat('en-GB', { timeZone: this.timeZone, hour: '2-digit', minute: '2-digit' });
-    // The seller app's own words for a booking's state (§213), not the enum.
+    const time = new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: this.timeZone, hour: '2-digit', minute: '2-digit' });
+    // The seller app's own words for a booking's state (§213), not the enum — in the seller's language (§308).
     const said: Record<string, string> = {
-      BOOKED: 'Expected',
-      IN_PROGRESS: 'In progress',
-      COMPLETED: 'Done',
-      NO_SHOW: 'No-show',
-      CANCELLED: 'Cancelled',
-      PENDING_PAYMENT: 'Unpaid',
+      BOOKED: say(l, 'Expected'),
+      IN_PROGRESS: say(l, 'In progress'),
+      COMPLETED: say(l, 'Done'),
+      NO_SHOW: say(l, 'No-show'),
+      CANCELLED: say(l, 'Cancelled'),
+      PENDING_PAYMENT: say(l, 'Unpaid'),
     };
     const reservation = (id: string) => {
       const s = id.replace(/-/g, '').slice(0, 8).toUpperCase();
@@ -1156,19 +1160,19 @@ export class PayoutsService {
 
     const lines = [
       toCsvRow([
-        'Reservation No.',
-        'Date',
-        'Time',
-        'Service',
-        'Quantity',
-        'Branch',
-        'Customer',
-        'Booking status',
-        'Deposit',
-        'Platform fee',
-        'Other',
-        'You get',
-        'Currency',
+        say(l, 'Reservation No.'),
+        say(l, 'Date'),
+        say(l, 'Time'),
+        say(l, 'Service'),
+        say(l, 'Quantity'),
+        say(l, 'Branch'),
+        say(l, 'Customer'),
+        say(l, 'Booking status'),
+        say(l, 'Deposit'),
+        say(l, 'Platform fee'),
+        say(l, 'Other'),
+        say(l, 'You get'),
+        say(l, 'Currency'),
       ]),
       ...bookings.map((b) =>
         toCsvRow([
@@ -1188,9 +1192,9 @@ export class PayoutsService {
         ]),
       ),
       ...detail.adjustments.map((a) =>
-        toCsvRow(['', day.format(new Date(a.createdAt)), '', `Correction: ${a.reason ?? ''}`, '', '', '', '', '', '', a.amountMinor, a.amountMinor, currency]),
+        toCsvRow(['', day.format(new Date(a.createdAt)), '', say(l, 'Correction: {reason}', { reason: a.reason ?? '' }), '', '', '', '', '', '', a.amountMinor, a.amountMinor, currency]),
       ),
-      toCsvRow(['Total', '', '', '', '', '', '', '', detail.totals.depositsMinor, detail.totals.platformFeesMinor, detail.totals.netMinor - detail.totals.depositsMinor - detail.totals.platformFeesMinor, detail.totals.netMinor, currency]),
+      toCsvRow([say(l, 'Total'), '', '', '', '', '', '', '', detail.totals.depositsMinor, detail.totals.platformFeesMinor, detail.totals.netMinor - detail.totals.depositsMinor - detail.totals.platformFeesMinor, detail.totals.netMinor, currency]),
     ];
     return { csv: `${lines.join('\r\n')}\r\n`, filename: `payout-${day.format(new Date(detail.payout.runAt))}.csv` };
   }

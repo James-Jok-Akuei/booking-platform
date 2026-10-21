@@ -2,15 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppointmentStatus } from '@prisma/client';
 import * as nodemailer from 'nodemailer';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { say } from '../i18n/say';
 import { BookingFacts, bookingTicket, icsFile } from './booking-email';
 import { Email, codeBoxes, notice, prose, renderEmail, serviceCards } from './email-kit';
 
 /** "45 min", "1 h 30 min" — as a person says it, the same as the app (§163). */
-const lengthOf = (minutes: number) => {
+const lengthOf = (minutes: number, l: Locale) => {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  if (h === 0) return `${m} min`;
-  return m === 0 ? `${h} h` : `${h} h ${m} min`;
+  if (h === 0) return say(l, '{m} min', { m });
+  return m === 0 ? say(l, '{h} h', { h }) : say(l, '{h} h {m} min', { h, m });
 };
 
 /**
@@ -20,7 +22,7 @@ const lengthOf = (minutes: number) => {
  * `booking-email.ts`; this owns the transport, what each email says, and what
  * happens when a send fails — a sign-in code in development is logged rather
  * than lost, while a notice or the weekly email learns that it failed so it
- * can be tried again.
+ * can be tried again. Each is written in its reader's language (§308).
  */
 @Injectable()
 export class MailService {
@@ -86,7 +88,9 @@ export class MailService {
       // "unsubscribe" button on the email.
       ...(extras.unsubscribeUrl
         ? {
-            list: { unsubscribe: { url: extras.unsubscribeUrl, comment: 'Stop emails like this' } },
+            list: {
+              unsubscribe: { url: extras.unsubscribeUrl, comment: say(email.locale, 'Stop emails like this') },
+            },
             headers: { 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
           }
         : {}),
@@ -98,12 +102,13 @@ export class MailService {
    * the platform's design. Throws on failure, like a notice: a caller that
    * records deliveries has to learn that it did not go.
    */
-  async sendGenericEmail(email: string, subject: string, body: string): Promise<void> {
+  async sendGenericEmail(email: string, subject: string, body: string, locale: Locale = DEFAULT_LOCALE): Promise<void> {
     await this.send(email, subject, {
       preheader: body.split('\n')[0] ?? subject,
-      hero: { tone: 'info', badge: { kind: 'glyph', glyph: 'i' }, eyebrow: 'A notice', title: subject },
+      hero: { tone: 'info', badge: { kind: 'glyph', glyph: 'i' }, eyebrow: say(locale, 'A notice'), title: subject },
       blocks: [prose(body)],
-      footer: { reason: `You get this because this address has an account with us.` },
+      footer: { reason: say(locale, 'You get this because this address has an account with us.') },
+      locale,
     });
   }
 
@@ -130,12 +135,22 @@ export class MailService {
    *
    * Six boxes on a dark top, the way the apps ask for it (§183, §292). The
    * code is in the subject and the inbox preview too: on most phones the
-   * notification alone is then enough.
+   * notification alone is then enough. In the language of the app it was
+   * asked for from (§308).
    */
-  async sendOtpEmail(email: string, code: string, kind: 'sign-in' | 'confirm' = 'sign-in'): Promise<void> {
-    const minutes = this.config.get<string>('OTP_EXPIRES_IN_MINUTES') ?? '10';
+  async sendOtpEmail(
+    email: string,
+    code: string,
+    kind: 'sign-in' | 'confirm' = 'sign-in',
+    locale: Locale = DEFAULT_LOCALE,
+  ): Promise<void> {
+    const l = locale;
+    const minutes = Number(this.config.get<string>('OTP_EXPIRES_IN_MINUTES') ?? '10');
     const confirm = kind === 'confirm';
-    const subject = confirm ? `Confirm it is you: ${code}` : `Your sign-in code: ${code}`;
+    const subject = confirm ? say(l, 'Confirm it is you: {code}', { code }) : say(l, 'Your sign-in code: {code}', { code });
+    const works = say(l, '{minutes, plural, one {It works for # minute, and only once.} other {It works for # minutes, and only once.}}', {
+      minutes,
+    });
 
     // In development, don't hard-fail the signup/login flow if SMTP isn't
     // configured yet — log the code so you can keep testing the flow locally.
@@ -145,34 +160,41 @@ export class MailService {
 
     try {
       await this.send(email, subject, {
-        preheader: `${code} — it works for ${minutes} minutes, and only once.`,
+        preheader: `${code} — ${works}`,
         hero: {
           tone: 'night',
-          eyebrow: confirm ? 'Confirm it is you' : 'Sign-in code',
-          title: confirm ? 'Your code to confirm' : 'Here is your code',
+          eyebrow: confirm ? say(l, 'Confirm it is you') : say(l, 'Sign-in code'),
+          title: confirm ? say(l, 'Your code to confirm') : say(l, 'Here is your code'),
           lead: confirm
-            ? 'You are making an important change — your payment number, who works at the shop, or something that cannot be undone. Enter this code to confirm it is you.'
-            : 'Enter it in the app to sign in. If you are new here, the same code creates your account.',
-          inside: codeBoxes(code, { onDark: true, note: `It works for ${minutes} minutes, and only once.` }),
+            ? say(
+                l,
+                'You are making an important change — your payment number, who works at the shop, or something that cannot be undone. Enter this code to confirm it is you.',
+              )
+            : say(l, 'Enter it in the app to sign in. If you are new here, the same code creates your account.'),
+          inside: codeBoxes(code, { onDark: true, note: works }),
         },
         blocks: [
           confirm
             ? notice(
                 'danger',
-                'Someone may be using your account. Do not share this code with anyone: sign out on every device and write to us from Help.',
-                'Did not ask for this?',
+                say(
+                  l,
+                  'Someone may be using your account. Do not share this code with anyone: sign out on every device and write to us from Help.',
+                ),
+                say(l, 'Did not ask for this?'),
               )
             : notice(
                 'info',
-                'You can ignore this email. Nobody can sign in without the code, and we will never ask you for it.',
-                'Did not ask for this?',
+                say(l, 'You can ignore this email. Nobody can sign in without the code, and we will never ask you for it.'),
+                say(l, 'Did not ask for this?'),
               ),
         ],
         footer: {
           reason: confirm
-            ? 'You get this because a change was made while signed in to this account.'
-            : 'You get this because someone asked to sign in with this email address.',
+            ? say(l, 'You get this because a change was made while signed in to this account.')
+            : say(l, 'You get this because someone asked to sign in with this email address.'),
         },
+        locale: l,
       });
     } catch (err) {
       this.logger.error(`Failed to send OTP email to ${email}`, err as Error);
@@ -210,20 +232,38 @@ export class MailService {
         /** On sale (§186): the price before, crossed out, and how much off. */
         sale?: { was: string; percent: number } | null;
       }>;
+      /** The customer's language (§308). */
+      locale?: Locale;
     },
   ): Promise<void> {
+    const l = digest.locale ?? DEFAULT_LOCALE;
+    const place = digest.place;
     // From a district: "in Gasabo". From an exact spot: "near KG 11 Ave", or
-    // just "around you" when the phone gave the place no name (§169).
-    const around = digest.nearSpot
-      ? digest.place === 'you'
-        ? 'around you'
-        : `near ${digest.place}`
-      : `in ${digest.place}`;
-    const subject = digest.nearSpot ? 'Popular near you' : `Popular near you in ${digest.place}`;
+    // just "around you" when the phone gave the place no name (§169). Whole
+    // sentences, so each language puts the place where it belongs (§308).
+    const anywhere = digest.nearSpot && place === 'you';
+    const onSale = digest.services.filter((s) => s.sale).length;
+    const lead = digest.nearSpot
+      ? anywhere
+        ? say(
+            l,
+            '{onSale, plural, =0 {What people around you are booking this week.} one {What people around you are booking this week — one of them is on sale.} other {What people around you are booking this week — # of them are on sale.}}',
+            { onSale },
+          )
+        : say(
+            l,
+            '{onSale, plural, =0 {What people near {place} are booking this week.} one {What people near {place} are booking this week — one of them is on sale.} other {What people near {place} are booking this week — # of them are on sale.}}',
+            { onSale, place },
+          )
+      : say(
+          l,
+          '{onSale, plural, =0 {What people in {place} are booking this week.} one {What people in {place} are booking this week — one of them is on sale.} other {What people in {place} are booking this week — # of them are on sale.}}',
+          { onSale, place },
+        );
+    const subject = digest.nearSpot ? say(l, 'Popular near you') : say(l, 'Popular near you in {place}', { place });
     // The footer says which address this is for (§172), so a wrong one is
     // noticed — and says where to change it.
-    const sentFor = digest.nearSpot && digest.place === 'you' ? 'your saved address' : digest.place;
-    const onSale = digest.services.filter((s) => s.sale).length;
+    const sentFor = anywhere ? say(l, 'your saved address') : place;
 
     await this.send(
       email,
@@ -232,15 +272,13 @@ export class MailService {
         preheader: digest.services
           .slice(0, 3)
           .map((s) => s.name)
-          .join(', ') + (digest.services.length > 3 ? ' and more' : ''),
+          .join(', ') + (digest.services.length > 3 ? ` ${say(l, 'and more')}` : ''),
         hero: {
           tone: 'accent',
           badge: { kind: 'glyph', glyph: '&#9733;' },
-          eyebrow: 'This week',
-          title: digest.nearSpot ? 'Popular near you' : `Popular in ${digest.place}`,
-          lead:
-            `What people ${around} are booking this week` +
-            (onSale ? ` — ${onSale === 1 ? 'one of them is' : `${onSale} of them are`} on sale.` : '.'),
+          eyebrow: say(l, 'This week'),
+          title: digest.nearSpot ? say(l, 'Popular near you') : say(l, 'Popular in {place}', { place }),
+          lead,
         },
         blocks: [
           serviceCards(
@@ -248,21 +286,25 @@ export class MailService {
               photoUrl: s.imageUrl,
               name: s.name,
               shop: s.shop,
-              facts: [s.away ?? s.where, lengthOf(s.minutes), s.rating !== null ? `★ ${s.rating.toFixed(1)}` : null]
+              facts: [s.away ?? s.where, lengthOf(s.minutes, l), s.rating !== null ? `★ ${s.rating.toFixed(1)}` : null]
                 .filter(Boolean)
                 .join(' · '),
               price: s.price,
               was: s.sale?.was ?? null,
               off: s.sale?.percent ?? null,
             })),
+            l,
           ),
-          prose('Open the app to book any of these — a deposit holds your time, and the rest is paid at the shop.'),
+          prose(say(l, 'Open the app to book any of these — a deposit holds your time, and the rest is paid at the shop.')),
         ],
         footer: {
-          reason: `You get this because you turned on "Weekly offers by email" in the app, for ${sentFor}.`,
-          manage: { label: 'Change the address in the app, under Account.' },
+          reason: say(l, 'You get this because you turned on "Weekly offers by email" in the app, for {place}.', {
+            place: sentFor,
+          }),
+          manage: { label: say(l, 'Change the address in the app, under Account.') },
           unsubscribeUrl: digest.unsubscribeUrl,
         },
+        locale: l,
       },
       { unsubscribeUrl: digest.unsubscribeUrl },
     );
@@ -278,14 +320,21 @@ export class MailService {
    * code lives until the appointment, not ten minutes, and says different
    * things.
    */
-  async sendAppointmentVerificationEmail(email: string, code: string, booking: BookingFacts): Promise<void> {
+  async sendAppointmentVerificationEmail(
+    email: string,
+    code: string,
+    booking: BookingFacts,
+    locale: Locale = DEFAULT_LOCALE,
+  ): Promise<void> {
     if (this.config.get<string>('NODE_ENV') !== 'production') {
       this.logger.warn(`[DEV ONLY] Appointment code for ${email}: ${code}`);
     }
+    const l = locale;
     const held = booking.status === AppointmentStatus.PENDING_PAYMENT;
+    const { shopName, serviceName } = booking;
     const subject = held
-      ? `Your booking at ${booking.shopName} — arrival code ${code}`
-      : `Your new arrival code for ${booking.serviceName}: ${code}`;
+      ? say(l, 'Your booking at {shopName} — arrival code {code}', { shopName, code })
+      : say(l, 'Your new arrival code for {serviceName}: {code}', { serviceName, code });
 
     try {
       await this.send(
@@ -293,31 +342,37 @@ export class MailService {
         subject,
         {
           preheader: held
-            ? `Pay the deposit in the app to confirm it. Your arrival code is ${code}.`
-            : `Any earlier code no longer works. Your arrival code is ${code}.`,
+            ? say(l, 'Pay the deposit in the app to confirm it. Your arrival code is {code}.', { code })
+            : say(l, 'Any earlier code no longer works. Your arrival code is {code}.', { code }),
           audience: 'CUSTOMER',
           hero: {
             tone: held ? 'accent' : 'ok',
             badge: held ? null : { kind: 'glyph', glyph: '&#10003;' },
-            eyebrow: held ? 'Your booking' : 'A new arrival code',
-            title: held ? 'Your time is held' : 'Here is your new code',
+            eyebrow: held ? say(l, 'Your booking') : say(l, 'A new arrival code'),
+            title: held ? say(l, 'Your time is held') : say(l, 'Here is your new code'),
             lead: held
-              ? `Pay the deposit in the app to confirm your booking at ${booking.shopName}. The time is held for you for 5 minutes.`
-              : 'You asked for a new arrival code, so any earlier one no longer works.',
+              ? say(l, 'Pay the deposit in the app to confirm your booking at {shopName}. The time is held for you for 5 minutes.', {
+                  shopName,
+                })
+              : say(l, 'You asked for a new arrival code, so any earlier one no longer works.'),
           },
           blocks: [
-            bookingTicket(booking, { timeZone: this.timeZone, audience: 'CUSTOMER' }),
+            bookingTicket(booking, { timeZone: this.timeZone, audience: 'CUSTOMER', locale: l }),
             codeBoxes(code, {
-              label: 'Your arrival code',
-              note: 'Give it to the shop when you arrive — they need it to start your appointment. Do not share it before.',
+              label: say(l, 'Your arrival code'),
+              note: say(
+                l,
+                'Give it to the shop when you arrive — they need it to start your appointment. Do not share it before.',
+              ),
             }),
           ],
           footer: {
-            reason: 'You get this because you booked with this email address.',
-            manage: { label: 'Your bookings are in the app, under Bookings.' },
+            reason: say(l, 'You get this because you booked with this email address.'),
+            manage: { label: say(l, 'Your bookings are in the app, under Bookings.') },
           },
+          locale: l,
         },
-        { calendar: held ? null : icsFile(booking) },
+        { calendar: held ? null : icsFile(booking, l) },
       );
     } catch (err) {
       this.logger.error(`Failed to send appointment verification email to ${email}`, err as Error);

@@ -1,3 +1,5 @@
+import { say } from '../i18n/say';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 /**
  * What would make a shop easier to book (§303) — beyond what approval needs.
  *
@@ -62,18 +64,19 @@ export interface AdviceItem {
   why: string;
 }
 
-/** "Kimironko", "Kimironko and Remera", "your 4 branches". */
-const branchWords = (names: string[]) =>
+/** "Kimironko", "Kimironko and Remera", "your 4 branches" — in the reader's language (§308). */
+const branchWords = (names: string[], locale: Locale) =>
   names.length > 3
-    ? `your ${names.length} branches`
+    ? say(locale, 'your {count} branches', { count: names.length })
     : names.length <= 1
       ? (names[0] ?? '')
-      : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+      : say(locale, '{some} and {last}', { some: names.slice(0, -1).join(', '), last: names[names.length - 1] });
 
-const services = (n: number) => `${n} ${n === 1 ? 'service' : 'services'}`;
-
-/** The checklist, in the order a customer meets the shop. */
-export function adviceItems(shop: AdviceShop): AdviceItem[] {
+/**
+ * The checklist, in the order a customer meets the shop — in the shop's
+ * language (§308): the seller app shows it, and the approval notice sends it.
+ */
+export function adviceItems(shop: AdviceShop, locale: Locale = DEFAULT_LOCALE): AdviceItem[] {
   const branches = shop.locations;
   const noPhotos = branches.filter((b) => b._count.media === 0).map((b) => b.name);
   const noHours = branches.filter((b) => b.hours.length === 0).map((b) => b.name);
@@ -84,63 +87,74 @@ export function adviceItems(shop: AdviceShop): AdviceItem[] {
   const onSale = shop.services.filter((s) => s.locations.length > 0);
   const noPicture = onSale.filter((s) => s._count.images === 0).length;
   const noWords = onSale.filter((s) => !s.description?.trim()).length;
+  const l = locale;
 
   return [
     {
       key: 'cover',
       done: Boolean(shop.coverImageUrl),
-      title: 'A cover photo',
-      why: 'the first thing customers see on your page',
+      title: say(l, 'A cover photo'),
+      why: say(l, 'the first thing customers see on your page'),
     },
-    { key: 'logo', done: Boolean(shop.logoUrl), title: 'Your logo', why: 'it sits on every card customers see of you' },
+    { key: 'logo', done: Boolean(shop.logoUrl), title: say(l, 'Your logo'), why: say(l, 'it sits on every card customers see of you') },
     {
       key: 'about',
       done: (shop.description ?? '').trim().length >= ABOUT_MIN_LENGTH,
-      title: 'A few lines about what you do',
-      why: 'customers read them before they book',
+      title: say(l, 'A few lines about what you do'),
+      why: say(l, 'customers read them before they book'),
     },
     {
       key: 'type',
       done: shop.subcategoryId !== null,
-      title: 'Your category and type',
-      why: 'how customers find you when they browse',
+      title: say(l, 'Your category and type'),
+      why: say(l, 'how customers find you when they browse'),
     },
-    { key: 'phone', done: Boolean(shop.phone?.trim()), title: 'A phone number', why: 'so customers can reach you' },
+    { key: 'phone', done: Boolean(shop.phone?.trim()), title: say(l, 'A phone number'), why: say(l, 'so customers can reach you') },
     {
       key: 'gallery',
       done: noPhotos.length === 0,
-      title: noPhotos.length ? `Photos of ${branchWords(noPhotos)}` : 'Photos of every branch',
-      why: 'customers want to see the place they are walking into',
+      title: noPhotos.length
+        ? say(l, 'Photos of {branches}', { branches: branchWords(noPhotos, l) })
+        : say(l, 'Photos of every branch'),
+      why: say(l, 'customers want to see the place they are walking into'),
     },
     {
       key: 'hours',
       done: noHours.length === 0,
-      title: noHours.length ? `Opening hours at ${branchWords(noHours)}` : 'Opening hours at every branch',
-      why: 'without hours, nothing there can be booked',
+      title: noHours.length
+        ? say(l, 'Opening hours at {branches}', { branches: branchWords(noHours, l) })
+        : say(l, 'Opening hours at every branch'),
+      why: say(l, 'without hours, nothing there can be booked'),
     },
     {
       key: 'where',
       done: notFound.length === 0,
-      title: notFound.length ? `A map pin and district for ${branchWords(notFound)}` : 'Every branch on the map',
-      why: 'how customers nearby find you',
+      title: notFound.length
+        ? say(l, 'A map pin and district for {branches}', { branches: branchWords(notFound, l) })
+        : say(l, 'Every branch on the map'),
+      why: say(l, 'how customers nearby find you'),
     },
     {
       key: 'service-photos',
       done: noPicture === 0,
-      title: noPicture ? `Photos on ${services(noPicture)}` : 'A photo on every service',
-      why: 'a service with a photo is easier to choose',
+      title: noPicture
+        ? say(l, '{count, plural, one {Photos on # service} other {Photos on # services}}', { count: noPicture })
+        : say(l, 'A photo on every service'),
+      why: say(l, 'a service with a photo is easier to choose'),
     },
     {
       key: 'service-words',
       done: noWords === 0,
-      title: noWords ? `A description on ${services(noWords)}` : 'A description on every service',
-      why: 'shown under “About this service” before they book',
+      title: noWords
+        ? say(l, '{count, plural, one {A description on # service} other {A description on # services}}', { count: noWords })
+        : say(l, 'A description on every service'),
+      why: say(l, 'shown under “About this service” before they book'),
     },
     {
       key: 'payout',
       done: shop.payoutDestinations.length > 0,
-      title: 'A payout number',
-      why: 'your share of each deposit is paid to it',
+      title: say(l, 'A payout number'),
+      why: say(l, 'your share of each deposit is paid to it'),
     },
   ];
 }
@@ -180,7 +194,12 @@ export function adviceToSend(items: AdviceItem[], keys: readonly string[] = [], 
   return { items: send, note: words ? words.slice(0, ADVICE_NOTE_MAX) : null };
 }
 
-/** The sentence the list hangs from, in the approval notice and in the console's preview. */
-export const ADVICE_LEAD =
-  'Shops with clear, high-resolution photos and full details get booked far more often. ' +
-  'Before you post, finish your shop by adding:';
+/** The sentence the list hangs from, in the approval notice and in the console's preview (§308: in the reader's language). */
+export const adviceLead = (locale: Locale = DEFAULT_LOCALE) =>
+  say(
+    locale,
+    'Shops with clear, high-resolution photos and full details get booked far more often. Before you post, finish your shop by adding:',
+  );
+
+/** The lead in English, for the console (which is in English). */
+export const ADVICE_LEAD = adviceLead();

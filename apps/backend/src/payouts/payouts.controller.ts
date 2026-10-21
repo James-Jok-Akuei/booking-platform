@@ -27,6 +27,8 @@ import { ListPayoutsDto, PayoutDetailQueryDto } from './dto/list-payouts.dto';
 import { MarkFailedDto, MarkPaidDto } from './dto/mark-payout.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
+import { RequestLocale } from '../i18n/request-locale.decorator';
+import type { Locale } from '../i18n/locales';
 import {
   AdminPayoutPageDto,
   BusinessBalanceDto,
@@ -171,8 +173,9 @@ export class BusinessPayoutsController {
     @Param('id', ParseUUIDPipe) businessId: string,
     @Param('payoutId', ParseUUIDPipe) payoutId: string,
     @Res({ passthrough: true }) response: Response,
+    @RequestLocale() locale: Locale,
   ) {
-    const { csv, filename } = await this.payouts.exportForBusiness(user, businessId, payoutId);
+    const { csv, filename } = await this.payouts.exportForBusiness(user, businessId, payoutId, locale);
     response.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     return csv;
   }

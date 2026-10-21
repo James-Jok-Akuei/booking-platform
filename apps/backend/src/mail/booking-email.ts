@@ -1,4 +1,6 @@
 import { AppointmentStatus, Prisma } from '@prisma/client';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { DATE_TAGS, say } from '../i18n/say';
 import { formatMoney } from '../payments/currency';
 import { Badge, Block, Ticket, Tone, ticket } from './email-kit';
 
@@ -126,26 +128,32 @@ export const reservationNo = (id: string) => {
   return `${s.slice(0, 4)}-${s.slice(4)}`;
 };
 
-const parts = (at: Date, timeZone: string, options: Intl.DateTimeFormatOptions) =>
-  new Intl.DateTimeFormat('en-GB', { timeZone, ...options }).format(at);
+/** A date's parts in the reader's language — the day before the month, a 24-hour clock (§308). */
+const parts = (at: Date, timeZone: string, options: Intl.DateTimeFormatOptions, locale: Locale = DEFAULT_LOCALE) =>
+  new Intl.DateTimeFormat(DATE_TAGS[locale], { timeZone, ...options }).format(at);
 
 /** "Tuesday 20 October · 11:15 – 12:15", in the platform's own time. */
-export function whenText(b: Pick<BookingFacts, 'startTime' | 'endTime'>, timeZone: string) {
-  const day = parts(b.startTime, timeZone, { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '');
-  const from = parts(b.startTime, timeZone, { hour: '2-digit', minute: '2-digit' });
-  const to = parts(b.endTime, timeZone, { hour: '2-digit', minute: '2-digit' });
+export function whenText(b: Pick<BookingFacts, 'startTime' | 'endTime'>, timeZone: string, locale: Locale = DEFAULT_LOCALE) {
+  const day = parts(b.startTime, timeZone, { weekday: 'long', day: 'numeric', month: 'long' }, locale).replace(',', '');
+  const from = parts(b.startTime, timeZone, { hour: '2-digit', minute: '2-digit' }, locale);
+  const to = parts(b.endTime, timeZone, { hour: '2-digit', minute: '2-digit' }, locale);
   return `${day} · ${from} – ${to}`;
 }
 
 /** "11:15". */
-export const clockOf = (at: Date, timeZone: string) => parts(at, timeZone, { hour: '2-digit', minute: '2-digit' });
+export const clockOf = (at: Date, timeZone: string, locale: Locale = DEFAULT_LOCALE) =>
+  parts(at, timeZone, { hour: '2-digit', minute: '2-digit' }, locale);
+
+/** "Tuesday", in the reader's language. */
+export const weekdayOf = (at: Date, timeZone: string, locale: Locale = DEFAULT_LOCALE) =>
+  parts(at, timeZone, { weekday: 'long' }, locale);
 
 /** The date tile, for the top of the email. */
-export function dateBadge(b: Pick<BookingFacts, 'startTime'>, timeZone: string): Badge {
+export function dateBadge(b: Pick<BookingFacts, 'startTime'>, timeZone: string, locale: Locale = DEFAULT_LOCALE): Badge {
   return {
     kind: 'date',
-    weekday: parts(b.startTime, timeZone, { weekday: 'short' }),
-    day: parts(b.startTime, timeZone, { day: 'numeric' }),
+    weekday: parts(b.startTime, timeZone, { weekday: 'short' }, locale),
+    day: parts(b.startTime, timeZone, { day: 'numeric' }, locale),
   };
 }
 
@@ -164,20 +172,24 @@ const stamp = (at: Date) =>
     .replace(/[-:]/g, '')
     .replace(/\.\d{3}/, '');
 
+/** What a calendar shows under the event. */
+const eventWords = (b: BookingFacts, locale: Locale) =>
+  say(locale, 'Booking no. {number}. Give the shop your arrival code when you arrive.', { number: reservationNo(b.id) });
+
 /** A Google Calendar event, filled in. */
-export function calendarUrl(b: BookingFacts) {
+export function calendarUrl(b: BookingFacts, locale: Locale = DEFAULT_LOCALE) {
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: `${b.serviceName} — ${b.shopName}`,
     dates: `${stamp(b.startTime)}/${stamp(b.endTime)}`,
     location: [b.branchName, b.address].filter(Boolean).join(', '),
-    details: `Booking no. ${reservationNo(b.id)}. Give the shop your arrival code when you arrive.`,
+    details: eventWords(b, locale),
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
 /** The same event as a file, which Apple Mail, Outlook and Gmail offer to add (RFC 5545). */
-export function icsFile(b: BookingFacts) {
+export function icsFile(b: BookingFacts, locale: Locale = DEFAULT_LOCALE) {
   const text = (value: string) =>
     value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
   return [
@@ -192,11 +204,11 @@ export function icsFile(b: BookingFacts) {
     `DTEND:${stamp(b.endTime)}`,
     `SUMMARY:${text(`${b.serviceName} — ${b.shopName}`)}`,
     `LOCATION:${text([b.branchName, b.address].filter(Boolean).join(', '))}`,
-    `DESCRIPTION:${text(`Booking no. ${reservationNo(b.id)}. Give the shop your arrival code when you arrive.`)}`,
+    `DESCRIPTION:${text(eventWords(b, locale))}`,
     'BEGIN:VALARM',
     'TRIGGER:-PT1H',
     'ACTION:DISPLAY',
-    `DESCRIPTION:${text(`${b.serviceName} in an hour`)}`,
+    `DESCRIPTION:${text(say(locale, '{serviceName} in an hour', { serviceName: b.serviceName }))}`,
     'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR',
@@ -207,28 +219,33 @@ export function icsFile(b: BookingFacts) {
 function statusOf(
   b: BookingFacts,
   audience: 'CUSTOMER' | 'BUSINESS' | 'ADMIN',
+  l: Locale,
 ): { label: string; tone: Exclude<Tone, 'night'> } {
   switch (b.status) {
     case AppointmentStatus.PENDING_PAYMENT:
-      return { label: audience === 'CUSTOMER' ? 'Waiting for your deposit' : 'Waiting for the deposit', tone: 'warn' };
+      return {
+        label: audience === 'CUSTOMER' ? say(l, 'Waiting for your deposit') : say(l, 'Waiting for the deposit'),
+        tone: 'warn',
+      };
     case AppointmentStatus.BOOKED:
-      return { label: 'Confirmed', tone: 'ok' };
+      return { label: say(l, 'Confirmed'), tone: 'ok' };
     case AppointmentStatus.IN_PROGRESS:
-      return { label: 'In progress', tone: 'info' };
+      return { label: say(l, 'In progress'), tone: 'info' };
     case AppointmentStatus.COMPLETED:
-      return { label: 'Done', tone: 'ok' };
+      return { label: say(l, 'Done'), tone: 'ok' };
     case AppointmentStatus.NO_SHOW:
-      return { label: 'Missed', tone: 'warn' };
+      return { label: say(l, 'Missed'), tone: 'warn' };
     case AppointmentStatus.CANCELLED:
-      return { label: 'Cancelled', tone: 'danger' };
+      return { label: say(l, 'Cancelled'), tone: 'danger' };
   }
 }
 
 /** The ticket, for the customer or the shop. */
 export function bookingTicket(
   b: BookingFacts,
-  opts: { timeZone: string; audience: 'CUSTOMER' | 'BUSINESS' | 'ADMIN'; links?: boolean },
+  opts: { timeZone: string; audience: 'CUSTOMER' | 'BUSINESS' | 'ADMIN'; links?: boolean; locale?: Locale },
 ): Block {
+  const l = opts.locale ?? DEFAULT_LOCALE;
   const money: Ticket['money'] = [];
   // What is left to pay matters only while the visit is still to come.
   const ahead =
@@ -238,13 +255,13 @@ export function bookingTicket(
   // A deposit is shown when it was paid, or while it still can be.
   if (b.depositPaid || ahead) {
     money.push({
-      label: b.depositPaid ? 'Deposit paid' : 'Deposit to pay',
+      label: b.depositPaid ? say(l, 'Deposit paid') : say(l, 'Deposit to pay'),
       value: formatMoney(b.depositMinor, b.currency),
     });
   }
   if (ahead && b.priceMinor !== null && b.priceMinor > b.depositMinor) {
     money.push({
-      label: opts.audience === 'CUSTOMER' ? 'To pay at the shop' : 'Due at the shop',
+      label: opts.audience === 'CUSTOMER' ? say(l, 'To pay at the shop') : say(l, 'Due at the shop'),
       value: formatMoney(b.priceMinor - b.depositMinor, b.currency),
     });
   }
@@ -255,25 +272,26 @@ export function bookingTicket(
     quantity: b.quantity,
     shop: b.shopName,
     shopLogoUrl: b.shopLogoUrl,
-    weekday: parts(b.startTime, opts.timeZone, { weekday: 'short' }),
-    day: parts(b.startTime, opts.timeZone, { day: 'numeric' }),
-    month: parts(b.startTime, opts.timeZone, { month: 'short' }),
-    when: whenText(b, opts.timeZone),
+    weekday: parts(b.startTime, opts.timeZone, { weekday: 'short' }, l),
+    day: parts(b.startTime, opts.timeZone, { day: 'numeric' }, l),
+    month: parts(b.startTime, opts.timeZone, { month: 'short' }, l),
+    when: whenText(b, opts.timeZone, l),
     branch: b.branchName,
     address: b.address,
     reservation: reservationNo(b.id),
-    status: statusOf(b, opts.audience),
+    status: statusOf(b, opts.audience, l),
     money,
+    locale: l,
     // What was chosen (§300); a private answer only as "in the app" (§300.6).
     extras:
       b.choices.length > 0 || b.hasPrivateAnswers || b.note
         ? {
-            label: opts.audience === 'CUSTOMER' ? 'Your choices' : 'What they chose',
+            label: opts.audience === 'CUSTOMER' ? say(l, 'Your choices') : say(l, 'What they chose'),
             lines: b.choices,
             privateNote: b.hasPrivateAnswers
               ? opts.audience === 'CUSTOMER'
-                ? 'Your private answers are with the shop — see them in the app.'
-                : 'Private answers — open the booking to read them.'
+                ? say(l, 'Your private answers are with the shop — see them in the app.')
+                : say(l, 'Private answers — open the booking to read them.')
               : null,
             note: b.note,
           }
@@ -282,8 +300,8 @@ export function bookingTicket(
     links:
       opts.links !== false && opts.audience === 'CUSTOMER' && live
         ? [
-            { label: 'Get directions', url: mapsUrl(b) },
-            { label: 'Add to calendar', url: calendarUrl(b) },
+            { label: say(l, 'Get directions'), url: mapsUrl(b) },
+            { label: say(l, 'Add to calendar'), url: calendarUrl(b, l) },
           ]
         : [],
   });

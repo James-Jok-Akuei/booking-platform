@@ -8,7 +8,7 @@ import { ApproveBusinessDto } from '../src/business/dto/approve-business.dto';
 import { ADVICE_LEAD, adviceItems, adviceToSend } from '../src/business/shop-advice';
 import { NotificationsService } from '../src/notifications/notifications.service';
 import { noticeEmail } from '../src/notifications/notification-email';
-import { renderNotification } from '../src/notifications/notification-templates';
+import { renderNotification, type AppointmentContext } from '../src/notifications/notification-templates';
 import { renderEmail } from '../src/mail/email-kit';
 import { StorageService } from '../src/storage/storage.service';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -57,13 +57,13 @@ describe('Advice sent with an approval (§303)', () => {
   /** A shop that can go live, and nothing more: no cover, logo, words, photos or pin. */
   const waiting = () => createBusiness(prisma, { status: BusinessStatus.PENDING });
 
-  const sentAdvice = () => {
+  const sentContext = () => {
     const call = notifications.notifyBusiness.mock.calls.find(
       ([params]) => (params as { type: NotificationType }).type === NotificationType.BUSINESS_APPROVED,
     );
-    return (call?.[0] as { context: { advice?: { items: Array<{ title: string; why: string }>; note: string | null } } })
-      ?.context.advice;
+    return (call?.[0] as { context: AppointmentContext } | undefined)?.context;
   };
+  const sentAdvice = () => sentContext()?.advice;
 
   it('lists what a bare shop is missing, in the words the shop reads', async () => {
     const shop = await waiting();
@@ -113,8 +113,17 @@ describe('Advice sent with an approval (§303)', () => {
       note: 'Lovely cuts!\n\n  A photo of the shop front would help people find you.  ',
     });
 
+    // The shop and the items, not their words: each member's notice writes
+    // them out in that member's language (§308).
     const advice = sentAdvice();
-    expect(advice?.items.map((item) => item.title)).toEqual([
+    expect(advice?.keys).toEqual(['cover', 'gallery', 'service-words']);
+    const { body } = renderNotification(NotificationType.BUSINESS_APPROVED, {
+      ...sentContext()!,
+      timeZone: 'Africa/Kigali',
+      audience: 'BUSINESS',
+    });
+    const lines = body.split('\n').filter((line) => line.startsWith('• '));
+    expect(lines.map((line) => line.slice(2).split(' — ')[0])).toEqual([
       'A cover photo',
       'Photos of Test Branch',
       'A description on 1 service',
@@ -179,10 +188,21 @@ describe('Advice sent with an approval (§303)', () => {
       timeZone: 'Africa/Kigali',
       audience: 'BUSINESS',
       advice: {
-        items: [
-          { title: 'A cover photo', why: 'the first thing customers see on your page' },
-          { title: 'Photos on 2 services', why: 'a service with a photo is easier to choose' },
-        ],
+        shop: {
+          coverImageUrl: null,
+          logoUrl: null,
+          description: null,
+          phone: null,
+          subcategoryId: null,
+          locations: [],
+          // Two services on sale with no photo.
+          services: [
+            { description: 'Wash and cut.', _count: { images: 0 }, locations: [{}] },
+            { description: 'Beard trim.', _count: { images: 0 }, locations: [{}] },
+          ],
+          payoutDestinations: [],
+        },
+        keys: ['cover', 'service-photos'],
         note: 'Lovely cuts — add a photo of the shop front.',
       },
     });

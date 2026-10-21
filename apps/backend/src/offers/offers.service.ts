@@ -8,6 +8,8 @@ import { DiscoveredServiceDto } from '../discovery/dto/discovery-response.dto';
 import { MailService } from '../mail/mail.service';
 import { RoutingService } from '../routing/routing.service';
 import { formatMoney } from '../payments/currency';
+import type { Locale } from '../i18n/locales';
+import { asLocale, say } from '../i18n/say';
 import { PrismaService } from '../prisma/prisma.service';
 import { OffersPreferenceDto, UpdateOffersPreferenceDto } from './dto/offers.dto';
 
@@ -164,6 +166,7 @@ export class OffersService {
       select: {
         id: true,
         email: true,
+        locale: true,
         offersToken: true,
         homeLatitude: true,
         homeLongitude: true,
@@ -187,6 +190,7 @@ export class OffersService {
           { lat: user.homeLatitude, lng: user.homeLongitude },
           user.homeLabel,
           user.homeDistrict,
+          asLocale(user.locale),
         );
       } else {
         const district = user.homeDistrict!;
@@ -203,6 +207,7 @@ export class OffersService {
           place: pick.place,
           nearSpot: Boolean(pick.away),
           unsubscribeUrl: this.unsubscribeUrl(user.offersToken!),
+          locale: asLocale(user.locale),
           services: pick.services.map((s, i) => ({
             away: pick.away?.[i] ?? null,
             name: s.name,
@@ -246,6 +251,7 @@ export class OffersService {
     spot: { lat: number; lng: number },
     label: string | null,
     district: { id: string; name: string; provinceId: string; province: { name: string } } | null,
+    locale: Locale,
   ): Promise<Pick> {
     for (const radiusKm of SPOT_RADII_KM) {
       const found = await this.discovery.searchServices({
@@ -271,7 +277,9 @@ export class OffersService {
           place: label ?? 'you',
           services: found.services,
           away: measured.map((m) =>
-            m.by === 'road' ? `${formatKm(m.distanceKm)} by road` : `${formatKm(m.distanceKm)} away`,
+            m.by === 'road'
+              ? say(locale, '{km} by road', { km: formatKm(m.distanceKm) })
+              : say(locale, '{km} away', { km: formatKm(m.distanceKm) }),
           ),
         };
       }

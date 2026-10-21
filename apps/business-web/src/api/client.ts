@@ -388,7 +388,11 @@ export async function logout(): Promise<void> {
  */
 export async function download(path: string, filename: string): Promise<void> {
   const response = await fetch(`${BASE_URL}${path}`, {
-    headers: tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {},
+    // The spreadsheet's column names in the chosen language (§308).
+    headers: {
+      'Accept-Language': requestLanguage.current,
+      ...(tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {}),
+    },
   });
 
   if (!response.ok) {

@@ -262,6 +262,8 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     return fetch(url.toString(), {
       method,
       headers: {
+        // The console is in English (§308): a browser set to French still gets English answers.
+        'Accept-Language': 'en',
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(pass ? { 'X-Step-Up': pass } : {}),

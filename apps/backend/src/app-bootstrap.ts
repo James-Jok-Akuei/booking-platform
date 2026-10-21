@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import rateLimit, { type RateLimitRequestHandler } from 'express-rate-limit';
+import { LocalisedErrorsFilter } from './i18n/localised-errors.filter';
 
 /**
  * Origins allowed to call this API from a browser, as a comma-separated list.
@@ -28,6 +29,9 @@ function allowedOrigins(): string[] {
  * main.ts is the only production caller, and its behaviour is unchanged.
  */
 export function configureApp(app: INestApplication): INestApplication {
+  // Refusals in the language each request asks for (§308).
+  app.useGlobalFilters(new LocalisedErrorsFilter(app.getHttpAdapter()));
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // strip unknown properties from incoming DTOs

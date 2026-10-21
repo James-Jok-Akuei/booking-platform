@@ -17,6 +17,8 @@ import {
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { StepUpCodeDto } from './dto/step-up.dto';
+import { RequestLocale } from '../i18n/request-locale.decorator';
+import type { Locale } from '../i18n/locales';
 
 @Controller('auth')
 @ApiErrors({ validation: true, rateLimited: true })
@@ -34,8 +36,8 @@ export class AuthController {
   @Post('otp/request')
   @ApiOkResponse({ type: OtpRequestedDto })
   @HttpCode(HttpStatus.OK)
-  requestOtp(@Body() dto: RequestOtpDto) {
-    return this.authService.requestOtp(dto.email, dto.role as UserRole | undefined);
+  requestOtp(@Body() dto: RequestOtpDto, @RequestLocale() locale: Locale) {
+    return this.authService.requestOtp(dto.email, dto.role as UserRole | undefined, locale);
   }
 
   /**
@@ -62,8 +64,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: OtpRequestedDto })
   @HttpCode(HttpStatus.OK)
-  requestStepUp(@CurrentUser() user: AuthenticatedUser) {
-    return this.authService.requestStepUp(user.userId);
+  requestStepUp(@CurrentUser() user: AuthenticatedUser, @RequestLocale() locale: Locale) {
+    return this.authService.requestStepUp(user.userId, locale);
   }
 
   /** The code, for a pass the app sends as `X-Step-Up` for the next few minutes. */
@@ -87,8 +89,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiErrors({ auth: true })
   @ApiOkResponse({ type: SignInSessionDto, isArray: true })
-  sessions(@CurrentUser() user: AuthenticatedUser) {
-    return this.authService.listSessions(user);
+  sessions(@CurrentUser() user: AuthenticatedUser, @RequestLocale() locale: Locale) {
+    return this.authService.listSessions(user, locale);
   }
 
   /** Signs one of them out — a phone left somewhere, a shared computer. */
@@ -97,8 +99,12 @@ export class AuthController {
   @ApiErrors({ auth: true, notFound: true })
   @ApiOkResponse({ type: ActionMessageDto })
   @HttpCode(HttpStatus.OK)
-  endSession(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
-    return this.authService.endOneSession(user, id);
+  endSession(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @RequestLocale() locale: Locale,
+  ) {
+    return this.authService.endOneSession(user, id, locale);
   }
 
   /** Signs out everywhere but here. */
