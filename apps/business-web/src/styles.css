@@ -110,6 +110,9 @@ html, body { margin: 0; }
 body {
   background: var(--canvas);
   min-height: 100vh;
+  /* A word too long for its line breaks onto the next rather than widening
+     the page (§308): Kinyarwanda words can be long. */
+  overflow-wrap: break-word;
 }
 
 ::selection { background: rgba(240, 83, 45, 0.18); }
@@ -976,3 +979,7 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .nfy-go { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: var(--r-md); background: var(--primary); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), var(--shadow-accent); transition: background 160ms var(--ease); }
 .nfy-go:hover { background: var(--primary-hover); }
 @media (max-width: 640px) { .nfy { margin: 20px auto; padding: 28px 20px 24px; } }
+
+/* Headings may be one long word in another language (§308): it breaks
+   inside its box instead of pushing the page wider than the screen. */
+h1, h2, h3 { overflow-wrap: anywhere; }

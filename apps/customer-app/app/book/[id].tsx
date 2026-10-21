@@ -571,9 +571,7 @@ export default function Book() {
                 <PopIn key={`${extraMinor}-${chosen.minutes}`} style={styles.extraLine}>
                   <Icon name="options-outline" size={15} color={theme.accentDeep} />
                   <Text style={styles.extraText}>
-                    <Trans>
-                      Your choices <Text style={styles.extraStrong}>{addsWords}</Text>
-                    </Trans>
+                    <Trans>Your choices <Text style={styles.extraStrong}>{addsWords}</Text></Trans>
                     {quantity > 1 && extraMinor !== 0 ? t` · once, not per person` : ''}
                   </Text>
                 </PopIn>
@@ -582,9 +580,7 @@ export default function Book() {
                 <View style={styles.atShop}>
                   <Icon name="information-circle-outline" size={15} color={theme.ink2} />
                   <Text style={styles.atShopText}>
-                    <Trans>
-                      The shop confirms the final price after seeing the job. The deposit is on this price.
-                    </Trans>
+                    <Trans>The shop confirms the final price after seeing the job. The deposit is on this price.</Trans>
                   </Text>
                 </View>
               )}
@@ -630,9 +626,7 @@ export default function Book() {
                   <View style={styles.holdLine}>
                     <Icon name="shield-checkmark" size={15} color={theme.ok} />
                     <Text style={styles.holdText}>
-                      <Trans>
-                        A {depositPct}% deposit holds the time for you. The rest is paid at the shop.
-                      </Trans>
+                      <Trans>A {depositPct}% deposit holds the time for you. The rest is paid at the shop.</Trans>
                     </Text>
                   </View>
                 </>
@@ -805,10 +799,8 @@ export default function Book() {
                     <Text style={styles.periodLabel}>{period.label}</Text>
                     <Text style={type.tiny}>
                       {period.slots.filter((t) => t.placesLeft >= quantity).length || t`None`}
-                        <Trans>
-                          free
-                        </Trans>
-                      </Text>
+                      <Trans>free</Trans>
+                    </Text>
                   </View>
                   <View style={styles.slots}>
                     {period.slots.map(({ time, placesLeft }) => {
@@ -873,9 +865,7 @@ export default function Book() {
 
               {availability.data?.timeZone && slots.length > 0 && (
                 <Text style={type.small}>
-                  <Trans>
-                    Times are local to the shop ({availability.data.timeZone}).
-                  </Trans>
+                  <Trans>Times are local to the shop ({availability.data.timeZone}).</Trans>
                 </Text>
               )}
               </>
@@ -950,10 +940,8 @@ export default function Book() {
             />
             {split && (
               <Text style={styles.footerNow} numberOfLines={1}>
-                <Trans>
-                  {format(depositMinor)} now
-                </Trans>
-                </Text>
+                <Trans>{format(depositMinor)} now</Trans>
+              </Text>
             )}
           </View>
           <Button

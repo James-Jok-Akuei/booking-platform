@@ -70,9 +70,7 @@ export function LegalPrompt() {
           </View>
           <Text style={type.heading}><Trans>{document.title} has changed</Trans></Text>
           <Text style={type.small}>
-            <Trans>
-              You agreed to version {document.acceptedVersion}. This is version {document.version}.
-            </Trans>
+            <Trans>You agreed to version {document.acceptedVersion}. This is version {document.version}.</Trans>
           </Text>
 
           {document.changeNote && (

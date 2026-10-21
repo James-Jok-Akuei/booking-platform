@@ -23,91 +23,78 @@ export const LOOKS: Partial<Record<Notification['type'], Look>> = {
     icon: 'checkmark-circle',
     fg: theme.ok,
     bg: theme.okSoft,
-
     get label() { return t`Confirmed`; },
   },
   APPOINTMENT_BOOKED: {
     icon: 'calendar',
     fg: theme.ok,
     bg: theme.okSoft,
-
     get label() { return t`Booked`; },
   },
   APPOINTMENT_REMINDER: {
     icon: 'alarm',
     fg: theme.accent,
     bg: theme.accentSoft,
-
     get label() { return t`Reminder`; },
   },
   APPOINTMENT_CANCELLED: {
     icon: 'close-circle',
     fg: theme.danger,
     bg: theme.dangerSoft,
-
     get label() { return t`Cancelled`; },
   },
   APPOINTMENT_NO_SHOW: {
     icon: 'alert-circle',
     fg: theme.danger,
     bg: theme.dangerSoft,
-
     get label() { return t`Missed`; },
   },
   DEPOSIT_FAILED: {
     icon: 'card',
     fg: theme.danger,
     bg: theme.dangerSoft,
-
     get label() { return t`Payment`; },
   },
   APPOINTMENT_MANUALLY_VERIFIED: {
     icon: 'shield-checkmark',
     fg: theme.ok,
     bg: theme.okSoft,
-
     get label() { return t`Verified`; },
   },
   NEW_MESSAGE: {
     icon: 'chatbubble-ellipses',
     fg: theme.accent,
     bg: theme.accentSoft,
-
     get label() { return t`Message`; },
   },
   TICKET_MESSAGE: {
     icon: 'help-buoy',
     fg: theme.accent,
     bg: theme.accentSoft,
-
     get label() { return t`Support`; },
   },
   TICKET_STATUS_CHANGED: {
     icon: 'help-buoy',
     fg: theme.ink2,
     bg: theme.sunken,
-
     get label() { return t`Support`; },
   },
   REVIEW_RESPONSE: {
     icon: 'star',
     fg: theme.warn,
     bg: theme.warnSoft,
-
     get label() { return t`Review`; },
   },
   REVIEW_HIDDEN: {
     icon: 'eye-off',
     fg: theme.warn,
     bg: theme.warnSoft,
-
     get label() { return t`Review`; },
   },
   DISPLAY_NAME_CLEARED: {
     icon: 'eye-off',
     fg: theme.warn,
     bg: theme.warnSoft,
-
     get label() { return t`Account`; },
   },
   // §287
@@ -115,28 +102,24 @@ export const LOOKS: Partial<Record<Notification['type'], Look>> = {
     icon: 'star',
     fg: theme.warn,
     bg: theme.warnSoft,
-
     get label() { return t`How was it?`; },
   },
   SHOP_MESSAGE: {
     icon: 'storefront',
     fg: theme.ok,
     bg: theme.okSoft,
-
     get label() { return t`Offer`; },
   },
   SHOP_DISCOUNT: {
     icon: 'pricetag',
     fg: theme.accentDeep,
     bg: theme.accentSoft,
-
     get label() { return t`Discount`; },
   },
   ANNOUNCEMENT: {
     icon: 'megaphone',
     fg: theme.ink,
     bg: theme.sunken,
-
     get label() { return t`From our team`; },
   },
   // Support acted for them (§297): checked in, cancelled, signed out.
@@ -144,7 +127,6 @@ export const LOOKS: Partial<Record<Notification['type'], Look>> = {
     icon: 'help-buoy',
     fg: theme.accent,
     bg: theme.accentSoft,
-
     get label() { return t`Support`; },
   },
   // A phone or browser not seen before signed in (§298).
@@ -152,7 +134,6 @@ export const LOOKS: Partial<Record<Notification['type'], Look>> = {
     icon: 'shield-checkmark',
     fg: theme.warn,
     bg: theme.warnSoft,
-
     get label() { return t`Sign-in`; },
   },
 };
@@ -160,7 +141,6 @@ export const FALLBACK: Look = {
   icon: 'notifications',
   fg: theme.accent,
   bg: theme.accentSoft,
-
   get label() { return t`News`; },
 };
 

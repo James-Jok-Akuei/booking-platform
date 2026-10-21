@@ -826,6 +826,10 @@ body {
     font-weight: 650;
     text-decoration: none;
   }
+  /* Long words (§308): each label keeps to its own fifth of the bar, ending
+     in "…" rather than running into the next. */
+  .tab-item { min-width: 0; padding: 0 2px; }
+  .tab-item > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tab-item:hover:not(:disabled) { background: none; border: none; color: #fff; }
   .tab-item.active { color: #fff; }
   .tab-item.active .tab-icon { color: #ff8a5c; }
@@ -940,3 +944,8 @@ body {
   .notice-banner > div { flex-basis: calc(100% - 96px); }
   .notice-banner-link { order: 4; margin-left: 48px; }
 }
+
+/* The language row in the shop menu (§308). */
+.tb-lang { padding: 6px 8px 4px; }
+.tb-lang:has(.lang) { border-top: 1px solid var(--line); margin-top: 6px; }
+.tb-lang:not(:has(.lang)) { display: none; }

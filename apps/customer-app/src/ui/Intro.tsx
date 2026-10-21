@@ -419,9 +419,7 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onGone }: IntroProps) {
                 },
               ]}
             >
-              <Trans>
-                Book your next appointment, easily.
-              </Trans>
+              <Trans>Book your next appointment, easily.</Trans>
             </Animated.Text>
           </Animated.View>
         )}

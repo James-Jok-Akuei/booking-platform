@@ -585,3 +585,31 @@
   .au .codebox { height: 56px; font-size: 23px; border-radius: 14px; }
   .au .codeboxes .codebox:nth-child(3) { margin-right: 6px; }
 }
+
+/* The language choice, at the top of the sheet (§308). */
+.au-lang { position: absolute; top: 22px; right: 26px; z-index: 2; }
+.au-lang:not(:has(.lang)) { display: none; }
+@media (max-width: 859px) {
+  .au-lang { position: static; display: flex; justify-content: center; margin: 0 0 8px; }
+}
+
+/* Long words (§308). The two chips over the wall shrink to fit side by side,
+   their words ending in "…"; on a phone the headline is laid out in the
+   wall's flow, so it grows the wall rather than running up under them. */
+.au-top > * { min-width: 0; flex-shrink: 1; }
+.au-chip-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 999px) {
+  .au-top { gap: 8px; }
+  .au-stage {
+    height: auto;
+    min-height: clamp(290px, 44vh, 420px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 62px 0 52px;
+  }
+  .au-hero { position: relative; left: auto; right: auto; bottom: auto; margin: 0 auto; width: min(calc(100% - 48px), 440px); transform: none; }
+}
+@media (max-width: 999px) and (hover: none) {
+  .au:has(.au-sheet input:focus) .au-stage { min-height: 0; padding: 0; }
+}

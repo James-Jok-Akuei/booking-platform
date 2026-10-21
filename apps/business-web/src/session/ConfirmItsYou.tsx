@@ -4,6 +4,8 @@ import { CodeBoxes, type CodeState } from '../ui/CodeBoxes';
 import { Icon } from '../ui/Icon';
 import { clock } from './words';
 import './session.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** As long as the server makes someone wait between codes. */
 const RESEND_SECONDS = 60;
@@ -51,7 +53,7 @@ function ConfirmDialog({ onDone }: { onDone: (pass: string | null) => void }) {
       setSent(reply.message);
       setWait(RESEND_SECONDS);
     } catch (error) {
-      setProblem(error instanceof ApiError ? error.message : 'The code could not be sent. Check your connection.');
+      setProblem(error instanceof ApiError ? error.message : t`The code could not be sent. Check your connection.`);
     }
   };
 
@@ -85,7 +87,7 @@ function ConfirmDialog({ onDone }: { onDone: (pass: string | null) => void }) {
       setState('error');
       setShake(true);
       setCode('');
-      setProblem(error instanceof ApiError ? error.message : 'That did not work. Try again.');
+      setProblem(error instanceof ApiError ? error.message : t`That did not work. Try again.`);
     }
   };
 
@@ -95,15 +97,17 @@ function ConfirmDialog({ onDone }: { onDone: (pass: string | null) => void }) {
         <span className="dlg-icon" aria-hidden="true">
           <Icon name="shield" size={24} />
         </span>
-        <h2 id="cy-title">Confirm it is you</h2>
+        <h2 id="cy-title"><Trans>Confirm it is you</Trans></h2>
         <div className="dlg-body">
           <p>
-            This change moves the shop's money or who can get in, so it needs a fresh code — that way a screen left open
-            is not enough.
+            <Trans>
+              This change moves the shop's money or who can get in, so it needs a fresh code — that way a screen left open
+              is not enough.
+            </Trans>
           </p>
           <p className="cy-sent" role="status">
             <Icon name="mail" size={16} />
-            {sent ?? 'Sending a code to your email…'}
+            {sent ?? t`Sending a code to your email…`}
           </p>
         </div>
 
@@ -132,13 +136,13 @@ function ConfirmDialog({ onDone }: { onDone: (pass: string | null) => void }) {
 
         <div className="cy-foot">
           <button type="button" className="cy-again" disabled={wait > 0} onClick={() => void ask()}>
-            {wait > 0 ? `New code in ${clock(wait * 1000)}` : 'Send a new code'}
+            {wait > 0 ? t`New code in ${clock(wait * 1000)}` : t`Send a new code`}
           </button>
         </div>
 
         <div className="dlg-actions">
           <button type="button" onClick={() => onDone(null)}>
-            Cancel
+            <Trans>Cancel</Trans>
           </button>
         </div>
       </div>

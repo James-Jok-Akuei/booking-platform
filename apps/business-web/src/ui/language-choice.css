@@ -1,0 +1,19 @@
+/* The language choice (§308): a row of the languages, each by its own name. */
+.lang { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; color: var(--muted); }
+.lang > svg { margin-right: 4px; flex: none; }
+.lang-option {
+  min-height: 0;
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: none;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.lang-option:hover:not(:disabled) { background: var(--sunken); border-color: transparent; color: var(--ink); }
+.lang-option.is-on { background: var(--accent-soft); border-color: rgba(240, 83, 45, 0.25); color: var(--accent-deep); }
+.lang-option.is-on:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent-deep); }
+.lang.is-compact .lang-option { height: 26px; padding: 0 9px; font-size: 12.5px; }

@@ -8,6 +8,10 @@ import { ION, type IonName } from './ionicons';
 import './customer-phone.css';
 import { RichText } from '../ui/RichText';
 import { hasRichText, richToPlain } from '../lib/richText';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale, dayName } from '../i18n/format';
+import { plural } from '@lingui/core/macro';
 
 /**
  * "How customers see you" (§208): the customer app's shop page, drawn here at
@@ -23,7 +27,8 @@ import { hasRichText, richToPlain } from '../lib/richText';
  */
 
 const HERO = 300;
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+/** Day names in the app's language (§308), Sunday first. */
+const DAYS = () => [0, 1, 2, 3, 4, 5, 6].map((day) => dayName(day));
 
 /** Each category's picture and colours when a shop has no cover (customer app `lookFor`). */
 const LOOKS: Record<string, { icon: IonName; from: string; to: string; tint: string; ink: string }> = {
@@ -64,15 +69,15 @@ const tintFor = (name: string) => TINTS[[...name].reduce((sum, c) => sum + c.cha
 const duration = (minutes: number) => {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  const hours = h === 1 ? '1 hour' : `${h} hours`;
-  const mins = m === 1 ? '1 minute' : `${m} minutes`;
+  const hours = plural(h, { one: '# hour', other: '# hours' });
+  const mins = plural(m, { one: '# minute', other: '# minutes' });
   if (h === 0) return mins;
   if (m === 0) return hours;
   return `${hours} ${mins}`;
 };
 
 const niceDate = (ymd: string) =>
-  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
 
 function Ion({ name, size, color }: { name: IonName; size: number; color: string }) {
   return (
@@ -124,7 +129,7 @@ export function CustomerPhone({ live, locations }: { live: LiveDetails; location
   return (
     <div className="csp">
       {branches.length > 1 && (
-        <div className="csp-branches" role="tablist" aria-label="Which branch">
+        <div className="csp-branches" role="tablist" aria-label={t`Which branch`}>
           {branches.map((b) => (
             <button
               key={b.id}
@@ -164,11 +169,13 @@ export function CustomerPhone({ live, locations }: { live: LiveDetails; location
       <p className="csp-note">
         {hidden ? (
           <>
-            <b>Customers cannot see this right now</b> — your shop is not posted yet, paused, or not yet approved. This is
-            how it will look.
+            <Trans>
+              <b>Customers cannot see this right now</b> — your shop is not posted yet, paused, or not yet approved. This is
+              how it will look.
+            </Trans>
           </>
         ) : (
-          'The real page from the app, with what you have typed. Scroll it, and try the tabs.'
+          t`The real page from the app, with what you have typed. Scroll it, and try the tabs.`
         )}
       </p>
     </div>
@@ -219,9 +226,9 @@ function ShopScreen({
   };
 
   const tabs = [
-    { value: 'services' as const, label: 'What they do' },
-    { value: 'hours' as const, label: 'Open hours' },
-    { value: 'reviews' as const, label: reviewTotal ? `Reviews (${reviewTotal})` : 'Reviews' },
+    { value: 'services' as const, label: t`What they do` },
+    { value: 'hours' as const, label: t`Open hours` },
+    { value: 'reviews' as const, label: reviewTotal ? t`Reviews (${reviewTotal})` : t`Reviews` },
   ];
   const index = tabs.findIndex((t) => t.value === tab);
 
@@ -241,17 +248,16 @@ function ShopScreen({
             <div className="csp-pills">
               {s.openNow ? (
                 <span className="csp-pill tone-ok">
-                  <i />
-                  Open now
+                  <Trans><i />Open now</Trans>
                 </span>
               ) : (
-                <span className="csp-pill tone-neutral">Closed</span>
+                <span className="csp-pill tone-neutral"><Trans>Closed</Trans></span>
               )}
               {live.subcategory && <span className="csp-pill tone-accent">{live.subcategory}</span>}
               {/* The one heart for a shop (§288): customers follow it here. */}
               <span className="csp-pill tone-accent csp-follow">
                 <Ion name="heart-outline" size={12} color="currentColor" />
-                Follow
+                <Trans>Follow</Trans>
               </span>
             </div>
 
@@ -276,29 +282,28 @@ function ShopScreen({
               <div className="csp-line csp-rating">
                 <Ion name="star" size={16} color="#FFB020" />
                 <b>{s.rating.average?.toFixed(1)}</b>
-                <span className="csp-small">from {s.rating.count} reviews</span>
+                <span className="csp-small"><Trans>from {s.rating.count} reviews</Trans></span>
               </div>
             )}
 
             {hasRichText(description) ? (
               <RichText text={description} className="csp-body csp-desc" />
             ) : (
-              <p className="csp-desc csp-hint">Your description shows here. Say what you offer and why you are worth the trip.</p>
+              <p className="csp-desc csp-hint"><Trans>Your description shows here. Say what you offer and why you are worth the trip.</Trans></p>
             )}
           </div>
 
           <div className="csp-button csp-fade" style={{ animationDelay: '80ms' }}>
             <Ion name="chatbubble-ellipses-outline" size={18} color="#F0532D" />
-            Message the shop
+            <Trans>Message the shop</Trans>
           </div>
 
           {s.gallery.length > 0 && (
             <div className="csp-section csp-fade" style={{ animationDelay: '120ms' }}>
               <div className="csp-gallery-head">
-                <h4>
-                  Photos <span>{s.gallery.length}</span>
+                <h4><Trans>Photos <span>{s.gallery.length}</span></Trans>
                 </h4>
-                <b>See all →</b>
+                <b><Trans>See all →</Trans></b>
               </div>
               <div className="csp-gallery">
                 {s.gallery.slice(0, 6).map((photo, i) => (
@@ -332,7 +337,7 @@ function ShopScreen({
 
           {tab === 'services' && (
             <div className="csp-section csp-fade" key="services">
-              {s.services.length === 0 && <p className="csp-small">Nothing is bookable here yet.</p>}
+              {s.services.length === 0 && <p className="csp-small"><Trans>Nothing is bookable here yet.</Trans></p>}
               {s.services.map((service) => (
                 <ServiceRow key={service.id} service={service} categoryIcon={live.categoryIcon} format={money.format} />
               ))}
@@ -346,21 +351,21 @@ function ShopScreen({
                   const isToday = h.dayOfWeek === today;
                   return (
                     <div key={h.dayOfWeek} className={`csp-hour${isToday ? ' is-today' : ''}`}>
-                      <span className="csp-day">{DAYS[h.dayOfWeek]}</span>
+                      <span className="csp-day">{DAYS()[h.dayOfWeek]}</span>
                       <span className={h.isClosed ? 'csp-hour-closed' : 'csp-hour-text'}>
-                        {h.isClosed ? 'Closed' : `${h.openTime} – ${h.closeTime}`}
+                        {h.isClosed ? t`Closed` : `${h.openTime} – ${h.closeTime}`}
                       </span>
                     </div>
                   );
                 })}
                 {s.upcomingExceptions.length > 0 && (
                   <div className="csp-exceptions">
-                    <p className="csp-label">Coming up</p>
+                    <p className="csp-label"><Trans>Coming up</Trans></p>
                     {s.upcomingExceptions.map((x) => (
                       <div key={x.date} className="csp-hour">
                         <span className="csp-day">{niceDate(x.date)}</span>
                         <span className={x.isClosed ? 'csp-closed-day' : 'csp-hour-text'}>
-                          {x.isClosed ? 'Closed' : `${x.customOpenTime} – ${x.customCloseTime}`}
+                          {x.isClosed ? t`Closed` : `${x.customOpenTime} – ${x.customCloseTime}`}
                         </span>
                       </div>
                     ))}
@@ -377,11 +382,11 @@ function ShopScreen({
                   <strong>{s.rating.average?.toFixed(1)}</strong>
                   <div>
                     <Stars rating={s.rating.average ?? 0} size={18} />
-                    <span className="csp-small">from {s.rating.count} reviews</span>
+                    <span className="csp-small"><Trans>from {s.rating.count} reviews</Trans></span>
                   </div>
                 </div>
               )}
-              {reviews.length === 0 && <p className="csp-small">Nobody has reviewed this place yet.</p>}
+              {reviews.length === 0 && <p className="csp-small"><Trans>Nobody has reviewed this place yet.</Trans></p>}
               {reviews.map((review) => {
                 const tint = tintFor(review.displayName.trim() || '?');
                 return (
@@ -398,7 +403,7 @@ function ShopScreen({
                     {review.comment && <p className="csp-body">{review.comment}</p>}
                     {review.responseText && (
                       <div className="csp-reply">
-                        <p className="csp-label">They replied</p>
+                        <p className="csp-label"><Trans>They replied</Trans></p>
                         <p className="csp-body">{review.responseText}</p>
                       </div>
                     )}
@@ -462,7 +467,7 @@ function ServiceRow({
         <div className="csp-price-row">
           <span className={`csp-price${service.discount ? ' is-sale' : ''}`}>{format(service.priceMinor, service.currency)}</span>
           {service.discount && <span className="csp-was">{format(service.discount.listPriceMinor, service.currency)}</span>}
-          <span className="csp-deposit">pay {format(deposit, service.currency)} now</span>
+          <span className="csp-deposit"><Trans>pay {format(deposit, service.currency)} now</Trans></span>
         </div>
       </div>
       <div className="csp-service-side">
@@ -479,7 +484,7 @@ function ServiceRow({
 
 function Stars({ rating, size }: { rating: number; size: number }) {
   return (
-    <span className="csp-stars" aria-label={`${rating} out of 5`}>
+    <span className="csp-stars" aria-label={t`${rating} out of 5`}>
       {[1, 2, 3, 4, 5].map((v) => (
         <Ion key={v} name="star" size={size} color={v <= Math.round(rating) ? '#FFB020' : '#ECE9E3'} />
       ))}
@@ -554,7 +559,7 @@ function fromOwnRecords(
           startingPriceMinor: startingPrice(sv, price),
           choiceGroups: sv.choiceGroups,
           noteEnabled: sv.noteEnabled,
-          notePrompt: sv.notePrompt ?? 'Anything the shop should know?',
+          notePrompt: sv.notePrompt ?? t`Anything the shop should know?`,
           priceConfirmedAtShop: sv.priceConfirmedAtShop,
         },
       ];

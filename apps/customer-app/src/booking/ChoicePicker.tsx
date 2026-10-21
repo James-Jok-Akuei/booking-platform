@@ -65,9 +65,7 @@ export function ChoicePicker({
               <View style={styles.private}>
                 <Icon name="lock-closed" size={13} color={theme.danger} />
                 <Text style={styles.privateText}>
-                  <Trans>
-                    Private: only the shop sees this — never in a message or an email.
-                  </Trans>
+                  <Trans>Private: only the shop sees this — never in a message or an email.</Trans>
                 </Text>
               </View>
             )}
@@ -189,9 +187,7 @@ export function NoteBox({
         textAlignVertical="top"
       />
       <Text style={type.tiny}>
-        <Trans>
-          A request, not a promise — the shop will try.
-        </Trans>
+        <Trans>A request, not a promise — the shop will try.</Trans>
       {privateAsked ? t` Allergies and health go in the questions above, never here.` : ''}
       </Text>
     </View>

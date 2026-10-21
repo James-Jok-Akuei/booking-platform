@@ -2,6 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import { useDismiss } from './useDismiss';
 import { Icon, type IconName } from './Icon';
 
+import { t } from '@lingui/core/macro';
+
 export type MoreItem = { label: string; icon: IconName; onClick: () => void; danger?: boolean };
 
 /**
@@ -12,7 +14,7 @@ export type MoreItem = { label: string; icon: IconName; onClick: () => void; dan
 export function MoreMenu({
   items,
   disabled,
-  label = 'More',
+  label = t`More`,
   align = 'right',
 }: {
   items: MoreItem[];

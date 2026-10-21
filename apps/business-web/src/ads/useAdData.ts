@@ -16,6 +16,7 @@ import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
 import { addDays, startOfDay } from '../lib/time';
 import type { IconName } from '../ui/Icon';
 import { useAccess } from '../access';
+import { t } from '@lingui/core/macro';
 
 /**
  * Everything the "For you" adverts are made from (§204), from what the app
@@ -125,76 +126,76 @@ export function useAdData() {
     const checks: HealthCheck[] = [];
     if (p) {
       checks.push(
-        { key: 'cover', label: 'A cover photo', done: Boolean(p.coverImageUrl), to: '/profile', icon: 'image', why: 'The first thing a customer sees on your page.' },
-        { key: 'logo', label: 'Your logo', done: Boolean(p.logoUrl), to: '/profile', icon: 'store', why: 'It sits on every card customers see of you.' },
+        { key: 'cover', label: t`A cover photo`, done: Boolean(p.coverImageUrl), to: '/profile', icon: 'image', why: t`The first thing a customer sees on your page.` },
+        { key: 'logo', label: t`Your logo`, done: Boolean(p.logoUrl), to: '/profile', icon: 'store', why: t`It sits on every card customers see of you.` },
         {
           key: 'about',
-          label: 'What you do, in a few lines',
+          label: t`What you do, in a few lines`,
           done: (p.description ?? '').trim().length >= 40,
           to: '/profile',
           icon: 'pencil',
-          why: 'Read by customers before they book.',
+          why: t`Read by customers before they book.`,
         },
-        { key: 'type', label: 'Your category and type', done: Boolean(p.category && p.subcategory), to: '/profile', icon: 'tag', why: 'How customers find you when they browse.' },
-        { key: 'phone', label: 'A phone number', done: Boolean(p.phone), to: '/profile', icon: 'phone', why: 'So customers can reach you.' },
+        { key: 'type', label: t`Your category and type`, done: Boolean(p.category && p.subcategory), to: '/profile', icon: 'tag', why: t`How customers find you when they browse.` },
+        { key: 'phone', label: t`A phone number`, done: Boolean(p.phone), to: '/profile', icon: 'phone', why: t`So customers can reach you.` },
       );
     }
     for (const b of branches) {
       checks.push({
         key: `gallery-${b.id}`,
-        label: `Photos of ${b.name}`,
+        label: t`Photos of ${b.name}`,
         done: (b._count?.media ?? 0) > 0,
         to: '/profile',
         icon: 'camera',
-        why: 'Customers want to see the place they are walking into.',
+        why: t`Customers want to see the place they are walking into.`,
       });
       checks.push({
         key: `hours-${b.id}`,
-        label: `Opening hours at ${b.name}`,
+        label: t`Opening hours at ${b.name}`,
         done: b.hours.some((h) => !h.isClosed),
         to: '/hours',
         icon: 'clock',
-        why: 'Without hours, nothing there can be booked.',
+        why: t`Without hours, nothing there can be booked.`,
       });
       checks.push({
         key: `where-${b.id}`,
-        label: `Where ${b.name} is`,
+        label: t`Where ${b.name} is`,
         done: Boolean(b.district) && b.latitude !== null && b.longitude !== null,
         to: '/hours',
         icon: 'pin',
-        why: 'How customers nearby find you.',
+        why: t`How customers nearby find you.`,
       });
     }
     if (catalogue.length === 0) {
-      checks.push({ key: 'service', label: 'Your first service', done: false, to: '/services', icon: 'tag', why: 'Customers book services — this is where it starts.' });
+      checks.push({ key: 'service', label: t`Your first service`, done: false, to: '/services', icon: 'tag', why: t`Customers book services — this is where it starts.` });
     } else {
       const noPhoto = onSale.filter((s) => s.images.length === 0);
       checks.push({
         key: 'service-photos',
-        label: noPhoto.length ? `Photos on ${noPhoto.length} ${noPhoto.length === 1 ? 'service' : 'services'}` : 'Photos on every service',
+        label: noPhoto.length ? t`Photos on ${noPhoto.length} ${noPhoto.length === 1 ? 'service' : 'services'}` : t`Photos on every service`,
         done: noPhoto.length === 0,
         to: '/services',
         icon: 'image',
-        why: 'A service with a photo is easier to choose.',
+        why: t`A service with a photo is easier to choose.`,
       });
       const noWords = onSale.filter((s) => !s.description);
       checks.push({
         key: 'service-words',
-        label: noWords.length ? `A description on ${noWords.length} ${noWords.length === 1 ? 'service' : 'services'}` : 'A description on every service',
+        label: noWords.length ? t`A description on ${noWords.length} ${noWords.length === 1 ? 'service' : 'services'}` : t`A description on every service`,
         done: noWords.length === 0,
         to: '/services',
         icon: 'pencil',
-        why: 'Shown under “About this service” before they book.',
+        why: t`Shown under “About this service” before they book.`,
       });
     }
     if (destination.data) {
       checks.push({
         key: 'payout',
-        label: 'A confirmed payout number',
+        label: t`A confirmed payout number`,
         done: destination.data.destination?.status === 'VERIFIED',
         to: '/getting-paid',
         icon: 'wallet',
-        why: 'Your share of deposits is paid to it.',
+        why: t`Your share of deposits is paid to it.`,
       });
     }
     const done = checks.filter((c) => c.done).length;

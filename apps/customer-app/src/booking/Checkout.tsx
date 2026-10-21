@@ -258,9 +258,7 @@ export function Checkout({
           <View style={styles.secure}>
             <Icon name="lock-closed" size={13} color={theme.ok} />
             <Text style={styles.secureText}>
-              <Trans>
-                Your PIN goes only into your phone. This app never asks for it.
-              </Trans>
+              <Trans>Your PIN goes only into your phone. This app never asks for it.</Trans>
             </Text>
           </View>
         )}
@@ -286,10 +284,8 @@ export function Checkout({
             <Icon name="alert-circle-outline" size={19} color={theme.danger} />
             <View style={styles.flex}>
               <Text style={styles.failed}>
-                <Trans>
-                  {explainFailedDeposit(failureReason)} You can try again.
-                </Trans>
-                </Text>
+                <Trans>{explainFailedDeposit(failureReason)} You can try again.</Trans>
+              </Text>
               {/* The operator's own code, kept small. It is unreadable as copy
                   and essential on a support ticket. */}
               {failureReason && <Text style={styles.failedCode}>{failureReason}</Text>}

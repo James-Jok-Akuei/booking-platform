@@ -1,3 +1,5 @@
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 /**
  * The mobile money network a number belongs to, as its own mark (§219) — the
  * MTN oval on MTN yellow, Airtel's wordmark on Airtel red — so a seller sees
@@ -10,8 +12,8 @@
 export type Network = 'MTN_MOMO' | 'AIRTEL_MONEY';
 
 export const NETWORK_NAME: Record<Network, string> = {
-  MTN_MOMO: 'MTN MoMo',
-  AIRTEL_MONEY: 'Airtel Money',
+  get MTN_MOMO() { return t`MTN MoMo`; },
+  get AIRTEL_MONEY() { return t`Airtel Money`; },
 };
 
 /**
@@ -77,7 +79,7 @@ export function NetworkMark({
             letterSpacing={0.2}
             fill="#000"
           >
-            MTN
+            <Trans>MTN</Trans>
           </text>
         </>
       ) : (
@@ -93,7 +95,7 @@ export function NetworkMark({
             letterSpacing={-0.3}
             fill="#fff"
           >
-            airtel
+            <Trans>airtel</Trans>
           </text>
         </>
       )}

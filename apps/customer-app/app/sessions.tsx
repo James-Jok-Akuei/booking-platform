@@ -78,9 +78,7 @@ export default function SessionsScreen() {
         ]}
       >
         <Text style={type.body}>
-          <Trans>
-            Every phone and browser where your account is open. Sign out any you do not recognise.
-          </Trans>
+          <Trans>Every phone and browser where your account is open. Sign out any you do not recognise.</Trans>
         </Text>
 
         <FadeIn style={styles.card}>
@@ -136,17 +134,13 @@ export default function SessionsScreen() {
           <View style={styles.tip}>
             <Icon name="mail-outline" size={16} color={theme.accent} />
             <Text style={[type.small, styles.flex]}>
-              <Trans>
-                A new phone or browser? We email you, and tell your other phones, each time one signs in.
-              </Trans>
+              <Trans>A new phone or browser? We email you, and tell your other phones, each time one signs in.</Trans>
             </Text>
           </View>
           <View style={styles.tip}>
             <Icon name="help-buoy-outline" size={16} color={theme.accent} />
             <Text style={[type.small, styles.flex]}>
-              <Trans>
-                Not you? Sign it out here, then write to us from Help — we will look at it with you.
-              </Trans>
+              <Trans>Not you? Sign it out here, then write to us from Help — we will look at it with you.</Trans>
             </Text>
           </View>
         </View>

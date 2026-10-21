@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { acceptLegal, myLegalStatus, type LegalStatus } from '../api/business';
 import { Icon } from '../ui/Icon';
 import { Portal } from '../ui/Portal';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * What this business still has to agree to (§126).
@@ -61,55 +63,56 @@ export function SellerAgreementGate({
 
   return (
     <Portal>
-    <div className="drawer-backdrop" onClick={onCancel}>
-      <aside
-        className="drawer"
-        onClick={(event) => event.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="drawer-head">
-          <div>
-            <h2>{document.title}</h2>
-            <p className="muted small">
-              Version {document.version}
-              {document.acceptedVersion !== null
-                ? ` · you agreed to version ${document.acceptedVersion}`
-                : ' · you have not agreed to this yet'}
-            </p>
+      <div className="drawer-backdrop" onClick={onCancel}>
+        <aside
+          className="drawer"
+          onClick={(event) => event.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="drawer-head">
+            <div>
+              <h2>{document.title}</h2>
+              <p className="muted small"><Trans>Version {document.version}</Trans>
+                {document.acceptedVersion !== null
+                  ? t` · you agreed to version ${document.acceptedVersion}`
+                  : t` · you have not agreed to this yet`}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <p className="notice">
-          <strong>Please accept this before listing a service.</strong> Listing one
-          is you agreeing to trade under these terms, so it is the one thing we
-          stop until you have read them.
-        </p>
+          <p className="notice">
+            <Trans>
+              <strong>Please accept this before listing a service.</strong> Listing one
+              is you agreeing to trade under these terms, so it is the one thing we
+              stop until you have read them.
+            </Trans>
+          </p>
 
-        {document.changeNote && (
-          <p className="muted small">What changed: {document.changeNote}</p>
-        )}
+          {document.changeNote && (
+            <p className="muted small"><Trans>What changed: {document.changeNote}</Trans></p>
+          )}
 
-        <button type="button" className="link" onClick={() => setReading((v) => !v)}>
-          {reading ? 'Hide' : 'Read it'}
-        </button>
-        {reading && <pre className="legal-body">{document.body}</pre>}
-
-        <div className="row-end">
-          <button type="button" className="link" onClick={onCancel}>
-            Not now
+          <button type="button" className="link" onClick={() => setReading((v) => !v)}>
+            {reading ? t`Hide` : t`Read it`}
           </button>
-          <button
-            type="button"
-            className="primary"
-            disabled={accept.isPending}
-            onClick={() => accept.mutate()}
-          >
-            {accept.isPending ? 'Saving…' : 'I agree'}
-          </button>
-        </div>
-      </aside>
-    </div>
+          {reading && <pre className="legal-body">{document.body}</pre>}
+
+          <div className="row-end">
+            <button type="button" className="link" onClick={onCancel}>
+              <Trans>Not now</Trans>
+            </button>
+            <button
+              type="button"
+              className="primary"
+              disabled={accept.isPending}
+              onClick={() => accept.mutate()}
+            >
+              {accept.isPending ? t`Saving…` : t`I agree`}
+            </button>
+          </div>
+        </aside>
+      </div>
     </Portal>
   );
 }
@@ -133,16 +136,16 @@ export function LegalBanner() {
       <p className="lb-text">
         <strong>
           {outstanding.length === 1
-            ? `${outstanding[0].title} has changed.`
-            : `${outstanding.length} documents have changed.`}
+            ? t`${outstanding[0].title} has changed.`
+            : t`${outstanding.length} documents have changed.`}
         </strong>{' '}
         {outstanding.length === 1 && outstanding[0].changeNote
           ? outstanding[0].changeNote
-          : 'Please read and agree when you can.'}
+          : t`Please read and agree when you can.`}
       </p>
       <Link to="/legal" className="lb-action">
-        Read and agree
-        <Icon name="arrowRight" size={15} stroke={2.2} />
+        <Trans>Read and agree</Trans>
+      <Icon name="arrowRight" size={15} stroke={2.2} />
       </Link>
     </div>
   );

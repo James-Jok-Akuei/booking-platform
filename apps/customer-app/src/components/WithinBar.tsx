@@ -10,10 +10,15 @@ import { t } from '@lingui/core/macro';
 
 const ANY = 'any';
 const OPTIONS = [
-  ...WITHIN_STEPS.map((km) => ({ value: String(km), label: t`${km} km` })),
+  // Read when shown (§308), like every label made at the top of a file.
+  ...WITHIN_STEPS.map((km) => ({
+    value: String(km),
+    get label() {
+      return t`${km} km`;
+    },
+  })),
   {
     value: ANY,
-
     get label() { return t`Any`; },
   },
 ];

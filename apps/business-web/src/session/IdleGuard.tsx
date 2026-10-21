@@ -4,6 +4,8 @@ import { useAuth } from '../auth/auth-context';
 import { Icon } from '../ui/Icon';
 import { clock, lengthWords } from './words';
 import './session.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** Activity is written down at most this often — every tab reads it. */
 const NOTE_EVERY = 5_000;
@@ -124,6 +126,8 @@ export function IdleGuard() {
     setWarning(null);
   };
 
+  // Named, so a translator sees the sentence whole (§308).
+  const lasts = most ?? t`a set time`;
   return (
     <div className="dlg-backdrop">
       <div
@@ -148,38 +152,43 @@ export function IdleGuard() {
           <Icon name={warning.kind === 'idle' ? 'timer' : 'lock'} size={22} />
         </div>
 
-        <h2 id="idle-title">{warning.kind === 'idle' ? 'Still there?' : 'Time to sign in again'}</h2>
+        <h2 id="idle-title">{warning.kind === 'idle' ? t`Still there?` : t`Time to sign in again`}</h2>
         <div className="dlg-body" id="idle-body">
           {warning.kind === 'idle' ? (
             <p>
-              Nothing has happened here for a while. To keep the account safe, you will be signed out in{' '}
-              <b className="idle-time">{clock(warning.left)}</b>.
+              <Trans>
+                Nothing has happened here for a while. To keep the account safe, you will be signed out in{' '}
+                <b className="idle-time">{clock(warning.left)}</b>.
+              </Trans>
             </p>
           ) : (
             <p>
-              For your safety, a sign-in lasts {most ?? 'a set time'}. You will be signed out in{' '}
-              <b className="idle-time">{clock(warning.left)}</b> — finish what you are doing, then sign in again with a
-              new code.
+              <Trans>
+                For your safety, a sign-in lasts {lasts}. You will be signed out in{' '}
+                <b className="idle-time">{clock(warning.left)}</b> — finish what you are doing, then sign in again with a
+                new code.
+              </Trans>
             </p>
           )}
           <p className="idle-small">
             {warning.kind === 'idle'
-              ? `Unused for ${idle}, a sign-in ends by itself.`
-              : 'Signing in again takes a code from your email.'}
+              ? t`Unused for ${idle}, a sign-in ends by itself.`
+              : t`Signing in again takes a code from your email.`}
           </p>
         </div>
 
         <div className="dlg-actions">
           <button type="button" onClick={() => void signOut()}>
-            <Icon name="logout" size={16} /> Sign out now
+            <Icon name="logout" size={16} />{' '}
+            <Trans>Sign out now</Trans>
           </button>
           {warning.kind === 'idle' ? (
             <button type="button" className="dlg-confirm tone-accent" autoFocus onClick={stay}>
-              Stay signed in
+              <Trans>Stay signed in</Trans>
             </button>
           ) : (
             <button type="button" className="dlg-confirm tone-accent" autoFocus onClick={acknowledge}>
-              OK
+              <Trans>OK</Trans>
             </button>
           )}
         </div>

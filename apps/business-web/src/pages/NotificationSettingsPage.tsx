@@ -13,6 +13,9 @@ import { pushState, pushSupported, turnOffHere, turnOnHere, type PushState } fro
 import { Icon, type IconName } from '../ui/Icon';
 import { Switch } from '../ui/Switch';
 import './notification-settings.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
 
 /** Each kind's mark, so the list reads at a glance. */
 const MARK: Record<string, { icon: IconName; tone: string }> = {
@@ -61,10 +64,12 @@ export function NotificationSettingsPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Notifications</h1>
+            <h1><Trans>Notifications</Trans></h1>
             <p className="muted">
-              Your bell in the app always has everything. Here you choose what also comes as an alert or an email —
-              everyone on your team chooses their own.
+              <Trans>
+                Your bell in the app always has everything. Here you choose what also comes as an alert or an email —
+                everyone on your team chooses their own.
+              </Trans>
             </p>
           </div>
         </header>
@@ -73,7 +78,7 @@ export function NotificationSettingsPage() {
       {save.error && (
         <p className="error ns-error" role="alert">
           <Icon name="alert" size={15} />
-          {save.error instanceof ApiError ? save.error.message : 'That did not save. Check your connection.'}
+          {save.error instanceof ApiError ? save.error.message : t`That did not save. Check your connection.`}
         </p>
       )}
 
@@ -81,13 +86,19 @@ export function NotificationSettingsPage() {
         <div className="ns-main">
           <article className="ns-card">
             <header className="ns-card-head">
-              <h2>What we send you</h2>
+              <h2><Trans>What we send you</Trans></h2>
               <div className="ns-cols" aria-hidden="true">
-                <span>
-                  <Icon name="bell" size={14} /> Alert
+                <span title={t`Alert`}>
+                  <Icon name="bell" size={14} />
+                  <span className="ns-col-word">
+                    <Trans>Alert</Trans>
+                  </span>
                 </span>
-                <span>
-                  <Icon name="mail" size={14} /> Email
+                <span title={t`Email`}>
+                  <Icon name="mail" size={14} />
+                  <span className="ns-col-word">
+                    <Trans>Email</Trans>
+                  </span>
                 </span>
               </div>
             </header>
@@ -118,21 +129,23 @@ export function NotificationSettingsPage() {
                   <Icon name="clock" size={18} />
                 </span>
                 <div>
-                  <h2>Quiet hours</h2>
+                  <h2><Trans>Quiet hours</Trans></h2>
                   <p className="muted small">
-                    Alerts that can wait — reviews, money, news — arrive after. Bookings and messages still come straight
-                    away.
+                    <Trans>
+                      Alerts that can wait — reviews, money, news — arrive after. Bookings and messages still come straight
+                      away.
+                    </Trans>
                   </p>
                 </div>
                 <Switch
                   checked={s.quietHours.on}
-                  label={s.quietHours.on ? 'Turn quiet hours off' : 'Turn quiet hours on'}
+                  label={s.quietHours.on ? t`Turn quiet hours off` : t`Turn quiet hours on`}
                   onChange={(on) => save.mutate({ quietHours: { ...s.quietHours, on } })}
                 />
               </header>
               <div className={`ns-quiet-times${s.quietHours.on ? '' : ' is-off'}`}>
                 <label>
-                  <span>From</span>
+                  <span><Trans>From</Trans></span>
                   <select
                     value={s.quietHours.from}
                     disabled={!s.quietHours.on}
@@ -149,7 +162,7 @@ export function NotificationSettingsPage() {
                   →
                 </span>
                 <label>
-                  <span>Until</span>
+                  <span><Trans>Until</Trans></span>
                   <select
                     value={s.quietHours.to}
                     disabled={!s.quietHours.on}
@@ -168,14 +181,14 @@ export function NotificationSettingsPage() {
 
           {s && s.devices.length > 0 && (
             <article className="ns-card ns-devices">
-              <h2>Where alerts go</h2>
+              <h2><Trans>Where alerts go</Trans></h2>
               <ul>
                 {s.devices.map((d) => (
                   <li key={d.id}>
                     <Icon name={d.kind === 'WEB' ? 'globe' : 'phone'} size={16} />
                     <span>
-                      <strong>{d.label ?? (d.kind === 'WEB' ? 'A browser' : 'A phone')}</strong>
-                      <small>Since {new Date(d.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</small>
+                      <strong>{d.label ?? (d.kind === 'WEB' ? t`A browser` : t`A phone`)}</strong>
+                      <small><Trans>Since {new Date(d.createdAt).toLocaleDateString(dateLocale(), { dateStyle: 'medium' })}</Trans></small>
                     </span>
                   </li>
                 ))}
@@ -230,14 +243,23 @@ function CategoryRow({
     if (c.locked) {
       return (
         <span className="ns-lock" title={c.locked} aria-label={c.locked}>
-          <Icon name="lock" size={13} /> <span>Always</span>
+          <Icon name="lock" size={13} /> <span><Trans>Always</Trans></span>
         </span>
       );
     }
+    const kind = row.title.toLowerCase();
     return (
       <Switch
         checked={c.on}
-        label={`${c.on ? 'Turn off' : 'Turn on'} ${row.title.toLowerCase()} by ${which === 'EMAIL' ? 'email' : 'alert'}`}
+        label={
+          which === 'EMAIL'
+            ? c.on
+              ? t`Turn off ${kind} by email`
+              : t`Turn on ${kind} by email`
+            : c.on
+              ? t`Turn off ${kind} by alert`
+              : t`Turn on ${kind} by alert`
+        }
         onChange={(on) => onChoose(row.category, which, on)}
       />
     );
@@ -252,14 +274,14 @@ function CategoryRow({
         <strong>{row.title}</strong>
         <span>{row.hint}</span>
         {row.email?.locked && <em>{row.email.locked}</em>}
-        {row.needsYes && <em className="ns-consent">Turning these on means: “{newsWording}”</em>}
+        {row.needsYes && <em className="ns-consent"><Trans>Turning these on means: “{newsWording}”</Trans></em>}
         {digest !== null && (
-          <div className="ns-digest" role="radiogroup" aria-label="Booking emails">
+          <div className="ns-digest" role="radiogroup" aria-label={t`Booking emails`}>
             <button type="button" role="radio" aria-checked={!digest} className={!digest ? 'is-on' : ''} onClick={() => onDigest(false)}>
-              Each one
+              <Trans>Each one</Trans>
             </button>
             <button type="button" role="radio" aria-checked={digest} className={digest ? 'is-on' : ''} onClick={() => onDigest(true)}>
-              One summary at 7:00
+              <Trans>One summary at 7:00</Trans>
             </button>
           </div>
         )}
@@ -287,7 +309,7 @@ function ThisComputer({ publicKey, onChanged }: { publicKey: string | null; onCh
       setState(await turnOnHere(publicKey));
       onChanged();
     } catch {
-      setProblem('That did not work. Try again, or check this site is allowed to send notifications.');
+      setProblem(t`That did not work. Try again, or check this site is allowed to send notifications.`);
     } finally {
       setBusy(false);
     }
@@ -301,15 +323,15 @@ function ThisComputer({ publicKey, onChanged }: { publicKey: string | null; onCh
   };
 
   const words: Record<PushState, { title: string; line: string }> = {
-    on: { title: 'Alerts are on here', line: 'New bookings and messages pop up on this computer, even with the app in another tab.' },
-    off: { title: 'Alerts on this computer', line: 'Hear about a new booking the moment it comes in, even with the app in another tab.' },
+    on: { title: t`Alerts are on here`, line: t`New bookings and messages pop up on this computer, even with the app in another tab.` },
+    off: { title: t`Alerts on this computer`, line: t`Hear about a new booking the moment it comes in, even with the app in another tab.` },
     blocked: {
-      title: 'This browser blocks alerts',
-      line: 'Allow notifications for this site — the lock or tune icon beside the address — then come back here.',
+      title: t`This browser blocks alerts`,
+      line: t`Allow notifications for this site — the lock or tune icon beside the address — then come back here.`,
     },
     unsupported: {
-      title: 'Alerts are not available here',
-      line: 'This browser cannot show alerts. Chrome, Edge, Firefox and Safari on a Mac can; on an iPhone, add the app to your home screen first.',
+      title: t`Alerts are not available here`,
+      line: t`This browser cannot show alerts. Chrome, Edge, Firefox and Safari on a Mac can; on an iPhone, add the app to your home screen first.`,
     },
   };
   const now = state ?? 'off';
@@ -322,14 +344,14 @@ function ThisComputer({ publicKey, onChanged }: { publicKey: string | null; onCh
       <h2>{words[now].title}</h2>
       <p className="muted small">{words[now].line}</p>
       {!publicKey && pushSupported() && now !== 'on' ? (
-        <p className="ns-here-note">Alerts on computers are not switched on for the platform yet.</p>
+        <p className="ns-here-note"><Trans>Alerts on computers are not switched on for the platform yet.</Trans></p>
       ) : now === 'on' ? (
         <button type="button" className="ns-here-btn is-quiet" disabled={busy} onClick={() => void off()}>
-          Turn off on this computer
+          <Trans>Turn off on this computer</Trans>
         </button>
       ) : now === 'off' ? (
         <button type="button" className="primary ns-here-btn" disabled={busy || !publicKey} onClick={() => void on()}>
-          <Icon name="bell" size={16} /> {busy ? 'Turning on…' : 'Turn on alerts here'}
+          <Icon name="bell" size={16} /> {busy ? t`Turning on…` : t`Turn on alerts here`}
         </button>
       ) : null}
       {problem && <p className="ns-here-problem">{problem}</p>}

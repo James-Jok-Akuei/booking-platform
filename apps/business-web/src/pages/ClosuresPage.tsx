@@ -17,6 +17,9 @@ import { BranchPills } from '../ui/BranchPills';
 import { Icon } from '../ui/Icon';
 import './closures.css';
 import { useAccess } from '../access';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale, dayName } from '../i18n/format';
 
 /** A local calendar day as YYYY-MM-DD — the seller's today, not UTC's. */
 const ymdOf = (d: Date) =>
@@ -25,7 +28,7 @@ const today = () => ymdOf(new Date());
 const dayOf = (ymd: string) => new Date(`${ymd}T12:00:00`);
 
 const niceDate = (ymd: string) =>
-  dayOf(ymd).toLocaleDateString(undefined, {
+  dayOf(ymd).toLocaleDateString(dateLocale(), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -34,8 +37,9 @@ const niceDate = (ymd: string) =>
 
 const isPast = (ymd: string) => ymd < today();
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const DAY_NAMES = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+/** Short day names in the app's language (§308), Monday first. */
+const WEEKDAYS = () => [1, 2, 3, 4, 5, 6, 0].map((day) => dayName(day, 'short'));
+const DAY_NAMES = () => [t`Sundays`, t`Mondays`, t`Tuesdays`, t`Wednesdays`, t`Thursdays`, t`Fridays`, t`Saturdays`];
 
 /**
  * Days that do not follow the usual week (§102, §195, §207).
@@ -77,11 +81,11 @@ export function ClosuresPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Closures &amp; breaks</h1>
+            <h1><Trans>Closures & breaks</Trans></h1>
             <p className="muted">
               {canChange
-                ? 'Days that do not follow your usual week. Pick a day, then close it, change its hours or take a break out of it — customers cannot book the times you take out.'
-                : 'Days that do not follow the usual week, and breaks taken out of a day. The owner or a manager changes them.'}
+                ? t`Days that do not follow your usual week. Pick a day, then close it, change its hours or take a break out of it — customers cannot book the times you take out.`
+                : t`Days that do not follow the usual week, and breaks taken out of a day. The owner or a manager changes them.`}
             </p>
           </div>
         </header>
@@ -93,7 +97,7 @@ export function ClosuresPage() {
       {branches.length === 0 && !locations.isLoading && (
         <div className="cl-empty">
           <Icon name="pin" size={26} />
-          <p>{canChange ? 'Add a branch first, under Branches & hours.' : 'You have no branch yet — ask the owner to choose yours.'}</p>
+          <p>{canChange ? t`Add a branch first, under Branches & hours.` : t`You have no branch yet — ask the owner to choose yours.`}</p>
         </div>
       )}
 
@@ -196,18 +200,18 @@ function MonthCalendar({
   for (let d = 0; d < 7; d++) if (!branch.hours.some((h) => h.dayOfWeek === d)) weeklyOff.add(d);
 
   const now = today();
-  const label = month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const label = month.toLocaleDateString(dateLocale(), { month: 'long', year: 'numeric' });
   const step = (by: number) => setMonth(new Date(month.getFullYear(), month.getMonth() + by, 1));
 
   return (
     <div className="cal">
       <p className="cl-step">
-        <b>1</b> Pick a day
+        <Trans><b>1</b> Pick a day</Trans>
       </p>
       <header className="cal-head">
         <h2>{label}</h2>
         <div className="cal-nav">
-          <button type="button" aria-label="Previous month" onClick={() => step(-1)}>
+          <button type="button" aria-label={t`Previous month`} onClick={() => step(-1)}>
             <Icon name="chevronLeft" size={18} />
           </button>
           <button
@@ -219,16 +223,16 @@ function MonthCalendar({
               onSelect(today());
             }}
           >
-            Today
+            <Trans>Today</Trans>
           </button>
-          <button type="button" aria-label="Next month" onClick={() => step(1)}>
+          <button type="button" aria-label={t`Next month`} onClick={() => step(1)}>
             <Icon name="chevronRight" size={18} />
           </button>
         </div>
       </header>
 
       <div className="cal-grid" role="grid">
-        {WEEKDAYS.map((d) => (
+        {WEEKDAYS().map((d) => (
           <span key={d} className="cal-wd">
             {d}
           </span>
@@ -249,12 +253,15 @@ function MonthCalendar({
           ]
             .filter(Boolean)
             .join(' ');
+          const why = closure?.reason ? ` — ${closure.reason}` : '';
+          const from = closure?.customOpenTime ?? '';
+          const until = closure?.customCloseTime ?? '';
           const title = closure
             ? closure.isClosed
-              ? `Closed all day${closure.reason ? ` — ${closure.reason}` : ''}`
-              : `Open ${closure.customOpenTime} to ${closure.customCloseTime}${closure.reason ? ` — ${closure.reason}` : ''}`
+              ? `${t`Closed all day`}${why}`
+              : `${t`Open ${from} to ${until}`}${why}`
             : weeklyOff.has(d.getDay())
-              ? 'Usually closed'
+              ? t`Usually closed`
               : undefined;
           return (
             <button
@@ -267,7 +274,7 @@ function MonthCalendar({
             >
               <span>{d.getDate()}</span>
               {breakCount > 0 && (
-                <i className="cal-breaks" aria-label={`${breakCount} break${breakCount === 1 ? '' : 's'}`}>
+                <i className="cal-breaks" aria-label={t`${breakCount} break${breakCount === 1 ? '' : 's'}`}>
                   {Array.from({ length: Math.min(breakCount, 3) }, (_, i) => (
                     <b key={i} />
                   ))}
@@ -280,16 +287,16 @@ function MonthCalendar({
 
       <footer className="cal-legend">
         <span>
-          <i className="lg-closed" /> Closed all day
+          <Trans><i className="lg-closed" />Closed all day</Trans>
         </span>
         <span>
-          <i className="lg-special" /> Different hours
+          <Trans><i className="lg-special" />Different hours</Trans>
         </span>
         <span>
-          <i className="lg-break" /> Break
+          <Trans><i className="lg-break" />Break</Trans>
         </span>
         <span>
-          <i className="lg-off" /> Usually closed
+          <Trans><i className="lg-off" />Usually closed</Trans>
         </span>
       </footer>
     </div>
@@ -382,45 +389,45 @@ function DayPanel({
   return (
     <div className="cl-day" ref={root}>
       <p className="cl-step">
-        <b>2</b> Change that day
+        <Trans><b>2</b> Change that day</Trans>
         <span className="cl-step-hint">
           <Icon name="arrowRight" size={13} className="cl-hint-side" />
           <Icon name="chevronUp" size={13} className="cl-hint-up" />
-          The day you picked
+          <Trans>The day you picked</Trans>
         </span>
       </p>
 
       <header className="cl-day-head" key={date}>
         <span className={`cl-day-tile${past ? ' is-past' : ''}`}>
-          <em>{d.toLocaleDateString(undefined, { weekday: 'short' })}</em>
+          <em>{d.toLocaleDateString(dateLocale(), { weekday: 'short' })}</em>
           <strong>{d.getDate()}</strong>
-          <em>{d.toLocaleDateString(undefined, { month: 'short' })}</em>
+          <em>{d.toLocaleDateString(dateLocale(), { month: 'short' })}</em>
         </span>
         <div>
-          <h2>{d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
+          <h2>{d.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
           <p>
             {usual.open ? (
               <>
-                <Icon name="clock" size={13} /> Usually open {usual.from} – {usual.to}
+                <Icon name="clock" size={13} /><Trans>Usually open {usual.from} – {usual.to}</Trans>
               </>
             ) : (
               <>
-                <Icon name="moon" size={13} /> Usually closed on {DAY_NAMES[usual.weekday]}
+                <Icon name="moon" size={13} /><Trans>Usually closed on {DAY_NAMES()[usual.weekday]}</Trans>
               </>
             )}
           </p>
         </div>
       </header>
 
-      <ul className="cl-on" aria-label="Changed on this day">
+      <ul className="cl-on" aria-label={t`Changed on this day`}>
         {closure && (
           <li className={closure.isClosed ? 'tone-red' : 'tone-amber'}>
             <Icon name={closure.isClosed ? 'calendarX' : 'clock'} size={15} />
             <span>
               <strong>
                 {closure.isClosed
-                  ? 'Closed all day'
-                  : `Open ${closure.customOpenTime} – ${closure.customCloseTime} instead`}
+                  ? t`Closed all day`
+                  : t`Open ${closure.customOpenTime ?? ""} – ${closure.customCloseTime ?? ""} instead`}
               </strong>
               {closure.reason && <em>{closure.reason}</em>}
             </span>
@@ -431,7 +438,7 @@ function DayPanel({
                 disabled={remove.busy}
                 onClick={() => remove.closure.mutate(closure.id)}
               >
-                Remove
+                <Trans>Remove</Trans>
               </button>
             )}
           </li>
@@ -440,14 +447,13 @@ function DayPanel({
           <li key={b.id} className="tone-blue">
             <Icon name="timer" size={15} />
             <span>
-              <strong>
-                Break {b.startTime} – {b.endTime}
+              <strong><Trans>Break {b.startTime} – {b.endTime}</Trans>
               </strong>
               {b.reason && <em>{b.reason}</em>}
             </span>
             {canChange && (
               <button type="button" className="cl-remove" disabled={remove.busy} onClick={() => remove.pause.mutate(b.id)}>
-                Remove
+                <Trans>Remove</Trans>
               </button>
             )}
           </li>
@@ -456,13 +462,13 @@ function DayPanel({
           <li className="is-none">
             <Icon name={usual.open ? 'checkCircle' : 'info'} size={15} />
             <span>
-              <strong>{usual.open ? 'Nothing changed' : 'Nothing changed — and usually shut'}</strong>
+              <strong>{usual.open ? t`Nothing changed` : t`Nothing changed — and usually shut`}</strong>
               <em>
                 {usual.open
-                  ? 'Customers can book this day as usual.'
+                  ? t`Customers can book this day as usual.`
                   : canChange
-                    ? 'Customers cannot book it. “Open, but different hours” opens it just this once.'
-                    : 'Customers cannot book it.'}
+                    ? t`Customers cannot book it. “Open, but different hours” opens it just this once.`
+                    : t`Customers cannot book it.`}
               </em>
             </span>
           </li>
@@ -471,11 +477,13 @@ function DayPanel({
 
       {!canChange ? (
         <p className="cl-past-note">
-          <Icon name="shield" size={15} /> The owner or a manager closes days and adds breaks.
+          <Icon name="shield" size={15} />{' '}
+          <Trans>The owner or a manager closes days and adds breaks.</Trans>
         </p>
       ) : past ? (
         <p className="cl-past-note">
-          <Icon name="info" size={15} /> This day has passed. Pick today or a day ahead to change it.
+          <Icon name="info" size={15} />{' '}
+          <Trans>This day has passed. Pick today or a day ahead to change it.</Trans>
         </p>
       ) : (
         <form className="cl-form" onSubmit={submit}>
@@ -489,8 +497,8 @@ function DayPanel({
             >
               <Icon name="calendarX" size={16} />
               <span>
-                <strong>The whole day</strong>
-                <em>Close it, or change its hours</em>
+                <strong><Trans>The whole day</Trans></strong>
+                <em><Trans>Close it, or change its hours</Trans></em>
               </span>
             </button>
             <button
@@ -502,8 +510,8 @@ function DayPanel({
             >
               <Icon name="timer" size={16} />
               <span>
-                <strong>Part of the day</strong>
-                <em>Lunch, a meeting, a delivery</em>
+                <strong><Trans>Part of the day</Trans></strong>
+                <em><Trans>Lunch, a meeting, a delivery</Trans></em>
               </span>
             </button>
           </div>
@@ -513,7 +521,7 @@ function DayPanel({
               {/* The server refuses a day that is both closed and has custom
                   hours, and one that is neither. Choosing one of two makes it
                   one or the other, so neither refusal can be reached. */}
-              <div className="cl-choice" role="radiogroup" aria-label="What happens">
+              <div className="cl-choice" role="radiogroup" aria-label={t`What happens`}>
                 <button
                   type="button"
                   role="radio"
@@ -521,7 +529,7 @@ function DayPanel({
                   className={mode === 'closed' ? 'is-on' : ''}
                   onClick={() => setMode('closed')}
                 >
-                  Closed all day
+                  <Trans>Closed all day</Trans>
                 </button>
                 <button
                   type="button"
@@ -530,17 +538,17 @@ function DayPanel({
                   className={mode === 'hours' ? 'is-on' : ''}
                   onClick={() => setMode('hours')}
                 >
-                  Open, but different hours
+                  <Trans>Open, but different hours</Trans>
                 </button>
               </div>
               {mode === 'hours' && (
                 <div className="cl-row">
                   <label className="cl-field">
-                    <span>Opens</span>
+                    <span><Trans>Opens</Trans></span>
                     <input type="time" value={open} onChange={(e) => setOpen(e.target.value)} />
                   </label>
                   <label className="cl-field">
-                    <span>Closes</span>
+                    <span><Trans>Closes</Trans></span>
                     <input type="time" value={close} onChange={(e) => setClose(e.target.value)} />
                   </label>
                 </div>
@@ -549,54 +557,53 @@ function DayPanel({
           ) : (
             <div className="cl-row">
               <label className="cl-field">
-                <span>From</span>
+                <span><Trans>From</Trans></span>
                 <input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
               </label>
               <label className="cl-field">
-                <span>Until</span>
+                <span><Trans>Until</Trans></span>
                 <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
               </label>
             </div>
           )}
 
           <label className="cl-field">
-            <span>
-              Why <em>optional — customers do not see this</em>
+            <span><Trans>Why <em>optional — customers do not see this</em></Trans>
             </span>
             <input
               value={why}
               onChange={(event) => setWhy(event.target.value)}
               maxLength={200}
-              placeholder={tab === 'whole' ? 'Public holiday' : 'Lunch'}
+              placeholder={tab === 'whole' ? t`Public holiday` : t`Lunch`}
             />
           </label>
 
           {saving.error && (
             <p className="error small" role="alert">
-              {saving.error instanceof ApiError ? saving.error.message : 'That did not save.'}
+              {saving.error instanceof ApiError ? saving.error.message : t`That did not save.`}
             </p>
           )}
 
           <div className="cl-submit">
             <span>
               {tab === 'whole' && closure
-                ? 'This replaces what is set for this day now.'
+                ? t`This replaces what is set for this day now.`
                 : tab === 'whole'
                   ? mode === 'closed'
-                    ? `No bookings on ${niceDate(date)}.`
-                    : `${niceDate(date)} · open ${open} to ${close}`
-                  : `${niceDate(date)} · ${start} to ${end} taken out`}
+                    ? t`No bookings on ${niceDate(date)}.`
+                    : t`${niceDate(date)} · open ${open} to ${close}`
+                  : t`${niceDate(date)} · ${start} to ${end} taken out`}
             </span>
             <button type="submit" className="primary" disabled={saving.isPending}>
               {saving.isPending
-                ? 'Saving…'
+                ? t`Saving…`
                 : tab === 'part'
-                  ? 'Add this break'
+                  ? t`Add this break`
                   : closure
-                    ? 'Change this day'
+                    ? t`Change this day`
                     : mode === 'closed'
-                      ? 'Close this day'
-                      : 'Set these hours'}
+                      ? t`Close this day`
+                      : t`Set these hours`}
             </button>
           </div>
         </form>
@@ -639,7 +646,7 @@ function ComingUp({
       kind: 'closure' as const,
       date: c.date.slice(0, 10),
       tone: c.isClosed ? ('red' as const) : ('amber' as const),
-      title: c.isClosed ? 'Closed all day' : `Open ${c.customOpenTime} – ${c.customCloseTime}`,
+      title: c.isClosed ? t`Closed all day` : t`Open ${c.customOpenTime ?? ""} – ${c.customCloseTime ?? ""}`,
       reason: c.reason,
     })),
     ...breaks.map((b) => ({
@@ -647,7 +654,7 @@ function ComingUp({
       kind: 'break' as const,
       date: b.date.slice(0, 10),
       tone: 'blue' as const,
-      title: `Break ${b.startTime} – ${b.endTime}`,
+      title: t`Break ${b.startTime} – ${b.endTime}`,
       reason: b.reason,
     })),
   ].sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title));
@@ -661,10 +668,10 @@ function ComingUp({
         key={row.id}
         className={`cl-entry tone-${row.tone}${old ? ' is-past' : ''}${row.date === selected ? ' is-picked' : ''}`}
       >
-        <button type="button" className="cl-entry-open" onClick={() => onPick(row.date)} title="Open this day above">
+        <button type="button" className="cl-entry-open" onClick={() => onPick(row.date)} title={t`Open this day above`}>
           <span className="cl-date">
             <strong>{d.getDate()}</strong>
-            <span>{d.toLocaleDateString(undefined, { month: 'short' })}</span>
+            <span>{d.toLocaleDateString(dateLocale(), { month: 'short' })}</span>
           </span>
           <span className="cl-entry-text">
             <strong>{row.title}</strong>
@@ -681,7 +688,7 @@ function ComingUp({
             disabled={remove.busy}
             onClick={() => (row.kind === 'closure' ? remove.closure : remove.pause).mutate(row.id)}
           >
-            Remove
+            <Trans>Remove</Trans>
           </button>
         )}
       </li>
@@ -692,11 +699,11 @@ function ComingUp({
     <article className="cl-list">
       <header>
         <div>
-          <h2>Coming up at {branch.name}</h2>
+          <h2><Trans>Coming up at {branch.name}</Trans></h2>
           <p>
             {coming.length === 0
-              ? 'Nothing taken out yet — every day follows your usual hours.'
-              : `${coming.length} ${coming.length === 1 ? 'change' : 'changes'}. Click one to open its day above.`}
+              ? t`Nothing taken out yet — every day follows your usual hours.`
+              : t`${coming.length} ${coming.length === 1 ? 'change' : 'changes'}. Click one to open its day above.`}
           </p>
         </div>
       </header>
@@ -705,7 +712,7 @@ function ComingUp({
         <>
           <button type="button" className="cl-past-toggle" onClick={() => setShowPast((v) => !v)}>
             <Icon name={showPast ? 'chevronUp' : 'chevronDown'} size={16} />
-            {showPast ? 'Hide past' : `Past (${past.length})`}
+            {showPast ? t`Hide past` : t`Past (${past.length})`}
           </button>
           {showPast && <ul>{past.map((r) => item(r, true))}</ul>}
         </>

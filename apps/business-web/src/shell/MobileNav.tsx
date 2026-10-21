@@ -2,6 +2,8 @@ import { NavLink } from 'react-router-dom';
 import { Icon, type IconName } from '../ui/Icon';
 import { Sidebar } from './Sidebar';
 import type { ShellData } from './useShellData';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * The phone's way round the app (§190).
@@ -27,23 +29,23 @@ export function TabBar({
         <Icon name={icon} size={21} />
         {badge > 0 && <span className="tab-badge">{badge > 9 ? '9+' : badge}</span>}
       </span>
-      <span>{label}</span>
+      <span title={label}>{label}</span>
     </NavLink>
   );
 
   return (
-    <nav className="tabbar" aria-label="Main">
-      {tab('/', 'Today', 'overview')}
-      {tab('/appointments', 'Bookings', 'calendarCheck', data.expectedToday)}
-      <button type="button" className="tab-checkin" onClick={onCheckIn} aria-label="Check in a customer" data-tour="check-in">
+    <nav className="tabbar" aria-label={t`Main`}>
+      {tab('/', t`Today`, 'overview')}
+      {tab('/appointments', t`Bookings`, 'calendarCheck', data.expectedToday)}
+      <button type="button" className="tab-checkin" onClick={onCheckIn} aria-label={t`Check in a customer`} data-tour="check-in">
         <Icon name="ticket" size={24} />
       </button>
-      {tab('/messages', 'Messages', 'message', data.unreadMessages)}
+      {tab('/messages', t`Messages`, 'message', data.unreadMessages)}
       <button type="button" className="tab-item" onClick={onOpenMenu} data-tour="menu">
         <span className="tab-icon">
           <Icon name="menu" size={21} />
         </span>
-        <span>Menu</span>
+        <span><Trans>Menu</Trans></span>
       </button>
     </nav>
   );
@@ -60,9 +62,9 @@ export function MenuDrawer({
   onSignOut: () => void;
 }) {
   return (
-    <div className="nav-drawer" role="dialog" aria-modal="true" aria-label="Menu" onMouseDown={onClose}>
+    <div className="nav-drawer" role="dialog" aria-modal="true" aria-label={t`Menu`} onMouseDown={onClose}>
       <div className="nav-drawer-panel" onMouseDown={(event) => event.stopPropagation()}>
-        <button type="button" className="nav-drawer-close" onClick={onClose} aria-label="Close the menu">
+        <button type="button" className="nav-drawer-close" onClick={onClose} aria-label={t`Close the menu`}>
           <Icon name="close" size={20} />
         </button>
         <Sidebar data={data} variant="drawer" onNavigate={onClose} onSignOut={onSignOut} />

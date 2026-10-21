@@ -5,13 +5,26 @@ import { acceptLegal, myLegalStatus, type LegalStatus } from '../api/business';
 import { Icon, type IconName } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import './legal.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
+import { Plural } from '@lingui/react/macro';
 
-const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
+const when = (iso: string) => new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' });
 
 const KIND: Record<string, { icon: IconName; blurb: string }> = {
-  SELLER_AGREEMENT: { icon: 'store', blurb: 'How you get paid, and what happens when a booking is cancelled.' },
-  TERMS_OF_USE: { icon: 'legal', blurb: 'The rules for using the platform, for everyone.' },
-  PRIVACY_POLICY: { icon: 'shield', blurb: 'What we keep about you and your customers, and why.' },
+  SELLER_AGREEMENT: {
+    icon: 'store',
+    get blurb() { return t`How you get paid, and what happens when a booking is cancelled.`; },
+  },
+  TERMS_OF_USE: {
+    icon: 'legal',
+    get blurb() { return t`The rules for using the platform, for everyone.`; },
+  },
+  PRIVACY_POLICY: {
+    icon: 'shield',
+    get blurb() { return t`What we keep about you and your customers, and why.`; },
+  },
 };
 
 /**
@@ -51,10 +64,12 @@ export function LegalPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Legal</h1>
+            <h1><Trans>Legal</Trans></h1>
             <p className="muted">
-              What you have agreed to. Older versions are kept — what you agreed to stays as you read it, even
-              after it is replaced.
+              <Trans>
+                What you have agreed to. Older versions are kept — what you agreed to stays as you read it, even
+                after it is replaced.
+              </Trans>
             </p>
           </div>
         </header>
@@ -65,9 +80,13 @@ export function LegalPage() {
           <Icon name="alert" size={18} />
           <span>
             <strong>
-              {outstanding} {outstanding === 1 ? 'document has' : 'documents have'} changed since you agreed.
+              <Plural
+                value={outstanding}
+                one="# document has changed since you agreed."
+                other="# documents have changed since you agreed."
+              />
             </strong>{' '}
-            Nothing stops working — please read and agree when you can.
+            <Trans>Nothing stops working — please read and agree when you can.</Trans>
           </span>
         </p>
       )}
@@ -75,13 +94,13 @@ export function LegalPage() {
         <p className="lg-banner is-ok">
           <Icon name="checkCircle" size={18} />
           <span>
-            <strong>You are up to date.</strong> You have agreed to the latest version of everything.
+            <Trans><strong>You are up to date.</strong> You have agreed to the latest version of everything.</Trans>
           </span>
         </p>
       )}
 
       {documents.isLoading && <div className="skeleton lg-skeleton" />}
-      {documents.data && rows.length === 0 && <p className="muted">Nothing has been published yet.</p>}
+      {documents.data && rows.length === 0 && <p className="muted"><Trans>Nothing has been published yet.</Trans></p>}
 
       {problem && (
         <p className="notice" role="alert">
@@ -106,31 +125,31 @@ export function LegalPage() {
                 </span>
                 <span className={`lg-state is-${state}`}>
                   <Icon name={state === 'agreed' ? 'check' : 'dot'} size={13} stroke={2.6} filled={state !== 'agreed'} />
-                  {state === 'agreed' ? 'Agreed' : state === 'changed' ? 'Changed' : 'Not agreed yet'}
+                  {state === 'agreed' ? t`Agreed` : state === 'changed' ? t`Changed` : t`Not agreed yet`}
                 </span>
               </div>
               <h2>{document.title}</h2>
               <p className="lg-blurb">{look.blurb}</p>
-              <p className="lg-meta">
-                Version {document.version} · published {when(document.publishedAt)}
+              <p className="lg-meta"><Trans>Version {document.version} · published {when(document.publishedAt)}</Trans>
               </p>
               <p className={`lg-status${document.needsAcceptance ? ' is-warn' : ''}`}>
                 {document.acceptedVersion === null
-                  ? 'You have not agreed to this yet.'
+                  ? t`You have not agreed to this yet.`
                   : document.needsAcceptance
-                    ? `You agreed to version ${document.acceptedVersion} on ${when(document.acceptedAt!)}. This one is newer.`
-                    : `Agreed on ${when(document.acceptedAt!)}.`}
+                    ? t`You agreed to version ${document.acceptedVersion} on ${when(document.acceptedAt!)}. This one is newer.`
+                    : t`Agreed on ${when(document.acceptedAt!)}.`}
               </p>
               {/* The one line that says what moved, shown only to somebody who
                   has already read an older version. */}
               {document.needsAcceptance && document.changeNote && (
                 <p className="lg-change">
-                  <strong>What changed:</strong> {document.changeNote}
+                  <strong><Trans>What changed:</Trans></strong> {document.changeNote}
                 </p>
               )}
               <div className="lg-actions">
                 <button type="button" onClick={() => setOpen(document)}>
-                  <Icon name="eye" size={16} /> Read it
+                  <Icon name="eye" size={16} />{' '}
+                  <Trans>Read it</Trans>
                 </button>
                 {document.needsAcceptance && (
                   <button
@@ -139,7 +158,7 @@ export function LegalPage() {
                     disabled={accept.isPending}
                     onClick={() => accept.mutate(document.id)}
                   >
-                    {accept.isPending && accept.variables === document.id ? 'Saving…' : 'I agree to this'}
+                    {accept.isPending && accept.variables === document.id ? t`Saving…` : t`I agree to this`}
                   </button>
                 )}
               </div>
@@ -150,7 +169,7 @@ export function LegalPage() {
 
       {open && (
         <Panel
-          eyebrow={`Version ${open.version} · published ${when(open.publishedAt)}`}
+          eyebrow={t`Version ${open.version} · published ${when(open.publishedAt)}`}
           title={open.title}
           onClose={() => setOpen(null)}
           width={760}
@@ -158,7 +177,7 @@ export function LegalPage() {
             open.needsAcceptance ? (
               <>
                 <button type="button" onClick={() => setOpen(null)}>
-                  Not now
+                  <Trans>Not now</Trans>
                 </button>
                 <button
                   type="button"
@@ -166,19 +185,19 @@ export function LegalPage() {
                   disabled={accept.isPending}
                   onClick={() => accept.mutate(open.id, { onSuccess: () => setOpen(null) })}
                 >
-                  {accept.isPending ? 'Saving…' : 'I agree to this'}
+                  {accept.isPending ? t`Saving…` : t`I agree to this`}
                 </button>
               </>
             ) : (
               <button type="button" onClick={() => setOpen(null)}>
-                Close
+                <Trans>Close</Trans>
               </button>
             )
           }
         >
           {open.needsAcceptance && open.changeNote && (
             <p className="lg-change">
-              <strong>What changed:</strong> {open.changeNote}
+              <strong><Trans>What changed:</Trans></strong> {open.changeNote}
             </p>
           )}
           <pre className="lg-body">{open.body}</pre>

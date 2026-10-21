@@ -6,6 +6,7 @@ import { ListItem, ListKeymap } from '@tiptap/extension-list';
 import { Placeholder } from '@tiptap/extensions';
 import { docToRich, richToHtml, type DocNode } from '../lib/richEditor';
 import './richtext.css';
+import { t } from '@lingui/core/macro';
 
 /**
  * A box for a shop's formatted words (§271) — a service's description, its
@@ -161,15 +162,15 @@ export function RichTextField({
 
   const over = value.length > maxLength;
   const tools: Array<{ key: string; label: string; keys: string; on: boolean; run: () => void; glyph: ReactNode }> = [
-    { key: 'b', label: 'Bold', keys: '⌘B · *word*', on: state?.bold ?? false, run: () => editor?.chain().focus().toggleBold().run(), glyph: GLYPH.bold },
-    { key: 'i', label: 'Italic', keys: '⌘I · _word_', on: state?.italic ?? false, run: () => editor?.chain().focus().toggleItalic().run(), glyph: GLYPH.italic },
-    { key: 'ul', label: 'Bulleted list', keys: 'Start a line with “- ”', on: state?.bullets ?? false, run: () => editor?.chain().focus().toggleBulletList().run(), glyph: GLYPH.bullets },
-    { key: 'ol', label: 'Numbered list', keys: 'Start a line with “1. ”', on: state?.numbers ?? false, run: () => editor?.chain().focus().toggleOrderedList().run(), glyph: GLYPH.numbers },
+    { key: 'b', label: t`Bold`, keys: '⌘B · *word*', on: state?.bold ?? false, run: () => editor?.chain().focus().toggleBold().run(), glyph: GLYPH.bold },
+    { key: 'i', label: t`Italic`, keys: '⌘I · _word_', on: state?.italic ?? false, run: () => editor?.chain().focus().toggleItalic().run(), glyph: GLYPH.italic },
+    { key: 'ul', label: t`Bulleted list`, keys: t`Start a line with “- ”`, on: state?.bullets ?? false, run: () => editor?.chain().focus().toggleBulletList().run(), glyph: GLYPH.bullets },
+    { key: 'ol', label: t`Numbered list`, keys: t`Start a line with “1. ”`, on: state?.numbers ?? false, run: () => editor?.chain().focus().toggleOrderedList().run(), glyph: GLYPH.numbers },
   ];
 
   return (
     <div className={`rtf${state?.focused ? ' is-focused' : ''}${over ? ' is-over' : ''}${disabled ? ' is-disabled' : ''}`}>
-      <div className="rtf-bar" role="toolbar" aria-label="Formatting">
+      <div className="rtf-bar" role="toolbar" aria-label={t`Formatting`}>
         {tools.map((t, i) => (
           <span key={t.key} className="rtf-tool-wrap">
             {i === 2 && <i className="rtf-sep" aria-hidden="true" />}

@@ -17,6 +17,10 @@ import { useAuth } from './auth-context';
 import { looksLikeEmail, suggestEmail } from './email';
 import './login.css';
 import { accessOf } from '../access';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
+import { LanguageChoice } from '../ui/LanguageChoice';
 
 /** What the headline says a seller can grow, one after another. */
 /** The server's own wait between codes (`OTP_RESEND_COOLDOWN_SECONDS`). */
@@ -28,19 +32,19 @@ type Step = 'email' | 'register' | 'code' | 'done';
 type DocumentKind = LegalDocument['kind'];
 
 const DOCUMENT_NAME: Record<DocumentKind, string> = {
-  TERMS_OF_USE: 'Terms of Use',
-  PRIVACY_POLICY: 'Privacy Policy',
-  SELLER_AGREEMENT: 'Seller Agreement',
+  get TERMS_OF_USE() { return t`Terms of Use`; },
+  get PRIVACY_POLICY() { return t`Privacy Policy`; },
+  get SELLER_AGREEMENT() { return t`Seller Agreement`; },
 };
 
 /** The server's sentences, said the way a person would (§183). */
 function friendly(caught: unknown, fallback: string): string {
   if (!(caught instanceof ApiError)) return fallback;
   const m = caught.message;
-  if (/invalid or expired/i.test(m)) return 'That code is not right, or it has run out. Check it and try again.';
-  if (/too many incorrect/i.test(m)) return 'Too many wrong tries. Ask for a new code below.';
+  if (/invalid or expired/i.test(m)) return t`That code is not right, or it has run out. Check it and try again.`;
+  if (/too many incorrect/i.test(m)) return t`Too many wrong tries. Ask for a new code below.`;
   if (/too many verification code requests/i.test(m))
-    return 'That is a lot of codes for one hour. Please try again a little later.';
+    return t`That is a lot of codes for one hour. Please try again a little later.`;
   return m;
 }
 
@@ -79,6 +83,20 @@ export function LoginPage() {
   // Every kind of shop that is switched on in the admin console (§284).
   const categories = useQuery({ queryKey: ['categories'], queryFn: getCategories, staleTime: 10 * 60_000 });
   const words = useMemo(() => growWords(categories.data), [categories.data]);
+  // "Grow your {word}" as ONE sentence for translators (§308), so a language
+  // may put the changing word where its grammar wants it; cut at the word to
+  // draw it in gold.
+  const headline = useMemo(() => {
+    const word = '\u2063';
+    const sentence = t({
+      message: `Grow your ${word}`,
+      comment: '{word} changes every two seconds: “barbershop.”, “car wash.”, “yoga studio.” — each one ends with its own full stop.',
+    });
+    const at = sentence.indexOf(word);
+    return at === -1
+      ? { lead: sentence.trim(), tail: '' }
+      : { lead: sentence.slice(0, at).trim(), tail: sentence.slice(at + word.length).trim() };
+  }, []);
   // A session that is not a business's (left from before this screen signed
   // such sessions back out) has no place in this app: closed quietly.
   useEffect(() => {
@@ -180,11 +198,11 @@ export function LoginPage() {
         setCode('');
         setCodeState('idle');
         setResendIn(Number(wait[1]));
-        setInfo('We sent you a code a moment ago. Enter that one.');
+        setInfo(t`We sent you a code a moment ago. Enter that one.`);
         setStep('code');
         return;
       }
-      setError(friendly(caught, 'Could not send a code. Check your connection and try again.'));
+      setError(friendly(caught, t`Could not send a code. Check your connection and try again.`));
     } finally {
       setBusy(false);
     }
@@ -202,8 +220,11 @@ export function LoginPage() {
         await signOut();
         setCodeState('error');
         setShake(true);
+        const email = signedIn.email;
         setError(
-          `${signedIn.email} is ${signedIn.role === 'CUSTOMER' ? 'a customer' : 'an admin'} account. This app is for businesses — sign in with your business email.`,
+          signedIn.role === 'CUSTOMER'
+            ? t`${email} is a customer account. This app is for businesses — sign in with your business email.`
+            : t`${email} is an admin account. This app is for businesses — sign in with your business email.`,
         );
         later(() => {
           setCode('');
@@ -221,7 +242,7 @@ export function LoginPage() {
     } catch (caught) {
       setCodeState('error');
       setShake(true);
-      setError(friendly(caught, 'That code did not work. Please try again.'));
+      setError(friendly(caught, t`That code did not work. Please try again.`));
       later(() => {
         setCode('');
         setCodeState('idle');
@@ -288,22 +309,27 @@ export function LoginPage() {
             <span className="au-brand-mark">
               <Icon name="calendarCheck" size={19} />
             </span>
-            For businesses
+            <span className="au-chip-text">
+              <Trans>For businesses</Trans>
+            </span>
           </span>
           <span className="au-glass au-made">
             <RwandaFlag width={18} />
-            Made for Rwanda
+            <span className="au-chip-text">
+              <Trans>Made for Rwanda</Trans>
+            </span>
           </span>
         </div>
 
         <Moments />
 
         <div className="au-hero">
-          <h2 className="au-h1" aria-label="Grow your business — bookings, deposits and check-ins in one place.">
-            <span aria-hidden="true">Grow your</span>
+          <h2 className="au-h1" aria-label={t`Grow your business — bookings, deposits and check-ins in one place.`}>
+            {headline.lead && <span aria-hidden="true">{headline.lead}</span>}
             <RotatingWord words={words} className="au-gold" />
+            {headline.tail && <span aria-hidden="true">{headline.tail}</span>}
           </h2>
-          <p className="au-sub">Customers book and pay a deposit. You check them in with a code.</p>
+          <p className="au-sub"><Trans>Customers book and pay a deposit. You check them in with a code.</Trans></p>
           <Proof />
         </div>
       </section>
@@ -324,45 +350,55 @@ export function LoginPage() {
                   <Icon name="lock" size={16} />
                   <span>
                     {why.why === 'idle'
-                      ? `You were signed out after ${lengthWords(why.idleMinutes)} without use, to keep the account safe.`
-                      : `For your safety, a sign-in lasts ${lengthWords(why.maxMinutes ?? why.idleMinutes)}.`}{' '}
-                    Sign in again to carry on.
-                  </span>
+                      ? t`You were signed out after ${lengthWords(why.idleMinutes)} without use, to keep the account safe.`
+                      : t`For your safety, a sign-in lasts ${lengthWords(why.maxMinutes ?? why.idleMinutes)}.`}
+                        <Trans>{' '}Sign in again to carry on.</Trans>
+                      </span>
                 </p>
               )}
               {start === 'signup' ? (
                 <>
                   <h1 className="au-title">
-                    Start selling.
-                    <br />
-                    <span className="au-hot">Free to join.</span>
+                    <Trans>
+                      Start selling.
+                      <br />
+                      <span className="au-hot">Free to join.</span>
+                    </Trans>
                   </h1>
                   <p className="au-lead">
-                    Type your business email and we will send you a 6-digit code. It creates your account — no
-                    password — and then we set up your shop together, in about five minutes.
+                    <Trans>
+                      Type your business email and we will send you a 6-digit code. It creates your account — no
+                      password — and then we set up your shop together, in about five minutes.
+                    </Trans>
                   </p>
                 </>
               ) : start === 'signin' ? (
                 <>
                   <h1 className="au-title">
-                    Welcome
-                    <br />
-                    <span className="au-hot">back.</span>
+                    <Trans>
+                      Welcome
+                      <br />
+                      <span className="au-hot">back.</span>
+                    </Trans>
                   </h1>
                   <p className="au-lead">
-                    Type your business email and we will send you a 6-digit code to sign in.
+                    <Trans>Type your business email and we will send you a 6-digit code to sign in.</Trans>
                   </p>
                 </>
               ) : (
                 <>
                   <h1 className="au-title">
-                    One email.
-                    <br />
-                    <span className="au-hot">No password.</span>
+                    <Trans>
+                      One email.
+                      <br />
+                      <span className="au-hot">No password.</span>
+                    </Trans>
                   </h1>
                   <p className="au-lead">
-                    Type your email and we will send you a 6-digit code. New here? The same code creates your
-                    business account.
+                    <Trans>
+                      Type your email and we will send you a 6-digit code. New here? The same code creates your
+                      business account.
+                    </Trans>
                   </p>
                 </>
               )}
@@ -383,8 +419,8 @@ export function LoginPage() {
                     setEmail(event.target.value);
                     if (error) setError(null);
                   }}
-                  placeholder="you@example.com"
-                  aria-label="Email address"
+                  placeholder={t`you@example.com`}
+                  aria-label={t`Email address`}
                 />
                 {valid && (
                   <span className="au-field-ok" aria-hidden="true">
@@ -398,20 +434,20 @@ export function LoginPage() {
                 <button type="button" className="au-suggest" onClick={() => setEmail(suggestion)}>
                   <Icon name="bulb" size={16} />
                   <span>
-                    Did you mean <b>{suggestion}</b>?
+                    <Trans>Did you mean <b>{suggestion}</b>?</Trans>
                   </span>
-                  <em>Fix</em>
+                  <em><Trans>Fix</Trans></em>
                 </button>
               )}
 
               {problem}
-              <Go busy={busy} disabled={!valid} busyLabel="Sending your code…">
-                Continue
+              <Go busy={busy} disabled={!valid} busyLabel={t`Sending your code…`}>
+                <Trans>Continue</Trans>
               </Go>
 
               <p className="au-foot">
                 <Icon name="lock" size={14} />
-                No password to remember. A fresh code every time.
+                <Trans>No password to remember. A fresh code every time.</Trans>
               </p>
             </form>
           )}
@@ -424,14 +460,15 @@ export function LoginPage() {
               }}
             >
               <Pill tone="accent" icon="sparkles">
-                New here
+                <Trans>New here</Trans>
               </Pill>
-              <h1 className="au-title">
-                Nice to <span className="au-hot">meet you.</span>
+              <h1 className="au-title"><Trans>Nice to <span className="au-hot">meet you.</span></Trans>
               </h1>
               <p className="au-lead">
-                There is no account for <b>{clean}</b> yet. Let us make your business account — it takes one
-                code, and nothing else.
+                <Trans>
+                  There is no account for <b>{clean}</b> yet. Let us make your business account — it takes one
+                  code, and nothing else.
+                </Trans>
               </p>
 
               <div className="au-perks">
@@ -441,13 +478,13 @@ export function LoginPage() {
                       <Icon name="calendarCheck" size={19} />
                     </span>
                   }
-                  title="Get booked online"
-                  text="Customers find your shop and pick a time that is free."
+                  title={t`Get booked online`}
+                  text={t`Customers find your shop and pick a time that is free.`}
                 />
                 <Perk
                   mark={<NetworkMark network="MTN_MOMO" size={40} />}
-                  title="Deposits to MTN MoMo"
-                  text="A deposit holds each booking. Your share is paid to your number."
+                  title={t`Deposits to MTN MoMo`}
+                  text={t`A deposit holds each booking. Your share is paid to your number.`}
                 />
                 <Perk
                   mark={
@@ -455,16 +492,18 @@ export function LoginPage() {
                       <Icon name="ticket" size={19} />
                     </span>
                   }
-                  title="Check in with a code"
-                  text="Six digits at the door. If they never come, your share is still paid."
+                  title={t`Check in with a code`}
+                  text={t`Six digits at the door. If they never come, your share is still paid.`}
                 />
               </div>
 
               <p className="au-invited">
                 <Icon name="users" size={15} />
                 <span>
-                  Invited to work with a business? This makes your account — you join them when you enter the
-                  code.
+                  <Trans>
+                    Invited to work with a business? This makes your account — you join them when you enter the
+                    code.
+                  </Trans>
                 </span>
               </p>
 
@@ -486,19 +525,21 @@ export function LoginPage() {
                 >
                   {agreed && <Icon name="check" size={16} stroke={3} />}
                 </button>
+                {/* One sentence for translators, the three documents inside it (§308). */}
                 <p id="au-agree-text">
-                  I have read and agree to the <Doc kind="TERMS_OF_USE" onOpen={setReading} />, the{' '}
-                  <Doc kind="PRIVACY_POLICY" onOpen={setReading} /> and the{' '}
-                  <Doc kind="SELLER_AGREEMENT" onOpen={setReading} />.
+                  <Trans>
+                    I have read and agree to the <Doc kind="TERMS_OF_USE" onOpen={setReading} />, the{' '}
+                    <Doc kind="PRIVACY_POLICY" onOpen={setReading} /> and the <Doc kind="SELLER_AGREEMENT" onOpen={setReading} />.
+                  </Trans>
                 </p>
               </div>
 
               {problem}
-              <Go busy={busy} disabled={!agreed} busyLabel="Sending your code…">
-                Create my business account
+              <Go busy={busy} disabled={!agreed} busyLabel={t`Sending your code…`}>
+                <Trans>Create my business account</Trans>
               </Go>
               <button type="button" className="au-link au-centre" onClick={startAgain}>
-                Use a different email
+                <Trans>Use a different email</Trans>
               </button>
             </form>
           )}
@@ -512,26 +553,25 @@ export function LoginPage() {
             >
               {isNew ? (
                 <Pill tone="accent" icon="sparkles">
-                  Creating your account
+                  <Trans>Creating your account</Trans>
                 </Pill>
               ) : (
                 <Pill tone="ok" dot>
-                  Welcome back
+                  <Trans>Welcome back</Trans>
                 </Pill>
               )}
-              <h1 className="au-title">
-                Check your <span className="au-hot">inbox.</span>
+              <h1 className="au-title"><Trans>Check your <span className="au-hot">inbox.</span></Trans>
               </h1>
-              <p className="au-lead au-lead-tight">Enter the 6-digit code we sent to</p>
+              <p className="au-lead au-lead-tight"><Trans>Enter the 6-digit code we sent to</Trans></p>
               <button
                 type="button"
                 className="au-chip"
                 onClick={startAgain}
-                aria-label={`${clean}. Change the email`}
+                aria-label={t`${clean}. Change the email`}
               >
                 <Icon name="mail" size={15} />
                 <span>{clean}</span>
-                <em>Change</em>
+                <em><Trans>Change</Trans></em>
               </button>
 
               <CodeBoxes
@@ -557,22 +597,22 @@ export function LoginPage() {
                 busy={codeState === 'busy'}
                 disabled={code.length !== 6 || codeState !== 'idle'}
                 done={codeState === 'ok'}
-                busyLabel="Checking…"
+                busyLabel={t`Checking…`}
               >
-                {codeState === 'ok' ? 'Signed in' : 'Verify'}
+                {codeState === 'ok' ? t`Signed in` : t`Verify`}
               </Go>
 
               <p className="au-resend">
-                <span>Didn&rsquo;t get it?</span>
+                <span><Trans>Didn’t get it?</Trans></span>
                 {resendIn > 0 ? (
-                  <b>Send a new one in 0:{String(resendIn).padStart(2, '0')}</b>
+                  <b><Trans>Send a new one in 0:{String(resendIn).padStart(2, '0')}</Trans></b>
                 ) : (
                   <button type="button" className="au-link" disabled={busy} onClick={() => void send(isNew ? 'BUSINESS' : undefined)}>
-                    {busy ? 'Sending…' : 'Send a new code'}
+                    {busy ? t`Sending…` : t`Send a new code`}
                   </button>
                 )}
               </p>
-              <p className="au-small">Look in your spam folder too. Each code works for {CODE_MINUTES} minutes.</p>
+              <p className="au-small"><Trans>Look in your spam folder too. Each code works for {CODE_MINUTES} minutes.</Trans></p>
             </form>
           )}
 
@@ -587,17 +627,15 @@ export function LoginPage() {
               </span>
               <h1 className="au-title">
                 {isNew ? (
-                  <>
-                    Welcome <span className="au-hot">aboard!</span>
+                  <><Trans>Welcome <span className="au-hot">aboard!</span></Trans>
                   </>
                 ) : (
-                  <>
-                    You are <span className="au-hot">in!</span>
+                  <><Trans>You are <span className="au-hot">in!</span></Trans>
                   </>
                 )}
               </h1>
               <p className="au-lead">
-                {isNew ? 'Your business account is ready. Let us set up your shop.' : 'Good to see you again.'}
+                {isNew ? t`Your business account is ready. Let us set up your shop.` : t`Good to see you again.`}
               </p>
               <span className="au-done-bar" aria-hidden="true">
                 <i />
@@ -606,6 +644,12 @@ export function LoginPage() {
           )}
         </div>
 
+        {/* The language, before anything else is read (§308). */}
+        {step !== 'done' && (
+          <div className="au-lang">
+            <LanguageChoice compact />
+          </div>
+        )}
         {step !== 'done' && (
           <footer className="au-legal">
             {(['TERMS_OF_USE', 'PRIVACY_POLICY', 'SELLER_AGREEMENT'] as const).map((kind, i) => (
@@ -622,13 +666,13 @@ export function LoginPage() {
 
       {reading && (
         <Panel
-          eyebrow={open ? `Version ${open.version} · ${new Date(open.publishedAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}` : 'Reading'}
+          eyebrow={open ? t`Version ${open.version} · ${new Date(open.publishedAt).toLocaleDateString(dateLocale(), { dateStyle: 'medium' })}` : t`Reading`}
           title={open?.title ?? DOCUMENT_NAME[reading]}
           onClose={() => setReading(null)}
           width={680}
           footer={
             <button type="button" className="primary" onClick={() => setReading(null)}>
-              Done reading
+              <Trans>Done reading</Trans>
             </button>
           }
         >
@@ -637,7 +681,7 @@ export function LoginPage() {
           ) : documents.isError ? (
             <p className="au-note is-error">
               <Icon name="alert" size={17} />
-              <span>This document could not be opened just now. Check your connection and try again.</span>
+              <span><Trans>This document could not be opened just now. Check your connection and try again.</Trans></span>
             </p>
           ) : (
             <div className="au-reading">
@@ -676,7 +720,7 @@ function Proof() {
         </span>
       )}
       <span>
-        <b>{total} places</b> already take bookings here
+        <Trans><b>{total} places</b> already take bookings here</Trans>
       </span>
     </p>
   );

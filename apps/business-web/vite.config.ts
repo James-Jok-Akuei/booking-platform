@@ -16,7 +16,8 @@ import { webSecurity } from '../../scripts/web-security.mjs';
  * is the point at which `enableCors()` has to be tightened (§4).
  */
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), webSecurity({ apiUrl: loadEnv(mode, process.cwd(), 'VITE_').VITE_API_URL, selfHostedFonts: true, frames: ['https://www.openstreetmap.org'] })],
+  // Every sentence goes through the translations (§308).
+  plugins: [react({ babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] } }), webSecurity({ apiUrl: loadEnv(mode, process.cwd(), 'VITE_').VITE_API_URL, selfHostedFonts: true, frames: ['https://www.openstreetmap.org'] })],
   server: {
     port: 5174,
     proxy: {

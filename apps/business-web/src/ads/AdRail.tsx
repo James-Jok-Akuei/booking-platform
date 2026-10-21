@@ -9,6 +9,8 @@ import { buildSlides } from './slides';
 import { tipFor } from './tips';
 import { useAdData, type AdData } from './useAdData';
 import './ads.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * "For you" — the column down the right of every page on a wide screen (§204,
@@ -23,27 +25,28 @@ export function AdRail({ folded, onFold }: { folded: boolean; onFold: () => void
     const left = data.access.runsBusiness ? data.missing.length : 0;
     return (
       <aside className="ads is-folded">
-        <button type="button" className="ads-unfold" onClick={onFold} aria-label="Open For you" title="Open For you">
+        <button type="button" className="ads-unfold" onClick={onFold} aria-label={t`Open For you`} title={t`Open For you`}>
           <span className="ads-unfold-icon">
             <Icon name="sparkles" size={20} />
             {left > 0 && <i>{left}</i>}
           </span>
-          <span className="ads-unfold-label">For you</span>
+          <span className="ads-unfold-label"><Trans>For you</Trans></span>
         </button>
       </aside>
     );
   }
 
   return (
-    <aside className="ads" aria-label="For you">
+    <aside className="ads" aria-label={t`For you`}>
       <header className="ads-head">
         <div>
           <h2>
-            <Icon name="sparkles" size={17} /> For you
+            <Icon name="sparkles" size={17} />{' '}
+            <Trans>For you</Trans>
           </h2>
-          <p>News, ideas and how it all works</p>
+          <p><Trans>News, ideas and how it all works</Trans></p>
         </div>
-        <button type="button" className="ads-fold" onClick={onFold} aria-label="Fold For you" title="Fold">
+        <button type="button" className="ads-fold" onClick={onFold} aria-label={t`Fold For you`} title={t`Fold`}>
           <Icon name="chevronRight" size={18} />
         </button>
       </header>
@@ -70,13 +73,14 @@ export function ForYouContent({ data, banner = true }: { data: AdData; banner?: 
           <Icon name={tip.icon} size={18} />
         </span>
         <div>
-          <p className="ads-label">Did you know?</p>
+          <p className="ads-label"><Trans>Did you know?</Trans></p>
           <strong>{tip.title}</strong>
           <span>{tip.text}</span>
         </div>
       </article>
       <p className="ads-foot">
-        <Icon name="info" size={13} /> Chosen from your shop and the app. Nothing here is paid for.
+        <Icon name="info" size={13} />{' '}
+        <Trans>Chosen from your shop and the app. Nothing here is paid for.</Trans>
       </p>
     </>
   );
@@ -94,7 +98,7 @@ function HealthCard({ data }: { data: AdData }) {
   return (
     <article className={`ads-health${complete ? ' is-complete' : ''}`}>
       <div className="ads-health-top">
-        <span className="ads-ring" aria-label={`${data.score}% complete`}>
+        <span className="ads-ring" aria-label={t`${data.score}% complete`}>
           <svg viewBox="0 0 64 64" width="64" height="64">
             <circle cx="32" cy="32" r={r} className="t" />
             <circle cx="32" cy="32" r={r} className="f" strokeDasharray={c} strokeDashoffset={c * (1 - data.score / 100)} />
@@ -102,12 +106,12 @@ function HealthCard({ data }: { data: AdData }) {
           <b>{data.score}%</b>
         </span>
         <div>
-          <p className="ads-label">Your shop</p>
-          <strong>{complete ? 'Everything is in place' : 'Make it stand out'}</strong>
+          <p className="ads-label"><Trans>Your shop</Trans></p>
+          <strong>{complete ? t`Everything is in place` : t`Make it stand out`}</strong>
           <span>
             {complete
-              ? 'Photos, words, hours and payouts — all set.'
-              : `${missing.length} ${missing.length === 1 ? 'thing' : 'things'} customers notice`}
+              ? t`Photos, words, hours and payouts — all set.`
+              : t`${missing.length} ${missing.length === 1 ? 'thing' : 'things'} customers notice`}
           </span>
         </div>
       </div>
@@ -131,7 +135,7 @@ function HealthCard({ data }: { data: AdData }) {
       )}
       {missing.length > 4 && (
         <button type="button" className="ads-more" onClick={() => setAll((v) => !v)}>
-          {all ? 'Show fewer' : `Show all ${missing.length}`}
+          {all ? t`Show fewer` : t`Show all ${missing.length}`}
         </button>
       )}
     </article>
@@ -144,8 +148,8 @@ function Guide({ data }: { data: AdData }) {
   return (
     <article className="ads-guide">
       <header>
-        <p className="ads-label">How it works</p>
-        <strong>The rules, in plain words</strong>
+        <p className="ads-label"><Trans>How it works</Trans></p>
+        <strong><Trans>The rules, in plain words</Trans></strong>
       </header>
       <div className="ads-guide-list">
         {topics.map((topic) => (
@@ -203,17 +207,17 @@ function Trending({ data }: { data: AdData }) {
     <article className="ads-trend" id="ads-trending">
       <header>
         <div>
-          <p className="ads-label">Trending on the app</p>
-          <strong>What customers are booking</strong>
+          <p className="ads-label"><Trans>Trending on the app</Trans></p>
+          <strong><Trans>What customers are booking</Trans></strong>
         </div>
       </header>
       {hasSame && (
         <div className="ads-tabs" role="tablist">
           <button type="button" role="tab" aria-selected={tab === 'same'} className={tab === 'same' ? 'is-on' : ''} onClick={() => setTab('same')}>
-            {data.subcategoryName ?? 'Your kind'}
+            {data.subcategoryName ?? t`Your kind`}
           </button>
           <button type="button" role="tab" aria-selected={tab === 'all'} className={tab === 'all' ? 'is-on' : ''} onClick={() => setTab('all')}>
-            Everywhere
+            <Trans>Everywhere</Trans>
           </button>
         </div>
       )}
@@ -223,8 +227,10 @@ function Trending({ data }: { data: AdData }) {
         ))}
       </ol>
       <p className="ads-trend-why">
-        Ranked the way the customer app ranks them: bookings, weighted by rating. Compare yours on{' '}
-        <Link to="/services">Services</Link>.
+        <Trans>
+          Ranked the way the customer app ranks them: bookings, weighted by rating. Compare yours on{' '}
+          <Link to="/services">Services</Link>.
+        </Trans>
       </p>
     </article>
   );
@@ -259,9 +265,11 @@ function TrendRow({
               {rating.toFixed(1)}
             </>
           )}
-          <i>·</i>
-          {s.bookingCount} booked
-        </span>
+          <Trans>
+            <i>·</i>
+            {s.bookingCount} booked
+          </Trans>
+          </span>
       </span>
     </li>
   );

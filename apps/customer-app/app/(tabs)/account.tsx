@@ -698,9 +698,7 @@ Take a copy of your data first if you want one.`,
           <FadeIn delay={280}>
             <Text style={styles.group}><Trans>Your data</Trans></Text>
             <Text style={[type.small, styles.groupNote]}>
-              <Trans>
-                What we keep about you is yours. You can take a copy of it at any time.
-              </Trans>
+              <Trans>What we keep about you is yours. You can take a copy of it at any time.</Trans>
             </Text>
             <View style={styles.card}>
               <Row
@@ -740,9 +738,7 @@ Take a copy of your data first if you want one.`,
             </Text>
           </PressableScale>
           <Text style={[type.small, styles.centre]}>
-            <Trans>
-              Closing is permanent. If you want a copy of your data, take it first.
-            </Trans>
+            <Trans>Closing is permanent. If you want a copy of your data, take it first.</Trans>
           </Text>
 
           {Constants.expoConfig?.version && (
@@ -793,9 +789,7 @@ Take a copy of your data first if you want one.`,
             <View style={styles.anonNow}>
               <Icon name="eye-off-outline" size={16} color={theme.ink2} />
               <Text style={[type.small, styles.flex]}>
-                <Trans>
-                  You are shown as Anonymous now.
-                </Trans>
+                <Trans>You are shown as Anonymous now.</Trans>
               </Text>
             </View>
           )}
@@ -832,9 +826,7 @@ Take a copy of your data first if you want one.`,
           <View style={styles.copyNote}>
             <Icon name="lock-closed-outline" size={16} color={theme.ink2} />
             <Text style={[type.small, styles.flex]}>
-              <Trans>
-                It is made on this phone and goes only where you send it. We do not email it to anyone.
-              </Trans>
+              <Trans>It is made on this phone and goes only where you send it. We do not email it to anyone.</Trans>
             </Text>
           </View>
           <Button

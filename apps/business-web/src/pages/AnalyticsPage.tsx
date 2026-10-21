@@ -8,8 +8,12 @@ import { Icon, type IconName } from '../ui/Icon';
 import { Stars } from '../ui/Stars';
 import './analytics.css';
 import { useAccess } from '../access';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dayName } from '../i18n/format';
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+/** Day names in the app's language (§308), Sunday first. */
+const DAYS = () => [0, 1, 2, 3, 4, 5, 6].map((day) => dayName(day));
 
 const hourLabel = (hour: number) =>
   `${String(hour).padStart(2, '0')}:00–${String((hour + 1) % 24).padStart(2, '0')}:00`;
@@ -21,9 +25,18 @@ const since = (days: number, endDaysAgo = 0) => ({
 });
 
 const PERIODS = [
-  { days: 7, label: '7 days' },
-  { days: 30, label: '30 days' },
-  { days: 90, label: '90 days' },
+  {
+    days: 7,
+    get label() { return t`7 days`; },
+  },
+  {
+    days: 30,
+    get label() { return t`30 days`; },
+  },
+  {
+    days: 90,
+    get label() { return t`90 days`; },
+  },
 ];
 
 /**
@@ -86,10 +99,10 @@ export function AnalyticsPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>How it is going</h1>
-            <p className="muted">Your bookings, your money and your ratings.</p>
+            <h1><Trans>How it is going</Trans></h1>
+            <p className="muted"><Trans>Your bookings, your money and your ratings.</Trans></p>
           </div>
-          <div className="an-period" role="tablist" aria-label="Period">
+          <div className="an-period" role="tablist" aria-label={t`Period`}>
             {PERIODS.map((p) => (
               <button
                 key={p.days}
@@ -98,15 +111,14 @@ export function AnalyticsPage() {
                 aria-selected={days === p.days}
                 className={days === p.days ? 'is-on' : ''}
                 onClick={() => setDays(p.days)}
-              >
-                Last {p.label}
+              ><Trans>Last {p.label}</Trans>
               </button>
             ))}
           </div>
         </header>
 
         {branches.length > 1 && (
-          <div className="bpills" role="tablist" aria-label="Branch">
+          <div className="bpills" role="tablist" aria-label={t`Branch`}>
             <button
               type="button"
               role="tab"
@@ -115,7 +127,7 @@ export function AnalyticsPage() {
               onClick={() => setLocationId('')}
             >
               {/* A manager of some branches sees theirs, together (§277). */}
-              <Icon name="layers" size={16} /> {allBranches ? 'All branches' : 'All your branches'}
+              <Icon name="layers" size={16} /> {allBranches ? t`All branches` : t`All your branches`}
             </button>
             {branches.map((b) => (
               <button
@@ -148,26 +160,26 @@ export function AnalyticsPage() {
             <Tile
               icon="star"
               tone="gold"
-              label="Rating"
+              label={t`Rating`}
               value={data.reviews.averageRating === null ? '—' : data.reviews.averageRating.toFixed(1)}
-              hint={`from ${data.reviews.count} reviews`}
+              hint={t`from ${data.reviews.count} reviews`}
               extra={data.reviews.averageRating !== null ? <Stars value={data.reviews.averageRating} size={15} /> : null}
             />
             <Tile
               icon="calendar"
               tone="blue"
-              label="Busiest day"
-              value={data.busiest.dayOfWeek ? DAYS[data.busiest.dayOfWeek.day] : '—'}
-              hint={data.busiest.dayOfWeek ? `${data.busiest.dayOfWeek.appointments} bookings` : undefined}
+              label={t`Busiest day`}
+              value={data.busiest.dayOfWeek ? DAYS()[data.busiest.dayOfWeek.day] : '—'}
+              hint={data.busiest.dayOfWeek ? t`${data.busiest.dayOfWeek.appointments} bookings` : undefined}
             />
             <Tile
               icon="clock"
               tone="coral"
-              label="Busiest hour"
+              label={t`Busiest hour`}
               value={data.busiest.hour ? hourLabel(data.busiest.hour.hour) : '—'}
               hint={
                 data.busiest.hour
-                  ? `${data.busiest.hour.appointments} bookings · ${data.busiest.timeZone}`
+                  ? t`${data.busiest.hour.appointments} bookings · ${data.busiest.timeZone}`
                   : undefined
               }
             />
@@ -202,23 +214,24 @@ function BookingsCard({
     <article className="an-card an-bookings">
       <header>
         <span className="an-label">
-          <Icon name="calendarCheck" size={16} /> Bookings
+          <Icon name="calendarCheck" size={16} />{' '}
+          <Trans>Bookings</Trans>
         </span>
         {change !== null && (
           <span className={`an-trend ${change >= 0 ? 'is-up' : 'is-down'}`}>
             <Icon name={change >= 0 ? 'trendUp' : 'trendDown'} size={13} stroke={2.2} />
             {change >= 0 ? '+' : ''}
-            {change}% on the {days} days before
+            <Trans>{change}% on the {days} days before</Trans>
           </span>
         )}
       </header>
       <strong className="an-big">{total}</strong>
-      <p className="an-caption">Bars: customers each day, not counting cancelled or unpaid bookings.</p>
+      <p className="an-caption"><Trans>Bars: customers each day, not counting cancelled or unpaid bookings.</Trans></p>
       <div className="an-chart">
         {loading ? (
           <div className="skeleton an-chart-skel" />
         ) : (
-          <div className={`an-bars${series.length > 40 ? ' is-dense' : ''}`} aria-label="Customers by day">
+          <div className={`an-bars${series.length > 40 ? ' is-dense' : ''}`} aria-label={t`Customers by day`}>
             {series.map((s, i) => (
               <span
                 key={i}
@@ -234,11 +247,10 @@ function BookingsCard({
       <footer className="an-chart-foot">
         <span>{series[0] ? shortDay(series[0].day) : ''}</span>
         {peak && peak.count > 0 && (
-          <span className="an-peak">
-            Busiest: {shortDay(peak.day)} · {peak.count}
+          <span className="an-peak"><Trans>Busiest: {shortDay(peak.day)} · {peak.count}</Trans>
           </span>
         )}
-        <span>Today</span>
+        <span><Trans>Today</Trans></span>
       </footer>
     </article>
   );
@@ -247,9 +259,9 @@ function BookingsCard({
 function OutcomeCard({ data }: { data: Analytics }) {
   const by = data.appointments.byStatus as Record<string, number | undefined>;
   const parts = [
-    { key: 'done', label: 'Turned up', value: by.COMPLETED ?? 0, rate: data.appointments.completionRate, color: '#0e9f54' },
-    { key: 'noshow', label: 'Did not turn up', value: by.NO_SHOW ?? 0, rate: data.appointments.noShowRate, color: '#c27803' },
-    { key: 'cancelled', label: 'Cancelled', value: by.CANCELLED ?? 0, rate: data.appointments.cancellationRate, color: '#d92d20' },
+    { key: 'done', label: t`Turned up`, value: by.COMPLETED ?? 0, rate: data.appointments.completionRate, color: '#0e9f54' },
+    { key: 'noshow', label: t`Did not turn up`, value: by.NO_SHOW ?? 0, rate: data.appointments.noShowRate, color: '#c27803' },
+    { key: 'cancelled', label: t`Cancelled`, value: by.CANCELLED ?? 0, rate: data.appointments.cancellationRate, color: '#d92d20' },
   ];
   const other = Math.max(0, data.appointments.total - parts.reduce((s, p) => s + p.value, 0));
   const total = Math.max(1, data.appointments.total);
@@ -266,7 +278,8 @@ function OutcomeCard({ data }: { data: Analytics }) {
   return (
     <article className="an-card an-outcome">
       <span className="an-label">
-        <Icon name="checkCircle" size={16} /> How bookings ended
+        <Icon name="checkCircle" size={16} />{' '}
+        <Trans>How bookings ended</Trans>
       </span>
       <div className="an-donut">
         <svg viewBox="0 0 140 140" width="150" height="150">
@@ -290,7 +303,7 @@ function OutcomeCard({ data }: { data: Analytics }) {
         </svg>
         <div className="an-donut-mid">
           <strong>{data.appointments.completionRate === null ? '—' : `${Math.round(data.appointments.completionRate)}%`}</strong>
-          <span>turned up</span>
+          <span><Trans>turned up</Trans></span>
         </div>
       </div>
       <ul className="an-legend">
@@ -306,7 +319,7 @@ function OutcomeCard({ data }: { data: Analytics }) {
         {other > 0 && (
           <li>
             <i style={{ background: '#e0dcd4' }} />
-            <span>Still to come or unpaid</span>
+            <span><Trans>Still to come or unpaid</Trans></span>
             <strong />
             <em>{other}</em>
           </li>
@@ -331,31 +344,31 @@ function MoneyPanel({
   return (
     <article className="an-card an-money">
       <header>
-        <h2>Money</h2>
-        <p>Deposits taken through the app, and what customers pay you directly.</p>
+        <h2><Trans>Money</Trans></h2>
+        <p><Trans>Deposits taken through the app, and what customers pay you directly.</Trans></p>
       </header>
       <div className="an-money-grid">
         <div className="an-money-main">
-          <span>Deposits taken</span>
+          <span><Trans>Deposits taken</Trans></span>
           <strong>{format(deposits, m.currency)}</strong>
-          <em>across {m.collectedThroughPlatform.appointmentCount} bookings</em>
-          <div className="an-split" aria-label={`${sharePct}% yours, ${100 - sharePct}% platform fees`}>
+          <em><Trans>across {m.collectedThroughPlatform.appointmentCount} bookings</Trans></em>
+          <div className="an-split" aria-label={t`${sharePct}% yours, ${100 - sharePct}% platform fees`}>
             <i style={{ width: `${sharePct}%` }} />
           </div>
           <div className="an-split-legend">
             <span>
-              <b className="is-you" /> Your share {format(share, m.currency)}
+              <Trans><b className="is-you" />Your share {format(share, m.currency)}</Trans>
             </span>
             <span>
-              <b className="is-fee" /> Platform fees {format(m.platformFeesPaidMinor, m.currency)}
+              <Trans><b className="is-fee" />Platform fees {format(m.platformFeesPaidMinor, m.currency)}</Trans>
             </span>
           </div>
         </div>
         <div className="an-money-side">
           <Icon name="banknote" size={22} />
-          <span>Owed by customers</span>
+          <span><Trans>Owed by customers</Trans></span>
           <strong>{format(m.balanceOwedToBusiness.amountMinor, m.currency)}</strong>
-          <em>paid to you directly, not through us</em>
+          <em><Trans>paid to you directly, not through us</Trans></em>
         </div>
       </div>
       {/* Surfaced, not hidden: a partial total that does not announce itself

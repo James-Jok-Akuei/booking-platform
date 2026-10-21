@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { Icon } from './Icon';
 import { Portal } from './Portal';
+import { t } from '@lingui/core/macro';
 
 /**
  * The panel from the right that a form opens in (§194, §195): a little
@@ -30,28 +31,28 @@ export function Panel({
   }, [onClose]);
   return (
     <Portal>
-    <div className="drawer-backdrop" onMouseDown={onClose}>
-      <aside
-        className="drawer panel"
-        style={{ width: `min(${width}px, 100%)` }}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header className="panel-head">
-          <div>
-            <p>{eyebrow}</p>
-            <h2>{title}</h2>
-          </div>
-          <button type="button" className="panel-close" onClick={onClose} aria-label="Close this panel">
-            <Icon name="close" size={18} />
-          </button>
-        </header>
-        <div className="panel-body">{children}</div>
-        {footer && <footer className="panel-foot">{footer}</footer>}
-      </aside>
-    </div>
+      <div className="drawer-backdrop" onMouseDown={onClose}>
+        <aside
+          className="drawer panel"
+          style={{ width: `min(${width}px, 100%)` }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <header className="panel-head">
+            <div>
+              <p>{eyebrow}</p>
+              <h2>{title}</h2>
+            </div>
+            <button type="button" className="panel-close" onClick={onClose} aria-label={t`Close this panel`}>
+              <Icon name="close" size={18} />
+            </button>
+          </header>
+          <div className="panel-body">{children}</div>
+          {footer && <footer className="panel-foot">{footer}</footer>}
+        </aside>
+      </div>
     </Portal>
   );
 }

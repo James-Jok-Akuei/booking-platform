@@ -55,6 +55,12 @@ export const ACTIVE_KEY = 'booking-business.lastActive';
 /** Why the last sign-in ended, for the sign-in page to say. */
 const WHY_KEY = 'booking-business.signedOutWhy';
 
+/**
+ * The language every request asks the server to answer in (§308) — set by
+ * `src/i18n` whenever the app's language changes.
+ */
+export const requestLanguage = { current: 'en' };
+
 export type TokenPair = components['schemas']['TokenPairDto'];
 export type Session = components['schemas']['SessionDto'] & { renewedAt: number };
 
@@ -270,6 +276,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
       method,
       signal,
       headers: {
+        'Accept-Language': requestLanguage.current,
         ...(body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(pass ? { 'X-Step-Up': pass } : {}),

@@ -13,6 +13,10 @@ import { MoreMenu } from '../../ui/MoreMenu';
 import { Select } from '../../ui/Select';
 import { Switch } from '../../ui/Switch';
 import './choices.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { plural } from '@lingui/core/macro';
+import { listOf } from '../../i18n/format';
 
 /**
  * Questions for customers (§300, §304): what a customer answers while
@@ -200,12 +204,14 @@ export function groupsToInput(groups: GroupDraft[], money: Money): ChoiceGroupIn
 export function choicesProblem(groups: GroupDraft[]): string | null {
   for (const [index, g] of groups.entries()) {
     const title = titleOf(g);
-    if (!title) return `Question ${index + 1}: write what you ask customers.`;
-    if (g.options.length === 0) return `“${title}”: add at least one answer.`;
+    const number = index + 1;
+    if (!title) return t`Question ${number}: write what you ask customers.`;
+    if (g.options.length === 0) return t`“${title}”: add at least one answer.`;
     const blank = g.options.findIndex((o) => !o.label.trim());
-    if (blank >= 0) return `“${title}”: answer ${blank + 1} is empty — write it, or remove it.`;
+    const answer = blank + 1;
+    if (blank >= 0) return t`“${title}”: answer ${answer} is empty — write it, or remove it.`;
     if (g.required && !g.options.some((o) => o.available)) {
-      return `“${title}”: customers must answer it, so at least one answer has to be offered.`;
+      return t`“${title}”: customers must answer it, so at least one answer has to be offered.`;
     }
   }
   return null;
@@ -355,25 +361,28 @@ export function ChoicesEditor({
   const remove = async (group: GroupDraft) => {
     const touched = group.id || (!group.fresh && (titleOf(group) || group.options.some((o) => o.label.trim())));
     const children = groups.filter((g) => g.showIf?.groupKey === group.key);
+    // The questions asked only after this one, named: “Length” and “Colour”.
+    const followUps = listOf(children.map((c) => `“${titleOf(c)}”`));
     if (touched || children.length > 0) {
       const ok = await confirmDialog({
-        title: `Remove “${titleOf(group) || 'this question'}”?`,
+        title: titleOf(group) ? t`Remove “${titleOf(group)}”?` : t`Remove this question?`,
         body: (
           <p>
-            Customers stop being asked it once you save. Bookings already made keep the answers they had.
-            {children.length > 0 && (
+            <Trans>Customers stop being asked it once you save. Bookings already made keep the answers they had.</Trans>
+          {children.length > 0 && (
               <>
                 {' '}
-                {children.map((c) => `“${titleOf(c)}”`).join(' and ')} {children.length === 1 ? 'was' : 'were'} asked only
-                after an answer here, so {children.length === 1 ? 'it will be' : 'they will be'} asked every time.
+                {children.length === 1
+                  ? t`${followUps} was asked only after an answer here, so it will be asked every time.`
+                  : t`${followUps} were asked only after an answer here, so they will be asked every time.`}
               </>
             )}
           </p>
         ),
         tone: 'danger',
         icon: 'trash',
-        confirmLabel: 'Remove question',
-        cancelLabel: 'Keep it',
+        confirmLabel: t`Remove question`,
+        cancelLabel: t`Keep it`,
       });
       if (!ok) return;
     }
@@ -433,7 +442,7 @@ export function ChoicesEditor({
       )}
 
       <div className="ch-start">
-        <h4 className="ch-start-title">{groups.length ? 'Add another question' : 'Add your first question'}</h4>
+        <h4 className="ch-start-title">{groups.length ? t`Add another question` : t`Add your first question`}</h4>
 
         {section && (
           <div className="ch-ready">
@@ -442,12 +451,12 @@ export function ChoicesEditor({
                 <Icon name="sparkles" size={16} />
               </span>
               <div>
-                <strong>Ready-made for {kindName}</strong>
-                <span>Add one in a tap, then set your prices. You can change any of the words.</span>
+                <strong><Trans>Ready-made for {kindName}</Trans></strong>
+                <span><Trans>Add one in a tap, then set your prices. You can change any of the words.</Trans></span>
               </div>
             </div>
             {sections.length > 1 && (
-              <div className="ch-ready-tabs" role="tablist" aria-label="Kinds of shop">
+              <div className="ch-ready-tabs" role="tablist" aria-label={t`Kinds of shop`}>
                 {sections.map((s, i) => (
                   <button
                     key={`${s.category}/${s.subcategory}`}
@@ -480,36 +489,40 @@ export function ChoicesEditor({
                       <strong>{s.question}</strong>
                       {group && (
                         <span className="ch-card-added">
-                          <Icon name="check" size={12} stroke={3} /> Added
+                          <Icon name="check" size={12} stroke={3} />{' '}
+                          <Trans>Added</Trans>
                         </span>
                       )}
                     </div>
-                    <ul className="ch-card-answers" aria-label="Its answers">
+                    <ul className="ch-card-answers" aria-label={t`Its answers`}>
                       {s.options.slice(0, 4).map((o) => (
                         <li key={o.label}>{o.label}</li>
                       ))}
-                      {s.options.length > 4 && <li className="is-more">+{s.options.length - 4} more</li>}
+                      {s.options.length > 4 && <li className="is-more">+{s.options.length - 4}<Trans>more</Trans></li>}
                     </ul>
                     <p className="ch-card-meta">
-                      {s.kind === 'MANY' ? 'They can pick several' : 'They pick one'}
-                      {s.required ? ' · must answer' : ''}
+                      {s.kind === 'MANY' ? t`They can pick several` : t`They pick one`}
+                      {s.required ? t` · must answer` : ''}
                       {s.healthRelated && (
                         <span className="ch-card-private">
-                          <Icon name="lock" size={11} stroke={2.4} /> Private
+                          <Icon name="lock" size={11} stroke={2.4} />{' '}
+                          <Trans>Private</Trans>
                         </span>
                       )}
                     </p>
                     {needsParent && !group && parentName && (
-                      <p className="ch-card-note">Adds “{parentName}” too — it is asked after an answer there.</p>
+                      <p className="ch-card-note"><Trans>Adds “{parentName}” too — it is asked after an answer there.</Trans></p>
                     )}
                     <div className="ch-card-actions">
                       {group ? (
                         <>
                           <button type="button" className="ch-card-btn" onClick={() => openOnly(group.key)}>
-                            <Icon name="pencil" size={14} /> Edit
+                            <Icon name="pencil" size={14} />{' '}
+                            <Trans>Edit</Trans>
                           </button>
                           <button type="button" className="ch-card-btn is-remove" onClick={() => void remove(group)}>
-                            <Icon name="close" size={14} /> Remove
+                            <Icon name="close" size={14} />{' '}
+                            <Trans>Remove</Trans>
                           </button>
                         </>
                       ) : (
@@ -518,9 +531,10 @@ export function ChoicesEditor({
                           className="ch-card-btn is-add"
                           onClick={() => addSuggestion(s)}
                           disabled={blocked}
-                          title={blocked ? `Up to ${MAX_GROUPS} questions per service` : s.hint}
+                          title={blocked ? t`Up to ${MAX_GROUPS} questions per service` : s.hint}
                         >
-                          <Icon name="plus" size={14} stroke={2.6} /> Add
+                          <Icon name="plus" size={14} stroke={2.6} />
+                          <Trans>Add</Trans>
                         </button>
                       )}
                     </div>
@@ -533,7 +547,7 @@ export function ChoicesEditor({
 
         <button type="button" className="ch-add" onClick={addOwn} disabled={full}>
           <Icon name="pencil" size={16} />
-          {full ? `That’s the most — ${MAX_GROUPS} questions per service` : 'Write my own question'}
+          {full ? t`That’s the most — ${MAX_GROUPS} questions per service` : t`Write my own question`}
         </button>
       </div>
 
@@ -548,44 +562,47 @@ export function ChoicesEditor({
       )}
 
       <div className="ch-settings">
-        <h4 className="ch-start-title">Also for this service</h4>
+        <h4 className="ch-start-title"><Trans>Also for this service</Trans></h4>
         <div className="ch-setting">
           <div>
-            <strong>Customers can write a note</strong>
+            <strong><Trans>Customers can write a note</Trans></strong>
             <span>
-              A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the
-              booking. Allergies and health go in a private question, never in the note.
+              <Trans>
+                A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the
+                booking. Allergies and health go in a private question, never in the note.
+              </Trans>
             </span>
           </div>
-          <Switch checked={noteEnabled} onChange={onNoteEnabled} label="Let customers write a note" />
+          <Switch checked={noteEnabled} onChange={onNoteEnabled} label={t`Let customers write a note`} />
         </div>
         {noteEnabled && (
           <div className="sv-field ch-prompt">
-            <label htmlFor="snoteprompt">
-              Words above their note box <em>{notePrompt.length}/120</em>
+            <label htmlFor="snoteprompt"><Trans>Words above their note box <em>{notePrompt.length}/120</em></Trans>
             </label>
             <input
               id="snoteprompt"
               maxLength={120}
               value={notePrompt}
               onChange={(e) => onNotePrompt(e.target.value)}
-              placeholder={suggestions.data?.notePrompt ?? 'Anything the shop should know?'}
+              placeholder={suggestions.data?.notePrompt ?? t`Anything the shop should know?`}
             />
-            <span className="sv-help">Leave it empty to use the words shown here.</span>
+            <span className="sv-help"><Trans>Leave it empty to use the words shown here.</Trans></span>
           </div>
         )}
         <div className="ch-setting">
           <div>
             <strong>
-              The final price is agreed at the shop
-              {suggestions.data?.priceAtShop && <em className="ch-usual">Common for shops like yours</em>}
+              <Trans>The final price is agreed at the shop</Trans>
+            {suggestions.data?.priceAtShop && <em className="ch-usual"><Trans>Common for shops like yours</Trans></em>}
             </strong>
             <span>
-              For work you can only price after seeing it, like a repair. Customers see “from” before your price, and
-              the deposit is taken on that price.
+              <Trans>
+                For work you can only price after seeing it, like a repair. Customers see “from” before your price, and
+                the deposit is taken on that price.
+              </Trans>
             </span>
           </div>
-          <Switch checked={priceAtShop} onChange={onPriceAtShop} label="The final price is agreed at the shop" />
+          <Switch checked={priceAtShop} onChange={onPriceAtShop} label={t`The final price is agreed at the shop`} />
         </div>
       </div>
     </div>
@@ -601,31 +618,32 @@ function HowItWorks({ money, example }: { money: Money; example?: ChoiceSuggesti
   const lines = example
     ? example.options.slice(0, 3).map((o, i) => ({
         label: o.label,
-        adds: o.extraMinutes ? `+${o.extraMinutes} min` : i === 1 ? `+${extra}` : null,
+        adds: o.extraMinutes ? t`+${o.extraMinutes} min` : i === 1 ? `+${extra}` : null,
       }))
     : [
-        { label: 'Short', adds: null },
-        { label: 'Medium', adds: '+15 min' },
-        { label: 'Long', adds: `+${extra} · +30 min` },
+        { label: t`Short`, adds: null },
+        { label: t`Medium`, adds: t`+15 min` },
+        { label: t`Long`, adds: `+${extra} · ${t`+30 min`}` },
       ];
   return (
     <div className="ch-how">
       <div className="ch-how-text">
-        <strong>Let customers say what they want</strong>
-        <p>You ask a question; when customers book, they tap an answer. An answer can cost more or take longer — you decide.</p>
+        <strong><Trans>Let customers say what they want</Trans></strong>
+        <p><Trans>You ask a question; when customers book, they tap an answer. An answer can cost more or take longer — you decide.</Trans></p>
         <ol>
-          <li>Add a question — a ready-made one below, or your own</li>
-          <li>Set what each answer adds to the price or the time</li>
-          <li>Save the service — customers see it when they book</li>
+          <li><Trans>Add a question — a ready-made one below, or your own</Trans></li>
+          <li><Trans>Set what each answer adds to the price or the time</Trans></li>
+          <li><Trans>Save the service — customers see it when they book</Trans></li>
         </ol>
       </div>
-      <figure className="ch-how-example" aria-label="An example of what customers see">
+      <figure className="ch-how-example" aria-label={t`An example of what customers see`}>
         <figcaption>
-          <Icon name="eye" size={12} /> Example — what customers see
+          <Icon name="eye" size={12} />{' '}
+          <Trans>Example — what customers see</Trans>
         </figcaption>
         <div className="ch-ex-q">
-          <strong>{example?.question ?? 'How long is your hair?'}</strong>
-          <span>{example?.kind === 'MANY' ? 'Choose any' : 'Pick 1'}</span>
+          <strong>{example?.question ?? t`How long is your hair?`}</strong>
+          <span>{example?.kind === 'MANY' ? t`Choose any` : t`Pick 1`}</span>
         </div>
         <ul>
           {lines.map((line, i) => (
@@ -685,20 +703,25 @@ function GroupCard({
           .filter((o) => o.label.trim())
           .map((o) => ({
             value: `${g.key}|${o.key}`,
-            label: `Only when they pick “${o.label.trim()}”`,
-            group: titleOf(g) || 'Untitled question',
+            label: t`Only when they pick “${o.label.trim()}”`,
+            group: titleOf(g) || t`Untitled question`,
           })),
   );
 
   const prices = group.options.map((o) => minor(o, money));
   const most = Math.max(0, ...prices);
   const longest = Math.max(0, ...group.options.map(minutesOf));
+  // The example under the short name, as one sentence for translators (§308).
+  const exampleName = shortName(group) || t`Cut`;
+  const exampleAnswer = group.options.find((o) => o.label.trim())?.label.trim() || t`Skin fade`;
+  const picks = group.maxPicks;
+  const mostPrice = money.format(most);
   const summary = [
-    group.kind === 'MANY' ? (group.maxPicks ? `They pick up to ${group.maxPicks}` : 'They pick one or more') : 'They pick one',
-    group.required ? 'must answer' : 'can skip',
-    `${group.options.length} ${group.options.length === 1 ? 'answer' : 'answers'}`,
-    !group.healthRelated && most > 0 && `up to +${money.format(most)}`,
-    !group.healthRelated && longest > 0 && `up to +${longest} min`,
+    group.kind === 'MANY' ? (picks ? t`They pick up to ${picks}` : t`They pick one or more`) : t`They pick one`,
+    group.required ? t`must answer` : t`can skip`,
+    plural(group.options.length, { one: '# answer', other: '# answers' }),
+    !group.healthRelated && most > 0 && t`up to +${mostPrice}`,
+    !group.healthRelated && longest > 0 && t`up to +${longest} min`,
   ].filter(Boolean);
 
   const makePrivate = (on: boolean) =>
@@ -722,7 +745,7 @@ function GroupCard({
         <button type="button" className="ch-group-toggle" onClick={onOpen} aria-expanded={group.open}>
           <span className="ch-num">{index + 1}</span>
           <span className="ch-group-title">
-            <strong>{title || 'New question'}</strong>
+            <strong>{title || t`New question`}</strong>
             <span>{summary.join(' · ')}</span>
           </span>
           <span className="ch-group-chev" aria-hidden="true">
@@ -732,42 +755,44 @@ function GroupCard({
         <span className="ch-badges">
           {group.healthRelated && (
             <span className="ch-badge is-private">
-              <Icon name="lock" size={12} stroke={2.4} /> Private
+              <Icon name="lock" size={12} stroke={2.4} />{' '}
+              <Trans>Private</Trans>
             </span>
           )}
           {parentOption && (
-            <span className="ch-badge is-if" title={`Asked only when “${parentOption.label}” is picked`}>
-              <Icon name="eye" size={12} /> After “{parentOption.label}”
+            <span className="ch-badge is-if" title={t`Asked only when “${parentOption.label}” is picked`}>
+              <Icon name="eye" size={12} />{' '}
+              <Trans>After “{parentOption.label}”</Trans>
             </span>
           )}
         </span>
         {/* The rarer things, one step away: the only arrow left opens it. */}
         <MoreMenu
-          label={`More for “${title || 'this question'}”`}
+          label={title ? t`More for “${title}”` : t`More for this question`}
           items={[
-            ...(canUp ? [{ label: 'Ask it earlier', icon: 'chevronUp' as const, onClick: () => onMove(-1) }] : []),
-            ...(canDown ? [{ label: 'Ask it later', icon: 'chevronDown' as const, onClick: () => onMove(1) }] : []),
-            { label: 'Remove this question', icon: 'trash', onClick: onRemove, danger: true },
+            ...(canUp ? [{ label: t`Ask it earlier`, icon: 'chevronUp' as const, onClick: () => onMove(-1) }] : []),
+            ...(canDown ? [{ label: t`Ask it later`, icon: 'chevronDown' as const, onClick: () => onMove(1) }] : []),
+            { label: t`Remove this question`, icon: 'trash', onClick: onRemove, danger: true },
           ]}
         />
       </div>
 
       <div className="ch-group-fold">
         <div className="ch-group-body">
-          <Step n={1} title="What do you ask customers?">
+          <Step n={1} title={t`What do you ask customers?`}>
             <input
               id={`${group.key}-q`}
               className="ch-question"
               maxLength={120}
               value={group.question}
               onChange={(e) => set({ question: e.target.value })}
-              placeholder="e.g. Which cut would you like?"
-              aria-label="The question customers see"
+              placeholder={t`e.g. Which cut would you like?`}
+              aria-label={t`The question customers see`}
             />
           </Step>
 
-          <Step n={2} title="How many answers can they pick?">
-            <div className="ch-pick" role="radiogroup" aria-label="How many answers they can pick">
+          <Step n={2} title={t`How many answers can they pick?`}>
+            <div className="ch-pick" role="radiogroup" aria-label={t`How many answers they can pick`}>
               {(['ONE', 'MANY'] as const).map((kind) => (
                 <button
                   key={kind}
@@ -781,8 +806,8 @@ function GroupCard({
                     {group.kind === kind && <Icon name="check" size={11} stroke={3} />}
                   </i>
                   <span>
-                    <strong>{kind === 'ONE' ? 'Just one' : 'One or more'}</strong>
-                    <em>{kind === 'ONE' ? 'Like the length of hair' : 'Like extras to add'}</em>
+                    <strong>{kind === 'ONE' ? t`Just one` : t`One or more`}</strong>
+                    <em>{kind === 'ONE' ? t`Like the length of hair` : t`Like extras to add`}</em>
                   </span>
                 </button>
               ))}
@@ -790,13 +815,13 @@ function GroupCard({
             <div className="ch-rules">
               {group.kind === 'MANY' && group.options.length > 1 && (
                 <label className="ch-max">
-                  <span>At most</span>
+                  <span><Trans>At most</Trans></span>
                   <Select
                     value={String(group.maxPicks ?? 0)}
                     onChange={(v) => set({ maxPicks: Number(v) || null })}
-                    label="The most answers a customer may pick"
+                    label={t`The most answers a customer may pick`}
                     options={[
-                      { value: '0', label: 'Any number' },
+                      { value: '0', label: t`Any number` },
                       ...Array.from({ length: group.options.length - 1 }, (_, i) => ({
                         value: String(i + 1),
                         label: `${i + 1} ${i === 0 ? 'answer' : 'answers'}`,
@@ -806,10 +831,10 @@ function GroupCard({
                 </label>
               )}
               <label className="ch-must">
-                <Switch checked={group.required} onChange={(required) => set({ required })} label="Customers must answer" />
+                <Switch checked={group.required} onChange={(required) => set({ required })} label={t`Customers must answer`} />
                 <span>
-                  <strong>Customers must answer</strong>
-                  <em>{group.required ? 'They can’t book without picking.' : 'They can skip it.'}</em>
+                  <strong><Trans>Customers must answer</Trans></strong>
+                  <em>{group.required ? t`They can’t book without picking.` : t`They can skip it.`}</em>
                 </span>
               </label>
             </div>
@@ -817,11 +842,11 @@ function GroupCard({
 
           <Step
             n={3}
-            title="The answers"
+            title={t`The answers`}
             hint={
               group.healthRelated
-                ? 'Private answers are always free and take no extra time.'
-                : 'Leave the price and time at 0 when an answer costs nothing extra.'
+                ? t`Private answers are always free and take no extra time.`
+                : t`Leave the price and time at 0 when an answer costs nothing extra.`
             }
           >
             <div className="ch-options">
@@ -847,39 +872,39 @@ function GroupCard({
               onClick={() => onChange((g) => ({ ...g, fresh: false, options: [...g.options, blankOption()] }))}
             >
               <Icon name="plus" size={15} stroke={2.4} />
-              {group.options.length >= MAX_OPTIONS ? `That’s the most — ${MAX_OPTIONS} answers` : 'Add an answer'}
+              {group.options.length >= MAX_OPTIONS ? t`That’s the most — ${MAX_OPTIONS} answers` : t`Add an answer`}
             </button>
           </Step>
 
           <div className={`ch-more${more ? ' is-open' : ''}`}>
             <button type="button" className="ch-more-toggle" onClick={() => setMore((was) => !was)} aria-expanded={more}>
               <Icon name="sliders" size={15} />
-              More options
-              {moreSet > 0 && <span className="ch-more-count">{moreSet} set</span>}
+              <Trans>More options</Trans>
+              {moreSet > 0 && <span className="ch-more-count"><Trans>{moreSet} set</Trans></span>}
               <Icon name="chevronDown" size={16} />
             </button>
             {more && (
               <div className="ch-more-body">
                 <div className="sv-field">
-                  <label htmlFor={`${group.key}-name`}>
-                    Short name on your bookings <em>optional</em>
+                  <label htmlFor={`${group.key}-name`}><Trans>Short name on your bookings <em>optional</em></Trans>
                   </label>
                   <input
                     id={`${group.key}-name`}
                     maxLength={60}
                     value={group.name}
                     onChange={(e) => set({ name: e.target.value })}
-                    placeholder={shortName({ name: '', question: group.question }) || 'e.g. Cut'}
+                    placeholder={shortName({ name: '', question: group.question }) || t`e.g. Cut`}
                   />
                   <span className="sv-help">
-                    Shown on the booking, like “{shortName(group) || 'Cut'}: {group.options.find((o) => o.label.trim())?.label.trim() || 'Skin fade'}”.
-                    Leave it empty to use the question.
+                    <Trans>
+                      Shown on the booking, like “{exampleName}: {exampleAnswer}”. Leave it empty to use the question.
+                    </Trans>
                   </span>
                 </div>
 
                 {(conditions.length > 0 || group.showIf) && (
                   <div className="sv-field">
-                    <label>When to ask it</label>
+                    <label><Trans>When to ask it</Trans></label>
                     <Select
                       value={group.showIf ? `${group.showIf.groupKey}|${group.showIf.optionKey}` : 'always'}
                       onChange={(v) => {
@@ -887,13 +912,13 @@ function GroupCard({
                         const [groupKey, optionKey] = v.split('|');
                         set({ showIf: { groupKey, optionKey } });
                       }}
-                      label="When to ask this question"
-                      options={[{ value: 'always', label: 'Every time' }, ...conditions]}
+                      label={t`When to ask this question`}
+                      options={[{ value: 'always', label: t`Every time` }, ...conditions]}
                     />
                     <span className="sv-help">
                       {children.length > 0
-                        ? `${children.map((c) => `“${titleOf(c)}”`).join(' and ')} ${children.length === 1 ? 'is' : 'are'} asked only after an answer here.`
-                        : 'Ask it only after a certain answer above — like “Colour?” only after “Dye”.'}
+                        ? t`${children.map((c) => `“${titleOf(c)}”`).join(' and ')} ${children.length === 1 ? 'is' : 'are'} asked only after an answer here.`
+                        : t`Ask it only after a certain answer above — like “Colour?” only after “Dye”.`}
                     </span>
                   </div>
                 )}
@@ -902,20 +927,22 @@ function GroupCard({
                   <Switch
                     checked={group.healthRelated}
                     onChange={makePrivate}
-                    label="A private question: health or personal"
+                    label={t`A private question: health or personal`}
                     disabled={Boolean(parent?.healthRelated)}
                   />
                   <span>
-                    <strong>A private question</strong>
-                    <em>For allergies, health or anything personal.</em>
+                    <strong><Trans>A private question</Trans></strong>
+                    <em><Trans>For allergies, health or anything personal.</Trans></em>
                   </span>
                 </label>
                 {group.healthRelated && (
                   <p className="ch-private-note">
                     <Icon name="lock" size={15} />
                     <span>
-                      Only you and the customer see these answers — never in an email or a phone alert — and they are
-                      removed 30 days after the visit. They are always free and take no extra time.
+                      <Trans>
+                        Only you and the customer see these answers — never in an email or a phone alert — and they are
+                        removed 30 days after the visit. They are always free and take no extra time.
+                      </Trans>
                     </span>
                   </p>
                 )}
@@ -965,34 +992,34 @@ function OptionRow({
   return (
     <div className={`ch-option${option.available ? '' : ' is-off'}${free ? ' is-free' : ''}`}>
       <div className="ch-option-label">
-        <span className="ch-mini">Answer {index + 1}</span>
+        <span className="ch-mini"><Trans>Answer </Trans>{index + 1}</span>
         <input
-          aria-label={`Answer ${index + 1}`}
+          aria-label={t`Answer ${index + 1}`}
           maxLength={60}
           value={option.label}
           onChange={(e) => onChange({ label: e.target.value })}
-          placeholder={index === 0 ? 'e.g. Short' : index === 1 ? 'e.g. Long' : 'Another answer'}
+          placeholder={index === 0 ? t`e.g. Short` : index === 1 ? t`e.g. Long` : t`Another answer`}
         />
         {describing ? (
           <input
             className="ch-option-desc"
-            aria-label={`A short description of answer ${index + 1}`}
+            aria-label={t`A short description of answer ${index + 1}`}
             maxLength={140}
             value={option.description}
             onChange={(e) => onChange({ description: e.target.value })}
-            placeholder="A short description — e.g. Below the shoulders"
+            placeholder={t`A short description — e.g. Below the shoulders`}
             autoFocus={!option.description}
           />
         ) : (
           <button type="button" className="link ch-describe" onClick={() => setDescribing(true)}>
-            + Add a short description
+            <Trans>+ Add a short description</Trans>
           </button>
         )}
       </div>
       {!free && (
         <>
           <div className={`ch-price${askPrice ? ' is-ask' : ''}${option.takesOff ? ' is-less' : ''}`}>
-            <span className="ch-mini">{option.takesOff ? 'Takes off the price' : 'Adds to the price'}</span>
+            <span className="ch-mini">{option.takesOff ? t`Takes off the price` : t`Adds to the price`}</span>
             <span className="sv-affix">
               <span>
                 {option.takesOff ? '−' : '+'} {money.code}
@@ -1002,22 +1029,22 @@ function OptionRow({
                 min="0"
                 step={money.exponent === 0 ? '1' : '0.01'}
                 inputMode="decimal"
-                aria-label={`${option.takesOff ? 'Taken off the price' : 'Added to the price'} for answer ${index + 1}`}
+                aria-label={option.takesOff ? t`Taken off the price for answer ${index + 1}` : t`Added to the price for answer ${index + 1}`}
                 value={option.price}
                 onChange={(e) => onChange({ price: e.target.value.replace('-', '') })}
                 placeholder="0"
               />
             </span>
             {askPrice ? (
-              <em>Shops usually charge for this</em>
+              <em><Trans>Shops usually charge for this</Trans></em>
             ) : (
               <button type="button" className="link ch-flip" onClick={() => onChange({ takesOff: !option.takesOff })}>
-                {option.takesOff ? 'or add to the price' : 'or take money off'}
+                {option.takesOff ? t`or add to the price` : t`or take money off`}
               </button>
             )}
           </div>
           <div className="ch-minutes">
-            <span className="ch-mini">Adds time</span>
+            <span className="ch-mini"><Trans>Adds time</Trans></span>
             <span className="sv-affix">
               <span>+</span>
               <input
@@ -1026,12 +1053,12 @@ function OptionRow({
                 max="480"
                 step="5"
                 inputMode="numeric"
-                aria-label={`Extra minutes for answer ${index + 1}`}
+                aria-label={t`Extra minutes for answer ${index + 1}`}
                 value={option.minutes}
                 onChange={(e) => onChange({ minutes: e.target.value })}
                 placeholder="0"
               />
-              <span>min</span>
+              <span><Trans>min</Trans></span>
             </span>
           </div>
         </>
@@ -1039,22 +1066,22 @@ function OptionRow({
       <div className="ch-option-end">
         <label
           className="ch-offer"
-          title={option.available ? 'Switch off when you can’t do it for now — customers see “Not available”.' : 'Switch on to offer it again.'}
+          title={option.available ? t`Switch off when you can’t do it for now — customers see “Not available”.` : t`Switch on to offer it again.`}
         >
           <Switch
             checked={option.available}
             onChange={(available) => onChange({ available })}
-            label={option.available ? 'Offered — switch off for “not available now”' : 'Not available now — switch on to offer it'}
+            label={option.available ? t`Offered — switch off for “not available now”` : t`Not available now — switch on to offer it`}
           />
-          <span>{option.available ? 'Offered' : 'Not now'}</span>
+          <span>{option.available ? t`Offered` : t`Not now`}</span>
         </label>
         <button
           type="button"
           className="ch-option-remove"
           onClick={onRemove}
           disabled={!canRemove}
-          aria-label={`Remove answer ${index + 1}`}
-          title={canRemove ? 'Remove this answer' : 'A question needs at least one answer'}
+          aria-label={t`Remove answer ${index + 1}`}
+          title={canRemove ? t`Remove this answer` : t`A question needs at least one answer`}
         >
           <Icon name="trash" size={14} />
         </button>
@@ -1124,8 +1151,8 @@ function ChoicesPreview({
     <div className="ch-preview">
       <div className="ch-preview-head">
         <Icon name="eye" size={16} />
-        <strong>Try it as a customer</strong>
-        <span>Tap the answers — the total changes</span>
+        <strong><Trans>Try it as a customer</Trans></strong>
+        <span><Trans>Tap the answers — the total changes</Trans></span>
       </div>
       <div className="ch-phone">
         {visible.map((g) => {
@@ -1135,13 +1162,14 @@ function ChoicesPreview({
               <div className="ch-q-head">
                 <strong>{titleOf(g)}</strong>
                 <span className={g.required && answered === 0 ? 'is-need' : ''}>
-                  {g.kind === 'MANY' ? (g.maxPicks ? `Choose up to ${g.maxPicks}` : 'Choose any') : 'Pick 1'}
-                  {g.required ? ' · Required' : ''}
+                  {g.kind === 'MANY' ? (g.maxPicks ? t`Choose up to ${g.maxPicks}` : t`Choose any`) : t`Pick 1`}
+                  {g.required ? t` · Required` : ''}
                 </span>
               </div>
               {g.healthRelated && (
                 <p className="ch-q-private">
-                  <Icon name="lock" size={12} /> Only the shop sees this.
+                  <Icon name="lock" size={12} />{' '}
+                  <Trans>Only the shop sees this.</Trans>
                 </p>
               )}
               <div className="ch-q-options">
@@ -1162,13 +1190,13 @@ function ChoicesPreview({
                         <i aria-hidden="true">{on && <Icon name="check" size={11} stroke={3} />}</i>
                         <span>{o.label.trim()}</span>
                         {!o.available ? (
-                          <em>Not available</em>
+                          <em><Trans>Not available</Trans></em>
                         ) : (
                           (price !== 0 || mins > 0) && (
                             <em>
                               {price !== 0 && `${price > 0 ? '+' : '−'}${money.format(Math.abs(price))}`}
                               {price !== 0 && mins > 0 && ' · '}
-                              {mins > 0 && `+${mins} min`}
+                              {mins > 0 && t`+${mins} min`}
                             </em>
                           )
                         )}
@@ -1181,7 +1209,7 @@ function ChoicesPreview({
         })}
         <div className="ch-total">
           <div>
-            <span>{priceAtShop ? 'From' : 'Total'}</span>
+            <span>{priceAtShop ? t`From` : t`Total`}</span>
             <strong>
               {basePriceMinor === null
                 ? `${extra >= 0 ? '+' : '−'}${money.format(Math.abs(extra))}`
@@ -1189,15 +1217,15 @@ function ChoicesPreview({
             </strong>
           </div>
           <div>
-            <span>Takes</span>
-            <strong>{durationMinutes + minutes} min</strong>
+            <span><Trans>Takes</Trans></span>
+            <strong>{durationMinutes + minutes}<Trans>min</Trans></strong>
           </div>
           <span className={`ch-total-state${missing ? ' is-need' : ''}`}>
-            {missing ? `${missing} to answer` : 'Ready to choose a time'}
+            {missing ? t`${missing} to answer` : t`Ready to choose a time`}
           </span>
         </div>
       </div>
-      {basePriceMinor === null && <p className="sv-help">Give a price at a branch to see the full total.</p>}
+      {basePriceMinor === null && <p className="sv-help"><Trans>Give a price at a branch to see the full total.</Trans></p>}
     </div>
   );
 }

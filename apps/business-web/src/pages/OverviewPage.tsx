@@ -42,6 +42,10 @@ import { useMediaQuery } from '../shell/useMediaQuery';
 import '../ads/ads.css';
 import './overview.css';
 import { useAccess } from '../access';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale, dayName } from '../i18n/format';
+import { plural } from '@lingui/core/macro';
 
 /**
  * Today (§192) — the page a seller opens the app on.
@@ -57,16 +61,35 @@ import { useAccess } from '../access';
 const REAL = REAL_STATUSES;
 
 const STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
-  BOOKED: { label: 'Expected', cls: 'booked' },
-  IN_PROGRESS: { label: 'In progress', cls: 'in-progress' },
-  COMPLETED: { label: 'Done', cls: 'completed' },
-  NO_SHOW: { label: 'No-show', cls: 'no-show' },
-  CANCELLED: { label: 'Cancelled', cls: 'cancelled' },
-  PENDING_PAYMENT: { label: 'Awaiting payment', cls: 'pending-payment' },
+  BOOKED: {
+    get label() { return t`Expected`; },
+    cls: 'booked'
+  },
+  IN_PROGRESS: {
+    get label() { return t`In progress`; },
+    cls: 'in-progress'
+  },
+  COMPLETED: {
+    get label() { return t`Done`; },
+    cls: 'completed'
+  },
+  NO_SHOW: {
+    get label() { return t`No-show`; },
+    cls: 'no-show'
+  },
+  CANCELLED: {
+    get label() { return t`Cancelled`; },
+    cls: 'cancelled'
+  },
+  PENDING_PAYMENT: {
+    get label() { return t`Awaiting payment`; },
+    cls: 'pending-payment'
+  },
 };
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const WEEKDAY_NAMES = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+/** Short day names in the app's language (§308), Monday first. */
+const WEEKDAYS = () => [1, 2, 3, 4, 5, 6, 0].map((day) => dayName(day, 'short'));
+const WEEKDAY_NAMES = () => [t`Sundays`, t`Mondays`, t`Tuesdays`, t`Wednesdays`, t`Thursdays`, t`Fridays`, t`Saturdays`];
 
 const reduceMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -204,13 +227,16 @@ export function OverviewPage() {
   }, [bookings.data, today.getTime()]);
 
   const sentence = (() => {
-    const people = (n: number) => `${n} ${n === 1 ? 'customer' : 'customers'}`;
     if (expectedToday > 0 && withYou > 0)
-      return `${people(expectedToday)} still expected today, and ${withYou} with you now.`;
-    if (expectedToday > 0) return `${people(expectedToday)} still expected today.`;
-    if (withYou > 0) return `${withYou} with you now, and nobody else expected today.`;
-    if (next) return `Nobody else expected today. Next: ${relativeDay(next.startTime, now).toLowerCase()} at ${clock(next.startTime)}.`;
-    return 'Nobody is expected yet — new bookings appear here as they come in.';
+      return t`${plural(expectedToday, { one: '# customer', other: '# customers' })} still expected today, and ${withYou} with you now.`;
+    if (expectedToday > 0) return plural(expectedToday, { one: '# customer still expected today.', other: '# customers still expected today.' });
+    if (withYou > 0) return t`${withYou} with you now, and nobody else expected today.`;
+    if (next) {
+      const day = relativeDay(next.startTime, now).toLowerCase();
+      const time = clock(next.startTime);
+      return t`Nobody else expected today. Next: ${day} at ${time}.`;
+    }
+    return t`Nobody is expected yet — new bookings appear here as they come in.`;
   })();
 
   return (
@@ -224,10 +250,10 @@ export function OverviewPage() {
                   date and the clock on every page (§234, §235). */}
               <span className="ov-country">
                 <RwandaFlag width={20} />
-                Rwanda
+                <Trans>Rwanda</Trans>
               </span>
               <Icon name={now.getHours() < 17 ? 'sun' : 'moon'} size={16} />
-              {now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+              <span className="ov-date">{now.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</span>
               <span className="ov-clock">{clock(now)}</span>
             </p>
             <h1>
@@ -240,13 +266,13 @@ export function OverviewPage() {
               {access.runsBranches && (
                 <Link to="/closures" className="btn-quiet">
                   <Icon name="calendarX" size={18} />
-                  Take time off
+                  <Trans>Take time off</Trans>
                 </Link>
               )}
               {access.runsBusiness && (
                 <Link to="/services" className="btn-dark">
                   <Icon name="plus" size={18} stroke={2.2} />
-                  Add a service
+                  <Trans>Add a service</Trans>
                 </Link>
               )}
             </div>
@@ -263,7 +289,7 @@ export function OverviewPage() {
 
       {complete.error && (
         <p className="notice" role="alert">
-          {complete.error instanceof ApiError ? complete.error.message : 'That did not work.'}
+          {complete.error instanceof ApiError ? complete.error.message : t`That did not work.`}
         </p>
       )}
 
@@ -271,49 +297,48 @@ export function OverviewPage() {
         <Stat
           tone="accent"
           icon="calendarCheck"
-          label="Still expected today"
+          label={t`Still expected today`}
           value={expectedToday}
           loading={bookings.isLoading}
           sub={
             lateToday.length > 0
-              ? `${lateToday.length} running late${nextToday ? ` · next at ${clock(nextToday.startTime)}` : ''}`
+              ? t`${lateToday.length} running late${nextToday ? ` · next at ${clock(nextToday.startTime)}` : ''}`
               : nextToday
-                ? `Next at ${clock(nextToday.startTime)}`
-                : 'Nobody else today'
+                ? t`Next at ${clock(nextToday.startTime)}`
+                : t`Nobody else today`
           }
           action={
             expectedToday > 0 ? (
-              <button type="button" className="ov-stat-action" onClick={() => openCheckIn()}>
-                Check in <Icon name="arrowRight" size={15} stroke={2.2} />
+              <button type="button" className="ov-stat-action" onClick={() => openCheckIn()}><Trans>Check in </Trans><Icon name="arrowRight" size={15} stroke={2.2} />
               </button>
             ) : null
           }
         />
         <Stat
           icon="timer"
-          label="With you now"
+          label={t`With you now`}
           value={withYou}
           loading={bookings.isLoading}
-          sub={withYou > 0 ? 'Mark them done when finished' : 'Nobody in the chair'}
+          sub={withYou > 0 ? t`Mark them done when finished` : t`Nobody in the chair`}
           to="/appointments?tab=in-progress"
         />
         <Stat
           icon="chart"
-          label="Bookings, last 7 days"
+          label={t`Bookings, last 7 days`}
           value={lastSeven}
           loading={bookings.isLoading}
           trend={trend}
-          sub={trend === null ? 'Counting from this week' : 'vs the 7 days before'}
+          sub={trend === null ? t`Counting from this week` : t`vs the 7 days before`}
           to={access.insights ? '/analytics' : undefined}
         />
         <Stat
           icon="star"
-          label="Your rating"
+          label={t`Your rating`}
           value={rating ?? 0}
           decimals={1}
-          empty={rating === null ? 'New' : undefined}
+          empty={rating === null ? t`New` : undefined}
           loading={locations.isLoading}
-          sub={ratingCount > 0 ? `from ${ratingCount} ${ratingCount === 1 ? 'review' : 'reviews'}` : 'No reviews yet'}
+          sub={ratingCount > 0 ? t`from ${ratingCount} ${ratingCount === 1 ? 'review' : 'reviews'}` : t`No reviews yet`}
           to="/reviews"
           stars={rating}
         />
@@ -324,11 +349,10 @@ export function OverviewPage() {
           <article className="ov-card ov-today">
             <header className="ov-card-head">
               <div>
-                <h2>Today’s schedule</h2>
-                <p>{todays.length === 0 ? 'Nothing booked for today' : summary(todays)}</p>
+                <h2><Trans>Today’s schedule</Trans></h2>
+                <p>{todays.length === 0 ? t`Nothing booked for today` : summary(todays)}</p>
               </div>
-              <Link to="/appointments" className="ov-link">
-                All appointments <Icon name="arrowRight" size={15} stroke={2.2} />
+              <Link to="/appointments" className="ov-link"><Trans>All appointments </Trans><Icon name="arrowRight" size={15} stroke={2.2} />
               </Link>
             </header>
             {bookings.isLoading ? (
@@ -340,8 +364,8 @@ export function OverviewPage() {
             ) : todays.length === 0 ? (
               <Empty
                 icon="calendar"
-                title="A quiet day so far"
-                text="When customers book for today, they appear here in time order, each with a button to check them in."
+                title={t`A quiet day so far`}
+                text={t`When customers book for today, they appear here in time order, each with a button to check them in.`}
               />
             ) : (
               <Timeline
@@ -359,13 +383,13 @@ export function OverviewPage() {
           <article className="ov-card ov-chart">
             <header className="ov-card-head">
               <div>
-                <h2>Bookings</h2>
-                <p>The last two weeks, and what is booked for the week ahead</p>
+                <h2><Trans>Bookings</Trans></h2>
+                <p><Trans>The last two weeks, and what is booked for the week ahead</Trans></p>
               </div>
               <div className="ov-legend">
-                <span><i className="lg-past" /> Past</span>
-                <span><i className="lg-today" /> Today</span>
-                <span><i className="lg-future" /> Booked ahead</span>
+                <span><Trans><i className="lg-past" />Past</Trans></span>
+                <span><Trans><i className="lg-today" />Today</Trans></span>
+                <span><Trans><i className="lg-future" />Booked ahead</Trans></span>
               </div>
             </header>
             <Chart days={days} loading={bookings.isLoading} />
@@ -378,8 +402,8 @@ export function OverviewPage() {
           <article className="ov-card ov-busy">
             <header className="ov-card-head">
               <div>
-                <h2>Busiest times</h2>
-                <p>From the last four weeks</p>
+                <h2><Trans>Busiest times</Trans></h2>
+                <p><Trans>From the last four weeks</Trans></p>
               </div>
             </header>
             <Busiest pattern={pattern} loading={bookings.isLoading} />
@@ -391,11 +415,10 @@ export function OverviewPage() {
         <article className="ov-card ov-reviews">
           <header className="ov-card-head">
             <div>
-              <h2>Latest reviews</h2>
-              <p>{ratingCount > 0 ? `${ratingCount} in all` : 'What customers say about you'}</p>
+              <h2><Trans>Latest reviews</Trans></h2>
+              <p>{ratingCount > 0 ? t`${ratingCount} in all` : t`What customers say about you`}</p>
             </div>
-            <Link to="/reviews" className="ov-link">
-              All reviews <Icon name="arrowRight" size={15} stroke={2.2} />
+            <Link to="/reviews" className="ov-link"><Trans>All reviews </Trans><Icon name="arrowRight" size={15} stroke={2.2} />
             </Link>
           </header>
           {reviews.isLoading ? (
@@ -405,7 +428,7 @@ export function OverviewPage() {
               ))}
             </div>
           ) : (reviews.data ?? []).length === 0 ? (
-            <Empty icon="star" title="No reviews yet" text="After a visit, customers can rate you. Their words will show here." />
+            <Empty icon="star" title={t`No reviews yet`} text={t`After a visit, customers can rate you. Their words will show here.`} />
           ) : (
             <ul className="ov-reviews-list">
               {reviews.data!.map(({ review, branch }) => (
@@ -423,14 +446,21 @@ export function OverviewPage() {
 
 function summary(rows: Appointment[]) {
   const count = (s: AppointmentStatus) => rows.filter((a) => a.status === s).length;
-  return [
-    count('BOOKED') && `${count('BOOKED')} expected`,
-    count('IN_PROGRESS') && `${count('IN_PROGRESS')} in progress`,
-    count('COMPLETED') && `${count('COMPLETED')} done`,
-    count('NO_SHOW') && `${count('NO_SHOW')} no-show`,
-  ]
-    .filter(Boolean)
-    .join(' · ') || `${rows.length} booked`;
+  const expected = count('BOOKED');
+  const inProgress = count('IN_PROGRESS');
+  const done = count('COMPLETED');
+  const noShow = count('NO_SHOW');
+  const booked = rows.length;
+  return (
+    [
+      expected && t`${expected} expected`,
+      inProgress && t`${inProgress} in progress`,
+      done && t`${done} done`,
+      noShow && t`${noShow} no-show`,
+    ]
+      .filter(Boolean)
+      .join(' · ') || t`${booked} booked`
+  );
 }
 
 function Stat({
@@ -513,8 +543,8 @@ function Timeline({
 }) {
   const nowIndex = items.findIndex((a) => new Date(a.startTime) > now);
   const marker = (
-    <li className="tl-now" key="now" aria-label={`Now, ${clock(now)}`}>
-      <span>Now · {clock(now)}</span>
+    <li className="tl-now" key="now" aria-label={t`Now, ${clock(now)}`}>
+      <span><Trans>Now · {clock(now)}</Trans></span>
     </li>
   );
   const rows = items.map((a) => {
@@ -524,7 +554,7 @@ function Timeline({
       <li key={a.id} className={`tl-item is-${look.cls}${late ? ' is-late' : ''}`}>
         <div className="tl-time">
           <strong>{clock(a.startTime)}</strong>
-          <span>{minutesBetween(a.startTime, a.endTime)} min</span>
+          <span><Trans>{minutesBetween(a.startTime, a.endTime)} min</Trans></span>
         </div>
         <div className="tl-rail" aria-hidden="true">
           <i />
@@ -535,26 +565,28 @@ function Timeline({
             <strong>{a.customer.email}</strong>
             <span>
               {a.service.name}
-              {a.quantity > 1 ? ` · ${a.quantity} people` : ''} · {a.location.name}
+              {a.quantity > 1 ? t` · ${a.quantity} people` : ''} · {a.location.name}
             </span>
           </div>
           <span className={`pill ${late ? 'late' : look.cls}`}>
-            {late ? `${span((now.getTime() - new Date(a.startTime).getTime()) / 60_000)} late` : look.label}
+            {late ? t`${span((now.getTime() - new Date(a.startTime).getTime()) / 60_000)} late` : look.label}
           </span>
           <div className="tl-action">
             {a.status === 'BOOKED' && (
               <button type="button" className="primary tl-btn" onClick={() => onCheckIn(a)}>
-                <Icon name="ticket" size={16} /> Check in
+                <Icon name="ticket" size={16} />{' '}
+                <Trans>Check in</Trans>
               </button>
             )}
             {a.status === 'IN_PROGRESS' && (
               <button type="button" className="dark tl-btn" disabled={busyId === a.id} onClick={() => onComplete(a)}>
-                <Icon name="check" size={16} stroke={2.4} /> {busyId === a.id ? 'Saving…' : 'Mark done'}
+                <Icon name="check" size={16} stroke={2.4} /> {busyId === a.id ? t`Saving…` : t`Mark done`}
               </button>
             )}
             {a.status === 'COMPLETED' && (
               <span className="tl-done">
-                <Icon name="checkCircle" size={18} /> Done
+                <Icon name="checkCircle" size={18} />{' '}
+                <Trans>Done</Trans>
               </span>
             )}
           </div>
@@ -581,16 +613,16 @@ function NextUp({
   if (!appointment) {
     return (
       <article className="ov-next is-empty">
-        <p className="ov-next-label">Next up</p>
-        <h3>Nobody expected</h3>
-        <p className="ov-next-text">Your next customer will show here, with a countdown to their time.</p>
+        <p className="ov-next-label"><Trans>Next up</Trans></p>
+        <h3><Trans>Nobody expected</Trans></h3>
+        <p className="ov-next-text"><Trans>Your next customer will show here, with a countdown to their time.</Trans></p>
       </article>
     );
   }
   const minutes = (new Date(appointment.startTime).getTime() - now.getTime()) / 60_000;
   const today = sameDay(new Date(appointment.startTime), now);
   const countdown =
-    !today ? relativeDay(appointment.startTime, now) : Math.abs(minutes) <= 10 ? 'Due now' : minutes > 0 ? `in ${span(minutes)}` : `${span(minutes)} late`;
+    !today ? relativeDay(appointment.startTime, now) : Math.abs(minutes) <= 10 ? t`Due now` : minutes > 0 ? t`in ${span(minutes)}` : t`${span(minutes)} late`;
   const due =
     appointment.servicePriceMinor !== null
       ? Math.max(0, appointment.servicePriceMinor - appointment.depositAmountMinor)
@@ -598,7 +630,7 @@ function NextUp({
   return (
     <article className="ov-next">
       <div className="ov-next-top">
-        <p className="ov-next-label">Next up</p>
+        <p className="ov-next-label"><Trans>Next up</Trans></p>
         <span className={`ov-next-count ${today && Math.abs(minutes) <= 10 ? 'is-now' : today && minutes < 0 ? 'is-late' : ''}`}>
           {countdown}
         </span>
@@ -609,31 +641,32 @@ function NextUp({
           <h3>{appointment.customer.email}</h3>
           <p>
             {appointment.service.name}
-            {appointment.quantity > 1 ? ` · ${appointment.quantity} people` : ''}
+            {appointment.quantity > 1 ? t` · ${appointment.quantity} people` : ''}
           </p>
         </div>
       </div>
       <dl className="ov-next-facts">
         <div>
-          <dt>When</dt>
+          <dt><Trans>When</Trans></dt>
           <dd>
             {today ? '' : `${shortDay(appointment.startTime)}, `}
             {clock(appointment.startTime)} – {clock(appointment.endTime)}
           </dd>
         </div>
         <div>
-          <dt>Where</dt>
+          <dt><Trans>Where</Trans></dt>
           <dd>{appointment.location.name}</dd>
         </div>
         {due !== null && (
           <div>
-            <dt>To pay at the shop</dt>
+            <dt><Trans>To pay at the shop</Trans></dt>
             <dd>{money(due, appointment.currency)}</dd>
           </div>
         )}
       </dl>
       <button type="button" className="ov-next-btn" onClick={() => onCheckIn(appointment)}>
-        <Icon name="ticket" size={18} /> Check them in
+        <Icon name="ticket" size={18} />{' '}
+        <Trans>Check them in</Trans>
       </button>
     </article>
   );
@@ -649,13 +682,11 @@ function Inbox({ threads, loading }: { threads: Thread[]; loading: boolean }) {
     <article className="ov-card ov-inbox">
       <header className="ov-card-head">
         <div>
-          <h2>
-            Messages {unread > 0 && <span className="ov-count">{unread} new</span>}
+          <h2><Trans>Messages </Trans>{unread > 0 && <span className="ov-count"><Trans>{unread} new</Trans></span>}
           </h2>
-          <p>Questions from customers</p>
+          <p><Trans>Questions from customers</Trans></p>
         </div>
-        <Link to="/messages" className="ov-link">
-          Open <Icon name="arrowRight" size={15} stroke={2.2} />
+        <Link to="/messages" className="ov-link"><Trans>Open </Trans><Icon name="arrowRight" size={15} stroke={2.2} />
         </Link>
       </header>
       {loading ? (
@@ -663,27 +694,27 @@ function Inbox({ threads, loading }: { threads: Thread[]; loading: boolean }) {
           <div className="skeleton" />
         </div>
       ) : recent.length === 0 ? (
-        <Empty icon="message" title="No messages yet" text="When a customer asks something, it lands here." small />
+        <Empty icon="message" title={t`No messages yet`} text={t`When a customer asks something, it lands here.`} small />
       ) : (
         <ul className="ov-threads">
-          {recent.map((t) => (
-            <li key={t.id}>
+          {recent.map((thread) => (
+            <li key={thread.id}>
               <Link
-                to={`/messages?thread=${encodeURIComponent(t.id)}`}
-                className={`ov-thread${t.unreadCount > 0 ? ' is-unread' : ''}`}
+                to={`/messages?thread=${encodeURIComponent(thread.id)}`}
+                className={`ov-thread${thread.unreadCount > 0 ? ' is-unread' : ''}`}
               >
-                <Avatar label={t.customer?.email ?? 'Customer'} size={38} />
+                <Avatar label={thread.customer?.email ?? t`Customer`} size={38} />
                 <span className="ov-thread-text">
-                  <strong>{t.customer?.email ?? 'Customer'}</strong>
+                  <strong>{thread.customer?.email ?? t`Customer`}</strong>
                   <span>
-                    {t.lastMessage?.hasPhoto && (!t.lastMessage.preview || t.lastMessage.preview === '[photo]')
-                      ? 'Sent a photo'
-                      : t.lastMessage?.preview ?? ''}
+                    {thread.lastMessage?.hasPhoto && (!thread.lastMessage.preview || thread.lastMessage.preview === '[photo]')
+                      ? t`Sent a photo`
+                      : thread.lastMessage?.preview ?? ''}
                   </span>
                 </span>
                 <span className="ov-thread-meta">
-                  <span>{t.lastMessageAt ? ago(t.lastMessageAt) : ''}</span>
-                  {t.unreadCount > 0 && <i>{t.unreadCount}</i>}
+                  <span>{thread.lastMessageAt ? ago(thread.lastMessageAt) : ''}</span>
+                  {thread.unreadCount > 0 && <i>{thread.unreadCount}</i>}
                 </span>
               </Link>
             </li>
@@ -710,11 +741,11 @@ function Chart({
       <div className="chart-figures">
         <div>
           <strong>{loading ? '–' : total}</strong>
-          <span>in the last two weeks</span>
+          <span><Trans>in the last two weeks</Trans></span>
         </div>
         <div>
           <strong>{loading ? '–' : ahead}</strong>
-          <span>booked for the week ahead</span>
+          <span><Trans>booked for the week ahead</Trans></span>
         </div>
       </div>
       <div className="chart-plot">
@@ -734,13 +765,13 @@ function Chart({
                   style={{ height: `${loading ? 0 : Math.max(d.count ? 6 : 0, (d.count / top) * 100)}%`, animationDelay: `${i * 22}ms` }}
                 >
                   <span className="bar-tip">
-                    {d.count} {d.count === 1 ? 'booking' : 'bookings'}
+                    {d.count} {d.count === 1 ? t`booking` : t`bookings`}
                     <em>{shortDay(d.day)}</em>
                   </span>
                 </div>
               </div>
               <span className="bar-label">
-                {d.when === 'today' ? 'Today' : i % 2 === 1 ? d.day.getDate() : ''}
+                {d.when === 'today' ? t`Today` : i % 2 === 1 ? d.day.getDate() : ''}
               </span>
             </div>
           ))}
@@ -768,8 +799,8 @@ function Busiest({
     return (
       <Empty
         icon="chart"
-        title="Not enough yet"
-        text="After a few more bookings, this shows the days and hours customers like best."
+        title={t`Not enough yet`}
+        text={t`After a few more bookings, this shows the days and hours customers like best.`}
         small
       />
     );
@@ -786,23 +817,25 @@ function Busiest({
   return (
     <div className="busy">
       <p className="busy-headline">
-        <strong>{WEEKDAY_NAMES[peakDay]}</strong> are your busiest, most often around{' '}
-        <strong>{String(peakHour).padStart(2, '0')}:00</strong>.
+        <Trans>
+          <strong>{WEEKDAY_NAMES()[peakDay]}</strong> are your busiest, most often around{' '}
+          <strong>{String(peakHour).padStart(2, '0')}:00</strong>.
+        </Trans>
       </p>
       <div className="busy-week">
         {week.map((count, i) => {
           const isPeak = [1, 2, 3, 4, 5, 6, 0][i] === peakDay;
           return (
-            <div key={i} className={`busy-day${isPeak ? ' is-peak' : ''}`} title={`${count} on ${WEEKDAYS[i]}`}>
+            <div key={i} className={`busy-day${isPeak ? ' is-peak' : ''}`} title={t`${count} on ${WEEKDAYS()[i]}`}>
               <div className="busy-track">
                 <div className="busy-bar" style={{ height: `${maxDay ? Math.max(8, (count / maxDay) * 100) : 8}%` }} />
               </div>
-              <span>{WEEKDAYS[i].slice(0, 1)}</span>
+              <span>{WEEKDAYS()[i].slice(0, 1)}</span>
             </div>
           );
         })}
       </div>
-      <div className="busy-hours" aria-label="Bookings by hour of the day">
+      <div className="busy-hours" aria-label={t`Bookings by hour of the day`}>
         {hours.map((h) => (
           <span
             key={h}
@@ -837,11 +870,10 @@ function MoneyCard({
     <article className="ov-card ov-money">
       <header className="ov-card-head">
         <div>
-          <h2>Money</h2>
-          <p>Your share of deposits, paid to your mobile money</p>
+          <h2><Trans>Money</Trans></h2>
+          <p><Trans>Your share of deposits, paid to your mobile money</Trans></p>
         </div>
-        <Link to="/getting-paid" className="ov-link">
-          Getting paid <Icon name="arrowRight" size={15} stroke={2.2} />
+        <Link to="/getting-paid" className="ov-link"><Trans>Getting paid </Trans><Icon name="arrowRight" size={15} stroke={2.2} />
         </Link>
       </header>
       <div className="money-body">
@@ -850,17 +882,17 @@ function MoneyCard({
           <Icon name="wallet" size={22} />
         </span>
         <div>
-          <span>Ready for your next payout</span>
+          <span><Trans>Ready for your next payout</Trans></span>
           <strong>{loading ? '–' : format(Math.round(ready), balance?.currency)}</strong>
         </div>
       </div>
       <div className="money-split">
         <div>
-          <span>Still settling</span>
+          <span><Trans>Still settling</Trans></span>
           <strong>{loading ? '–' : format(balance?.pendingMinor, balance?.currency)}</strong>
         </div>
         <div>
-          <span>Paid to you so far</span>
+          <span><Trans>Paid to you so far</Trans></span>
           <strong>{loading ? '–' : format(balance?.lifetimePaidMinor, balance?.currency)}</strong>
         </div>
       </div>
@@ -868,7 +900,7 @@ function MoneyCard({
       {balance?.payoutsPaused && (
         <p className="money-paused">
           <Icon name="pause" size={15} />
-          Payouts are paused — see Getting paid for why.
+          <Trans>Payouts are paused — see Getting paid for why.</Trans>
         </p>
       )}
     </article>
@@ -879,9 +911,9 @@ function ReviewRow({ review, branch }: { review: Review; branch: string }) {
   return (
     <li className="ov-review">
       <div className="ov-review-head">
-        <Avatar label={review.displayName ?? review.customer?.email ?? 'Anonymous'} size={36} />
+        <Avatar label={review.displayName ?? review.customer?.email ?? t`Anonymous`} size={36} />
         <div>
-          <strong>{review.displayName ?? 'Anonymous'}</strong>
+          <strong>{review.displayName ?? t`Anonymous`}</strong>
           <span>
             {branch} · {ago(review.createdAt)}
           </span>
@@ -889,7 +921,7 @@ function ReviewRow({ review, branch }: { review: Review; branch: string }) {
         <Stars value={review.rating} size={14} />
       </div>
       {review.comment && <p>{review.comment}</p>}
-      {!review.responseText && <span className="ov-review-reply">Not replied yet</span>}
+      {!review.responseText && <span className="ov-review-reply"><Trans>Not replied yet</Trans></span>}
     </li>
   );
 }

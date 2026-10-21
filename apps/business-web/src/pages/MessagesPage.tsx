@@ -11,19 +11,23 @@ import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 import { DropZone } from '../ui/DropZone';
 import './messages.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
+import { plural } from '@lingui/core/macro';
 
 /** What a thread is about, so eight threads with one customer are not eight identical rows. */
 const subject = (thread: Thread) =>
   thread.appointment
-    ? `${thread.appointment.serviceName}, ${new Date(thread.appointment.startTime).toLocaleDateString(undefined, {
+    ? `${thread.appointment.serviceName}, ${new Date(thread.appointment.startTime).toLocaleDateString(dateLocale(), {
         day: 'numeric',
         month: 'short',
       })}`
-    : 'A question, before booking';
+    : t`A question, before booking`;
 
 const preview = (thread: Thread) =>
   thread.lastMessage?.hasPhoto && (!thread.lastMessage.preview || thread.lastMessage.preview === '[photo]')
-    ? 'Sent a photo'
+    ? t`Sent a photo`
     : thread.lastMessage?.preview ?? '';
 
 /**
@@ -100,10 +104,10 @@ export function MessagesPage() {
       <div className="page-top">
         <header className="page-head ms-head">
           <div>
-            <h1>Messages</h1>
+            <h1><Trans>Messages</Trans></h1>
             <p className="muted">
-              Questions from customers, and anything said about a booking.
-              {waiting > 0 && ` ${waiting} waiting for you.`}
+              <Trans>Questions from customers, and anything said about a booking.</Trans>
+            {waiting > 0 && t` ${waiting} waiting for you.`}
             </p>
           </div>
         </header>
@@ -117,8 +121,8 @@ export function MessagesPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search conversations"
-                aria-label="Search conversations"
+                placeholder={t`Search conversations`}
+                aria-label={t`Search conversations`}
               />
             </label>
             <div className="ms-filter" role="tablist">
@@ -128,8 +132,7 @@ export function MessagesPage() {
                 aria-selected={filter === 'all'}
                 className={filter === 'all' ? 'is-on' : ''}
                 onClick={() => setFilter('all')}
-              >
-                All <span>{rows.length}</span>
+              ><Trans>All <span>{rows.length}</span></Trans>
               </button>
               <button
                 type="button"
@@ -137,8 +140,7 @@ export function MessagesPage() {
                 aria-selected={filter === 'unread'}
                 className={filter === 'unread' ? 'is-on' : ''}
                 onClick={() => setFilter('unread')}
-              >
-                Unread {waiting > 0 && <span className="is-hot">{waiting}</span>}
+              ><Trans>Unread </Trans>{waiting > 0 && <span className="is-hot">{waiting}</span>}
               </button>
             </div>
           </div>
@@ -183,13 +185,15 @@ export function MessagesPage() {
                 <Icon name="message" size={26} />
               </span>
               <p>
-                No messages yet. Customers can write to you from your page in the app, before they book and
-                about a booking they have made.
+                <Trans>
+                  No messages yet. Customers can write to you from your page in the app, before they book and
+                  about a booking they have made.
+                </Trans>
               </p>
             </div>
           )}
           {threads.data && rows.length > 0 && shown.length === 0 && (
-            <p className="ms-none">{filter === 'unread' ? 'Nothing unread — all caught up.' : 'Nothing matches.'}</p>
+            <p className="ms-none">{filter === 'unread' ? t`Nothing unread — all caught up.` : t`Nothing matches.`}</p>
           )}
         </aside>
 
@@ -201,8 +205,12 @@ export function MessagesPage() {
               <span>
                 <Icon name="message" size={34} />
               </span>
-              <h2>{waiting > 0 ? `${waiting} ${waiting === 1 ? 'conversation is' : 'conversations are'} waiting` : 'Choose a conversation'}</h2>
-              <p>Pick one on the left to read it and reply. Replies reach the customer in their app straight away.</p>
+              <h2>
+                {waiting > 0
+                  ? plural(waiting, { one: '# conversation is waiting', other: '# conversations are waiting' })
+                  : t`Choose a conversation`}
+              </h2>
+              <p><Trans>Pick one on the left to read it and reply. Replies reach the customer in their app straight away.</Trans></p>
             </div>
           )}
         </div>
@@ -277,14 +285,14 @@ function Conversation({ threadId, thread, onBack }: { threadId: string; thread: 
 
   return (
     // A photo dropped anywhere on the conversation is attached, ready to send (§305).
-    <DropZone className="ms-chat" onFiles={([file]) => setPhoto(file)} hint="Drop to attach the photo">
+    <DropZone className="ms-chat" onFiles={([file]) => setPhoto(file)} hint={t`Drop to attach the photo`}>
       <header className="ms-chat-head">
-        <button type="button" className="ms-back" onClick={onBack} aria-label="Back to conversations">
+        <button type="button" className="ms-back" onClick={onBack} aria-label={t`Back to conversations`}>
           <Icon name="chevronLeft" size={20} />
         </button>
-        <Avatar label={thread?.customer.email ?? 'Customer'} size={44} />
+        <Avatar label={thread?.customer.email ?? t`Customer`} size={44} />
         <div className="ms-chat-who">
-          <strong>{thread?.customer.email ?? 'Conversation'}</strong>
+          <strong>{thread?.customer.email ?? t`Conversation`}</strong>
           <span>{thread ? subject(thread) : ''}</span>
         </div>
         {thread?.appointment && (
@@ -297,7 +305,7 @@ function Conversation({ threadId, thread, onBack }: { threadId: string; thread: 
 
       <div className="ms-log">
         {messages.isLoading && <div className="skeleton ms-log-skeleton" />}
-        {messages.data && count === 0 && <p className="ms-none">Nothing in this conversation yet.</p>}
+        {messages.data && count === 0 && <p className="ms-none"><Trans>Nothing in this conversation yet.</Trans></p>}
         {list.map((message, i) => {
           const prev = list[i - 1];
           const next = list[i + 1];
@@ -324,7 +332,7 @@ function Conversation({ threadId, thread, onBack }: { threadId: string; thread: 
 
       {send.isError && (
         <p className="ms-send-error" role="alert">
-          {send.error instanceof ApiError ? send.error.message : 'Not sent. Try again.'}
+          {send.error instanceof ApiError ? send.error.message : t`Not sent. Try again.`}
         </p>
       )}
 
@@ -333,15 +341,15 @@ function Conversation({ threadId, thread, onBack }: { threadId: string; thread: 
           <div className="ms-attached">
             <img src={photoUrl} alt="" />
             <span>{photo?.name}</span>
-            <button type="button" onClick={() => setPhoto(null)} aria-label="Remove the photo">
+            <button type="button" onClick={() => setPhoto(null)} aria-label={t`Remove the photo`}>
               <Icon name="close" size={14} />
             </button>
           </div>
         )}
         <div className="ms-compose-row">
-          <label className="ms-attach" htmlFor="chat-photo" title="Attach a photo">
+          <label className="ms-attach" htmlFor="chat-photo" title={t`Attach a photo`}>
             <Icon name="paperclip" size={19} />
-            <span className="visually-hidden">Attach a photo</span>
+            <span className="visually-hidden"><Trans>Attach a photo</Trans></span>
           </label>
           <input
             id="chat-photo"
@@ -365,7 +373,7 @@ function Conversation({ threadId, thread, onBack }: { threadId: string; thread: 
                 if (canSend) send.mutate();
               }
             }}
-            placeholder="Write a reply"
+            placeholder={t`Write a reply`}
             maxLength={2000}
             rows={1}
           />
@@ -374,13 +382,12 @@ function Conversation({ threadId, thread, onBack }: { threadId: string; thread: 
             className="ms-send"
             disabled={!canSend}
             onClick={() => send.mutate()}
-            aria-label="Send"
+            aria-label={t`Send`}
           >
             {send.isPending ? <span className="ci-spinner" /> : <Icon name="send" size={18} />}
           </button>
         </div>
-        <p className="ms-hint">
-          Enter to send · Shift + Enter for a new line<span className="drop-tip"> · drop a photo to attach it</span>
+        <p className="ms-hint"><Trans>Enter to send · Shift + Enter for a new line<span className="drop-tip"> · drop a photo to attach it</span></Trans>
         </p>
       </div>
     </DropZone>
@@ -412,7 +419,7 @@ function Bubble({
         <span className="ms-meta">
           {/* Whose reply, by name, because several people here can answer (§14).
               The customer's side never sees these addresses (§112.1). */}
-          {fromUs ? message.sender.email : 'Customer'} · {clock(message.createdAt)}
+          {fromUs ? message.sender.email : t`Customer`} · {clock(message.createdAt)}
         </span>
       )}
     </div>

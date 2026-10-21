@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { deviceStore } from './api/client';
 import { registerPushDevice, unregisterPushDevice } from './api/notifications';
+import { t } from '@lingui/core/macro';
 
 /**
  * Alerts on this phone (§287), through Expo's push service — free, and the

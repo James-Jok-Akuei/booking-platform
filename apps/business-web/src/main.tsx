@@ -1,4 +1,8 @@
-import { StrictMode, useEffect } from 'react';
+// The language first: English is ready before any other file is read (§308).
+import { loadLocale, useAppLocale } from './i18n';
+import { Fragment, StrictMode, useEffect, type ReactNode } from 'react';
+import { i18n } from '@lingui/core';
+import { I18nProvider } from '@lingui/react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -36,17 +40,34 @@ function IntroLeaves() {
 // A file let go outside a drop zone must not replace the app (§305).
 guardFileDrops();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-          <DialogHost />
-          <ConfirmHost />
-          <IntroLeaves />
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </StrictMode>,
+
+/** A new language is drawn afresh, every sentence in it; the address, and so the page, stays. */
+function Localised({ children }: { children: ReactNode }) {
+  const locale = useAppLocale();
+  return (
+    <I18nProvider i18n={i18n}>
+      <Fragment key={locale}>{children}</Fragment>
+    </I18nProvider>
+  );
+}
+
+// Drawn once the language is settled (§308): its file is small, and the
+// opening picture covers the wait.
+void loadLocale().finally(() =>
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Localised>
+            <AuthProvider>
+              <App />
+              <DialogHost />
+              <ConfirmHost />
+              <IntroLeaves />
+            </AuthProvider>
+          </Localised>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </StrictMode>,
+  ),
 );

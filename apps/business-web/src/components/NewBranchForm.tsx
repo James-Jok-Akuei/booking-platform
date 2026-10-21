@@ -8,6 +8,8 @@ import { Panel } from '../ui/Panel';
 import { Select } from '../ui/Select';
 import { AddressField, useDistrictFrom } from './AddressField';
 import type { FoundAddress } from '../api/business';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * Pulls a latitude and longitude out of whatever someone pasted.
@@ -30,13 +32,11 @@ export function parseCoordinates(
   input: string,
 ): { latitude: number; longitude: number } | { error: string } {
   const text = input.trim();
-  if (!text) return { error: 'Paste a Google Maps link, or type the coordinates.' };
+  if (!text) return { error: t`Paste a Google Maps link, or type the coordinates.` };
 
   if (/goo\.gl|maps\.app/.test(text)) {
     return {
-      error:
-        'That is a shortened link, which hides the coordinates. Open it in a ' +
-        'browser first, then copy the full address from the bar.',
+      error: t`That is a shortened link, which hides the coordinates. Open it in a browser first, then copy the full address from the bar.`,
     };
   }
 
@@ -49,9 +49,7 @@ export function parseCoordinates(
 
   if (!found) {
     return {
-      error:
-        'Could not find coordinates in that. Paste a Google Maps link, or type ' +
-        'them as "-1.9536, 30.0606".',
+      error: t`Could not find coordinates in that. Paste a Google Maps link, or type them as "-1.9536, 30.0606".`,
     };
   }
 
@@ -59,18 +57,16 @@ export function parseCoordinates(
   const longitude = Number(found[2]);
 
   if (latitude < -90 || latitude > 90) {
-    return { error: `${latitude} is not a latitude — it has to be between -90 and 90.` };
+    return { error: t`${latitude} is not a latitude — it has to be between -90 and 90.` };
   }
   if (longitude < -180 || longitude > 180) {
-    return { error: `${longitude} is not a longitude — it has to be between -180 and 180.` };
+    return { error: t`${longitude} is not a longitude — it has to be between -180 and 180.` };
   }
   // The server refuses this too (IsNotNullIsland). Caught here so the message
   // explains rather than reciting a validator's name.
   if (latitude === 0 && longitude === 0) {
     return {
-      error:
-        '0, 0 is a point in the Atlantic Ocean. That is usually what a map shows ' +
-        'when it has not found anything yet.',
+      error: t`0, 0 is a point in the Atlantic Ocean. That is usually what a map shows when it has not found anything yet.`,
     };
   }
 
@@ -99,7 +95,7 @@ export function PlaceField({
   /** The browser's own position, for someone filling this in at the shop. */
   const useMyPosition = () => {
     if (!navigator.geolocation) {
-      onProblem('This browser cannot find your position. Paste a map link instead.');
+      onProblem(t`This browser cannot find your position. Paste a map link instead.`);
       return;
     }
     setLocating(true);
@@ -111,10 +107,7 @@ export function PlaceField({
       },
       () => {
         setLocating(false);
-        onProblem(
-          'Could not get your position. Allow location for this site, or paste a ' +
-            'Google Maps link instead.',
-        );
+        onProblem(t`Could not get your position. Allow location for this site, or paste a Google Maps link instead.`);
       },
       { enableHighAccuracy: true, timeout: 10_000 },
     );
@@ -122,7 +115,7 @@ export function PlaceField({
 
   return (
     <div className="bf-field">
-      <label htmlFor="bf-place">Where it is</label>
+      <label htmlFor="bf-place"><Trans>Where it is</Trans></label>
       <div className="bf-place">
         <span className="bf-place-icon">
           <Icon name="pin" size={18} />
@@ -134,11 +127,11 @@ export function PlaceField({
             onChange(e.target.value);
             onProblem(null);
           }}
-          placeholder="Paste a Google Maps link, or -1.9536, 30.0606"
+          placeholder={t`Paste a Google Maps link, or -1.9536, 30.0606`}
         />
         <button type="button" className="bf-locate" onClick={useMyPosition} disabled={locating}>
           <Icon name="zap" size={15} />
-          {locating ? 'Finding you…' : 'Use my current position'}
+          {locating ? t`Finding you…` : t`Use my current position`}
         </button>
       </div>
       <span className="bf-help">{hint}</span>
@@ -150,9 +143,12 @@ export function PlaceField({
       {coordinates && !('error' in coordinates) && (
         <div className="bf-map">
           <p>
-            <Icon name="checkCircle" size={15} /> Found {coordinates.latitude.toFixed(5)},{' '}
-            {coordinates.longitude.toFixed(5)}. Check that the pin is on your shop before saving —
-            customers' distances are measured from it.
+            <Icon name="checkCircle" size={15} />
+            <Trans>
+              Found {coordinates.latitude.toFixed(5)},{' '}
+              {coordinates.longitude.toFixed(5)}. Check that the pin is on your shop before saving —
+              customers' distances are measured from it.
+            </Trans>
           </p>
           <MapPin latitude={coordinates.latitude} longitude={coordinates.longitude} />
         </div>
@@ -175,13 +171,13 @@ export function DistrictField({
   const provinces = useQuery({ queryKey: ['provinces'], queryFn: listProvinces, staleTime: Infinity });
   return (
     <div className="bf-field">
-      <label htmlFor="bf-district">District</label>
+      <label htmlFor="bf-district"><Trans>District</Trans></label>
       <Select
         id="bf-district"
         value={value}
         onChange={onChange}
-        placeholder="Choose a district"
-        sheetTitle="District"
+        placeholder={t`Choose a district`}
+        sheetTitle={t`District`}
         icon="pin"
         options={
           provinces.data?.flatMap((province) =>
@@ -217,7 +213,7 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
     const district = districtFrom(found);
     if (district) setDistrictId(district);
     setProblem(null);
-    setFromAddress(district ? 'The pin and the district were filled in from this address.' : 'The pin was filled in from this address.');
+    setFromAddress(district ? t`The pin and the district were filled in from this address.` : t`The pin was filled in from this address.`);
   };
 
   const create = useMutation({
@@ -242,16 +238,16 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
 
   return (
     <Panel
-      eyebrow="Add a branch"
-      title="A new branch"
+      eyebrow={t`Add a branch`}
+      title={t`A new branch`}
       onClose={onClose}
       footer={
         <>
           <button type="button" onClick={onClose}>
-            Cancel
+            <Trans>Cancel</Trans>
           </button>
           <button type="submit" form="new-branch" className="primary" disabled={!ready || create.isPending}>
-            {create.isPending ? 'Opening…' : 'Open this branch'}
+            {create.isPending ? t`Opening…` : t`Open this branch`}
           </button>
         </>
       }
@@ -279,32 +275,31 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
       >
         <div className="bf-two">
           <div className="bf-field">
-            <label htmlFor="bf-name">Branch name</label>
+            <label htmlFor="bf-name"><Trans>Branch name</Trans></label>
             <input
               id="bf-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={120}
-              placeholder="Kimironko Branch"
+              placeholder={t`Kimironko Branch`}
               autoFocus
             />
           </div>
           <div className="bf-field">
-            <label htmlFor="bf-phone">
-              Phone for this branch <em>optional</em>
+            <label htmlFor="bf-phone"><Trans>Phone for this branch <em>optional</em></Trans>
             </label>
             <input
               id="bf-phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               maxLength={30}
-              placeholder="Leave empty to use the business phone"
+              placeholder={t`Leave empty to use the business phone`}
             />
           </div>
         </div>
 
         <div className="bf-field">
-          <label htmlFor="bf-address">Address</label>
+          <label htmlFor="bf-address"><Trans>Address</Trans></label>
           <AddressField
             id="bf-address"
             value={address}
@@ -313,10 +308,10 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
               setFromAddress(null);
             }}
             onPick={onPick}
-            placeholder="Start typing — KG 9 Ave, Kimironko…"
+            placeholder={t`Start typing — KG 9 Ave, Kimironko…`}
           />
           <span className={`bf-help${fromAddress ? ' is-ok' : ''}`}>
-            {fromAddress ? `${fromAddress} Check the pin below is on your shop.` : 'Pick a suggestion to drop the pin on the map for you.'}
+            {fromAddress ? t`${fromAddress} Check the pin below is on your shop.` : t`Pick a suggestion to drop the pin on the map for you.`}
           </span>
         </div>
 
@@ -324,13 +319,13 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
           value={place}
           onChange={setPlace}
           onProblem={setProblem}
-          hint="Customers find you by how near you are. Choose a suggested address above, paste the shop's Google Maps link, or press the button if you are there now."
+          hint={t`Customers find you by how near you are. Choose a suggested address above, paste the shop's Google Maps link, or press the button if you are there now.`}
         />
 
         <DistrictField
           value={districtId}
           onChange={setDistrictId}
-          hint="Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen."
+          hint={t`Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen.`}
         />
 
         {problem && (
@@ -344,8 +339,10 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
             reads an empty calendar as the platform being broken. */}
         <p className="bf-note">
           <Icon name="clock" size={16} />
-          A new branch starts closed every day. Set its hours once it is open, or customers will see
-          nothing bookable.
+          <Trans>
+            A new branch starts closed every day. Set its hours once it is open, or customers will see
+            nothing bookable.
+          </Trans>
         </p>
       </form>
     </Panel>

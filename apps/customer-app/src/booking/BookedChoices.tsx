@@ -145,9 +145,7 @@ export function ChangeChoicesSheet({
     <Sheet open={open} onClose={onClose} title={t`Change your wishes`}>
       <ScrollView style={styles.sheetScroll} contentContainerStyle={styles.sheetBody} keyboardShouldPersistTaps="handled">
         <Text style={type.small}>
-          <Trans>
-            Until 2 hours before, as often as you like. The shop is told something changed.
-          </Trans>
+          <Trans>Until 2 hours before, as often as you like. The shop is told something changed.</Trans>
         </Text>
         {wishes.length > 0 && (
           <ChoicePicker

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { listBanners } from '../api/business';
 import { Icon } from '../ui/Icon';
+import { t } from '@lingui/core/macro';
 
 const KEY = 'booking-business.banners-closed';
 const readClosed = (): string[] => {
@@ -43,10 +44,10 @@ export function NoticeBanner() {
       </div>
       {b.linkPath && (
         <Link to={b.linkPath} className="notice-banner-link">
-          {b.linkLabel || 'See more'} <Icon name="external" size={13} />
+          {b.linkLabel || t`See more`} <Icon name="external" size={13} />
         </Link>
       )}
-      <button type="button" className="notice-banner-close" onClick={close} aria-label="Close this notice">
+      <button type="button" className="notice-banner-close" onClick={close} aria-label={t`Close this notice`}>
         <Icon name="close" size={15} />
       </button>
     </aside>

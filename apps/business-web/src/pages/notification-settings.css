@@ -9,7 +9,10 @@
 .ns-card h2 { margin: 0; font-size: 17px; }
 .ns-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .ns-cols { display: grid; grid-template-columns: 72px 72px; text-align: center; font-size: 12px; font-weight: 750; color: var(--muted); }
-.ns-cols span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.ns-cols span { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; }
+/* Long words (§308): each label keeps to its column. */
+.ns-cols > span { overflow: hidden; }
+.ns-col-word { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ns-skeleton { height: 280px; margin-top: 14px; border-radius: 18px; }
 
 .ns-rows { list-style: none; margin: 0; padding: 0; }
@@ -29,10 +32,12 @@
 .ns-what em { font-style: normal; font-size: 12px; font-weight: 650; color: var(--ink-2); }
 .ns-what .ns-consent { color: var(--accent-deep); }
 .ns-switch { display: flex; justify-content: center; padding-top: 6px; }
-.ns-lock { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 99px; background: var(--sunken-2); font-size: 11.5px; font-weight: 750; color: var(--ink-2); cursor: help; }
+.ns-lock { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 4px 9px; border-radius: 99px; background: var(--sunken-2); font-size: 11.5px; font-weight: 750; color: var(--ink-2); cursor: help; }
+/* Long words (§308): the badge keeps inside its column. */
+.ns-lock span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ns-none { color: var(--muted); }
-.ns-digest { display: inline-flex; align-self: flex-start; gap: 2px; margin-top: 8px; padding: 3px; border-radius: 12px; background: var(--sunken-2); }
-.ns-digest button { min-height: 30px; padding: 0 11px; border: none; border-radius: 9px; background: transparent; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.ns-digest { display: inline-flex; flex-wrap: wrap; max-width: 100%; align-self: flex-start; gap: 2px; margin-top: 8px; padding: 3px; border-radius: 12px; background: var(--sunken-2); }
+.ns-digest button { min-height: 30px; padding: 4px 11px; white-space: normal; text-align: left; border: none; border-radius: 9px; background: transparent; font-size: 12.5px; font-weight: 700; color: var(--muted); }
 .ns-digest button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.6); border: none; color: var(--ink); }
 .ns-digest button.is-on, .ns-digest button.is-on:hover:not(:disabled) { background: var(--panel); color: var(--ink); box-shadow: var(--shadow-sm); }
 

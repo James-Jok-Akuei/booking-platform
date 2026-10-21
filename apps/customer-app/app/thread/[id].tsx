@@ -250,9 +250,7 @@ function ThreadScreen() {
               <Icon name="help-circle" size={17} color={theme.ask} />
             </View>
             <Text style={[styles.askText, styles.flex]}>
-              <Trans>
-                Ask anything before you book — prices, timing, what to bring.
-              </Trans>
+              <Trans>Ask anything before you book — prices, timing, what to bring.</Trans>
             </Text>
             {thread.data.business.locationId && (
               <PressableScale
@@ -547,7 +545,6 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(ThreadScreen, {
   icon: 'chatbubbles-outline',
-
   get title() { return t`Sign in to read this chat`; },
   get text() { return t`Messages are kept with your account, so only you and the shop can read them.`; },
 });

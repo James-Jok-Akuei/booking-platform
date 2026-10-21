@@ -394,9 +394,7 @@ export default function SignIn() {
                     >
                       <Icon name="bulb" size={16} color={theme.warn} />
                       <Text style={styles.suggestText}>
-                        <Trans>
-                          Did you mean <Text style={styles.strong}>{suggestion}</Text>?
-                        </Trans>
+                        <Trans>Did you mean <Text style={styles.strong}>{suggestion}</Text>?</Trans>
                       </Text>
                       <Text style={styles.suggestFix}><Trans>Fix</Trans></Text>
                     </PressableScale>
@@ -557,9 +555,7 @@ export default function SignIn() {
                   )}
                 </View>
                 <Text style={styles.small}>
-                  <Trans>
-                    Look in your spam folder too. Each code works for {CODE_MINUTES} minutes.
-                  </Trans>
+                  <Trans>Look in your spam folder too. Each code works for {CODE_MINUTES} minutes.</Trans>
                 </Text>
               </>
             )}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 
 import { useQuery } from '@tanstack/react-query';
 import { listProvinces, searchAddresses, type FoundAddress } from '../api/business';
 import { Icon } from '../ui/Icon';
+import { Trans } from '@lingui/react/macro';
 
 /** Letters before anything is asked, and the pause in typing that asks (§174). */
 const MIN_LETTERS = 3;
@@ -119,10 +120,10 @@ export function AddressField({
   };
 
   let body: ReactNode = null;
-  if (q.length < MIN_LETTERS) body = <p className="af-note">Keep typing — three letters are enough to start.</p>;
-  else if (failed) body = <p className="af-note">Could not search just now. Type the address in full.</p>;
-  else if (found && !found.available) body = <p className="af-note">Address search is not available right now. Type it in full.</p>;
-  else if (found && results.length === 0 && !asking) body = <p className="af-note">Nothing found for “{asked}”. Type it as you would say it.</p>;
+  if (q.length < MIN_LETTERS) body = <p className="af-note"><Trans>Keep typing — three letters are enough to start.</Trans></p>;
+  else if (failed) body = <p className="af-note"><Trans>Could not search just now. Type the address in full.</Trans></p>;
+  else if (found && !found.available) body = <p className="af-note"><Trans>Address search is not available right now. Type it in full.</Trans></p>;
+  else if (found && results.length === 0 && !asking) body = <p className="af-note"><Trans>Nothing found for “{asked}”. Type it as you would say it.</Trans></p>;
   else if (results.length > 0)
     body = (
       <ul className={`af-list${asking ? ' is-asking' : ''}`} role="listbox" id={`${id}-list`}>
@@ -150,7 +151,7 @@ export function AddressField({
         ))}
       </ul>
     );
-  else if (asking) body = <p className="af-note">Looking…</p>;
+  else if (asking) body = <p className="af-note"><Trans>Looking…</Trans></p>;
 
   return (
     <div className="af" ref={wrap}>
@@ -181,7 +182,7 @@ export function AddressField({
       {open && body && (
         <div className="af-pop">
           {body}
-          <p className="af-credit">Suggestions from OpenStreetMap</p>
+          <p className="af-credit"><Trans>Suggestions from OpenStreetMap</Trans></p>
         </div>
       )}
     </div>

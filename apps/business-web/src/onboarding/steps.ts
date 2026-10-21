@@ -1,5 +1,6 @@
 import type { Readiness, ReadinessKey } from '../api/business';
 import type { IconName } from '../ui/Icon';
+import { t } from '@lingui/core/macro';
 
 /**
  * Setting up a shop, in four short steps and a send-off (§256).
@@ -14,11 +15,42 @@ import type { IconName } from '../ui/Icon';
 export type StepKey = 'shop' | 'branch' | 'service' | 'paid' | 'review';
 
 export const STEPS: Array<{ key: StepKey; title: string; short: string; icon: IconName; keys: ReadinessKey[]; optional?: boolean }> = [
-  { key: 'shop', title: 'Your shop', short: 'Name, type and phone', icon: 'store', keys: ['name', 'type', 'phone'] },
-  { key: 'branch', title: 'Where you are', short: 'A branch and its hours', icon: 'pin', keys: ['branch', 'hours'] },
-  { key: 'service', title: 'Your first service', short: 'Something to book', icon: 'tag', keys: ['service'] },
-  { key: 'paid', title: 'Getting paid', short: 'Optional — add it later', icon: 'wallet', keys: ['payout'], optional: true },
-  { key: 'review', title: 'Send for review', short: 'We check it, you post it', icon: 'send', keys: [] },
+  {
+    key: 'shop',
+    get title() { return t`Your shop`; },
+    get short() { return t`Name, type and phone`; },
+    icon: 'store',
+    keys: ['name', 'type', 'phone']
+  },
+  {
+    key: 'branch',
+    get title() { return t`Where you are`; },
+    get short() { return t`A branch and its hours`; },
+    icon: 'pin',
+    keys: ['branch', 'hours']
+  },
+  {
+    key: 'service',
+    get title() { return t`Your first service`; },
+    get short() { return t`Something to book`; },
+    icon: 'tag',
+    keys: ['service']
+  },
+  {
+    key: 'paid',
+    get title() { return t`Getting paid`; },
+    get short() { return t`Optional — add it later`; },
+    icon: 'wallet',
+    keys: ['payout'],
+    optional: true
+  },
+  {
+    key: 'review',
+    get title() { return t`Send for review`; },
+    get short() { return t`We check it, you post it`; },
+    icon: 'send',
+    keys: []
+  },
 ];
 
 /**
@@ -60,14 +92,46 @@ export const isScreen = (value: string | null): value is Screen => SCREENS.some(
 
 /** Each item of the checklist, said the way a seller would, and the question that asks it. */
 export const ITEM_WORDS: Record<ReadinessKey, { label: string; step: Screen; section: StepKey }> = {
-  name: { label: 'Your shop’s name', step: 'name', section: 'shop' },
-  type: { label: 'What kind of shop it is', step: 'kind', section: 'shop' },
-  phone: { label: 'A phone number', step: 'contact', section: 'shop' },
-  logo: { label: 'Your logo', step: 'contact', section: 'shop' },
-  branch: { label: 'A branch on the map', step: 'address', section: 'branch' },
-  hours: { label: 'Opening hours', step: 'hours', section: 'branch' },
-  service: { label: 'A service to book', step: 'service', section: 'service' },
-  payout: { label: 'A number to be paid on', step: 'paid', section: 'paid' },
+  name: {
+    get label() { return t`Your shop’s name`; },
+    step: 'name',
+    section: 'shop'
+  },
+  type: {
+    get label() { return t`What kind of shop it is`; },
+    step: 'kind',
+    section: 'shop'
+  },
+  phone: {
+    get label() { return t`A phone number`; },
+    step: 'contact',
+    section: 'shop'
+  },
+  logo: {
+    get label() { return t`Your logo`; },
+    step: 'contact',
+    section: 'shop'
+  },
+  branch: {
+    get label() { return t`A branch on the map`; },
+    step: 'address',
+    section: 'branch'
+  },
+  hours: {
+    get label() { return t`Opening hours`; },
+    step: 'hours',
+    section: 'branch'
+  },
+  service: {
+    get label() { return t`A service to book`; },
+    step: 'service',
+    section: 'service'
+  },
+  payout: {
+    get label() { return t`A number to be paid on`; },
+    step: 'paid',
+    section: 'paid'
+  },
 };
 
 /**
@@ -82,17 +146,17 @@ export const shopStateWord = (
 ) =>
   status === 'APPROVED'
     ? !posted
-      ? 'Not posted'
+      ? t`Not posted`
       : paused
-        ? 'Paused'
-        : 'Live'
+        ? t`Paused`
+        : t`Live`
     : status === 'PENDING'
       ? submittedAt
-        ? 'In review'
-        : 'Setting up'
+        ? t`In review`
+        : t`Setting up`
       : status === 'REJECTED'
-        ? 'Needs a change'
-        : 'Suspended';
+        ? t`Needs a change`
+        : t`Suspended`;
 
 export const isDone = (readiness: Readiness | undefined, keys: ReadinessKey[]) =>
   Boolean(readiness) && keys.every((k) => readiness!.items.find((i) => i.key === k)?.done);
@@ -112,9 +176,27 @@ export function nextStep(readiness: Readiness | undefined): Screen {
 
 /** A week of hours, as the server takes it: all seven days, closed ones marked. */
 export const HOURS_PRESETS: Array<{ key: string; label: string; days: number[]; open: string; close: string }> = [
-  { key: 'mon-sat', label: 'Monday to Saturday', days: [1, 2, 3, 4, 5, 6], open: '08:00', close: '18:00' },
-  { key: 'every-day', label: 'Every day', days: [0, 1, 2, 3, 4, 5, 6], open: '08:00', close: '20:00' },
-  { key: 'mon-fri', label: 'Monday to Friday', days: [1, 2, 3, 4, 5], open: '08:00', close: '17:00' },
+  {
+    key: 'mon-sat',
+    get label() { return t`Monday to Saturday`; },
+    days: [1, 2, 3, 4, 5, 6],
+    open: '08:00',
+    close: '18:00'
+  },
+  {
+    key: 'every-day',
+    get label() { return t`Every day`; },
+    days: [0, 1, 2, 3, 4, 5, 6],
+    open: '08:00',
+    close: '20:00'
+  },
+  {
+    key: 'mon-fri',
+    get label() { return t`Monday to Friday`; },
+    days: [1, 2, 3, 4, 5],
+    open: '08:00',
+    close: '17:00'
+  },
 ];
 
 export const weekOf = (days: number[], open: string, close: string) =>

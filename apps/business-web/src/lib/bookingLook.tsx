@@ -5,6 +5,8 @@ import { dueLabel } from '../checkin/CheckIn';
 import { clock, relativeDay, sameDay, startOfDay } from './time';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /*
  * How a booking is described, the same in the Appointments list and its
@@ -13,12 +15,30 @@ import { Icon, type IconName } from '../ui/Icon';
  */
 
 export const STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
-  BOOKED: { label: 'Expected', cls: 'booked' },
-  IN_PROGRESS: { label: 'In progress', cls: 'in-progress' },
-  COMPLETED: { label: 'Done', cls: 'completed' },
-  NO_SHOW: { label: 'No-show', cls: 'no-show' },
-  CANCELLED: { label: 'Cancelled', cls: 'cancelled' },
-  PENDING_PAYMENT: { label: 'Unpaid', cls: 'pending-payment' },
+  BOOKED: {
+    get label() { return t`Expected`; },
+    cls: 'booked'
+  },
+  IN_PROGRESS: {
+    get label() { return t`In progress`; },
+    cls: 'in-progress'
+  },
+  COMPLETED: {
+    get label() { return t`Done`; },
+    cls: 'completed'
+  },
+  NO_SHOW: {
+    get label() { return t`No-show`; },
+    cls: 'no-show'
+  },
+  CANCELLED: {
+    get label() { return t`Cancelled`; },
+    cls: 'cancelled'
+  },
+  PENDING_PAYMENT: {
+    get label() { return t`Unpaid`; },
+    cls: 'pending-payment'
+  },
 };
 
 /**
@@ -77,13 +97,13 @@ export function payment(a: Appointment, money: Money) {
   const due = dueAtShop(a);
   switch (a.status) {
     case 'PENDING_PAYMENT':
-      return { amount: money(a.depositAmountMinor, a.currency), unit: 'deposit', note: 'Not paid yet', tone: 'warn', icon: 'hourglass' as IconName };
+      return { amount: money(a.depositAmountMinor, a.currency), unit: 'deposit', note: t`Not paid yet`, tone: 'warn', icon: 'hourglass' as IconName };
     case 'BOOKED':
     case 'IN_PROGRESS':
       return {
         amount: due === null ? '—' : money(due, a.currency),
         unit: due === null ? '' : 'due',
-        note: paid ? 'Deposit paid' : 'No deposit',
+        note: paid ? t`Deposit paid` : t`No deposit`,
         tone: paid ? 'ok' : 'muted',
         icon: (paid ? 'checkCircle' : 'info') as IconName,
       };
@@ -91,17 +111,17 @@ export function payment(a: Appointment, money: Money) {
       return {
         amount: a.servicePriceMinor === null ? money(a.businessAmountMinor, a.currency) : money(a.servicePriceMinor, a.currency),
         unit: a.servicePriceMinor === null ? 'yours' : 'total',
-        note: 'Deposit paid',
+        note: t`Deposit paid`,
         tone: 'ok',
         icon: 'checkCircle' as IconName,
       };
     case 'NO_SHOW':
-      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: 'Deposit kept', tone: 'muted', icon: 'wallet' as IconName };
+      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: t`Deposit kept`, tone: 'muted', icon: 'wallet' as IconName };
     case 'CANCELLED':
-      if (!paid) return { amount: '—', unit: '', note: 'No deposit', tone: 'muted', icon: 'info' as IconName };
+      if (!paid) return { amount: '—', unit: '', note: t`No deposit`, tone: 'muted', icon: 'info' as IconName };
       if (a.cancelledBy === 'BUSINESS')
-        return { amount: '—', unit: '', note: 'Deposit refunded', tone: 'muted', icon: 'refresh' as IconName };
-      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: 'Deposit kept', tone: 'muted', icon: 'wallet' as IconName };
+        return { amount: '—', unit: '', note: t`Deposit refunded`, tone: 'muted', icon: 'refresh' as IconName };
+      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: t`Deposit kept`, tone: 'muted', icon: 'wallet' as IconName };
   }
 }
 
@@ -110,27 +130,27 @@ export function standing(a: Appointment, now: Date): { text: string; tone: strin
   switch (a.status) {
     case 'BOOKED': {
       const start = new Date(a.startTime);
-      if (start < startOfDay(now)) return { text: 'Not checked in', tone: 'late' };
+      if (start < startOfDay(now)) return { text: t`Not checked in`, tone: 'late' };
       if (!sameDay(start, now)) {
         const days = Math.round((startOfDay(start).getTime() - startOfDay(now).getTime()) / 86_400_000);
-        return { text: days === 1 ? 'Tomorrow' : `In ${days} days`, tone: 'muted' };
+        return { text: days === 1 ? t`Tomorrow` : t`In ${days} days`, tone: 'muted' };
       }
       const due = dueLabel(a.startTime, now.getTime());
       return { text: due.text.charAt(0).toUpperCase() + due.text.slice(1), tone: due.tone };
     }
     case 'IN_PROGRESS':
-      return { text: a.verifiedAt ? `Arrived ${clock(a.verifiedAt)}` : 'With you', tone: 'muted' };
+      return { text: a.verifiedAt ? t`Arrived ${clock(a.verifiedAt)}` : t`With you`, tone: 'muted' };
     case 'COMPLETED':
-      return { text: a.completedAt ? `Finished ${clock(a.completedAt)}` : 'Finished', tone: 'muted' };
+      return { text: a.completedAt ? t`Finished ${clock(a.completedAt)}` : t`Finished`, tone: 'muted' };
     case 'NO_SHOW':
-      return { text: a.noShowAt ? `Marked ${clock(a.noShowAt)}` : 'Did not come', tone: 'muted' };
+      return { text: a.noShowAt ? t`Marked ${clock(a.noShowAt)}` : t`Did not come`, tone: 'muted' };
     case 'CANCELLED':
       return {
-        text: a.cancelledBy === 'BUSINESS' ? 'By you' : a.cancelledBy === 'CUSTOMER' ? 'By the customer' : 'Not paid in time',
+        text: a.cancelledBy === 'BUSINESS' ? t`By you` : a.cancelledBy === 'CUSTOMER' ? t`By the customer` : t`Not paid in time`,
         tone: 'muted',
       };
     case 'PENDING_PAYMENT':
-      return { text: 'Paying on their phone', tone: 'muted' };
+      return { text: t`Paying on their phone`, tone: 'muted' };
   }
 }
 
@@ -156,7 +176,7 @@ export function BookingInQuestion({ a, cover }: { a: Appointment; cover?: string
             {relativeDay(a.startTime)} · {clock(a.startTime)}–{clock(a.endTime)}
           </span>
           <span>
-            {a.customer.email} · No. {reservationNo(a.id)}
+            <Trans>{a.customer.email} · No. {reservationNo(a.id)}</Trans>
           </span>
         </span>
       </div>
@@ -175,7 +195,7 @@ export function BookingInQuestion({ a, cover }: { a: Appointment; cover?: string
 export function confirmDone(a: Appointment, money: Money, cover?: string | null) {
   const due = dueAtShop(a);
   return confirmDialog({
-    title: 'Mark this booking as done?',
+    title: t`Mark this booking as done?`,
     tone: 'ok',
     icon: 'checkCircle',
     body: (
@@ -184,18 +204,16 @@ export function confirmDone(a: Appointment, money: Money, cover?: string | null)
         {due !== null && due > 0 && (
           <p className="dlg-booking-due">
             <Icon name="banknote" size={16} />
-            <span>
-              Still to collect at the shop: <strong>{money(due, a.currency)}</strong>
+            <span><Trans>Still to collect at the shop: <strong>{money(due, a.currency)}</strong></Trans>
             </span>
           </p>
         )}
-        <p>
-          It cannot be changed back.{' '}
-          {a.depositPaidAt ? 'The deposit becomes yours to be paid out, and the customer can rate the visit.' : 'The customer can then rate the visit.'}
+        <p><Trans>It cannot be changed back.{' '}</Trans>
+          {a.depositPaidAt ? t`The deposit becomes yours to be paid out, and the customer can rate the visit.` : t`The customer can then rate the visit.`}
         </p>
       </>
     ),
-    confirmLabel: 'Yes, mark done',
-    cancelLabel: 'Not yet',
+    confirmLabel: t`Yes, mark done`,
+    cancelLabel: t`Not yet`,
   });
 }

@@ -2,24 +2,26 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useAccess, type Access } from '../access';
 import { Icon, type IconName } from '../ui/Icon';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 type Need = 'money' | 'insights' | 'people';
 
 const WORDS: Record<Need, { icon: IconName; title: string; body: string }> = {
   money: {
     icon: 'wallet',
-    title: 'The money is for the owner',
-    body: 'The balance and payouts are seen by the owner, and by managers who look after every branch. Ask the owner if you need to know something.',
+    get title() { return t`The money is for the owner`; },
+    get body() { return t`The balance and payouts are seen by the owner, and by managers who look after every branch. Ask the owner if you need to know something.`; },
   },
   insights: {
     icon: 'chart',
-    title: 'This is for the owner and managers',
-    body: 'How the business is going — bookings, takings and ratings over time — is seen by the owner and by managers.',
+    get title() { return t`This is for the owner and managers`; },
+    get body() { return t`How the business is going — bookings, takings and ratings over time — is seen by the owner and by managers.`; },
   },
   people: {
     icon: 'users',
-    title: 'Only the owner adds people',
-    body: 'Ask the owner to invite someone, or to change who works where.',
+    get title() { return t`Only the owner adds people`; },
+    get body() { return t`Ask the owner to invite someone, or to change who works where.`; },
   },
 };
 
@@ -47,8 +49,7 @@ export function NotForYou({ need }: { need: Need }) {
       </span>
       <h1>{words.title}</h1>
       <p>{words.body}</p>
-      <Link to="/" className="nfy-go">
-        Back to your day <Icon name="arrowRight" size={16} />
+      <Link to="/" className="nfy-go"><Trans>Back to your day </Trans><Icon name="arrowRight" size={16} />
       </Link>
     </section>
   );

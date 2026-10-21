@@ -7,14 +7,7 @@ import { ShopLogo } from '../ui/ShopLogo';
 import { Icon, type IconName } from '../ui/Icon';
 import { roleLabel, type ShellData } from './useShellData';
 import { shopStateWord } from '../onboarding/steps';
-
-/** What the welcome tour calls each group of the menu (§307). */
-const GROUP_KEYS: Record<string, string> = {
-  'Your shop': 'shop',
-  Customers: 'customers',
-  Money: 'money',
-  'Manage account': 'account',
-};
+import { t } from '@lingui/core/macro';
 
 /**
  * The menu down the left (§131, §190).
@@ -54,7 +47,7 @@ export function Sidebar({
     setTip({ label, top: box.top + box.height / 2, left: box.right + 14 });
   };
   const hideTip = () => setTip(null);
-  const name = business?.name ?? 'Your business';
+  const name = business?.name ?? t`Your business`;
   const live = data.live;
   // Why customers cannot see the shop, in the seller's words rather than
   // the status's (§256), and where to go about it.
@@ -65,26 +58,26 @@ export function Sidebar({
     if (!business || live) return null;
     if (business.status === 'APPROVED') {
       return data.posted
-        ? { head: 'Your shop is paused', text: 'Customers cannot book until you resume it.', to: '/profile', icon: 'pause', tone: 'warn' }
-        : { head: 'Approved — post it', text: 'Customers see your shop once you post it.', to: '/', icon: 'send', tone: 'ok', spotlight: 'post-shop' };
+        ? { head: t`Your shop is paused`, text: t`Customers cannot book until you resume it.`, to: '/profile', icon: 'pause', tone: 'warn' }
+        : { head: t`Approved — post it`, text: t`Customers see your shop once you post it.`, to: '/', icon: 'send', tone: 'ok', spotlight: 'post-shop' };
     }
     if (business.status === 'PENDING' && data.readiness?.submittedAt) {
-      return { head: 'Waiting for review', text: 'We are checking your shop. You get an email when it is approved.', to: '/', icon: 'hourglass', tone: 'warn' };
+      return { head: t`Waiting for review`, text: t`We are checking your shop. You get an email when it is approved.`, to: '/', icon: 'hourglass', tone: 'warn' };
     }
     if (business.status === 'PENDING') {
       return left
         ? {
-            head: 'Finish setting up',
-            text: `${left} ${left === 1 ? 'thing' : 'things'} left before we can check your shop.`,
+            head: t`Finish setting up`,
+            text: t`${left} ${left === 1 ? 'thing' : 'things'} left before we can check your shop.`,
             to: '/welcome',
             icon: 'clock',
             tone: 'warn',
           }
-        : { head: 'Ready to send', text: 'Send your shop for review from your Overview.', to: '/', icon: 'send', tone: 'warn', spotlight: 'send-review' };
+        : { head: t`Ready to send`, text: t`Send your shop for review from your Overview.`, to: '/', icon: 'send', tone: 'warn', spotlight: 'send-review' };
     }
     return business.status === 'REJECTED'
-      ? { head: 'Needs a change', text: 'See what we said, fix it, and send your shop back.', to: '/', icon: 'alert', tone: 'danger', spotlight: 'send-review' }
-      : { head: 'Shop suspended', text: 'Customers cannot find or book it. Talk to support.', to: '/help', icon: 'alert', tone: 'danger' };
+      ? { head: t`Needs a change`, text: t`See what we said, fix it, and send your shop back.`, to: '/', icon: 'alert', tone: 'danger', spotlight: 'send-review' }
+      : { head: t`Shop suspended`, text: t`Customers cannot find or book it. Talk to support.`, to: '/help', icon: 'alert', tone: 'danger' };
   };
   const standing = standingFor();
   const state = !business ? '' : shopStateWord(business.status, data.paused, data.readiness?.submittedAt, data.posted);
@@ -113,17 +106,17 @@ export function Sidebar({
             type="button"
             className="sb-fold"
             onClick={onToggleRail}
-            aria-label={rail ? 'Open the menu' : 'Fold the menu'}
-            title={rail ? 'Open the menu' : 'Fold the menu'}
+            aria-label={rail ? t`Open the menu` : t`Fold the menu`}
+            title={rail ? t`Open the menu` : t`Fold the menu`}
           >
             <Icon name="sidebar" size={18} />
           </button>
         )}
       </div>
 
-      <nav className="sb-nav" aria-label="Main">
+      <nav className="sb-nav" aria-label={t`Main`}>
         {sections.map((section) => (
-          <div className="sb-group" key={section.group ?? 'top'} data-tour={`group:${GROUP_KEYS[section.group ?? ''] ?? 'top'}`}>
+          <div className="sb-group" key={section.key} data-tour={`group:${section.key}`}>
             {section.group && <p className="sb-group-title">{section.group}</p>}
             {section.items.map((item) => {
               const badge = badgeFor(item.to);
@@ -146,7 +139,7 @@ export function Sidebar({
                   </span>
                   <span className="sb-label">{item.label}</span>
                   {badge > 0 && (
-                    <span className="sb-badge" aria-label={`${badge} waiting`}>
+                    <span className="sb-badge" aria-label={t`${badge} waiting`}>
                       {badge > 99 ? '99+' : badge}
                     </span>
                   )}
@@ -199,9 +192,9 @@ export function Sidebar({
           <ShopLogo logoUrl={data.logoUrl} name={name} size={36} className="sb-user-logo" />
           <span className="sb-user-text">
             <strong title={data.email}>{data.email}</strong>
-            <span>{roleLabel(data.role) || 'Signed in'}</span>
+            <span>{roleLabel(data.role) || t`Signed in`}</span>
           </span>
-          <button type="button" className="sb-signout" onClick={onSignOut} aria-label="Sign out" title="Sign out">
+          <button type="button" className="sb-signout" onClick={onSignOut} aria-label={t`Sign out`} title={t`Sign out`}>
             <Icon name="logout" size={18} />
           </button>
         </div>

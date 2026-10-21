@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 /** The sun's 24 rays as one star: points alternating out and in, round its centre. */
 const rays = (cx: number, cy: number, outer: number, inner: number) =>
   Array.from({ length: 48 }, (_, i) => {
@@ -24,7 +25,7 @@ export function RwandaFlag({ width = 18, className = '' }: { width?: number; cla
       height={height}
       viewBox="0 0 30 20"
       role="img"
-      aria-label="Rwanda"
+      aria-label={t`Rwanda`}
       style={{ borderRadius: Math.max(2, width / 9) }}
     >
       <rect width="30" height="10" fill="#00A1DE" />

@@ -9,6 +9,10 @@ import { useTour } from '../tour/Tour';
 import { useDismiss } from '../ui/useDismiss';
 import { clock, useNow } from '../lib/time';
 import { roleLabel, type ShellData } from './useShellData';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
+import { LanguageChoice } from '../ui/LanguageChoice';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
@@ -40,7 +44,7 @@ export function Topbar({
   // The date and a clock, on every page (§235) — the one place they are on a
   // wide screen. Ticking keeps both right past midnight with the tab left open.
   const now = useNow(15_000);
-  const today = now.toLocaleDateString(undefined, {
+  const today = now.toLocaleDateString(dateLocale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -49,19 +53,19 @@ export function Topbar({
   return (
     <header className={`topbar${scrolled ? ' is-scrolled' : ''}`}>
       <div className="tb-left">
-        <button type="button" className="tb-icon tb-menu" onClick={onOpenMenu} aria-label="Open the menu">
+        <button type="button" className="tb-icon tb-menu" onClick={onOpenMenu} aria-label={t`Open the menu`}>
           <Icon name="menu" size={20} />
         </button>
         {/* Rwanda's flag before where you are, on every page (§234); on a
             phone the bar has no room, and Overview's first chip carries it. */}
-        <span className="tb-flag" title="Made for Rwanda">
+        <span className="tb-flag" title={t`Made for Rwanda`}>
           <RwandaFlag width={32} />
         </span>
         <div className="tb-where">
           <span className="tb-crumbs">
-            <span>{item?.group ?? 'Your day'}</span>
+            <span>{item?.group ?? t`Your day`}</span>
             <Icon name="chevronRight" size={13} stroke={2.2} />
-            <strong>{item?.label ?? 'Business'}</strong>
+            <strong>{item?.label ?? t`Business`}</strong>
           </span>
           <span className="tb-date">
             {today}
@@ -70,29 +74,29 @@ export function Topbar({
         </div>
       </div>
 
-      <button type="button" className="tb-search" onClick={onOpenSearch} aria-label="Search or jump to a page" data-tour="search">
+      <button type="button" className="tb-search" onClick={onOpenSearch} aria-label={t`Search or jump to a page`} data-tour="search">
         <Icon name="search" size={17} />
-        <span>Search or jump to…</span>
+        <span><Trans>Search or jump to…</Trans></span>
         <span className="tb-keys" aria-hidden="true">
-          <kbd className="kbd">{isMac ? '⌘' : 'Ctrl'}</kbd>
+          <kbd className="kbd">{isMac ? '⌘' : t`Ctrl`}</kbd>
           <kbd className="kbd">K</kbd>
         </span>
       </button>
 
       <div className="tb-right">
-        <button type="button" className="tb-icon tb-search-small" onClick={onOpenSearch} aria-label="Search" data-tour="search">
+        <button type="button" className="tb-icon tb-search-small" onClick={onOpenSearch} aria-label={t`Search`} data-tour="search">
           <Icon name="search" size={19} />
         </button>
         <button type="button" className="tb-checkin" onClick={onCheckIn} data-tour="check-in">
           <Icon name="ticket" size={18} />
-          <span>Check in</span>
+          <span><Trans>Check in</Trans></span>
           {data.expectedToday > 0 && <span className="tb-checkin-count">{data.expectedToday}</span>}
         </button>
         <Link
           to="/messages"
           className="tb-icon"
-          aria-label={data.unreadMessages > 0 ? `${data.unreadMessages} unread messages` : 'Messages'}
-          title="Messages"
+          aria-label={data.unreadMessages > 0 ? t`${data.unreadMessages} unread messages` : t`Messages`}
+          title={t`Messages`}
         >
           <Icon name="message" size={19} />
           {data.unreadMessages > 0 && <span className="tb-dot" aria-hidden="true" />}
@@ -112,15 +116,15 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
   const close = useCallback(() => setOpen(false), []);
   useDismiss(open, ref, close);
 
-  const name = data.business?.name ?? 'Your business';
+  const name = data.business?.name ?? t`Your business`;
   const live = data.live;
   const tour = useTour();
 
   const links = [
-    { to: '/profile', label: 'Your shopfront', icon: 'store' as const },
-    { to: '/people', label: 'People', icon: 'users' as const },
-    { to: '/legal', label: 'Legal', icon: 'legal' as const },
-    { to: '/help', label: 'Help', icon: 'help' as const },
+    { to: '/profile', label: t`Your shopfront`, icon: 'store' as const },
+    { to: '/people', label: t`People`, icon: 'users' as const },
+    { to: '/legal', label: t`Legal`, icon: 'legal' as const },
+    { to: '/help', label: t`Help`, icon: 'help' as const },
   ];
 
   return (
@@ -129,7 +133,7 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
         type="button"
         className={`tb-avatar tb-shop ${open ? 'is-open' : ''}`}
         onClick={() => setOpen((was) => !was)}
-        aria-label={`${name} — your shop and account`}
+        aria-label={t`${name} — your shop and account`}
         aria-expanded={open}
         title={name}
       >
@@ -137,7 +141,7 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
         <span className="tb-shop-text">
           <strong>{name}</strong>
           <span>
-            {live ? 'Your shop · live' : data.paused ? 'Your shop · paused' : 'Your shop · not live'}
+            {live ? t`Your shop · live` : data.paused ? t`Your shop · paused` : t`Your shop · not live`}
           </span>
         </span>
         <Icon name="chevronDown" size={15} stroke={2.2} />
@@ -149,13 +153,13 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
             <span className="tb-shop-card-text">
               <strong>{name}</strong>
               <span className={`tb-shop-state ${live ? 'is-live' : 'is-off'}`}>
-                <i /> {live ? 'Live · taking bookings' : data.paused ? 'Paused' : 'Not live yet'}
+                <i /> {live ? t`Live · taking bookings` : data.paused ? t`Paused` : t`Not live yet`}
               </span>
             </span>
             <Icon name="chevronRight" size={16} className="tb-shop-go" />
           </Link>
           <div className="tb-shop-who">
-            <span>Signed in as</span>
+            <span><Trans>Signed in as</Trans></span>
             <strong title={data.email}>{data.email}</strong>
             <em>{roleLabel(data.role)}</em>
           </div>
@@ -176,12 +180,16 @@ function AccountMenu({ data, onSignOut }: { data: ShellData; onSignOut: () => vo
             }}
           >
             <Icon name="play" size={18} />
-            Take the welcome tour
+            <Trans>Take the welcome tour</Trans>
           </button>
+          {/* The app's language (§308), once there is a choice. */}
+          <div className="tb-lang">
+            <LanguageChoice compact />
+          </div>
           <div className="menu-rule" />
           <button type="button" className="menu-item is-danger" role="menuitem" onClick={onSignOut}>
             <Icon name="logout" size={18} />
-            Sign out
+            <Trans>Sign out</Trans>
           </button>
         </div>
       )}

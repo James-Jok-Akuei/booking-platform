@@ -15,6 +15,10 @@ import { Avatar } from '../ui/Avatar';
 import { CodeBoxes } from '../ui/CodeBoxes';
 import { Icon } from '../ui/Icon';
 import './checkin.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
+import { plural } from '@lingui/core/macro';
 
 /**
  * Checking a customer in (§191) — the thing a seller does more than anything
@@ -80,32 +84,32 @@ const startOfToday = () => {
 };
 
 const clock = (iso: string) =>
-  new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
 
 const dayLabel = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  new Date(iso).toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
 
 const span = (minutes: number) => {
   const m = Math.round(Math.abs(minutes));
-  if (m < 60) return `${m} min`;
+  if (m < 60) return t`${m} min`;
   const h = Math.floor(m / 60);
   const rest = m % 60;
-  return rest ? `${h} h ${rest} min` : `${h} h`;
+  return rest ? t`${h} h ${rest} min` : t`${h} h`;
 };
 
 /** How far a customer is from their time, said the way a person would. */
 export function dueLabel(startIso: string, now = Date.now()) {
   const minutes = (new Date(startIso).getTime() - now) / 60_000;
-  if (Math.abs(minutes) <= 10) return { text: 'Due now', tone: 'now' as const };
-  if (minutes > 0) return { text: `in ${span(minutes)}`, tone: 'soon' as const };
-  return { text: `${span(minutes)} late`, tone: 'late' as const };
+  if (Math.abs(minutes) <= 10) return { text: t`Due now`, tone: 'now' as const };
+  if (minutes > 0) return { text: t`in ${span(minutes)}`, tone: 'soon' as const };
+  return { text: t`${span(minutes)} late`, tone: 'late' as const };
 }
 
 const minutesBetween = (a: Appointment) =>
   Math.round((new Date(a.endTime).getTime() - new Date(a.startTime).getTime()) / 60_000);
 
 const whatFor = (a: Appointment) =>
-  `${a.service.name}${a.quantity > 1 ? ` · ${a.quantity} people` : ''}`;
+  a.quantity > 1 ? `${a.service.name} · ${plural(a.quantity, { one: '# person', other: '# people' })}` : a.service.name;
 
 function CheckInDialog({
   preset,
@@ -217,7 +221,7 @@ function CheckInDialog({
         className={`ci ci-step-${step}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Check in a customer"
+        aria-label={t`Check in a customer`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className="ci-head">
@@ -225,20 +229,20 @@ function CheckInDialog({
             <Icon name="ticket" size={20} />
           </div>
           <div className="ci-titles">
-            <h2>Check in</h2>
+            <h2><Trans>Check in</Trans></h2>
             <p>
-              {step === 'choose' && 'Who has arrived?'}
-              {step === 'code' && 'Ask for their code'}
-              {step === 'manual' && 'Without the code'}
-              {step === 'done' && 'All done'}
+              {step === 'choose' && t`Who has arrived?`}
+              {step === 'code' && t`Ask for their code`}
+              {step === 'manual' && t`Without the code`}
+              {step === 'done' && t`All done`}
             </p>
           </div>
-          <ol className="ci-steps" aria-label={`Step ${stepIndex + 1} of 3`}>
+          <ol className="ci-steps" aria-label={t`Step ${stepIndex + 1} of 3`}>
             {[0, 1, 2].map((i) => (
               <li key={i} className={i < stepIndex ? 'is-done' : i === stepIndex ? 'is-now' : ''} />
             ))}
           </ol>
-          <button type="button" className="ci-close" onClick={onClose} aria-label="Close">
+          <button type="button" className="ci-close" onClick={onClose} aria-label={t`Close`}>
             <Icon name="close" size={18} />
           </button>
         </header>
@@ -252,8 +256,8 @@ function CheckInDialog({
                   autoFocus
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Find by email or service"
-                  aria-label="Find a customer"
+                  placeholder={t`Find by email or service`}
+                  aria-label={t`Find a customer`}
                 />
               </label>
 
@@ -266,18 +270,18 @@ function CheckInDialog({
                     <span>
                       <Icon name="calendarCheck" size={26} />
                     </span>
-                    <strong>{search ? `Nobody matches “${search}”` : 'Nobody is expected'}</strong>
+                    <strong>{search ? t`Nobody matches “${search}”` : t`Nobody is expected`}</strong>
                     <p className="muted">
                       {search
-                        ? 'Try part of their email, or the service.'
-                        : 'Customers appear here once they have booked and paid their deposit.'}
+                        ? t`Try part of their email, or the service.`
+                        : t`Customers appear here once they have booked and paid their deposit.`}
                     </p>
                   </div>
                 )}
 
-                <Group title="Today" rows={groups.today} onChoose={choose} today />
-                <Group title="Coming up" rows={groups.later} onChoose={choose} />
-                <Group title="Earlier, not checked in" rows={groups.earlier} onChoose={choose} />
+                <Group title={t`Today`} rows={groups.today} onChoose={choose} today />
+                <Group title={t`Coming up`} rows={groups.later} onChoose={choose} />
+                <Group title={t`Earlier, not checked in`} rows={groups.earlier} onChoose={choose} />
               </div>
             </>
           )}
@@ -288,9 +292,9 @@ function CheckInDialog({
 
               {step === 'code' ? (
                 <div className="ci-code">
-                  <h3>What is their 6-digit code?</h3>
+                  <h3><Trans>What is their 6-digit code?</Trans></h3>
                   <p className="muted">
-                    It is in the email we sent them, and on the booking in their app.
+                    <Trans>It is in the email we sent them, and on the booking in their app.</Trans>
                   </p>
                   <CodeBoxes
                     value={code}
@@ -321,11 +325,12 @@ function CheckInDialog({
                   >
                     {verify.isPending ? (
                       <>
-                        <span className="ci-spinner" /> Checking…
+                        <Trans><span className="ci-spinner" />Checking…</Trans>
                       </>
                     ) : (
                       <>
-                        <Icon name="check" size={18} stroke={2.4} /> Check in
+                        <Icon name="check" size={18} stroke={2.4} />{' '}
+                        <Trans>Check in</Trans>
                       </>
                     )}
                   </button>
@@ -338,31 +343,33 @@ function CheckInDialog({
                         setStep('manual');
                       }}
                     >
-                      No code?
+                      <Trans>No code?</Trans>
                     </button>
                   )}
                 </div>
               ) : (
                 <div className="ci-manual">
-                  <h3>Check in without the code</h3>
+                  <h3><Trans>Check in without the code</Trans></h3>
                   <p>
-                    What did the customer recall — the booking time, the service, anything that
-                    identified them?
+                    <Trans>
+                      What did the customer recall — the booking time, the service, anything that
+                      identified them?
+                    </Trans>
                   </p>
                   <textarea
                     autoFocus
                     rows={4}
                     value={note}
                     onChange={(event) => setNote(event.target.value)}
-                    placeholder="For example: knew it was the 16:00 hot-towel shave, and showed the booking email on their phone."
+                    placeholder={t`For example: knew it was the 16:00 hot-towel shave, and showed the booking email on their phone.`}
                   />
                   <p className="ci-manual-note">
                     <Icon name="shield" size={16} />
-                    This is recorded against your name and every administrator is told.
+                    <Trans>This is recorded against your name and every administrator is told.</Trans>
                   </p>
                   {note.trim().length > 0 && note.trim().length < 10 && (
                     <p className="muted small">
-                      Please write at least 10 characters. This is the record of the decision.
+                      <Trans>Please write at least 10 characters. This is the record of the decision.</Trans>
                     </p>
                   )}
                   {error && (
@@ -380,7 +387,7 @@ function CheckInDialog({
                         setStep('code');
                       }}
                     >
-                      Back to the code
+                      <Trans>Back to the code</Trans>
                     </button>
                     <button
                       type="button"
@@ -388,7 +395,7 @@ function CheckInDialog({
                       disabled={note.trim().length < 10 || manual.isPending}
                       onClick={() => manual.mutate()}
                     >
-                      {manual.isPending ? 'Checking in…' : 'Check in without the code'}
+                      {manual.isPending ? t`Checking in…` : t`Check in without the code`}
                     </button>
                   </div>
                 </div>
@@ -405,29 +412,29 @@ function CheckInDialog({
                   <path className="ci-tick-mark" d="M20 33.5 28.5 42 45 24" />
                 </svg>
               </div>
-              <h2>Checked in</h2>
+              <h2><Trans>Checked in</Trans></h2>
               <p className="ci-done-who">
-                <strong>{done.customer.email}</strong> is with you now.
+                <Trans><strong>{done.customer.email}</strong> is with you now.</Trans>
               </p>
 
               <dl className="ci-receipt">
                 <div>
-                  <dt>Service</dt>
+                  <dt><Trans>Service</Trans></dt>
                   <dd>{whatFor(done)}</dd>
                 </div>
                 <div>
-                  <dt>Time</dt>
+                  <dt><Trans>Time</Trans></dt>
                   <dd>
-                    {clock(done.startTime)} – {clock(done.endTime)} · {minutesBetween(done)} min
+                    <Trans>{clock(done.startTime)} – {clock(done.endTime)} · {minutesBetween(done)} min</Trans>
                   </dd>
                 </div>
                 <div>
-                  <dt>Deposit paid</dt>
+                  <dt><Trans>Deposit paid</Trans></dt>
                   <dd>{money.format(done.depositAmountMinor, done.currency)}</dd>
                 </div>
                 {done.servicePriceMinor !== null && (
                   <div className="ci-receipt-due">
-                    <dt>Still to pay you at the shop</dt>
+                    <dt><Trans>Still to pay you at the shop</Trans></dt>
                     <dd>
                       {money.format(
                         Math.max(0, done.servicePriceMinor - done.depositAmountMinor),
@@ -444,20 +451,21 @@ function CheckInDialog({
               </div>
 
               <p className="muted small ci-done-next">
-                When they are finished, mark it done on{' '}
-                <Link to="/appointments" onClick={onClose}>
+                <Trans>
+                  When they are finished, mark it done on{' '}
+                  <Link to="/appointments" onClick={onClose}>
                   Appointments
-                </Link>
-                .
+                  </Link>.
+                </Trans>
               </p>
 
               <div className="ci-done-actions">
                 <button type="button" onClick={again}>
-                  <Icon name="ticket" size={18} />
-                  Check in someone else
+                  <Icon name="ticket" size={18} />{' '}
+                  <Trans>Check in someone else</Trans>
                 </button>
                 <button type="button" className="dark" onClick={onClose} autoFocus>
-                  Done
+                  <Trans>Done</Trans>
                 </button>
               </div>
             </div>
@@ -523,17 +531,20 @@ function Who({ appointment, onChange }: { appointment: Appointment; onChange?: (
       <div className="ci-who-text">
         <strong>{appointment.customer.email}</strong>
         <span>
-          {whatFor(appointment)} · {minutesBetween(appointment)} min
+          <Trans>{whatFor(appointment)} · {minutesBetween(appointment)} min</Trans>
         </span>
         <span>
-          {today ? 'Today' : dayLabel(appointment.startTime)} at {clock(appointment.startTime)} ·{' '}
-          {appointment.location.name}
+          {today ? t`Today` : dayLabel(appointment.startTime)}
+          <Trans>
+            at {clock(appointment.startTime)} ·{' '}
+            {appointment.location.name}
+          </Trans>
           {due && <em className={`ci-due is-${due.tone}`}>{due.text}</em>}
         </span>
       </div>
       {onChange && (
         <button type="button" className="ci-change" onClick={onChange}>
-          Change
+          <Trans>Change</Trans>
         </button>
       )}
     </div>

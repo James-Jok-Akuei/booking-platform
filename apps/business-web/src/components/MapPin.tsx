@@ -1,3 +1,5 @@
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 /**
  * The pin, on a map, before it is saved (§157).
  *
@@ -12,7 +14,7 @@ export function MapPin({ latitude, longitude }: { latitude: number; longitude: n
   return (
     <div className="map-pin">
       <iframe
-        title="Where the pin is"
+        title={t`Where the pin is`}
         src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latitude},${longitude}`}
         loading="lazy"
       />
@@ -22,7 +24,7 @@ export function MapPin({ latitude, longitude }: { latitude: number; longitude: n
         target="_blank"
         rel="noreferrer"
       >
-        Open a bigger map
+        <Trans>Open a bigger map</Trans>
       </a>
     </div>
   );

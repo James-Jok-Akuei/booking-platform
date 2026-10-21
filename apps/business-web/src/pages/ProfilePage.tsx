@@ -35,6 +35,9 @@ import { RichTextBox } from '../ui/RichTextBox';
 import { DropZone } from '../ui/DropZone';
 import './profile.css';
 import { useAccess } from '../access';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { plural } from '@lingui/core/macro';
 
 /** Mirrors ALLOWED_MIME_TYPES on the server (§132.3). */
 const ACCEPT = 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp';
@@ -57,8 +60,8 @@ export function ProfilePage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Your shopfront</h1>
-            <p className="muted">What a customer sees before they book. The photos do most of the work.</p>
+            <h1><Trans>Your shopfront</Trans></h1>
+            <p className="muted"><Trans>What a customer sees before they book. The photos do most of the work.</Trans></p>
           </div>
         </header>
       </div>
@@ -68,8 +71,8 @@ export function ProfilePage() {
         <p className="pf-scope">
           <Icon name="shield" size={16} />
           {access.runsBranches
-            ? 'The owner, or a manager of every branch, changes the shopfront. You can add and remove photos at your branches.'
-            : 'The owner or a manager changes the shopfront. You can see it here as customers do.'}
+            ? t`The owner, or a manager of every branch, changes the shopfront. You can add and remove photos at your branches.`
+            : t`The owner or a manager changes the shopfront. You can see it here as customers do.`}
         </p>
       )}
 
@@ -170,7 +173,7 @@ function ShopWindow({
         onFiles={([file]) => pick('cover')(file)}
         disabled={!canEdit || busy}
         noteInside
-        hint={profile.coverImageUrl ? 'Drop to make it your new cover' : 'Drop to make it your cover'}
+        hint={profile.coverImageUrl ? t`Drop to make it your new cover` : t`Drop to make it your cover`}
       >
       <div
         className={`pf-cover${profile.coverImageUrl ? '' : ' is-empty'}`}
@@ -179,14 +182,14 @@ function ShopWindow({
         {!profile.coverImageUrl && (
           <span className="pf-cover-hint">
             <Icon name="image" size={28} />
-            No cover photo yet
-            {canEdit && <small className="drop-tip">Drop a photo here, or press “Add a cover photo”</small>}
+            <Trans>No cover photo yet</Trans>
+            {canEdit && <small className="drop-tip"><Trans>Drop a photo here, or press “Add a cover photo”</Trans></small>}
           </span>
         )}
         {canEdit && (
           <PickImage id="cover-upload" busy={busy} onPick={pick('cover')} className="pf-cover-btn">
             <Icon name="camera" size={17} />
-            {uploading === 'cover' ? 'Uploading…' : profile.coverImageUrl ? 'Change cover' : 'Add a cover photo'}
+            {uploading === 'cover' ? t`Uploading…` : profile.coverImageUrl ? t`Change cover` : t`Add a cover photo`}
           </PickImage>
         )}
       </div>
@@ -196,7 +199,7 @@ function ShopWindow({
         onFiles={([file]) => pick('logo')(file)}
         disabled={!canEdit || busy}
         noteInside
-        hint={profile.logoUrl ? 'Drop to make it your new logo' : 'Drop to make it your logo'}
+        hint={profile.logoUrl ? t`Drop to make it your new logo` : t`Drop to make it your logo`}
       >
       <div className="pf-id">
         <div className="pf-logo">
@@ -204,15 +207,15 @@ function ShopWindow({
           {canEdit && (
             <PickImage id="logo-upload" busy={busy} onPick={pick('logo')} className="pf-logo-btn">
               <Icon name="camera" size={16} />
-              <span className="visually-hidden">{profile.logoUrl ? 'Change logo' : 'Add a logo'}</span>
+              <span className="visually-hidden">{profile.logoUrl ? t`Change logo` : t`Add a logo`}</span>
             </PickImage>
           )}
           {uploading === 'logo' && <i className="pf-logo-busy" />}
         </div>
         <div className="pf-id-text">
-          <h2>{profile.name ?? 'Unnamed business'}</h2>
+          <h2>{profile.name ?? t`Unnamed business`}</h2>
           <p>
-            {profile.category?.name ?? 'No category chosen'}
+            {profile.category?.name ?? t`No category chosen`}
             {profile.subcategory && <> · {profile.kinds[0] ? kindName(profile.kinds[0]) : profile.subcategory.name}</>}
           </p>
           <div className="pf-badges">
@@ -221,17 +224,18 @@ function ShopWindow({
             </span>
             {rating !== null && (
               <span className="pf-badge">
-                <Stars value={rating} size={13} /> {rating.toFixed(1)} · {count} reviews
+                <Stars value={rating} size={13} />
+                <Trans>{rating.toFixed(1)} · {count} reviews</Trans>
               </span>
             )}
             <span className="pf-badge">
-              <Icon name="pin" size={14} /> {locations.length} {locations.length === 1 ? 'branch' : 'branches'}
+              <Icon name="pin" size={14} /> {locations.length} {locations.length === 1 ? t`branch` : t`branches`}
             </span>
           </div>
         </div>
         {canEdit && (
           <PickImage id="logo-upload-2" busy={busy} onPick={pick('logo')} className="pf-logo-change">
-            {profile.logoUrl ? 'Change logo' : 'Add a logo'}
+            {profile.logoUrl ? t`Change logo` : t`Add a logo`}
           </PickImage>
         )}
       </div>
@@ -250,13 +254,13 @@ function ShopWindow({
 function Strength({ profile, locations }: { profile: BusinessProfile; locations: Location[] }) {
   const active = locations.filter((l) => l.isActive);
   const steps: Array<{ label: string; done: boolean; icon: IconName }> = [
-    { label: 'Cover photo', done: Boolean(profile.coverImageUrl), icon: 'image' },
-    { label: 'Logo', done: Boolean(profile.logoUrl), icon: 'store' },
-    { label: 'What you do', done: (profile.description ?? '').trim().length >= 40, icon: 'pencil' },
-    { label: 'Kind of shop', done: Boolean(profile.category && profile.subcategory), icon: 'tag' },
-    { label: 'Phone', done: Boolean(profile.phone), icon: 'phone' },
+    { label: t`Cover photo`, done: Boolean(profile.coverImageUrl), icon: 'image' },
+    { label: t`Logo`, done: Boolean(profile.logoUrl), icon: 'store' },
+    { label: t`What you do`, done: (profile.description ?? '').trim().length >= 40, icon: 'pencil' },
+    { label: t`Kind of shop`, done: Boolean(profile.category && profile.subcategory), icon: 'tag' },
+    { label: t`Phone`, done: Boolean(profile.phone), icon: 'phone' },
     {
-      label: 'Photos at every branch',
+      label: t`Photos at every branch`,
       done: active.length > 0 && active.every((l) => (l._count?.media ?? 0) > 0),
       icon: 'camera',
     },
@@ -268,7 +272,7 @@ function Strength({ profile, locations }: { profile: BusinessProfile; locations:
 
   return (
     <article className="pf-strength">
-      <div className="pf-ring" aria-label={`${pct}% complete`}>
+      <div className="pf-ring" aria-label={t`${pct}% complete`}>
         <svg viewBox="0 0 80 80" width="88" height="88">
           <circle cx="40" cy="40" r={r} className="pf-ring-track" />
           <circle
@@ -283,11 +287,11 @@ function Strength({ profile, locations }: { profile: BusinessProfile; locations:
         <strong>{pct}%</strong>
       </div>
       <div className="pf-strength-text">
-        <h2>{done === steps.length ? 'Your shop window is complete' : 'Make your shop window stand out'}</h2>
+        <h2>{done === steps.length ? t`Your shop window is complete` : t`Make your shop window stand out`}</h2>
         <p>
           {done === steps.length
-            ? 'Everything a customer looks for is here.'
-            : `${steps.length - done} ${steps.length - done === 1 ? 'thing' : 'things'} left — shops with photos and a good description get chosen first.`}
+            ? t`Everything a customer looks for is here.`
+            : t`${steps.length - done} ${steps.length - done === 1 ? 'thing' : 'things'} left — shops with photos and a good description get chosen first.`}
         </p>
         <ul>
           {steps.map((s) => (
@@ -398,42 +402,41 @@ function Details({
       <form className="pf-form" onSubmit={submit}>
         <fieldset className="pf-fieldset" disabled={!canEdit}>
           <header>
-            <h2>Details</h2>
+            <h2><Trans>Details</Trans></h2>
             <p>
               {canEdit
-                ? 'Shown on your shop’s page in the app.'
-                : 'Shown on your shop’s page in the app. The owner, or a manager of every branch, changes them.'}
+                ? t`Shown on your shop’s page in the app.`
+                : t`Shown on your shop’s page in the app. The owner, or a manager of every branch, changes them.`}
             </p>
           </header>
 
           <label className="pf-field">
-            <span>Business name</span>
+            <span><Trans>Business name</Trans></span>
             <input value={name} onChange={(event) => setName(event.target.value)} maxLength={120} />
           </label>
 
           {/* Not a <label>: a click on its words would press the first button
               of the formatting bar inside it. */}
           <div className="pf-field pf-grow">
-            <span id="pf-desc-label">What you do</span>
+            <span id="pf-desc-label"><Trans>What you do</Trans></span>
             <RichTextBox
               labelledBy="pf-desc-label"
               value={description}
               onChange={setDescription}
               rows={5}
               maxLength={2000}
-              placeholder="A customer reads this before booking. Say what you offer and what makes you worth the trip."
+              placeholder={t`A customer reads this before booking. Say what you offer and what makes you worth the trip.`}
             />
           </div>
 
           <label className="pf-field">
-            <span>Phone</span>
+            <span><Trans>Phone</Trans></span>
             <input value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={30} />
           </label>
 
           {/* Every kind of place the shop is (§265): a salon whose other branch is a spa is both. */}
           <div className="pf-field">
-            <span>
-              Kinds of shop <em>the first is your main one · up to {MAX_KIND_CATEGORIES} categories</em>
+            <span><Trans>Kinds of shop <em>the first is your main one · up to {MAX_KIND_CATEGORIES} categories</em></Trans>
             </span>
             {listed.length > 0 && (
               <ul className="pf-kinds">
@@ -448,10 +451,10 @@ function Details({
                           value={labels[k.subcategory.id] ?? ''}
                           onChange={(e) => setLabels({ ...labels, [k.subcategory.id]: e.target.value })}
                           maxLength={40}
-                          placeholder="What kind exactly?"
-                          aria-label={`What kind of ${k.category.name} exactly`}
+                          placeholder={t`What kind exactly?`}
+                          aria-label={t`What kind of ${k.category.name} exactly`}
                         />
-                        <em>Other · {k.category.name}</em>
+                        <em><Trans>Other · {k.category.name}</Trans></em>
                       </span>
                     ) : (
                       <span className="pf-kind-text">
@@ -460,17 +463,17 @@ function Details({
                       </span>
                     )}
                     {i === 0 ? (
-                      <span className="pf-kind-main">Main</span>
+                      <span className="pf-kind-main"><Trans>Main</Trans></span>
                     ) : (
                       <button type="button" className="pf-kind-link" onClick={() => setKindsList([k.subcategory.id, ...kinds.filter((id) => id !== k.subcategory.id)])}>
-                        Make main
+                        <Trans>Make main</Trans>
                       </button>
                     )}
                     <button
                       type="button"
                       className="pf-kind-remove"
-                      aria-label={`Remove ${k.subcategory.name}`}
-                      title={listed.length === 1 ? 'A shop needs at least one kind' : 'Remove'}
+                      aria-label={t`Remove ${k.subcategory.name}`}
+                      title={listed.length === 1 ? t`A shop needs at least one kind` : t`Remove`}
                       disabled={listed.length === 1}
                       onClick={() => setKindsList(kinds.filter((id) => id !== k.subcategory.id))}
                     >
@@ -487,16 +490,16 @@ function Details({
                   setAddCategoryId(next);
                   setAddTypeId('');
                 }}
-                label="Category"
-                placeholder={listed.length ? 'Add another kind…' : 'Choose a category'}
+                label={t`Category`}
+                placeholder={listed.length ? t`Add another kind…` : t`Choose a category`}
                 options={categories.data?.map((category) => ({ value: category.id, label: category.name })) ?? []}
               />
               <Select
                 value={addTypeId}
                 onChange={setAddTypeId}
                 disabled={!addCategory || categoryFull}
-                label="Type"
-                placeholder={categoryFull ? `Up to ${MAX_KIND_CATEGORIES} categories` : addCategory ? 'Which type' : 'Then a type'}
+                label={t`Type`}
+                placeholder={categoryFull ? t`Up to ${MAX_KIND_CATEGORIES} categories` : addCategory ? t`Which type` : t`Then a type`}
                 options={addCategory?.subcategories.filter((t) => !kinds.includes(t.id)).map((t) => ({ value: t.id, label: t.name })) ?? []}
               />
               <button
@@ -509,7 +512,8 @@ function Details({
                   setAddLabel('');
                 }}
               >
-                <Icon name="plus" size={16} /> Add
+                <Icon name="plus" size={16} />
+                <Trans>Add</Trans>
               </button>
             </div>
             {addIsOther && (
@@ -518,17 +522,17 @@ function Details({
                 value={addLabel}
                 onChange={(e) => setAddLabel(e.target.value)}
                 maxLength={40}
-                placeholder="What kind exactly? e.g. Henna artist"
-                aria-label="What kind exactly"
+                placeholder={t`What kind exactly? e.g. Henna artist`}
+                aria-label={t`What kind exactly`}
                 autoFocus
               />
             )}
-            {unlabelled && <span className="pf-kind-hint">Say what each “Other” is — customers see it in its place.</span>}
+            {unlabelled && <span className="pf-kind-hint"><Trans>Say what each “Other” is — customers see it in its place.</Trans></span>}
           </div>
 
           {save.error && (
             <p className="error small" role="alert">
-              {save.error instanceof ApiError ? save.error.message : 'That did not save.'}
+              {save.error instanceof ApiError ? save.error.message : t`That did not save.`}
             </p>
           )}
 
@@ -537,18 +541,24 @@ function Details({
               <span>
                 {saved && !save.isPending && !dirty ? (
                   <span className="ok">
-                    <Icon name="checkCircle" size={16} /> Saved.
+                    <Icon name="checkCircle" size={16} />{' '}
+                    <Trans>Saved.</Trans>
                   </span>
                 ) : description.length > 2000 ? (
-                  <span className="error">“What you do” is {description.length - 2000} characters too long.</span>
+                  <span className="error">
+                    {plural(description.length - 2000, {
+                      one: '“What you do” is # character too long.',
+                      other: '“What you do” is # characters too long.',
+                    })}
+                  </span>
                 ) : dirty ? (
-                  'The preview shows your changes — save to make them live.'
+                  t`The preview shows your changes — save to make them live.`
                 ) : (
                   ''
                 )}
               </span>
               <button type="submit" className="primary" disabled={save.isPending || !dirty || unlabelled || description.length > 2000}>
-                {save.isPending ? 'Saving…' : 'Save'}
+                {save.isPending ? t`Saving…` : t`Save`}
               </button>
             </footer>
           )}
@@ -556,9 +566,10 @@ function Details({
       </form>
 
       {/* The shop as the customer's app shows it, as it is being written (§208). */}
-      <aside className="pf-preview" aria-label="How customers see your shop">
+      <aside className="pf-preview" aria-label={t`How customers see your shop`}>
         <p className="pf-preview-label">
-          <Icon name="eye" size={15} /> How customers see you
+          <Icon name="eye" size={15} />{' '}
+          <Trans>How customers see you</Trans>
         </p>
         <CustomerPhone
           locations={locations}
@@ -580,13 +591,13 @@ function Galleries({ locations, canEdit }: { locations: Location[] | undefined; 
   return (
     <section className="pf-galleries">
       <header className="pf-galleries-head">
-        <h2>Photos</h2>
-        <p>Each branch has its own photos, because a customer wants to see the place they are actually walking into.</p>
+        <h2><Trans>Photos</Trans></h2>
+        <p><Trans>Each branch has its own photos, because a customer wants to see the place they are actually walking into.</Trans></p>
       </header>
       {locations?.map((location) => (
         <LocationGallery key={location.id} id={location.id} name={location.name} canEdit={canEdit} />
       ))}
-      {locations?.length === 0 && <p className="muted">Add a branch first, under Branches &amp; hours.</p>}
+      {locations?.length === 0 && <p className="muted"><Trans>Add a branch first, under Branches & hours.</Trans></p>}
     </section>
   );
 }
@@ -624,10 +635,12 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
     }
     setBatch(null);
     if (files.length > take.length) {
+      const room = take.length;
+      const left = files.length - take.length;
       setProblem(
-        `${name} has room for ${take.length} more ${take.length === 1 ? 'photo' : 'photos'} (${limit} at most), so ${
-          files.length - take.length
-        } ${files.length - take.length === 1 ? 'was' : 'were'} left out.`,
+        left === 1
+          ? t`${name} has room for ${room} more (${limit} at most), so 1 was left out.`
+          : t`${name} has room for ${room} more (${limit} at most), so ${left} were left out.`,
       );
     }
   };
@@ -656,7 +669,7 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
         </div>
         {gallery.data && (
           <span className="pf-count">
-            {count} of {limit}
+            <Trans>{count} of {limit}</Trans>
           </span>
         )}
       </header>
@@ -665,7 +678,7 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
         onFiles={(files) => void addMany(files)}
         multiple
         disabled={!canEdit || full || add.isPending}
-        hint={`Drop photos of ${name}`}
+        hint={t`Drop photos of ${name}`}
       >
       <div className="pf-photos">
         {gallery.data?.photos.map((photo) => (
@@ -675,15 +688,15 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
               <button
                 type="button"
                 disabled={drop.isPending}
-                aria-label="Remove"
+                aria-label={t`Remove`}
                 onClick={async () => {
                   if (
                     await confirmDialog({
-                      title: 'Remove this photo?',
-                      body: <p>It cannot be brought back.</p>,
+                      title: t`Remove this photo?`,
+                      body: <p><Trans>It cannot be brought back.</Trans></p>,
                       tone: 'danger',
                       icon: 'trash',
-                      confirmLabel: 'Remove',
+                      confirmLabel: t`Remove`,
                     })
                   ) {
                     drop.mutate(photo.id);
@@ -703,14 +716,14 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
             onPickMany={(files) => void addMany(files)}
           >
             <Icon name="upload" size={22} />
-            {batch ? `Uploading ${batch.at} of ${batch.of}…` : add.isPending ? 'Uploading…' : 'Add photos'}
-            {!add.isPending && <small className="drop-tip">or drop them here</small>}
+            {batch ? t`Uploading ${batch.at} of ${batch.of}…` : add.isPending ? t`Uploading…` : t`Add photos`}
+            {!add.isPending && <small className="drop-tip"><Trans>or drop them here</Trans></small>}
           </PickImage>
         )}
       </div>
       </DropZone>
 
-      {full && <p className="muted small">This branch is at its {limit} photo limit.</p>}
+      {full && <p className="muted small"><Trans>This branch is at its {limit} photo limit.</Trans></p>}
       {problem && (
         <p className="error small" role="alert">
           {problem}
@@ -739,38 +752,40 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
 function PostPanel({ profile }: { profile: BusinessProfile }) {
   // Posting shows the whole shop: the owner, or a manager of every branch (§277).
   const canAct = useAccess().runsBusiness;
-  const { ask, post } = usePostShop(profile.name ?? 'your shop');
+  const { ask, post } = usePostShop(profile.name ?? t`your shop`);
 
   return (
     <div className="pf-pause is-unposted">
       <ShopLogo
         logoUrl={profile.logoUrl}
-        name={profile.name ?? 'Your business'}
+        name={profile.name ?? t`Your business`}
         size={48}
         className="pf-pause-logo"
         state="off"
         badge={{ icon: 'check', tone: 'ok' }}
       />
       <div className="pf-pause-text">
-        <h2>Approved — not posted yet</h2>
+        <h2><Trans>Approved — not posted yet</Trans></h2>
         <p>
-          Customers cannot see your shop until you post it. Take your time — everything you change is saved, and nobody
-          sees it until you post.
+          <Trans>
+            Customers cannot see your shop until you post it. Take your time — everything you change is saved, and nobody
+            sees it until you post.
+          </Trans>
         </p>
         {post.error && (
           <p className="error small" role="alert">
-            {post.error instanceof ApiError ? post.error.message : 'That did not work.'}
+            {post.error instanceof ApiError ? post.error.message : t`That did not work.`}
           </p>
         )}
       </div>
       <div className="pf-pause-action">
         {canAct ? (
           <button type="button" className="primary pf-post" disabled={post.isPending} onClick={() => void ask()}>
-            {post.isPending ? 'Posting…' : 'Post my shop'}
+            {post.isPending ? t`Posting…` : t`Post my shop`}
             {!post.isPending && <Icon name="send" size={16} />}
           </button>
         ) : (
-          <span>The owner, or a manager of every branch, posts it.</span>
+          <span><Trans>The owner, or a manager of every branch, posts it.</Trans></span>
         )}
       </div>
     </div>
@@ -790,27 +805,29 @@ function PausePanel({ profile }: { profile: BusinessProfile }) {
       setProblem(null);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
-    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not work.'),
+    onError: (error) => setProblem(error instanceof ApiError ? error.message : t`That did not work.`),
   });
 
   const flip = async () => {
     if (
       paused ||
       (await confirmDialog({
-        title: 'Pause the shop?',
+        title: t`Pause the shop?`,
         body: (
           <>
             <p>
-              Customers stop finding you and cannot make new bookings. Everything already booked still
-              happens and you are still paid for it.
+              <Trans>
+                Customers stop finding you and cannot make new bookings. Everything already booked still
+                happens and you are still paid for it.
+              </Trans>
             </p>
-            <p>You can turn this off whenever you like.</p>
+            <p><Trans>You can turn this off whenever you like.</Trans></p>
           </>
         ),
         tone: 'warn',
         icon: 'pause',
-        confirmLabel: 'Pause the shop',
-        cancelLabel: 'Keep it open',
+        confirmLabel: t`Pause the shop`,
+        cancelLabel: t`Keep it open`,
       }))
     ) {
       toggle.mutate();
@@ -822,18 +839,18 @@ function PausePanel({ profile }: { profile: BusinessProfile }) {
       {/* The shop's own logo, not a play button (§231): this card is about it. */}
       <ShopLogo
         logoUrl={profile.logoUrl}
-        name={profile.name ?? 'Your business'}
+        name={profile.name ?? t`Your business`}
         size={48}
         className="pf-pause-logo"
         state={paused ? undefined : profile.status === 'APPROVED' ? 'live' : 'off'}
         badge={paused ? { icon: 'pause', tone: 'warn' } : undefined}
       />
       <div className="pf-pause-text">
-        <h2>{paused ? 'Your shop is paused' : 'Your shop is open'}</h2>
+        <h2>{paused ? t`Your shop is paused` : t`Your shop is open`}</h2>
         <p>
           {paused
-            ? 'Customers cannot find you or make new bookings. Bookings you already have still happen, and money you are owed is still paid out — pausing does not cancel anything.'
-            : 'Going away, or fully booked for a while? Pausing takes every branch out of search and stops new bookings, and you can undo it at any time.'}
+            ? t`Customers cannot find you or make new bookings. Bookings you already have still happen, and money you are owed is still paid out — pausing does not cancel anything.`
+            : t`Going away, or fully booked for a while? Pausing takes every branch out of search and stops new bookings, and you can undo it at any time.`}
         </p>
         {problem && (
           <p className="error small" role="alert">
@@ -845,17 +862,17 @@ function PausePanel({ profile }: { profile: BusinessProfile }) {
         {canPause ? (
           <>
             <span>
-              {toggle.isPending ? (paused ? 'Opening…' : 'Pausing…') : paused ? 'Open the shop again' : 'Pause the shop'}
+              {toggle.isPending ? (paused ? t`Opening…` : t`Pausing…`) : paused ? t`Open the shop again` : t`Pause the shop`}
             </span>
             <Switch
               checked={!paused}
               disabled={toggle.isPending}
-              label={paused ? 'Open the shop again' : 'Pause the shop'}
+              label={paused ? t`Open the shop again` : t`Pause the shop`}
               onChange={() => void flip()}
             />
           </>
         ) : (
-          <span>Only the owner pauses the shop.</span>
+          <span><Trans>Only the owner pauses the shop.</Trans></span>
         )}
       </div>
     </div>

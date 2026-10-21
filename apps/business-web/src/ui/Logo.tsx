@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro';
 /**
  * The platform's mark (§239, §242): a white tile with a "b" for Bwangu and a
  * check for a reservation made — the dark of the ink, the orange of the brand. Drawn,
@@ -18,8 +19,7 @@ export function Logo({ size = 44 }: { size?: number }) {
 /** The name, as it is written: one word, the second half in the brand's orange. */
 export function Wordmark() {
   return (
-    <span className="wordmark">
-      Bwangu<b>Reservations</b>
+    <span className="wordmark"><Trans>Bwangu<b>Reservations</b></Trans>
     </span>
   );
 }

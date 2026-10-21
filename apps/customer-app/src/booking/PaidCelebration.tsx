@@ -163,7 +163,7 @@ export function PaidCelebration({
             {format(a.depositAmountMinor, a.currency)} paid with MTN Mobile Money. Your slot is
             confirmed.
           </Trans>
-          </Text>
+        </Text>
       </FadeIn>
 
       {/* The receipt: enough to know it is the right booking at a glance. */}

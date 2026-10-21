@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'rea
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '../api/business';
 import { Icon } from './Icon';
 import './drop-zone.css';
+import { t } from '@lingui/core/macro';
 
 /**
  * Dropping files where a photo or a file is asked for (§305): drag one from
@@ -22,7 +23,7 @@ export type FileKind = { types: string[]; extensions: string[]; words: string };
 export const PHOTOS: FileKind = {
   types: ['image/jpeg', 'image/png', 'image/webp'],
   extensions: ['.jpg', '.jpeg', '.png', '.webp'],
-  words: 'a photo — JPG, PNG or WebP',
+  get words() { return t`a photo — JPG, PNG or WebP`; },
 };
 
 const extensionOf = (file: File) => file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
@@ -126,7 +127,7 @@ export function DropZone({
     const all = Array.from(event.dataTransfer.files);
     const { taken, problem } = sortFiles(all, kind);
     const kept = multiple ? taken : taken.slice(0, 1);
-    say(problem ?? (!multiple && taken.length > 1 ? 'One at a time here — the first one was used.' : null));
+    say(problem ?? (!multiple && taken.length > 1 ? t`One at a time here — the first one was used.` : null));
     if (kept.length) onFiles(kept);
   };
 
@@ -151,7 +152,7 @@ export function DropZone({
         <p className="drop-problem" role="alert">
           <Icon name="alert" size={15} />
           <span>{problem}</span>
-          <button type="button" onClick={() => say(null)} aria-label="Close">
+          <button type="button" onClick={() => say(null)} aria-label={t`Close`}>
             <Icon name="close" size={13} />
           </button>
         </p>

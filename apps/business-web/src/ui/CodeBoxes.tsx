@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 
+import { t } from '@lingui/core/macro';
+
 /** Where a code stands (§238): being typed, being checked, wrong, or right. */
 export type CodeState = 'idle' | 'busy' | 'error' | 'ok';
 
@@ -101,7 +103,7 @@ export function CodeBoxes({
       // Only the row's own shake: a digit's pop ending inside it bubbles here too.
       onAnimationEnd={(event) => event.target === event.currentTarget && onShakeEnd?.()}
       role="group"
-      aria-label={`${length}-digit code`}
+      aria-label={t`${length}-digit code`}
     >
       {digits.map((digit, index) => (
         <input
@@ -116,7 +118,7 @@ export function CodeBoxes({
           // No maxLength: the browser cut a pasted "1 2 3 4 5 6" to its first
           // six characters — three digits — before the code ever saw it (§283).
           disabled={disabled}
-          aria-label={`Digit ${index + 1}`}
+          aria-label={t`Digit ${index + 1}`}
           onFocus={(event) => event.target.select()}
           onChange={(event) => typeAt(index, event.target.value)}
           // A paste is read from the clipboard itself, all of it (§283).

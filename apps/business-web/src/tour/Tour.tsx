@@ -21,6 +21,8 @@ import { Logo } from '../ui/Logo';
 import { Portal } from '../ui/Portal';
 import { SCENES, keptMark, marksFor, type Mark, type Placement, type Scene } from './steps';
 import './tour.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * The welcome tour (§307): what somebody new to the seller app sees the first
@@ -228,7 +230,7 @@ function Film({ shopName, onTour, onSkip }: { shopName: string | null; onTour: (
       <div className="tf-backdrop" />
       <div className={`tf${playing ? ' is-playing' : ''}${ended ? ' is-ended' : ''}${still ? ' is-still' : ''}`}>
         <div className="tf-panel" role="dialog" aria-modal="true" aria-labelledby="tf-title" aria-describedby="tf-lead">
-          <button type="button" className="tf-close" onClick={onSkip} aria-label="Close the welcome">
+          <button type="button" className="tf-close" onClick={onSkip} aria-label={t`Close the welcome`}>
             <Icon name="close" size={18} stroke={2.2} />
           </button>
 
@@ -246,18 +248,17 @@ function Film({ shopName, onTour, onSkip }: { shopName: string | null; onTour: (
             <header className="tf-head">
               <p className="tf-eyebrow">
                 <Logo size={22} />
-                <span>{shopName ? `Welcome, ${shopName}` : 'Welcome aboard'}</span>
+                <span>{shopName ? t`Welcome, ${shopName}` : t`Welcome aboard`}</span>
               </p>
-              <h2 id="tf-title">
-                How a booking <span>reaches you.</span>
+              <h2 id="tf-title"><Trans>How a booking <span>reaches you.</span></Trans>
               </h2>
               <p className="tf-lead" id="tf-lead">
-                Five moments, on the real screens. Then we can show you around — it takes a minute.
+                <Trans>Five moments, on the real screens. Then we can show you around — it takes a minute.</Trans>
               </p>
             </header>
 
             {!phone && (
-              <ol className="tf-steps" role="tablist" aria-label="How a booking reaches you">
+              <ol className="tf-steps" role="tablist" aria-label={t`How a booking reaches you`}>
                 {SCENES.map((s, i) => {
                   const on = i === active;
                   return (
@@ -301,7 +302,7 @@ function Film({ shopName, onTour, onSkip }: { shopName: string | null; onTour: (
             <span className="tf-glow" aria-hidden="true" />
             <p className={`tf-whose is-${scene.side}`} key={`${scene.side}-${phone}`}>
               <Icon name={scene.side === 'customer' ? 'phone' : 'store'} size={14} stroke={2.2} />
-              {scene.side === 'customer' ? 'On the customer’s phone' : 'In your app'}
+              {scene.side === 'customer' ? t`On the customer’s phone` : t`In your app`}
             </p>
 
             {(['browser', 'phone'] as const).map((device) => {
@@ -317,7 +318,8 @@ function Film({ shopName, onTour, onSkip }: { shopName: string | null; onTour: (
                         <i />
                       </span>
                       <span className="tf-url">
-                        <Icon name="lock" size={12} stroke={2} /> BwanguReservations · For businesses
+                        <Icon name="lock" size={12} stroke={2} />{' '}
+                        <Trans>BwanguReservations · For businesses</Trans>
                       </span>
                     </div>
                   ) : (
@@ -365,11 +367,11 @@ function Film({ shopName, onTour, onSkip }: { shopName: string | null; onTour: (
 
           <footer className="tf-foot">
             <button type="button" ref={go} className="primary tf-go" onClick={onTour}>
-              Show me around
-              <Icon name="arrowRight" size={17} stroke={2.3} />
+              <Trans>Show me around</Trans>
+            <Icon name="arrowRight" size={17} stroke={2.3} />
             </button>
             <button type="button" className="tf-later" onClick={onSkip}>
-              I’ll look around myself
+              <Trans>I’ll look around myself</Trans>
             </button>
           </footer>
         </div>
@@ -595,10 +597,10 @@ function Marks({ marks: asked, onEnd }: { marks: Mark[]; onEnd: () => void }) {
               </span>
               {!single && (
                 <span className="tm-count">
-                  {index + 1} of {count}
+                  {index + 1}<Trans>of {count}</Trans>
                 </span>
               )}
-              <button type="button" className="tm-x" onClick={end} aria-label="End the tour">
+              <button type="button" className="tm-x" onClick={end} aria-label={t`End the tour`}>
                 <Icon name="close" size={16} stroke={2.2} />
               </button>
             </div>
@@ -615,7 +617,7 @@ function Marks({ marks: asked, onEnd }: { marks: Mark[]; onEnd: () => void }) {
               <span className="tm-buttons">
                 {index > 0 && (
                   <button type="button" className="tm-back" onClick={() => goTo(index - 1)}>
-                    Back
+                    <Trans>Back</Trans>
                   </button>
                 )}
                 <button
@@ -624,7 +626,7 @@ function Marks({ marks: asked, onEnd }: { marks: Mark[]; onEnd: () => void }) {
                   className="primary tm-next"
                   onClick={() => (lastOne ? end() : goTo(index + 1))}
                 >
-                  {single ? 'Got it' : lastOne ? 'Finish' : 'Next'}
+                  {single ? t`Got it` : lastOne ? t`Finish` : t`Next`}
                   {!single && <Icon name={lastOne ? 'check' : 'arrowRight'} size={16} stroke={2.4} />}
                 </button>
               </span>

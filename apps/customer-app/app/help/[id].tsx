@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(Help, {
   icon: 'help-buoy-outline',
-
   get title() { return t`Sign in to get help`; },
   get text() { return t`Help is tied to your booking, so we need to know it is you.`; },
 });

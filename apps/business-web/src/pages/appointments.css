@@ -465,3 +465,7 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 }
 
 .ap-drawer-skel .skeleton { height: 96px; border-radius: 16px; }
+
+/* Long words (§308): a heading that cannot fit its column ends in "…" with
+   its full words on hover, never running into the next one. */
+.ap-cols > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

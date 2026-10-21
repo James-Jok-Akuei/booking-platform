@@ -15,11 +15,15 @@ import { Icon, type IconName } from '../ui/Icon';
 import { NETWORK_NAME, NetworkMark, networkOf } from '../ui/NetworkMark';
 import { PayoutDetail, overdue } from './PayoutDetail';
 import './payouts.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
+import { Plural } from '@lingui/react/macro';
 
 const PAGE = 25;
 
 const when = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  iso ? new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
 /** "+250788100001" → "+250 788 100 001": read in threes, as people say it (§245). */
 const spaced = (msisdn: string) => {
@@ -32,17 +36,29 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 
 /** The number's state in the page's own words (§291), not the enum. */
 const NUMBER_STATE: Record<string, string> = {
-  VERIFIED: 'Confirmed',
-  UNVERIFIED: 'Being checked',
-  REJECTED: 'Refused',
-  SUPERSEDED: 'Replaced',
+  get VERIFIED() { return t`Confirmed`; },
+  get UNVERIFIED() { return t`Being checked`; },
+  get REJECTED() { return t`Refused`; },
+  get SUPERSEDED() { return t`Replaced`; },
 };
 
 const PAYOUT: Record<string, { label: string; cls: string }> = {
-  PAID: { label: 'Paid', cls: 'paid' },
-  PENDING: { label: 'Pending', cls: 'pending' },
-  PROCESSING: { label: 'Processing', cls: 'processing' },
-  FAILED: { label: 'Failed', cls: 'failed' },
+  PAID: {
+    get label() { return t`Paid`; },
+    cls: 'paid'
+  },
+  PENDING: {
+    get label() { return t`Pending`; },
+    cls: 'pending'
+  },
+  PROCESSING: {
+    get label() { return t`Processing`; },
+    cls: 'processing'
+  },
+  FAILED: {
+    get label() { return t`Failed`; },
+    cls: 'failed'
+  },
 };
 
 /**
@@ -89,8 +105,8 @@ export function GettingPaidPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Getting paid</h1>
-            <p className="muted">Your share of every deposit, sent to your mobile money.</p>
+            <h1><Trans>Getting paid</Trans></h1>
+            <p className="muted"><Trans>Your share of every deposit, sent to your mobile money.</Trans></p>
           </div>
         </header>
       </div>
@@ -101,10 +117,10 @@ export function GettingPaidPage() {
             <Icon name="pause" size={20} />
           </span>
           <p>
-            <strong>Your payments are paused.</strong>{' '}
+            <strong><Trans>Your payments are paused.</Trans></strong>{' '}
             {b.payoutsPausedReason === 'DESTINATION_NOT_VERIFIED'
-              ? 'Your mobile money number has not been confirmed yet. Nothing is lost — your money is kept and goes out with the first payment after it is.'
-              : 'This business is suspended. Nothing is written off; the balance is held until it is reinstated.'}
+              ? t`Your mobile money number has not been confirmed yet. Nothing is lost — your money is kept and goes out with the first payment after it is.`
+              : t`This business is suspended. Nothing is written off; the balance is held until it is reinstated.`}
           </p>
         </div>
       )}
@@ -113,7 +129,8 @@ export function GettingPaidPage() {
         <article className="gp-wallet">
           <div className="gp-wallet-head">
             <span className="gp-wallet-label">
-              <Icon name="wallet" size={16} /> Coming to you
+              <Icon name="wallet" size={16} />{' '}
+              <Trans>Coming to you</Trans>
             </span>
             {/* Where it goes, as a card shows its network (§219). */}
             <NetworkMark network={network} shape="wide" size={34} className="gp-brand" />
@@ -127,25 +144,25 @@ export function GettingPaidPage() {
               ? ' '
               : b.onTheWayCount > 0
                 ? b.onTheWayMinor === coming
-                  ? `All of it is on its way to you, in ${plural(b.onTheWayCount, 'payment', 'payments')}.`
-                  : `${money.format(b.onTheWayMinor)} of it is on its way to you, in ${plural(b.onTheWayCount, 'payment', 'payments')}.`
+                  ? t`All of it is on its way to you, in ${plural(b.onTheWayCount, 'payment', 'payments')}.`
+                  : t`${money.format(b.onTheWayMinor)} of it is on its way to you, in ${plural(b.onTheWayCount, 'payment', 'payments')}.`
                 : coming > 0
-                  ? 'Earned, and not in your mobile money yet.'
-                  : 'Nothing waiting. Money from new bookings shows here.'}
+                  ? t`Earned, and not in your mobile money yet.`
+                  : t`Nothing waiting. Money from new bookings shows here.`}
           </p>
           <div className="gp-wallet-foot">
             <div>
-              <span>Paid to you so far</span>
+              <span><Trans>Paid to you so far</Trans></span>
               <strong>{b ? money.format(b.lifetimePaidMinor) : '–'}</strong>
             </div>
             <div>
-              <span>Payments</span>
+              <span><Trans>Payments</Trans></span>
               <strong>{b ? b.payoutCount : '–'}</strong>
             </div>
             <div className="gp-wallet-to">
-              <span>To {NETWORK_NAME[network]}</span>
+              <span><Trans>To {NETWORK_NAME[network]}</Trans></span>
               <strong>
-                {number ? `•••• ${(number.msisdn ?? number.msisdnLast3 ?? '').slice(-3)}` : 'No number yet'}
+                {number ? `•••• ${(number.msisdn ?? number.msisdnLast3 ?? '').slice(-3)}` : t`No number yet`}
               </strong>
             </div>
           </div>
@@ -164,8 +181,8 @@ export function GettingPaidPage() {
       {b && (
         <article className="gp-flow">
           <header>
-            <h2>Your money</h2>
-            <p>Where every franc of your deposits is, from a booking to your mobile money.</p>
+            <h2><Trans>Your money</Trans></h2>
+            <p><Trans>Where every franc of your deposits is, from a booking to your mobile money.</Trans></p>
           </header>
           {/* The one case the steps cannot say by themselves (§35.3). */}
           {b.availableNowMinor < 0 && (
@@ -179,38 +196,38 @@ export function GettingPaidPage() {
             <Step
               icon="hourglass"
               tone="grey"
-              label="Not yours yet"
+              label={t`Not yours yet`}
               value={money.format(b.unresolvedMinor)}
-              note="Bookings not yet done or cancelled."
+              note={t`Bookings not yet done or cancelled.`}
             />
             <Step
               icon="clock"
               tone="amber"
-              label="Still held"
+              label={t`Still held`}
               value={money.format(b.pendingMinor)}
-              note={`Earned, waiting ${plural(b.holdDays, 'day', 'days')} after the visit.`}
+              note={t`Earned, waiting ${plural(b.holdDays, 'day', 'days')} after the visit.`}
             />
             <Step
               icon="wallet"
               tone="green"
-              label="Ready to send"
+              label={t`Ready to send`}
               value={money.format(b.availableNowMinor)}
-              note="Goes into the next payment."
+              note={t`Goes into the next payment.`}
               strong={b.onTheWayCount === 0}
             />
             {/* Worked out into a payment, not yet arrived (§291). */}
             <Step
               icon="send"
               tone="blue"
-              label="On its way"
+              label={t`On its way`}
               value={money.format(b.onTheWayMinor)}
-              note={b.onTheWayCount > 0 ? `${plural(b.onTheWayCount, 'payment', 'payments')} being sent to you.` : 'Nothing being sent just now.'}
+              note={b.onTheWayCount > 0 ? t`${plural(b.onTheWayCount, 'payment', 'payments')} being sent to you.` : t`Nothing being sent just now.`}
               strong={b.onTheWayCount > 0}
             />
             <Step
               icon="checkCircle"
               tone="night"
-              label="Paid to you so far"
+              label={t`Paid to you so far`}
               value={money.format(b.lifetimePaidMinor)}
               note={`${plural(b.payoutCount, 'payment', 'payments')}.`}
             />
@@ -219,15 +236,17 @@ export function GettingPaidPage() {
               reconciling this screen against its till and finding a gap (§29.2). */}
           <p className="gp-deposits">
             <Icon name="info" size={15} />
-            These are deposits only — the balance of each appointment is settled with the customer directly
-            and never passes through the platform.
+            <Trans>
+              These are deposits only — the balance of each appointment is settled with the customer directly
+              and never passes through the platform.
+            </Trans>
           </p>
         </article>
       )}
 
       <article className="gp-history">
         <header>
-          <h2>Payments to you</h2>
+          <h2><Trans>Payments to you</Trans></h2>
           {payoutTotal > 0 && <span>{payoutTotal}</span>}
         </header>
         {/* How long it takes, said once, where the payments are (§290). */}
@@ -235,9 +254,14 @@ export function GettingPaidPage() {
           <p className="gp-how">
             <Icon name="clock" size={15} />
             <span>
-              Money from a booking waits <strong>{b.holdDays} {b.holdDays === 1 ? 'day' : 'days'}</strong> after the
-              visit. Each night at 2 a.m. what is ready is worked out into one payment, and our team sends it to your
-              mobile money number. Open a payment to see the bookings in it.
+              <Trans>
+                Money from a booking waits{' '}
+                <strong>
+                  <Plural value={b.holdDays} one="# day" other="# days" />
+                </strong>{' '}
+                after the visit. Each night at 2 a.m. what is ready is worked out into one payment, and our team sends it
+                to your mobile money number. Open a payment to see the bookings in it.
+              </Trans>
             </span>
           </p>
         )}
@@ -247,7 +271,7 @@ export function GettingPaidPage() {
             <span>
               <Icon name="banknote" size={26} />
             </span>
-            <p>Nothing sent yet.</p>
+            <p><Trans>Nothing sent yet.</Trans></p>
           </div>
         )}
         {payoutRows.length > 0 && (
@@ -260,19 +284,19 @@ export function GettingPaidPage() {
                     type="button"
                     className={`gp-row is-${look.cls}`}
                     onClick={() => setOpen(payout)}
-                    aria-label={`${money.format(payout.settlementAmountMinor)}, ${look.label}. See the bookings in it`}
+                    aria-label={t`${money.format(payout.settlementAmountMinor)}, ${look.label}. See the bookings in it`}
                   >
                     <span className="gp-row-icon">
                       <Icon name={payout.status === 'FAILED' ? 'xCircle' : payout.status === 'PAID' ? 'arrowUpRight' : 'clock'} size={18} />
                     </span>
                     <span className="gp-row-main">
                       <strong>{money.format(payout.settlementAmountMinor)}</strong>
-                      <span>Worked out on {when(payout.runAt)}</span>
+                      <span><Trans>Worked out on {when(payout.runAt)}</Trans></span>
                       {payout.failureReason && <span className="gp-fail">{payout.failureReason}</span>}
                     </span>
                     <span className="gp-row-side">
                       <span className={`pill ${look.cls}`}>{look.label}</span>
-                      {payout.paidAt && <span>Arrived {when(payout.paidAt)}</span>}
+                      {payout.paidAt && <span><Trans>Arrived {when(payout.paidAt)}</Trans></span>}
                       {overdue(payout) && (
                         <span className="gp-late">
                           <Icon name="alert" size={13} />
@@ -289,7 +313,7 @@ export function GettingPaidPage() {
         )}
         {payouts.hasNextPage && (
           <button type="button" className="gp-more" onClick={() => void payouts.fetchNextPage()} disabled={payouts.isFetchingNextPage}>
-            {payouts.isFetchingNextPage ? 'Loading…' : `Show more (${payoutRows.length} of ${payoutTotal})`}
+            {payouts.isFetchingNextPage ? t`Loading…` : t`Show more (${payoutRows.length} of ${payoutTotal})`}
           </button>
         )}
       </article>
@@ -362,11 +386,13 @@ function Destination({
       <header>
         <NetworkMark network={destination?.provider ?? 'MTN_MOMO'} size={46} className="gp-dest-mark" />
         <div>
-          <h2>Where your money goes</h2>
+          <h2><Trans>Where your money goes</Trans></h2>
           <p>
-            Your payments are sent by <strong>MTN MoMo</strong> to this number. Changing it{' '}
-            <strong>pauses your payments</strong> until our team confirms the new one — that check is what stops
-            money going to a number nobody checked.
+            <Trans>
+              Your payments are sent by <strong>MTN MoMo</strong> to this number. Changing it{' '}
+              <strong>pauses your payments</strong> until our team confirms the new one — that check is what stops
+              money going to a number nobody checked.
+            </Trans>
           </p>
         </div>
       </header>
@@ -375,7 +401,8 @@ function Destination({
         <div className="gp-number">
           <div>
             <span className="gp-number-label">
-              <NetworkMark network={destination.provider} size={16} /> {NETWORK_NAME[destination.provider]} number
+              <NetworkMark network={destination.provider} size={16} />
+              <Trans>{NETWORK_NAME[destination.provider]} number</Trans>
             </span>
             <strong className="gp-number-value">
               {destination.msisdn ? spaced(destination.msisdn) : `•••• ${destination.msisdnLast3 ?? ''}`}
@@ -386,19 +413,19 @@ function Destination({
           </span>
           <p>
             {destination.status === 'VERIFIED'
-              ? `Confirmed ${when(destination.verifiedAt)}. Your payments go here.`
+              ? t`Confirmed ${when(destination.verifiedAt)}. Your payments go here.`
               : destination.status === 'UNVERIFIED'
-                ? 'Our team is checking it. Your payments wait until then — nothing is lost.'
+                ? t`Our team is checking it. Your payments wait until then — nothing is lost.`
                 : destination.status === 'REJECTED'
-                  ? (destination.rejectionReason ?? 'Refused. Submit another number.')
-                  : 'Replaced by a newer number.'}
+                  ? (destination.rejectionReason ?? t`Refused. Submit another number.`)
+                  : t`Replaced by a newer number.`}
           </p>
         </div>
       ) : (
         <p className="gp-nonumber">
           <Icon name="alert" size={16} />
           <span>
-            No number yet — <strong>you cannot be paid</strong> until you add one.
+            <Trans>No number yet — <strong>you cannot be paid</strong> until you add one.</Trans>
           </span>
         </p>
       )}
@@ -407,11 +434,12 @@ function Destination({
           money physically goes, and §48 keeps it at that level. */}
       {!isOwner ? (
         <p className="gp-owner-only">
-          <Icon name="shield" size={15} /> Only the owner can change this.
+          <Icon name="shield" size={15} />{' '}
+          <Trans>Only the owner can change this.</Trans>
         </p>
       ) : changing || !destination ? (
         <form className="gp-form" onSubmit={onSubmit}>
-          <label htmlFor="msisdn">Number</label>
+          <label htmlFor="msisdn"><Trans>Number</Trans></label>
           <div>
             <input
               id="msisdn"
@@ -421,32 +449,33 @@ function Destination({
               inputMode="tel"
             />
             <button type="submit" className="primary" disabled={submit.isPending}>
-              {submit.isPending ? 'Sending…' : 'Submit for checking'}
+              {submit.isPending ? t`Sending…` : t`Submit for checking`}
             </button>
           </div>
           {typed && (
             <p className={`gp-typed ${typed === 'MTN_MOMO' ? 'is-ok' : 'is-warn'}`}>
               <NetworkMark network={typed} size={22} />
               {typed === 'MTN_MOMO'
-                ? 'An MTN MoMo number — your payments can be sent to it.'
-                : 'An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079).'}
+                ? t`An MTN MoMo number — your payments can be sent to it.`
+                : t`An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079).`}
             </p>
           )}
           {destination && (
             <button type="button" className="link" onClick={() => setChanging(false)}>
-              Cancel
+              <Trans>Cancel</Trans>
             </button>
           )}
         </form>
       ) : (
         <button type="button" className="gp-change" onClick={() => setChanging(true)}>
-          <Icon name="pencil" size={15} /> Change the number
+          <Icon name="pencil" size={15} />{' '}
+          <Trans>Change the number</Trans>
         </button>
       )}
 
       {submit.error && (
         <p className="error small" role="alert">
-          {submit.error instanceof ApiError ? submit.error.message : 'Could not save.'}
+          {submit.error instanceof ApiError ? submit.error.message : t`Could not save.`}
         </p>
       )}
     </article>

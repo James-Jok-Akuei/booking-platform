@@ -1,5 +1,7 @@
 import { Icon } from '../ui/Icon';
 
+import { t } from '@lingui/core/macro';
+
 /**
  * The file picker, as a button (§132.3).
  *
@@ -41,7 +43,7 @@ export function ImageButton({
       />
       <label htmlFor={id} className={busy ? 'file-trigger disabled' : 'file-trigger'}>
         <Icon name="upload" size={17} />
-        {busy ? 'Uploading…' : label}
+        {busy ? t`Uploading…` : label}
       </label>
     </>
   );

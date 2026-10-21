@@ -1,5 +1,7 @@
 import type { Location } from '../api/business';
 import { Icon } from './Icon';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * Choosing a branch, as pills (§196, §199) — for pages that show one branch at
@@ -19,7 +21,7 @@ export function BranchPills({
 }) {
   if (branches.length < 2) return null;
   return (
-    <div className="bpills" role="tablist" aria-label="Branch">
+    <div className="bpills" role="tablist" aria-label={t`Branch`}>
       {branches.map((b) => {
         const after = extra?.(b);
         return (
@@ -33,7 +35,7 @@ export function BranchPills({
           >
             <Icon name="pin" size={16} />
             {b.name}
-            {!b.isActive && <em>closed</em>}
+            {!b.isActive && <em><Trans>closed</Trans></em>}
             {after && <em>{after}</em>}
           </button>
         );

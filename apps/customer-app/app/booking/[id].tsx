@@ -501,7 +501,6 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(Booking, {
   icon: 'calendar-outline',
-
   get title() { return t`Sign in to see this booking`; },
   get text() { return t`Bookings are kept with your account, so only you can open them.`; },
 });

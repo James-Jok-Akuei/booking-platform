@@ -62,6 +62,10 @@ import {
 } from './steps';
 import { accessOf } from '../access';
 import './welcome.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale, dayName, listOf } from '../i18n/format';
+import { plural } from '@lingui/core/macro';
 
 /** The server's refusal in its own words, or ours. */
 const said = (error: unknown, fallback: string) => (error instanceof ApiError ? error.message : fallback);
@@ -147,6 +151,9 @@ export function Welcome() {
   const required = (readiness.data?.items ?? []).filter((i) => i.required);
   const doneCount = required.filter((i) => i.done).length;
   const share = required.length ? doneCount / required.length : 0;
+  // Named, so the meter reads as one sentence to a translator (§308).
+  const total = required.length || 6;
+  const percent = Math.round(share * 100);
   const access = accessOf(me.data?.businessMembership, me.isSuccess);
   const shopName = me.data?.businessMembership?.businessProfile.name?.trim() || null;
   const sectionIndex = STEPS.findIndex((s) => s.key === section);
@@ -161,15 +168,14 @@ export function Welcome() {
         <span className="wz-brand">
           <Logo size={38} />
           <span>
-            <b>
-              Bwangu<i>Reservations</i>
+            <b><Trans>Bwangu<i>Reservations</i></Trans>
             </b>
-            <small>For businesses</small>
+            <small><Trans>For businesses</Trans></small>
           </span>
         </span>
         <button type="button" className="wz-later" onClick={finishLater}>
-          Finish later
-          <Icon name="close" size={15} stroke={2.2} />
+          <Trans>Finish later</Trans>
+        <Icon name="close" size={15} stroke={2.2} />
         </button>
       </header>
 
@@ -179,18 +185,19 @@ export function Welcome() {
         <div className="wz-panel" role="dialog" aria-modal="true" aria-labelledby="wz-title">
           <aside className="wz-rail">
             <div className="wz-rail-head">
-              <span className="wz-kicker">Setting up</span>
-              <h2 title={shopName ?? undefined}>{shopName ?? 'Your shop'}</h2>
-              <p>About five minutes. Skip anything you do not have to hand — it waits on your Overview.</p>
+              <span className="wz-kicker"><Trans>Setting up</Trans></span>
+              <h2 title={shopName ?? undefined}>{shopName ?? t`Your shop`}</h2>
+              <p><Trans>About five minutes. Skip anything you do not have to hand — it waits on your Overview.</Trans></p>
             </div>
 
-            <div className="wz-meter" aria-label={`${doneCount} of ${required.length} required things done`}>
+            <div className="wz-meter" aria-label={t`${doneCount} of ${required.length} required things done`}>
               <div className="wz-meter-top">
-                <strong>
-                  {doneCount} of {required.length || 6}
-                </strong>
-                done
-                <span>{Math.round(share * 100)}%</span>
+                <Trans>
+                  <strong>
+                    {doneCount} of {total}
+                  </strong>{' '}
+                  done <span>{percent}%</span>
+                </Trans>
               </div>
               <div className="wz-meter-bar">
                 <i style={{ '--p': share } as CSSProperties} />
@@ -211,7 +218,7 @@ export function Welcome() {
                       <span className="wz-badge">{done && !on ? <DrawnCheck size={18} /> : <StepGlyph name={s.key} size={21} />}</span>
                       <span className="wz-step-text">
                         <strong>{s.title}</strong>
-                        <em>{done ? 'Done' : s.short}</em>
+                        <em>{done ? t`Done` : s.short}</em>
                       </span>
                     </button>
                   </li>
@@ -225,19 +232,20 @@ export function Welcome() {
                   <StepGlyph name="headset" size={20} />
                 </span>
                 <span>
-                  <strong>Need a hand?</strong>
-                  <em>We can set it up with you.</em>
+                  <strong><Trans>Need a hand?</Trans></strong>
+                  <em><Trans>We can set it up with you.</Trans></em>
                 </span>
-                <Link to="/help">Talk to us</Link>
+                <Link to="/help"><Trans>Talk to us</Trans></Link>
               </div>
               <p className="wz-lock">
-                <Icon name="lock" size={14} /> Customers see nothing until we approve your shop and you post it.
+                <Icon name="lock" size={14} />{' '}
+                <Trans>Customers see nothing until we approve your shop and you post it.</Trans>
               </p>
             </div>
           </aside>
 
           <main className={`wz-main is-${dir}`}>
-            <button type="button" className="wz-x" onClick={finishLater} aria-label="Finish later" title="Finish later">
+            <button type="button" className="wz-x" onClick={finishLater} aria-label={t`Finish later`} title={t`Finish later`}>
               <Icon name="close" size={18} stroke={2.2} />
             </button>
 
@@ -258,10 +266,12 @@ export function Welcome() {
                 <div className="wz-step">
                   <header className="wz-head">
                     <div className="wz-col">
-                      <h1 id="wz-title">Only the owner can set up the shop</h1>
+                      <h1 id="wz-title"><Trans>Only the owner can set up the shop</Trans></h1>
                       <p className="wz-lead">
-                        Or a manager who looks after every branch. Ask them to finish setting it up — you can still
-                        look around.
+                        <Trans>
+                          Or a manager who looks after every branch. Ask them to finish setting it up — you can still
+                          look around.
+                        </Trans>
                       </p>
                     </div>
                   </header>
@@ -269,8 +279,7 @@ export function Welcome() {
                   <div className="wz-foot">
                     <div className="wz-col">
                       <span />
-                      <button type="button" className="primary wz-go" onClick={finishLater}>
-                        Go to the dashboard <Icon name="arrowRight" size={17} stroke={2.4} />
+                      <button type="button" className="primary wz-go" onClick={finishLater}><Trans>Go to the dashboard </Trans><Icon name="arrowRight" size={17} stroke={2.4} />
                       </button>
                     </div>
                   </div>
@@ -308,8 +317,8 @@ function Floats() {
       <span className="wz-float f1">
         <NetworkMark network="MTN_MOMO" size={36} />
         <span>
-          <strong>Deposits by MoMo</strong>
-          <em>Paid when they book</em>
+          <strong><Trans>Deposits by MoMo</Trans></strong>
+          <em><Trans>Paid when they book</Trans></em>
         </span>
       </span>
       <span className="wz-float f2">
@@ -317,8 +326,8 @@ function Floats() {
           <Icon name="calendarCheck" size={19} />
         </span>
         <span>
-          <strong>Bookings land here</strong>
-          <em>Once your shop is posted</em>
+          <strong><Trans>Bookings land here</Trans></strong>
+          <em><Trans>Once your shop is posted</Trans></em>
         </span>
       </span>
     </div>
@@ -338,9 +347,9 @@ function QHead({ screen, title, lead, optional }: { screen: Screen; title: React
       <div className="wz-col">
         <div className="wz-head-meta">
           <span className="wz-eyebrow">
-            {section === 'review' ? 'Last step' : part.title}
-            {questions.length > 1 && <em>{` · ${n} of ${questions.length}`}</em>}
-            {optional && <i>Optional</i>}
+            {section === 'review' ? t`Last step` : part.title}
+            {questions.length > 1 && <em>{t` · ${n} of ${questions.length}`}</em>}
+            {optional && <i><Trans>Optional</Trans></i>}
           </span>
           {questions.length > 1 && (
             <span className="wz-qdots" aria-hidden="true">
@@ -368,9 +377,9 @@ function Body({ children }: { children: ReactNode }) {
 function Foot({
   busy = false,
   ready = true,
-  label = 'Next',
+  label = t`Next`,
   nav,
-  skipLabel = 'Skip for now',
+  skipLabel = t`Skip for now`,
   noSkip,
 }: {
   busy?: boolean;
@@ -386,7 +395,8 @@ function Foot({
         <div>
           {nav.back && (
             <button type="button" className="wz-back" onClick={nav.back}>
-              <Icon name="chevronLeft" size={17} stroke={2.2} /> Back
+              <Icon name="chevronLeft" size={17} stroke={2.2} />{' '}
+              <Trans>Back</Trans>
             </button>
           )}
         </div>
@@ -399,7 +409,7 @@ function Foot({
           <button type="submit" className="primary wz-go" disabled={busy || !ready}>
             {busy ? (
               <>
-                <span className="wz-spin" aria-hidden="true" /> Saving…
+                <Trans><span className="wz-spin" aria-hidden="true" />Saving…</Trans>
               </>
             ) : (
               <>
@@ -454,7 +464,8 @@ function Have({ icon, title, text, children }: { icon: ReactNode; title: ReactNo
 /** A category's types in a few words — the named ones, not "Other". */
 const describe = (all: string[]) => {
   const names = all.filter((n) => n !== 'Other');
-  return names.length > 3 ? `${names.slice(0, 3).join(', ')} and more` : names.join(', ');
+  const firstThree = names.slice(0, 3).join(', ');
+  return names.length > 3 ? t`${firstThree} and more` : names.join(', ');
 };
 
 // ---------------------------------------------------------------------------
@@ -471,7 +482,7 @@ function NameQ({ nav }: { nav: Nav }) {
   const save = useMutation({
     mutationFn: () => updateProfile({ name: name.trim() }),
     onSuccess: () => nav.saved(),
-    onError: (error) => setProblem(said(error, 'That did not save. Check your connection and try again.')),
+    onError: (error) => setProblem(said(error, t`That did not save. Check your connection and try again.`)),
   });
   const ready = name.trim().length >= 2;
   const main = profile.data?.kinds[0];
@@ -488,23 +499,24 @@ function NameQ({ nav }: { nav: Nav }) {
         else save.mutate();
       }}
     >
-      <QHead screen="name" title="What’s your shop called?" lead="The name customers see when they find you — the one on your sign is best." />
+      <QHead screen="name" title={t`What’s your shop called?`} lead={t`The name customers see when they find you — the one on your sign is best.`} />
       <Body>
-        <BigInput icon="store" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder="e.g. Kigali Barbers" aria-label="Shop name" autoFocus />
-        <div className="wz-preview" aria-label="How customers will see you">
+        <BigInput icon="store" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder={t`e.g. Kigali Barbers`} aria-label={t`Shop name`} autoFocus />
+        <div className="wz-preview" aria-label={t`How customers will see you`}>
           <span className="wz-preview-tag">
-            <Icon name="eye" size={13} /> How customers see you
+            <Icon name="eye" size={13} />{' '}
+            <Trans>How customers see you</Trans>
           </span>
           {name.trim() || profile.data?.logoUrl ? (
-            <ShopLogo logoUrl={profile.data?.logoUrl ?? null} name={name.trim() || 'Shop'} size={56} />
+            <ShopLogo logoUrl={profile.data?.logoUrl ?? null} name={name.trim() || t`Shop`} size={56} />
           ) : (
             <span className="wz-logo-blank">
               <StepGlyph name="shop" size={26} />
             </span>
           )}
           <span className="wz-preview-text">
-            <strong>{name.trim() || 'Your shop’s name'}</strong>
-            <em>{kind ?? 'Barbers, salons, spas, garages and more'}</em>
+            <strong>{name.trim() || t`Your shop’s name`}</strong>
+            <em>{kind ?? t`Barbers, salons, spas, garages and more`}</em>
           </span>
         </div>
         <Problem text={problem} />
@@ -544,11 +556,11 @@ function KindQ({ nav, draft, onDraft }: { nav: Nav; draft: string[] | null; onDr
     >
       <QHead
         screen="kind"
-        title="What kind of shop is it?"
-        lead="Choose all that fit, up to four — a shop with a salon at one branch and a spa at another is both. The first you choose is your main one."
+        title={t`What kind of shop is it?`}
+        lead={t`Choose all that fit, up to four — a shop with a salon at one branch and a spa at another is both. The first you choose is your main one.`}
       />
       <Body>
-        <div className="wz-kinds" role="group" aria-label="What kind of shop">
+        <div className="wz-kinds" role="group" aria-label={t`What kind of shop`}>
           {(categories.data ?? []).map((c, i) => {
             const at = chosen.indexOf(c.id);
             const on = at >= 0;
@@ -560,10 +572,10 @@ function KindQ({ nav, draft, onDraft }: { nav: Nav; draft: string[] | null; onDr
                 aria-checked={on}
                 className={`wz-kind${on ? ' is-on' : ''}${!on && full ? ' is-full' : ''}`}
                 onClick={() => toggle(c.id)}
-                title={!on && full ? `Up to ${MAX_KIND_CATEGORIES} kinds — take one off first` : undefined}
+                title={!on && full ? t`Up to ${MAX_KIND_CATEGORIES} kinds — take one off first` : undefined}
               >
                 {at === 0 ? (
-                  <span className="wz-kind-main">Main</span>
+                  <span className="wz-kind-main"><Trans>Main</Trans></span>
                 ) : (
                   <span className="wz-kind-tick" aria-hidden="true">
                     <DrawnCheck size={12} stroke={3.4} />
@@ -579,8 +591,8 @@ function KindQ({ nav, draft, onDraft }: { nav: Nav; draft: string[] | null; onDr
         </div>
         <p className="wz-quiet wz-kind-count" aria-live="polite">
           {chosen.length === 0
-            ? 'Nothing chosen yet.'
-            : `${chosen.length} of up to ${MAX_KIND_CATEGORIES} chosen${full ? ' — take one off to choose another' : ''}.`}
+            ? t`Nothing chosen yet.`
+            : t`${chosen.length} of up to ${MAX_KIND_CATEGORIES} chosen${full ? ' — take one off to choose another' : ''}.`}
         </p>
       </Body>
       <Foot nav={nav} ready={chosen.length > 0} />
@@ -624,7 +636,7 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
   const save = useMutation({
     mutationFn: () => setKinds(ordered, otherLabels),
     onSuccess: () => nav.saved(),
-    onError: (error) => setProblem(said(error, 'That did not save. Check your connection and try again.')),
+    onError: (error) => setProblem(said(error, t`That did not save. Check your connection and try again.`)),
   });
   const toggle = (id: string) => setPicked(types.includes(id) ? types.filter((t) => t !== id) : [...types, id]);
 
@@ -641,15 +653,15 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
     >
       <QHead
         screen="type"
-        title={groups.length > 1 ? 'Which describe it best?' : 'Which describes it best?'}
-        lead={groups.length > 1 ? 'Choose at least one in each. You can choose more than one.' : 'Choose all that apply.'}
+        title={groups.length > 1 ? t`Which describe it best?` : t`Which describes it best?`}
+        lead={groups.length > 1 ? t`Choose at least one in each. You can choose more than one.` : t`Choose all that apply.`}
       />
       <Body>
         {groups.length === 0 && (
           <p className="wz-note is-warn">
-            <Icon name="alert" size={15} /> Choose what kind of shop it is first.{' '}
+            <Icon name="alert" size={15} /><Trans>Choose what kind of shop it is first.{' '}</Trans>
             <button type="button" className="wz-inline" onClick={() => nav.go('kind')}>
-              Choose it
+              <Trans>Choose it</Trans>
             </button>
           </p>
         )}
@@ -658,20 +670,20 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
             <div className="wz-chosen">
               <LineArt icon={group.icon} />
               <span>
-                <em>{g === 0 ? 'Main kind' : 'Also'}</em>
+                <em>{g === 0 ? t`Main kind` : t`Also`}</em>
                 <strong>{group.name}</strong>
               </span>
               {g === 0 ? (
                 <button type="button" className="wz-link" onClick={() => nav.go('kind')}>
-                  Change
+                  <Trans>Change</Trans>
                 </button>
               ) : (
                 <button type="button" className="wz-link" onClick={() => setOrder([group.id, ...categoryIds.filter((c) => c !== group.id)])}>
-                  Make it the main one
+                  <Trans>Make it the main one</Trans>
                 </button>
               )}
             </div>
-            <div className="wz-options" role="group" aria-label={`Types of ${group.name}`}>
+            <div className="wz-options" role="group" aria-label={t`Types of ${group.name}`}>
               {group.subcategories.map((s, i) => {
                 const on = types.includes(s.id);
                 return (
@@ -697,24 +709,24 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
               .filter((s) => s.name === OTHER && types.includes(s.id))
               .map((s) => (
                 <label key={s.id} className="wz-field wz-writein">
-                  <span className="wz-label">What kind exactly?</span>
+                  <span className="wz-label"><Trans>What kind exactly?</Trans></span>
                   <BigInput
                     icon="pencil"
                     value={labels[s.id] ?? ''}
                     onChange={(e) => setTyped({ ...labels, [s.id]: e.target.value })}
                     maxLength={40}
-                    placeholder={WRITE_IN_EXAMPLES[group.icon ?? ''] ?? 'In a few words'}
+                    placeholder={WRITE_IN_EXAMPLES[group.icon ?? ''] ?? t`In a few words`}
                     autoFocus
                   />
-                  <em>Customers see this instead of “Other”. Our team checks it with the rest of your shop.</em>
+                  <em><Trans>Customers see this instead of “Other”. Our team checks it with the rest of your shop.</Trans></em>
                 </label>
               ))}
           </section>
         ))}
         {groups.length > 1 && empty.length > 0 && (
-          <p className="wz-quiet">Still to choose: one in {empty.map((g) => g.name).join(' and ')}.</p>
+          <p className="wz-quiet"><Trans>Still to choose: one in {empty.map((g) => g.name).join(' and ')}.</Trans></p>
         )}
-        {unlabelled.length > 0 && empty.length === 0 && <p className="wz-quiet">Say what kind it is, under “Other”.</p>}
+        {unlabelled.length > 0 && empty.length === 0 && <p className="wz-quiet"><Trans>Say what kind it is, under “Other”.</Trans></p>}
         <Problem text={problem} />
       </Body>
       <Foot nav={nav} busy={save.isPending} ready={groups.length > 0 && empty.length === 0 && unlabelled.length === 0} />
@@ -724,22 +736,22 @@ function TypeQ({ nav, draft }: { nav: Nav; draft: string[] | null }) {
 
 /** What a write-in under each category's "Other" might be, as a hint (§267). */
 const WRITE_IN_EXAMPLES: Record<string, string> = {
-  sparkles: 'e.g. Henna artist',
-  'heart-pulse': 'e.g. Reflexology',
-  stethoscope: 'e.g. Hearing tests',
-  dumbbell: 'e.g. Climbing wall',
-  utensils: 'e.g. Cooking at your table',
-  ticket: 'e.g. Poetry nights',
-  people: 'e.g. Chess club',
-  mountain: 'e.g. Coffee farm visit',
-  bed: 'e.g. Camping',
-  briefcase: 'e.g. CV writing',
-  car: 'e.g. Car hire',
-  shirt: 'e.g. Beading',
-  'home-tools': 'e.g. Solar panel fitting',
-  paw: 'e.g. Pet photography',
-  camera: 'e.g. Drone filming',
-  'calendar-star': 'e.g. Photo booth hire',
+  get sparkles() { return t`e.g. Henna artist`; },
+  get 'heart-pulse'() { return t`e.g. Reflexology`; },
+  get stethoscope() { return t`e.g. Hearing tests`; },
+  get dumbbell() { return t`e.g. Climbing wall`; },
+  get utensils() { return t`e.g. Cooking at your table`; },
+  get ticket() { return t`e.g. Poetry nights`; },
+  get people() { return t`e.g. Chess club`; },
+  get mountain() { return t`e.g. Coffee farm visit`; },
+  get bed() { return t`e.g. Camping`; },
+  get briefcase() { return t`e.g. CV writing`; },
+  get car() { return t`e.g. Car hire`; },
+  get shirt() { return t`e.g. Beading`; },
+  get 'home-tools'() { return t`e.g. Solar panel fitting`; },
+  get paw() { return t`e.g. Pet photography`; },
+  get camera() { return t`e.g. Drone filming`; },
+  get 'calendar-star'() { return t`e.g. Photo booth hire`; },
 };
 
 function ContactQ({ nav }: { nav: Nav }) {
@@ -757,15 +769,15 @@ function ContactQ({ nav }: { nav: Nav }) {
       void queryClient.invalidateQueries({ queryKey: ['profile'] });
       void queryClient.invalidateQueries({ queryKey: ['readiness'] });
     },
-    onError: (error) => setProblem(said(error, 'That picture did not upload. Try a JPG or PNG under 5 MB.')),
+    onError: (error) => setProblem(said(error, t`That picture did not upload. Try a JPG or PNG under 5 MB.`)),
   });
   const save = useMutation({
     mutationFn: () => updateProfile({ phone: phone.trim() }),
     onSuccess: () => nav.saved(),
-    onError: (error) => setProblem(said(error, 'That did not save. Check your connection and try again.')),
+    onError: (error) => setProblem(said(error, t`That did not save. Check your connection and try again.`)),
   });
   const ready = phone.replace(/\D/g, '').length >= 9;
-  const name = profile.data?.name ?? 'Shop';
+  const name = profile.data?.name ?? t`Shop`;
 
   return (
     <form
@@ -778,16 +790,16 @@ function ContactQ({ nav }: { nav: Nav }) {
         else save.mutate();
       }}
     >
-      <QHead screen="contact" title="How can customers reach you?" lead="A number customers can call. We may call it too, to check your shop before it goes live." />
+      <QHead screen="contact" title={t`How can customers reach you?`} lead={t`A number customers can call. We may call it too, to check your shop before it goes live.`} />
       <Body>
-        <BigInput icon="phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" maxLength={30} placeholder="+250 788 123 456" aria-label="Phone number" autoFocus />
+        <BigInput icon="phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" maxLength={30} placeholder="+250 788 123 456" aria-label={t`Phone number`} autoFocus />
         <div className="wz-sep">
-          <span>And if you have one</span>
+          <span><Trans>And if you have one</Trans></span>
         </div>
         <DropZone
           onFiles={([file]) => logo.mutate(file)}
           disabled={logo.isPending}
-          hint={profile.data?.logoUrl ? 'Drop to make it your new logo' : 'Drop to make it your logo'}
+          hint={profile.data?.logoUrl ? t`Drop to make it your new logo` : t`Drop to make it your logo`}
         >
         <div className="wz-logo">
           {profile.data?.logoUrl ? (
@@ -798,10 +810,10 @@ function ContactQ({ nav }: { nav: Nav }) {
             </span>
           )}
           <span className="wz-logo-text">
-            <strong>{profile.data?.logoUrl ? 'Your logo' : 'Add your logo'}</strong>
-            <em>{profile.data?.logoUrl ? 'It shows on every card customers see.' : 'Optional · square works best · JPG, PNG or WebP'}</em>
+            <strong>{profile.data?.logoUrl ? t`Your logo` : t`Add your logo`}</strong>
+            <em>{profile.data?.logoUrl ? t`It shows on every card customers see.` : t`Optional · square works best · JPG, PNG or WebP`}</em>
           </span>
-          <ImageButton id="wz-logo" label={profile.data?.logoUrl ? 'Change' : 'Upload'} busy={logo.isPending} onPick={(file) => file && logo.mutate(file)} />
+          <ImageButton id="wz-logo" label={profile.data?.logoUrl ? t`Change` : t`Upload`} busy={logo.isPending} onPick={(file) => file && logo.mutate(file)} />
         </div>
         </DropZone>
         <Problem text={problem} />
@@ -866,7 +878,7 @@ function AddressQ({ nav }: { nav: Nav }) {
           nav.next();
         }}
       >
-        <QHead screen="address" title="Where is your shop?" lead="Your branch is on the map." />
+        <QHead screen="address" title={t`Where is your shop?`} lead={t`Your branch is on the map.`} />
         <Body>
           {branch.latitude !== null && branch.longitude !== null && (
             <div className="wz-map">
@@ -884,10 +896,11 @@ function AddressQ({ nav }: { nav: Nav }) {
             }
           />
           <p className="wz-note">
-            <Icon name="info" size={15} /> More branches and photos are in <b>Branches &amp; hours</b>, whenever you want them.
+            <Icon name="info" size={15} />{' '}
+            <Trans>More branches and photos are in <b>Branches &amp; hours</b>, whenever you want them.</Trans>
           </p>
         </Body>
-        <Foot nav={nav} label="Continue" noSkip />
+        <Foot nav={nav} label={t`Continue`} noSkip />
       </form>
     );
   }
@@ -901,10 +914,10 @@ function AddressQ({ nav }: { nav: Nav }) {
         if (ready) create.mutate();
       }}
     >
-      <QHead screen="address" title="Where is your shop?" lead="Start typing the address and pick it from the list — we put you on the map." />
+      <QHead screen="address" title={t`Where is your shop?`} lead={t`Start typing the address and pick it from the list — we put you on the map.`} />
       <Body>
         <div className="wz-address bf">
-          <AddressField id="wz-address" value={address} onChange={setAddress} onPick={onPick} placeholder="e.g. KG 11 Ave, Kimironko" />
+          <AddressField id="wz-address" value={address} onChange={setAddress} onPick={onPick} placeholder={t`e.g. KG 11 Ave, Kimironko`} />
         </div>
 
         {pinned && (
@@ -917,11 +930,11 @@ function AddressQ({ nav }: { nav: Nav }) {
                 <DrawnCheck size={15} stroke={3} />
               </span>
               <span>
-                <strong>On the map</strong>
-                <em>Customers nearby will find you here.</em>
+                <strong><Trans>On the map</Trans></strong>
+                <em><Trans>Customers nearby will find you here.</Trans></em>
               </span>
               <button type="button" className="wz-link" onClick={() => setManual((v) => !v)}>
-                {manual ? 'Done' : 'Move the pin'}
+                {manual ? t`Done` : t`Move the pin`}
               </button>
             </div>
           </div>
@@ -930,10 +943,11 @@ function AddressQ({ nav }: { nav: Nav }) {
         {(manual || !pinned) && (
           <div className={`wz-manual bf${manual ? ' is-open' : ''}`}>
             {manual ? (
-              <PlaceField value={place} onChange={setPlace} onProblem={setProblem} hint="Paste your Google Maps link, or use your position if you are at the shop now." />
+              <PlaceField value={place} onChange={setPlace} onProblem={setProblem} hint={t`Paste your Google Maps link, or use your position if you are at the shop now.`} />
             ) : (
               <button type="button" className="wz-link" onClick={() => setManual(true)}>
-                <Icon name="pin" size={15} /> Can’t find it? Paste a map link or use where you are
+                <Icon name="pin" size={15} />{' '}
+                <Trans>Can’t find it? Paste a map link or use where you are</Trans>
               </button>
             )}
           </div>
@@ -941,19 +955,18 @@ function AddressQ({ nav }: { nav: Nav }) {
 
         {(pinned || districtId) && (
           <div className="wz-field bf">
-            <DistrictField value={districtId} onChange={setDistrictId} hint="Customers search by area, so this is how they find you." />
+            <DistrictField value={districtId} onChange={setDistrictId} hint={t`Customers search by area, so this is how they find you.`} />
           </div>
         )}
 
         <div className="wz-field">
           {renaming ? (
             <>
-              <span className="wz-label">Branch name</span>
-              <BigInput icon="store" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder="Kigali Barbers — Kimironko" autoFocus />
+              <span className="wz-label"><Trans>Branch name</Trans></span>
+              <BigInput icon="store" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder={t`Kigali Barbers — Kimironko`} autoFocus />
             </>
           ) : (
-            <p className="wz-quiet">
-              Shown to customers as <b>{branchName || 'your shop’s name'}</b>.{' '}
+            <p className="wz-quiet"><Trans>Shown to customers as </Trans><b>{branchName || t`your shop’s name`}</b>.{' '}
               <button
                 type="button"
                 className="wz-link"
@@ -962,7 +975,7 @@ function AddressQ({ nav }: { nav: Nav }) {
                   setRenaming(true);
                 }}
               >
-                Rename
+                <Trans>Rename</Trans>
               </button>
             </p>
           )}
@@ -970,8 +983,11 @@ function AddressQ({ nav }: { nav: Nav }) {
 
         {active.length > 0 && (
           <p className="wz-note">
-            <Icon name="info" size={15} /> Your branch “{active[0].name}” has no map pin or district yet. Add them in{' '}
-            <Link to="/hours">Branches &amp; hours</Link>, or add the address here.
+            <Icon name="info" size={15} />
+            <Trans>
+              Your branch “{active[0].name}” has no map pin or district yet. Add them in{' '}
+              <Link to="/hours">Branches &amp; hours</Link>, or add the address here.
+            </Trans>
           </p>
         )}
         <Problem text={problem} />
@@ -984,8 +1000,9 @@ function AddressQ({ nav }: { nav: Nav }) {
 type Week = { days: number[]; open: string; close: string };
 /** Monday first, as a week is read here. */
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
-const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const DAY_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+/** Day names in the app's language (§308), Sunday first. */
+const DAY_SHORT = () => [0, 1, 2, 3, 4, 5, 6].map((day) => dayName(day, 'short'));
+const DAY_LONG = () => [0, 1, 2, 3, 4, 5, 6].map((day) => dayName(day));
 const sameDays = (a: number[], b: number[]) => a.length === b.length && a.every((d) => b.includes(d));
 
 /** "Monday to Saturday", "Every day", "Mon, Wed and Fri". */
@@ -993,11 +1010,15 @@ function daysInWords(days: number[]) {
   const preset = HOURS_PRESETS.find((p) => sameDays(p.days, days));
   if (preset) return preset.label;
   const ordered = DAY_ORDER.filter((d) => days.includes(d));
-  if (ordered.length === 0) return 'No days chosen';
+  if (ordered.length === 0) return t`No days chosen`;
   const run = DAY_ORDER.indexOf(ordered[ordered.length - 1]) - DAY_ORDER.indexOf(ordered[0]) + 1 === ordered.length;
-  if (run && ordered.length > 2) return `${DAY_LONG[ordered[0]]} to ${DAY_LONG[ordered[ordered.length - 1]]}`;
-  const names = ordered.map((d) => DAY_SHORT[d]);
-  return names.length === 1 ? DAY_LONG[ordered[0]] : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  if (run && ordered.length > 2) {
+    const first = DAY_LONG()[ordered[0]];
+    const last = DAY_LONG()[ordered[ordered.length - 1]];
+    return t`${first} to ${last}`;
+  }
+  const names = ordered.map((d) => DAY_SHORT()[d]);
+  return names.length === 1 ? DAY_LONG()[ordered[0]] : listOf(names);
 }
 
 function HoursQ({ nav }: { nav: Nav }) {
@@ -1014,7 +1035,7 @@ function HoursQ({ nav }: { nav: Nav }) {
   const save = useMutation({
     mutationFn: () => setHours(branch!.id, weekOf(week.days, week.open, week.close)),
     onSuccess: () => nav.saved(),
-    onError: (error) => setProblem(said(error, 'Those hours did not save.')),
+    onError: (error) => setProblem(said(error, t`Those hours did not save.`)),
   });
   const toggle = (day: number) =>
     setWeek((w) => ({ ...w, days: w.days.includes(day) ? w.days.filter((d) => d !== day) : [...w.days, day] }));
@@ -1029,24 +1050,24 @@ function HoursQ({ nav }: { nav: Nav }) {
         else if (branch && ready) save.mutate();
       }}
     >
-      <QHead screen="hours" title="When are you open?" lead={hasHours ? 'Your opening hours are set.' : 'Pick your usual week. Lunch breaks and odd days can be set later.'} />
+      <QHead screen="hours" title={t`When are you open?`} lead={hasHours ? t`Your opening hours are set.` : t`Pick your usual week. Lunch breaks and odd days can be set later.`} />
       <Body>
         {!branch ? (
           <p className="wz-note is-warn">
-            <Icon name="alert" size={15} /> Hours belong to a branch, so add your address first.{' '}
+            <Icon name="alert" size={15} /><Trans>Hours belong to a branch, so add your address first.{' '}</Trans>
             <button type="button" className="wz-inline" onClick={() => nav.go('address')}>
-              Add the address
+              <Trans>Add the address</Trans>
             </button>
           </p>
         ) : hasHours ? (
           <Have
             icon={<StepGlyph name="clock" size={22} />}
-            title="Opening hours are set"
-            text={`Open ${branch.hours.filter((h) => !h.isClosed).length} days a week — change them any time in Branches & hours`}
+            title={t`Opening hours are set`}
+            text={t`Open ${branch.hours.filter((h) => !h.isClosed).length} days a week — change them any time in Branches & hours`}
           />
         ) : (
           <>
-            <div className="wz-presets" role="radiogroup" aria-label="Common weeks">
+            <div className="wz-presets" role="radiogroup" aria-label={t`Common weeks`}>
               {HOURS_PRESETS.map((p) => (
                 <button
                   key={p.key}
@@ -1067,37 +1088,36 @@ function HoursQ({ nav }: { nav: Nav }) {
               ))}
             </div>
             <div className="wz-hours">
-              <div className="wz-week" role="group" aria-label="Open on">
+              <div className="wz-week" role="group" aria-label={t`Open on`}>
                 {DAY_ORDER.map((d) => {
                   const on = week.days.includes(d);
                   return (
-                    <button key={d} type="button" aria-pressed={on} className={on ? 'is-on' : ''} onClick={() => toggle(d)} title={DAY_LONG[d]}>
-                      {DAY_SHORT[d]}
+                    <button key={d} type="button" aria-pressed={on} className={on ? 'is-on' : ''} onClick={() => toggle(d)} title={DAY_LONG()[d]}>
+                      {DAY_SHORT()[d]}
                     </button>
                   );
                 })}
               </div>
               <div className="wz-times">
                 <label>
-                  <span>Opens</span>
+                  <span><Trans>Opens</Trans></span>
                   <input type="time" value={week.open} onChange={(e) => setWeek({ ...week, open: e.target.value })} />
                 </label>
                 <span className="wz-times-to" aria-hidden="true">
                   <Icon name="arrowRight" size={16} />
                 </span>
                 <label>
-                  <span>Closes</span>
+                  <span><Trans>Closes</Trans></span>
                   <input type="time" value={week.close} onChange={(e) => setWeek({ ...week, close: e.target.value })} />
                 </label>
               </div>
               <p className="wz-hours-sum">
                 <StepGlyph name="clock" size={17} />
                 {week.days.length ? (
-                  <span>
-                    Open <b>{daysInWords(week.days)}</b>, {week.open}–{week.close}
+                  <span><Trans>Open <b>{daysInWords(week.days)}</b>, {week.open}–{week.close}</Trans>
                   </span>
                 ) : (
-                  <span>Choose the days you open.</span>
+                  <span><Trans>Choose the days you open.</Trans></span>
                 )}
               </p>
             </div>
@@ -1105,7 +1125,7 @@ function HoursQ({ nav }: { nav: Nav }) {
         )}
         <Problem text={problem} />
       </Body>
-      <Foot nav={nav} busy={save.isPending} ready={hasHours || (Boolean(branch) && ready)} label={hasHours ? 'Continue' : 'Next'} noSkip={hasHours} />
+      <Foot nav={nav} busy={save.isPending} ready={hasHours || (Boolean(branch) && ready)} label={hasHours ? t`Continue` : t`Next`} noSkip={hasHours} />
     </form>
   );
 }
@@ -1115,7 +1135,11 @@ function HoursQ({ nav }: { nav: Nav }) {
 
 const DURATIONS = [15, 30, 45, 60, 90, 120];
 const DEPOSITS = [20, 30, 50];
-const durationWords = (d: number) => (d < 60 ? `${d} min` : d % 60 === 0 ? `${d / 60} h` : `${Math.floor(d / 60)} h ${d % 60}`);
+const durationWords = (d: number) => {
+  const hours = Math.floor(d / 60);
+  const minutes = d % 60;
+  return d < 60 ? t`${d} min` : minutes === 0 ? t`${hours} h` : t`${hours} h ${minutes}`;
+};
 
 function useOffered() {
   const services = useQuery({ queryKey: ['services'], queryFn: listServices });
@@ -1134,68 +1158,72 @@ function OfferedHave({ nav, screen }: { nav: Nav; screen: Screen }) {
         nav.go('paid');
       }}
     >
-      <QHead screen={screen} title="What customers can book" lead={`You have ${offered.length} ${offered.length === 1 ? 'service' : 'services'} ready to book.`} />
+      <QHead screen={screen} title={t`What customers can book`} lead={t`You have ${offered.length} ${offered.length === 1 ? 'service' : 'services'} ready to book.`} />
       <Body>
         <Have
           icon={<StepGlyph name="service" size={22} />}
           title={first.name}
-          text={`${money.format(Math.min(...first.locations.map((o) => o.priceMinor)))} · ${first.durationMinutes} min · ${Number(first.depositPercentage)}% deposit`}
+          text={t`${money.format(Math.min(...first.locations.map((o) => o.priceMinor)))} · ${first.durationMinutes} min · ${Number(first.depositPercentage)}% deposit`}
         />
         <p className="wz-note">
-          <Icon name="info" size={15} /> Add more, with photos and descriptions, in <b>Services</b> whenever you like.
+          <Icon name="info" size={15} />{' '}
+          <Trans>Add more, with photos and descriptions, in <b>Services</b> whenever you like.</Trans>
         </p>
       </Body>
-      <Foot nav={nav} label="Continue" noSkip />
+      <Foot nav={nav} label={t`Continue`} noSkip />
     </form>
   );
 }
 
-/** A few things a shop of this type is booked for, one press each (§256, §266). */
-const EXAMPLES: Array<[RegExp, string[]]> = [
-  [/barber/, ['Haircut', 'Beard trim', 'Haircut and beard']],
-  [/braid|locs/, ['Box braids', 'Locs retwist', 'Cornrows']],
-  [/^hair$|hair salon/, ['Wash and blow-dry', 'Braids', 'Relaxer']],
-  [/nail/, ['Manicure', 'Pedicure', 'Gel nails']],
-  [/lash|brow/, ['Lash extensions', 'Brow shaping', 'Lash lift']],
-  [/make-?up/, ['Bridal make-up', 'Evening make-up', 'Make-up lesson']],
-  [/facial|skin/, ['Classic facial', 'Deep-cleanse facial', 'Body scrub']],
-  [/massage|spa|sauna/, ['Full-body massage', 'Back massage', 'Steam room']],
-  [/tattoo|piercing/, ['Small tattoo', 'Ear piercing', 'Consultation']],
-  [/dine-in|private dining/, ['Table for two', 'Table for four', 'Private room for ten']],
-  [/pick-up/, ['Lunch to collect', 'Dinner to collect', 'Breakfast to collect']],
-  [/movie/, ['Standard ticket', 'VIP seat', 'Seat for two']],
-  [/concert|theatre|show|comedy|festival|sporting|exhibit/, ['General admission', 'VIP ticket', 'Group of four']],
-  [/gym/, ['Day pass', 'Gym session', 'Fitness assessment']],
-  [/pitch|court/, ['Pitch for one hour', 'Evening slot', 'Weekend slot']],
-  [/swim/, ['Swim session', 'Swimming lesson', 'Kids’ lesson']],
-  [/martial|dance|pilates/, ['Drop-in class', 'Private lesson', 'Beginners’ class']],
-  [/personal training/, ['One-hour session', 'Fitness assessment', 'Partner session']],
-  [/tutor|educational/, ['One-hour lesson', 'Exam revision', 'Group lesson']],
-  [/coach|consult/, ['First consultation', 'One-hour session', 'Follow-up']],
-  [/dental/, ['Check-up and clean', 'Filling', 'Whitening']],
-  [/eye/, ['Eye test', 'Contact lens fitting', 'Glasses fitting']],
-  [/clinic|dermatolog|specialist/, ['Consultation', 'Follow-up visit', 'Check-up']],
-  [/lab|vaccin/, ['Blood test', 'Vaccination', 'Health check']],
-  [/yoga|meditation/, ['Yoga class', 'Meditation session', 'Private class']],
-  [/therapy|nutrition|acupuncture|chiropractic|physio/, ['First session', 'Follow-up session', 'Assessment']],
-  [/hotel|guesthouse|apartment/, ['One night, double room', 'One night, single room', 'Weekend stay']],
-  [/day pass|pool/, ['Pool day pass', 'Spa and pool day', 'Family day pass']],
-  [/meeting|conference/, ['Meeting room, half day', 'Meeting room, full day', 'Conference hall']],
-  [/gorilla|wildlife/, ['Gorilla trekking', 'Golden monkey trek', 'Chimpanzee trek']],
-  [/safari/, ['Full-day safari', 'Half-day game drive', 'Boat safari']],
-  [/tour|hik|boat|adventure/, ['Kigali city tour', 'Guided hike', 'Lake boat trip']],
-  [/tailor|clothing|fitting/, ['Trouser alterations', 'Dress fitting', 'Suit made to measure']],
-  [/shoe/, ['Shoe repair', 'Shoe shine', 'Heel replacement']],
-  [/laundry|dry clean/, ['Wash and fold', 'Dry cleaning', 'Ironing']],
-  [/driving/, ['Driving lesson', 'Test preparation', 'Refresher lesson']],
-  [/car|tyre|vehicle|auto/, ['Car wash', 'Oil change', 'Wheel balancing']],
-  [/photo|video|studio/, ['Portrait session', 'Event coverage', 'Studio hour']],
-  [/groom|dog|pet|vet/, ['Dog grooming', 'Nail clipping', 'Check-up']],
-  [/clean/, ['Home cleaning', 'Deep clean', 'Office cleaning']],
+/**
+ * A few things a shop of this type is booked for, one press each (§256, §266) —
+ * in the seller's language, since the one pressed becomes their service's name.
+ */
+const EXAMPLES = (): Array<[RegExp, string[]]> => [
+  [/barber/, [t`Haircut`, t`Beard trim`, t`Haircut and beard`]],
+  [/braid|locs/, [t`Box braids`, t`Locs retwist`, t`Cornrows`]],
+  [/^hair$|hair salon/, [t`Wash and blow-dry`, t`Braids`, t`Relaxer`]],
+  [/nail/, [t`Manicure`, t`Pedicure`, t`Gel nails`]],
+  [/lash|brow/, [t`Lash extensions`, t`Brow shaping`, t`Lash lift`]],
+  [/make-?up/, [t`Bridal make-up`, t`Evening make-up`, t`Make-up lesson`]],
+  [/facial|skin/, [t`Classic facial`, t`Deep-cleanse facial`, t`Body scrub`]],
+  [/massage|spa|sauna/, [t`Full-body massage`, t`Back massage`, t`Steam room`]],
+  [/tattoo|piercing/, [t`Small tattoo`, t`Ear piercing`, t`Consultation`]],
+  [/dine-in|private dining/, [t`Table for two`, t`Table for four`, t`Private room for ten`]],
+  [/pick-up/, [t`Lunch to collect`, t`Dinner to collect`, t`Breakfast to collect`]],
+  [/movie/, [t`Standard ticket`, t`VIP seat`, t`Seat for two`]],
+  [/concert|theatre|show|comedy|festival|sporting|exhibit/, [t`General admission`, t`VIP ticket`, t`Group of four`]],
+  [/gym/, [t`Day pass`, t`Gym session`, t`Fitness assessment`]],
+  [/pitch|court/, [t`Pitch for one hour`, t`Evening slot`, t`Weekend slot`]],
+  [/swim/, [t`Swim session`, t`Swimming lesson`, t`Kids’ lesson`]],
+  [/martial|dance|pilates/, [t`Drop-in class`, t`Private lesson`, t`Beginners’ class`]],
+  [/personal training/, [t`One-hour session`, t`Fitness assessment`, t`Partner session`]],
+  [/tutor|educational/, [t`One-hour lesson`, t`Exam revision`, t`Group lesson`]],
+  [/coach|consult/, [t`First consultation`, t`One-hour session`, t`Follow-up`]],
+  [/dental/, [t`Check-up and clean`, t`Filling`, t`Whitening`]],
+  [/eye/, [t`Eye test`, t`Contact lens fitting`, t`Glasses fitting`]],
+  [/clinic|dermatolog|specialist/, [t`Consultation`, t`Follow-up visit`, t`Check-up`]],
+  [/lab|vaccin/, [t`Blood test`, t`Vaccination`, t`Health check`]],
+  [/yoga|meditation/, [t`Yoga class`, t`Meditation session`, t`Private class`]],
+  [/therapy|nutrition|acupuncture|chiropractic|physio/, [t`First session`, t`Follow-up session`, t`Assessment`]],
+  [/hotel|guesthouse|apartment/, [t`One night, double room`, t`One night, single room`, t`Weekend stay`]],
+  [/day pass|pool/, [t`Pool day pass`, t`Spa and pool day`, t`Family day pass`]],
+  [/meeting|conference/, [t`Meeting room, half day`, t`Meeting room, full day`, t`Conference hall`]],
+  [/gorilla|wildlife/, [t`Gorilla trekking`, t`Golden monkey trek`, t`Chimpanzee trek`]],
+  [/safari/, [t`Full-day safari`, t`Half-day game drive`, t`Boat safari`]],
+  [/tour|hik|boat|adventure/, [t`Kigali city tour`, t`Guided hike`, t`Lake boat trip`]],
+  [/tailor|clothing|fitting/, [t`Trouser alterations`, t`Dress fitting`, t`Suit made to measure`]],
+  [/shoe/, [t`Shoe repair`, t`Shoe shine`, t`Heel replacement`]],
+  [/laundry|dry clean/, [t`Wash and fold`, t`Dry cleaning`, t`Ironing`]],
+  [/driving/, [t`Driving lesson`, t`Test preparation`, t`Refresher lesson`]],
+  [/car|tyre|vehicle|auto/, [t`Car wash`, t`Oil change`, t`Wheel balancing`]],
+  [/photo|video|studio/, [t`Portrait session`, t`Event coverage`, t`Studio hour`]],
+  [/groom|dog|pet|vet/, [t`Dog grooming`, t`Nail clipping`, t`Check-up`]],
+  [/clean/, [t`Home cleaning`, t`Deep clean`, t`Office cleaning`]],
 ];
 const examplesFor = (type: string | null | undefined) => {
   const name = type?.toLowerCase() ?? '';
-  return EXAMPLES.find(([match]) => match.test(name))?.[1] ?? [];
+  return EXAMPLES().find(([match]) => match.test(name))?.[1] ?? [];
 };
 
 function ServiceQ({ nav, draft, onDraft }: { nav: Nav; draft: ServiceDraft; onDraft: (d: ServiceDraft) => void }) {
@@ -1220,21 +1248,21 @@ function ServiceQ({ nav, draft, onDraft }: { nav: Nav; draft: ServiceDraft; onDr
         nav.next();
       }}
     >
-      <QHead screen="service" title="What can customers book first?" lead="Just one to start. You can add the rest later, with photos." />
+      <QHead screen="service" title={t`What can customers book first?`} lead={t`Just one to start. You can add the rest later, with photos.`} />
       <Body>
         {open.length === 0 && (
           <p className="wz-note is-warn">
-            <Icon name="alert" size={15} /> A service is offered at a branch, so add your address first.{' '}
+            <Icon name="alert" size={15} /><Trans>A service is offered at a branch, so add your address first.{' '}</Trans>
             <button type="button" className="wz-inline" onClick={() => nav.go('address')}>
-              Add the address
+              <Trans>Add the address</Trans>
             </button>
           </p>
         )}
         <div className="wz-field">
-          <BigInput icon="tag" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder={`e.g. ${examples[0] ?? 'Haircut'}`} aria-label="Service name" autoFocus />
+          <BigInput icon="tag" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder={t`e.g. ${examples[0] ?? 'Haircut'}`} aria-label={t`Service name`} autoFocus />
           {examples.length > 0 && (
             <div className="wz-examples">
-              <span>Try</span>
+              <span><Trans>Try</Trans></span>
               {examples.map((e) => (
                 <button key={e} type="button" className={e === name ? 'is-on' : ''} onClick={() => setName(e)}>
                   {e}
@@ -1244,7 +1272,7 @@ function ServiceQ({ nav, draft, onDraft }: { nav: Nav; draft: ServiceDraft; onDr
           )}
         </div>
         <div className="wz-field">
-          <span className="wz-label">How long does it take?</span>
+          <span className="wz-label"><Trans>How long does it take?</Trans></span>
           <div className="wz-chips">
             {DURATIONS.map((d) => (
               <button key={d} type="button" className={d === duration ? 'is-on' : ''} onClick={() => setDuration(d)}>
@@ -1280,7 +1308,7 @@ function PriceQ({ nav, draft }: { nav: Nav; draft: ServiceDraft }) {
         offers: open.map((l) => ({ locationId: l.id, priceMinor })),
       }),
     onSuccess: () => nav.saved(),
-    onError: (error) => setProblem(said(error, 'That service did not save.')),
+    onError: (error) => setProblem(said(error, t`That service did not save.`)),
   });
 
   if (offered.length > 0) return <OfferedHave nav={nav} screen="price" />;
@@ -1296,26 +1324,26 @@ function PriceQ({ nav, draft }: { nav: Nav; draft: ServiceDraft }) {
     >
       <QHead
         screen="price"
-        title={draft.name ? `How much is ${draft.name.toLowerCase()}?` : 'How much is it?'}
-        lead="Customers pay a small part when they book, the rest at your shop."
+        title={draft.name ? t`How much is ${draft.name.toLowerCase()}?` : t`How much is it?`}
+        lead={t`Customers pay a small part when they book, the rest at your shop.`}
       />
       <Body>
         {!draft.name ? (
           <p className="wz-note is-warn">
-            <Icon name="alert" size={15} /> Name the service first.{' '}
+            <Icon name="alert" size={15} /><Trans>Name the service first.{' '}</Trans>
             <button type="button" className="wz-inline" onClick={() => nav.go('service')}>
-              Name it
+              <Trans>Name it</Trans>
             </button>
           </p>
         ) : (
           <>
             <label className="wz-money is-big">
-              <b>{money.code || 'RWF'}</b>
-              <input value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" placeholder="5,000" aria-label="Price" autoFocus />
+              <b>{money.code || t`RWF`}</b>
+              <input value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" placeholder="5,000" aria-label={t`Price`} autoFocus />
               <em>{durationWords(draft.duration)}</em>
             </label>
             <div className="wz-field">
-              <span className="wz-label">Deposit to book</span>
+              <span className="wz-label"><Trans>Deposit to book</Trans></span>
               <div className="wz-chips">
                 {DEPOSITS.map((d) => (
                   <button key={d} type="button" className={d === deposit ? 'is-on' : ''} onClick={() => setDeposit(d)}>
@@ -1329,18 +1357,16 @@ function PriceQ({ nav, draft }: { nav: Nav; draft: ServiceDraft }) {
                 </div>
                 <div className="wz-split-legend">
                   <span>
-                    <b className="is-now" />
-                    On their phone, to book
+                    <Trans><b className="is-now" />On their phone, to book</Trans>
                     <strong>{priced ? money.format(depositMinor) : `${deposit}%`}</strong>
                   </span>
                   <span>
-                    <b />
-                    At your shop
+                    <Trans><b />At your shop</Trans>
                     <strong>{priced ? money.format(priceMinor - depositMinor) : `${100 - deposit}%`}</strong>
                   </span>
                 </div>
               </div>
-              <em>A deposit means fewer people who book and do not come.</em>
+              <em><Trans>A deposit means fewer people who book and do not come.</Trans></em>
             </div>
           </>
         )}
@@ -1364,7 +1390,7 @@ function PaidQ({ nav }: { nav: Nav }) {
   const save = useMutation({
     mutationFn: () => submitPayoutDestination(msisdn.trim()),
     onSuccess: () => nav.saved(),
-    onError: (error) => setProblem(said(error, 'That number did not save.')),
+    onError: (error) => setProblem(said(error, t`That number did not save.`)),
   });
 
   const have = current.data?.destination ?? null;
@@ -1377,15 +1403,15 @@ function PaidQ({ nav }: { nav: Nav }) {
           nav.next();
         }}
       >
-        <QHead screen="paid" title="Where should we send your money?" lead="Your share of every deposit goes to this number." />
+        <QHead screen="paid" title={t`Where should we send your money?`} lead={t`Your share of every deposit goes to this number.`} />
         <Body>
           <Have
             icon={<NetworkMark network={have.provider} size={40} />}
             title={`${NETWORK_NAME[have.provider]} · •••• ${(have.msisdn ?? have.msisdnLast3 ?? '').slice(-3)}`}
-            text={have.status === 'VERIFIED' ? 'Checked — payouts go here' : 'Waiting to be checked by our team'}
+            text={have.status === 'VERIFIED' ? t`Checked — payouts go here` : t`Waiting to be checked by our team`}
           />
         </Body>
-        <Foot nav={nav} label="Continue" noSkip />
+        <Foot nav={nav} label={t`Continue`} noSkip />
       </form>
     );
   }
@@ -1402,8 +1428,8 @@ function PaidQ({ nav }: { nav: Nav }) {
       <QHead
         screen="paid"
         optional
-        title="Where should we send your money?"
-        lead="Your shop can go live without it — you are paid once it is added and checked."
+        title={t`Where should we send your money?`}
+        lead={t`Your shop can go live without it — you are paid once it is added and checked.`}
       />
       <Body>
         <span className={`wz-msisdn is-big${network ? ' is-known' : ''}`}>
@@ -1414,14 +1440,14 @@ function PaidQ({ nav }: { nav: Nav }) {
               <Icon name="phone" size={18} />
             </span>
           )}
-          <input value={msisdn} onChange={(e) => setMsisdn(e.target.value)} inputMode="tel" placeholder="MoMo or Airtel number" maxLength={20} aria-label="Mobile money number" autoFocus />
+          <input value={msisdn} onChange={(e) => setMsisdn(e.target.value)} inputMode="tel" placeholder={t`MoMo or Airtel number`} maxLength={20} aria-label={t`Mobile money number`} autoFocus />
           {network && <em>{NETWORK_NAME[network]}</em>}
         </span>
         <div className="wz-paid-how">
           {[
-            { icon: 'banknote' as IconName, text: 'A customer pays a deposit to book' },
-            { icon: 'shield' as IconName, text: 'We hold it safely until they come' },
-            { icon: 'wallet' as IconName, text: 'Your share is sent to this number' },
+            { icon: 'banknote' as IconName, text: t`A customer pays a deposit to book` },
+            { icon: 'shield' as IconName, text: t`We hold it safely until they come` },
+            { icon: 'wallet' as IconName, text: t`Your share is sent to this number` },
           ].map((s, i) => (
             <span key={s.text}>
               <i>
@@ -1432,10 +1458,10 @@ function PaidQ({ nav }: { nav: Nav }) {
             </span>
           ))}
         </div>
-        <p className="wz-quiet">In the shop’s or the owner’s name. Our team checks it before the first payout.</p>
+        <p className="wz-quiet"><Trans>In the shop’s or the owner’s name. Our team checks it before the first payout.</Trans></p>
         <Problem text={problem} />
       </Body>
-      <Foot nav={nav} busy={save.isPending} ready={digits.length >= 9} skipLabel="Add it later" />
+      <Foot nav={nav} busy={save.isPending} ready={digits.length >= 9} skipLabel={t`Add it later`} />
     </form>
   );
 }
@@ -1446,6 +1472,7 @@ function PaidQ({ nav }: { nav: Nav }) {
 function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | undefined; email: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const address = email || t`your address`;
   const [sent, setSent] = useState(false);
   const submit = useMutation({
     mutationFn: submitForReview,
@@ -1485,21 +1512,22 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
               <DrawnCheck size={46} stroke={2.4} />
             </span>
           </div>
-          <h1 id="wz-title">{sent ? 'Your shop is with us for review' : 'Your shop is waiting for review'}</h1>
+          <h1 id="wz-title">{sent ? t`Your shop is with us for review` : t`Your shop is waiting for review`}</h1>
           <p className="wz-lead">
             {readiness.submittedAt && !sent
-              ? `Sent ${new Date(readiness.submittedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}. `
+              ? t`Sent ${new Date(readiness.submittedAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' })}. `
               : ''}
-            Here is what happens next.
-          </p>
+                <Trans>Here is what happens next.</Trans>
+              </p>
           <ol className="wz-next">
             <li>
               <span className="wz-next-icon">
                 <StepGlyph name="shield" size={22} />
               </span>
               <span>
-                <strong>We check your details</strong>
-                Usually within one working day. We may call your shop’s number.
+                <Trans>
+                  <strong>We check your details</strong>Usually within one working day. We may call your shop’s number.
+                </Trans>
               </span>
             </li>
             <li>
@@ -1507,8 +1535,7 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
                 <StepGlyph name="mail" size={22} />
               </span>
               <span>
-                <strong>You get an email</strong>
-                At {email || 'your address'}, the moment you are approved.
+                <Trans><strong>You get an email</strong>At {address}, the moment you are approved.</Trans>
               </span>
             </li>
             <li>
@@ -1516,8 +1543,9 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
                 <StepGlyph name="review" size={22} />
               </span>
               <span>
-                <strong>You post your shop</strong>
-                When you are ready — one button on your dashboard. Customers see it from then, not before.
+                <Trans>
+                  <strong>You post your shop</strong>When you are ready — one button on your dashboard. Customers see it from then, not before.
+                </Trans>
               </span>
             </li>
             <li>
@@ -1525,16 +1553,16 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
                 <StepGlyph name="sparkle" size={22} />
               </span>
               <span>
-                <strong>Meanwhile, make it shine</strong>
-                Photos, a description, more services and your team. Shops with photos get booked first.
+                <Trans>
+                  <strong>Meanwhile, make it shine</strong>Photos, a description, more services and your team. Shops with photos get booked first.
+                </Trans>
               </span>
             </li>
           </ol>
         </Body>
         <div className="wz-foot is-center">
           <div className="wz-col">
-            <button type="button" className="primary wz-go" onClick={() => navigate('/', { replace: true })}>
-              Go to my dashboard <Icon name="arrowRight" size={17} stroke={2.4} />
+            <button type="button" className="primary wz-go" onClick={() => navigate('/', { replace: true })}><Trans>Go to my dashboard </Trans><Icon name="arrowRight" size={17} stroke={2.4} />
             </button>
           </div>
         </div>
@@ -1545,14 +1573,14 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
   const rejected = readiness.status === 'REJECTED';
   const required = readiness.items.filter((i) => i.required);
   const missing = required.filter((i) => !i.done);
+  const have = required.length - missing.length;
   const later = readiness.items.filter((i) => !i.required);
   const tile = (i: Readiness['items'][number]) => (
     <button key={i.key} type="button" className={`wz-ready${i.done ? ' is-done' : ''}`} onClick={() => nav.go(ITEM_WORDS[i.key].step)} disabled={i.done}>
       <span className="wz-ready-icon">{i.done ? <DrawnCheck size={14} stroke={3.2} /> : <StepGlyph name={ITEM_WORDS[i.key].section} size={17} />}</span>
       <span>{ITEM_WORDS[i.key].label}</span>
       {!i.done && (
-        <em>
-          Add <Icon name="arrowRight" size={13} stroke={2.4} />
+        <em><Trans>Add </Trans><Icon name="arrowRight" size={13} stroke={2.4} />
         </em>
       )}
     </button>
@@ -1568,13 +1596,16 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
     >
       <QHead
         screen="review"
-        title={rejected ? 'Send your shop back for review' : missing.length ? 'Almost there' : 'Ready to send'}
+        title={rejected ? t`Send your shop back for review` : missing.length ? t`Almost there` : t`Ready to send`}
         lead={
           rejected
-            ? 'Fix what we asked, then send it back. Everything you set up is still here.'
+            ? t`Fix what we asked, then send it back. Everything you set up is still here.`
             : missing.length
-              ? `${missing.length} ${missing.length === 1 ? 'thing is' : 'things are'} still needed before we can review your shop.`
-              : 'We check every shop before customers can book it. Send yours now — it only takes a moment.'
+              ? plural(missing.length, {
+                  one: '# thing is still needed before we can review your shop.',
+                  other: '# things are still needed before we can review your shop.',
+                })
+              : t`We check every shop before customers can book it. Send yours now — it only takes a moment.`
         }
       />
       <Body>
@@ -1582,29 +1613,30 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
           <div className="wz-reason">
             <Icon name="alert" size={18} />
             <span>
-              <strong>What we said</strong>
+              <strong><Trans>What we said</Trans></strong>
               {readiness.statusReason}
             </span>
           </div>
         )}
         <div className="wz-field">
           <span className="wz-label">
-            What we need <small>{required.length - missing.length} of {required.length}</small>
+            <Trans>What we need <small>{have} of {required.length}</small></Trans>
           </span>
           <div className="wz-ready-grid">{required.map(tile)}</div>
         </div>
         <div className="wz-field">
-          <span className="wz-label">Nice to have — add whenever you like</span>
+          <span className="wz-label"><Trans>Nice to have — add whenever you like</Trans></span>
           <div className="wz-ready-grid is-optional">{later.map(tile)}</div>
         </div>
-        <Problem text={submit.error ? said(submit.error, 'That did not send. Check your connection and try again.') : null} />
+        <Problem text={submit.error ? said(submit.error, t`That did not send. Check your connection and try again.`) : null} />
       </Body>
       <div className="wz-foot">
         <div className="wz-col">
           <div>
             {nav.back && (
               <button type="button" className="wz-back" onClick={nav.back}>
-                <Icon name="chevronLeft" size={17} stroke={2.2} /> Back
+                <Icon name="chevronLeft" size={17} stroke={2.2} />{' '}
+                <Trans>Back</Trans>
               </button>
             )}
           </div>
@@ -1612,11 +1644,11 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
             <button type="submit" className="primary wz-go" disabled={!readiness.canSubmit || submit.isPending}>
               {submit.isPending ? (
                 <>
-                  <span className="wz-spin" aria-hidden="true" /> Sending…
+                  <Trans><span className="wz-spin" aria-hidden="true" />Sending…</Trans>
                 </>
               ) : (
                 <>
-                  {rejected ? 'Send back for review' : 'Send for review'}
+                  {rejected ? t`Send back for review` : t`Send for review`}
                   <Icon name="send" size={16} />
                 </>
               )}

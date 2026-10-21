@@ -1,5 +1,6 @@
 import type { Appointment, AppointmentStatus, Location, ScheduleException, TimeBlock } from '../../api/business';
 import { addDays, startOfDay } from '../../lib/time';
+import { t } from '@lingui/core/macro';
 
 /*
  * The calendar's sums (§229), kept apart from how it is drawn: a day's open
@@ -68,19 +69,20 @@ export function planFor(location: Location, day: Date, exceptions: ScheduleExcep
     .sort((a, b) => a.start - b.start);
   const exception = exceptions.find((e) => e.date.slice(0, 10) === ymd);
   if (exception) {
-    if (exception.isClosed) return { open: [], breaks, closed: exception.reason ? `Closed — ${exception.reason}` : 'Closed', special: null };
+    const why = exception.reason;
+    if (exception.isClosed) return { open: [], breaks, closed: why ? t`Closed — ${why}` : t`Closed`, special: null };
     if (exception.customOpenTime && exception.customCloseTime) {
       return {
         open: [{ start: minutesOf(exception.customOpenTime), end: minutesOf(exception.customCloseTime) }],
         breaks,
         closed: null,
-        special: exception.reason ? `Special hours — ${exception.reason}` : 'Special hours',
+        special: why ? t`Special hours — ${why}` : t`Special hours`,
       };
     }
   }
   const hours = location.hours.find((h) => h.dayOfWeek === day.getDay());
   // A day with no saved hours is shut too (§12.4).
-  if (!hours || hours.isClosed) return { open: [], breaks, closed: 'Usually closed', special: null };
+  if (!hours || hours.isClosed) return { open: [], breaks, closed: t`Usually closed`, special: null };
   return { open: [{ start: minutesOf(hours.openTime), end: minutesOf(hours.closeTime) }], breaks, closed: null, special: null };
 }
 
@@ -94,7 +96,7 @@ export function mergePlans(plans: DayPlan[]): DayPlan {
     if (last && i.start <= last.end) last.end = Math.max(last.end, i.end);
     else open.push({ ...i });
   }
-  return { open, breaks: [], closed: open.length ? null : 'Closed', special: null };
+  return { open, breaks: [], closed: open.length ? null : t`Closed`, special: null };
 }
 
 /** Where a booking sits on its day, in minutes from midnight, clamped to the day. */

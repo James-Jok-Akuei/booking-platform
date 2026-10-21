@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getMe, getProfile, getReadiness, listAppointments } from '../api/business';
 import { listThreads } from '../api/chat';
+import { syncAccountLocale } from '../i18n';
 
 /** Today, from local midnight to the next one, as the instants the API takes. */
 export const todayRange = () => {
@@ -23,6 +25,8 @@ export const todayRange = () => {
  */
 export function useShellData() {
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
+  // The account's language, once known (§308).
+  useEffect(() => syncAccountLocale(me.data?.locale), [me.data?.locale]);
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile, retry: false });
   // Whether a shop that is not live has been sent for review, and what it
   // still needs (§256) — so the frame can say so in words.

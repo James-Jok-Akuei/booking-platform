@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { NAV_ITEMS } from '../nav';
+import { navItems } from '../nav';
 import { Icon } from '../ui/Icon';
 import { AdCarousel } from './AdCarousel';
 import { buildSlides } from './slides';
@@ -8,12 +8,14 @@ import { hideStrip, isStripHidden, showStripAgain } from './stripHidden';
 import { useAdData } from './useAdData';
 import { useForYouPanels } from './useForYouPanels';
 import './ads.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * Each page opens on its own advert: its place in the menu, so neighbouring
  * pages never open on the same one.
  */
-const seedOf = (path: string) => Math.max(0, NAV_ITEMS.findIndex((item) => item.to === path));
+const seedOf = (path: string) => Math.max(0, navItems().findIndex((item) => item.to === path));
 
 /** How long "Hidden until you next sign in · Undo" stays after closing. */
 const NOTE_MS = 5000;
@@ -56,9 +58,9 @@ export function AdStrip() {
     return note ? (
       <p className="ad-strip-note" role="status">
         <Icon name="clock" size={15} />
-        <span>Adverts hidden until you next sign in.</span>
+        <span><Trans>Adverts hidden until you next sign in.</Trans></span>
         <button type="button" onClick={undo}>
-          Undo
+          <Trans>Undo</Trans>
         </button>
       </p>
     ) : null;
@@ -69,7 +71,7 @@ export function AdStrip() {
   return (
     <aside
       className={`ad-strip${closing ? ' is-closing' : ''}`}
-      aria-label="For you"
+      aria-label={t`For you`}
       onAnimationEnd={(event) => {
         if (closing && event.target === event.currentTarget) {
           setHidden(true);
@@ -82,8 +84,8 @@ export function AdStrip() {
         type="button"
         className="ad-strip-close"
         onClick={close}
-        aria-label="Hide adverts until you next sign in"
-        title="Hide until you next sign in"
+        aria-label={t`Hide adverts until you next sign in`}
+        title={t`Hide until you next sign in`}
       >
         <Icon name="close" size={14} stroke={2.4} />
       </button>

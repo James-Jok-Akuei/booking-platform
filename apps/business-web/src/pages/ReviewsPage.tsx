@@ -17,10 +17,13 @@ import { Icon } from '../ui/Icon';
 import { Select } from '../ui/Select';
 import { Stars } from '../ui/Stars';
 import './reviews.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
 
 const PAGE = 20;
 
-const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
+const when = (iso: string) => new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' });
 
 /** The reply is editable for a week after posting; the server enforces it. */
 const withinEditWindow = (responseAt: string) =>
@@ -30,10 +33,22 @@ type Filter = 'all' | 'waiting' | 'replied' | 1 | 2 | 3 | 4 | 5;
 type Sort = 'newest' | 'oldest' | 'lowest' | 'highest';
 
 const SORTS: Array<{ value: Sort; label: string }> = [
-  { value: 'newest', label: 'Newest first' },
-  { value: 'oldest', label: 'Oldest first' },
-  { value: 'lowest', label: 'Lowest rating first' },
-  { value: 'highest', label: 'Highest rating first' },
+  {
+    value: 'newest',
+    get label() { return t`Newest first`; },
+  },
+  {
+    value: 'oldest',
+    get label() { return t`Oldest first`; },
+  },
+  {
+    value: 'lowest',
+    get label() { return t`Lowest rating first`; },
+  },
+  {
+    value: 'highest',
+    get label() { return t`Highest rating first`; },
+  },
 ];
 
 /** A value that settles a moment after typing stops. */
@@ -116,9 +131,9 @@ export function ReviewsPage() {
   const pick = (next: Filter) => setFilter((was) => (was === next && next !== 'all' ? 'all' : next));
 
   const tabs: Array<{ key: Filter; label: ReactNode; count: number | undefined; tone?: string }> = [
-    { key: 'all', label: 'All', count },
-    { key: 'waiting', label: 'Waiting for a reply', count: breakdown?.waiting, tone: 'accent' },
-    { key: 'replied', label: 'Replied', count: breakdown?.replied },
+    { key: 'all', label: t`All`, count },
+    { key: 'waiting', label: t`Waiting for a reply`, count: breakdown?.waiting, tone: 'accent' },
+    { key: 'replied', label: t`Replied`, count: breakdown?.replied },
     ...[5, 4, 3, 2, 1].map((n) => ({
       key: n as Filter,
       label: (
@@ -135,8 +150,8 @@ export function ReviewsPage() {
       <div className="page-top rv-top">
         <header className="page-head">
           <div>
-            <h1>Reviews</h1>
-            <p className="muted">What customers said, and your reply. Everyone can see both.</p>
+            <h1><Trans>Reviews</Trans></h1>
+            <p className="muted"><Trans>What customers said, and your reply. Everyone can see both.</Trans></p>
           </div>
         </header>
 
@@ -171,18 +186,18 @@ export function ReviewsPage() {
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search the words or a name"
-                  aria-label="Search reviews"
+                  placeholder={t`Search the words or a name`}
+                  aria-label={t`Search reviews`}
                 />
                 {search && (
-                  <button type="button" className="rv-search-clear" onClick={() => setSearch('')} aria-label="Clear">
+                  <button type="button" className="rv-search-clear" onClick={() => setSearch('')} aria-label={t`Clear`}>
                     <Icon name="close" size={13} stroke={2.2} />
                   </button>
                 )}
               </label>
               <div className="rv-sort">
                 <Icon name="sliders" size={15} />
-                <Select variant="bare" value={sort} onChange={setSort} label="Order" options={SORTS} />
+                <Select variant="bare" value={sort} onChange={setSort} label={t`Order`} options={SORTS} />
               </div>
             </div>
             <div className="rv-tabs pin-phone" role="tablist">
@@ -206,7 +221,7 @@ export function ReviewsPage() {
 
       {locations.isLoading && <div className="skeleton rv-skeleton" />}
       {branches.length === 0 && !locations.isLoading && (
-        <p className="muted">Add a branch first, under Branches &amp; hours.</p>
+        <p className="muted"><Trans>Add a branch first, under Branches & hours.</Trans></p>
       )}
 
       {locationId && (
@@ -231,8 +246,8 @@ export function ReviewsPage() {
               <span>
                 <Icon name="star" size={28} />
               </span>
-              <strong>No reviews for this branch yet</strong>
-              <p>Customers can review a booking once you mark it done.</p>
+              <strong><Trans>No reviews for this branch yet</Trans></strong>
+              <p><Trans>Customers can review a booking once you mark it done.</Trans></p>
             </div>
           )}
           {first && count > 0 && rows.length === 0 && (
@@ -240,8 +255,8 @@ export function ReviewsPage() {
               <span>
                 <Icon name={filter === 'waiting' ? 'checkCircle' : 'search'} size={28} />
               </span>
-              <strong>{filter === 'waiting' && !q ? 'Every review has a reply' : 'Nothing matches'}</strong>
-              <p>{filter === 'waiting' && !q ? 'Nice work — nothing is waiting for you.' : 'Try other words, or another filter.'}</p>
+              <strong>{filter === 'waiting' && !q ? t`Every review has a reply` : t`Nothing matches`}</strong>
+              <p>{filter === 'waiting' && !q ? t`Nice work — nothing is waiting for you.` : t`Try other words, or another filter.`}</p>
             </div>
           )}
 
@@ -254,13 +269,12 @@ export function ReviewsPage() {
           <div ref={end} />
           {rows.length > 0 && first && (
             <footer className="rv-foot">
-              <span>
-                Showing <strong>{rows.length.toLocaleString()}</strong> of <strong>{first.total.toLocaleString()}</strong>
-                {first.total !== count ? ` (${count.toLocaleString()} in all)` : ''}
+              <span><Trans>Showing <strong>{rows.length.toLocaleString()}</strong> of <strong>{first.total.toLocaleString()}</strong></Trans>
+                {first.total !== count ? t` (${count.toLocaleString()} in all)` : ''}
               </span>
               {list.hasNextPage && (
                 <button type="button" onClick={() => list.fetchNextPage()} disabled={list.isFetchingNextPage}>
-                  {list.isFetchingNextPage ? 'Loading…' : 'Show more'}
+                  {list.isFetchingNextPage ? t`Loading…` : t`Show more`}
                 </button>
               )}
             </footer>
@@ -301,7 +315,7 @@ function Summary({
         <strong>{ratingAvg === null ? '–' : ratingAvg.toFixed(1)}</strong>
         <Stars value={ratingAvg ?? 0} size={18} />
         <span>
-          {ratingAvg === null ? 'No rating yet' : ratingCount === 1 ? 'from 1 review' : `from ${ratingCount.toLocaleString()} reviews`}
+          {ratingAvg === null ? t`No rating yet` : ratingCount === 1 ? t`from 1 review` : t`from ${ratingCount.toLocaleString()} reviews`}
         </span>
       </div>
 
@@ -314,7 +328,7 @@ function Summary({
               type="button"
               className={`rv-bar${filter === n ? ' is-on' : ''}`}
               onClick={() => onFilter(n as Filter)}
-              title={`Show ${n}-star reviews`}
+              title={t`Show ${n}-star reviews`}
             >
               <span className="rv-bar-label">
                 {n} <Icon name="star" size={12} filled />
@@ -338,15 +352,14 @@ function Summary({
           <b>{Math.round(share * 100)}%</b>
         </span>
         <div>
-          <strong>{total === 0 ? 'Nothing to answer' : waiting === 0 ? 'All answered' : `${waiting.toLocaleString()} waiting for a reply`}</strong>
+          <strong>{total === 0 ? t`Nothing to answer` : waiting === 0 ? t`All answered` : t`${waiting.toLocaleString()} waiting for a reply`}</strong>
           <span>
             {total === 0
-              ? 'Replies show under each review, for everyone.'
-              : `You have replied to ${replied.toLocaleString()} of ${total.toLocaleString()}. Every reader sees your reply.`}
+              ? t`Replies show under each review, for everyone.`
+              : t`You have replied to ${replied.toLocaleString()} of ${total.toLocaleString()}. Every reader sees your reply.`}
           </span>
           {waiting > 0 && filter !== 'waiting' && (
-            <button type="button" onClick={() => onFilter('waiting')}>
-              Answer them <Icon name="arrowRight" size={14} stroke={2.2} />
+            <button type="button" onClick={() => onFilter('waiting')}><Trans>Answer them </Trans><Icon name="arrowRight" size={14} stroke={2.2} />
             </button>
           )}
         </div>
@@ -372,22 +385,39 @@ function Marked({ text, find }: { text: string; find: string }) {
 
 /** A start for a reply, by how the review went — always edited before it is sent. */
 function suggestions(review: Review): string[] {
-  const name = review.displayName && review.displayName !== 'Anonymous' ? ` ${review.displayName.split(' ')[0]}` : '';
-  const what = review.serviceName ? ` ${review.serviceName.toLowerCase()}` : ' visit';
+  // In the seller's language (§308), each sentence whole: with the customer's
+  // first name when they gave one, without it when they did not.
+  const name = review.displayName && review.displayName !== 'Anonymous' ? review.displayName.split(' ')[0] : null;
+  const what = review.serviceName ? review.serviceName.toLowerCase() : t`visit`;
   if (review.rating >= 4)
-    return [
-      `Thank you${name}! We're so glad you enjoyed your${what}. See you next time.`,
-      `Thanks for taking the time to review us${name} — it means a lot to the team.`,
-    ];
+    return name
+      ? [
+          t`Thank you ${name}! We're so glad you enjoyed your ${what}. See you next time.`,
+          t`Thanks for taking the time to review us ${name} — it means a lot to the team.`,
+        ]
+      : [
+          t`Thank you! We're so glad you enjoyed your ${what}. See you next time.`,
+          t`Thanks for taking the time to review us — it means a lot to the team.`,
+        ];
   if (review.rating === 3)
-    return [
-      `Thank you for the honest review${name}. We'd love to make your next${what} a five-star one.`,
-      `Thanks${name} — we've shared this with the team. What would have made it better?`,
-    ];
-  return [
-    `We're sorry${name}. That isn't the${what} we want for anyone. Please message us so we can put it right.`,
-    `Thank you for telling us${name}. We've spoken with the team about this, and we'd like the chance to do better.`,
-  ];
+    return name
+      ? [
+          t`Thank you for the honest review ${name}. We'd love to make your next ${what} a five-star one.`,
+          t`Thanks ${name} — we've shared this with the team. What would have made it better?`,
+        ]
+      : [
+          t`Thank you for the honest review. We'd love to make your next ${what} a five-star one.`,
+          t`Thanks — we've shared this with the team. What would have made it better?`,
+        ];
+  return name
+    ? [
+        t`We're sorry ${name}. That isn't the ${what} we want for anyone. Please message us so we can put it right.`,
+        t`Thank you for telling us ${name}. We've spoken with the team about this, and we'd like the chance to do better.`,
+      ]
+    : [
+        t`We're sorry. That isn't the ${what} we want for anyone. Please message us so we can put it right.`,
+        t`Thank you for telling us. We've spoken with the team about this, and we'd like the chance to do better.`,
+      ];
 }
 
 function ReviewRow({
@@ -408,8 +438,8 @@ function ReviewRow({
 
   const hasReply = Boolean(review.responseText);
   const editable = review.responseAt ? withinEditWindow(review.responseAt) : false;
-  const name = review.displayName ?? 'Anonymous';
-  const shop = profile.data?.name ?? 'Your shop';
+  const name = review.displayName ?? t`Anonymous`;
+  const shop = profile.data?.name ?? t`Your shop`;
   const long = (review.comment?.length ?? 0) > 260;
   const tone = review.rating >= 4 ? 'good' : review.rating === 3 ? 'mid' : 'low';
 
@@ -438,10 +468,10 @@ function ReviewRow({
                 </>
               )}
               {when(review.createdAt)}
-              {review.editedAt && ' · edited'}
+              {review.editedAt && t` · edited`}
             </span>
           </div>
-          <span className={`rv-stars tone-${tone}`} title={`${review.rating} out of 5`}>
+          <span className={`rv-stars tone-${tone}`} title={t`${review.rating} out of 5`}>
             <Stars value={review.rating} size={14} />
             <b>{review.rating}.0</b>
           </span>
@@ -452,11 +482,11 @@ function ReviewRow({
             <Marked text={review.comment} find={find} />
           </p>
         ) : (
-          <p className="rv-text is-empty">A rating, no words.</p>
+          <p className="rv-text is-empty"><Trans>A rating, no words.</Trans></p>
         )}
         {long && (
           <button type="button" className="rv-more" onClick={() => setOpen((v) => !v)}>
-            {open ? 'Show less' : 'Read all'}
+            {open ? t`Show less` : t`Read all`}
           </button>
         )}
 
@@ -467,19 +497,21 @@ function ReviewRow({
             </span>
             <div className="rv-reply-body">
               <div className="rv-reply-meta">
-                <strong>Your reply</strong>
+                <strong><Trans>Your reply</Trans></strong>
                 <span>
                   {ago(review.responseAt!)}
-                  {review.responseEditedAt && ' · edited'}
+                  {review.responseEditedAt && t` · edited`}
                 </span>
                 {editable ? (
                   <button type="button" className="rv-edit" onClick={() => setComposing(true)}>
-                    <Icon name="pencil" size={13} /> Edit
+                    <Icon name="pencil" size={13} />{' '}
+                    <Trans>Edit</Trans>
                   </button>
                 ) : (
                   // Saying why beats a button that earns a 400.
-                  <span className="rv-locked" title={`Replies can only be changed within ${REVIEW_EDIT_WINDOW_DAYS} days of posting.`}>
-                    <Icon name="clock" size={12} /> Final
+                  <span className="rv-locked" title={t`Replies can only be changed within ${REVIEW_EDIT_WINDOW_DAYS} days of posting.`}>
+                    <Icon name="clock" size={12} />{' '}
+                    <Trans>Final</Trans>
                   </span>
                 )}
               </div>
@@ -491,10 +523,11 @@ function ReviewRow({
         {!hasReply && !composing && (
           <div className="rv-ask">
             <span className="rv-waiting">
-              <i /> Waiting for your reply
+              <Trans><i />Waiting for your reply</Trans>
             </span>
             <button type="button" className="rv-reply-btn" onClick={() => setComposing(true)}>
-              <Icon name="message" size={15} /> Reply
+              <Icon name="message" size={15} />{' '}
+              <Trans>Reply</Trans>
             </button>
           </div>
         )}
@@ -524,17 +557,17 @@ function ReviewRow({
               autoFocus
               placeholder={
                 review.rating <= 2
-                  ? 'A calm, specific reply does more for the next reader than for this one.'
-                  : 'Thank them, briefly.'
+                  ? t`A calm, specific reply does more for the next reader than for this one.`
+                  : t`Thank them, briefly.`
               }
             />
             {save.error && (
               <p className="error small" role="alert">
-                {save.error instanceof ApiError ? save.error.message : 'That did not save.'}
+                {save.error instanceof ApiError ? save.error.message : t`That did not save.`}
               </p>
             )}
             <div className="rv-compose-foot">
-              <span>Public, under the review. You can edit it for {REVIEW_EDIT_WINDOW_DAYS} days.</span>
+              <span><Trans>Public, under the review. You can edit it for {REVIEW_EDIT_WINDOW_DAYS} days.</Trans></span>
               <div>
                 <button
                   type="button"
@@ -543,11 +576,11 @@ function ReviewRow({
                     setText(review.responseText ?? '');
                   }}
                 >
-                  Cancel
+                  <Trans>Cancel</Trans>
                 </button>
                 <button type="submit" className="primary" disabled={save.isPending || text.trim() === ''}>
                   <Icon name="send" size={15} />
-                  {save.isPending ? 'Saving…' : hasReply ? 'Save reply' : 'Post reply'}
+                  {save.isPending ? t`Saving…` : hasReply ? t`Save reply` : t`Post reply`}
                 </button>
               </div>
             </div>

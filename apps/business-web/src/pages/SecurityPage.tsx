@@ -4,6 +4,8 @@ import { ago, shortDay } from '../lib/time';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 import './security.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** "an unknown device" → "An unknown device", for the start of a line. */
 const capital = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -28,12 +30,12 @@ export function SecurityPage() {
 
   const askEnd = async (s: SignInSession) => {
     const ok = await confirmDialog({
-      title: `Sign out on ${s.device}?`,
-      body: <p>Whoever is using it will need a new code, sent to your email, to get back in.</p>,
+      title: t`Sign out on ${s.device}?`,
+      body: <p><Trans>Whoever is using it will need a new code, sent to your email, to get back in.</Trans></p>,
       tone: 'warn',
       icon: 'logout',
-      confirmLabel: 'Sign out there',
-      cancelLabel: 'Keep it',
+      confirmLabel: t`Sign out there`,
+      cancelLabel: t`Keep it`,
     });
     if (ok) end.mutate(s.id);
   };
@@ -43,21 +45,22 @@ export function SecurityPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Sign-in and security</h1>
-            <p className="muted">Every phone and computer where your account is open. Sign out any you do not recognise.</p>
+            <h1><Trans>Sign-in and security</Trans></h1>
+            <p className="muted"><Trans>Every phone and computer where your account is open. Sign out any you do not recognise.</Trans></p>
           </div>
         </header>
       </div>
 
       {error && (
         <p className="error" role="alert">
-          {error instanceof ApiError ? error.message : 'That did not work.'}
+          {error instanceof ApiError ? error.message : t`That did not work.`}
         </p>
       )}
 
       <article className="card sec-card">
         <h2>
-          <Icon name="globe" size={18} /> Where you are signed in
+          <Icon name="globe" size={18} />{' '}
+          <Trans>Where you are signed in</Trans>
         </h2>
         {sessions.isLoading ? (
           <div className="skeleton sec-skel" />
@@ -71,36 +74,39 @@ export function SecurityPage() {
                 <div>
                   <strong>
                     {capital(s.device)}
-                    {s.current && <span className="sec-here">This one</span>}
+                    {s.current && <span className="sec-here"><Trans>This one</Trans></span>}
                   </strong>
                   <span>
-                    {s.current ? 'Now' : `Last used ${ago(s.lastUsedAt)}`} · signed in {shortDay(s.createdAt)}
+                    {s.current ? t`Now` : t`Last used ${ago(s.lastUsedAt)}`}<Trans>· signed in {shortDay(s.createdAt)}</Trans>
                     {shownIp(s.ip) ? ` · ${shownIp(s.ip)}` : ''}
                   </span>
                 </div>
                 {!s.current && (
                   <button type="button" disabled={end.isPending} onClick={() => void askEnd(s)}>
-                    Sign out
+                    <Trans>Sign out</Trans>
                   </button>
                 )}
               </li>
             ))}
-            {list.length === 0 && <li className="sec-empty">Only here.</li>}
+            {list.length === 0 && <li className="sec-empty"><Trans>Only here.</Trans></li>}
           </ul>
         )}
         {list.some((s) => !s.current) && (
           <div className="sec-actions">
             <button type="button" className="danger" disabled={others.isPending} onClick={() => others.mutate()}>
-              <Icon name="logout" size={16} /> Sign out everywhere else
+              <Icon name="logout" size={16} />{' '}
+              <Trans>Sign out everywhere else</Trans>
             </button>
           </div>
         )}
         <div className="sec-tips">
           <p>
-            <Icon name="mail" size={15} /> A new phone or browser? We email you, and tell your other phones, each time one signs in.
+            <Icon name="mail" size={15} />{' '}
+            <Trans>A new phone or browser? We email you, and tell your other phones, each time one signs in.</Trans>
           </p>
           <p>
-            <Icon name="shield" size={15} /> Not you? Sign it out here, then write to us from Help — we can look at it with you.
+            <Icon name="shield" size={15} />{' '}
+            <Trans>Not you? Sign it out here, then write to us from Help — we can look at it with you.</Trans>
           </p>
         </div>
       </article>

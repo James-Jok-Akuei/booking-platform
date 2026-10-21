@@ -236,9 +236,7 @@ export default function Legal() {
         {current && (
           <View style={[styles.barInner, { width: Math.min(layout.contentWidth, 560) }]}>
             <Text style={[type.small, styles.barText]}>
-              <Trans>
-                By tapping, you agree to version {current.version} of the {current.title}.
-              </Trans>
+              <Trans>By tapping, you agree to version {current.version} of the {current.title}.</Trans>
             </Text>
             <AgreeButton
               // A fresh button per document: the one that just turned into a

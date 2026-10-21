@@ -372,15 +372,11 @@ export function OffersCard() {
               </Text>
             ) : found.data && !found.data.available ? (
               <Text style={styles.notice}>
-                <Trans>
-                  Address search is not working just now. Use where you are, or choose a district.
-                </Trans>
+                <Trans>Address search is not working just now. Use where you are, or choose a district.</Trans>
               </Text>
             ) : found.data && found.data.results.length === 0 && !found.isPlaceholderData ? (
               <Text style={styles.notice}>
-                <Trans>
-                  Nothing found for "{asked}". Try a street name, a building or a neighbourhood.
-                </Trans>
+                <Trans>Nothing found for "{asked}". Try a street name, a building or a neighbourhood.</Trans>
               </Text>
             ) : found.data ? (
               <View style={[styles.results, found.isPlaceholderData && styles.resultsStale]}>
@@ -418,9 +414,7 @@ export function OffersCard() {
                   <View style={styles.flex}>
                     <Text style={type.subheading}><Trans>At the address right now?</Trans></Text>
                     <Text style={type.small}>
-                      <Trans>
-                        Save the exact spot your phone is at — your home, say.
-                      </Trans>
+                      <Trans>Save the exact spot your phone is at — your home, say.</Trans>
                     </Text>
                   </View>
                 </View>
@@ -450,9 +444,7 @@ export function OffersCard() {
                   </FadeIn>
                 )}
                 <Text style={type.tiny}>
-                  <Trans>
-                    Kept only for these emails and never shown to shops. Forget it any time.
-                  </Trans>
+                  <Trans>Kept only for these emails and never shown to shops. Forget it any time.</Trans>
                 </Text>
               </View>
 

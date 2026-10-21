@@ -8,38 +8,38 @@ msgstr ""
 "Language: rw\n"
 
 #. placeholder {0}: sale.percent
-#: app/book/[id].tsx:943
+#: app/book/[id].tsx:933
 msgid " · {0}% off"
 msgstr ""
 
 #. placeholder {0}: saleUntil(sale)
-#: app/book/[id].tsx:598
+#: app/book/[id].tsx:594
 msgid " · discount {0}"
 msgstr ""
 
-#: app/book/[id].tsx:598
+#: app/book/[id].tsx:594
 msgid " · discount on now"
 msgstr ""
 
-#: app/book/[id].tsx:577
+#: app/book/[id].tsx:575
 msgid " · once, not per person"
 msgstr ""
 
-#: app/book/[id].tsx:944
+#: app/book/[id].tsx:934
 msgid " · with choices"
 msgstr ""
 
-#: src/booking/ChoicePicker.tsx:195
+#: src/booking/ChoicePicker.tsx:191
 msgid " Allergies and health go in the questions above, never here."
 msgstr ""
 
 #. placeholder {0}: countWord(quantity)
-#: app/book/[id].tsx:601
+#: app/book/[id].tsx:597
 msgid " on {0}"
 msgstr ""
 
 #. placeholder {0}: when(s.createdAt)
-#: app/sessions.tsx:112
+#: app/sessions.tsx:110
 msgid "· signed in {0}"
 msgstr ""
 
@@ -71,7 +71,7 @@ msgstr ""
 #. placeholder {0}: missing.length - 1
 #. placeholder {1}: askedAs(missing[0])
 #. placeholder {2}: askedAs(missing[0])
-#: app/book/[id].tsx:723
+#: app/book/[id].tsx:717
 msgid "{0, plural, one {Answer “{1}” first and # more — the times depend on your answers.} other {Answer “{2}” first and # more — the times depend on your answers.}}"
 msgstr ""
 
@@ -105,7 +105,7 @@ msgid "{0} each"
 msgstr ""
 
 #. placeholder {0}: count === 1 ? 'A new story' : `${count} new stories`
-#: app/(tabs)/index.tsx:473
+#: app/(tabs)/index.tsx:470
 msgid "{0} from today."
 msgstr ""
 
@@ -120,7 +120,7 @@ msgid "{0} min by car"
 msgstr ""
 
 #. placeholder {0}: format(depositMinor)
-#: app/book/[id].tsx:953
+#: app/book/[id].tsx:943
 msgid "{0} now"
 msgstr ""
 
@@ -145,7 +145,7 @@ msgid "{0} selected"
 msgstr ""
 
 #. placeholder {0}: explainFailedDeposit(failureReason)
-#: src/booking/Checkout.tsx:289
+#: src/booking/Checkout.tsx:287
 msgid "{0} You can try again."
 msgstr ""
 
@@ -175,7 +175,7 @@ msgstr ""
 
 #. placeholder {0}: sale.percent
 #. placeholder {1}: format(savedMinor)
-#: app/book/[id].tsx:919
+#: app/book/[id].tsx:909
 msgid "{0}% off · you save {1}"
 msgstr ""
 
@@ -187,7 +187,7 @@ msgstr ""
 msgid "{businessName}. View the shop"
 msgstr ""
 
-#: app/sign-in.tsx:505
+#: app/sign-in.tsx:509
 msgid "{clean}. Change email"
 msgstr ""
 
@@ -199,7 +199,7 @@ msgstr ""
 msgid "{days, plural, one {# day ago} other {# days ago}}"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:186
+#: src/components/NotificationCard.tsx:166
 msgid "{days} d"
 msgstr ""
 
@@ -215,11 +215,11 @@ msgstr ""
 msgid "{distance} by road · about {minutes} min by car"
 msgstr ""
 
-#: app/sign-in.tsx:225
+#: app/sign-in.tsx:230
 msgid "{email} is a business account. This app is for customers — sign in with a different email."
 msgstr ""
 
-#: app/sign-in.tsx:226
+#: app/sign-in.tsx:231
 msgid "{email} is an admin account. This app is for customers — sign in with a different email."
 msgstr ""
 
@@ -247,7 +247,7 @@ msgstr ""
 msgid "{hours} {mins}"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:181
+#: src/components/NotificationCard.tsx:161
 msgid "{hours} h"
 msgstr ""
 
@@ -255,7 +255,7 @@ msgstr ""
 msgid "{kinds, plural, one {# kind} other {# kinds}}"
 msgstr ""
 
-#: src/components/WithinBar.tsx:13
+#: src/components/WithinBar.tsx:17
 msgid "{km} km"
 msgstr ""
 
@@ -263,7 +263,7 @@ msgstr ""
 msgid "{label}, {badge} unread"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:281
+#: src/components/NotificationCard.tsx:261
 msgid "{label}: {subject}"
 msgstr ""
 
@@ -280,7 +280,7 @@ msgid "{m} min"
 msgstr ""
 
 #: app/(tabs)/messages.tsx:29
-#: src/components/NotificationCard.tsx:179
+#: src/components/NotificationCard.tsx:159
 msgid "{minutes} min"
 msgstr ""
 
@@ -304,7 +304,7 @@ msgstr ""
 msgid "{percent} percent off"
 msgstr ""
 
-#: app/book/[id].tsx:822
+#: app/book/[id].tsx:814
 msgid "{placesLeft} left"
 msgstr ""
 
@@ -329,11 +329,11 @@ msgid "{since} ago"
 msgstr ""
 
 #. placeholder {0}: placesLeft === 1 ? 'place' : 'places'
-#: app/book/[id].tsx:835
+#: app/book/[id].tsx:827
 msgid "{time}, {placesLeft} {0} left"
 msgstr ""
 
-#: app/book/[id].tsx:833
+#: app/book/[id].tsx:825
 msgid "{time}, booked"
 msgstr ""
 
@@ -349,7 +349,7 @@ msgid "{unreadTotal} unread in {0} {1}"
 msgstr ""
 
 #. placeholder {0}: words[value - 1]
-#: app/review/[id].tsx:190
+#: app/review/[id].tsx:192
 msgid "{value} out of 5 — {0}"
 msgstr ""
 
@@ -367,19 +367,19 @@ msgstr ""
 msgid "07xx xxx xxx"
 msgstr ""
 
-#: src/booking/Checkout.tsx:276
+#: src/booking/Checkout.tsx:274
 msgid "1. A payment request appears on your phone."
 msgstr ""
 
-#: src/booking/Checkout.tsx:277
+#: src/booking/Checkout.tsx:275
 msgid "2. Enter your MoMo PIN to approve it."
 msgstr ""
 
-#: src/booking/Checkout.tsx:278
+#: src/booking/Checkout.tsx:276
 msgid "3. This screen updates on its own."
 msgstr ""
 
-#: app/book/[id].tsx:633
+#: app/book/[id].tsx:629
 msgid "A {depositPct}% deposit holds the time for you. The rest is paid at the shop."
 msgstr ""
 
@@ -388,11 +388,11 @@ msgstr ""
 msgid "A business"
 msgstr ""
 
-#: app/(tabs)/account.tsx:808
+#: app/(tabs)/account.tsx:802
 msgid "A copy of your data"
 msgstr ""
 
-#: src/booking/Reservation.tsx:370
+#: src/booking/Reservation.tsx:366
 msgid "A few words help the next person decide. It takes a moment."
 msgstr ""
 
@@ -400,15 +400,15 @@ msgstr ""
 msgid "A new code is on its way to your email."
 msgstr ""
 
-#: app/sessions.tsx:139
+#: app/sessions.tsx:137
 msgid "A new phone or browser? We email you, and tell your other phones, each time one signs in."
 msgstr ""
 
-#: src/booking/ChoicePicker.tsx:176
+#: src/booking/ChoicePicker.tsx:174
 msgid "A note for the shop"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:96
+#: src/tour/WelcomeTour.tsx:91
 msgid "A part of the price, by mobile money, approved on your own phone. The rest you pay at the shop."
 msgstr ""
 
@@ -416,11 +416,11 @@ msgstr ""
 msgid "A payment"
 msgstr ""
 
-#: src/booking/ChoicePicker.tsx:192
+#: src/booking/ChoicePicker.tsx:190
 msgid "A request, not a promise — the shop will try."
 msgstr ""
 
-#: app/review/[id].tsx:241
+#: app/review/[id].tsx:243
 msgid "A review can be changed for {REVIEW_EDIT_WINDOW_DAYS} days after posting. That time has passed, so this one now stands as it is."
 msgstr ""
 
@@ -433,9 +433,12 @@ msgstr ""
 msgid "A story from {0}"
 msgstr ""
 
-#. placeholder {0}: a.status === 'BOOKED' ? 'booked' : 'not finished'
-#: app/review/[id].tsx:142
-msgid "A visit can be reviewed once the shop has marked it done. This one is still {0}."
+#: app/review/[id].tsx:144
+msgid "A visit can be reviewed once the shop has marked it done. This one is still booked."
+msgstr ""
+
+#: app/review/[id].tsx:145
+msgid "A visit can be reviewed once the shop has marked it done. This one is still not finished."
 msgstr ""
 
 #: app/(tabs)/account.tsx:669
@@ -452,7 +455,7 @@ msgstr ""
 
 #: app/(tabs)/_layout.tsx:30
 #: app/(tabs)/account.tsx:414
-#: src/components/NotificationCard.tsx:111
+#: src/components/NotificationCard.tsx:98
 msgid "Account"
 msgstr ""
 
@@ -464,11 +467,11 @@ msgstr ""
 msgid "Add"
 msgstr ""
 
-#: app/ticket/[id].tsx:154
+#: app/ticket/[id].tsx:152
 msgid "Add a message"
 msgstr ""
 
-#: src/booking/ChoicePicker.tsx:164
+#: src/booking/ChoicePicker.tsx:162
 msgid "Add a note for the shop"
 msgstr ""
 
@@ -542,7 +545,7 @@ msgstr ""
 msgid "Alerts on this phone, what comes by email, quiet hours, the shops you follow."
 msgstr ""
 
-#: app/(tabs)/index.tsx:679
+#: app/(tabs)/index.tsx:674
 #: app/(tabs)/messages.tsx:159
 #: app/notifications.tsx:342
 msgid "All"
@@ -559,7 +562,7 @@ msgid "All caught up"
 msgstr ""
 
 #. placeholder {0}: shortName(chosenProvince.name)
-#: app/(tabs)/index.tsx:1076
+#: app/(tabs)/index.tsx:1071
 msgid "All of {0}"
 msgstr ""
 
@@ -567,7 +570,7 @@ msgstr ""
 msgid "All of it in Saved → Following"
 msgstr ""
 
-#: app/(tabs)/index.tsx:1036
+#: app/(tabs)/index.tsx:1031
 msgid "All of Rwanda"
 msgstr ""
 
@@ -583,26 +586,26 @@ msgstr ""
 msgid "An alert on this phone the day before."
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:560
+#: src/tour/WelcomeTour.tsx:552
 msgid "And a note when a shop replies to you."
 msgstr ""
 
 #: app/(tabs)/account.tsx:354
-#: app/review/[id].tsx:223
+#: app/review/[id].tsx:225
 #: src/exportDocument.ts:50
 msgid "Anonymous"
 msgstr ""
 
 #. placeholder {0}: askedAs(missing[0])
-#: app/book/[id].tsx:727
+#: app/book/[id].tsx:721
 msgid "Answer “{0}” first — the times depend on your answers."
 msgstr ""
 
-#: app/book/[id].tsx:976
+#: app/book/[id].tsx:964
 msgid "Answer first"
 msgstr ""
 
-#: src/booking/BookedChoices.tsx:182
+#: src/booking/BookedChoices.tsx:180
 msgid "Answer the questions"
 msgstr ""
 
@@ -611,7 +614,7 @@ msgctxt "help request status"
 msgid "Answered"
 msgstr ""
 
-#: src/components/WithinBar.tsx:17
+#: src/components/WithinBar.tsx:22
 msgid "Any"
 msgstr ""
 
@@ -619,7 +622,7 @@ msgstr ""
 msgid "App language"
 msgstr ""
 
-#: app/sign-in.tsx:433
+#: app/sign-in.tsx:437
 msgid "Approve the deposit on your own phone."
 msgstr ""
 
@@ -631,7 +634,7 @@ msgstr ""
 msgid "Ask anything before you book — prices, timing, what to bring."
 msgstr ""
 
-#: app/thread/[id].tsx:318
+#: app/thread/[id].tsx:316
 msgid "Ask them anything — prices, parking, what to bring."
 msgstr ""
 
@@ -644,19 +647,19 @@ msgstr ""
 msgid "Asking your phone…"
 msgstr ""
 
-#: src/components/OffersCard.tsx:419
+#: src/components/OffersCard.tsx:415
 msgid "At the address right now?"
 msgstr ""
 
-#: app/book/[id].tsx:626
+#: app/book/[id].tsx:622
 msgid "At the shop"
 msgstr ""
 
-#: app/thread/[id].tsx:380
+#: app/thread/[id].tsx:378
 msgid "Attach a photo"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:319
+#: src/tour/WelcomeTour.tsx:311
 msgid "Back"
 msgstr ""
 
@@ -668,15 +671,15 @@ msgstr ""
 msgid "Bad"
 msgstr ""
 
-#: src/booking/Reservation.tsx:288
+#: src/booking/Reservation.tsx:286
 msgid "Balance at the shop"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:64
+#: src/tour/WelcomeTour.tsx:63
 msgid "Barbers, salons, spas and more — with their real photos, prices and reviews."
 msgstr ""
 
-#: src/booking/Reservation.tsx:309
+#: src/booking/Reservation.tsx:307
 msgid "Because the shop cancelled, your deposit is refunded in full."
 msgstr ""
 
@@ -699,14 +702,14 @@ msgstr ""
 msgid "Best price: {0} at {1}, {price}."
 msgstr ""
 
-#: app/(tabs)/index.tsx:71
-#: app/(tabs)/index.tsx:92
+#: app/(tabs)/index.tsx:70
+#: app/(tabs)/index.tsx:89
 msgid "Best rated"
 msgstr ""
 
 #: app/book/[id].tsx:252
 #: app/book/[id].tsx:264
-#: app/thread/[id].tsx:265
+#: app/thread/[id].tsx:263
 #: src/components/SavedServiceCard.tsx:138
 msgid "Book"
 msgstr ""
@@ -716,7 +719,7 @@ msgstr ""
 msgid "Book {0}"
 msgstr ""
 
-#: app/book/[id].tsx:982
+#: app/book/[id].tsx:970
 msgid "Book {slot}"
 msgstr ""
 
@@ -730,7 +733,7 @@ msgstr ""
 msgid "Book at {0}"
 msgstr ""
 
-#: app/sign-in.tsx:427
+#: app/sign-in.tsx:431
 msgid "Book in seconds"
 msgstr ""
 
@@ -743,7 +746,7 @@ msgstr ""
 msgid "Book your next {word}"
 msgstr ""
 
-#: app/sign-in.tsx:309
+#: app/sign-in.tsx:315
 msgid "Book your next appointment at real shops near you, in a few taps."
 msgstr ""
 
@@ -751,11 +754,11 @@ msgstr ""
 msgid "Book your next appointment, easily."
 msgstr ""
 
-#: src/components/NotificationCard.tsx:34
+#: src/components/NotificationCard.tsx:32
 msgid "Booked"
 msgstr ""
 
-#: app/book/[id].tsx:822
+#: app/book/[id].tsx:814
 msgctxt "a time with no places left"
 msgid "Booked"
 msgstr ""
@@ -775,7 +778,7 @@ msgstr ""
 msgid "Bookings"
 msgstr ""
 
-#: app/booking/[id].tsx:506
+#: app/booking/[id].tsx:505
 msgid "Bookings are kept with your account, so only you can open them."
 msgstr ""
 
@@ -795,7 +798,7 @@ msgstr ""
 msgid "braids"
 msgstr ""
 
-#: app/(tabs)/index.tsx:670
+#: app/(tabs)/index.tsx:665
 msgid "Browse all categories →"
 msgstr ""
 
@@ -831,12 +834,12 @@ msgstr ""
 msgid "Cancel this booking?"
 msgstr ""
 
-#: src/booking/Reservation.tsx:334
+#: src/booking/Reservation.tsx:330
 msgid "Cancel this reservation"
 msgstr ""
 
-#: src/booking/Reservation.tsx:300
-#: src/components/NotificationCard.tsx:48
+#: src/booking/Reservation.tsx:298
+#: src/components/NotificationCard.tsx:44
 #: src/exportDocument.ts:86
 msgid "Cancelled"
 msgstr ""
@@ -854,7 +857,7 @@ msgstr ""
 msgid "Cancelled it, as you asked"
 msgstr ""
 
-#: src/booking/Reservation.tsx:321
+#: src/booking/Reservation.tsx:317
 msgid "Cancelling"
 msgstr ""
 
@@ -866,12 +869,12 @@ msgstr ""
 msgid "car wash"
 msgstr ""
 
-#: app/(tabs)/index.tsx:665
+#: app/(tabs)/index.tsx:660
 #: app/categories.tsx:124
 msgid "Categories"
 msgstr ""
 
-#: app/sign-in.tsx:512
+#: app/sign-in.tsx:516
 #: src/booking/BookedChoices.tsx:44
 #: src/components/OffersCard.tsx:252
 msgid "Change"
@@ -890,16 +893,16 @@ msgstr ""
 msgid "Changed “missed” to done — you came"
 msgstr ""
 
-#: app/(tabs)/index.tsx:76
-#: app/(tabs)/index.tsx:93
+#: app/(tabs)/index.tsx:74
+#: app/(tabs)/index.tsx:90
 msgid "Cheapest"
 msgstr ""
 
-#: app/sign-in.tsx:499
+#: app/sign-in.tsx:503
 msgid "Check your <0>inbox.</0>"
 msgstr ""
 
-#: src/booking/Checkout.tsx:274
+#: src/booking/Checkout.tsx:272
 msgid "Check your phone"
 msgstr ""
 
@@ -907,7 +910,7 @@ msgstr ""
 msgid "check-up"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:118
+#: src/tour/WelcomeTour.tsx:110
 msgid "Checked in"
 msgstr ""
 
@@ -919,8 +922,8 @@ msgstr ""
 msgid "Checkout"
 msgstr ""
 
-#: app/book/[id].tsx:682
-#: app/book/[id].tsx:980
+#: app/book/[id].tsx:676
+#: app/book/[id].tsx:968
 msgid "Choose a time"
 msgstr ""
 
@@ -948,15 +951,15 @@ msgstr ""
 msgid "Clear the address"
 msgstr ""
 
-#: app/(tabs)/index.tsx:634
+#: app/(tabs)/index.tsx:629
 #: app/(tabs)/messages.tsx:148
 #: app/categories.tsx:163
 msgid "Clear the search"
 msgstr ""
 
-#: app/sign-in.tsx:299
+#: app/sign-in.tsx:304
 #: src/stories/StoryPlayer.tsx:407
-#: src/tour/WelcomeTour.tsx:287
+#: src/tour/WelcomeTour.tsx:279
 #: src/ui/PhotoViewer.tsx:271
 #: src/ui/Sheet.tsx:63
 #: src/ui/Sheet.tsx:87
@@ -967,7 +970,7 @@ msgstr ""
 msgid "Close it"
 msgstr ""
 
-#: app/(tabs)/account.tsx:739
+#: app/(tabs)/account.tsx:737
 msgid "Close my account"
 msgstr ""
 
@@ -999,15 +1002,15 @@ msgstr ""
 msgid "Closed on this day."
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:71
+#: src/tour/WelcomeTour.tsx:69
 msgid "Closest places first"
 msgstr ""
 
-#: app/(tabs)/account.tsx:743
+#: app/(tabs)/account.tsx:741
 msgid "Closing is permanent. If you want a copy of your data, take it first."
 msgstr ""
 
-#: app/(tabs)/account.tsx:739
+#: app/(tabs)/account.tsx:737
 msgid "Closing…"
 msgstr ""
 
@@ -1027,7 +1030,7 @@ msgstr ""
 msgid "concert"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:27
+#: src/components/NotificationCard.tsx:26
 msgid "Confirmed"
 msgstr ""
 
@@ -1044,7 +1047,7 @@ msgstr ""
 msgid "consultation"
 msgstr ""
 
-#: app/sign-in.tsx:401
+#: app/sign-in.tsx:405
 msgid "Continue"
 msgstr ""
 
@@ -1093,7 +1096,7 @@ msgstr ""
 msgid "Could not prepare that"
 msgstr ""
 
-#: app/(tabs)/index.tsx:1002
+#: app/(tabs)/index.tsx:997
 msgid "Could not reach the server."
 msgstr ""
 
@@ -1105,7 +1108,7 @@ msgstr ""
 msgid "Could not search. Try again."
 msgstr ""
 
-#: app/sign-in.tsx:205
+#: app/sign-in.tsx:210
 msgid "Could not send a code. Check your connection and try again."
 msgstr ""
 
@@ -1121,11 +1124,11 @@ msgstr ""
 msgid "Could not start the payment"
 msgstr ""
 
-#: app/sign-in.tsx:480
+#: app/sign-in.tsx:484
 msgid "Create my account"
 msgstr ""
 
-#: app/sign-in.tsx:494
+#: app/sign-in.tsx:498
 msgid "Creating your account"
 msgstr ""
 
@@ -1137,7 +1140,7 @@ msgstr ""
 msgid "day"
 msgstr ""
 
-#: app/book/[id].tsx:734
+#: app/book/[id].tsx:728
 msgid "Day"
 msgstr ""
 
@@ -1162,7 +1165,7 @@ msgid "Deposit not paid"
 msgstr ""
 
 #: src/booking/Reservation.tsx:270
-#: src/tour/WelcomeTour.tsx:102
+#: src/tour/WelcomeTour.tsx:96
 msgid "Deposit paid"
 msgstr ""
 
@@ -1170,11 +1173,11 @@ msgstr ""
 msgid "Deposits, MoMo, and when you get your money back."
 msgstr ""
 
-#: app/sign-in.tsx:391
+#: app/sign-in.tsx:397
 msgid "Did you mean <0>{suggestion}</0>?"
 msgstr ""
 
-#: app/sign-in.tsx:539
+#: app/sign-in.tsx:543
 msgid "Didn't get it?"
 msgstr ""
 
@@ -1186,7 +1189,7 @@ msgstr ""
 msgid "Directions"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:133
+#: src/components/NotificationCard.tsx:117
 #: src/components/Spotlights.tsx:228
 msgid "Discount"
 msgstr ""
@@ -1217,16 +1220,16 @@ msgstr ""
 msgid "Discount: {0} at {1}, {2}% off, now {now}."
 msgstr ""
 
-#: app/(tabs)/index.tsx:902
+#: app/(tabs)/index.tsx:897
 msgid "Discounts"
 msgstr ""
 
-#: src/components/WithinBar.tsx:46
+#: src/components/WithinBar.tsx:51
 msgid "Distances are from where you are now"
 msgstr ""
 
 #: src/booking/ChoicePicker.tsx:51
-#: src/tour/WelcomeTour.tsx:371
+#: src/tour/WelcomeTour.tsx:363
 msgid "Done"
 msgstr ""
 
@@ -1247,7 +1250,7 @@ msgstr ""
 msgid "Drop to attach the photo"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:538
+#: src/tour/WelcomeTour.tsx:530
 msgid "e.g. Aline U."
 msgstr ""
 
@@ -1255,7 +1258,7 @@ msgstr ""
 msgid "Earlier"
 msgstr ""
 
-#: app/(tabs)/account.tsx:849
+#: app/(tabs)/account.tsx:841
 msgid "Easy to read and print. This is what most people want."
 msgstr ""
 
@@ -1269,7 +1272,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: app/sign-in.tsx:369
+#: app/sign-in.tsx:375
 msgid "Email address"
 msgstr ""
 
@@ -1281,7 +1284,7 @@ msgstr ""
 msgid "Ends in {clock}"
 msgstr ""
 
-#: app/sign-in.tsx:501
+#: app/sign-in.tsx:505
 msgid "Enter the 6-digit code we sent to"
 msgstr ""
 
@@ -1297,11 +1300,11 @@ msgstr ""
 msgid "event"
 msgstr ""
 
-#: app/(tabs)/account.tsx:816
+#: app/(tabs)/account.tsx:810
 msgid "Every booking"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:80
+#: src/tour/WelcomeTour.tsx:77
 msgid "Every free time is there to see. Choose yours with a tap."
 msgstr ""
 
@@ -1309,7 +1312,7 @@ msgstr ""
 msgid "Every phone and browser where your account is open. Sign out any you do not recognise."
 msgstr ""
 
-#: app/(tabs)/account.tsx:717
+#: app/(tabs)/account.tsx:715
 msgid "Every phone and browser with your account open — sign out any you do not know."
 msgstr ""
 
@@ -1321,12 +1324,12 @@ msgstr ""
 msgid "Everything we hold about you, as of {asOf}."
 msgstr ""
 
-#: app/(tabs)/account.tsx:812
+#: app/(tabs)/account.tsx:806
 msgid "Everything we keep about you, in one place:"
 msgstr ""
 
 #: src/booking/PaidCelebration.tsx:204
-#: src/booking/Reservation.tsx:384
+#: src/booking/Reservation.tsx:378
 msgid "Explore more services"
 msgstr ""
 
@@ -1339,19 +1342,19 @@ msgid "Fewer {label}"
 msgstr ""
 
 #: app/(tabs)/bookings.tsx:139
-#: app/(tabs)/index.tsx:609
+#: app/(tabs)/index.tsx:606
 #: app/(tabs)/messages.tsx:210
 #: app/(tabs)/saved.tsx:181
 msgid "Find a place"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:63
+#: src/tour/WelcomeTour.tsx:62
 msgid "Find a place near you"
 msgstr ""
 
-#: app/(tabs)/index.tsx:711
+#: app/(tabs)/index.tsx:706
 #: src/components/NearMeCard.tsx:91
-#: src/components/OffersCard.tsx:431
+#: src/components/OffersCard.tsx:425
 msgid "Finding you…"
 msgstr ""
 
@@ -1363,7 +1366,7 @@ msgstr ""
 msgid "fitting"
 msgstr ""
 
-#: app/sign-in.tsx:395
+#: app/sign-in.tsx:399
 msgid "Fix"
 msgstr ""
 
@@ -1410,7 +1413,7 @@ msgstr ""
 msgid "Following{0}"
 msgstr ""
 
-#: app/(tabs)/account.tsx:769
+#: app/(tabs)/account.tsx:765
 msgid "For example, Aline M."
 msgstr ""
 
@@ -1422,11 +1425,11 @@ msgstr ""
 msgid "Four steps, from finding a place to showing your code."
 msgstr ""
 
-#: app/book/[id].tsx:808
+#: app/book/[id].tsx:802
 msgid "free"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:86
+#: src/tour/WelcomeTour.tsx:82
 msgid "Fri 23 Oct, 10:00"
 msgstr ""
 
@@ -1457,11 +1460,11 @@ msgstr ""
 msgid "from {price}"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:140
+#: src/components/NotificationCard.tsx:123
 msgid "From our team"
 msgstr ""
 
-#: app/(tabs)/index.tsx:874
+#: app/(tabs)/index.tsx:869
 msgid "From places you follow"
 msgstr ""
 
@@ -1469,7 +1472,7 @@ msgstr ""
 msgid "From the shop"
 msgstr ""
 
-#: src/components/WithinBar.tsx:48
+#: src/components/WithinBar.tsx:53
 msgid "From where you are now"
 msgstr ""
 
@@ -1477,7 +1480,7 @@ msgstr ""
 msgid "Fully booked on this day."
 msgstr ""
 
-#: app/(tabs)/account.tsx:708
+#: app/(tabs)/account.tsx:706
 msgid "Get a copy of my data"
 msgstr ""
 
@@ -1486,11 +1489,11 @@ msgstr ""
 msgid "Get help"
 msgstr ""
 
-#: app/(tabs)/account.tsx:854
+#: app/(tabs)/account.tsx:846
 msgid "Get it as a data file"
 msgstr ""
 
-#: app/(tabs)/account.tsx:842
+#: app/(tabs)/account.tsx:834
 msgid "Get it as a PDF"
 msgstr ""
 
@@ -1513,7 +1516,7 @@ msgstr ""
 msgid "Good"
 msgstr ""
 
-#: app/sign-in.tsx:580
+#: app/sign-in.tsx:582
 msgid "Good to see you again."
 msgstr ""
 
@@ -1538,19 +1541,19 @@ msgstr ""
 msgid "Hear the moment a booking is confirmed, and get a reminder before it. You choose what below."
 msgstr ""
 
-#: app/help/[id].tsx:212
+#: app/help/[id].tsx:211
 msgid "Help is tied to your booking, so we need to know it is you."
 msgstr ""
 
-#: app/(tabs)/account.tsx:819
+#: app/(tabs)/account.tsx:813
 msgid "Help requests and our answers."
 msgstr ""
 
-#: app/ticket/[id].tsx:264
+#: app/ticket/[id].tsx:261
 msgid "Help requests are kept with your account, so only you can open them."
 msgstr ""
 
-#: src/booking/Reservation.tsx:348
+#: src/booking/Reservation.tsx:344
 msgid "Helped with this booking"
 msgstr ""
 
@@ -1562,7 +1565,7 @@ msgstr ""
 msgid "Hold alerts that can wait"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:95
+#: src/tour/WelcomeTour.tsx:90
 msgid "Hold it with a small deposit"
 msgstr ""
 
@@ -1583,7 +1586,7 @@ msgid "hotel stay"
 msgstr ""
 
 #: app/(tabs)/account.tsx:673
-#: src/tour/WelcomeTour.tsx:293
+#: src/tour/WelcomeTour.tsx:285
 msgid "How booking works"
 msgstr ""
 
@@ -1591,18 +1594,18 @@ msgstr ""
 msgid "How many {label}, type a number up to {max}"
 msgstr ""
 
-#: app/book/[id].tsx:692
+#: app/book/[id].tsx:686
 msgid "How many people?"
 msgstr ""
 
 #: app/(tabs)/account.tsx:680
-#: app/(tabs)/account.tsx:872
+#: app/(tabs)/account.tsx:864
 msgid "How paying works"
 msgstr ""
 
-#: app/review/[id].tsx:183
-#: src/booking/Reservation.tsx:362
-#: src/components/NotificationCard.tsx:119
+#: app/review/[id].tsx:185
+#: src/booking/Reservation.tsx:358
+#: src/components/NotificationCard.tsx:105
 msgid "How was it?"
 msgstr ""
 
@@ -1610,15 +1613,15 @@ msgstr ""
 msgid "hrs"
 msgstr ""
 
-#: src/components/LegalPrompt.tsx:91
+#: src/components/LegalPrompt.tsx:89
 msgid "I agree"
 msgstr ""
 
-#: app/legal.tsx:247
+#: app/legal.tsx:245
 msgid "I agree to this"
 msgstr ""
 
-#: app/sign-in.tsx:464
+#: app/sign-in.tsx:468
 msgid "I have read and agree to the <0>Terms of Use</0> and the <1>Privacy Policy</1>."
 msgstr ""
 
@@ -1626,12 +1629,12 @@ msgstr ""
 msgid "I need help"
 msgstr ""
 
-#: src/booking/Reservation.tsx:332
+#: src/booking/Reservation.tsx:328
 msgid "If the shop cancels, you get your whole deposit back."
 msgstr ""
 
 #. placeholder {0}: format(a.depositAmountMinor, a.currency)
-#: src/booking/Reservation.tsx:326
+#: src/booking/Reservation.tsx:322
 msgid "If you cancel, your deposit of {0} is not refunded. It is what holds the slot."
 msgstr ""
 
@@ -1645,7 +1648,7 @@ msgstr ""
 msgid "in {0}"
 msgstr ""
 
-#: app/(tabs)/account.tsx:835
+#: app/(tabs)/account.tsx:829
 msgid "It is made on this phone and goes only where you send it. We do not email it to anyone."
 msgstr ""
 
@@ -1712,11 +1715,11 @@ msgstr ""
 msgid "Keep watching"
 msgstr ""
 
-#: app/sign-in.tsx:439
+#: app/sign-in.tsx:443
 msgid "Keep what you love"
 msgstr ""
 
-#: src/components/OffersCard.tsx:453
+#: src/components/OffersCard.tsx:447
 msgid "Kept only for these emails and never shown to shops. Forget it any time."
 msgstr ""
 
@@ -1732,15 +1735,15 @@ msgstr ""
 #. placeholder {0}: new Date(number.lastUsedAt).toLocaleDateString(dateLocale())
 #. placeholder {0}: when(s.lastUsedAt)
 #: app/(tabs)/account.tsx:586
-#: app/sessions.tsx:112
+#: app/sessions.tsx:110
 msgid "Last used {0}"
 msgstr ""
 
-#: app/review/[id].tsx:232
+#: app/review/[id].tsx:234
 msgid "Leave this blank to stay Anonymous. Whatever you put here becomes the name on all of your reviews."
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:545
+#: src/tour/WelcomeTour.tsx:537
 msgid "Left empty, your reviews say “Anonymous”."
 msgstr ""
 
@@ -1769,23 +1772,23 @@ msgstr ""
 msgid "Location is off. Allow it to use where you are, or type the address above."
 msgstr ""
 
-#: app/(tabs)/index.tsx:1019
+#: app/(tabs)/index.tsx:1014
 msgid "Look at every distance"
 msgstr ""
 
-#: app/sign-in.tsx:554
+#: app/sign-in.tsx:558
 msgid "Look in your spam folder too. Each code works for {CODE_MINUTES} minutes."
 msgstr ""
 
-#: app/(tabs)/index.tsx:1019
+#: app/(tabs)/index.tsx:1014
 msgid "Look up to {nextStep} km"
 msgstr ""
 
-#: app/sign-in.tsx:292
+#: app/sign-in.tsx:297
 msgid "Made for Rwanda"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:526
+#: src/tour/WelcomeTour.tsx:518
 msgid "Make it yours"
 msgstr ""
 
@@ -1811,7 +1814,7 @@ msgstr ""
 
 #: app/(tabs)/messages.tsx:219
 #: src/booking/Reservation.tsx:181
-#: src/components/NotificationCard.tsx:76
+#: src/components/NotificationCard.tsx:68
 msgid "Message"
 msgstr ""
 
@@ -1830,7 +1833,7 @@ msgstr ""
 msgid "Messages"
 msgstr ""
 
-#: app/thread/[id].tsx:552
+#: app/thread/[id].tsx:549
 msgid "Messages are kept with your account, so only you and the shop can read them."
 msgstr ""
 
@@ -1838,7 +1841,7 @@ msgstr ""
 msgid "min"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:55
+#: src/components/NotificationCard.tsx:50
 msgid "Missed"
 msgstr ""
 
@@ -1870,7 +1873,7 @@ msgstr ""
 msgid "Most booked: {0} at {1}, {2} bookings."
 msgstr ""
 
-#: app/(tabs)/index.tsx:91
+#: app/(tabs)/index.tsx:88
 msgid "Most popular"
 msgstr ""
 
@@ -1891,9 +1894,9 @@ msgstr ""
 msgid "Name on your reviews"
 msgstr ""
 
-#: app/(tabs)/index.tsx:927
+#: app/(tabs)/index.tsx:922
 #: src/components/Spotlights.tsx:250
-#: src/tour/WelcomeTour.tsx:70
+#: src/tour/WelcomeTour.tsx:68
 msgid "Near you"
 msgstr ""
 
@@ -1903,8 +1906,8 @@ msgstr ""
 msgid "Near you: {0} at {1}, {away} away."
 msgstr ""
 
-#: app/(tabs)/index.tsx:95
-#: app/(tabs)/index.tsx:711
+#: app/(tabs)/index.tsx:92
+#: app/(tabs)/index.tsx:706
 msgid "Nearest"
 msgstr ""
 
@@ -1912,11 +1915,11 @@ msgstr ""
 msgid "Needs your attention"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:310
+#: src/components/NotificationCard.tsx:290
 msgid "New"
 msgstr ""
 
-#: app/sign-in.tsx:412
+#: app/sign-in.tsx:416
 msgid "New here"
 msgstr ""
 
@@ -1924,17 +1927,17 @@ msgstr ""
 msgid "New services as they are added"
 msgstr ""
 
-#: app/(tabs)/index.tsx:81
-#: app/(tabs)/index.tsx:94
+#: app/(tabs)/index.tsx:78
+#: app/(tabs)/index.tsx:91
 msgid "Newest"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:164
+#: src/components/NotificationCard.tsx:144
 msgid "News"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:328
-#: src/tour/WelcomeTour.tsx:371
+#: src/tour/WelcomeTour.tsx:320
+#: src/tour/WelcomeTour.tsx:363
 msgid "Next"
 msgstr ""
 
@@ -1942,7 +1945,7 @@ msgstr ""
 msgid "Next story"
 msgstr ""
 
-#: app/sign-in.tsx:413
+#: app/sign-in.tsx:417
 msgid "Nice to <0>meet you.</0>"
 msgstr ""
 
@@ -1959,7 +1962,7 @@ msgstr ""
 msgid "No notifications yet"
 msgstr ""
 
-#: app/sign-in.tsx:405
+#: app/sign-in.tsx:409
 msgid "No password to remember. A fresh code every time."
 msgstr ""
 
@@ -1979,7 +1982,7 @@ msgstr ""
 msgid "Nobody has reviewed this place yet."
 msgstr ""
 
-#: app/book/[id].tsx:807
+#: app/book/[id].tsx:801
 #: app/notifications.tsx:288
 msgid "None"
 msgstr ""
@@ -1996,11 +1999,11 @@ msgstr ""
 msgid "Not a photo we can use"
 msgstr ""
 
-#: src/booking/ChoicePicker.tsx:89
+#: src/booking/ChoicePicker.tsx:87
 msgid "not available now"
 msgstr ""
 
-#: src/booking/ChoicePicker.tsx:106
+#: src/booking/ChoicePicker.tsx:104
 msgid "Not available now"
 msgstr ""
 
@@ -2028,9 +2031,9 @@ msgstr ""
 msgid "Not good"
 msgstr ""
 
-#: app/(tabs)/index.tsx:483
+#: app/(tabs)/index.tsx:480
 #: app/(tabs)/saved.tsx:141
-#: src/components/LegalPrompt.tsx:108
+#: src/components/LegalPrompt.tsx:106
 #: src/components/NearMeCard.tsx:102
 #: src/stories/StoryPlayer.tsx:486
 #: src/ui/Dialog.tsx:116
@@ -2051,7 +2054,7 @@ msgstr ""
 
 #: app/(tabs)/account.tsx:166
 #: app/(tabs)/account.tsx:260
-#: app/legal.tsx:250
+#: app/legal.tsx:248
 #: src/components/OffersCard.tsx:111
 #: src/exportDocument.ts:57
 #: src/useSavedService.ts:46
@@ -2077,7 +2080,7 @@ msgstr ""
 msgid "Not yet"
 msgstr ""
 
-#: app/sessions.tsx:147
+#: app/sessions.tsx:143
 msgid "Not you? Sign it out here, then write to us from Help — we will look at it with you."
 msgstr ""
 
@@ -2089,11 +2092,11 @@ msgstr ""
 msgid "Nothing by that name."
 msgstr ""
 
-#: src/components/OffersCard.tsx:381
+#: src/components/OffersCard.tsx:379
 msgid "Nothing found for \"{asked}\". Try a street name, a building or a neighbourhood."
 msgstr ""
 
-#: src/booking/Reservation.tsx:327
+#: src/booking/Reservation.tsx:323
 msgid "Nothing has been paid, so cancelling costs nothing."
 msgstr ""
 
@@ -2109,7 +2112,7 @@ msgstr ""
 msgid "Nothing here yet"
 msgstr ""
 
-#: app/thread/[id].tsx:317
+#: app/thread/[id].tsx:315
 msgid "Nothing here yet."
 msgstr ""
 
@@ -2121,7 +2124,7 @@ msgstr ""
 msgid "Nothing is listed yet."
 msgstr ""
 
-#: app/(tabs)/index.tsx:1008
+#: app/(tabs)/index.tsx:1003
 msgid "Nothing matches that yet."
 msgstr ""
 
@@ -2134,7 +2137,7 @@ msgid "Nothing paid"
 msgstr ""
 
 #. placeholder {0}: area.km
-#: app/(tabs)/index.tsx:1017
+#: app/(tabs)/index.tsx:1012
 msgid "Nothing to book within {0} km yet"
 msgstr ""
 
@@ -2153,7 +2156,7 @@ msgstr ""
 
 #: app/(tabs)/account.tsx:650
 #: app/(tabs)/account.tsx:654
-#: app/(tabs)/index.tsx:599
+#: app/(tabs)/index.tsx:596
 #: app/notification-settings.tsx:102
 #: app/notification-settings.tsx:120
 #: app/notifications.tsx:250
@@ -2162,16 +2165,16 @@ msgid "Notifications"
 msgstr ""
 
 #. placeholder {0}: unread.notifications
-#: app/(tabs)/index.tsx:598
+#: app/(tabs)/index.tsx:595
 msgid "Notifications, {0} unread"
 msgstr ""
 
 #: app/(tabs)/messages.tsx:28
-#: src/components/NotificationCard.tsx:178
+#: src/components/NotificationCard.tsx:158
 msgid "now"
 msgstr ""
 
-#: app/sessions.tsx:112
+#: app/sessions.tsx:110
 msgid "Now"
 msgstr ""
 
@@ -2180,7 +2183,7 @@ msgid "Numbers you pay from"
 msgstr ""
 
 #. placeholder {0}: SLIDES.length
-#: src/tour/WelcomeTour.tsx:345
+#: src/tour/WelcomeTour.tsx:337
 msgid "of {0}"
 msgstr ""
 
@@ -2188,7 +2191,7 @@ msgstr ""
 msgid "Off"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:126
+#: src/components/NotificationCard.tsx:111
 msgid "Offer"
 msgstr ""
 
@@ -2225,7 +2228,7 @@ msgstr ""
 msgid "On, since {optedIn}"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:557
+#: src/tour/WelcomeTour.tsx:549
 msgid "On. We will remind you, and tell you when a shop replies."
 msgstr ""
 
@@ -2233,12 +2236,12 @@ msgstr ""
 msgid "One account for everything"
 msgstr ""
 
-#: app/sign-in.tsx:332
+#: app/sign-in.tsx:338
 msgid "One email.\n"
 "<0>No password.</0>"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:371
+#: src/tour/WelcomeTour.tsx:363
 msgid "One more thing"
 msgstr ""
 
@@ -2246,15 +2249,15 @@ msgstr ""
 msgid "One saved service is no longer offered and was taken off your list."
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:530
+#: src/tour/WelcomeTour.tsx:522
 msgid "One small thing — you can change it in Account."
 msgstr ""
 
-#: app/(tabs)/account.tsx:862
+#: app/(tabs)/account.tsx:854
 msgid "Only if you are moving to another app or service: the same data as a file (JSON) a computer can read and bring in. The law gives you the right to take your data with you this way."
 msgstr ""
 
-#: app/(tabs)/account.tsx:724
+#: app/(tabs)/account.tsx:722
 msgid "Only on this phone. Come back any time with a new code."
 msgstr ""
 
@@ -2287,14 +2290,14 @@ msgstr ""
 msgid "open now"
 msgstr ""
 
-#: app/(tabs)/index.tsx:702
+#: app/(tabs)/index.tsx:697
 #: app/book/[id].tsx:536
 #: app/shop/[id].tsx:219
 msgid "Open now"
 msgstr ""
 
 #: src/components/NearMeCard.tsx:29
-#: src/components/OffersCard.tsx:446
+#: src/components/OffersCard.tsx:440
 #: src/useNearMe.ts:227
 msgid "Open Settings"
 msgstr ""
@@ -2332,11 +2335,11 @@ msgstr ""
 msgid "Opening…"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:282
+#: src/components/NotificationCard.tsx:262
 msgid "Opens it. Swipe left to remove."
 msgstr ""
 
-#: src/components/OffersCard.tsx:460
+#: src/components/OffersCard.tsx:452
 msgid "Or a whole district"
 msgstr ""
 
@@ -2344,7 +2347,7 @@ msgstr ""
 msgid "Or pick a kind"
 msgstr ""
 
-#: src/booking/Reservation.tsx:343
+#: src/booking/Reservation.tsx:339
 msgid "Our support team helped"
 msgstr ""
 
@@ -2352,7 +2355,7 @@ msgstr ""
 msgid "paid {paidOn}"
 msgstr ""
 
-#: app/book/[id].tsx:642
+#: app/book/[id].tsx:636
 msgid "Paid in full now, and the time is yours."
 msgstr ""
 
@@ -2369,8 +2372,8 @@ msgstr ""
 msgid "Pay at the shop"
 msgstr ""
 
-#: app/book/[id].tsx:621
-#: app/book/[id].tsx:924
+#: app/book/[id].tsx:617
+#: app/book/[id].tsx:914
 #: app/booking/[id].tsx:385
 #: app/booking/[id].tsx:404
 #: src/booking/Checkout.tsx:182
@@ -2385,15 +2388,15 @@ msgstr ""
 msgid "Pay with"
 msgstr ""
 
-#: app/sign-in.tsx:432
+#: app/sign-in.tsx:436
 #: src/booking/PayingPromises.tsx:23
 msgid "Pay with MTN MoMo"
 msgstr ""
 
 #: app/(tabs)/account.tsx:562
-#: src/booking/Checkout.tsx:306
+#: src/booking/Checkout.tsx:302
 #: src/booking/Reservation.tsx:235
-#: src/components/NotificationCard.tsx:62
+#: src/components/NotificationCard.tsx:56
 msgid "Payment"
 msgstr ""
 
@@ -2405,7 +2408,7 @@ msgstr ""
 msgid "Payment summary"
 msgstr ""
 
-#: app/book/[id].tsx:698
+#: app/book/[id].tsx:692
 msgid "people"
 msgstr ""
 
@@ -2448,7 +2451,7 @@ msgstr ""
 msgid "photo shoot"
 msgstr ""
 
-#: app/thread/[id].tsx:346
+#: app/thread/[id].tsx:344
 msgid "Photo, tap to open"
 msgstr ""
 
@@ -2477,19 +2480,19 @@ msgstr ""
 msgid "Pick 1"
 msgstr ""
 
-#: app/review/[id].tsx:252
+#: app/review/[id].tsx:254
 msgid "Pick a rating"
 msgstr ""
 
-#: app/book/[id].tsx:979
+#: app/book/[id].tsx:967
 msgid "Pick a time"
 msgstr ""
 
-#: app/sign-in.tsx:428
+#: app/sign-in.tsx:432
 msgid "Pick a time and hold it with a small deposit."
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:79
+#: src/tour/WelcomeTour.tsx:76
 msgid "Pick a time that suits you"
 msgstr ""
 
@@ -2502,12 +2505,12 @@ msgstr ""
 msgid "Place"
 msgstr ""
 
-#: app/(tabs)/index.tsx:581
+#: app/(tabs)/index.tsx:578
 msgid "Place: {placeLabel}"
 msgstr ""
 
-#: app/(tabs)/index.tsx:784
-#: app/(tabs)/index.tsx:799
+#: app/(tabs)/index.tsx:779
+#: app/(tabs)/index.tsx:794
 msgid "Places"
 msgstr ""
 
@@ -2527,13 +2530,13 @@ msgstr ""
 msgid "Popular near you, every Friday"
 msgstr ""
 
-#: app/review/[id].tsx:252
+#: app/review/[id].tsx:254
 msgid "Post review"
 msgstr ""
 
-#: app/(tabs)/account.tsx:708
-#: app/(tabs)/account.tsx:842
-#: app/(tabs)/account.tsx:854
+#: app/(tabs)/account.tsx:706
+#: app/(tabs)/account.tsx:834
+#: app/(tabs)/account.tsx:846
 msgid "Preparing…"
 msgstr ""
 
@@ -2541,7 +2544,7 @@ msgstr ""
 msgid "Price"
 msgstr ""
 
-#: app/book/[id].tsx:908
+#: app/book/[id].tsx:898
 msgid "private answers for the shop"
 msgstr ""
 
@@ -2569,7 +2572,7 @@ msgstr ""
 msgid "Profile"
 msgstr ""
 
-#: app/(tabs)/index.tsx:1003
+#: app/(tabs)/index.tsx:998
 msgid "Pull down to try again."
 msgstr ""
 
@@ -2590,7 +2593,7 @@ msgstr ""
 msgid "Quiet until"
 msgstr ""
 
-#: src/components/LegalPrompt.tsx:103
+#: src/components/LegalPrompt.tsx:101
 msgid "Read all the documents"
 msgstr ""
 
@@ -2606,7 +2609,7 @@ msgstr ""
 msgid "Read your private answers, to help"
 msgstr ""
 
-#: app/sign-in.tsx:314
+#: app/sign-in.tsx:320
 msgid "Real shops near you, booked in a few taps."
 msgstr ""
 
@@ -2618,17 +2621,17 @@ msgstr ""
 msgid "Remind me before it"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:41
+#: src/components/NotificationCard.tsx:38
 msgid "Reminder"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:554
+#: src/tour/WelcomeTour.tsx:546
 msgid "Reminders before each booking"
 msgstr ""
 
 #: app/notifications.tsx:308
-#: app/thread/[id].tsx:374
-#: src/components/NotificationCard.tsx:270
+#: app/thread/[id].tsx:372
+#: src/components/NotificationCard.tsx:250
 msgid "Remove"
 msgstr ""
 
@@ -2682,8 +2685,8 @@ msgid "Reservation no."
 msgstr ""
 
 #: src/booking/Reservation.tsx:188
-#: src/components/NotificationCard.tsx:97
-#: src/components/NotificationCard.tsx:104
+#: src/components/NotificationCard.tsx:86
+#: src/components/NotificationCard.tsx:92
 msgid "Review"
 msgstr ""
 
@@ -2697,7 +2700,7 @@ msgstr ""
 msgid "Reviews ({0})"
 msgstr ""
 
-#: app/review/[id].tsx:372
+#: app/review/[id].tsx:373
 msgid "Reviews come from people who booked, so we need to know it is you."
 msgstr ""
 
@@ -2705,7 +2708,7 @@ msgstr ""
 msgid "Reviews, offers and news arrive after. Bookings, reminders and messages still come straight away."
 msgstr ""
 
-#: app/(tabs)/index.tsx:241
+#: app/(tabs)/index.tsx:238
 #: src/ui/RwandaFlag.tsx:20
 msgid "Rwanda"
 msgstr ""
@@ -2722,16 +2725,16 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: app/review/[id].tsx:252
-#: src/booking/BookedChoices.tsx:182
+#: app/review/[id].tsx:254
+#: src/booking/BookedChoices.tsx:180
 msgid "Save changes"
 msgstr ""
 
-#: app/sign-in.tsx:440
+#: app/sign-in.tsx:444
 msgid "Save places and services for later."
 msgstr ""
 
-#: src/components/OffersCard.tsx:421
+#: src/components/OffersCard.tsx:417
 msgid "Save the exact spot your phone is at — your home, say."
 msgstr ""
 
@@ -2739,7 +2742,7 @@ msgstr ""
 msgid "Save this"
 msgstr ""
 
-#: app/(tabs)/account.tsx:777
+#: app/(tabs)/account.tsx:773
 msgid "Save this name"
 msgstr ""
 
@@ -2762,8 +2765,8 @@ msgstr ""
 msgid "Saved so you do not retype them. Nothing can be charged without the prompt on your phone."
 msgstr ""
 
-#: app/(tabs)/account.tsx:777
-#: src/components/LegalPrompt.tsx:91
+#: app/(tabs)/account.tsx:773
+#: src/components/LegalPrompt.tsx:89
 msgid "Saving…"
 msgstr ""
 
@@ -2771,7 +2774,7 @@ msgstr ""
 msgid "Search a shop or a message"
 msgstr ""
 
-#: app/(tabs)/index.tsx:624
+#: app/(tabs)/index.tsx:619
 msgid "Search a shop or a service"
 msgstr ""
 
@@ -2779,7 +2782,7 @@ msgstr ""
 msgid "sec"
 msgstr ""
 
-#: app/(tabs)/index.tsx:955
+#: app/(tabs)/index.tsx:950
 msgid "See all"
 msgstr ""
 
@@ -2801,11 +2804,11 @@ msgstr ""
 msgid "See more"
 msgstr ""
 
-#: src/booking/Reservation.tsx:378
+#: src/booking/Reservation.tsx:372
 msgid "See or change it"
 msgstr ""
 
-#: app/(tabs)/index.tsx:482
+#: app/(tabs)/index.tsx:479
 msgid "See the shop"
 msgstr ""
 
@@ -2813,7 +2816,7 @@ msgstr ""
 msgid "See the story from {displayName}"
 msgstr ""
 
-#: app/(tabs)/index.tsx:875
+#: app/(tabs)/index.tsx:870
 msgid "See them"
 msgstr ""
 
@@ -2833,17 +2836,17 @@ msgstr ""
 msgid "Select all"
 msgstr ""
 
-#: app/thread/[id].tsx:395
-#: app/ticket/[id].tsx:164
+#: app/thread/[id].tsx:393
+#: app/ticket/[id].tsx:162
 msgid "Send"
 msgstr ""
 
-#: app/sign-in.tsx:549
+#: app/sign-in.tsx:553
 msgid "Send a new code"
 msgstr ""
 
 #. placeholder {0}: String(resendIn).padStart(2, '0')
-#: app/sign-in.tsx:541
+#: app/sign-in.tsx:545
 msgid "Send a new one in 0:{0}"
 msgstr ""
 
@@ -2861,7 +2864,7 @@ msgstr ""
 
 #: app/booking/[id].tsx:458
 #: app/help/[id].tsx:126
-#: app/sign-in.tsx:549
+#: app/sign-in.tsx:553
 msgid "Sending…"
 msgstr ""
 
@@ -2886,11 +2889,11 @@ msgstr ""
 msgid "Sent you a new arrival code"
 msgstr ""
 
-#: src/booking/Checkout.tsx:306
+#: src/booking/Checkout.tsx:302
 msgid "Service"
 msgstr ""
 
-#: app/(tabs)/index.tsx:981
+#: app/(tabs)/index.tsx:976
 msgid "Services"
 msgstr ""
 
@@ -2915,7 +2918,7 @@ msgstr ""
 msgid "Show less"
 msgstr ""
 
-#: app/(tabs)/account.tsx:788
+#: app/(tabs)/account.tsx:784
 msgid "Show me as Anonymous"
 msgstr ""
 
@@ -2923,11 +2926,11 @@ msgstr ""
 msgid "Show this code when you arrive"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:111
+#: src/tour/WelcomeTour.tsx:104
 msgid "Show your code when you arrive"
 msgstr ""
 
-#: app/(tabs)/account.tsx:760
+#: app/(tabs)/account.tsx:756
 msgid "Shown beside every review you have written and will write. Shops you book with still see your email."
 msgstr ""
 
@@ -2947,7 +2950,7 @@ msgstr ""
 msgid "Sign in or create an account"
 msgstr ""
 
-#: app/book/[id].tsx:983
+#: app/book/[id].tsx:971
 msgid "Sign in to book"
 msgstr ""
 
@@ -2959,7 +2962,7 @@ msgstr ""
 msgid "Sign in to choose"
 msgstr ""
 
-#: app/help/[id].tsx:211
+#: app/help/[id].tsx:210
 msgid "Sign in to get help"
 msgstr ""
 
@@ -2967,7 +2970,7 @@ msgstr ""
 msgid "Sign in to keep a list"
 msgstr ""
 
-#: app/thread/[id].tsx:551
+#: app/thread/[id].tsx:548
 msgid "Sign in to read this chat"
 msgstr ""
 
@@ -2975,11 +2978,11 @@ msgstr ""
 msgid "Sign in to report a story"
 msgstr ""
 
-#: app/booking/[id].tsx:505
+#: app/booking/[id].tsx:504
 msgid "Sign in to see this booking"
 msgstr ""
 
-#: app/ticket/[id].tsx:263
+#: app/ticket/[id].tsx:260
 msgid "Sign in to see this request"
 msgstr ""
 
@@ -2995,17 +2998,17 @@ msgstr ""
 msgid "Sign in to see your notifications"
 msgstr ""
 
-#: app/review/[id].tsx:371
+#: app/review/[id].tsx:372
 msgid "Sign in to write a review"
 msgstr ""
 
 #: app/(tabs)/account.tsx:310
-#: app/(tabs)/account.tsx:723
-#: app/sessions.tsx:117
+#: app/(tabs)/account.tsx:721
+#: app/sessions.tsx:115
 msgid "Sign out"
 msgstr ""
 
-#: app/sessions.tsx:130
+#: app/sessions.tsx:128
 msgid "Sign out everywhere else"
 msgstr ""
 
@@ -3022,31 +3025,31 @@ msgstr ""
 msgid "Sign out?"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:156
+#: src/components/NotificationCard.tsx:137
 msgid "Sign-in"
 msgstr ""
 
-#: app/sign-in.tsx:532
+#: app/sign-in.tsx:536
 msgid "Signed in"
 msgstr ""
 
-#: app/sessions.tsx:130
+#: app/sessions.tsx:128
 msgid "Signing out…"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:119
+#: src/tour/WelcomeTour.tsx:111
 msgid "Six digits, and you are in"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:112
+#: src/tour/WelcomeTour.tsx:105
 msgid "Six digits, on your booking and in your email. That is all the shop needs."
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:377
+#: src/tour/WelcomeTour.tsx:369
 msgid "Skip — I’ll look around"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:287
+#: src/tour/WelcomeTour.tsx:279
 msgid "Skip the welcome"
 msgstr ""
 
@@ -3059,8 +3062,8 @@ msgstr ""
 msgid "Something else"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:371
-#: src/tour/WelcomeTour.tsx:578
+#: src/tour/WelcomeTour.tsx:363
+#: src/tour/WelcomeTour.tsx:570
 msgid "Start exploring"
 msgstr ""
 
@@ -3073,7 +3076,7 @@ msgstr ""
 msgid "Started {0}"
 msgstr ""
 
-#: src/booking/BookedChoices.tsx:176
+#: src/booking/BookedChoices.tsx:174
 msgid "stay as booked: they changed the price or the time."
 msgstr ""
 
@@ -3081,7 +3084,7 @@ msgstr ""
 msgid "Stay signed in"
 msgstr ""
 
-#: src/booking/BookedChoices.tsx:175
+#: src/booking/BookedChoices.tsx:173
 msgid "stays as booked: it changed the price or the time."
 msgstr ""
 
@@ -3106,9 +3109,9 @@ msgid "studio session"
 msgstr ""
 
 #: app/ticket/[id].tsx:119
-#: src/components/NotificationCard.tsx:83
-#: src/components/NotificationCard.tsx:90
-#: src/components/NotificationCard.tsx:148
+#: src/components/NotificationCard.tsx:74
+#: src/components/NotificationCard.tsx:80
+#: src/components/NotificationCard.tsx:130
 msgid "Support"
 msgstr ""
 
@@ -3169,7 +3172,7 @@ msgstr ""
 msgid "That booking could not be found."
 msgstr ""
 
-#: app/sign-in.tsx:243
+#: app/sign-in.tsx:248
 msgid "That code did not work. Please try again."
 msgstr ""
 
@@ -3209,7 +3212,7 @@ msgstr ""
 msgid "The deposit is not refunded if you cancel. If the shop cancels, you get all of it back."
 msgstr ""
 
-#: src/booking/Reservation.tsx:315
+#: src/booking/Reservation.tsx:311
 msgid "The deposit is not refunded when you cancel."
 msgstr ""
 
@@ -3217,7 +3220,7 @@ msgstr ""
 msgid "The deposit only holds your time. You pay what is left after your visit, the way the shop takes it."
 msgstr ""
 
-#: src/booking/Checkout.tsx:354
+#: src/booking/Checkout.tsx:350
 msgid "The hold has ended. Pay now if the slot is still free."
 msgstr ""
 
@@ -3226,12 +3229,12 @@ msgid "The more you tell us, the faster we can sort it out."
 msgstr ""
 
 #: app/(tabs)/account.tsx:538
-#: app/(tabs)/account.tsx:757
-#: src/tour/WelcomeTour.tsx:534
+#: app/(tabs)/account.tsx:753
+#: src/tour/WelcomeTour.tsx:526
 msgid "The name on your reviews"
 msgstr ""
 
-#: app/review/[id].tsx:215
+#: app/review/[id].tsx:217
 msgid "The name to show"
 msgstr ""
 
@@ -3243,7 +3246,7 @@ msgstr ""
 msgid "The place"
 msgstr ""
 
-#: app/(tabs)/index.tsx:1018
+#: app/(tabs)/index.tsx:1013
 msgid "The places this close have not put up their services."
 msgstr ""
 
@@ -3259,7 +3262,7 @@ msgstr ""
 msgid "The shop cancelled this"
 msgstr ""
 
-#: app/book/[id].tsx:585
+#: app/book/[id].tsx:583
 msgid "The shop confirms the final price after seeing the job. The deposit is on this price."
 msgstr ""
 
@@ -3275,15 +3278,15 @@ msgstr ""
 msgid "The shop you follow sends you offers. Choose under Saved → Following."
 msgstr ""
 
-#: app/(tabs)/account.tsx:816
+#: app/(tabs)/account.tsx:810
 msgid "The shop, the service, the time, what you paid and what happened."
 msgstr ""
 
-#: app/(tabs)/account.tsx:817
+#: app/(tabs)/account.tsx:811
 msgid "The stars you gave and what you wrote."
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:103
+#: src/tour/WelcomeTour.tsx:97
 msgid "The time is truly yours"
 msgstr ""
 
@@ -3295,7 +3298,7 @@ msgstr ""
 msgid "therapy"
 msgstr ""
 
-#: app/sign-in.tsx:416
+#: app/sign-in.tsx:420
 msgid "There is no account for <0>{clean}</0> yet. Let us make one — it takes one code, and nothing else."
 msgstr ""
 
@@ -3338,15 +3341,15 @@ msgstr ""
 msgid "This goes to our support team, with your booking attached. To reach the shop itself, use Message on the reservation."
 msgstr ""
 
-#: app/review/[id].tsx:231
+#: app/review/[id].tsx:233
 msgid "This is the name on all of your reviews. Changing it here changes it on every one of them."
 msgstr ""
 
-#: app/sessions.tsx:107
+#: app/sessions.tsx:105
 msgid "This one"
 msgstr ""
 
-#: app/sessions.tsx:107
+#: app/sessions.tsx:105
 msgid "This phone"
 msgstr ""
 
@@ -3363,7 +3366,7 @@ msgstr ""
 msgid "This place is not available right now."
 msgstr ""
 
-#: app/ticket/[id].tsx:177
+#: app/ticket/[id].tsx:175
 msgid "This request is closed."
 msgstr ""
 
@@ -3375,14 +3378,14 @@ msgstr ""
 msgid "This week"
 msgstr ""
 
-#: app/book/[id].tsx:774
-#: src/booking/Checkout.tsx:306
+#: app/book/[id].tsx:768
+#: src/booking/Checkout.tsx:302
 #: src/booking/Reservation.tsx:223
 msgid "Time"
 msgstr ""
 
 #. placeholder {0}: availability.data.timeZone
-#: app/book/[id].tsx:876
+#: app/book/[id].tsx:868
 msgid "Times are local to the shop ({0})."
 msgstr ""
 
@@ -3390,7 +3393,7 @@ msgstr ""
 msgid "To come"
 msgstr ""
 
-#: src/booking/Reservation.tsx:288
+#: src/booking/Reservation.tsx:286
 msgid "To pay at the shop"
 msgstr ""
 
@@ -3398,7 +3401,7 @@ msgstr ""
 msgid "today"
 msgstr ""
 
-#: app/book/[id].tsx:763
+#: app/book/[id].tsx:757
 #: app/notifications.tsx:52
 #: app/thread/[id].tsx:49
 msgid "Today"
@@ -3407,7 +3410,7 @@ msgstr ""
 #. placeholder {0}: label.weekday
 #. placeholder {1}: label.day
 #. placeholder {2}: label.month
-#: app/book/[id].tsx:753
+#: app/book/[id].tsx:747
 msgid "Today, {0} {1} {2}"
 msgstr ""
 
@@ -3434,15 +3437,15 @@ msgstr ""
 msgid "Top rated: {0} at {1}, rated {avg}."
 msgstr ""
 
-#: app/book/[id].tsx:915
-#: app/book/[id].tsx:942
+#: app/book/[id].tsx:905
+#: app/book/[id].tsx:932
 #: src/booking/Checkout.tsx:167
 #: src/booking/Reservation.tsx:260
 msgid "Total"
 msgstr ""
 
 #. placeholder {0}: countWord(quantity)
-#: app/book/[id].tsx:942
+#: app/book/[id].tsx:932
 msgid "Total for {0}"
 msgstr ""
 
@@ -3450,7 +3453,7 @@ msgstr ""
 msgid "Try “barber” or “massage”"
 msgstr ""
 
-#: app/(tabs)/index.tsx:1009
+#: app/(tabs)/index.tsx:1004
 msgid "Try a different word, or clear the filters."
 msgstr ""
 
@@ -3473,7 +3476,7 @@ msgid "Turn it on in your phone's Settings to see what is near you. Everything e
 msgstr ""
 
 #: src/booking/PaidCelebration.tsx:319
-#: src/tour/WelcomeTour.tsx:571
+#: src/tour/WelcomeTour.tsx:563
 msgid "Turn on"
 msgstr ""
 
@@ -3482,7 +3485,7 @@ msgstr ""
 msgid "Turn on alerts"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:559
+#: src/tour/WelcomeTour.tsx:551
 msgid "Turned off in your phone’s settings."
 msgstr ""
 
@@ -3494,7 +3497,7 @@ msgstr ""
 msgid "tutoring"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:529
+#: src/tour/WelcomeTour.tsx:521
 msgid "Two small things — you can change both in Account."
 msgstr ""
 
@@ -3502,7 +3505,7 @@ msgstr ""
 msgid "Type the address"
 msgstr ""
 
-#: app/sign-in.tsx:338
+#: app/sign-in.tsx:344
 msgid "Type your email and we will send you a 6-digit code. New here? The same code creates your account."
 msgstr ""
 
@@ -3529,7 +3532,7 @@ msgstr ""
 msgid "Unread · {unreadTotal}"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:281
+#: src/components/NotificationCard.tsx:261
 msgid "Unread. {label}: {subject}"
 msgstr ""
 
@@ -3550,7 +3553,7 @@ msgstr ""
 msgid "Up to {places} people"
 msgstr ""
 
-#: app/book/[id].tsx:693
+#: app/book/[id].tsx:687
 msgid "Up to {places}, all at once"
 msgstr ""
 
@@ -3565,11 +3568,11 @@ msgstr ""
 
 #. placeholder {0}: place.label
 #. placeholder {1}: place.detail ? `, ${place.detail}` : ''
-#: src/components/OffersCard.tsx:393
+#: src/components/OffersCard.tsx:389
 msgid "Use {0}{1}"
 msgstr ""
 
-#: app/sign-in.tsx:486
+#: app/sign-in.tsx:490
 msgid "Use a different email"
 msgstr ""
 
@@ -3578,7 +3581,7 @@ msgstr ""
 msgid "Use my location"
 msgstr ""
 
-#: src/components/OffersCard.tsx:431
+#: src/components/OffersCard.tsx:425
 msgid "Use where I am now"
 msgstr ""
 
@@ -3590,16 +3593,16 @@ msgstr ""
 msgid "venue"
 msgstr ""
 
-#: src/components/NotificationCard.tsx:69
+#: src/components/NotificationCard.tsx:62
 msgid "Verified"
 msgstr ""
 
-#: app/sign-in.tsx:532
+#: app/sign-in.tsx:536
 msgid "Verify"
 msgstr ""
 
 #. placeholder {0}: Constants.expoConfig.version
-#: app/(tabs)/account.tsx:749
+#: app/(tabs)/account.tsx:745
 msgid "Version {0}"
 msgstr ""
 
@@ -3617,7 +3620,7 @@ msgstr ""
 msgid "vet visit"
 msgstr ""
 
-#: app/thread/[id].tsx:299
+#: app/thread/[id].tsx:297
 msgid "View"
 msgstr ""
 
@@ -3643,19 +3646,19 @@ msgid "Was {0}"
 msgstr ""
 
 #. placeholder {0}: format(sale.listPriceMinor)
-#: app/book/[id].tsx:597
+#: app/book/[id].tsx:593
 msgid "Was <0>{0}</0>"
 msgstr ""
 
-#: app/(tabs)/index.tsx:478
+#: app/(tabs)/index.tsx:475
 msgid "Watch again"
 msgstr ""
 
-#: app/(tabs)/index.tsx:478
+#: app/(tabs)/index.tsx:475
 msgid "Watch the stories"
 msgstr ""
 
-#: app/(tabs)/index.tsx:478
+#: app/(tabs)/index.tsx:475
 msgid "Watch the story"
 msgstr ""
 
@@ -3663,7 +3666,7 @@ msgstr ""
 msgid "We have your message. A reply will appear here, and you can add more below."
 msgstr ""
 
-#: app/sign-in.tsx:201
+#: app/sign-in.tsx:206
 msgid "We sent you a code a moment ago. Enter that one."
 msgstr ""
 
@@ -3685,15 +3688,15 @@ msgstr ""
 msgid "Weekly offers near you by email are under Account → Offers. Every email we send also has a link to stop emails like it."
 msgstr ""
 
-#: app/sign-in.tsx:572
+#: app/sign-in.tsx:574
 msgid "Welcome <0>aboard!</0>"
 msgstr ""
 
-#: app/sign-in.tsx:494
+#: app/sign-in.tsx:498
 msgid "Welcome back"
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:293
+#: src/tour/WelcomeTour.tsx:285
 msgid "Welcome to BwanguReservations"
 msgstr ""
 
@@ -3702,7 +3705,7 @@ msgid "What are you\n"
 "looking for?"
 msgstr ""
 
-#: src/components/LegalPrompt.tsx:80
+#: src/components/LegalPrompt.tsx:78
 msgid "What changed"
 msgstr ""
 
@@ -3711,7 +3714,7 @@ msgstr ""
 msgid "What changed: {0}"
 msgstr ""
 
-#: app/review/[id].tsx:209
+#: app/review/[id].tsx:211
 msgid "What happened? (optional)"
 msgstr ""
 
@@ -3752,11 +3755,11 @@ msgstr ""
 msgid "Where"
 msgstr ""
 
-#: app/(tabs)/index.tsx:1032
+#: app/(tabs)/index.tsx:1027
 msgid "Where in Rwanda"
 msgstr ""
 
-#: app/(tabs)/account.tsx:716
+#: app/(tabs)/account.tsx:714
 #: app/sessions.tsx:73
 msgid "Where you are signed in"
 msgstr ""
@@ -3778,12 +3781,12 @@ msgstr ""
 msgid "With us since {0}"
 msgstr ""
 
-#: src/components/WithinBar.tsx:45
+#: src/components/WithinBar.tsx:50
 msgid "Within"
 msgstr ""
 
 #. placeholder {0}: area.km
-#: app/(tabs)/index.tsx:849
+#: app/(tabs)/index.tsx:844
 msgid "within {0} km"
 msgstr ""
 
@@ -3795,7 +3798,7 @@ msgstr ""
 msgid "workout"
 msgstr ""
 
-#: app/thread/[id].tsx:385
+#: app/thread/[id].tsx:383
 msgid "Write a message"
 msgstr ""
 
@@ -3803,8 +3806,8 @@ msgstr ""
 #: app/review/[id].tsx:110
 #: app/review/[id].tsx:123
 #: app/review/[id].tsx:138
-#: app/review/[id].tsx:161
-#: src/booking/Reservation.tsx:378
+#: app/review/[id].tsx:163
+#: src/booking/Reservation.tsx:372
 msgid "Write a review"
 msgstr ""
 
@@ -3857,15 +3860,15 @@ msgstr ""
 msgid "You approve the payment with your MoMo PIN, on your phone."
 msgstr ""
 
-#: app/sign-in.tsx:575
+#: app/sign-in.tsx:577
 msgid "You are <0>in!</0>"
 msgstr ""
 
-#: app/(tabs)/account.tsx:796
+#: app/(tabs)/account.tsx:792
 msgid "You are shown as Anonymous now."
 msgstr ""
 
-#: app/review/[id].tsx:242
+#: app/review/[id].tsx:244
 msgid "You can change this for {REVIEW_EDIT_WINDOW_DAYS} days after posting."
 msgstr ""
 
@@ -3898,7 +3901,7 @@ msgstr ""
 msgid "You have read everything. Switch to All to see it again."
 msgstr ""
 
-#: app/(tabs)/index.tsx:472
+#: app/(tabs)/index.tsx:469
 msgid "You have seen today’s story. Watch it again, or open the shop."
 msgstr ""
 
@@ -3907,7 +3910,7 @@ msgid "you rated this"
 msgstr ""
 
 #. placeholder {0}: format(savedMinor)
-#: app/book/[id].tsx:600
+#: app/book/[id].tsx:596
 msgid "You save {0}"
 msgstr ""
 
@@ -3919,24 +3922,24 @@ msgstr ""
 msgid "You: {said}"
 msgstr ""
 
-#: app/sign-in.tsx:360
+#: app/sign-in.tsx:366
 msgid "you@example.com"
 msgstr ""
 
-#: app/(tabs)/account.tsx:815
+#: app/(tabs)/account.tsx:809
 #: src/exportDocument.ts:206
 msgid "Your account"
 msgstr ""
 
-#: app/sign-in.tsx:580
+#: app/sign-in.tsx:582
 msgid "Your account is ready. Let us find you something good."
 msgstr ""
 
-#: app/(tabs)/account.tsx:709
+#: app/(tabs)/account.tsx:707
 msgid "Your account, bookings, reviews, messages and questions to us — to read, print or keep."
 msgstr ""
 
-#: app/book/[id].tsx:893
+#: app/book/[id].tsx:883
 #: app/booking/[id].tsx:234
 #: app/booking/[id].tsx:246
 msgid "Your booking"
@@ -3950,7 +3953,7 @@ msgstr ""
 msgid "Your bookings and messages stay with your account. You will need a new code to get back in."
 msgstr ""
 
-#: app/book/[id].tsx:655
+#: app/book/[id].tsx:649
 #: src/booking/BookedChoices.tsx:40
 msgid "Your choices"
 msgstr ""
@@ -3959,7 +3962,7 @@ msgstr ""
 msgid "Your choices <0>{addsWords}</0>"
 msgstr ""
 
-#: app/(tabs)/account.tsx:818
+#: app/(tabs)/account.tsx:812
 msgid "Your conversations with shops."
 msgstr ""
 
@@ -3982,11 +3985,11 @@ msgstr ""
 msgid "Your district"
 msgstr ""
 
-#: app/(tabs)/account.tsx:815
+#: app/(tabs)/account.tsx:809
 msgid "Your email, the name on your reviews, when you joined, and your home area if you set one."
 msgstr ""
 
-#: app/(tabs)/account.tsx:818
+#: app/(tabs)/account.tsx:812
 #: src/exportDocument.ts:211
 msgid "Your messages"
 msgstr ""
@@ -4007,7 +4010,7 @@ msgstr ""
 msgid "Your PIN goes only into your phone. This app never asks for it."
 msgstr ""
 
-#: app/(tabs)/account.tsx:819
+#: app/(tabs)/account.tsx:813
 msgid "Your questions to us"
 msgstr ""
 
@@ -4020,12 +4023,12 @@ msgstr ""
 msgid "Your requests about this booking"
 msgstr ""
 
-#: app/review/[id].tsx:161
-#: src/booking/Reservation.tsx:362
+#: app/review/[id].tsx:163
+#: src/booking/Reservation.tsx:358
 msgid "Your review"
 msgstr ""
 
-#: app/(tabs)/account.tsx:817
+#: app/(tabs)/account.tsx:811
 #: src/exportDocument.ts:210
 msgid "Your reviews"
 msgstr ""
@@ -4034,7 +4037,7 @@ msgstr ""
 msgid "Your saved address"
 msgstr ""
 
-#: src/booking/Checkout.tsx:354
+#: src/booking/Checkout.tsx:350
 msgid "Your slot is held for"
 msgstr ""
 
@@ -4046,6 +4049,6 @@ msgstr ""
 msgid "Your whole deposit goes back to the number that paid. If you cancel, the shop keeps it."
 msgstr ""
 
-#: src/tour/WelcomeTour.tsx:87
+#: src/tour/WelcomeTour.tsx:83
 msgid "Yours to choose"
 msgstr ""

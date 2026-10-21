@@ -17,6 +17,8 @@ import { useLiveNotifications } from '../notify/useLive';
 import { turnOffHere } from '../notify/webPush';
 import { TourProvider } from '../tour/Tour';
 import '../shell/shell.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 const RAIL_KEY = 'booking-business.sidebar-rail';
 const ADS_KEY = 'booking-business.ads-folded';
@@ -180,18 +182,28 @@ function Frame() {
   // press by mistake, and coming back means a new code by email. Every way out
   // — the sidebar, the shop menu, the phone's menu, search — comes through here.
   const leave = useCallback(async () => {
+    const shopName = data.business?.name;
     const sure = await confirmDialog({
-      title: 'Sign out?',
+      title: t`Sign out?`,
       body: (
         <p>
-          You will leave {data.business?.name ? <strong>{data.business.name}</strong> : 'your business'} on this
-          device. To come back, sign in with your email and the new 6-digit code we send you.
+          {shopName ? (
+            <Trans>
+              You will leave <strong>{shopName}</strong> on this device. To come back, sign in with your email and the
+              new 6-digit code we send you.
+            </Trans>
+          ) : (
+            <Trans>
+              You will leave your business on this device. To come back, sign in with your email and the new 6-digit
+              code we send you.
+            </Trans>
+          )}
         </p>
       ),
       icon: 'logout',
       tone: 'warn',
-      confirmLabel: 'Sign out',
-      cancelLabel: 'Stay signed in',
+      confirmLabel: t`Sign out`,
+      cancelLabel: t`Stay signed in`,
     });
     if (!sure) return;
     // This computer stops getting this account's alerts (§287).

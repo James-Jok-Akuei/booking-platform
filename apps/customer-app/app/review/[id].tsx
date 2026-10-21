@@ -139,9 +139,11 @@ function WriteReview() {
         <EmptyState
           icon="hourglass-outline"
           title={t`Not yet`}
-          text={t`A visit can be reviewed once the shop has marked it done. This one is still ${
-            a.status === 'BOOKED' ? 'booked' : 'not finished'
-          }.`}
+          text={
+            a.status === 'BOOKED'
+              ? t`A visit can be reviewed once the shop has marked it done. This one is still booked.`
+              : t`A visit can be reviewed once the shop has marked it done. This one is still not finished.`
+          }
         />
       </View>
     );
@@ -367,7 +369,6 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(WriteReview, {
   icon: 'star-outline',
-
   get title() { return t`Sign in to write a review`; },
   get text() { return t`Reviews come from people who booked, so we need to know it is you.`; },
 });

@@ -469,3 +469,10 @@ a.ov-stat:hover .ov-stat-go { color: var(--accent); transform: translate(2px, -2
   .ov-stat-value { font-size: 28px; }
   .ov-stat-sub { font-size: 12px; }
 }
+
+/* Long words (§308): the chip keeps to the screen — the date gives way with
+   "…" — and the greeting beneath wraps inside it. */
+.ov-eyebrow { max-width: 100%; }
+.ov-eyebrow > * { flex-shrink: 0; }
+.ov-eyebrow .ov-date { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ov-head > :first-child { min-width: 0; max-width: 100%; }

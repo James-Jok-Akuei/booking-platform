@@ -26,6 +26,9 @@ import { useTour } from '../tour/Tour';
 import { DropZone, type FileKind } from '../ui/DropZone';
 import { Panel as SidePanel } from '../ui/Panel';
 import './support.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
 
 /** An icon for each kind of question, the same in the list and the form. */
 const CATEGORY_ICON: Record<TicketCategory, IconName> = {
@@ -55,28 +58,28 @@ const STATUS: Record<
   { label: string; short: string; hint: string; tone: string }
 > = {
   OPEN: {
-    label: 'Waiting for support',
-    short: 'Nobody has picked it up yet',
-    hint: 'We have it. Nobody has picked it up yet.',
-    tone: 'tkt-open',
+    get label() { return t`Waiting for support`; },
+    get short() { return t`Nobody has picked it up yet`; },
+    get hint() { return t`We have it. Nobody has picked it up yet.`; },
+    tone: 'tkt-open'
   },
   IN_PROGRESS: {
-    label: 'Being looked at',
-    short: 'Someone is on it',
-    hint: 'Someone is working on this.',
-    tone: 'tkt-active',
+    get label() { return t`Being looked at`; },
+    get short() { return t`Someone is on it`; },
+    get hint() { return t`Someone is working on this.`; },
+    tone: 'tkt-active'
   },
   RESOLVED: {
-    label: 'Resolved',
-    short: `You can reopen it for ${REOPEN_WINDOW_DAYS} days`,
-    hint: 'We think this is sorted.',
-    tone: 'tkt-resolved',
+    get label() { return t`Resolved`; },
+    get short() { return t`You can reopen it for ${REOPEN_WINDOW_DAYS} days`; },
+    get hint() { return t`We think this is sorted.`; },
+    tone: 'tkt-resolved'
   },
   CLOSED: {
-    label: 'Closed',
-    short: 'Finished',
-    hint: 'Finished. Raise a new one if it comes back.',
-    tone: 'tkt-closed',
+    get label() { return t`Closed`; },
+    get short() { return t`Finished`; },
+    get hint() { return t`Finished. Raise a new one if it comes back.`; },
+    tone: 'tkt-closed'
   },
 };
 
@@ -86,17 +89,17 @@ const STATUS: Record<
  * kind of thing it is, which is the part a reader needs before clicking.
  */
 const describeFile = (mimeType: string) => {
-  if (mimeType.startsWith('image/')) return 'View image';
-  if (mimeType === 'application/pdf') return 'View PDF';
-  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return 'View spreadsheet';
-  if (mimeType.includes('word')) return 'View document';
-  if (mimeType === 'text/csv') return 'View CSV';
-  if (mimeType === 'text/plain') return 'View text file';
-  return 'View attachment';
+  if (mimeType.startsWith('image/')) return t`View image`;
+  if (mimeType === 'application/pdf') return t`View PDF`;
+  if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return t`View spreadsheet`;
+  if (mimeType.includes('word')) return t`View document`;
+  if (mimeType === 'text/csv') return t`View CSV`;
+  if (mimeType === 'text/plain') return t`View text file`;
+  return t`View attachment`;
 };
 
 const when = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  iso ? new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
 /** The window is enforced server-side; this only decides whether to offer it. */
 const withinReopenWindow = (resolvedAt: string | null) => {
@@ -130,15 +133,15 @@ export function SupportPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Help</h1>
-            <p className="muted">Ask us about anything — we reply on this page and by email.</p>
+            <h1><Trans>Help</Trans></h1>
+            <p className="muted"><Trans>Ask us about anything — we reply on this page and by email.</Trans></p>
           </div>
           {/* The welcome tour, kept here (§307). */}
           <button type="button" className="hp-tour" onClick={tour.start}>
             <span className="hp-tour-icon" aria-hidden="true">
               <Icon name="play" size={13} stroke={2.4} filled />
             </span>
-            Take the welcome tour
+            <Trans>Take the welcome tour</Trans>
           </button>
         </header>
       </div>
@@ -148,10 +151,12 @@ export function SupportPage() {
           <span className="hp-hero-icon">
             <Icon name="help" size={24} />
           </span>
-          <h2>How can we help?</h2>
+          <h2><Trans>How can we help?</Trans></h2>
           <p>
-            Something wrong with a payout, a booking or your profile? Tell us here and you will get a reply in
-            this page and by email.
+            <Trans>
+              Something wrong with a payout, a booking or your profile? Tell us here and you will get a reply in
+              this page and by email.
+            </Trans>
           </p>
         </div>
         <div className="hp-topics">
@@ -170,19 +175,20 @@ export function SupportPage() {
       {/* One card down to the bottom line, like every page (§216). */}
       <div className="hp-board">
         <header className="hp-board-head">
-          <h2>Your questions</h2>
-          <span>{rows.length ? `${live.length} open · ${done.length} finished` : 'Replies arrive here and by email.'}</span>
+          <h2><Trans>Your questions</Trans></h2>
+          <span>{rows.length ? t`${live.length} open · ${done.length} finished` : t`Replies arrive here and by email.`}</span>
         </header>
         {tickets.isLoading && <div className="skeleton hp-skeleton" />}
 
         {tickets.data && rows.length === 0 && (
           <p className="hp-none">
-            <Icon name="checkCircle" size={18} /> You have not asked us anything yet. That is a good sign.
+            <Icon name="checkCircle" size={18} />{' '}
+            <Trans>You have not asked us anything yet. That is a good sign.</Trans>
           </p>
         )}
 
-        {live.length > 0 && <TicketGroup title="Open" rows={live} onOpen={setOpenId} />}
-        {done.length > 0 && <TicketGroup title="Finished" rows={done} onOpen={setOpenId} />}
+        {live.length > 0 && <TicketGroup title={t`Open`} rows={live} onOpen={setOpenId} />}
+        {done.length > 0 && <TicketGroup title={t`Finished`} rows={done} onOpen={setOpenId} />}
       </div>
 
       {composing && (
@@ -226,7 +232,7 @@ function TicketGroup({
               <span className="hp-ticket-text">
                 <strong>{ticket.subject}</strong>
                 <span>
-                  {ticket.reference} · last activity {ago(ticket.lastMessageAt ?? ticket.createdAt)}
+                  <Trans>{ticket.reference} · last activity {ago(ticket.lastMessageAt ?? ticket.createdAt)}</Trans>
                 </span>
               </span>
               <span className="hp-ticket-state">
@@ -312,60 +318,60 @@ function FilePicker({
   const full = files.length >= MAX_ATTACHMENTS;
 
   return (
-    <DropZone onFiles={add} kind={ATTACHMENTS} multiple disabled={full} hint="Drop to attach">
-    <div className="file-field">
-      {files.length > 0 && (
-        <ul className="file-list">
-          {files.map((file) => (
-            <li key={`${file.name}-${file.size}-${file.lastModified}`}>
-              <span className="file-name">{file.name}</span>
-              <span className="muted small">
-                {Math.max(1, Math.round(file.size / 1024))} KB
-              </span>
-              <button
-                type="button"
-                className="link"
-                onClick={() => onChange(files.filter((held) => held !== file))}
-              >
-                remove
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+    <DropZone onFiles={add} kind={ATTACHMENTS} multiple disabled={full} hint={t`Drop to attach`}>
+      <div className="file-field">
+        {files.length > 0 && (
+          <ul className="file-list">
+            {files.map((file) => (
+              <li key={`${file.name}-${file.size}-${file.lastModified}`}>
+                <span className="file-name">{file.name}</span>
+                <span className="muted small">
+                  <Trans>{Math.max(1, Math.round(file.size / 1024))} KB</Trans>
+                </span>
+                <button
+                  type="button"
+                  className="link"
+                  onClick={() => onChange(files.filter((held) => held !== file))}
+                >
+                  <Trans>remove</Trans>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
 
-      <input
-        id={id}
-        type="file"
-        multiple
-        className="visually-hidden"
-        accept={[...ACCEPTED_TYPES, ...ACCEPTED_EXTENSIONS].join(',')}
-        disabled={full}
-        // Cleared after every selection so picking the same file again still
-        // fires `change` — without this, removing a file and re-adding it does
-        // nothing at all.
-        onChange={(event) => {
-          add(event.target.files);
-          event.target.value = '';
-        }}
-      />
-      <label htmlFor={id} className={full ? 'file-trigger disabled' : 'file-trigger'}>
-        <Icon name="paperclip" size={16} />
-        {files.length === 0 ? 'Attach a file' : 'Add another file'}
-      </label>
-      {!full && <span className="muted small drop-tip">or drop {files.length === 0 ? 'files' : 'more'} here</span>}
-      {full && (
-        <span className="muted small">{MAX_ATTACHMENTS} files is the limit.</span>
-      )}
+        <input
+          id={id}
+          type="file"
+          multiple
+          className="visually-hidden"
+          accept={[...ACCEPTED_TYPES, ...ACCEPTED_EXTENSIONS].join(',')}
+          disabled={full}
+          // Cleared after every selection so picking the same file again still
+          // fires `change` — without this, removing a file and re-adding it does
+          // nothing at all.
+          onChange={(event) => {
+            add(event.target.files);
+            event.target.value = '';
+          }}
+        />
+        <label htmlFor={id} className={full ? 'file-trigger disabled' : 'file-trigger'}>
+          <Icon name="paperclip" size={16} />
+          {files.length === 0 ? t`Attach a file` : t`Add another file`}
+        </label>
+        {!full && <span className="muted small drop-tip">{files.length === 0 ? t`or drop files here` : t`or drop more here`}</span>}
+        {full && (
+          <span className="muted small"><Trans>{MAX_ATTACHMENTS} files is the limit.</Trans></span>
+        )}
 
-      {problems.length > 0 && (
-        <ul className="error small" role="alert">
-          {problems.map((problem) => (
-            <li key={problem}>{problem}</li>
-          ))}
-        </ul>
-      )}
-    </div>
+        {problems.length > 0 && (
+          <ul className="error small" role="alert">
+            {problems.map((problem) => (
+              <li key={problem}>{problem}</li>
+            ))}
+          </ul>
+        )}
+      </div>
     </DropZone>
   );
 }
@@ -374,7 +380,7 @@ function FilePicker({
 const ATTACHMENTS: FileKind = {
   types: ACCEPTED_TYPES,
   extensions: ACCEPTED_EXTENSIONS,
-  words: 'a photo, PDF, Word, Excel, CSV or text file',
+  get words() { return t`a photo, PDF, Word, Excel, CSV or text file`; },
 };
 
 function Attachments({ files }: { files: TicketAttachment[] }) {
@@ -383,7 +389,7 @@ function Attachments({ files }: { files: TicketAttachment[] }) {
     <div className="attachments">
       {files.map((file) => (
         <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="small">
-          {describeFile(file.mimeType)} ({Math.max(1, Math.round(file.sizeBytes / 1024))} KB)
+          <Trans>{describeFile(file.mimeType)} ({Math.max(1, Math.round(file.sizeBytes / 1024))} KB)</Trans>
         </a>
       ))}
     </div>
@@ -425,13 +431,13 @@ function NewTicket({
 
   return (
     <SidePanel
-      eyebrow="Ask for help"
-      title="Tell us what happened"
+      eyebrow={t`Ask for help`}
+      title={t`Tell us what happened`}
       onClose={onClose}
       footer={
         <>
           <button type="button" onClick={onClose}>
-            Cancel
+            <Trans>Cancel</Trans>
           </button>
           <button
             type="submit"
@@ -440,14 +446,14 @@ function NewTicket({
             disabled={create.isPending || subject.trim().length < 3 || body.trim() === ''}
           >
             <Icon name="send" size={16} />
-            {create.isPending ? 'Sending…' : 'Send'}
+            {create.isPending ? t`Sending…` : t`Send`}
           </button>
         </>
       }
     >
       <form id="new-ticket" onSubmit={submit} className="stack">
         <div className="stack-field">
-          <span className="field-label">What is this about?</span>
+          <span className="field-label"><Trans>What is this about?</Trans></span>
           <div className="hp-cats" role="radiogroup">
             {TICKET_CATEGORIES.map((option) => (
               <button
@@ -466,31 +472,33 @@ function NewTicket({
         </div>
 
         <label>
-          One line summary
-          <input
+          <Trans>One line summary</Trans>
+        <input
             value={subject}
             onChange={(event) => setSubject(event.target.value)}
-            placeholder="Payout for September has not arrived"
+            placeholder={t`Payout for September has not arrived`}
             maxLength={200}
           />
         </label>
 
         <label>
-          What happened?
-          <textarea
+          <Trans>What happened?</Trans>
+        <textarea
             value={body}
             onChange={(event) => setBody(event.target.value)}
             rows={6}
             maxLength={5000}
-            placeholder="Dates, amounts and the booking reference if you have one — it saves us asking."
+            placeholder={t`Dates, amounts and the booking reference if you have one — it saves us asking.`}
           />
         </label>
 
         <div className="stack-field">
-          <span className="field-label">Anything that shows the problem</span>
+          <span className="field-label"><Trans>Anything that shows the problem</Trans></span>
           <span className="muted small">
-            Optional. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} files, {MAX_UPLOAD_MB}MB
-            each. A statement or an invoice helps most for anything about money.
+            <Trans>
+              Optional. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} files, {MAX_UPLOAD_MB}MB
+              each. A statement or an invoice helps most for anything about money.
+            </Trans>
           </span>
           <FilePicker
             id="new-ticket-attachments"
@@ -501,7 +509,7 @@ function NewTicket({
 
         {create.error && (
           <p className="error small" role="alert">
-            {create.error instanceof ApiError ? create.error.message : 'That did not send.'}
+            {create.error instanceof ApiError ? create.error.message : t`That did not send.`}
           </p>
         )}
       </form>
@@ -536,8 +544,8 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
 
   return (
     <SidePanel
-      eyebrow={data ? `${data.reference} · raised ${when(data.createdAt)}` : 'Your question'}
-      title={data?.subject ?? 'Loading…'}
+      eyebrow={data ? t`${data.reference} · raised ${when(data.createdAt)}` : t`Your question`}
+      title={data?.subject ?? t`Loading…`}
       onClose={onClose}
     >
       {!data ? (
@@ -551,7 +559,7 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
 
           {data.resolutionNote && (
             <p className="notice">
-              <strong>What we did:</strong> {data.resolutionNote}
+              <strong><Trans>What we did:</Trans></strong> {data.resolutionNote}
             </p>
           )}
 
@@ -562,7 +570,7 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
                 className={message.authorType === 'REPORTER' ? 'hp-msg is-mine' : 'hp-msg'}
               >
                 <div className="hp-msg-who">
-                  {message.authorType === 'REPORTER' ? 'You' : 'Support'} · {when(message.createdAt)}
+                  {message.authorType === 'REPORTER' ? t`You` : t`Support`} · {when(message.createdAt)}
                 </div>
                 <p>{message.body}</p>
                 <Attachments files={message.attachments} />
@@ -582,17 +590,21 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
               {withinReopenWindow(data.resolvedAt) ? (
                 <>
                   <p className="muted small">
-                    Still not right? You can reopen this for {REOPEN_WINDOW_DAYS} days after
-                    it was resolved.
+                    <Trans>
+                      Still not right? You can reopen this for {REOPEN_WINDOW_DAYS} days after
+                      it was resolved.
+                    </Trans>
                   </p>
                   <button type="button" disabled={reopen.isPending} onClick={() => reopen.mutate()}>
-                    {reopen.isPending ? 'Reopening…' : 'This is not fixed'}
+                    {reopen.isPending ? t`Reopening…` : t`This is not fixed`}
                   </button>
                 </>
               ) : (
                 <p className="muted small">
-                  This was resolved more than {REOPEN_WINDOW_DAYS} days ago, so it can no
-                  longer be reopened. Please raise a new one.
+                  <Trans>
+                    This was resolved more than {REOPEN_WINDOW_DAYS} days ago, so it can no
+                    longer be reopened. Please raise a new one.
+                  </Trans>
                 </p>
               )}
             </div>
@@ -611,7 +623,7 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
                 onChange={(event) => setReply(event.target.value)}
                 rows={3}
                 maxLength={5000}
-                placeholder="Add anything else that might help…"
+                placeholder={t`Add anything else that might help…`}
               />
               <div className="reply-actions">
                 <FilePicker
@@ -624,7 +636,7 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
                   className="primary"
                   disabled={send.isPending || reply.trim() === ''}
                 >
-                  {send.isPending ? 'Sending…' : 'Send'}
+                  {send.isPending ? t`Sending…` : t`Send`}
                 </button>
               </div>
             </form>
@@ -634,7 +646,7 @@ function TicketThread({ id, onClose }: { id: string; onClose: () => void }) {
             <p className="error small" role="alert">
               {(send.error ?? reopen.error) instanceof ApiError
                 ? (send.error ?? reopen.error)!.message
-                : 'That did not work.'}
+                : t`That did not work.`}
             </p>
           )}
         </>

@@ -23,8 +23,12 @@ import { Stars } from '../ui/Stars';
 import { Switch } from '../ui/Switch';
 import './hours.css';
 import { useAccess } from '../access';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dayName } from '../i18n/format';
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+/** Day names in the app's language (§308), Sunday first. */
+const DAYS = () => [0, 1, 2, 3, 4, 5, 6].map((day) => dayName(day));
 /** Monday first, the way a working week is read; the stored days stay 0 = Sunday. */
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
@@ -72,14 +76,15 @@ export function HoursPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Branches &amp; hours</h1>
+            <h1><Trans>Branches & hours</Trans></h1>
             <p className="muted">
-              Every place you work from, when it is open, and how many people it can take at once.
+              <Trans>Every place you work from, when it is open, and how many people it can take at once.</Trans>
             </p>
           </div>
           {access.runsBusiness && (
             <button type="button" className="primary hr-add" onClick={() => setAdding(true)}>
-              <Icon name="plus" size={18} stroke={2.4} /> Add a branch
+              <Icon name="plus" size={18} stroke={2.4} />{' '}
+              <Trans>Add a branch</Trans>
             </button>
           )}
         </header>
@@ -89,13 +94,14 @@ export function HoursPage() {
         <p className="hr-scope">
           <Icon name="pin" size={16} />
           {access.runsBranches
-            ? 'These are the branches you look after. You can change their hours and details; the owner opens and closes branches.'
-            : 'These are the branches you work at. The owner or a manager changes their hours.'}
+            ? t`These are the branches you look after. You can change their hours and details; the owner opens and closes branches.`
+            : t`These are the branches you work at. The owner or a manager changes their hours.`}
         </p>
       )}
       {access.allBranches && !access.runsBranches && (
         <p className="hr-scope">
-          <Icon name="shield" size={16} /> The owner or a manager changes the hours. You can see them here.
+          <Icon name="shield" size={16} />{' '}
+          <Trans>The owner or a manager changes the hours. You can see them here.</Trans>
         </p>
       )}
 
@@ -108,19 +114,22 @@ export function HoursPage() {
           <span>
             <Icon name="pin" size={30} />
           </span>
-          <h2>No branches yet</h2>
+          <h2><Trans>No branches yet</Trans></h2>
           {access.runsBusiness ? (
             <>
               <p>
-                Add one — until then there is nothing for a customer to book and nothing to set hours
-                for.
+                <Trans>
+                  Add one — until then there is nothing for a customer to book and nothing to set hours
+                  for.
+                </Trans>
               </p>
               <button type="button" className="primary" onClick={() => setAdding(true)}>
-                <Icon name="plus" size={18} stroke={2.4} /> Add a branch
+                <Icon name="plus" size={18} stroke={2.4} />{' '}
+                <Trans>Add a branch</Trans>
               </button>
             </>
           ) : (
-            <p>The owner has not given you a branch yet. Ask them to choose yours on the People page.</p>
+            <p><Trans>The owner has not given you a branch yet. Ask them to choose yours on the People page.</Trans></p>
           )}
         </div>
       )}
@@ -172,7 +181,7 @@ function BranchCard({
   const hasPin = location.latitude !== null && location.longitude !== null;
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['locations'] });
-  const fail = (error: unknown) => setProblem(error instanceof ApiError ? error.message : 'That did not work.');
+  const fail = (error: unknown) => setProblem(error instanceof ApiError ? error.message : t`That did not work.`);
 
   const close = useMutation({
     mutationFn: () => closeLocation(location.id),
@@ -199,17 +208,19 @@ function BranchCard({
    */
   const askClose = async () => {
     const ok = await confirmDialog({
-      title: `Close ${location.name}?`,
+      title: t`Close ${location.name}?`,
       body: (
         <p>
-          It stops taking bookings and customers will not find it. Nothing is deleted — past
-          bookings, reviews and takings stay, and you can reopen it at any time.
+          <Trans>
+            It stops taking bookings and customers will not find it. Nothing is deleted — past
+            bookings, reviews and takings stay, and you can reopen it at any time.
+          </Trans>
         </p>
       ),
       tone: 'danger',
       icon: 'pause',
-      confirmLabel: 'Close this branch',
-      cancelLabel: 'Keep it open',
+      confirmLabel: t`Close this branch`,
+      cancelLabel: t`Keep it open`,
     });
     if (ok) close.mutate();
   };
@@ -227,7 +238,7 @@ function BranchCard({
         ) : (
           <div className="hr-map is-empty">
             <Icon name="pin" size={28} />
-            <span>{canChange ? 'No pin yet — add one under Edit details' : 'No pin yet'}</span>
+            <span>{canChange ? t`No pin yet — add one under Edit details` : t`No pin yet`}</span>
           </div>
         )}
         <div className="hr-hero-shade" />
@@ -235,34 +246,35 @@ function BranchCard({
           <span className={`hr-state${location.isActive ? (todays && !todays.isClosed ? ' is-open' : '') : ' is-shut'}`}>
             <i />
             {!location.isActive
-              ? 'Closed'
+              ? t`Closed`
               : todays && !todays.isClosed
-                ? `Today ${todays.openTime} – ${todays.closeTime}`
-                : 'Closed today'}
+                ? t`Today ${todays.openTime} – ${todays.closeTime}`
+                : t`Closed today`}
           </span>
           <h2>{location.name}</h2>
           <p>
             <Icon name="pin" size={14} />
             {location.district
               ? `${location.district.name}, ${location.district.province.name}`
-              : 'No district set — customers cannot find this branch by place'}
+              : t`No district set — customers cannot find this branch by place`}
           </p>
         </div>
         {(canChange || canOpenClose) && (
           <div className="hr-hero-actions">
             {canChange && (
               <button type="button" onClick={onEdit}>
-                <Icon name="pencil" size={16} /> Edit details
+                <Icon name="pencil" size={16} />{' '}
+                <Trans>Edit details</Trans>
               </button>
             )}
             {canOpenClose &&
               (location.isActive ? (
                 <button type="button" className="hr-close-btn" disabled={close.isPending} onClick={askClose}>
-                  {close.isPending ? 'Closing…' : 'Close this branch'}
+                  {close.isPending ? t`Closing…` : t`Close this branch`}
                 </button>
               ) : (
                 <button type="button" className="primary" disabled={reopen.isPending} onClick={() => reopen.mutate()}>
-                  {reopen.isPending ? 'Reopening…' : 'Reopen this branch'}
+                  {reopen.isPending ? t`Reopening…` : t`Reopen this branch`}
                 </button>
               ))}
           </div>
@@ -275,13 +287,15 @@ function BranchCard({
           {location.address}
         </span>
         <span>
-          <Icon name="tag" size={15} />
-          cheapest service {money.format(location.fromPriceMinor)}
+          <Icon name="tag" size={15} /><Trans>cheapest service {money.format(location.fromPriceMinor)}</Trans>
         </span>
         {location.ratingCount > 0 && (
           <span>
-            <Stars value={Number(location.ratingAvg)} size={13} /> rated {location.ratingAvg} over{' '}
-            {location.ratingCount}
+            <Stars value={Number(location.ratingAvg)} size={13} />
+            <Trans>
+              rated {location.ratingAvg} over{' '}
+              {location.ratingCount}
+            </Trans>
           </span>
         )}
         {location.phone && (
@@ -300,8 +314,10 @@ function BranchCard({
 
       {!location.isActive && (
         <p className="notice hr-problem">
-          This branch is closed. It takes no new bookings and customers cannot find it. Everything that
-          happened here is kept.
+          <Trans>
+            This branch is closed. It takes no new bookings and customers cannot find it. Everything that
+            happened here is kept.
+          </Trans>
         </p>
       )}
 
@@ -322,7 +338,7 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
   useEffect(() => {
     const byDay = new Map(location.hours.map((h) => [h.dayOfWeek, h]));
     setWeek(
-      DAYS.map(
+      DAYS().map(
         (_, day) =>
           byDay.get(day) ?? {
             id: `new-${day}`,
@@ -381,15 +397,15 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
     <section className="hr-week">
       <header>
         <div>
-          <h3>Opening hours</h3>
+          <h3><Trans>Opening hours</Trans></h3>
           <p>
-            {openDays === 0 ? 'Closed every day — nothing can be booked' : `Open ${openDays} ${openDays === 1 ? 'day' : 'days'} a week`}
+            {openDays === 0 ? t`Closed every day — nothing can be booked` : t`Open ${openDays} ${openDays === 1 ? 'day' : 'days'} a week`}
           </p>
         </div>
         {openDays > 1 && firstOpen && !readOnly && (
           <button type="button" className="hr-copy" onClick={copyFirst}>
             <Icon name="copy" size={15} />
-            {DAYS[firstOpen.dayOfWeek].slice(0, 3)}’s hours to every open day
+            <Trans>{DAYS()[firstOpen.dayOfWeek].slice(0, 3)}’s hours to every open day</Trans>
           </button>
         )}
       </header>
@@ -404,32 +420,32 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
           return (
             <li key={day} className={`${h.isClosed ? 'is-off' : ''}${day === today ? ' is-today' : ''}`}>
               <span className="hr-day">
-                {DAYS[day].slice(0, 3)}
-                {day === today && <em>today</em>}
+                {DAYS()[day].slice(0, 3)}
+                {day === today && <em><Trans>today</Trans></em>}
               </span>
               <Switch
                 checked={!h.isClosed}
-                label={`Open on ${DAYS[day]}`}
+                label={t`Open on ${DAYS()[day]}`}
                 disabled={readOnly}
                 onChange={(open) => update(day, { isClosed: !open })}
               />
               {h.isClosed ? (
-                <span className="hr-closed">Closed</span>
+                <span className="hr-closed"><Trans>Closed</Trans></span>
               ) : (
                 <span className="hr-times">
                   <input
                     type="time"
                     value={h.openTime}
                     readOnly={readOnly}
-                    aria-label={`${DAYS[day]} opens`}
+                    aria-label={t`${DAYS()[day]} opens`}
                     onChange={(e) => update(day, { openTime: e.target.value })}
                   />
-                  <span>to</span>
+                  <span><Trans>to</Trans></span>
                   <input
                     type="time"
                     value={h.closeTime}
                     readOnly={readOnly}
-                    aria-label={`${DAYS[day]} closes`}
+                    aria-label={t`${DAYS()[day]} closes`}
                     onChange={(e) => update(day, { closeTime: e.target.value })}
                   />
                 </span>
@@ -458,7 +474,7 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
 
       {saveHours.error && (
         <p className="error small" role="alert">
-          {saveHours.error instanceof ApiError ? saveHours.error.message : 'Could not save.'}
+          {saveHours.error instanceof ApiError ? saveHours.error.message : t`Could not save.`}
         </p>
       )}
 
@@ -467,12 +483,13 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
           <span>
             {saveHours.isSuccess ? (
               <span className="ok">
-                <Icon name="checkCircle" size={16} /> Saved
+                <Icon name="checkCircle" size={16} />{' '}
+                <Trans>Saved</Trans>
               </span>
             ) : dirty ? (
-              'You have changes that are not saved'
+              t`You have changes that are not saved`
             ) : (
-              'The whole week is saved together'
+              t`The whole week is saved together`
             )}
           </span>
           <button
@@ -481,7 +498,7 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
             disabled={saveHours.isPending || !dirty}
             onClick={() => saveHours.mutate()}
           >
-            {saveHours.isPending ? 'Saving…' : 'Save the week'}
+            {saveHours.isPending ? t`Saving…` : t`Save the week`}
           </button>
         </footer>
       )}
@@ -503,10 +520,10 @@ function PlacesCard({ location, onSaved, readOnly }: { location: Location; onSav
 
   return (
     <section className="hr-places">
-      <h3>People served at once</h3>
+      <h3><Trans>People served at once</Trans></h3>
       <div className={`hr-stepper${readOnly ? ' is-readonly' : ''}`}>
         {!readOnly && (
-          <button type="button" onClick={() => step(-1)} disabled={n <= 1} aria-label="One fewer">
+          <button type="button" onClick={() => step(-1)} disabled={n <= 1} aria-label={t`One fewer`}>
             <Icon name="minus" size={18} stroke={2.4} />
           </button>
         )}
@@ -517,10 +534,10 @@ function PlacesCard({ location, onSaved, readOnly }: { location: Location; onSav
           value={capacity}
           readOnly={readOnly}
           onChange={(e) => setCap(e.target.value)}
-          aria-label="People served at once"
+          aria-label={t`People served at once`}
         />
         {!readOnly && (
-          <button type="button" onClick={() => step(1)} aria-label="One more">
+          <button type="button" onClick={() => step(1)} aria-label={t`One more`}>
             <Icon name="plus" size={18} stroke={2.4} />
           </button>
         )}
@@ -536,14 +553,16 @@ function PlacesCard({ location, onSaved, readOnly }: { location: Location; onSav
       {/* Capacity is what availability counts against (§16.4), and since
           §189 the only thing deciding how many one booking may be for. */}
       <p>
-        How many customers this branch can look after at the same time — the same number for every
-        service here. A booking for 3 people takes 3 places at that time; when every place is taken,
-        customers see the time as booked. It is also the most people one booking can be for. Lowering
-        it does not cancel bookings already made.
+        <Trans>
+          How many customers this branch can look after at the same time — the same number for every
+          service here. A booking for 3 people takes 3 places at that time; when every place is taken,
+          customers see the time as booked. It is also the most people one booking can be for. Lowering
+          it does not cancel bookings already made.
+        </Trans>
       </p>
       {saveCapacity.error && (
         <p className="error small" role="alert">
-          {saveCapacity.error instanceof ApiError ? saveCapacity.error.message : 'Could not save.'}
+          {saveCapacity.error instanceof ApiError ? saveCapacity.error.message : t`Could not save.`}
         </p>
       )}
       {!readOnly && (
@@ -553,7 +572,7 @@ function PlacesCard({ location, onSaved, readOnly }: { location: Location; onSav
           disabled={saveCapacity.isPending || !changed}
           onClick={() => saveCapacity.mutate()}
         >
-          {saveCapacity.isPending ? 'Saving…' : changed ? 'Save' : saveCapacity.isSuccess ? 'Saved' : 'Save'}
+          {saveCapacity.isPending ? t`Saving…` : changed ? t`Save` : saveCapacity.isSuccess ? t`Saved` : t`Save`}
         </button>
       )}
     </section>
@@ -592,21 +611,21 @@ function EditBranchPanel({ location, onClose }: { location: Location; onClose: (
       queryClient.invalidateQueries({ queryKey: ['locations'] });
       onClose();
     },
-    onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not work.'),
+    onError: (error) => setProblem(error instanceof ApiError ? error.message : t`That did not work.`),
   });
 
   return (
     <Panel
-      eyebrow="Edit details"
+      eyebrow={t`Edit details`}
       title={location.name}
       onClose={onClose}
       footer={
         <>
           <button type="button" onClick={onClose}>
-            Cancel
+            <Trans>Cancel</Trans>
           </button>
           <button type="submit" form="edit-branch" className="primary" disabled={save.isPending}>
-            {save.isPending ? 'Saving…' : 'Save'}
+            {save.isPending ? t`Saving…` : t`Save`}
           </button>
         </>
       }
@@ -621,18 +640,17 @@ function EditBranchPanel({ location, onClose }: { location: Location; onClose: (
       >
         <div className="bf-two">
           <div className="bf-field">
-            <label htmlFor="eb-name">Branch name</label>
+            <label htmlFor="eb-name"><Trans>Branch name</Trans></label>
             <input id="eb-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
           </div>
           <div className="bf-field">
-            <label htmlFor="eb-phone">
-              Phone for this branch <em>optional</em>
+            <label htmlFor="eb-phone"><Trans>Phone for this branch <em>optional</em></Trans>
             </label>
             <input id="eb-phone" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} />
           </div>
         </div>
         <div className="bf-field">
-          <label htmlFor="eb-address">Address</label>
+          <label htmlFor="eb-address"><Trans>Address</Trans></label>
           <AddressField
             id="eb-address"
             value={address}
@@ -646,21 +664,21 @@ function EditBranchPanel({ location, onClose }: { location: Location; onClose: (
               const district = districtFrom(found);
               if (district) setDistrictId(district);
               setProblem(null);
-              setFromAddress(district ? 'The pin and the district were moved to this address.' : 'The pin was moved to this address.');
+              setFromAddress(district ? t`The pin and the district were moved to this address.` : t`The pin was moved to this address.`);
             }}
           />
-          {fromAddress && <span className="bf-help is-ok">{fromAddress} Check it below before saving.</span>}
+          {fromAddress && <span className="bf-help is-ok"><Trans>{fromAddress} Check it below before saving.</Trans></span>}
         </div>
         <PlaceField
           value={place}
           onChange={setPlace}
           onProblem={setProblem}
-          hint="Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
+          hint={t`Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now.`}
         />
         <DistrictField
           value={districtId}
           onChange={setDistrictId}
-          hint="Customers filter by this. Without it, this branch does not appear when someone searches their area."
+          hint={t`Customers filter by this. Without it, this branch does not appear when someone searches their area.`}
         />
         {problem && (
           <p className="error small" role="alert">

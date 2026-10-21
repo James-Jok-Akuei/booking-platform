@@ -1,10 +1,12 @@
 import type { IconName } from '../ui/Icon';
 
+import { t } from '@lingui/core/macro';
+
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 const touch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 
 /** How to open search here: keys on a computer, the magnifying glass on a phone. */
-export const SEARCH_HOW = touch ? 'Tap the magnifying glass at the top' : `Press ${isMac ? '⌘' : 'Ctrl'} K`;
+export const searchHow = () => (touch ? t`Tap the magnifying glass at the top` : t`Press ${isMac ? '⌘' : 'Ctrl'} K`);
 
 /**
  * "Did you know?" — one feature worth knowing, chosen by the page the seller is
@@ -14,68 +16,68 @@ export const SEARCH_HOW = touch ? 'Tap the magnifying glass at the top' : `Press
 const TIPS: Record<string, { icon: IconName; title: string; text: string }> = {
   '/': {
     icon: 'search',
-    title: 'Jump anywhere',
-    text: `${SEARCH_HOW} and type any word — “prices”, “holiday”, “momo” — to go straight there.`,
+    get title() { return t`Jump anywhere`; },
+    get text() { return t`${searchHow()} and type any word — “prices”, “holiday”, “momo” — to go straight there.`; },
   },
   '/appointments': {
     icon: 'ticket',
-    title: 'Six digits, no button',
-    text: 'When a customer reads out their code, the sixth digit checks them in on its own.',
+    get title() { return t`Six digits, no button`; },
+    get text() { return t`When a customer reads out their code, the sixth digit checks them in on its own.`; },
   },
   '/services': {
     icon: 'image',
-    title: 'Choose the cover',
-    text: '“Make cover” picks the photo customers see on the service’s card in the app.',
+    get title() { return t`Choose the cover`; },
+    get text() { return t`“Make cover” picks the photo customers see on the service’s card in the app.`; },
   },
   '/hours': {
     icon: 'users',
-    title: 'People served at once',
-    text: 'A booking for 3 people takes 3 places. When every place is taken, the time shows as booked.',
+    get title() { return t`People served at once`; },
+    get text() { return t`A booking for 3 people takes 3 places. When every place is taken, the time shows as booked.`; },
   },
   '/closures': {
     icon: 'calendar',
-    title: 'Click a day',
-    text: 'Clicking a day on the calendar fills in the date in both forms.',
+    get title() { return t`Click a day`; },
+    get text() { return t`Clicking a day on the calendar fills in the date in both forms.`; },
   },
   '/profile': {
     icon: 'eye',
-    title: 'See what customers see',
-    text: 'The phone beside your details shows your page as customers will see it, as you type.',
+    get title() { return t`See what customers see`; },
+    get text() { return t`The phone beside your details shows your page as customers will see it, as you type.`; },
   },
   '/messages': {
     icon: 'send',
-    title: 'Quicker replies',
-    text: 'Enter sends; Shift + Enter starts a new line. Photos go with the paperclip.',
+    get title() { return t`Quicker replies`; },
+    get text() { return t`Enter sends; Shift + Enter starts a new line. Photos go with the paperclip.`; },
   },
   '/reviews': {
     icon: 'star',
-    title: 'A reply is public',
-    text: 'Everyone who reads a review reads your reply too. A calm, specific one helps the next customer decide.',
+    get title() { return t`A reply is public`; },
+    get text() { return t`Everyone who reads a review reads your reply too. A calm, specific one helps the next customer decide.`; },
   },
   '/getting-paid': {
     icon: 'wallet',
-    title: 'Changing your number',
-    text: 'Payouts pause until a new number is confirmed — nothing you have earned is lost.',
+    get title() { return t`Changing your number`; },
+    get text() { return t`Payouts pause until a new number is confirmed — nothing you have earned is lost.`; },
   },
   '/analytics': {
     icon: 'chart',
-    title: 'How the app ranks you',
-    text: 'Popular means bookings weighted by rating — good reviews move you up the list customers see.',
+    get title() { return t`How the app ranks you`; },
+    get text() { return t`Popular means bookings weighted by rating — good reviews move you up the list customers see.`; },
   },
   '/people': {
     icon: 'shield',
-    title: 'Who can do what',
-    text: 'Staff can check customers in and handle bookings, but cannot change prices or hours.',
+    get title() { return t`Who can do what`; },
+    get text() { return t`Staff can check customers in and handle bookings, but cannot change prices or hours.`; },
   },
   '/legal': {
     icon: 'legal',
-    title: 'Nothing stops working',
-    text: 'When a document changes, everything keeps running — agree when you have read it.',
+    get title() { return t`Nothing stops working`; },
+    get text() { return t`When a document changes, everything keeps running — agree when you have read it.`; },
   },
   '/help': {
     icon: 'paperclip',
-    title: 'Show us the problem',
-    text: 'Attach a screenshot, a statement or an invoice — it saves us asking.',
+    get title() { return t`Show us the problem`; },
+    get text() { return t`Attach a screenshot, a statement or an invoice — it saves us asking.`; },
   },
 };
 

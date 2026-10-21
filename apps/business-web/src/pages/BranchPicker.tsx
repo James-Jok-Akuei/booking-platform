@@ -1,5 +1,7 @@
 import type { Location, MemberBranches } from '../api/business';
 import { Icon } from '../ui/Icon';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * Where someone works (§277): every branch — including any opened later — or
@@ -30,7 +32,7 @@ export function BranchPicker({
 
   return (
     <div className={`bp${compact ? ' is-compact' : ''}`}>
-      <div className="bp-modes" role="radiogroup" aria-label="Which branches">
+      <div className="bp-modes" role="radiogroup" aria-label={t`Which branches`}>
         <button
           type="button"
           role="radio"
@@ -42,8 +44,8 @@ export function BranchPicker({
             <Icon name="layers" size={18} />
           </span>
           <span>
-            <strong>Every branch</strong>
-            <em>Including any you open later</em>
+            <strong><Trans>Every branch</Trans></strong>
+            <em><Trans>Including any you open later</Trans></em>
           </span>
           <i className="bp-dot" aria-hidden="true" />
         </button>
@@ -61,15 +63,15 @@ export function BranchPicker({
             <Icon name="pin" size={18} />
           </span>
           <span>
-            <strong>Chosen branches</strong>
-            <em>Only the ones you tick</em>
+            <strong><Trans>Chosen branches</Trans></strong>
+            <em><Trans>Only the ones you tick</Trans></em>
           </span>
           <i className="bp-dot" aria-hidden="true" />
         </button>
       </div>
 
       {!value.allLocations && (
-        <ul className="bp-list" aria-label="Branches">
+        <ul className="bp-list" aria-label={t`Branches`}>
           {branches.map((b, i) => {
             const on = ticked.has(b.id);
             return (
@@ -94,7 +96,8 @@ export function BranchPicker({
           })}
           {value.locationIds.length === 0 && (
             <li className="bp-need" role="status">
-              <Icon name="info" size={14} /> Tick at least one branch.
+              <Icon name="info" size={14} />{' '}
+              <Trans>Tick at least one branch.</Trans>
             </li>
           )}
         </ul>
@@ -105,9 +108,9 @@ export function BranchPicker({
 
 /** "Every branch", or the branches' names — the same words on a row and an invitation. */
 export function branchWords(value: MemberBranches, branches: Location[]) {
-  if (value.allLocations) return 'Every branch';
+  if (value.allLocations) return t`Every branch`;
   const names = value.locationIds
     .map((id) => branches.find((b) => b.id === id)?.name)
     .filter((n): n is string => Boolean(n));
-  return names.length ? names.join(', ') : 'No branch yet';
+  return names.length ? names.join(', ') : t`No branch yet`;
 }

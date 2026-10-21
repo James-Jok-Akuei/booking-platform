@@ -2,6 +2,8 @@ import type { Appointment } from '../api/business';
 import type { useMoney } from '../money';
 import { Icon } from '../ui/Icon';
 import './booking-choices.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 type Pick = NonNullable<Appointment['choices']>[number];
 
@@ -10,7 +12,7 @@ function adds(pick: Pick, format: (minor: number) => string) {
   return [
     pick.priceMinor > 0 && `+${format(pick.priceMinor)}`,
     pick.priceMinor < 0 && `−${format(-pick.priceMinor)}`,
-    pick.extraMinutes > 0 && `+${pick.extraMinutes} min`,
+    pick.extraMinutes > 0 && t`+${pick.extraMinutes} min`,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -43,10 +45,11 @@ export function BookingChoices({
     <section className="bc">
       {heading && (
         <h3 className="ap-drawer-h bc-h">
-          What they chose
-          {a.choicesChangedAt && (
+          <Trans>What they chose</Trans>
+        {a.choicesChangedAt && (
             <span className="bc-changed" title={new Date(a.choicesChangedAt).toLocaleString()}>
-              <Icon name="pencil" size={12} /> changed since booking
+              <Icon name="pencil" size={12} />{' '}
+              <Trans>changed since booking</Trans>
             </span>
           )}
         </h3>
@@ -66,7 +69,7 @@ export function BookingChoices({
         <div className="bc-private" role="note">
           <Icon name="lock" size={15} />
           <div>
-            <span>Private — for you only. Never share or send it on.</span>
+            <span><Trans>Private — for you only. Never share or send it on.</Trans></span>
             {[...byGroup.entries()].map(([group, options]) => (
               <strong key={group}>
                 {group}: {options.join(', ')}
@@ -77,7 +80,8 @@ export function BookingChoices({
       )}
       {a.healthChoicesRemovedAt && (
         <p className="bc-removed">
-          <Icon name="lock" size={13} /> Private answers were removed 30 days after the visit.
+          <Icon name="lock" size={13} />{' '}
+          <Trans>Private answers were removed 30 days after the visit.</Trans>
         </p>
       )}
       {a.customerNote && (
@@ -103,7 +107,7 @@ export function ChoiceMarks({ a }: { a: Appointment }) {
         </span>
       )}
       {privateCount > 0 && (
-        <span className="bc-mark is-private" title="Private answers — open the booking">
+        <span className="bc-mark is-private" title={t`Private answers — open the booking`}>
           <Icon name="lock" size={12} />
         </span>
       )}

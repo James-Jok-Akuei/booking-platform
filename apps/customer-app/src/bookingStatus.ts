@@ -18,13 +18,13 @@ export const BOOKING_STATUS: Record<
   { label: string; tone: 'ok' | 'warn' | 'danger' | 'accent' | 'neutral'; nudge?: string }
 > = {
   PENDING_PAYMENT: {
-    get label() { return t({ message: t`Not paid yet`, context: 'booking status' }); },
+    get label() { return t({ message: 'Not paid yet', context: 'booking status' }); },
     tone: 'warn',
     get nudge() { return t`Pay the deposit to confirm this slot`; },
   },
-  BOOKED: { get label() { return t({ message: t`Confirmed`, context: 'booking status' }); }, tone: 'ok' },
-  IN_PROGRESS: { get label() { return t({ message: t`Happening now`, context: 'booking status' }); }, tone: 'accent' },
-  COMPLETED: { get label() { return t({ message: t`Done`, context: 'booking status' }); }, tone: 'neutral' },
-  CANCELLED: { get label() { return t({ message: t`Cancelled`, context: 'booking status' }); }, tone: 'neutral' },
-  NO_SHOW: { get label() { return t({ message: t`Missed`, context: 'booking status' }); }, tone: 'danger' },
+  BOOKED: { get label() { return t({ message: 'Confirmed', context: 'booking status' }); }, tone: 'ok' },
+  IN_PROGRESS: { get label() { return t({ message: 'Happening now', context: 'booking status' }); }, tone: 'accent' },
+  COMPLETED: { get label() { return t({ message: 'Done', context: 'booking status' }); }, tone: 'neutral' },
+  CANCELLED: { get label() { return t({ message: 'Cancelled', context: 'booking status' }); }, tone: 'neutral' },
+  NO_SHOW: { get label() { return t({ message: 'Missed', context: 'booking status' }); }, tone: 'danger' },
 };

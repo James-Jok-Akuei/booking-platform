@@ -130,9 +130,7 @@ function TicketScreen() {
           <View style={styles.waiting}>
             <Icon name="time-outline" size={16} color={theme.ink2} />
             <Text style={[type.small, styles.flex]}>
-              <Trans>
-                We have your message. A reply will appear here, and you can add more below.
-              </Trans>
+              <Trans>We have your message. A reply will appear here, and you can add more below.</Trans>
             </Text>
           </View>
         )}
@@ -259,7 +257,6 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(TicketScreen, {
   icon: 'help-buoy-outline',
-
   get title() { return t`Sign in to see this request`; },
   get text() { return t`Help requests are kept with your account, so only you can open them.`; },
 });

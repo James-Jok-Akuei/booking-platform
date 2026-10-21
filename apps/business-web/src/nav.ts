@@ -1,5 +1,6 @@
 import type { Access } from './access';
 import type { IconName } from './ui/Icon';
+import { t } from '@lingui/core/macro';
 
 /**
  * Every page of the business app, in one list (§131, §190).
@@ -21,172 +22,191 @@ export type NavItem = {
   need?: 'money' | 'insights';
 };
 
-export type NavGroup = { group: string | null; items: NavItem[] };
+/** `key` names the group for code (the welcome tour, §307); `group` is its heading, in the app's language (§308). */
+export type NavGroup = { key: 'top' | 'shop' | 'customers' | 'money' | 'account'; group: string | null; items: NavItem[] };
 
 export const SECTIONS: NavGroup[] = [
   {
     // Above the headings: the first things seen every morning (§131.1, §192).
+    key: 'top',
     group: null,
     items: [
       {
         to: '/',
-        label: 'Overview',
+        get label() { return t`Overview`; },
         icon: 'overview',
-        keywords: 'home today dashboard summary schedule next',
-        hint: 'Your day at a glance',
+        get keywords() { return t({ message: 'home today dashboard summary schedule next', context: 'search words' }); },
+        get hint() { return t`Your day at a glance`; },
       },
       {
         to: '/appointments',
-        label: 'Appointments',
+        get label() { return t`Appointments`; },
         icon: 'calendarCheck',
-        keywords: 'bookings orders customers today check in verify code arrival redeem',
-        hint: 'Who is coming, and checking them in',
+        get keywords() { return t({ message: 'bookings orders customers today check in verify code arrival redeem', context: 'search words' }); },
+        get hint() { return t`Who is coming, and checking them in`; },
       },
     ],
   },
   {
-    group: 'Your shop',
+    key: 'shop',
+    get group() { return t`Your shop`; },
     items: [
       {
         to: '/profile',
-        label: 'Your shopfront',
+        get label() { return t`Your shopfront`; },
         icon: 'store',
-        keywords: 'profile logo cover photos gallery description pause',
-        hint: 'What customers see first',
+        get keywords() { return t({ message: 'profile logo cover photos gallery description pause', context: 'search words' }); },
+        get hint() { return t`What customers see first`; },
       },
       {
         to: '/stories',
-        label: 'Stories',
+        get label() { return t`Stories`; },
         icon: 'stories',
-        keywords: 'story photo today post 24 hours instagram status advert',
-        hint: 'A photo for today, at the top of the app',
+        get keywords() { return t({ message: 'story photo today post 24 hours instagram status advert', context: 'search words' }); },
+        get hint() { return t`A photo for today, at the top of the app`; },
       },
       {
         to: '/services',
-        label: 'Services',
+        get label() { return t`Services`; },
         icon: 'tag',
-        keywords: 'prices menu catalogue sale discount photos deposit',
-        hint: 'What you sell, and for how much',
+        get keywords() { return t({ message: 'prices menu catalogue sale discount photos deposit', context: 'search words' }); },
+        get hint() { return t`What you sell, and for how much`; },
       },
       {
         to: '/hours',
-        label: 'Branches & hours',
+        get label() { return t`Branches & hours`; },
         icon: 'pin',
-        keywords: 'locations opening times address map people served at once places capacity',
-        hint: 'Where you are and when you open',
+        get keywords() { return t({ message: 'locations opening times address map people served at once places capacity', context: 'search words' }); },
+        get hint() { return t`Where you are and when you open`; },
       },
       {
         to: '/closures',
-        label: 'Closures & breaks',
+        get label() { return t`Closures & breaks`; },
         icon: 'calendarX',
-        keywords: 'holiday closed lunch break block time off',
-        hint: 'Days off and blocked-out hours',
+        get keywords() { return t({ message: 'holiday closed lunch break block time off', context: 'search words' }); },
+        get hint() { return t`Days off and blocked-out hours`; },
       },
     ],
   },
   {
-    group: 'Customers',
+    key: 'customers',
+    get group() { return t`Customers`; },
     items: [
       {
         to: '/messages',
-        label: 'Messages',
+        get label() { return t`Messages`; },
         icon: 'message',
-        keywords: 'chat inbox questions reply',
-        hint: 'Questions and replies',
+        get keywords() { return t({ message: 'chat inbox questions reply', context: 'search words' }); },
+        get hint() { return t`Questions and replies`; },
       },
       {
         to: '/reviews',
-        label: 'Reviews',
+        get label() { return t`Reviews`; },
         icon: 'star',
-        keywords: 'ratings stars feedback reply',
-        hint: 'What customers said',
+        get keywords() { return t({ message: 'ratings stars feedback reply', context: 'search words' }); },
+        get hint() { return t`What customers said`; },
       },
       {
         to: '/followers',
-        label: 'Followers',
+        get label() { return t`Followers`; },
         icon: 'megaphone',
-        keywords: 'followers offers message customers blast promotion marketing send',
-        hint: 'Write to customers who follow your shop',
+        get keywords() { return t({ message: 'followers offers message customers blast promotion marketing send', context: 'search words' }); },
+        get hint() { return t`Write to customers who follow your shop`; },
       },
     ],
   },
   {
-    group: 'Money',
+    key: 'money',
+    get group() { return t`Money`; },
     items: [
       {
         to: '/getting-paid',
-        label: 'Getting paid',
+        get label() { return t`Getting paid`; },
         icon: 'wallet',
-        keywords: 'payouts balance momo mobile money number',
-        hint: 'Your balance and payouts',
-        need: 'money',
+        get keywords() { return t({ message: 'payouts balance momo mobile money number', context: 'search words' }); },
+        get hint() { return t`Your balance and payouts`; },
+        need: 'money'
       },
       {
         to: '/analytics',
-        label: 'How it is going',
+        get label() { return t`How it is going`; },
         icon: 'chart',
-        keywords: 'analytics stats numbers reports busiest earnings',
-        hint: 'Bookings, money and ratings over time',
-        need: 'insights',
+        get keywords() { return t({ message: 'analytics stats numbers reports busiest earnings', context: 'search words' }); },
+        get hint() { return t`Bookings, money and ratings over time`; },
+        need: 'insights'
       },
     ],
   },
   {
-    group: 'Manage account',
+    key: 'account',
+    get group() { return t`Manage account`; },
     items: [
       {
         to: '/people',
-        label: 'People',
+        get label() { return t`People`; },
         icon: 'users',
-        keywords: 'staff team colleagues invite manager',
-        hint: 'Who works here with you',
+        get keywords() { return t({ message: 'staff team colleagues invite manager', context: 'search words' }); },
+        get hint() { return t`Who works here with you`; },
       },
       {
         to: '/security',
-        label: 'Sign-in and security',
+        get label() { return t`Sign-in and security`; },
         icon: 'shield',
-        keywords: 'sessions devices phones signed in sign out everywhere login security lost phone',
-        hint: 'Where you are signed in, and signing out there',
+        get keywords() { return t({ message: 'sessions devices phones signed in sign out everywhere login security lost phone', context: 'search words' }); },
+        get hint() { return t`Where you are signed in, and signing out there`; },
       },
       {
         to: '/notifications',
-        label: 'Notifications',
+        get label() { return t`Notifications`; },
         icon: 'bell',
-        keywords: 'alerts email push quiet hours settings summary unsubscribe',
-        hint: 'What we send you, and how',
+        get keywords() { return t({ message: 'alerts email push quiet hours settings summary unsubscribe', context: 'search words' }); },
+        get hint() { return t`What we send you, and how`; },
       },
       {
         to: '/legal',
-        label: 'Legal',
+        get label() { return t`Legal`; },
         icon: 'legal',
-        keywords: 'terms agreement privacy policy documents',
-        hint: 'The agreements you work under',
+        get keywords() { return t({ message: 'terms agreement privacy policy documents', context: 'search words' }); },
+        get hint() { return t`The agreements you work under`; },
       },
       {
         to: '/help',
-        label: 'Help',
+        get label() { return t`Help`; },
         icon: 'help',
-        keywords: 'support ticket problem contact',
-        hint: 'Ask us anything',
+        get keywords() { return t({ message: 'support ticket problem contact', context: 'search words' }); },
+        get hint() { return t`Ask us anything`; },
       },
     ],
   },
 ];
 
-export const NAV_ITEMS: Array<NavItem & { group: string | null }> = SECTIONS.flatMap((section) =>
-  section.items.map((item) => ({ ...item, group: section.group })),
-);
+/**
+ * Every page with its group's heading — made when asked, never once at load:
+ * the words are read in the app's language of the moment (§308).
+ */
+export const navItems = (): Array<NavItem & { group: string | null }> =>
+  SECTIONS.flatMap((section) =>
+    section.items.map((item) => ({
+      to: item.to,
+      label: item.label,
+      icon: item.icon,
+      keywords: item.keywords,
+      hint: item.hint,
+      need: item.need,
+      group: section.group,
+    })),
+  );
 
 const allowed = (item: NavItem, access: Access) => !item.need || access[item.need];
 
 /** The pages this person may use (§277), with any heading left empty dropped. */
 export const sectionsFor = (access: Access): NavGroup[] =>
-  SECTIONS.map((section) => ({ ...section, items: section.items.filter((item) => allowed(item, access)) })).filter(
+  SECTIONS.map((section) => ({ key: section.key, group: section.group, items: section.items.filter((item) => allowed(item, access)) })).filter(
     (section) => section.items.length > 0,
   );
 
-export const navItemsFor = (access: Access) => NAV_ITEMS.filter((item) => allowed(item, access));
+export const navItemsFor = (access: Access) => navItems().filter((item) => allowed(item, access));
 
 /** The page an address belongs to, for the top bar's title. */
 export const navItemFor = (pathname: string) =>
-  NAV_ITEMS.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`)) ?? null;
+  navItems().find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`)) ?? null;

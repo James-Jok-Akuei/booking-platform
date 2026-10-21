@@ -67,17 +67,14 @@ const shortName = (name: string) =>
 const SORTS: Array<{ value: DiscoverySort; label: string }> = [
   {
     value: 'rating',
-
     get label() { return t`Best rated`; },
   },
   {
     value: 'price',
-
     get label() { return t`Cheapest`; },
   },
   {
     value: 'newest',
-
     get label() { return t`Newest`; },
   },
 ];
@@ -606,9 +603,7 @@ export default function Discover() {
         </View>
 
         <Text style={[type.display, layout.compact && styles.displayCompact, styles.title]}>
-          <Trans>
-            Find a place
-          </Trans>
+          <Trans>Find a place</Trans>
         </Text>
       </FadeIn>
 

@@ -270,10 +270,8 @@ export function Reservation({
             <Text style={styles.paidLabel}>{paid ? t`Deposit paid` : t`Deposit not paid`}</Text>
             {a.depositPaidAt && (
               <Text style={type.tiny}>
-                <Trans>
-                  {dayOf(a.depositPaidAt)}, {timeOf(a.depositPaidAt)} · {MOMO_NAME}
-                </Trans>
-                </Text>
+                <Trans>{dayOf(a.depositPaidAt)}, {timeOf(a.depositPaidAt)} · {MOMO_NAME}</Trans>
+              </Text>
             )}
           </View>
           <Text style={styles.paidValue}>{format(a.depositAmountMinor, a.currency)}</Text>
@@ -306,9 +304,7 @@ export function Reservation({
           )}
           {a.cancelledBy === 'BUSINESS' && paid && (
             <Text style={type.body}>
-              <Trans>
-                Because the shop cancelled, your deposit is refunded in full.
-              </Trans>
+              <Trans>Because the shop cancelled, your deposit is refunded in full.</Trans>
             </Text>
           )}
           {a.cancelledBy === 'CUSTOMER' && paid && (
@@ -367,9 +363,7 @@ export function Reservation({
             </>
           ) : (
             <Text style={type.small}>
-              <Trans>
-                A few words help the next person decide. It takes a moment.
-              </Trans>
+              <Trans>A few words help the next person decide. It takes a moment.</Trans>
             </Text>
           )}
           <Button

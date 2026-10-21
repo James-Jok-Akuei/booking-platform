@@ -10,15 +10,19 @@ import { Icon, type IconName } from '../ui/Icon';
 import { NETWORK_NAME } from '../ui/NetworkMark';
 import { Panel } from '../ui/Panel';
 import './payout-detail.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
+import { plural } from '@lingui/core/macro';
 
 const PAGE = 30;
 
 /** The ledger's own words for the lines beyond a deposit and its fee (§85, §290). */
 const LINE: Record<string, string> = {
-  DEPOSIT_REFUND: 'Deposit refunded',
-  PLATFORM_FEE_REVERSAL: 'Platform fee returned',
-  GATEWAY_FEE_DEBIT: 'Gateway fee',
-  ADJUSTMENT: 'Manual adjustment',
+  get DEPOSIT_REFUND() { return t`Deposit refunded`; },
+  get PLATFORM_FEE_REVERSAL() { return t`Platform fee returned`; },
+  get GATEWAY_FEE_DEBIT() { return t`Gateway fee`; },
+  get ADJUSTMENT() { return t`Manual adjustment`; },
 };
 
 /**
@@ -28,22 +32,22 @@ const LINE: Record<string, string> = {
  */
 export function overdue(payout: Payout): string | null {
   const days = (iso: string | null) => (iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000) : 0);
-  if (payout.status === 'PENDING' && days(payout.runAt) >= 3) return `Waiting ${days(payout.runAt)} days`;
+  if (payout.status === 'PENDING' && days(payout.runAt) >= 3) return plural(days(payout.runAt), { one: 'Waiting # day', other: 'Waiting # days' });
   if (payout.status === 'PROCESSING' && days(payout.sentAt) >= 1)
-    return `With MTN for ${days(payout.sentAt)} ${days(payout.sentAt) === 1 ? 'day' : 'days'}`;
+    return plural(days(payout.sentAt), { one: 'With MTN for # day', other: 'With MTN for # days' });
   return null;
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  PENDING: 'Pending',
-  PROCESSING: 'Processing',
-  PAID: 'Paid',
-  FAILED: 'Failed',
+  get PENDING() { return t`Pending`; },
+  get PROCESSING() { return t`Processing`; },
+  get PAID() { return t`Paid`; },
+  get FAILED() { return t`Failed`; },
 };
 
 const at = (iso: string | null) =>
   iso
-    ? new Date(iso).toLocaleString(undefined, {
+    ? new Date(iso).toLocaleString(dateLocale(), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -94,7 +98,7 @@ export function PayoutDetail({
     try {
       await download(myPayoutExportPath(businessId, payout.id), `payout-${payout.runAt.slice(0, 10)}.csv`);
     } catch (error) {
-      setSaveError(error instanceof ApiError ? error.message : 'That did not download. Check your connection.');
+      setSaveError(error instanceof ApiError ? error.message : t`That did not download. Check your connection.`);
     } finally {
       setSaving(false);
     }
@@ -103,36 +107,43 @@ export function PayoutDetail({
   const late = overdue(payout);
   const amount = money.format(payout.settlementAmountMinor, currency);
   const ask = () => {
-    const subject = `My payment of ${amount}, worked out on ${at(payout.runAt)}`;
-    const body =
-      `My payment of ${amount}, worked out on ${at(payout.runAt)}, ` +
-      `${late ? `says "${STATUS_LABEL[payout.status] ?? payout.status}" — ${late.toLowerCase()}` : `says "${STATUS_LABEL[payout.status] ?? payout.status}"`}. ` +
-      `Could you check it?\n\nPayment ${payout.id}`;
+    // Their own words to our team, in their language (§308) — the payment's number stays as it is.
+    const workedOut = at(payout.runAt);
+    const status = STATUS_LABEL[payout.status] ?? payout.status;
+    const subject = t`My payment of ${amount}, worked out on ${workedOut}`;
+    const said = late
+      ? t`My payment of ${amount}, worked out on ${workedOut}, says “${status}” — ${late}. Could you check it?`
+      : t`My payment of ${amount}, worked out on ${workedOut}, says “${status}”. Could you check it?`;
+    const body = `${said}\n\n${t`Payment ${payout.id}`}`;
     onClose();
     navigate(`/help?${new URLSearchParams({ new: 'PAYMENT_ISSUE', subject, body }).toString()}`);
   };
 
   const sendTo = first?.sendTo;
-  const where = sendTo
-    ? `your ${NETWORK_NAME[sendTo.provider]} number ending ${sendTo.last3}`
-    : 'your mobile money number';
+  const network = sendTo ? NETWORK_NAME[sendTo.provider] : '';
+  const ending = sendTo?.last3 ?? '';
+  const workedOutOn = at(payout.runAt);
+  const sentOn = at(payout.sentAt);
+  const arrivedOn = at(payout.paidAt);
   const story: Record<string, string> = {
-    PENDING: `Worked out on ${at(payout.runAt)}. Our team sends it next, to ${where}.`,
-    PROCESSING: `Sent on ${at(payout.sentAt)}. Waiting for MTN MoMo to confirm — that usually takes minutes.`,
-    PAID: `Arrived on ${at(payout.paidAt)}.`,
-    FAILED: 'It did not go through. Nothing is lost: the money was put back and goes out with your next payment.',
+    PENDING: sendTo
+      ? t`Worked out on ${workedOutOn}. Our team sends it next, to your ${network} number ending ${ending}.`
+      : t`Worked out on ${workedOutOn}. Our team sends it next, to your mobile money number.`,
+    PROCESSING: t`Sent on ${sentOn}. Waiting for MTN MoMo to confirm — that usually takes minutes.`,
+    PAID: t`Arrived on ${arrivedOn}.`,
+    FAILED: t`It did not go through. Nothing is lost: the money was put back and goes out with your next payment.`,
   };
 
   // Worked out → sent → arrived, each lit once it has happened.
   const steps: Array<{ label: string; when: string | null; icon: IconName }> = [
-    { label: 'Worked out', when: payout.runAt, icon: 'clock' },
-    { label: 'Sent', when: payout.sentAt ?? (payout.status === 'PAID' ? payout.paidAt : null), icon: 'send' },
-    { label: payout.status === 'FAILED' ? 'Did not arrive' : 'Arrived', when: payout.paidAt, icon: 'checkCircle' },
+    { label: t`Worked out`, when: payout.runAt, icon: 'clock' },
+    { label: t`Sent`, when: payout.sentAt ?? (payout.status === 'PAID' ? payout.paidAt : null), icon: 'send' },
+    { label: payout.status === 'FAILED' ? t`Did not arrive` : t`Arrived`, when: payout.paidAt, icon: 'checkCircle' },
   ];
 
   return (
     <Panel
-      eyebrow="Payment to you"
+      eyebrow={t`Payment to you`}
       title={money.format(payout.settlementAmountMinor, currency)}
       onClose={onClose}
       width={640}
@@ -144,11 +155,11 @@ export function PayoutDetail({
             </span>
           )}
           <button type="button" onClick={onClose}>
-            Close
+            <Trans>Close</Trans>
           </button>
           <button type="button" className="primary" onClick={() => void save()} disabled={saving || !first}>
             <Icon name="download" size={16} />
-            {saving ? 'Preparing…' : 'Download as a spreadsheet'}
+            {saving ? t`Preparing…` : t`Download as a spreadsheet`}
           </button>
         </>
       }
@@ -171,14 +182,13 @@ export function PayoutDetail({
                   <Icon name={payout.status === 'FAILED' && i === 2 ? 'xCircle' : step.icon} size={15} />
                 </span>
                 <strong>{step.label}</strong>
-                <em>{done ? at(step.when) : payout.status === 'FAILED' && i === 2 ? 'Put back' : 'Not yet'}</em>
+                <em>{done ? at(step.when) : payout.status === 'FAILED' && i === 2 ? t`Put back` : t`Not yet`}</em>
               </li>
             );
           })}
         </ol>
         {payout.reference && (
-          <p className="gpd-ref">
-            MTN MoMo reference <code>{payout.reference}</code>
+          <p className="gpd-ref"><Trans>MTN MoMo reference <code>{payout.reference}</code></Trans>
           </p>
         )}
       </section>
@@ -188,78 +198,78 @@ export function PayoutDetail({
         <div className="gpd-late" role="status">
           <Icon name="alert" size={18} />
           <p>
-            <strong>{late}.</strong> If that is longer than you expected, ask us — we will check this payment and reply
-            on the Help page and by email.
+            <Trans>
+              <strong>{late}.</strong> If that is longer than you expected, ask us — we will check this payment and reply
+              on the Help page and by email.
+            </Trans>
           </p>
           <button type="button" className="primary" onClick={ask}>
-            Ask us about it
+            <Trans>Ask us about it</Trans>
           </button>
         </div>
       ) : (
         <button type="button" className="link gpd-ask" onClick={ask}>
           <Icon name="help" size={15} />
-          Something wrong with this payment? Ask us about it
+          <Trans>Something wrong with this payment? Ask us about it</Trans>
         </button>
       )}
 
       <section className="gpd-sum">
-        <h3>What is in it</h3>
+        <h3><Trans>What is in it</Trans></h3>
         {!totals ? (
           <div className="skeleton gpd-skel" />
         ) : (
           <dl>
             <div>
-              <dt>
-                Deposits received{' '}
+              <dt><Trans>Deposits received{' '}</Trans>
                 <span>
-                  · {totals.bookings} {totals.bookings === 1 ? 'booking' : 'bookings'}
+                  · {totals.bookings} {totals.bookings === 1 ? t`booking` : t`bookings`}
                 </span>
               </dt>
               <dd>{fmt(totals.depositsMinor)}</dd>
             </div>
             <div>
-              <dt>Platform fee</dt>
+              <dt><Trans>Platform fee</Trans></dt>
               <dd>{fmt(totals.platformFeesMinor)}</dd>
             </div>
             {totals.refundsMinor !== 0 && (
               <div>
-                <dt>Deposits refunded</dt>
+                <dt><Trans>Deposits refunded</Trans></dt>
                 <dd>{fmt(totals.refundsMinor)}</dd>
               </div>
             )}
             {totals.feesReturnedMinor !== 0 && (
               <div>
-                <dt>Platform fee returned</dt>
+                <dt><Trans>Platform fee returned</Trans></dt>
                 <dd>{fmt(totals.feesReturnedMinor)}</dd>
               </div>
             )}
             {totals.gatewayFeesMinor !== 0 && (
               <div>
-                <dt>Gateway fee</dt>
+                <dt><Trans>Gateway fee</Trans></dt>
                 <dd>{fmt(totals.gatewayFeesMinor)}</dd>
               </div>
             )}
             {totals.adjustmentsMinor !== 0 && (
               <div>
-                <dt>Manual adjustments</dt>
+                <dt><Trans>Manual adjustments</Trans></dt>
                 <dd>{fmt(totals.adjustmentsMinor)}</dd>
               </div>
             )}
             <div className="gpd-total">
-              <dt>You get</dt>
+              <dt><Trans>You get</Trans></dt>
               <dd>{fmt(totals.netMinor)}</dd>
             </div>
           </dl>
         )}
         <p className="gpd-note">
           <Icon name="info" size={14} />
-          Deposits only — the rest of each price is paid to you at the shop.
+          <Trans>Deposits only — the rest of each price is paid to you at the shop.</Trans>
         </p>
       </section>
 
       <section className="gpd-bookings">
-        <h3>
-          The bookings <span>{totals ? totals.bookings : ''}</span>
+        <h3><Trans>The bookings </Trans><span>{totals ? totals.bookings : ''}</span>
         </h3>
         {pages.isLoading && (
           <div className="gpd-list">
@@ -270,7 +280,7 @@ export function PayoutDetail({
         )}
         {pages.error && (
           <p className="error" role="alert">
-            {pages.error instanceof ApiError ? pages.error.message : 'Could not load the bookings.'}
+            {pages.error instanceof ApiError ? pages.error.message : t`Could not load the bookings.`}
           </p>
         )}
         <ul className="gpd-list">
@@ -295,7 +305,7 @@ export function PayoutDetail({
             onClick={() => void pages.fetchNextPage()}
             disabled={pages.isFetchingNextPage}
           >
-            {pages.isFetchingNextPage ? 'Loading…' : `Show more (${bookings.length} of ${totals?.bookings ?? ''})`}
+            {pages.isFetchingNextPage ? t`Loading…` : t`Show more (${bookings.length} of ${totals?.bookings ?? ''})`}
           </button>
         )}
         {first && first.adjustments.length > 0 && (
@@ -306,8 +316,8 @@ export function PayoutDetail({
                   <Icon name="sliders" size={16} />
                 </span>
                 <span className="gpd-main">
-                  <strong>Manual adjustment</strong>
-                  <span>{a.reason ?? 'A correction made by our team.'}</span>
+                  <strong><Trans>Manual adjustment</Trans></strong>
+                  <span>{a.reason ?? t`A correction made by our team.`}</span>
                 </span>
                 <strong className={`gpd-net${a.amountMinor < 0 ? ' is-minus' : ''}`}>{fmt(a.amountMinor)}</strong>
               </li>
@@ -335,7 +345,7 @@ function Booking({
   const look = BOOKING[b.status] ?? { label: b.status, cls: '' };
   return (
     <li style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}>
-      <button type="button" className="gpd-booking" onClick={onOpen} title="Open this booking">
+      <button type="button" className="gpd-booking" onClick={onOpen} title={t`Open this booking`}>
         <span className={`gpd-thumb${cover ? '' : ' is-empty'}`}>
           {cover ? <img src={cover} alt="" loading="lazy" /> : <Icon name="tag" size={16} />}
         </span>
@@ -348,13 +358,13 @@ function Booking({
             {shortDay(b.startTime)}, {clock(b.startTime)} · {b.branchName}
           </span>
           <span>
-            {b.customerEmail} · No. {reservationNo(b.appointmentId)}
+            <Trans>{b.customerEmail} · No. {reservationNo(b.appointmentId)}</Trans>
           </span>
         </span>
         <span className="gpd-money">
           <strong className={`gpd-net${b.netMinor < 0 ? ' is-minus' : ''}`}>{fmt(b.netMinor)}</strong>
           <span>
-            {fmt(b.depositMinor)} deposit − {fmt(-b.platformFeeMinor)} fee
+            <Trans>{fmt(b.depositMinor)} deposit − {fmt(-b.platformFeeMinor)} fee</Trans>
           </span>
           {b.others.map((line) => (
             <span key={line.type} className="gpd-other">

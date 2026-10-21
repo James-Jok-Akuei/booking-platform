@@ -59,14 +59,12 @@ const SLIDES: Slide[] = [
   {
     key: 'find',
     image: require('../../assets/tour/find.jpg'),
-
     get title() { return t`Find a place near you`; },
     get text() { return t`Barbers, salons, spas and more — with their real photos, prices and reviews.`; },
     spot: { x: 3, y: 34, w: 94, h: 22 },
 
     chip: {
       icon: 'location',
-
       get title() { return t`Near you`; },
       get text() { return t`Closest places first`; },
       tone: theme.night
@@ -75,14 +73,12 @@ const SLIDES: Slide[] = [
   {
     key: 'pick',
     image: require('../../assets/tour/pick.jpg'),
-
     get title() { return t`Pick a time that suits you`; },
     get text() { return t`Every free time is there to see. Choose yours with a tap.`; },
     spot: { x: 7, y: 35, w: 86, h: 39 },
 
     chip: {
       icon: 'time',
-
       get title() { return t`Fri 23 Oct, 10:00`; },
       get text() { return t`Yours to choose`; },
       tone: theme.accent
@@ -91,14 +87,12 @@ const SLIDES: Slide[] = [
   {
     key: 'pay',
     image: require('../../assets/tour/pay.jpg'),
-
     get title() { return t`Hold it with a small deposit`; },
     get text() { return t`A part of the price, by mobile money, approved on your own phone. The rest you pay at the shop.`; },
     spot: { x: 6, y: 22, w: 88, h: 8.5 },
 
     chip: {
       icon: 'shield-checkmark',
-
       get title() { return t`Deposit paid`; },
       get text() { return t`The time is truly yours`; },
       tone: theme.ok
@@ -107,14 +101,12 @@ const SLIDES: Slide[] = [
   {
     key: 'code',
     image: require('../../assets/tour/code.jpg'),
-
     get title() { return t`Show your code when you arrive`; },
     get text() { return t`Six digits, on your booking and in your email. That is all the shop needs.`; },
     spot: { x: 9, y: 48.5, w: 82, h: 14.5 },
 
     chip: {
       icon: 'ticket',
-
       get title() { return t`Checked in`; },
       get text() { return t`Six digits, and you are in`; },
       tone: theme.accent

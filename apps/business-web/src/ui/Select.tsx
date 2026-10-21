@@ -11,6 +11,8 @@ import {
 import { useMediaQuery } from '../shell/useMediaQuery';
 import { Icon, type IconName } from './Icon';
 import { Portal } from './Portal';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 export type SelectOption<T extends string> = {
   value: T;
@@ -35,7 +37,7 @@ export function Select<T extends string>({
   value,
   onChange,
   options,
-  placeholder = 'Choose one',
+  placeholder = t`Choose one`,
   disabled = false,
   icon,
   label,
@@ -207,7 +209,7 @@ export function Select<T extends string>({
       {sheet && (
         <header className="sel-sheet-head">
           <strong>{sheetTitle ?? label ?? placeholder}</strong>
-          <button type="button" className="sel-sheet-close" onClick={() => close()} aria-label="Close">
+          <button type="button" className="sel-sheet-close" onClick={() => close()} aria-label={t`Close`}>
             <Icon name="close" size={17} />
           </button>
         </header>
@@ -222,15 +224,15 @@ export function Select<T extends string>({
               setQuery(event.target.value);
               setActive(0);
             }}
-            placeholder="Search"
-            aria-label="Search the list"
+            placeholder={t`Search`}
+            aria-label={t`Search the list`}
             aria-controls={listId}
             aria-activedescendant={shown[active] ? `${listId}-${active}` : undefined}
           />
         </label>
       )}
       <ul className="sel-list" role="listbox" id={listId} aria-label={label ?? sheetTitle}>
-        {shown.length === 0 && <li className="sel-none">Nothing matches “{query}”</li>}
+        {shown.length === 0 && <li className="sel-none"><Trans>Nothing matches “{query}”</Trans></li>}
         {shown.map((option, i) => {
           const heading = option.group && option.group !== lastGroup ? option.group : null;
           lastGroup = option.group;

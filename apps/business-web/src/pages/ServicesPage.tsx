@@ -44,6 +44,10 @@ import {
   groupsToInput,
   type GroupDraft,
 } from './choices/ChoicesEditor';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
+import { plural } from '@lingui/core/macro';
 
 type Editor = { mode: 'new' } | { mode: 'edit'; service: Service; focus?: 'photos' };
 
@@ -289,16 +293,18 @@ export function ServicesPage() {
     try {
       if (editor.mode === 'edit' && dirty) {
         const leave = await confirmDialog({
-          title: 'Leave without saving?',
+          title: t`Leave without saving?`,
           body: (
             <p>
-              Your changes to “{editor.service.name}” are not saved yet. If you leave now, the service stays as it was.
+              <Trans>
+                Your changes to “{editor.service.name}” are not saved yet. If you leave now, the service stays as it was.
+              </Trans>
             </p>
           ),
           tone: 'warn',
           icon: 'pencil',
-          confirmLabel: 'Leave without saving',
-          cancelLabel: 'Keep editing',
+          confirmLabel: t`Leave without saving`,
+          cancelLabel: t`Keep editing`,
         });
         if (!leave) return;
       }
@@ -307,12 +313,12 @@ export function ServicesPage() {
           discard.mutate(draftRef.current);
         } else if (!(await flushDraft())) {
           const close = await confirmDialog({
-            title: 'Close without your last changes?',
-            body: <p>We could not save what you typed last — check your connection. Everything before it is saved.</p>,
+            title: t`Close without your last changes?`,
+            body: <p><Trans>We could not save what you typed last — check your connection. Everything before it is saved.</Trans></p>,
             tone: 'warn',
             icon: 'alert',
-            confirmLabel: 'Close anyway',
-            cancelLabel: 'Keep writing',
+            confirmLabel: t`Close anyway`,
+            cancelLabel: t`Keep writing`,
           });
           if (!close) return;
         }
@@ -338,14 +344,15 @@ export function ServicesPage() {
   // the shop is waiting for approval, not posted yet, or paused.
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
   const p = profile.data;
-  const hiddenUntil = !p
+  // What still keeps services from customers — said as a whole sentence where it is shown (§308).
+  const hiddenUntil: HiddenUntil = !p
     ? null
     : p.status !== 'APPROVED'
-      ? 'your shop is live'
+      ? 'approval'
       : !p.publishedAt
-        ? 'you post your shop'
+        ? 'posting'
         : p.pausedAt
-          ? 'you open your shop again'
+          ? 'paused'
           : null;
 
   /**
@@ -368,18 +375,18 @@ export function ServicesPage() {
     }) => {
       if (input.id) {
         setPostProblem(null);
-        setPosting('Saving…');
+        setPosting(t`Saving…`);
         const updated = await updateService(input.id, input.body);
         if (input.photos) await applyPhotos(input.id, input.before ?? [], input.photos);
         return updated;
       }
       setPostProblem(null);
-      setPosting('Posting the service…');
+      setPosting(t`Posting the service…`);
       const created = await createService(input.body as never);
       const files = input.files ?? [];
       const failed: string[] = [];
       for (const [index, file] of files.entries()) {
-        setPosting(`Uploading photo ${index + 1} of ${files.length}…`);
+        setPosting(t`Uploading photo ${index + 1} of ${files.length}…`);
         try {
           await addServiceImage(created.id, file);
         } catch (error) {
@@ -428,18 +435,18 @@ export function ServicesPage() {
     // Removed first, so a full service has room for the new ones.
     const gone = before.filter((image) => !kept.has(image.id));
     for (const image of gone) {
-      setPosting('Removing photos…');
+      setPosting(t`Removing photos…`);
       try {
         await removeServiceImage(serviceId, image.id);
       } catch (error) {
-        failed.push(said(error, 'a photo was not removed'));
+        failed.push(said(error, t`a photo was not removed`));
       }
     }
 
     const fresh = after.filter((p) => p.file);
     const uploaded = new Map<string, string>();
     for (const [index, photo] of fresh.entries()) {
-      setPosting(`Uploading photo ${index + 1} of ${fresh.length}…`);
+      setPosting(t`Uploading photo ${index + 1} of ${fresh.length}…`);
       try {
         uploaded.set(photo.key, (await addServiceImage(serviceId, photo.file!)).id);
       } catch (error) {
@@ -459,15 +466,18 @@ export function ServicesPage() {
       try {
         await setServiceImageCover(serviceId, coverId);
       } catch (error) {
-        failed.push(said(error, 'the cover was not changed'));
+        failed.push(said(error, t`the cover was not changed`));
       }
     }
 
     queryClient.invalidateQueries({ queryKey: ['service-images', serviceId] });
     if (failed.length > 0) {
+      const why = failed[0];
       setPostProblem(
-        `Saved, but ${failed.length} photo ${failed.length === 1 ? 'change' : 'changes'} did not go through: ` +
-          `${failed[0]}. Open Edit on the service to try again.`,
+        plural(failed.length, {
+          one: `Saved, but # photo change did not go through: ${why}. Open Edit on the service to try again.`,
+          other: `Saved, but # photo changes did not go through: ${why}. Open Edit on the service to try again.`,
+        }),
       );
     }
   };
@@ -502,7 +512,7 @@ export function ServicesPage() {
       // Pausing the last branch leaves it bookable by nobody. Worth saying
       // once, in the server's own words rather than a guess made here.
       if (!result.isOffered && result.offeredAtCount === 0) {
-        void alertDialog({ title: 'Nobody can book it now', body: <p>{result.message}</p>, tone: 'warn' });
+        void alertDialog({ title: t`Nobody can book it now`, body: <p>{result.message}</p>, tone: 'warn' });
       }
       refresh();
     },
@@ -526,24 +536,26 @@ export function ServicesPage() {
 
   const retire = async (service: Service) => {
     const ok = await confirmDialog({
-      title: `Stop offering “${service.name}” at every branch?`,
+      title: t`Stop offering “${service.name}” at every branch?`,
       body: (
         <p>
-          It moves to “Not on sale”, keeps its prices, and you can put it back at any time.
-          Appointments already made are unaffected.
+          <Trans>
+            It moves to “Not on sale”, keeps its prices, and you can put it back at any time.
+            Appointments already made are unaffected.
+          </Trans>
         </p>
       ),
       tone: 'danger',
       icon: 'pause',
-      confirmLabel: 'Stop offering everywhere',
-      cancelLabel: 'Keep it on sale',
+      confirmLabel: t`Stop offering everywhere`,
+      cancelLabel: t`Keep it on sale`,
     });
     if (ok) everywhere.mutate({ id: service.id, isOffered: false });
   };
 
   // A refused save is said inside the open form, where the person is (§280).
   const error = (editor ? null : save.error) ?? everywhere.error ?? toggle.error ?? unretire.error;
-  const saveProblem = save.error ? (save.error instanceof ApiError ? save.error.message : 'That did not save. Check your connection and try again.') : null;
+  const saveProblem = save.error ? (save.error instanceof ApiError ? save.error.message : t`That did not save. Check your connection and try again.`) : null;
 
   return (
     <section className="sv">
@@ -568,18 +580,20 @@ export function ServicesPage() {
       <div className="page-top">
         <header className="page-head sv-head">
           <div>
-            <h1>Services</h1>
+            <h1><Trans>Services</Trans></h1>
             <p className="muted sv-lead">
-              Each service is offered at the branches you choose, at <strong>that branch's price</strong> —
-              a city-centre shop can charge more than a quieter one for the same work. The deposit
-              percentage is what a customer pays up front to hold the slot; the rest is settled with you
-              directly.
+              <Trans>
+                Each service is offered at the branches you choose, at <strong>that branch's price</strong> —
+                a city-centre shop can charge more than a quieter one for the same work. The deposit
+                percentage is what a customer pays up front to hold the slot; the rest is settled with you
+                directly.
+              </Trans>
             </p>
           </div>
           {access.runsBusiness && (
             <button type="button" className="primary sv-add" onClick={startNew}>
-              <Icon name="plus" size={18} stroke={2.4} />
-              Add a service
+              <Icon name="plus" size={18} stroke={2.4} />{' '}
+              <Trans>Add a service</Trans>
             </button>
           )}
         </header>
@@ -589,29 +603,31 @@ export function ServicesPage() {
         <p className="sv-scope">
           <Icon name="shield" size={16} />
           {access.runsBranches
-            ? 'You can switch a service on or off at your branches. The owner, or a manager of every branch, changes the menu and its prices.'
-            : 'You can see what is on sale at your branches. The owner or a manager changes it.'}
+            ? t`You can switch a service on or off at your branches. The owner, or a manager of every branch, changes the menu and its prices.`
+            : t`You can see what is on sale at your branches. The owner or a manager changes it.`}
         </p>
       )}
 
       {services.data && services.data.length > 0 && (
         <div className="sv-chips">
           <span className="sv-chip">
-            <i className="dot-ok" /> {onSale.length} on sale
+            <Trans><i className="dot-ok" /> {onSale.length} on sale</Trans>
           </span>
           {withSale > 0 && (
             <span className="sv-chip is-accent">
-              <Icon name="percent" size={14} stroke={2.2} /> {withSale} with a discount
+              <Icon name="percent" size={14} stroke={2.2} />
+              <Trans>{withSale} with a discount</Trans>
             </span>
           )}
           {noPhotos > 0 && (
             <span className="sv-chip is-warn">
-              <Icon name="camera" size={14} /> {noPhotos} without photos
+              <Icon name="camera" size={14} />
+              <Trans>{noPhotos} without photos</Trans>
             </span>
           )}
           {notOnSale.length > 0 && (
             <span className="sv-chip">
-              <i className="dot-off" /> {notOnSale.length} not on sale
+              <Trans><i className="dot-off" /> {notOnSale.length} not on sale</Trans>
             </span>
           )}
         </div>
@@ -619,7 +635,7 @@ export function ServicesPage() {
 
       {error && (
         <p className="notice" role="alert">
-          {error instanceof ApiError ? error.message : 'That did not work.'}
+          {error instanceof ApiError ? error.message : t`That did not work.`}
         </p>
       )}
       {postProblem && (
@@ -633,9 +649,12 @@ export function ServicesPage() {
       {!adding && access.runsBusiness && (drafts.data?.length ?? 0) > 0 && (
         <section className="sv-drafts">
           <h2 className="sv-section-title">
-            <Icon name="pencil" size={16} /> Drafts
-            <span>{drafts.data!.length}</span>
-            <em className="sv-drafts-note">Saved as you typed — customers never see a draft</em>
+            <Icon name="pencil" size={16} />
+            <Trans>
+              Drafts
+              <span>{drafts.data!.length}</span>
+              <em className="sv-drafts-note">Saved as you typed — customers never see a draft</em>
+            </Trans>
           </h2>
           <div className="sv-draft-row">
             {drafts.data?.map((item) => (
@@ -645,13 +664,13 @@ export function ServicesPage() {
                     <Icon name="tag" size={18} />
                   </span>
                   <div>
-                    <strong>{item.name || 'Untitled service'}</strong>
-                    <span>{fresh === item.id ? 'Saved just now' : `Last saved ${ago(item.updatedAt)}`}</span>
+                    <strong>{item.name || t`Untitled service`}</strong>
+                    <span>{fresh === item.id ? t`Saved just now` : t`Last saved ${ago(item.updatedAt)}`}</span>
                   </div>
                 </div>
                 <div className="sv-draft-by">
                   <Avatar label={item.createdBy.email} size={22} />
-                  <span>started by {item.createdBy.email}</span>
+                  <span><Trans>started by {item.createdBy.email}</Trans></span>
                 </div>
                 <div className="sv-draft-actions">
                   <button
@@ -660,21 +679,20 @@ export function ServicesPage() {
                     onClick={async () => {
                       if (
                         await confirmDialog({
-                          title: 'Throw this draft away?',
-                          body: <p>What was written in it cannot be brought back.</p>,
+                          title: t`Throw this draft away?`,
+                          body: <p><Trans>What was written in it cannot be brought back.</Trans></p>,
                           tone: 'danger',
                           icon: 'trash',
-                          confirmLabel: 'Discard',
+                          confirmLabel: t`Discard`,
                         })
                       ) {
                         discard.mutate(item.id);
                       }
                     }}
                   >
-                    Discard
+                    <Trans>Discard</Trans>
                   </button>
-                  <button type="button" className="dark" onClick={() => resume(item)}>
-                    Carry on <Icon name="arrowRight" size={16} stroke={2.2} />
+                  <button type="button" className="dark" onClick={() => resume(item)}><Trans>Carry on </Trans><Icon name="arrowRight" size={16} stroke={2.2} />
                   </button>
                 </div>
               </article>
@@ -698,19 +716,22 @@ export function ServicesPage() {
           </span>
           {access.runsBusiness ? (
             <>
-              <h2>Put your first service on sale</h2>
+              <h2><Trans>Put your first service on sale</Trans></h2>
               <p>
-                A name, how long it takes, a price at each branch — and a photo or two. Customers can book
-                it the moment it is posted.
+                <Trans>
+                  A name, how long it takes, a price at each branch — and a photo or two. Customers can book
+                  it the moment it is posted.
+                </Trans>
               </p>
               <button type="button" className="primary" onClick={startNew}>
-                <Icon name="plus" size={18} stroke={2.4} /> Add a service
+                <Icon name="plus" size={18} stroke={2.4} />{' '}
+                <Trans>Add a service</Trans>
               </button>
             </>
           ) : (
             <>
-              <h2>Nothing on sale at your branches yet</h2>
-              <p>When the owner adds a service at your branch, it shows here.</p>
+              <h2><Trans>Nothing on sale at your branches yet</Trans></h2>
+              <p><Trans>When the owner adds a service at your branch, it shows here.</Trans></p>
             </>
           )}
         </div>
@@ -739,13 +760,18 @@ export function ServicesPage() {
       {notOnSale.length > 0 && (
         <section className="sv-off">
           <h2 className="sv-section-title">
-            <Icon name="pause" size={16} /> Not on sale
-            <span>{notOnSale.length}</span>
+            <Icon name="pause" size={16} />
+            <Trans>
+              Not on sale
+              <span>{notOnSale.length}</span>
+            </Trans>
           </h2>
           <p className="muted small sv-off-lead">
-            Still yours, and bookable by nobody. Kept so past appointments resolve to what was booked.
-            Switch a branch back on — or press <strong>Put back on sale</strong> if you retired it
-            everywhere.
+            <Trans>
+              Still yours, and bookable by nobody. Kept so past appointments resolve to what was booked.
+              Switch a branch back on — or press <strong>Put back on sale</strong> if you retired it
+              everywhere.
+            </Trans>
           </p>
           <div className="sv-grid">
             {notOnSale.map((service, i) => (
@@ -778,8 +804,8 @@ export function ServicesPage() {
 
       {editor && (
         <EditorPanel
-          title={editor.mode === 'new' ? (resumed ? 'Carry on with your service' : 'New service') : editor.service.name}
-          eyebrow={editor.mode === 'new' ? 'Add a service' : 'Edit service'}
+          title={editor.mode === 'new' ? (resumed ? t`Carry on with your service` : t`New service`) : editor.service.name}
+          eyebrow={editor.mode === 'new' ? t`Add a service` : t`Edit service`}
           status={
             <SaveState
               look={
@@ -866,27 +892,27 @@ function EditorPanel({
   }, [onClose]);
   return (
     <Portal>
-    <div className="drawer-backdrop" onMouseDown={onClose}>
-      <aside
-        className="drawer sv-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header className="sv-panel-head">
-          <div>
-            <p>{eyebrow}</p>
-            <h2>{title}</h2>
-            {status}
-          </div>
-          <button type="button" className="sv-panel-close" onClick={onClose} aria-label="Close this panel">
-            <Icon name="close" size={18} />
-          </button>
-        </header>
-        {children}
-      </aside>
-    </div>
+      <div className="drawer-backdrop" onMouseDown={onClose}>
+        <aside
+          className="drawer sv-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <header className="sv-panel-head">
+            <div>
+              <p>{eyebrow}</p>
+              <h2>{title}</h2>
+              {status}
+            </div>
+            <button type="button" className="sv-panel-close" onClick={onClose} aria-label={t`Close this panel`}>
+              <Icon name="close" size={18} />
+            </button>
+          </header>
+          {children}
+        </aside>
+      </div>
     </Portal>
   );
 }
@@ -899,19 +925,19 @@ type SaveLook = DraftSave | { kind: 'unsaved' } | { kind: 'clean' };
  * exists waits for "Save changes", and says when something has not been.
  */
 function SaveState({ look, editing }: { look: SaveLook; editing: boolean }) {
-  const at = (date: Date) => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const at = (date: Date) => date.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
   const [icon, words, tone]: [ReactNode, string, string] =
     look.kind === 'saving'
-      ? [<i className="sv-save-spin" />, editing ? 'Saving…' : 'Saving draft…', 'is-saving']
+      ? [<i className="sv-save-spin" />, editing ? t`Saving…` : t`Saving draft…`, 'is-saving']
       : look.kind === 'saved'
-        ? [<Icon name="check" size={13} stroke={3} />, `Draft saved · ${at(look.at)}`, 'is-saved']
+        ? [<Icon name="check" size={13} stroke={3} />, t`Draft saved · ${at(look.at)}`, 'is-saved']
         : look.kind === 'failed'
-          ? [<Icon name="alert" size={13} />, 'Not saved — trying again', 'is-failed']
+          ? [<Icon name="alert" size={13} />, t`Not saved — trying again`, 'is-failed']
           : look.kind === 'unsaved'
-            ? [<i className="sv-save-dot" />, 'Unsaved changes', 'is-unsaved']
+            ? [<i className="sv-save-dot" />, t`Unsaved changes`, 'is-unsaved']
             : look.kind === 'clean'
-              ? [<Icon name="check" size={13} stroke={3} />, 'All changes saved', 'is-clean']
-              : [<Icon name="pencil" size={13} />, 'Saved as a draft while you type', 'is-new'];
+              ? [<Icon name="check" size={13} stroke={3} />, t`All changes saved`, 'is-clean']
+              : [<Icon name="pencil" size={13} />, t`Saved as a draft while you type`, 'is-new'];
   return (
     <span className={`sv-save ${tone}`} role="status" aria-live="polite" key={look.kind}>
       {icon}
@@ -961,9 +987,9 @@ function ServiceCard({
   // The words a customer reads (§180, §185): a glance shows which services
   // still have nothing to say for themselves.
   const words: Array<[string, boolean]> = [
-    ['Title', Boolean(service.title)],
-    ['Description', Boolean(service.description)],
-    ['Instructions', Boolean(service.instructions)],
+    [t`Title`, Boolean(service.title)],
+    [t`Description`, Boolean(service.description)],
+    [t`Instructions`, Boolean(service.instructions)],
   ];
   const written = words.filter(([, has]) => has).length;
 
@@ -974,14 +1000,14 @@ function ServiceCard({
         className="svc-cover"
         onClick={canEdit ? onPhotos : undefined}
         disabled={!canEdit}
-        aria-label={`Photos of ${service.name}`}
+        aria-label={t`Photos of ${service.name}`}
       >
         {cover ? (
           <img src={cover} alt="" />
         ) : (
           <span className="svc-cover-empty">
             <Icon name="camera" size={26} />
-            <span>{canEdit ? 'Add a photo' : 'No photo yet'}</span>
+            <span>{canEdit ? t`Add a photo` : t`No photo yet`}</span>
           </span>
         )}
         {/* A sale running now (§186), on the picture so it is seen. */}
@@ -989,42 +1015,46 @@ function ServiceCard({
         <span className="svc-count">
           <Icon name="image" size={14} />
           {service.images.length === 0
-            ? 'No photos'
-            : `${service.images.length} photo${service.images.length === 1 ? '' : 's'}`}
+            ? t`No photos`
+            : t`${service.images.length} photo${service.images.length === 1 ? '' : 's'}`}
         </span>
       </button>
 
       <div className="svc-body">
         <h3>{service.name}</h3>
-        <p className={`svc-title${service.title ? '' : ' is-missing'}`}>{service.title || 'No title yet'}</p>
+        <p className={`svc-title${service.title ? '' : ' is-missing'}`}>{service.title || t`No title yet`}</p>
 
         <div className="svc-meta">
           <span>
-            <Icon name="clock" size={15} /> {service.durationMinutes} min
+            <Icon name="clock" size={15} />
+            <Trans>{service.durationMinutes} min</Trans>
           </span>
           <span>
-            <Icon name="wallet" size={15} /> {service.depositPercentage}% deposit
+            <Icon name="wallet" size={15} />
+            <Trans>{service.depositPercentage}% deposit</Trans>
           </span>
           {/* The questions customers answer (§300), and a price agreed later. */}
           {service.choiceGroups.length > 0 && (
             <span title={service.choiceGroups.map((g) => g.name).join(', ')}>
               <Icon name="sliders" size={15} /> {service.choiceGroups.length}{' '}
-              {service.choiceGroups.length === 1 ? 'question' : 'questions'}
+              {service.choiceGroups.length === 1 ? t`question` : t`questions`}
             </span>
           )}
           {service.priceConfirmedAtShop && (
             <span>
-              <Icon name="tag" size={15} /> price at the shop
+              <Icon name="tag" size={15} />{' '}
+              <Trans>price at the shop</Trans>
             </span>
           )}
         </div>
         {depositMinor !== null && (
-          <p className="svc-dep">from {money.format(depositMinor)} up front</p>
+          <p className="svc-dep"><Trans>from {money.format(depositMinor)} up front</Trans></p>
         )}
         {sale && (
           <p className="svc-sale-line">
-            <Icon name="percent" size={13} stroke={2.2} /> {sale}% off
-            {service.discountEndsOn ? ` · until ${niceDay(service.discountEndsOn.slice(0, 10))}` : ' · until you end it'}
+            <Icon name="percent" size={13} stroke={2.2} />
+            <Trans>{sale}% off</Trans>
+            {service.discountEndsOn ? t` · until ${niceDay(service.discountEndsOn.slice(0, 10))}` : t` · until you end it`}
           </p>
         )}
 
@@ -1043,16 +1073,16 @@ function ServiceCard({
                     retired service sells nothing anywhere, so offering to stop
                     it here would be stopping something already stopped. */}
                 {!service.isActive ? (
-                  <span className="muted small">service stopped</span>
+                  <span className="muted small"><Trans>service stopped</Trans></span>
                 ) : !canToggle ? (
                   <span className={`svc-state${offer.isOffered ? ' is-on' : ''}`}>
-                    {offer.isOffered ? 'On sale' : 'Paused'}
+                    {offer.isOffered ? t`On sale` : t`Paused`}
                   </span>
                 ) : (
                   <Switch
                     checked={offer.isOffered}
                     disabled={busy}
-                    label={offer.isOffered ? `Stop offering here (${offer.location.name})` : `Put back on sale here (${offer.location.name})`}
+                    label={offer.isOffered ? t`Stop offering here (${offer.location.name})` : t`Put back on sale here (${offer.location.name})`}
                     onChange={(next) => onToggle(offer.locationId, next)}
                   />
                 )}
@@ -1063,10 +1093,10 @@ function ServiceCard({
         {live.length === 0 && (
           // No branch is selling it. Stated plainly, not as an error — it is a
           // choice, not a fault.
-          <p className="svc-none">{service.isActive ? 'Switched off at every branch' : 'Service stopped'}</p>
+          <p className="svc-none">{service.isActive ? t`Switched off at every branch` : t`Service stopped`}</p>
         )}
 
-        <div className="svc-words" title="What a customer reads on the service's page">
+        <div className="svc-words" title={t`What a customer reads on the service's page`}>
           {words.map(([label, has]) => (
             <span key={label} className={has ? 'is-done' : ''}>
               <Icon name={has ? 'check' : 'minus'} size={12} stroke={2.6} />
@@ -1080,22 +1110,24 @@ function ServiceCard({
       {canEdit && (
         <footer className="svc-foot">
           <button type="button" onClick={onEdit}>
-            <Icon name="pencil" size={16} /> Edit
+            <Icon name="pencil" size={16} />{' '}
+            <Trans>Edit</Trans>
           </button>
           <button type="button" onClick={onPhotos}>
-            <Icon name="image" size={16} /> Photos
+            <Icon name="image" size={16} />{' '}
+            <Trans>Photos</Trans>
           </button>
           {restore ? (
             <button type="button" className="primary svc-restore" disabled={busy} onClick={onRetire}>
-              Put back on sale
+              <Trans>Put back on sale</Trans>
             </button>
           ) : (
             <MoreMenu
               disabled={busy}
               items={[
-                { label: 'Edit', icon: 'pencil', onClick: onEdit },
-                { label: 'Photos', icon: 'image', onClick: onPhotos },
-                { label: 'Stop offering everywhere', icon: 'pause', onClick: onRetire, danger: true },
+                { label: t`Edit`, icon: 'pencil', onClick: onEdit },
+                { label: t`Photos`, icon: 'image', onClick: onPhotos },
+                { label: t`Stop offering everywhere`, icon: 'pause', onClick: onRetire, danger: true },
               ]}
             />
           )}
@@ -1145,6 +1177,9 @@ function Section({ icon, title, hint, children, id }: { icon: IconName; title: s
   );
 }
 
+/** What still keeps a service from customers (§308: a key, so each case is its own sentence). */
+type HiddenUntil = 'approval' | 'posting' | 'paused' | null;
+
 function ServiceForm({
   money,
   locations,
@@ -1176,7 +1211,7 @@ function ServiceForm({
   /** Open scrolled to a section — the cover's "Photos" lands on the photos. */
   focus?: 'photos';
   /** When customers will see a new service, if not at once (§268) — e.g. "you post your shop". */
-  hiddenUntil?: string | null;
+  hiddenUntil?: HiddenUntil;
   /** Something is written, so "Save as draft" has something to keep. */
   canDraft?: boolean;
   /** "Save as draft" on a NEW service: saved now, and the panel closes (§269). */
@@ -1252,7 +1287,10 @@ function ServiceForm({
     setPhotoProblem(
       problem ??
         (picked.length > room
-          ? `${PHOTO_LIMIT} photos is the most for a service, so ${picked.length - room} ${picked.length - room === 1 ? 'was' : 'were'} left out.`
+          ? plural(picked.length - room, {
+              one: `${PHOTO_LIMIT} photos is the most for a service, so # was left out.`,
+              other: `${PHOTO_LIMIT} photos is the most for a service, so # were left out.`,
+            })
           : null),
     );
     setPhotos((was) =>
@@ -1329,14 +1367,26 @@ function ServiceForm({
   const submit = (event: FormEvent) => {
     event.preventDefault();
     // The box cannot stop typing at the limit as a plain one did; it says so here.
-    const long = [
-      description.length > 2000 && `the description by ${description.length - 2000}`,
-      instructions.length > 600 && `the special instructions by ${instructions.length - 600}`,
-    ].filter(Boolean);
-    if (long.length > 0) {
+    const overDescription = description.length - 2000;
+    const overInstructions = instructions.length - 600;
+    if (overDescription > 0 || overInstructions > 0) {
       void alertDialog({
-        title: 'A little too long',
-        body: <p>Shorten {long.join(' and ')} characters — the count is at the top right of each box.</p>,
+        title: t`A little too long`,
+        body: (
+          <p>
+            {overDescription > 0 && overInstructions > 0
+              ? t`Shorten the description by ${overDescription} and the special instructions by ${overInstructions} characters — the count is at the top right of each box.`
+              : overDescription > 0
+                ? plural(overDescription, {
+                    one: 'Shorten the description by # character — the count is at the top right of each box.',
+                    other: 'Shorten the description by # characters — the count is at the top right of each box.',
+                  })
+                : plural(overInstructions, {
+                    one: 'Shorten the special instructions by # character — the count is at the top right of each box.',
+                    other: 'Shorten the special instructions by # characters — the count is at the top right of each box.',
+                  })}
+          </p>
+        ),
         tone: 'warn',
         icon: 'pencil',
       });
@@ -1344,8 +1394,8 @@ function ServiceForm({
     }
     if (offers.length === 0) {
       void alertDialog({
-        title: 'Give it a price',
-        body: <p>Give a price at a least one branch, or nobody can book it.</p>,
+        title: t`Give it a price`,
+        body: <p><Trans>Give a price at a least one branch, or nobody can book it.</Trans></p>,
         tone: 'warn',
         icon: 'tag',
       });
@@ -1355,7 +1405,7 @@ function ServiceForm({
     if (choiceTrouble) {
       setGroups((was) => was.map((g, i) => ({ ...g, open: i === firstTroubled(was) })));
       void alertDialog({
-        title: 'Finish your questions',
+        title: t`Finish your questions`,
         body: <p>{choiceTrouble}</p>,
         tone: 'warn',
         icon: 'sliders',
@@ -1364,8 +1414,8 @@ function ServiceForm({
     }
     if (discount.trim() && (percentOff === null || percentOff < 1 || percentOff > 90)) {
       void alertDialog({
-        title: 'Check the discount',
-        body: <p>A discount is a whole number from 1 to 90 percent off — or leave it empty for no discount.</p>,
+        title: t`Check the discount`,
+        body: <p><Trans>A discount is a whole number from 1 to 90 percent off — or leave it empty for no discount.</Trans></p>,
         tone: 'warn',
         icon: 'percent',
       });
@@ -1401,36 +1451,35 @@ function ServiceForm({
       <div className="sv-form-body" ref={body}>
         {/* The words a customer reads (§180, §185), in the order the service's
             page shows them. */}
-        <Section icon="pencil" title="Name and words" hint="What customers read when they choose it">
+        <Section icon="pencil" title={t`Name and words`} hint={t`What customers read when they choose it`}>
           <div className="sv-field">
-            <label htmlFor="sname">Name</label>
+            <label htmlFor="sname"><Trans>Name</Trans></label>
             <input
               id="sname"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Haircut"
+              placeholder={t`e.g. Haircut`}
               required
               autoFocus={creating}
             />
           </div>
           <div className="sv-field">
-            <label htmlFor="stitle">
-              Title <em>{title.length}/100</em>
+            <label htmlFor="stitle"><Trans>Title <em>{title.length}/100</em></Trans>
             </label>
             <input
               id="stitle"
               maxLength={100}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
+              placeholder={t`One line that makes someone want it — e.g. “Sharp fades and clean line-ups”`}
             />
             <span className="sv-help">
-              The headline right under the photos. The name above stays the short label on cards.
+              <Trans>The headline right under the photos. The name above stays the short label on cards.</Trans>
             </span>
           </div>
           <div className="sv-field">
             <label id="sdesc-label" onClick={() => document.getElementById('sdesc')?.focus()}>
-              Description
+              <Trans>Description</Trans>
             </label>
             <RichTextBox
               id="sdesc"
@@ -1439,13 +1488,13 @@ function ServiceForm({
               maxLength={2000}
               value={description}
               onChange={setDescription}
-              placeholder="What it is and what is included — a customer reads this before choosing it."
+              placeholder={t`What it is and what is included — a customer reads this before choosing it.`}
             />
-            <span className="sv-help">Shown under “About this service”.</span>
+            <span className="sv-help"><Trans>Shown under “About this service”.</Trans></span>
           </div>
           <div className="sv-field">
             <label id="sinstr-label" onClick={() => document.getElementById('sinstr')?.focus()}>
-              Special instructions
+              <Trans>Special instructions</Trans>
             </label>
             <RichTextBox
               id="sinstr"
@@ -1454,18 +1503,18 @@ function ServiceForm({
               maxLength={600}
               value={instructions}
               onChange={setInstructions}
-              placeholder="What to know before coming: arrive ten minutes early, bring a towel, park at the back…"
+              placeholder={t`What to know before coming: arrive ten minutes early, bring a towel, park at the back…`}
             />
             <span className="sv-help">
-              Shown as “Before you come” — on the service, and again on the customer’s reservation.
+              <Trans>Shown as “Before you come” — on the service, and again on the customer’s reservation.</Trans>
             </span>
           </div>
         </Section>
 
-        <Section icon="tag" title="Price and time" hint="How long it takes, and what it costs at each branch">
+        <Section icon="tag" title={t`Price and time`} hint={t`How long it takes, and what it costs at each branch`}>
           <div className="sv-two">
             <div className="sv-field">
-              <label htmlFor="sdur">Minutes</label>
+              <label htmlFor="sdur"><Trans>Minutes</Trans></label>
               <div className="sv-affix">
                 <input
                   id="sdur"
@@ -1476,11 +1525,11 @@ function ServiceForm({
                   onChange={(e) => setDuration(e.target.value)}
                   required
                 />
-                <span>min</span>
+                <span><Trans>min</Trans></span>
               </div>
             </div>
             <div className="sv-field">
-              <label htmlFor="sdep">Deposit %</label>
+              <label htmlFor="sdep"><Trans>Deposit %</Trans></label>
               <div className="sv-affix">
                 <input
                   id="sdep"
@@ -1497,7 +1546,7 @@ function ServiceForm({
           </div>
 
           <div className="sv-field">
-            <label>Price per branch ({money.code})</label>
+            <label><Trans>Price per branch ({money.code})</Trans></label>
             <div className="sv-prices">
               {locations.map((location) => {
                 const value = prices[location.id] ?? '';
@@ -1514,26 +1563,28 @@ function ServiceForm({
                         type="number"
                         min="0"
                         step={money.exponent === 0 ? '1' : '0.01'}
-                        placeholder="not offered"
+                        placeholder={t`not offered`}
                         value={value}
                         onChange={(e) => setPrices((current) => ({ ...current, [location.id]: e.target.value }))}
                       />
                     </span>
                     <span className="sv-price-dep">
-                      {minor !== null && Number.isFinite(minor) ? `${money.format(depositShare(minor))} up front` : '—'}
+                      {minor !== null && Number.isFinite(minor) ? t`${money.format(depositShare(minor))} up front` : '—'}
                     </span>
                   </label>
                 );
               })}
             </div>
             <span className="sv-help">
-              The price is for one person. Leave a branch blank to stop offering it there.
+              <Trans>The price is for one person. Leave a branch blank to stop offering it there.</Trans>
             </span>
             {/* How many people one booking can be for is the branch's to say,
                 not the service's (§189). */}
             <span className="sv-help">
-              How many people can book the same time is set for each branch, under{' '}
-              <Link to="/hours">Branches &amp; hours</Link> → “People served at once”.
+              <Trans>
+                How many people can book the same time is set for each branch, under{' '}
+                <Link to="/hours">Branches &amp; hours</Link> → “People served at once”.
+              </Trans>
             </span>
           </div>
         </Section>
@@ -1543,11 +1594,11 @@ function ServiceForm({
         <Section
           id="sv-choices"
           icon="sliders"
-          title="Questions for customers"
+          title={t`Questions for customers`}
           hint={
             groups.length > 0
-              ? `${groups.length} ${groups.length === 1 ? 'question' : 'questions'} customers answer when they book`
-              : 'Optional — ask what they want, like the cut or extras'
+              ? t`${groups.length} ${groups.length === 1 ? 'question' : 'questions'} customers answer when they book`
+              : t`Optional — ask what they want, like the cut or extras`
           }
         >
           <ChoicesEditor
@@ -1568,10 +1619,10 @@ function ServiceForm({
         {/* A sale (§186): a percentage off every branch's price, until a last
             day or until it is ended. What customers will pay is worked out as
             it is typed, branch by branch. */}
-        <Section icon="percent" title="Discount" hint="Optional — customers see the old price crossed out">
+        <Section icon="percent" title={t`Discount`} hint={t`Optional — customers see the old price crossed out`}>
           <div className="sv-two">
             <div className="sv-field">
-              <label htmlFor="sdisc">Percent off</label>
+              <label htmlFor="sdisc"><Trans>Percent off</Trans></label>
               <div className="sv-affix">
                 <input
                   id="sdisc"
@@ -1579,7 +1630,7 @@ function ServiceForm({
                   min="1"
                   max="90"
                   step="1"
-                  placeholder="e.g. 20"
+                  placeholder={t`e.g. 20`}
                   value={discount}
                   onChange={(e) => setDiscount(e.target.value)}
                 />
@@ -1587,7 +1638,7 @@ function ServiceForm({
               </div>
             </div>
             <div className="sv-field">
-              <label htmlFor="sends">Last day</label>
+              <label htmlFor="sends"><Trans>Last day</Trans></label>
               <input
                 id="sends"
                 type="date"
@@ -1608,20 +1659,22 @@ function ServiceForm({
                     <div key={l.id}>
                       <span>{l.name}</span>
                       <span className="sv-sale-pay">
-                        customers pay <strong>{money.format(salePrice(list, percentOff))}</strong> instead of{' '}
-                        <s>{money.format(list)}</s>
+                        <Trans>
+                          customers pay <strong>{money.format(salePrice(list, percentOff))}</strong> instead of{' '}
+                          <s>{money.format(list)}</s>
+                        </Trans>
                       </span>
                     </div>
                   );
                 })}
               <p>
                 {saleEndsOn
-                  ? `${percentOff}% off until the end of ${niceDay(saleEndsOn)}. Bookings made before then keep the discounted price.`
-                  : `${percentOff}% off until you end it. Bookings already made keep the price they were made at.`}
+                  ? t`${percentOff}% off until the end of ${niceDay(saleEndsOn)}. Bookings made before then keep the discounted price.`
+                  : t`${percentOff}% off until you end it. Bookings already made keep the price they were made at.`}
               </p>
             </div>
           ) : saleEnded && initial?.discountEndsOn ? (
-            <span className="sv-help">The last sale ended on {niceDay(initial.discountEndsOn.slice(0, 10))}.</span>
+            <span className="sv-help"><Trans>The last sale ended on {niceDay(initial.discountEndsOn.slice(0, 10))}.</Trans></span>
           ) : null}
           {(discount || saleEndsOn) && (
             <button
@@ -1632,7 +1685,7 @@ function ServiceForm({
                 setSaleEndsOn('');
               }}
             >
-              End the discount
+              <Trans>End the discount</Trans>
             </button>
           )}
         </Section>
@@ -1640,19 +1693,19 @@ function ServiceForm({
         <Section
           id="sv-photos"
           icon="camera"
-          title="Photos"
-          hint={`${photos.length} of ${PHOTO_LIMIT} · choose the cover with “Make cover”`}
+          title={t`Photos`}
+          hint={t`${photos.length} of ${PHOTO_LIMIT} · choose the cover with “Make cover”`}
         >
           <p className="sv-help">
             {creating
-              ? 'Customers see these when they pick this service. Add them now and they go up with it; you can change them later from Edit.'
-              : 'Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it.'}
+              ? t`Customers see these when they pick this service. Add them now and they go up with it; you can change them later from Edit.`
+              : t`Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it.`}
           </p>
           <DropZone
             onFiles={addFiles}
             multiple
             disabled={busy || photos.length >= PHOTO_LIMIT}
-            hint="Drop photos for this service"
+            hint={t`Drop photos for this service`}
           >
           <div className="sv-photo-grid">
             {photos.map((photo, index) => (
@@ -1684,8 +1737,8 @@ function ServiceForm({
                 />
                 <label htmlFor="service-photos-pick" className={`sv-photo-add${busy ? ' is-disabled' : ''}`}>
                   <Icon name="upload" size={22} />
-                  {photos.length === 0 ? 'Add photos' : 'Add more photos'}
-                  <small className="drop-tip">or drop them here</small>
+                  {photos.length === 0 ? t`Add photos` : t`Add more photos`}
+                  <small className="drop-tip"><Trans>or drop them here</Trans></small>
                 </label>
               </>
             )}
@@ -1698,12 +1751,15 @@ function ServiceForm({
             </p>
           )}
           {photos.length === 0 && !creating && (
-            <p className="sv-help">No photos. A service with a photo is easier to choose than one without.</p>
+            <p className="sv-help"><Trans>No photos. A service with a photo is easier to choose than one without.</Trans></p>
           )}
           {!creating && photosChanged && (
             <p className="sv-photo-pending" role="status">
-              <Icon name="info" size={15} /> Photo changes are not saved yet — customers still see the photos as they
-              were until you press “Save changes”.
+              <Icon name="info" size={15} />
+              <Trans>
+                Photo changes are not saved yet — customers still see the photos as they
+                were until you press “Save changes”.
+              </Trans>
             </p>
           )}
         </Section>
@@ -1720,10 +1776,23 @@ function ServiceForm({
           <span className="sv-golive">
             <i className={hiddenUntil ? 'dot-off' : 'dot-ok'} />
             {hiddenUntil
-              ? `Ready at ${offers.length} ${offers.length === 1 ? 'branch' : 'branches'} — customers see it once ${hiddenUntil}.`
-              : `Goes live at ${offers.length} ${offers.length === 1 ? 'branch' : 'branches'}${
-                  photos.length > 0 ? ` with ${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}` : ''
-                }.`}
+              ? hiddenUntil === 'approval'
+                ? plural(offers.length, {
+                    one: 'Ready at # branch — customers see it once your shop is live.',
+                    other: 'Ready at # branches — customers see it once your shop is live.',
+                  })
+                : hiddenUntil === 'posting'
+                  ? plural(offers.length, {
+                      one: 'Ready at # branch — customers see it once you post your shop.',
+                      other: 'Ready at # branches — customers see it once you post your shop.',
+                    })
+                  : plural(offers.length, {
+                      one: 'Ready at # branch — customers see it once you open your shop again.',
+                      other: 'Ready at # branches — customers see it once you open your shop again.',
+                    })
+              : photos.length > 0
+                ? t`Goes live at ${plural(offers.length, { one: '# branch', other: '# branches' })} with ${plural(photos.length, { one: '# photo', other: '# photos' })}.`
+                : plural(offers.length, { one: 'Goes live at # branch.', other: 'Goes live at # branches.' })}
           </span>
         )}
         <div className="sv-form-actions">
@@ -1733,19 +1802,20 @@ function ServiceForm({
               className="sv-draft-btn"
               onClick={onSaveDraft}
               disabled={busy || !canDraft}
-              title={canDraft ? 'Keep it under Drafts and finish it later' : 'Type something first'}
+              title={canDraft ? t`Keep it under Drafts and finish it later` : t`Type something first`}
             >
-              <Icon name="pencil" size={16} /> Save as draft
+              <Icon name="pencil" size={16} />{' '}
+              <Trans>Save as draft</Trans>
             </button>
           ) : (
             onCancel && (
               <button type="button" onClick={onCancel}>
-                Cancel
+                <Trans>Cancel</Trans>
               </button>
             )
           )}
           <button type="submit" className="primary" disabled={busy}>
-            {busy ? (busyLabel ?? 'Saving…') : creating ? (hiddenUntil ? 'Add this service' : 'Post this service') : 'Save changes'}
+            {busy ? (busyLabel ?? t`Saving…`) : creating ? (hiddenUntil ? t`Add this service` : t`Post this service`) : t`Save changes`}
           </button>
         </div>
       </footer>
@@ -1771,7 +1841,7 @@ function isSaleOver(endsOn: string | null) {
 
 /** "Sun 12 Oct", for a YYYY-MM-DD. */
 function niceDay(ymd: string) {
-  return new Date(`${ymd}T12:00:00Z`).toLocaleDateString(undefined, {
+  return new Date(`${ymd}T12:00:00Z`).toLocaleDateString(dateLocale(), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -1806,17 +1876,17 @@ function PhotoTile({
   return (
     <figure className={cover ? 'sv-photo is-cover' : 'sv-photo'}>
       <img src={url} alt="" />
-      {cover && <span className="sv-cover-badge">★ Cover</span>}
-      {fresh && <span className="sv-new-badge">Not saved</span>}
+      {cover && <span className="sv-cover-badge"><Trans>★ Cover</Trans></span>}
+      {fresh && <span className="sv-new-badge"><Trans>Not saved</Trans></span>}
       <figcaption>
         {cover ? (
-          <span className="sv-on-card">On the card</span>
+          <span className="sv-on-card"><Trans>On the card</Trans></span>
         ) : (
           <button type="button" disabled={busy} onClick={onCover}>
-            Make cover
+            <Trans>Make cover</Trans>
           </button>
         )}
-        <button type="button" className="sv-photo-remove" disabled={busy} onClick={onRemove} aria-label="Remove">
+        <button type="button" className="sv-photo-remove" disabled={busy} onClick={onRemove} aria-label={t`Remove`}>
           <Icon name="trash" size={15} />
         </button>
       </figcaption>

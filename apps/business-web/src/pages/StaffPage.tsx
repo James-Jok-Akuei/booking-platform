@@ -23,8 +23,11 @@ import { Icon, type IconName } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import { BranchPicker, branchWords } from './BranchPicker';
 import './staff.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
 
-const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
+const when = (iso: string) => new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' });
 
 /**
  * What each role may actually do, in the words of the person deciding (§277).
@@ -34,24 +37,34 @@ const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { date
  * line between OWNER and everyone else.
  */
 const ROLE_MEANS: Record<'OWNER' | StaffRole, string> = {
-  OWNER: 'Runs everything at every branch: the money, the shopfront, and who works where. There is only one owner.',
-  MANAGER:
-    'Runs their branches: bookings, cancellations, hours, closures and photos. A manager of every branch also changes the shopfront, services and prices, and sees the money.',
-  STAFF:
-    'Works the front desk at their branches: checks customers in, marks visits done, and answers messages and reviews. Cannot cancel bookings or see the money.',
+  get OWNER() { return t`Runs everything at every branch: the money, the shopfront, and who works where. There is only one owner.`; },
+  get MANAGER() { return t`Runs their branches: bookings, cancellations, hours, closures and photos. A manager of every branch also changes the shopfront, services and prices, and sees the money.`; },
+  get STAFF() { return t`Works the front desk at their branches: checks customers in, marks visits done, and answers messages and reviews. Cannot cancel bookings or see the money.`; },
 };
 
 /** The same, in a few words, for a row. */
 const ROLE_SHORT: Record<'OWNER' | StaffRole, string> = {
-  OWNER: 'Runs everything',
-  MANAGER: 'Runs their branches',
-  STAFF: 'Front desk',
+  get OWNER() { return t`Runs everything`; },
+  get MANAGER() { return t`Runs their branches`; },
+  get STAFF() { return t`Front desk`; },
 };
 
 const ROLE_LOOK: Record<'OWNER' | StaffRole, { label: string; icon: IconName; cls: string }> = {
-  OWNER: { label: 'Owner', icon: 'key', cls: 'owner' },
-  MANAGER: { label: 'Manager', icon: 'shield', cls: 'manager' },
-  STAFF: { label: 'Staff', icon: 'user', cls: 'staff' },
+  OWNER: {
+    get label() { return t`Owner`; },
+    icon: 'key',
+    cls: 'owner'
+  },
+  MANAGER: {
+    get label() { return t`Manager`; },
+    icon: 'shield',
+    cls: 'manager'
+  },
+  STAFF: {
+    get label() { return t`Staff`; },
+    icon: 'user',
+    cls: 'staff'
+  },
 };
 
 /** People who work here, and what each may do (§14, §202). */
@@ -92,8 +105,8 @@ export function StaffPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>People</h1>
-            <p className="muted">Who works here, and what each of them can do.</p>
+            <h1><Trans>People</Trans></h1>
+            <p className="muted"><Trans>Who works here, and what each of them can do.</Trans></p>
           </div>
         </header>
       </div>
@@ -103,11 +116,10 @@ export function StaffPage() {
           {!isOwner && members.data && (
             <p className="st-note">
               <Icon name="shield" size={16} />
-              <span>
-                Only the owner can add people and choose where they work.{' '}
+              <span><Trans>Only the owner can add people and choose where they work.{' '}</Trans>
                 {access.allBranches
-                  ? 'You work at every branch.'
-                  : `You work at ${branchWords({ allLocations: false, locationIds: access.branchIds }, branches)} — you see the people there.`}
+                  ? t`You work at every branch.`
+                  : t`You work at ${branchWords({ allLocations: false, locationIds: access.branchIds }, branches)} — you see the people there.`}
               </span>
             </p>
           )}
@@ -117,7 +129,7 @@ export function StaffPage() {
           {active.length > 0 && (
             <article className="st-card">
               <header>
-                <h2>Working here</h2>
+                <h2><Trans>Working here</Trans></h2>
                 <span>{active.length}</span>
               </header>
               <ul className="st-people">
@@ -139,7 +151,7 @@ export function StaffPage() {
           {pending.length > 0 && (
             <article className="st-card">
               <header>
-                <h2>Invited, not joined yet</h2>
+                <h2><Trans>Invited, not joined yet</Trans></h2>
                 <span>{pending.length}</span>
               </header>
               <ul className="st-people">
@@ -151,8 +163,10 @@ export function StaffPage() {
                     <div className="st-who">
                       <strong>{invitation.email}</strong>
                       <span>
-                        Invited as {invitation.role.toLowerCase()} on {when(invitation.createdAt)} · expires{' '}
-                        {when(invitation.expiresAt)}
+                        <Trans>
+                          Invited as {invitation.role.toLowerCase()} on {when(invitation.createdAt)} · expires{' '}
+                          {when(invitation.expiresAt)}
+                        </Trans>
                       </span>
                       <BranchChips value={invitation} branches={branches} />
                     </div>
@@ -166,17 +180,17 @@ export function StaffPage() {
           {removed.length > 0 && (
             <article className="st-card is-quiet">
               <header>
-                <h2>No longer here</h2>
+                <h2><Trans>No longer here</Trans></h2>
                 <span>{removed.length}</span>
               </header>
-              <p className="st-sub">Kept on purpose: this is the record that they once had access.</p>
+              <p className="st-sub"><Trans>Kept on purpose: this is the record that they once had access.</Trans></p>
               <ul className="st-people">
                 {removed.map((member) => (
                   <li key={member.id} className="st-person is-removed">
                     <Avatar label={member.email} size={38} />
                     <div className="st-who">
                       <strong>{member.email}</strong>
-                      <span>was {member.role.toLowerCase()}</span>
+                      <span><Trans>was {member.role.toLowerCase()}</Trans></span>
                     </div>
                   </li>
                 ))}
@@ -188,7 +202,7 @@ export function StaffPage() {
         <aside className="st-side">
           {isOwner && <InviteForm branches={open} onDone={refresh} />}
           <article className="st-roles">
-            <h2>What each role can do</h2>
+            <h2><Trans>What each role can do</Trans></h2>
             {(['OWNER', 'MANAGER', 'STAFF'] as const).map((role) => (
               <div key={role} className={`st-role is-${ROLE_LOOK[role].cls}`}>
                 <span>
@@ -205,10 +219,12 @@ export function StaffPage() {
                 <Icon name="pin" size={17} />
               </span>
               <div>
-                <strong>Branches</strong>
+                <strong><Trans>Branches</Trans></strong>
                 <p>
-                  Choose where each person works. They see only the bookings, messages and reviews of their branches.
-                  “Every branch” includes any you open later.
+                  <Trans>
+                    Choose where each person works. They see only the bookings, messages and reviews of their branches.
+                    “Every branch” includes any you open later.
+                  </Trans>
                 </p>
               </div>
             </div>
@@ -229,7 +245,8 @@ function BranchChips({ value, branches }: { value: MemberBranches; branches: Loc
     return (
       <span className="st-branches">
         <span className="st-branch is-every">
-          <Icon name="layers" size={12} /> Every branch
+          <Icon name="layers" size={12} />{' '}
+          <Trans>Every branch</Trans>
         </span>
       </span>
     );
@@ -239,7 +256,7 @@ function BranchChips({ value, branches }: { value: MemberBranches; branches: Loc
     .filter((b): b is Location => Boolean(b));
   return (
     <span className="st-branches">
-      {named.length === 0 && <span className="st-branch is-none">No branch yet</span>}
+      {named.length === 0 && <span className="st-branch is-none"><Trans>No branch yet</Trans></span>}
       {named.map((b) => (
         <span key={b.id} className={`st-branch${b.isActive ? '' : ' is-closed'}`}>
           <Icon name="pin" size={12} /> {b.name}
@@ -282,33 +299,34 @@ function BranchesPanel({
 
   return (
     <Panel
-      eyebrow="Where they work"
+      eyebrow={t`Where they work`}
       title={member.email}
       width={560}
       onClose={onClose}
       footer={
         <>
           <button type="button" onClick={onClose}>
-            Cancel
+            <Trans>Cancel</Trans>
           </button>
           <button type="button" className="primary" disabled={save.isPending || unchanged || empty} onClick={() => save.mutate()}>
-            {save.isPending ? 'Saving…' : 'Save'}
+            {save.isPending ? t`Saving…` : t`Save`}
           </button>
         </>
       }
     >
       <p className="st-panel-lead">
         {member.role === 'MANAGER'
-          ? 'A manager runs the branches you choose — their bookings, hours, closures and photos. With every branch, they also run the shopfront, the services and prices, and see the money.'
-          : 'Staff work the front desk at the branches you choose. They see only those branches’ bookings, messages and reviews.'}
+          ? t`A manager runs the branches you choose — their bookings, hours, closures and photos. With every branch, they also run the shopfront, the services and prices, and see the money.`
+          : t`Staff work the front desk at the branches you choose. They see only those branches’ bookings, messages and reviews.`}
       </p>
       <BranchPicker branches={branches} value={value} onChange={setValue} />
       <p className="st-panel-note">
-        <Icon name="info" size={14} /> It changes straight away — they do not need to sign in again.
+        <Icon name="info" size={14} />{' '}
+        <Trans>It changes straight away — they do not need to sign in again.</Trans>
       </p>
       {save.error && (
         <p className="error small" role="alert">
-          {save.error instanceof ApiError ? save.error.message : 'That did not save.'}
+          {save.error instanceof ApiError ? save.error.message : t`That did not save.`}
         </p>
       )}
     </Panel>
@@ -342,24 +360,26 @@ function InviteForm({ branches, onDone }: { branches: Location[]; onDone: () => 
       <span className="st-invite-icon">
         <Icon name="users" size={20} />
       </span>
-      <h2>Add someone</h2>
+      <h2><Trans>Add someone</Trans></h2>
       <p>
-        They get an email. If they do not have an account yet, one is made when they accept — they do not
-        need to sign up first.
+        <Trans>
+          They get an email. If they do not have an account yet, one is made when they accept — they do not
+          need to sign up first.
+        </Trans>
       </p>
 
       <label className="st-field">
-        <span>Their email</span>
+        <span><Trans>Their email</Trans></span>
         <input
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="name@example.com"
+          placeholder={t`name@example.com`}
         />
       </label>
 
       <div className="st-field">
-        <span>What they can do</span>
+        <span><Trans>What they can do</Trans></span>
         <div className="st-choice" role="radiogroup">
           {(['STAFF', 'MANAGER'] as const).map((r) => (
             <button
@@ -379,25 +399,26 @@ function InviteForm({ branches, onDone }: { branches: Location[]; onDone: () => 
 
       {branches.length > 0 && (
         <div className="st-field">
-          <span>Where they work</span>
+          <span><Trans>Where they work</Trans></span>
           <BranchPicker branches={branches} value={where} onChange={setWhere} compact />
         </div>
       )}
 
       {invite.error && (
         <p className="error small" role="alert">
-          {invite.error instanceof ApiError ? invite.error.message : 'That did not send.'}
+          {invite.error instanceof ApiError ? invite.error.message : t`That did not send.`}
         </p>
       )}
       {sent && !invite.isPending && (
         <p className="st-sent">
-          <Icon name="checkCircle" size={16} /> Invitation sent to {sent}.
+          <Icon name="checkCircle" size={16} />{' '}
+          <Trans>Invitation sent to {sent}.</Trans>
         </p>
       )}
 
       <button type="submit" className="primary st-send" disabled={invite.isPending || email.trim() === '' || noBranch}>
         <Icon name="send" size={16} />
-        {invite.isPending ? 'Sending…' : 'Send invitation'}
+        {invite.isPending ? t`Sending…` : t`Send invitation`}
       </button>
     </form>
   );
@@ -419,7 +440,7 @@ function MemberRow({
   onDone: () => void;
 }) {
   const [problem, setProblem] = useState<string | null>(null);
-  const fail = (error: unknown) => setProblem(error instanceof ApiError ? error.message : 'That did not work.');
+  const fail = (error: unknown) => setProblem(error instanceof ApiError ? error.message : t`That did not work.`);
 
   const changeRole = useMutation({
     mutationFn: (role: StaffRole) => setMemberRole(member.id, role),
@@ -451,7 +472,7 @@ function MemberRow({
       <div className="st-who">
         <strong>
           {member.email}
-          {isMe && <em>you</em>}
+          {isMe && <em><Trans>you</Trans></em>}
         </strong>
         <span title={ROLE_MEANS[member.role as 'OWNER' | StaffRole]}>
           {ROLE_SHORT[member.role as 'OWNER' | StaffRole]}
@@ -466,7 +487,7 @@ function MemberRow({
 
       <div className="st-actions">
         {editable ? (
-          <div className="st-mini-choice" role="radiogroup" aria-label={`Role of ${member.email}`}>
+          <div className="st-mini-choice" role="radiogroup" aria-label={t`Role of ${member.email}`}>
             {(['STAFF', 'MANAGER'] as const).map((r) => (
               <button
                 key={r}
@@ -492,11 +513,11 @@ function MemberRow({
             type="button"
             className="st-where"
             onClick={onChooseBranches}
-            aria-label={`Where ${member.email} works`}
-            title="Where they work"
+            aria-label={t`Where ${member.email} works`}
+            title={t`Where they work`}
           >
             <Icon name="pin" size={16} />
-            <span>Branches</span>
+            <span><Trans>Branches</Trans></span>
           </button>
         )}
 
@@ -505,21 +526,23 @@ function MemberRow({
             type="button"
             className="st-remove"
             disabled={remove.isPending}
-            aria-label={`Remove ${member.email}`}
-            title="Remove"
+            aria-label={t`Remove ${member.email}`}
+            title={t`Remove`}
             onClick={async () => {
               if (
                 await confirmDialog({
-                  title: `Remove ${member.email}?`,
+                  title: t`Remove ${member.email}?`,
                   body: (
                     <p>
-                      They lose access straight away. Their name stays on anything they already did, and you
-                      can invite them again later.
+                      <Trans>
+                        They lose access straight away. Their name stays on anything they already did, and you
+                        can invite them again later.
+                      </Trans>
                     </p>
                   ),
                   tone: 'danger',
                   icon: 'userX',
-                  confirmLabel: 'Remove',
+                  confirmLabel: t`Remove`,
                 })
               ) {
                 remove.mutate();
@@ -538,7 +561,7 @@ function RevokeButton({ id, onDone }: { id: string; onDone: () => void }) {
   const revoke = useMutation({ mutationFn: () => revokeInvitation(id), onSuccess: onDone });
   return (
     <button type="button" className="st-revoke" disabled={revoke.isPending} onClick={() => revoke.mutate()}>
-      {revoke.isPending ? 'Cancelling…' : 'Cancel invitation'}
+      {revoke.isPending ? t`Cancelling…` : t`Cancel invitation`}
     </button>
   );
 }

@@ -9,6 +9,9 @@ import { usePostShop } from './usePostShop';
 import { useSpotlight } from './useSpotlight';
 import './golive.css';
 import { accessOf } from '../access';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
 
 const DAY = 24 * 60 * 60 * 1000;
 const seenKey = (businessId: string) => `bp.live-seen.${businessId}`;
@@ -22,7 +25,7 @@ const readSeen = (key: string) => {
 };
 
 const said = (error: unknown) =>
-  error instanceof ApiError ? error.message : 'That did not send. Check your connection and try again.';
+  error instanceof ApiError ? error.message : t`That did not send. Check your connection and try again.`;
 
 /**
  * Where the shop stands, at the top of the Overview, until it is live (§256).
@@ -61,7 +64,7 @@ export function GoLiveCard() {
 
   if (r.status === 'APPROVED') {
     if (!r.publishedAt) {
-      return <ReadyToPost readiness={r} name={profile.data?.name ?? 'your shop'} canAct={canAct} />;
+      return <ReadyToPost readiness={r} name={profile.data?.name ?? t`your shop`} canAct={canAct} />;
     }
     const changed = r.publishedAt;
     if (Date.now() - new Date(changed).getTime() > 7 * DAY) return null;
@@ -74,7 +77,7 @@ export function GoLiveCard() {
       }
       setDismissed(changed);
     };
-    return <Live name={profile.data?.name ?? 'Your shop'} onClose={close} />;
+    return <Live name={profile.data?.name ?? t`Your shop`} onClose={close} />;
   }
 
   const required = r.items.filter((i) => i.required);
@@ -84,20 +87,21 @@ export function GoLiveCard() {
 
   if (r.status === 'SUSPENDED') {
     return (
-      <section className="gl is-danger" aria-label="Your shop's status" data-tour="go-live">
+      <section className="gl is-danger" aria-label={t`Your shop's status`} data-tour="go-live">
         <div className="gl-head">
           <span className="gl-badge">
             <Icon name="alert" size={24} />
           </span>
           <div className="gl-text">
-            <span className="gl-eyebrow">Hidden from customers</span>
-            <h2>Your shop is suspended</h2>
-            <p>Customers cannot find it or book. Bookings already made still stand.</p>
+            <span className="gl-eyebrow"><Trans>Hidden from customers</Trans></span>
+            <h2><Trans>Your shop is suspended</Trans></h2>
+            <p><Trans>Customers cannot find it or book. Bookings already made still stand.</Trans></p>
             {r.statusReason && <Reason text={r.statusReason} />}
           </div>
           <div className="gl-actions">
             <Link to="/help" className="btn-dark">
-              <Icon name="help" size={18} /> Talk to support
+              <Icon name="help" size={18} />{' '}
+              <Trans>Talk to support</Trans>
             </Link>
           </div>
         </div>
@@ -108,31 +112,36 @@ export function GoLiveCard() {
   if (waiting) {
     const sent = new Date(r.submittedAt!);
     return (
-      <section className="gl is-waiting" aria-label="Your shop's status" data-tour="go-live">
+      <section className="gl is-waiting" aria-label={t`Your shop's status`} data-tour="go-live">
         <div className="gl-head">
           <span className="gl-badge gl-pulse">
             <Icon name="hourglass" size={24} />
           </span>
           <div className="gl-text">
-            <span className="gl-eyebrow">Sent {sent.toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}</span>
-            <h2>We are checking your shop</h2>
+            <span className="gl-eyebrow"><Trans>Sent {sent.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' })}</Trans></span>
+            <h2><Trans>We are checking your shop</Trans></h2>
             <p>
-              Usually within one working day. We may call your shop’s number, and you get an email at{' '}
-              <b>{me.data.email}</b> the moment it is live.
+              <Trans>
+                Usually within one working day. We may call your shop’s number, and you get an email at{' '}
+                <b>{me.data.email}</b> the moment it is live.
+              </Trans>
             </p>
           </div>
         </div>
         <Track at={1} />
         <div className="gl-meanwhile">
-          <span>While you wait</span>
+          <span><Trans>While you wait</Trans></span>
           <Link to="/profile">
-            <Icon name="image" size={16} /> Add photos
+            <Icon name="image" size={16} />{' '}
+            <Trans>Add photos</Trans>
           </Link>
           <Link to="/services">
-            <Icon name="tag" size={16} /> More services
+            <Icon name="tag" size={16} />{' '}
+            <Trans>More services</Trans>
           </Link>
           <Link to="/people">
-            <Icon name="users" size={16} /> Invite your team
+            <Icon name="users" size={16} />{' '}
+            <Trans>Invite your team</Trans>
           </Link>
         </div>
       </section>
@@ -141,7 +150,7 @@ export function GoLiveCard() {
 
   const rejected = r.status === 'REJECTED';
   return (
-    <section className={`gl ${rejected ? 'is-rejected' : 'is-setup'}${sendSpot.lit ? ' is-spotlit' : ''}`} aria-label="Your shop's status" data-tour="go-live">
+    <section className={`gl ${rejected ? 'is-rejected' : 'is-setup'}${sendSpot.lit ? ' is-spotlit' : ''}`} aria-label={t`Your shop's status`} data-tour="go-live">
       <div className="gl-head">
         {rejected ? (
           <span className="gl-badge">
@@ -151,14 +160,14 @@ export function GoLiveCard() {
           <Ring done={done} total={required.length} />
         )}
         <div className="gl-text">
-          <span className="gl-eyebrow">{rejected ? 'Needs a change' : 'Not live yet'}</span>
-          <h2>{rejected ? 'Make the change, then send your shop back' : missing.length ? 'Finish setting up your shop' : 'Your shop is ready to send'}</h2>
+          <span className="gl-eyebrow">{rejected ? t`Needs a change` : t`Not live yet`}</span>
+          <h2>{rejected ? t`Make the change, then send your shop back` : missing.length ? t`Finish setting up your shop` : t`Your shop is ready to send`}</h2>
           <p>
             {rejected
-              ? 'We could not approve it yet. Everything you set up is still here.'
+              ? t`We could not approve it yet. Everything you set up is still here.`
               : missing.length
-                ? `${missing.length} ${missing.length === 1 ? 'thing' : 'things'} left before we can check it and put it live. Customers cannot see it until then.`
-                : 'Everything we need is in. Send it and we check it, usually within one working day.'}
+                ? t`${missing.length} ${missing.length === 1 ? 'thing' : 'things'} left before we can check it and put it live. Customers cannot see it until then.`
+                : t`Everything we need is in. Send it and we check it, usually within one working day.`}
           </p>
           {rejected && r.statusReason && <Reason text={r.statusReason} />}
         </div>
@@ -176,24 +185,24 @@ export function GoLiveCard() {
                   submit.mutate();
                 }}
               >
-                {submit.isPending ? 'Sending…' : rejected ? 'Send back for review' : 'Send for review'}
+                {submit.isPending ? t`Sending…` : rejected ? t`Send back for review` : t`Send for review`}
                 {!submit.isPending && <Icon name="send" size={16} />}
               </button>
-              {sendSpot.lit && <SpotHint words={rejected ? 'Press here to send it back' : 'Press here to send it for review'} />}
+              {sendSpot.lit && <SpotHint words={rejected ? t`Press here to send it back` : t`Press here to send it for review`} />}
               </span>
             ) : (
-              <Link to="/welcome" className="btn-dark gl-go">
-                Continue setting up <Icon name="arrowRight" size={17} stroke={2.4} />
+              <Link to="/welcome" className="btn-dark gl-go"><Trans>Continue setting up </Trans><Icon name="arrowRight" size={17} stroke={2.4} />
               </Link>
             )}
             {rejected && (
               <Link to="/profile" className="btn-quiet">
-                <Icon name="pencil" size={16} /> Edit your shop
+                <Icon name="pencil" size={16} />{' '}
+                <Trans>Edit your shop</Trans>
               </Link>
             )}
           </div>
         ) : (
-          <p className="gl-staff">The owner, or a manager of every branch, finishes this.</p>
+          <p className="gl-staff"><Trans>The owner, or a manager of every branch, finishes this.</Trans></p>
         )}
       </div>
 
@@ -214,7 +223,7 @@ function Checklist({ readiness, canAct, onlyExtras }: { readiness: Readiness; ca
   const items = onlyExtras ? readiness.items.filter((i) => !i.required) : readiness.items;
   return (
     <ul className={`gl-list${onlyExtras ? ' is-extras' : ''}`}>
-      {onlyExtras && <li className="gl-list-head">Nice to have — add whenever you like</li>}
+      {onlyExtras && <li className="gl-list-head"><Trans>Nice to have — add whenever you like</Trans></li>}
       {items.map((item) => {
         const words = ITEM_WORDS[item.key];
         const body = (
@@ -222,7 +231,7 @@ function Checklist({ readiness, canAct, onlyExtras }: { readiness: Readiness; ca
             <span className="gl-tick">{item.done ? <Icon name="check" size={13} stroke={3.2} /> : null}</span>
             <span className="gl-item">
               {words.label}
-              {!item.required && <em>optional</em>}
+              {!item.required && <em><Trans>optional</Trans></em>}
             </span>
             {!item.done && canAct && <Icon name="chevronRight" size={16} />}
           </>
@@ -243,7 +252,7 @@ function Ring({ done, total }: { done: number; total: number }) {
   const length = 2 * Math.PI * r;
   const share = total ? done / total : 0;
   return (
-    <span className="gl-ring" role="img" aria-label={`${done} of ${total} done`}>
+    <span className="gl-ring" role="img" aria-label={t`${done} of ${total} done`}>
       <svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">
         <circle cx="32" cy="32" r={r} className="gl-ring-track" />
         <circle cx="32" cy="32" r={r} className="gl-ring-fill" strokeDasharray={length} strokeDashoffset={length * (1 - share)} />
@@ -259,13 +268,13 @@ function Ring({ done, total }: { done: number; total: number }) {
 /** Set up → checked → posted → booked: where the shop is on the way. */
 function Track({ at }: { at: 0 | 1 | 2 }) {
   const stops: Array<{ label: string; icon: IconName }> = [
-    { label: 'Set up your shop', icon: 'store' },
-    { label: 'We check it', icon: 'shield' },
-    { label: 'You post it', icon: 'send' },
-    { label: 'Customers book', icon: 'calendarCheck' },
+    { label: t`Set up your shop`, icon: 'store' },
+    { label: t`We check it`, icon: 'shield' },
+    { label: t`You post it`, icon: 'send' },
+    { label: t`Customers book`, icon: 'calendarCheck' },
   ];
   return (
-    <ol className="gl-track" aria-label="On the way to going live">
+    <ol className="gl-track" aria-label={t`On the way to going live`}>
       {stops.map((s, i) => (
         <li key={s.label} className={i < at ? 'is-done' : i === at ? 'is-on' : ''}>
           <span>{i < at ? <Icon name="check" size={14} stroke={3} /> : <Icon name={s.icon} size={15} />}</span>
@@ -279,7 +288,7 @@ function Track({ at }: { at: 0 | 1 | 2 }) {
 function Reason({ text }: { text: string }) {
   return (
     <blockquote className="gl-reason">
-      <strong>What we said</strong>
+      <strong><Trans>What we said</Trans></strong>
       {text}
     </blockquote>
   );
@@ -299,23 +308,26 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
   // Lost since approval — a service switched off, the hours cleared.
   const gaps = readiness.goLiveGaps;
   return (
-    <section className={`gl is-approved${spot.lit ? ' is-spotlit' : ''}`} aria-label="Your shop's status" data-tour="go-live">
+    <section className={`gl is-approved${spot.lit ? ' is-spotlit' : ''}`} aria-label={t`Your shop's status`} data-tour="go-live">
       <div className="gl-head">
         <span className="gl-badge">
           <Icon name="checkCircle" size={26} />
         </span>
         <div className="gl-text">
-          <span className="gl-eyebrow">Approved · not posted yet</span>
-          <h2>Your shop is approved. Post it when you are ready</h2>
+          <span className="gl-eyebrow"><Trans>Approved · not posted yet</Trans></span>
+          <h2><Trans>Your shop is approved. Post it when you are ready</Trans></h2>
           <p>
-            Customers cannot see <b>{name}</b> yet. Look it over the way they will, then post it — and from that moment they
-            can find you and book. No rush: change anything you like first.
+            <Trans>
+              Customers cannot see <b>{name}</b> yet. Look it over the way they will, then post it — and from that moment they
+              can find you and book. No rush: change anything you like first.
+            </Trans>
           </p>
         </div>
         {canAct ? (
           <div className="gl-actions">
             <Link to="/profile" className="btn-quiet">
-              <Icon name="eye" size={16} /> See it as customers will
+              <Icon name="eye" size={16} />{' '}
+              <Trans>See it as customers will</Trans>
             </Link>
             <span className="gl-spot-wrap">
             <button
@@ -328,14 +340,14 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
                 void ask();
               }}
             >
-              {post.isPending ? 'Posting…' : 'Post my shop'}
+              {post.isPending ? t`Posting…` : t`Post my shop`}
               {!post.isPending && <Icon name="send" size={16} />}
             </button>
-            {spot.lit && readiness.canPublish && <SpotHint words="Press here to post your shop" />}
+            {spot.lit && readiness.canPublish && <SpotHint words={t`Press here to post your shop`} />}
             </span>
           </div>
         ) : (
-          <p className="gl-staff">The owner, or a manager of every branch, posts it.</p>
+          <p className="gl-staff"><Trans>The owner, or a manager of every branch, posts it.</Trans></p>
         )}
       </div>
 
@@ -345,9 +357,11 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
         <p className="gl-problem" role="status">
           <Icon name="alert" size={16} />
           <span>
-            Before it can be posted, it needs {gaps.map((k) => ITEM_WORDS[k].label.toLowerCase()).join(' and ')} —
-            otherwise customers would find nothing to book.{' '}
-            {FIX_AT[gaps[0]] && <Link to={FIX_AT[gaps[0]]!}>Add it</Link>}
+            <Trans>
+              Before it can be posted, it needs {gaps.map((k) => ITEM_WORDS[k].label.toLowerCase()).join(' and ')} —
+              otherwise customers would find nothing to book.{' '}
+            </Trans>
+            {FIX_AT[gaps[0]] && <Link to={FIX_AT[gaps[0]]!}><Trans>Add it</Trans></Link>}
           </span>
         </p>
       )}
@@ -397,19 +411,19 @@ function AdviceFromUs({ readiness, canAct }: { readiness: Readiness; canAct: boo
           <Icon name={allDone ? 'checkCircle' : 'bulb'} size={18} />
         </span>
         <div>
-          <strong>{allDone ? 'All done — thank you' : 'Our advice before you post'}</strong>
+          <strong>{allDone ? t`All done — thank you` : t`Our advice before you post`}</strong>
           <span>
             {items.length === 0
-              ? 'From our review team'
+              ? t`From our review team`
               : allDone
-                ? 'Everything we suggested is in. Shops like yours get booked far more often.'
-                : `Shops with clear, high-resolution photos and full details get booked far more often · ${done} of ${items.length} done`}
+                ? t`Everything we suggested is in. Shops like yours get booked far more often.`
+                : t`Shops with clear, high-resolution photos and full details get booked far more often · ${done} of ${items.length} done`}
           </span>
         </div>
       </div>
       {sent.note && (
         <blockquote className="gl-advice-note">
-          “{sent.note}”<cite>— Our review team</cite>
+          “{sent.note}”<cite><Trans>— Our review team</Trans></cite>
         </blockquote>
       )}
       {items.length > 0 && (
@@ -424,11 +438,11 @@ function AdviceFromUs({ readiness, canAct }: { readiness: Readiness; canAct: boo
                 </span>
                 <span className="gl-advice-words">
                   <strong>{item.title}</strong>
-                  <em>{item.done ? 'Done' : `${item.why.charAt(0).toUpperCase()}${item.why.slice(1)}`}</em>
+                  <em>{item.done ? t`Done` : `${item.why.charAt(0).toUpperCase()}${item.why.slice(1)}`}</em>
                 </span>
                 {go && (
                   <span className="gl-advice-go">
-                    <span className="gl-advice-go-word">Add</span>
+                    <span className="gl-advice-go-word"><Trans>Add</Trans></span>
                     <Icon name="arrowRight" size={14} />
                   </span>
                 )}
@@ -438,7 +452,7 @@ function AdviceFromUs({ readiness, canAct }: { readiness: Readiness; canAct: boo
             return (
               <li key={item.key} className={item.done ? 'is-done' : ''}>
                 {go ? (
-                  <Link to={at.to} className="gl-advice-row" aria-label={`Add ${item.title.toLowerCase()}`}>
+                  <Link to={at.to} className="gl-advice-row" aria-label={t`Add ${item.title.toLowerCase()}`}>
                     {row}
                   </Link>
                 ) : (
@@ -466,7 +480,7 @@ function SpotHint({ words }: { words: string }) {
 /** The moment a shop goes live, once. */
 function Live({ name, onClose }: { name: string; onClose: () => void }) {
   return (
-    <section className="gl is-live" aria-label="Your shop is live">
+    <section className="gl is-live" aria-label={t`Your shop is live`}>
       <span className="gl-confetti" aria-hidden="true">
         {Array.from({ length: 18 }, (_, i) => (
           <i key={i} style={{ ['--i' as string]: i }} />
@@ -477,18 +491,21 @@ function Live({ name, onClose }: { name: string; onClose: () => void }) {
           <Icon name="sparkles" size={26} />
         </span>
         <div className="gl-text">
-          <span className="gl-eyebrow">Posted</span>
-          <h2>You are live! 🎉</h2>
+          <span className="gl-eyebrow"><Trans>Posted</Trans></span>
+          <h2><Trans>You are live! 🎉</Trans></h2>
           <p>
-            Customers can now find <b>{name}</b> and book. New bookings appear on this page and in Appointments, and we tell
-            you each time.
+            <Trans>
+              Customers can now find <b>{name}</b> and book. New bookings appear on this page and in Appointments, and we tell
+              you each time.
+            </Trans>
           </p>
         </div>
         <div className="gl-actions">
           <Link to="/services" className="btn-quiet">
-            <Icon name="plus" size={16} /> Add more services
+            <Icon name="plus" size={16} />{' '}
+            <Trans>Add more services</Trans>
           </Link>
-          <button type="button" className="gl-close" onClick={onClose} aria-label="Close">
+          <button type="button" className="gl-close" onClick={onClose} aria-label={t`Close`}>
             <Icon name="close" size={18} />
           </button>
         </div>

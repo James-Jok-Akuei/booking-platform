@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Icon, type IconName } from '../ui/Icon';
 import { Effect } from './Effects';
 import type { Slide } from './slides';
+import { t } from '@lingui/core/macro';
 
 /** How long each advert is on screen — the customer app's pace (§188). */
 const SLIDE_MS = 8000;
@@ -167,8 +168,8 @@ export function AdCarousel({
         if (event.key === 'ArrowLeft') go(shown - 1, -1);
       }}
       role="region"
-      aria-roledescription="carousel"
-      aria-label="For you"
+      aria-roledescription={t`carousel`}
+      aria-label={t`For you`}
     >
       <div
         ref={frame}
@@ -184,7 +185,7 @@ export function AdCarousel({
               <Card
                 key={slide.key}
                 slide={slide}
-                position={`${i + 1} of ${count}`}
+                position={t`${i + 1} of ${count}`}
                 active={i === shown}
                 leaving={i === leaving}
                 compact={compact}
@@ -199,14 +200,14 @@ export function AdCarousel({
       </div>
 
       {count > 1 && (
-        <div className="adc-dots" role="tablist" aria-label="Choose an advert">
+        <div className="adc-dots" role="tablist" aria-label={t`Choose an advert`}>
           {slides.map((slide, i) => (
             <button
               key={slide.key}
               type="button"
               role="tab"
               aria-selected={i === shown}
-              aria-label={`${i + 1} of ${count}: ${slide.eyebrow}`}
+              aria-label={t`${i + 1} of ${count}: ${slide.eyebrow}`}
               className={`adc-dot${i === shown ? ' is-on' : ''}`}
               onClick={() => go(i, i > shown ? 1 : -1)}
             >
@@ -258,7 +259,7 @@ function Card({
         .filter(Boolean)
         .join(' ')}
       aria-hidden={!active}
-      aria-roledescription="slide"
+      aria-roledescription={t`slide`}
       aria-label={`${position}: ${slide.eyebrow}`}
     >
       <div className="adc-bg" aria-hidden="true">

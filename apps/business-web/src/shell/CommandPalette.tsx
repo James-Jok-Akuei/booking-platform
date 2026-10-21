@@ -4,6 +4,15 @@ import { useAccess } from '../access';
 import { navItemsFor } from '../nav';
 import { Icon, type IconName } from '../ui/Icon';
 import { useTour } from '../tour/Tour';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+
+/** Each group's heading, in the app's language (§308); the keys above stay as they are. */
+const SECTION_TITLE: Record<Entry['section'], () => string> = {
+  Actions: () => t`Actions`,
+  Pages: () => t`Pages`,
+  Account: () => t`Account`,
+};
 
 type Entry = {
   id: string;
@@ -49,11 +58,11 @@ export function CommandPalette({
     return [
       {
         id: 'check-in',
-        label: 'Check in a customer',
-        hint: 'Type the code they read out to you',
+        label: t`Check in a customer`,
+        hint: t`Type the code they read out to you`,
         icon: 'ticket',
         section: 'Actions',
-        words: 'verify code arrival redeem arrived',
+        words: t({ message: 'verify code arrival redeem arrived', context: 'search words' }),
         run: () => {
           onClose();
           onCheckIn();
@@ -64,11 +73,11 @@ export function CommandPalette({
         ? [
             {
               id: 'add-service',
-              label: 'Add a service',
-              hint: 'Put something new on your menu',
+              label: t`Add a service`,
+              hint: t`Put something new on your menu`,
               icon: 'plus' as const,
               section: 'Actions' as const,
-              words: 'new service price create',
+              words: t({ message: 'new service price create', context: 'search words' }),
               run: go('/services'),
             },
           ]
@@ -77,11 +86,11 @@ export function CommandPalette({
         ? [
             {
               id: 'block-time',
-              label: 'Take time off',
-              hint: 'Close a day, or block a break',
+              label: t`Take time off`,
+              hint: t`Close a day, or block a break`,
               icon: 'calendarX' as const,
               section: 'Actions' as const,
-              words: 'holiday closed break lunch',
+              words: t({ message: 'holiday closed break lunch', context: 'search words' }),
               run: go('/closures'),
             },
           ]
@@ -92,17 +101,17 @@ export function CommandPalette({
         hint: item.hint,
         icon: item.icon,
         section: 'Pages',
-        tag: item.group ?? 'Your day',
+        tag: item.group ?? t`Your day`,
         words: `${item.keywords} ${item.group ?? ''}`,
         run: go(item.to),
       })),
       {
         id: 'tour',
-        label: 'Take the welcome tour',
-        hint: 'How a booking reaches you, and where everything is',
+        label: t`Take the welcome tour`,
+        hint: t`How a booking reaches you, and where everything is`,
         icon: 'play',
         section: 'Account',
-        words: 'tour guide walkthrough new start learn how it works show me around',
+        words: t({ message: 'tour guide walkthrough new start learn how it works show me around', context: 'search words' }),
         run: () => {
           onClose();
           tour.start();
@@ -110,11 +119,11 @@ export function CommandPalette({
       },
       {
         id: 'sign-out',
-        label: 'Sign out',
-        hint: 'Leave this account on this device',
+        label: t`Sign out`,
+        hint: t`Leave this account on this device`,
         icon: 'logout',
         section: 'Account',
-        words: 'log out exit',
+        words: t({ message: 'log out exit', context: 'search words' }),
         run: () => {
           onClose();
           onSignOut();
@@ -167,7 +176,7 @@ export function CommandPalette({
         className="cp"
         role="dialog"
         aria-modal="true"
-        aria-label="Search or jump to a page"
+        aria-label={t`Search or jump to a page`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="cp-search">
@@ -177,26 +186,26 @@ export function CommandPalette({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Search pages and actions…"
-            aria-label="Search pages and actions"
+            placeholder={t`Search pages and actions…`}
+            aria-label={t`Search pages and actions`}
             role="combobox"
             aria-expanded="true"
             aria-controls="cp-list"
           />
-          <kbd className="kbd">Esc</kbd>
+          <kbd className="kbd"><Trans>Esc</Trans></kbd>
         </div>
 
         <div className="cp-list" id="cp-list" role="listbox" ref={listRef}>
           {sections.length === 0 && (
             <div className="cp-empty">
               <Icon name="search" size={26} />
-              <strong>Nothing called “{query}”</strong>
-              <span>Try a page name, or a word like “prices” or “holiday”.</span>
+              <strong><Trans>Nothing called “{query}”</Trans></strong>
+              <span><Trans>Try a page name, or a word like “prices” or “holiday”.</Trans></span>
             </div>
           )}
           {sections.map((group) => (
             <div key={group.section} className="cp-section">
-              <p className="cp-section-title">{group.section}</p>
+              <p className="cp-section-title">{SECTION_TITLE[group.section]()}</p>
               {group.rows.map((entry) => {
                 index += 1;
                 const mine = index;
@@ -228,9 +237,9 @@ export function CommandPalette({
         </div>
 
         <div className="cp-foot">
-          <span><kbd className="kbd">↑</kbd><kbd className="kbd">↓</kbd> to move</span>
-          <span><kbd className="kbd">↵</kbd> to open</span>
-          <span><kbd className="kbd">esc</kbd> to close</span>
+          <span><Trans><kbd className="kbd">↑</kbd><kbd className="kbd">↓</kbd> to move</Trans></span>
+          <span><Trans><kbd className="kbd">↵</kbd> to open</Trans></span>
+          <span><Trans><kbd className="kbd">esc</kbd> to close</Trans></span>
         </div>
       </div>
     </div>

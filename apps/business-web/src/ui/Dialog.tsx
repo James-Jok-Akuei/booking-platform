@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Icon, type IconName } from './Icon';
 import './dialog.css';
+import { t } from '@lingui/core/macro';
 
 /**
  * One designed dialog for every question the app asks (§193) — the business
@@ -140,7 +141,7 @@ function DialogView({ request }: { request: Request }) {
   }, []);
 
   const confirmLabel =
-    request.confirmLabel ?? (request.kind === 'alert' ? 'OK' : request.kind === 'prompt' ? 'Save' : 'Yes');
+    request.confirmLabel ?? (request.kind === 'alert' ? t`OK` : request.kind === 'prompt' ? t`Save` : t`Yes`);
 
   return (
     <div className="dlg-backdrop" onMouseDown={request.kind === 'alert' ? accept : cancel}>
@@ -197,7 +198,7 @@ function DialogView({ request }: { request: Request }) {
         <div className="dlg-actions">
           {request.kind !== 'alert' && (
             <button type="button" onClick={cancel}>
-              {request.cancelLabel ?? 'Cancel'}
+              {request.cancelLabel ?? t`Cancel`}
             </button>
           )}
           <button

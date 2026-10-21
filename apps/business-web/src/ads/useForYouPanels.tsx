@@ -3,6 +3,7 @@ import { Panel } from '../ui/Panel';
 import { ForYouContent, GuideBody } from './AdRail';
 import { guideTopics, type GuideTopic } from './guide';
 import type { AdData } from './useAdData';
+import { t } from '@lingui/core/macro';
 
 /**
  * "For you" without its column (§205, §221): a "How it works" topic opens on
@@ -38,13 +39,13 @@ export function useForYouPanels(data: AdData) {
   const panels = (
     <>
       {topic && (
-        <Panel eyebrow="How it works" title={topic.title} onClose={() => setTopic(null)} width={560}>
+        <Panel eyebrow={t`How it works`} title={topic.title} onClose={() => setTopic(null)} width={560}>
           <p className="fy-short">{topic.short}</p>
           <GuideBody topic={topic} onLink={() => setTopic(null)} />
         </Panel>
       )}
       {all && (
-        <Panel eyebrow="Ideas, news and how it all works" title="For you" onClose={() => setAll(false)} width={460}>
+        <Panel eyebrow={t`Ideas, news and how it all works`} title={t`For you`} onClose={() => setAll(false)} width={460}>
           <div className="fy-panel">
             <ForYouContent data={data} banner={false} />
           </div>

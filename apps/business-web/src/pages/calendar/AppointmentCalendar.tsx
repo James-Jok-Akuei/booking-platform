@@ -38,6 +38,9 @@ import {
   type Interval,
 } from './model';
 import './calendar.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale, dayName } from '../../i18n/format';
 
 /*
  * The Appointments calendar (§229): the same bookings as the list, laid out
@@ -200,7 +203,7 @@ export function useCalendar({
     const make = (day: Date, locations: Location[], title: string, sub: string): Column => {
       const location = locations.length === 1 ? locations[0] : null;
       const plans = locations.map((l) => plan(l, day));
-      const merged = plans.length ? mergePlans(plans) : { open: [], breaks: [], closed: 'No branch', special: null };
+      const merged = plans.length ? mergePlans(plans) : { open: [], breaks: [], closed: t`No branch`, special: null };
       const dayBookings = onDay(day, locations);
       const used = location ? placesTaken(dayBookings, day) : null;
       return {
@@ -222,7 +225,7 @@ export function useCalendar({
       return scope.map((b) => make(range.days[0], [b], b.name, ''));
     }
     return range.days.map((day) =>
-      make(day, scope, day.toLocaleDateString(undefined, { weekday: 'short' }), String(day.getDate())),
+      make(day, scope, day.toLocaleDateString(dateLocale(), { weekday: 'short' }), String(day.getDate())),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [all, view, branch, scope.length, narrow, range.from.getTime(), shown.join(','), plan, nowMinuteKey]);
@@ -270,12 +273,12 @@ const rangeLabel = (cal: CalendarState) => {
   const { view, anchor, range, narrow } = cal;
   // A phone keeps it short, so the arrows, the date and the views share one row.
   const long = narrow ? 'short' : 'long';
-  if (view === 'day') return anchor.toLocaleDateString(undefined, { weekday: long, day: 'numeric', month: long });
-  if (view === 'month') return anchor.toLocaleDateString(undefined, { month: long, year: 'numeric' });
+  if (view === 'day') return anchor.toLocaleDateString(dateLocale(), { weekday: long, day: 'numeric', month: long });
+  if (view === 'month') return anchor.toLocaleDateString(dateLocale(), { month: long, year: 'numeric' });
   const first = range.days[0];
   const last = range.days[6];
   const sameMonth = first.getMonth() === last.getMonth();
-  return `${first.getDate()}${sameMonth ? '' : ` ${first.toLocaleDateString(undefined, { month: 'short' })}`} – ${last.getDate()} ${last.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`;
+  return `${first.getDate()}${sameMonth ? '' : ` ${first.toLocaleDateString(dateLocale(), { month: 'short' })}`} – ${last.getDate()} ${last.toLocaleDateString(dateLocale(), { month: 'short', year: 'numeric' })}`;
 };
 
 // ---------------------------------------------------------------------------
@@ -320,22 +323,22 @@ export function CalendarHead({ cal }: { cal: CalendarState }) {
   }, [picking]);
 
   const views: Array<{ key: CalView; label: string; icon: IconName }> = [
-    { key: 'day', label: 'Day', icon: 'columns' },
-    ...(cal.narrow ? [] : [{ key: 'week' as CalView, label: 'Week', icon: 'calendar' as IconName }]),
-    { key: 'month', label: 'Month', icon: 'overview' },
+    { key: 'day', label: t`Day`, icon: 'columns' },
+    ...(cal.narrow ? [] : [{ key: 'week' as CalView, label: t`Week`, icon: 'calendar' as IconName }]),
+    { key: 'month', label: t`Month`, icon: 'overview' },
   ];
 
   return (
     <>
       <div className="acal-nav">
         <div className="acal-step">
-          <button type="button" onClick={() => cal.go(-1)} aria-label="Earlier" title="Earlier (←)">
+          <button type="button" onClick={() => cal.go(-1)} aria-label={t`Earlier`} title={t`Earlier (←)`}>
             <Icon name="chevronLeft" size={17} />
           </button>
-          <button type="button" className="acal-today" onClick={() => cal.setAnchor(cal.now)} title="Today (T)">
-            Today
+          <button type="button" className="acal-today" onClick={() => cal.setAnchor(cal.now)} title={t`Today (T)`}>
+            <Trans>Today</Trans>
           </button>
-          <button type="button" onClick={() => cal.go(1)} aria-label="Later" title="Later (→)">
+          <button type="button" onClick={() => cal.go(1)} aria-label={t`Later`} title={t`Later (→)`}>
             <Icon name="chevronRight" size={17} />
           </button>
         </div>
@@ -357,12 +360,14 @@ export function CalendarHead({ cal }: { cal: CalendarState }) {
           )}
         </div>
         {!cal.narrow && cal.scope.length > 0 && (
-          <span className="acal-full" title="Booked time against open time, for the time shown">
-            <i style={{ '--share': cal.full.share } as CSSProperties} />
-            {Math.round(cal.full.share * 100)}% booked
+          <span className="acal-full" title={t`Booked time against open time, for the time shown`}>
+            <Trans>
+              <i style={{ '--share': cal.full.share } as CSSProperties} />
+              {Math.round(cal.full.share * 100)}% booked
+            </Trans>
           </span>
         )}
-        <div className="acal-views" role="tablist" aria-label="Show">
+        <div className="acal-views" role="tablist" aria-label={t`Show`}>
           {views.map((v) => (
             <button
               key={v.key}
@@ -380,7 +385,7 @@ export function CalendarHead({ cal }: { cal: CalendarState }) {
         </div>
       </div>
 
-      <div className="acal-legend" role="group" aria-label="Statuses shown">
+      <div className="acal-legend" role="group" aria-label={t`Statuses shown`}>
         {STATUS_ORDER.map((status) => {
           const on = cal.shown.includes(status);
           return (
@@ -390,7 +395,7 @@ export function CalendarHead({ cal }: { cal: CalendarState }) {
               className={`acal-chip st-${STATUS[status].cls}${on ? ' is-on' : ''}`}
               aria-pressed={on}
               onClick={() => cal.toggle(status)}
-              title={on ? `Hide ${STATUS[status].label.toLowerCase()}` : `Show ${STATUS[status].label.toLowerCase()}`}
+              title={on ? t`Hide ${STATUS[status].label.toLowerCase()}` : t`Show ${STATUS[status].label.toLowerCase()}`}
             >
               <i />
               {STATUS[status].label}
@@ -399,9 +404,11 @@ export function CalendarHead({ cal }: { cal: CalendarState }) {
           );
         })}
         <span className="acal-chip-key">
-          <i className="key-free" /> Free
-          <i className="key-closed" /> Closed
-          <i className="key-break" /> Break
+          <Trans>
+            <i className="key-free" />Free
+            <i className="key-closed" />Closed
+            <i className="key-break" />Break
+          </Trans>
         </span>
       </div>
 
@@ -422,7 +429,7 @@ function WeekStrip({ cal }: { cal: CalendarState }) {
     staleTime: 30_000,
   });
   return (
-    <div className="acal-strip pin-phone" role="tablist" aria-label="Days">
+    <div className="acal-strip pin-phone" role="tablist" aria-label={t`Days`}>
       {days.map((day) => {
         const n = (week.data ?? []).filter((a) => sameDay(new Date(a.startTime), day) && a.status !== 'CANCELLED').length;
         const on = sameDay(day, cal.anchor);
@@ -435,7 +442,7 @@ function WeekStrip({ cal }: { cal: CalendarState }) {
             className={`${on ? 'is-on' : ''}${sameDay(day, cal.now) ? ' is-today' : ''}`}
             onClick={() => cal.setAnchor(day)}
           >
-            <em>{day.toLocaleDateString(undefined, { weekday: 'narrow' })}</em>
+            <em>{day.toLocaleDateString(dateLocale(), { weekday: 'narrow' })}</em>
             <strong>{day.getDate()}</strong>
             <i className={n ? 'has' : ''}>{n || ''}</i>
           </button>
@@ -450,7 +457,7 @@ const GUTTER = 56;
 function DayHeads({ cal }: { cal: CalendarState }) {
   return (
     <div className="acal-heads" style={{ '--cols': cal.columns.length, '--gutter': `${GUTTER}px` } as CSSProperties}>
-      <span className="acal-heads-gutter">{cal.view === 'week' ? `W${isoWeek(cal.range.days[0])}` : ''}</span>
+      <span className="acal-heads-gutter">{cal.view === 'week' ? t`W${isoWeek(cal.range.days[0])}` : ''}</span>
       {cal.columns.map((col) => {
         const n = col.visible.length;
         const hours = col.plan.open.length ? col.plan.open.map((i) => `${hhmm(i.start)}–${hhmm(i.end)}`).join(', ') : null;
@@ -461,7 +468,7 @@ function DayHeads({ cal }: { cal: CalendarState }) {
             className={`acal-head${col.isToday ? ' is-today' : ''}${col.plan.closed ? ' is-closed' : ''}`}
             onClick={() => cal.view === 'week' && (cal.setAnchor(col.day), cal.setView('day'))}
             disabled={cal.view !== 'week'}
-            title={cal.view === 'week' ? 'Open this day' : undefined}
+            title={cal.view === 'week' ? t`Open this day` : undefined}
           >
             {cal.view === 'week' ? (
               <>
@@ -469,7 +476,7 @@ function DayHeads({ cal }: { cal: CalendarState }) {
                 <strong>{col.sub}</strong>
               </>
             ) : (
-              <strong className="acal-head-name">{cal.columns.length > 1 ? col.title : col.day.toLocaleDateString(undefined, { weekday: 'long' })}</strong>
+              <strong className="acal-head-name">{cal.columns.length > 1 ? col.title : col.day.toLocaleDateString(dateLocale(), { weekday: 'long' })}</strong>
             )}
             <span className="acal-head-meta">
               {col.plan.closed ? (
@@ -478,7 +485,7 @@ function DayHeads({ cal }: { cal: CalendarState }) {
                 <>
                   {n > 0 && <b>{n}</b>}
                   {cal.view === 'day' && hours && <small>{hours}</small>}
-                  {col.plan.special && <small className="acal-head-special">Special hours</small>}
+                  {col.plan.special && <small className="acal-head-special"><Trans>Special hours</Trans></small>}
                 </>
               )}
             </span>
@@ -542,35 +549,35 @@ function Insight({ cal }: { cal: CalendarState }) {
   const byDay = new Map<string, number>();
   for (const a of real) byDay.set(ymdOf(new Date(a.startTime)), (byDay.get(ymdOf(new Date(a.startTime))) ?? 0) + 1);
   const busiest = [...byDay.entries()].sort((a, b) => b[1] - a[1])[0];
-  const what = cal.view === 'day' ? 'This day' : cal.view === 'week' ? 'This week' : 'This month';
+  const what = cal.view === 'day' ? t`This day` : cal.view === 'week' ? t`This week` : t`This month`;
   return (
     <section className="acal-insight">
       <p className="acal-side-label">{what}</p>
       <div className="acal-ring" style={{ '--share': cal.full.share } as CSSProperties}>
         <strong>{Math.round(cal.full.share * 100)}%</strong>
-        <span>booked</span>
+        <span><Trans>booked</Trans></span>
       </div>
       <dl>
         <div>
-          <dt>Bookings</dt>
+          <dt><Trans>Bookings</Trans></dt>
           <dd>{real.length}</dd>
         </div>
         <div>
-          <dt>Hours booked</dt>
+          <dt><Trans>Hours booked</Trans></dt>
           <dd>{cal.full.bookedHours.toFixed(cal.full.bookedHours < 10 ? 1 : 0)}</dd>
         </div>
         <div>
-          <dt>Open hours</dt>
+          <dt><Trans>Open hours</Trans></dt>
           <dd>{Math.round(cal.full.openHours)}</dd>
         </div>
         {busiest && cal.view !== 'day' && (
           <div>
-            <dt>Busiest</dt>
-            <dd>{dateOf(busiest[0]).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</dd>
+            <dt><Trans>Busiest</Trans></dt>
+            <dd>{dateOf(busiest[0]).toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric' })}</dd>
           </div>
         )}
       </dl>
-      <p className="acal-insight-note">Booked time against open time, counting each place a branch has.</p>
+      <p className="acal-insight-note"><Trans>Booked time against open time, counting each place a branch has.</Trans></p>
     </section>
   );
 }
@@ -598,12 +605,12 @@ function MiniMonth({ cal, onPick }: { cal: CalendarState; onPick: (day: Date) =>
   return (
     <div className="acal-mini">
       <header>
-        <strong>{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</strong>
+        <strong>{month.toLocaleDateString(dateLocale(), { month: 'long', year: 'numeric' })}</strong>
         <span>
-          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label="Previous month">
+          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label={t`Previous month`}>
             <Icon name="chevronLeft" size={15} />
           </button>
-          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} aria-label="Next month">
+          <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} aria-label={t`Next month`}>
             <Icon name="chevronRight" size={15} />
           </button>
         </span>
@@ -627,7 +634,7 @@ function MiniMonth({ cal, onPick }: { cal: CalendarState; onPick: (day: Date) =>
                 .filter(Boolean)
                 .join(' ')}
               onClick={() => onPick(d)}
-              title={n ? `${n} booking${n === 1 ? '' : 's'}` : undefined}
+              title={n ? t`${n} booking${n === 1 ? '' : 's'}` : undefined}
             >
               {d.getDate()}
               {n > 0 && <i style={{ opacity: 0.35 + (0.65 * n) / most }} />}
@@ -752,7 +759,7 @@ function TimeGrid({
         {empty && (
           <p className="acal-empty">
             <Icon name="calendar" size={18} />
-            {cal.all.length ? 'No bookings with the statuses shown — turn more on above.' : 'No bookings in this time yet.'}
+            {cal.all.length ? t`No bookings with the statuses shown — turn more on above.` : t`No bookings in this time yet.`}
           </p>
         )}
       </div>
@@ -822,9 +829,8 @@ function ColumnView({
         </span>
       ))}
       {col.plan.breaks.map((b) => (
-        <span key={`b${b.start}`} className="acal-break" style={{ top: top(b.start), height: (b.end - b.start) * ppm }} title={`Break ${hhmm(b.start)}–${hhmm(b.end)}${b.reason ? ` · ${b.reason}` : ''}`}>
-          <em>
-            Break{b.reason ? ` · ${b.reason}` : ''}
+        <span key={`b${b.start}`} className="acal-break" style={{ top: top(b.start), height: (b.end - b.start) * ppm }} title={t`Break ${hhmm(b.start)}–${hhmm(b.end)}${b.reason ? ` · ${b.reason}` : ''}`}>
+          <em><Trans>Break</Trans>{b.reason ? ` · ${b.reason}` : ''}
           </em>
         </span>
       ))}
@@ -835,11 +841,11 @@ function ColumnView({
             key={`f${f.start}`}
             className="acal-free"
             style={{ top: top(f.start) + 2, height: h - 4 }}
-            title={`Free ${hhmm(f.start)}–${hhmm(f.end)} — customers can book this time`}
+            title={t`Free ${hhmm(f.start)}–${hhmm(f.end)} — customers can book this time`}
           >
             {h >= 30 && (
               <em>
-                <Icon name="plus" size={11} stroke={2.6} /> Free · {span(f.end - f.start)}
+                <Icon name="plus" size={11} stroke={2.6} /><Trans>Free · {span(f.end - f.start)}</Trans>
               </em>
             )}
           </span>
@@ -931,7 +937,7 @@ function EventBlock({
             {clock(start)}
             {size !== 'xs' && <span className="acal-end">–{clock(end)}</span>}
           </span>
-          {tone(a, cal.now) === 'late' && cal.view === 'day' && <b className="acal-ev-late">Late</b>}
+          {tone(a, cal.now) === 'late' && cal.view === 'day' && <b className="acal-ev-late"><Trans>Late</Trans></b>}
         </span>
         <strong>
           {a.service.name}
@@ -984,7 +990,7 @@ function Pile({
       onClick={(event) => onClick(event.currentTarget)}
       aria-haspopup="dialog"
       aria-expanded={open}
-      aria-label={`${n} bookings between ${hhmm(cluster.start)} and ${hhmm(cluster.end)}. Open them.`}
+      aria-label={t`${n} bookings between ${hhmm(cluster.start)} and ${hhmm(cluster.end)}. Open them.`}
     >
       <span className="acal-pile-paper" aria-hidden="true" />
       <span className="acal-pile-paper p2" aria-hidden="true" />
@@ -1021,11 +1027,11 @@ function Pile({
             {capacity !== null && taken !== null && (
               <small className={taken >= capacity ? 'is-full' : ''}>
                 {taken >= capacity ? (
-                  'Full'
+                  t`Full`
                 ) : (
                   <>
                     {capacity - taken}
-                    <span className="acal-end"> of {capacity}</span> free
+                    <Trans><span className="acal-end"> of {capacity}</span> free</Trans>
                   </>
                 )}
               </small>
@@ -1086,22 +1092,23 @@ function Fan({
       <header className="acal-fan-head">
         <div>
           <strong>
-            {items.length} bookings · {hhmm(cluster.start)}–{hhmm(cluster.end)}
+            <Trans>{items.length} bookings · {hhmm(cluster.start)}–{hhmm(cluster.end)}</Trans>
           </strong>
           <span>
-            {column.day.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}
+            {column.day.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'short' })}
             {column.location ? ` · ${column.location.name}` : ''}
           </span>
         </div>
         {capacity !== null && taken !== null && (
           <span className={`acal-fan-places${taken >= capacity ? ' is-full' : ''}`}>
-            <b>
+            <Trans>
+              <b>
               {Math.min(taken, capacity)}/{capacity}
-            </b>
-            places
+              </b>places
+            </Trans>
           </span>
         )}
-        <button type="button" className="acal-fan-close" onClick={onClose} aria-label="Close">
+        <button type="button" className="acal-fan-close" onClick={onClose} aria-label={t`Close`}>
           <Icon name="close" size={16} />
         </button>
       </header>
@@ -1133,7 +1140,7 @@ function Fan({
                       {a.quantity > 1 && <em> ×{a.quantity}</em>}
                     </strong>
                     <small>
-                      {a.customer.email} · No. {reservationNo(a.id)}
+                      <Trans>{a.customer.email} · No. {reservationNo(a.id)}</Trans>
                     </small>
                   </span>
                 </span>
@@ -1147,12 +1154,14 @@ function Fan({
               </button>
               {a.status === 'BOOKED' && sameDay(new Date(a.startTime), cal.now) && (
                 <button type="button" className="primary acal-card-act" onClick={() => (onClose(), actions.checkIn(a))}>
-                  <Icon name="ticket" size={14} /> Check in
+                  <Icon name="ticket" size={14} />{' '}
+                  <Trans>Check in</Trans>
                 </button>
               )}
               {a.status === 'IN_PROGRESS' && (
                 <button type="button" className="dark acal-card-act" onClick={() => (onClose(), actions.complete(a))}>
-                  <Icon name="check" size={14} stroke={2.4} /> Mark done
+                  <Icon name="check" size={14} stroke={2.4} />{' '}
+                  <Trans>Mark done</Trans>
                 </button>
               )}
             </li>
@@ -1166,7 +1175,7 @@ function Fan({
     return (
       <Portal>
         <div className="acal-fan-backdrop" onPointerDown={onClose} />
-        <div className="acal-fan is-sheet" role="dialog" aria-label="Bookings at this time">
+        <div className="acal-fan is-sheet" role="dialog" aria-label={t`Bookings at this time`}>
           {body}
         </div>
       </Portal>
@@ -1178,7 +1187,7 @@ function Fan({
         ref={panel}
         className={`acal-fan${place ? ' is-placed' : ''}`}
         role="dialog"
-        aria-label="Bookings at this time"
+        aria-label={t`Bookings at this time`}
         style={{ width, left: place?.left ?? -9999, top: place?.top ?? 0 }}
         onPointerEnter={onEnter}
         onPointerLeave={onLeave}
@@ -1203,7 +1212,7 @@ function MonthGrid({ cal, actions }: { cal: CalendarState; actions: Actions }) {
   const room = cal.narrow ? 0 : 3;
   return (
     <div className="acal-month">
-      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+      {[1, 2, 3, 4, 5, 6, 0].map((day) => dayName(day, 'short')).map((d) => (
         <em key={d} className="acal-month-wd">
           {cal.narrow ? d[0] : d}
         </em>
@@ -1225,7 +1234,7 @@ function MonthGrid({ cal, actions }: { cal: CalendarState; actions: Actions }) {
               .filter(Boolean)
               .join(' ')}
           >
-            <button type="button" className="acal-month-open" onClick={() => (cal.setAnchor(day), cal.setView('day'))} aria-label={`Open ${day.toDateString()}`}>
+            <button type="button" className="acal-month-open" onClick={() => (cal.setAnchor(day), cal.setView('day'))} aria-label={t`Open ${day.toDateString()}`}>
               <span className="acal-month-num">{day.getDate()}</span>
               {list.length > 0 && <b className="acal-month-count">{list.length}</b>}
             </button>
@@ -1238,8 +1247,9 @@ function MonthGrid({ cal, actions }: { cal: CalendarState; actions: Actions }) {
               ))}
             {room > 0 && list.length > room && (
               <button type="button" className="acal-month-more" onClick={() => (cal.setAnchor(day), cal.setView('day'))}>
-                +{list.length - room} more
-              </button>
+                +{list.length - room}
+                  <Trans>more</Trans>
+                </button>
             )}
             {room === 0 && list.length > 0 && (
               <span className="acal-month-dots">
@@ -1248,7 +1258,7 @@ function MonthGrid({ cal, actions }: { cal: CalendarState; actions: Actions }) {
                 ))}
               </span>
             )}
-            {closed && room > 0 && list.length === 0 && <span className="acal-month-closed">Closed</span>}
+            {closed && room > 0 && list.length === 0 && <span className="acal-month-closed"><Trans>Closed</Trans></span>}
           </div>
         );
       })}

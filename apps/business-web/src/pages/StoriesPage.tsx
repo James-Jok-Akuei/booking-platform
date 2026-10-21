@@ -8,14 +8,16 @@ import { Icon } from '../ui/Icon';
 import { DropZone } from '../ui/DropZone';
 import { ShopLogo } from '../ui/ShopLogo';
 import './stories.css';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 const CAPTION_MAX = 150;
 /** Words to start from, for any kind of shop; a tap puts one in the box. */
-const IDEAS = [
-  'Free this afternoon — book now',
-  'Something we did today',
-  'New this week — book it in the app',
-  'Open late tonight',
+const IDEAS = () => [
+  t`Free this afternoon — book now`,
+  t`Something we did today`,
+  t`New this week — book it in the app`,
+  t`Open late tonight`,
 ];
 const ACCEPT = 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp';
 /** What the server takes for a story: the same photos as a shop's gallery. */
@@ -24,13 +26,14 @@ const MAX_MB = 15;
 
 /** Why a file cannot be a story, in words — or null when it can. */
 function refusal(file: File): string | null {
-  if (file.type.startsWith('video/')) return 'A story is a photo — a video cannot go up. Choose a JPG, PNG or WebP.';
+  if (file.type.startsWith('video/')) return t`A story is a photo — a video cannot go up. Choose a JPG, PNG or WebP.`;
   if (!TYPES.includes(file.type)) {
     const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : null;
-    return `A story takes a JPG, PNG or WebP photo.${ext ? ` This one is a .${ext} file.` : ''}`;
+    return ext ? t`A story takes a JPG, PNG or WebP photo. This one is a .${ext} file.` : t`A story takes a JPG, PNG or WebP photo.`;
   }
   if (file.size > MAX_MB * 1024 * 1024) {
-    return `That photo is ${Math.ceil(file.size / (1024 * 1024))} MB. A story takes one up to ${MAX_MB} MB.`;
+    const size = Math.ceil(file.size / (1024 * 1024));
+    return t`That photo is ${size} MB. A story takes one up to ${MAX_MB} MB.`;
   }
   return null;
 }
@@ -38,10 +41,10 @@ function refusal(file: File): string | null {
 /** "13h 20m left", "45m left". */
 function left(expiresAt: string, now: number) {
   const ms = Date.parse(expiresAt) - now;
-  if (ms <= 0) return 'Ended';
+  if (ms <= 0) return t`Ended`;
   const h = Math.floor(ms / 3_600_000);
   const m = Math.floor((ms % 3_600_000) / 60_000);
-  return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
+  return h > 0 ? t`${h}h ${m}m left` : t`${m}m left`;
 }
 
 /**
@@ -78,11 +81,11 @@ export function StoriesPage() {
   const askRemove = async (story: BusinessStory) => {
     if (
       await confirmDialog({
-        title: 'Take this story down?',
-        body: <p>Customers stop seeing it straight away. It cannot be brought back — you can post it again.</p>,
+        title: t`Take this story down?`,
+        body: <p><Trans>Customers stop seeing it straight away. It cannot be brought back — you can post it again.</Trans></p>,
         tone: 'danger',
         icon: 'trash',
-        confirmLabel: 'Take it down',
+        confirmLabel: t`Take it down`,
       })
     ) {
       remove.mutate(story.id);
@@ -94,10 +97,12 @@ export function StoriesPage() {
       <div className="page-top">
         <header className="page-head">
           <div>
-            <h1>Stories</h1>
+            <h1><Trans>Stories</Trans></h1>
             <p className="muted">
-              A photo and a few words for today. Customers see it at the top of the app for 24 hours, with a Book button
-              that brings them straight to you.
+              <Trans>
+                A photo and a few words for today. Customers see it at the top of the app for 24 hours, with a Book button
+                that brings them straight to you.
+              </Trans>
             </p>
           </div>
         </header>
@@ -105,8 +110,11 @@ export function StoriesPage() {
 
       {!shopLive && (
         <p className="sto-note">
-          <Icon name="info" size={16} /> Customers see your stories once your shop is live. You can post them now — they
-          show as soon as it is.
+          <Icon name="info" size={16} />
+          <Trans>
+            Customers see your stories once your shop is live. You can post them now — they
+            show as soon as it is.
+          </Trans>
         </p>
       )}
 
@@ -115,7 +123,7 @@ export function StoriesPage() {
           <Composer
             postedToday={stories.data?.postedToday ?? 0}
             dailyLimit={stories.data?.dailyLimit ?? 10}
-            shopName={p?.name ?? 'Your shop'}
+            shopName={p?.name ?? t`Your shop`}
             logoUrl={p?.logoUrl ?? null}
             branches={(locations.data ?? []).filter((l) => l.isActive && access.sees(l.id))}
             wholeShop={access.allBranches}
@@ -124,14 +132,14 @@ export function StoriesPage() {
         ) : (
           <aside className="sto-card sto-readonly">
             <Icon name="shield" size={18} />
-            <p>The owner or a manager posts stories. You can see them here.</p>
+            <p><Trans>The owner or a manager posts stories. You can see them here.</Trans></p>
           </aside>
         )}
 
         <div className="sto-lists">
           <article className="sto-card">
             <header className="sto-card-head">
-              <h2>Live now</h2>
+              <h2><Trans>Live now</Trans></h2>
               <span>{live.length}</span>
             </header>
             {stories.isLoading && <div className="skeleton sto-skeleton" />}
@@ -140,8 +148,8 @@ export function StoriesPage() {
                 <span className="sto-empty-ring">
                   <Icon name="stories" size={28} />
                 </span>
-                <strong>No story up right now</strong>
-                <p>A shop with a story gets a coral ring in the app — the first thing customers tap.</p>
+                <strong><Trans>No story up right now</Trans></strong>
+                <p><Trans>A shop with a story gets a coral ring in the app — the first thing customers tap.</Trans></p>
               </div>
             )}
             <div className="sto-grid">
@@ -164,7 +172,7 @@ export function StoriesPage() {
           {ended.length > 0 && (
             <article className="sto-card is-quiet">
               <header className="sto-card-head">
-                <h2>Ended</h2>
+                <h2><Trans>Ended</Trans></h2>
                 <span>{ended.length}</span>
               </header>
               <div className="sto-grid">
@@ -173,7 +181,7 @@ export function StoriesPage() {
                     key={story.id}
                     story={story}
                     index={i}
-                    note={story.removedAt ? 'Taken down' : 'Ended'}
+                    note={story.removedAt ? t`Taken down` : t`Ended`}
                     ended
                     canRemove={false}
                     busy={false}
@@ -246,21 +254,21 @@ function Composer({
     <aside className="sto-composer">
       {/* What customers will see, as they will see it. */}
       {/* Dropped like every other photo in the app (§305). */}
-      <DropZone className="sto-drop" onFiles={([file]) => pick(file)} hint={preview ? 'Drop to use this photo instead' : 'Drop to use this photo'}>
+      <DropZone className="sto-drop" onFiles={([file]) => pick(file)} hint={preview ? t`Drop to use this photo instead` : t`Drop to use this photo`}>
       <div className={`sto-phone${preview ? ' has-photo' : ''}`}>
         {preview ? (
           <>
             <img className="sto-phone-blur" src={preview} alt="" aria-hidden="true" />
-            <img className="sto-phone-photo" src={preview} alt="Your story" />
+            <img className="sto-phone-photo" src={preview} alt={t`Your story`} />
           </>
         ) : (
           <label className="sto-pick" htmlFor="story-photo">
             <span className="sto-pick-icon">
               <Icon name="camera" size={26} />
             </span>
-            <strong>Choose a photo</strong>
-            <span>or drop one here</span>
-            <small>JPG, PNG or WebP · up to {MAX_MB} MB</small>
+            <strong><Trans>Choose a photo</Trans></strong>
+            <span><Trans>or drop one here</Trans></span>
+            <small><Trans>JPG, PNG or WebP · up to {MAX_MB} MB</Trans></small>
           </label>
         )}
         <div className="sto-phone-top">
@@ -271,19 +279,20 @@ function Composer({
             <ShopLogo logoUrl={logoUrl} name={shopName} size={30} />
             <span>
               <b>{shopName}</b>
-              <small>{place ? `${place} · now` : 'now'}</small>
+              <small>{place ? t`${place} · now` : t`now`}</small>
             </span>
           </div>
         </div>
         {(caption.trim() || preview) && (
           <div className="sto-phone-foot">
             {caption.trim() && <p>{caption.trim()}</p>}
-            <span className="sto-book">Book at {place ?? shopName}</span>
+            <span className="sto-book"><Trans>Book at </Trans>{place ?? shopName}</span>
           </div>
         )}
         {preview && (
           <label className="sto-change" htmlFor="story-photo">
-            <Icon name="image" size={15} /> Change photo
+            <Icon name="image" size={15} />{' '}
+            <Trans>Change photo</Trans>
           </label>
         )}
         <input
@@ -302,24 +311,26 @@ function Composer({
       <div className="sto-form">
         <label className="sto-field">
           <span>
-            A few words{' '}
-            <em>
+            <Trans>
+              A few words{' '}
+              <em>
               {caption.length}/{CAPTION_MAX}
-            </em>
+              </em>
+            </Trans>
           </span>
           <textarea
             rows={2}
             maxLength={CAPTION_MAX}
             value={caption}
-            placeholder="Two slots free this afternoon — book now"
+            placeholder={t`Two slots free this afternoon — book now`}
             onChange={(event) => setCaption(event.target.value)}
           />
         </label>
 
         {(branches.length > 1 || (!wholeShop && branches.length > 0)) && (
           <div className="sto-field">
-            <span>About</span>
-            <div className="sto-where" role="radiogroup" aria-label="Which branch">
+            <span><Trans>About</Trans></span>
+            <div className="sto-where" role="radiogroup" aria-label={t`Which branch`}>
               {wholeShop && (
                 <button
                   type="button"
@@ -328,7 +339,8 @@ function Composer({
                   className={branchId === null ? 'is-on' : ''}
                   onClick={() => setWhere(null)}
                 >
-                  <Icon name="store" size={14} /> The whole shop
+                  <Icon name="store" size={14} />{' '}
+                  <Trans>The whole shop</Trans>
                 </button>
               )}
               {branches.map((b) => (
@@ -347,9 +359,9 @@ function Composer({
           </div>
         )}
 
-        <div className="sto-meter" aria-label={`${postedToday} of ${dailyLimit} stories posted today`}>
+        <div className="sto-meter" aria-label={t`${postedToday} of ${dailyLimit} stories posted today`}>
           <span>
-            {postedToday} of {dailyLimit} today
+            <Trans>{postedToday} of {dailyLimit} today</Trans>
           </span>
           <i>
             <b style={{ width: `${Math.min(100, (postedToday / dailyLimit) * 100)}%` }} />
@@ -360,12 +372,13 @@ function Composer({
           <p className="sto-problem" role="alert">
             <Icon name="alert" size={15} />
             {refused ??
-              (post.error instanceof ApiError ? post.error.message : 'That did not post. Check your connection.')}
+              (post.error instanceof ApiError ? post.error.message : t`That did not post. Check your connection.`)}
           </p>
         )}
         {done && (
           <p className="sto-done" role="status">
-            <Icon name="checkCircle" size={16} /> Posted — live for 24 hours.
+            <Icon name="checkCircle" size={16} />{' '}
+            <Trans>Posted — live for 24 hours.</Trans>
           </p>
         )}
 
@@ -376,15 +389,16 @@ function Composer({
           onClick={() => post.mutate()}
         >
           <Icon name="send" size={16} />
-          {post.isPending ? 'Posting…' : full ? 'Ten posted today' : 'Post story'}
+          {post.isPending ? t`Posting…` : full ? t`Ten posted today` : t`Post story`}
         </button>
 
         <div className="sto-ideas">
           <span>
-            <Icon name="sparkles" size={14} /> Need words? Tap one
+            <Icon name="sparkles" size={14} />{' '}
+            <Trans>Need words? Tap one</Trans>
           </span>
           <div>
-            {IDEAS.map((idea) => (
+            {IDEAS().map((idea) => (
               <button key={idea} type="button" onClick={() => setCaption(idea)}>
                 {idea}
               </button>
@@ -428,7 +442,7 @@ function StoryTile({
           className="sto-tile-remove"
           disabled={busy}
           onClick={onRemove}
-          aria-label="Take this story down"
+          aria-label={t`Take this story down`}
         >
           <Icon name="trash" size={14} />
         </button>
@@ -437,7 +451,7 @@ function StoryTile({
         {story.caption && <p>{story.caption}</p>}
         <span className="sto-tile-facts">
           <span>
-            <Icon name="eye" size={13} /> {story.views} {story.views === 1 ? 'view' : 'views'}
+            <Icon name="eye" size={13} /> {story.views} {story.views === 1 ? t`view` : t`views`}
           </span>
           {story.location && (
             <span>
@@ -445,7 +459,7 @@ function StoryTile({
             </span>
           )}
         </span>
-        {story.removedReason && <span className="sto-tile-removed">Taken down: {story.removedReason}</span>}
+        {story.removedReason && <span className="sto-tile-removed"><Trans>Taken down: {story.removedReason}</Trans></span>}
       </figcaption>
     </figure>
   );
