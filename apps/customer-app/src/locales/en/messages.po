@@ -112,7 +112,7 @@ msgid "{0} from today."
 msgstr "{0} from today."
 
 #. placeholder {0}: document.title
-#: src/components/LegalPrompt.tsx:71
+#: src/components/LegalPrompt.tsx:72
 msgid "{0} has changed"
 msgstr "{0} has changed"
 
@@ -519,7 +519,7 @@ msgid "Afternoon"
 msgstr "Afternoon"
 
 #. placeholder {0}: status.acceptedAt ? when(status.acceptedAt) : ''
-#: app/legal.tsx:193
+#: app/legal.tsx:197
 msgid "Agreed {0}"
 msgstr "Agreed {0}"
 
@@ -814,7 +814,7 @@ msgstr "Bwangu<0>Reservations</0>"
 
 #. placeholder {0}: current.version
 #. placeholder {1}: current.title
-#: app/legal.tsx:239
+#: app/legal.tsx:247
 msgid "By tapping, you agree to version {0} of the {1}."
 msgstr "By tapping, you agree to version {0} of the {1}."
 
@@ -1615,11 +1615,11 @@ msgstr "How was it?"
 msgid "hrs"
 msgstr "hrs"
 
-#: src/components/LegalPrompt.tsx:89
+#: src/components/LegalPrompt.tsx:93
 msgid "I agree"
 msgstr "I agree"
 
-#: app/legal.tsx:245
+#: app/legal.tsx:253
 msgid "I agree to this"
 msgstr "I agree to this"
 
@@ -1749,7 +1749,7 @@ msgstr "Leave this blank to stay Anonymous. Whatever you put here becomes the na
 msgid "Left empty, your reviews say “Anonymous”."
 msgstr "Left empty, your reviews say “Anonymous”."
 
-#: app/legal.tsx:103
+#: app/legal.tsx:107
 msgid "Legal"
 msgstr "Legal"
 
@@ -2035,7 +2035,7 @@ msgstr "Not good"
 
 #: app/(tabs)/index.tsx:480
 #: app/(tabs)/saved.tsx:141
-#: src/components/LegalPrompt.tsx:106
+#: src/components/LegalPrompt.tsx:110
 #: src/components/NearMeCard.tsx:102
 #: src/stories/StoryPlayer.tsx:486
 #: src/ui/Dialog.tsx:116
@@ -2056,7 +2056,7 @@ msgstr "Not paid yet"
 
 #: app/(tabs)/account.tsx:166
 #: app/(tabs)/account.tsx:260
-#: app/legal.tsx:248
+#: app/legal.tsx:256
 #: src/components/OffersCard.tsx:111
 #: src/exportDocument.ts:57
 #: src/useSavedService.ts:46
@@ -2106,7 +2106,7 @@ msgstr "Nothing has been paid, so cancelling costs nothing."
 msgid "Nothing has been paid, so nothing is lost."
 msgstr "Nothing has been paid, so nothing is lost."
 
-#: app/legal.tsx:173
+#: app/legal.tsx:177
 msgid "Nothing has been published yet."
 msgstr "Nothing has been published yet."
 
@@ -2218,7 +2218,7 @@ msgstr "Offers: off"
 msgid "Offers: on"
 msgstr "Offers: on"
 
-#: app/legal.tsx:215
+#: app/legal.tsx:223
 msgid "Older versions are kept. What you agreed to stays as you read it, even after it is replaced."
 msgstr "Older versions are kept. What you agreed to stays as you read it, even after it is replaced."
 
@@ -2596,13 +2596,21 @@ msgstr "Quiet hours"
 msgid "Quiet until"
 msgstr "Quiet until"
 
-#: src/components/LegalPrompt.tsx:101
+#: src/components/LegalPrompt.tsx:105
 msgid "Read all the documents"
 msgstr "Read all the documents"
+
+#: src/components/TranslationNote.tsx:26
+msgid "Read it in my language"
+msgstr "Read it in my language"
 
 #: src/ui/RichText.tsx:108
 msgid "Read more"
 msgstr "Read more"
+
+#: src/components/TranslationNote.tsx:26
+msgid "Read the English"
+msgstr "Read the English"
 
 #: src/booking/Reservation.tsx:45
 msgid "Read your conversation with the shop, to help"
@@ -2769,7 +2777,7 @@ msgid "Saved so you do not retype them. Nothing can be charged without the promp
 msgstr "Saved so you do not retype them. Nothing can be charged without the prompt on your phone."
 
 #: app/(tabs)/account.tsx:773
-#: src/components/LegalPrompt.tsx:89
+#: src/components/LegalPrompt.tsx:93
 msgid "Saving…"
 msgstr "Saving…"
 
@@ -3350,6 +3358,14 @@ msgstr "This document was made on your phone from your account. The same data is
 msgid "This goes to our support team, with your booking attached. To reach the shop itself, use Message on the reservation."
 msgstr "This goes to our support team, with your booking attached. To reach the shop itself, use Message on the reservation."
 
+#: src/components/TranslationNote.tsx:21
+msgid "This is a translation. If it ever differs from the English, the English applies."
+msgstr "This is a translation. If it ever differs from the English, the English applies."
+
+#: src/components/TranslationNote.tsx:19
+msgid "This is the English, which applies wherever a translation differs."
+msgstr "This is the English, which applies wherever a translation differs."
+
 #: app/review/[id].tsx:233
 msgid "This is the name on all of your reviews. Changing it here changes it on every one of them."
 msgstr "This is the name on all of your reviews. Changing it here changes it on every one of them."
@@ -3570,8 +3586,8 @@ msgstr "Up to {places}, all at once"
 msgid "Upcoming"
 msgstr "Upcoming"
 
-#: src/upload.ts:47
-#: src/upload.web.ts:38
+#: src/upload.ts:51
+#: src/upload.web.ts:42
 msgid "Upload failed ({status})."
 msgstr "Upload failed ({status})."
 
@@ -3617,7 +3633,7 @@ msgstr "Version {0}"
 
 #. placeholder {0}: current.version
 #. placeholder {1}: when(current.publishedAt)
-#: app/legal.tsx:180
+#: app/legal.tsx:184
 msgid "Version {0} · {1}"
 msgstr "Version {0} · {1}"
 
@@ -3715,12 +3731,12 @@ msgid "What are you\n"
 msgstr "What are you\n"
 "looking for?"
 
-#: src/components/LegalPrompt.tsx:78
+#: src/components/LegalPrompt.tsx:79
 msgid "What changed"
 msgstr "What changed"
 
 #. placeholder {0}: current.changeNote
-#: app/legal.tsx:203
+#: app/legal.tsx:207
 msgid "What changed: {0}"
 msgstr "What changed: {0}"
 
@@ -3849,12 +3865,12 @@ msgstr "You"
 
 #. placeholder {0}: document.acceptedVersion
 #. placeholder {1}: document.version
-#: src/components/LegalPrompt.tsx:73
+#: src/components/LegalPrompt.tsx:74
 msgid "You agreed to version {0}. This is version {1}."
 msgstr "You agreed to version {0}. This is version {1}."
 
 #. placeholder {0}: status.acceptedVersion
-#: app/legal.tsx:192
+#: app/legal.tsx:196
 msgid "You agreed to version {0}. This one is newer."
 msgstr "You agreed to version {0}. This one is newer."
 
@@ -3886,7 +3902,7 @@ msgstr "You can change this for {REVIEW_EDIT_WINDOW_DAYS} days after posting."
 msgid "You cancelled this"
 msgstr "You cancelled this"
 
-#: app/legal.tsx:190
+#: app/legal.tsx:194
 msgid "You have not agreed to this yet"
 msgstr "You have not agreed to this yet"
 

@@ -96,14 +96,16 @@ export type LegalStatus = components['schemas']['LegalStatusDto'];
 
 
 /** Readable with no account at all — agreeing before reading is worth nothing. */
-export const listLegal = () => api<LegalDocument[]>('/legal', { anonymous: true });
+export const listLegal = (lang?: 'en') => api<LegalDocument[]>(lang ? `/legal?lang=${lang}` : '/legal', { anonymous: true });
 
-export const myLegalStatus = () => api<LegalStatus[]>('/legal/me');
+/** In the app's language where translated; `'en'` is "Read the English" (§308.5). */
+export const myLegalStatus = (lang?: 'en') => api<LegalStatus[]>(lang ? `/legal/me?lang=${lang}` : '/legal/me');
 
-export const acceptLegal = (documentId: string) =>
+/** Agreeing to one version, with the language it was read in kept beside it (§308.5). */
+export const acceptLegal = (document: { id: string; language?: string }) =>
   api<{ documentId: string; kind: string; version: number }>('/legal/me/accept', {
     method: 'POST',
-    body: { documentId },
+    body: { documentId: document.id, ...(document.language ? { language: document.language } : {}) },
   });
 
 // ---------------------------------------------------------------------------

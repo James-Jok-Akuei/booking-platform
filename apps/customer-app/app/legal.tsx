@@ -10,6 +10,7 @@ import {
 } from '../src/api/auth';
 import { useSignedIn } from '../src/api/client';
 import { LegalText } from '../src/components/LegalText';
+import { TranslationNote } from '../src/components/TranslationNote';
 import { radius, shadow, theme, type } from '../src/theme';
 import { AgreeButton } from '../src/ui/AgreeButton';
 import { EmptyState } from '../src/ui/EmptyState';
@@ -56,12 +57,15 @@ export default function Legal() {
   /** How far the open document can scroll; what "read to the end" is measured against. */
   const [sizes, setSizes] = useState({ content: 0, view: 0 });
   const [atEnd, setAtEnd] = useState(false);
+  // "Read the English" (§308.5): the English applies wherever a translation differs.
+  const [english, setEnglish] = useState(false);
 
   // Signed in, the same list arrives with "and here is what you agreed to"
   // attached — one request rather than two that could disagree.
   const documents = useQuery({
-    queryKey: ['legal', signedIn],
-    queryFn: () => (signedIn ? myLegalStatus() : listLegal()),
+    queryKey: ['legal', signedIn, english],
+    queryFn: () => (signedIn ? myLegalStatus(english ? 'en' : undefined) : listLegal(english ? 'en' : undefined)),
+    placeholderData: (previous) => previous,
   });
 
   const accept = useMutation({ mutationFn: acceptLegal });
@@ -204,6 +208,10 @@ export default function Legal() {
               </View>
             )}
 
+            {(english || current.language !== 'en') && (
+              <TranslationNote english={english} onToggle={() => setEnglish((was) => !was)} />
+            )}
+
             <View style={styles.rule} />
 
             <LegalText body={current.body} />
@@ -244,7 +252,7 @@ export default function Legal() {
               key={current.id}
               label={t`I agree to this`}
               wake={atEnd || fits}
-              onAgree={() => accept.mutateAsync(current.id).catch((error) => {
+              onAgree={() => accept.mutateAsync(current).catch((error) => {
                 showProblem(t`Not saved`, error);
                 throw error;
               })}

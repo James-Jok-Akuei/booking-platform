@@ -9,6 +9,7 @@ import {
   ParseEnumPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { LegalDocumentKind, UserRole } from '@prisma/client';
@@ -25,6 +26,7 @@ import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   AdminLegalDocumentDto,
   LegalDraftDto,
+  LegalTranslationsSetDto,
 } from './dto/legal-response.dto';
 import {
   LegalAcceptanceDto,
@@ -33,9 +35,13 @@ import {
 } from './dto/legal-response.dto';
 import {
   AcceptDocumentDto,
+  LegalLanguageQueryDto,
+  LegalTranslationsDto,
   StartDraftDto,
   UpdateDraftDto,
 } from './dto/legal.dto';
+import { RequestLocale } from '../i18n/request-locale.decorator';
+import type { Locale } from '../i18n/locales';
 
 /**
  * The published documents, readable by anyone (§122).
@@ -52,8 +58,8 @@ export class LegalController {
 
   @Get()
   @ApiOkResponse({ type: [LegalDocumentDto] })
-  published() {
-    return this.legal.published();
+  published(@RequestLocale() locale: Locale, @Query() query: LegalLanguageQueryDto) {
+    return this.legal.published(query.lang ?? locale);
   }
 
   /**
@@ -70,8 +76,11 @@ export class LegalController {
   @ApiOkResponse({ type: LegalDocumentDto })
   current(
     @Param('kind', new ParseEnumPipe(LegalDocumentKind)) kind: LegalDocumentKind,
+    @RequestLocale() locale: Locale,
+    @Query() query: LegalLanguageQueryDto,
   ) {
-    return this.legal.currentOf(kind);
+    // In the reader's language where translated; `?lang=en` is "Read the English" (§308.5).
+    return this.legal.currentOf(kind, query.lang ?? locale);
   }
 }
 
@@ -84,8 +93,8 @@ export class LegalAcceptanceController {
 
   @Get()
   @ApiOkResponse({ type: [LegalStatusDto] })
-  status(@CurrentUser() user: AuthenticatedUser) {
-    return this.legal.statusFor(user.userId);
+  status(@CurrentUser() user: AuthenticatedUser, @RequestLocale() locale: Locale, @Query() query: LegalLanguageQueryDto) {
+    return this.legal.statusFor(user.userId, query.lang ?? locale);
   }
 
   @Post('accept')
@@ -95,7 +104,7 @@ export class LegalAcceptanceController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: AcceptDocumentDto,
   ) {
-    return this.legal.accept(user.userId, dto.documentId);
+    return this.legal.accept(user.userId, dto.documentId, dto.language);
   }
 }
 
@@ -132,6 +141,17 @@ export class AdminLegalController {
     @Body() dto: UpdateDraftDto,
   ) {
     return this.legal.updateDraft(id, dto);
+  }
+
+  /** A version's Kinyarwanda and French — a draft's or one in force (§308.5). */
+  @Patch(':id/translations')
+  @ApiOkResponse({ type: LegalTranslationsSetDto })
+  setTranslations(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: LegalTranslationsDto,
+  ) {
+    return this.legal.setTranslations(id, dto, user.userId);
   }
 
   @Post('drafts/:id/publish')

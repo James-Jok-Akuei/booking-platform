@@ -867,12 +867,14 @@ export const resumeBusiness = () =>
 export type LegalStatus = components['schemas']['LegalStatusDto'];
 
 
-export const myLegalStatus = () => api<LegalStatus[]>('/legal/me');
+/** In the app's language where translated; `'en'` is "Read the English" (§308.5). */
+export const myLegalStatus = (lang?: 'en') => api<LegalStatus[]>(lang ? `/legal/me?lang=${lang}` : '/legal/me');
 
-export const acceptLegal = (documentId: string) =>
+/** Agreeing to one version, with the language it was read in kept beside it (§308.5). */
+export const acceptLegal = (document: { id: string; language?: string }) =>
   api<{ documentId: string; version: number }>('/legal/me/accept', {
     method: 'POST',
-    body: { documentId },
+    body: { documentId: document.id, ...(document.language ? { language: document.language } : {}) },
   });
 
 /**
@@ -882,7 +884,8 @@ export const acceptLegal = (documentId: string) =>
  */
 export type LegalDocument = components['schemas']['LegalDocumentDto'];
 
-export const publishedLegal = () => api<LegalDocument[]>('/legal', { anonymous: true });
+export const publishedLegal = (lang?: 'en') =>
+  api<LegalDocument[]>(lang ? `/legal?lang=${lang}` : '/legal', { anonymous: true });
 
 // ---------------------------------------------------------------------------
 // The sign-in wall (§238)

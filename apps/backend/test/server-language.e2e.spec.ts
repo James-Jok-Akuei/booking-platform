@@ -230,6 +230,48 @@ describe('The server, in the reader’s language (§308)', () => {
     expect((await said(english.userId)).subject).toBe('MTN MoMo is slow this morning');
   });
 
+  it('gives a legal document in the reader’s language once translated — added after publishing, nobody asked to agree again', async () => {
+    const admin = await createAdmin(prisma);
+    const adminToken = ctx.token(admin.userId, admin.email, 'ADMIN');
+    const draft = await request(ctx.url, '/admin/legal/drafts', { method: 'POST', token: adminToken, body: { kind: 'TERMS_OF_USE' } });
+    const id = draft.body.id as string;
+    await request(ctx.url, `/admin/legal/drafts/${id}`, {
+      method: 'PATCH',
+      token: adminToken,
+      body: { title: 'Terms of Use', body: 'These are the terms.' },
+    });
+    await request(ctx.url, `/admin/legal/drafts/${id}/publish`, { method: 'POST', token: adminToken, body: {} });
+
+    // Published in English; the French added afterwards.
+    const set = await request(ctx.url, `/admin/legal/${id}/translations`, {
+      method: 'PATCH',
+      token: adminToken,
+      body: { fr: { title: 'Conditions d’utilisation', body: 'Voici les conditions.' }, rw: { title: 'Amategeko' } },
+    });
+    expect(set.status).toBe(200);
+    // A title alone is not a translation: Kinyarwanda readers still get the English.
+    const fr = await request(ctx.url, '/legal/TERMS_OF_USE', { headers: { 'Accept-Language': 'fr' } });
+    expect(fr.body).toMatchObject({ id, title: 'Conditions d’utilisation', body: 'Voici les conditions.', language: 'fr' });
+    const rw = await request(ctx.url, '/legal/TERMS_OF_USE', { headers: { 'Accept-Language': 'rw' } });
+    expect(rw.body).toMatchObject({ id, title: 'Terms of Use', body: 'These are the terms.', language: 'en' });
+    // "Read the English".
+    const english = await request(ctx.url, '/legal/TERMS_OF_USE?lang=en', { headers: { 'Accept-Language': 'fr' } });
+    expect(english.body).toMatchObject({ body: 'These are the terms.', language: 'en' });
+
+    // Agreeing keeps the language it was read in; the version is the same one.
+    const customer = await createCustomer(prisma);
+    const token = ctx.token(customer.userId, customer.email, 'CUSTOMER');
+    const accepted = await request(ctx.url, '/legal/me/accept', { method: 'POST', token, body: { documentId: id, language: 'fr' } });
+    expect(accepted.status).toBe(200);
+    const row = await prisma.legalAcceptance.findFirstOrThrow({ where: { userId: customer.userId, documentId: id } });
+    expect(row.language).toBe('fr');
+    const status = await request(ctx.url, '/legal/me', { token, headers: { 'Accept-Language': 'fr' } });
+    const terms = (status.body as unknown as Array<{ kind: string; needsAcceptance: boolean; language: string }>).find(
+      (d) => d.kind === 'TERMS_OF_USE',
+    )!;
+    expect(terms).toMatchObject({ needsAcceptance: false, language: 'fr' });
+  });
+
   it('answers the settings and their refusals in the language the app asks in', async () => {
     const customer = await createCustomer(prisma);
     const token = ctx.token(customer.userId, customer.email, 'CUSTOMER');

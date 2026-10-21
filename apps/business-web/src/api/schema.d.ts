@@ -354,6 +354,23 @@ export interface paths {
         patch: operations["AdminLegalController_updateDraft"];
         trace?: never;
     };
+    "/admin/legal/{id}/translations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** A version's Kinyarwanda and French — a draft's or one in force (§308.5). */
+        put: operations["AdminLegalController_setTranslations"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/legal/drafts/{id}/publish": {
         parameters: {
             query?: never;
@@ -3937,10 +3954,22 @@ export interface components {
             publishedAt: string;
             /** @description One line on what moved, so nobody rereads four thousand words (§122.3). */
             changeNote: string | null;
+            /**
+             * @description The language the title and text are in (§308.5): the reader's where this
+             *     version has been translated, else English. Where a translation and the
+             *     English differ, the English applies — the apps say so beside it.
+             * @enum {string}
+             */
+            language: "en" | "rw" | "fr";
         };
         AcceptDocumentDto: {
             /** Format: uuid */
             documentId: string;
+            /**
+             * @description The language it was read in, kept with the agreement (§308.5).
+             * @enum {string}
+             */
+            language?: "en" | "rw" | "fr";
         };
         LegalAcceptanceDto: {
             documentId: string;
@@ -3960,6 +3989,22 @@ export interface components {
             publishedAt: string;
             /** @description One line on what moved, so nobody rereads four thousand words (§122.3). */
             changeNote: string | null;
+            /**
+             * @description The language the title and text are in (§308.5): the reader's where this
+             *     version has been translated, else English. Where a translation and the
+             *     English differ, the English applies — the apps say so beside it.
+             * @enum {string}
+             */
+            language: "en" | "rw" | "fr";
+        };
+        LegalWordsResponseDto: {
+            title?: string;
+            body?: string;
+            changeNote?: string;
+        };
+        LegalTranslationsResponseDto: {
+            rw?: components["schemas"]["LegalWordsResponseDto"];
+            fr?: components["schemas"]["LegalWordsResponseDto"];
         };
         LegalPublisherDto: {
             id: string;
@@ -3979,6 +4024,8 @@ export interface components {
             publishedAt: string | null;
             /** @description What changed, shown to people being asked to accept again. */
             changeNote: string | null;
+            /** @description This version in Kinyarwanda and French, where translated (§308.5). */
+            translations: components["schemas"]["LegalTranslationsResponseDto"];
             createdAt: string;
             updatedAt: string;
             /** @description Null on a draft, and null if that administrator's account has since gone. */
@@ -4012,6 +4059,18 @@ export interface components {
              */
             body?: string;
             changeNote?: string;
+        };
+        LegalWordsDto: {
+            title?: string;
+            body?: string;
+            changeNote?: string;
+        };
+        LegalTranslationsDto: {
+            rw?: components["schemas"]["LegalWordsDto"];
+            fr?: components["schemas"]["LegalWordsDto"];
+        };
+        LegalTranslationsSetDto: {
+            translations: components["schemas"]["LegalTranslationsResponseDto"];
         };
         MeBusinessDto: {
             id: string;
@@ -8877,7 +8936,9 @@ export interface operations {
     };
     LegalAcceptanceController_status: {
         parameters: {
-            query?: never;
+            query?: {
+                lang?: "en" | "rw" | "fr";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -8955,7 +9016,9 @@ export interface operations {
     };
     LegalController_published: {
         parameters: {
-            query?: never;
+            query?: {
+                lang?: "en" | "rw" | "fr";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -8983,7 +9046,9 @@ export interface operations {
     };
     LegalController_current: {
         parameters: {
-            query?: never;
+            query?: {
+                lang?: "en" | "rw" | "fr";
+            };
             header?: never;
             path: {
                 kind: "TERMS_OF_USE" | "PRIVACY_POLICY" | "SELLER_AGREEMENT";
@@ -9146,6 +9211,67 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LegalDraftDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminLegalController_setTranslations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LegalTranslationsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalTranslationsSetDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

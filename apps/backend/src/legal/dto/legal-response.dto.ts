@@ -18,6 +18,12 @@ export class LegalDocumentDto {
   publishedAt!: string;
   /** One line on what moved, so nobody rereads four thousand words (§122.3). */
   changeNote!: string | null;
+  /**
+   * The language the title and text are in (§308.5): the reader's where this
+   * version has been translated, else English. Where a translation and the
+   * English differ, the English applies — the apps say so beside it.
+   */
+  language!: 'en' | 'rw' | 'fr';
 }
 
 /** The same, plus what this person has agreed to. */
@@ -56,6 +62,23 @@ export class LegalAcceptanceCountDto {
  * edited. Once published it is frozen: what people agreed to has to stay as
  * they read it, so a correction is a new version, never an edit (§122.3).
  */
+/** One version in one other language, as typed in the console (§308.5). */
+export class LegalWordsResponseDto {
+  title?: string;
+  body?: string;
+  changeNote?: string;
+}
+
+export class LegalTranslationsResponseDto {
+  rw?: LegalWordsResponseDto;
+  fr?: LegalWordsResponseDto;
+}
+
+/** What setting a version's translations answers with. */
+export class LegalTranslationsSetDto {
+  translations!: LegalTranslationsResponseDto;
+}
+
 export class AdminLegalDocumentDto {
   id!: string;
   kind!: LegalDocumentKind;
@@ -66,6 +89,8 @@ export class AdminLegalDocumentDto {
   publishedAt!: string | null;
   /** What changed, shown to people being asked to accept again. */
   changeNote!: string | null;
+  /** This version in Kinyarwanda and French, where translated (§308.5). */
+  translations!: LegalTranslationsResponseDto;
 
   createdAt!: string;
   updatedAt!: string;

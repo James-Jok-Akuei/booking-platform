@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { LegalDocumentKind, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { readTyped, type TypedWords } from '../i18n/typed-words';
 
 /** The refusal a screen answers by showing the document to accept (§280). */
 export const AGREEMENT_REQUIRED = 'AGREEMENT_REQUIRED';
@@ -20,7 +22,31 @@ const PUBLIC_SELECT = {
   body: true,
   publishedAt: true,
   changeNote: true,
+  translations: true,
 } as const;
+
+/** What a translation of a version holds (§308.5). */
+export const LEGAL_WORDS = ['title', 'body', 'changeNote'] as const;
+export type LegalTranslations = TypedWords<(typeof LEGAL_WORDS)[number]>;
+
+type PublicRow = Prisma.LegalDocumentGetPayload<{ select: typeof PUBLIC_SELECT }>;
+
+/**
+ * A version as the reader reads it (§308.5): in their language where it has
+ * been translated — the whole text, never a mix — else in English, and
+ * `language` says which. The English applies where they differ.
+ */
+export function inLanguage({ translations, ...row }: PublicRow, locale: Locale) {
+  const typed = locale === 'en' ? undefined : readTyped(translations, LEGAL_WORDS)[locale];
+  if (!typed?.body) return { ...row, language: DEFAULT_LOCALE as Locale };
+  return {
+    ...row,
+    title: typed.title ?? row.title,
+    body: typed.body,
+    changeNote: row.changeNote === null ? null : (typed.changeNote ?? row.changeNote),
+    language: locale,
+  };
+}
 
 @Injectable()
 export class LegalService {
@@ -35,7 +61,7 @@ export class LegalService {
    * terms first, and asking them to agree before they can read is the thing
    * everybody complains about.
    */
-  async published() {
+  async published(locale: Locale = DEFAULT_LOCALE) {
     const rows = await this.prisma.legalDocument.findMany({
       where: { publishedAt: { not: null } },
       orderBy: [{ kind: 'asc' }, { version: 'desc' }],
@@ -48,10 +74,10 @@ export class LegalService {
     for (const row of rows) {
       if (!current.has(row.kind)) current.set(row.kind, row);
     }
-    return [...current.values()];
+    return [...current.values()].map((row) => inLanguage(row, locale));
   }
 
-  async currentOf(kind: LegalDocumentKind) {
+  async currentOf(kind: LegalDocumentKind, locale: Locale = DEFAULT_LOCALE) {
     const document = await this.prisma.legalDocument.findFirst({
       where: { kind, publishedAt: { not: null } },
       orderBy: { version: 'desc' },
@@ -60,7 +86,7 @@ export class LegalService {
     if (!document) {
       throw new NotFoundException('That document has not been published yet.');
     }
-    return document;
+    return inLanguage(document, locale);
   }
 
   /**
@@ -70,9 +96,9 @@ export class LegalService {
    * in one pass — "accepted", "not yet", or "accepted an older version" — rather
    * than asking per document and getting three answers at three moments.
    */
-  async statusFor(userId: string) {
+  async statusFor(userId: string, locale: Locale = DEFAULT_LOCALE) {
     const [documents, acceptances] = await Promise.all([
-      this.published(),
+      this.published(locale),
       this.prisma.legalAcceptance.findMany({
         where: { userId },
         select: { documentId: true, acceptedAt: true, document: { select: { kind: true, version: true } } },
@@ -161,8 +187,11 @@ export class LegalService {
     });
   }
 
-  /** Records agreement to one exact version. Agreeing twice is agreeing once. */
-  async accept(userId: string, documentId: string) {
+  /**
+   * Records agreement to one exact version. Agreeing twice is agreeing once.
+   * `language` is the one they read it in, kept with the agreement (§308.5).
+   */
+  async accept(userId: string, documentId: string, language?: Locale) {
     const document = await this.prisma.legalDocument.findUnique({
       where: { id: documentId },
       select: { id: true, publishedAt: true, kind: true, version: true },
@@ -176,7 +205,7 @@ export class LegalService {
 
     await this.prisma.legalAcceptance.upsert({
       where: { userId_documentId: { userId, documentId } },
-      create: { userId, documentId },
+      create: { userId, documentId, language: language ?? null },
       update: {},
     });
     return { documentId, kind: document.kind, version: document.version };
@@ -184,9 +213,9 @@ export class LegalService {
 
   // ---------- Admin ----------
 
-  /** Every version of everything, newest first. Drafts included. */
+  /** Every version of everything, newest first. Drafts included, and each one's translations. */
   async listForAdmin() {
-    return this.prisma.legalDocument.findMany({
+    const rows = await this.prisma.legalDocument.findMany({
       orderBy: [{ kind: 'asc' }, { version: 'desc' }],
       select: {
         ...PUBLIC_SELECT,
@@ -196,6 +225,31 @@ export class LegalService {
         _count: { select: { acceptances: true } },
       },
     });
+    return rows.map((row) => ({ ...row, translations: readTyped(row.translations, LEGAL_WORDS) }));
+  }
+
+  /**
+   * A version's Kinyarwanda and French (§308.5), as the console's boxes hold
+   * them now — a language emptied is a language removed.
+   *
+   * Allowed on a published version too, which its English never is: the
+   * English applies where they differ (the user's decision, 2026-10-21), so a
+   * translation added or corrected later changes nothing anybody agreed to,
+   * and nobody is asked to agree again.
+   */
+  async setTranslations(id: string, translations: unknown, adminId: string) {
+    const document = await this.prisma.legalDocument.findUnique({
+      where: { id },
+      select: { id: true, kind: true, version: true, publishedAt: true },
+    });
+    if (!document) throw new NotFoundException('Document not found.');
+    const words = readTyped(translations, LEGAL_WORDS);
+    await this.prisma.legalDocument.update({ where: { id }, data: { translations: words } });
+    this.logger.log(
+      `${document.kind} v${document.version}${document.publishedAt ? '' : ' (draft)'} translations set by ${adminId}: ` +
+        (Object.keys(words).join(', ') || 'none'),
+    );
+    return { translations: words };
   }
 
   /**
@@ -283,7 +337,7 @@ export class LegalService {
     this.logger.log(
       `${document.kind} v${document.version} published by ${adminId}.`,
     );
-    return published;
+    return inLanguage(published, DEFAULT_LOCALE);
   }
 }
 

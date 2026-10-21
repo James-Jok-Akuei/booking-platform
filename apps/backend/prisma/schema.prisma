@@ -2720,6 +2720,13 @@ model LegalDocument {
   /// Nobody rereads four thousand words to find the sentence that moved.
   changeNote String?
 
+  /// This version in Kinyarwanda and French (§308.5):
+  /// { "rw": { "title": "…", "body": "…", "changeNote": "…" }, "fr": … }.
+  /// The English is the version that applies where they differ, so a
+  /// translation may be added or corrected after publishing without anyone
+  /// being asked to agree again.
+  translations Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -2746,6 +2753,10 @@ model LegalAcceptance {
   document   LegalDocument @relation(fields: [documentId], references: [id], onDelete: Restrict)
 
   acceptedAt DateTime @default(now())
+
+  /// The language they read it in when they agreed — "en", "rw", "fr" (§308.5).
+  /// Null for agreements recorded before languages, and at sign-up.
+  language String?
 
   /// Accepting twice is accepting once.
   @@unique([userId, documentId])

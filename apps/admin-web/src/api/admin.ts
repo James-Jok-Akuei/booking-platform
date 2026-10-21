@@ -722,6 +722,11 @@ export const updateLegalDraft = (
 export const publishLegalDraft = (id: string) =>
   api<LegalDocument>(`/admin/legal/drafts/${id}/publish`, { method: 'POST' });
 
+/** A version's Kinyarwanda and French (§308.5) — allowed once published: the English applies where they differ. */
+export type LegalTranslations = LegalDocument['translations'];
+export const setLegalTranslations = (id: string, translations: LegalTranslations) =>
+  api<{ translations: LegalTranslations }>(`/admin/legal/${id}/translations`, { method: 'PATCH', body: translations });
+
 // ---------------------------------------------------------------------------
 // The sign-in wall (§238, §254): the same public lists the business app's uses
 // ---------------------------------------------------------------------------

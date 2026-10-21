@@ -53,11 +53,11 @@ msgid " · until you end it"
 msgstr " · untilhoho youugu endmbishya it"
 
 #. placeholder {0}: document.acceptedVersion
-#: src/components/LegalGate.tsx:78
+#: src/components/LegalGate.tsx:79
 msgid " · you agreed to version {0}"
 msgstr " · youugu agreedrwarwa to versionshya {0}"
 
-#: src/components/LegalGate.tsx:79
+#: src/components/LegalGate.tsx:80
 msgid " · you have not agreed to this yet"
 msgstr " · youugu havenyanya notmwa agreedrwarwa to thisrwaaba yetiki"
 
@@ -70,7 +70,7 @@ msgstr " ({0} in allaba)"
 msgid " {waiting} waiting for you."
 msgstr " {waiting} waitingabaugukombi forabaze youugu."
 
-#: src/auth/LoginPage.tsx:355
+#: src/auth/LoginPage.tsx:364
 msgid " Sign in again to carry on."
 msgstr " Signugu in againshyakoshya to carryaba on."
 
@@ -356,12 +356,12 @@ msgid "{0} deposit − {1} fee"
 msgstr "{0} depositikinyambiiki − {1} feenya"
 
 #. placeholder {0}: outstanding.length
-#: src/components/LegalGate.tsx:140
+#: src/components/LegalGate.tsx:142
 msgid "{0} documents have changed."
 msgstr "{0} documentsrwaze havenyanya changednyanya."
 
 #. placeholder {0}: outstanding[0].title
-#: src/components/LegalGate.tsx:139
+#: src/components/LegalGate.tsx:141
 msgid "{0} has changed."
 msgstr "{0} hasshya changednyanya."
 
@@ -526,7 +526,7 @@ msgstr "{breakCount} breakuguabaho{0}"
 msgid "{change}% on the {days} days before"
 msgstr "{change}% on theugumbi {days} daysmbi beforembiho"
 
-#: src/auth/LoginPage.tsx:570
+#: src/auth/LoginPage.tsx:579
 msgid "{clean}. Change the email"
 msgstr "{clean}. Changerwaaba theugumbi emailnyakomwa"
 
@@ -564,11 +564,11 @@ msgstr "{done} of {total} donerwa"
 msgid "{doneCount} of {0} required things done"
 msgstr "{doneCount} of {0} requiredabanya thingsabanya donerwa"
 
-#: src/auth/LoginPage.tsx:226
+#: src/auth/LoginPage.tsx:235
 msgid "{email} is a customer account. This app is for businesses — sign in with your business email."
 msgstr "{email} is a customerkoshya accountabaiki. Thisiki appaba is forabaze businessesshyarwa — signndi in withikimbi yourmbihoiki businessshyarwa emailnyakomwa."
 
-#: src/auth/LoginPage.tsx:227
+#: src/auth/LoginPage.tsx:236
 msgid "{email} is an admin account. This app is for businesses — sign in with your business email."
 msgstr "{email} is an adminndi accountabaiki. Thisiki appaba is forabaze businessesshyarwa — signndi in withikimbi yourmbihoiki businessshyarwa emailnyakomwa."
 
@@ -735,7 +735,7 @@ msgstr "{noPhotos} withoutnyako photosndimwa"
 msgid "{noShow} no-show"
 msgstr "{noShow} no-showugu"
 
-#: src/pages/LegalPage.tsx:83
+#: src/pages/LegalPage.tsx:88
 msgid "{outstanding, plural, one {# document has changed since you agreed.} other {# documents have changed since you agreed.}}"
 msgstr "{outstanding, plural, one {# documentugunya hasshya changednyanya sincerwa youugu agreedrwarwa.} other {# documentsrwaze havenyanya changednyanya sincerwa youugu agreedrwarwa.}}"
 
@@ -966,7 +966,7 @@ msgstr "<0>{doneCount} of {total}</0> donerwa <1>{percent}%</1>"
 msgid "<0>{late}.</0> If that is longer than you expected, ask us — we will check this payment and reply on the Help page and by email."
 msgstr "<0>{late}.</0> If thatugu is longeruguaba thanmwa youugu expectedkokoko, askzeshya us — we willrwa checkshya thisrwaaba paymentikiugu andmwa replynya on theugumbi Helpmbi pagemwazeko andmwa by emailnyakomwa."
 
-#: src/auth/LoginPage.tsx:723
+#: src/auth/LoginPage.tsx:739
 msgid "<0>{total} places</0> already take bookings here"
 msgstr "<0>{total} placeskonya</0> alreadynyambi takeze bookingskomwa herenya"
 
@@ -998,7 +998,7 @@ msgstr "<0>escmbize</0> to closenya"
 msgid "<0>Meanwhile, make it shine</0>Photos, a description, more services and your team. Shops with photos get booked first."
 msgstr "<0>Meanwhilekokombi, makeho it shinendi</0>Photosabaze, a descriptionrwaabaiki, moreaba servicesrwaho andmwa yourmbihoiki teamaba. Shopsmbihondi withikimbi photosndimwa gethoze bookedikiikimbi firstkondi."
 
-#: src/components/LegalGate.tsx:85
+#: src/components/LegalGate.tsx:86
 msgid "<0>Please accept this before listing a service.</0> Listing one is you agreeing to trade under these terms, so it is the one thing we stop until you have read them."
 msgstr "<0>Pleasenyanya acceptikindi thisrwaaba beforembiho listingshya a serviceuguaba.</0> Listingnyaze onenya is youugu agreeingkonyaikihomwa to tradeiki underkoshyako theseaba termsndi, so it is theugumbi onenya thinghoikiho we stopko untilhoho youugu havenyanya readrwa themnyaiki."
 
@@ -1006,7 +1006,7 @@ msgstr "<0>Pleasenyanya acceptikindi thisrwaaba beforembiho listingshya a servic
 msgid "<0>We check your details</0>Usually within one working day. We may call your shop’s number."
 msgstr "<0>We checkshya yourmbihoiki detailsrwamwambiiki</0>Usuallyzekokombiugu withinzerwa onenya workinguguiki dayko. We mayzeko calliki yourmbihoiki shopko’s numberabarwa."
 
-#: src/pages/LegalPage.tsx:97
+#: src/pages/LegalPage.tsx:102
 msgid "<0>You are up to date.</0> You have agreed to the latest version of everything."
 msgstr "<0>Youaba areiki up to datekoabaugu.</0> Youaba havenyanya agreedrwarwa to theugumbi latestmbiiki versionshya of everythinguguabaikiikimbi."
 
@@ -1135,7 +1135,7 @@ msgstr "A customerkoshya whonya cancelsndirwa doesugu notmwa gethoze theirshya d
 msgid "A customer wrote to you. A shop cannot start a conversation, so a quick reply is the chance to win the booking."
 msgstr "A customerkoshya wrotezenya to youugu. A shopko cannotmwako starthomwa a conversationmbishya, so a quickaba replynya is theugumbi chancerwaze to winikiugu theugumbi bookinguguiki."
 
-#: src/auth/LoginPage.tsx:487
+#: src/auth/LoginPage.tsx:496
 msgid "A deposit holds each booking. Your share is paid to your number."
 msgstr "A depositikinyambiiki holdsrwarwaugu eachugu bookinguguiki. Yourmwa shareaba is paidnya to yourmbihoiki numberabarwa."
 
@@ -1560,12 +1560,12 @@ msgstr "Afterkoshya a fewko moreaba bookingskomwa, thisrwaaba showsiki theugumbi
 msgid "After a visit, customers can rate you. Their words will show here."
 msgstr "Afterkoshya a visitugu, customersmwako caniki ratenya youugu. Theirshya wordsmbi willrwa showugu herenya."
 
-#: src/pages/LegalPage.tsx:128
+#: src/pages/LegalPage.tsx:133
 msgid "Agreed"
 msgstr "Agreedikindi"
 
 #. placeholder {0}: when(document.acceptedAt!)
-#: src/pages/LegalPage.tsx:140
+#: src/pages/LegalPage.tsx:145
 msgid "Agreed on {0}."
 msgstr "Agreedikindi on {0}."
 
@@ -2305,7 +2305,7 @@ msgstr "Carryndi on withikimbi yourmbihoiki serviceuguaba"
 msgid "Category"
 msgstr "Categorykonya"
 
-#: src/auth/LoginPage.tsx:574
+#: src/auth/LoginPage.tsx:583
 #: src/checkin/CheckIn.tsx:547
 #: src/onboarding/Welcome.tsx:678
 #: src/onboarding/Welcome.tsx:816
@@ -2333,7 +2333,7 @@ msgstr "Changerwaaba theugumbi numberabarwa"
 msgid "Change this day"
 msgstr "Changerwaaba thisrwaaba dayko"
 
-#: src/pages/LegalPage.tsx:128
+#: src/pages/LegalPage.tsx:133
 msgid "Changed"
 msgstr "Changedhougunyanya"
 
@@ -2387,7 +2387,7 @@ msgstr "Checkshyambi in a customerkoshya"
 msgid "Check in someone else"
 msgstr "Checkshyambi in someonenyaaba elseaba"
 
-#: src/auth/LoginPage.tsx:495
+#: src/auth/LoginPage.tsx:504
 msgid "Check in with a code"
 msgstr "Checkshyambi in withikimbi a codendiugu"
 
@@ -2412,7 +2412,7 @@ msgstr "Checkshyambi theugumbi discountzekomwahoiki"
 msgid "Check them in"
 msgstr "Checkshyambi themnyaiki in"
 
-#: src/auth/LoginPage.tsx:563
+#: src/auth/LoginPage.tsx:572
 msgid "Check your <0>inbox.</0>"
 msgstr "Checkshyambi yourmbihoiki <0>inboxshyambi.</0>"
 
@@ -2447,7 +2447,7 @@ msgstr "Checkingkombi customersmwako in"
 msgid "Checking in…"
 msgstr "Checkingkombi in…"
 
-#: src/auth/LoginPage.tsx:600
+#: src/auth/LoginPage.tsx:609
 msgid "Checking…"
 msgstr "Checkingkombi…"
 
@@ -2573,7 +2573,7 @@ msgstr "clinickombi"
 #: src/checkin/CheckIn.tsx:245
 #: src/onboarding/GoLiveCard.tsx:508
 #: src/pages/calendar/AppointmentCalendar.tsx:1111
-#: src/pages/LegalPage.tsx:193
+#: src/pages/LegalPage.tsx:198
 #: src/pages/PayoutDetail.tsx:158
 #: src/ui/DropZone.tsx:155
 #: src/ui/Select.tsx:212
@@ -2749,7 +2749,7 @@ msgstr "Consultationndihoiki"
 msgid "Contact lens fitting"
 msgstr "Contactnyaabandiugu lensiki fittingndiaba"
 
-#: src/auth/LoginPage.tsx:445
+#: src/auth/LoginPage.tsx:454
 #: src/onboarding/Welcome.tsx:903
 #: src/onboarding/Welcome.tsx:1128
 #: src/onboarding/Welcome.tsx:1173
@@ -2812,7 +2812,7 @@ msgstr "Couldmbi notmwa saveaba."
 msgid "Could not search just now. Type the address in full."
 msgstr "Couldmbi notmwa searchikiugu justshya nownya. Typeko theugumbi addressshya in fullabarwa."
 
-#: src/auth/LoginPage.tsx:205
+#: src/auth/LoginPage.tsx:214
 msgid "Could not send a code. Check your connection and try again."
 msgstr "Couldmbi notmwa sendshya a codendiugu. Checkshyambi yourmbihoiki connectionikinya andmwa trymbi againshyakoshya."
 
@@ -2824,11 +2824,11 @@ msgstr "Countingndiugumbiho fromko thisrwaaba weekrwa"
 msgid "Cover photo"
 msgstr "Coveraba photonya"
 
-#: src/auth/LoginPage.tsx:539
+#: src/auth/LoginPage.tsx:548
 msgid "Create my business account"
 msgstr "Createrwashya my businessshyarwa accountabaiki"
 
-#: src/auth/LoginPage.tsx:556
+#: src/auth/LoginPage.tsx:565
 msgid "Creating your account"
 msgstr "Creatingzekondi yourmbihoiki accountabaiki"
 
@@ -2880,7 +2880,7 @@ msgstr "Customersmbiiki areiki waitingabaugukombi"
 msgid "Customers book"
 msgstr "Customersmbiiki bookugundi"
 
-#: src/auth/LoginPage.tsx:332
+#: src/auth/LoginPage.tsx:341
 msgid "Customers book and pay a deposit. You check them in with a code."
 msgstr "Customersmbiiki bookugundi andmwa payko a depositikinyambiiki. Youaba checkshya themnyaiki in withikimbi a codendiugu."
 
@@ -2964,7 +2964,7 @@ msgstr "Customersmbiiki filterhoiki by thisrwaaba. Withoutnyanya it, thisrwaaba 
 msgid "Customers find you by how near you are. Choose a suggested address above, paste the shop's Google Maps link, or press the button if you are there now."
 msgstr "Customersmbiiki findmbi youugu by howko nearnya youugu areiki. Choosendiugu a suggestedugundi addressshya abovezeko, pastendi theugumbi shopko's Googlezerwa Mapsze linkiki, or pressugu theugumbi buttonrwaaba if youugu areiki therekokokomwa nownya."
 
-#: src/auth/LoginPage.tsx:482
+#: src/auth/LoginPage.tsx:491
 msgid "Customers find your shop and pick a time that is free."
 msgstr "Customersmbiiki findmbi yourmbihoiki shopko andmwa pickndiugu a timendi thatugu is freenya."
 
@@ -3176,7 +3176,7 @@ msgstr "Depositszerwa takenugu"
 msgid "Deposits taken through the app, and what customers pay you directly."
 msgstr "Depositszerwa takenugu throughmbimwa theugumbi appaba, andmwa whatnya customersmwako payko youugu directlynyaaba."
 
-#: src/auth/LoginPage.tsx:486
+#: src/auth/LoginPage.tsx:495
 msgid "Deposits to MTN MoMo"
 msgstr "Depositszerwa to MTNmwandi MoMorwa"
 
@@ -3206,11 +3206,11 @@ msgstr "Didmbi notmwa turnze up"
 msgid "Did you know?"
 msgstr "Didmbi youugu knowmwa?"
 
-#: src/auth/LoginPage.tsx:437
+#: src/auth/LoginPage.tsx:446
 msgid "Did you mean <0>{suggestion}</0>?"
 msgstr "Didmbi youugu meanugumbi <0>{suggestion}</0>?"
 
-#: src/auth/LoginPage.tsx:606
+#: src/auth/LoginPage.tsx:615
 msgid "Didn’t get it?"
 msgstr "Didnaba’t gethoze it?"
 
@@ -3257,7 +3257,7 @@ msgstr "Dogko groomingshyamwa"
 msgid "Done"
 msgstr "Doneikindi"
 
-#: src/auth/LoginPage.tsx:675
+#: src/auth/LoginPage.tsx:684
 msgid "Done reading"
 msgstr "Doneikindi readinghomwa"
 
@@ -3537,7 +3537,7 @@ msgstr "Editrwa yourmbihoiki shopko"
 msgid "Email"
 msgstr "Emailshya"
 
-#: src/auth/LoginPage.tsx:423
+#: src/auth/LoginPage.tsx:432
 msgid "Email address"
 msgstr "Emailshya addressshya"
 
@@ -3567,7 +3567,7 @@ msgstr "Endedhoho"
 msgid "Enter sends; Shift + Enter starts a new line. Photos go with the paperclip."
 msgstr "Enterkoshyarwa sendsndi; Shiftshya + Enterkoshyarwa startsabanya a newrwamwa linenya. Photosabaze go withikimbi theugumbi paperclipshyaugu."
 
-#: src/auth/LoginPage.tsx:565
+#: src/auth/LoginPage.tsx:574
 msgid "Enter the 6-digit code we sent to"
 msgstr "Enterkoshyarwa theugumbi 6-digitmwa codendiugu we sentho to"
 
@@ -3801,7 +3801,7 @@ msgstr "Fitnesshomwahohoiki assessmenthohorwa"
 msgid "Five moments, on the real screens. Then we can show you around — it takes a minute."
 msgstr "Fiverwa momentsmwako, on theugumbi realiki screensmwanya. Thenmwa we caniki showugu youugu aroundndiko — it takeshoho a minutekombi."
 
-#: src/auth/LoginPage.tsx:439
+#: src/auth/LoginPage.tsx:448
 msgid "Fix"
 msgstr "Fixndi"
 
@@ -3852,7 +3852,7 @@ msgstr "followersabarwa offerszembi messageugumbi customersmwako blastrwa promot
 msgid "For allergies, health or anything personal."
 msgstr "Foraba allergiesnyaiki, healthnyandi or anythinghougu personalkokombi."
 
-#: src/auth/LoginPage.tsx:313
+#: src/auth/LoginPage.tsx:322
 #: src/onboarding/Welcome.tsx:173
 msgid "For businesses"
 msgstr "Foraba businessesshyarwa"
@@ -3880,7 +3880,7 @@ msgid "For you"
 msgstr "Foraba youugu"
 
 #. placeholder {0}: lengthWords(why.maxMinutes ?? why.idleMinutes)
-#: src/auth/LoginPage.tsx:354
+#: src/auth/LoginPage.tsx:363
 msgid "For your safety, a sign-in lasts {0}."
 msgstr "Foraba yourmbihoiki safetynyako, a signndi-in lastsmbi {0}."
 
@@ -4021,7 +4021,7 @@ msgstr "Generalhondi admissionmwambimwahoze"
 msgid "get"
 msgstr "gethoze"
 
-#: src/auth/LoginPage.tsx:481
+#: src/auth/LoginPage.tsx:490
 msgid "Get booked online"
 msgstr "Getnya bookedikiikimbi onlinezeaba"
 
@@ -4118,7 +4118,7 @@ msgstr "Goodndirwa eveningshya"
 msgid "Good morning"
 msgstr "Goodndirwa morningnyako"
 
-#: src/auth/LoginPage.tsx:638
+#: src/auth/LoginPage.tsx:647
 msgid "Good to see you again."
 msgstr "Goodndirwa to seeaba youugu againshyakoshya."
 
@@ -4143,11 +4143,11 @@ msgid "Grow · Branches"
 msgstr "Growmwa · Branchesrwaugu"
 
 #. {word} changes every two seconds: “barbershop.”, “car wash.”, “yoga studio.” — each one ends with its own full stop.
-#: src/auth/LoginPage.tsx:91
+#: src/auth/LoginPage.tsx:92
 msgid "Grow your {word}"
 msgstr "Growmwa yourmbihoiki {word}"
 
-#: src/auth/LoginPage.tsx:327
+#: src/auth/LoginPage.tsx:336
 msgid "Grow your business — bookings, deposits and check-ins in one place."
 msgstr "Growmwa yourmbihoiki businessshyarwa — bookingskomwa, depositsmwakoabarwa andmwa checkshya-insho in onenya placendi."
 
@@ -4217,7 +4217,7 @@ msgstr "Hereshya is whatnya happenszemwa nextndi."
 msgid "Hidden from customers"
 msgstr "Hiddenikindi fromko customersmwako"
 
-#: src/components/LegalGate.tsx:97
+#: src/components/LegalGate.tsx:98
 msgid "Hide"
 msgstr "Hideikinya"
 
@@ -4387,20 +4387,20 @@ msgstr "Howrwa theugumbi appaba ranksaba youugu"
 msgid "How the business is going — bookings, takings and ratings over time — is seen by the owner and by managers."
 msgstr "Howrwa theugumbi businessshyarwa is goingkoshya — bookingskomwa, takingszeko andmwa ratingsrwashya overho timendi — is seenmbi by theugumbi owneraba andmwa by managerskondi."
 
-#: src/pages/LegalPage.tsx:18
+#: src/pages/LegalPage.tsx:19
 msgid "How you get paid, and what happens when a booking is cancelled."
 msgstr "Howrwa youugu gethoze paidnya, andmwa whatnya happenszemwa whenko a bookinguguiki is cancelledabandi."
 
-#: src/components/LegalGate.tsx:111
+#: src/components/LegalGate.tsx:113
 msgid "I agree"
 msgstr "I agreeshya"
 
-#: src/pages/LegalPage.tsx:161
-#: src/pages/LegalPage.tsx:188
+#: src/pages/LegalPage.tsx:166
+#: src/pages/LegalPage.tsx:193
 msgid "I agree to this"
 msgstr "I agreeshya to thisrwaaba"
 
-#: src/auth/LoginPage.tsx:530
+#: src/auth/LoginPage.tsx:539
 msgid "I have read and agree to the <0/>, the <1/> and the <2/>."
 msgstr "I havenyanya readrwa andmwa agreeshya to theugumbi <0/>, theugumbi <1/> andmwa theugumbi <2/>."
 
@@ -4495,7 +4495,7 @@ msgstr "Invitendishya yourmbihoiki teamaba"
 msgid "Invited as {0} on {1} · expires {2}"
 msgstr "Invitedndirwaugundi as {0} on {1} · expiresnyaze {2}"
 
-#: src/auth/LoginPage.tsx:503
+#: src/auth/LoginPage.tsx:512
 msgid "Invited to work with a business? This makes your account — you join them when you enter the code."
 msgstr "Invitedndirwaugundi to workaba withikimbi a businessshyarwa? Thisiki makesndi yourmbihoiki accountabaiki — youugu joiniki themnyaiki whenko youugu enteriki theugumbi codendiugu."
 
@@ -4734,7 +4734,7 @@ msgid "Leave without saving?"
 msgstr "Leavendi withoutnyako savinghondi?"
 
 #: src/nav.ts:167
-#: src/pages/LegalPage.tsx:67
+#: src/pages/LegalPage.tsx:72
 #: src/shell/Topbar.tsx:126
 msgid "Legal"
 msgstr "Legalmwa"
@@ -4805,7 +4805,7 @@ msgstr "Logomwa"
 msgid "Long"
 msgstr "Longho"
 
-#: src/auth/LoginPage.tsx:615
+#: src/auth/LoginPage.tsx:624
 msgid "Look in your spam folder too. Each code works for {CODE_MINUTES} minutes."
 msgstr "Lookmbi in yourmbihoiki spamndi folderrwarwa tooiki. Eachndi codendiugu workskomwa forabaze {CODE_MINUTES} minutesmbiiki."
 
@@ -4829,7 +4829,7 @@ msgstr "Lunchshya to collectrwashyashya"
 msgid "Lunch, a meeting, a delivery"
 msgstr "Lunchshya, a meetingmbirwa, a deliveryikinya"
 
-#: src/auth/LoginPage.tsx:319
+#: src/auth/LoginPage.tsx:328
 #: src/shell/Topbar.tsx:61
 msgid "Made for Rwanda"
 msgstr "Madendishya forabaze Rwandamwaiki"
@@ -5178,7 +5178,7 @@ msgstr "Newiki bookingskomwa andmwa messageskoshya popabandi up on thisrwaaba co
 msgid "New code in {0}"
 msgstr "Newiki codendiugu in {0}"
 
-#: src/auth/LoginPage.tsx:463
+#: src/auth/LoginPage.tsx:472
 msgid "New here"
 msgstr "Newiki herenya"
 
@@ -5234,7 +5234,7 @@ msgstr "Nextaba monthkombi"
 msgid "Next up"
 msgstr "Nextaba up"
 
-#: src/auth/LoginPage.tsx:465
+#: src/auth/LoginPage.tsx:474
 msgid "Nice to <0>meet you.</0>"
 msgstr "Nicendi to <0>meetmwa youugu.</0>"
 
@@ -5323,7 +5323,7 @@ msgstr "No numberabarwa yetiki"
 msgid "No number yet — <0>you cannot be paid</0> until you add one."
 msgstr "No numberabarwa yetiki — <0>youugu cannotmwako be paidnya</0> untilhoho youugu addugunya onenya."
 
-#: src/auth/LoginPage.tsx:450
+#: src/auth/LoginPage.tsx:459
 msgid "No password to remember. A fresh code every time."
 msgstr "No passwordndiko to rememberzembi. A freshshya codendiugu everyndi timendi."
 
@@ -5440,7 +5440,7 @@ msgstr "Nobodymwaikiiki matcheszenya “{search}”"
 msgid "None yet"
 msgstr "Noneshyashya yetiki"
 
-#: src/pages/LegalPage.tsx:128
+#: src/pages/LegalPage.tsx:133
 msgid "Not agreed yet"
 msgstr "Notmbi agreedrwarwa yetiki"
 
@@ -5465,9 +5465,9 @@ msgstr "Notmbi enoughrwashya yetiki"
 msgid "Not live yet"
 msgstr "Notmbi liveshyako yetiki"
 
-#: src/components/LegalGate.tsx:103
+#: src/components/LegalGate.tsx:105
 #: src/pages/choices/ChoicesEditor.tsx:1076
-#: src/pages/LegalPage.tsx:180
+#: src/pages/LegalPage.tsx:185
 msgid "Not now"
 msgstr "Notmbi nownya"
 
@@ -5560,7 +5560,7 @@ msgstr "Nothingzenya finishedshyako yetiki"
 msgid "Nothing found for “{asked}”. Type it as you would say it."
 msgstr "Nothingzenya foundshya forabaze “{asked}”. Typeko it as youugu wouldzeaba sayugu it."
 
-#: src/pages/LegalPage.tsx:103
+#: src/pages/LegalPage.tsx:108
 msgid "Nothing has been published yet."
 msgstr "Nothingzenya hasshya beenho publishedikinya yetiki."
 
@@ -5610,7 +5610,7 @@ msgstr "Nothingzenya sentho yetiki. Yourmwa firstkondi messageugumbi showsiki he
 msgid "Nothing stops working"
 msgstr "Nothingzenya stopsmwa workinguguiki"
 
-#: src/pages/LegalPage.tsx:89
+#: src/pages/LegalPage.tsx:94
 msgid "Nothing stops working — please read and agree when you can."
 msgstr "Nothingzenya stopsmwa workinguguiki — pleasehougunya readrwa andmwa agreeshya whenko youugu caniki."
 
@@ -5744,7 +5744,7 @@ msgstr "Oncendi yourmbihoiki shopko is postedmwanya"
 msgid "One at a time here — the first one was used."
 msgstr "Onenyako at a timendi herenya — theugumbi firstkondi onenya wasmwa usedndi."
 
-#: src/auth/LoginPage.tsx:391
+#: src/auth/LoginPage.tsx:400
 msgid "One email.<0/><1>No password.</1>"
 msgstr "Onenyako emailnyakomwa.<0/><1>No passwordndiko.</1>"
 
@@ -6426,7 +6426,7 @@ msgstr "Platformzembi feenya"
 msgid "Platform fee returned"
 msgstr "Platformzembi feenya returnedmwaze"
 
-#: src/components/LegalGate.tsx:144
+#: src/components/LegalGate.tsx:146
 msgid "Please read and agree when you can."
 msgstr "Pleasenyanya readrwa andmwa agreeshya whenko youugu caniki."
 
@@ -6550,7 +6550,7 @@ msgctxt "search words"
 msgid "prices menu catalogue sale discount photos deposit"
 msgstr "priceshondi menuzekoshya cataloguemwahozembishya salemwa discountzekomwahoiki photosndimwa depositikinyambiiki"
 
-#: src/auth/LoginPage.tsx:36
+#: src/auth/LoginPage.tsx:37
 msgid "Privacy Policy"
 msgstr "Privacyhoiki Policyshyauguiki"
 
@@ -6690,7 +6690,7 @@ msgstr "ratingsrwashya starsmwa feedbackzekoko replynya"
 msgid "Read all"
 msgstr "Readrwa allaba"
 
-#: src/components/LegalGate.tsx:147
+#: src/components/LegalGate.tsx:149
 msgid "Read and agree"
 msgstr "Readrwa andmwa agreeshya"
 
@@ -6698,16 +6698,24 @@ msgstr "Readrwa andmwa agreeshya"
 msgid "Read by customers before they book."
 msgstr "Readrwa by customersmwako beforembiho theynya bookugundi."
 
-#: src/components/LegalGate.tsx:97
-#: src/pages/LegalPage.tsx:152
+#: src/components/LegalGate.tsx:98
+#: src/pages/LegalPage.tsx:157
 msgid "Read it"
 msgstr "Readrwa it"
+
+#: src/ui/TranslationNote.tsx:22
+msgid "Read it in my language"
+msgstr "Readrwa it in my languagenyambi"
 
 #: src/ads/slides.ts:226
 msgid "Read more"
 msgstr "Readrwa moreaba"
 
-#: src/auth/LoginPage.tsx:669
+#: src/ui/TranslationNote.tsx:22
+msgid "Read the English"
+msgstr "Readrwa theugumbi Englishshya"
+
+#: src/auth/LoginPage.tsx:678
 msgid "Reading"
 msgstr "Readingnyaiki"
 
@@ -7004,14 +7012,14 @@ msgstr "Savedugu."
 msgid "Saving draft…"
 msgstr "Savingnyako draftndi…"
 
-#: src/components/LegalGate.tsx:111
+#: src/components/LegalGate.tsx:113
 #: src/pages/AppointmentsPage.tsx:783
 #: src/pages/ClosuresPage.tsx:599
 #: src/pages/HoursPage.tsx:501
 #: src/pages/HoursPage.tsx:575
 #: src/pages/HoursPage.tsx:628
-#: src/pages/LegalPage.tsx:161
-#: src/pages/LegalPage.tsx:188
+#: src/pages/LegalPage.tsx:166
+#: src/pages/LegalPage.tsx:193
 #: src/pages/OverviewPage.tsx:583
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/ReviewsPage.tsx:583
@@ -7133,7 +7141,7 @@ msgstr "Seeabaugu yourmbihoiki shopfrontndimwahoikiugu"
 msgid "See your team"
 msgstr "Seeabaugu yourmbihoiki teamaba"
 
-#: src/auth/LoginPage.tsx:37
+#: src/auth/LoginPage.tsx:38
 msgid "Seller Agreement"
 msgstr "Sellermbize Agreementhondi"
 
@@ -7143,13 +7151,13 @@ msgstr "Sellermbize Agreementhondi"
 msgid "Send"
 msgstr "Sendho"
 
-#: src/auth/LoginPage.tsx:611
+#: src/auth/LoginPage.tsx:620
 #: src/session/ConfirmItsYou.tsx:139
 msgid "Send a new code"
 msgstr "Sendho a newrwamwa codendiugu"
 
 #. placeholder {0}: String(resendIn).padStart(2, '0')
-#: src/auth/LoginPage.tsx:608
+#: src/auth/LoginPage.tsx:617
 msgid "Send a new one in 0:{0}"
 msgstr "Sendho a newrwamwa onenya in 0:{0}"
 
@@ -7189,12 +7197,12 @@ msgstr "Sendho yourmbihoiki shopko forabaze reviewikimbiiki fromko yourmbihoiki 
 msgid "Sending a code to your email…"
 msgstr "Sendingkoaba a codendiugu to yourmbihoiki emailnyakomwa…"
 
-#: src/auth/LoginPage.tsx:444
-#: src/auth/LoginPage.tsx:538
+#: src/auth/LoginPage.tsx:453
+#: src/auth/LoginPage.tsx:547
 msgid "Sending your code…"
 msgstr "Sendingkoaba yourmbihoiki codendiugu…"
 
-#: src/auth/LoginPage.tsx:611
+#: src/auth/LoginPage.tsx:620
 #: src/onboarding/GoLiveCard.tsx:188
 #: src/pages/FollowersPage.tsx:236
 #: src/pages/PayoutsPage.tsx:452
@@ -7464,7 +7472,7 @@ msgstr "Signugu up in ourrwa customerkoshya appaba withikimbi yourmbihoiki perso
 msgid "Sign-in and security"
 msgstr "Signugu-in andmwa securitynyaze"
 
-#: src/auth/LoginPage.tsx:602
+#: src/auth/LoginPage.tsx:611
 #: src/shell/Sidebar.tsx:195
 msgid "Signed in"
 msgstr "Signedkombi in"
@@ -7482,7 +7490,7 @@ msgstr "Signingugundimwaho in againshyakoshya takeshoho a codendiugu fromko your
 msgid "Since {0}"
 msgstr "Sinceiki {0}"
 
-#: src/auth/LoginPage.tsx:496
+#: src/auth/LoginPage.tsx:505
 msgid "Six digits at the door. If they never come, your share is still paid."
 msgstr "Sixnya digitsshya at theugumbi dooriki. If theynya neverkoshya comeiki, yourmbihoiki shareaba is stillkomwa paidnya."
 
@@ -7610,7 +7618,7 @@ msgstr "Startnya a linenya withikimbi “1. ”"
 msgid "Start from an idea"
 msgstr "Startnya fromko an ideamwa"
 
-#: src/auth/LoginPage.tsx:362
+#: src/auth/LoginPage.tsx:371
 msgid "Start selling.<0/><1>Free to join.</1>"
 msgstr "Startnya sellingnyakoabaho.<0/><1>Freehondimwa to joiniki.</1>"
 
@@ -7874,7 +7882,7 @@ msgctxt "search words"
 msgid "terms agreement privacy policy documents"
 msgstr "termsndi agreementnyaze privacyhondi policyshyamwaho documentsrwaze"
 
-#: src/auth/LoginPage.tsx:35
+#: src/auth/LoginPage.tsx:36
 msgid "Terms of Use"
 msgstr "Termsndi of Useugu"
 
@@ -7926,11 +7934,11 @@ msgstr "Thanksndishya forabaze takingikiiki theugumbi timendi to reviewikimbiiki
 msgid "Thanks for taking the time to review us {name} — it means a lot to the team."
 msgstr "Thanksndishya forabaze takingikiiki theugumbi timendi to reviewikimbiiki us {name} — it meansrwa a lotndi to theugumbi teamaba."
 
-#: src/auth/LoginPage.tsx:245
+#: src/auth/LoginPage.tsx:254
 msgid "That code did not work. Please try again."
 msgstr "Thatugu codendiugu didmwa notmwa workaba. Pleasenyanya trymbi againshyakoshya."
 
-#: src/auth/LoginPage.tsx:44
+#: src/auth/LoginPage.tsx:45
 msgid "That code is not right, or it has run out. Check it and try again."
 msgstr "Thatugu codendiugu is notmwa rightrwa, or it hasshya runmwa outshya. Checkshyambi it andmwa trymbi againshyakoshya."
 
@@ -7995,7 +8003,7 @@ msgstr "Thatugu didmwa notmwa workaba. Trymbi againshyakoshya, or checkshya this
 msgid "That did not work. Try again."
 msgstr "Thatugu didmwa notmwa workaba. Trymbi againshyakoshya."
 
-#: src/auth/LoginPage.tsx:47
+#: src/auth/LoginPage.tsx:48
 msgid "That is a lot of codes for one hour. Please try again a little later."
 msgstr "Thatugu is a lotndi of codeskombi forabaze onenya hourshya. Pleasenyanya trymbi againshyakoshya a littlekondi laterkoshya."
 
@@ -8234,7 +8242,7 @@ msgstr "Theugu resthomwako is paidnya to youugu directlynyaaba, notmwa throughmb
 msgid "The rest of the price is paid to you directly at the shop — it never passes through the app."
 msgstr "Theugu resthomwako of theugumbi pricembiugumbi is paidnya to youugu directlynyaaba at theugumbi shopko — it neverkoshya passesugukombi throughmbimwa theugumbi appaba."
 
-#: src/pages/LegalPage.tsx:22
+#: src/pages/LegalPage.tsx:23
 msgid "The rules for using the platform, for everyone."
 msgstr "Theugu rulesaba forabaze usinghoze theugumbi platformmwambi, forabaze everyoneabarwa."
 
@@ -8291,7 +8299,7 @@ msgstr "Thenmwa a typerwa"
 msgid "There is a reply to your help request."
 msgstr "Therekoaba is a replynya to yourmbihoiki helpze requestmwako."
 
-#: src/auth/LoginPage.tsx:468
+#: src/auth/LoginPage.tsx:477
 msgid "There is no account for <0>{clean}</0> yet. Let us make your business account — it takes one code, and nothing else."
 msgstr "Therekoaba is no accountabaiki forabaze <0>{clean}</0> yetiki. Letze us makeho yourmbihoiki businessshyarwa accountabaiki — it takeshoho onenya codendiugu, andmwa nothingzeko elseaba."
 
@@ -8404,9 +8412,13 @@ msgstr "Thisiki dayko"
 msgid "This day has passed. Pick today or a day ahead to change it."
 msgstr "Thisiki dayko hasshya passedrwaho. Pickaba todaymbi or a dayko aheadmwa to changekonya it."
 
-#: src/auth/LoginPage.tsx:684
+#: src/auth/LoginPage.tsx:700
 msgid "This document could not be opened just now. Check your connection and try again."
 msgstr "Thisiki documentugunya couldmbi notmwa be openeduguaba justshya nownya. Checkshyambi yourmbihoiki connectionikinya andmwa trymbi againshyakoshya."
+
+#: src/ui/TranslationNote.tsx:18
+msgid "This is a translation. If it ever differs from the English, the English applies."
+msgstr "Thisiki is a translationndishya. If it everiki differsmwahomwanya fromko theugumbi Englishshya, theugumbi Englishshya applieshondimwaiki."
 
 #: src/components/Allowed.tsx:18
 msgid "This is for the owner and managers"
@@ -8419,6 +8431,10 @@ msgstr "Thisiki is notmwa fixedkoshya"
 #: src/checkin/CheckIn.tsx:368
 msgid "This is recorded against your name and every administrator is told."
 msgstr "Thisiki is recordedkonya againstabaho yourmbihoiki namemwa andmwa everyndi administratormwahorwa is toldndi."
+
+#: src/ui/TranslationNote.tsx:16
+msgid "This is the English, which applies wherever a translation differs."
+msgstr "Thisiki is theugumbi Englishshya, whichmwanyaze applieshondimwaiki whereverikiiki a translationndishya differsmwahomwanya."
 
 #: src/pages/calendar/AppointmentCalendar.tsx:552
 msgid "This month"
@@ -8549,7 +8565,7 @@ msgstr "Todayzeshya’s scheduleugunya"
 msgid "Tomorrow"
 msgstr "Tomorrowmwako"
 
-#: src/auth/LoginPage.tsx:45
+#: src/auth/LoginPage.tsx:46
 msgid "Too many wrong tries. Ask for a new code below."
 msgstr "Tooiki manyze wrongzembi triesmbiugushya. Askmbi forabaze a newrwamwa codendiugu belowzenya."
 
@@ -8681,15 +8697,15 @@ msgstr "Typeko somethingnyanya firstkondi"
 msgid "Type the code they read out to you"
 msgstr "Typeko theugumbi codendiugu theynya readrwa outshya to youugu"
 
-#: src/auth/LoginPage.tsx:385
+#: src/auth/LoginPage.tsx:394
 msgid "Type your business email and we will send you a 6-digit code to sign in."
 msgstr "Typeko yourmbihoiki businessshyarwa emailnyakomwa andmwa we willrwa sendshya youugu a 6-digitmwa codendiugu to signndi in."
 
-#: src/auth/LoginPage.tsx:369
+#: src/auth/LoginPage.tsx:378
 msgid "Type your business email and we will send you a 6-digit code. It creates your account — no password — and then we set up your shop together, in about five minutes."
 msgstr "Typeko yourmbihoiki businessshyarwa emailnyakomwa andmwa we willrwa sendshya youugu a 6-digitmwa codendiugu. It createszenyakondi yourmbihoiki accountabaiki — no passwordndiko — andmwa thenmwa we setshya up yourmbihoiki shopko togethernyako, in aboutmwa fiverwaaba minutesmbiiki."
 
-#: src/auth/LoginPage.tsx:398
+#: src/auth/LoginPage.tsx:407
 msgid "Type your email and we will send you a 6-digit code. New here? The same code creates your business account."
 msgstr "Typeko yourmbihoiki emailnyakomwa andmwa we willrwa sendshya youugu a 6-digitmwa codendiugu. Newiki herenya? Theugu samehohoze codendiugu createszenyakondi yourmbihoiki businessshyarwa accountabaiki."
 
@@ -8791,7 +8807,7 @@ msgstr "Uploadingabaugu photonya {0} of {1}…"
 msgid "Uploading…"
 msgstr "Uploadingabaugu…"
 
-#: src/auth/LoginPage.tsx:542
+#: src/auth/LoginPage.tsx:551
 msgid "Use a different email"
 msgstr "Useugu a differentmbiikiikinyaze emailnyakomwa"
 
@@ -8834,7 +8850,7 @@ msgstr "Vaccinationmbiikindi"
 msgid "venue"
 msgstr "venueaba"
 
-#: src/auth/LoginPage.tsx:602
+#: src/auth/LoginPage.tsx:611
 msgid "Verify"
 msgstr "Verifyuguko"
 
@@ -8844,13 +8860,13 @@ msgid "verify code arrival redeem arrived"
 msgstr "verifyugushya codendiugu arrivalmbiugu redeemrwamwa arrivedzeaba"
 
 #. placeholder {0}: document.version
-#: src/components/LegalGate.tsx:76
+#: src/components/LegalGate.tsx:77
 msgid "Version {0}"
 msgstr "Versionhoho {0}"
 
 #. placeholder {0}: open.version
 #. placeholder {1}: new Date(open.publishedAt).toLocaleDateString(dateLocale(), { dateStyle: 'medium' })
-#: src/auth/LoginPage.tsx:669
+#: src/auth/LoginPage.tsx:678
 msgid "Version {0} · {1}"
 msgstr "Versionhoho {0} · {1}"
 
@@ -8858,8 +8874,8 @@ msgstr "Versionhoho {0} · {1}"
 #. placeholder {0}: open.version
 #. placeholder {1}: when(document.publishedAt)
 #. placeholder {1}: when(open.publishedAt)
-#: src/pages/LegalPage.tsx:133
-#: src/pages/LegalPage.tsx:172
+#: src/pages/LegalPage.tsx:138
+#: src/pages/LegalPage.tsx:177
 msgid "Version {0} · published {1}"
 msgstr "Versionhoho {0} · publishedikinya {1}"
 
@@ -9017,7 +9033,7 @@ msgstr "We justshya addediki a newrwamwa serviceuguaba. Havenya a lookzembiugu o
 msgid "We let you know straight away"
 msgstr "We letmwandi youugu knowmwa straightshyashya awayshya"
 
-#: src/auth/LoginPage.tsx:201
+#: src/auth/LoginPage.tsx:210
 msgid "We sent you a code a moment ago. Enter that one."
 msgstr "We sentho youugu a codendiugu a momentrwauguko agombi. Enterkoshyarwa thatugu onenya."
 
@@ -9050,7 +9066,7 @@ msgstr "Weekendmbiugu slotikindi"
 msgid "Weekend stay"
 msgstr "Weekendmbiugu stayugu"
 
-#: src/auth/LoginPage.tsx:630
+#: src/auth/LoginPage.tsx:639
 msgid "Welcome <0>aboard!</0>"
 msgstr "Welcomenyaze <0>aboardugunyaiki!</0>"
 
@@ -9058,7 +9074,7 @@ msgstr "Welcomenyaze <0>aboardugunyaiki!</0>"
 msgid "Welcome aboard"
 msgstr "Welcomenyaze aboardugunyaiki"
 
-#: src/auth/LoginPage.tsx:560
+#: src/auth/LoginPage.tsx:569
 msgid "Welcome back"
 msgstr "Welcomenyaze backmbi"
 
@@ -9066,7 +9082,7 @@ msgstr "Welcomenyaze backmbi"
 msgid "Welcome, {shopName}"
 msgstr "Welcomenyaze, {shopName}"
 
-#: src/auth/LoginPage.tsx:378
+#: src/auth/LoginPage.tsx:387
 msgid "Welcome<0/><1>back.</1>"
 msgstr "Welcomenyaze<0/><1>backmbi.</1>"
 
@@ -9086,13 +9102,13 @@ msgstr "Whatshya a customerkoshya seesko beforembiho theynya bookugundi. Theugu 
 msgid "What can customers book first?"
 msgstr "Whatshya caniki customersmwako bookugundi firstkondi?"
 
-#: src/pages/LegalPage.tsx:146
-#: src/pages/LegalPage.tsx:200
+#: src/pages/LegalPage.tsx:151
+#: src/pages/LegalPage.tsx:208
 msgid "What changed:"
 msgstr "Whatshya changednyanya:"
 
 #. placeholder {0}: document.changeNote
-#: src/components/LegalGate.tsx:93
+#: src/components/LegalGate.tsx:94
 msgid "What changed: {0}"
 msgstr "Whatshya changednyanya: {0}"
 
@@ -9226,7 +9242,7 @@ msgstr "Whatshya wasmwa writtenuguiki in it cannotmwako be broughtzeshya backmbi
 msgid "What we did:"
 msgstr "Whatshya we didmwa:"
 
-#: src/pages/LegalPage.tsx:26
+#: src/pages/LegalPage.tsx:27
 msgid "What we keep about you and your customers, and why."
 msgstr "Whatshya we keepndi aboutmwa youugu andmwa yourmbihoiki customersmwako, andmwa whyrwa."
 
@@ -9257,7 +9273,7 @@ msgstr "Whatshya youugu do"
 msgid "What you do, in a few lines"
 msgstr "Whatshya youugu do, in a fewko linesndi"
 
-#: src/pages/LegalPage.tsx:69
+#: src/pages/LegalPage.tsx:74
 msgid "What you have agreed to. Older versions are kept — what you agreed to stays as you read it, even after it is replaced."
 msgstr "Whatshya youugu havenyanya agreedrwarwa to. Olderikinyambi versionsabaiki areiki keptrwa — whatnya youugu agreedrwarwa to staysrwa as youugu readrwa it, eveniki afteriki it is replacedrwaaba."
 
@@ -9564,11 +9580,11 @@ msgstr "Youaba"
 
 #. placeholder {0}: document.acceptedVersion
 #. placeholder {1}: when(document.acceptedAt!)
-#: src/pages/LegalPage.tsx:139
+#: src/pages/LegalPage.tsx:144
 msgid "You agreed to version {0} on {1}. This one is newer."
 msgstr "Youaba agreedrwarwa to versionshya {0} on {1}. Thisiki onenya is newermwa."
 
-#: src/auth/LoginPage.tsx:633
+#: src/auth/LoginPage.tsx:642
 msgid "You are <0>in!</0>"
 msgstr "Youaba areiki <0>in!</0>"
 
@@ -9622,7 +9638,7 @@ msgstr "Youaba havenyanya changesmwaiki thatugu areiki notmwa savedaba"
 msgid "You have no branch yet — ask the owner to choose yours."
 msgstr "Youaba havenyanya no branchkomwa yetiki — askzeshya theugumbi owneraba to choosendiuguiki yourshomwa."
 
-#: src/pages/LegalPage.tsx:137
+#: src/pages/LegalPage.tsx:142
 msgid "You have not agreed to this yet."
 msgstr "Youaba havenyanya notmwa agreedrwarwa to thisrwaaba yetiki."
 
@@ -9645,7 +9661,7 @@ msgid "You post it"
 msgstr "Youaba postho it"
 
 #. placeholder {0}: lengthWords(why.idleMinutes)
-#: src/auth/LoginPage.tsx:353
+#: src/auth/LoginPage.tsx:362
 msgid "You were signed out after {0} without use, to keep the account safe."
 msgstr "Youaba wereugu signedkoko outshya afteriki {0} withoutnyako useaba, to keepndi theugumbi accountabaiki safeugu."
 
@@ -9666,7 +9682,7 @@ msgstr "Youaba workaba at {0} — youugu seeaba theugumbi peoplezeshya therekoko
 msgid "You work at every branch."
 msgstr "Youaba workaba at everyndi branchkomwa."
 
-#: src/auth/LoginPage.tsx:422
+#: src/auth/LoginPage.tsx:431
 msgid "you@example.com"
 msgstr "youugu@exampleikiiki.commbi"
 
@@ -9711,7 +9727,7 @@ msgstr "Yourmwa branchkomwa is on theugumbi maprwa."
 msgid "Your business"
 msgstr "Yourmwa businessshyarwa"
 
-#: src/auth/LoginPage.tsx:638
+#: src/auth/LoginPage.tsx:647
 msgid "Your business account is ready. Let us set up your shop."
 msgstr "Yourmwa businessshyarwa accountabaiki is readyaba. Letze us setshya up yourmbihoiki shopko."
 

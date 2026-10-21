@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { acceptLegal, myLegalStatus, type LegalStatus } from '../api/business';
+import { TranslationNote } from '../ui/TranslationNote';
 import { Icon } from '../ui/Icon';
 import { Portal } from '../ui/Portal';
 import { Trans } from '@lingui/react/macro';
@@ -16,7 +17,7 @@ import { t } from '@lingui/core/macro';
 export function useOutstandingLegal() {
   const documents = useQuery({
     queryKey: ['legal-status'],
-    queryFn: myLegalStatus,
+    queryFn: () => myLegalStatus(),
     // Changes only when an admin publishes, which is rare.
     staleTime: 10 * 60 * 1000,
   });
@@ -53,7 +54,7 @@ export function SellerAgreementGate({
   const [reading, setReading] = useState(false);
 
   const accept = useMutation({
-    mutationFn: () => acceptLegal(document.id),
+    mutationFn: () => acceptLegal(document),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['legal-status'] });
       queryClient.invalidateQueries({ queryKey: ['legal'] });
@@ -96,6 +97,7 @@ export function SellerAgreementGate({
           <button type="button" className="link" onClick={() => setReading((v) => !v)}>
             {reading ? t`Hide` : t`Read it`}
           </button>
+          {reading && document.language !== 'en' && <TranslationNote english={false} />}
           {reading && <pre className="legal-body">{document.body}</pre>}
 
           <div className="row-end">

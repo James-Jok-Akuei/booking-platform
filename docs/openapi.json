@@ -667,7 +667,21 @@
     "/legal/me": {
       "get": {
         "operationId": "LegalAcceptanceController_status",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "rw",
+                "fr"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -762,7 +776,21 @@
     "/legal": {
       "get": {
         "operationId": "LegalController_published",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "rw",
+                "fr"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -808,6 +836,19 @@
                 "SELLER_AGREEMENT"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "rw",
+                "fr"
+              ]
             }
           }
         ],
@@ -1049,6 +1090,87 @@
             }
           }
         },
+        "tags": [
+          "AdminLegal"
+        ]
+      }
+    },
+    "/admin/legal/{id}/translations": {
+      "put": {
+        "operationId": "AdminLegalController_setTranslations",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegalTranslationsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalTranslationsSetDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "A version's Kinyarwanda and French — a draft's or one in force (§308.5).",
         "tags": [
           "AdminLegal"
         ]
@@ -18855,6 +18977,15 @@
             "type": "string",
             "nullable": true,
             "description": "One line on what moved, so nobody rereads four thousand words (§122.3)."
+          },
+          "language": {
+            "type": "string",
+            "description": "The language the title and text are in (§308.5): the reader's where this\nversion has been translated, else English. Where a translation and the\nEnglish differ, the English applies — the apps say so beside it.",
+            "enum": [
+              "en",
+              "rw",
+              "fr"
+            ]
           }
         },
         "required": [
@@ -18867,7 +18998,8 @@
           "title",
           "body",
           "publishedAt",
-          "changeNote"
+          "changeNote",
+          "language"
         ]
       },
       "AcceptDocumentDto": {
@@ -18876,6 +19008,15 @@
           "documentId": {
             "type": "string",
             "format": "uuid"
+          },
+          "language": {
+            "type": "string",
+            "description": "The language it was read in, kept with the agreement (§308.5).",
+            "enum": [
+              "en",
+              "rw",
+              "fr"
+            ]
           }
         },
         "required": [
@@ -18938,6 +19079,15 @@
             "type": "string",
             "nullable": true,
             "description": "One line on what moved, so nobody rereads four thousand words (§122.3)."
+          },
+          "language": {
+            "description": "The language the title and text are in (§308.5): the reader's where this\nversion has been translated, else English. Where a translation and the\nEnglish differ, the English applies — the apps say so beside it.",
+            "enum": [
+              "en",
+              "rw",
+              "fr"
+            ],
+            "type": "string"
           }
         },
         "required": [
@@ -18947,8 +19097,34 @@
           "title",
           "body",
           "publishedAt",
-          "changeNote"
+          "changeNote",
+          "language"
         ]
+      },
+      "LegalWordsResponseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "changeNote": {
+            "type": "string"
+          }
+        }
+      },
+      "LegalTranslationsResponseDto": {
+        "type": "object",
+        "properties": {
+          "rw": {
+            "$ref": "#/components/schemas/LegalWordsResponseDto"
+          },
+          "fr": {
+            "$ref": "#/components/schemas/LegalWordsResponseDto"
+          }
+        }
       },
       "LegalPublisherDto": {
         "type": "object",
@@ -19009,6 +19185,14 @@
             "nullable": true,
             "description": "What changed, shown to people being asked to accept again."
           },
+          "translations": {
+            "description": "This version in Kinyarwanda and French, where translated (§308.5).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LegalTranslationsResponseDto"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string"
           },
@@ -19042,6 +19226,7 @@
           "body",
           "publishedAt",
           "changeNote",
+          "translations",
           "createdAt",
           "updatedAt",
           "publishedBy",
@@ -19139,6 +19324,48 @@
             "maxLength": 300
           }
         }
+      },
+      "LegalWordsDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "body": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200000
+          },
+          "changeNote": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 300
+          }
+        }
+      },
+      "LegalTranslationsDto": {
+        "type": "object",
+        "properties": {
+          "rw": {
+            "$ref": "#/components/schemas/LegalWordsDto"
+          },
+          "fr": {
+            "$ref": "#/components/schemas/LegalWordsDto"
+          }
+        }
+      },
+      "LegalTranslationsSetDto": {
+        "type": "object",
+        "properties": {
+          "translations": {
+            "$ref": "#/components/schemas/LegalTranslationsResponseDto"
+          }
+        },
+        "required": [
+          "translations"
+        ]
       },
       "MeBusinessDto": {
         "type": "object",

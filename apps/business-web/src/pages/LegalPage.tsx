@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { acceptLegal, myLegalStatus, type LegalStatus } from '../api/business';
+import { TranslationNote } from '../ui/TranslationNote';
 import { Icon, type IconName } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import './legal.css';
@@ -42,8 +43,12 @@ export function LegalPage() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState<LegalStatus | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  // "Read the English" (§308.5): the English applies wherever a translation differs.
+  const [english, setEnglish] = useState(false);
 
-  const documents = useQuery({ queryKey: ['legal'], queryFn: myLegalStatus });
+  const documents = useQuery({ queryKey: ['legal'], queryFn: () => myLegalStatus() });
+  const inEnglish = useQuery({ queryKey: ['legal', 'en'], queryFn: () => myLegalStatus('en'), enabled: english });
+  const shown = open && english ? (inEnglish.data?.find((d) => d.id === open.id) ?? open) : open;
 
   const accept = useMutation({
     mutationFn: acceptLegal,
@@ -156,9 +161,9 @@ export function LegalPage() {
                     type="button"
                     className="primary"
                     disabled={accept.isPending}
-                    onClick={() => accept.mutate(document.id)}
+                    onClick={() => accept.mutate(document)}
                   >
-                    {accept.isPending && accept.variables === document.id ? t`Saving…` : t`I agree to this`}
+                    {accept.isPending && accept.variables?.id === document.id ? t`Saving…` : t`I agree to this`}
                   </button>
                 )}
               </div>
@@ -183,7 +188,7 @@ export function LegalPage() {
                   type="button"
                   className="primary"
                   disabled={accept.isPending}
-                  onClick={() => accept.mutate(open.id, { onSuccess: () => setOpen(null) })}
+                  onClick={() => accept.mutate(open, { onSuccess: () => setOpen(null) })}
                 >
                   {accept.isPending ? t`Saving…` : t`I agree to this`}
                 </button>
@@ -195,12 +200,15 @@ export function LegalPage() {
             )
           }
         >
-          {open.needsAcceptance && open.changeNote && (
+          {(english || open.language !== 'en') && (
+            <TranslationNote english={english} onToggle={() => setEnglish((was) => !was)} />
+          )}
+          {open.needsAcceptance && shown?.changeNote && (
             <p className="lg-change">
-              <strong><Trans>What changed:</Trans></strong> {open.changeNote}
+              <strong><Trans>What changed:</Trans></strong> {shown.changeNote}
             </p>
           )}
-          <pre className="lg-body">{open.body}</pre>
+          <pre className="lg-body">{shown?.body}</pre>
         </Panel>
       )}
     </section>

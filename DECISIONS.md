@@ -19979,3 +19979,30 @@ sent (the same `compose` as support's notices), its email button in their
 words, and its banner in the language the app asks in. A language not typed
 gets the English, never a half-filled message — each field falls back on its
 own. Shared helpers for words typed per language: `src/i18n/typed-words.ts`.
+
+### 308.5 Legal documents in each language (2026-10-21)
+
+The user decided (with the lawyer to confirm): **the English version applies
+wherever a translation differs**, and **a translation is added to the version
+in force without anybody being asked to agree again**.
+
+- Each version can carry a Kinyarwanda and a French title, text and "what
+  changed" (`legal_documents.translations`, migration `legal_translations`),
+  set from the console's Legal page — on a draft or on a version in force,
+  which its English never is. The console reads a version in each of its
+  languages (tabs over the page), says beside it which languages it is in,
+  and writes a translation beside the English it translates, counting the
+  paragraphs so none is missed.
+- Readers get the whole text in their language where that version has been
+  translated — never half — else the English, and the answer says which
+  (`language`). Where it is a translation, the apps and the website say so:
+  "This is a translation. If it ever differs from the English, the English
+  applies", with "Read the English" one press away (`?lang=en`).
+- Agreeing keeps the language it was read in (`legal_acceptances.language`),
+  so the record shows what the person actually read. The version agreed to
+  is the same whatever the language.
+- Starting a new version does not copy the old translations: they translate
+  the old words. Until the new one is translated, readers get its English.
+
+The documents themselves still need writing in Kinyarwanda and French by a
+translator and reading by the lawyer (launch paperwork).

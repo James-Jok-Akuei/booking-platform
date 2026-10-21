@@ -110,7 +110,7 @@ msgid "{0} from today."
 msgstr "{0} fromko todaymbi."
 
 #. placeholder {0}: document.title
-#: src/components/LegalPrompt.tsx:71
+#: src/components/LegalPrompt.tsx:72
 msgid "{0} has changed"
 msgstr "{0} hasshya changednyanya"
 
@@ -517,7 +517,7 @@ msgid "Afternoon"
 msgstr "Afternoonnyaiki"
 
 #. placeholder {0}: status.acceptedAt ? when(status.acceptedAt) : ''
-#: app/legal.tsx:193
+#: app/legal.tsx:197
 msgid "Agreed {0}"
 msgstr "Agreedikindi {0}"
 
@@ -812,7 +812,7 @@ msgstr "Bwangukoaba<0>Reservationsmbiugunya</0>"
 
 #. placeholder {0}: current.version
 #. placeholder {1}: current.title
-#: app/legal.tsx:239
+#: app/legal.tsx:247
 msgid "By tapping, you agree to version {0} of the {1}."
 msgstr "By tappingzenya, youugu agreeshya to versionshya {0} of theugumbi {1}."
 
@@ -1613,11 +1613,11 @@ msgstr "Howrwa wasmwa it?"
 msgid "hrs"
 msgstr "hrsndi"
 
-#: src/components/LegalPrompt.tsx:89
+#: src/components/LegalPrompt.tsx:93
 msgid "I agree"
 msgstr "I agreeshya"
 
-#: app/legal.tsx:245
+#: app/legal.tsx:253
 msgid "I agree to this"
 msgstr "I agreeshya to thisrwaaba"
 
@@ -1747,7 +1747,7 @@ msgstr "Leavendi thisrwaaba blankkombi to stayugu Anonymousmwandi. Whatevernyaik
 msgid "Left empty, your reviews say “Anonymous”."
 msgstr "Leftabazeko emptymbi, yourmbihoiki reviewsmwahorwaze sayugu “Anonymousmwandi”."
 
-#: app/legal.tsx:103
+#: app/legal.tsx:107
 msgid "Legal"
 msgstr "Legalmwa"
 
@@ -2033,7 +2033,7 @@ msgstr "Notmbi goodndi"
 
 #: app/(tabs)/index.tsx:480
 #: app/(tabs)/saved.tsx:141
-#: src/components/LegalPrompt.tsx:106
+#: src/components/LegalPrompt.tsx:110
 #: src/components/NearMeCard.tsx:102
 #: src/stories/StoryPlayer.tsx:486
 #: src/ui/Dialog.tsx:116
@@ -2054,7 +2054,7 @@ msgstr "Notmbi paidnya yetiki"
 
 #: app/(tabs)/account.tsx:166
 #: app/(tabs)/account.tsx:260
-#: app/legal.tsx:248
+#: app/legal.tsx:256
 #: src/components/OffersCard.tsx:111
 #: src/exportDocument.ts:57
 #: src/useSavedService.ts:46
@@ -2104,7 +2104,7 @@ msgstr "Nothingzenya hasshya beenho paidnya, so cancellingshyaaba costsrwa nothi
 msgid "Nothing has been paid, so nothing is lost."
 msgstr "Nothingzenya hasshya beenho paidnya, so nothingzeko is lostho."
 
-#: app/legal.tsx:173
+#: app/legal.tsx:177
 msgid "Nothing has been published yet."
 msgstr "Nothingzenya hasshya beenho publishedikinya yetiki."
 
@@ -2216,7 +2216,7 @@ msgstr "Offerszenyandi: offmwa"
 msgid "Offers: on"
 msgstr "Offerszenyandi: on"
 
-#: app/legal.tsx:215
+#: app/legal.tsx:223
 msgid "Older versions are kept. What you agreed to stays as you read it, even after it is replaced."
 msgstr "Olderikinyambi versionsabaiki areiki keptrwa. Whatshya youugu agreedrwarwa to staysrwa as youugu readrwa it, eveniki afteriki it is replacedrwaaba."
 
@@ -2593,13 +2593,21 @@ msgstr "Quietnya hoursugu"
 msgid "Quiet until"
 msgstr "Quietnya untilhoho"
 
-#: src/components/LegalPrompt.tsx:101
+#: src/components/LegalPrompt.tsx:105
 msgid "Read all the documents"
 msgstr "Readrwa allaba theugumbi documentsrwaze"
+
+#: src/components/TranslationNote.tsx:26
+msgid "Read it in my language"
+msgstr "Readrwa it in my languagenyambi"
 
 #: src/ui/RichText.tsx:108
 msgid "Read more"
 msgstr "Readrwa moreaba"
+
+#: src/components/TranslationNote.tsx:26
+msgid "Read the English"
+msgstr "Readrwa theugumbi Englishshya"
 
 #: src/booking/Reservation.tsx:45
 msgid "Read your conversation with the shop, to help"
@@ -2766,7 +2774,7 @@ msgid "Saved so you do not retype them. Nothing can be charged without the promp
 msgstr "Savedugu so youugu do notmwa retypeabaikiho themnyaiki. Nothingzenya caniki be chargednyanya withoutnyako theugumbi promptnyaikindi on yourmbihoiki phonehoikize."
 
 #: app/(tabs)/account.tsx:773
-#: src/components/LegalPrompt.tsx:89
+#: src/components/LegalPrompt.tsx:93
 msgid "Saving…"
 msgstr "Savingnyako…"
 
@@ -3341,6 +3349,14 @@ msgstr "Thisiki documentugunya wasmwa madendi on yourmbihoiki phonehoikize fromk
 msgid "This goes to our support team, with your booking attached. To reach the shop itself, use Message on the reservation."
 msgstr "Thisiki goesshya to ourrwa supportndiho teamaba, withikimbi yourmbihoiki bookinguguiki attachedikimbi. To reachugu theugumbi shopko itselfmbishya, useaba Messageabaugu on theugumbi reservationkonyako."
 
+#: src/components/TranslationNote.tsx:21
+msgid "This is a translation. If it ever differs from the English, the English applies."
+msgstr "Thisiki is a translationndishya. If it everiki differsmwahomwanya fromko theugumbi Englishshya, theugumbi Englishshya applieshondimwaiki."
+
+#: src/components/TranslationNote.tsx:19
+msgid "This is the English, which applies wherever a translation differs."
+msgstr "Thisiki is theugumbi Englishshya, whichmwanyaze applieshondimwaiki whereverikiiki a translationndishya differsmwahomwanya."
+
 #: app/review/[id].tsx:233
 msgid "This is the name on all of your reviews. Changing it here changes it on every one of them."
 msgstr "Thisiki is theugumbi namemwa on allaba of yourmbihoiki reviewsmwahorwaze. Changingmbize it herenya changesmwaiki it on everyndi onenya of themnyaiki."
@@ -3561,8 +3577,8 @@ msgstr "Up to {places}, allaba at oncendi"
 msgid "Upcoming"
 msgstr "Upcomingshyaugu"
 
-#: src/upload.ts:47
-#: src/upload.web.ts:38
+#: src/upload.ts:51
+#: src/upload.web.ts:42
 msgid "Upload failed ({status})."
 msgstr "Uploadabaho failedabandi ({status})."
 
@@ -3608,7 +3624,7 @@ msgstr "Versionhoho {0}"
 
 #. placeholder {0}: current.version
 #. placeholder {1}: when(current.publishedAt)
-#: app/legal.tsx:180
+#: app/legal.tsx:184
 msgid "Version {0} · {1}"
 msgstr "Versionhoho {0} · {1}"
 
@@ -3705,12 +3721,12 @@ msgid "What are you\n"
 "looking for?"
 msgstr "Whatshya areiki youugu\nlookingzeshya forabaze?"
 
-#: src/components/LegalPrompt.tsx:78
+#: src/components/LegalPrompt.tsx:79
 msgid "What changed"
 msgstr "Whatshya changednyanya"
 
 #. placeholder {0}: current.changeNote
-#: app/legal.tsx:203
+#: app/legal.tsx:207
 msgid "What changed: {0}"
 msgstr "Whatshya changednyanya: {0}"
 
@@ -3839,12 +3855,12 @@ msgstr "Youaba"
 
 #. placeholder {0}: document.acceptedVersion
 #. placeholder {1}: document.version
-#: src/components/LegalPrompt.tsx:73
+#: src/components/LegalPrompt.tsx:74
 msgid "You agreed to version {0}. This is version {1}."
 msgstr "Youaba agreedrwarwa to versionshya {0}. Thisiki is versionshya {1}."
 
 #. placeholder {0}: status.acceptedVersion
-#: app/legal.tsx:192
+#: app/legal.tsx:196
 msgid "You agreed to version {0}. This one is newer."
 msgstr "Youaba agreedrwarwa to versionshya {0}. Thisiki onenya is newermwa."
 
@@ -3876,7 +3892,7 @@ msgstr "Youaba caniki changekonya thisrwaaba forabaze {REVIEW_EDIT_WINDOW_DAYS} 
 msgid "You cancelled this"
 msgstr "Youaba cancelledabandi thisrwaaba"
 
-#: app/legal.tsx:190
+#: app/legal.tsx:194
 msgid "You have not agreed to this yet"
 msgstr "Youaba havenyanya notmwa agreedrwarwa to thisrwaaba yetiki"
 

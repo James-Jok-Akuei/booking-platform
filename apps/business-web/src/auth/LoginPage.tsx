@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError, requestOtp, signedOutWhy } from '../api/client';
 import { lengthWords } from '../session/words';
 import { getCategories, getMe, getReadiness, publishedLegal, wallPlaces, type LegalDocument } from '../api/business';
+import { TranslationNote } from '../ui/TranslationNote';
 import { growWords } from './growWords';
 import { CodeBoxes, type CodeState } from '../ui/CodeBoxes';
 import { Icon, type IconName } from '../ui/Icon';
@@ -149,8 +150,16 @@ export function LoginPage() {
   // The documents, fetched once somebody is about to agree to them.
   const documents = useQuery({
     queryKey: ['legal-published'],
-    queryFn: publishedLegal,
+    queryFn: () => publishedLegal(),
     enabled: step === 'register' || reading !== null,
+    staleTime: 10 * 60_000,
+  });
+  // "Read the English" (§308.5): the English applies wherever a translation differs.
+  const [english, setEnglish] = useState(false);
+  const inEnglish = useQuery({
+    queryKey: ['legal-published', 'en'],
+    queryFn: () => publishedLegal('en'),
+    enabled: english && reading !== null,
     staleTime: 10 * 60_000,
   });
 
@@ -677,7 +686,14 @@ export function LoginPage() {
           }
         >
           {open ? (
-            <pre className="lg-body">{open.body}</pre>
+            <>
+              {(english || open.language !== 'en') && (
+                <TranslationNote english={english} onToggle={() => setEnglish((was) => !was)} />
+              )}
+              <pre className="lg-body">
+                {english ? (inEnglish.data?.find((d) => d.id === open.id)?.body ?? open.body) : open.body}
+              </pre>
+            </>
           ) : documents.isError ? (
             <p className="au-note is-error">
               <Icon name="alert" size={17} />

@@ -139,3 +139,18 @@
   .lgl-editor-foot { flex-wrap: wrap; }
   .lgl-editor-foot > span { flex-basis: 100%; }
 }
+
+/* Kinyarwanda and French (§308.5): reading a version in them, and writing them. */
+.lgl-langs { display: flex; gap: 4px; padding: 10px 22px 0; }
+.lgl-langs button { min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 13px; font-weight: 650; color: var(--ink-2); }
+.lgl-langs button.is-on { background: var(--night); border-color: var(--night); color: #fff; }
+.lgl-trans { padding: 14px; border-radius: 20px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.06); box-shadow: var(--shadow-xs); }
+.lgl-trans h4 { display: flex; align-items: center; gap: 8px; margin: 2px 4px 8px; font-size: 13px; font-weight: 750; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.lgl-trans h4 svg { color: var(--accent); }
+.lgl-trans-row { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-top: 1px solid var(--line); }
+.lgl-trans-row:first-of-type { border-top: none; }
+.lgl-trans-row > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.lgl-trans-row strong { font-size: 13.5px; }
+.lgl-trans-row em { font-style: normal; font-size: 12px; color: var(--muted); font-weight: 600; }
+.lgl-trans-row button { min-height: 34px; padding: 0 14px; border-radius: 11px; font-size: 13px; }
+.lgl-trans p { margin: 8px 4px 2px; font-size: 12px; line-height: 1.5; color: var(--muted); }

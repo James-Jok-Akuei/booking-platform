@@ -8,6 +8,7 @@ import { font, radius, shadow, theme, type } from '../theme';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { TranslationNote } from './TranslationNote';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 
@@ -35,7 +36,7 @@ export function LegalPrompt() {
 
   const documents = useQuery({
     queryKey: ['legal-status'],
-    queryFn: myLegalStatus,
+    queryFn: () => myLegalStatus(),
     enabled: signedIn,
     // The answer changes only when an admin publishes, which is rare. Asking on
     // every screen would be a request per navigation for a notice that is almost
@@ -80,6 +81,9 @@ export function LegalPrompt() {
             </View>
           )}
 
+          {/* The English one tap away on the Legal page (§308.5). */}
+          {document.language !== 'en' && <TranslationNote english={false} />}
+
           <ScrollView style={styles.bodyScroll} showsVerticalScrollIndicator={false}>
             <Text style={styles.body}>{document.body}</Text>
           </ScrollView>
@@ -87,7 +91,7 @@ export function LegalPrompt() {
           <Button
             busy={accept.isPending}
             label={accept.isPending ? t`Saving…` : t`I agree`}
-            onPress={() => accept.mutate(document.id)}
+            onPress={() => accept.mutate(document)}
           />
 
           <View style={styles.footRow}>

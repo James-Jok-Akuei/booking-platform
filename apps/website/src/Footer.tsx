@@ -10,7 +10,7 @@ import { LanguageChoice } from './LanguageChoice';
 import { dateLocale, askIn } from './i18n';
 
 type Kind = 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
-type Doc = { title: string; version: number; body: string; publishedAt: string };
+type Doc = { title: string; version: number; body: string; publishedAt: string; language?: string };
 
 // Read when drawn, in the language then in use (§308).
 const DOCS: Array<{ kind: Kind; readonly label: string }> = [
@@ -174,6 +174,8 @@ export function Footer({ onGetApp, onHow }: { onGetApp: () => void; onHow: () =>
 function LegalDoc({ kind, onClose }: { kind: Kind; onClose: () => void }) {
   const [doc, setDoc] = useState<Doc | null>(null);
   const [failed, setFailed] = useState(false);
+  // "Read the English" (§308.5): the English applies wherever a translation differs.
+  const [english, setEnglish] = useState(false);
   const label = DOCS.find((d) => d.kind === kind)!.label;
   const since = doc
     ? new Date(doc.publishedAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
@@ -181,12 +183,12 @@ function LegalDoc({ kind, onClose }: { kind: Kind; onClose: () => void }) {
 
   useEffect(() => {
     const control = new AbortController();
-    fetch(`${API_URL}/legal/${kind}`, { signal: control.signal, headers: { 'Accept-Language': askIn() } })
+    fetch(`${API_URL}/legal/${kind}${english ? '?lang=en' : ''}`, { signal: control.signal, headers: { 'Accept-Language': askIn() } })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: Doc) => setDoc(d))
       .catch((e: Error) => e.name !== 'AbortError' && setFailed(true));
     return () => control.abort();
-  }, [kind]);
+  }, [kind, english]);
 
   return (
     <Modal title={label} onClose={onClose} className="is-doc">
@@ -196,6 +198,18 @@ function LegalDoc({ kind, onClose }: { kind: Kind; onClose: () => void }) {
           <Trans>
             Version {doc.version} · in force since {since}
           </Trans>
+        </p>
+      )}
+      {doc && (english || (doc.language ?? 'en') !== 'en') && (
+        <p className="doc-translated">
+          {english ? (
+            <Trans>This is the English, which applies wherever a translation differs.</Trans>
+          ) : (
+            <Trans>This is a translation. If it ever differs from the English, the English applies.</Trans>
+          )}{' '}
+          <button type="button" onClick={() => setEnglish((was) => !was)}>
+            {english ? <Trans>Read it in my language</Trans> : <Trans>Read the English</Trans>}
+          </button>
         </p>
       )}
       <div className="doc-body">

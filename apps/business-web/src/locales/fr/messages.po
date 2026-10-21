@@ -53,11 +53,11 @@ msgid " · until you end it"
 msgstr ""
 
 #. placeholder {0}: document.acceptedVersion
-#: src/components/LegalGate.tsx:78
+#: src/components/LegalGate.tsx:79
 msgid " · you agreed to version {0}"
 msgstr ""
 
-#: src/components/LegalGate.tsx:79
+#: src/components/LegalGate.tsx:80
 msgid " · you have not agreed to this yet"
 msgstr ""
 
@@ -70,7 +70,7 @@ msgstr ""
 msgid " {waiting} waiting for you."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:355
+#: src/auth/LoginPage.tsx:364
 msgid " Sign in again to carry on."
 msgstr ""
 
@@ -356,12 +356,12 @@ msgid "{0} deposit − {1} fee"
 msgstr ""
 
 #. placeholder {0}: outstanding.length
-#: src/components/LegalGate.tsx:140
+#: src/components/LegalGate.tsx:142
 msgid "{0} documents have changed."
 msgstr ""
 
 #. placeholder {0}: outstanding[0].title
-#: src/components/LegalGate.tsx:139
+#: src/components/LegalGate.tsx:141
 msgid "{0} has changed."
 msgstr ""
 
@@ -526,7 +526,7 @@ msgstr ""
 msgid "{change}% on the {days} days before"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:570
+#: src/auth/LoginPage.tsx:579
 msgid "{clean}. Change the email"
 msgstr ""
 
@@ -564,11 +564,11 @@ msgstr ""
 msgid "{doneCount} of {0} required things done"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:226
+#: src/auth/LoginPage.tsx:235
 msgid "{email} is a customer account. This app is for businesses — sign in with your business email."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:227
+#: src/auth/LoginPage.tsx:236
 msgid "{email} is an admin account. This app is for businesses — sign in with your business email."
 msgstr ""
 
@@ -735,7 +735,7 @@ msgstr ""
 msgid "{noShow} no-show"
 msgstr ""
 
-#: src/pages/LegalPage.tsx:83
+#: src/pages/LegalPage.tsx:88
 msgid "{outstanding, plural, one {# document has changed since you agreed.} other {# documents have changed since you agreed.}}"
 msgstr ""
 
@@ -966,7 +966,7 @@ msgstr ""
 msgid "<0>{late}.</0> If that is longer than you expected, ask us — we will check this payment and reply on the Help page and by email."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:723
+#: src/auth/LoginPage.tsx:739
 msgid "<0>{total} places</0> already take bookings here"
 msgstr ""
 
@@ -998,7 +998,7 @@ msgstr ""
 msgid "<0>Meanwhile, make it shine</0>Photos, a description, more services and your team. Shops with photos get booked first."
 msgstr ""
 
-#: src/components/LegalGate.tsx:85
+#: src/components/LegalGate.tsx:86
 msgid "<0>Please accept this before listing a service.</0> Listing one is you agreeing to trade under these terms, so it is the one thing we stop until you have read them."
 msgstr ""
 
@@ -1006,7 +1006,7 @@ msgstr ""
 msgid "<0>We check your details</0>Usually within one working day. We may call your shop’s number."
 msgstr ""
 
-#: src/pages/LegalPage.tsx:97
+#: src/pages/LegalPage.tsx:102
 msgid "<0>You are up to date.</0> You have agreed to the latest version of everything."
 msgstr ""
 
@@ -1135,7 +1135,7 @@ msgstr ""
 msgid "A customer wrote to you. A shop cannot start a conversation, so a quick reply is the chance to win the booking."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:487
+#: src/auth/LoginPage.tsx:496
 msgid "A deposit holds each booking. Your share is paid to your number."
 msgstr ""
 
@@ -1560,12 +1560,12 @@ msgstr ""
 msgid "After a visit, customers can rate you. Their words will show here."
 msgstr ""
 
-#: src/pages/LegalPage.tsx:128
+#: src/pages/LegalPage.tsx:133
 msgid "Agreed"
 msgstr ""
 
 #. placeholder {0}: when(document.acceptedAt!)
-#: src/pages/LegalPage.tsx:140
+#: src/pages/LegalPage.tsx:145
 msgid "Agreed on {0}."
 msgstr ""
 
@@ -2305,7 +2305,7 @@ msgstr ""
 msgid "Category"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:574
+#: src/auth/LoginPage.tsx:583
 #: src/checkin/CheckIn.tsx:547
 #: src/onboarding/Welcome.tsx:678
 #: src/onboarding/Welcome.tsx:816
@@ -2333,7 +2333,7 @@ msgstr ""
 msgid "Change this day"
 msgstr ""
 
-#: src/pages/LegalPage.tsx:128
+#: src/pages/LegalPage.tsx:133
 msgid "Changed"
 msgstr ""
 
@@ -2387,7 +2387,7 @@ msgstr ""
 msgid "Check in someone else"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:495
+#: src/auth/LoginPage.tsx:504
 msgid "Check in with a code"
 msgstr ""
 
@@ -2412,7 +2412,7 @@ msgstr ""
 msgid "Check them in"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:563
+#: src/auth/LoginPage.tsx:572
 msgid "Check your <0>inbox.</0>"
 msgstr ""
 
@@ -2447,7 +2447,7 @@ msgstr ""
 msgid "Checking in…"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:600
+#: src/auth/LoginPage.tsx:609
 msgid "Checking…"
 msgstr ""
 
@@ -2573,7 +2573,7 @@ msgstr ""
 #: src/checkin/CheckIn.tsx:245
 #: src/onboarding/GoLiveCard.tsx:508
 #: src/pages/calendar/AppointmentCalendar.tsx:1111
-#: src/pages/LegalPage.tsx:193
+#: src/pages/LegalPage.tsx:198
 #: src/pages/PayoutDetail.tsx:158
 #: src/ui/DropZone.tsx:155
 #: src/ui/Select.tsx:212
@@ -2749,7 +2749,7 @@ msgstr ""
 msgid "Contact lens fitting"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:445
+#: src/auth/LoginPage.tsx:454
 #: src/onboarding/Welcome.tsx:903
 #: src/onboarding/Welcome.tsx:1128
 #: src/onboarding/Welcome.tsx:1173
@@ -2812,7 +2812,7 @@ msgstr ""
 msgid "Could not search just now. Type the address in full."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:205
+#: src/auth/LoginPage.tsx:214
 msgid "Could not send a code. Check your connection and try again."
 msgstr ""
 
@@ -2824,11 +2824,11 @@ msgstr ""
 msgid "Cover photo"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:539
+#: src/auth/LoginPage.tsx:548
 msgid "Create my business account"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:556
+#: src/auth/LoginPage.tsx:565
 msgid "Creating your account"
 msgstr ""
 
@@ -2880,7 +2880,7 @@ msgstr ""
 msgid "Customers book"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:332
+#: src/auth/LoginPage.tsx:341
 msgid "Customers book and pay a deposit. You check them in with a code."
 msgstr ""
 
@@ -2964,7 +2964,7 @@ msgstr ""
 msgid "Customers find you by how near you are. Choose a suggested address above, paste the shop's Google Maps link, or press the button if you are there now."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:482
+#: src/auth/LoginPage.tsx:491
 msgid "Customers find your shop and pick a time that is free."
 msgstr ""
 
@@ -3176,7 +3176,7 @@ msgstr ""
 msgid "Deposits taken through the app, and what customers pay you directly."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:486
+#: src/auth/LoginPage.tsx:495
 msgid "Deposits to MTN MoMo"
 msgstr ""
 
@@ -3206,11 +3206,11 @@ msgstr ""
 msgid "Did you know?"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:437
+#: src/auth/LoginPage.tsx:446
 msgid "Did you mean <0>{suggestion}</0>?"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:606
+#: src/auth/LoginPage.tsx:615
 msgid "Didn’t get it?"
 msgstr ""
 
@@ -3257,7 +3257,7 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:675
+#: src/auth/LoginPage.tsx:684
 msgid "Done reading"
 msgstr ""
 
@@ -3537,7 +3537,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:423
+#: src/auth/LoginPage.tsx:432
 msgid "Email address"
 msgstr ""
 
@@ -3567,7 +3567,7 @@ msgstr ""
 msgid "Enter sends; Shift + Enter starts a new line. Photos go with the paperclip."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:565
+#: src/auth/LoginPage.tsx:574
 msgid "Enter the 6-digit code we sent to"
 msgstr ""
 
@@ -3801,7 +3801,7 @@ msgstr ""
 msgid "Five moments, on the real screens. Then we can show you around — it takes a minute."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:439
+#: src/auth/LoginPage.tsx:448
 msgid "Fix"
 msgstr ""
 
@@ -3852,7 +3852,7 @@ msgstr ""
 msgid "For allergies, health or anything personal."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:313
+#: src/auth/LoginPage.tsx:322
 #: src/onboarding/Welcome.tsx:173
 msgid "For businesses"
 msgstr ""
@@ -3880,7 +3880,7 @@ msgid "For you"
 msgstr ""
 
 #. placeholder {0}: lengthWords(why.maxMinutes ?? why.idleMinutes)
-#: src/auth/LoginPage.tsx:354
+#: src/auth/LoginPage.tsx:363
 msgid "For your safety, a sign-in lasts {0}."
 msgstr ""
 
@@ -4021,7 +4021,7 @@ msgstr ""
 msgid "get"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:481
+#: src/auth/LoginPage.tsx:490
 msgid "Get booked online"
 msgstr ""
 
@@ -4118,7 +4118,7 @@ msgstr ""
 msgid "Good morning"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:638
+#: src/auth/LoginPage.tsx:647
 msgid "Good to see you again."
 msgstr ""
 
@@ -4143,11 +4143,11 @@ msgid "Grow · Branches"
 msgstr ""
 
 #. {word} changes every two seconds: “barbershop.”, “car wash.”, “yoga studio.” — each one ends with its own full stop.
-#: src/auth/LoginPage.tsx:91
+#: src/auth/LoginPage.tsx:92
 msgid "Grow your {word}"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:327
+#: src/auth/LoginPage.tsx:336
 msgid "Grow your business — bookings, deposits and check-ins in one place."
 msgstr ""
 
@@ -4217,7 +4217,7 @@ msgstr ""
 msgid "Hidden from customers"
 msgstr ""
 
-#: src/components/LegalGate.tsx:97
+#: src/components/LegalGate.tsx:98
 msgid "Hide"
 msgstr ""
 
@@ -4387,20 +4387,20 @@ msgstr ""
 msgid "How the business is going — bookings, takings and ratings over time — is seen by the owner and by managers."
 msgstr ""
 
-#: src/pages/LegalPage.tsx:18
+#: src/pages/LegalPage.tsx:19
 msgid "How you get paid, and what happens when a booking is cancelled."
 msgstr ""
 
-#: src/components/LegalGate.tsx:111
+#: src/components/LegalGate.tsx:113
 msgid "I agree"
 msgstr ""
 
-#: src/pages/LegalPage.tsx:161
-#: src/pages/LegalPage.tsx:188
+#: src/pages/LegalPage.tsx:166
+#: src/pages/LegalPage.tsx:193
 msgid "I agree to this"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:530
+#: src/auth/LoginPage.tsx:539
 msgid "I have read and agree to the <0/>, the <1/> and the <2/>."
 msgstr ""
 
@@ -4495,7 +4495,7 @@ msgstr ""
 msgid "Invited as {0} on {1} · expires {2}"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:503
+#: src/auth/LoginPage.tsx:512
 msgid "Invited to work with a business? This makes your account — you join them when you enter the code."
 msgstr ""
 
@@ -4734,7 +4734,7 @@ msgid "Leave without saving?"
 msgstr ""
 
 #: src/nav.ts:167
-#: src/pages/LegalPage.tsx:67
+#: src/pages/LegalPage.tsx:72
 #: src/shell/Topbar.tsx:126
 msgid "Legal"
 msgstr ""
@@ -4805,7 +4805,7 @@ msgstr ""
 msgid "Long"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:615
+#: src/auth/LoginPage.tsx:624
 msgid "Look in your spam folder too. Each code works for {CODE_MINUTES} minutes."
 msgstr ""
 
@@ -4829,7 +4829,7 @@ msgstr ""
 msgid "Lunch, a meeting, a delivery"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:319
+#: src/auth/LoginPage.tsx:328
 #: src/shell/Topbar.tsx:61
 msgid "Made for Rwanda"
 msgstr ""
@@ -5178,7 +5178,7 @@ msgstr ""
 msgid "New code in {0}"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:463
+#: src/auth/LoginPage.tsx:472
 msgid "New here"
 msgstr ""
 
@@ -5234,7 +5234,7 @@ msgstr ""
 msgid "Next up"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:465
+#: src/auth/LoginPage.tsx:474
 msgid "Nice to <0>meet you.</0>"
 msgstr ""
 
@@ -5323,7 +5323,7 @@ msgstr ""
 msgid "No number yet — <0>you cannot be paid</0> until you add one."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:450
+#: src/auth/LoginPage.tsx:459
 msgid "No password to remember. A fresh code every time."
 msgstr ""
 
@@ -5440,7 +5440,7 @@ msgstr ""
 msgid "None yet"
 msgstr ""
 
-#: src/pages/LegalPage.tsx:128
+#: src/pages/LegalPage.tsx:133
 msgid "Not agreed yet"
 msgstr ""
 
@@ -5465,9 +5465,9 @@ msgstr ""
 msgid "Not live yet"
 msgstr ""
 
-#: src/components/LegalGate.tsx:103
+#: src/components/LegalGate.tsx:105
 #: src/pages/choices/ChoicesEditor.tsx:1076
-#: src/pages/LegalPage.tsx:180
+#: src/pages/LegalPage.tsx:185
 msgid "Not now"
 msgstr ""
 
@@ -5560,7 +5560,7 @@ msgstr ""
 msgid "Nothing found for “{asked}”. Type it as you would say it."
 msgstr ""
 
-#: src/pages/LegalPage.tsx:103
+#: src/pages/LegalPage.tsx:108
 msgid "Nothing has been published yet."
 msgstr ""
 
@@ -5610,7 +5610,7 @@ msgstr ""
 msgid "Nothing stops working"
 msgstr ""
 
-#: src/pages/LegalPage.tsx:89
+#: src/pages/LegalPage.tsx:94
 msgid "Nothing stops working — please read and agree when you can."
 msgstr ""
 
@@ -5744,7 +5744,7 @@ msgstr ""
 msgid "One at a time here — the first one was used."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:391
+#: src/auth/LoginPage.tsx:400
 msgid "One email.<0/><1>No password.</1>"
 msgstr ""
 
@@ -6426,7 +6426,7 @@ msgstr ""
 msgid "Platform fee returned"
 msgstr ""
 
-#: src/components/LegalGate.tsx:144
+#: src/components/LegalGate.tsx:146
 msgid "Please read and agree when you can."
 msgstr ""
 
@@ -6550,7 +6550,7 @@ msgctxt "search words"
 msgid "prices menu catalogue sale discount photos deposit"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:36
+#: src/auth/LoginPage.tsx:37
 msgid "Privacy Policy"
 msgstr ""
 
@@ -6690,7 +6690,7 @@ msgstr ""
 msgid "Read all"
 msgstr ""
 
-#: src/components/LegalGate.tsx:147
+#: src/components/LegalGate.tsx:149
 msgid "Read and agree"
 msgstr ""
 
@@ -6698,16 +6698,24 @@ msgstr ""
 msgid "Read by customers before they book."
 msgstr ""
 
-#: src/components/LegalGate.tsx:97
-#: src/pages/LegalPage.tsx:152
+#: src/components/LegalGate.tsx:98
+#: src/pages/LegalPage.tsx:157
 msgid "Read it"
+msgstr ""
+
+#: src/ui/TranslationNote.tsx:22
+msgid "Read it in my language"
 msgstr ""
 
 #: src/ads/slides.ts:226
 msgid "Read more"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:669
+#: src/ui/TranslationNote.tsx:22
+msgid "Read the English"
+msgstr ""
+
+#: src/auth/LoginPage.tsx:678
 msgid "Reading"
 msgstr ""
 
@@ -7004,14 +7012,14 @@ msgstr ""
 msgid "Saving draft…"
 msgstr ""
 
-#: src/components/LegalGate.tsx:111
+#: src/components/LegalGate.tsx:113
 #: src/pages/AppointmentsPage.tsx:783
 #: src/pages/ClosuresPage.tsx:599
 #: src/pages/HoursPage.tsx:501
 #: src/pages/HoursPage.tsx:575
 #: src/pages/HoursPage.tsx:628
-#: src/pages/LegalPage.tsx:161
-#: src/pages/LegalPage.tsx:188
+#: src/pages/LegalPage.tsx:166
+#: src/pages/LegalPage.tsx:193
 #: src/pages/OverviewPage.tsx:583
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/ReviewsPage.tsx:583
@@ -7133,7 +7141,7 @@ msgstr ""
 msgid "See your team"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:37
+#: src/auth/LoginPage.tsx:38
 msgid "Seller Agreement"
 msgstr ""
 
@@ -7143,13 +7151,13 @@ msgstr ""
 msgid "Send"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:611
+#: src/auth/LoginPage.tsx:620
 #: src/session/ConfirmItsYou.tsx:139
 msgid "Send a new code"
 msgstr ""
 
 #. placeholder {0}: String(resendIn).padStart(2, '0')
-#: src/auth/LoginPage.tsx:608
+#: src/auth/LoginPage.tsx:617
 msgid "Send a new one in 0:{0}"
 msgstr ""
 
@@ -7189,12 +7197,12 @@ msgstr ""
 msgid "Sending a code to your email…"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:444
-#: src/auth/LoginPage.tsx:538
+#: src/auth/LoginPage.tsx:453
+#: src/auth/LoginPage.tsx:547
 msgid "Sending your code…"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:611
+#: src/auth/LoginPage.tsx:620
 #: src/onboarding/GoLiveCard.tsx:188
 #: src/pages/FollowersPage.tsx:236
 #: src/pages/PayoutsPage.tsx:452
@@ -7464,7 +7472,7 @@ msgstr ""
 msgid "Sign-in and security"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:602
+#: src/auth/LoginPage.tsx:611
 #: src/shell/Sidebar.tsx:195
 msgid "Signed in"
 msgstr ""
@@ -7482,7 +7490,7 @@ msgstr ""
 msgid "Since {0}"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:496
+#: src/auth/LoginPage.tsx:505
 msgid "Six digits at the door. If they never come, your share is still paid."
 msgstr ""
 
@@ -7610,7 +7618,7 @@ msgstr ""
 msgid "Start from an idea"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:362
+#: src/auth/LoginPage.tsx:371
 msgid "Start selling.<0/><1>Free to join.</1>"
 msgstr ""
 
@@ -7874,7 +7882,7 @@ msgctxt "search words"
 msgid "terms agreement privacy policy documents"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:35
+#: src/auth/LoginPage.tsx:36
 msgid "Terms of Use"
 msgstr ""
 
@@ -7926,11 +7934,11 @@ msgstr ""
 msgid "Thanks for taking the time to review us {name} — it means a lot to the team."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:245
+#: src/auth/LoginPage.tsx:254
 msgid "That code did not work. Please try again."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:44
+#: src/auth/LoginPage.tsx:45
 msgid "That code is not right, or it has run out. Check it and try again."
 msgstr ""
 
@@ -7995,7 +8003,7 @@ msgstr ""
 msgid "That did not work. Try again."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:47
+#: src/auth/LoginPage.tsx:48
 msgid "That is a lot of codes for one hour. Please try again a little later."
 msgstr ""
 
@@ -8234,7 +8242,7 @@ msgstr ""
 msgid "The rest of the price is paid to you directly at the shop — it never passes through the app."
 msgstr ""
 
-#: src/pages/LegalPage.tsx:22
+#: src/pages/LegalPage.tsx:23
 msgid "The rules for using the platform, for everyone."
 msgstr ""
 
@@ -8291,7 +8299,7 @@ msgstr ""
 msgid "There is a reply to your help request."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:468
+#: src/auth/LoginPage.tsx:477
 msgid "There is no account for <0>{clean}</0> yet. Let us make your business account — it takes one code, and nothing else."
 msgstr ""
 
@@ -8404,8 +8412,12 @@ msgstr ""
 msgid "This day has passed. Pick today or a day ahead to change it."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:684
+#: src/auth/LoginPage.tsx:700
 msgid "This document could not be opened just now. Check your connection and try again."
+msgstr ""
+
+#: src/ui/TranslationNote.tsx:18
+msgid "This is a translation. If it ever differs from the English, the English applies."
 msgstr ""
 
 #: src/components/Allowed.tsx:18
@@ -8418,6 +8430,10 @@ msgstr ""
 
 #: src/checkin/CheckIn.tsx:368
 msgid "This is recorded against your name and every administrator is told."
+msgstr ""
+
+#: src/ui/TranslationNote.tsx:16
+msgid "This is the English, which applies wherever a translation differs."
 msgstr ""
 
 #: src/pages/calendar/AppointmentCalendar.tsx:552
@@ -8549,7 +8565,7 @@ msgstr ""
 msgid "Tomorrow"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:45
+#: src/auth/LoginPage.tsx:46
 msgid "Too many wrong tries. Ask for a new code below."
 msgstr ""
 
@@ -8681,15 +8697,15 @@ msgstr ""
 msgid "Type the code they read out to you"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:385
+#: src/auth/LoginPage.tsx:394
 msgid "Type your business email and we will send you a 6-digit code to sign in."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:369
+#: src/auth/LoginPage.tsx:378
 msgid "Type your business email and we will send you a 6-digit code. It creates your account — no password — and then we set up your shop together, in about five minutes."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:398
+#: src/auth/LoginPage.tsx:407
 msgid "Type your email and we will send you a 6-digit code. New here? The same code creates your business account."
 msgstr ""
 
@@ -8791,7 +8807,7 @@ msgstr ""
 msgid "Uploading…"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:542
+#: src/auth/LoginPage.tsx:551
 msgid "Use a different email"
 msgstr ""
 
@@ -8834,7 +8850,7 @@ msgstr ""
 msgid "venue"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:602
+#: src/auth/LoginPage.tsx:611
 msgid "Verify"
 msgstr ""
 
@@ -8844,13 +8860,13 @@ msgid "verify code arrival redeem arrived"
 msgstr ""
 
 #. placeholder {0}: document.version
-#: src/components/LegalGate.tsx:76
+#: src/components/LegalGate.tsx:77
 msgid "Version {0}"
 msgstr ""
 
 #. placeholder {0}: open.version
 #. placeholder {1}: new Date(open.publishedAt).toLocaleDateString(dateLocale(), { dateStyle: 'medium' })
-#: src/auth/LoginPage.tsx:669
+#: src/auth/LoginPage.tsx:678
 msgid "Version {0} · {1}"
 msgstr ""
 
@@ -8858,8 +8874,8 @@ msgstr ""
 #. placeholder {0}: open.version
 #. placeholder {1}: when(document.publishedAt)
 #. placeholder {1}: when(open.publishedAt)
-#: src/pages/LegalPage.tsx:133
-#: src/pages/LegalPage.tsx:172
+#: src/pages/LegalPage.tsx:138
+#: src/pages/LegalPage.tsx:177
 msgid "Version {0} · published {1}"
 msgstr ""
 
@@ -9017,7 +9033,7 @@ msgstr ""
 msgid "We let you know straight away"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:201
+#: src/auth/LoginPage.tsx:210
 msgid "We sent you a code a moment ago. Enter that one."
 msgstr ""
 
@@ -9050,7 +9066,7 @@ msgstr ""
 msgid "Weekend stay"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:630
+#: src/auth/LoginPage.tsx:639
 msgid "Welcome <0>aboard!</0>"
 msgstr ""
 
@@ -9058,7 +9074,7 @@ msgstr ""
 msgid "Welcome aboard"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:560
+#: src/auth/LoginPage.tsx:569
 msgid "Welcome back"
 msgstr ""
 
@@ -9066,7 +9082,7 @@ msgstr ""
 msgid "Welcome, {shopName}"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:378
+#: src/auth/LoginPage.tsx:387
 msgid "Welcome<0/><1>back.</1>"
 msgstr ""
 
@@ -9086,13 +9102,13 @@ msgstr ""
 msgid "What can customers book first?"
 msgstr ""
 
-#: src/pages/LegalPage.tsx:146
-#: src/pages/LegalPage.tsx:200
+#: src/pages/LegalPage.tsx:151
+#: src/pages/LegalPage.tsx:208
 msgid "What changed:"
 msgstr ""
 
 #. placeholder {0}: document.changeNote
-#: src/components/LegalGate.tsx:93
+#: src/components/LegalGate.tsx:94
 msgid "What changed: {0}"
 msgstr ""
 
@@ -9226,7 +9242,7 @@ msgstr ""
 msgid "What we did:"
 msgstr ""
 
-#: src/pages/LegalPage.tsx:26
+#: src/pages/LegalPage.tsx:27
 msgid "What we keep about you and your customers, and why."
 msgstr ""
 
@@ -9257,7 +9273,7 @@ msgstr ""
 msgid "What you do, in a few lines"
 msgstr ""
 
-#: src/pages/LegalPage.tsx:69
+#: src/pages/LegalPage.tsx:74
 msgid "What you have agreed to. Older versions are kept — what you agreed to stays as you read it, even after it is replaced."
 msgstr ""
 
@@ -9564,11 +9580,11 @@ msgstr ""
 
 #. placeholder {0}: document.acceptedVersion
 #. placeholder {1}: when(document.acceptedAt!)
-#: src/pages/LegalPage.tsx:139
+#: src/pages/LegalPage.tsx:144
 msgid "You agreed to version {0} on {1}. This one is newer."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:633
+#: src/auth/LoginPage.tsx:642
 msgid "You are <0>in!</0>"
 msgstr ""
 
@@ -9622,7 +9638,7 @@ msgstr ""
 msgid "You have no branch yet — ask the owner to choose yours."
 msgstr ""
 
-#: src/pages/LegalPage.tsx:137
+#: src/pages/LegalPage.tsx:142
 msgid "You have not agreed to this yet."
 msgstr ""
 
@@ -9645,7 +9661,7 @@ msgid "You post it"
 msgstr ""
 
 #. placeholder {0}: lengthWords(why.idleMinutes)
-#: src/auth/LoginPage.tsx:353
+#: src/auth/LoginPage.tsx:362
 msgid "You were signed out after {0} without use, to keep the account safe."
 msgstr ""
 
@@ -9666,7 +9682,7 @@ msgstr ""
 msgid "You work at every branch."
 msgstr ""
 
-#: src/auth/LoginPage.tsx:422
+#: src/auth/LoginPage.tsx:431
 msgid "you@example.com"
 msgstr ""
 
@@ -9711,7 +9727,7 @@ msgstr ""
 msgid "Your business"
 msgstr ""
 
-#: src/auth/LoginPage.tsx:638
+#: src/auth/LoginPage.tsx:647
 msgid "Your business account is ready. Let us set up your shop."
 msgstr ""
 

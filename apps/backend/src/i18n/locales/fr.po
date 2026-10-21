@@ -336,7 +336,7 @@ msgid "A photo on every service"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/legal/legal.service.ts:257
+#: src/legal/legal.service.ts:311
 msgid "A published version cannot be edited. Start a new version instead — what people agreed to has to stay as they read it."
 msgstr ""
 
@@ -1069,9 +1069,10 @@ msgid "DJ & Live Music"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/legal/legal.service.ts:170
-#: src/legal/legal.service.ts:254
-#: src/legal/legal.service.ts:270
+#: src/legal/legal.service.ts:199
+#: src/legal/legal.service.ts:245
+#: src/legal/legal.service.ts:308
+#: src/legal/legal.service.ts:324
 msgid "Document not found."
 msgstr ""
 
@@ -1534,7 +1535,7 @@ msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: value0.
-#: src/legal/dto/legal.dto.ts:6
+#: src/legal/dto/legal.dto.ts:8
 msgid "kind must be one of: {value0}"
 msgstr ""
 
@@ -2840,7 +2841,7 @@ msgid "That branch is closed."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/legal/legal.service.ts:61
+#: src/legal/legal.service.ts:87
 msgid "That document has not been published yet."
 msgstr ""
 
@@ -2920,12 +2921,12 @@ msgid "That user is not an administrator."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/legal/legal.service.ts:174
+#: src/legal/legal.service.ts:203
 msgid "That version has not been published."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/legal/legal.service.ts:272
+#: src/legal/legal.service.ts:326
 msgid "That version is already published."
 msgstr ""
 
@@ -3084,7 +3085,7 @@ msgid "There is no tour by that name."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/legal/legal.service.ts:275
+#: src/legal/legal.service.ts:329
 msgid "There is nothing written to publish."
 msgstr ""
 

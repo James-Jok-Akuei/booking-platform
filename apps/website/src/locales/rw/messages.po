@@ -15,23 +15,23 @@ msgstr ""
 
 #. placeholder {0}: s.name
 #. placeholder {1}: s.business.name
-#: src/Places.tsx:142
+#: src/Places.tsx:143
 msgid "{0} at {1}"
 msgstr ""
 
-#: src/Places.tsx:175
+#: src/Places.tsx:176
 msgid "{deposit} to book"
 msgstr ""
 
-#: src/App.tsx:209
+#: src/App.tsx:210
 msgid "{total, plural, one {# place} other {# places}}"
 msgstr ""
 
-#: src/Places.tsx:109
+#: src/Places.tsx:110
 msgid "{total, plural, one {<0>#</0> service ready to <1>book</1> today.} other {<2>#</2> services ready to <3>book</3> today.}}"
 msgstr ""
 
-#: src/App.tsx:213
+#: src/App.tsx:214
 msgid "{total, plural, one {Place you can<0/>book today.} other {Places you can<1/>book today.}}"
 msgstr ""
 
@@ -47,15 +47,15 @@ msgstr ""
 msgid "Approved"
 msgstr ""
 
-#: src/App.tsx:368
+#: src/App.tsx:369
 msgid "Back to top"
 msgstr ""
 
-#: src/App.tsx:420
+#: src/App.tsx:421
 msgid "Barbers, salons, spas, garages — with real photos, prices and open hours."
 msgstr ""
 
-#: src/App.tsx:265
+#: src/App.tsx:266
 msgid "Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo deposit. You see your whole day on one screen, and check people in with a code."
 msgstr ""
 
@@ -71,11 +71,11 @@ msgstr ""
 msgid "Book real places near you, hold your time with a small MoMo deposit, and show your code at the door."
 msgstr ""
 
-#: src/App.tsx:154
+#: src/App.tsx:155
 msgid "Book your next<0/>appointment, Easily!"
 msgstr ""
 
-#: src/App.tsx:31
+#: src/App.tsx:32
 msgid "BwanguReservations — Book real shops in Rwanda, quickly"
 msgstr ""
 
@@ -83,7 +83,7 @@ msgstr ""
 msgid "BwanguReservations · For businesses"
 msgstr ""
 
-#: src/App.tsx:390
+#: src/App.tsx:391
 msgid "BwanguReservations is coming to the App Store and Google Play. Businesses can already sign in on the web and set up their shop."
 msgstr ""
 
@@ -96,7 +96,7 @@ msgstr ""
 msgid "BwanguReservations on social media"
 msgstr ""
 
-#: src/App.tsx:402
+#: src/App.tsx:403
 #: src/Modal.tsx:37
 msgid "Close"
 msgstr ""
@@ -105,29 +105,29 @@ msgstr ""
 msgid "Code sent"
 msgstr ""
 
-#: src/App.tsx:323
+#: src/App.tsx:324
 msgid "Customers can book you now"
 msgstr ""
 
-#: src/App.tsx:286
+#: src/App.tsx:287
 msgid "Deposits paid straight to MTN MoMo"
 msgstr ""
 
-#: src/App.tsx:289
+#: src/App.tsx:290
 msgid "Fewer people who book and do not come"
 msgstr ""
 
-#: src/Places.tsx:124
+#: src/Places.tsx:125
 msgid "Find a place <0>-></0> Pick a free time <1>-></1> Show your code at the door."
 msgstr ""
 
-#: src/App.tsx:419
+#: src/App.tsx:420
 msgid "Find a shop near you"
 msgstr ""
 
-#: src/App.tsx:135
-#: src/App.tsx:255
-#: src/App.tsx:341
+#: src/App.tsx:136
+#: src/App.tsx:256
+#: src/App.tsx:342
 #: src/Footer.tsx:114
 msgid "For businesses"
 msgstr ""
@@ -144,36 +144,36 @@ msgstr ""
 msgid "From sign-up to your first booking"
 msgstr ""
 
-#: src/App.tsx:258
+#: src/App.tsx:259
 msgid "Get booked<0/>while you work."
 msgstr ""
 
-#: src/App.tsx:138
-#: src/App.tsx:143
-#: src/App.tsx:339
-#: src/App.tsx:382
+#: src/App.tsx:139
+#: src/App.tsx:144
+#: src/App.tsx:340
+#: src/App.tsx:383
 #: src/Footer.tsx:103
 msgid "Get the app"
 msgstr ""
 
-#: src/App.tsx:310
+#: src/App.tsx:311
 msgid "Haircut · Saturday 10:30"
 msgstr ""
 
-#: src/App.tsx:342
+#: src/App.tsx:343
 msgid "Help"
 msgstr ""
 
-#: src/App.tsx:424
+#: src/App.tsx:425
 msgid "Hold your time with a small deposit"
 msgstr ""
 
-#: src/App.tsx:434
+#: src/App.tsx:435
 #: src/Footer.tsx:106
 msgid "How booking works"
 msgstr ""
 
-#: src/App.tsx:340
+#: src/App.tsx:341
 msgid "How it works"
 msgstr ""
 
@@ -198,7 +198,7 @@ msgstr ""
 msgid "Live in three steps"
 msgstr ""
 
-#: src/Footer.tsx:208
+#: src/Footer.tsx:222
 msgid "Loading…"
 msgstr ""
 
@@ -206,7 +206,7 @@ msgstr ""
 msgid "Made for Rwanda"
 msgstr ""
 
-#: src/App.tsx:133
+#: src/App.tsx:134
 msgid "Main"
 msgstr ""
 
@@ -214,11 +214,11 @@ msgstr ""
 msgid "More"
 msgstr ""
 
-#: src/App.tsx:307
+#: src/App.tsx:308
 msgid "New booking"
 msgstr ""
 
-#: src/App.tsx:425
+#: src/App.tsx:426
 msgid "Paid with MTN MoMo on your own phone. The rest you pay at the shop."
 msgstr ""
 
@@ -230,7 +230,7 @@ msgstr ""
 msgid "Places to book"
 msgstr ""
 
-#: src/Places.tsx:190
+#: src/Places.tsx:191
 msgid "Prices are set by each shop. The deposit is part of the price, not extra."
 msgstr ""
 
@@ -242,8 +242,16 @@ msgstr ""
 msgid "Privacy Policy"
 msgstr ""
 
-#: src/App.tsx:345
+#: src/App.tsx:346
 msgid "Quick links"
+msgstr ""
+
+#: src/Footer.tsx:211
+msgid "Read it in my language"
+msgstr ""
+
+#: src/Footer.tsx:211
+msgid "Read the English"
 msgstr ""
 
 #: src/Features.tsx:21
@@ -254,11 +262,11 @@ msgstr ""
 msgid "Real screens from the app — exactly what you will see."
 msgstr ""
 
-#: src/App.tsx:174
+#: src/App.tsx:175
 msgid "Screens of the apps"
 msgstr ""
 
-#: src/Places.tsx:187
+#: src/Places.tsx:188
 msgid "See every place in the app"
 msgstr ""
 
@@ -278,7 +286,7 @@ msgstr ""
 msgid "Setting up a shop: its name, what kind of shop it is, and how customers will see it."
 msgstr ""
 
-#: src/App.tsx:429
+#: src/App.tsx:430
 msgid "Show your 6-digit code at the door"
 msgstr ""
 
@@ -286,7 +294,7 @@ msgstr ""
 msgid "Show your 6-digit code when you arrive and you are checked in. We remind you the day before, so it is never a surprise."
 msgstr ""
 
-#: src/App.tsx:276
+#: src/App.tsx:277
 #: src/Footer.tsx:123
 msgid "Sign in"
 msgstr ""
@@ -295,7 +303,7 @@ msgstr ""
 msgid "Sign up with your email"
 msgstr ""
 
-#: src/App.tsx:281
+#: src/App.tsx:282
 msgid "Sign-ups for businesses open soon."
 msgstr ""
 
@@ -307,13 +315,13 @@ msgstr ""
 msgid "Skip anything, add it later"
 msgstr ""
 
-#: src/App.tsx:398
+#: src/App.tsx:399
 #: src/Footer.tsx:118
 #: src/Tour.tsx:229
 msgid "Start selling"
 msgstr ""
 
-#: src/App.tsx:273
+#: src/App.tsx:274
 msgid "Start selling — it is free"
 msgstr ""
 
@@ -325,15 +333,15 @@ msgstr ""
 msgid "Terms of Use"
 msgstr ""
 
-#: src/App.tsx:387
+#: src/App.tsx:388
 msgid "The app is on its way."
 msgstr ""
 
-#: src/App.tsx:58
+#: src/App.tsx:59
 msgid "The business app: a shop’s day at a glance"
 msgstr ""
 
-#: src/App.tsx:66
+#: src/App.tsx:67
 msgid "The business app: a week of bookings on a calendar"
 msgstr ""
 
@@ -345,15 +353,15 @@ msgstr ""
 msgid "The business app’s sign-up: a 6-digit code sent to your email, typed into six boxes."
 msgstr ""
 
-#: src/App.tsx:82
+#: src/App.tsx:83
 msgid "The customer app: a shop’s page"
 msgstr ""
 
-#: src/App.tsx:74
+#: src/App.tsx:75
 msgid "The customer app: find a place"
 msgstr ""
 
-#: src/App.tsx:430
+#: src/App.tsx:431
 msgid "The shop checks you in with it. No password, no printout."
 msgstr ""
 
@@ -361,8 +369,16 @@ msgstr ""
 msgid "The three steps"
 msgstr ""
 
-#: src/Footer.tsx:204
+#: src/Footer.tsx:218
 msgid "This could not be loaded just now. Please try again in a moment."
+msgstr ""
+
+#: src/Footer.tsx:208
+msgid "This is a translation. If it ever differs from the English, the English applies."
+msgstr ""
+
+#: src/Footer.tsx:206
+msgid "This is the English, which applies wherever a translation differs."
 msgstr ""
 
 #: src/Tour.tsx:95
@@ -374,11 +390,11 @@ msgid "Usually within one working day. Then you post your shop when you are read
 msgstr ""
 
 #. placeholder {0}: doc.version
-#: src/Footer.tsx:196
+#: src/Footer.tsx:198
 msgid "Version {0} · in force since {since}"
 msgstr ""
 
-#: src/App.tsx:165
+#: src/App.tsx:166
 msgid "Watch how to book<0/>in under a minute!"
 msgstr ""
 
@@ -394,15 +410,15 @@ msgstr ""
 msgid "Why book here"
 msgstr ""
 
-#: src/App.tsx:320
+#: src/App.tsx:321
 msgid "You are live!"
 msgstr ""
 
-#: src/App.tsx:151
+#: src/App.tsx:152
 msgid "Your appointments, without the phone calls."
 msgstr ""
 
-#: src/App.tsx:292
+#: src/App.tsx:293
 msgid "Your bookings, messages and money in one place"
 msgstr ""
 
