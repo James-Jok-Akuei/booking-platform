@@ -38,6 +38,7 @@ import { AuthWall } from '../auth/AuthWall';
 import { AddressField, useDistrictFrom } from '../components/AddressField';
 import { DistrictField, PlaceField, parseCoordinates } from '../components/NewBranchForm';
 import { ImageButton } from '../components/ImageButton';
+import { DropZone } from '../ui/DropZone';
 import { StaticMap } from '../components/StaticMap';
 import { useMoney } from '../money';
 import { Icon, type IconName } from '../ui/Icon';
@@ -783,6 +784,11 @@ function ContactQ({ nav }: { nav: Nav }) {
         <div className="wz-sep">
           <span>And if you have one</span>
         </div>
+        <DropZone
+          onFiles={([file]) => logo.mutate(file)}
+          disabled={logo.isPending}
+          hint={profile.data?.logoUrl ? 'Drop to make it your new logo' : 'Drop to make it your logo'}
+        >
         <div className="wz-logo">
           {profile.data?.logoUrl ? (
             <ShopLogo logoUrl={profile.data.logoUrl} name={name} size={52} />
@@ -793,10 +799,11 @@ function ContactQ({ nav }: { nav: Nav }) {
           )}
           <span className="wz-logo-text">
             <strong>{profile.data?.logoUrl ? 'Your logo' : 'Add your logo'}</strong>
-            <em>{profile.data?.logoUrl ? 'It shows on every card customers see.' : 'Optional · square works best · JPG or PNG'}</em>
+            <em>{profile.data?.logoUrl ? 'It shows on every card customers see.' : 'Optional · square works best · JPG, PNG or WebP'}</em>
           </span>
           <ImageButton id="wz-logo" label={profile.data?.logoUrl ? 'Change' : 'Upload'} busy={logo.isPending} onPick={(file) => file && logo.mutate(file)} />
         </div>
+        </DropZone>
         <Problem text={problem} />
       </Body>
       <Foot nav={nav} busy={save.isPending} ready={ready} />

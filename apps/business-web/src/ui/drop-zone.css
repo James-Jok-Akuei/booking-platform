@@ -1,0 +1,92 @@
+/* Dropping files where they are asked for (§305). */
+
+.drop-zone { position: relative; }
+
+/* A file is being dragged over the page: every place that takes one says so. */
+.is-dragging-files .drop-zone:not(.is-disabled)::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  z-index: 3;
+  border-radius: 20px;
+  border: 2px dashed rgba(240, 83, 45, 0.55);
+  background: rgba(240, 83, 45, 0.04);
+  pointer-events: none;
+  animation: drop-breathe 1.4s var(--ease) infinite alternate;
+}
+@keyframes drop-breathe { from { border-color: rgba(240, 83, 45, 0.35); } to { border-color: rgba(240, 83, 45, 0.75); } }
+
+/* Over this one: what letting go does. */
+.drop-veil {
+  position: absolute;
+  inset: -4px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  border-radius: 20px;
+  border: 2px solid var(--accent);
+  background: rgba(255, 246, 242, 0.9);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+  animation: drop-in 160ms var(--ease) both;
+}
+.drop-veil span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 750;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  animation: drop-lift 420ms var(--spring) both;
+}
+@keyframes drop-in { from { opacity: 0; } }
+@keyframes drop-lift { from { transform: translateY(6px) scale(0.94); } }
+
+.drop-problem {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 9px 10px 9px 12px;
+  border-radius: 12px;
+  background: var(--warn-soft);
+  color: #7a4b00;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+  animation: drop-in 200ms var(--ease) both;
+}
+.drop-zone.note-inside .drop-problem { position: absolute; left: 14px; right: 14px; bottom: 14px; margin: 0; box-shadow: var(--shadow-md); }
+.drop-problem > svg { flex: none; margin-top: 2px; }
+.drop-problem span { flex: 1; }
+.drop-problem button {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  min-height: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+
+/* "Or drop it here" is for a computer: a phone has no dragging. */
+@media (hover: none) {
+  .drop-tip { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-dragging-files .drop-zone::before, .drop-veil, .drop-veil span, .drop-problem { animation: none; }
+}

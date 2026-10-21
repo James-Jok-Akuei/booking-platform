@@ -7,6 +7,7 @@ import { AuthProvider } from './auth/auth-context';
 import { DialogHost } from './ui/Dialog';
 import { ConfirmHost } from './session/ConfirmItsYou';
 import { leaveIntro } from './intro';
+import { guardFileDrops } from './ui/DropZone';
 import './styles.css';
 
 const queryClient = new QueryClient({
@@ -31,6 +32,9 @@ function IntroLeaves() {
   useEffect(() => void leaveIntro(), []);
   return null;
 }
+
+// A file let go outside a drop zone must not replace the app (§305).
+guardFileDrops();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

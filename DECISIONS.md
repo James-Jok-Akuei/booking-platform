@@ -19616,3 +19616,58 @@ Checked on the running seller app with the demo barber shop: adding a
 ready-made, taking it back (the card returns to Add, nothing asked), editing
 a saved question, More options, a private question — at 1440, 1024 and 390.
 Nothing was saved to the demo shop.
+
+## 305. Drag and drop, wherever a photo or a file is asked for (2026-10-21)
+
+The user: allow drag and drop in our apps, especially the business app, where
+photos or files are required — it makes things easier.
+
+### 305.1 The seller app (`ui/DropZone.tsx`, `drop-zone.css`)
+
+One drop zone, used everywhere a file goes in; every "Add a photo" button
+stays — dropping is the second way in, never the only one:
+
+- **Your shopfront**: the cover ("Drop to make it your cover"), the logo (the
+  name row), and each branch's photos — **several at once**, uploaded one
+  after another ("Uploading 2 of 5…") up to the branch's limit, and the
+  picker takes several now too.
+- **Services**: the photos of the service being edited or added (several;
+  they wait for Save, §281, like picked ones).
+- **Setting up**: the logo step.
+- **Messages**: the whole conversation — the photo is attached, ready to send.
+- **Help**: a request's attachments, with their own wider list of kinds.
+- **Stories**: the phone preview (it had its own drop; it now uses the shared
+  one).
+
+While a file is dragged anywhere on the page **every place that takes one
+lights up** (a dashed orange outline); over one, a pill says what letting go
+does. A wrong kind or a file over 15 MB is said there in plain words ("That
+isn’t a photo — JPG, PNG or WebP", "1 file isn’t a photo… so it was left
+out") — and picked service photos are now checked the same way. **The page
+guard** (`guardFileDrops`, in `main.tsx`): a file let go outside a zone is
+ignored, where the browser would otherwise open it in place of the app and
+lose whatever was being typed; elsewhere the pointer shows it cannot go
+there. "Or drop it here" tips show on computers only (`.drop-tip`, hidden on
+touch screens).
+
+### 305.2 The customer web app (`src/ui/webDrop.tsx`)
+
+A photo dropped on **a conversation** is attached; on **the picture** in
+Account it becomes theirs. React Native Web gives a View no drag events, so
+they are listened to on its element (a callback ref, since the picture
+appears only once the account has loaded); on a phone it is nothing. The
+same page guard.
+
+**Found on the way**: photos never uploaded from the customer *web* app at
+all — Expo's native uploader (`File.upload`) is an empty stand-in in a
+browser. `src/upload.web.ts` now sends them with the browser's own `fetch`
+and `FormData`, reading the picture back from its `blob:`/`data:` address;
+the phone keeps the native uploader.
+
+The admin console takes no files, and the website none.
+
+Checked in the running apps: hovering (the outlines and the pill), a PDF
+dropped on the cover (refused, nothing uploaded), two photos and a PDF on a
+service (photos added, the PDF explained), a photo dropped into a
+conversation in both apps, a photo dropped on a customer's picture (uploaded
+through the new web uploader, then removed again), Stories — at 1440 and 390.

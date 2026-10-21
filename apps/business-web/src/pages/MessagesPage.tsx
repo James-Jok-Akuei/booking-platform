@@ -9,6 +9,7 @@ import { useMediaQuery } from '../shell/useMediaQuery';
 import { ago, clock, relativeDay, sameDay } from '../lib/time';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
+import { DropZone } from '../ui/DropZone';
 import './messages.css';
 
 /** What a thread is about, so eight threads with one customer are not eight identical rows. */
@@ -275,7 +276,8 @@ function Conversation({ threadId, thread, onBack }: { threadId: string; thread: 
   const canSend = (draft.trim().length > 0 || photo !== null) && !send.isPending;
 
   return (
-    <div className="ms-chat">
+    // A photo dropped anywhere on the conversation is attached, ready to send (§305).
+    <DropZone className="ms-chat" onFiles={([file]) => setPhoto(file)} hint="Drop to attach the photo">
       <header className="ms-chat-head">
         <button type="button" className="ms-back" onClick={onBack} aria-label="Back to conversations">
           <Icon name="chevronLeft" size={20} />
@@ -377,9 +379,11 @@ function Conversation({ threadId, thread, onBack }: { threadId: string; thread: 
             {send.isPending ? <span className="ci-spinner" /> : <Icon name="send" size={18} />}
           </button>
         </div>
-        <p className="ms-hint">Enter to send · Shift + Enter for a new line</p>
+        <p className="ms-hint">
+          Enter to send · Shift + Enter for a new line<span className="drop-tip"> · drop a photo to attach it</span>
+        </p>
       </div>
-    </div>
+    </DropZone>
   );
 }
 

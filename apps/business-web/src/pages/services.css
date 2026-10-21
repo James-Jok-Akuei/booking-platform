@@ -408,3 +408,5 @@
 .sv-scope svg { flex: none; margin-top: 2px; }
 .svc-state { flex: none; padding: 4px 10px; border-radius: 99px; background: var(--sunken-2); color: var(--muted); font-size: 11.5px; font-weight: 750; }
 .svc-state.is-on { background: var(--ok-soft); color: var(--ok-deep); }
+.sv-photo-add small { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.sv-photo-problem { margin-top: 8px; }

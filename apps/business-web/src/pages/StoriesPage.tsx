@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, type DragEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { deleteStory, getProfile, listLocations, listMyStories, postStory, type BusinessStory } from '../api/business';
 import { useAccess } from '../access';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
+import { DropZone } from '../ui/DropZone';
 import { ShopLogo } from '../ui/ShopLogo';
 import './stories.css';
 
@@ -209,7 +210,6 @@ function Composer({
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState('');
   const [where, setWhere] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
   const [done, setDone] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
   const preview = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
@@ -239,26 +239,15 @@ function Composer({
     setRefused(why);
     if (!why) setFile(picked);
   };
-  const onDrop = (event: DragEvent) => {
-    event.preventDefault();
-    setDragging(false);
-    pick(event.dataTransfer.files[0]);
-  };
 
   const place = branchId ? branches.find((b) => b.id === branchId)?.name : null;
 
   return (
     <aside className="sto-composer">
       {/* What customers will see, as they will see it. */}
-      <div
-        className={`sto-phone${dragging ? ' is-dragging' : ''}${preview ? ' has-photo' : ''}`}
-        onDragOver={(event) => {
-          event.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-      >
+      {/* Dropped like every other photo in the app (§305). */}
+      <DropZone className="sto-drop" onFiles={([file]) => pick(file)} hint={preview ? 'Drop to use this photo instead' : 'Drop to use this photo'}>
+      <div className={`sto-phone${preview ? ' has-photo' : ''}`}>
         {preview ? (
           <>
             <img className="sto-phone-blur" src={preview} alt="" aria-hidden="true" />
@@ -308,6 +297,7 @@ function Composer({
           }}
         />
       </div>
+      </DropZone>
 
       <div className="sto-form">
         <label className="sto-field">

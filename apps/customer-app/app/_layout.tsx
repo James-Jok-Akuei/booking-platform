@@ -23,9 +23,12 @@ import { useLiveNotifications } from '../src/useLive';
 import { LegalPrompt } from '../src/components/LegalPrompt';
 import { DialogHost } from '../src/ui/Dialog';
 import { Intro } from '../src/ui/Intro';
+import { guardWebDrops } from '../src/ui/webDrop';
 import { theme } from '../src/theme';
 
 configurePush();
+// On the web, a photo let go outside a drop place must not replace the app (§305).
+guardWebDrops();
 
 // The launch screen stays up until the intro's first frame, which is the same
 // picture to the dot (§302); the intro hides it then. A short fade covers any

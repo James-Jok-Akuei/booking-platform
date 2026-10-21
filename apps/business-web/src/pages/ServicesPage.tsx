@@ -35,6 +35,7 @@ import { Switch } from '../ui/Switch';
 import { RichTextBox } from '../ui/RichTextBox';
 import './services.css';
 import { useAccess } from '../access';
+import { DropZone, PHOTOS, sortFiles } from '../ui/DropZone';
 import {
   ChoicesEditor,
   choicesProblem,
@@ -1243,7 +1244,17 @@ function ServiceForm({
   const [photos, setPhotos] = useState<PhotoItem[]>(startPhotos);
   const madeUrls = useRef<string[]>([]);
   useEffect(() => () => madeUrls.current.forEach((url) => URL.revokeObjectURL(url)), []);
-  const addFiles = (picked: File[]) =>
+  // Checked as dropped ones are (§305): photos only, each under the size limit.
+  const [photoProblem, setPhotoProblem] = useState<string | null>(null);
+  const addFiles = (chosen: File[]) => {
+    const { taken: picked, problem } = sortFiles(chosen, PHOTOS);
+    const room = PHOTO_LIMIT - photos.length;
+    setPhotoProblem(
+      problem ??
+        (picked.length > room
+          ? `${PHOTO_LIMIT} photos is the most for a service, so ${picked.length - room} ${picked.length - room === 1 ? 'was' : 'were'} left out.`
+          : null),
+    );
     setPhotos((was) =>
       [
         ...was,
@@ -1254,6 +1265,7 @@ function ServiceForm({
         }),
       ].slice(0, PHOTO_LIMIT),
     );
+  };
   const photoSig = photos.map((p) => p.key).join('|');
   const photosChanged = photoSig !== startPhotos.map((p) => p.key).join('|');
 
@@ -1636,6 +1648,12 @@ function ServiceForm({
               ? 'Customers see these when they pick this service. Add them now and they go up with it; you can change them later from Edit.'
               : 'Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it.'}
           </p>
+          <DropZone
+            onFiles={addFiles}
+            multiple
+            disabled={busy || photos.length >= PHOTO_LIMIT}
+            hint="Drop photos for this service"
+          >
           <div className="sv-photo-grid">
             {photos.map((photo, index) => (
               <PhotoTile
@@ -1667,10 +1685,18 @@ function ServiceForm({
                 <label htmlFor="service-photos-pick" className={`sv-photo-add${busy ? ' is-disabled' : ''}`}>
                   <Icon name="upload" size={22} />
                   {photos.length === 0 ? 'Add photos' : 'Add more photos'}
+                  <small className="drop-tip">or drop them here</small>
                 </label>
               </>
             )}
           </div>
+          </DropZone>
+          {photoProblem && (
+            <p className="sv-form-problem sv-photo-problem" role="alert">
+              <Icon name="alert" size={16} />
+              <span>{photoProblem}</span>
+            </p>
+          )}
           {photos.length === 0 && !creating && (
             <p className="sv-help">No photos. A service with a photo is easier to choose than one without.</p>
           )}

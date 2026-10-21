@@ -22,6 +22,7 @@ import {
 } from '../api/business';
 import { ago } from '../lib/time';
 import { Icon, type IconName } from '../ui/Icon';
+import { DropZone, type FileKind } from '../ui/DropZone';
 import { Panel as SidePanel } from '../ui/Panel';
 import './support.css';
 
@@ -258,7 +259,7 @@ function FilePicker({
 }) {
   const [problems, setProblems] = useState<string[]>([]);
 
-  const add = (chosen: FileList | null) => {
+  const add = (chosen: FileList | File[] | null) => {
     if (!chosen || chosen.length === 0) return;
     const rejected: string[] = [];
     const accepted: File[] = [];
@@ -302,6 +303,7 @@ function FilePicker({
   const full = files.length >= MAX_ATTACHMENTS;
 
   return (
+    <DropZone onFiles={add} kind={ATTACHMENTS} multiple disabled={full} hint="Drop to attach">
     <div className="file-field">
       {files.length > 0 && (
         <ul className="file-list">
@@ -342,6 +344,7 @@ function FilePicker({
         <Icon name="paperclip" size={16} />
         {files.length === 0 ? 'Attach a file' : 'Add another file'}
       </label>
+      {!full && <span className="muted small drop-tip">or drop {files.length === 0 ? 'files' : 'more'} here</span>}
       {full && (
         <span className="muted small">{MAX_ATTACHMENTS} files is the limit.</span>
       )}
@@ -354,8 +357,16 @@ function FilePicker({
         </ul>
       )}
     </div>
+    </DropZone>
   );
 }
+
+/** What a help request takes (§83), for dropping as for picking. */
+const ATTACHMENTS: FileKind = {
+  types: ACCEPTED_TYPES,
+  extensions: ACCEPTED_EXTENSIONS,
+  words: 'a photo, PDF, Word, Excel, CSV or text file',
+};
 
 function Attachments({ files }: { files: TicketAttachment[] }) {
   if (files.length === 0) return null;

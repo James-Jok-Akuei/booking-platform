@@ -32,6 +32,7 @@ import { shopStateWord } from '../onboarding/steps';
 import { LineArt } from '../onboarding/LineArt';
 import { usePostShop } from '../onboarding/usePostShop';
 import { RichTextBox } from '../ui/RichTextBox';
+import { DropZone } from '../ui/DropZone';
 import './profile.css';
 import { useAccess } from '../access';
 
@@ -96,12 +97,15 @@ function PickImage({
   id,
   busy,
   onPick,
+  onPickMany,
   className,
   children,
 }: {
   id: string;
   busy: boolean;
-  onPick: (file: File) => void;
+  onPick?: (file: File) => void;
+  /** Several at once (§305): a branch's photos. */
+  onPickMany?: (files: File[]) => void;
   className: string;
   children: React.ReactNode;
 }) {
@@ -112,12 +116,14 @@ function PickImage({
         type="file"
         className="visually-hidden"
         accept={ACCEPT}
+        multiple={Boolean(onPickMany)}
         disabled={busy}
         onChange={(event) => {
-          const file = event.target.files?.[0];
+          const files = Array.from(event.target.files ?? []);
           // Cleared so picking the SAME file twice still fires a change.
           event.target.value = '';
-          if (file) onPick(file);
+          if (onPickMany && files.length) onPickMany(files);
+          else if (files[0]) onPick?.(files[0]);
         }}
       />
       <label htmlFor={id} className={`${className}${busy ? ' is-busy' : ''}`}>
@@ -160,6 +166,12 @@ function ShopWindow({
 
   return (
     <div className="pf-window">
+      <DropZone
+        onFiles={([file]) => pick('cover')(file)}
+        disabled={!canEdit || busy}
+        noteInside
+        hint={profile.coverImageUrl ? 'Drop to make it your new cover' : 'Drop to make it your cover'}
+      >
       <div
         className={`pf-cover${profile.coverImageUrl ? '' : ' is-empty'}`}
         style={profile.coverImageUrl ? { backgroundImage: `url(${profile.coverImageUrl})` } : undefined}
@@ -168,6 +180,7 @@ function ShopWindow({
           <span className="pf-cover-hint">
             <Icon name="image" size={28} />
             No cover photo yet
+            {canEdit && <small className="drop-tip">Drop a photo here, or press “Add a cover photo”</small>}
           </span>
         )}
         {canEdit && (
@@ -177,7 +190,14 @@ function ShopWindow({
           </PickImage>
         )}
       </div>
+      </DropZone>
 
+      <DropZone
+        onFiles={([file]) => pick('logo')(file)}
+        disabled={!canEdit || busy}
+        noteInside
+        hint={profile.logoUrl ? 'Drop to make it your new logo' : 'Drop to make it your logo'}
+      >
       <div className="pf-id">
         <div className="pf-logo">
           {profile.logoUrl ? <img src={profile.logoUrl} alt="" /> : <span>{initialsOf(profile.name ?? 'B')}</span>}
@@ -215,6 +235,7 @@ function ShopWindow({
           </PickImage>
         )}
       </div>
+      </DropZone>
 
       {problem && (
         <p className="notice pf-problem" role="alert">
@@ -587,6 +608,30 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
     onError: (error) => setProblem(error instanceof ApiError ? error.message : 'That did not upload.'),
   });
 
+  // Several at once (§305), dropped or picked: one after another, as many as still fit.
+  const [batch, setBatch] = useState<{ at: number; of: number } | null>(null);
+  const addMany = async (files: File[]) => {
+    setProblem(null);
+    const room = gallery.data?.remaining ?? files.length;
+    const take = files.slice(0, Math.max(0, room));
+    for (const [at, file] of take.entries()) {
+      setBatch({ at: at + 1, of: take.length });
+      try {
+        await add.mutateAsync(file);
+      } catch {
+        break;
+      }
+    }
+    setBatch(null);
+    if (files.length > take.length) {
+      setProblem(
+        `${name} has room for ${take.length} more ${take.length === 1 ? 'photo' : 'photos'} (${limit} at most), so ${
+          files.length - take.length
+        } ${files.length - take.length === 1 ? 'was' : 'were'} left out.`,
+      );
+    }
+  };
+
   const drop = useMutation({
     mutationFn: (mediaId: string) => removeGalleryPhoto(id, mediaId),
     onSuccess: refresh,
@@ -616,6 +661,12 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
         )}
       </header>
 
+      <DropZone
+        onFiles={(files) => void addMany(files)}
+        multiple
+        disabled={!canEdit || full || add.isPending}
+        hint={`Drop photos of ${name}`}
+      >
       <div className="pf-photos">
         {gallery.data?.photos.map((photo) => (
           <figure key={photo.id} className="pf-photo">
@@ -649,16 +700,15 @@ function LocationGallery({ id, name, canEdit }: { id: string; name: string; canE
             id={`gallery-${id}`}
             busy={add.isPending}
             className="pf-photo-add"
-            onPick={(file) => {
-              setProblem(null);
-              add.mutate(file);
-            }}
+            onPickMany={(files) => void addMany(files)}
           >
             <Icon name="upload" size={22} />
-            {add.isPending ? 'Uploading…' : 'Add a photo'}
+            {batch ? `Uploading ${batch.at} of ${batch.of}…` : add.isPending ? 'Uploading…' : 'Add photos'}
+            {!add.isPending && <small className="drop-tip">or drop them here</small>}
           </PickImage>
         )}
       </div>
+      </DropZone>
 
       {full && <p className="muted small">This branch is at its {limit} photo limit.</p>}
       {problem && (

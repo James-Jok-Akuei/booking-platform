@@ -32,6 +32,7 @@ import { PhotoViewer } from '../../src/ui/PhotoViewer';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { requireSignIn } from '../../src/components/SignInWall';
 import { showDialog, showProblem } from '../../src/ui/Dialog';
+import { DropVeil, useWebPhotoDrop } from '../../src/ui/webDrop';
 
 const clock = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -186,7 +187,15 @@ function ThreadScreen() {
   const canSend = (draft.trim().length > 0 || photo !== null) && !send.isPending;
   const businessName = thread.data?.business.name ?? 'Messages';
 
+  // On a computer, a photo dropped on the conversation is attached (§305).
+  const drop = useWebPhotoDrop({
+    onPhoto: setPhoto,
+    onRefused: (why) => showDialog({ tone: 'warn', icon: 'images', title: 'Not a photo we can send', message: why }),
+  });
+
   return (
+    <View ref={drop.ref} style={styles.screen}>
+    {drop.over && <DropVeil label="Drop to attach the photo" />}
     <KeyboardAvoidingView
       style={styles.screen}
       // Padding on BOTH platforms (§166). Android used to resize the window
@@ -390,6 +399,7 @@ function ThreadScreen() {
         </PressableScale>
       </View>
     </KeyboardAvoidingView>
+    </View>
   );
 }
 

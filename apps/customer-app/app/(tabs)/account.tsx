@@ -39,7 +39,7 @@ import { Sheet } from '../../src/ui/Sheet';
 import { listMyAppointments } from '../../src/api/booking';
 import { OffersCard } from '../../src/components/OffersCard';
 import { PayingPromises } from '../../src/booking/PayingPromises';
-import { pickImage } from '../../src/pickImage';
+import { pickImage, type PickedImage } from '../../src/pickImage';
 import { useSignedIn } from '../../src/api/client';
 import { shareApp } from '../../src/share';
 import { skyForToday } from '../../src/skies';
@@ -55,6 +55,7 @@ import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { BigTitle } from '../../src/ui/TopBar';
 import { showDialog, showProblem } from '../../src/ui/Dialog';
+import { DropVeil, useWebPhotoDrop } from '../../src/ui/webDrop';
 
 /** How tall the dark header is before the safe area is added. */
 const HERO = 318;
@@ -111,10 +112,11 @@ export default function Account() {
    */
   /** The picture (§124.1). Uploaded, not linked. */
   const picture = useMutation({
-    mutationFn: async () => {
+    // A photo dropped on the picture (§305, the web) comes ready; otherwise it is picked.
+    mutationFn: async (dropped?: PickedImage) => {
       // Converted to JPEG on the way out. An iPhone hands over HEIC, which the
       // server refuses and no browser can render (§125).
-      const picked = await pickImage({ square: true });
+      const picked = dropped ?? (await pickImage({ square: true }));
       return picked ? setMyImage(picked) : null;
     },
     onSuccess: (result) => {
@@ -125,6 +127,12 @@ export default function Account() {
       queryClient.invalidateQueries({ queryKey: ['me'] });
     },
     onError: (error) => showProblem('Could not add that', error, (error as Error).message),
+  });
+
+  const dropPicture = useWebPhotoDrop({
+    onPhoto: (photo) => picture.mutate(photo),
+    onRefused: (why) => showDialog({ tone: 'warn', icon: 'images', title: 'Not a photo we can use', message: why }),
+    disabled: picture.isPending,
   });
 
   const clearPicture = useMutation({
@@ -394,9 +402,11 @@ export default function Account() {
               <FadeIn style={styles.heroPerson}>
                 {/* Shown to them and to nobody else (§124.1). A shop needs a
                     name to call out and an arrival code, not a face. */}
+                <View ref={dropPicture.ref}>
+                {dropPicture.over && <DropVeil label="Drop" round />}
                 <PressableScale
                   disabled={picture.isPending}
-                  onPress={() => picture.mutate()}
+                  onPress={() => picture.mutate(undefined)}
                   accessibilityRole="button"
                   accessibilityLabel={me.data.imageUrl ? 'Change picture' : 'Add a picture'}
                   scaleTo={0.95}
@@ -420,6 +430,7 @@ export default function Account() {
                     <Icon name="camera" size={14} color="#FFFFFF" />
                   </View>
                 </PressableScale>
+                </View>
 
                 <Text style={styles.heroName} numberOfLines={1}>
                   {nameShown}
