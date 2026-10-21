@@ -12,7 +12,7 @@ import {
   type Follow,
   type FollowNews,
 } from '../../src/api/notifications';
-import { followWords, useFollows, whose } from '../../src/useFollow';
+import { followWords, useFollows } from '../../src/useFollow';
 import { useSavedService } from '../../src/useSavedService';
 import { FollowingCard } from '../../src/components/FollowingCard';
 import { SavedServiceCard } from '../../src/components/SavedServiceCard';
@@ -28,6 +28,7 @@ import { Segmented } from '../../src/ui/Segmented';
 import { PlaceCardSkeleton } from '../../src/ui/Skeleton';
 import { BigTitle } from '../../src/ui/TopBar';
 import { Undo } from '../../src/ui/Undo';
+import { t } from '@lingui/core/macro';
 
 type Kind = 'following' | 'services';
 type FollowList = { follows: Follow[] };
@@ -72,7 +73,7 @@ export default function Saved() {
     mutationFn: ({ follow, on }: { follow: Follow; on: boolean }) => setFollowOffers(follow.business.id, on),
     onMutate: ({ follow, on }) =>
       patch((rows) => rows.map((r) => (r.business.id === follow.business.id ? { ...r, offers: on } : r))),
-    onError: (error) => showProblem('Not changed', error),
+    onError: (error) => showProblem(t`Not changed`, error),
     onSettled: refresh,
   });
   const unfollow = useMutation({
@@ -83,26 +84,26 @@ export default function Saved() {
     },
     onError: (error) => {
       setUndo(null);
-      showProblem('Still following', error);
+      showProblem(t`Still following`, error);
     },
     onSettled: refresh,
   });
   // Undo puts back exactly what was there, the yes to offers included.
   const refollow = useMutation({
     mutationFn: (follow: Follow) => followShop(follow.business.id, follow.offers),
-    onError: (error) => showProblem('Not followed', error),
+    onError: (error) => showProblem(t`Not followed`, error),
     onSettled: refresh,
   });
 
   if (!signedIn) {
     return (
       <View style={styles.screen}>
-        <BigTitle title="Saved" />
+        <BigTitle title={t`Saved`} />
         <EmptyState
           icon="heart-outline"
-          title="Sign in to keep a list"
-          text="Shops you follow and services you save are kept with your account, so they follow you to any phone."
-          action="Sign in"
+          title={t`Sign in to keep a list`}
+          text={t`Shops you follow and services you save are kept with your account, so they follow you to any phone.`}
+          action={t`Sign in`}
           onAction={() => router.push('/sign-in?next=/saved')}
         />
       </View>
@@ -128,14 +129,16 @@ export default function Saved() {
       return;
     }
     // A yes to marketing is asked in its own words, every time (§287).
+    const shop = follow.business.name;
+    const words = followWords(shop);
     showDialog({
-      title: `Hear ${whose(follow.business.name)} offers?`,
-      message: `“${followWords(follow.business.name)}”\n\nOne a week at most, as a phone alert or an email — whichever you allow under Notifications.`,
+      title: t`Hear offers from ${shop}?`,
+      message: t`“${words}”\n\nOne a week at most, as a phone alert or an email — whichever you allow under Notifications.`,
       tone: 'accent',
       icon: 'notifications',
       actions: [
-        { label: 'Yes, send them', role: 'primary', onPress: () => offers.mutate({ follow, on: true }) },
-        { label: 'Not now', role: 'cancel' },
+        { label: t`Yes, send them`, role: 'primary', onPress: () => offers.mutate({ follow, on: true }) },
+        { label: t`Not now`, role: 'cancel' },
       ],
     });
   };
@@ -146,8 +149,8 @@ export default function Saved() {
         value={kind}
         onChange={setKind}
         options={[
-          { value: 'following', label: `Following${count(follows.data?.follows.length)}` },
-          { value: 'services', label: `Services${count(services.data?.total)}` },
+          { value: 'following', label: t`Following${count(follows.data?.follows.length)}` },
+          { value: 'services', label: t`Services${count(services.data?.total)}` },
         ]}
       />
       {/* Said once, on the read that found them gone (§158): a list that is
@@ -157,8 +160,8 @@ export default function Saved() {
           <Icon name="information-circle-outline" size={16} color={theme.ink2} />
           <Text style={[type.small, styles.flex]}>
             {removed === 1
-              ? 'One saved service is no longer offered and was taken off your list.'
-              : `${removed} saved services are no longer offered and were taken off your list.`}
+              ? t`One saved service is no longer offered and was taken off your list.`
+              : t`${removed} saved services are no longer offered and were taken off your list.`}
           </Text>
         </FadeIn>
       )}
@@ -173,17 +176,17 @@ export default function Saved() {
   ) : kind === 'following' ? (
     <EmptyState
       icon="heart-outline"
-      title="Not following anyone yet"
-      text="Tap Follow on a shop's page. Its new services, discounts and stories then come together here."
-      action="Find a place"
+      title={t`Not following anyone yet`}
+      text={t`Tap Follow on a shop's page. Its new services, discounts and stories then come together here.`}
+      action={t`Find a place`}
       onAction={() => router.push('/')}
     />
   ) : (
     <EmptyState
       icon="heart-outline"
-      title="No services saved yet"
-      text="Tap the heart on any service — on Home or on a shop's page — and it will wait for you here."
-      action="Browse services"
+      title={t`No services saved yet`}
+      text={t`Tap the heart on any service — on Home or on a shop's page — and it will wait for you here.`}
+      action={t`Browse services`}
       onAction={() => router.push('/')}
     />
   );
@@ -217,7 +220,7 @@ export default function Saved() {
 
   return (
     <View style={styles.screen}>
-      <BigTitle title="Saved" />
+      <BigTitle title={t`Saved`} />
       {kind === 'following' ? (
         <FlatList
           key={listKey}
@@ -259,7 +262,7 @@ export default function Saved() {
       )}
 
       <Undo
-        message={undo ? `Unfollowed ${undo.follow.business.name}` : null}
+        message={undo ? t`Unfollowed ${undo.follow.business.name}` : null}
         token={undo?.token ?? 0}
         onUndo={() => {
           if (!undo) return;

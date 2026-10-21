@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { parseRich, type RichLine } from '../richText';
 import { font, theme } from '../theme';
 import { PressableScale } from './PressableScale';
+import { t } from '@lingui/core/macro';
 
 /** The face for bold, italic or both, from the face the words are set in. */
 function faceFor(base: string | undefined, bold?: boolean, italic?: boolean) {
@@ -104,7 +105,7 @@ export function RichText({
       </View>
       {more && (
         <PressableScale onPress={() => setExpanded((was) => !was)} hitSlop={8} accessibilityRole="button">
-          <Text style={styles.link}>{expanded ? 'Show less' : 'Read more'}</Text>
+          <Text style={styles.link}>{expanded ? t`Show less` : t`Read more`}</Text>
         </PressableScale>
       )}
     </View>

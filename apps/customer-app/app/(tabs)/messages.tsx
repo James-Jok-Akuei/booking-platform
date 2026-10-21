@@ -14,6 +14,9 @@ import { useLayout } from '../../src/ui/layout';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Segmented } from '../../src/ui/Segmented';
 import { RowSkeleton } from '../../src/ui/Skeleton';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../../src/i18n/format';
 
 type Filter = 'all' | 'unread';
 
@@ -22,14 +25,14 @@ const when = (iso: string) => {
   const d = new Date(iso);
   const now = new Date();
   const minutes = Math.round((now.getTime() - d.getTime()) / 60000);
-  if (minutes < 1) return 'now';
-  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 1) return t`now`;
+  if (minutes < 60) return t`${minutes} min`;
   const start = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const days = Math.round((start(now) - start(d)) / 86_400_000);
-  if (days === 0) return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  if (days === 1) return 'Yesterday';
-  if (days < 7) return d.toLocaleDateString(undefined, { weekday: 'short' });
-  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  if (days === 0) return d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  if (days === 1) return t`Yesterday`;
+  if (days < 7) return d.toLocaleDateString(dateLocale(), { weekday: 'short' });
+  return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
 };
 
 /**
@@ -40,10 +43,10 @@ const when = (iso: string) => {
 const subject = (thread: Thread) =>
   thread.appointment
     ? `${thread.appointment.serviceName} · ${new Date(thread.appointment.startTime).toLocaleDateString(
-        undefined,
+        dateLocale(),
         { day: 'numeric', month: 'short' },
       )}`
-    : 'Asking before booking';
+    : t`Asking before booking`;
 
 /**
  * Every conversation this customer has, newest activity first (§164).
@@ -95,13 +98,13 @@ export default function Messages() {
     return (
       <View style={styles.screen}>
         <View style={[styles.head, { paddingTop: insets.top + 14 }]}>
-          <Text style={type.display}>Messages</Text>
+          <Text style={type.display}><Trans>Messages</Trans></Text>
         </View>
         <EmptyState
           icon="chatbubble-ellipses-outline"
-          title="Sign in to see your messages"
-          text="Conversations are kept with your account, so they follow you to any phone."
-          action="Sign in"
+          title={t`Sign in to see your messages`}
+          text={t`Conversations are kept with your account, so they follow you to any phone.`}
+          action={t`Sign in`}
           onAction={() => router.push('/sign-in?next=/messages')}
         />
       </View>
@@ -112,14 +115,14 @@ export default function Messages() {
     <View style={styles.header}>
       <View style={styles.titleRow}>
         <View style={styles.flex}>
-          <Text style={type.display}>Messages</Text>
+          <Text style={type.display}><Trans>Messages</Trans></Text>
           <Text style={type.small}>
             {unreadTotal > 0
-              ? `${unreadTotal} unread in ${all.filter((t) => t.unreadCount > 0).length} ${
+              ? t`${unreadTotal} unread in ${all.filter((t) => t.unreadCount > 0).length} ${
                   all.filter((t) => t.unreadCount > 0).length === 1 ? 'conversation' : 'conversations'
                 }`
               : all.length > 0
-                ? 'All caught up'
+                ? t`All caught up`
                 : ' '}
           </Text>
         </View>
@@ -136,13 +139,13 @@ export default function Messages() {
           style={styles.searchInput}
           value={query}
           onChangeText={setQuery}
-          placeholder="Search a shop or a message"
+          placeholder={t`Search a shop or a message`}
           placeholderTextColor={theme.muted}
           autoCorrect={false}
           returnKeyType="search"
         />
         {query.length > 0 && (
-          <PressableScale onPress={() => setQuery('')} hitSlop={10} accessibilityRole="button" accessibilityLabel="Clear the search" style={styles.clear}>
+          <PressableScale onPress={() => setQuery('')} hitSlop={10} accessibilityRole="button" accessibilityLabel={t`Clear the search`} style={styles.clear}>
             <Icon name="close" size={13} color={theme.ink2} />
           </PressableScale>
         )}
@@ -153,8 +156,8 @@ export default function Messages() {
           value={filter}
           onChange={setFilter}
           options={[
-            { value: 'all', label: 'All' },
-            { value: 'unread', label: unreadTotal > 0 ? `Unread · ${unreadTotal}` : 'Unread' },
+            { value: 'all', label: t`All` },
+            { value: 'unread', label: unreadTotal > 0 ? t`Unread · ${unreadTotal}` : t`Unread` },
           ]}
         />
       )}
@@ -196,15 +199,15 @@ export default function Messages() {
               <RowSkeleton />
             </View>
           ) : needle !== '' ? (
-            <EmptyState icon="search" title="Nothing matches that." text="Try a shop's name, or a word from the message." />
+            <EmptyState icon="search" title={t`Nothing matches that.`} text={t`Try a shop's name, or a word from the message.`} />
           ) : filter === 'unread' ? (
-            <EmptyState icon="checkmark-done-circle-outline" title="Nothing unread" text="You have read everything. Switch to All to see it again." />
+            <EmptyState icon="checkmark-done-circle-outline" title={t`Nothing unread`} text={t`You have read everything. Switch to All to see it again.`} />
           ) : (
             <EmptyState
               icon="chatbubble-ellipses-outline"
-              title="No messages yet"
-              text="Open a place and tap Message the shop to ask something before you book."
-              action="Find a place"
+              title={t`No messages yet`}
+              text={t`Open a place and tap Message the shop to ask something before you book.`}
+              action={t`Find a place`}
               onAction={() => router.push('/')}
             />
           )
@@ -213,17 +216,18 @@ export default function Messages() {
           const unread = item.unreadCount > 0;
           const last = item.lastMessage;
           const mineLast = last?.senderId === me;
-          const preview = last
-            ? `${mineLast ? 'You: ' : ''}${last.preview || (last.hasPhoto ? 'Photo' : 'Message')}`
-            : 'No messages yet';
-          const name = item.business.name ?? 'A business';
+          const said = last ? last.preview || (last.hasPhoto ? t`Photo` : t`Message`) : '';
+          const preview = last ? (mineLast ? t`You: ${said}` : said) : t`No messages yet`;
+          const name = item.business.name ?? t`A business`;
+          const about = subject(item);
+          const waiting = item.unreadCount;
           return (
             <FadeIn index={Math.min(index, 8)}>
               <PressableScale
                 style={[styles.row, unread && styles.rowUnread]}
                 scaleTo={0.985}
                 accessibilityRole="button"
-                accessibilityLabel={`${unread ? `${item.unreadCount} unread. ` : ''}${name}, ${subject(item)}. ${preview}`}
+                accessibilityLabel={unread ? t`${waiting} unread. ${name}, ${about}. ${preview}` : t`${name}, ${about}. ${preview}`}
                 onPress={() => router.push(`/thread/${item.id}`)}
               >
                 {/* The face, with a ring when something is waiting. */}
@@ -250,7 +254,7 @@ export default function Messages() {
                         color={item.appointment ? theme.accent : theme.ask}
                       />
                       <Text style={[styles.kindText, { color: item.appointment ? theme.accent : theme.ask }]}>
-                        {item.appointment ? 'Booking' : 'Question'}
+                        {item.appointment ? t`Booking` : t`Question`}
                       </Text>
                     </View>
                     <Text

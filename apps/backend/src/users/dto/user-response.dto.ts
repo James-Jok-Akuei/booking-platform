@@ -10,6 +10,7 @@ import {
 } from '@prisma/client';
 import { AppointmentStatus } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
+import { LOCALES } from '../../i18n/locales';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import { TOUR_NAMES } from '../tours';
 
@@ -33,6 +34,7 @@ export const ME_SELECT = {
   displayName: true,
   imageUrl: true,
   toursDue: true,
+  locale: true,
   businessMemberships: {
     where: { status: BusinessMemberStatus.ACTIVE },
     select: {
@@ -92,6 +94,9 @@ export class MeDto implements MeWire {
   /** The welcome tours still to show them (§307): "customer" or "seller". */
   @ApiProperty({ enum: TOUR_NAMES, isArray: true })
   toursDue!: string[];
+  /** The language they read the apps, emails and notices in (§308). */
+  @ApiProperty({ enum: LOCALES })
+  locale!: string;
 
   /**
    * At most one, or null. The underlying relation is a LIST only because the
@@ -113,6 +118,12 @@ export class UserImageDto {
 export class UserDisplayNameDto {
   id!: string;
   displayName!: string | null;
+}
+
+/** The language now chosen (§308). */
+export class UserLocaleDto {
+  @ApiProperty({ enum: LOCALES })
+  locale!: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -250,6 +261,8 @@ export const EXPORT_ACCOUNT_SELECT = {
   displayName: true,
   createdAt: true,
   closedAt: true,
+  // The language they chose (§308).
+  locale: true,
   // What they chose about emails near them, and where "near" is (§140).
   offersOptInAt: true,
   homeDistrict: { select: { name: true } },
@@ -301,6 +314,7 @@ export class ExportedAccountDto
   displayName!: string | null;
   createdAt!: string;
   closedAt!: string | null;
+  locale!: string;
   /** When they agreed to emails about services near them; null if they have not. */
   offersOptInAt!: string | null;
   homeDistrict!: ExportedHomeDistrictDto | null;

@@ -5,6 +5,9 @@
   "dependencies": {
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@expo/vector-icons": "^15.0.2",
+    "@formatjs/intl-pluralrules": "^6.3.16",
+    "@lingui/core": "^6.10.0",
+    "@lingui/react": "^6.10.0",
     "@tanstack/react-query": "^5.104.0",
     "babel-preset-expo": "~57.0.0",
     "expo": "~57.0.26",
@@ -16,6 +19,7 @@
     "expo-image-picker": "~57.0.20",
     "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.11",
+    "expo-localization": "~57.0.2",
     "expo-location": "~57.0.20",
     "expo-notifications": "~57.0.23",
     "expo-print": "~57.0.2",
@@ -34,6 +38,9 @@
     "socket.io-client": "^4.8.4"
   },
   "devDependencies": {
+    "@lingui/babel-plugin-lingui-macro": "^6.10.0",
+    "@lingui/cli": "^6.10.0",
+    "@lingui/format-po": "^6.10.0",
     "@types/react": "~19.2.2",
     "typescript": "~6.0.3"
   },
@@ -42,7 +49,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n:extract": "node ../../scripts/i18n/lingui.mjs extract",
+    "i18n:compile": "node ../../scripts/i18n/long-words.mjs src/locales && node ../../scripts/i18n/lingui.mjs compile",
+    "i18n": "npm run i18n:extract && npm run i18n:compile"
   },
   "private": true
 }

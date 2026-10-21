@@ -48,6 +48,10 @@ import { Stepper } from '../../src/ui/Stepper';
 import { Ticker } from '../../src/ui/Ticker';
 import { TopBar } from '../../src/ui/TopBar';
 import { showProblem } from '../../src/ui/Dialog';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../../src/i18n/format';
+import { plural } from '@lingui/core/macro';
 
 /**
  * The next 14 days, as the YYYY-MM-DD the endpoint takes.
@@ -69,14 +73,14 @@ const nextDays = (count: number) =>
 const dayLabel = (ymd: string) => {
   const date = new Date(`${ymd}T12:00:00Z`);
   return {
-    weekday: date.toLocaleDateString(undefined, { weekday: 'short' }),
-    day: date.toLocaleDateString(undefined, { day: 'numeric' }),
-    month: date.toLocaleDateString(undefined, { month: 'short' }),
+    weekday: date.toLocaleDateString(dateLocale(), { weekday: 'short' }),
+    day: date.toLocaleDateString(dateLocale(), { day: 'numeric' }),
+    month: date.toLocaleDateString(dateLocale(), { month: 'short' }),
   };
 };
 
 const niceDate = (ymd: string) =>
-  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(undefined, {
+  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(dateLocale(), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -165,7 +169,7 @@ export default function Book() {
   // Short, for one line under the photos: "14 min by car", or the distance.
   const way = route.data
     ? route.data.by === 'road' && route.data.minutes !== null
-      ? `${route.data.minutes} min by car`
+      ? t`${route.data.minutes} min by car`
       : distanceLabel(route.data.distanceKm)
     : null;
 
@@ -230,7 +234,7 @@ export default function Book() {
       router.replace(`/booking/${appointment.id}`);
     },
     onError: (error) =>
-      showProblem('Could not book that', error),
+      showProblem(t`Could not book that`, error),
   });
 
   // A question before booking (§167): the thing most people have, and the
@@ -239,13 +243,13 @@ export default function Book() {
     mutationFn: () => openInquiry(shop.data!.business.id, id),
     onSuccess: (thread) => router.push(`/thread/${thread.id}`),
     onError: (error) =>
-      showProblem('Could not open that', error),
+      showProblem(t`Could not open that`, error),
   });
 
   if (shop.isLoading) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Book" />
+        <TopBar title={t`Book`} />
         <View style={[styles.content, { width: layout.contentWidth, alignSelf: 'center' }]}>
           <Skeleton height={200} round={radius.lg} />
           <Skeleton height={420} round={radius.lg} />
@@ -257,8 +261,8 @@ export default function Book() {
   if (!shop.data || !service) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Book" />
-        <EmptyState icon="calendar-outline" title="That service is no longer offered here." />
+        <TopBar title={t`Book`} />
+        <EmptyState icon="calendar-outline" title={t`That service is no longer offered here.`} />
       </View>
     );
   }
@@ -274,8 +278,8 @@ export default function Book() {
   const several = places > 1;
   // Everything is for the WHOLE booking (§136): the price is one times how
   // many, and the deposit is its share of that total.
-  const unitWord = several ? 'per person' : null;
-  const countWord = (n: number) => `${n} ${n === 1 ? 'person' : 'people'}`;
+  const unitWord = several ? t`per person` : null;
+  const countWord = (n: number) => plural(n, { one: '# person', other: '# people' });
   // The answers are added once, whatever the number of people, and never
   // discounted (§300.3).
   const extraMinor = chosen.priceMinor;
@@ -285,6 +289,14 @@ export default function Book() {
   const restMinor = Math.max(0, totalMinor - depositMinor);
   const split = depositMinor < totalMinor;
   const format = (minor: number) => money.format(minor, service.currency);
+  // What the answers add, as one phrase: "+RWF 2,000 · +15 min" (§300).
+  const addsWords = [
+    extraMinor > 0 && `+${format(extraMinor)}`,
+    extraMinor < 0 && `−${format(-extraMinor)}`,
+    chosen.minutes > 0 && `+${duration(chosen.minutes)}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
   // A sale on today (§186). `service.priceMinor` is already the price after it.
   const sale = service.discount;
   const savedMinor = sale ? (sale.listPriceMinor - service.priceMinor) * quantity : 0;
@@ -303,19 +315,23 @@ export default function Book() {
     const data = availability.data;
     if (!data || slots.length > 0) return null;
     if (data.reason) return data.reason;
-    if (data.source.startsWith('CLOSED')) return 'Closed on this day.';
+    if (data.source.startsWith('CLOSED')) return t`Closed on this day.`;
     if (times.length > 0) {
-      return times.every((t) => t.placesLeft === 0)
-        ? 'Every time is booked on this day. Pick another day.'
-        : `No time has room for ${countWord(quantity)} on this day. Try fewer people, or another day.`;
+      return times.every((slot) => slot.placesLeft === 0)
+        ? t`Every time is booked on this day. Pick another day.`
+        : plural(quantity, {
+            one: 'No time has room for # person on this day. Try fewer people, or another day.',
+            other: 'No time has room for # people on this day. Try fewer people, or another day.',
+          });
     }
     // An empty TODAY is almost always the clock, not the shop (§156).
     if (date === days[0]) {
-      return data.closeTime
-        ? `Closed for today — the shop shuts at ${data.closeTime}. Pick another day.`
-        : 'No times left today. Pick another day.';
+      const shuts = data.closeTime;
+      return shuts
+        ? t`Closed for today — the shop shuts at ${shuts}. Pick another day.`
+        : t`No times left today. Pick another day.`;
     }
-    return 'Fully booked on this day.';
+    return t`Fully booked on this day.`;
   })();
 
   // The page's inner width, and the width inside the deal card. Even columns
@@ -388,7 +404,7 @@ export default function Book() {
         subtitle={businessName}
         right={
           <View style={styles.topRight}>
-            <IconButton icon="share-outline" label="Share this service" onPress={share} flat />
+            <IconButton icon="share-outline" label={t`Share this service`} onPress={share} flat />
             <SaveButton
               saved={service.saved}
               onPress={() => savedService.toggle(service.id, id, service.saved ?? false, here)}
@@ -436,7 +452,7 @@ export default function Book() {
                 haptic
                 scaleTo={0.98}
                 accessibilityRole="button"
-                accessibilityLabel={`${businessName}. View the shop`}
+                accessibilityLabel={t`${businessName}. View the shop`}
                 style={styles.bylineShop}
               >
                 <Avatar uri={s.business.logoUrl} name={businessName} size={36} />
@@ -460,7 +476,7 @@ export default function Book() {
                     {s.rating.count > 0 && way && <Text style={styles.bylineDot}>·</Text>}
                     {(way || s.rating.count === 0) && (
                       <Text style={styles.bylineText} numberOfLines={1}>
-                        {way ?? 'View their shop'}
+                        {way ?? t`View their shop`}
                       </Text>
                     )}
                   </View>
@@ -475,11 +491,11 @@ export default function Book() {
                 haptic
                 scaleTo={0.94}
                 accessibilityRole="button"
-                accessibilityLabel="Message the shop with a question"
+                accessibilityLabel={t`Message the shop with a question`}
                 style={styles.bylineAsk}
               >
                 <Icon name="chatbubble-ellipses-outline" size={16} color={theme.ask} />
-                <Text style={styles.bylineAskText}>{openChat.isPending ? '…' : 'Ask'}</Text>
+                <Text style={styles.bylineAskText}>{openChat.isPending ? '…' : t`Ask`}</Text>
               </PressableScale>
             )}
           </FadeIn>
@@ -496,7 +512,7 @@ export default function Book() {
           )}
           {service.description && (
             <FadeIn delay={30} style={styles.words}>
-              <Text style={type.heading}>About this service</Text>
+              <Text style={type.heading}><Trans>About this service</Trans></Text>
               {/* The shop's own formatting (§271); four lines, then "Read more". */}
               <RichText text={service.description} style={styles.wordsText} collapsedLines={4} />
             </FadeIn>
@@ -517,9 +533,9 @@ export default function Book() {
                   tone="accent"
                 />
               )}
-              {s.openNow && <Pill label="Open now" tone="ok" dot />}
+              {s.openNow && <Pill label={t`Open now`} tone="ok" dot />}
               {several && (
-                <Pill label={`Up to ${places} people`} tone="neutral" icon="people-outline" />
+                <Pill label={t`Up to ${places} people`} tone="neutral" icon="people-outline" />
               )}
             </View>
             <Text style={type.title}>{service.name}</Text>
@@ -542,7 +558,7 @@ export default function Book() {
             <View style={styles.section}>
               <View style={styles.priceRow}>
                 {/* Priced after the shop sees the job (§300.3): this is where it starts. */}
-                {service.priceConfirmedAtShop && <Text style={styles.priceFrom}>from</Text>}
+                {service.priceConfirmedAtShop && <Text style={styles.priceFrom}><Trans>from</Trans></Text>}
                 <Text
                   style={[styles.price, layout.compact && styles.priceCompact, sale && styles.priceSale]}
                 >
@@ -555,17 +571,10 @@ export default function Book() {
                 <PopIn key={`${extraMinor}-${chosen.minutes}`} style={styles.extraLine}>
                   <Icon name="options-outline" size={15} color={theme.accentDeep} />
                   <Text style={styles.extraText}>
-                    Your choices{' '}
-                    <Text style={styles.extraStrong}>
-                      {[
-                        extraMinor > 0 && `+${format(extraMinor)}`,
-                        extraMinor < 0 && `−${format(-extraMinor)}`,
-                        chosen.minutes > 0 && `+${duration(chosen.minutes)}`,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Text>
-                    {quantity > 1 && extraMinor !== 0 ? ' · once, not per person' : ''}
+                    <Trans>
+                      Your choices <Text style={styles.extraStrong}>{addsWords}</Text>
+                    </Trans>
+                    {quantity > 1 && extraMinor !== 0 ? t` · once, not per person` : ''}
                   </Text>
                 </PopIn>
               )}
@@ -573,7 +582,9 @@ export default function Book() {
                 <View style={styles.atShop}>
                   <Icon name="information-circle-outline" size={15} color={theme.ink2} />
                   <Text style={styles.atShopText}>
-                    The shop confirms the final price after seeing the job. The deposit is on this price.
+                    <Trans>
+                      The shop confirms the final price after seeing the job. The deposit is on this price.
+                    </Trans>
                   </Text>
                 </View>
               )}
@@ -583,13 +594,11 @@ export default function Book() {
                 <View style={styles.saleLine}>
                   <SaleBadge percent={sale.percent} large />
                   <View style={styles.flex}>
-                    <Text style={styles.saleText}>
-                      Was <Text style={styles.was}>{format(sale.listPriceMinor)}</Text>
-                      {sale.endsOn ? ` · discount ${saleUntil(sale)}` : ' · discount on now'}
+                    <Text style={styles.saleText}><Trans>Was <Text style={styles.was}>{format(sale.listPriceMinor)}</Text></Trans>
+                      {sale.endsOn ? t` · discount ${saleUntil(sale)}` : t` · discount on now`}
                     </Text>
-                    <Text style={styles.saleSave}>
-                      You save {format(savedMinor)}
-                      {quantity > 1 ? ` on ${countWord(quantity)}` : ''}
+                    <Text style={styles.saleSave}><Trans>You save {format(savedMinor)}</Trans>
+                      {quantity > 1 ? t` on ${countWord(quantity)}` : ''}
                     </Text>
                   </View>
                 </View>
@@ -609,27 +618,28 @@ export default function Book() {
                   </View>
                   <View style={styles.split}>
                     <View style={styles.flex}>
-                      <Text style={styles.splitLabel}>
-                        Pay now{quantity > 1 ? ` · ${countWord(quantity)}` : ''}
+                      <Text style={styles.splitLabel}><Trans>Pay now</Trans>{quantity > 1 ? ` · ${countWord(quantity)}` : ''}
                       </Text>
                       <Ticker value={depositMinor} render={format} style={styles.splitNow} />
                     </View>
                     <View style={styles.splitRight}>
-                      <Text style={styles.splitLabel}>At the shop</Text>
+                      <Text style={styles.splitLabel}><Trans>At the shop</Trans></Text>
                       <Ticker value={restMinor} render={format} style={styles.splitLater} />
                     </View>
                   </View>
                   <View style={styles.holdLine}>
                     <Icon name="shield-checkmark" size={15} color={theme.ok} />
                     <Text style={styles.holdText}>
-                      A {depositPct}% deposit holds the time for you. The rest is paid at the shop.
+                      <Trans>
+                        A {depositPct}% deposit holds the time for you. The rest is paid at the shop.
+                      </Trans>
                     </Text>
                   </View>
                 </>
               ) : (
                 <View style={styles.holdLine}>
                   <Icon name="shield-checkmark" size={15} color={theme.ok} />
-                  <Text style={styles.holdText}>Paid in full now, and the time is yours.</Text>
+                  <Text style={styles.holdText}><Trans>Paid in full now, and the time is yours.</Trans></Text>
                 </View>
               )}
             </View>
@@ -642,7 +652,7 @@ export default function Book() {
                 <View ref={choicesRef} collapsable={false} style={styles.section}>
                   {groups.length > 0 && (
                     <>
-                      <Text style={type.heading}>Your choices</Text>
+                      <Text style={type.heading}><Trans>Your choices</Trans></Text>
                       <ChoicePicker
                         groups={groups}
                         picked={picked}
@@ -669,7 +679,7 @@ export default function Book() {
 
             {/* CHOOSE A TIME: how many, which day, what time. */}
             <View ref={timesRef} collapsable={false} style={styles.section}>
-              <Text style={type.heading}>Choose a time</Text>
+              <Text style={type.heading}><Trans>Choose a time</Trans></Text>
 
               {/* Asked only where the branch serves more than one at once
                   (§189). Before the day and the time, because the answer
@@ -679,13 +689,13 @@ export default function Book() {
                 // reads on one line instead of three.
                 <View style={[styles.howMany, inCard < 300 && styles.howManyStacked]}>
                   <View style={inCard < 300 ? undefined : styles.flex}>
-                    <Text style={type.subheading}>How many people?</Text>
-                    <Text style={type.small}>Up to {places}, all at once</Text>
+                    <Text style={type.subheading}><Trans>How many people?</Trans></Text>
+                    <Text style={type.small}><Trans>Up to {places}, all at once</Trans></Text>
                   </View>
                   <Stepper
                     value={quantity}
                     max={places}
-                    label="people"
+                    label={t`people`}
                     onFocus={keys.reveal}
                     onChange={(next) => {
                       setQuantity(next);
@@ -709,16 +719,19 @@ export default function Book() {
                     <Icon name="arrow-up" size={18} color={theme.accentDeep} />
                   </View>
                   <Text style={[type.body, styles.flex]}>
-                    Answer “{askedAs(missing[0])}” first
-                    {missing.length > 1 ? ` and ${missing.length - 1} more` : ''} — the times depend on your
-                    answers.
+                    {missing.length > 1
+                      ? plural(missing.length - 1, {
+                          one: `Answer “${askedAs(missing[0])}” first and # more — the times depend on your answers.`,
+                          other: `Answer “${askedAs(missing[0])}” first and # more — the times depend on your answers.`,
+                        })
+                      : t`Answer “${askedAs(missing[0])}” first — the times depend on your answers.`}
                   </Text>
                 </PressableScale>
               )}
 
               {missing.length === 0 && (
               <>
-              <Text style={type.label}>Day</Text>
+              <Text style={type.label}><Trans>Day</Trans></Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -735,7 +748,11 @@ export default function Book() {
                       scaleTo={0.93}
                       accessibilityRole="button"
                       accessibilityState={{ selected: active }}
-                      accessibilityLabel={`${i === 0 ? 'Today, ' : ''}${label.weekday} ${label.day} ${label.month}`}
+                      accessibilityLabel={
+                        i === 0
+                          ? t`Today, ${label.weekday} ${label.day} ${label.month}`
+                          : `${label.weekday} ${label.day} ${label.month}`
+                      }
                       onPress={() => {
                         setDate(ymd);
                         setSlot(null);
@@ -743,7 +760,7 @@ export default function Book() {
                       style={[styles.day, active && styles.dayActive]}
                     >
                       <Text style={[styles.dayWeek, active && styles.onAccent]}>
-                        {i === 0 ? 'Today' : label.weekday}
+                        {i === 0 ? t`Today` : label.weekday}
                       </Text>
                       <Text style={[styles.dayNum, active && styles.onAccent]}>{label.day}</Text>
                       <Text style={[styles.dayMonth, active && styles.onAccentSoft]}>
@@ -754,7 +771,7 @@ export default function Book() {
                 })}
               </ScrollView>
 
-              <Text style={type.label}>Time</Text>
+              <Text style={type.label}><Trans>Time</Trans></Text>
 
               {availability.isLoading && (
                 <View style={styles.slots}>
@@ -787,8 +804,11 @@ export default function Book() {
                     <Icon name={period.icon} size={15} color={theme.ink2} />
                     <Text style={styles.periodLabel}>{period.label}</Text>
                     <Text style={type.tiny}>
-                      {period.slots.filter((t) => t.placesLeft >= quantity).length || 'None'} free
-                    </Text>
+                      {period.slots.filter((t) => t.placesLeft >= quantity).length || t`None`}
+                        <Trans>
+                          free
+                        </Trans>
+                      </Text>
                   </View>
                   <View style={styles.slots}>
                     {period.slots.map(({ time, placesLeft }) => {
@@ -799,7 +819,7 @@ export default function Book() {
                       // "2 left" only where it is news: some places already
                       // taken, and only a few remaining.
                       const few = several && !full && placesLeft < places && placesLeft <= 5;
-                      const note = full ? 'Booked' : few ? `${placesLeft} left` : null;
+                      const note = full ? t({ message: 'Booked', context: 'a time with no places left' }) : few ? t`${placesLeft} left` : null;
                       return (
                         <PressableScale
                           key={time}
@@ -810,9 +830,9 @@ export default function Book() {
                           accessibilityState={{ selected: active, disabled: !fits }}
                           accessibilityLabel={
                             full
-                              ? `${time}, booked`
+                              ? t`${time}, booked`
                               : few
-                                ? `${time}, ${placesLeft} ${placesLeft === 1 ? 'place' : 'places'} left`
+                                ? t`${time}, ${placesLeft} ${placesLeft === 1 ? 'place' : 'places'} left`
                                 : time
                           }
                           onPress={() => choose(time)}
@@ -853,7 +873,9 @@ export default function Book() {
 
               {availability.data?.timeZone && slots.length > 0 && (
                 <Text style={type.small}>
-                  Times are local to the shop ({availability.data.timeZone}).
+                  <Trans>
+                    Times are local to the shop ({availability.data.timeZone}).
+                  </Trans>
                 </Text>
               )}
               </>
@@ -868,7 +890,7 @@ export default function Book() {
                     <View style={styles.summaryTick}>
                       <Icon name="checkmark" size={15} color="#FFFFFF" />
                     </View>
-                    <Text style={styles.summaryTitle}>Your booking</Text>
+                    <Text style={styles.summaryTitle}><Trans>Your booking</Trans></Text>
                   </View>
                   <Text style={styles.summaryWhen}>
                     {niceDate(date)} · {slot} – {endOf(slot, minutes)}
@@ -883,23 +905,23 @@ export default function Book() {
                     <Text style={styles.summaryWhat} numberOfLines={3}>
                       {[
                         ...chosen.lines.filter((l) => !l.group.healthRelated).map((l) => l.option.label),
-                        ...(chosen.lines.some((l) => l.group.healthRelated) ? ['private answers for the shop'] : []),
+                        ...(chosen.lines.some((l) => l.group.healthRelated) ? [t`private answers for the shop`] : []),
                       ].join(' · ')}
                     </Text>
                   )}
                   <View style={styles.summaryRule} />
                   <View style={styles.summaryMoney}>
                     <View style={styles.flex}>
-                      <Text style={styles.summaryLabel}>Total</Text>
+                      <Text style={styles.summaryLabel}><Trans>Total</Trans></Text>
                       <Text style={styles.summaryValue}>{format(totalMinor)}</Text>
                       {sale && (
                         <Text style={styles.summarySave}>
-                          {sale.percent}% off · you save {format(savedMinor)}
+                          <Trans>{sale.percent}% off · you save {format(savedMinor)}</Trans>
                         </Text>
                       )}
                     </View>
                     <View>
-                      <Text style={styles.summaryLabel}>Pay now</Text>
+                      <Text style={styles.summaryLabel}><Trans>Pay now</Trans></Text>
                       <Text style={[styles.summaryValue, styles.summaryNow]}>
                         {format(depositMinor)}
                       </Text>
@@ -915,11 +937,11 @@ export default function Book() {
       {/* The running answer to "what will this cost me", and the one button. */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.footerInner}>
-          <View style={styles.flex}>
+          <View style={styles.footerTotal}>
             <Text style={styles.footerLabel} numberOfLines={1}>
-              {quantity > 1 ? `Total for ${countWord(quantity)}` : 'Total'}
-              {sale ? ` · ${sale.percent}% off` : ''}
-              {extraMinor !== 0 ? ' · with choices' : ''}
+              {quantity > 1 ? t`Total for ${countWord(quantity)}` : t`Total`}
+              {sale ? t` · ${sale.percent}% off` : ''}
+              {extraMinor !== 0 ? t` · with choices` : ''}
             </Text>
             <Ticker
               value={totalMinor}
@@ -928,8 +950,10 @@ export default function Book() {
             />
             {split && (
               <Text style={styles.footerNow} numberOfLines={1}>
-                {format(depositMinor)} now
-              </Text>
+                <Trans>
+                  {format(depositMinor)} now
+                </Trans>
+                </Text>
             )}
           </View>
           <Button
@@ -949,14 +973,14 @@ export default function Book() {
             }
             label={
               missing.length > 0
-                ? 'Answer first'
+                ? t`Answer first`
                 : !slot
                   ? layout.compact
-                    ? 'Pick a time'
-                    : 'Choose a time'
+                    ? t`Pick a time`
+                    : t`Choose a time`
                   : signedIn
-                    ? `Book ${slot}`
-                    : 'Sign in to book'
+                    ? t`Book ${slot}`
+                    : t`Sign in to book`
             }
             onPress={() => {
               if (missing.length > 0) return goToChoices();
@@ -1211,6 +1235,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
+  // The total keeps its room: the button beside it wraps first (§308).
+  footerTotal: { flexGrow: 1, flexShrink: 0, maxWidth: '55%' },
   footerLabel: {
     fontFamily: font.bold,
     fontSize: 10.5,
@@ -1221,6 +1247,7 @@ const styles = StyleSheet.create({
   footerPrice: { fontFamily: font.extrabold, fontSize: 21, color: theme.ink, letterSpacing: -0.4 },
   footerPriceCompact: { fontSize: 18 },
   footerNow: { fontFamily: font.semibold, fontSize: 12, color: theme.accent, marginTop: 1 },
-  cta: { minWidth: 156, flexShrink: 0 },
-  ctaCompact: { minWidth: 120, paddingHorizontal: 16 },
+  // Wide enough to read, never so wide that it squeezes the total (§308).
+  cta: { minWidth: 112, maxWidth: '58%', flexShrink: 1 },
+  ctaCompact: { minWidth: 104, paddingHorizontal: 16 },
 });

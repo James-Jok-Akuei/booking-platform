@@ -12,6 +12,8 @@ import { askForPush, pushState, type PushState } from '../push';
 import { followWords, useFollow } from '../useFollow';
 import { PressableScale } from '../ui/PressableScale';
 import { AppSwitch } from '../ui/AppSwitch';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 const CONFETTI = ['#F0532D', '#FFB020', '#0E9F54', '#2456C7', '#D03A6E', '#6B3FD4'];
 
@@ -155,11 +157,13 @@ export function PaidCelebration({
       </View>
 
       <FadeIn delay={220} style={styles.words}>
-        <Text style={[type.display, styles.centre]}>Payment successful</Text>
+        <Text style={[type.display, styles.centre]}><Trans>Payment successful</Trans></Text>
         <Text style={[type.body, styles.centre]}>
-          {format(a.depositAmountMinor, a.currency)} paid with MTN Mobile Money. Your slot is
-          confirmed.
-        </Text>
+          <Trans>
+            {format(a.depositAmountMinor, a.currency)} paid with MTN Mobile Money. Your slot is
+            confirmed.
+          </Trans>
+          </Text>
       </FadeIn>
 
       {/* The receipt: enough to know it is the right booking at a glance. */}
@@ -184,9 +188,9 @@ export function PaidCelebration({
 
         <View style={styles.dashed} />
 
-        <Row label="When" value={`${dayOf(a.startTime)}\n${timeRange(a)}`} />
-        <Row label="Where" value={a.location.name} />
-        <Row label="Reservation no." value={reservationNo(a.id)} strong />
+        <Row label={t`When`} value={`${dayOf(a.startTime)}\n${timeRange(a)}`} />
+        <Row label={t`Where`} value={a.location.name} />
+        <Row label={t`Reservation no.`} value={reservationNo(a.id)} strong />
       </FadeIn>
 
       {/* The moment the reason is plain (§287): a reminder before it, and the
@@ -196,8 +200,8 @@ export function PaidCelebration({
       </FadeIn>
 
       <FadeIn delay={460} style={styles.actions}>
-        <Button label="View my reservation" icon="ticket-outline" onPress={onView} />
-        <Button kind="ghost" label="Explore more services" onPress={onExplore} />
+        <Button label={t`View my reservation`} icon="ticket-outline" onPress={onView} />
+        <Button kind="ghost" label={t`Explore more services`} onPress={onExplore} />
       </FadeIn>
     </ScrollView>
   );
@@ -297,13 +301,13 @@ function StayInTouch({ shop, businessId }: { shop: string; businessId: string })
             <Icon name="alarm-outline" size={18} color={theme.ask} />
           </View>
           <View style={styles.flex}>
-            <Text style={styles.touchTitle}>Remind me before it</Text>
-            <Text style={type.small}>An alert on this phone the day before.</Text>
+            <Text style={styles.touchTitle}><Trans>Remind me before it</Trans></Text>
+            <Text style={type.small}><Trans>An alert on this phone the day before.</Trans></Text>
           </View>
           {push === 'on' ? (
             <View style={styles.touchOn}>
               <Icon name="checkmark" size={14} color={theme.ok} />
-              <Text style={styles.touchOnText}>On</Text>
+              <Text style={styles.touchOnText}><Trans>On</Trans></Text>
             </View>
           ) : (
             <PressableScale
@@ -312,7 +316,7 @@ function StayInTouch({ shop, businessId }: { shop: string; businessId: string })
               style={styles.touchBtn}
               accessibilityRole="button"
             >
-              <Text style={styles.touchBtnText}>Turn on</Text>
+              <Text style={styles.touchBtnText}><Trans>Turn on</Trans></Text>
             </PressableScale>
           )}
         </View>
@@ -323,13 +327,13 @@ function StayInTouch({ shop, businessId }: { shop: string; businessId: string })
           <Icon name="heart-outline" size={18} color={theme.accentDeep} />
         </View>
         <View style={styles.flex}>
-          <Text style={styles.touchTitle}>Follow {shop} for its offers</Text>
+          <Text style={styles.touchTitle}><Trans>Follow {shop} for its offers</Trans></Text>
           <Text style={type.small}>“{followWords(shop)}”</Text>
         </View>
         <AppSwitch
           value={follow.following && follow.offers}
           disabled={follow.pending}
-          accessibilityLabel={`Follow ${shop} and get its offers`}
+          accessibilityLabel={t`Follow ${shop} and get its offers`}
           onValueChange={(on) => (on ? follow.follow(true) : follow.setOffers(false))}
         />
       </View>

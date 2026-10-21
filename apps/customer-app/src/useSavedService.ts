@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { saveService, unsaveService } from './api/discovery';
 import { tokens } from './api/client';
 import { showProblem } from './ui/Dialog';
+import { t } from '@lingui/core/macro';
 
 type Keyed = { id: string; location?: { id: string }; saved?: boolean };
 
@@ -42,7 +43,7 @@ export function useSavedService() {
     },
     onError: (error, _variables, context) => {
       if (context) patch(context.serviceId, context.locationId, context.saved);
-      showProblem('Not saved', error);
+      showProblem(t`Not saved`, error);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['saved-services'] }),
   });

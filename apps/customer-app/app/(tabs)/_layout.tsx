@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router/js-tabs';
 import { TabBar } from '../../src/ui/TabBar';
 import { theme } from '../../src/theme';
+import { t } from '@lingui/core/macro';
 
 /**
  * The five places a customer lives in (§133).
@@ -22,11 +23,11 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: theme.bg },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="bookings" options={{ title: 'Bookings' }} />
-      <Tabs.Screen name="saved" options={{ title: 'Saved' }} />
-      <Tabs.Screen name="messages" options={{ title: 'Messages' }} />
-      <Tabs.Screen name="account" options={{ title: 'Account' }} />
+      <Tabs.Screen name="index" options={{ title: t`Home` }} />
+      <Tabs.Screen name="bookings" options={{ title: t`Bookings` }} />
+      <Tabs.Screen name="saved" options={{ title: t`Saved` }} />
+      <Tabs.Screen name="messages" options={{ title: t`Messages` }} />
+      <Tabs.Screen name="account" options={{ title: t`Account` }} />
     </Tabs>
   );
 }

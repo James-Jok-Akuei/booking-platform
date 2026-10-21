@@ -3,6 +3,7 @@ import { font, theme } from '../theme';
 import { Cover } from '../ui/Cover';
 import type { ViewerOrigin, ViewerPhoto } from '../ui/PhotoViewer';
 import { PressableScale } from '../ui/PressableScale';
+import { t } from '@lingui/core/macro';
 
 const GAP = 4;
 
@@ -131,7 +132,7 @@ function Tile({
     <PressableScale
       scaleTo={0.97}
       accessibilityRole="imagebutton"
-      accessibilityLabel={more > 0 ? `Photo ${index + 1}, and ${more} more` : `Photo ${index + 1}`}
+      accessibilityLabel={more > 0 ? t`Photo ${index + 1}, and ${more} more` : t`Photo ${index + 1}`}
       onPress={open}
       style={[styles.tile, { width, height, borderRadius: radius }]}
     >

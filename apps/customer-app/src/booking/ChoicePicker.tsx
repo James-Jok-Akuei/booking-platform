@@ -6,6 +6,8 @@ import { useLayout } from '../ui/layout';
 import { PopIn } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
 import { addsWords, askedAs, limitWords, shows, type ChoiceGroup, type ChoiceOption } from './choices';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * The questions a shop asks while booking (§300), answered by tapping:
@@ -46,11 +48,11 @@ export function ChoicePicker({
                 answered ? (
                   <View style={[styles.badge, styles.badgeDone]}>
                     <Icon name="checkmark" size={12} color={theme.ok} />
-                    <Text style={[styles.badgeText, styles.badgeTextDone]}>Done</Text>
+                    <Text style={[styles.badgeText, styles.badgeTextDone]}><Trans>Done</Trans></Text>
                   </View>
                 ) : (
                   <View style={[styles.badge, styles.badgeNeed]}>
-                    <Text style={[styles.badgeText, styles.badgeTextNeed]}>Required</Text>
+                    <Text style={[styles.badgeText, styles.badgeTextNeed]}><Trans>Required</Trans></Text>
                   </View>
                 )
               ) : (
@@ -63,7 +65,9 @@ export function ChoicePicker({
               <View style={styles.private}>
                 <Icon name="lock-closed" size={13} color={theme.danger} />
                 <Text style={styles.privateText}>
-                  Private: only the shop sees this — never in a message or an email.
+                  <Trans>
+                    Private: only the shop sees this — never in a message or an email.
+                  </Trans>
                 </Text>
               </View>
             )}
@@ -82,7 +86,7 @@ export function ChoicePicker({
                     onPress={() => onToggle(group, option)}
                     accessibilityRole={group.kind === 'ONE' ? 'radio' : 'checkbox'}
                     accessibilityState={{ checked: on, disabled: paused }}
-                    accessibilityLabel={`${option.label}${adds ? `, ${adds}` : ''}${paused ? ', not available now' : ''}`}
+                    accessibilityLabel={[option.label, adds, paused ? t`not available now` : null].filter(Boolean).join(', ')}
                     style={[styles.option, wide && styles.optionWide, on && styles.optionOn, paused && styles.optionPaused]}
                   >
                     <View
@@ -99,7 +103,7 @@ export function ChoicePicker({
                       {option.description && <Text style={styles.description}>{option.description}</Text>}
                     </View>
                     {paused ? (
-                      <Text style={styles.paused}>Not available now</Text>
+                      <Text style={styles.paused}><Trans>Not available now</Trans></Text>
                     ) : (
                       adds && <Text style={[styles.adds, on && styles.addsOn]}>{adds}</Text>
                     )}
@@ -157,7 +161,7 @@ export function NoteBox({
           <Icon name="create-outline" size={16} color={theme.ink2} />
         </View>
         <View style={styles.flex}>
-          <Text style={styles.noteTitle}>Add a note for the shop</Text>
+          <Text style={styles.noteTitle}><Trans>Add a note for the shop</Trans></Text>
           <Text style={type.small} numberOfLines={1}>
             {prompt}
           </Text>
@@ -169,7 +173,7 @@ export function NoteBox({
   return (
     <View style={styles.note}>
       <View style={styles.noteHead}>
-        <Text style={[type.subheading, styles.flex]}>A note for the shop</Text>
+        <Text style={[type.subheading, styles.flex]}><Trans>A note for the shop</Trans></Text>
         <Text style={styles.count}>{value.length}/250</Text>
       </View>
       <TextInput
@@ -185,8 +189,10 @@ export function NoteBox({
         textAlignVertical="top"
       />
       <Text style={type.tiny}>
-        A request, not a promise — the shop will try.
-        {privateAsked ? ' Allergies and health go in the questions above, never here.' : ''}
+        <Trans>
+          A request, not a promise — the shop will try.
+        </Trans>
+      {privateAsked ? t` Allergies and health go in the questions above, never here.` : ''}
       </Text>
     </View>
   );

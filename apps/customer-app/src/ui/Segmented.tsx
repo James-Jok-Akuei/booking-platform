@@ -60,7 +60,11 @@ export function Segmented<T extends string>({
               onChange(option.value);
             }}
           >
-            <Text style={[styles.label, on && styles.labelOn]}>{option.label}</Text>
+            {/* Two lines at most, smaller if the phone can: a long word
+                (§308) wraps inside its segment, never out of it. */}
+            <Text style={[styles.label, on && styles.labelOn]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.85}>
+              {option.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -84,7 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.panel,
     ...shadow.card,
   },
-  option: { flex: 1, height: 40, alignItems: 'center', justifyContent: 'center' },
-  label: { fontFamily: font.semibold, fontSize: 14, color: theme.muted },
+  option: { flex: 1, minHeight: 40, paddingHorizontal: 6, paddingVertical: 4, alignItems: 'center', justifyContent: 'center' },
+  label: { fontFamily: font.semibold, fontSize: 14, lineHeight: 17, color: theme.muted, textAlign: 'center' },
   labelOn: { color: theme.ink, fontFamily: font.bold },
 });

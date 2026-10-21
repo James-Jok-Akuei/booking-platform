@@ -27,6 +27,7 @@ import { Icon, lookFor, type IconName } from '../ui/Icon';
 import { tick } from '../ui/haptic';
 import { useReducedMotion } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
+import { t } from '@lingui/core/macro';
 
 /** How long each spotlight is on screen (§188): long enough to read it all. */
 const SLIDE_MS = 8000;
@@ -187,7 +188,7 @@ export function Spotlights({
       image: s.imageUrl ?? s.business.coverImageUrl,
       logo: s.business.logoUrl,
       categoryIcon: s.business.category?.icon ?? null,
-      cta: 'Book now',
+      cta: t`Book now`,
       open: () => router.push(`/book/${s.location.id}?serviceId=${s.id}`),
     });
 
@@ -212,10 +213,10 @@ export function Spotlights({
       out.push({
         ...service(b),
         kind: 'booked',
-        kicker: 'Most booked',
+        kicker: t`Most booked`,
         stat: `${b.bookingCount} booked`,
         line: `${shopOf(b)} · ${areaOf(b)}`,
-        label: `Most booked: ${b.name} at ${shopOf(b)}, ${b.bookingCount} bookings.`,
+        label: t`Most booked: ${b.name} at ${shopOf(b)}, ${b.bookingCount} bookings.`,
       });
     }
     if (d?.discount) {
@@ -224,10 +225,10 @@ export function Spotlights({
       out.push({
         ...service(d),
         kind: 'deal',
-        kicker: 'Discount',
+        kicker: t`Discount`,
         stat: `−${d.discount.percent}%`,
         line: `${shopOf(d)} · now ${now}, was ${was}`,
-        label: `Discount: ${d.name} at ${shopOf(d)}, ${d.discount.percent}% off, now ${now}.`,
+        label: t`Discount: ${d.name} at ${shopOf(d)}, ${d.discount.percent}% off, now ${now}.`,
       });
     }
     if (r) {
@@ -235,10 +236,10 @@ export function Spotlights({
       out.push({
         ...service(r),
         kind: 'rated',
-        kicker: 'Top rated',
+        kicker: t`Top rated`,
         stat: `★ ${avg}`,
         line: `${shopOf(r)} · ${r.location.ratingCount} ${r.location.ratingCount === 1 ? 'review' : 'reviews'}`,
-        label: `Top rated: ${r.name} at ${shopOf(r)}, rated ${avg}.`,
+        label: t`Top rated: ${r.name} at ${shopOf(r)}, rated ${avg}.`,
       });
     }
     if (n) {
@@ -246,10 +247,10 @@ export function Spotlights({
       out.push({
         ...service(n),
         kind: 'near',
-        kicker: 'Near you',
+        kicker: t`Near you`,
         stat: away,
         line: `${shopOf(n)} · ${areaOf(n)}`,
-        label: `Near you: ${n.name} at ${shopOf(n)}, ${away} away.`,
+        label: t`Near you: ${n.name} at ${shopOf(n)}, ${away} away.`,
       });
     }
     if (p) {
@@ -257,20 +258,20 @@ export function Spotlights({
       out.push({
         ...service(p),
         kind: 'price',
-        kicker: 'Best price',
+        kicker: t`Best price`,
         stat: price,
         line: `${shopOf(p)} · ${duration(p.durationMinutes)}`,
-        label: `Best price: ${p.name} at ${shopOf(p)}, ${price}.`,
+        label: t`Best price: ${p.name} at ${shopOf(p)}, ${price}.`,
       });
     }
     if (f) {
       out.push({
         ...service(f),
         kind: 'fresh',
-        kicker: 'Just added',
+        kicker: t`Just added`,
         stat: 'New',
         line: `New at ${shopOf(f)} · ${areaOf(f)}`,
-        label: `Just added: ${f.name} at ${shopOf(f)}.`,
+        label: t`Just added: ${f.name} at ${shopOf(f)}.`,
       });
     }
     if (top) {
@@ -279,15 +280,15 @@ export function Spotlights({
       out.push({
         key: `business:${top.id}`,
         kind: 'business',
-        kicker: 'Top business',
+        kicker: t`Top business`,
         title: name,
         stat: `★ ${avg}`,
         line: `${top.ratingCount} ${top.ratingCount === 1 ? 'review' : 'reviews'} · ${top.district?.name ?? top.name}`,
         image: top.business.coverImageUrl ?? top.business.logoUrl,
         logo: top.business.logoUrl,
         categoryIcon: top.business.category?.icon ?? null,
-        cta: 'Visit',
-        label: `Top business: ${name}, rated ${avg} from ${top.ratingCount} reviews.`,
+        cta: t`Visit`,
+        label: t`Top business: ${name}, rated ${avg} from ${top.ratingCount} reviews.`,
         open: () => router.push(`/shop/${top.id}`),
       });
     }
@@ -537,7 +538,7 @@ export function Spotlights({
             hitSlop={12}
             scaleTo={0.85}
             accessibilityRole="button"
-            accessibilityLabel="Hide spotlights"
+            accessibilityLabel={t`Hide spotlights`}
             style={styles.close}
           >
             <Icon name="close" size={14} color="#FFFFFF" />

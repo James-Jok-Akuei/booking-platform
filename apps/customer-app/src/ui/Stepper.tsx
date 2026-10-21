@@ -3,6 +3,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { font, theme } from '../theme';
 import { Icon } from './Icon';
 import { PressableScale } from './PressableScale';
+import { t } from '@lingui/core/macro';
 
 /**
  * A number you change one at a time (§136).
@@ -52,7 +53,7 @@ export function Stepper({
         disabled={!down}
         onPress={() => onChange(value - 1)}
         accessibilityRole="button"
-        accessibilityLabel={`Fewer ${label}`}
+        accessibilityLabel={t`Fewer ${label}`}
         style={[styles.button, !down && styles.off]}
       >
         <Icon name="remove" size={20} color={theme.ink} />
@@ -70,7 +71,7 @@ export function Stepper({
           returnKeyType="done"
           selectTextOnFocus
           maxLength={4}
-          accessibilityLabel={`How many ${label}, type a number up to ${max}`}
+          accessibilityLabel={t`How many ${label}, type a number up to ${max}`}
         />
       ) : (
         <Text style={styles.value}>{value}</Text>
@@ -82,7 +83,7 @@ export function Stepper({
         disabled={!up}
         onPress={() => onChange(value + 1)}
         accessibilityRole="button"
-        accessibilityLabel={`More ${label}`}
+        accessibilityLabel={t`More ${label}`}
         style={[styles.button, styles.plus, !up && styles.off]}
       >
         <Icon name="add" size={20} color="#FFFFFF" />

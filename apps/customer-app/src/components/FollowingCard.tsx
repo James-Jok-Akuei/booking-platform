@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
 import type { Follow, FollowNews } from '../api/notifications';
-import { whose } from '../useFollow';
 import { StoryRing } from '../stories/StoryRing';
 import { font, radius, shadow, theme, type } from '../theme';
 import { Avatar } from '../ui/Avatar';
@@ -8,6 +7,8 @@ import { Cover } from '../ui/Cover';
 import { Icon, type IconName } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { RatingBadge } from '../ui/Stars';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 const NEWS_LOOK: Record<FollowNews['kind'], { icon: IconName; fg: string; bg: string }> = {
   DISCOUNT: { icon: 'pricetag', fg: theme.accentDeep, bg: theme.accentSoft },
@@ -40,6 +41,7 @@ export function FollowingCard({
   onUnfollow: () => void;
 }) {
   const shop = follow.business;
+  const name = shop.name;
   const closed = !follow.bookAt;
 
   return (
@@ -69,7 +71,7 @@ export function FollowingCard({
           {shop.name}
         </Text>
         <Text style={type.small} numberOfLines={1}>
-          {[follow.hasStory ? 'Story up now' : null, follow.district].filter(Boolean).join(' · ') || ' '}
+          {[follow.hasStory ? t`Story up now` : null, follow.district].filter(Boolean).join(' · ') || ' '}
         </Text>
 
         {follow.news.length > 0 && (
@@ -105,7 +107,7 @@ export function FollowingCard({
           </View>
         )}
 
-        {closed && <Text style={styles.note}>Not taking bookings right now. It stays here until it does.</Text>}
+        {closed && <Text style={styles.note}><Trans>Not taking bookings right now. It stays here until it does.</Trans></Text>}
 
         <View style={styles.foot}>
           <PressableScale
@@ -113,7 +115,7 @@ export function FollowingCard({
             scaleTo={0.95}
             accessibilityRole="switch"
             accessibilityState={{ checked: follow.offers }}
-            accessibilityLabel={`${whose(shop.name)} offers as notifications`}
+            accessibilityLabel={t`Offers from ${name} as notifications`}
             style={[styles.chip, follow.offers && styles.chipOn]}
           >
             <Icon
@@ -122,18 +124,18 @@ export function FollowingCard({
               color={follow.offers ? theme.accentDeep : theme.muted}
             />
             <Text style={[styles.chipText, follow.offers && styles.chipTextOn]}>
-              {follow.offers ? 'Offers: on' : 'Offers: off'}
+              {follow.offers ? t`Offers: on` : t`Offers: off`}
             </Text>
           </PressableScale>
           <PressableScale
             onPress={onUnfollow}
             scaleTo={0.95}
             accessibilityRole="button"
-            accessibilityLabel={`Following ${shop.name}. Tap to unfollow`}
+            accessibilityLabel={t`Following ${name}. Tap to unfollow`}
             style={styles.following}
           >
             <Icon name="heart" size={15} color={theme.accentDeep} />
-            <Text style={styles.followingText}>Following</Text>
+            <Text style={styles.followingText}><Trans>Following</Trans></Text>
           </PressableScale>
         </View>
       </View>

@@ -57,15 +57,29 @@ import { PressableScale } from '../../src/ui/PressableScale';
 import { RwandaFlag } from '../../src/ui/RwandaFlag';
 import { Sheet } from '../../src/ui/Sheet';
 import { Skeleton } from '../../src/ui/Skeleton';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** "City of Kigali" is what the state calls it; "Kigali" is what people say. */
 const shortName = (name: string) =>
   name.replace(/^City of /, '').replace(/ Province$/, '');
 
 const SORTS: Array<{ value: DiscoverySort; label: string }> = [
-  { value: 'rating', label: 'Best rated' },
-  { value: 'price', label: 'Cheapest' },
-  { value: 'newest', label: 'Newest' },
+  {
+    value: 'rating',
+
+    get label() { return t`Best rated`; },
+  },
+  {
+    value: 'price',
+
+    get label() { return t`Cheapest`; },
+  },
+  {
+    value: 'newest',
+
+    get label() { return t`Newest`; },
+  },
 ];
 
 /**
@@ -74,11 +88,11 @@ const SORTS: Array<{ value: DiscoverySort; label: string }> = [
  * would be a lie told in a heading.
  */
 const SHELF_TITLE: Record<DiscoverySort, string> = {
-  popular: 'Most popular',
-  rating: 'Best rated',
-  price: 'Cheapest',
-  newest: 'Newest',
-  distance: 'Nearest',
+  get popular() { return t`Most popular`; },
+  get rating() { return t`Best rated`; },
+  get price() { return t`Cheapest`; },
+  get newest() { return t`Newest`; },
+  get distance() { return t`Nearest`; },
 };
 
 /** Space between the rows at the top of Home. */
@@ -224,7 +238,7 @@ export default function Discover() {
     (districtId &&
       provinces.data?.flatMap((p) => p.districts).find((d) => d.id === districtId)?.name) ||
     (chosenProvince && shortName(chosenProvince.name)) ||
-    'Rwanda';
+    t`Rwanda`;
 
   const position = nearMe.state.status === 'on' ? nearMe.state : null;
   const sortingByDistance = sort === 'distance' && position !== null;
@@ -455,18 +469,18 @@ export default function Discover() {
     showDialog({
       title: bubble.name,
       message: seen
-        ? 'You have seen today’s story. Watch it again, or open the shop.'
-        : `${count === 1 ? 'A new story' : `${count} new stories`} from today.`,
+        ? t`You have seen today’s story. Watch it again, or open the shop.`
+        : t`${count === 1 ? 'A new story' : `${count} new stories`} from today.`,
       tone: 'accent',
       icon: 'aperture',
       actions: [
         {
-          label: seen ? 'Watch again' : count === 1 ? 'Watch the story' : 'Watch the stories',
+          label: seen ? t`Watch again` : count === 1 ? t`Watch the story` : t`Watch the stories`,
           role: 'primary',
           onPress: () => setStoryAt({ shop: index, story: firstUnseen(seenStories, story) }),
         },
-        { label: 'See the shop', role: 'secondary', onPress: () => router.push(`/shop/${bubble.pageId}`) },
-        { label: 'Not now', role: 'cancel' },
+        { label: t`See the shop`, role: 'secondary', onPress: () => router.push(`/shop/${bubble.pageId}`) },
+        { label: t`Not now`, role: 'cancel' },
       ],
     });
   };
@@ -564,7 +578,7 @@ export default function Discover() {
           haptic
           scaleTo={0.95}
           accessibilityRole="button"
-          accessibilityLabel={`Place: ${placeLabel}`}
+          accessibilityLabel={t`Place: ${placeLabel}`}
           style={styles.placePill}
         >
           <RwandaFlag width={20} />
@@ -581,8 +595,8 @@ export default function Discover() {
                 icon="notifications-outline"
                 label={
                   unread.notifications > 0
-                    ? `Notifications, ${unread.notifications} unread`
-                    : 'Notifications'
+                    ? t`Notifications, ${unread.notifications} unread`
+                    : t`Notifications`
                 }
                 onPress={() => router.push('/notifications')}
               />
@@ -592,7 +606,9 @@ export default function Discover() {
         </View>
 
         <Text style={[type.display, layout.compact && styles.displayCompact, styles.title]}>
-          Find a place
+          <Trans>
+            Find a place
+          </Trans>
         </Text>
       </FadeIn>
 
@@ -605,7 +621,7 @@ export default function Discover() {
           style={styles.searchInput}
           value={query}
           onChangeText={setQuery}
-          placeholder="Search a shop or a service"
+          placeholder={t`Search a shop or a service`}
           placeholderTextColor={theme.muted}
           returnKeyType="search"
           autoCorrect={false}
@@ -615,7 +631,7 @@ export default function Discover() {
             onPress={() => setQuery('')}
             hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel="Clear the search"
+            accessibilityLabel={t`Clear the search`}
             style={styles.clear}
           >
             <Icon name="close" size={14} color={theme.ink2} />
@@ -646,12 +662,12 @@ export default function Discover() {
       {(categories.data?.length ?? 0) > 0 && (
         <FadeIn delay={120}>
           <View style={styles.sectionHead}>
-            <Text style={type.heading}>Categories</Text>
+            <Text style={type.heading}><Trans>Categories</Trans></Text>
             {/* The tiles scroll sideways and show about four of eight. Someone
                 who does not already know what they want needs to SEE the list
                 (§121). */}
             <PressableScale onPress={() => router.push('/categories')} hitSlop={8}>
-              <Text style={styles.link}>Browse all categories →</Text>
+              <Text style={styles.link}><Trans>Browse all categories →</Trans></Text>
             </PressableScale>
           </View>
           <ScrollView
@@ -660,7 +676,7 @@ export default function Discover() {
             style={bleed}
             contentContainerStyle={[styles.tiles, bleedPad]}
           >
-            <CategoryTile label="All" active={categoryId === null} onPress={() => pickCategory(null)} />
+            <CategoryTile label={t`All`} active={categoryId === null} onPress={() => pickCategory(null)} />
             {categories.data?.map((category, i) => (
               <CategoryTile
                 key={category.id}
@@ -683,7 +699,7 @@ export default function Discover() {
           contentContainerStyle={[styles.chips, bleedPad]}
         >
           <Chip
-            label="Open now"
+            label={t`Open now`}
             icon="time-outline"
             tone="accent"
             active={openNow}
@@ -692,7 +708,7 @@ export default function Discover() {
           {/* A SORT, deliberately sitting with the sorts. It reorders the list
               and removes nothing — tapping it never makes a shop disappear. */}
           <Chip
-            label={nearMe.state.status === 'asking' ? 'Finding you…' : 'Nearest'}
+            label={nearMe.state.status === 'asking' ? t`Finding you…` : t`Nearest`}
             icon="navigate-outline"
             active={sort === 'distance' && nearMe.state.status === 'on'}
             onPress={async () => {
@@ -765,7 +781,7 @@ export default function Discover() {
         {/* WHO IS HERE. One line tall, most popular first. */}
         {placesLoading && (
           <View>
-            <SectionHead title="Places" />
+            <SectionHead title={t`Places`} />
             <View style={styles.bubbles}>
               {[0, 1, 2, 3, 4].map((n) => (
                 <View key={n} style={styles.bubbleGhost}>
@@ -780,7 +796,7 @@ export default function Discover() {
         {placeRow.length > 0 && (
           <FadeIn>
             <SectionHead
-              title="Places"
+              title={t`Places`}
               note={
                 shopCount === undefined
                   ? undefined
@@ -830,7 +846,7 @@ export default function Discover() {
           <FadeIn delay={60}>
             <SectionHead
               title={SHELF_TITLE[filters.sort]}
-              note={area.km !== null ? `within ${area.km} km` : undefined}
+              note={area.km !== null ? t`within ${area.km} km` : undefined}
             />
             <ScrollView
               horizontal
@@ -855,8 +871,8 @@ export default function Discover() {
         {browsing && followedOffers.length > 0 && (
           <FadeIn delay={70}>
             <SectionHead
-              title="From places you follow"
-              action="See them"
+              title={t`From places you follow`}
+              action={t`See them`}
               onAction={() => router.push('/saved')}
             />
             <ScrollView
@@ -883,7 +899,7 @@ export default function Discover() {
           <FadeIn delay={75}>
             <SectionHead
               // "Discounts", not "On sale" (§284): the plainer word for everyone.
-              title="Discounts"
+              title={t`Discounts`}
               note={`${deals.data?.total ?? onSale.length} ${(deals.data?.total ?? onSale.length) === 1 ? 'service' : 'services'}`}
             />
             <ScrollView
@@ -908,7 +924,7 @@ export default function Discover() {
 
         {browsing && position !== null && !sortingByDistance && nearOffers.length > 0 && (
           <FadeIn delay={90}>
-            <SectionHead title="Near you" />
+            <SectionHead title={t`Near you`} />
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -936,7 +952,7 @@ export default function Discover() {
               icon={shelf.category.icon}
               // The same thing the category tile above does — a shortcut to
               // it from where the eye already is, not a new place to go.
-              action="See all"
+              action={t`See all`}
               onAction={() => pickCategory(shelf.category.id)}
             />
             <ScrollView
@@ -962,7 +978,7 @@ export default function Discover() {
         {!browsing && offers.length > 0 && (
           <FadeIn delay={60}>
             <SectionHead
-              title="Services"
+              title={t`Services`}
               note={`${services.data?.total} ${services.data?.total === 1 ? 'service' : 'services'}`}
             />
             <View style={styles.grid}>
@@ -983,14 +999,14 @@ export default function Discover() {
         {failed ? (
           <EmptyState
             icon="cloud-offline-outline"
-            title="Could not reach the server."
-            text="Pull down to try again."
+            title={t`Could not reach the server.`}
+            text={t`Pull down to try again.`}
           />
         ) : settled && shops.length === 0 && offers.length === 0 ? (
           <EmptyState
             icon="search"
-            title="Nothing matches that yet."
-            text="Try a different word, or clear the filters."
+            title={t`Nothing matches that yet.`}
+            text={t`Try a different word, or clear the filters.`}
           />
         ) : settled && offers.length === 0 && area.km !== null ? (
           // Places close by, but none of them has anything to book yet (§171):
@@ -998,9 +1014,9 @@ export default function Discover() {
           // a row of circles above an empty screen.
           <EmptyState
             icon="navigate-outline"
-            title={`Nothing to book within ${area.km} km yet`}
-            text="The places this close have not put up their services."
-            action={nextStep === null ? 'Look at every distance' : `Look up to ${nextStep} km`}
+            title={t`Nothing to book within ${area.km} km yet`}
+            text={t`The places this close have not put up their services.`}
+            action={nextStep === null ? t`Look at every distance` : t`Look up to ${nextStep} km`}
             onAction={() => pickWithin(nextStep)}
           />
         ) : null}
@@ -1013,11 +1029,11 @@ export default function Discover() {
         onBook={(locationId) => router.push(`/shop/${locationId}`)}
       />
 
-      <Sheet open={placeSheet} title="Where in Rwanda" onClose={() => setPlaceSheet(false)}>
+      <Sheet open={placeSheet} title={t`Where in Rwanda`} onClose={() => setPlaceSheet(false)}>
         <ScrollView contentContainerStyle={styles.sheetBody} showsVerticalScrollIndicator={false}>
           <View style={styles.wrapRow}>
             <Chip
-              label="All of Rwanda"
+              label={t`All of Rwanda`}
               tone="accent"
               active={provinceId === null && districtId === null}
               onPress={() => {
@@ -1057,7 +1073,7 @@ export default function Discover() {
           {chosenProvince?.isCity && chosenProvince.districts.length > 1 && (
             <View style={styles.wrapRow}>
               <Chip
-                label={`All of ${shortName(chosenProvince.name)}`}
+                label={t`All of ${shortName(chosenProvince.name)}`}
                 active={districtId === null}
                 onPress={() => setDistrictId(null)}
               />
@@ -1219,11 +1235,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Long words (§308): the link goes under the title rather than off the screen.
   sectionHead: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    columnGap: 12,
+    rowGap: 4,
     marginBottom: 12,
   },
   sectionTitle: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },

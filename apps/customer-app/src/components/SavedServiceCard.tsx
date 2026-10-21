@@ -10,6 +10,8 @@ import { PressableScale } from '../ui/PressableScale';
 import { SaveButton } from './SaveButton';
 import { SaleBadge } from './Sale';
 import { useMoney } from '../money';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * A saved service, as a card worth coming back to (§158).
@@ -96,7 +98,7 @@ export function SavedServiceCard({
             {service.bookingCount > 0 && (
               <View style={styles.fact}>
                 <Icon name="flame" size={12} color="#FFB08A" />
-                <Text style={styles.factText}>{service.bookingCount} booked</Text>
+                <Text style={styles.factText}><Trans>{service.bookingCount} booked</Trans></Text>
               </View>
             )}
           </View>
@@ -105,7 +107,7 @@ export function SavedServiceCard({
         {!service.bookable && (
           <View style={styles.paused} pointerEvents="none">
             <Icon name="pause-circle" size={16} color="#FFFFFF" />
-            <Text style={styles.pausedText}>Not taking bookings right now</Text>
+            <Text style={styles.pausedText}><Trans>Not taking bookings right now</Trans></Text>
           </View>
         )}
       </View>
@@ -130,14 +132,14 @@ export function SavedServiceCard({
             haptic
             scaleTo={0.93}
             accessibilityRole="button"
-            accessibilityLabel={`Book ${service.name}`}
+            accessibilityLabel={t`Book ${service.name}`}
             style={styles.book}
           >
-            <Text style={styles.bookText}>Book</Text>
+            <Text style={styles.bookText}><Trans>Book</Trans></Text>
             <Icon name="arrow-forward" size={15} color="#FFFFFF" />
           </PressableScale>
         ) : (
-          <Text style={styles.stays}>Stays here</Text>
+          <Text style={styles.stays}><Trans>Stays here</Trans></Text>
         )}
       </View>
     </PressableScale>

@@ -28,6 +28,8 @@ import { tick } from '../ui/haptic';
 import { Icon, type IconName } from '../ui/Icon';
 import { useReducedMotion } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * The welcome story (§307): what somebody sees the first time they are signed
@@ -57,34 +59,66 @@ const SLIDES: Slide[] = [
   {
     key: 'find',
     image: require('../../assets/tour/find.jpg'),
-    title: 'Find a place near you',
-    text: 'Barbers, salons, spas and more — with their real photos, prices and reviews.',
+
+    get title() { return t`Find a place near you`; },
+    get text() { return t`Barbers, salons, spas and more — with their real photos, prices and reviews.`; },
     spot: { x: 3, y: 34, w: 94, h: 22 },
-    chip: { icon: 'location', title: 'Near you', text: 'Closest places first', tone: theme.night },
+
+    chip: {
+      icon: 'location',
+
+      get title() { return t`Near you`; },
+      get text() { return t`Closest places first`; },
+      tone: theme.night
+    }
   },
   {
     key: 'pick',
     image: require('../../assets/tour/pick.jpg'),
-    title: 'Pick a time that suits you',
-    text: 'Every free time is there to see. Choose yours with a tap.',
+
+    get title() { return t`Pick a time that suits you`; },
+    get text() { return t`Every free time is there to see. Choose yours with a tap.`; },
     spot: { x: 7, y: 35, w: 86, h: 39 },
-    chip: { icon: 'time', title: 'Fri 23 Oct, 10:00', text: 'Yours to choose', tone: theme.accent },
+
+    chip: {
+      icon: 'time',
+
+      get title() { return t`Fri 23 Oct, 10:00`; },
+      get text() { return t`Yours to choose`; },
+      tone: theme.accent
+    }
   },
   {
     key: 'pay',
     image: require('../../assets/tour/pay.jpg'),
-    title: 'Hold it with a small deposit',
-    text: 'A part of the price, by mobile money, approved on your own phone. The rest you pay at the shop.',
+
+    get title() { return t`Hold it with a small deposit`; },
+    get text() { return t`A part of the price, by mobile money, approved on your own phone. The rest you pay at the shop.`; },
     spot: { x: 6, y: 22, w: 88, h: 8.5 },
-    chip: { icon: 'shield-checkmark', title: 'Deposit paid', text: 'The time is truly yours', tone: theme.ok },
+
+    chip: {
+      icon: 'shield-checkmark',
+
+      get title() { return t`Deposit paid`; },
+      get text() { return t`The time is truly yours`; },
+      tone: theme.ok
+    }
   },
   {
     key: 'code',
     image: require('../../assets/tour/code.jpg'),
-    title: 'Show your code when you arrive',
-    text: 'Six digits, on your booking and in your email. That is all the shop needs.',
+
+    get title() { return t`Show your code when you arrive`; },
+    get text() { return t`Six digits, on your booking and in your email. That is all the shop needs.`; },
     spot: { x: 9, y: 48.5, w: 82, h: 14.5 },
-    chip: { icon: 'ticket', title: 'Checked in', text: 'Six digits, and you are in', tone: theme.accent },
+
+    chip: {
+      icon: 'ticket',
+
+      get title() { return t`Checked in`; },
+      get text() { return t`Six digits, and you are in`; },
+      tone: theme.accent
+    }
   },
 ];
 
@@ -250,13 +284,13 @@ function Story({ first, me, onClose }: { first: boolean; me: Me | null; onClose:
               hitSlop={12}
               style={styles.close}
               accessibilityRole="button"
-              accessibilityLabel={first ? 'Skip the welcome' : 'Close'}
+              accessibilityLabel={first ? t`Skip the welcome` : t`Close`}
             >
               <Icon name="close" size={20} color="#FFFFFF" />
             </Pressable>
           </View>
 
-          {!short && <Text style={styles.eyebrow}>{first ? 'Welcome to BwanguReservations' : 'How booking works'}</Text>}
+          {!short && <Text style={styles.eyebrow}>{first ? t`Welcome to BwanguReservations` : t`How booking works`}</Text>}
 
           {slide ? (
             <>
@@ -282,7 +316,7 @@ function Story({ first, me, onClose }: { first: boolean; me: Me | null; onClose:
                       onPressOut={letGo}
                       delayLongPress={220}
                       accessibilityRole="button"
-                      accessibilityLabel="Back"
+                      accessibilityLabel={t`Back`}
                     />
                     <Pressable
                       style={styles.zoneNext}
@@ -291,7 +325,7 @@ function Story({ first, me, onClose }: { first: boolean; me: Me | null; onClose:
                       onPressOut={letGo}
                       delayLongPress={220}
                       accessibilityRole="button"
-                      accessibilityLabel="Next"
+                      accessibilityLabel={t`Next`}
                     />
                   </View>
                 </View>
@@ -308,7 +342,7 @@ function Story({ first, me, onClose }: { first: boolean; me: Me | null; onClose:
               >
                 {!short && (
                   <Text style={styles.step}>
-                    {index + 1} of {SLIDES.length}
+                    {index + 1}<Trans>of {SLIDES.length}</Trans>
                   </Text>
                 )}
                 <Text style={[styles.title, short && styles.titleShort]} accessibilityRole="header">
@@ -334,13 +368,13 @@ function Story({ first, me, onClose }: { first: boolean; me: Me | null; onClose:
           {slide && (
             <View style={[styles.foot, { paddingBottom: (wide ? 0 : insets.bottom) + 18 }]}>
               <Button
-                label={last ? (first ? 'Start exploring' : 'Done') : index === SLIDES.length - 1 && first ? 'One more thing' : 'Next'}
+                label={last ? (first ? t`Start exploring` : t`Done`) : index === SLIDES.length - 1 && first ? t`One more thing` : t`Next`}
                 icon={last ? 'checkmark' : undefined}
                 onPress={() => go(index + 1)}
               />
               {first && (
                 <Pressable onPress={onClose} hitSlop={8} style={styles.skip} accessibilityRole="button">
-                  <Text style={styles.skipText}>Skip — I’ll look around</Text>
+                  <Text style={styles.skipText}><Trans>Skip — I’ll look around</Trans></Text>
                 </Pressable>
               )}
             </View>
@@ -489,26 +523,26 @@ function MakeItYours({ me, onDone }: { me: Me | null; onDone: () => void }) {
       <View style={styles.yoursBadge}>
         <Icon name="sparkles" size={26} color={theme.accent} />
       </View>
-      <Text style={[styles.title, styles.center]}>Make it yours</Text>
+      <Text style={[styles.title, styles.center]}><Trans>Make it yours</Trans></Text>
       <Text style={[styles.text, styles.center]}>
         {alerts && alerts !== 'unavailable'
-          ? 'Two small things — you can change both in Account.'
-          : 'One small thing — you can change it in Account.'}
+          ? t`Two small things — you can change both in Account.`
+          : t`One small thing — you can change it in Account.`}
       </Text>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>The name on your reviews</Text>
+        <Text style={styles.cardLabel}><Trans>The name on your reviews</Trans></Text>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="e.g. Aline U."
+          placeholder={t`e.g. Aline U.`}
           placeholderTextColor="rgba(255,255,255,0.4)"
           style={styles.input}
           maxLength={40}
           autoCapitalize="words"
           returnKeyType="done"
         />
-        <Text style={styles.cardNote}>Left empty, your reviews say “Anonymous”.</Text>
+        <Text style={styles.cardNote}><Trans>Left empty, your reviews say “Anonymous”.</Trans></Text>
       </View>
 
       {alerts && alerts !== 'unavailable' && (
@@ -517,13 +551,13 @@ function MakeItYours({ me, onDone }: { me: Me | null; onDone: () => void }) {
             <Icon name="notifications" size={18} color={theme.accent} />
           </View>
           <View style={styles.flex}>
-            <Text style={styles.cardTitle}>Reminders before each booking</Text>
+            <Text style={styles.cardTitle}><Trans>Reminders before each booking</Trans></Text>
             <Text style={styles.cardNote}>
               {alerts === 'on'
-                ? 'On. We will remind you, and tell you when a shop replies.'
+                ? t`On. We will remind you, and tell you when a shop replies.`
                 : alerts === 'denied'
-                  ? 'Turned off in your phone’s settings.'
-                  : 'And a note when a shop replies to you.'}
+                  ? t`Turned off in your phone’s settings.`
+                  : t`And a note when a shop replies to you.`}
             </Text>
           </View>
           {alerts === 'undecided' && (
@@ -534,14 +568,14 @@ function MakeItYours({ me, onDone }: { me: Me | null; onDone: () => void }) {
               style={styles.turnOn}
               accessibilityRole="button"
             >
-              <Text style={styles.turnOnText}>Turn on</Text>
+              <Text style={styles.turnOnText}><Trans>Turn on</Trans></Text>
             </PressableScale>
           )}
           {alerts === 'on' && <Icon name="checkmark-circle" size={22} color="#5BD38F" />}
         </View>
       )}
 
-      <Button label="Start exploring" busy={busy} onPress={() => void finish()} style={styles.start} />
+      <Button label={t`Start exploring`} busy={busy} onPress={() => void finish()} style={styles.start} />
     </View>
   );
 }

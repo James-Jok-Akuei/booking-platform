@@ -1,6 +1,9 @@
 import type { AccountExport } from './api/auth';
 import { BOOKING_STATUS } from './bookingStatus';
 import { TICKET_STATUS } from './ticketStatus';
+import { plural, t } from '@lingui/core/macro';
+import { appLocale } from './i18n';
+import { dateLocale } from './i18n/format';
 
 /**
  * A person's data, as a document a person can read (§144).
@@ -23,10 +26,10 @@ export function exportDocumentHtml(
   format: (minor: number | null | undefined, code?: string | null) => string,
 ): string {
   const day = (iso: string | null | undefined) =>
-    iso ? new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
+    iso ? new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' }) : '';
   const moment = (iso: string | null | undefined) =>
     iso
-      ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+      ? new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' })
       : '';
   // Everything a customer typed is escaped: a message containing "<b>" is
   // shown as written, not obeyed.
@@ -36,24 +39,26 @@ export function exportDocumentHtml(
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  const asOf = moment(data.exportedAt);
   const stars = (rating: number) => '★'.repeat(rating) + '☆'.repeat(Math.max(0, 5 - rating));
 
   const { account } = data;
+  const optedIn = day(account.offersOptInAt);
 
   const facts = [
-    ['Email', esc(account.email)],
-    ['Name on your reviews', account.displayName ? esc(account.displayName) : 'Anonymous'],
-    ['With us since', day(account.createdAt)],
-    ['Your district', account.homeDistrict ? esc(account.homeDistrict.name) : 'Not chosen'],
+    [t`Email`, esc(account.email)],
+    [t`Name on your reviews`, account.displayName ? esc(account.displayName) : t`Anonymous`],
+    [t`With us since`, day(account.createdAt)],
+    [t`Your district`, account.homeDistrict ? esc(account.homeDistrict.name) : t`Not chosen`],
     [
-      'Address for weekly offers',
+      t`Address for weekly offers`,
       account.homeLatitude !== null && account.homeLongitude !== null
         ? `${account.homeLabel ? `${esc(account.homeLabel)} — ` : ''}${account.homeLatitude.toFixed(5)}, ${account.homeLongitude.toFixed(5)}`
-        : 'Not saved',
+        : t`Not saved`,
     ],
     [
-      'Weekly offers by email',
-      account.offersOptInAt ? `On, since ${day(account.offersOptInAt)}` : 'Off',
+      t`Weekly offers by email`,
+      account.offersOptInAt ? t`On, since ${optedIn}` : t`Off`,
     ],
   ]
     .map(([label, value]) => `<tr><th>${label}</th><td>${value}</td></tr>`)
@@ -62,6 +67,7 @@ export function exportDocumentHtml(
   const bookings = data.bookings
     .map((b) => {
       const status = BOOKING_STATUS[b.status];
+      const paidOn = day(b.depositPaidAt);
       return `
       <div class="item">
         <div class="row">
@@ -70,19 +76,19 @@ export function exportDocumentHtml(
         </div>
         <div class="muted">${esc(b.location.name)} · ${esc(b.location.address)}</div>
         <table class="mini">
-          <tr><th>When</th><td>${moment(b.startTime)}</td></tr>
-          <tr><th>Price</th><td>${format(b.servicePriceMinor, b.currency)}</td></tr>
-          <tr><th>Deposit</th><td>${format(b.depositAmountMinor, b.currency)}${
-            b.depositPaidAt ? `, paid ${day(b.depositPaidAt)}` : ', not paid'
+          <tr><th>${t`When`}</th><td>${moment(b.startTime)}</td></tr>
+          <tr><th>${t`Price`}</th><td>${format(b.servicePriceMinor, b.currency)}</td></tr>
+          <tr><th>${t`Deposit`}</th><td>${format(b.depositAmountMinor, b.currency)}${
+            b.depositPaidAt ? `, ${t`paid ${paidOn}`}` : `, ${t`not paid`}`
           }</td></tr>
           ${
             b.cancelledAt
-              ? `<tr><th>Cancelled</th><td>${day(b.cancelledAt)}${
+              ? `<tr><th>${t`Cancelled`}</th><td>${day(b.cancelledAt)}${
                   b.cancellationReason ? ` — ${esc(b.cancellationReason)}` : ''
                 }</td></tr>`
               : ''
           }
-          <tr><th>Booked on</th><td>${day(b.createdAt)}</td></tr>
+          <tr><th>${t`Booked on`}</th><td>${day(b.createdAt)}</td></tr>
         </table>
       </div>`;
     })
@@ -96,7 +102,7 @@ export function exportDocumentHtml(
           <div class="strong">${esc(r.location.name)}</div>
           <div class="stars">${stars(r.rating)}</div>
         </div>
-        <div class="muted">${day(r.createdAt)}${r.editedAt ? ` · edited ${day(r.editedAt)}` : ''}</div>
+        <div class="muted">${day(r.createdAt)}${r.editedAt ? ` · ${t`edited ${day(r.editedAt)}`}` : ''}</div>
         ${r.comment ? `<p>${esc(r.comment)}</p>` : ''}
       </div>`,
     )
@@ -109,8 +115,8 @@ export function exportDocumentHtml(
       .map(
         (m) => `
         <div class="msg ${m.from === 'you' ? 'mine' : ''}">
-          <div class="who">${m.from === 'you' ? 'You' : esc(m.from)} · ${moment(m.sentAt)}</div>
-          <div>${m.body ? esc(m.body) : ''}${m.photoUrl ? '<span class="muted">[a photo]</span>' : ''}</div>
+          <div class="who">${m.from === 'you' ? t`You` : esc(m.from)} · ${moment(m.sentAt)}</div>
+          <div>${m.body ? esc(m.body) : ''}${m.photoUrl ? `<span class="muted">${t`[a photo]`}</span>` : ''}</div>
         </div>`,
       )
       .join('');
@@ -119,10 +125,8 @@ export function exportDocumentHtml(
     .map(
       (c) => `
       <div class="item">
-        <div class="strong">${esc(c.with ?? 'A business')}</div>
-        <div class="muted">Started ${day(c.startedAt)} · ${c.messages.length} message${
-          c.messages.length === 1 ? '' : 's'
-        }</div>
+        <div class="strong">${esc(c.with ?? t`A business`)}</div>
+        <div class="muted">${t`Started ${day(c.startedAt)}`} · ${plural(c.messages.length, { one: '# message', other: '# messages' })}</div>
         ${talk(c.messages)}
       </div>`,
     )
@@ -130,14 +134,14 @@ export function exportDocumentHtml(
 
   const tickets = data.supportTickets
     .map(
-      (t) => `
+      (ticket) => `
       <div class="item">
         <div class="row">
-          <div class="strong">${esc(t.subject)}</div>
-          <div class="tag">${esc(TICKET_STATUS[t.status].label)}</div>
+          <div class="strong">${esc(ticket.subject)}</div>
+          <div class="tag">${esc(TICKET_STATUS[ticket.status].label)}</div>
         </div>
-        <div class="muted">Opened ${day(t.createdAt)}</div>
-        ${talk(t.messages)}
+        <div class="muted">${t`Opened ${day(ticket.createdAt)}`}</div>
+        ${talk(ticket.messages)}
       </div>`,
     )
     .join('');
@@ -147,11 +151,11 @@ export function exportDocumentHtml(
     ${count === 0 ? `<p class="muted">${empty}</p>` : body}`;
 
   return `<!doctype html>
-<html lang="en">
+<html lang="${appLocale() === 'en-XA' ? 'en' : appLocale()}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Your data</title>
+<title>${t`Your data`}</title>
 <style>
   @page { margin: 18mm 16mm; }
   * { box-sizing: border-box; }
@@ -188,28 +192,27 @@ export function exportDocumentHtml(
 </head>
 <body>
   <div class="cover">
-    <h1>Your data</h1>
-    <p>Everything we hold about you, as of ${moment(data.exportedAt)}.</p>
+    <h1>${t`Your data`}</h1>
+    <p>${t`Everything we hold about you, as of ${asOf}.`}</p>
     <div class="who">${account.displayName ? esc(account.displayName) : esc(account.email)}</div>
     <div class="counts">
-      <div><b>${data.bookings.length}</b><span>Bookings</span></div>
-      <div><b>${data.reviews.length}</b><span>Reviews</span></div>
-      <div><b>${data.conversations.length}</b><span>Conversations</span></div>
-      <div><b>${data.supportTickets.length}</b><span>Support requests</span></div>
+      <div><b>${data.bookings.length}</b><span>${t`Bookings`}</span></div>
+      <div><b>${data.reviews.length}</b><span>${t`Reviews`}</span></div>
+      <div><b>${data.conversations.length}</b><span>${t`Conversations`}</span></div>
+      <div><b>${data.supportTickets.length}</b><span>${t`Support requests`}</span></div>
     </div>
   </div>
 
-  <h2>Your account</h2>
+  <h2>${t`Your account`}</h2>
   <table class="facts">${facts}</table>
 
-  ${section('Your bookings', data.bookings.length, bookings, 'You have not booked anything yet.')}
-  ${section('Your reviews', data.reviews.length, reviews, 'You have not written a review yet.')}
-  ${section('Your messages', data.conversations.length, conversations, 'You have not messaged a business yet.')}
-  ${section('Your support requests', data.supportTickets.length, tickets, 'You have not asked support for help yet.')}
+  ${section(t`Your bookings`, data.bookings.length, bookings, t`You have not booked anything yet.`)}
+  ${section(t`Your reviews`, data.reviews.length, reviews, t`You have not written a review yet.`)}
+  ${section(t`Your messages`, data.conversations.length, conversations, t`You have not messaged a business yet.`)}
+  ${section(t`Your support requests`, data.supportTickets.length, tickets, t`You have not asked support for help yet.`)}
 
   <div class="foot">
-    This document was made on your phone from your account. The same data is also available as
-    a file another service can read (JSON): in the app, Account → Your data → Get a copy of my data.
+    ${t`This document was made on your phone from your account. The same data is also available as a file another service can read (JSON): in the app, Account → Your data → Get a copy of my data.`}
   </div>
 </body>
 </html>`;

@@ -46,6 +46,8 @@ import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
 import { showDialog, showProblem } from '../../src/ui/Dialog';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * One booking: pay the deposit, then show the arrival code.
@@ -85,7 +87,7 @@ function Booking() {
       queryClient.setQueryData(['appointment', id], updated);
       setChanging(false);
     },
-    onError: (error) => showProblem('Could not change that', error),
+    onError: (error) => showProblem(t`Could not change that`, error),
   });
 
   const appointment = useQuery({
@@ -183,7 +185,7 @@ function Booking() {
         .catch(() => undefined);
     },
     onError: (error) =>
-      showProblem('Could not start the payment', error),
+      showProblem(t`Could not start the payment`, error),
   });
 
   /**
@@ -207,12 +209,12 @@ function Booking() {
       showDialog({
         tone: 'ok',
         icon: 'mail',
-        title: 'Sent',
-        message: 'A new code is on its way to your email.',
+        title: t`Sent`,
+        message: t`A new code is on its way to your email.`,
       });
     },
     onError: (error) =>
-      showProblem('Not sent', error),
+      showProblem(t`Not sent`, error),
   });
 
   const cancel = useMutation({
@@ -223,13 +225,13 @@ function Booking() {
       router.dismissTo('/');
     },
     onError: (error) =>
-      showProblem('Could not cancel', error),
+      showProblem(t`Could not cancel`, error),
   });
 
   if (appointment.isLoading) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Your booking" />
+        <TopBar title={t`Your booking`} />
         <View style={styles.content}>
           <Skeleton height={170} round={radius.xl} />
           <Skeleton height={230} round={radius.xl} />
@@ -241,11 +243,11 @@ function Booking() {
   if (!appointment.data) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Your booking" />
+        <TopBar title={t`Your booking`} />
         <EmptyState
           icon="calendar-outline"
-          title="That booking could not be found."
-          text="If you have signed out, sign in again and open it from My bookings."
+          title={t`That booking could not be found.`}
+          text={t`If you have signed out, sign in again and open it from My bookings.`}
         />
       </View>
     );
@@ -285,14 +287,14 @@ function Booking() {
     showDialog({
       tone: 'danger',
       icon: 'close',
-      title: 'Cancel this booking?',
+      title: t`Cancel this booking?`,
       message: paid
-        ? 'Your deposit is not refunded when you cancel. That is what holds the slot.'
-        : 'Nothing has been paid, so nothing is lost.',
+        ? t`Your deposit is not refunded when you cancel. That is what holds the slot.`
+        : t`Nothing has been paid, so nothing is lost.`,
       actions: [
-        { label: 'Keep it', role: 'cancel' },
+        { label: t`Keep it`, role: 'cancel' },
         {
-          label: 'Cancel booking',
+          label: t`Cancel booking`,
           role: 'primary',
           onPress: () => cancel.mutate('Cancelled by the customer.'),
         },
@@ -318,7 +320,7 @@ function Booking() {
       showDialog({
         tone: 'warn',
         icon: 'map',
-        title: 'Could not open maps',
+        title: t`Could not open maps`,
         message: `${a.location.name}\n${a.location.address}`,
       }),
     );
@@ -345,7 +347,7 @@ function Booking() {
   if (awaitingPayment && !paid) {
     return (
       <KeyboardAvoidingView style={styles.screen} behavior="padding">
-        <TopBar title="Checkout" />
+        <TopBar title={t`Checkout`} />
         {viewer}
         <ScrollView
           ref={keys.ref}
@@ -370,7 +372,7 @@ function Booking() {
             onOpenPhoto={setPhoto}
             onFieldFocus={keys.reveal}
           />
-          <Button kind="quietDanger" label="Cancel this booking" onPress={askToCancel} />
+          <Button kind="quietDanger" label={t`Cancel this booking`} onPress={askToCancel} />
         </ScrollView>
 
         {/* The amount and the button, fixed where the thumb is. The total is
@@ -380,7 +382,7 @@ function Booking() {
           <View style={[styles.payInner, { width: Math.min(layout.contentWidth, 560) }]}>
             <View style={styles.payRow}>
               <View>
-                <Text style={type.small}>Pay now</Text>
+                <Text style={type.small}><Trans>Pay now</Trans></Text>
                 <Text style={styles.payAmount}>
                   {money.format(a.depositAmountMinor, a.currency)}
                 </Text>
@@ -394,12 +396,12 @@ function Booking() {
                   onPress={() => pay.mutate()}
                   label={
                     pay.isPending
-                      ? 'Asking your phone…'
+                      ? t`Asking your phone…`
                       : stage === 'PENDING'
-                        ? 'Waiting for approval…'
+                        ? t`Waiting for approval…`
                         : stage === 'FAILED'
-                          ? 'Try again'
-                          : 'Pay now'
+                          ? t`Try again`
+                          : t`Pay now`
                   }
                 />
               </View>
@@ -408,8 +410,8 @@ function Booking() {
               <Icon name="shield-checkmark-outline" size={13} color={theme.muted} />
               <Text style={type.tiny}>
                 {phoneLooksUsable
-                  ? 'You approve the payment with your MoMo PIN, on your phone.'
-                  : 'Enter your MoMo number above to pay.'}
+                  ? t`You approve the payment with your MoMo PIN, on your phone.`
+                  : t`Enter your MoMo number above to pay.`}
               </Text>
             </View>
           </View>
@@ -421,7 +423,7 @@ function Booking() {
   // ---- the reservation ----
   return (
     <View style={styles.screen}>
-      <TopBar title="Reservation" />
+      <TopBar title={t`Reservation`} />
       {viewer}
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -453,10 +455,10 @@ function Booking() {
           resendOff={resend.isPending || resendCooling}
           resendLabel={
             resend.isPending
-              ? 'Sending…'
+              ? t`Sending…`
               : resendCooling
-                ? 'Just sent — check your email'
-                : 'Email me this code again'
+                ? t`Just sent — check your email`
+                : t`Email me this code again`
           }
           onExplore={explore}
           onChangeChoices={canChangeWishes ? () => setChanging(true) : undefined}
@@ -499,6 +501,7 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(Booking, {
   icon: 'calendar-outline',
-  title: 'Sign in to see this booking',
-  text: 'Bookings are kept with your account, so only you can open them.',
+
+  get title() { return t`Sign in to see this booking`; },
+  get text() { return t`Bookings are kept with your account, so only you can open them.`; },
 });

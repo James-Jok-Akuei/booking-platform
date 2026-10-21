@@ -19,13 +19,16 @@ import { Segmented } from '../../src/ui/Segmented';
 import { RowSkeleton } from '../../src/ui/Skeleton';
 import { Stars } from '../../src/ui/Stars';
 import { BigTitle } from '../../src/ui/TopBar';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../../src/i18n/format';
 
 type Tab = 'upcoming' | 'past';
 
 const clock = (iso: string) =>
-  new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
 const weekday = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { weekday: 'long' });
+  new Date(iso).toLocaleDateString(dateLocale(), { weekday: 'long' });
 
 /**
  * Every booking this customer has made.
@@ -69,12 +72,12 @@ export default function Bookings() {
   if (!signedIn) {
     return (
       <View style={styles.screen}>
-        <BigTitle title="My bookings" />
+        <BigTitle title={t`My bookings`} />
         <EmptyState
           icon="calendar-outline"
-          title="Sign in to see your bookings"
-          text="They are kept with your account, so they follow you to any phone."
-          action="Sign in"
+          title={t`Sign in to see your bookings`}
+          text={t`They are kept with your account, so they follow you to any phone.`}
+          action={t`Sign in`}
           onAction={() => router.push('/sign-in?next=/bookings')}
         />
       </View>
@@ -85,14 +88,14 @@ export default function Bookings() {
 
   return (
     <View style={styles.screen}>
-      <BigTitle title="My bookings" />
+      <BigTitle title={t`My bookings`} />
       <View style={[styles.tabs, { width: layout.contentWidth, paddingHorizontal: layout.gutter }]}>
         <Segmented
           value={tab}
           onChange={setTab}
           options={[
-            { value: 'upcoming', label: 'Upcoming' },
-            { value: 'past', label: 'Past' },
+            { value: 'upcoming', label: t`Upcoming` },
+            { value: 'past', label: t`Past` },
           ]}
         />
       </View>
@@ -127,16 +130,16 @@ export default function Bookings() {
           ) : (
             <EmptyState
               icon={tab === 'upcoming' ? 'calendar-outline' : 'time-outline'}
-              title={tab === 'upcoming' ? 'Nothing booked yet' : 'Nothing here yet'}
+              title={tab === 'upcoming' ? t`Nothing booked yet` : t`Nothing here yet`}
               text={
                 tab === 'upcoming'
-                  ? 'Bookings you make will show up here.'
-                  : 'Bookings that have been and gone will show up here.'
+                  ? t`Bookings you make will show up here.`
+                  : t`Bookings that have been and gone will show up here.`
               }
-              action={tab === 'upcoming' ? 'Find a place' : undefined}
+              action={tab === 'upcoming' ? t`Find a place` : undefined}
               onAction={() => router.push('/')}
               // Nothing booked yet is when "how does this work?" is asked (§307.1).
-              secondary={tab === 'upcoming' ? 'See how booking works' : undefined}
+              secondary={tab === 'upcoming' ? t`See how booking works` : undefined}
               onSecondary={playWelcomeTour}
             />
           )
@@ -172,7 +175,7 @@ function BookingRow({
     <PressableScale style={styles.row} onPress={onPress} scaleTo={0.98}>
       <View style={[styles.date, faded && styles.dateFaded]}>
         <Text style={[styles.dateMonth, faded && styles.dateTextFaded]}>
-          {start.toLocaleDateString(undefined, { month: 'short' }).toUpperCase()}
+          {start.toLocaleDateString(dateLocale(), { month: 'short' }).toUpperCase()}
         </Text>
         <Text style={[styles.dateDay, faded && styles.dateTextFaded]}>{start.getDate()}</Text>
       </View>
@@ -205,10 +208,10 @@ function BookingRow({
               reason a cancellation costs something. */}
           <Text style={styles.money} numberOfLines={1}>
             {item.depositPaidAt
-              ? `${deposit} deposit paid`
+              ? t`${deposit} deposit paid`
               : item.status === 'PENDING_PAYMENT'
-                ? `${deposit} deposit due`
-                : 'Nothing paid'}
+                ? t`${deposit} deposit due`
+                : t`Nothing paid`}
           </Text>
         </View>
 
@@ -225,12 +228,12 @@ function BookingRow({
           (item.review ? (
             <View style={styles.line}>
               <Stars rating={item.review.rating} size={13} />
-              <Text style={type.small}>you rated this</Text>
+              <Text style={type.small}><Trans>you rated this</Trans></Text>
             </View>
           ) : (
             <View style={styles.nudge}>
               <Icon name="star-outline" size={14} color={theme.warn} />
-              <Text style={styles.nudgeText}>Tell others how it went</Text>
+              <Text style={styles.nudgeText}><Trans>Tell others how it went</Trans></Text>
             </View>
           ))}
       </View>

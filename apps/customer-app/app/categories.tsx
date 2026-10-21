@@ -16,6 +16,10 @@ import { PressableScale } from '../src/ui/PressableScale';
 import { Sheet } from '../src/ui/Sheet';
 import { Skeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { plural } from '@lingui/core/macro';
+import { listOf } from '../src/i18n/format';
 
 const GAP = 12;
 
@@ -117,7 +121,7 @@ export default function Categories() {
 
   return (
     <View style={styles.screen}>
-      <TopBar title="Categories" />
+      <TopBar title={t`Categories`} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -133,7 +137,10 @@ export default function Categories() {
       >
         <FadeIn>
           <Text style={[type.display, layout.compact && styles.displayCompact]}>
-            What are you{'\n'}looking for?
+            <Trans>
+              What are you{'\n'}
+              looking for?
+            </Trans>
           </Text>
         </FadeIn>
 
@@ -143,7 +150,7 @@ export default function Categories() {
             style={styles.searchInput}
             value={query}
             onChangeText={setQuery}
-            placeholder="Try “barber” or “massage”"
+            placeholder={t`Try “barber” or “massage”`}
             placeholderTextColor={theme.muted}
             autoCorrect={false}
             returnKeyType="search"
@@ -153,7 +160,7 @@ export default function Categories() {
               onPress={() => setQuery('')}
               hitSlop={10}
               accessibilityRole="button"
-              accessibilityLabel="Clear the search"
+              accessibilityLabel={t`Clear the search`}
               style={styles.clear}
             >
               <Icon name="close" size={14} color={theme.ink2} />
@@ -173,7 +180,7 @@ export default function Categories() {
         )}
 
         {categories.data?.length === 0 && (
-          <EmptyState icon="grid-outline" title="Nothing is listed yet." />
+          <EmptyState icon="grid-outline" title={t`Nothing is listed yet.`} />
         )}
 
         {/* The kinds that match, as shortcuts. */}
@@ -195,8 +202,7 @@ export default function Categories() {
                   </View>
                   <View style={styles.flex}>
                     <Text style={styles.kindName}>{sub.name}</Text>
-                    <Text style={type.small} numberOfLines={1}>
-                      in {category.name}
+                    <Text style={type.small} numberOfLines={1}><Trans>in {category.name}</Trans>
                     </Text>
                   </View>
                   <Icon name="arrow-forward" size={16} color={theme.muted} />
@@ -209,8 +215,8 @@ export default function Categories() {
         {needle !== '' && shown.length === 0 && categories.data && (
           <EmptyState
             icon="search"
-            title="Nothing by that name."
-            text="Try a shorter word, or clear the search to see everything."
+            title={t`Nothing by that name.`}
+            text={t`Try a shorter word, or clear the search to see everything.`}
           />
         )}
 
@@ -243,13 +249,13 @@ export default function Categories() {
 
             <Button
               icon="search"
-              label={`See everything in ${open.name}`}
+              label={t`See everything in ${open.name}`}
               onPress={() => go(open.id)}
             />
 
             {open.subcategories.length > 0 && (
               <>
-                <Text style={type.label}>Or pick a kind</Text>
+                <Text style={type.label}><Trans>Or pick a kind</Trans></Text>
                 <View style={styles.subs}>
                   {open.subcategories.map((sub) => {
                     const look = lookFor(open.icon);
@@ -302,12 +308,13 @@ function Tile({
   const look = lookFor(category.icon);
   const kinds = category.subcategories.length;
   const facts = [
-    count === undefined ? null : count === 0 ? 'Coming soon' : `${count} ${count === 1 ? 'place' : 'places'}`,
-    kinds > 0 ? `${kinds} ${kinds === 1 ? 'kind' : 'kinds'}` : null,
+    count === undefined ? null : count === 0 ? t`Coming soon` : plural(count, { one: '# place', other: '# places' }),
+    kinds > 0 ? plural(kinds, { one: '# kind', other: '# kinds' }) : null,
   ].filter(Boolean);
   // The named kinds, not "Other" (§266).
   const names = category.subcategories.map((s) => s.name).filter((n) => n !== 'Other');
-  const covers = names.length > 2 ? `${names.slice(0, 2).join(', ')} and more` : names.join(' and ');
+  const firstTwo = names.slice(0, 2).join(', ');
+  const covers = names.length > 2 ? t`${firstTwo} and more` : listOf(names);
 
   return (
     <PressableScale

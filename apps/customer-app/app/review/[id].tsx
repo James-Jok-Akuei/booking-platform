@@ -33,15 +33,11 @@ import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
 import { showProblem } from '../../src/ui/Dialog';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** What each score means, so a tap is a sentence rather than a number. */
-const MEANING = [
-  'Bad',
-  'Not good',
-  'Fine',
-  'Good',
-  'Very good',
-];
+const meaning = () => [t`Bad`, t`Not good`, t`Fine`, t`Good`, t`Very good`];
 
 /**
  * Write or edit one review. The id in the route is the APPOINTMENT's.
@@ -80,6 +76,7 @@ function WriteReview() {
   // the customer actually changes something. Defaulting state from a query that
   // starts undefined would otherwise pin the form to an empty review.
   const score = rating ?? existing?.rating ?? 0;
+  const words = meaning();
   const text = comment ?? existing?.comment ?? '';
 
   const save = useMutation({
@@ -104,13 +101,13 @@ function WriteReview() {
       router.back();
     },
     onError: (error) =>
-      showProblem('Could not save that', error),
+      showProblem(t`Could not save that`, error),
   });
 
   if (appointment.isLoading) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Write a review" />
+        <TopBar title={t`Write a review`} />
         <View style={styles.content}>
           <Skeleton height={86} round={radius.lg} />
           <Skeleton height={320} round={radius.xl} />
@@ -123,11 +120,11 @@ function WriteReview() {
   if (!a) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Write a review" />
+        <TopBar title={t`Write a review`} />
         <EmptyState
           icon="calendar-outline"
-          title="That booking could not be found."
-          text="If you have signed out, sign in again and open it from My bookings."
+          title={t`That booking could not be found.`}
+          text={t`If you have signed out, sign in again and open it from My bookings.`}
         />
       </View>
     );
@@ -138,11 +135,11 @@ function WriteReview() {
   if (a.status !== 'COMPLETED') {
     return (
       <View style={styles.screen}>
-        <TopBar title="Write a review" />
+        <TopBar title={t`Write a review`} />
         <EmptyState
           icon="hourglass-outline"
-          title="Not yet"
-          text={`A visit can be reviewed once the shop has marked it done. This one is still ${
+          title={t`Not yet`}
+          text={t`A visit can be reviewed once the shop has marked it done. This one is still ${
             a.status === 'BOOKED' ? 'booked' : 'not finished'
           }.`}
         />
@@ -161,7 +158,7 @@ function WriteReview() {
       // the composer sat under the keyboard.
       behavior="padding"
     >
-      <TopBar title={existing ? 'Your review' : 'Write a review'} />
+      <TopBar title={existing ? t`Your review` : t`Write a review`} />
       <ScrollView
         ref={keys.ref}
         onScroll={keys.track}
@@ -183,14 +180,14 @@ function WriteReview() {
         </FadeIn>
 
         <FadeIn delay={70} style={styles.card}>
-          <Text style={[type.title, styles.centre]}>How was it?</Text>
+          <Text style={[type.title, styles.centre]}><Trans>How was it?</Trans></Text>
           <View style={styles.stars}>
             {[1, 2, 3, 4, 5].map((value) => (
               <StarButton
                 key={value}
                 on={value <= score}
                 disabled={locked}
-                label={`${value} out of 5 — ${MEANING[value - 1]}`}
+                label={t`${value} out of 5 — ${words[value - 1]}`}
                 onPress={() => setRating(value)}
               />
             ))}
@@ -198,7 +195,7 @@ function WriteReview() {
           {/* Always takes a line, so the form below does not jump when the
               first star is tapped. */}
           <Text style={[styles.meaning, styles.centre]}>
-            {score > 0 ? MEANING[score - 1] : ' '}
+            {score > 0 ? words[score - 1] : ' '}
           </Text>
 
           <TextInput
@@ -209,13 +206,13 @@ function WriteReview() {
             editable={!locked}
             multiline
             maxLength={2000}
-            placeholder="What happened? (optional)"
+            placeholder={t`What happened? (optional)`}
             placeholderTextColor={theme.muted}
           />
 
           {!locked && (
             <>
-              <Text style={type.label}>The name to show</Text>
+              <Text style={type.label}><Trans>The name to show</Trans></Text>
               <TextInput
                 onFocus={keys.reveal}
                 style={styles.nameInput}
@@ -223,7 +220,7 @@ function WriteReview() {
                 onChangeText={setDisplayName}
                 maxLength={40}
                 autoCapitalize="words"
-                placeholder="Anonymous"
+                placeholder={t`Anonymous`}
                 placeholderTextColor={theme.muted}
               />
               {/* The name lives on the account, not on the review. Saying so
@@ -231,8 +228,8 @@ function WriteReview() {
                   this person has ever left, which is intended and surprising. */}
               <Text style={type.small}>
                 {me.data?.displayName
-                  ? 'This is the name on all of your reviews. Changing it here changes it on every one of them.'
-                  : 'Leave this blank to stay Anonymous. Whatever you put here becomes the name on all of your reviews.'}
+                  ? t`This is the name on all of your reviews. Changing it here changes it on every one of them.`
+                  : t`Leave this blank to stay Anonymous. Whatever you put here becomes the name on all of your reviews.`}
               </Text>
             </>
           )}
@@ -241,8 +238,8 @@ function WriteReview() {
         {existing && (
           <Text style={[type.small, styles.centre]}>
             {locked
-              ? `A review can be changed for ${REVIEW_EDIT_WINDOW_DAYS} days after posting. That time has passed, so this one now stands as it is.`
-              : `You can change this for ${REVIEW_EDIT_WINDOW_DAYS} days after posting.`}
+              ? t`A review can be changed for ${REVIEW_EDIT_WINDOW_DAYS} days after posting. That time has passed, so this one now stands as it is.`
+              : t`You can change this for ${REVIEW_EDIT_WINDOW_DAYS} days after posting.`}
           </Text>
         )}
       </ScrollView>
@@ -252,7 +249,7 @@ function WriteReview() {
           <Button
             disabled={score === 0}
             busy={save.isPending}
-            label={existing ? 'Save changes' : score === 0 ? 'Pick a rating' : 'Post review'}
+            label={existing ? t`Save changes` : score === 0 ? t`Pick a rating` : t`Post review`}
             onPress={() => save.mutate()}
             style={{ width: Math.min(layout.contentWidth - 40, 520), alignSelf: 'center' }}
           />
@@ -370,6 +367,7 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(WriteReview, {
   icon: 'star-outline',
-  title: 'Sign in to write a review',
-  text: 'Reviews come from people who booked, so we need to know it is you.',
+
+  get title() { return t`Sign in to write a review`; },
+  get text() { return t`Reviews come from people who booked, so we need to know it is you.`; },
 });

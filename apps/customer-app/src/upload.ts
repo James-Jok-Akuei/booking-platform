@@ -1,6 +1,7 @@
 import { File } from 'expo-file-system';
 import { UploadType } from 'expo-file-system';
 import { ApiError, tokens } from './api/client';
+import { t } from '@lingui/core/macro';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4100';
 
@@ -42,7 +43,8 @@ export async function uploadFile<T>(
   if (result.status >= 400) {
     // The server's own sentence, which says what was wrong with the file — not
     // "upload failed", which §125 spent an evening failing to explain.
-    let message = `Upload failed (${result.status}).`;
+    const status = result.status;
+    let message = t`Upload failed (${status}).`;
     try {
       const payload = JSON.parse(result.body) as { message?: string | string[] };
       const raw = payload.message;

@@ -17,6 +17,7 @@ import { CountBadge } from './CountBadge';
 import { font, radius, shadow, theme } from '../theme';
 import { tick } from './haptic';
 import { Icon, type IconName } from './Icon';
+import { t } from '@lingui/core/macro';
 
 /** The icon for each tab, outlined when idle and filled when it is the one you are on. */
 const ICONS: Record<string, { idle: IconName; on: IconName }> = {
@@ -105,7 +106,7 @@ export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarP
           // Signed out, the account tab is the way in, and says so.
           const signIn = !signedIn && route.name === 'account';
           const label = signIn
-            ? 'Sign in'
+            ? t`Sign in`
             : typeof options.title === 'string'
               ? options.title
               : route.name;
@@ -167,7 +168,7 @@ function Tab({
       onPress={onPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: focused }}
-      accessibilityLabel={badge > 0 ? `${label}, ${badge} unread` : label}
+      accessibilityLabel={badge > 0 ? t`${label}, ${badge} unread` : label}
       hitSlop={6}
       style={styles.tab}
     >

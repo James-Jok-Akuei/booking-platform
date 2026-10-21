@@ -17,6 +17,7 @@ import { font } from '../theme';
 import { tick } from './haptic';
 import { Icon } from './Icon';
 import { PressableScale } from './PressableScale';
+import { t } from '@lingui/core/macro';
 
 /** `label` is what the photo is of — "Haircut" — shown beside the counter (§152). */
 export type ViewerPhoto = { id: string; url: string; label?: string };
@@ -267,7 +268,7 @@ export function PhotoViewer({
           scaleTo={0.9}
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel="Close"
+          accessibilityLabel={t`Close`}
           style={styles.close}
         >
           <Icon name="close" size={20} color="#FFFFFF" />
@@ -291,7 +292,7 @@ export function PhotoViewer({
                 onPress={() => goTo(i)}
                 scaleTo={0.9}
                 accessibilityRole="button"
-                accessibilityLabel={`Photo ${i + 1} of ${photos.length}`}
+                accessibilityLabel={t`Photo ${i + 1} of ${photos.length}`}
                 style={[styles.thumb, i === index && styles.thumbOn]}
               >
                 <Image

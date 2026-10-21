@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { font, theme } from '../theme';
 import { Icon, type IconName } from '../ui/Icon';
 import { MomoLogo } from '../ui/Momo';
+import { t } from '@lingui/core/macro';
 
 /**
  * How paying works, said once (§182, §278): the three promises true of every
@@ -19,29 +20,29 @@ export function PayingPromises() {
     <View style={styles.list}>
       <Pledge
         mark={<MomoLogo size={40} />}
-        title="Pay with MTN MoMo"
-        text="You approve the deposit on your own phone. This app never asks for your PIN."
+        title={t`Pay with MTN MoMo`}
+        text={t`You approve the deposit on your own phone. This app never asks for your PIN.`}
       />
       <Pledge
         icon="flash"
         color={theme.ok}
         tint={theme.okSoft}
-        title="Confirmed the moment you pay"
-        text="The time is yours as soon as the deposit goes through."
+        title={t`Confirmed the moment you pay`}
+        text={t`The time is yours as soon as the deposit goes through.`}
       />
       <Pledge
         icon="refresh"
         color={theme.ask}
         tint={theme.askSoft}
-        title="Refunded if the shop cancels"
-        text="Your whole deposit goes back to the number that paid. If you cancel, the shop keeps it."
+        title={t`Refunded if the shop cancels`}
+        text={t`Your whole deposit goes back to the number that paid. If you cancel, the shop keeps it.`}
       />
       <Pledge
         icon="storefront-outline"
         color={theme.accentDeep}
         tint={theme.accentSoft}
-        title="The rest is paid at the shop"
-        text="The deposit only holds your time. You pay what is left after your visit, the way the shop takes it."
+        title={t`The rest is paid at the shop`}
+        text={t`The deposit only holds your time. You pay what is left after your visit, the way the shop takes it.`}
       />
     </View>
   );

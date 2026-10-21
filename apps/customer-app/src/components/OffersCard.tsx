@@ -30,6 +30,8 @@ import { PressableScale } from '../ui/PressableScale';
 import { Sheet } from '../ui/Sheet';
 import { Skeleton } from '../ui/Skeleton';
 import { showProblem } from '../ui/Dialog';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * "Weekly offers by email" (§140, §172): one email a week about popular
@@ -106,7 +108,7 @@ export function OffersCard() {
     onSuccess: (saved) => queryClient.setQueryData(['offers-preference'], saved),
     onError: (error, _next, context) => {
       if (context?.before) queryClient.setQueryData(['offers-preference'], context.before);
-      showProblem('Not saved', error);
+      showProblem(t`Not saved`, error);
     },
   });
 
@@ -164,9 +166,9 @@ export function OffersCard() {
       if (status !== 'granted') {
         setSpotProblem(
           canAskAgain
-            ? { text: 'Location is off. Allow it to use where you are, or type the address above.' }
+            ? { text: t`Location is off. Allow it to use where you are, or type the address above.` }
             : {
-                text: 'Location is off for this app. Turn it on in Settings, or type the address above.',
+                text: t`Location is off for this app. Turn it on in Settings, or type the address above.`,
                 settings: true,
               },
         );
@@ -188,7 +190,7 @@ export function OffersCard() {
       save.mutate({ optedIn, spot: { latitude, longitude, ...(label ? { label } : {}) } });
       close();
     } catch {
-      setSpotProblem({ text: 'Your phone could not find where you are. Try again outdoors, or type the address above.' });
+      setSpotProblem({ text: t`Your phone could not find where you are. Try again outdoors, or type the address above.` });
     } finally {
       setLocating(false);
     }
@@ -199,7 +201,7 @@ export function OffersCard() {
   const hasPlace = Boolean(district || spot);
 
   const where = spot
-    ? (spot.label ?? 'Your saved address')
+    ? (spot.label ?? t`Your saved address`)
     : district
       ? `${district.name}, ${district.provinceName}`
       : null;
@@ -211,12 +213,12 @@ export function OffersCard() {
           <Icon name="mail-outline" size={19} color={theme.accent} />
         </View>
         <View style={styles.flex}>
-          <Text style={type.heading}>Weekly offers by email</Text>
-          <Text style={type.small}>Popular near you, every Friday</Text>
+          <Text style={type.heading}><Trans>Weekly offers by email</Trans></Text>
+          <Text style={type.small}><Trans>Popular near you, every Friday</Trans></Text>
         </View>
         <Switch
           value={optedIn}
-          accessibilityLabel="Weekly offers by email"
+          accessibilityLabel={t`Weekly offers by email`}
           trackColor={{ true: theme.accent, false: theme.line }}
           thumbColor="#FFFFFF"
           onValueChange={(on) => {
@@ -232,7 +234,7 @@ export function OffersCard() {
         onPress={() => open(false)}
         haptic
         accessibilityRole="button"
-        accessibilityLabel={where ? `Sent for ${where}. Change the address` : 'Add an address'}
+        accessibilityLabel={where ? t`Sent for ${where}. Change the address` : t`Add an address`}
         style={[styles.address, !where && styles.addressEmpty]}
       >
         <View style={[styles.addressIcon, !where && styles.addressIconEmpty]}>
@@ -246,30 +248,32 @@ export function OffersCard() {
           {/* "Change" sits up here, beside the label, so the address itself
               has the whole width — it is the part that has to be read. */}
           <View style={styles.kickerRow}>
-            <Text style={styles.addressKicker}>{where ? 'Sent for' : 'No address yet'}</Text>
-            <Text style={styles.change}>{where ? 'Change' : 'Add'}</Text>
+            <Text style={styles.addressKicker}>{where ? t`Sent for` : t`No address yet`}</Text>
+            <Text style={styles.change}>{where ? t`Change` : t`Add`}</Text>
           </View>
           <Text style={type.subheading} numberOfLines={3}>
-            {where ?? 'Add the address to send offers for'}
+            {where ?? t`Add the address to send offers for`}
           </Text>
           {/* Said, because the two give different answers: an address is
               measured by road; a district is the whole district. */}
           <Text style={type.tiny}>
             {spot
-              ? 'Saved address · measured by road'
+              ? t`Saved address · measured by road`
               : district
-                ? 'Whole district · add an address for real distances'
-                : 'Home, work, or anywhere you like'}
+                ? t`Whole district · add an address for real distances`
+                : t`Home, work, or anywhere you like`}
           </Text>
         </View>
       </PressableScale>
 
       <Text style={type.small}>
-        Picked near this address, not where your phone is. Turn it off here or from any of the
-        emails.
+        <Trans>
+          Picked near this address, not where your phone is. Turn it off here or from any of the
+          emails.
+        </Trans>
       </Text>
 
-      <Sheet open={choosing} title="Send offers for which address?" onClose={close}>
+      <Sheet open={choosing} title={t`Send offers for which address?`} onClose={close}>
         <ScrollView
           contentContainerStyle={styles.sheet}
           showsVerticalScrollIndicator={false}
@@ -279,7 +283,7 @@ export function OffersCard() {
             <View style={styles.current}>
               <Icon name="home" size={16} color={theme.accent} />
               <View style={styles.flex}>
-                <Text style={styles.addressKicker}>Saved now</Text>
+                <Text style={styles.addressKicker}><Trans>Saved now</Trans></Text>
                 <Text style={styles.currentText} numberOfLines={2}>
                   {spot.label ?? `${spot.latitude.toFixed(4)}, ${spot.longitude.toFixed(4)}`}
                 </Text>
@@ -287,7 +291,7 @@ export function OffersCard() {
               <Button
                 compact
                 kind="ghost"
-                label="Forget it"
+                label={t`Forget it`}
                 onPress={() => {
                   // Forgetting the address with no district left would leave
                   // nothing to measure from, so the emails stop too.
@@ -300,7 +304,7 @@ export function OffersCard() {
 
           {/* 1. Typed, with places suggested as it is typed (§172, §174). */}
           <View style={styles.block}>
-            {!searching && <Text style={type.subheading}>Type the address</Text>}
+            {!searching && <Text style={type.subheading}><Trans>Type the address</Trans></Text>}
             <View style={styles.searchRow}>
               <View style={[styles.search, focused && styles.searchOn]}>
                 <Icon name="search" size={17} color={focused ? theme.accent : theme.muted} />
@@ -311,13 +315,13 @@ export function OffersCard() {
                   onChangeText={setTyped}
                   onFocus={() => setFocused(true)}
                   onBlur={() => setFocused(false)}
-                  placeholder="Start typing a street or place"
+                  placeholder={t`Start typing a street or place`}
                   placeholderTextColor={theme.muted}
                   returnKeyType="search"
                   // Return asks at once rather than waiting for the pause.
                   onSubmitEditing={() => setAsked(typed.trim().replace(/\s+/g, ' '))}
                   autoCorrect={false}
-                  accessibilityLabel="Address to search for"
+                  accessibilityLabel={t`Address to search for`}
                 />
                 {found.isFetching ? (
                   <ActivityIndicator size="small" color={theme.accent} />
@@ -330,7 +334,7 @@ export function OffersCard() {
                     }}
                     hitSlop={10}
                     accessibilityRole="button"
-                    accessibilityLabel="Clear the address"
+                    accessibilityLabel={t`Clear the address`}
                     style={styles.clear}
                   >
                     <Icon name="close" size={13} color={theme.ink2} />
@@ -339,7 +343,7 @@ export function OffersCard() {
               </View>
               {searching && (
                 <PressableScale onPress={stopSearching} hitSlop={8} accessibilityRole="button">
-                  <Text style={styles.cancel}>Cancel</Text>
+                  <Text style={styles.cancel}><Trans>Cancel</Trans></Text>
                 </PressableScale>
               )}
             </View>
@@ -347,8 +351,8 @@ export function OffersCard() {
             {typed.trim().length < 3 ? (
               <Text style={type.tiny}>
                 {typed.trim().length === 0
-                  ? 'Places appear as you type — "KG 11", "Kimironko", "Kigali Heights".'
-                  : 'Keep typing…'}
+                  ? t`Places appear as you type — "KG 11", "Kimironko", "Kigali Heights".`
+                  : t`Keep typing…`}
               </Text>
             ) : found.isPending && found.isFetching ? (
               <View style={styles.results}>
@@ -364,15 +368,19 @@ export function OffersCard() {
               </View>
             ) : found.isError ? (
               <Text style={styles.notice}>
-                {found.error instanceof ApiError ? found.error.message : 'Could not search. Try again.'}
+                {found.error instanceof ApiError ? found.error.message : t`Could not search. Try again.`}
               </Text>
             ) : found.data && !found.data.available ? (
               <Text style={styles.notice}>
-                Address search is not working just now. Use where you are, or choose a district.
+                <Trans>
+                  Address search is not working just now. Use where you are, or choose a district.
+                </Trans>
               </Text>
             ) : found.data && found.data.results.length === 0 && !found.isPlaceholderData ? (
               <Text style={styles.notice}>
-                Nothing found for "{asked}". Try a street name, a building or a neighbourhood.
+                <Trans>
+                  Nothing found for "{asked}". Try a street name, a building or a neighbourhood.
+                </Trans>
               </Text>
             ) : found.data ? (
               <View style={[styles.results, found.isPlaceholderData && styles.resultsStale]}>
@@ -382,7 +390,7 @@ export function OffersCard() {
                     onPress={() => pick(place)}
                     haptic
                     accessibilityRole="button"
-                    accessibilityLabel={`Use ${place.label}${place.detail ? `, ${place.detail}` : ''}`}
+                    accessibilityLabel={t`Use ${place.label}${place.detail ? `, ${place.detail}` : ''}`}
                     style={styles.result}
                   >
                     <View style={styles.resultIcon}>
@@ -408,9 +416,11 @@ export function OffersCard() {
                     <Icon name="navigate" size={18} color={theme.accent} />
                   </View>
                   <View style={styles.flex}>
-                    <Text style={type.subheading}>At the address right now?</Text>
+                    <Text style={type.subheading}><Trans>At the address right now?</Trans></Text>
                     <Text style={type.small}>
-                      Save the exact spot your phone is at — your home, say.
+                      <Trans>
+                        Save the exact spot your phone is at — your home, say.
+                      </Trans>
                     </Text>
                   </View>
                 </View>
@@ -418,7 +428,7 @@ export function OffersCard() {
                   compact
                   kind="soft"
                   icon="locate"
-                  label={locating ? 'Finding you…' : 'Use where I am now'}
+                  label={locating ? t`Finding you…` : t`Use where I am now`}
                   busy={locating}
                   onPress={takeExactSpot}
                 />
@@ -433,19 +443,21 @@ export function OffersCard() {
                           hitSlop={8}
                           accessibilityRole="button"
                         >
-                          <Text style={styles.spotProblemLink}>Open Settings</Text>
+                          <Text style={styles.spotProblemLink}><Trans>Open Settings</Trans></Text>
                         </PressableScale>
                       )}
                     </View>
                   </FadeIn>
                 )}
                 <Text style={type.tiny}>
-                  Kept only for these emails and never shown to shops. Forget it any time.
+                  <Trans>
+                    Kept only for these emails and never shown to shops. Forget it any time.
+                  </Trans>
                 </Text>
               </View>
 
               {/* 3. A whole district, for someone who would rather not say more. */}
-              <Text style={type.label}>Or a whole district</Text>
+              <Text style={type.label}><Trans>Or a whole district</Trans></Text>
               {provinces.data?.map((province) => (
                 <View key={province.id} style={styles.group}>
                   <Text style={type.label}>{province.name}</Text>

@@ -1,3 +1,4 @@
+import { plural, t } from '@lingui/core/macro';
 /**
  * A length of time, as a person says it (§163).
  *
@@ -8,9 +9,9 @@
 export const duration = (minutes: number, long = false): string => {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  const hours = long ? (h === 1 ? '1 hour' : `${h} hours`) : `${h} h`;
-  const mins = long ? (m === 1 ? '1 minute' : `${m} minutes`) : `${m} min`;
+  const hours = long ? plural(h, { one: '# hour', other: '# hours' }) : t`${h} h`;
+  const mins = long ? plural(m, { one: '# minute', other: '# minutes' }) : t`${m} min`;
   if (h === 0) return mins;
   if (m === 0) return hours;
-  return `${hours} ${mins}`;
+  return t`${hours} ${mins}`;
 };

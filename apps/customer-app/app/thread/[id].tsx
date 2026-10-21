@@ -33,9 +33,12 @@ import { PressableScale } from '../../src/ui/PressableScale';
 import { requireSignIn } from '../../src/components/SignInWall';
 import { showDialog, showProblem } from '../../src/ui/Dialog';
 import { DropVeil, useWebPhotoDrop } from '../../src/ui/webDrop';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../../src/i18n/format';
 
 const clock = (iso: string) =>
-  new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
 
 /** "Today", "Yesterday", "Monday", "6 October" — the pill between days. */
 const dayLabel = (iso: string) => {
@@ -43,10 +46,10 @@ const dayLabel = (iso: string) => {
   const now = new Date();
   const start = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const days = Math.round((start(now) - start(d)) / 86_400_000);
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Yesterday';
-  if (days < 7) return d.toLocaleDateString(undefined, { weekday: 'long' });
-  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+  if (days === 0) return t`Today`;
+  if (days === 1) return t`Yesterday`;
+  if (days < 7) return d.toLocaleDateString(dateLocale(), { weekday: 'long' });
+  return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' });
 };
 const dayKey = (iso: string) => new Date(iso).toDateString();
 
@@ -132,7 +135,7 @@ function ThreadScreen() {
       queryClient.invalidateQueries({ queryKey: ['threads'] });
     },
     onError: (error) =>
-      showProblem('Not sent', error),
+      showProblem(t`Not sent`, error),
   });
 
   /**
@@ -151,7 +154,7 @@ function ThreadScreen() {
       showDialog({
         tone: 'warn',
         icon: 'images',
-        title: 'Photos are not allowed',
+        title: t`Photos are not allowed`,
         message: (error as Error).message,
       });
     }
@@ -185,220 +188,222 @@ function ThreadScreen() {
   );
   const [openPhoto, setOpenPhoto] = useState<number | null>(null);
   const canSend = (draft.trim().length > 0 || photo !== null) && !send.isPending;
-  const businessName = thread.data?.business.name ?? 'Messages';
+  const businessName = thread.data?.business.name ?? t`Messages`;
 
   // On a computer, a photo dropped on the conversation is attached (§305).
   const drop = useWebPhotoDrop({
     onPhoto: setPhoto,
-    onRefused: (why) => showDialog({ tone: 'warn', icon: 'images', title: 'Not a photo we can send', message: why }),
+    onRefused: (why) => showDialog({ tone: 'warn', icon: 'images', title: t`Not a photo we can send`, message: why }),
   });
 
   return (
     <View ref={drop.ref} style={styles.screen}>
-    {drop.over && <DropVeil label="Drop to attach the photo" />}
-    <KeyboardAvoidingView
-      style={styles.screen}
-      // Padding on BOTH platforms (§166). Android used to resize the window
-      // for the keyboard by itself, which is why this was left undefined
-      // there; with edge-to-edge screens that resize no longer happens, and
-      // the composer sat under the keyboard.
-      behavior="padding"
-    >
-      {/* Who you are talking to, and — for a booking's thread — what about.
-          The header is the app's own (§133), so the name sits beside a face
-          rather than alone in a system bar. */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <IconButton
-          icon="chevron-back"
-          label="Go back"
-          flat
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/messages'))}
-        />
-        <PressableScale
-          disabled={!thread.data?.business.locationId}
-          onPress={() =>
-            thread.data?.business.locationId && router.push(`/shop/${thread.data.business.locationId}`)
-          }
-          scaleTo={0.95}
-          accessibilityRole="button"
-          accessibilityLabel={`Open ${businessName}`}
-        >
-          <Avatar uri={thread.data?.business.logoUrl} name={businessName} size={42} />
-        </PressableScale>
-        <View style={styles.flex}>
-          <Text style={styles.headerName} numberOfLines={1}>
-            {businessName}
-          </Text>
-          <Text
-            style={[styles.headerSub, thread.data && !thread.data.appointment && { color: theme.ask }]}
-            numberOfLines={1}
+      {drop.over && <DropVeil label={t`Drop to attach the photo`} />}
+      <KeyboardAvoidingView
+        style={styles.screen}
+        // Padding on BOTH platforms (§166). Android used to resize the window
+        // for the keyboard by itself, which is why this was left undefined
+        // there; with edge-to-edge screens that resize no longer happens, and
+        // the composer sat under the keyboard.
+        behavior="padding"
+      >
+        {/* Who you are talking to, and — for a booking's thread — what about.
+            The header is the app's own (§133), so the name sits beside a face
+            rather than alone in a system bar. */}
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <IconButton
+            icon="chevron-back"
+            label={t`Go back`}
+            flat
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/messages'))}
+          />
+          <PressableScale
+            disabled={!thread.data?.business.locationId}
+            onPress={() =>
+              thread.data?.business.locationId && router.push(`/shop/${thread.data.business.locationId}`)
+            }
+            scaleTo={0.95}
+            accessibilityRole="button"
+            accessibilityLabel={t`Open ${businessName}`}
           >
-            {thread.data?.appointment ? 'About a booking' : 'Asking before booking'}
-          </Text>
-        </View>
-      </View>
-
-      {/* A question, said as one (§167): blue where bookings are coral, a
-          line saying what this conversation is for, and the way to book once
-          the answer is in. */}
-      {thread.data && !thread.data.appointment && (
-        <View style={[styles.ask, { width: Math.min(layout.contentWidth - 32, 520) }]}>
-          <View style={styles.askIcon}>
-            <Icon name="help-circle" size={17} color={theme.ask} />
-          </View>
-          <Text style={[styles.askText, styles.flex]}>
-            Ask anything before you book — prices, timing, what to bring.
-          </Text>
-          {thread.data.business.locationId && (
-            <PressableScale
-              onPress={() => router.push(`/shop/${thread.data!.business.locationId}`)}
-              haptic
-              scaleTo={0.95}
-              accessibilityRole="button"
-              style={styles.askBook}
-            >
-              <Text style={styles.askBookText}>Book</Text>
-            </PressableScale>
-          )}
-        </View>
-      )}
-
-      {/* The booking this is about, as a chip under the header — one tap to
-          the reservation, which is nearly always what "wait, when was it?"
-          wants (§164). */}
-      {thread.data?.appointment && (
-        <PressableScale
-          onPress={() => router.push(`/booking/${thread.data!.appointment!.id}`)}
-          haptic
-          scaleTo={0.97}
-          accessibilityRole="button"
-          style={[styles.about, { width: Math.min(layout.contentWidth - 32, 520) }]}
-        >
-          <View style={styles.aboutIcon}>
-            <Icon name="calendar" size={15} color={theme.accent} />
-          </View>
+            <Avatar uri={thread.data?.business.logoUrl} name={businessName} size={42} />
+          </PressableScale>
           <View style={styles.flex}>
-            <Text style={styles.aboutName} numberOfLines={1}>
-              {thread.data.appointment.serviceName}
+            <Text style={styles.headerName} numberOfLines={1}>
+              {businessName}
             </Text>
-            <Text style={type.tiny} numberOfLines={1}>
-              {new Date(thread.data.appointment.startTime).toLocaleString(undefined, {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+            <Text
+              style={[styles.headerSub, thread.data && !thread.data.appointment && { color: theme.ask }]}
+              numberOfLines={1}
+            >
+              {thread.data?.appointment ? t`About a booking` : t`Asking before booking`}
             </Text>
           </View>
-          <Text style={styles.aboutGo}>View</Text>
-          <Icon name="chevron-forward" size={14} color={theme.accent} />
-        </PressableScale>
-      )}
+        </View>
 
-      {messages.isLoading && <ActivityIndicator style={styles.spinner} color={theme.accent} />}
-
-      <FlatList
-        ref={listRef}
-        data={drawn}
-        keyExtractor={(item) => item.message.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.list, { width: layout.contentWidth }]}
-        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
-        ListEmptyComponent={
-          messages.isLoading ? null : (
-            <EmptyState
-              icon="chatbubble-ellipses-outline"
-              title="Nothing here yet."
-              text="Ask them anything — prices, parking, what to bring."
-            />
-          )
-        }
-        renderItem={({ item: { message: item, mine, first, last, day } }) => (
-          <View style={[styles.bubbleRow, mine && styles.bubbleRowMine, !first && styles.bubbleRowJoined]}>
-            {day && (
-              <View style={styles.dayPill}>
-                <Text style={styles.dayText}>{day}</Text>
-              </View>
-            )}
-            <FadeIn distance={8} style={[styles.bubbleLine, mine && styles.bubbleLineMine]}>
-              <View
-                style={[
-                  styles.bubble,
-                  mine ? styles.mine : styles.theirs,
-                  // Corners: square towards the neighbour in a group, round
-                  // elsewhere — the shape that says "these go together".
-                  mine
-                    ? { borderTopRightRadius: first ? 20 : 6, borderBottomRightRadius: last ? 6 : 6 }
-                    : { borderTopLeftRadius: first ? 20 : 6, borderBottomLeftRadius: last ? 6 : 6 },
-                  item.photoUrl && !item.body && styles.bubblePhotoOnly,
-                ]}
+        {/* A question, said as one (§167): blue where bookings are coral, a
+            line saying what this conversation is for, and the way to book once
+            the answer is in. */}
+        {thread.data && !thread.data.appointment && (
+          <View style={[styles.ask, { width: Math.min(layout.contentWidth - 32, 520) }]}>
+            <View style={styles.askIcon}>
+              <Icon name="help-circle" size={17} color={theme.ask} />
+            </View>
+            <Text style={[styles.askText, styles.flex]}>
+              <Trans>
+                Ask anything before you book — prices, timing, what to bring.
+              </Trans>
+            </Text>
+            {thread.data.business.locationId && (
+              <PressableScale
+                onPress={() => router.push(`/shop/${thread.data!.business.locationId}`)}
+                haptic
+                scaleTo={0.95}
+                accessibilityRole="button"
+                style={styles.askBook}
               >
-                {item.photoUrl && (
-                  <PressableScale
-                    scaleTo={0.97}
-                    accessibilityRole="imagebutton"
-                    accessibilityLabel="Photo, tap to open"
-                    onPress={() => setOpenPhoto(photos.findIndex((p) => p.id === item.id))}
-                  >
-                    <Image source={{ uri: item.photoUrl }} style={styles.photo} />
-                  </PressableScale>
-                )}
-                {item.body && <Text style={[styles.body, mine && styles.bodyMine]}>{item.body}</Text>}
-                {last && (
-                  <View style={styles.timeRow}>
-                    <Text style={[styles.time, mine && styles.timeMine]}>{clock(item.createdAt)}</Text>
-                    {mine && <Icon name="checkmark-done" size={13} color="rgba(255,255,255,0.78)" />}
-                  </View>
-                )}
-              </View>
-            </FadeIn>
+                <Text style={styles.askBookText}><Trans>Book</Trans></Text>
+              </PressableScale>
+            )}
           </View>
         )}
-      />
 
-      <PhotoViewer photos={photos} openAt={openPhoto} onClose={() => setOpenPhoto(null)} />
+        {/* The booking this is about, as a chip under the header — one tap to
+            the reservation, which is nearly always what "wait, when was it?"
+            wants (§164). */}
+        {thread.data?.appointment && (
+          <PressableScale
+            onPress={() => router.push(`/booking/${thread.data!.appointment!.id}`)}
+            haptic
+            scaleTo={0.97}
+            accessibilityRole="button"
+            style={[styles.about, { width: Math.min(layout.contentWidth - 32, 520) }]}
+          >
+            <View style={styles.aboutIcon}>
+              <Icon name="calendar" size={15} color={theme.accent} />
+            </View>
+            <View style={styles.flex}>
+              <Text style={styles.aboutName} numberOfLines={1}>
+                {thread.data.appointment.serviceName}
+              </Text>
+              <Text style={type.tiny} numberOfLines={1}>
+                {new Date(thread.data.appointment.startTime).toLocaleString(dateLocale(), {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </Text>
+            </View>
+            <Text style={styles.aboutGo}><Trans>View</Trans></Text>
+            <Icon name="chevron-forward" size={14} color={theme.accent} />
+          </PressableScale>
+        )}
 
-      {photo && (
-        <View style={styles.attached}>
-          <Image source={{ uri: photo.uri }} style={styles.thumb} />
-          <Text style={[type.small, styles.flex]} numberOfLines={1}>
-            {photo.name}
-          </Text>
-          <PressableScale onPress={() => setPhoto(null)} hitSlop={10}>
-            <Text style={styles.remove}>Remove</Text>
+        {messages.isLoading && <ActivityIndicator style={styles.spinner} color={theme.accent} />}
+
+        <FlatList
+          ref={listRef}
+          data={drawn}
+          keyExtractor={(item) => item.message.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.list, { width: layout.contentWidth }]}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+          ListEmptyComponent={
+            messages.isLoading ? null : (
+              <EmptyState
+                icon="chatbubble-ellipses-outline"
+                title={t`Nothing here yet.`}
+                text={t`Ask them anything — prices, parking, what to bring.`}
+              />
+            )
+          }
+          renderItem={({ item: { message: item, mine, first, last, day } }) => (
+            <View style={[styles.bubbleRow, mine && styles.bubbleRowMine, !first && styles.bubbleRowJoined]}>
+              {day && (
+                <View style={styles.dayPill}>
+                  <Text style={styles.dayText}>{day}</Text>
+                </View>
+              )}
+              <FadeIn distance={8} style={[styles.bubbleLine, mine && styles.bubbleLineMine]}>
+                <View
+                  style={[
+                    styles.bubble,
+                    mine ? styles.mine : styles.theirs,
+                    // Corners: square towards the neighbour in a group, round
+                    // elsewhere — the shape that says "these go together".
+                    mine
+                      ? { borderTopRightRadius: first ? 20 : 6, borderBottomRightRadius: last ? 6 : 6 }
+                      : { borderTopLeftRadius: first ? 20 : 6, borderBottomLeftRadius: last ? 6 : 6 },
+                    item.photoUrl && !item.body && styles.bubblePhotoOnly,
+                  ]}
+                >
+                  {item.photoUrl && (
+                    <PressableScale
+                      scaleTo={0.97}
+                      accessibilityRole="imagebutton"
+                      accessibilityLabel={t`Photo, tap to open`}
+                      onPress={() => setOpenPhoto(photos.findIndex((p) => p.id === item.id))}
+                    >
+                      <Image source={{ uri: item.photoUrl }} style={styles.photo} />
+                    </PressableScale>
+                  )}
+                  {item.body && <Text style={[styles.body, mine && styles.bodyMine]}>{item.body}</Text>}
+                  {last && (
+                    <View style={styles.timeRow}>
+                      <Text style={[styles.time, mine && styles.timeMine]}>{clock(item.createdAt)}</Text>
+                      {mine && <Icon name="checkmark-done" size={13} color="rgba(255,255,255,0.78)" />}
+                    </View>
+                  )}
+                </View>
+              </FadeIn>
+            </View>
+          )}
+        />
+
+        <PhotoViewer photos={photos} openAt={openPhoto} onClose={() => setOpenPhoto(null)} />
+
+        {photo && (
+          <View style={styles.attached}>
+            <Image source={{ uri: photo.uri }} style={styles.thumb} />
+            <Text style={[type.small, styles.flex]} numberOfLines={1}>
+              {photo.name}
+            </Text>
+            <PressableScale onPress={() => setPhoto(null)} hitSlop={10}>
+              <Text style={styles.remove}><Trans>Remove</Trans></Text>
+            </PressableScale>
+          </View>
+        )}
+
+        <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+          <IconButton icon="image-outline" label={t`Attach a photo`} onPress={attach} flat size={46} />
+          <TextInput
+            style={styles.input}
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={t`Write a message`}
+            placeholderTextColor={theme.muted}
+            multiline
+            maxLength={2000}
+          />
+          <PressableScale
+            haptic
+            scaleTo={0.9}
+            disabled={!canSend}
+            accessibilityRole="button"
+            accessibilityLabel={t`Send`}
+            onPress={() => send.mutate()}
+            style={[styles.send, !canSend && styles.sendOff]}
+          >
+            {send.isPending ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Icon name="arrow-up" size={21} color={canSend ? '#FFFFFF' : theme.muted} />
+            )}
           </PressableScale>
         </View>
-      )}
-
-      <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-        <IconButton icon="image-outline" label="Attach a photo" onPress={attach} flat size={46} />
-        <TextInput
-          style={styles.input}
-          value={draft}
-          onChangeText={setDraft}
-          placeholder="Write a message"
-          placeholderTextColor={theme.muted}
-          multiline
-          maxLength={2000}
-        />
-        <PressableScale
-          haptic
-          scaleTo={0.9}
-          disabled={!canSend}
-          accessibilityRole="button"
-          accessibilityLabel="Send"
-          onPress={() => send.mutate()}
-          style={[styles.send, !canSend && styles.sendOff]}
-        >
-          {send.isPending ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
-          ) : (
-            <Icon name="arrow-up" size={21} color={canSend ? '#FFFFFF' : theme.muted} />
-          )}
-        </PressableScale>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -542,6 +547,7 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(ThreadScreen, {
   icon: 'chatbubbles-outline',
-  title: 'Sign in to read this chat',
-  text: 'Messages are kept with your account, so only you and the shop can read them.',
+
+  get title() { return t`Sign in to read this chat`; },
+  get text() { return t`Messages are kept with your account, so only you and the shop can read them.`; },
 });

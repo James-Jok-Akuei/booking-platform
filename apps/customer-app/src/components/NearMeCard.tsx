@@ -7,29 +7,31 @@ import { Button } from '../ui/Button';
 import { FadeIn } from '../ui/FadeIn';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 type Words = { title: string; text: string; action: string };
 
 const WORDS = {
   off: {
-    title: 'See what is near you',
-    text: 'Use where you are right now to show places close by and how far each one is. Only while the app is open, and never saved.',
-    action: 'Use my location',
+    get title() { return t`See what is near you`; },
+    get text() { return t`Use where you are right now to show places close by and how far each one is. Only while the app is open, and never saved.`; },
+    get action() { return t`Use my location`; },
   },
   retry: {
-    title: 'Location is off',
-    text: 'Without it we cannot show what is near you. Everything else still works.',
-    action: 'Try again',
+    get title() { return t`Location is off`; },
+    get text() { return t`Without it we cannot show what is near you. Everything else still works.`; },
+    get action() { return t`Try again`; },
   },
   settings: {
-    title: 'Location is off for this app',
-    text: "Turn it on in your phone's Settings to see what is near you. Everything else still works.",
-    action: 'Open Settings',
+    get title() { return t`Location is off for this app`; },
+    get text() { return t`Turn it on in your phone's Settings to see what is near you. Everything else still works.`; },
+    get action() { return t`Open Settings`; },
   },
   failed: {
-    title: 'Could not find you just now',
-    text: 'Your phone could not get a position. Try again, outside or near a window.',
-    action: 'Try again',
+    get title() { return t`Could not find you just now`; },
+    get text() { return t`Your phone could not get a position. Try again, outside or near a window.`; },
+    get action() { return t`Try again`; },
   },
 } satisfies Record<string, Words>;
 
@@ -86,7 +88,7 @@ export function NearMeCard({
           <Button
             compact
             icon={toSettings ? 'settings-outline' : 'navigate'}
-            label={asking ? 'Finding you…' : words.action}
+            label={asking ? t`Finding you…` : words.action}
             busy={asking}
             onPress={toSettings ? onSettings : onUse}
           />
@@ -97,7 +99,7 @@ export function NearMeCard({
               accessibilityRole="button"
               style={styles.later}
             >
-              <Text style={styles.laterText}>Not now</Text>
+              <Text style={styles.laterText}><Trans>Not now</Trans></Text>
             </PressableScale>
           )}
         </View>
@@ -164,7 +166,8 @@ const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   words: { flex: 1, gap: 3 },
   text: { fontFamily: font.medium, fontSize: 13, lineHeight: 18.5, color: theme.ink2 },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  // Long words (§308): the second button goes under the first rather than off the card.
+  actions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 16, rowGap: 6 },
   later: { paddingVertical: 8, paddingHorizontal: 4 },
   laterText: { fontFamily: font.semibold, fontSize: 14, color: theme.ink2 },
   radar: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center' },

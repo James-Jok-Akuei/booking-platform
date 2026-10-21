@@ -1,4 +1,5 @@
 import type { IconName } from '../ui/Icon';
+import { t } from '@lingui/core/macro';
 
 export type Period<T = string> = {
   key: 'morning' | 'afternoon' | 'evening';
@@ -7,10 +8,11 @@ export type Period<T = string> = {
   slots: T[];
 };
 
+// Labels are read when used, so they are in the language of the moment (§308).
 const PERIODS: Array<Omit<Period, 'slots'> & { from: number; to: number }> = [
-  { key: 'morning', label: 'Morning', icon: 'sunny-outline', from: 0, to: 12 },
-  { key: 'afternoon', label: 'Afternoon', icon: 'partly-sunny-outline', from: 12, to: 17 },
-  { key: 'evening', label: 'Evening', icon: 'moon-outline', from: 17, to: 24 },
+  { key: 'morning', get label() { return t`Morning`; }, icon: 'sunny-outline', from: 0, to: 12 },
+  { key: 'afternoon', get label() { return t`Afternoon`; }, icon: 'partly-sunny-outline', from: 12, to: 17 },
+  { key: 'evening', get label() { return t`Evening`; }, icon: 'moon-outline', from: 17, to: 24 },
 ];
 
 /**

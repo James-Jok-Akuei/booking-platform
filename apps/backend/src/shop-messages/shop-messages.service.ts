@@ -23,9 +23,12 @@ const DAY = 24 * 60 * 60 * 1000;
 const NEW_DAYS = 14;
 
 /** The words a customer agrees to by following a shop, kept with the yes. */
-/** "Kigali Barbers'", "Amani's" — a name already ending in s takes the mark alone. */
-const whose = (name: string) => (/s$/i.test(name.trim()) ? `${name.trim()}'` : `${name.trim()}'s`);
-export const followWording = (shop: string) => `Yes, send me ${whose(shop)} offers. I can stop at any time.`;
+/**
+ * The words a yes to a shop's offers agrees to, kept with it — the same the
+ * app shows. "Offers from {shop}": a possessive built in English code cannot
+ * be translated (§308).
+ */
+export const followWording = (shop: string) => `Yes, send me offers from ${shop.trim()}. I can stop at any time.`;
 
 /**
  * Following shops, and shops writing to their followers (§287, §288) — the

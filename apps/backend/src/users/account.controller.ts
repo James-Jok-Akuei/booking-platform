@@ -33,8 +33,10 @@ import {
   SavedPaymentNumberDto,
   UserDisplayNameDto,
   UserImageDto,
+  UserLocaleDto,
 } from './dto/user-response.dto';
 import { SetDisplayNameDto } from './dto/set-display-name.dto';
+import { SetLocaleDto } from './dto/set-locale.dto';
 
 /**
  * What a person may do to their OWN account (§119).
@@ -120,6 +122,16 @@ export class AccountController {
   @ApiOkResponse({ type: UserDisplayNameDto })
   setDisplayName(@CurrentUser() user: AuthenticatedUser, @Body() dto: SetDisplayNameDto) {
     return this.account.setDisplayName(user.userId, dto.displayName);
+  }
+
+  /**
+   * The language chosen in an app (§308). Kept on the account so what is sent
+   * while they are away — emails, alerts — reads in it too, on every device.
+   */
+  @Patch('locale')
+  @ApiOkResponse({ type: UserLocaleDto })
+  setLocale(@CurrentUser() user: AuthenticatedUser, @Body() dto: SetLocaleDto) {
+    return this.account.setLocale(user.userId, dto.locale);
   }
 
   /** Everything the platform holds about the caller, as JSON (§119.2). */

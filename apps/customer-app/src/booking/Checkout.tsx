@@ -8,11 +8,13 @@ import { Chip } from '../ui/Chip';
 import { Cover } from '../ui/Cover';
 import { FadeIn } from '../ui/FadeIn';
 import { Icon } from '../ui/Icon';
-import { MomoLogo } from '../ui/Momo';
+import { MomoLogo, MOMO_NAME } from '../ui/Momo';
 import { Pulse } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
 import { balanceMinor, dayOf, howMany, minutesOf, timeRange, type Bought } from './format';
 import { BookedChoices } from './BookedChoices';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** How long the server holds an unpaid slot (`PENDING_PAYMENT_TTL_MS`). */
 const HOLD_MS = 5 * 60 * 1000;
@@ -69,7 +71,7 @@ export function Checkout({
             onPress={() => bought.images.length > 0 && onOpenPhoto(0)}
             scaleTo={0.96}
             accessibilityRole="imagebutton"
-            accessibilityLabel={`Photos of ${a.service.name}`}
+            accessibilityLabel={t`Photos of ${a.service.name}`}
           >
             <Cover
               uri={bought.cover}
@@ -132,12 +134,12 @@ export function Checkout({
 
       {/* THE SUM. Every line a person would otherwise work out in their head. */}
       <FadeIn delay={60} style={styles.card}>
-        <Text style={type.heading}>Payment summary</Text>
+        <Text style={type.heading}><Trans>Payment summary</Trans></Text>
 
         {a.unitPriceMinor !== null && (a.quantity > 1 || a.choicesPriceMinor !== 0) && (
           <Line
             label={a.quantity > 1 ? `${a.service.name} × ${a.quantity}` : a.service.name}
-            hint={a.quantity > 1 ? `${format(a.unitPriceMinor, a.currency)} each` : undefined}
+            hint={a.quantity > 1 ? t`${format(a.unitPriceMinor, a.currency)} each` : undefined}
             value={format(a.unitPriceMinor * a.quantity, a.currency)}
           />
         )}
@@ -155,19 +157,19 @@ export function Checkout({
         {/* The sale it was booked under (§186), said as a saving. */}
         {a.discountPercent !== null && a.listPriceMinor !== null && a.servicePriceMinor !== null && (
           <Line
-            label={`Discount · ${a.discountPercent}% off`}
-            hint={`Was ${format(a.listPriceMinor, a.currency)}`}
+            label={t`Discount · ${a.discountPercent}% off`}
+            hint={t`Was ${format(a.listPriceMinor, a.currency)}`}
             value={`−${format(a.listPriceMinor - a.servicePriceMinor, a.currency)}`}
             saving
           />
         )}
         {a.servicePriceMinor !== null && (
-          <Line label="Total" value={format(a.servicePriceMinor, a.currency)} />
+          <Line label={t`Total`} value={format(a.servicePriceMinor, a.currency)} />
         )}
         {balance !== null && (
           <Line
-            label="Pay at the shop"
-            hint="After your visit"
+            label={t`Pay at the shop`}
+            hint={t`After your visit`}
             value={format(balance, a.currency)}
             muted
           />
@@ -177,11 +179,11 @@ export function Checkout({
 
         <View style={styles.due}>
           <View style={styles.flex}>
-            <Text style={styles.dueLabel}>Pay now</Text>
+            <Text style={styles.dueLabel}><Trans>Pay now</Trans></Text>
             <Text style={type.small}>
               {a.depositPercentage !== null
-                ? `${Number(a.depositPercentage)}% deposit · confirms your time`
-                : 'Deposit · confirms your time'}
+                ? t`${Number(a.depositPercentage)}% deposit · confirms your time`
+                : t`Deposit · confirms your time`}
             </Text>
           </View>
           <Text style={styles.dueValue}>{format(a.depositAmountMinor, a.currency)}</Text>
@@ -191,8 +193,10 @@ export function Checkout({
         <View style={styles.policy}>
           <Icon name="information-circle-outline" size={16} color={theme.ink2} />
           <Text style={styles.policyText}>
-            The deposit is not refunded if you cancel. If the shop cancels, you get all of it
-            back.
+            <Trans>
+              The deposit is not refunded if you cancel. If the shop cancels, you get all of it
+              back.
+            </Trans>
           </Text>
         </View>
       </FadeIn>
@@ -200,13 +204,13 @@ export function Checkout({
       {/* HOW. One method, shown as a chosen one: it says whose mobile money
           this is before a number is typed (§134.3). */}
       <FadeIn delay={120} style={styles.card}>
-        <Text style={type.heading}>Pay with</Text>
+        <Text style={type.heading}><Trans>Pay with</Trans></Text>
 
         <View style={styles.method}>
           <MomoLogo size={44} />
           <View style={styles.flex}>
-            <Text style={type.subheading}>MTN Mobile Money</Text>
-            <Text style={type.small}>You approve it on your own phone</Text>
+            <Text style={type.subheading}>{MOMO_NAME}</Text>
+            <Text style={type.small}><Trans>You approve it on your own phone</Trans></Text>
           </View>
           <View style={styles.radio}>
             <View style={styles.radioDot} />
@@ -230,7 +234,7 @@ export function Checkout({
           </View>
         )}
 
-        <Text style={type.label}>MoMo number</Text>
+        <Text style={type.label}><Trans>MoMo number</Trans></Text>
         <View style={styles.field}>
           <Icon name="call-outline" size={18} color={theme.muted} />
           <TextInput
@@ -238,7 +242,7 @@ export function Checkout({
             value={phone}
             onChangeText={onPhone}
             onFocus={onFieldFocus}
-            placeholder="07xx xxx xxx"
+            placeholder={t`07xx xxx xxx`}
             placeholderTextColor={theme.muted}
             keyboardType="phone-pad"
             editable={stage !== 'PENDING'}
@@ -254,7 +258,9 @@ export function Checkout({
           <View style={styles.secure}>
             <Icon name="lock-closed" size={13} color={theme.ok} />
             <Text style={styles.secureText}>
-              Your PIN goes only into your phone. This app never asks for it.
+              <Trans>
+                Your PIN goes only into your phone. This app never asks for it.
+              </Trans>
             </Text>
           </View>
         )}
@@ -265,11 +271,11 @@ export function Checkout({
           <View style={styles.waiting}>
             <View style={styles.waitingHead}>
               <Pulse />
-              <Text style={[type.subheading, styles.flex]}>Check your phone</Text>
+              <Text style={[type.subheading, styles.flex]}><Trans>Check your phone</Trans></Text>
             </View>
-            <Text style={type.body}>1. A payment request appears on your phone.</Text>
-            <Text style={type.body}>2. Enter your MoMo PIN to approve it.</Text>
-            <Text style={type.body}>3. This screen updates on its own.</Text>
+            <Text style={type.body}><Trans>1. A payment request appears on your phone.</Trans></Text>
+            <Text style={type.body}><Trans>2. Enter your MoMo PIN to approve it.</Trans></Text>
+            <Text style={type.body}><Trans>3. This screen updates on its own.</Trans></Text>
           </View>
         )}
 
@@ -280,8 +286,10 @@ export function Checkout({
             <Icon name="alert-circle-outline" size={19} color={theme.danger} />
             <View style={styles.flex}>
               <Text style={styles.failed}>
-                {explainFailedDeposit(failureReason)} You can try again.
-              </Text>
+                <Trans>
+                  {explainFailedDeposit(failureReason)} You can try again.
+                </Trans>
+                </Text>
               {/* The operator's own code, kept small. It is unreadable as copy
                   and essential on a support ticket. */}
               {failureReason && <Text style={styles.failedCode}>{failureReason}</Text>}
@@ -295,7 +303,7 @@ export function Checkout({
 
 /** Where you are: the two steps behind you, and this one. */
 function Steps() {
-  const steps = ['Service', 'Time', 'Payment'];
+  const steps = [t`Service`, t`Time`, t`Payment`];
   return (
     <View style={styles.steps}>
       {steps.map((label, index) => {
@@ -343,7 +351,7 @@ function HoldTimer({ createdAt }: { createdAt: string }) {
     <View style={[styles.hold, urgent && styles.holdUrgent]}>
       <Icon name="time-outline" size={17} color={urgent ? theme.danger : theme.warn} />
       <Text style={[styles.holdText, styles.flex]}>
-        {total > 0 ? 'Your slot is held for' : 'The hold has ended. Pay now if the slot is still free.'}
+        {total > 0 ? t`Your slot is held for` : t`The hold has ended. Pay now if the slot is still free.`}
       </Text>
       {total > 0 && (
         <Text style={[styles.holdClock, urgent && { color: theme.danger }]}>{clock}</Text>

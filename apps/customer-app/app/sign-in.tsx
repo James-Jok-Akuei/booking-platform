@@ -36,6 +36,8 @@ import { PopIn } from '../src/ui/Motion';
 import { Pill } from '../src/ui/Pill';
 import { PressableScale } from '../src/ui/PressableScale';
 import { RwandaFlag } from '../src/ui/RwandaFlag';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** What the headline says can be booked, one after another. */
 /** The server's own wait between codes (`OTP_RESEND_COOLDOWN_SECONDS`). */
@@ -51,10 +53,10 @@ type Step = 'email' | 'register' | 'code' | 'done';
 function friendly(caught: unknown, fallback: string): string {
   if (!(caught instanceof ApiError)) return fallback;
   const m = caught.message;
-  if (/invalid or expired/i.test(m)) return 'That code is not right, or it has run out. Check it and try again.';
-  if (/too many incorrect/i.test(m)) return 'Too many wrong tries. Ask for a new code below.';
+  if (/invalid or expired/i.test(m)) return t`That code is not right, or it has run out. Check it and try again.`;
+  if (/too many incorrect/i.test(m)) return t`Too many wrong tries. Ask for a new code below.`;
   if (/too many verification code requests/i.test(m))
-    return 'That is a lot of codes for one hour. Please try again a little later.';
+    return t`That is a lot of codes for one hour. Please try again a little later.`;
   return m;
 }
 
@@ -82,6 +84,22 @@ export default function SignIn() {
   // Every kind of place that is switched on in the admin console (§284).
   const categories = useQuery({ queryKey: ['categories'], queryFn: listCategories, staleTime: 10 * 60_000 });
   const words = useMemo(() => bookWords(categories.data), [categories.data]);
+  // "Book your next {word}" as ONE sentence for translators (§308), so a
+  // language may put the changing word wherever its grammar wants it; it is
+  // cut at the word to draw the word in gold.
+  const headline = useMemo(() => {
+    const word = '\u2063';
+    const sentence = t({
+      message: `Book your next ${word}`,
+      comment: '{word} changes every two seconds: “haircut.”, “car wash.”, “yoga class.” — each one ends with its own full stop.',
+    });
+    const at = sentence.indexOf(word);
+    return at === -1
+      ? { lead: sentence.trim(), tail: '' }
+      : { lead: sentence.slice(0, at).trim(), tail: sentence.slice(at + word.length).trim() };
+  }, []);
+  // A small phone gets a smaller headline, so long words still fit above the sheet.
+  const narrow = window.width < 360;
   // Keeps the field being typed into above the keyboard (§168).
   const keys = useKeyboardScroll();
 
@@ -135,7 +153,12 @@ export default function SignIn() {
     }).start();
   }, [keyboardUp, fold]);
 
-  const HERO = Math.round(Math.max(250, Math.min(400, window.height * 0.42)));
+  // Tall enough for the headline in any language (§308): measured, it grows
+  // the wall rather than running under the "Made for Rwanda" chip.
+  const [headlineHeight, setHeadlineHeight] = useState(0);
+  const HERO = Math.round(
+    Math.max(250, Math.min(400, window.height * 0.42), headlineHeight ? headlineHeight + 54 + insets.top + 64 : 0),
+  );
   const STRIP = insets.top + 62;
   const heroHeight = fold.interpolate({ inputRange: [0, 1], outputRange: [HERO, STRIP] });
   const headlineFade = fold.interpolate({ inputRange: [0, 0.4], outputRange: [1, 0], extrapolate: 'clamp' });
@@ -180,11 +203,11 @@ export default function SignIn() {
         setCode('');
         setCodeState('idle');
         setResendIn(Number(wait[1]));
-        setInfo('We sent you a code a moment ago. Enter that one.');
+        setInfo(t`We sent you a code a moment ago. Enter that one.`);
         setStep('code');
         return;
       }
-      setError(friendly(caught, 'Could not send a code. Check your connection and try again.'));
+      setError(friendly(caught, t`Could not send a code. Check your connection and try again.`));
     } finally {
       setBusy(false);
     }
@@ -201,8 +224,11 @@ export default function SignIn() {
         // signed this app in as the shop, under an error saying it had not.
         await signOut();
         setCodeState('error');
+        const email = user.email;
         setError(
-          `${user.email} is ${user.role === 'BUSINESS' ? 'a business' : 'an admin'} account. This app is for customers — sign in with a different email.`,
+          user.role === 'BUSINESS'
+            ? t`${email} is a business account. This app is for customers — sign in with a different email.`
+            : t`${email} is an admin account. This app is for customers — sign in with a different email.`,
         );
         later(() => {
           setCode('');
@@ -219,7 +245,7 @@ export default function SignIn() {
       later(() => router.dismissTo((next ?? '/') as never), 1750);
     } catch (caught) {
       setCodeState('error');
-      setError(friendly(caught, 'That code did not work. Please try again.'));
+      setError(friendly(caught, t`That code did not work. Please try again.`));
       later(() => {
         setCode('');
         setCodeState('idle');
@@ -268,14 +294,14 @@ export default function SignIn() {
         <View style={[styles.heroTop, { paddingTop: insets.top + 10 }]}>
           <View style={styles.glassPill}>
             <RwandaFlag width={18} />
-            <Text style={styles.glassText}>Made for Rwanda</Text>
+            <Text style={styles.glassText} numberOfLines={1}><Trans>Made for Rwanda</Trans></Text>
           </View>
           <PressableScale
             onPress={close}
             hitSlop={10}
             scaleTo={0.9}
             accessibilityRole="button"
-            accessibilityLabel="Close"
+            accessibilityLabel={t`Close`}
             style={styles.glassClose}
           >
             <Icon name="close" size={20} color="#FFFFFF" />
@@ -284,12 +310,14 @@ export default function SignIn() {
 
         <Animated.View
           style={[styles.headline, { width: column, opacity: headlineFade }]}
+          onLayout={(event) => setHeadlineHeight(Math.round(event.nativeEvent.layout.height))}
           accessible
-          accessibilityLabel="Book your next appointment at real shops near you, in a few taps."
+          accessibilityLabel={t`Book your next appointment at real shops near you, in a few taps.`}
         >
-          <Text style={styles.h1}>Book your next</Text>
-          <RotatingWord words={words} style={styles.h1Gold} />
-          <Text style={styles.h1Sub}>Real shops near you, booked in a few taps.</Text>
+          {headline.lead ? <Text style={[styles.h1, narrow && styles.h1Narrow]}>{headline.lead}</Text> : null}
+          <RotatingWord words={words} style={[styles.h1Gold, narrow && styles.h1GoldNarrow]} />
+          {headline.tail ? <Text style={[styles.h1, narrow && styles.h1Narrow]}>{headline.tail}</Text> : null}
+          <Text style={styles.h1Sub}><Trans>Real shops near you, booked in a few taps.</Trans></Text>
         </Animated.View>
       </Animated.View>
 
@@ -307,12 +335,16 @@ export default function SignIn() {
             {step === 'email' && (
               <>
                 <Text style={styles.title}>
-                  One email.{'\n'}
-                  <Text style={styles.hot}>No password.</Text>
+                  <Trans>
+                    One email.{'\n'}
+                    <Text style={styles.hot}>No password.</Text>
+                  </Trans>
                 </Text>
                 <Text style={styles.lead}>
-                  Type your email and we will send you a 6-digit code. New here? The same code
-                  creates your account.
+                  <Trans>
+                    Type your email and we will send you a 6-digit code. New here? The same code
+                    creates your account.
+                  </Trans>
                 </Text>
 
                 <View style={[styles.field, emailFocused && styles.fieldOn]}>
@@ -331,7 +363,7 @@ export default function SignIn() {
                       keys.reveal();
                     }}
                     onBlur={() => setEmailFocused(false)}
-                    placeholder="you@example.com"
+                    placeholder={t`you@example.com`}
                     placeholderTextColor={theme.muted}
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -340,7 +372,7 @@ export default function SignIn() {
                     keyboardType="email-address"
                     returnKeyType="go"
                     onSubmitEditing={() => valid && send()}
-                    accessibilityLabel="Email address"
+                    accessibilityLabel={t`Email address`}
                   />
                   {valid && (
                     <PopIn>
@@ -362,32 +394,35 @@ export default function SignIn() {
                     >
                       <Icon name="bulb" size={16} color={theme.warn} />
                       <Text style={styles.suggestText}>
-                        Did you mean <Text style={styles.strong}>{suggestion}</Text>?
+                        <Trans>
+                          Did you mean <Text style={styles.strong}>{suggestion}</Text>?
+                        </Trans>
                       </Text>
-                      <Text style={styles.suggestFix}>Fix</Text>
+                      <Text style={styles.suggestFix}><Trans>Fix</Trans></Text>
                     </PressableScale>
                   </FadeIn>
                 )}
 
                 {problem}
-                <Button label="Continue" busy={busy} disabled={!valid} onPress={() => send()} />
+                <Button label={t`Continue`} busy={busy} disabled={!valid} onPress={() => send()} />
 
                 <View style={styles.footnote}>
                   <Icon name="lock-closed" size={13} color={theme.muted} />
-                  <Text style={styles.footnoteText}>No password to remember. A fresh code every time.</Text>
+                  <Text style={styles.footnoteText}><Trans>No password to remember. A fresh code every time.</Trans></Text>
                 </View>
               </>
             )}
 
             {step === 'register' && (
               <>
-                <Pill label="New here" tone="accent" icon="sparkles" />
-                <Text style={styles.title}>
-                  Nice to <Text style={styles.hot}>meet you.</Text>
+                <Pill label={t`New here`} tone="accent" icon="sparkles" />
+                <Text style={styles.title}><Trans>Nice to <Text style={styles.hot}>meet you.</Text></Trans>
                 </Text>
                 <Text style={styles.lead}>
-                  There is no account for <Text style={styles.strong}>{clean}</Text> yet. Let us make
-                  one — it takes one code, and nothing else.
+                  <Trans>
+                    There is no account for <Text style={styles.strong}>{clean}</Text> yet. Let us make
+                    one — it takes one code, and nothing else.
+                  </Trans>
                 </Text>
 
                 <View style={styles.perks}>
@@ -395,20 +430,20 @@ export default function SignIn() {
                     icon="calendar"
                     color={theme.accent}
                     tint={theme.accentSoft}
-                    title="Book in seconds"
-                    text="Pick a time and hold it with a small deposit."
+                    title={t`Book in seconds`}
+                    text={t`Pick a time and hold it with a small deposit.`}
                   />
                   <Perk
                     mark={<MomoLogo size={40} />}
-                    title="Pay with MTN MoMo"
-                    text="Approve the deposit on your own phone."
+                    title={t`Pay with MTN MoMo`}
+                    text={t`Approve the deposit on your own phone.`}
                   />
                   <Perk
                     icon="heart"
                     color={theme.ask}
                     tint={theme.askSoft}
-                    title="Keep what you love"
-                    text="Save places and services for later."
+                    title={t`Keep what you love`}
+                    text={t`Save places and services for later.`}
                   />
                 </View>
 
@@ -430,28 +465,31 @@ export default function SignIn() {
                       </PopIn>
                     )}
                   </View>
+                  {/* One sentence for translators, the two documents inside it (§308). */}
                   <Text style={styles.agreeText}>
-                    I have read and agree to the{' '}
-                    <Text style={styles.link} onPress={() => router.push('/legal')}>
-                      Terms of Use
-                    </Text>{' '}
-                    and the{' '}
-                    <Text style={styles.link} onPress={() => router.push('/legal')}>
-                      Privacy Policy
-                    </Text>
-                    .
+                    <Trans>
+                      I have read and agree to the{' '}
+                      <Text style={styles.link} onPress={() => router.push('/legal')}>
+                        Terms of Use
+                      </Text>{' '}
+                      and the{' '}
+                      <Text style={styles.link} onPress={() => router.push('/legal')}>
+                        Privacy Policy
+                      </Text>
+                      .
+                    </Trans>
                   </Text>
                 </Pressable>
 
                 {problem}
                 <Button
-                  label="Create my account"
+                  label={t`Create my account`}
                   busy={busy}
                   disabled={!agreed}
                   onPress={() => send('CUSTOMER')}
                 />
                 <PressableScale onPress={startAgain} hitSlop={8} accessibilityRole="button">
-                  <Text style={styles.linkCentre}>Use a different email</Text>
+                  <Text style={styles.linkCentre}><Trans>Use a different email</Trans></Text>
                 </PressableScale>
               </>
             )}
@@ -459,26 +497,25 @@ export default function SignIn() {
             {step === 'code' && (
               <>
                 <Pill
-                  label={isNew ? 'Creating your account' : 'Welcome back'}
+                  label={isNew ? t`Creating your account` : t`Welcome back`}
                   tone={isNew ? 'accent' : 'ok'}
                   icon={isNew ? 'sparkles' : undefined}
                   dot={!isNew}
                 />
-                <Text style={styles.title}>
-                  Check your <Text style={styles.hot}>inbox.</Text>
+                <Text style={styles.title}><Trans>Check your <Text style={styles.hot}>inbox.</Text></Trans>
                 </Text>
-                <Text style={styles.lead}>Enter the 6-digit code we sent to</Text>
+                <Text style={styles.lead}><Trans>Enter the 6-digit code we sent to</Trans></Text>
                 <PressableScale
                   onPress={startAgain}
                   accessibilityRole="button"
-                  accessibilityLabel={`${clean}. Change email`}
+                  accessibilityLabel={t`${clean}. Change email`}
                   style={styles.emailChip}
                 >
                   <Icon name="mail" size={15} color={theme.accent} />
                   <Text style={styles.emailChipText} numberOfLines={1}>
                     {clean}
                   </Text>
-                  <Text style={styles.emailChipEdit}>Change</Text>
+                  <Text style={styles.emailChipEdit}><Trans>Change</Trans></Text>
                 </PressableScale>
 
                 <CodeBoxes
@@ -498,17 +535,16 @@ export default function SignIn() {
                 )}
 
                 <Button
-                  label={codeState === 'ok' ? 'Signed in' : 'Verify'}
+                  label={codeState === 'ok' ? t`Signed in` : t`Verify`}
                   busy={codeState === 'busy'}
                   disabled={code.length !== 6 || codeState === 'ok'}
                   onPress={() => verify(code)}
                 />
 
                 <View style={styles.resend}>
-                  <Text style={styles.resendText}>Didn't get it?</Text>
+                  <Text style={styles.resendText}><Trans>Didn't get it?</Trans></Text>
                   {resendIn > 0 ? (
-                    <Text style={styles.resendWait}>
-                      Send a new one in 0:{String(resendIn).padStart(2, '0')}
+                    <Text style={styles.resendWait}><Trans>Send a new one in 0:{String(resendIn).padStart(2, '0')}</Trans>
                     </Text>
                   ) : (
                     <PressableScale
@@ -516,12 +552,14 @@ export default function SignIn() {
                       hitSlop={8}
                       accessibilityRole="button"
                     >
-                      <Text style={styles.link}>{busy ? 'Sending…' : 'Send a new code'}</Text>
+                      <Text style={styles.link}>{busy ? t`Sending…` : t`Send a new code`}</Text>
                     </PressableScale>
                   )}
                 </View>
                 <Text style={styles.small}>
-                  Look in your spam folder too. Each code works for {CODE_MINUTES} minutes.
+                  <Trans>
+                    Look in your spam folder too. Each code works for {CODE_MINUTES} minutes.
+                  </Trans>
                 </Text>
               </>
             )}
@@ -537,17 +575,15 @@ export default function SignIn() {
                 </PopIn>
                 <Text style={[styles.title, styles.centre]}>
                   {isNew ? (
-                    <>
-                      Welcome <Text style={styles.hot}>aboard!</Text>
+                    <><Trans>Welcome <Text style={styles.hot}>aboard!</Text></Trans>
                     </>
                   ) : (
-                    <>
-                      You are <Text style={styles.hot}>in!</Text>
+                    <><Trans>You are <Text style={styles.hot}>in!</Text></Trans>
                     </>
                   )}
                 </Text>
                 <Text style={[styles.lead, styles.centre]}>
-                  {isNew ? 'Your account is ready. Let us find you something good.' : 'Good to see you again.'}
+                  {isNew ? t`Your account is ready. Let us find you something good.` : t`Good to see you again.`}
                 </Text>
               </View>
             )}
@@ -606,7 +642,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  // Gives way to the close button when its words are long (§308).
   glassPill: {
+    flexShrink: 1,
+    marginRight: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -617,7 +656,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
   },
-  glassText: { fontFamily: font.bold, fontSize: 12.5, color: '#FFFFFF' },
+  glassText: { flexShrink: 1, fontFamily: font.bold, fontSize: 12.5, color: '#FFFFFF' },
   glassClose: {
     width: 40,
     height: 40,
@@ -631,6 +670,8 @@ const styles = StyleSheet.create({
   headline: { position: 'absolute', bottom: 54, alignSelf: 'center' },
   h1: { fontFamily: font.extrabold, fontSize: 30, lineHeight: 36, color: '#FFFFFF', letterSpacing: -0.6 },
   h1Gold: { fontFamily: font.extrabold, fontSize: 36, lineHeight: 42, color: GOLD, letterSpacing: -0.8 },
+  h1Narrow: { fontSize: 25, lineHeight: 30 },
+  h1GoldNarrow: { fontSize: 29, lineHeight: 35 },
   h1Sub: { fontFamily: font.semibold, fontSize: 14.5, lineHeight: 20, color: 'rgba(255,255,255,0.82)', marginTop: 8 },
 
   // ---- the sheet ----

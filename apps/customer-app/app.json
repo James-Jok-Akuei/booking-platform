@@ -47,7 +47,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#1F2A1F"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "scheme": "booking",
     "experiments": {

@@ -12,6 +12,10 @@ import { useLayout } from '../src/ui/layout';
 import { PressableScale } from '../src/ui/PressableScale';
 import { RowSkeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../src/i18n/format';
+import { plural } from '@lingui/core/macro';
 
 /** "an unknown device" → "An unknown device", for the start of a line. */
 const capital = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -21,10 +25,10 @@ const markOf = (device: string): IconName =>
 /** "today", "yesterday", "3 days ago", then the date. */
 function when(iso: string) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
-  if (days <= 0) return 'today';
-  if (days === 1) return 'yesterday';
-  if (days < 7) return `${days} days ago`;
-  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  if (days <= 0) return t`today`;
+  if (days === 1) return t`yesterday`;
+  if (days < 7) return plural(days, { one: '# day ago', other: '# days ago' });
+  return new Date(iso).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
 }
 
 /**
@@ -43,12 +47,12 @@ export default function SessionsScreen() {
   const end = useMutation({
     mutationFn: endSignIn,
     onSuccess: refresh,
-    onError: (error) => showProblem('Could not sign out there', error),
+    onError: (error) => showProblem(t`Could not sign out there`, error),
   });
   const others = useMutation({
     mutationFn: endOtherSessions,
     onSuccess: refresh,
-    onError: (error) => showProblem('Could not sign out the others', error),
+    onError: (error) => showProblem(t`Could not sign out the others`, error),
   });
   const list = sessions.data ?? [];
 
@@ -56,17 +60,17 @@ export default function SessionsScreen() {
     showDialog({
       tone: 'accent',
       icon: 'log-out',
-      title: `Sign out on ${s.device}?`,
-      message: 'Whoever has it will need a new code, sent to your email, to get back in.',
+      title: t`Sign out on ${s.device}?`,
+      message: t`Whoever has it will need a new code, sent to your email, to get back in.`,
       actions: [
-        { label: 'Keep it', role: 'cancel' },
-        { label: 'Sign out there', role: 'primary', onPress: async () => void (await end.mutateAsync(s.id)) },
+        { label: t`Keep it`, role: 'cancel' },
+        { label: t`Sign out there`, role: 'primary', onPress: async () => void (await end.mutateAsync(s.id)) },
       ],
     });
 
   return (
     <View style={styles.screen}>
-      <TopBar title="Where you are signed in" />
+      <TopBar title={t`Where you are signed in`} />
       <ScrollView
         contentContainerStyle={[
           styles.content,
@@ -74,7 +78,9 @@ export default function SessionsScreen() {
         ]}
       >
         <Text style={type.body}>
-          Every phone and browser where your account is open. Sign out any you do not recognise.
+          <Trans>
+            Every phone and browser where your account is open. Sign out any you do not recognise.
+          </Trans>
         </Text>
 
         <FadeIn style={styles.card}>
@@ -98,17 +104,17 @@ export default function SessionsScreen() {
                       </Text>
                       {s.current && (
                         <View style={styles.here}>
-                          <Text style={styles.hereText}>{Platform.OS === 'web' ? 'This one' : 'This phone'}</Text>
+                          <Text style={styles.hereText}>{Platform.OS === 'web' ? t`This one` : t`This phone`}</Text>
                         </View>
                       )}
                     </View>
                     <Text style={type.small}>
-                      {s.current ? 'Now' : `Last used ${when(s.lastUsedAt)}`} · signed in {when(s.createdAt)}
+                      {s.current ? t`Now` : t`Last used ${when(s.lastUsedAt)}`}<Trans>· signed in {when(s.createdAt)}</Trans>
                     </Text>
                   </View>
                   {!s.current && (
                     <PressableScale style={styles.out} onPress={() => askEnd(s)} disabled={end.isPending}>
-                      <Text style={styles.outText}>Sign out</Text>
+                      <Text style={styles.outText}><Trans>Sign out</Trans></Text>
                     </PressableScale>
                   )}
                 </View>
@@ -121,7 +127,7 @@ export default function SessionsScreen() {
           <Button
             kind="quietDanger"
             icon="log-out-outline"
-            label={others.isPending ? 'Signing out…' : 'Sign out everywhere else'}
+            label={others.isPending ? t`Signing out…` : t`Sign out everywhere else`}
             onPress={() => others.mutate()}
           />
         )}
@@ -130,13 +136,17 @@ export default function SessionsScreen() {
           <View style={styles.tip}>
             <Icon name="mail-outline" size={16} color={theme.accent} />
             <Text style={[type.small, styles.flex]}>
-              A new phone or browser? We email you, and tell your other phones, each time one signs in.
+              <Trans>
+                A new phone or browser? We email you, and tell your other phones, each time one signs in.
+              </Trans>
             </Text>
           </View>
           <View style={styles.tip}>
             <Icon name="help-buoy-outline" size={16} color={theme.accent} />
             <Text style={[type.small, styles.flex]}>
-              Not you? Sign it out here, then write to us from Help — we will look at it with you.
+              <Trans>
+                Not you? Sign it out here, then write to us from Help — we will look at it with you.
+              </Trans>
             </Text>
           </View>
         </View>

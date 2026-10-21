@@ -22,6 +22,7 @@ import {
   ExportedTicketDto,
   UserImageDto,
 } from './dto/user-response.dto';
+import type { Locale } from '../i18n/locales';
 
 /**
  * Appointments that have not happened yet and are still expected to.
@@ -124,6 +125,15 @@ export class AccountService {
     });
     if (count === 0) throw new NotFoundException('Account not found.');
     return { id: userId, displayName };
+  }
+
+  async setLocale(userId: string, locale: Locale) {
+    const { count } = await this.prisma.user.updateMany({
+      where: { id: userId, closedAt: null },
+      data: { locale },
+    });
+    if (count === 0) throw new NotFoundException('Account not found.');
+    return { locale };
   }
 
   async exportFor(userId: string) {

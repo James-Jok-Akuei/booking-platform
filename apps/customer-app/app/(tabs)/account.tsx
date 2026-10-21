@@ -51,18 +51,22 @@ import { EmptyState } from '../../src/ui/EmptyState';
 import { FadeIn } from '../../src/ui/FadeIn';
 import { Icon, type IconName } from '../../src/ui/Icon';
 import { useLayout } from '../../src/ui/layout';
-import { MomoLogo } from '../../src/ui/Momo';
+import { MomoLogo, MOMO_NAME } from '../../src/ui/Momo';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { BigTitle } from '../../src/ui/TopBar';
 import { showDialog, showProblem } from '../../src/ui/Dialog';
 import { DropVeil, useWebPhotoDrop } from '../../src/ui/webDrop';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../../src/i18n/format';
+import { LanguageSheet, languagesToChoose, useLanguageName } from '../../src/components/LanguageSheet';
 
 /** How tall the dark header is before the safe area is added. */
 const HERO = 318;
 
 const joined = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  new Date(iso).toLocaleDateString(dateLocale(), { month: 'long', year: 'numeric' });
 
 /**
  * Who you are signed in as, and the way out.
@@ -127,12 +131,12 @@ export default function Account() {
       if (!result) return;
       queryClient.invalidateQueries({ queryKey: ['me'] });
     },
-    onError: (error) => showProblem('Could not add that', error, (error as Error).message),
+    onError: (error) => showProblem(t`Could not add that`, error, (error as Error).message),
   });
 
   const dropPicture = useWebPhotoDrop({
     onPhoto: (photo) => picture.mutate(photo),
-    onRefused: (why) => showDialog({ tone: 'warn', icon: 'images', title: 'Not a photo we can use', message: why }),
+    onRefused: (why) => showDialog({ tone: 'warn', icon: 'images', title: t`Not a photo we can use`, message: why }),
     disabled: picture.isPending,
   });
 
@@ -159,7 +163,7 @@ export default function Account() {
       refreshNumbers();
     },
     onError: (error) =>
-      showProblem('Not saved', error),
+      showProblem(t`Not saved`, error),
   });
 
   // ---- The three numbers under the header (§143) ----
@@ -195,18 +199,18 @@ export default function Account() {
    */
   const share = async (uri: string, mimeType: string, kind: string) => {
     if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri, { mimeType, dialogTitle: 'Your data', UTI: kind });
+      await Sharing.shareAsync(uri, { mimeType, dialogTitle: t`Your data`, UTI: kind });
     } else {
       showDialog({
         tone: 'ok',
         icon: 'document-text',
-        title: 'Saved',
-        message: `Your data is in ${uri}. This device cannot open a share sheet.`,
+        title: t`Saved`,
+        message: t`Your data is in ${uri}. This device cannot open a share sheet.`,
       });
     }
   };
   const exportFailed = (error: unknown) =>
-    showProblem('Could not prepare that', error);
+    showProblem(t`Could not prepare that`, error);
 
   const exportData = useMutation({
     mutationFn: exportMyData,
@@ -238,6 +242,9 @@ export default function Account() {
   const [naming, setNaming] = useState(false);
   // How paying works (§278): the promises that used to close every service page.
   const [paying, setPaying] = useState(false);
+  // The app's language (§308), when there is more than one to choose.
+  const [language, setLanguage] = useState(false);
+  const languageName = useLanguageName();
   // A copy of their data, explained before it is made (§294).
   const [copying, setCopying] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -250,7 +257,7 @@ export default function Account() {
       setNaming(false);
     },
     onError: (error) =>
-      showProblem('Not saved', error),
+      showProblem(t`Not saved`, error),
   });
 
   /**
@@ -266,26 +273,27 @@ export default function Account() {
       await signOut();
       queryClient.clear();
       router.replace('/');
-      showDialog({ tone: 'ok', icon: 'checkmark', title: 'Account closed', message: result.message });
+      showDialog({ tone: 'ok', icon: 'checkmark', title: t`Account closed`, message: result.message });
     },
     onError: (error) =>
-      showProblem('Not closed', error),
+      showProblem(t`Not closed`, error),
   });
 
   const confirmClose = () =>
     showDialog({
       tone: 'danger',
       icon: 'person-remove',
-      title: 'Close your account?',
-      message:
-        'This cannot be undone.\n\nYour bookings and reviews stay with the shops ' +
-        'they belong to, with your name taken off them — a shop still has its ' +
-        'record of what it did and was paid for.\n\nYour email is released, so ' +
-        'you can sign up again later, but it would be a new account with none of ' +
-        'this.\n\nTake a copy of your data first if you want one.',
+      title: t`Close your account?`,
+      message: t`This cannot be undone.
+
+Your bookings and reviews stay with the shops they belong to, with your name taken off them — a shop still has its record of what it did and was paid for.
+
+Your email is released, so you can sign up again later, but it would be a new account with none of this.
+
+Take a copy of your data first if you want one.`,
       actions: [
-        { label: 'Keep my account', role: 'cancel' },
-        { label: 'Close it', role: 'primary', onPress: () => close.mutate() },
+        { label: t`Keep my account`, role: 'cancel' },
+        { label: t`Close it`, role: 'primary', onPress: () => close.mutate() },
       ],
     });
 
@@ -293,13 +301,13 @@ export default function Account() {
     showDialog({
       tone: 'accent',
       icon: 'log-out',
-      title: 'Sign out?',
+      title: t`Sign out?`,
       message:
-        'Your bookings and messages stay with your account. You will need a new code to get back in.',
+        t`Your bookings and messages stay with your account. You will need a new code to get back in.`,
       actions: [
-        { label: 'Stay signed in', role: 'cancel' },
+        { label: t`Stay signed in`, role: 'cancel' },
         {
-          label: 'Sign out',
+          label: t`Sign out`,
           role: 'primary',
           // The button spins while this runs, so it cannot be pressed twice.
           onPress: async () => {
@@ -320,25 +328,30 @@ export default function Account() {
   if (!signedIn) {
     return (
       <View style={styles.screen}>
-        <BigTitle title="Sign in" />
+        <BigTitle title={t`Sign in`} />
         {/* What an account opens (§170): everything the visitor cannot see
             yet is listed here, once, instead of being icons that lead to
             "sign in first". */}
         <EmptyState
           icon="person-circle-outline"
-          title="One account for everything"
-          text="Sign in to book and pay, keep your bookings, save places and services, message shops and get your notifications. It follows you to any phone."
-          action="Sign in or create an account"
+          title={t`One account for everything`}
+          text={t`Sign in to book and pay, keep your bookings, save places and services, message shops and get your notifications. It follows you to any phone.`}
+          action={t`Sign in or create an account`}
           onAction={() => router.push('/sign-in?next=/')}
           // Worth seeing before deciding to make an account at all (§307.1).
-          secondary="See how booking works"
+          secondary={t`See how booking works`}
           onSecondary={playWelcomeTour}
         />
+        {/* Before signing in too: the language is the first thing to be right (§308). */}
+        {languagesToChoose() && (
+          <Button kind="ghost" compact icon="language-outline" label={languageName} onPress={() => setLanguage(true)} style={styles.signedOutLanguage} />
+        )}
+        <LanguageSheet open={language} onClose={() => setLanguage(false)} />
       </View>
     );
   }
 
-  const nameShown = me.data?.displayName ?? 'Anonymous';
+  const nameShown = me.data?.displayName ?? t`Anonymous`;
   const sky = skyForToday();
   const heroHeight = HERO + insets.top;
 
@@ -398,7 +411,7 @@ export default function Account() {
           </Animated.View>
 
           <View style={[styles.heroBody, { paddingTop: insets.top + 18, width: layout.contentWidth, alignSelf: 'center' }]}>
-            <Text style={styles.heroLabel}>Account</Text>
+            <Text style={styles.heroLabel}><Trans>Account</Trans></Text>
 
             {me.isLoading && <Skeleton width={104} height={104} round={52} />}
 
@@ -407,12 +420,12 @@ export default function Account() {
                 {/* Shown to them and to nobody else (§124.1). A shop needs a
                     name to call out and an arrival code, not a face. */}
                 <View ref={dropPicture.ref}>
-                {dropPicture.over && <DropVeil label="Drop" round />}
+                {dropPicture.over && <DropVeil label={t`Drop`} round />}
                 <PressableScale
                   disabled={picture.isPending}
                   onPress={() => picture.mutate(undefined)}
                   accessibilityRole="button"
-                  accessibilityLabel={me.data.imageUrl ? 'Change picture' : 'Add a picture'}
+                  accessibilityLabel={me.data.imageUrl ? t`Change picture` : t`Add a picture`}
                   scaleTo={0.95}
                   haptic
                 >
@@ -446,7 +459,7 @@ export default function Account() {
                 <View style={styles.heroChips}>
                   <View style={styles.since}>
                     <Icon name="sparkles" size={12} color={theme.star} />
-                    <Text style={styles.sinceText}>With us since {joined(me.data.createdAt)}</Text>
+                    <Text style={styles.sinceText}><Trans>With us since {joined(me.data.createdAt)}</Trans></Text>
                   </View>
                   {/* The sky's name, small: a page that changes should say so. */}
                   <View style={styles.since}>
@@ -469,15 +482,15 @@ export default function Account() {
           <FadeIn delay={80} style={styles.stats}>
             <Stat
               value={everBooked.data?.total}
-              label="Bookings"
+              label={t`Bookings`}
               onPress={() => router.push('/bookings')}
             />
             <View style={styles.statRule} />
-            <Stat value={upcoming} label="To come" onPress={() => router.push('/bookings')} />
+            <Stat value={upcoming} label={t`To come`} onPress={() => router.push('/bookings')} />
             <View style={styles.statRule} />
             <Stat
               value={follows.data?.follows.length}
-              label="Following"
+              label={t`Following`}
               onPress={() => router.push('/saved')}
             />
           </FadeIn>
@@ -485,24 +498,24 @@ export default function Account() {
           {/* ---- Profile ---- */}
           {me.data && (
             <FadeIn delay={120}>
-              <Text style={styles.group}>Profile</Text>
+              <Text style={styles.group}><Trans>Profile</Trans></Text>
               <View style={styles.card}>
                 <Row
                   icon="camera-outline"
                   label={
                     picture.isPending
-                      ? 'Sending it now…'
+                      ? t`Sending it now…`
                       : me.data.imageUrl
-                        ? 'Change picture'
-                        : 'Add a picture'
+                        ? t`Change picture`
+                        : t`Add a picture`
                   }
                   // On Android the picker's own crop screen is the last step
                   // and its button says "Crop", not "Done" — which reads as
                   // though something else is still expected (§125.6).
                   note={
                     Platform.OS === 'android'
-                      ? 'Only you see it. Tapping Crop is what sends it.'
-                      : 'Only you see it.'
+                      ? t`Only you see it. Tapping Crop is what sends it.`
+                      : t`Only you see it.`
                   }
                   onPress={() => picture.mutate()}
                   off={picture.isPending}
@@ -512,7 +525,7 @@ export default function Account() {
                     <View style={styles.divider} />
                     <Row
                       icon="trash-outline"
-                      label="Remove picture"
+                      label={t`Remove picture`}
                       onPress={() => clearPicture.mutate()}
                       off={clearPicture.isPending}
                       plain
@@ -522,15 +535,15 @@ export default function Account() {
                 <View style={styles.divider} />
                 <Row
                   icon="create-outline"
-                  label="The name on your reviews"
+                  label={t`The name on your reviews`}
                   value={nameShown}
                   // One name for the account, so it changes on every review
                   // they have left at once (§31.1) — said in the sheet, where
                   // the change is made.
                   note={
                     me.data.displayName
-                      ? 'Tap to change it, or to be shown as Anonymous.'
-                      : 'Tap to give a name.'
+                      ? t`Tap to change it, or to be shown as Anonymous.`
+                      : t`Tap to give a name.`
                   }
                   onPress={() => {
                     setNameDraft(me.data?.displayName ?? '');
@@ -546,17 +559,17 @@ export default function Account() {
               says so — nothing kept here can be charged without the handset
               (§124.2). */}
           <FadeIn delay={160}>
-            <Text style={styles.group}>Payment</Text>
+            <Text style={styles.group}><Trans>Payment</Trans></Text>
             <View style={styles.card}>
               <View style={styles.payHead}>
                 <MomoLogo size={44} />
                 <View style={styles.flex}>
-                  <Text style={styles.rowLabel}>MTN Mobile Money</Text>
-                  <Text style={type.small}>Numbers you pay from</Text>
+                  <Text style={styles.rowLabel}>{MOMO_NAME}</Text>
+                  <Text style={type.small}><Trans>Numbers you pay from</Trans></Text>
                 </View>
                 <View style={styles.safe}>
                   <Icon name="shield-checkmark" size={12} color={theme.ok} />
-                  <Text style={styles.safeText}>Safe</Text>
+                  <Text style={styles.safeText}><Trans>Safe</Trans></Text>
                 </View>
               </View>
 
@@ -570,8 +583,7 @@ export default function Account() {
                     <View style={styles.flex}>
                       <Text style={styles.number}>{spaced(number.phoneNumber)}</Text>
                       {number.lastUsedAt && (
-                        <Text style={type.small}>
-                          Last used {new Date(number.lastUsedAt).toLocaleDateString()}
+                        <Text style={type.small}><Trans>Last used {new Date(number.lastUsedAt).toLocaleDateString(dateLocale())}</Trans>
                         </Text>
                       )}
                     </View>
@@ -579,7 +591,7 @@ export default function Account() {
                       onPress={() => dropNumber.mutate(number.id)}
                       hitSlop={10}
                       accessibilityRole="button"
-                      accessibilityLabel={`Remove ${number.phoneNumber}`}
+                      accessibilityLabel={t`Remove ${number.phoneNumber}`}
                       style={styles.remove}
                     >
                       <Icon name="close" size={15} color={theme.ink2} />
@@ -597,38 +609,50 @@ export default function Account() {
                     style={styles.numberInput}
                     value={newNumber}
                     onChangeText={setNewNumber}
-                    placeholder="07xx xxx xxx"
+                    placeholder={t`07xx xxx xxx`}
                     placeholderTextColor={theme.muted}
                     keyboardType="phone-pad"
                     autoFocus
                   />
                   <Button
                     compact
-                    label="Save"
+                    label={t`Save`}
                     busy={addNumber.isPending}
                     disabled={newNumber.replace(/\D/g, '').length < 9}
                     onPress={() => addNumber.mutate()}
                   />
                 </View>
               ) : (
-                <Row icon="add" label="Add a number" onPress={() => setAdding(true)} accent />
+                <Row icon="add" label={t`Add a number`} onPress={() => setAdding(true)} accent />
               )}
 
               <Text style={type.small}>
-                Saved so you do not retype them. Nothing can be charged without the
-                prompt on your phone.
+                <Trans>
+                  Saved so you do not retype them. Nothing can be charged without the
+                  prompt on your phone.
+                </Trans>
               </Text>
             </View>
           </FadeIn>
 
+          {/* ---- The app's language (§308): only once there is a choice. ---- */}
+          {languagesToChoose() && (
+            <FadeIn delay={185}>
+              <Text style={styles.group}><Trans>Language</Trans></Text>
+              <View style={styles.card}>
+                <Row icon="language-outline" label={t`App language`} value={languageName} onPress={() => setLanguage(true)} />
+              </View>
+            </FadeIn>
+          )}
+
           {/* ---- What we send, and how (§287). ---- */}
           <FadeIn delay={190}>
-            <Text style={styles.group}>Notifications</Text>
+            <Text style={styles.group}><Trans>Notifications</Trans></Text>
             <View style={styles.card}>
               <Row
                 icon="notifications-outline"
-                label="Notifications"
-                note="Alerts on this phone, what comes by email, quiet hours, the shops you follow."
+                label={t`Notifications`}
+                note={t`Alerts on this phone, what comes by email, quiet hours, the shops you follow.`}
                 onPress={() => router.push('/notification-settings')}
               />
             </View>
@@ -636,35 +660,35 @@ export default function Account() {
 
           {/* ---- Emails about services nearby, for those who want them (§140). ---- */}
           <FadeIn delay={200}>
-            <Text style={styles.group}>Offers</Text>
+            <Text style={styles.group}><Trans>Offers</Trans></Text>
             <OffersCard />
           </FadeIn>
 
           {/* ---- About ---- */}
           <FadeIn delay={240}>
-            <Text style={styles.group}>About</Text>
+            <Text style={styles.group}><Trans>About</Trans></Text>
             <View style={styles.card}>
               <Row
                 icon="play-circle-outline"
-                label="How booking works"
-                note="Four steps, from finding a place to showing your code."
+                label={t`How booking works`}
+                note={t`Four steps, from finding a place to showing your code.`}
                 onPress={playWelcomeTour}
               />
               <View style={styles.divider} />
               <Row
                 icon="shield-checkmark-outline"
-                label="How paying works"
-                note="Deposits, MoMo, and when you get your money back."
+                label={t`How paying works`}
+                note={t`Deposits, MoMo, and when you get your money back.`}
                 onPress={() => setPaying(true)}
               />
               <View style={styles.divider} />
               <Row
                 icon="document-text-outline"
-                label="Terms and privacy"
+                label={t`Terms and privacy`}
                 onPress={() => router.push('/legal')}
               />
               <View style={styles.divider} />
-              <Row icon="share-social-outline" label="Tell a friend about this app" onPress={shareApp} />
+              <Row icon="share-social-outline" label={t`Tell a friend about this app`} onPress={shareApp} />
             </View>
           </FadeIn>
 
@@ -672,30 +696,32 @@ export default function Account() {
           {/* Offered BEFORE the close, and said so in the closing dialogue: the
               moment someone is leaving is the only moment they want this. */}
           <FadeIn delay={280}>
-            <Text style={styles.group}>Your data</Text>
+            <Text style={styles.group}><Trans>Your data</Trans></Text>
             <Text style={[type.small, styles.groupNote]}>
-              What we keep about you is yours. You can take a copy of it at any time.
+              <Trans>
+                What we keep about you is yours. You can take a copy of it at any time.
+              </Trans>
             </Text>
             <View style={styles.card}>
               <Row
                 icon="download-outline"
-                label={exportData.isPending || exportJson.isPending ? 'Preparing…' : 'Get a copy of my data'}
-                note="Your account, bookings, reviews, messages and questions to us — to read, print or keep."
+                label={exportData.isPending || exportJson.isPending ? t`Preparing…` : t`Get a copy of my data`}
+                note={t`Your account, bookings, reviews, messages and questions to us — to read, print or keep.`}
                 onPress={() => setCopying(true)}
                 off={exportData.isPending || exportJson.isPending}
               />
               <View style={styles.divider} />
               <Row
                 icon="phone-portrait-outline"
-                label="Where you are signed in"
-                note="Every phone and browser with your account open — sign out any you do not know."
+                label={t`Where you are signed in`}
+                note={t`Every phone and browser with your account open — sign out any you do not know.`}
                 onPress={() => router.push('/sessions')}
               />
               <View style={styles.divider} />
               <Row
                 icon="log-out-outline"
-                label="Sign out"
-                note="Only on this phone. Come back any time with a new code."
+                label={t`Sign out`}
+                note={t`Only on this phone. Come back any time with a new code.`}
                 onPress={leave}
                 danger
               />
@@ -710,15 +736,17 @@ export default function Account() {
             onPress={confirmClose}
           >
             <Text style={styles.closeAccountText}>
-              {close.isPending ? 'Closing…' : 'Close my account'}
+              {close.isPending ? t`Closing…` : t`Close my account`}
             </Text>
           </PressableScale>
           <Text style={[type.small, styles.centre]}>
-            Closing is permanent. If you want a copy of your data, take it first.
+            <Trans>
+              Closing is permanent. If you want a copy of your data, take it first.
+            </Trans>
           </Text>
 
           {Constants.expoConfig?.version && (
-            <Text style={styles.version}>Version {Constants.expoConfig.version}</Text>
+            <Text style={styles.version}><Trans>Version {Constants.expoConfig.version}</Trans></Text>
           )}
         </View>
       </Animated.ScrollView>
@@ -726,17 +754,19 @@ export default function Account() {
       {/* The name on their reviews (§144). Two choices, said as two choices:
           a name, or Anonymous. Anonymous is not an empty box somebody has to
           think to clear — it is a button. */}
-      <Sheet open={naming} title="The name on your reviews" onClose={() => setNaming(false)}>
+      <Sheet open={naming} title={t`The name on your reviews`} onClose={() => setNaming(false)}>
         <View style={styles.nameSheet}>
           <Text style={type.small}>
-            Shown beside every review you have written and will write. Shops you
-            book with still see your email.
+            <Trans>
+              Shown beside every review you have written and will write. Shops you
+              book with still see your email.
+            </Trans>
           </Text>
           <TextInput
             style={styles.nameInput}
             value={nameDraft}
             onChangeText={setNameDraft}
-            placeholder="For example, Aline M."
+            placeholder={t`For example, Aline M.`}
             placeholderTextColor={theme.muted}
             maxLength={40}
             autoCapitalize="words"
@@ -744,7 +774,7 @@ export default function Account() {
             returnKeyType="done"
           />
           <Button
-            label={rename.isPending ? 'Saving…' : 'Save this name'}
+            label={rename.isPending ? t`Saving…` : t`Save this name`}
             busy={rename.isPending}
             disabled={
               nameDraft.trim().length < 2 || nameDraft.trim() === (me.data?.displayName ?? '')
@@ -755,7 +785,7 @@ export default function Account() {
             <Button
               kind="outline"
               icon="eye-off-outline"
-              label="Show me as Anonymous"
+              label={t`Show me as Anonymous`}
               disabled={rename.isPending}
               onPress={() => rename.mutate(null)}
             />
@@ -763,7 +793,9 @@ export default function Account() {
             <View style={styles.anonNow}>
               <Icon name="eye-off-outline" size={16} color={theme.ink2} />
               <Text style={[type.small, styles.flex]}>
-                You are shown as Anonymous now.
+                <Trans>
+                  You are shown as Anonymous now.
+                </Trans>
               </Text>
             </View>
           )}
@@ -773,18 +805,18 @@ export default function Account() {
       {/* What the copy holds, how it leaves the phone, and the two ways to have
           it — a page to read, which is what nearly everyone wants, or a file
           another service can read, which the law lets people ask for (§294). */}
-      <Sheet open={copying} title="A copy of your data" onClose={() => setCopying(false)}>
+      <Sheet open={copying} title={t`A copy of your data`} onClose={() => setCopying(false)}>
         {/* Scrolls inside the sheet: on a small phone it is taller than the
             sheet may grow, and the last lines were cut off (§294). */}
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.copySheet}>
-          <Text style={type.body}>Everything we keep about you, in one place:</Text>
+          <Text style={type.body}><Trans>Everything we keep about you, in one place:</Trans></Text>
           <View style={styles.copyList}>
             {[
-              ['person-outline', 'Your account', 'Your email, the name on your reviews, when you joined, and your home area if you set one.'],
-              ['calendar-outline', 'Every booking', 'The shop, the service, the time, what you paid and what happened.'],
-              ['star-outline', 'Your reviews', 'The stars you gave and what you wrote.'],
-              ['chatbubbles-outline', 'Your messages', 'Your conversations with shops.'],
-              ['help-buoy-outline', 'Your questions to us', 'Help requests and our answers.'],
+              ['person-outline', t`Your account`, t`Your email, the name on your reviews, when you joined, and your home area if you set one.`],
+              ['calendar-outline', t`Every booking`, t`The shop, the service, the time, what you paid and what happened.`],
+              ['star-outline', t`Your reviews`, t`The stars you gave and what you wrote.`],
+              ['chatbubbles-outline', t`Your messages`, t`Your conversations with shops.`],
+              ['help-buoy-outline', t`Your questions to us`, t`Help requests and our answers.`],
             ].map(([icon, title, line]) => (
               <View key={title} style={styles.copyItem}>
                 <View style={styles.copyIcon}>
@@ -800,24 +832,26 @@ export default function Account() {
           <View style={styles.copyNote}>
             <Icon name="lock-closed-outline" size={16} color={theme.ink2} />
             <Text style={[type.small, styles.flex]}>
-              It is made on this phone and goes only where you send it. We do not email it to anyone.
+              <Trans>
+                It is made on this phone and goes only where you send it. We do not email it to anyone.
+              </Trans>
             </Text>
           </View>
           <Button
             icon="document-text-outline"
-            label={exportData.isPending ? 'Preparing…' : 'Get it as a PDF'}
+            label={exportData.isPending ? t`Preparing…` : t`Get it as a PDF`}
             busy={exportData.isPending}
             onPress={() => {
               setCopying(false);
               exportData.mutate();
             }}
           />
-          <Text style={[type.small, styles.centre]}>Easy to read and print. This is what most people want.</Text>
+          <Text style={[type.small, styles.centre]}><Trans>Easy to read and print. This is what most people want.</Trans></Text>
           <View style={styles.copyRule} />
           <Button
             kind="outline"
             icon="swap-horizontal-outline"
-            label={exportJson.isPending ? 'Preparing…' : 'Get it as a data file'}
+            label={exportJson.isPending ? t`Preparing…` : t`Get it as a data file`}
             busy={exportJson.isPending}
             onPress={() => {
               setCopying(false);
@@ -825,13 +859,17 @@ export default function Account() {
             }}
           />
           <Text style={[type.small, styles.centre]}>
-            Only if you are moving to another app or service: the same data as a file (JSON) a computer can read
-            and bring in. The law gives you the right to take your data with you this way.
+            <Trans>
+              Only if you are moving to another app or service: the same data as a file (JSON) a computer can read
+              and bring in. The law gives you the right to take your data with you this way.
+            </Trans>
           </Text>
         </ScrollView>
       </Sheet>
 
-      <Sheet open={paying} title="How paying works" onClose={() => setPaying(false)}>
+      <LanguageSheet open={language} onClose={() => setLanguage(false)} />
+
+      <Sheet open={paying} title={t`How paying works`} onClose={() => setPaying(false)}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.payingSheet}>
           <PayingPromises />
         </ScrollView>
@@ -984,6 +1022,7 @@ function Row({
 }
 
 const styles = StyleSheet.create({
+  signedOutLanguage: { alignSelf: 'center' },
   screen: { flex: 1, backgroundColor: theme.bg },
   flex: { flex: 1 },
   centre: { textAlign: 'center' },
@@ -1049,7 +1088,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
     maxWidth: '100%',
   },
-  heroChips: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  // Long words (§308): the chips wrap to a second centred line, never off the screen.
+  heroChips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 12, paddingHorizontal: 16 },
   since: {
     flexDirection: 'row',
     alignItems: 'center',

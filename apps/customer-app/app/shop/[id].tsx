@@ -38,15 +38,21 @@ import { RichText } from '../../src/ui/RichText';
 import { hasRichText, richToPlain } from '../../src/richText';
 import { TopBar } from '../../src/ui/TopBar';
 import { showProblem } from '../../src/ui/Dialog';
-import { useFollow, whose } from '../../src/useFollow';
+import { useFollow } from '../../src/useFollow';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../../src/i18n/format';
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+/** A day of the week by its number (0 = Sunday), in the app's language (§308). */
+const dayName = (day: number) =>
+  // 2023-01-01 was a Sunday.
+  new Date(Date.UTC(2023, 0, 1 + day, 12)).toLocaleDateString(dateLocale(), { weekday: 'long', timeZone: 'UTC' });
 
 /** How tall the picture at the top is. The sheet below overlaps its last 28pt. */
 const HERO = 300;
 
 const niceDate = (ymd: string) =>
-  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(undefined, {
+  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(dateLocale(), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -113,7 +119,7 @@ export default function Shop() {
     mutationFn: () => openInquiry(shop.data!.business.id, id),
     onSuccess: (thread) => router.push(`/thread/${thread.id}`),
     onError: (error) =>
-      showProblem('Could not open that', error),
+      showProblem(t`Could not open that`, error),
   });
 
   if (shop.isLoading) {
@@ -130,7 +136,7 @@ export default function Shop() {
           <Skeleton height={92} round={radius.lg} />
         </View>
         <View style={[styles.floating, { top: insets.top + 8 }]}>
-          <IconButton icon="chevron-back" label="Go back" onPress={() => router.back()} />
+          <IconButton icon="chevron-back" label={t`Go back`} onPress={() => router.back()} />
         </View>
       </View>
     );
@@ -139,8 +145,8 @@ export default function Shop() {
   if (shop.isError || !shop.data) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Place" />
-        <EmptyState icon="storefront-outline" title="This place is not available right now." />
+        <TopBar title={t`Place`} />
+        <EmptyState icon="storefront-outline" title={t`This place is not available right now.`} />
       </View>
     );
   }
@@ -210,9 +216,9 @@ export default function Shop() {
             <FadeIn>
               <View style={styles.pills}>
                 {s.openNow ? (
-                  <Pill label="Open now" tone="ok" dot />
+                  <Pill label={t`Open now`} tone="ok" dot />
                 ) : (
-                  <Pill label="Closed" tone="neutral" />
+                  <Pill label={t`Closed`} tone="neutral" />
                 )}
                 {/* Every kind of place it is, the main one first (§265). */}
                 {/* An "Other" reads as what the shop wrote; one it left blank is not shown (§267). */}
@@ -237,7 +243,7 @@ export default function Shop() {
                     scaleTo={0.94}
                     style={[styles.followButton, follow.following && styles.followButtonOn]}
                     accessibilityRole="button"
-                    accessibilityLabel={follow.following ? `Following ${displayName}. Tap to unfollow` : `Follow ${displayName}`}
+                    accessibilityLabel={follow.following ? t`Following ${displayName}. Tap to unfollow` : t`Follow ${displayName}`}
                   >
                     <Icon
                       name={follow.following ? 'heart' : 'heart-outline'}
@@ -245,7 +251,7 @@ export default function Shop() {
                       color={follow.following ? theme.accentDeep : '#FFFFFF'}
                     />
                     <Text style={[styles.followText, follow.following && styles.followTextOn]}>
-                      {follow.following ? 'Following' : 'Follow'}
+                      {follow.following ? t`Following` : t`Follow`}
                     </Text>
                   </PressableScale>
                 </View>
@@ -260,7 +266,7 @@ export default function Shop() {
                     haptic
                     scaleTo={0.92}
                     accessibilityRole="button"
-                    accessibilityLabel={`See ${whose(displayName)} story`}
+                    accessibilityLabel={t`See the story from ${displayName}`}
                   >
                     <StoryRing size={52} seen={allSeen(seenStories, storyShop)}>
                       <View style={styles.storyLogo}>
@@ -275,7 +281,7 @@ export default function Shop() {
 
               {/* Only once it means something: "3 followers" reads worse than nothing (§288). */}
               {s.business.followers >= 20 && (
-                <Text style={styles.followers}>{s.business.followers.toLocaleString()} people follow {displayName}</Text>
+                <Text style={styles.followers}><Trans>{s.business.followers.toLocaleString()} people follow {displayName}</Trans></Text>
               )}
 
               <View style={styles.line}>
@@ -302,7 +308,7 @@ export default function Shop() {
                 <View style={[styles.line, styles.ratingLine]}>
                   <Icon name="star" size={16} color={theme.star} />
                   <Text style={styles.ratingScore}>{s.rating.average?.toFixed(1)}</Text>
-                  <Text style={type.small}>from {s.rating.count} reviews</Text>
+                  <Text style={type.small}><Trans>from {s.rating.count} reviews</Trans></Text>
                 </View>
               )}
 
@@ -323,7 +329,7 @@ export default function Shop() {
                 <Button
                   kind="soft"
                   icon="chatbubble-ellipses-outline"
-                  label={openChat.isPending ? 'Opening…' : 'Message the shop'}
+                  label={openChat.isPending ? t`Opening…` : t`Message the shop`}
                   disabled={openChat.isPending}
                   onPress={() => openChat.mutate()}
                 />
@@ -339,11 +345,10 @@ export default function Shop() {
             {s.gallery.length > 0 && (
               <FadeIn delay={120} style={styles.section}>
                 <View style={styles.galleryHead}>
-                  <Text style={type.heading}>
-                    Photos <Text style={styles.galleryCount}>{s.gallery.length}</Text>
+                  <Text style={type.heading}><Trans>Photos <Text style={styles.galleryCount}>{s.gallery.length}</Text></Trans>
                   </Text>
                   <PressableScale onPress={() => router.push(`/gallery/${s.id}`)} hitSlop={8} haptic>
-                    <Text style={styles.link}>See all →</Text>
+                    <Text style={styles.link}><Trans>See all →</Trans></Text>
                   </PressableScale>
                 </View>
                 <ScrollView
@@ -359,7 +364,7 @@ export default function Shop() {
                         key={photo.id}
                         scaleTo={0.96}
                         accessibilityRole="imagebutton"
-                        accessibilityLabel={`Photo ${index + 1} of ${s.gallery.length}`}
+                        accessibilityLabel={t`Photo ${index + 1} of ${s.gallery.length}`}
                         onPress={() => setPhoto(index)}
                       >
                         <Image source={{ uri: photo.url }} style={styles.galleryPhoto} />
@@ -383,11 +388,11 @@ export default function Shop() {
                 value={tab}
                 onChange={setTab}
                 options={[
-                  { value: 'services', label: 'What they do' },
-                  { value: 'hours', label: 'Open hours' },
+                  { value: 'services', label: t`What they do` },
+                  { value: 'hours', label: t`Open hours` },
                   {
                     value: 'reviews',
-                    label: reviews.data?.total ? `Reviews (${reviews.data.total})` : 'Reviews',
+                    label: reviews.data?.total ? t`Reviews (${reviews.data.total})` : t`Reviews`,
                   },
                 ]}
               />
@@ -396,7 +401,7 @@ export default function Shop() {
             {tab === 'services' && (
             <FadeIn key="services" style={styles.section}>
               {s.services.length === 0 && (
-                <Text style={type.small}>Nothing is bookable here yet.</Text>
+                <Text style={type.small}><Trans>Nothing is bookable here yet.</Trans></Text>
               )}
               {s.services.map((service) => (
                 <ServiceRow
@@ -421,7 +426,7 @@ export default function Shop() {
                   return (
                     <View key={h.dayOfWeek} style={[styles.hourRow, isToday && styles.hourRowToday]}>
                       <Text style={[styles.day, isToday && styles.dayToday]}>
-                        {DAYS[h.dayOfWeek]}
+                        {dayName(h.dayOfWeek)}
                       </Text>
                       <Text
                         style={[
@@ -429,7 +434,7 @@ export default function Shop() {
                           isToday && !h.isClosed && styles.dayToday,
                         ]}
                       >
-                        {h.isClosed ? 'Closed' : `${h.openTime} – ${h.closeTime}`}
+                        {h.isClosed ? t`Closed` : `${h.openTime} – ${h.closeTime}`}
                       </Text>
                     </View>
                   );
@@ -439,13 +444,13 @@ export default function Shop() {
                     choosing a date, not after. */}
                 {s.upcomingExceptions.length > 0 && (
                   <View style={styles.exceptions}>
-                    <Text style={type.label}>Coming up</Text>
+                    <Text style={type.label}><Trans>Coming up</Trans></Text>
                     {s.upcomingExceptions.map((exception) => (
                       <View key={exception.date} style={styles.hourRow}>
                         <Text style={styles.day}>{niceDate(exception.date)}</Text>
                         <Text style={exception.isClosed ? styles.closedDay : styles.hourText}>
                           {exception.isClosed
-                            ? 'Closed'
+                            ? t`Closed`
                             : `${exception.customOpenTime} – ${exception.customCloseTime}`}
                         </Text>
                       </View>
@@ -464,13 +469,13 @@ export default function Shop() {
                   <Text style={styles.summaryScore}>{s.rating.average?.toFixed(1)}</Text>
                   <View style={styles.summarySide}>
                     <Stars rating={s.rating.average ?? 0} size={18} />
-                    <Text style={type.small}>from {s.rating.count} reviews</Text>
+                    <Text style={type.small}><Trans>from {s.rating.count} reviews</Trans></Text>
                   </View>
                 </View>
               )}
 
               {reviews.data?.reviews.length === 0 && (
-                <Text style={type.small}>Nobody has reviewed this place yet.</Text>
+                <Text style={type.small}><Trans>Nobody has reviewed this place yet.</Trans></Text>
               )}
               {reviews.data?.reviews.map((review) => (
                 <View key={review.id} style={[styles.card, styles.review]}>
@@ -485,7 +490,7 @@ export default function Shop() {
                   {/* The shop's reply, which is often the more useful half. */}
                   {review.responseText && (
                     <View style={styles.reply}>
-                      <Text style={type.label}>They replied</Text>
+                      <Text style={type.label}><Trans>They replied</Trans></Text>
                       <Text style={type.body}>{review.responseText}</Text>
                     </View>
                   )}
@@ -526,11 +531,11 @@ export default function Shop() {
       <View style={[styles.floating, { top: insets.top + 8 }]}>
         <IconButton
           icon="chevron-back"
-          label="Go back"
+          label={t`Go back`}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
         />
         <View style={styles.floatingRight}>
-          <IconButton icon="share-outline" label="Share this place" onPress={share} />
+          <IconButton icon="share-outline" label={t`Share this place`} onPress={share} />
         </View>
       </View>
     </View>
@@ -591,14 +596,14 @@ function ServiceRow({
         </View>
         <View style={styles.servicePrice}>
           <Text style={[styles.price, service.discount && styles.priceSale]}>
-            {service.startingPriceMinor !== null && <Text style={styles.priceFrom}>from </Text>}
+            {service.startingPriceMinor !== null && <Text style={styles.priceFrom}><Trans>from </Trans></Text>}
             {format(shownMinor, service.currency)}
           </Text>
           {/* On sale (§186): the old price crossed out, and how much off. */}
           {service.discount && (
             <Text style={styles.was}>{format(service.discount.listPriceMinor, service.currency)}</Text>
           )}
-          <Text style={styles.deposit}>pay {format(depositMinor, service.currency)} now</Text>
+          <Text style={styles.deposit}><Trans>pay {format(depositMinor, service.currency)} now</Trans></Text>
         </View>
         {/* How long the sale has left, ticking (§283). */}
         {service.discount?.endsAt && <SaleEndsChip endsAt={service.discount.endsAt} style={styles.saleClock} />}

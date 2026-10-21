@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { font, radius, shadow, theme, type } from '../theme';
 import { FadeIn } from '../ui/FadeIn';
 import { RichText } from '../ui/RichText';
+import { Trans } from '@lingui/react/macro';
 
 /**
  * What the shop asks a customer to know before they come (§180): "arrive ten
@@ -24,9 +25,9 @@ export function BeforeYouCome({
 }) {
   return (
     <FadeIn delay={delay} style={inset ? styles.inset : styles.card}>
-      <Text style={type.heading}>Before you come</Text>
+      <Text style={type.heading}><Trans>Before you come</Trans></Text>
       <RichText text={text} style={styles.text} />
-      <Text style={type.tiny}>From the shop</Text>
+      <Text style={type.tiny}><Trans>From the shop</Trans></Text>
     </FadeIn>
   );
 }

@@ -5,11 +5,17 @@ import { FadeIn } from '../ui/FadeIn';
 import { Icon } from '../ui/Icon';
 import { Pulse } from '../ui/Motion';
 import { Segmented } from '../ui/Segmented';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 const ANY = 'any';
 const OPTIONS = [
-  ...WITHIN_STEPS.map((km) => ({ value: String(km), label: `${km} km` })),
-  { value: ANY, label: 'Any' },
+  ...WITHIN_STEPS.map((km) => ({ value: String(km), label: t`${km} km` })),
+  {
+    value: ANY,
+
+    get label() { return t`Any`; },
+  },
 ];
 
 /**
@@ -36,10 +42,10 @@ export function WithinBar({
     <View style={styles.wrap}>
       <View style={styles.head}>
         <Icon name="navigate" size={14} color={theme.accent} />
-        <Text style={styles.title}>Within</Text>
-        <View style={styles.live} accessibilityLabel="Distances are from where you are now">
+        <Text style={styles.title}><Trans>Within</Trans></Text>
+        <View style={styles.live} accessibilityLabel={t`Distances are from where you are now`}>
           <Pulse color={theme.ok} size={6} />
-          <Text style={styles.liveText}>From where you are now</Text>
+          <Text style={styles.liveText}><Trans>From where you are now</Trans></Text>
         </View>
       </View>
       <Segmented

@@ -24,23 +24,26 @@ import {
 } from './format';
 import { BeforeYouCome } from './BeforeYouCome';
 import { BookedChoices } from './BookedChoices';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { MOMO_NAME } from '../ui/Momo';
 
 const WHO_CANCELLED: Record<string, string> = {
-  CUSTOMER: 'You cancelled this',
-  BUSINESS: 'The shop cancelled this',
-  SYSTEM_EXPIRY: 'It was not paid in time',
+  get CUSTOMER() { return t`You cancelled this`; },
+  get BUSINESS() { return t`The shop cancelled this`; },
+  get SYSTEM_EXPIRY() { return t`It was not paid in time`; },
 };
 
 /** What our support team did on a booking (§297), as the customer reads it. */
 const SUPPORT_STEP: Partial<Record<string, string>> = {
-  CHECK_IN: 'Checked you in',
-  COMPLETE: 'Marked it done',
-  FIX_NO_SHOW: 'Changed “missed” to done — you came',
-  CANCEL_FOR_CUSTOMER: 'Cancelled it, as you asked',
-  CANCEL_FOR_SHOP: 'Cancelled it on the shop’s side',
-  RESEND_CODE: 'Sent you a new arrival code',
-  READ_MESSAGES: 'Read your conversation with the shop, to help',
-  READ_HEALTH_CHOICES: 'Read your private answers, to help',
+  get CHECK_IN() { return t`Checked you in`; },
+  get COMPLETE() { return t`Marked it done`; },
+  get FIX_NO_SHOW() { return t`Changed “missed” to done — you came`; },
+  get CANCEL_FOR_CUSTOMER() { return t`Cancelled it, as you asked`; },
+  get CANCEL_FOR_SHOP() { return t`Cancelled it on the shop’s side`; },
+  get RESEND_CODE() { return t`Sent you a new arrival code`; },
+  get READ_MESSAGES() { return t`Read your conversation with the shop, to help`; },
+  get READ_HEALTH_CHOICES() { return t`Read your private answers, to help`; },
 };
 
 /**
@@ -106,7 +109,7 @@ export function Reservation({
           scaleTo={0.985}
           onPress={() => bought.images.length > 0 && onOpenPhoto(0)}
           accessibilityRole="imagebutton"
-          accessibilityLabel={`Photos of ${a.service.name}`}
+          accessibilityLabel={t`Photos of ${a.service.name}`}
         >
           <Cover
             uri={bought.cover}
@@ -149,7 +152,7 @@ export function Reservation({
       {paid && live && a.verificationCode && (
         <FadeIn delay={60} style={styles.card}>
           <View style={styles.codeBox}>
-            <Text style={type.label}>Show this code when you arrive</Text>
+            <Text style={type.label}><Trans>Show this code when you arrive</Trans></Text>
             <Text
               style={[styles.code, layout.compact && styles.codeCompact]}
               selectable
@@ -175,16 +178,16 @@ export function Reservation({
       <FadeIn delay={100} style={styles.actions}>
         <Action
           icon="chatbubble-ellipses-outline"
-          label="Message"
+          label={t`Message`}
           onPress={onMessage}
           off={messageBusy}
         />
-        <Action icon="navigate-outline" label="Directions" onPress={onDirections} />
-        <Action icon="help-buoy-outline" label="Get help" onPress={onHelp} />
+        <Action icon="navigate-outline" label={t`Directions`} onPress={onDirections} />
+        <Action icon="help-buoy-outline" label={t`Get help`} onPress={onHelp} />
         {a.status === 'COMPLETED' ? (
-          <Action icon="star-outline" label={a.review ? 'My review' : 'Review'} onPress={onReview} />
+          <Action icon="star-outline" label={a.review ? t`My review` : t`Review`} onPress={onReview} />
         ) : (
-          canCancel && <Action icon="close-circle-outline" label="Cancel" onPress={onCancel} danger />
+          canCancel && <Action icon="close-circle-outline" label={t`Cancel`} onPress={onCancel} danger />
         )}
       </FadeIn>
 
@@ -205,7 +208,7 @@ export function Reservation({
           ) : (
             <PressableScale haptic scaleTo={0.98} onPress={onChangeChoices} accessibilityRole="button" style={styles.addWish}>
               <Icon name="create-outline" size={17} color={theme.accentDeep} />
-              <Text style={[type.subheading, styles.flex]}>Add a wish or a note for the shop</Text>
+              <Text style={[type.subheading, styles.flex]}><Trans>Add a wish or a note for the shop</Trans></Text>
               <Icon name="chevron-forward" size={16} color={theme.muted} />
             </PressableScale>
           )}
@@ -214,22 +217,22 @@ export function Reservation({
 
       {/* THE FACTS. */}
       <FadeIn delay={140} style={styles.card}>
-        <Text style={type.heading}>Reservation details</Text>
-        <Row label="Reservation no." value={reservationNo(a.id)} strong />
-        <Row label="Date" value={dayOf(a.startTime)} />
-        <Row label="Time" value={timeRange(a)} />
-        <Row label="Length" value={duration(minutesOf(a), true)} />
+        <Text style={type.heading}><Trans>Reservation details</Trans></Text>
+        <Row label={t`Reservation no.`} value={reservationNo(a.id)} strong />
+        <Row label={t`Date`} value={dayOf(a.startTime)} />
+        <Row label={t`Time`} value={timeRange(a)} />
+        <Row label={t`Length`} value={duration(minutesOf(a), true)} />
         {a.quantity > 1 && (
-          <Row label="People" value={String(a.quantity)} />
+          <Row label={t`People`} value={String(a.quantity)} />
         )}
-        <Row label="Place" value={`${a.location.name}\n${a.location.address}`} />
-        {way && <Row label="Getting there" value={way} />}
-        <Row label="Booked on" value={`${dayOf(a.createdAt)}, ${timeOf(a.createdAt)}`} />
+        <Row label={t`Place`} value={`${a.location.name}\n${a.location.address}`} />
+        {way && <Row label={t`Getting there`} value={way} />}
+        <Row label={t`Booked on`} value={`${dayOf(a.createdAt)}, ${timeOf(a.createdAt)}`} />
       </FadeIn>
 
       {/* THE MONEY. */}
       <FadeIn delay={180} style={styles.card}>
-        <Text style={type.heading}>Payment</Text>
+        <Text style={type.heading}><Trans>Payment</Trans></Text>
         {a.unitPriceMinor !== null && (a.quantity > 1 || a.choicesPriceMinor !== 0) && (
           <Row
             label={a.quantity > 1 ? `${a.quantity} × ${format(a.unitPriceMinor, a.currency)}` : a.service.name}
@@ -249,12 +252,12 @@ export function Reservation({
         {/* The sale it was booked under (§186). */}
         {a.discountPercent !== null && a.listPriceMinor !== null && a.servicePriceMinor !== null && (
           <Row
-            label={`Discount · ${a.discountPercent}% off`}
+            label={t`Discount · ${a.discountPercent}% off`}
             value={`−${format(a.listPriceMinor - a.servicePriceMinor, a.currency)}`}
           />
         )}
         {a.servicePriceMinor !== null && (
-          <Row label="Total" value={format(a.servicePriceMinor, a.currency)} />
+          <Row label={t`Total`} value={format(a.servicePriceMinor, a.currency)} />
         )}
         <View style={styles.dashed} />
         <View style={styles.paidRow}>
@@ -264,11 +267,13 @@ export function Reservation({
             color={paid ? theme.ok : theme.muted}
           />
           <View style={styles.flex}>
-            <Text style={styles.paidLabel}>{paid ? 'Deposit paid' : 'Deposit not paid'}</Text>
+            <Text style={styles.paidLabel}>{paid ? t`Deposit paid` : t`Deposit not paid`}</Text>
             {a.depositPaidAt && (
               <Text style={type.tiny}>
-                {dayOf(a.depositPaidAt)}, {timeOf(a.depositPaidAt)} · MTN Mobile Money
-              </Text>
+                <Trans>
+                  {dayOf(a.depositPaidAt)}, {timeOf(a.depositPaidAt)} · {MOMO_NAME}
+                </Trans>
+                </Text>
             )}
           </View>
           <Text style={styles.paidValue}>{format(a.depositAmountMinor, a.currency)}</Text>
@@ -280,7 +285,7 @@ export function Reservation({
               <Text style={styles.paidLabel}>
                 {/* Not "paid": what happens at the till is between the two
                     of them, and nothing here records it. */}
-                {a.status === 'COMPLETED' ? 'Balance at the shop' : 'To pay at the shop'}
+                {a.status === 'COMPLETED' ? t`Balance at the shop` : t`To pay at the shop`}
               </Text>
             </View>
             <Text style={styles.paidValue}>{format(balance, a.currency)}</Text>
@@ -292,7 +297,7 @@ export function Reservation({
       {a.status === 'CANCELLED' ? (
         <FadeIn delay={220} style={styles.card}>
           <Text style={type.heading}>
-            {(a.cancelledBy && WHO_CANCELLED[a.cancelledBy]) ?? 'Cancelled'}
+            {(a.cancelledBy && WHO_CANCELLED[a.cancelledBy]) ?? t`Cancelled`}
           </Text>
           {a.cancelledAt && (
             <Text style={type.small}>
@@ -301,30 +306,32 @@ export function Reservation({
           )}
           {a.cancelledBy === 'BUSINESS' && paid && (
             <Text style={type.body}>
-              Because the shop cancelled, your deposit is refunded in full.
+              <Trans>
+                Because the shop cancelled, your deposit is refunded in full.
+              </Trans>
             </Text>
           )}
           {a.cancelledBy === 'CUSTOMER' && paid && (
-            <Text style={type.body}>The deposit is not refunded when you cancel.</Text>
+            <Text style={type.body}><Trans>The deposit is not refunded when you cancel.</Trans></Text>
           )}
         </FadeIn>
       ) : (
         canCancel && (
           <FadeIn delay={220} style={styles.card}>
-            <Text style={type.heading}>Cancelling</Text>
+            <Text style={type.heading}><Trans>Cancelling</Trans></Text>
             <Rule
               icon="person-outline"
               text={
                 paid
-                  ? `If you cancel, your deposit of ${format(a.depositAmountMinor, a.currency)} is not refunded. It is what holds the slot.`
-                  : 'Nothing has been paid, so cancelling costs nothing.'
+                  ? t`If you cancel, your deposit of ${format(a.depositAmountMinor, a.currency)} is not refunded. It is what holds the slot.`
+                  : t`Nothing has been paid, so cancelling costs nothing.`
               }
             />
             <Rule
               icon="storefront-outline"
-              text="If the shop cancels, you get your whole deposit back."
+              text={t`If the shop cancels, you get your whole deposit back.`}
             />
-            <Button kind="quietDanger" label="Cancel this reservation" onPress={onCancel} />
+            <Button kind="quietDanger" label={t`Cancel this reservation`} onPress={onCancel} />
           </FadeIn>
         )
       )}
@@ -333,12 +340,12 @@ export function Reservation({
           booking changes without the customer seeing why. */}
       {a.supportActions.length > 0 && (
         <FadeIn delay={240} style={styles.card}>
-          <Text style={type.heading}>Our support team helped</Text>
+          <Text style={type.heading}><Trans>Our support team helped</Trans></Text>
           {a.supportActions.map((step, i) => (
             <View key={i} style={styles.rule}>
               <Icon name="help-buoy-outline" size={17} color={theme.accent} />
               <View style={styles.flex}>
-                <Text style={type.body}>{SUPPORT_STEP[step.kind] ?? 'Helped with this booking'}</Text>
+                <Text style={type.body}>{SUPPORT_STEP[step.kind] ?? t`Helped with this booking`}</Text>
                 <Text style={type.small}>
                   {dayOf(step.createdAt)}, {timeOf(step.createdAt)}
                 </Text>
@@ -352,7 +359,7 @@ export function Reservation({
           left to do here (§111). */}
       {a.status === 'COMPLETED' && (
         <FadeIn delay={220} style={styles.card}>
-          <Text style={type.heading}>{a.review ? 'Your review' : 'How was it?'}</Text>
+          <Text style={type.heading}>{a.review ? t`Your review` : t`How was it?`}</Text>
           {a.review ? (
             <>
               <Stars rating={a.review.rating} size={22} />
@@ -360,19 +367,21 @@ export function Reservation({
             </>
           ) : (
             <Text style={type.small}>
-              A few words help the next person decide. It takes a moment.
+              <Trans>
+                A few words help the next person decide. It takes a moment.
+              </Trans>
             </Text>
           )}
           <Button
             kind="outline"
             icon="star-outline"
-            label={a.review ? 'See or change it' : 'Write a review'}
+            label={a.review ? t`See or change it` : t`Write a review`}
             onPress={onReview}
           />
         </FadeIn>
       )}
 
-      <Button kind="soft" icon="search" label="Explore more services" onPress={onExplore} />
+      <Button kind="soft" icon="search" label={t`Explore more services`} onPress={onExplore} />
     </>
   );
 }

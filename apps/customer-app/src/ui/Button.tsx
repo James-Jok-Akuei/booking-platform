@@ -72,8 +72,9 @@ export function Button({
       ) : (
         <View style={styles.row}>
           {icon && <Icon name={icon} size={18} color={off && solid ? theme.muted : look.fg} />}
+          {/* Two lines before a word is cut (§308): Kinyarwanda can be long. */}
           <Text
-            numberOfLines={1}
+            numberOfLines={2}
             style={[styles.label, { color: off ? theme.muted : look.fg }]}
           >
             {label}
@@ -93,6 +94,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   compact: { minHeight: 44, paddingHorizontal: 18 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  label: { fontFamily: font.bold, fontSize: 15.5 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: '100%' },
+  label: { fontFamily: font.bold, fontSize: 15.5, lineHeight: 19, textAlign: 'center', flexShrink: 1 },
 });

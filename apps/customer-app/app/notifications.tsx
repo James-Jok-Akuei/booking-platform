@@ -35,6 +35,9 @@ import { Sheet } from '../src/ui/Sheet';
 import { RowSkeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
 import { Undo } from '../src/ui/Undo';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../src/i18n/format';
 
 type Filter = 'all' | 'unread';
 type Section = { title: string; data: Notification[]; important?: boolean };
@@ -46,16 +49,16 @@ const sameDay = (a: Date, b: Date) =>
 const dayGroup = (iso: string) => {
   const d = new Date(iso);
   const now = new Date();
-  if (sameDay(d, now)) return 'Today';
+  if (sameDay(d, now)) return t`Today`;
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  if (sameDay(d, yesterday)) return 'Yesterday';
-  if (now.getTime() - d.getTime() < 7 * 86_400_000) return 'This week';
-  return 'Earlier';
+  if (sameDay(d, yesterday)) return t`Yesterday`;
+  if (now.getTime() - d.getTime() < 7 * 86_400_000) return t`This week`;
+  return t`Earlier`;
 };
 
 const fullWhen = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, { dateStyle: 'full', timeStyle: 'short' });
+  new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'full', timeStyle: 'short' });
 
 /**
  * What the platform has told this person (§134, §159).
@@ -233,7 +236,7 @@ export default function Notifications() {
       byDay.set(key, [...(byDay.get(key) ?? []), n]);
     }
     return [
-      ...(attention.length > 0 ? [{ title: 'Needs your attention', data: attention, important: true }] : []),
+      ...(attention.length > 0 ? [{ title: t`Needs your attention`, data: attention, important: true }] : []),
       ...[...byDay.entries()].map(([title, data]) => ({ title, data })),
     ];
   }, [rows, filter]);
@@ -244,12 +247,12 @@ export default function Notifications() {
   if (!signedIn) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Notifications" />
+        <TopBar title={t`Notifications`} />
         <EmptyState
           icon="notifications-outline"
-          title="Sign in to see your notifications"
-          text="They are kept with your account, so they follow you to any phone."
-          action="Sign in"
+          title={t`Sign in to see your notifications`}
+          text={t`They are kept with your account, so they follow you to any phone.`}
+          action={t`Sign in`}
           onAction={() => router.push('/sign-in?next=/notifications')}
         />
       </View>
@@ -266,13 +269,13 @@ export default function Notifications() {
           hitSlop={10}
           haptic
           accessibilityRole="button"
-          accessibilityLabel="Stop selecting"
+          accessibilityLabel={t`Stop selecting`}
           style={styles.selectClose}
         >
           <Icon name="close" size={18} color={theme.ink} />
         </PressableScale>
         <Text style={[type.heading, styles.flex]}>
-          {chosen.length === 0 ? 'Select' : `${chosen.length} selected`}
+          {chosen.length === 0 ? t`Select` : t`${chosen.length} selected`}
         </Text>
         <PressableScale
           onPress={() => setSelected(allChosen ? new Set() : new Set(rows.map((n) => n.id)))}
@@ -282,7 +285,7 @@ export default function Notifications() {
           style={styles.action}
         >
           <Icon name={allChosen ? 'square-outline' : 'checkbox'} size={17} color={theme.accent} />
-          <Text style={styles.actionText}>{allChosen ? 'None' : 'Select all'}</Text>
+          <Text style={styles.actionText}>{allChosen ? t`None` : t`Select all`}</Text>
         </PressableScale>
       </View>
       <View style={styles.selectActions}>
@@ -290,7 +293,7 @@ export default function Notifications() {
           kind="soft"
           compact
           icon="checkmark-done"
-          label="Mark read"
+          label={t`Mark read`}
           disabled={chosen.length === 0 || !rows.some((n) => chosen.includes(n.id) && !n.readAt)}
           onPress={() => {
             readMany.mutate(chosen);
@@ -302,7 +305,7 @@ export default function Notifications() {
           kind="danger"
           compact
           icon="trash-outline"
-          label={chosen.length > 0 ? `Remove ${chosen.length}` : 'Remove'}
+          label={chosen.length > 0 ? t`Remove ${chosen.length}` : t`Remove`}
           disabled={chosen.length === 0}
           onPress={() => {
             removeMany.mutate(chosen);
@@ -316,12 +319,12 @@ export default function Notifications() {
     <View style={styles.header}>
       <View style={styles.headRow}>
         <View style={styles.flex}>
-          <Text style={type.title}>Notifications</Text>
+          <Text style={type.title}><Trans>Notifications</Trans></Text>
           <Text style={type.small}>
             {unread > 0
-              ? `${unread} unread of ${inbox.data?.total ?? rows.length}`
+              ? t`${unread} unread of ${inbox.data?.total ?? rows.length}`
               : rows.length > 0
-                ? 'All caught up'
+                ? t`All caught up`
                 : ' '}
           </Text>
         </View>
@@ -336,8 +339,8 @@ export default function Notifications() {
         value={filter}
         onChange={setFilter}
         options={[
-          { value: 'all', label: 'All' },
-          { value: 'unread', label: unread > 0 ? `Unread · ${unread}` : 'Unread' },
+          { value: 'all', label: t`All` },
+          { value: 'unread', label: unread > 0 ? t`Unread · ${unread}` : t`Unread` },
         ]}
       />
 
@@ -353,7 +356,7 @@ export default function Notifications() {
               style={styles.action}
             >
               <Icon name="checkmark-done" size={16} color={theme.accent} />
-              <Text style={styles.actionText}>Mark all as read</Text>
+              <Text style={styles.actionText}><Trans>Mark all as read</Trans></Text>
             </PressableScale>
           )}
           {readCount > 0 && (
@@ -365,7 +368,7 @@ export default function Notifications() {
               style={styles.action}
             >
               <Icon name="trash-outline" size={15} color={theme.ink2} />
-              <Text style={[styles.actionText, styles.actionMuted]}>Clear read</Text>
+              <Text style={[styles.actionText, styles.actionMuted]}><Trans>Clear read</Trans></Text>
             </PressableScale>
           )}
         </View>
@@ -412,14 +415,14 @@ export default function Notifications() {
           ) : filter === 'unread' && rows.length > 0 ? (
             <EmptyState
               icon="checkmark-done-circle-outline"
-              title="Nothing unread"
-              text="You have read everything. Switch to All to see it again."
+              title={t`Nothing unread`}
+              text={t`You have read everything. Switch to All to see it again.`}
             />
           ) : (
             <EmptyState
               icon="notifications-outline"
-              title="No notifications yet"
-              text="When something happens with a booking, it shows up here."
+              title={t`No notifications yet`}
+              text={t`When something happens with a booking, it shows up here.`}
             />
           )
         }
@@ -448,7 +451,7 @@ export default function Notifications() {
       />
 
       <Undo
-        message={undo ? (undo.ids.length === 1 ? 'Removed' : `${undo.ids.length} removed`) : null}
+        message={undo ? (undo.ids.length === 1 ? t`Removed` : t`${undo.ids.length} removed`) : null}
         token={undo?.token ?? 0}
         onUndo={() => {
           if (!undo) return;
@@ -487,7 +490,7 @@ export default function Notifications() {
             <Button
               kind="quietDanger"
               icon="trash-outline"
-              label="Remove this notification"
+              label={t`Remove this notification`}
               onPress={() => {
                 setOpenId(null);
                 remove.mutate(open.id);
@@ -555,10 +558,10 @@ const styles = StyleSheet.create({
 
 /** The button's words for where a notification opens (§287). */
 function openAction(link: string | null): { icon: IconName; label: string } {
-  if (!link || link.startsWith('/booking')) return { icon: 'ticket-outline', label: 'Open the reservation' };
-  if (link.startsWith('/review')) return { icon: 'star-outline', label: 'Write a review' };
-  if (link.startsWith('/thread')) return { icon: 'chatbubble-outline', label: 'Open the conversation' };
-  if (link.startsWith('/ticket')) return { icon: 'help-buoy-outline', label: 'Open the support request' };
-  if (link.startsWith('/shop')) return { icon: 'storefront-outline', label: 'Open the shop' };
-  return { icon: 'arrow-forward', label: 'Open' };
+  if (!link || link.startsWith('/booking')) return { icon: 'ticket-outline', label: t`Open the reservation` };
+  if (link.startsWith('/review')) return { icon: 'star-outline', label: t`Write a review` };
+  if (link.startsWith('/thread')) return { icon: 'chatbubble-outline', label: t`Open the conversation` };
+  if (link.startsWith('/ticket')) return { icon: 'help-buoy-outline', label: t`Open the support request` };
+  if (link.startsWith('/shop')) return { icon: 'storefront-outline', label: t`Open the shop` };
+  return { icon: 'arrow-forward', label: t`Open` };
 }

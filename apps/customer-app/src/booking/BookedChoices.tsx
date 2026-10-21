@@ -8,6 +8,9 @@ import { PressableScale } from '../ui/PressableScale';
 import { Sheet } from '../ui/Sheet';
 import { ChoicePicker, NoteBox } from './ChoicePicker';
 import { toggle, type ChoiceGroup } from './choices';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { listOf } from '../i18n/format';
 
 type Pick = NonNullable<Appointment['choices']>[number];
 
@@ -34,11 +37,11 @@ export function BookedChoices({
   return (
     <View style={styles.box}>
       <View style={styles.head}>
-        <Text style={[type.subheading, styles.flex]}>Your choices</Text>
+        <Text style={[type.subheading, styles.flex]}><Trans>Your choices</Trans></Text>
         {onChange && (
           <PressableScale haptic scaleTo={0.95} onPress={onChange} accessibilityRole="button" style={styles.change}>
             <Icon name="create-outline" size={14} color={theme.accentDeep} />
-            <Text style={styles.changeText}>Change</Text>
+            <Text style={styles.changeText}><Trans>Change</Trans></Text>
           </PressableScale>
         )}
       </View>
@@ -54,7 +57,7 @@ export function BookedChoices({
               {[
                 pick.priceMinor > 0 && `+${format(pick.priceMinor, a.currency)}`,
                 pick.priceMinor < 0 && `−${format(-pick.priceMinor, a.currency)}`,
-                pick.extraMinutes > 0 && `+${pick.extraMinutes} min`,
+                pick.extraMinutes > 0 && t`+${pick.extraMinutes} min`,
               ]
                 .filter(Boolean)
                 .join(' · ')}
@@ -68,7 +71,7 @@ export function BookedChoices({
         <View style={styles.private}>
           <Icon name="lock-closed" size={14} color={theme.danger} />
           <View style={styles.flex}>
-            <Text style={styles.privateLabel}>Private, for the shop only</Text>
+            <Text style={styles.privateLabel}><Trans>Private, for the shop only</Trans></Text>
             <Text style={styles.privateText}>
               {groupLines(privateOnes)
                 .map(([group, options]) => `${group}: ${options.join(', ')}`)
@@ -78,7 +81,7 @@ export function BookedChoices({
         </View>
       )}
       {a.healthChoicesRemovedAt && (
-        <Text style={type.tiny}>Private answers were removed 30 days after the visit, as promised.</Text>
+        <Text style={type.tiny}><Trans>Private answers were removed 30 days after the visit, as promised.</Trans></Text>
       )}
 
       {a.customerNote && (
@@ -139,10 +142,12 @@ export function ChangeChoicesSheet({
   );
 
   return (
-    <Sheet open={open} onClose={onClose} title="Change your wishes">
+    <Sheet open={open} onClose={onClose} title={t`Change your wishes`}>
       <ScrollView style={styles.sheetScroll} contentContainerStyle={styles.sheetBody} keyboardShouldPersistTaps="handled">
         <Text style={type.small}>
-          Until 2 hours before, as often as you like. The shop is told something changed.
+          <Trans>
+            Until 2 hours before, as often as you like. The shop is told something changed.
+          </Trans>
         </Text>
         {wishes.length > 0 && (
           <ChoicePicker
@@ -165,16 +170,16 @@ export function ChangeChoicesSheet({
           <View style={styles.fixed}>
             <Icon name="lock-closed-outline" size={14} color={theme.muted} />
             <Text style={[type.small, styles.flex]}>
-              {fixed.map((pick) => `“${pick.option}”`).join(' and ')}{' '}
+              {listOf(fixed.map((pick) => `“${pick.option}”`))}{' '}
               {fixed.length === 1
-                ? 'stays as booked: it changed the price or the time.'
-                : 'stay as booked: they changed the price or the time.'}
+                ? t`stays as booked: it changed the price or the time.`
+                : t`stay as booked: they changed the price or the time.`}
             </Text>
           </View>
         )}
       </ScrollView>
       <Button
-        label={missing.length > 0 ? 'Answer the questions' : 'Save changes'}
+        label={missing.length > 0 ? t`Answer the questions` : t`Save changes`}
         busy={busy}
         disabled={missing.length > 0}
         onPress={() =>

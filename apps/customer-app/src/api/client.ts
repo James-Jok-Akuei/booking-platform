@@ -38,6 +38,13 @@ const SecureStore =
 export const deviceStore = SecureStore;
 
 /**
+ * The language every request asks the server to answer in (§308) — set by
+ * `src/i18n` whenever the app's language changes, so the server's own
+ * sentences (a refusal, a notice) come back in it.
+ */
+export const requestLanguage = { current: 'en' };
+
+/**
  * The HTTP client, ported from the two web apps (§102).
  *
  * The same three things that are easy to get subtly wrong — attaching the
@@ -315,6 +322,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
       method,
       signal,
       headers: {
+        'Accept-Language': requestLanguage.current,
         ...(body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },

@@ -8,6 +8,8 @@ import { font, radius, shadow, theme, type } from '../theme';
 import { Button } from '../ui/Button';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * Shown when something somebody already agreed to has been replaced (§126.3).
@@ -66,15 +68,16 @@ export function LegalPrompt() {
           <View style={styles.disc}>
             <Icon name="document-text-outline" size={24} color={theme.accent} />
           </View>
-          <Text style={type.heading}>{document.title} has changed</Text>
+          <Text style={type.heading}><Trans>{document.title} has changed</Trans></Text>
           <Text style={type.small}>
-            You agreed to version {document.acceptedVersion}. This is version{' '}
-            {document.version}.
+            <Trans>
+              You agreed to version {document.acceptedVersion}. This is version {document.version}.
+            </Trans>
           </Text>
 
           {document.changeNote && (
             <View style={styles.noteBox}>
-              <Text style={type.label}>What changed</Text>
+              <Text style={type.label}><Trans>What changed</Trans></Text>
               <Text style={type.body}>{document.changeNote}</Text>
             </View>
           )}
@@ -85,7 +88,7 @@ export function LegalPrompt() {
 
           <Button
             busy={accept.isPending}
-            label={accept.isPending ? 'Saving…' : 'I agree'}
+            label={accept.isPending ? t`Saving…` : t`I agree`}
             onPress={() => accept.mutate(document.id)}
           />
 
@@ -97,12 +100,12 @@ export function LegalPrompt() {
                 router.push('/legal');
               }}
             >
-              <Text style={styles.link}>Read all the documents</Text>
+              <Text style={styles.link}><Trans>Read all the documents</Trans></Text>
             </PressableScale>
             {/* Leaving it for later is allowed, and it comes back next time the
                 app opens. Nothing here is blocked by not agreeing. */}
-            <PressableScale hitSlop={8} onPress={() => setDismissed(true)}>
-              <Text style={styles.later}>Not now</Text>
+            <PressableScale hitSlop={8} onPress={() => setDismissed(true)} testID="legal-later">
+              <Text style={styles.later}><Trans>Not now</Trans></Text>
             </PressableScale>
           </View>
         </View>
@@ -147,7 +150,8 @@ const styles = StyleSheet.create({
   },
   bodyScroll: { maxHeight: 240 },
   body: { fontFamily: font.regular, color: theme.ink2, fontSize: 14, lineHeight: 21.5 },
-  footRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  // Long words (§308): "Not now" goes under the link rather than off the card.
+  footRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', columnGap: 16, rowGap: 8, marginTop: 4 },
   link: { fontFamily: font.bold, color: theme.accent, fontSize: 13.5 },
   later: { fontFamily: font.semibold, color: theme.muted, fontSize: 13.5 },
 });

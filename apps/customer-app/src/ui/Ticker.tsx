@@ -46,5 +46,10 @@ export function Ticker({
     };
   }, [value, counter, duration]);
 
-  return <Text style={style}>{render(shown)}</Text>;
+  // A price is never broken over two lines: smaller, if the phone can, before that.
+  return (
+    <Text style={style} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+      {render(shown)}
+    </Text>
+  );
 }

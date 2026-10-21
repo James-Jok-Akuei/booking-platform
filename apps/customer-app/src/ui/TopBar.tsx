@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { font, theme, type } from '../theme';
 import { IconButton } from './IconButton';
 import { useLayout } from './layout';
+import { t } from '@lingui/core/macro';
 
 /**
  * The top of a screen that was pushed onto the stack (§133).
@@ -44,7 +45,7 @@ export function TopBar({
       {noBack ? (
         <View style={styles.side} />
       ) : (
-        <IconButton icon="chevron-back" label="Go back" onPress={back} flat />
+        <IconButton icon="chevron-back" label={t`Go back`} onPress={back} flat />
       )}
       <View style={styles.middle}>
         {title && (
@@ -83,7 +84,10 @@ export function BigTitle({
   return (
     <View style={[styles.big, { paddingTop: insets.top + 14, width: layout.contentWidth, alignSelf: 'center' }]}>
       <View style={styles.bigText}>
-        <Text style={type.display}>{title}</Text>
+        {/* A long word (§308) shrinks to fit rather than breaking in two. */}
+        <Text style={type.display} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
+          {title}
+        </Text>
         {subtitle && <Text style={[type.small, styles.bigSub]}>{subtitle}</Text>}
       </View>
       {right}

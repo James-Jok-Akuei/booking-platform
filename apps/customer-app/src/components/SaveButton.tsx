@@ -3,6 +3,7 @@ import { Animated, Pressable, StyleSheet } from 'react-native';
 import { shadow, theme } from '../theme';
 import { thump } from '../ui/haptic';
 import { Icon } from '../ui/Icon';
+import { t } from '@lingui/core/macro';
 
 /**
  * The heart. One component so the places it appears cannot drift.
@@ -62,7 +63,7 @@ export function SaveButton({
       }}
       hitSlop={10}
       accessibilityRole="button"
-      accessibilityLabel={saved ? 'Remove from saved' : 'Save this'}
+      accessibilityLabel={saved ? t`Remove from saved` : t`Save this`}
       style={[
         styles.tap,
         { width: size, height: size, borderRadius: size / 2 },

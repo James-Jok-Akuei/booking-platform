@@ -1,4 +1,5 @@
 import { ApiError, tokens } from './api/client';
+import { t } from '@lingui/core/macro';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4100';
 
@@ -33,7 +34,8 @@ export async function uploadFile<T>(
   const text = await response.text();
 
   if (!response.ok) {
-    let message = `Upload failed (${response.status}).`;
+    const status = response.status;
+    let message = t`Upload failed (${status}).`;
     try {
       const payload = JSON.parse(text) as { message?: string | string[] };
       const raw = payload.message;

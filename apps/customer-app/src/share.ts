@@ -1,4 +1,5 @@
 import { Share } from 'react-native';
+import { t } from '@lingui/core/macro';
 
 /**
  * Where a shared link points.
@@ -26,7 +27,8 @@ export async function shareShop(shop: {
   fromPrice?: string | null;
 }) {
   const where = shop.districtName ? `${shop.districtName} — ${shop.address}` : shop.address;
-  const price = shop.fromPrice ? `\nFrom ${shop.fromPrice}.` : '';
+  const from = shop.fromPrice;
+  const price = from ? `\n${t`From ${from}.`}` : '';
   await Share.share({
     message:
       `${shop.businessName ?? shop.name}\n${where}${price}` +
@@ -48,9 +50,10 @@ export async function shareService(service: {
     service.branchName && service.branchName !== service.businessName
       ? `${service.businessName}, ${service.branchName}`
       : service.businessName;
+  const name = service.name;
   await Share.share({
     message:
-      `${service.name} at ${where}\n${service.price} · ${service.length}` +
+      `${t`${name} at ${where}`}\n${service.price} · ${service.length}` +
       linkFor(`/book/${service.locationId}?serviceId=${service.serviceId}`),
   });
 }
@@ -59,7 +62,7 @@ export async function shareService(service: {
 export async function shareApp() {
   await Share.share({
     message:
-      'Book appointments with shops near you — see prices and free times before ' +
-      'you go, and pay the deposit from your phone.' + linkFor('/'),
+      t`Book appointments with shops near you — see prices and free times before you go, and pay the deposit from your phone.` +
+      linkFor('/'),
   });
 }

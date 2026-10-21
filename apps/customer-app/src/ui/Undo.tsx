@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { font, radius, shadow, theme } from '../theme';
 import { Icon, type IconName } from './Icon';
 import { PressableScale } from './PressableScale';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 export const UNDO_MS = 5000;
 
@@ -72,10 +74,10 @@ export function Undo({
           haptic
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel="Undo"
+          accessibilityLabel={t`Undo`}
           style={styles.undo}
         >
-          <Text style={styles.undoText}>Undo</Text>
+          <Text style={styles.undoText}><Trans>Undo</Trans></Text>
         </PressableScale>
         <Animated.View style={[styles.line, { transform: [{ scaleX: drain }] }]} />
       </View>

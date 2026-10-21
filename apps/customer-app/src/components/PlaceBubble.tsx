@@ -6,6 +6,7 @@ import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { distanceLabel } from '../distance';
+import { plural, t } from '@lingui/core/macro';
 
 const SIZE = 66;
 
@@ -49,8 +50,12 @@ export function PlaceBubble({
   const away = distanceLabel(distanceKm ?? null);
   const label = [
     name,
-    story ? `${story.count} ${story.count === 1 ? 'story' : 'stories'} today${story.seen ? ', seen' : ', new'}` : null,
-    openNow ? 'open now' : null,
+    story
+      ? story.seen
+        ? plural(story.count, { one: '# story today, seen', other: '# stories today, seen' })
+        : plural(story.count, { one: '# story today, new', other: '# stories today, new' })
+      : null,
+    openNow ? t`open now` : null,
   ]
     .filter(Boolean)
     .join(', ');

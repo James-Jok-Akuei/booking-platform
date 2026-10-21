@@ -1,4 +1,5 @@
 import type { DiscoveryPage } from './api/discovery';
+import { plural, t } from '@lingui/core/macro';
 
 /** The distances a customer can pick on Home, in kilometres (§171). */
 export const WITHIN_STEPS = [2, 5, 10, 25] as const;
@@ -72,11 +73,19 @@ export function reach(within: Within, nearest: DiscoveryPage | undefined): Reach
 export function widenedNote(area: Reach): string | null {
   if (!area.widenedFrom) return null;
   const { km, found } = area.widenedFrom;
-  const what =
-    found === 0
-      ? `Nothing within ${km} km`
-      : `Only ${found} ${found === 1 ? 'place' : 'places'} within ${km} km`;
-  return area.km === null
-    ? `${what}, so this shows every distance.`
-    : `${what}, so this shows up to ${area.km} km.`;
+  const shown = area.km;
+  if (found === 0) {
+    return shown === null
+      ? t`Nothing within ${km} km, so this shows every distance.`
+      : t`Nothing within ${km} km, so this shows up to ${shown} km.`;
+  }
+  return shown === null
+    ? plural(found, {
+        one: `Only # place within ${km} km, so this shows every distance.`,
+        other: `Only # places within ${km} km, so this shows every distance.`,
+      })
+    : plural(found, {
+        one: `Only # place within ${km} km, so this shows up to ${shown} km.`,
+        other: `Only # places within ${km} km, so this shows up to ${shown} km.`,
+      });
 }

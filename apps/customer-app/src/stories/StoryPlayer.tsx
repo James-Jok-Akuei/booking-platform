@@ -26,6 +26,8 @@ import { tick } from '../ui/haptic';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { firstUnseen, markSeen, useSeenStories } from './seen';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** How long a photo stays up once it has loaded, before the next one. */
 const SHOW_MS = 5000;
@@ -36,7 +38,8 @@ const WIDE = 640;
 /** Stories counted in this sitting: going back to one is not a second view. */
 const counted = new Set<string>();
 
-const REASONS = ['It is misleading or not real', 'It is rude or offensive', 'It is spam', 'Something else'];
+/** Why a story is reported, in the app's language — read when the sheet opens (§308). */
+const reasons = () => [t`It is misleading or not real`, t`It is rude or offensive`, t`It is spam`, t`Something else`];
 
 export type StoryStart = { shop: number; story: number };
 
@@ -91,6 +94,8 @@ export function StoryPlayer({
 
   const shop = at ? list[at.shop] : undefined;
   const story = shop && at ? shop.stories[at.story] : undefined;
+  // "5 min", "3 h" — said as "{since} ago" in the app's language (§308).
+  const since = story ? ago(story.createdAt) : '';
 
   const go = (next: StoryStart, newShop = false) => {
     progress.stopAnimation();
@@ -289,7 +294,7 @@ export function StoryPlayer({
       <Animated.View style={[StyleSheet.absoluteFill, styles.backdrop, { opacity: dim }]} />
 
       <View style={styles.center}>
-        {wide && <Arrow icon="chevron-back" label="The shop before" onPress={prevShop} hidden={!at || at.shop === 0} />}
+        {wide && <Arrow icon="chevron-back" label={t`The shop before`} onPress={prevShop} hidden={!at || at.shop === 0} />}
 
         <Animated.View style={pulled} {...pan.panHandlers}>
           <Animated.View style={[styles.stage, { width: stageW, height: stageH }, wide && styles.stageWide, stage]}>
@@ -313,13 +318,13 @@ export function StoryPlayer({
                     setBroken(true);
                     setLoaded(true);
                   }}
-                  accessibilityLabel={story.caption ?? `A story from ${shop.business.name}`}
+                  accessibilityLabel={story.caption ?? t`A story from ${shop.business.name}`}
                 />
                 {!loaded && <ActivityIndicator color="#FFFFFF" size="large" style={styles.spinner} />}
                 {broken && (
                   <View style={styles.brokenBox} pointerEvents="none">
                     <Icon name="image-outline" size={30} color="rgba(255,255,255,0.7)" />
-                    <Text style={styles.brokenText}>This photo did not load.</Text>
+                    <Text style={styles.brokenText}><Trans>This photo did not load.</Trans></Text>
                   </View>
                 )}
 
@@ -346,8 +351,8 @@ export function StoryPlayer({
                   delayLongPress={260}
                   onPress={onTap}
                   accessibilityRole="button"
-                  accessibilityLabel="Next story"
-                  accessibilityHint="Tap the left side to go back. Hold to pause."
+                  accessibilityLabel={t`Next story`}
+                  accessibilityHint={t`Tap the left side to go back. Hold to pause.`}
                 />
 
                 <Animated.View style={[styles.head, { paddingTop: top, opacity: chrome }]} pointerEvents="box-none">
@@ -379,7 +384,7 @@ export function StoryPlayer({
                         {shop.business.name}
                       </Text>
                       <Text style={styles.when} numberOfLines={1}>
-                        {ago(story.createdAt) === 'now' ? 'Just now' : `${ago(story.createdAt)} ago`}
+                        {Date.now() - new Date(story.createdAt).getTime() < 60_000 ? t`Just now` : t`${since} ago`}
                       </Text>
                     </View>
                     <PressableScale
@@ -390,7 +395,7 @@ export function StoryPlayer({
                       hitSlop={8}
                       style={styles.headButton}
                       accessibilityRole="button"
-                      accessibilityLabel="Report this story"
+                      accessibilityLabel={t`Report this story`}
                     >
                       <Icon name="ellipsis-horizontal" size={20} color="#FFFFFF" />
                     </PressableScale>
@@ -399,7 +404,7 @@ export function StoryPlayer({
                       hitSlop={8}
                       style={styles.headButton}
                       accessibilityRole="button"
-                      accessibilityLabel="Close"
+                      accessibilityLabel={t`Close`}
                     >
                       <Icon name="close" size={24} color="#FFFFFF" />
                     </PressableScale>
@@ -417,11 +422,10 @@ export function StoryPlayer({
                     scaleTo={0.96}
                     style={styles.book}
                     accessibilityRole="button"
-                    accessibilityLabel={`Book at ${story.bookAt.name}`}
+                    accessibilityLabel={t`Book at ${story.bookAt.name}`}
                   >
                     <Icon name="calendar" size={17} color={theme.ink} />
-                    <Text style={styles.bookText} numberOfLines={1}>
-                      Book at {story.bookAt.name}
+                    <Text style={styles.bookText} numberOfLines={1}><Trans>Book at {story.bookAt.name}</Trans>
                     </Text>
                     <Icon name="arrow-forward" size={16} color={theme.accentDeep} />
                   </PressableScale>
@@ -431,7 +435,7 @@ export function StoryPlayer({
           </Animated.View>
         </Animated.View>
 
-        {wide && <Arrow icon="chevron-forward" label="The next shop" onPress={nextShop} hidden={!at} />}
+        {wide && <Arrow icon="chevron-forward" label={t`The next shop`} onPress={nextShop} hidden={!at} />}
       </View>
 
       {/* Reporting: inside the player, so nothing opens behind it. */}
@@ -454,12 +458,14 @@ export function StoryPlayer({
             <View style={[styles.panelIcon, styles.panelIconOk]}>
               <Icon name="checkmark" size={24} color={theme.ok} />
             </View>
-            <Text style={styles.panelTitle}>Thank you for telling us</Text>
+            <Text style={styles.panelTitle}><Trans>Thank you for telling us</Trans></Text>
             <Text style={styles.panelText}>
-              We will look at it, and take it down if it breaks the rules. The shop is not told who reported it.
+              <Trans>
+                We will look at it, and take it down if it breaks the rules. The shop is not told who reported it.
+              </Trans>
             </Text>
             <PressableScale onPress={() => setReporting(null)} style={styles.panelPrimary} accessibilityRole="button">
-              <Text style={styles.panelPrimaryText}>Keep watching</Text>
+              <Text style={styles.panelPrimaryText}><Trans>Keep watching</Trans></Text>
             </PressableScale>
           </View>
         ) : !signedIn ? (
@@ -467,25 +473,25 @@ export function StoryPlayer({
             <View style={styles.panelIcon}>
               <Icon name="flag" size={22} color={theme.accentDeep} />
             </View>
-            <Text style={styles.panelTitle}>Sign in to report a story</Text>
-            <Text style={styles.panelText}>So we know a real person is asking.</Text>
+            <Text style={styles.panelTitle}><Trans>Sign in to report a story</Trans></Text>
+            <Text style={styles.panelText}><Trans>So we know a real person is asking.</Trans></Text>
             <PressableScale
               onPress={() => close(() => router.push('/sign-in'))}
               style={styles.panelPrimary}
               accessibilityRole="button"
             >
-              <Text style={styles.panelPrimaryText}>Sign in</Text>
+              <Text style={styles.panelPrimaryText}><Trans>Sign in</Trans></Text>
             </PressableScale>
             <PressableScale onPress={() => setReporting(null)} style={styles.panelQuiet} accessibilityRole="button">
-              <Text style={styles.panelQuietText}>Not now</Text>
+              <Text style={styles.panelQuietText}><Trans>Not now</Trans></Text>
             </PressableScale>
           </View>
         ) : (
           <View style={styles.panelBody}>
-            <Text style={styles.panelTitle}>What is wrong with this story?</Text>
-            <Text style={styles.panelText}>The shop is not told who reported it.</Text>
+            <Text style={styles.panelTitle}><Trans>What is wrong with this story?</Trans></Text>
+            <Text style={styles.panelText}><Trans>The shop is not told who reported it.</Trans></Text>
             <View style={styles.reasons}>
-              {REASONS.map((reason) => (
+              {reasons().map((reason) => (
                 <PressableScale
                   key={reason}
                   disabled={report.isPending || !story}
@@ -504,11 +510,11 @@ export function StoryPlayer({
             </View>
             {report.error && (
               <Text style={styles.panelError}>
-                {report.error instanceof ApiError ? report.error.message : 'That did not send. Check your connection.'}
+                {report.error instanceof ApiError ? report.error.message : t`That did not send. Check your connection.`}
               </Text>
             )}
             <PressableScale onPress={() => setReporting(null)} style={styles.panelQuiet} accessibilityRole="button">
-              <Text style={styles.panelQuietText}>Cancel</Text>
+              <Text style={styles.panelQuietText}><Trans>Cancel</Trans></Text>
             </PressableScale>
           </View>
         )}

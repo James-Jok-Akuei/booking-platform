@@ -3,6 +3,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import type { PickedImage } from '../pickImage';
 import { font, theme } from '../theme';
 import { Icon } from './Icon';
+import { t } from '@lingui/core/macro';
 
 /**
  * Dropping a photo from the computer (§305), on the web app only: onto a
@@ -66,8 +67,8 @@ export function useWebPhotoDrop({
       setOver(false);
       const file = Array.from(event.dataTransfer?.files ?? [])[0];
       if (!file) return;
-      if (!PHOTO_TYPES.includes(file.type)) return latest.current.onRefused('That isn’t a photo — use a JPG, PNG or WebP.');
-      if (file.size > MAX_BYTES) return latest.current.onRefused('That photo is over 15 MB — try a smaller copy.');
+      if (!PHOTO_TYPES.includes(file.type)) return latest.current.onRefused(t`That isn’t a photo — use a JPG, PNG or WebP.`);
+      if (file.size > MAX_BYTES) return latest.current.onRefused(t`That photo is over 15 MB — try a smaller copy.`);
       latest.current.onPhoto({ uri: URL.createObjectURL(file), name: file.name, type: file.type });
     };
     element.addEventListener('dragenter', enter);

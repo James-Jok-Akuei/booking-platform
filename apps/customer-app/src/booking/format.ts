@@ -1,5 +1,7 @@
 import type { Appointment } from '../api/booking';
 import type { ViewerPhoto } from '../ui/PhotoViewer';
+import { dateLocale } from '../i18n/format';
+import { plural } from '@lingui/core/macro';
 
 /**
  * What the customer is buying, as a picture (§137). The appointment carries
@@ -18,7 +20,7 @@ export type Bought = {
 };
 
 export const dayOf = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, {
+  new Date(iso).toLocaleDateString(dateLocale(), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -26,7 +28,7 @@ export const dayOf = (iso: string) =>
   });
 
 export const timeOf = (iso: string) =>
-  new Date(iso).toLocaleTimeString(undefined, { timeStyle: 'short' });
+  new Date(iso).toLocaleTimeString(dateLocale(), { timeStyle: 'short' });
 
 export const timeRange = (a: Pick<Appointment, 'startTime' | 'endTime'>) =>
   `${timeOf(a.startTime)} – ${timeOf(a.endTime)}`;
@@ -36,7 +38,7 @@ export const minutesOf = (a: Pick<Appointment, 'startTime' | 'endTime'>) =>
 
 /** "For 3 people", or nothing for one (§189: a quantity is always people). */
 export const howMany = (a: Pick<Appointment, 'quantity'>) =>
-  a.quantity <= 1 ? null : `For ${a.quantity} people`;
+  a.quantity <= 1 ? null : plural(a.quantity, { one: 'For # person', other: 'For # people' });
 
 /**
  * A number a person can read out. It is the first eight characters of the

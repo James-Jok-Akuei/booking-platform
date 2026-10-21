@@ -23,8 +23,9 @@ export function useMoney() {
     if (minor === null || minor === undefined) return '—';
     const c = currency.data;
     const label = code ?? c?.code ?? '';
-    if (!c) return `${label} ${minor.toLocaleString()}`.trim();
-    if (c.exponent === 0) return `${label} ${minor.toLocaleString()}`;
+    // Grouped the same in every language (§308): "RWF 12,000", as mobile money writes it.
+    if (!c) return `${label} ${minor.toLocaleString('en-US')}`.trim();
+    if (c.exponent === 0) return `${label} ${minor.toLocaleString('en-US')}`;
     return `${label} ${(minor / c.minorUnitsPerMajor).toFixed(c.exponent)}`;
   };
 

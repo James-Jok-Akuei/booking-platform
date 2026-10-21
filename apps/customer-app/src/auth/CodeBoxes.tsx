@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { font, theme } from '../theme';
+import { t } from '@lingui/core/macro';
 
 export type CodeState = 'idle' | 'busy' | 'error' | 'ok';
 
@@ -109,7 +110,7 @@ export function CodeBoxes({
           autoFocus
           caretHidden
           editable={open}
-          accessibilityLabel={`${length}-digit code`}
+          accessibilityLabel={t`${length}-digit code`}
         />
       </Pressable>
     </Animated.View>

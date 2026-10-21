@@ -321,6 +321,12 @@ model User {
   /// none due; anyone can take one again from Help or Account.
   toursDue String[] @default([])
 
+  /// The language this person reads the apps, their emails and their notices
+  /// in (§308): "en", "rw" or "fr" (`src/i18n/locales.ts`). Chosen in either
+  /// app and kept here so a message sent while they are away — an email, a
+  /// push — is in their language too. English until they choose.
+  locale String @default("en")
+
   /// The name shown beside this customer's reviews, on the User rather than on
   /// each Review: one source of truth means changing it changes every review at
   /// once, instead of leaving three different names across three reviews.

@@ -24,6 +24,8 @@ import { PressableScale } from '../src/ui/PressableScale';
 import { Sheet } from '../src/ui/Sheet';
 import { RowSkeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 const MARK: Record<string, { icon: IconName; bg: string; fg: string }> = {
   BOOKINGS: { icon: 'calendar', bg: theme.askSoft, fg: theme.ask },
@@ -42,9 +44,14 @@ const TIMES = Array.from({ length: 48 }, (_, i) => i * 30);
 function offersFrom(follows: Follow[]) {
   const on = follows.filter((f) => f.offers).length;
   const all = follows.length;
-  const shops = all === 1 ? 'the shop you follow' : `the ${all} shops you follow`;
-  const said = on === 0 ? `None of ${shops} send you offers` : on === all ? `All of ${shops} send you offers` : `${on} of ${shops} send you offers`;
-  return `${all === 1 ? (on ? 'The shop you follow sends you offers' : 'The shop you follow does not send you offers') : said}. Choose under Saved → Following.`;
+  if (all === 1) {
+    return on
+      ? t`The shop you follow sends you offers. Choose under Saved → Following.`
+      : t`The shop you follow does not send you offers. Choose under Saved → Following.`;
+  }
+  if (on === 0) return t`None of the ${all} shops you follow send you offers. Choose under Saved → Following.`;
+  if (on === all) return t`All of the ${all} shops you follow send you offers. Choose under Saved → Following.`;
+  return t`${on} of the ${all} shops you follow send you offers. Choose under Saved → Following.`;
 }
 
 /**
@@ -92,12 +99,12 @@ export default function NotificationSettingsScreen() {
   if (!signedIn) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Notifications" />
+        <TopBar title={t`Notifications`} />
         <EmptyState
           icon="notifications-outline"
-          title="Sign in to choose"
-          text="What we send you is set on your account."
-          action="Sign in"
+          title={t`Sign in to choose`}
+          text={t`What we send you is set on your account.`}
+          action={t`Sign in`}
           onAction={() => router.push('/sign-in?next=/notification-settings')}
         />
       </View>
@@ -110,7 +117,7 @@ export default function NotificationSettingsScreen() {
 
   return (
     <View style={styles.screen}>
-      <TopBar title="Notifications" />
+      <TopBar title={t`Notifications`} />
       <ScrollView
         contentContainerStyle={[
           styles.body,
@@ -130,12 +137,12 @@ export default function NotificationSettingsScreen() {
 
         {save.error && (
           <Text style={styles.problem}>
-            {save.error instanceof ApiError ? save.error.message : 'That did not save. Check your connection.'}
+            {save.error instanceof ApiError ? save.error.message : t`That did not save. Check your connection.`}
           </Text>
         )}
 
         <FadeIn delay={60}>
-          <Text style={styles.group}>What we send you</Text>
+          <Text style={styles.group}><Trans>What we send you</Trans></Text>
           <View style={styles.card}>
             {settings.isLoading && <RowSkeleton />}
             {s?.categories.map((row, i) => (
@@ -149,7 +156,7 @@ export default function NotificationSettingsScreen() {
                     onPress={() => router.push('/saved')}
                     style={styles.follows}
                     accessibilityRole="link"
-                    accessibilityLabel="Choose which shops send you offers, under Saved, Following"
+                    accessibilityLabel={t`Choose which shops send you offers, under Saved, Following`}
                   >
                     <Icon name="heart" size={16} color={theme.accent} />
                     <Text style={styles.followsText}>{offersFrom(follows.data!.follows)}</Text>
@@ -163,21 +170,23 @@ export default function NotificationSettingsScreen() {
 
         {s && (
           <FadeIn delay={120}>
-            <Text style={styles.group}>Quiet hours</Text>
+            <Text style={styles.group}><Trans>Quiet hours</Trans></Text>
             <View style={[styles.card, styles.quiet]}>
               <View style={styles.quietHead}>
                 <View style={styles.moon}>
                   <Icon name="moon" size={18} color="#FFFFFF" />
                 </View>
                 <View style={styles.flex}>
-                  <Text style={styles.rowTitle}>Hold alerts that can wait</Text>
+                  <Text style={styles.rowTitle}><Trans>Hold alerts that can wait</Trans></Text>
                   <Text style={type.small}>
-                    Reviews, offers and news arrive after. Bookings, reminders and messages still come straight away.
+                    <Trans>
+                      Reviews, offers and news arrive after. Bookings, reminders and messages still come straight away.
+                    </Trans>
                   </Text>
                 </View>
                 <AppSwitch
                   value={s.quietHours.on}
-                  accessibilityLabel="Quiet hours"
+                  accessibilityLabel={t`Quiet hours`}
                   onValueChange={(on) => save.mutate({ quietHours: { ...s.quietHours, on } })}
                 />
               </View>
@@ -189,9 +198,9 @@ export default function NotificationSettingsScreen() {
                       onPress={() => setPicking(which)}
                       style={styles.time}
                       accessibilityRole="button"
-                      accessibilityLabel={`${which === 'from' ? 'From' : 'Until'} ${clock(s.quietHours[which])}`}
+                      accessibilityLabel={`${which === 'from' ? t`From` : t`Until`} ${clock(s.quietHours[which])}`}
                     >
-                      <Text style={styles.timeLabel}>{which === 'from' ? 'From' : 'Until'}</Text>
+                      <Text style={styles.timeLabel}>{which === 'from' ? t`From` : t`Until`}</Text>
                       <Text style={styles.timeValue}>{clock(s.quietHours[which])}</Text>
                     </PressableScale>
                   </View>
@@ -202,14 +211,16 @@ export default function NotificationSettingsScreen() {
         )}
 
         <Text style={styles.foot}>
-          Weekly offers near you by email are under Account → Offers. Every email we send also has a link to stop emails
-          like it.
+          <Trans>
+            Weekly offers near you by email are under Account → Offers. Every email we send also has a link to stop emails
+            like it.
+          </Trans>
         </Text>
       </ScrollView>
 
       <Sheet
         open={picking !== null}
-        title={picking === 'from' ? 'Quiet from' : 'Quiet until'}
+        title={picking === 'from' ? t`Quiet from` : t`Quiet until`}
         onClose={() => setPicking(null)}
       >
         <ScrollView style={styles.sheetList} contentContainerStyle={styles.sheetBody}>
@@ -270,7 +281,7 @@ function KindRow({
   const channel = (which: 'PUSH' | 'EMAIL') => {
     const c = which === 'PUSH' ? row.push : row.email;
     if (!c) return null;
-    const label = which === 'PUSH' ? 'Alert' : 'Email';
+    const label = which === 'PUSH' ? t`Alert` : t`Email`;
     return (
       <View style={styles.chan}>
         <Icon name={which === 'PUSH' ? 'notifications-outline' : 'mail-outline'} size={15} color={theme.ink2} />
@@ -282,7 +293,7 @@ function KindRow({
         ) : (
           <AppSwitch
             value={c.on}
-            accessibilityLabel={`${row.title} by ${label.toLowerCase()}`}
+            accessibilityLabel={t`${row.title} by ${label.toLowerCase()}`}
             style={styles.switch}
             onValueChange={(on) => onChoose(row.category, which, on)}
           />
@@ -300,9 +311,9 @@ function KindRow({
           <Text style={styles.rowTitle}>{row.title}</Text>
           <Text style={type.small}>{row.hint}</Text>
           {row.email?.locked && <Text style={styles.locked}>{row.email.locked}</Text>}
-          {row.needsYes && <Text style={styles.consent}>Turning these on means: “{wording}”</Text>}
+          {row.needsYes && <Text style={styles.consent}><Trans>Turning these on means: “{wording}”</Trans></Text>}
           {row.push?.on && !pushOn && Platform.OS !== 'web' && (
-            <Text style={styles.hintOff}>Alerts are off on this phone — turn them on above.</Text>
+            <Text style={styles.hintOff}><Trans>Alerts are off on this phone — turn them on above.</Trans></Text>
           )}
         </View>
       </View>
@@ -317,18 +328,18 @@ function KindRow({
 /** Alerts on this phone: on, not yet asked, or turned off in the phone's settings. */
 function PhoneAlerts({ state, onTurnOn }: { state: PushState | null; onTurnOn: () => void }) {
   const words: Record<PushState, { title: string; line: string }> = {
-    on: { title: 'Alerts are on', line: 'Bookings, reminders and messages reach you even when the app is closed.' },
+    on: { title: t`Alerts are on`, line: t`Bookings, reminders and messages reach you even when the app is closed.` },
     undecided: {
-      title: 'Turn on alerts',
-      line: 'Hear the moment a booking is confirmed, and get a reminder before it. You choose what below.',
+      title: t`Turn on alerts`,
+      line: t`Hear the moment a booking is confirmed, and get a reminder before it. You choose what below.`,
     },
     denied: {
-      title: 'Alerts are off for this app',
-      line: 'They were turned off in your phone’s settings. Turn them on there, then come back.',
+      title: t`Alerts are off for this app`,
+      line: t`They were turned off in your phone’s settings. Turn them on there, then come back.`,
     },
     unavailable: {
-      title: 'Alerts come on your phone',
-      line: 'Open the app on your phone to turn alerts on. Here, everything is in your notifications.',
+      title: t`Alerts come on your phone`,
+      line: t`Open the app on your phone to turn alerts on. Here, everything is in your notifications.`,
     },
   };
   const now = state ?? 'undecided';
@@ -346,7 +357,7 @@ function PhoneAlerts({ state, onTurnOn }: { state: PushState | null; onTurnOn: (
       {now === 'undecided' && (
         <PressableScale onPress={onTurnOn} haptic style={styles.heroBtn} accessibilityRole="button">
           <Icon name="notifications" size={17} color="#FFFFFF" />
-          <Text style={styles.heroBtnText}>Turn on alerts</Text>
+          <Text style={styles.heroBtnText}><Trans>Turn on alerts</Trans></Text>
         </PressableScale>
       )}
       {now === 'denied' && (
@@ -357,7 +368,7 @@ function PhoneAlerts({ state, onTurnOn }: { state: PushState | null; onTurnOn: (
           accessibilityRole="button"
         >
           <Icon name="settings-outline" size={17} color={theme.ink} />
-          <Text style={[styles.heroBtnText, { color: theme.ink }]}>Open the phone’s settings</Text>
+          <Text style={[styles.heroBtnText, { color: theme.ink }]}><Trans>Open the phone’s settings</Trans></Text>
         </PressableScale>
       )}
     </View>
@@ -414,9 +425,11 @@ const styles = StyleSheet.create({
   rowTitle: { fontFamily: font.bold, fontSize: 15.5, color: theme.ink, marginBottom: 2 },
   consent: { fontFamily: font.semibold, fontSize: 12.5, lineHeight: 18, color: theme.accentDeep, marginTop: 4 },
   hintOff: { fontFamily: font.semibold, fontSize: 12.5, color: theme.warn, marginTop: 4 },
-  chans: { flexDirection: 'row', gap: 10, marginLeft: 50, maxWidth: 520 },
+  // Long words (§308): a second switch goes under the first rather than off the screen.
+  chans: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginLeft: 50, maxWidth: 520 },
   chan: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 140,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,

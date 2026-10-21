@@ -6,6 +6,7 @@ import { theme } from '../theme';
 import { EmptyState } from '../ui/EmptyState';
 import type { IconName } from '../ui/Icon';
 import { TopBar } from '../ui/TopBar';
+import { t } from '@lingui/core/macro';
 
 type Wall = { title: string; text: string; icon: IconName };
 
@@ -38,7 +39,7 @@ export function requireSignIn<P extends object>(Screen: ComponentType<P>, wall: 
           icon={wall.icon}
           title={wall.title}
           text={wall.text}
-          action="Sign in"
+          action={t`Sign in`}
           onAction={() => router.push(`/sign-in?next=${encodeURIComponent(here)}`)}
         />
       </View>

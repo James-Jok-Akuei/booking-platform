@@ -5,6 +5,9 @@ import { font, radius, shadow, theme, type } from '../theme';
 import { thump } from '../ui/haptic';
 import { Icon, type IconName } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../i18n/format';
 
 export type Look = { icon: IconName; fg: string; bg: string; label: string };
 
@@ -16,30 +19,150 @@ export type Look = { icon: IconName; fg: string; bg: string; label: string };
  * still be readable.
  */
 export const LOOKS: Partial<Record<Notification['type'], Look>> = {
-  DEPOSIT_CONFIRMED: { icon: 'checkmark-circle', fg: theme.ok, bg: theme.okSoft, label: 'Confirmed' },
-  APPOINTMENT_BOOKED: { icon: 'calendar', fg: theme.ok, bg: theme.okSoft, label: 'Booked' },
-  APPOINTMENT_REMINDER: { icon: 'alarm', fg: theme.accent, bg: theme.accentSoft, label: 'Reminder' },
-  APPOINTMENT_CANCELLED: { icon: 'close-circle', fg: theme.danger, bg: theme.dangerSoft, label: 'Cancelled' },
-  APPOINTMENT_NO_SHOW: { icon: 'alert-circle', fg: theme.danger, bg: theme.dangerSoft, label: 'Missed' },
-  DEPOSIT_FAILED: { icon: 'card', fg: theme.danger, bg: theme.dangerSoft, label: 'Payment' },
-  APPOINTMENT_MANUALLY_VERIFIED: { icon: 'shield-checkmark', fg: theme.ok, bg: theme.okSoft, label: 'Verified' },
-  NEW_MESSAGE: { icon: 'chatbubble-ellipses', fg: theme.accent, bg: theme.accentSoft, label: 'Message' },
-  TICKET_MESSAGE: { icon: 'help-buoy', fg: theme.accent, bg: theme.accentSoft, label: 'Support' },
-  TICKET_STATUS_CHANGED: { icon: 'help-buoy', fg: theme.ink2, bg: theme.sunken, label: 'Support' },
-  REVIEW_RESPONSE: { icon: 'star', fg: theme.warn, bg: theme.warnSoft, label: 'Review' },
-  REVIEW_HIDDEN: { icon: 'eye-off', fg: theme.warn, bg: theme.warnSoft, label: 'Review' },
-  DISPLAY_NAME_CLEARED: { icon: 'eye-off', fg: theme.warn, bg: theme.warnSoft, label: 'Account' },
+  DEPOSIT_CONFIRMED: {
+    icon: 'checkmark-circle',
+    fg: theme.ok,
+    bg: theme.okSoft,
+
+    get label() { return t`Confirmed`; },
+  },
+  APPOINTMENT_BOOKED: {
+    icon: 'calendar',
+    fg: theme.ok,
+    bg: theme.okSoft,
+
+    get label() { return t`Booked`; },
+  },
+  APPOINTMENT_REMINDER: {
+    icon: 'alarm',
+    fg: theme.accent,
+    bg: theme.accentSoft,
+
+    get label() { return t`Reminder`; },
+  },
+  APPOINTMENT_CANCELLED: {
+    icon: 'close-circle',
+    fg: theme.danger,
+    bg: theme.dangerSoft,
+
+    get label() { return t`Cancelled`; },
+  },
+  APPOINTMENT_NO_SHOW: {
+    icon: 'alert-circle',
+    fg: theme.danger,
+    bg: theme.dangerSoft,
+
+    get label() { return t`Missed`; },
+  },
+  DEPOSIT_FAILED: {
+    icon: 'card',
+    fg: theme.danger,
+    bg: theme.dangerSoft,
+
+    get label() { return t`Payment`; },
+  },
+  APPOINTMENT_MANUALLY_VERIFIED: {
+    icon: 'shield-checkmark',
+    fg: theme.ok,
+    bg: theme.okSoft,
+
+    get label() { return t`Verified`; },
+  },
+  NEW_MESSAGE: {
+    icon: 'chatbubble-ellipses',
+    fg: theme.accent,
+    bg: theme.accentSoft,
+
+    get label() { return t`Message`; },
+  },
+  TICKET_MESSAGE: {
+    icon: 'help-buoy',
+    fg: theme.accent,
+    bg: theme.accentSoft,
+
+    get label() { return t`Support`; },
+  },
+  TICKET_STATUS_CHANGED: {
+    icon: 'help-buoy',
+    fg: theme.ink2,
+    bg: theme.sunken,
+
+    get label() { return t`Support`; },
+  },
+  REVIEW_RESPONSE: {
+    icon: 'star',
+    fg: theme.warn,
+    bg: theme.warnSoft,
+
+    get label() { return t`Review`; },
+  },
+  REVIEW_HIDDEN: {
+    icon: 'eye-off',
+    fg: theme.warn,
+    bg: theme.warnSoft,
+
+    get label() { return t`Review`; },
+  },
+  DISPLAY_NAME_CLEARED: {
+    icon: 'eye-off',
+    fg: theme.warn,
+    bg: theme.warnSoft,
+
+    get label() { return t`Account`; },
+  },
   // §287
-  APPOINTMENT_COMPLETED: { icon: 'star', fg: theme.warn, bg: theme.warnSoft, label: 'How was it?' },
-  SHOP_MESSAGE: { icon: 'storefront', fg: theme.ok, bg: theme.okSoft, label: 'Offer' },
-  SHOP_DISCOUNT: { icon: 'pricetag', fg: theme.accentDeep, bg: theme.accentSoft, label: 'Discount' },
-  ANNOUNCEMENT: { icon: 'megaphone', fg: theme.ink, bg: theme.sunken, label: 'From our team' },
+  APPOINTMENT_COMPLETED: {
+    icon: 'star',
+    fg: theme.warn,
+    bg: theme.warnSoft,
+
+    get label() { return t`How was it?`; },
+  },
+  SHOP_MESSAGE: {
+    icon: 'storefront',
+    fg: theme.ok,
+    bg: theme.okSoft,
+
+    get label() { return t`Offer`; },
+  },
+  SHOP_DISCOUNT: {
+    icon: 'pricetag',
+    fg: theme.accentDeep,
+    bg: theme.accentSoft,
+
+    get label() { return t`Discount`; },
+  },
+  ANNOUNCEMENT: {
+    icon: 'megaphone',
+    fg: theme.ink,
+    bg: theme.sunken,
+
+    get label() { return t`From our team`; },
+  },
   // Support acted for them (§297): checked in, cancelled, signed out.
-  SUPPORT_UPDATE: { icon: 'help-buoy', fg: theme.accent, bg: theme.accentSoft, label: 'Support' },
+  SUPPORT_UPDATE: {
+    icon: 'help-buoy',
+    fg: theme.accent,
+    bg: theme.accentSoft,
+
+    get label() { return t`Support`; },
+  },
   // A phone or browser not seen before signed in (§298).
-  NEW_SIGN_IN: { icon: 'shield-checkmark', fg: theme.warn, bg: theme.warnSoft, label: 'Sign-in' },
+  NEW_SIGN_IN: {
+    icon: 'shield-checkmark',
+    fg: theme.warn,
+    bg: theme.warnSoft,
+
+    get label() { return t`Sign-in`; },
+  },
 };
-export const FALLBACK: Look = { icon: 'notifications', fg: theme.accent, bg: theme.accentSoft, label: 'News' };
+export const FALLBACK: Look = {
+  icon: 'notifications',
+  fg: theme.accent,
+  bg: theme.accentSoft,
+
+  get label() { return t`News`; },
+};
 
 /** The kinds that want something done, not just read (§159). */
 export const NEEDS_ATTENTION: ReadonlySet<Notification['type']> = new Set([
@@ -52,16 +175,16 @@ export const NEEDS_ATTENTION: ReadonlySet<Notification['type']> = new Set([
 
 export const ago = (iso: string) => {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutes < 1) return 'now';
-  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 1) return t`now`;
+  if (minutes < 60) return t`${minutes} min`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} h`;
+  if (hours < 24) return t`${hours} h`;
   // Calendar days, not 24-hour blocks: a card under "Yesterday" must say
   // "1 d", not "2 d" because it was sent early that morning.
   const start = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const days = Math.round((start(new Date()) - start(new Date(iso))) / 86_400_000);
-  if (days < 7) return `${days} d`;
-  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  if (days < 7) return t`${days} d`;
+  return new Date(iso).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
 };
 
 const REMOVE_AT = 96;
@@ -106,6 +229,8 @@ export function NotificationCard({
   selected: boolean;
 }) {
   const look = LOOKS[item.type] ?? FALLBACK;
+  const label = look.label;
+  const subject = item.subject;
   const unread = item.readAt === null;
   const x = useRef(new Animated.Value(0)).current;
   const gone = useRef(false);
@@ -142,7 +267,7 @@ export function NotificationCard({
         <Animated.View style={{ transform: [{ scale: reveal }] }}>
           <Icon name="trash" size={20} color="#FFFFFF" />
         </Animated.View>
-        <Text style={styles.behindText}>Remove</Text>
+        <Text style={styles.behindText}><Trans>Remove</Trans></Text>
       </Animated.View>
 
       <Animated.View style={{ transform: [{ translateX: x }] }} {...pan.panHandlers}>
@@ -153,8 +278,8 @@ export function NotificationCard({
           delayLongPress={320}
           accessibilityRole="button"
           accessibilityState={selecting ? { selected } : undefined}
-          accessibilityLabel={`${unread ? 'Unread. ' : ''}${look.label}: ${item.subject}`}
-          accessibilityHint="Opens it. Swipe left to remove."
+          accessibilityLabel={unread ? t`Unread. ${label}: ${subject}` : t`${label}: ${subject}`}
+          accessibilityHint={t`Opens it. Swipe left to remove.`}
           style={[
             styles.card,
             !unread && styles.cardRead,
@@ -182,7 +307,7 @@ export function NotificationCard({
               <View style={styles.whenRow}>
                 {unread && (
                   <View style={styles.newPill}>
-                    <Text style={styles.newText}>New</Text>
+                    <Text style={styles.newText}><Trans>New</Trans></Text>
                   </View>
                 )}
                 <Text style={[styles.when, unread && styles.whenUnread]}>{ago(item.createdAt)}</Text>

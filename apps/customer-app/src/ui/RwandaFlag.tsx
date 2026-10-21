@@ -1,5 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
+import { t } from '@lingui/core/macro';
+
 /**
  * The flag of Rwanda, drawn (§147).
  *
@@ -15,7 +17,7 @@ export function RwandaFlag({ width = 18 }: { width?: number }) {
   return (
     <View
       style={[styles.flag, { width, height, borderRadius: Math.max(2, width / 9) }]}
-      accessibilityLabel="Rwanda"
+      accessibilityLabel={t`Rwanda`}
     >
       <View style={[styles.blue, { height: height / 2 }]}>
         <View

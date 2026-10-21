@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { radius, theme, type } from '../theme';
 import { IconButton } from './IconButton';
+import { t } from '@lingui/core/macro';
 
 /**
  * A panel that rises from the bottom of the screen (§133).
@@ -59,7 +60,7 @@ export function Sheet({
   return (
     <Modal visible={open} transparent animationType="none" onRequestClose={close} statusBarTranslucent>
       <Animated.View style={[styles.backdrop, { opacity: progress }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel="Close" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel={t`Close`} />
       </Animated.View>
       {/* The sheet rises with the keyboard (§166), so a field in it is never
           typed into blind. */}
@@ -83,7 +84,7 @@ export function Sheet({
         <View style={styles.grabber} />
         <View style={styles.head}>
           <Text style={type.heading}>{title}</Text>
-          <IconButton icon="close" label="Close" onPress={close} size={36} flat />
+          <IconButton icon="close" label={t`Close`} onPress={close} size={36} flat />
         </View>
         {children}
       </Animated.View>

@@ -17,6 +17,8 @@ import { PhotoViewer, type ViewerPhoto } from '../../src/ui/PhotoViewer';
 import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 const GAP = 8;
 
@@ -101,7 +103,7 @@ export default function Gallery() {
   const groups = useMemo(() => {
     if (!s) return [];
     const list: Array<{ id: string; label: string; count: number }> = [];
-    if (s.gallery.length > 0) list.push({ id: 'place', label: 'The place', count: s.gallery.length });
+    if (s.gallery.length > 0) list.push({ id: 'place', label: t`The place`, count: s.gallery.length });
     for (const service of s.services) {
       if (service.images.length > 0) {
         list.push({ id: service.id, label: service.name, count: service.images.length });
@@ -134,7 +136,7 @@ export default function Gallery() {
   if (shop.isLoading) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Photos" />
+        <TopBar title={t`Photos`} />
         <View style={[styles.content, { paddingHorizontal: layout.gutter }]}>
           <Skeleton height={260} round={radius.xl} />
           <View style={styles.wall}>
@@ -154,8 +156,8 @@ export default function Gallery() {
   if (!s) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Photos" />
-        <EmptyState icon="images-outline" title="This place is not available right now." />
+        <TopBar title={t`Photos`} />
+        <EmptyState icon="images-outline" title={t`This place is not available right now.`} />
       </View>
     );
   }
@@ -165,7 +167,7 @@ export default function Gallery() {
   return (
     <View style={styles.screen}>
       <TopBar
-        title="Photos"
+        title={t`Photos`}
         subtitle={`${shopName} · ${all.length} ${all.length === 1 ? 'photo' : 'photos'}`}
       />
 
@@ -179,8 +181,8 @@ export default function Gallery() {
         {all.length === 0 && (
           <EmptyState
             icon="images-outline"
-            title="No photos yet."
-            text="This place has not added any pictures. Its services may still be worth a look."
+            title={t`No photos yet.`}
+            text={t`This place has not added any pictures. Its services may still be worth a look.`}
           />
         )}
 
@@ -193,7 +195,7 @@ export default function Gallery() {
               style={{ marginHorizontal: -layout.gutter }}
               contentContainerStyle={[styles.chips, { paddingHorizontal: layout.gutter }]}
             >
-              <Chip label={`All · ${all.length}`} tone="accent" active={group === 'all'} onPress={() => setGroup('all')} />
+              <Chip label={t`All · ${all.length}`} tone="accent" active={group === 'all'} onPress={() => setGroup('all')} />
               {groups.map((g) => (
                 <Chip
                   key={g.id}
@@ -213,7 +215,7 @@ export default function Gallery() {
             <PressableScale
               scaleTo={0.985}
               accessibilityRole="imagebutton"
-              accessibilityLabel={`${lead.label ?? 'Photo'}, 1 of ${shown.length}`}
+              accessibilityLabel={t`${lead.label ?? 'Photo'}, 1 of ${shown.length}`}
               onPress={() => setOpen(0)}
             >
               <Image
@@ -264,7 +266,7 @@ export default function Gallery() {
                       scaleTo={0.96}
                       haptic
                       accessibilityRole="imagebutton"
-                      accessibilityLabel={`${shot.label ?? 'Photo'}, ${index + 1} of ${shown.length}`}
+                      accessibilityLabel={t`${shot.label ?? 'Photo'}, ${index + 1} of ${shown.length}`}
                       onPress={() => setOpen(index)}
                     >
                       <Image source={{ uri: shot.url }} style={[styles.tile, { height }]} />
@@ -293,7 +295,7 @@ export default function Gallery() {
               style={styles.footButton}
             >
               <Icon name="calendar-outline" size={17} color="#FFFFFF" />
-              <Text style={styles.footText}>Back to {shopName} to book</Text>
+              <Text style={styles.footText}><Trans>Back to {shopName} to book</Trans></Text>
             </PressableScale>
           </FadeIn>
         )}

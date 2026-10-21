@@ -3,12 +3,14 @@ import { useRouter } from 'expo-router';
 import { useSignedIn } from './api/client';
 import { followShop, listFollows, setFollowOffers, unfollowShop, type Follow } from './api/notifications';
 import { showDialog } from './ui/Dialog';
+import { t } from '@lingui/core/macro';
 
-/** "Kigali Barbers'", "Amani's" — a name already ending in s takes the mark alone. */
-export const whose = (name: string) => (/s$/i.test(name.trim()) ? `${name.trim()}'` : `${name.trim()}'s`);
-
-/** The words a yes to a shop's offers agrees to, kept with it (§287). Said the same way by the server. */
-export const followWords = (shop: string) => `Yes, send me ${whose(shop)} offers. I can stop at any time.`;
+/**
+ * The words a yes to a shop's offers agrees to, kept with it (§287). Said the
+ * same way by the server. "Offers from {shop}" rather than "{shop}'s offers":
+ * a possessive built in English code cannot be translated (§308).
+ */
+export const followWords = (shop: string) => t`Yes, send me offers from ${shop}. I can stop at any time.`;
 
 /** Everything this customer follows — one list, shared by every screen that asks. */
 export function useFollows() {
@@ -22,7 +24,7 @@ export function useFollows() {
  * Its offers as notifications are a separate yes, asked in plain words the
  * moment someone follows. Signed out, a tap goes to sign in first.
  */
-export function useFollow(businessId: string | undefined, shopName = 'this shop') {
+export function useFollow(businessId: string | undefined, shopName = t`this shop`) {
   const signedIn = useSignedIn();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -56,22 +58,22 @@ export function useFollow(businessId: string | undefined, shopName = 'this shop'
       // Why it is worth it, said before the choice — following is only kept
       // if it gives something back (§288).
       showDialog({
-        title: `Follow ${shopName}?`,
-        message: 'You will not miss a thing from them:',
+        title: t`Follow ${shopName}?`,
+        message: t`You will not miss a thing from them:`,
         points: [
-          { icon: 'pricetag', text: 'Its discounts as they start' },
-          { icon: 'sparkles', text: 'New services as they are added' },
-          { icon: 'home', text: 'A row of its services on Home' },
-          { icon: 'aperture', text: 'Its stories first' },
-          { icon: 'heart', text: 'All of it in Saved → Following' },
+          { icon: 'pricetag', text: t`Its discounts as they start` },
+          { icon: 'sparkles', text: t`New services as they are added` },
+          { icon: 'home', text: t`A row of its services on Home` },
+          { icon: 'aperture', text: t`Its stories first` },
+          { icon: 'heart', text: t`All of it in Saved → Following` },
         ],
-        note: `Offers as alerts or emails are a separate yes, one a week at most: “${followWords(shopName)}”`,
+        note: t`Offers as alerts or emails are a separate yes, one a week at most: “${followWords(shopName)}”`,
         tone: 'accent',
         icon: 'heart',
         actions: [
-          { label: 'Follow, and send me offers', role: 'primary', onPress: () => follow.mutate(true) },
-          { label: 'Just follow', role: 'secondary', onPress: () => follow.mutate(false) },
-          { label: 'Not now', role: 'cancel' },
+          { label: t`Follow, and send me offers`, role: 'primary', onPress: () => follow.mutate(true) },
+          { label: t`Just follow`, role: 'secondary', onPress: () => follow.mutate(false) },
+          { label: t`Not now`, role: 'cancel' },
         ],
       });
     },

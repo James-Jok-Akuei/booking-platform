@@ -15,11 +15,14 @@ import { font, radius, theme } from '../theme';
  */
 const LOGO = require('../../assets/mtn-logo.jpg');
 
+/** The service's own name, the same in every language (§308). */
+export const MOMO_NAME = 'MTN Mobile Money';
+
 export function MomoLogo({ size = 40 }: { size?: number }) {
   return (
     <Image
       source={LOGO}
-      accessibilityLabel="MTN Mobile Money"
+      accessibilityLabel={MOMO_NAME}
       style={{ width: size, height: size, borderRadius: size * 0.26 }}
     />
   );
@@ -37,7 +40,7 @@ export function MomoBanner({ note }: { note?: string }) {
     <View style={styles.banner}>
       <MomoLogo size={46} />
       <View style={styles.text}>
-        <Text style={styles.name}>MTN Mobile Money</Text>
+        <Text style={styles.name}>{MOMO_NAME}</Text>
         {note && <Text style={styles.note}>{note}</Text>}
       </View>
     </View>

@@ -15,6 +15,7 @@ import Svg, { Defs, G, Path, RadialGradient, Rect, Stop } from 'react-native-svg
 import { font, theme } from '../theme';
 import { tick } from './haptic';
 import { leaveWebIntro } from './webIntro';
+import { Trans } from '@lingui/react/macro';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -405,8 +406,7 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onGone }: IntroProps) {
                   transform: [{ translateY: from(v.name, 14) }],
                 },
               ]}
-            >
-              Bwangu<Text style={styles.orange}>Reservations</Text>
+            ><Trans>Bwangu<Text style={styles.orange}>Reservations</Text></Trans>
             </Animated.Text>
             <Animated.Text
               style={[
@@ -419,7 +419,9 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onGone }: IntroProps) {
                 },
               ]}
             >
-              Book your next appointment, easily.
+              <Trans>
+                Book your next appointment, easily.
+              </Trans>
             </Animated.Text>
           </Animated.View>
         )}

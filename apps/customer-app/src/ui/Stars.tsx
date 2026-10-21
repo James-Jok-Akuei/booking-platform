@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { font, theme } from '../theme';
 import { Icon } from './Icon';
+import { t } from '@lingui/core/macro';
 
 /** Five stars, filled to the score. Drawn as icons so they line up with text. */
 export function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
-    <View style={styles.row} accessibilityLabel={`${rating} out of 5`}>
+    <View style={styles.row} accessibilityLabel={t`${rating} out of 5`}>
       {[1, 2, 3, 4, 5].map((value) => (
         <Icon
           key={value}

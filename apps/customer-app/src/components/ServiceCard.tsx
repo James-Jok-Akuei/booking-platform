@@ -9,6 +9,8 @@ import { SaleBadge } from './Sale';
 import { SaleEndsChip } from './SaleCountdown';
 import { distanceLabel } from '../distance';
 import { duration } from '../duration';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /**
  * One service, small (§135.3).
@@ -60,7 +62,7 @@ export function ServiceCard({
       onPress={onPress}
       scaleTo={0.96}
       accessibilityRole="button"
-      accessibilityLabel={`${service.name} at ${service.business.name ?? service.location.name}, ${price}${sale ? `, ${sale.percent} percent off` : ''}`}
+      accessibilityLabel={t`${service.name} at ${service.business.name ?? service.location.name}, ${price}${sale ? `, ${sale.percent} percent off` : ''}`}
       style={[styles.card, { width }]}
       // The heart (§158), only for a signed-in reader — `saved` is absent
       // otherwise, and the button draws nothing for undefined. On top of the
@@ -161,7 +163,7 @@ export function ServiceCard({
           {service.bookingCount > 0 && (
             <View style={styles.meta}>
               <Icon name="flame" size={11} color={theme.accent} />
-              <Text style={styles.booked}>{service.bookingCount} booked</Text>
+              <Text style={styles.booked}><Trans>{service.bookingCount} booked</Trans></Text>
             </View>
           )}
         </View>

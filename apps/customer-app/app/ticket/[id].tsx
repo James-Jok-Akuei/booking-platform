@@ -23,9 +23,12 @@ import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
 import { showProblem } from '../../src/ui/Dialog';
+import { Trans } from '@lingui/react/macro';
+import { dateLocale } from '../../src/i18n/format';
+import { t } from '@lingui/core/macro';
 
 const when = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' });
 
 /**
  * One support request, as a conversation (§137).
@@ -59,13 +62,13 @@ function TicketScreen() {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
     },
     onError: (error) =>
-      showProblem('Not sent', error),
+      showProblem(t`Not sent`, error),
   });
 
   if (ticket.isLoading) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Your request" />
+        <TopBar title={t`Your request`} />
         <View style={styles.list}>
           <Skeleton height={70} round={radius.lg} />
           <Skeleton height={90} round={radius.lg} />
@@ -76,15 +79,15 @@ function TicketScreen() {
   if (!ticket.data) {
     return (
       <View style={styles.screen}>
-        <TopBar title="Your request" />
-        <EmptyState icon="help-buoy-outline" title="That request could not be found." />
+        <TopBar title={t`Your request`} />
+        <EmptyState icon="help-buoy-outline" title={t`That request could not be found.`} />
       </View>
     );
   }
 
-  const t = ticket.data;
-  const status = TICKET_STATUS[t.status];
-  const open = t.status !== 'CLOSED';
+  const asked = ticket.data;
+  const status = TICKET_STATUS[asked.status];
+  const open = asked.status !== 'CLOSED';
   const canSend = text.trim().length > 0 && !send.isPending;
 
   return (
@@ -96,7 +99,7 @@ function TicketScreen() {
       // the composer sat under the keyboard.
       behavior="padding"
     >
-      <TopBar title={t.reference} subtitle={status.label} />
+      <TopBar title={asked.reference} subtitle={status.label} />
       <ScrollView
         style={styles.flex}
         showsVerticalScrollIndicator={false}
@@ -104,16 +107,16 @@ function TicketScreen() {
         contentContainerStyle={[styles.list, { width: layout.contentWidth, alignSelf: 'center' }]}
       >
         <View style={styles.head}>
-          <Text style={[type.subheading, styles.flex]}>{t.subject}</Text>
+          <Text style={[type.subheading, styles.flex]}>{asked.subject}</Text>
           <Pill label={status.label} tone={status.tone} />
         </View>
 
-        {t.messages.map((message) => {
+        {asked.messages.map((message) => {
           const mine = message.authorType === 'REPORTER';
           return (
             <View key={message.id} style={[styles.bubbleRow, mine && styles.bubbleRowMine]}>
               <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
-                {!mine && <Text style={styles.who}>Support</Text>}
+                {!mine && <Text style={styles.who}><Trans>Support</Trans></Text>}
                 <Text style={[styles.body, mine && styles.bodyMine]}>{message.body}</Text>
                 <Text style={[styles.time, mine && styles.timeMine]}>{when(message.createdAt)}</Text>
               </View>
@@ -123,19 +126,21 @@ function TicketScreen() {
 
         {/* Before anyone has answered, say that someone will — an empty left
             side reads as "nobody is there". */}
-        {t.messages.every((m) => m.authorType === 'REPORTER') && open && (
+        {asked.messages.every((m) => m.authorType === 'REPORTER') && open && (
           <View style={styles.waiting}>
             <Icon name="time-outline" size={16} color={theme.ink2} />
             <Text style={[type.small, styles.flex]}>
-              We have your message. A reply will appear here, and you can add more below.
+              <Trans>
+                We have your message. A reply will appear here, and you can add more below.
+              </Trans>
             </Text>
           </View>
         )}
 
-        {t.resolutionNote && (
+        {asked.resolutionNote && (
           <View style={styles.resolved}>
             <Icon name="checkmark-circle" size={18} color={theme.ok} />
-            <Text style={[type.body, styles.flex]}>{t.resolutionNote}</Text>
+            <Text style={[type.body, styles.flex]}>{asked.resolutionNote}</Text>
           </View>
         )}
       </ScrollView>
@@ -146,7 +151,7 @@ function TicketScreen() {
             style={styles.input}
             value={text}
             onChangeText={setText}
-            placeholder="Add a message"
+            placeholder={t`Add a message`}
             placeholderTextColor={theme.muted}
             multiline
             maxLength={5000}
@@ -156,7 +161,7 @@ function TicketScreen() {
             scaleTo={0.9}
             disabled={!canSend}
             accessibilityRole="button"
-            accessibilityLabel="Send"
+            accessibilityLabel={t`Send`}
             onPress={() => send.mutate()}
             style={[styles.send, !canSend && styles.sendOff]}
           >
@@ -169,7 +174,7 @@ function TicketScreen() {
         </View>
       ) : (
         <View style={[styles.closed, { paddingBottom: insets.bottom + 14 }]}>
-          <Text style={type.small}>This request is closed.</Text>
+          <Text style={type.small}><Trans>This request is closed.</Trans></Text>
         </View>
       )}
     </KeyboardAvoidingView>
@@ -254,6 +259,7 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(TicketScreen, {
   icon: 'help-buoy-outline',
-  title: 'Sign in to see this request',
-  text: 'Help requests are kept with your account, so only you can open them.',
+
+  get title() { return t`Sign in to see this request`; },
+  get text() { return t`Help requests are kept with your account, so only you can open them.`; },
 });

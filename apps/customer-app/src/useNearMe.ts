@@ -3,6 +3,7 @@ import { AppState, Linking, type NativeEventSubscription } from 'react-native';
 import * as Location from 'expo-location';
 import { deviceStore } from './api/client';
 import { confirmDialog } from './ui/Dialog';
+import { t } from '@lingui/core/macro';
 
 export type NearMeState =
   | { status: 'off' }
@@ -220,11 +221,11 @@ const enable = async (options?: { explain?: boolean }): Promise<boolean> => {
         const go = await confirmDialog({
           tone: 'info',
           icon: 'location',
-          title: 'Location is off',
+          title: t`Location is off`,
           message:
-            'Your phone has location turned off for this app. Turn it on in Settings to see the nearest places first. Everything else works without it.',
-          confirm: 'Open Settings',
-          cancel: 'Not now',
+            t`Your phone has location turned off for this app. Turn it on in Settings to see the nearest places first. Everything else works without it.`,
+          confirm: t`Open Settings`,
+          cancel: t`Not now`,
         });
         if (go) openSettings();
         return false;
@@ -232,11 +233,11 @@ const enable = async (options?: { explain?: boolean }): Promise<boolean> => {
       const yes = await confirmDialog({
         tone: 'accent',
         icon: 'navigate',
-        title: 'See what is near you?',
+        title: t`See what is near you?`,
         message:
-          'We use where your phone is right now to put the nearest places first and show how far each one is. Only while the app is open, and never saved.',
-        confirm: 'Use my location',
-        cancel: 'Not now',
+          t`We use where your phone is right now to put the nearest places first and show how far each one is. Only while the app is open, and never saved.`,
+        confirm: t`Use my location`,
+        cancel: t`Not now`,
       });
       if (!yes) return false;
     }

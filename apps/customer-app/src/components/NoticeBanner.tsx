@@ -9,6 +9,7 @@ import { font, radius, theme } from '../theme';
 import { FadeIn } from '../ui/FadeIn';
 import { Icon } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
+import { t } from '@lingui/core/macro';
 
 const KEY = 'booking.bannersClosed';
 
@@ -53,7 +54,7 @@ export function NoticeBanner() {
               style={styles.link}
               accessibilityRole="button"
             >
-              <Text style={styles.linkText}>{b.linkLabel || 'See more'}</Text>
+              <Text style={styles.linkText}>{b.linkLabel || t`See more`}</Text>
               <Icon name="arrow-forward" size={14} color={theme.ink} />
             </PressableScale>
           )}
@@ -63,7 +64,7 @@ export function NoticeBanner() {
           hitSlop={10}
           style={styles.close}
           accessibilityRole="button"
-          accessibilityLabel="Close this notice"
+          accessibilityLabel={t`Close this notice`}
         >
           <Icon name="close" size={16} color="rgba(255,255,255,0.8)" />
         </PressableScale>

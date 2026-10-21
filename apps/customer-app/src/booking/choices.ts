@@ -1,4 +1,5 @@
 import type { ShopService } from '../api/discovery';
+import { t } from '@lingui/core/macro';
 
 /**
  * Service choices (§300) on the customer's side: which questions show, what
@@ -14,8 +15,10 @@ export type ChoiceOption = ChoiceGroup['options'][number];
 export const askedAs = (group: Pick<ChoiceGroup, 'name' | 'question'>) => group.question ?? group.name;
 
 /** "Pick 1", "Choose up to 2", "Choose any". */
-export const limitWords = (group: ChoiceGroup) =>
-  group.kind === 'ONE' ? 'Pick 1' : group.maxPicks ? `Choose up to ${group.maxPicks}` : 'Choose any';
+export const limitWords = (group: ChoiceGroup) => {
+  const most = group.maxPicks;
+  return group.kind === 'ONE' ? t`Pick 1` : most ? t`Choose up to ${most}` : t`Choose any`;
+};
 
 /** A question shows when it has no condition, or its answer is picked. */
 export const shows = (group: ChoiceGroup, picked: ReadonlySet<string>) =>
@@ -131,4 +134,8 @@ export const bookingDraft = {
 export const cardPrice = (
   service: { priceMinor: number; startingPriceMinor: number | null },
   format: (minor: number) => string,
-) => (service.startingPriceMinor !== null ? `from ${format(service.startingPriceMinor)}` : format(service.priceMinor));
+) => {
+  if (service.startingPriceMinor === null) return format(service.priceMinor);
+  const price = format(service.startingPriceMinor);
+  return t`from ${price}`;
+};

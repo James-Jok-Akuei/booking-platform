@@ -18,12 +18,14 @@ import { PressableScale } from '../../src/ui/PressableScale';
 import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
 import { showProblem } from '../../src/ui/Dialog';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 /** The three things a customer with a booking actually needs help with. */
 const ABOUT: Array<{ value: TicketCategory; label: string; subject: string }> = [
-  { value: 'PAYMENT_ISSUE', label: 'A payment', subject: 'Problem with a payment' },
-  { value: 'APPOINTMENT_DISPUTE', label: 'This booking', subject: 'Problem with my booking' },
-  { value: 'OTHER', label: 'Something else', subject: 'I need help' },
+  { value: 'PAYMENT_ISSUE', get label() { return t`A payment`; }, get subject() { return t`Problem with a payment`; } },
+  { value: 'APPOINTMENT_DISPUTE', get label() { return t`This booking`; }, get subject() { return t`Problem with my booking`; } },
+  { value: 'OTHER', get label() { return t`Something else`; }, get subject() { return t`I need help`; } },
 ];
 
 /**
@@ -66,7 +68,7 @@ function Help() {
       router.push(`/ticket/${ticket.id}`);
     },
     onError: (error) =>
-      showProblem('Not sent', error),
+      showProblem(t`Not sent`, error),
   });
 
   return (
@@ -78,7 +80,7 @@ function Help() {
       // the composer sat under the keyboard.
       behavior="padding"
     >
-      <TopBar title="Get help" subtitle={`Reservation ${reservationNo(id)}`} />
+      <TopBar title={t`Get help`} subtitle={t`Reservation ${reservationNo(id)}`} />
       <ScrollView
         ref={keys.ref}
         onScroll={keys.track}
@@ -91,7 +93,7 @@ function Help() {
         ]}
       >
         <FadeIn style={styles.card}>
-          <Text style={type.heading}>What is it about?</Text>
+          <Text style={type.heading}><Trans>What is it about?</Trans></Text>
           <View style={styles.chips}>
             {ABOUT.map((option) => (
               <Chip
@@ -104,13 +106,13 @@ function Help() {
             ))}
           </View>
 
-          <Text style={type.label}>Tell us what happened</Text>
+          <Text style={type.label}><Trans>Tell us what happened</Trans></Text>
           <TextInput
             onFocus={keys.reveal}
             style={styles.input}
             value={body}
             onChangeText={setBody}
-            placeholder="The more you tell us, the faster we can sort it out."
+            placeholder={t`The more you tell us, the faster we can sort it out.`}
             placeholderTextColor={theme.muted}
             multiline
             maxLength={5000}
@@ -121,21 +123,23 @@ function Help() {
             icon="send"
             busy={send.isPending}
             disabled={body.trim().length < 3}
-            label={send.isPending ? 'Sending…' : 'Send to support'}
+            label={send.isPending ? t`Sending…` : t`Send to support`}
             onPress={() => send.mutate()}
           />
           <View style={styles.note}>
             <Icon name="information-circle-outline" size={16} color={theme.ink2} />
             <Text style={styles.noteText}>
-              This goes to our support team, with your booking attached. To reach the shop
-              itself, use Message on the reservation.
+              <Trans>
+                This goes to our support team, with your booking attached. To reach the shop
+                itself, use Message on the reservation.
+              </Trans>
             </Text>
           </View>
         </FadeIn>
 
         {mine.length > 0 && (
           <FadeIn delay={80} style={styles.group}>
-            <Text style={type.heading}>Your requests about this booking</Text>
+            <Text style={type.heading}><Trans>Your requests about this booking</Trans></Text>
             {mine.map((ticket) => {
               const status = TICKET_STATUS[ticket.status];
               return (
@@ -203,6 +207,7 @@ const styles = StyleSheet.create({
 
 export default requireSignIn(Help, {
   icon: 'help-buoy-outline',
-  title: 'Sign in to get help',
-  text: 'Help is tied to your booking, so we need to know it is you.',
+
+  get title() { return t`Sign in to get help`; },
+  get text() { return t`Help is tied to your booking, so we need to know it is you.`; },
 });

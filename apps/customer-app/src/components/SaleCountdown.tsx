@@ -3,6 +3,8 @@ import { Animated, Easing, StyleSheet, Text, View, type StyleProp, type ViewStyl
 import { font, radius, theme } from '../theme';
 import { Icon } from '../ui/Icon';
 import { Pulse } from '../ui/Motion';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -79,7 +81,7 @@ export function SaleCountdown({
     return (
       <View style={[styles.ended, style]}>
         <Icon name="time-outline" size={15} color={theme.ink2} />
-        <Text style={styles.endedText}>This discount has ended — the price is back to normal.</Text>
+        <Text style={styles.endedText}><Trans>This discount has ended — the price is back to normal.</Trans></Text>
       </View>
     );
   }
@@ -91,22 +93,22 @@ export function SaleCountdown({
     <View
       style={[styles.box, urgent && styles.boxUrgent, style]}
       accessible
-      accessibilityLabel={`Discount ends in ${d} days, ${h} hours and ${m} minutes`}
+      accessibilityLabel={t`Discount ends in ${d} days, ${h} hours and ${m} minutes`}
     >
       <View style={styles.head}>
         {urgent ? <Pulse color="#FFFFFF" size={8} /> : <Icon name="flash" size={14} color={theme.accentDeep} />}
         <Text style={[styles.headText, urgent && styles.onUrgent]}>
-          {urgent ? 'Last day of the discount — ends in' : 'Discount ends in'}
+          {urgent ? t`Last day of the discount — ends in` : t`Discount ends in`}
         </Text>
       </View>
       <View style={styles.segments}>
-        <Segment value={d} label={d === 1 ? 'day' : 'days'} urgent={urgent} />
+        <Segment value={d} label={d === 1 ? t`day` : t`days`} urgent={urgent} />
         <Colon urgent={urgent} />
-        <Segment value={h} label="hrs" urgent={urgent} />
+        <Segment value={h} label={t`hrs`} urgent={urgent} />
         <Colon urgent={urgent} />
-        <Segment value={m} label="min" urgent={urgent} />
+        <Segment value={m} label={t`min`} urgent={urgent} />
         <Colon urgent={urgent} />
-        <Segment value={s} label="sec" urgent={urgent} />
+        <Segment value={s} label={t`sec`} urgent={urgent} />
       </View>
     </View>
   );
@@ -182,11 +184,11 @@ export function SaleEndsChip({
     <View
       style={[styles.chip, onPhoto ? styles.chipPhoto : styles.chipList, urgent && styles.chipUrgent, style]}
       accessible
-      accessibilityLabel={`Discount ends in ${d > 0 ? `${d} days, ` : ''}${h} hours and ${m} minutes`}
+      accessibilityLabel={t`Discount ends in ${d > 0 ? `${d} days, ` : ''}${h} hours and ${m} minutes`}
     >
       <Icon name="time" size={onPhoto ? 10 : 12} color={onPhoto || urgent ? '#FFFFFF' : theme.accentDeep} />
       <Text style={[styles.chipText, onPhoto ? styles.chipTextPhoto : styles.chipTextList, urgent && styles.onUrgent]}>
-        {onPhoto ? clock : `Ends in ${clock}`}
+        {onPhoto ? clock : t`Ends in ${clock}`}
       </Text>
     </View>
   );

@@ -1542,6 +1542,68 @@
         ]
       }
     },
+    "/users/me/locale": {
+      "patch": {
+        "operationId": "AccountController_setLocale",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetLocaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLocaleDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The language chosen in an app (§308). Kept on the account so what is sent\nwhile they are away — emails, alerts — reads in it too, on every device.",
+        "tags": [
+          "Account"
+        ]
+      }
+    },
     "/users/me/export": {
       "get": {
         "operationId": "AccountController_export",
@@ -19164,6 +19226,15 @@
               ]
             }
           },
+          "locale": {
+            "type": "string",
+            "description": "The language they read the apps, emails and notices in (§308).",
+            "enum": [
+              "en",
+              "rw",
+              "fr"
+            ]
+          },
           "id": {
             "type": "string"
           },
@@ -19202,6 +19273,7 @@
         },
         "required": [
           "toursDue",
+          "locale",
           "id",
           "email",
           "role",
@@ -19338,6 +19410,38 @@
           "displayName"
         ]
       },
+      "SetLocaleDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "enum": [
+              "en",
+              "rw",
+              "fr"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "locale"
+        ]
+      },
+      "UserLocaleDto": {
+        "type": "object",
+        "properties": {
+          "locale": {
+            "type": "string",
+            "enum": [
+              "en",
+              "rw",
+              "fr"
+            ]
+          }
+        },
+        "required": [
+          "locale"
+        ]
+      },
       "ExportedHomeDistrictDto": {
         "type": "object",
         "properties": {
@@ -19377,6 +19481,9 @@
             "type": "string",
             "nullable": true
           },
+          "locale": {
+            "type": "string"
+          },
           "offersOptInAt": {
             "type": "string",
             "nullable": true,
@@ -19411,6 +19518,7 @@
           "displayName",
           "createdAt",
           "closedAt",
+          "locale",
           "offersOptInAt",
           "homeDistrict",
           "homeLatitude",

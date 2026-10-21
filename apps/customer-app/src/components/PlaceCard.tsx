@@ -7,6 +7,7 @@ import { Pill } from '../ui/Pill';
 import { PressableScale } from '../ui/PressableScale';
 import { RatingBadge } from '../ui/Stars';
 import { SaveButton } from './SaveButton';
+import { t } from '@lingui/core/macro';
 
 /**
  * One place, as a card (§133).
@@ -72,7 +73,7 @@ export function PlaceCard({
             <View />
           ) : (
             <Pill
-              label={openNow ? 'Open' : 'Closed'}
+              label={openNow ? t`Open` : t`Closed`}
               tone={openNow ? 'ok' : 'neutral'}
               dot={openNow}
               solid

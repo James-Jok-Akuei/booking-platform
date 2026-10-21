@@ -483,6 +483,26 @@ export interface paths {
         patch: operations["AccountController_setDisplayName"];
         trace?: never;
     };
+    "/users/me/locale": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * The language chosen in an app (§308). Kept on the account so what is sent
+         *     while they are away — emails, alerts — reads in it too, on every device.
+         */
+        patch: operations["AccountController_setLocale"];
+        trace?: never;
+    };
     "/users/me/export": {
         parameters: {
             query?: never;
@@ -4015,6 +4035,11 @@ export interface components {
         MeDto: {
             /** @description The welcome tours still to show them (§307): "customer" or "seller". */
             toursDue: ("customer" | "seller")[];
+            /**
+             * @description The language they read the apps, emails and notices in (§308).
+             * @enum {string}
+             */
+            locale: "en" | "rw" | "fr";
             id: string;
             email: string;
             /** @enum {string} */
@@ -4063,6 +4088,14 @@ export interface components {
             id: string;
             displayName: string | null;
         };
+        SetLocaleDto: {
+            /** @enum {string} */
+            locale: "en" | "rw" | "fr";
+        };
+        UserLocaleDto: {
+            /** @enum {string} */
+            locale: "en" | "rw" | "fr";
+        };
         ExportedHomeDistrictDto: {
             name: string;
         };
@@ -4074,6 +4107,7 @@ export interface components {
             displayName: string | null;
             createdAt: string;
             closedAt: string | null;
+            locale: string;
             /** @description When they agreed to emails about services near them; null if they have not. */
             offersOptInAt: string | null;
             homeDistrict: components["schemas"]["ExportedHomeDistrictDto"] | null;
@@ -9485,6 +9519,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserDisplayNameDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AccountController_setLocale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetLocaleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserLocaleDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

@@ -20,9 +20,12 @@ import { Segmented } from '../src/ui/Segmented';
 import { RowSkeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
 import { showProblem } from '../src/ui/Dialog';
+import { Trans } from '@lingui/react/macro';
+import { t } from '@lingui/core/macro';
+import { dateLocale } from '../src/i18n/format';
 
 const when = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { dateStyle: 'medium' });
+  new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' });
 
 /**
  * The documents, and what this person has agreed to (§122).
@@ -97,7 +100,7 @@ export default function Legal() {
 
   return (
     <View style={styles.screen}>
-      <TopBar title="Legal" />
+      <TopBar title={t`Legal`} />
 
       {rows.length > 1 && current && (
         <View style={[styles.tabs, { width: layout.contentWidth }]}>
@@ -167,15 +170,14 @@ export default function Legal() {
         )}
 
         {documents.data && rows.length === 0 && (
-          <EmptyState icon="document-text-outline" title="Nothing has been published yet." />
+          <EmptyState icon="document-text-outline" title={t`Nothing has been published yet.`} />
         )}
 
         {current && (
           <FadeIn key={current.id} distance={10} style={styles.card}>
             <View style={styles.meta}>
               <Text style={type.title}>{current.title}</Text>
-              <Text style={type.small}>
-                Version {current.version} · {when(current.publishedAt)}
+              <Text style={type.small}><Trans>Version {current.version} · {when(current.publishedAt)}</Trans>
               </Text>
             </View>
 
@@ -185,10 +187,10 @@ export default function Legal() {
                 icon={status.needsAcceptance ? 'alert-circle-outline' : 'checkmark-circle'}
                 label={
                   status.acceptedVersion === null
-                    ? 'You have not agreed to this yet'
+                    ? t`You have not agreed to this yet`
                     : status.needsAcceptance
-                      ? `You agreed to version ${status.acceptedVersion}. This one is newer.`
-                      : `Agreed ${status.acceptedAt ? when(status.acceptedAt) : ''}`
+                      ? t`You agreed to version ${status.acceptedVersion}. This one is newer.`
+                      : t`Agreed ${status.acceptedAt ? when(status.acceptedAt) : ''}`
                 }
               />
             )}
@@ -198,7 +200,7 @@ export default function Legal() {
                 earlier version — to anyone else nothing "changed". */}
             {status.needsAcceptance && status.acceptedVersion !== null && current.changeNote && (
               <View style={styles.noteBox}>
-                <Text style={type.body}>What changed: {current.changeNote}</Text>
+                <Text style={type.body}><Trans>What changed: {current.changeNote}</Trans></Text>
               </View>
             )}
 
@@ -210,8 +212,10 @@ export default function Legal() {
 
         {current && (
           <Text style={[type.small, styles.foot]}>
-            Older versions are kept. What you agreed to stays as you read it, even
-            after it is replaced.
+            <Trans>
+              Older versions are kept. What you agreed to stays as you read it, even
+              after it is replaced.
+            </Trans>
           </Text>
         )}
       </Animated.ScrollView>
@@ -232,16 +236,18 @@ export default function Legal() {
         {current && (
           <View style={[styles.barInner, { width: Math.min(layout.contentWidth, 560) }]}>
             <Text style={[type.small, styles.barText]}>
-              By tapping, you agree to version {current.version} of the {current.title}.
+              <Trans>
+                By tapping, you agree to version {current.version} of the {current.title}.
+              </Trans>
             </Text>
             <AgreeButton
               // A fresh button per document: the one that just turned into a
               // tick must not be the one offered for the next document.
               key={current.id}
-              label="I agree to this"
+              label={t`I agree to this`}
               wake={atEnd || fits}
               onAgree={() => accept.mutateAsync(current.id).catch((error) => {
-                showProblem('Not saved', error);
+                showProblem(t`Not saved`, error);
                 throw error;
               })}
               onDone={() => {

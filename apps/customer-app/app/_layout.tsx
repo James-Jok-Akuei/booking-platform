@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { isRunningInExpoGo } from 'expo';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useGlobalSearchParams, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
@@ -17,7 +17,12 @@ import {
   useFonts,
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+import { i18n } from '@lingui/core';
+import { I18nProvider } from '@lingui/react';
 import { onSessionEnded, tokens, useSignedIn } from '../src/api/client';
+import { getMe } from '../src/api/auth';
+import { loadLocale, syncAccountLocale, useAppLocale } from '../src/i18n';
 import { configurePush, onAlertOpened, refreshPush } from '../src/push';
 import { useLiveNotifications } from '../src/useLive';
 import { LegalPrompt } from '../src/components/LegalPrompt';
@@ -88,9 +93,11 @@ export default function RootLayout() {
 
   // SecureStore is async, so the token cache is filled once before anything
   // that depends on being signed in renders.
+  // The language too (§308): what was picked here, else the phone's.
   useEffect(() => {
-    tokens.hydrate().finally(() => setReady(true));
+    Promise.all([tokens.hydrate(), loadLocale()]).finally(() => setReady(true));
   }, []);
+
 
   /**
    * When a refresh has definitively failed, send the person to sign in (§117.4).
@@ -115,6 +122,27 @@ export default function RootLayout() {
   const fontsReady = fontsLoaded || !!fontError;
   const appIn = ready && fontsReady && begun;
 
+  // A language chosen while the app is open is drawn afresh from the top,
+  // every sentence in it — and the screen somebody was on, with everything
+  // in its address, is the one they stay on. The language the app opened in
+  // is not a change.
+  const locale = useAppLocale();
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+  const here = useRef({ pathname, params });
+  const drawnIn = useRef<string | null>(null);
+  useEffect(() => {
+    if (!appIn) return;
+    if (drawnIn.current === null || drawnIn.current === locale) {
+      drawnIn.current = locale;
+      here.current = { pathname, params };
+      return;
+    }
+    drawnIn.current = locale;
+    const back = here.current;
+    requestAnimationFrame(() => router.replace({ pathname: back.pathname as never, params: back.params }));
+  }, [appIn, locale, pathname, params]);
+
   useEffect(() => {
     if (!appIn || introGone) return;
     const timer = setTimeout(gone, 5000);
@@ -126,40 +154,45 @@ export default function RootLayout() {
       {/* Light on the intro's night, dark on the app's paper. */}
       <StatusBar style={introGone ? 'dark' : 'light'} />
       {appIn && (
-        <QueryClientProvider client={queryClient}>
-          {/* Above the navigator, so a replaced document is seen wherever somebody
-              happens to be (§126.3). It renders nothing when there is nothing to
-              say, which is almost always — and nothing over the intro. */}
-          {introGone && <LegalPrompt />}
-          <Alerts />
-          {/* No native headers anywhere (§133): every screen draws its own top
-              bar, so the back button, the title and the type are the app's and
-              are the same on every screen. */}
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: theme.bg },
-              animation: 'slide_from_right',
-            }}
-          >
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="categories" />
-            <Stack.Screen name="legal" />
-            <Stack.Screen name="notifications" />
-            {/* Rises from the bottom: signing in is an interruption to whatever
-                was being done, and it should look like one that can be put away. */}
-            <Stack.Screen
-              name="sign-in"
-              options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-            />
-          </Stack>
-          {/* The welcome story (§307), once, the first time someone is signed
-              in — after the opening picture, and only on a tab. */}
-          <WelcomeTourHost ready={introGone} />
-          {/* Every question and message the app asks (§184), in its own design
-              rather than the phone's grey alert. One host, so they queue. */}
-          <DialogHost />
-        </QueryClientProvider>
+        <I18nProvider i18n={i18n}>
+          <QueryClientProvider client={queryClient}>
+            {/* Drawn afresh in a new language (§308). */}
+            <Fragment key={locale}>
+              {/* Above the navigator, so a replaced document is seen wherever somebody
+                  happens to be (§126.3). It renders nothing when there is nothing to
+                  say, which is almost always — and nothing over the intro. */}
+              {introGone && <LegalPrompt />}
+              <Alerts />
+              {/* No native headers anywhere (§133): every screen draws its own top
+                  bar, so the back button, the title and the type are the app's and
+                  are the same on every screen. */}
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: theme.bg },
+                  animation: 'slide_from_right',
+                }}
+              >
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="categories" />
+                <Stack.Screen name="legal" />
+                <Stack.Screen name="notifications" />
+                {/* Rises from the bottom: signing in is an interruption to whatever
+                    was being done, and it should look like one that can be put away. */}
+                <Stack.Screen
+                  name="sign-in"
+                  options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+                />
+              </Stack>
+              {/* The welcome story (§307), once, the first time someone is signed
+                  in — after the opening picture, and only on a tab. */}
+              <WelcomeTourHost ready={introGone} />
+              {/* Every question and message the app asks (§184), in its own design
+                  rather than the phone's grey alert. One host, so they queue. */}
+              <DialogHost />
+            </Fragment>
+          </QueryClientProvider>
+        </I18nProvider>
       )}
       {!introGone && <Intro fontsReady={fontsReady} appReady={appIn} onBegin={begin} onGone={gone} />}
     </SafeAreaProvider>
@@ -174,6 +207,9 @@ export default function RootLayout() {
 function Alerts() {
   const signedIn = useSignedIn();
   useLiveNotifications();
+  // The account's language, once known (§308).
+  const me = useQuery({ queryKey: ['me'], queryFn: getMe, enabled: signedIn });
+  useEffect(() => syncAccountLocale(me.data?.locale), [me.data?.locale]);
   useEffect(() => {
     if (signedIn) void refreshPush();
   }, [signedIn]);

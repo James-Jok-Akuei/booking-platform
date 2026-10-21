@@ -16,6 +16,7 @@ import { font, shadow, theme } from '../theme';
 import { caution, cheer, tick } from './haptic';
 import { Icon, type IconName } from './Icon';
 import { PressableScale } from './PressableScale';
+import { t } from '@lingui/core/macro';
 
 export type DialogTone = 'danger' | 'warn' | 'ok' | 'info' | 'accent';
 
@@ -87,7 +88,7 @@ export function showDialog(spec: DialogSpec) {
 }
 
 /** Something did not work: the server's own sentence when it sent one. */
-export function showProblem(title: string, error: unknown, fallback = 'Please try again.') {
+export function showProblem(title: string, error: unknown, fallback = t`Please try again.`) {
   showDialog({
     tone: 'danger',
     icon: 'alert',
@@ -112,7 +113,7 @@ export function confirmDialog(spec: {
       tone: spec.tone,
       icon: spec.icon,
       actions: [
-        { label: spec.cancel ?? 'Not now', role: 'cancel', onPress: () => resolve(false) },
+        { label: spec.cancel ?? t`Not now`, role: 'cancel', onPress: () => resolve(false) },
         { label: spec.confirm, role: 'primary', onPress: () => resolve(true) },
       ],
     }),
