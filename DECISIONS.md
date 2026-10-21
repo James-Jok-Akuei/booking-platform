@@ -19671,3 +19671,29 @@ dropped on the cover (refused, nothing uploaded), two photos and a PDF on a
 service (photos added, the PDF explained), a photo dropped into a
 conversation in both apps, a photo dropped on a customer's picture (uploaded
 through the new web uploader, then removed again), Stories — at 1440 and 390.
+
+## 306. The sidebar's shop card takes you to the button (2026-10-21)
+
+The user: clicking "Approved — post it" at the bottom left should jump the
+seller to where they post the shop, instead of doing nothing (it linked to
+the Overview, so on the Overview nothing happened); make the button easy to
+see — a small animation.
+
+- **The card leads somewhere**: an arrow on its right that nudges now and
+  then, and a click opens the Overview from any page with
+  `state: { spotlight }` — "post-shop" for Approved — post it, "send-review"
+  for Ready to send and Needs a change. On a phone the menu closes first.
+- **Arriving** (`onboarding/useSpotlight.ts`): the button is scrolled to the
+  middle of the screen once it is drawn; the card glows once, the button
+  pulses three times, and a dark bubble over it says "Press here to post your
+  shop" (or to send it for review / send it back) with a bobbing arrow — gone
+  after 5½ seconds or when the button is pressed. The request is taken out of
+  the page's history, so Back or a reload does not do it again.
+- **Always**: while the shop is approved and not posted, the paper plane on
+  "Post my shop" takes off and comes back every few seconds, beside the
+  breathing it already had (§268).
+- Reduce motion: no pulses, nudges or bobbing; the bubble still says what to
+  press.
+
+Checked from the Services page and from the foot of the Overview, at 1440 and
+on a phone through the menu.

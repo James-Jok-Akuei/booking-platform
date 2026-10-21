@@ -86,6 +86,55 @@
 /* Posting: the one thing to do, so it breathes a little until it is done. */
 .gl-post:not(:disabled) { animation: gl-breathe 2.6s var(--ease) 900ms infinite; }
 @keyframes gl-breathe { 0%, 100% { box-shadow: var(--shadow-xs); } 50% { box-shadow: 0 0 0 6px rgba(240, 83, 45, 0.14), var(--shadow-sm); } }
+/* …and its paper plane takes off now and then, so it is seen (§306). */
+.gl-post:not(:disabled) > svg { animation: gl-fly 3.4s var(--ease) 1.6s infinite; }
+@keyframes gl-fly {
+  0%, 70%, 100% { transform: none; opacity: 1; }
+  79% { transform: translate(8px, -8px) rotate(-10deg); opacity: 0; }
+  80% { transform: translate(-8px, 8px); opacity: 0; }
+  90% { transform: none; opacity: 1; }
+}
+
+/* Sent here from the sidebar (§306): the card glows once, the button pulses
+   three times, and a bubble over it says what to press. */
+.gl { scroll-margin: 120px; }
+.gl.is-spotlit { animation: gl-spot-card 1.8s var(--ease) both; }
+@keyframes gl-spot-card {
+  0% { box-shadow: 0 0 0 0 rgba(240, 83, 45, 0); }
+  25% { box-shadow: 0 0 0 4px rgba(240, 83, 45, 0.35), var(--shadow-md); }
+  100% { box-shadow: 0 0 0 0 rgba(240, 83, 45, 0), var(--shadow-sm); }
+}
+.gl-spot-wrap { position: relative; display: inline-flex; }
+.gl-go.is-spotlit:not(:disabled) { animation: gl-spot-btn 1.15s var(--ease) 3 both; }
+@keyframes gl-spot-btn {
+  0% { box-shadow: 0 0 0 0 rgba(240, 83, 45, 0.6); transform: scale(1); }
+  35% { transform: scale(1.05); }
+  100% { box-shadow: 0 0 0 16px rgba(240, 83, 45, 0); transform: scale(1); }
+}
+.gl-spot {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 12px);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 13px;
+  border-radius: 13px;
+  background: var(--night);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  animation: gl-spot-in 420ms var(--spring) both, gl-spot-bob 1.3s ease-in-out 420ms infinite;
+}
+.gl-spot::after { content: ''; position: absolute; right: 26px; top: 100%; border: 7px solid transparent; border-top-color: var(--night); }
+.gl-spot svg { animation: gl-spot-arrow 0.9s ease-in-out infinite; }
+@keyframes gl-spot-in { from { opacity: 0; transform: translateY(8px) scale(0.92); } }
+@keyframes gl-spot-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes gl-spot-arrow { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
 .gl-problem { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; border-radius: var(--r-md); background: var(--danger-soft); color: var(--danger); font-size: 13.5px; font-weight: 600; }
 
 .gl-close { width: 40px; height: 40px; min-height: 0; padding: 0; border-radius: 50%; background: transparent; border-color: transparent; color: var(--muted); }
@@ -110,6 +159,7 @@
   .gl-confetti { display: none; }
   .gl-pulse::after { animation: none; }
   .gl-post:not(:disabled) { animation: none; }
+  .gl-post:not(:disabled) > svg, .gl.is-spotlit, .gl-go.is-spotlit:not(:disabled), .gl-spot, .gl-spot svg { animation: none; }
 }
 
 @media (max-width: 1180px) {
@@ -124,6 +174,9 @@
   .gl-text h2 { font-size: 18px; }
   .gl-actions { width: 100%; flex-direction: column; align-items: stretch; }
   .gl-actions > * { justify-content: center; }
+  .gl-spot-wrap > .gl-go { flex: 1; justify-content: center; }
+  .gl-spot { right: 50%; transform-origin: center; translate: 50% 0; }
+  .gl-spot::after { right: calc(50% - 7px); }
   .is-live .gl-actions .gl-close { position: absolute; top: 10px; right: 10px; flex: none; }
   /* The one thing to do comes first under the thumb. */
   .gl-actions .gl-post { order: -1; }

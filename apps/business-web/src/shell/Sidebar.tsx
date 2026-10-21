@@ -51,13 +51,14 @@ export function Sidebar({
   // Why customers cannot see the shop, in the seller's words rather than
   // the status's (§256), and where to go about it.
   const left = (data.readiness?.items ?? []).filter((i) => i.required && !i.done).length;
-  type Standing = { head: string; text: string; to: string; icon: IconName; tone: string };
+  /** `spotlight`: the button on the Overview it takes them to, lit when they arrive (§306). */
+  type Standing = { head: string; text: string; to: string; icon: IconName; tone: string; spotlight?: string };
   const standingFor = (): Standing | null => {
     if (!business || live) return null;
     if (business.status === 'APPROVED') {
       return data.posted
         ? { head: 'Your shop is paused', text: 'Customers cannot book until you resume it.', to: '/profile', icon: 'pause', tone: 'warn' }
-        : { head: 'Approved — post it', text: 'Customers see your shop once you post it.', to: '/', icon: 'send', tone: 'ok' };
+        : { head: 'Approved — post it', text: 'Customers see your shop once you post it.', to: '/', icon: 'send', tone: 'ok', spotlight: 'post-shop' };
     }
     if (business.status === 'PENDING' && data.readiness?.submittedAt) {
       return { head: 'Waiting for review', text: 'We are checking your shop. You get an email when it is approved.', to: '/', icon: 'hourglass', tone: 'warn' };
@@ -71,10 +72,10 @@ export function Sidebar({
             icon: 'clock',
             tone: 'warn',
           }
-        : { head: 'Ready to send', text: 'Send your shop for review from your Overview.', to: '/', icon: 'send', tone: 'warn' };
+        : { head: 'Ready to send', text: 'Send your shop for review from your Overview.', to: '/', icon: 'send', tone: 'warn', spotlight: 'send-review' };
     }
     return business.status === 'REJECTED'
-      ? { head: 'Needs a change', text: 'See what we said, fix it, and send your shop back.', to: '/', icon: 'alert', tone: 'danger' }
+      ? { head: 'Needs a change', text: 'See what we said, fix it, and send your shop back.', to: '/', icon: 'alert', tone: 'danger', spotlight: 'send-review' }
       : { head: 'Shop suspended', text: 'Customers cannot find or book it. Talk to support.', to: '/help', icon: 'alert', tone: 'danger' };
   };
   const standing = standingFor();
@@ -160,7 +161,13 @@ export function Sidebar({
             like a bug unless something says so. A live shop needs no card:
             the green dot on its logo, top right, says it. */}
         {standing && (
-          <Link to={standing.to} className="sb-status is-off" onClick={onNavigate}>
+          <Link
+            to={standing.to}
+            // Takes them to the very button, lit (§306) — from any page, the Overview included.
+            state={standing.spotlight ? { spotlight: standing.spotlight } : undefined}
+            className={`sb-status is-off${standing.spotlight ? ' is-go' : ''}`}
+            onClick={onNavigate}
+          >
             {/* The shop's own logo, with why it is hidden on the corner (§231). */}
             <ShopLogo
               logoUrl={data.logoUrl}
@@ -172,6 +179,9 @@ export function Sidebar({
             <span className="sb-status-body">
               <span className="sb-status-head">{standing.head}</span>
               <span className="sb-status-text">{standing.text}</span>
+            </span>
+            <span className="sb-status-go" aria-hidden="true">
+              <Icon name="arrowRight" size={15} stroke={2.4} />
             </span>
           </Link>
         )}

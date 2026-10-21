@@ -227,6 +227,23 @@ body {
   transition: transform 220ms var(--ease), box-shadow 220ms var(--ease);
 }
 .sb-status:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -16px rgba(31, 42, 31, 0.6); }
+/* It takes them somewhere (§306): an arrow that says so, and nudges. */
+.sb-status-go {
+  flex: none;
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  transition: transform 200ms var(--ease), background 200ms var(--ease);
+}
+.sb-status.is-off .sb-status-go { background: rgba(255, 255, 255, 0.75); }
+.sb-status:hover .sb-status-go { transform: translateX(3px); background: #fff; }
+.sb-status.is-go .sb-status-go { animation: sb-go 2.6s var(--ease) 1.2s infinite; }
+@keyframes sb-go { 0%, 68%, 100% { transform: none; } 78% { transform: translateX(5px); } 88% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sb-status.is-go .sb-status-go { animation: none; } }
 .sb-status-body { flex: 1; min-width: 0; }
 .sb-status-logo { margin-top: 1px; }
 .sb-status-head { display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 750; }

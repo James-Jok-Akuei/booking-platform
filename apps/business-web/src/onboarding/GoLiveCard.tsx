@@ -6,6 +6,7 @@ import { getMe, getProfile, getReadiness, submitForReview, type Readiness, type 
 import { Icon, type IconName } from '../ui/Icon';
 import { ITEM_WORDS } from './steps';
 import { usePostShop } from './usePostShop';
+import { useSpotlight } from './useSpotlight';
 import './golive.css';
 import { accessOf } from '../access';
 
@@ -44,6 +45,8 @@ export function GoLiveCard() {
   // manager of every branch (§277).
   const canAct = accessOf(me.data?.businessMembership, me.isSuccess).runsBusiness;
   const [dismissed, setDismissed] = useState<string | null>(null);
+  // Sent here from the sidebar to send the shop for review (§306).
+  const sendSpot = useSpotlight('send-review');
 
   const submit = useMutation({
     mutationFn: submitForReview,
@@ -138,7 +141,7 @@ export function GoLiveCard() {
 
   const rejected = r.status === 'REJECTED';
   return (
-    <section className={`gl ${rejected ? 'is-rejected' : 'is-setup'}`} aria-label="Your shop's status">
+    <section className={`gl ${rejected ? 'is-rejected' : 'is-setup'}${sendSpot.lit ? ' is-spotlit' : ''}`} aria-label="Your shop's status">
       <div className="gl-head">
         {rejected ? (
           <span className="gl-badge">
@@ -162,10 +165,22 @@ export function GoLiveCard() {
         {canAct ? (
           <div className="gl-actions">
             {r.canSubmit ? (
-              <button type="button" className="primary gl-go" disabled={submit.isPending} onClick={() => submit.mutate()}>
+              <span className="gl-spot-wrap">
+              <button
+                ref={sendSpot.ref}
+                type="button"
+                className={`primary gl-go gl-send${sendSpot.lit ? ' is-spotlit' : ''}`}
+                disabled={submit.isPending}
+                onClick={() => {
+                  sendSpot.done();
+                  submit.mutate();
+                }}
+              >
                 {submit.isPending ? 'Sending…' : rejected ? 'Send back for review' : 'Send for review'}
                 {!submit.isPending && <Icon name="send" size={16} />}
               </button>
+              {sendSpot.lit && <SpotHint words={rejected ? 'Press here to send it back' : 'Press here to send it for review'} />}
+              </span>
             ) : (
               <Link to="/welcome" className="btn-dark gl-go">
                 Continue setting up <Icon name="arrowRight" size={17} stroke={2.4} />
@@ -279,10 +294,12 @@ const FIX_AT: Partial<Record<ReadinessKey, string>> = { name: '/profile', branch
  */
 function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: string; canAct: boolean }) {
   const { ask, post } = usePostShop(name);
+  // Sent here from the sidebar's "Approved — post it" (§306).
+  const spot = useSpotlight('post-shop');
   // Lost since approval — a service switched off, the hours cleared.
   const gaps = readiness.goLiveGaps;
   return (
-    <section className="gl is-approved" aria-label="Your shop's status">
+    <section className={`gl is-approved${spot.lit ? ' is-spotlit' : ''}`} aria-label="Your shop's status">
       <div className="gl-head">
         <span className="gl-badge">
           <Icon name="checkCircle" size={26} />
@@ -300,15 +317,22 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
             <Link to="/profile" className="btn-quiet">
               <Icon name="eye" size={16} /> See it as customers will
             </Link>
+            <span className="gl-spot-wrap">
             <button
+              ref={spot.ref}
               type="button"
-              className="primary gl-go gl-post"
+              className={`primary gl-go gl-post${spot.lit ? ' is-spotlit' : ''}`}
               disabled={post.isPending || !readiness.canPublish}
-              onClick={() => void ask()}
+              onClick={() => {
+                spot.done();
+                void ask();
+              }}
             >
               {post.isPending ? 'Posting…' : 'Post my shop'}
               {!post.isPending && <Icon name="send" size={16} />}
             </button>
+            {spot.lit && readiness.canPublish && <SpotHint words="Press here to post your shop" />}
+            </span>
           </div>
         ) : (
           <p className="gl-staff">The owner, or a manager of every branch, posts it.</p>
@@ -426,6 +450,16 @@ function AdviceFromUs({ readiness, canAct }: { readiness: Readiness; canAct: boo
         </ul>
       )}
     </div>
+  );
+}
+
+/** Above the button the seller was sent to (§306): what to press, pointing at it. */
+function SpotHint({ words }: { words: string }) {
+  return (
+    <span className="gl-spot" role="status">
+      {words}
+      <Icon name="chevronDown" size={16} stroke={2.6} />
+    </span>
   );
 }
 
