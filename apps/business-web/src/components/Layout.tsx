@@ -15,6 +15,7 @@ import { LegalBanner } from './LegalGate';
 import { NoticeBanner } from '../shell/NoticeBanner';
 import { useLiveNotifications } from '../notify/useLive';
 import { turnOffHere } from '../notify/webPush';
+import { TourProvider } from '../tour/Tour';
 import '../shell/shell.css';
 
 const RAIL_KEY = 'booking-business.sidebar-rail';
@@ -58,7 +59,10 @@ const typing = (target: EventTarget | null) => {
 export function Layout() {
   return (
     <CheckInProvider>
-      <Frame />
+      {/* The welcome tour (§307), offered once to somebody new, kept in Help. */}
+      <TourProvider>
+        <Frame />
+      </TourProvider>
     </CheckInProvider>
   );
 }

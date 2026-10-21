@@ -22,6 +22,7 @@ import {
 } from '../api/business';
 import { ago } from '../lib/time';
 import { Icon, type IconName } from '../ui/Icon';
+import { useTour } from '../tour/Tour';
 import { DropZone, type FileKind } from '../ui/DropZone';
 import { Panel as SidePanel } from '../ui/Panel';
 import './support.css';
@@ -119,6 +120,7 @@ export function SupportPage() {
   };
 
   const tickets = useQuery({ queryKey: ['my-tickets'], queryFn: () => listMyTickets() });
+  const tour = useTour();
   const rows = tickets.data?.tickets ?? [];
   const live = rows.filter((t) => t.status === 'OPEN' || t.status === 'IN_PROGRESS');
   const done = rows.filter((t) => t.status === 'RESOLVED' || t.status === 'CLOSED');
@@ -131,6 +133,13 @@ export function SupportPage() {
             <h1>Help</h1>
             <p className="muted">Ask us about anything — we reply on this page and by email.</p>
           </div>
+          {/* The welcome tour, kept here (§307). */}
+          <button type="button" className="hp-tour" onClick={tour.start}>
+            <span className="hp-tour-icon" aria-hidden="true">
+              <Icon name="play" size={13} stroke={2.4} filled />
+            </span>
+            Take the welcome tour
+          </button>
         </header>
       </div>
 

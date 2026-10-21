@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAccess } from '../access';
 import { navItemsFor } from '../nav';
 import { Icon, type IconName } from '../ui/Icon';
+import { useTour } from '../tour/Tour';
 
 type Entry = {
   id: string;
@@ -38,6 +39,7 @@ export function CommandPalette({
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const access = useAccess();
+  const tour = useTour();
 
   const entries = useMemo<Entry[]>(() => {
     const go = (to: string) => () => {
@@ -95,6 +97,18 @@ export function CommandPalette({
         run: go(item.to),
       })),
       {
+        id: 'tour',
+        label: 'Take the welcome tour',
+        hint: 'How a booking reaches you, and where everything is',
+        icon: 'play',
+        section: 'Account',
+        words: 'tour guide walkthrough new start learn how it works show me around',
+        run: () => {
+          onClose();
+          tour.start();
+        },
+      },
+      {
         id: 'sign-out',
         label: 'Sign out',
         hint: 'Leave this account on this device',
@@ -107,7 +121,7 @@ export function CommandPalette({
         },
       },
     ];
-  }, [navigate, onCheckIn, onClose, onSignOut, access]);
+  }, [navigate, onCheckIn, onClose, onSignOut, access, tour]);
 
   const shown = useMemo(() => {
     const words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);

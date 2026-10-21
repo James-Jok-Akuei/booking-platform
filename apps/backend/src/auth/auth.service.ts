@@ -28,6 +28,7 @@ import { RECENT_AUTH_MINUTES, SESSION_POLICY, sessionEndsAt } from './session-po
 import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 import { checkTotp, openSecret, recoveryDigest } from './totp';
+import { TOURS } from '../users/tours';
 import { describeDevice, trimUserAgent } from './device';
 
 /** The refusal the console answers by asking for the authenticator code (§298). */
@@ -401,7 +402,10 @@ export class AuthService {
     }
 
     if (role !== UserRole.BUSINESS) {
-      return this.prisma.user.create({ data: { email, role } });
+      // A new customer is shown around once, wherever they first sign in (§307).
+      return this.prisma.user.create({
+        data: { email, role, ...(role === UserRole.CUSTOMER ? { toursDue: [TOURS.customer] } : {}) },
+      });
     }
 
     // ---- Brand-new business account ----
@@ -415,7 +419,8 @@ export class AuthService {
 
     if (invitation) {
       return this.prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({ data: { email, role } });
+        // A new team member is shown around too (§307), the parts they can use.
+        const user = await tx.user.create({ data: { email, role, toursDue: [TOURS.seller] } });
         await tx.businessMembership.create({
           data: {
             userId: user.id,
@@ -439,7 +444,7 @@ export class AuthService {
     // original pre-membership behaviour. They become its one and only OWNER.
     // The profile starts PENDING until an admin approves it, exactly as before.
     return this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({ data: { email, role } });
+      const user = await tx.user.create({ data: { email, role, toursDue: [TOURS.seller] } });
       const business = await tx.businessProfile.create({ data: {} });
       await tx.businessMembership.create({
         data: {

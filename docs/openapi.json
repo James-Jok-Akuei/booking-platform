@@ -1155,6 +1155,57 @@
         ]
       }
     },
+    "/users/me/tours/{name}/done": {
+      "post": {
+        "operationId": "UsersController_tourDone",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToursDueDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "A welcome tour finished or skipped (§307): no longer due, on any device.\nTaking it again from Help or Account changes nothing here.",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/users/me/image": {
       "post": {
         "operationId": "AccountController_setImage",
@@ -19102,6 +19153,17 @@
       "MeDto": {
         "type": "object",
         "properties": {
+          "toursDue": {
+            "type": "array",
+            "description": "The welcome tours still to show them (§307): \"customer\" or \"seller\".",
+            "items": {
+              "type": "string",
+              "enum": [
+                "customer",
+                "seller"
+              ]
+            }
+          },
           "id": {
             "type": "string"
           },
@@ -19139,6 +19201,7 @@
           }
         },
         "required": [
+          "toursDue",
           "id",
           "email",
           "role",
@@ -19146,6 +19209,24 @@
           "displayName",
           "imageUrl",
           "businessMembership"
+        ]
+      },
+      "ToursDueDto": {
+        "type": "object",
+        "properties": {
+          "toursDue": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "customer",
+                "seller"
+              ]
+            }
+          }
+        },
+        "required": [
+          "toursDue"
         ]
       },
       "UserImageDto": {

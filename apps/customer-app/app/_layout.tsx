@@ -24,6 +24,7 @@ import { LegalPrompt } from '../src/components/LegalPrompt';
 import { DialogHost } from '../src/ui/Dialog';
 import { Intro } from '../src/ui/Intro';
 import { guardWebDrops } from '../src/ui/webDrop';
+import { WelcomeTourHost } from '../src/tour/WelcomeTour';
 import { theme } from '../src/theme';
 
 configurePush();
@@ -152,6 +153,9 @@ export default function RootLayout() {
               options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
             />
           </Stack>
+          {/* The welcome story (§307), once, the first time someone is signed
+              in — after the opening picture, and only on a tab. */}
+          <WelcomeTourHost ready={introGone} />
           {/* Every question and message the app asks (§184), in its own design
               rather than the phone's grey alert. One host, so they queue. */}
           <DialogHost />

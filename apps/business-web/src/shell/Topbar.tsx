@@ -69,7 +69,7 @@ export function Topbar({
         </div>
       </div>
 
-      <button type="button" className="tb-search" onClick={onOpenSearch} aria-label="Search or jump to a page">
+      <button type="button" className="tb-search" onClick={onOpenSearch} aria-label="Search or jump to a page" data-tour="search">
         <Icon name="search" size={17} />
         <span>Search or jump to…</span>
         <span className="tb-keys" aria-hidden="true">
@@ -79,10 +79,10 @@ export function Topbar({
       </button>
 
       <div className="tb-right">
-        <button type="button" className="tb-icon tb-search-small" onClick={onOpenSearch} aria-label="Search">
+        <button type="button" className="tb-icon tb-search-small" onClick={onOpenSearch} aria-label="Search" data-tour="search">
           <Icon name="search" size={19} />
         </button>
-        <button type="button" className="tb-checkin" onClick={onCheckIn}>
+        <button type="button" className="tb-checkin" onClick={onCheckIn} data-tour="check-in">
           <Icon name="ticket" size={18} />
           <span>Check in</span>
           {data.expectedToday > 0 && <span className="tb-checkin-count">{data.expectedToday}</span>}

@@ -1,9 +1,10 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, NotFoundException, Param, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApiOkResponse } from '@nestjs/swagger';
-import { ME_SELECT, MeDto } from './dto/user-response.dto';
+import { ME_SELECT, MeDto, ToursDueDto } from './dto/user-response.dto';
+import { TOUR_NAMES, type TourName } from './tours';
 import { scopeOf } from '../business/branch-scope';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 
@@ -47,5 +48,27 @@ export class UsersController {
       ...rest,
       businessMembership: { ...kept, allLocations: scope.allLocations, locationIds: scope.locationIds },
     };
+  }
+
+  /**
+   * A welcome tour finished or skipped (§307): no longer due, on any device.
+   * Taking it again from Help or Account changes nothing here.
+   */
+  @UseGuards(JwtAuthGuard)
+  @ApiErrors({ auth: true, notFound: true })
+  @Post('me/tours/:name/done')
+  @HttpCode(200)
+  @ApiOkResponse({ type: ToursDueDto })
+  async tourDone(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('name') name: string,
+  ): Promise<ToursDueDto> {
+    if (!TOUR_NAMES.includes(name as TourName)) throw new NotFoundException('There is no tour by that name.');
+    const record = await this.prisma.user.findUniqueOrThrow({ where: { id: user.userId }, select: { toursDue: true } });
+    const toursDue = record.toursDue.filter((due) => due !== name);
+    if (toursDue.length !== record.toursDue.length) {
+      await this.prisma.user.update({ where: { id: user.userId }, data: { toursDue } });
+    }
+    return { toursDue };
   }
 }

@@ -42,6 +42,10 @@ export type Currency = components['schemas']['CurrencyDto'];
 
 export const getMe = () => api<Me>('/users/me');
 
+/** The welcome tour finished or put aside (§307), on whichever device; what is still owed comes back. */
+export const tourDone = (name: Me['toursDue'][number]) =>
+  api<components['schemas']['ToursDueDto']>(`/users/me/tours/${name}/done`, { method: 'POST' });
+
 export const getCurrency = () => api<Currency>('/payments/currency', { anonymous: true });
 
 export const listAppointments = (params: {

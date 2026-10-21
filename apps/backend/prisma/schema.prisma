@@ -315,6 +315,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// The welcome tours still to show this person (§307): set when the account
+  /// is created — "customer" or "seller" — and cleared when they finish or
+  /// skip it, on whichever device. Accounts made before tours existed have
+  /// none due; anyone can take one again from Help or Account.
+  toursDue String[] @default([])
+
   /// The name shown beside this customer's reviews, on the User rather than on
   /// each Review: one source of truth means changing it changes every review at
   /// once, instead of leaving three different names across three reviews.

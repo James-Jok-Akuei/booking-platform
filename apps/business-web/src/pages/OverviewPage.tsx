@@ -267,7 +267,7 @@ export function OverviewPage() {
         </p>
       )}
 
-      <div className="ov-stats">
+      <div className="ov-stats" data-tour="today">
         <Stat
           tone="accent"
           icon="calendarCheck"

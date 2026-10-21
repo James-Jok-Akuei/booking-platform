@@ -19697,3 +19697,72 @@ see — a small animation.
 
 Checked from the Services page and from the foot of the Overview, at 1440 and
 on a phone through the menu.
+
+## 307. A welcome tour on both apps, the first time somebody is signed in (2026-10-21)
+
+The user: on first sign-in, after making an account, both apps should show a
+product tour / walk-through — proper UI/UX, take your time.
+
+**Who is owed one is the server's to say.** `users.toursDue` (a list of names,
+migration `welcome_tours`) is filled when the account is made: "customer" for a
+new customer, "seller" for somebody founding a shop or joining a team by
+invitation, nothing for an administrator. `GET /users/me` returns it;
+`POST /users/me/tours/:name/done` takes the name off (harmless twice; an unknown
+name is 404). Accounts made before this have nothing owed — nobody who already
+knows the app is stopped by a tour. Finished **or** skipped counts as done, on
+any device, so a second phone or browser does not show it again.
+
+**The seller app** (`src/tour/`):
+- **When**: the first time they reach the Overview after the opening picture
+  — a founder once they leave setting up their shop (the wizard is itself the
+  first part of the welcome), a new team member on their first sign-in. Not
+  on any other page they were sent to.
+- **The film** — "How a booking reaches you", five moments on the real
+  screens (§260's rule): a customer finds the shop, books a time and pays a
+  deposit (the customer's phone), it lands in Appointments, the 6-digit code
+  is typed into Check in, and their share goes to their MoMo number (this
+  app — the computer's screens on a computer, the phone's on a phone). Each
+  screen eases in on the part that matters, the rest dimmed around an orange
+  ring, a note floating beside it, and a pill saying whose screen it is. It
+  plays by itself, pauses under the mouse or a held finger, ←/→ move, and it
+  stops at the end on "Show me around". On a phone it is stories: bars, tap
+  left/right, swipe.
+- **The marks** — "Show me around": the real app dimmed and a light moving
+  over it, with a card beside each part: getting live (only while not live),
+  your day, Check in, Appointments, Your shop, Customers, Money (only for
+  those who see the money, §277), search, Help. On a phone: your day, the
+  Check in button, Bookings, Messages, Menu. The light follows a scroll and
+  glides between parts; the page under it takes no clicks (a click nudges
+  the card); Esc ends it; the page and the menu are scrolled back to where
+  they were at the end. A part not on the screen is left out.
+- **"I'll look around myself"** shows one card on Help: "The tour is kept for
+  you". It is taken again from Help ("Take the welcome tour") or the search.
+- Every sentence is the platform's real rule, worded as `ads/guide.ts` words
+  it — change both together.
+
+**The customer app** (`src/tour/WelcomeTour.tsx`): a full-screen story the
+first time they are signed in — after the opening picture, and only on one
+of the tabs, so never over the sign-in or a booking half made (signed in to
+book, they finish booking first and see it later). Four moments on the app's
+real screens (find a place, pick a time, a small deposit by mobile money, the
+code at the door), each easing in on the part that matters with a note, bars
+on top, tap right/left, hold to pause; then "Make it yours": the name on their
+reviews (§31), and reminders before each booking — asked here, where the
+reason is plain, and left out where the phone cannot have them (the web).
+Skipping counts. Account → "How booking works" plays the four moments again.
+On a computer it is a phone-sized card in the middle.
+
+**The screenshots** come from a temporary shop and customers made through
+the real API and removed afterwards (`business-web/public/tour/`,
+`customer-app/assets/tour/`), so no demo picture that is not fit to show
+appears in them (§260). Retake them when those screens change.
+
+**Found on the way**: the local "confirm a deposit" helper
+(`npm run dev:confirm-deposit`) refused every deposit since §66.2 — it read the
+display-only exchange rate, which is empty when the platform charges in
+francs. It reads the settlement one now.
+
+Checked in the running apps at 1440, 1024, 390 and 320 (seller) and 390, 320
+and 820 (customer, on the web): the film and every mark, skipping (the server
+cleared the owed tour), taking it again from Help and from Account, a new
+shop's first step. On a real phone it has not been seen yet.

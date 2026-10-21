@@ -8,6 +8,14 @@ import { Icon, type IconName } from '../ui/Icon';
 import { roleLabel, type ShellData } from './useShellData';
 import { shopStateWord } from '../onboarding/steps';
 
+/** What the welcome tour calls each group of the menu (§307). */
+const GROUP_KEYS: Record<string, string> = {
+  'Your shop': 'shop',
+  Customers: 'customers',
+  Money: 'money',
+  'Manage account': 'account',
+};
+
 /**
  * The menu down the left (§131, §190).
  *
@@ -115,7 +123,7 @@ export function Sidebar({
 
       <nav className="sb-nav" aria-label="Main">
         {sections.map((section) => (
-          <div className="sb-group" key={section.group ?? 'top'}>
+          <div className="sb-group" key={section.group ?? 'top'} data-tour={`group:${GROUP_KEYS[section.group ?? ''] ?? 'top'}`}>
             {section.group && <p className="sb-group-title">{section.group}</p>}
             {section.items.map((item) => {
               const badge = badgeFor(item.to);
@@ -126,6 +134,7 @@ export function Sidebar({
                   end={item.to === '/'}
                   onClick={onNavigate}
                   className={({ isActive }) => `sb-link${isActive ? ' active' : ''}`}
+                  data-tour={`page:${item.to}`}
                   aria-label={rail ? item.label : undefined}
                   onMouseEnter={showTip(item.label)}
                   onMouseLeave={hideTip}

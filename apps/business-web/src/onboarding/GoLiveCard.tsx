@@ -84,7 +84,7 @@ export function GoLiveCard() {
 
   if (r.status === 'SUSPENDED') {
     return (
-      <section className="gl is-danger" aria-label="Your shop's status">
+      <section className="gl is-danger" aria-label="Your shop's status" data-tour="go-live">
         <div className="gl-head">
           <span className="gl-badge">
             <Icon name="alert" size={24} />
@@ -108,7 +108,7 @@ export function GoLiveCard() {
   if (waiting) {
     const sent = new Date(r.submittedAt!);
     return (
-      <section className="gl is-waiting" aria-label="Your shop's status">
+      <section className="gl is-waiting" aria-label="Your shop's status" data-tour="go-live">
         <div className="gl-head">
           <span className="gl-badge gl-pulse">
             <Icon name="hourglass" size={24} />
@@ -141,7 +141,7 @@ export function GoLiveCard() {
 
   const rejected = r.status === 'REJECTED';
   return (
-    <section className={`gl ${rejected ? 'is-rejected' : 'is-setup'}${sendSpot.lit ? ' is-spotlit' : ''}`} aria-label="Your shop's status">
+    <section className={`gl ${rejected ? 'is-rejected' : 'is-setup'}${sendSpot.lit ? ' is-spotlit' : ''}`} aria-label="Your shop's status" data-tour="go-live">
       <div className="gl-head">
         {rejected ? (
           <span className="gl-badge">
@@ -299,7 +299,7 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
   // Lost since approval — a service switched off, the hours cleared.
   const gaps = readiness.goLiveGaps;
   return (
-    <section className={`gl is-approved${spot.lit ? ' is-spotlit' : ''}`} aria-label="Your shop's status">
+    <section className={`gl is-approved${spot.lit ? ' is-spotlit' : ''}`} aria-label="Your shop's status" data-tour="go-live">
       <div className="gl-head">
         <span className="gl-badge">
           <Icon name="checkCircle" size={26} />

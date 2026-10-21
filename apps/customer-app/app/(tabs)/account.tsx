@@ -39,6 +39,7 @@ import { Sheet } from '../../src/ui/Sheet';
 import { listMyAppointments } from '../../src/api/booking';
 import { OffersCard } from '../../src/components/OffersCard';
 import { PayingPromises } from '../../src/booking/PayingPromises';
+import { playWelcomeTour } from '../../src/tour/WelcomeTour';
 import { pickImage, type PickedImage } from '../../src/pickImage';
 import { useSignedIn } from '../../src/api/client';
 import { shareApp } from '../../src/share';
@@ -640,6 +641,13 @@ export default function Account() {
           <FadeIn delay={240}>
             <Text style={styles.group}>About</Text>
             <View style={styles.card}>
+              <Row
+                icon="play-circle-outline"
+                label="How booking works"
+                note="Four steps, from finding a place to showing your code."
+                onPress={playWelcomeTour}
+              />
+              <View style={styles.divider} />
               <Row
                 icon="shield-checkmark-outline"
                 label="How paying works"

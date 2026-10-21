@@ -23,6 +23,10 @@ export type Me = components['schemas']['MeDto'];
 
 export const getMe = () => api<Me>('/users/me');
 
+/** The welcome story seen or put aside (§307), on whichever phone; what is still owed comes back. */
+export const tourDone = (name: Me['toursDue'][number]) =>
+  api<components['schemas']['ToursDueDto']>(`/users/me/tours/${name}/done`, { method: 'POST' });
+
 /**
  * Step one. No role is sent for an existing account — role belongs to
  * registration, and sending it once locked every administrator out (§50).

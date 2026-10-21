@@ -386,6 +386,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/me/tours/{name}/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A welcome tour finished or skipped (§307): no longer due, on any device.
+         *     Taking it again from Help or Account changes nothing here.
+         */
+        post: operations["UsersController_tourDone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me/image": {
         parameters: {
             query?: never;
@@ -3993,6 +4013,8 @@ export interface components {
             businessProfile: components["schemas"]["MeBusinessDto"];
         };
         MeDto: {
+            /** @description The welcome tours still to show them (§307): "customer" or "seller". */
+            toursDue: ("customer" | "seller")[];
             id: string;
             email: string;
             /** @enum {string} */
@@ -4006,6 +4028,9 @@ export interface components {
              *     always seen one membership or none.
              */
             businessMembership: components["schemas"]["MeMembershipDto"] | null;
+        };
+        ToursDueDto: {
+            toursDue: ("customer" | "seller")[];
         };
         UserImageDto: {
             id: string;
@@ -9162,6 +9187,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+        };
+    };
+    UsersController_tourDone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ToursDueDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
                 };
             };
         };

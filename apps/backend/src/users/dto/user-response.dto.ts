@@ -11,6 +11,7 @@ import {
 import { AppointmentStatus } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { NoExtraFields, Serialised } from '../../common/serialised';
+import { TOUR_NAMES } from '../tours';
 
 // ---------------------------------------------------------------------------
 // The caller's own account (§128.16)
@@ -31,6 +32,7 @@ export const ME_SELECT = {
   createdAt: true,
   displayName: true,
   imageUrl: true,
+  toursDue: true,
   businessMemberships: {
     where: { status: BusinessMemberStatus.ACTIVE },
     select: {
@@ -87,6 +89,9 @@ export class MeDto implements MeWire {
   createdAt!: string;
   displayName!: string | null;
   imageUrl!: string | null;
+  /** The welcome tours still to show them (§307): "customer" or "seller". */
+  @ApiProperty({ enum: TOUR_NAMES, isArray: true })
+  toursDue!: string[];
 
   /**
    * At most one, or null. The underlying relation is a LIST only because the
@@ -441,3 +446,9 @@ export const __exportedReviewDtoIsExact: NoExtraFields<
   ExportedReviewDto,
   Serialised<Prisma.ReviewGetPayload<{ select: typeof EXPORT_REVIEW_SELECT }>>
 > = true;
+
+/** The tours still due after one is done (§307). */
+export class ToursDueDto {
+  @ApiProperty({ enum: TOUR_NAMES, isArray: true })
+  toursDue!: string[];
+}

@@ -103,7 +103,10 @@ async function main() {
     );
   }
 
-  const rate = await settings.getExchangeRateForDisplay();
+  // The money question, not the display one (§66.2): in a deployment that
+  // charges in its own currency the display helper answers null — there is
+  // nothing to approximate — which left this script refusing every deposit.
+  const rate = await settings.getSettlementContext();
   if (!rate) {
     throw new Error(
       'No exchange rate is configured, so there is no charged amount to record. ' +
@@ -129,7 +132,7 @@ async function main() {
     data: {
       paymentProviderReferenceId: reference,
       paymentInitiatedAt: new Date(),
-      providerCurrency: rate.providerCurrency,
+      providerCurrency: rate.settlementCurrency,
       providerAmountMinor: chargedMinor,
       exchangeRateUsed: rate.rate,
     },
@@ -155,14 +158,14 @@ async function main() {
     [
       '',
       `Appointment ${appointmentId} -> ${status}`,
-      `  charged        ${chargedMinor} ${rate.providerCurrency} minor units ` +
+      `  charged        ${chargedMinor} ${rate.settlementCurrency} minor units ` +
         `(rate ${rate.rate.toFixed(8)})`,
       `  reference      ${reference}`,
       '  ledger entries:',
       ...entries.map(
         (e) =>
           `    ${e.type.padEnd(22)} USD ${String(e.amountMinor).padStart(8)}c   ` +
-          `${rate.providerCurrency} ${String(e.settlementAmountMinor ?? 0).padStart(10)}`,
+          `${rate.settlementCurrency} ${String(e.settlementAmountMinor ?? 0).padStart(10)}`,
       ),
       '',
     ].join('\n'),
