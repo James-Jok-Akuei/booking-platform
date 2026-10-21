@@ -7,7 +7,7 @@ import { Icon, type IconName } from '../ui/Icon';
 import { PressableScale } from '../ui/PressableScale';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate } from '../i18n/format';
 
 export type Look = { icon: IconName; fg: string; bg: string; label: string };
 
@@ -164,7 +164,7 @@ export const ago = (iso: string) => {
   const start = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const days = Math.round((start(new Date()) - start(new Date(iso))) / 86_400_000);
   if (days < 7) return t`${days} d`;
-  return new Date(iso).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
+  return formatDate(new Date(iso), { day: 'numeric', month: 'short' });
 };
 
 const REMOVE_AT = 96;

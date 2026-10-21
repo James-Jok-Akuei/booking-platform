@@ -1,0 +1,204 @@
+POLITIQUE DE CONFIDENTIALITÉ
+
+Dernière mise à jour : 21 octobre 2026
+
+La présente Politique de confidentialité explique quelles données à caractère personnel BwanguReservations (« nous ») collecte lorsque vous utilisez l’application BwanguReservations, pourquoi nous les collectons, avec qui nous les partageons et quels sont vos droits.
+
+Nous respectons la loi n° 058/2021 du 13/10/2021 relative à la protection des données à caractère personnel et de la vie privée (« la Loi sur la protection des données »). L’autorité qui contrôle l’application de cette loi au Rwanda est l’Autorité nationale de cybersécurité (NCSA), par l’intermédiaire de son Bureau de la protection des données et de la vie privée.
+
+
+1. QUI EST RESPONSABLE DE VOS DONNÉES
+
+BwanguReservations est le responsable du traitement des données à caractère personnel décrites ici.
+
+- Adresse : Downtown Kigali, Nyarugenge District, Ville de Kigali, Rwanda
+- E-mail pour les questions de confidentialité : jokditakeerleek@gmail.com
+- Délégué à la protection des données : [NAME], jokditakeerleek@gmail.com
+- Certificat d’enregistrement auprès de la NCSA : [CERTIFICATE NUMBER, ONCE ISSUED]
+
+Lorsque vous réservez auprès d’un établissement, cet établissement reçoit aussi certaines de vos données afin de pouvoir vous servir. L’établissement est responsable de l’usage qu’il fait de ces données une fois qu’il les a reçues.
+
+
+2. LES DONNÉES QUE NOUS COLLECTONS
+
+2.1 Données que vous nous fournissez
+
+- Votre adresse e-mail, qui vous sert à vous connecter.
+- Un nom d’affichage et une photo de profil, si vous choisissez de les ajouter.
+- Les numéros mobile money que vous utilisez pour payer, et ceux que vous enregistrez pour la prochaine fois.
+- Vos réservations : l’établissement, le service, la quantité, la date et l’heure.
+- Les choix que vous faites lorsque vous réservez, comme la longueur de vos cheveux ou la taille de votre voiture, et toute note que vous écrivez à l’établissement.
+- Les messages que vous envoyez aux établissements, et les photos que vous y joignez.
+- Les demandes que vous envoyez à notre équipe d’assistance, et les fichiers que vous y joignez.
+- Les avis et les notes que vous rédigez.
+- Les établissements que vous enregistrez en favoris.
+- Votre district, ou l’adresse que vous enregistrez, si vous faites ce choix pour les « Offres de la semaine par e-mail ».
+
+2.2 Données créées lorsque vous utilisez l’application
+
+- Les enregistrements de paiement : le montant, l’heure, le numéro mobile money utilisé et la référence fournie par le prestataire de paiement. Nous ne recevons jamais votre code PIN mobile money.
+- Votre acceptation de nos Conditions d’utilisation et de la présente Politique de confidentialité, avec la date et la version.
+- Les notifications que nous vous avons envoyées et le fait que vous les ayez ouvertes ou non.
+- Les journaux techniques conservés par nos serveurs, comme l’heure d’une requête et les rapports d’erreur, utilisés pour assurer la sécurité et le bon fonctionnement du service.
+
+2.3 Votre position
+
+Si vous l’autorisez, l’application utilise la position de votre téléphone pour indiquer à quelle distance de vous se trouvent les établissements, à vol d’oiseau et par la route, et pour les trier par distance. Votre position est utilisée sur le moment pour répondre à la recherche. Nous ne l’enregistrons pas dans votre compte et nous ne suivons pas vos déplacements. Pour calculer les distances par la route, votre position et celle de l’établissement sont envoyées à un service de calcul d’itinéraire, qui ne reçoit ni votre nom ni votre e-mail.
+
+Les « Offres de la semaine par e-mail » sont différentes, car elles sont envoyées lorsque vous n’utilisez pas l’application. Pour elles, vous pouvez choisir un district dans une liste, saisir une adresse et la sélectionner parmi les lieux que nous trouvons, ou appuyer sur « Utiliser ma position actuelle », qui prend le point où se trouve votre téléphone à ce moment-là (par exemple votre domicile). Nous enregistrons ce seul point avec le nom de sa rue. Nous l’utilisons uniquement pour choisir des services proches de ce point pour l’e-mail hebdomadaire et pour mesurer leur distance par la route, et l’e-mail indique pour quelle adresse il a été envoyé. Ce point n’est jamais montré aux établissements. Votre position en temps réel n’est jamais utilisée pour ces e-mails. Vous pouvez modifier l’adresse ou appuyer sur « Oublier » à tout moment, et elle est supprimée lorsque vous fermez votre compte.
+
+2.4 Réponses privées, par exemple sur la santé
+
+Certains établissements posent une question qui touche à votre santé ou à un autre sujet privé afin de pouvoir vous servir en toute sécurité : une allergie alimentaire, une grossesse, une blessure qu’un thérapeute doit connaître, le type d’aide juridique dont vous avez besoin. Vous êtes libre de répondre ou non. Ces réponses sont des données à caractère personnel sensibles, et nous les traitons de façon plus stricte que toute autre donnée :
+
+- Nous les utilisons uniquement pour les transmettre à l’établissement auprès duquel vous réservez. En répondant, vous donnez votre consentement explicite à cette transmission, et vous pouvez modifier ou supprimer une réponse dans l’application jusqu’à 2 heures avant le rendez-vous.
+- Elles sont stockées verrouillées (chiffrées), séparément du reste de votre réservation.
+- Seuls vous et cet établissement pouvez les voir. Elles ne figurent jamais dans un e-mail, une notification sur téléphone ou une invitation de calendrier.
+- Notre équipe d’assistance ne peut les lire que lorsque vous ou l’établissement nous demandez de l’aide pour cette réservation. Chaque lecture est enregistrée avec son motif, et la réservation indique que notre équipe d’assistance les a lues.
+- Nous les supprimons 30 jours après le rendez-vous.
+
+Nous ne vous demandons jamais de diagnostic, vos antécédents médicaux, vos résultats d’examens ni les médicaments que vous prenez.
+
+2.5 Ce que nous ne collectons pas
+
+Nous ne collectons pas vos numéros de carte d’identité nationale, de passeport ou d’assurance, vos contacts, ni votre code PIN mobile money. Nous n’utilisons pas de traceurs publicitaires et nous ne vendons pas vos données.
+
+
+3. POURQUOI NOUS UTILISONS VOS DONNÉES, ET NOTRE BASE LÉGALE
+
+La Loi sur la protection des données ne nous permet d’utiliser des données à caractère personnel que lorsqu’il existe une base légale. Les nôtres sont :
+
+- Pour exécuter notre contrat avec vous. Créer votre compte, prendre les réservations, gérer les acomptes et les remboursements, envoyer les confirmations et les codes d’arrivée, vous permettre d’écrire à un établissement, et répondre à vos demandes d’assistance.
+- Pour respecter la loi. Tenir les registres comptables et fiscaux, répondre aux demandes légales des autorités et traiter les réclamations des consommateurs.
+- Pour nos intérêts légitimes, lorsque ceux-ci ne prévalent pas sur vos droits. Assurer la sécurité de la Plateforme, prévenir la fraude et les abus, corriger les pannes, afficher les avis, et comprendre de façon générale comment la Plateforme est utilisée afin de pouvoir l’améliorer.
+- Avec votre consentement. Utiliser la position de votre téléphone, vous envoyer les « Offres de la semaine par e-mail » et afficher votre photo de profil. Vous pouvez retirer votre consentement à tout moment, et cela n’aura pas d’effet sur ce qui a été fait auparavant.
+- Avec votre consentement explicite. Transmettre vos réponses aux questions privées, par exemple sur la santé, à l’établissement auprès duquel vous réservez (voir 2.4).
+
+
+4. AVEC QUI NOUS PARTAGEONS VOS DONNÉES
+
+4.1 L’établissement auprès duquel vous réservez. Il voit votre adresse e-mail et votre nom d’affichage si vous en avez choisi un, ce que vous avez réservé et pour quand, les choix que vous avez faits et votre note, vos réponses à ses questions privées, si votre acompte est payé, les messages que vous lui envoyez et tout avis que vous laissez. Il ne voit ni votre numéro mobile money ni vos autres réservations.
+
+4.2 Les autres utilisateurs. Vos avis sont publics et affichés avec votre nom d’affichage. Si vous n’avez pas choisi de nom d’affichage, votre avis s’affiche sous le nom « Anonyme ».
+
+4.3 Les prestataires de services qui travaillent pour nous. Ils ne peuvent utiliser vos données que sur nos instructions :
+
+- MTN Mobile Money Rwanda, pour encaisser les acomptes et verser les remboursements.
+- [EMAIL DELIVERY PROVIDER], pour distribuer les e-mails.
+- [HOSTING AND STORAGE PROVIDER], pour héberger la Plateforme et stocker les fichiers.
+- [ROUTE-FINDING SERVICE], pour mesurer les distances par la route. Il ne reçoit que des points sur une carte, jamais votre nom ni votre e-mail.
+- OpenStreetMap, dont les serveurs dessinent les images de carte sur nos sites web. Votre navigateur les récupère directement, donc OpenStreetMap voit votre adresse internet, et rien d’autre.
+- [ADDRESS SEARCH SERVICE], pour trouver sur la carte une adresse que vous saisissez. Il ne reçoit que les mots que vous avez saisis, jamais votre nom ni votre e-mail.
+
+4.4 Les autorités. Nous partageons des données avec une autorité publique ou un tribunal lorsque la loi l’exige.
+
+4.5 Un nouveau propriétaire. Si notre entreprise est vendue ou fusionnée, vos données peuvent être transmises au nouveau propriétaire, qui doit continuer à les protéger comme le décrit la présente politique. Nous vous en informerons à l’avance.
+
+Nous ne vendons pas vos données à caractère personnel et nous ne les partageons pas avec des annonceurs.
+
+
+5. OÙ VOS DONNÉES SONT STOCKÉES
+
+La Loi sur la protection des données exige que les données à caractère personnel soient stockées au Rwanda, sauf si l’organisation détient un certificat d’enregistrement délivré par la NCSA qui autorise leur stockage hors du Rwanda.
+
+Vos données sont stockées [IN RWANDA / IN (COUNTRY), UNDER NCSA AUTHORISATION NUMBER ...]. Lorsqu’un prestataire de services que nous utilisons est situé hors du Rwanda, nous ne transférons des données que dans la mesure permise par la Loi sur la protection des données : avec l’autorisation de la NCSA et des garanties appropriées, comme les clauses contractuelles types qu’elle a publiées, ou avec votre consentement.
+
+
+6. COMBIEN DE TEMPS NOUS CONSERVONS VOS DONNÉES
+
+Nous ne conservons les données à caractère personnel que le temps nécessaire aux finalités ci-dessus.
+
+- Les informations de votre compte : tant que votre compte est ouvert.
+- Les réservations et les enregistrements de paiement : pendant la durée exigée par la loi pour les registres comptables et fiscaux, actuellement [10 YEARS, TO BE CONFIRMED], même si vous fermez votre compte. Après la fermeture de votre compte, ces enregistrements ne portent plus votre nom ni votre adresse e-mail.
+- Les messages et les demandes d’assistance : tant que votre compte est ouvert, puis uniquement le temps nécessaire pour traiter les litiges.
+- Les réponses aux questions privées, par exemple sur la santé : supprimées 30 jours après le rendez-vous. Vos autres choix et votre note restent dans l’enregistrement de la réservation.
+- Les avis : tant que l’établissement est référencé sur la Plateforme. Après la fermeture de votre compte, ils s’affichent sous le nom « Anonyme ».
+- Votre district, votre adresse enregistrée et votre consentement au marketing : jusqu’à ce que vous les modifiiez ou les oubliiez, ou que vous fermiez votre compte. Désactiver les « Offres de la semaine par e-mail » les conserve, pour que la réactivation ne demande qu’une touche ; « Oublier » supprime l’adresse enregistrée.
+- Les journaux techniques : pendant une courte période, normalement pas plus de [90 DAYS].
+
+
+7. COMMENT NOUS PROTÉGEONS VOS DONNÉES
+
+- Les données circulent entre l’application et nos serveurs par des connexions chiffrées.
+- Nous vous connectons avec des codes à usage unique envoyés à votre adresse e-mail : nous ne détenons donc aucun mot de passe vous appartenant que l’on pourrait nous voler.
+- Les codes de connexion sont stockés sous une forme protégée, et non en texte lisible.
+- Les réponses aux questions privées, par exemple sur la santé, sont stockées verrouillées (chiffrées) et séparées du reste de la réservation.
+- Seuls les membres du personnel qui ont besoin de vos données pour faire leur travail peuvent y accéder.
+- Notre équipe d’assistance ne lit pas vos messages avec un établissement. Elle ne lit les messages d’une réservation donnée que lorsque vous ou l’établissement nous demandez de l’aide pour cette réservation, ou lorsqu’un problème la concernant nous est signalé. Chaque lecture est enregistrée, et la réservation indique que notre équipe d’assistance a lu la conversation.
+- Lorsque notre équipe d’assistance agit en votre nom — pour enregistrer votre arrivée, annuler une réservation que vous nous avez demandé d’annuler ou vous déconnecter d’un téléphone perdu — l’action est enregistrée avec son motif, et l’on vous informe de ce qui a été fait.
+- Les paiements sont approuvés sur votre propre téléphone. Un numéro mobile money enregistré ne peut pas être débité sans cette approbation.
+
+Aucun système n’est parfaitement sûr. Si une violation de données à caractère personnel susceptible de mettre vos droits en danger se produit, nous la signalerons à la NCSA dans les 48 heures après en avoir pris connaissance, comme l’exige la Loi sur la protection des données, et nous vous en informerons sans délai lorsque la loi l’exige aussi.
+
+
+8. VOS DROITS
+
+En vertu de la Loi sur la protection des données, vous avez le droit :
+
+- d’être informé de la manière dont vos données sont utilisées, ce qui est l’objet de la présente politique ;
+- d’accéder à vos données et d’en obtenir une copie ;
+- de faire corriger vos données si elles sont inexactes ou dépassées ;
+- de faire effacer vos données lorsque nous n’avons plus de raison légale de les conserver ;
+- de vous opposer à notre utilisation de vos données, y compris à des fins de marketing ;
+- de nous demander de limiter l’utilisation de vos données le temps qu’une question les concernant soit résolue ;
+- de recevoir vos données sous une forme que vous pouvez transférer à un autre service (portabilité) ;
+- de ne pas faire l’objet d’une décision prise uniquement par des moyens automatisés et qui vous affecte gravement. Nous ne prenons pas de telles décisions ;
+- de retirer votre consentement à tout moment ;
+- de désigner une personne qui peut exercer ces droits pour vous, y compris après votre décès.
+
+Comment exercer ces droits dans l’application :
+
+- Obtenir une copie de vos données : Compte, puis « Obtenir une copie de mes données ».
+- Corriger votre nom ou votre photo : Compte.
+- Arrêter les e-mails marketing : désactivez « Offres de la semaine par e-mail » dans Compte, ou utilisez le lien de désabonnement présent dans chacun de ces e-mails.
+- Arrêter l’utilisation de votre position : désactivez la localisation pour l’application dans les paramètres de votre téléphone.
+- Fermer votre compte et supprimer votre identité : Compte, puis « Fermer mon compte ».
+
+Pour toute autre demande, écrivez à jokditakeerleek@gmail.com. Nous ne facturons rien pour cela. Nous vous répondrons dans un délai de 30 jours. Nous pouvons vous demander de confirmer que vous êtes le titulaire du compte avant d’agir.
+
+
+9. ENFANTS
+
+La Plateforme est destinée aux personnes âgées de 18 ans et plus. Nous ne collectons pas sciemment de données à caractère personnel auprès de personnes de moins de 16 ans sans le consentement d’un parent ou d’un tuteur. Si vous pensez qu’un enfant nous a fourni des données, prévenez-nous et nous les supprimerons.
+
+
+10. MARKETING
+
+Nous n’envoyons d’e-mails marketing qu’aux personnes qui ont activé les « Offres de la semaine par e-mail ». Ces e-mails sont envoyés au maximum une fois par semaine, sont signalés comme des offres, et chacun contient un lien pour se désabonner d’une seule touche. Les e-mails concernant vos propres réservations ne sont pas du marketing et sont toujours envoyés.
+
+
+11. COOKIES ET OUTILS SIMILAIRES
+
+Nous n’utilisons ni cookies publicitaires, ni cookies de suivi, ni outils de mesure d’audience — ni dans l’application, ni sur nos sites web (notre page d’accueil, l’application professionnelle et la console de notre équipe). C’est pourquoi on ne vous demande jamais d’accepter ou de refuser des cookies : aucun ne nécessite votre choix.
+
+Ce qui est conservé sur votre appareil se limite à ce dont le service a besoin pour fonctionner :
+
+- Votre connexion. L’application pour téléphone la conserve dans le stockage sécurisé de votre téléphone. Sur nos sites web, elle est conservée dans le stockage de votre navigateur, sur votre ordinateur. La déconnexion la supprime.
+- De petits réglages que vous avez choisis, comme un onglet que vous avez ouvert ou une astuce que vous avez fermée. Ils restent dans votre navigateur ou votre téléphone et ne sont envoyés à personne.
+- Les notifications. Si vous les autorisez, votre téléphone ou votre navigateur nous donne une adresse à laquelle les envoyer. Désactiver les notifications, ou vous déconnecter sur ce téléphone, supprime cette adresse.
+
+Nos sites web chargent leurs caractères (polices) depuis nos propres serveurs, et non depuis ceux d’une autre entreprise. Les cartes de nos sites web proviennent d’OpenStreetMap : lorsqu’une carte s’affiche, votre navigateur demande les images de la carte à leurs serveurs, qui voient donc votre adresse internet — mais ni votre nom ni rien d’autre vous concernant. Les itinéraires s’ouvrent dans une application ou un site de cartes de votre choix.
+
+Si nous ajoutons un jour un élément facultatif, comme le comptage du nombre de personnes qui visitent une page, nous vous le demanderons d’abord, et vous pourrez refuser.
+
+
+12. MODIFICATIONS DE LA PRÉSENTE POLITIQUE
+
+Lorsque nous modifierons la présente politique, nous vous montrerons dans l’application ce qui a changé et nous vous demanderons d’accepter la nouvelle version. La date indiquée en haut montre quand elle a été mise à jour pour la dernière fois.
+
+
+13. LANGUE
+
+La présente politique est rédigée en anglais. Si nous en fournissons une traduction en kinyarwanda ou en français et qu’il existe une différence, la version anglaise s’applique, sauf disposition contraire de la loi.
+
+
+14. QUESTIONS ET RÉCLAMATIONS
+
+Contactez-nous d’abord, pour que nous puissions arranger les choses :
+
+BwanguReservations
+Downtown Kigali, Nyarugenge District, Ville de Kigali, Rwanda
+jokditakeerleek@gmail.com
++250 798 972 441
+
+Si notre réponse ne vous satisfait pas, vous avez le droit de déposer une réclamation auprès de l’Autorité nationale de cybersécurité (NCSA), Bureau de la protection des données et de la vie privée, qui contrôle l’application de la Loi sur la protection des données au Rwanda.

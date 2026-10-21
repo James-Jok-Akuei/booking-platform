@@ -7,7 +7,7 @@ import { Modal } from './Modal';
 import { API_URL, CONTACT_EMAIL, CONTACT_PHONE, SOCIAL, businessStart } from './links';
 import { SocialIcon } from './SocialIcon';
 import { LanguageChoice } from './LanguageChoice';
-import { dateLocale, askIn } from './i18n';
+import { formatDate, askIn } from './i18n';
 
 type Kind = 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
 type Doc = { title: string; version: number; body: string; publishedAt: string; language?: string };
@@ -178,7 +178,7 @@ function LegalDoc({ kind, onClose }: { kind: Kind; onClose: () => void }) {
   const [english, setEnglish] = useState(false);
   const label = DOCS.find((d) => d.kind === kind)!.label;
   const since = doc
-    ? new Date(doc.publishedAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' })
+    ? formatDate(new Date(doc.publishedAt), { day: 'numeric', month: 'long', year: 'numeric' })
     : '';
 
   useEffect(() => {

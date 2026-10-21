@@ -19805,7 +19805,8 @@ their own translations, read by the lawyer. The console stays English; where
 it writes words customers read (categories, legal documents, announcements)
 it will get a box per language. A language is offered only once it is
 finished and checked (`OFFERED = ['en']` in each app), so nobody ever sees
-half a translation.
+half a translation. ~~superseded by §308.7: the user chose to switch both on
+before the native check~~
 
 **How the apps do it** (parts 1 and 2):
 - **Lingui** in both apps: every sentence goes through `t`, `<Trans>`,
@@ -19890,9 +19891,11 @@ Two were wrong in English already: the code boxes were 4px too wide on a
 and "For your shop" was squeezed beside the name on narrow phones (below
 380 it now sits under it).
 
-Kinyarwanda dates come from the phone's and the server's own language data
+~~Kinyarwanda dates come from the phone's and the server's own language data
 ("Ukwakira 22 Kuwa kane" for Thursday 22 October); the native reviewer is to
-say whether that order reads right, and the formats can be set by hand if not.
+say whether that order reads right, and the formats can be set by hand if not.~~
+Superseded by §308.7: the order is ours ("Kuwa kane, 22 Ukwakira 2026"), and
+in the apps the names too, since browsers have none.
 
 Checked: every notice, for every side, renders the same English as before
 (apart from that one); tests put stand-in French in and see it in a notice,
@@ -19965,8 +19968,8 @@ picker. They are said in the reader's language by the server, as it answers:
 - **The apps** ask for their data again when the language changes, so names
   follow at once; the website sends its language with its requests.
 
-**Left for later**: searching by a name in Kinyarwanda or French (search
-still matches the English names and the shops' own words).
+~~**Left for later**: searching by a name in Kinyarwanda or French (search
+still matches the English names and the shops' own words).~~ Done in §308.7.
 
 ### 308.4 Announcements in each language (2026-10-21)
 
@@ -20006,3 +20009,119 @@ in force without anybody being asked to agree again**.
 
 The documents themselves still need writing in Kinyarwanda and French by a
 translator and reading by the lawyer (launch paperwork).
+
+### 308.6 Signing in with the wrong kind of account, and refusals by code (2026-10-21)
+
+The user tried an administrator's email in the business app and was asked for
+"the 6-digit code from your authenticator app" — a step that made no sense
+there. Now:
+- **The wrong app is said first.** The apps send which app they are
+  (`app: 'business' | 'customer'` on `POST /auth/otp/verify`). Once the
+  emailed code is right, an account of another kind is refused before any
+  second step, with `code: WRONG_APP` and its kind, in plain words: an
+  administrator is sent to the console; a customer's email in the business
+  app is told to use their business email or a new one to add a business; a
+  business email in the customer app is told to use a different email to
+  book. The code is used up. The console and older apps (no `app`) are
+  unchanged.
+- **Every sign-in refusal has a stable `code`** (`SIGN_IN` in
+  auth.service.ts: NO_ACCOUNT, ACCOUNT_CLOSED, CODE_COOLDOWN with
+  `waitSeconds`, TOO_MANY_CODES, CODE_NOT_RIGHT, TOO_MANY_TRIES, WRONG_APP).
+  Both apps decide what to show by the code (`refusalOf`), never by reading
+  the English — which would have broken sign-in in any other language — and
+  show the server's sentence, already in the app's language, for the rest.
+- The request limiter's "too many…" answers (app-bootstrap.ts) answer before
+  Nest's error filter, so they say their words themselves, in the request's
+  language.
+
+**Words that overlapped** (the user's screenshots): the shop menu's "Take
+the welcome tour" spilled past the menu without its icon — menu items now
+wrap, the icon kept; the menu's "Signed in as" email was white on white —
+it is the page's ink now (in English too); the photo drop box's "or drop
+them here" ran outside its border — it wraps inside it (shop and service
+photos).
+
+### 308.7 Kinyarwanda and French switched on (2026-10-21)
+
+The user: "trust the process and do these things now … we can later adjust,
+which will be small changes". So the "later" list of §308–308.5 was done in
+one go, and **both languages are offered in both apps and on the website**
+(`OFFERED = ['en', 'rw', 'fr']`), ahead of the native check.
+
+**The translations.** Every sentence — customer app 943, seller app 2,299,
+server 902, website 103 — was translated into both languages by AI
+translators working from one brief and glossary (product words fixed once:
+gahunda / réservation, avansi / acompte, iduka / établissement, kwakira /
+accueillir…), each batch checked by machine (placeholders, plural branches,
+tags, spaces, apostrophes) and merged into the `.po` files; corrections made
+while looking at the screens are kept in the merge's last step. Nothing is
+left untranslated. **This is a first version**: a native Kinyarwanda speaker
+(and a French one) still has to read it in the running apps; their fixes are
+small edits to the `.po` files. Sentences that turned out to be glued from
+English pieces were rewritten whole on the way ("{n} things left", "Invited
+as {role}", "Mondays are your busiest", the server's "booking(s)", lists
+joined with "and"): plurals and per-case sentences everywhere, and the
+server's error filter now also says, in the reader's language, our own words
+caught inside a refusal (a role, a status, a list of missing items).
+
+**Dates.** Browsers carry no Kinyarwanda dates and quietly wrote English
+("Wednesday 21 October"). The apps and the website now write Kinyarwanda's
+day and month names themselves (the language standard's names, capitalised)
+in Rwanda's order: "Kuwa gatatu, 21 Ukwakira 2026", 24-hour clock. Lists
+join with "na" / "n’" (Kinyarwanda has no list pattern either). The server
+keeps Node's own names in the same order.
+
+**Search by translated names.** A search matches a category's or type's
+Kinyarwanda and French names too, typed with or without accents ("Kogosha"
+finds the barbers, "Coiffure" the salons) — `TaxonomyNamesService.spokenMatches`.
+
+**The website.** A page per language for search engines: `/rw/` and `/fr/`,
+each with its title, description, share picture words, `<html lang>`,
+canonical and `hreflang` links naming the others (made at build,
+`plugins/language-pages.ts`); the language follows the address. The
+walkthrough video gets subtitles in each language (timed to its voice) —
+no Kinyarwanda synthetic voice exists, and recording again would book real
+sandbox payments; the subtitles show by default in the page's language.
+
+**Legal documents.** All three are translated into both languages in full
+(`prisma/legal/<name>.{rw,fr}.txt`), each keeping the clause that the English
+applies; the Privacy Policy gained that clause too (13. LANGUAGE — v9).
+`npm run legal:publish` now also puts the translations on the version in
+force, and `prisma/legal/translations.json` records which English each was
+made from: once the English changes, an old translation is left off (readers
+get the English) until it is updated and marked with
+`npm run legal:publish -- --translated`. A draft being written in the
+console is never written over. The lawyer is still to read them.
+
+**Pictures of the apps.** The tours (seller film, customer story) and the
+website's screens pick their pictures from a folder per language
+(`public/tour/{rw,fr}/`, `assets/tour/{rw,fr}/`, `public/shots/{rw,fr}/`),
+retaken in each language from a temporary shop, removed afterwards.
+
+**Made to fit.** Looked at in Kinyarwanda and French at 1440, 1024, 390 and
+320, and adjusted where the longer words did not sit well — the layout
+changes for the language where needed, never cutting words:
+- `--words` (styles.css) brings the densest parts a step down in longer
+  languages (Kinyarwanda 0.93, French 0.96): the appointment tabs, the phone
+  tab bar on the narrowest phones.
+- Rows that scroll sideways fade the edge that has more (`.scroll-edges`,
+  `ui/scrollEdges.ts`), so a cut word reads as "there is more".
+- The appointments tiles' labels take two lines (room kept for both in a
+  longer language, so the numbers stay in a row); the overview's two buttons
+  stack, each whole, when they do not fit side by side; the date strip shows
+  the flag without the word "Rwanda" where the day name needs the room.
+- Shorter words chosen for tight places (the translator's choice, not the
+  layout's): the website headline ("Fata gahunda / mu buryo bworoshye!",
+  "Réservez / en toute simplicité !"), the phone tab bar's "Accueil" and
+  "Agenda", the check-in button's "Accueillir", "Trouver un lieu", "Pour le
+  Rwanda", "Espace pro", the shop page's "Amasaha", the seller's "Isura
+  y’iduka" and "Shakisha gahunda", the rotating sign-in words each carrying
+  their own "your" in Kinyarwanda.
+- The role beside the shop's name ("Owner") and two timestamps were never
+  translated; they are.
+
+**Still to do** (not code): the native speakers' reading of both languages
+in the apps; the lawyer's reading of the legal translations (and the
+official Kinyarwanda and French names of RDB, RICA, NCSA and the laws they
+cite).
+

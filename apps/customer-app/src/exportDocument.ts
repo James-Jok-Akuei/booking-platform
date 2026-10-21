@@ -3,7 +3,7 @@ import { BOOKING_STATUS } from './bookingStatus';
 import { TICKET_STATUS } from './ticketStatus';
 import { plural, t } from '@lingui/core/macro';
 import { appLocale } from './i18n';
-import { dateLocale } from './i18n/format';
+import { formatDate, formatDateTime } from './i18n/format';
 
 /**
  * A person's data, as a document a person can read (§144).
@@ -26,10 +26,10 @@ export function exportDocumentHtml(
   format: (minor: number | null | undefined, code?: string | null) => string,
 ): string {
   const day = (iso: string | null | undefined) =>
-    iso ? new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' }) : '';
+    iso ? formatDate(new Date(iso), { dateStyle: 'medium' }) : '';
   const moment = (iso: string | null | undefined) =>
     iso
-      ? new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' })
+      ? formatDateTime(new Date(iso), { dateStyle: 'medium', timeStyle: 'short' })
       : '';
   // Everything a customer typed is escaped: a message containing "<b>" is
   // shown as written, not obeyed.

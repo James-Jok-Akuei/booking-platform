@@ -23,7 +23,7 @@ msgstr "{0} at {1}"
 msgid "{deposit} to book"
 msgstr "{deposit} to book"
 
-#: src/App.tsx:210
+#: src/App.tsx:215
 msgid "{total, plural, one {# place} other {# places}}"
 msgstr "{total, plural, one {# place} other {# places}}"
 
@@ -31,7 +31,7 @@ msgstr "{total, plural, one {# place} other {# places}}"
 msgid "{total, plural, one {<0>#</0> service ready to <1>book</1> today.} other {<2>#</2> services ready to <3>book</3> today.}}"
 msgstr "{total, plural, one {<0>#</0> service ready to <1>book</1> today.} other {<2>#</2> services ready to <3>book</3> today.}}"
 
-#: src/App.tsx:214
+#: src/App.tsx:219
 msgid "{total, plural, one {Place you can<0/>book today.} other {Places you can<1/>book today.}}"
 msgstr "{total, plural, one {Place you can<0/>book today.} other {Places you can<1/>book today.}}"
 
@@ -39,23 +39,23 @@ msgstr "{total, plural, one {Place you can<0/>book today.} other {Places you can
 msgid "A small deposit<0/>holds your time"
 msgstr "A small deposit<0/>holds your time"
 
-#: src/Tour.tsx:68
+#: src/Tour.tsx:69
 msgid "About five minutes"
 msgstr "About five minutes"
 
-#: src/Tour.tsx:92
+#: src/Tour.tsx:93
 msgid "Approved"
 msgstr "Approved"
 
-#: src/App.tsx:369
+#: src/App.tsx:375
 msgid "Back to top"
 msgstr "Back to top"
 
-#: src/App.tsx:421
+#: src/App.tsx:428
 msgid "Barbers, salons, spas, garages — with real photos, prices and open hours."
 msgstr "Barbers, salons, spas, garages — with real photos, prices and open hours."
 
-#: src/App.tsx:266
+#: src/App.tsx:272
 msgid "Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo deposit. You see your whole day on one screen, and check people in with a code."
 msgstr "Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo deposit. You see your whole day on one screen, and check people in with a code."
 
@@ -71,19 +71,23 @@ msgstr "Book in<0/>under a minute"
 msgid "Book real places near you, hold your time with a small MoMo deposit, and show your code at the door."
 msgstr "Book real places near you, hold your time with a small MoMo deposit, and show your code at the door."
 
-#: src/App.tsx:155
+#: src/i18n/head.ts:10
+msgid "Book your next appointment at real shops near you. Pay a small deposit with MTN MoMo, show your 6-digit code at the door."
+msgstr "Book your next appointment at real shops near you. Pay a small deposit with MTN MoMo, show your 6-digit code at the door."
+
+#: src/App.tsx:160
 msgid "Book your next<0/>appointment, Easily!"
 msgstr "Book your next<0/>appointment, Easily!"
 
-#: src/App.tsx:32
+#: src/i18n/head.ts:9
 msgid "BwanguReservations — Book real shops in Rwanda, quickly"
 msgstr "BwanguReservations — Book real shops in Rwanda, quickly"
 
-#: src/Tour.tsx:247
+#: src/Tour.tsx:249
 msgid "BwanguReservations · For businesses"
 msgstr "BwanguReservations · For businesses"
 
-#: src/App.tsx:391
+#: src/App.tsx:397
 msgid "BwanguReservations is coming to the App Store and Google Play. Businesses can already sign in on the web and set up their shop."
 msgstr "BwanguReservations is coming to the App Store and Google Play. Businesses can already sign in on the web and set up their shop."
 
@@ -96,24 +100,28 @@ msgstr "BwanguReservations on {0}"
 msgid "BwanguReservations on social media"
 msgstr "BwanguReservations on social media"
 
-#: src/App.tsx:403
+#: src/i18n/head.ts:11
+msgid "BwanguReservations: book your next appointment, easily — the app's Find a place and shop screens"
+msgstr "BwanguReservations: book your next appointment, easily — the app's Find a place and shop screens"
+
+#: src/App.tsx:409
 #: src/Modal.tsx:37
 msgid "Close"
 msgstr "Close"
 
-#: src/Tour.tsx:44
+#: src/Tour.tsx:45
 msgid "Code sent"
 msgstr "Code sent"
 
-#: src/App.tsx:324
+#: src/App.tsx:330
 msgid "Customers can book you now"
 msgstr "Customers can book you now"
 
-#: src/App.tsx:287
+#: src/App.tsx:293
 msgid "Deposits paid straight to MTN MoMo"
 msgstr "Deposits paid straight to MTN MoMo"
 
-#: src/App.tsx:290
+#: src/App.tsx:296
 msgid "Fewer people who book and do not come"
 msgstr "Fewer people who book and do not come"
 
@@ -121,13 +129,13 @@ msgstr "Fewer people who book and do not come"
 msgid "Find a place <0>-></0> Pick a free time <1>-></1> Show your code at the door."
 msgstr "Find a place <0>-></0> Pick a free time <1>-></1> Show your code at the door."
 
-#: src/App.tsx:420
+#: src/App.tsx:427
 msgid "Find a shop near you"
 msgstr "Find a shop near you"
 
-#: src/App.tsx:136
-#: src/App.tsx:256
-#: src/App.tsx:342
+#: src/App.tsx:141
+#: src/App.tsx:262
+#: src/App.tsx:348
 #: src/Footer.tsx:114
 msgid "For businesses"
 msgstr "For businesses"
@@ -136,44 +144,44 @@ msgstr "For businesses"
 msgid "For customers"
 msgstr "For customers"
 
-#: src/Tour.tsx:232
+#: src/Tour.tsx:234
 msgid "Free to join · No card needed"
 msgstr "Free to join · No card needed"
 
-#: src/Tour.tsx:179
+#: src/Tour.tsx:181
 msgid "From sign-up to your first booking"
 msgstr "From sign-up to your first booking"
 
-#: src/App.tsx:259
+#: src/App.tsx:265
 msgid "Get booked<0/>while you work."
 msgstr "Get booked<0/>while you work."
 
-#: src/App.tsx:139
 #: src/App.tsx:144
-#: src/App.tsx:340
-#: src/App.tsx:383
+#: src/App.tsx:149
+#: src/App.tsx:346
+#: src/App.tsx:389
 #: src/Footer.tsx:103
 msgid "Get the app"
 msgstr "Get the app"
 
-#: src/App.tsx:311
+#: src/App.tsx:317
 msgid "Haircut · Saturday 10:30"
 msgstr "Haircut · Saturday 10:30"
 
-#: src/App.tsx:343
+#: src/App.tsx:349
 msgid "Help"
 msgstr "Help"
 
-#: src/App.tsx:425
+#: src/App.tsx:432
 msgid "Hold your time with a small deposit"
 msgstr "Hold your time with a small deposit"
 
-#: src/App.tsx:435
+#: src/App.tsx:442
 #: src/Footer.tsx:106
 msgid "How booking works"
 msgstr "How booking works"
 
-#: src/App.tsx:341
+#: src/App.tsx:347
 msgid "How it works"
 msgstr "How it works"
 
@@ -190,7 +198,7 @@ msgstr "Language: {0}"
 msgid "Legal"
 msgstr "Legal"
 
-#: src/Tour.tsx:182
+#: src/Tour.tsx:184
 msgid "Live in <0>three steps.</0>"
 msgstr "Live in <0>three steps.</0>"
 
@@ -206,7 +214,7 @@ msgstr "Loading…"
 msgid "Made for Rwanda"
 msgstr "Made for Rwanda"
 
-#: src/App.tsx:134
+#: src/App.tsx:139
 msgid "Main"
 msgstr "Main"
 
@@ -214,11 +222,11 @@ msgstr "Main"
 msgid "More"
 msgstr "More"
 
-#: src/App.tsx:308
+#: src/App.tsx:314
 msgid "New booking"
 msgstr "New booking"
 
-#: src/App.tsx:426
+#: src/App.tsx:433
 msgid "Paid with MTN MoMo on your own phone. The rest you pay at the shop."
 msgstr "Paid with MTN MoMo on your own phone. The rest you pay at the shop."
 
@@ -242,7 +250,7 @@ msgstr "Prices in RWF · Deposits by MTN MoMo"
 msgid "Privacy Policy"
 msgstr "Privacy Policy"
 
-#: src/App.tsx:346
+#: src/App.tsx:352
 msgid "Quick links"
 msgstr "Quick links"
 
@@ -258,11 +266,11 @@ msgstr "Read the English"
 msgid "Real places,<0/>checked by us"
 msgstr "Real places,<0/>checked by us"
 
-#: src/Tour.tsx:187
+#: src/Tour.tsx:189
 msgid "Real screens from the app — exactly what you will see."
 msgstr "Real screens from the app — exactly what you will see."
 
-#: src/App.tsx:175
+#: src/App.tsx:180
 msgid "Screens of the apps"
 msgstr "Screens of the apps"
 
@@ -278,15 +286,15 @@ msgstr "See the free times for today and the days ahead, pick one, and it is you
 msgid "Seller Agreement"
 msgstr "Seller Agreement"
 
-#: src/Tour.tsx:56
+#: src/Tour.tsx:57
 msgid "Set up your shop"
 msgstr "Set up your shop"
 
-#: src/Tour.tsx:62
+#: src/Tour.tsx:63
 msgid "Setting up a shop: its name, what kind of shop it is, and how customers will see it."
 msgstr "Setting up a shop: its name, what kind of shop it is, and how customers will see it."
 
-#: src/App.tsx:430
+#: src/App.tsx:437
 msgid "Show your 6-digit code at the door"
 msgstr "Show your 6-digit code at the door"
 
@@ -294,34 +302,34 @@ msgstr "Show your 6-digit code at the door"
 msgid "Show your 6-digit code when you arrive and you are checked in. We remind you the day before, so it is never a surprise."
 msgstr "Show your 6-digit code when you arrive and you are checked in. We remind you the day before, so it is never a surprise."
 
-#: src/App.tsx:277
+#: src/App.tsx:283
 #: src/Footer.tsx:123
 msgid "Sign in"
 msgstr "Sign in"
 
-#: src/Tour.tsx:32
+#: src/Tour.tsx:33
 msgid "Sign up with your email"
 msgstr "Sign up with your email"
 
-#: src/App.tsx:282
+#: src/App.tsx:288
 msgid "Sign-ups for businesses open soon."
 msgstr "Sign-ups for businesses open soon."
 
-#: src/Tour.tsx:47
+#: src/Tour.tsx:48
 msgid "Six digits — no password, ever"
 msgstr "Six digits — no password, ever"
 
-#: src/Tour.tsx:71
+#: src/Tour.tsx:72
 msgid "Skip anything, add it later"
 msgstr "Skip anything, add it later"
 
-#: src/App.tsx:399
+#: src/App.tsx:405
 #: src/Footer.tsx:118
-#: src/Tour.tsx:229
+#: src/Tour.tsx:231
 msgid "Start selling"
 msgstr "Start selling"
 
-#: src/App.tsx:274
+#: src/App.tsx:280
 msgid "Start selling — it is free"
 msgstr "Start selling — it is free"
 
@@ -333,39 +341,39 @@ msgstr "Talk to us"
 msgid "Terms of Use"
 msgstr "Terms of Use"
 
-#: src/App.tsx:388
+#: src/App.tsx:394
 msgid "The app is on its way."
 msgstr "The app is on its way."
 
-#: src/App.tsx:59
+#: src/App.tsx:63
 msgid "The business app: a shop’s day at a glance"
 msgstr "The business app: a shop’s day at a glance"
 
-#: src/App.tsx:67
+#: src/App.tsx:71
 msgid "The business app: a week of bookings on a calendar"
 msgstr "The business app: a week of bookings on a calendar"
 
-#: src/Tour.tsx:86
+#: src/Tour.tsx:87
 msgid "The business app’s home page the moment a shop is posted: You are live!"
 msgstr "The business app’s home page the moment a shop is posted: You are live!"
 
-#: src/Tour.tsx:38
+#: src/Tour.tsx:39
 msgid "The business app’s sign-up: a 6-digit code sent to your email, typed into six boxes."
 msgstr "The business app’s sign-up: a 6-digit code sent to your email, typed into six boxes."
 
-#: src/App.tsx:83
+#: src/App.tsx:87
 msgid "The customer app: a shop’s page"
 msgstr "The customer app: a shop’s page"
 
-#: src/App.tsx:75
+#: src/App.tsx:79
 msgid "The customer app: find a place"
 msgstr "The customer app: find a place"
 
-#: src/App.tsx:431
+#: src/App.tsx:438
 msgid "The shop checks you in with it. No password, no printout."
 msgstr "The shop checks you in with it. No password, no printout."
 
-#: src/Tour.tsx:193
+#: src/Tour.tsx:195
 msgid "The three steps"
 msgstr "The three steps"
 
@@ -381,11 +389,11 @@ msgstr "This is a translation. If it ever differs from the English, the English 
 msgid "This is the English, which applies wherever a translation differs."
 msgstr "This is the English, which applies wherever a translation differs."
 
-#: src/Tour.tsx:95
+#: src/Tour.tsx:96
 msgid "Usually within one working day"
 msgstr "Usually within one working day"
 
-#: src/Tour.tsx:83
+#: src/Tour.tsx:84
 msgid "Usually within one working day. Then you post your shop when you are ready, and customers can find you and book."
 msgstr "Usually within one working day. Then you post your shop when you are ready, and customers can find you and book."
 
@@ -394,15 +402,15 @@ msgstr "Usually within one working day. Then you post your shop when you are rea
 msgid "Version {0} · in force since {since}"
 msgstr "Version {0} · in force since {since}"
 
-#: src/App.tsx:166
+#: src/App.tsx:171
 msgid "Watch how to book<0/>in under a minute!"
 msgstr "Watch how to book<0/>in under a minute!"
 
-#: src/Tour.tsx:80
+#: src/Tour.tsx:81
 msgid "We check it, you post it"
 msgstr "We check it, you post it"
 
-#: src/Tour.tsx:35
+#: src/Tour.tsx:36
 msgid "We send a 6-digit code, and that is your account. No password, no card."
 msgstr "We send a 6-digit code, and that is your account. No password, no card."
 
@@ -410,15 +418,15 @@ msgstr "We send a 6-digit code, and that is your account. No password, no card."
 msgid "Why book here"
 msgstr "Why book here"
 
-#: src/App.tsx:321
+#: src/App.tsx:327
 msgid "You are live!"
 msgstr "You are live!"
 
-#: src/App.tsx:152
+#: src/App.tsx:157
 msgid "Your appointments, without the phone calls."
 msgstr "Your appointments, without the phone calls."
 
-#: src/App.tsx:293
+#: src/App.tsx:299
 msgid "Your bookings, messages and money in one place"
 msgstr "Your bookings, messages and money in one place"
 
@@ -426,6 +434,6 @@ msgstr "Your bookings, messages and money in one place"
 msgid "Your code,<0/>not a queue"
 msgstr "Your code,<0/>not a queue"
 
-#: src/Tour.tsx:59
+#: src/Tour.tsx:60
 msgid "Your name, a branch and one service — about five minutes. Skip anything and add it later."
 msgstr "Your name, a branch and one service — about five minutes. Skip anything and add it later."

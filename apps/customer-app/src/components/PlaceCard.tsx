@@ -73,7 +73,7 @@ export function PlaceCard({
             <View />
           ) : (
             <Pill
-              label={openNow ? t`Open` : t`Closed`}
+              label={openNow ? t({ message: 'Open', context: 'a shop, open now' }) : t({ message: 'Closed', context: 'a shop, closed now' })}
               tone={openNow ? 'ok' : 'neutral'}
               dot={openNow}
               solid

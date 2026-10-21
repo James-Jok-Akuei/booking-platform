@@ -21,14 +21,14 @@ import { Stars } from '../../src/ui/Stars';
 import { BigTitle } from '../../src/ui/TopBar';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../../src/i18n/format';
+import { formatTime, formatDate } from '../../src/i18n/format';
 
 type Tab = 'upcoming' | 'past';
 
 const clock = (iso: string) =>
-  new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  formatTime(new Date(iso), { hour: '2-digit', minute: '2-digit' });
 const weekday = (iso: string) =>
-  new Date(iso).toLocaleDateString(dateLocale(), { weekday: 'long' });
+  formatDate(new Date(iso), { weekday: 'long' });
 
 /**
  * Every booking this customer has made.
@@ -175,7 +175,7 @@ function BookingRow({
     <PressableScale style={styles.row} onPress={onPress} scaleTo={0.98}>
       <View style={[styles.date, faded && styles.dateFaded]}>
         <Text style={[styles.dateMonth, faded && styles.dateTextFaded]}>
-          {start.toLocaleDateString(dateLocale(), { month: 'short' }).toUpperCase()}
+          {formatDate(start, { month: 'short' }).toUpperCase()}
         </Text>
         <Text style={[styles.dateDay, faded && styles.dateTextFaded]}>{start.getDate()}</Text>
       </View>

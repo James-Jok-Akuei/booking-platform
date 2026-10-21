@@ -10,8 +10,8 @@ import { useSpotlight } from './useSpotlight';
 import './golive.css';
 import { accessOf } from '../access';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { plural, t } from '@lingui/core/macro';
+import { formatDate, listOf } from '../i18n/format';
 
 const DAY = 24 * 60 * 60 * 1000;
 const seenKey = (businessId: string) => `bp.live-seen.${businessId}`;
@@ -118,7 +118,7 @@ export function GoLiveCard() {
             <Icon name="hourglass" size={24} />
           </span>
           <div className="gl-text">
-            <span className="gl-eyebrow"><Trans>Sent {sent.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' })}</Trans></span>
+            <span className="gl-eyebrow"><Trans>Sent {formatDate(sent, { day: 'numeric', month: 'long' })}</Trans></span>
             <h2><Trans>We are checking your shop</Trans></h2>
             <p>
               <Trans>
@@ -166,7 +166,7 @@ export function GoLiveCard() {
             {rejected
               ? t`We could not approve it yet. Everything you set up is still here.`
               : missing.length
-                ? t`${missing.length} ${missing.length === 1 ? 'thing' : 'things'} left before we can check it and put it live. Customers cannot see it until then.`
+                ? plural(missing.length, { one: '# thing left before we can check it and put it live. Customers cannot see it until then.', other: '# things left before we can check it and put it live. Customers cannot see it until then.' })
                 : t`Everything we need is in. Send it and we check it, usually within one working day.`}
           </p>
           {rejected && r.statusReason && <Reason text={r.statusReason} />}
@@ -307,6 +307,8 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
   const spot = useSpotlight('post-shop');
   // Lost since approval — a service switched off, the hours cleared.
   const gaps = readiness.goLiveGaps;
+  // The language's own "and" (§308): a list, never English glued in.
+  const needs = listOf(gaps.map((k) => ITEM_WORDS[k].label.toLowerCase()));
   return (
     <section className={`gl is-approved${spot.lit ? ' is-spotlit' : ''}`} aria-label={t`Your shop's status`} data-tour="go-live">
       <div className="gl-head">
@@ -358,8 +360,7 @@ function ReadyToPost({ readiness, name, canAct }: { readiness: Readiness; name: 
           <Icon name="alert" size={16} />
           <span>
             <Trans>
-              Before it can be posted, it needs {gaps.map((k) => ITEM_WORDS[k].label.toLowerCase()).join(' and ')} —
-              otherwise customers would find nothing to book.{' '}
+              Before it can be posted, it needs {needs} — otherwise customers would find nothing to book.{' '}
             </Trans>
             {FIX_AT[gaps[0]] && <Link to={FIX_AT[gaps[0]]!}><Trans>Add it</Trans></Link>}
           </span>

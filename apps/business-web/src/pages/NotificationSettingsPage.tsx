@@ -15,7 +15,7 @@ import { Switch } from '../ui/Switch';
 import './notification-settings.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate } from '../i18n/format';
 
 /** Each kind's mark, so the list reads at a glance. */
 const MARK: Record<string, { icon: IconName; tone: string }> = {
@@ -188,7 +188,7 @@ export function NotificationSettingsPage() {
                     <Icon name={d.kind === 'WEB' ? 'globe' : 'phone'} size={16} />
                     <span>
                       <strong>{d.label ?? (d.kind === 'WEB' ? t`A browser` : t`A phone`)}</strong>
-                      <small><Trans>Since {new Date(d.createdAt).toLocaleDateString(dateLocale(), { dateStyle: 'medium' })}</Trans></small>
+                      <small><Trans>Since {formatDate(new Date(d.createdAt), { dateStyle: 'medium' })}</Trans></small>
                     </span>
                   </li>
                 ))}

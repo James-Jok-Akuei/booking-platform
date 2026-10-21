@@ -184,7 +184,9 @@ export function SaleEndsChip({
     <View
       style={[styles.chip, onPhoto ? styles.chipPhoto : styles.chipList, urgent && styles.chipUrgent, style]}
       accessible
-      accessibilityLabel={t`Discount ends in ${d > 0 ? `${d} days, ` : ''}${h} hours and ${m} minutes`}
+      accessibilityLabel={
+        d > 0 ? t`Discount ends in ${d} days, ${h} hours and ${m} minutes` : t`Discount ends in ${h} hours and ${m} minutes`
+      }
     >
       <Icon name="time" size={onPhoto ? 10 : 12} color={onPhoto || urgent ? '#FFFFFF' : theme.accentDeep} />
       <Text style={[styles.chipText, onPhoto ? styles.chipTextPhoto : styles.chipTextList, urgent && styles.onUrgent]}>

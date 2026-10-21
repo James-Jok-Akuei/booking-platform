@@ -90,7 +90,7 @@ async function register(): Promise<boolean> {
     const result = await registerPushDevice({
       kind: 'EXPO',
       token,
-      label: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android phone'),
+      label: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : t`Android phone`),
     });
     if (result.registered) await deviceStore.setItemAsync(TOKEN_KEY, token);
     return result.registered;

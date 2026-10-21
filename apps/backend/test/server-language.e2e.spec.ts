@@ -21,7 +21,7 @@ import { createAdmin, createCustomer } from './setup/factories';
 describe('The server, in the reader’s language (§308)', () => {
   let ctx: E2eContext;
   let prisma: PrismaService;
-  const before = CATALOGS.fr;
+  const before = { fr: CATALOGS.fr, rw: CATALOGS.rw };
 
   const FRENCH: Record<string, string> = {
     'Cancelled: {serviceName}, {short}': 'Annulé : {serviceName}, {short}',
@@ -33,7 +33,7 @@ describe('The server, in the reader’s language (§308)', () => {
     'Booking cancelled': 'Réservation annulée',
     'Bookings and payments': 'Réservations et paiements',
     'Always emailed — it is the record of your booking.': 'Toujours par e-mail — c’est la trace de votre réservation.',
-    'Please wait {value0}s before requesting another code.': 'Veuillez patienter {value0} s avant de demander un autre code.',
+    'Please wait {waitSeconds}s before requesting another code.': 'Veuillez patienter {waitSeconds} s avant de demander un autre code.',
     '{count, plural, one {Photos on # service} other {Photos on # services}}':
       '{count, plural, one {Des photos sur # service} other {Des photos sur # services}}',
     // A seeded type's name, as translators give it (§308.3).
@@ -42,13 +42,16 @@ describe('The server, in the reader’s language (§308)', () => {
 
   beforeAll(async () => {
     CATALOGS.fr = FRENCH;
+    // Kinyarwanda plays a language with nothing translated yet: the real one is complete now (§308.7).
+    CATALOGS.rw = {};
     ctx = await createE2eApp();
     prisma = ctx.prisma;
     await resetDatabase(prisma);
   });
 
   afterAll(async () => {
-    CATALOGS.fr = before;
+    CATALOGS.fr = before.fr;
+    CATALOGS.rw = before.rw;
     await resetDatabase(prisma);
     await ctx.close();
   });
@@ -184,6 +187,12 @@ describe('The server, in the reader’s language (§308)', () => {
     // A shop called like a type is a shop, not a type.
     const shop = await names.localise({ business: { name: 'Test Barbershop' } }, 'fr');
     expect(shop.business.name).toBe('Test Barbershop');
+
+    // Searching in French finds the kind by its French name — accents and capitals aside (§308.7).
+    const barber = await prisma.subcategory.findFirstOrThrow({ where: { name: 'Test Barbershop' } });
+    expect((await names.spokenMatches('barbier')).types).toContain(barber.id);
+    expect((await names.spokenMatches('BEAUTE')).categories).toContain(category.id);
+    expect(await names.spokenMatches('zzz')).toEqual({ categories: [], types: [] });
   });
 
   it('sends an announcement typed in two languages to each person in theirs, and shows its banner in the app’s', async () => {

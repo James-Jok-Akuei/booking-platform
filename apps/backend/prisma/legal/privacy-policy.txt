@@ -1,6 +1,6 @@
 PRIVACY POLICY
 
-Last updated: 20 October 2026
+Last updated: 21 October 2026
 
 This Privacy Policy explains what personal data BwanguReservations ("we", "us") collects when you use the BwanguReservations app, why we collect it, who we share it with, and the rights you have.
 
@@ -187,7 +187,12 @@ If we ever add something optional, such as counting how many people visit a page
 When we change this policy we will show you what changed in the app and ask you to accept the new version. The date at the top shows when it was last updated.
 
 
-13. QUESTIONS AND COMPLAINTS
+13. LANGUAGE
+
+This policy is written in English. If we provide a translation in Kinyarwanda or French and there is a difference, the English version applies unless the law says otherwise.
+
+
+14. QUESTIONS AND COMPLAINTS
 
 Contact us first, so we can put things right:
 

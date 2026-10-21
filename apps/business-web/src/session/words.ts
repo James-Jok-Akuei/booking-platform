@@ -1,9 +1,12 @@
+import { plural } from '@lingui/core/macro';
+
 /** "30 minutes", "12 hours", "30 days" — how long a sign-in lasts, as a person says it (§279). */
 export function lengthWords(minutes: number): string {
-  const say = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`;
-  if (minutes >= 24 * 60 && minutes % (24 * 60) === 0) return say(minutes / (24 * 60), 'day');
-  if (minutes >= 60 && minutes % 60 === 0) return say(minutes / 60, 'hour');
-  return say(minutes, 'minute');
+  const days = minutes / (24 * 60);
+  const hours = minutes / 60;
+  if (minutes >= 24 * 60 && Number.isInteger(days)) return plural(days, { one: '# day', other: '# days' });
+  if (minutes >= 60 && Number.isInteger(hours)) return plural(hours, { one: '# hour', other: '# hours' });
+  return plural(minutes, { one: '# minute', other: '# minutes' });
 }
 
 /** A countdown, "1:42". */

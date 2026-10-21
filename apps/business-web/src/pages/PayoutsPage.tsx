@@ -16,14 +16,14 @@ import { NETWORK_NAME, NetworkMark, networkOf } from '../ui/NetworkMark';
 import { PayoutDetail, overdue } from './PayoutDetail';
 import './payouts.css';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { plural, t } from '@lingui/core/macro';
+import { formatDateTime } from '../i18n/format';
 import { Plural } from '@lingui/react/macro';
 
 const PAGE = 25;
 
 const when = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  iso ? formatDateTime(new Date(iso), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
 /** "+250788100001" → "+250 788 100 001": read in threes, as people say it (§245). */
 const spaced = (msisdn: string) => {
@@ -32,7 +32,6 @@ const spaced = (msisdn: string) => {
   return msisdn;
 };
 
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 /** The number's state in the page's own words (§291), not the enum. */
 const NUMBER_STATE: Record<string, string> = {
@@ -99,6 +98,7 @@ export function GettingPaidPage() {
   // Payouts go out through MTN MoMo (the one network the platform sends with, §219).
   const network = number?.provider ?? 'MTN_MOMO';
   const coming = b ? b.pendingMinor + b.availableNowMinor + b.onTheWayMinor : 0;
+  const onTheWay = b ? money.format(b.onTheWayMinor) : '';
 
   return (
     <section className="gp">
@@ -144,8 +144,14 @@ export function GettingPaidPage() {
               ? ' '
               : b.onTheWayCount > 0
                 ? b.onTheWayMinor === coming
-                  ? t`All of it is on its way to you, in ${plural(b.onTheWayCount, 'payment', 'payments')}.`
-                  : t`${money.format(b.onTheWayMinor)} of it is on its way to you, in ${plural(b.onTheWayCount, 'payment', 'payments')}.`
+                  ? plural(b.onTheWayCount, {
+                      one: 'All of it is on its way to you, in # payment.',
+                      other: 'All of it is on its way to you, in # payments.',
+                    })
+                  : plural(b.onTheWayCount, {
+                      one: `${onTheWay} of it is on its way to you, in # payment.`,
+                      other: `${onTheWay} of it is on its way to you, in # payments.`,
+                    })
                 : coming > 0
                   ? t`Earned, and not in your mobile money yet.`
                   : t`Nothing waiting. Money from new bookings shows here.`}
@@ -205,7 +211,7 @@ export function GettingPaidPage() {
               tone="amber"
               label={t`Still held`}
               value={money.format(b.pendingMinor)}
-              note={t`Earned, waiting ${plural(b.holdDays, 'day', 'days')} after the visit.`}
+              note={plural(b.holdDays, { one: 'Earned, waiting # day after the visit.', other: 'Earned, waiting # days after the visit.' })}
             />
             <Step
               icon="wallet"
@@ -221,7 +227,11 @@ export function GettingPaidPage() {
               tone="blue"
               label={t`On its way`}
               value={money.format(b.onTheWayMinor)}
-              note={b.onTheWayCount > 0 ? t`${plural(b.onTheWayCount, 'payment', 'payments')} being sent to you.` : t`Nothing being sent just now.`}
+              note={
+                b.onTheWayCount > 0
+                  ? plural(b.onTheWayCount, { one: '# payment being sent to you.', other: '# payments being sent to you.' })
+                  : t`Nothing being sent just now.`
+              }
               strong={b.onTheWayCount > 0}
             />
             <Step
@@ -229,7 +239,7 @@ export function GettingPaidPage() {
               tone="night"
               label={t`Paid to you so far`}
               value={money.format(b.lifetimePaidMinor)}
-              note={`${plural(b.payoutCount, 'payment', 'payments')}.`}
+              note={plural(b.payoutCount, { one: '# payment.', other: '# payments.' })}
             />
           </ol>
           {/* The deposit is not the price. Saying so here stops a business

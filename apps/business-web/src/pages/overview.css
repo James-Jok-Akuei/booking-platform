@@ -444,7 +444,8 @@ a.ov-stat:hover .ov-stat-go { color: var(--accent); transform: translate(2px, -2
   .ov-cols { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'next' 'today' 'inbox' 'chart' 'money' 'busy'; }
   .ov { gap: 16px; }
   .ov-head-actions { width: 100%; }
-  .ov-head-actions a { flex: 1; justify-content: center; }
+  /* Side by side while both fit; a longer language stacks them, each whole (§308.7). */
+  .ov-head-actions a { flex: 1 1 auto; justify-content: center; white-space: nowrap; }
   .ov-stats { gap: 12px; }
   .ov-stat { min-height: 156px; padding: 16px; border-radius: 22px; }
   .ov-stat-value { font-size: 32px; }
@@ -476,3 +477,13 @@ a.ov-stat:hover .ov-stat-go { color: var(--accent); transform: translate(2px, -2
 .ov-eyebrow > * { flex-shrink: 0; }
 .ov-eyebrow .ov-date { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ov-head > :first-child { min-width: 0; max-width: 100%; }
+
+/* Kinyarwanda's day names are long ("Kuwa gatandatu"): on a narrow phone the
+   flag alone says "Rwanda", and the date keeps its words (§308.7). */
+@container page (max-width: 440px) {
+  html:lang(rw) .ov-country-name { display: none; }
+}
+/* On the narrowest phones the flag says it in every language. */
+@container page (max-width: 360px) {
+  .ov-country-name { display: none; }
+}

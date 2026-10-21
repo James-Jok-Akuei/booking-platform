@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, Length } from 'class-validator';
 
 /**
  * Email and code, and nothing else.
@@ -24,4 +24,12 @@ export class VerifyOtpDto {
   @IsString()
   @Length(6, 12)
   twoStepCode?: string;
+
+  /**
+   * The app asking (§308.6): an account it is not for is told where it
+   * belongs, before anything else and without being signed in.
+   */
+  @IsOptional()
+  @IsIn(['business', 'customer'])
+  app?: 'business' | 'customer';
 }

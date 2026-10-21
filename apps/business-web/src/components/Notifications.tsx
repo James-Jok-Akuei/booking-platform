@@ -15,7 +15,7 @@ import { useDismiss } from '../ui/useDismiss';
 import { useMediaQuery } from '../shell/useMediaQuery';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate } from '../i18n/format';
 
 const when = (iso: string) => {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -23,7 +23,7 @@ const when = (iso: string) => {
   if (minutes < 1) return t`just now`;
   if (minutes < 60) return t`${minutes}m ago`;
   if (minutes < 60 * 24) return t`${hours}h ago`;
-  return new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' });
+  return formatDate(new Date(iso), { dateStyle: 'medium' });
 };
 
 /**

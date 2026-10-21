@@ -84,14 +84,18 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
 .ap-today-icon { position: absolute; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 9px; }
 .ap-today-icon svg { width: 15px; height: 15px; }
 .ap-today-tile { position: relative; }
-.ap-today-text em { padding-left: 34px; line-height: 26px; }
+/* The label beside the icon: one line in English, up to two in a longer language — never cut (§308.7). */
+.ap-today-text em { padding-left: 34px; min-height: 26px; padding-top: 5px; line-height: 1.3; white-space: normal; }
+/* Every tile keeps room for two lines in a longer language, so the numbers stay in a row. */
+html:lang(rw) .ap-today-text em, html:lang(fr) .ap-today-text em { min-height: calc(2.6em + 5px); }
+.ap-today-text small { white-space: normal; }
 .ap-today-tile.tone-accent .ap-today-icon { background: var(--accent-grad); color: #fff; box-shadow: var(--shadow-accent); }
 .ap-today-tile.tone-warn .ap-today-icon { background: var(--warn-soft); color: #9a5d00; }
 .ap-today-tile.tone-ok .ap-today-icon { background: var(--ok-soft); color: var(--ok-deep); }
 .ap-today-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
-.ap-today-text em { font-style: normal; font-size: 12px; font-weight: 650; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-today-text em { font-style: normal; font-size: 12px; font-weight: 650; color: var(--muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
 .ap-today-text strong { margin: 6px 0 1px; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ap-today-text small { font-size: 11.5px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-today-text small { font-size: 11.5px; font-weight: 600; line-height: 1.3; color: var(--muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 /* The money still to collect: the one dark tile. */
 .ap-today-tile.tone-night {
   background: radial-gradient(160px 120px at 100% 0%, rgba(240, 83, 45, 0.45), transparent 70%), var(--night);
@@ -119,13 +123,13 @@ button.ap-today-tile:hover:not(:disabled) { background: var(--panel); border-col
   position: relative;
   flex: none;
   min-height: 48px;
-  padding: 0 12px;
+  padding: 0 calc(12px * var(--words));
   gap: 8px;
   border: none;
   border-radius: 12px 12px 0 0;
   background: transparent;
   color: var(--muted);
-  font-size: 14px;
+  font-size: calc(14px * var(--words));
   font-weight: 650;
 }
 .ap-tab svg { color: var(--faint); transition: color 160ms var(--ease); }

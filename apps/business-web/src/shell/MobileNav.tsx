@@ -35,8 +35,9 @@ export function TabBar({
 
   return (
     <nav className="tabbar" aria-label={t`Main`}>
-      {tab('/', t`Today`, 'overview')}
-      {tab('/appointments', t`Bookings`, 'calendarCheck', data.expectedToday)}
+      {/* Their own words, short enough for a 320-wide phone in every language (§308.7). */}
+      {tab('/', t({ message: 'Today', context: 'phone tab bar: one short word' }), 'overview')}
+      {tab('/appointments', t({ message: 'Bookings', context: 'phone tab bar: one short word' }), 'calendarCheck', data.expectedToday)}
       <button type="button" className="tab-checkin" onClick={onCheckIn} aria-label={t`Check in a customer`} data-tour="check-in">
         <Icon name="ticket" size={24} />
       </button>

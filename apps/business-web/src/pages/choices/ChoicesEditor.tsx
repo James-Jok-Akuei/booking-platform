@@ -163,6 +163,15 @@ export function groupsFromDraft(choices: unknown, money: Money): GroupDraft[] {
   return drafts;
 }
 
+/** "“Colour?” is asked only after an answer here." — the names joined the language's way. */
+function askedAfter(titles: string[]) {
+  const names = listOf(titles.map((title) => `“${title}”`));
+  return plural(titles.length, {
+    one: `${names} is asked only after an answer here.`,
+    other: `${names} are asked only after an answer here.`,
+  });
+}
+
 const minor = (o: OptionDraft, money: Money) => {
   const value = o.price.trim() ? money.toMinor(o.price) : 0;
   const amount = Number.isFinite(value) ? Math.abs(value) : 0;
@@ -917,7 +926,7 @@ function GroupCard({
                     />
                     <span className="sv-help">
                       {children.length > 0
-                        ? t`${children.map((c) => `“${titleOf(c)}”`).join(' and ')} ${children.length === 1 ? 'is' : 'are'} asked only after an answer here.`
+                        ? askedAfter(children.map((c) => titleOf(c)))
                         : t`Ask it only after a certain answer above — like “Colour?” only after “Dye”.`}
                     </span>
                   </div>

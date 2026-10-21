@@ -15,8 +15,8 @@ import { PressableScale } from '../../src/ui/PressableScale';
 import { Segmented } from '../../src/ui/Segmented';
 import { RowSkeleton } from '../../src/ui/Skeleton';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
-import { dateLocale } from '../../src/i18n/format';
+import { plural, t } from '@lingui/core/macro';
+import { formatTime, formatDate } from '../../src/i18n/format';
 
 type Filter = 'all' | 'unread';
 
@@ -29,10 +29,10 @@ const when = (iso: string) => {
   if (minutes < 60) return t`${minutes} min`;
   const start = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const days = Math.round((start(now) - start(d)) / 86_400_000);
-  if (days === 0) return d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  if (days === 0) return formatTime(d, { hour: '2-digit', minute: '2-digit' });
   if (days === 1) return t`Yesterday`;
-  if (days < 7) return d.toLocaleDateString(dateLocale(), { weekday: 'short' });
-  return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
+  if (days < 7) return formatDate(d, { weekday: 'short' });
+  return formatDate(d, { day: 'numeric', month: 'short' });
 };
 
 /**
@@ -42,10 +42,7 @@ const when = (iso: string) => {
  */
 const subject = (thread: Thread) =>
   thread.appointment
-    ? `${thread.appointment.serviceName} · ${new Date(thread.appointment.startTime).toLocaleDateString(
-        dateLocale(),
-        { day: 'numeric', month: 'short' },
-      )}`
+    ? `${thread.appointment.serviceName} · ${formatDate(new Date(thread.appointment.startTime), { day: 'numeric', month: 'short' })}`
     : t`Asking before booking`;
 
 /**
@@ -118,9 +115,10 @@ export default function Messages() {
           <Text style={type.display}><Trans>Messages</Trans></Text>
           <Text style={type.small}>
             {unreadTotal > 0
-              ? t`${unreadTotal} unread in ${all.filter((t) => t.unreadCount > 0).length} ${
-                  all.filter((t) => t.unreadCount > 0).length === 1 ? 'conversation' : 'conversations'
-                }`
+              ? plural(all.filter((thread) => thread.unreadCount > 0).length, {
+                  one: `${unreadTotal} unread in # conversation`,
+                  other: `${unreadTotal} unread in # conversations`,
+                })
               : all.length > 0
                 ? t`All caught up`
                 : ' '}

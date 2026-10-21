@@ -13,13 +13,13 @@ import { DropZone } from '../ui/DropZone';
 import './messages.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 /** What a thread is about, so eight threads with one customer are not eight identical rows. */
 const subject = (thread: Thread) =>
   thread.appointment
-    ? `${thread.appointment.serviceName}, ${new Date(thread.appointment.startTime).toLocaleDateString(dateLocale(), {
+    ? `${thread.appointment.serviceName}, ${formatDate(new Date(thread.appointment.startTime), {
         day: 'numeric',
         month: 'short',
       })}`

@@ -459,7 +459,7 @@ body {
 .tb-shop-go { color: var(--faint); flex: none; }
 .tb-shop-who { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; align-items: baseline; margin: 6px 4px 6px; padding: 8px 8px 10px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
 .tb-shop-who span { grid-column: 1 / -1; font-size: 11px; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
-.tb-shop-who strong { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-shop-who strong { font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tb-shop-who em { font-style: normal; font-size: 12px; font-weight: 650; color: var(--muted); }
 /* The name only where the bar has room for it beside the page's title and
    the search; otherwise the logo alone. */
@@ -494,13 +494,18 @@ body {
 .menu-head span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .menu-item {
   width: 100%;
-  height: 44px;
-  min-height: 0;
+  /* At least one comfortable line; a longer language's words take a second (§308). */
+  height: auto;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
-  padding: 0 12px;
+  padding: 9px 12px;
+  line-height: 1.3;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
   border-radius: 13px;
   border: none;
   background: none;
@@ -509,7 +514,7 @@ body {
   font-size: 14px;
   text-decoration: none;
 }
-.menu-item svg { color: var(--muted); }
+.menu-item svg { flex: none; color: var(--muted); }
 .menu-item:hover, .menu-item:hover:not(:disabled) { background: var(--sunken); color: var(--ink); border: none; }
 .menu-item.is-danger, .menu-item.is-danger svg { color: var(--danger); }
 .menu-item.is-danger:hover:not(:disabled) { background: var(--danger-soft); }
@@ -830,6 +835,13 @@ body {
      in "…" rather than running into the next. */
   .tab-item { min-width: 0; padding: 0 2px; }
   .tab-item > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* The narrowest phones (§308.7): the bar reaches a little closer to the
+     edges and a longer language's words come down a step, so "Uyu munsi" and
+     "Ubutumwa" are read whole rather than cut. */
+  @media (max-width: 360px) {
+    .tabbar { left: 8px; right: 8px; padding: 0 2px; }
+    .tab-item { font-size: calc(11px * var(--words)); letter-spacing: -0.015em; padding: 0 1px; }
+  }
   .tab-item:hover:not(:disabled) { background: none; border: none; color: #fff; }
   .tab-item.active { color: #fff; }
   .tab-item.active .tab-icon { color: #ff8a5c; }

@@ -36,8 +36,35 @@ import { say } from '../i18n/say';
 /** The refusal the console answers by asking for the authenticator code (§298). */
 export const TWO_STEP_REQUIRED = 'TWO_STEP_REQUIRED';
 
+/**
+ * What the sign-in refusals are, by name (§308): the apps tell them apart by
+ * `code`, never by their words, which are said in the reader's language.
+ */
+export const SIGN_IN = {
+  NO_ACCOUNT: 'NO_ACCOUNT',
+  CLOSED: 'ACCOUNT_CLOSED',
+  COOLDOWN: 'CODE_COOLDOWN',
+  TOO_MANY_CODES: 'TOO_MANY_CODES',
+  CODE_NOT_RIGHT: 'CODE_NOT_RIGHT',
+  TOO_MANY_TRIES: 'TOO_MANY_TRIES',
+  WRONG_APP: 'WRONG_APP',
+} as const;
+
+const codeNotRight = () =>
+  new BadRequestException({
+    statusCode: 400,
+    error: 'Bad Request',
+    code: SIGN_IN.CODE_NOT_RIGHT,
+    message: 'Invalid or expired verification code.',
+  });
+
 /** Where a sign-in came from (§298): what its browser or app says, and its address. */
+/** Which app is signing somebody in, so an account of another kind is told where it belongs (§308.6). */
+export type SignInApp = 'business' | 'customer';
+
 export interface SignInContext {
+  /** The app asking; left out by older apps and the console. */
+  app?: SignInApp;
   userAgent?: string | null;
   ip?: string | null;
   /** An administrator's authenticator code, or one of their recovery codes. */
@@ -108,10 +135,12 @@ export class AuthService {
       // the code is issued on the strength of it.
       const invitedAsAdmin = await this.hasPendingAdminInvitation(normalizedEmail);
       if (!invitedAsAdmin) {
-        throw new BadRequestException(
-          'This email has no account yet. Send `role` as BUSINESS or CUSTOMER to ' +
-            'create one.',
-        );
+        throw new BadRequestException({
+          statusCode: 400,
+          error: 'Bad Request',
+          code: SIGN_IN.NO_ACCOUNT,
+          message: 'This email has no account yet. Send `role` as BUSINESS or CUSTOMER to create one.',
+        });
       }
     }
 
@@ -123,9 +152,12 @@ export class AuthService {
     // again as somebody new. This is here for the closed address itself, and so
     // the rule is written down rather than left to emerge from a rename.
     if (existingUser?.closedAt) {
-      throw new BadRequestException(
-        'This account has been closed. Sign up again to start a new one.',
-      );
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'Bad Request',
+        code: SIGN_IN.CLOSED,
+        message: 'This account has been closed. Sign up again to start a new one.',
+      });
     }
 
     // An existing user's role wins outright. A new user gets the requested one.
@@ -171,9 +203,15 @@ export class AuthService {
     if (lastOtp) {
       const secondsSinceLast = (Date.now() - lastOtp.createdAt.getTime()) / 1000;
       if (secondsSinceLast < cooldownSeconds) {
-        throw new BadRequestException(
-          `Please wait ${Math.ceil(cooldownSeconds - secondsSinceLast)}s before requesting another code.`,
-        );
+        const waitSeconds = Math.ceil(cooldownSeconds - secondsSinceLast);
+        // `waitSeconds` for the apps: the last code still works, and how long until another (§308 — never read from the words).
+        throw new BadRequestException({
+          statusCode: 400,
+          error: 'Bad Request',
+          code: SIGN_IN.COOLDOWN,
+          waitSeconds,
+          message: `Please wait ${waitSeconds}s before requesting another code.`,
+        });
       }
     }
 
@@ -183,7 +221,12 @@ export class AuthService {
     });
 
     if (requestsInLastHour >= maxPerHour) {
-      throw new BadRequestException('Too many verification code requests. Please try again later.');
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'Bad Request',
+        code: SIGN_IN.TOO_MANY_CODES,
+        message: 'Too many verification code requests. Please try again later.',
+      });
     }
   }
 
@@ -213,6 +256,12 @@ export class AuthService {
     });
 
     const checked = await this.checkCode(otp, code);
+    // The right email code in the wrong app: said plainly before anything else
+    // — before an administrator's authenticator step, and before any sign-in
+    // is started — so nobody is signed in where their account does not belong.
+    // Only once the code is right, so it tells nobody but the owner what kind
+    // of account an email is.
+    if (context.app) await this.refuseWrongApp(normalizedEmail, context.app, checked);
     // An administrator with an authenticator app types its code too (§298) —
     // asked for only once the email code is right, which stays usable until
     // both are. A wrong app code counts against the email code's tries.
@@ -250,6 +299,46 @@ export class AuthService {
     });
     if (!wasRegistration) await this.tellAboutNewSignIn(user.id, session.id, context);
     return { ...tokens, user: { id: user.id, email: user.email, role: user.role } };
+  }
+
+  /**
+   * Refuses an account the asking app is not for (§308.6): the business app
+   * is for sellers, the customer app for customers, and administrators have
+   * their own console. The code is spent either way.
+   */
+  private async refuseWrongApp(email: string, app: SignInApp, otp: CodeRow) {
+    const account = await this.prisma.user.findUnique({ where: { email }, select: { role: true } });
+    if (!account) return;
+    const belongs = app === 'business' ? account.role === UserRole.BUSINESS : account.role === UserRole.CUSTOMER;
+    if (belongs) return;
+    await this.useUp(otp);
+    if (account.role === UserRole.ADMIN) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'Forbidden',
+        code: SIGN_IN.WRONG_APP,
+        accountKind: account.role,
+        message: 'This is an administrator account. Administrators sign in to the admin console, not here.',
+      });
+    }
+    if (app === 'business') {
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'Forbidden',
+        code: SIGN_IN.WRONG_APP,
+        accountKind: account.role,
+        message:
+          'This email is a customer account. To sell on BwanguReservations, sign in with your business email, or use a new email to add your business.',
+      });
+    }
+    throw new ForbiddenException({
+      statusCode: 403,
+      error: 'Forbidden',
+      code: SIGN_IN.WRONG_APP,
+      accountKind: account.role,
+      message:
+        'This email is a business account. To book as a customer, sign in with a different email. Your shop is managed in the business app.',
+    });
   }
 
   /**
@@ -808,12 +897,15 @@ export class AuthService {
 
   /** The checks alone, leaving the code usable — for a sign-in that has a second step (§298). */
   private async checkCode<T extends CodeRow>(otp: T | null, code: string): Promise<T> {
-    if (!otp || otp.expiresAt < new Date()) {
-      throw new BadRequestException('Invalid or expired verification code.');
-    }
+    if (!otp || otp.expiresAt < new Date()) throw codeNotRight();
 
     if (otp.attempts >= otp.maxAttempts) {
-      throw new BadRequestException('Too many incorrect attempts. Please request a new code.');
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'Bad Request',
+        code: SIGN_IN.TOO_MANY_TRIES,
+        message: 'Too many incorrect attempts. Please request a new code.',
+      });
     }
 
     const isMatch = await bcrypt.compare(code, otp.codeHash);
@@ -822,7 +914,7 @@ export class AuthService {
         where: { id: otp.id },
         data: { attempts: { increment: 1 } },
       });
-      throw new BadRequestException('Invalid or expired verification code.');
+      throw codeNotRight();
     }
     return otp;
   }
@@ -833,7 +925,7 @@ export class AuthService {
       where: { id: otp.id, consumedAt: null },
       data: { consumedAt: new Date() },
     });
-    if (used.count === 0) throw new BadRequestException('Invalid or expired verification code.');
+    if (used.count === 0) throw codeNotRight();
     return otp;
   }
 

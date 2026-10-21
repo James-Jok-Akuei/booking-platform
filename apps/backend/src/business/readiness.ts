@@ -1,6 +1,7 @@
 import { BusinessStatus, PayoutDestinationStatus, Prisma } from '@prisma/client';
 import { adviceItems, readApprovalAdvice } from './shop-advice';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { msg } from '../i18n/say';
 
 /**
  * What a shop needs before it can go live, in one place (§255).
@@ -104,22 +105,22 @@ export const isReadyForReview = (shop: ReadinessShop) =>
 
 /** In words, for a refusal: "its phone number and a service to book". */
 export const READINESS_WORDS: Record<ReadinessKey, string> = {
-  name: 'its name',
-  type: 'what kind of shop it is',
-  phone: 'a phone number',
-  branch: 'a branch with its address, map pin and district',
-  hours: 'opening hours',
-  service: 'a service to book',
-  logo: 'a logo',
-  payout: 'a payout number',
+  name: msg('its name'),
+  type: msg('what kind of shop it is'),
+  phone: msg('a phone number'),
+  branch: msg('a branch with its address, map pin and district'),
+  hours: msg('opening hours'),
+  service: msg('a service to book'),
+  logo: msg('a logo'),
+  payout: msg('a payout number'),
 };
 
 /** The same, for what approval would still need (§255). */
 export const GO_LIVE_WORDS: Record<ReadinessKey, string> = {
   ...READINESS_WORDS,
-  branch: 'an open branch',
-  hours: 'opening hours at a branch',
-  service: 'a service offered at an open branch',
+  branch: msg('an open branch'),
+  hours: msg('opening hours at a branch'),
+  service: msg('a service offered at an open branch'),
 };
 
 export const listInWords = (keys: ReadinessKey[], dictionary: Record<ReadinessKey, string> = READINESS_WORDS) => {

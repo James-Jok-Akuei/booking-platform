@@ -38,7 +38,7 @@ import {
   ruleFor,
 } from './notification-catalog';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
-import { DATE_TAGS, asLocale, msg, say } from '../i18n/say';
+import { DATE_TAGS, asLocale, formatDateIn, msg, say } from '../i18n/say';
 import { readTyped, typedIn } from '../i18n/typed-words';
 import { NotificationPreferencesService } from './notification-preferences.service';
 import { PushService } from './push.service';
@@ -659,12 +659,10 @@ export class NotificationsService {
     for (const [, list] of byPerson) {
       const email = list[0].notification.recipient.email;
       const locale = asLocale(list[0].notification.recipient.locale);
-      const clock = new Intl.DateTimeFormat(DATE_TAGS[locale], {
-        timeZone: this.timeZone,
-        weekday: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const clock = {
+        format: (at: Date) =>
+          formatDateIn(locale, at, { timeZone: this.timeZone, weekday: 'short', hour: '2-digit', minute: '2-digit' }),
+      };
       const summary = summaryEmail({
         items: list.map((d) => ({ at: clock.format(d.notification.createdAt), subject: d.notification.subject })),
         appUrl: this.businessAppUrl,

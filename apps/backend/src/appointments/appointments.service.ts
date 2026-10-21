@@ -38,7 +38,7 @@ import {
 } from '../business/service-choices';
 import { UpdateBookingChoicesDto } from './dto/update-booking-choices.dto';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
-import { DATE_TAGS, asLocale, say } from '../i18n/say';
+import { DATE_TAGS, formatDateIn, asLocale, say } from '../i18n/say';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { askHowItWent } from './how-it-went';
@@ -1907,9 +1907,7 @@ export class AppointmentsService {
   /** "Tuesday 20 October at 11:15", as the shop and the customer know the time. */
   private spokenTime(at: Date, l: Locale = DEFAULT_LOCALE) {
     const zone = process.env.PLATFORM_TIMEZONE ?? 'Africa/Kigali';
-    const day = new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: zone, weekday: 'long', day: 'numeric', month: 'long' })
-      .format(at)
-      .replace(',', '');
+    const day = formatDateIn(l, at, { timeZone: zone, weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '');
     const time = new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: zone, hour: '2-digit', minute: '2-digit' }).format(at);
     return say(l, '{day} at {time}', { day, time });
   }

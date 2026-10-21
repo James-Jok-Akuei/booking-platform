@@ -23,6 +23,13 @@ import { SCENES, keptMark, marksFor, type Mark, type Placement, type Scene } fro
 import './tour.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
+import { appLocale } from '../i18n';
+
+/** A screen of the film, taken in the app's language (§308.7); English ones are at the folder's root. */
+const tourPicture = (name: string) => {
+  const locale = appLocale();
+  return locale === 'rw' || locale === 'fr' ? `/tour/${locale}/${name}.jpg` : `/tour/${name}.jpg`;
+};
 
 /**
  * The welcome tour (§307): what somebody new to the seller app sees the first
@@ -174,7 +181,7 @@ function Film({ shopName, onTour, onSkip }: { shopName: string | null; onTour: (
     // Every screen fetched at once, so none of them fades in empty.
     for (const s of SCENES) {
       const image = new Image();
-      image.src = `/tour/${s.key}-${s.side === 'seller' && !window.matchMedia(PHONE).matches ? 'desktop' : 'phone'}.jpg`;
+      image.src = tourPicture(`${s.key}-${s.side === 'seller' && !window.matchMedia(PHONE).matches ? 'desktop' : 'phone'}`);
     }
     // The page under the film stays where it is.
     document.documentElement.classList.add('tf-open');
@@ -330,7 +337,7 @@ function Film({ shopName, onTour, onSkip }: { shopName: string | null; onTour: (
                       <figure key={s.key} className={`tf-shot${i === active ? ' is-on' : ''}`} style={spotVars(s)}>
                         <div className="tf-zoom">
                           <img
-                            src={`/tour/${s.key}-${device === 'browser' ? 'desktop' : 'phone'}.jpg`}
+                            src={tourPicture(`${s.key}-${device === 'browser' ? 'desktop' : 'phone'}`)}
                             alt={i === active ? s.alt : ''}
                             draggable={false}
                             decoding="async"

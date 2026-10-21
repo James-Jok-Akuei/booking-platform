@@ -11,421 +11,429 @@ msgstr ""
 #: src/Footer.tsx:86
 #: src/Footer.tsx:87
 msgid "{0} — coming soon"
-msgstr ""
+msgstr "{0} — bientôt disponible"
 
 #. placeholder {0}: s.name
 #. placeholder {1}: s.business.name
 #: src/Places.tsx:143
 msgid "{0} at {1}"
-msgstr ""
+msgstr "{0} chez {1}"
 
 #: src/Places.tsx:176
 msgid "{deposit} to book"
-msgstr ""
+msgstr "{deposit} pour réserver"
 
-#: src/App.tsx:210
+#: src/App.tsx:215
 msgid "{total, plural, one {# place} other {# places}}"
-msgstr ""
+msgstr "{total, plural, one {# établissement} other {# établissements}}"
 
 #: src/Places.tsx:110
 msgid "{total, plural, one {<0>#</0> service ready to <1>book</1> today.} other {<2>#</2> services ready to <3>book</3> today.}}"
-msgstr ""
+msgstr "{total, plural, one {<0>#</0> service à <1>réserver</1> aujourd’hui.} other {<2>#</2> services à <3>réserver</3> aujourd’hui.}}"
 
-#: src/App.tsx:214
+#: src/App.tsx:219
 msgid "{total, plural, one {Place you can<0/>book today.} other {Places you can<1/>book today.}}"
-msgstr ""
+msgstr "{total, plural, one {Établissement où<0/>réserver aujourd’hui.} other {Établissements où<1/>réserver aujourd’hui.}}"
 
 #: src/Features.tsx:71
 msgid "A small deposit<0/>holds your time"
-msgstr ""
+msgstr "Un petit acompte<0/>bloque votre créneau"
 
-#: src/Tour.tsx:68
+#: src/Tour.tsx:69
 msgid "About five minutes"
-msgstr ""
+msgstr "Environ cinq minutes"
 
-#: src/Tour.tsx:92
+#: src/Tour.tsx:93
 msgid "Approved"
-msgstr ""
+msgstr "Approuvé"
 
-#: src/App.tsx:369
+#: src/App.tsx:375
 msgid "Back to top"
-msgstr ""
+msgstr "Retour en haut"
 
-#: src/App.tsx:421
+#: src/App.tsx:428
 msgid "Barbers, salons, spas, garages — with real photos, prices and open hours."
-msgstr ""
+msgstr "Barbiers, salons, spas, garages — avec de vraies photos, les prix et les horaires d’ouverture."
 
-#: src/App.tsx:266
+#: src/App.tsx:272
 msgid "Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo deposit. You see your whole day on one screen, and check people in with a code."
-msgstr ""
+msgstr "Barbiers, salons, spas, garages et plus : les clients vous trouvent, choisissent un créneau disponible et le bloquent avec un petit acompte MoMo. Vous voyez toute votre journée sur un seul écran et enregistrez les arrivées avec un code."
 
 #: src/Features.tsx:28
 msgid "Barbers, salons, spas, garages, clinics and more — with their own photos, prices and opening hours. We check every shop before it is listed."
-msgstr ""
+msgstr "Barbiers, salons, spas, garages, cliniques et plus — avec leurs propres photos, prix et horaires d’ouverture. Nous vérifions chaque établissement avant sa mise en ligne."
 
 #: src/Features.tsx:47
 msgid "Book in<0/>under a minute"
-msgstr ""
+msgstr "Réservez en<0/>moins d’une minute"
 
 #: src/Footer.tsx:60
 msgid "Book real places near you, hold your time with a small MoMo deposit, and show your code at the door."
-msgstr ""
+msgstr "Réservez de vrais établissements près de chez vous, bloquez votre créneau avec un petit acompte MoMo et montrez votre code à l’entrée."
 
-#: src/App.tsx:155
+#: src/i18n/head.ts:10
+msgid "Book your next appointment at real shops near you. Pay a small deposit with MTN MoMo, show your 6-digit code at the door."
+msgstr "Réservez votre prochain rendez-vous dans de vrais établissements près de chez vous. Payez un petit acompte avec MTN MoMo, montrez votre code à 6 chiffres à l’entrée."
+
+#: src/App.tsx:160
 msgid "Book your next<0/>appointment, Easily!"
-msgstr ""
+msgstr "Réservez<0/>en toute simplicité !"
 
-#: src/App.tsx:32
+#: src/i18n/head.ts:9
 msgid "BwanguReservations — Book real shops in Rwanda, quickly"
-msgstr ""
+msgstr "BwanguReservations — Réservez de vrais établissements au Rwanda, rapidement"
 
-#: src/Tour.tsx:247
+#: src/Tour.tsx:249
 msgid "BwanguReservations · For businesses"
-msgstr ""
+msgstr "BwanguReservations · Pour les professionnels"
 
-#: src/App.tsx:391
+#: src/App.tsx:397
 msgid "BwanguReservations is coming to the App Store and Google Play. Businesses can already sign in on the web and set up their shop."
-msgstr ""
+msgstr "BwanguReservations arrive bientôt sur l’App Store et Google Play. Les professionnels peuvent déjà se connecter sur le web et configurer leur établissement."
 
 #. placeholder {0}: s.label
 #: src/Footer.tsx:77
 msgid "BwanguReservations on {0}"
-msgstr ""
+msgstr "BwanguReservations sur {0}"
 
 #: src/Footer.tsx:68
 msgid "BwanguReservations on social media"
-msgstr ""
+msgstr "BwanguReservations sur les réseaux sociaux"
 
-#: src/App.tsx:403
+#: src/i18n/head.ts:11
+msgid "BwanguReservations: book your next appointment, easily — the app's Find a place and shop screens"
+msgstr "BwanguReservations : réservez votre prochain rendez-vous, en toute simplicité — l’écran « Trouver un établissement » et la page d’un établissement, dans l’application"
+
+#: src/App.tsx:409
 #: src/Modal.tsx:37
 msgid "Close"
-msgstr ""
+msgstr "Fermer"
 
-#: src/Tour.tsx:44
+#: src/Tour.tsx:45
 msgid "Code sent"
-msgstr ""
+msgstr "Code envoyé"
 
-#: src/App.tsx:324
+#: src/App.tsx:330
 msgid "Customers can book you now"
-msgstr ""
+msgstr "Les clients peuvent réserver chez vous dès maintenant"
 
-#: src/App.tsx:287
+#: src/App.tsx:293
 msgid "Deposits paid straight to MTN MoMo"
-msgstr ""
+msgstr "Acomptes payés directement via MTN MoMo"
 
-#: src/App.tsx:290
+#: src/App.tsx:296
 msgid "Fewer people who book and do not come"
-msgstr ""
+msgstr "Moins de clients qui réservent sans venir"
 
 #: src/Places.tsx:125
 msgid "Find a place <0>-></0> Pick a free time <1>-></1> Show your code at the door."
-msgstr ""
+msgstr "Trouvez un établissement <0>-></0> Choisissez un créneau disponible <1>-></1> Montrez votre code à l’entrée."
 
-#: src/App.tsx:420
+#: src/App.tsx:427
 msgid "Find a shop near you"
-msgstr ""
+msgstr "Trouvez un établissement près de chez vous"
 
-#: src/App.tsx:136
-#: src/App.tsx:256
-#: src/App.tsx:342
+#: src/App.tsx:141
+#: src/App.tsx:262
+#: src/App.tsx:348
 #: src/Footer.tsx:114
 msgid "For businesses"
-msgstr ""
+msgstr "Espace pro"
 
 #: src/Footer.tsx:100
 msgid "For customers"
-msgstr ""
+msgstr "Pour les clients"
 
-#: src/Tour.tsx:232
+#: src/Tour.tsx:234
 msgid "Free to join · No card needed"
-msgstr ""
+msgstr "Inscription gratuite · Sans carte bancaire"
 
-#: src/Tour.tsx:179
+#: src/Tour.tsx:181
 msgid "From sign-up to your first booking"
-msgstr ""
+msgstr "De l’inscription à votre première réservation"
 
-#: src/App.tsx:259
+#: src/App.tsx:265
 msgid "Get booked<0/>while you work."
-msgstr ""
+msgstr "Recevez des réservations<0/>pendant que vous travaillez."
 
-#: src/App.tsx:139
 #: src/App.tsx:144
-#: src/App.tsx:340
-#: src/App.tsx:383
+#: src/App.tsx:149
+#: src/App.tsx:346
+#: src/App.tsx:389
 #: src/Footer.tsx:103
 msgid "Get the app"
-msgstr ""
+msgstr "Obtenir l’application"
 
-#: src/App.tsx:311
+#: src/App.tsx:317
 msgid "Haircut · Saturday 10:30"
-msgstr ""
+msgstr "Coupe de cheveux · Samedi 10h30"
 
-#: src/App.tsx:343
+#: src/App.tsx:349
 msgid "Help"
-msgstr ""
+msgstr "Aide"
 
-#: src/App.tsx:425
+#: src/App.tsx:432
 msgid "Hold your time with a small deposit"
-msgstr ""
+msgstr "Bloquez votre créneau avec un petit acompte"
 
-#: src/App.tsx:435
+#: src/App.tsx:442
 #: src/Footer.tsx:106
 msgid "How booking works"
-msgstr ""
+msgstr "Comment réserver"
 
-#: src/App.tsx:341
+#: src/App.tsx:347
 msgid "How it works"
-msgstr ""
+msgstr "Comment ça marche"
 
 #: src/LanguageChoice.tsx:41
 msgid "Language"
-msgstr ""
+msgstr "Langue"
 
 #. placeholder {0}: now.native
 #: src/LanguageChoice.tsx:67
 msgid "Language: {0}"
-msgstr ""
+msgstr "Langue : {0}"
 
 #: src/Footer.tsx:132
 msgid "Legal"
-msgstr ""
+msgstr "Juridique"
 
-#: src/Tour.tsx:182
+#: src/Tour.tsx:184
 msgid "Live in <0>three steps.</0>"
-msgstr ""
+msgstr "En ligne en <0>trois étapes.</0>"
 
 #: src/Footer.tsx:127
 msgid "Live in three steps"
-msgstr ""
+msgstr "En ligne en trois étapes"
 
 #: src/Footer.tsx:222
 msgid "Loading…"
-msgstr ""
+msgstr "Chargement…"
 
 #: src/Footer.tsx:65
 msgid "Made for Rwanda"
-msgstr ""
+msgstr "Pour le Rwanda"
 
-#: src/App.tsx:134
+#: src/App.tsx:139
 msgid "Main"
-msgstr ""
+msgstr "Menu principal"
 
 #: src/Footer.tsx:97
 msgid "More"
-msgstr ""
+msgstr "Plus"
 
-#: src/App.tsx:308
+#: src/App.tsx:314
 msgid "New booking"
-msgstr ""
+msgstr "Nouvelle réservation"
 
-#: src/App.tsx:426
+#: src/App.tsx:433
 msgid "Paid with MTN MoMo on your own phone. The rest you pay at the shop."
-msgstr ""
+msgstr "Payé avec MTN MoMo sur votre propre téléphone. Vous payez le reste sur place."
 
 #: src/Features.tsx:78
 msgid "Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. If the shop has to cancel, you get it all back."
-msgstr ""
+msgstr "Payez une partie du prix avec MTN MoMo sur votre propre téléphone, et le reste sur place. Si l’établissement doit annuler, vous êtes entièrement remboursé."
 
 #: src/Footer.tsx:109
 msgid "Places to book"
-msgstr ""
+msgstr "Établissements à réserver"
 
 #: src/Places.tsx:191
 msgid "Prices are set by each shop. The deposit is part of the price, not extra."
-msgstr ""
+msgstr "Les prix sont fixés par chaque établissement. L’acompte fait partie du prix, ce n’est pas un supplément."
 
 #: src/Footer.tsx:164
 msgid "Prices in RWF · Deposits by MTN MoMo"
-msgstr ""
+msgstr "Prix en RWF · Acomptes par MTN MoMo"
 
 #: src/Footer.tsx:26
 msgid "Privacy Policy"
-msgstr ""
+msgstr "Politique de confidentialité"
 
-#: src/App.tsx:346
+#: src/App.tsx:352
 msgid "Quick links"
-msgstr ""
+msgstr "Liens rapides"
 
 #: src/Footer.tsx:211
 msgid "Read it in my language"
-msgstr ""
+msgstr "Lire dans ma langue"
 
 #: src/Footer.tsx:211
 msgid "Read the English"
-msgstr ""
+msgstr "Lire la version anglaise"
 
 #: src/Features.tsx:21
 msgid "Real places,<0/>checked by us"
-msgstr ""
+msgstr "De vrais établissements,<0/>vérifiés par nos soins"
 
-#: src/Tour.tsx:187
+#: src/Tour.tsx:189
 msgid "Real screens from the app — exactly what you will see."
-msgstr ""
+msgstr "De vrais écrans de l’application — exactement ce que vous verrez."
 
-#: src/App.tsx:175
+#: src/App.tsx:180
 msgid "Screens of the apps"
-msgstr ""
+msgstr "Écrans des applications"
 
 #: src/Places.tsx:188
 msgid "See every place in the app"
-msgstr ""
+msgstr "Voir tous les établissements dans l’application"
 
 #: src/Features.tsx:54
 msgid "See the free times for today and the days ahead, pick one, and it is yours. No phone calls, no waiting for a reply."
-msgstr ""
+msgstr "Consultez les créneaux disponibles aujourd’hui et les jours suivants, choisissez-en un, et il est à vous. Pas d’appel, pas d’attente de réponse."
 
 #: src/Footer.tsx:32
 msgid "Seller Agreement"
-msgstr ""
+msgstr "Contrat commerçant"
 
-#: src/Tour.tsx:56
+#: src/Tour.tsx:57
 msgid "Set up your shop"
-msgstr ""
+msgstr "Configurez votre établissement"
 
-#: src/Tour.tsx:62
+#: src/Tour.tsx:63
 msgid "Setting up a shop: its name, what kind of shop it is, and how customers will see it."
-msgstr ""
+msgstr "Configuration d’un établissement : son nom, son type et la façon dont les clients le verront."
 
-#: src/App.tsx:430
+#: src/App.tsx:437
 msgid "Show your 6-digit code at the door"
-msgstr ""
+msgstr "Montrez votre code à 6 chiffres à l’entrée"
 
 #: src/Features.tsx:104
 msgid "Show your 6-digit code when you arrive and you are checked in. We remind you the day before, so it is never a surprise."
-msgstr ""
+msgstr "Montrez votre code à 6 chiffres en arrivant : votre arrivée est enregistrée. Nous vous rappelons votre rendez-vous la veille, pour éviter toute surprise."
 
-#: src/App.tsx:277
+#: src/App.tsx:283
 #: src/Footer.tsx:123
 msgid "Sign in"
-msgstr ""
+msgstr "Se connecter"
 
-#: src/Tour.tsx:32
+#: src/Tour.tsx:33
 msgid "Sign up with your email"
-msgstr ""
+msgstr "Inscrivez-vous avec votre e-mail"
 
-#: src/App.tsx:282
+#: src/App.tsx:288
 msgid "Sign-ups for businesses open soon."
-msgstr ""
+msgstr "Les inscriptions pour les professionnels ouvrent bientôt."
 
-#: src/Tour.tsx:47
+#: src/Tour.tsx:48
 msgid "Six digits — no password, ever"
-msgstr ""
+msgstr "Six chiffres — jamais de mot de passe"
 
-#: src/Tour.tsx:71
+#: src/Tour.tsx:72
 msgid "Skip anything, add it later"
-msgstr ""
+msgstr "Passez ce que vous voulez, ajoutez-le plus tard"
 
-#: src/App.tsx:399
+#: src/App.tsx:405
 #: src/Footer.tsx:118
-#: src/Tour.tsx:229
+#: src/Tour.tsx:231
 msgid "Start selling"
-msgstr ""
+msgstr "Commencer à vendre"
 
-#: src/App.tsx:274
+#: src/App.tsx:280
 msgid "Start selling — it is free"
-msgstr ""
+msgstr "Commencer à vendre — c’est gratuit"
 
 #: src/Footer.tsx:143
 msgid "Talk to us"
-msgstr ""
+msgstr "Contactez-nous"
 
 #: src/Footer.tsx:20
 msgid "Terms of Use"
-msgstr ""
+msgstr "Conditions d’utilisation"
 
-#: src/App.tsx:388
+#: src/App.tsx:394
 msgid "The app is on its way."
-msgstr ""
+msgstr "L’application arrive bientôt."
 
-#: src/App.tsx:59
+#: src/App.tsx:63
 msgid "The business app: a shop’s day at a glance"
-msgstr ""
+msgstr "L’application professionnelle : la journée d’un établissement en un coup d’œil"
 
-#: src/App.tsx:67
+#: src/App.tsx:71
 msgid "The business app: a week of bookings on a calendar"
-msgstr ""
+msgstr "L’application professionnelle : une semaine de réservations sur un calendrier"
 
-#: src/Tour.tsx:86
+#: src/Tour.tsx:87
 msgid "The business app’s home page the moment a shop is posted: You are live!"
-msgstr ""
+msgstr "La page d’accueil de l’application professionnelle dès qu’un établissement est publié : Vous êtes en ligne !"
 
-#: src/Tour.tsx:38
+#: src/Tour.tsx:39
 msgid "The business app’s sign-up: a 6-digit code sent to your email, typed into six boxes."
-msgstr ""
+msgstr "L’inscription sur l’application professionnelle : un code à 6 chiffres envoyé à votre adresse e-mail, saisi dans six cases."
 
-#: src/App.tsx:83
+#: src/App.tsx:87
 msgid "The customer app: a shop’s page"
-msgstr ""
+msgstr "L’application client : la page d’un établissement"
 
-#: src/App.tsx:75
+#: src/App.tsx:79
 msgid "The customer app: find a place"
-msgstr ""
+msgstr "L’application client : trouver un établissement"
 
-#: src/App.tsx:431
+#: src/App.tsx:438
 msgid "The shop checks you in with it. No password, no printout."
-msgstr ""
+msgstr "L’établissement enregistre votre arrivée avec ce code. Pas de mot de passe, rien à imprimer."
 
-#: src/Tour.tsx:193
+#: src/Tour.tsx:195
 msgid "The three steps"
-msgstr ""
+msgstr "Les trois étapes"
 
 #: src/Footer.tsx:218
 msgid "This could not be loaded just now. Please try again in a moment."
-msgstr ""
+msgstr "Impossible de charger ce contenu pour le moment. Veuillez réessayer dans un instant."
 
 #: src/Footer.tsx:208
 msgid "This is a translation. If it ever differs from the English, the English applies."
-msgstr ""
+msgstr "Ceci est une traduction. En cas de différence avec la version anglaise, c’est l’anglais qui fait foi."
 
 #: src/Footer.tsx:206
 msgid "This is the English, which applies wherever a translation differs."
-msgstr ""
+msgstr "Ceci est la version anglaise, qui fait foi en cas de différence avec une traduction."
 
-#: src/Tour.tsx:95
+#: src/Tour.tsx:96
 msgid "Usually within one working day"
-msgstr ""
+msgstr "En général sous un jour ouvré"
 
-#: src/Tour.tsx:83
+#: src/Tour.tsx:84
 msgid "Usually within one working day. Then you post your shop when you are ready, and customers can find you and book."
-msgstr ""
+msgstr "En général sous un jour ouvré. Ensuite, vous publiez votre établissement quand vous êtes prêt, et les clients peuvent vous trouver et réserver."
 
 #. placeholder {0}: doc.version
 #: src/Footer.tsx:198
 msgid "Version {0} · in force since {since}"
-msgstr ""
+msgstr "Version {0} · en vigueur depuis le {since}"
 
-#: src/App.tsx:166
+#: src/App.tsx:171
 msgid "Watch how to book<0/>in under a minute!"
-msgstr ""
+msgstr "Découvrez comment réserver<0/>en moins d’une minute !"
 
-#: src/Tour.tsx:80
+#: src/Tour.tsx:81
 msgid "We check it, you post it"
-msgstr ""
+msgstr "Nous vérifions, vous publiez"
 
-#: src/Tour.tsx:35
+#: src/Tour.tsx:36
 msgid "We send a 6-digit code, and that is your account. No password, no card."
-msgstr ""
+msgstr "Nous vous envoyons un code à 6 chiffres, et votre compte est créé. Pas de mot de passe, pas de carte."
 
 #: src/Features.tsx:125
 msgid "Why book here"
-msgstr ""
+msgstr "Pourquoi réserver ici"
 
-#: src/App.tsx:321
+#: src/App.tsx:327
 msgid "You are live!"
-msgstr ""
+msgstr "Vous êtes en ligne !"
 
-#: src/App.tsx:152
+#: src/App.tsx:157
 msgid "Your appointments, without the phone calls."
-msgstr ""
+msgstr "Vos rendez-vous, sans coups de fil."
 
-#: src/App.tsx:293
+#: src/App.tsx:299
 msgid "Your bookings, messages and money in one place"
-msgstr ""
+msgstr "Vos réservations, messages et revenus au même endroit"
 
 #: src/Features.tsx:97
 msgid "Your code,<0/>not a queue"
-msgstr ""
+msgstr "Votre code,<0/>pas la file d’attente"
 
-#: src/Tour.tsx:59
+#: src/Tour.tsx:60
 msgid "Your name, a branch and one service — about five minutes. Skip anything and add it later."
-msgstr ""
+msgstr "Votre nom, une succursale et un service — environ cinq minutes. Passez ce que vous voulez et ajoutez-le plus tard."

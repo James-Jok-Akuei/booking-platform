@@ -41,18 +41,17 @@ import { showProblem } from '../../src/ui/Dialog';
 import { useFollow } from '../../src/useFollow';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../../src/i18n/format';
+import { formatDate } from '../../src/i18n/format';
 
 /** A day of the week by its number (0 = Sunday), in the app's language (§308). */
 const dayName = (day: number) =>
-  // 2023-01-01 was a Sunday.
-  new Date(Date.UTC(2023, 0, 1 + day, 12)).toLocaleDateString(dateLocale(), { weekday: 'long', timeZone: 'UTC' });
+  formatDate(new Date(Date.UTC(2023, 0, 1 + day, 12)), { weekday: 'long', timeZone: 'UTC' });
 
 /** How tall the picture at the top is. The sheet below overlaps its last 28pt. */
 const HERO = 300;
 
 const niceDate = (ymd: string) =>
-  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(dateLocale(), {
+  formatDate(new Date(`${ymd}T12:00:00Z`), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',

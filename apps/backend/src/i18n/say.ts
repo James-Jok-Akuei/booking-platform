@@ -21,6 +21,24 @@ export const DATE_TAGS: Record<Locale, string> = { en: 'en-GB', fr: 'fr-RW', rw:
 
 export const asLocale = (value: unknown): Locale => (isLocale(value) ? value : DEFAULT_LOCALE);
 
+/**
+ * A date in `locale` — its words, and the order that language writes them in
+ * (§308.7). Kinyarwanda's built-in pattern puts the month or the year first
+ * ("Ukwakira 22, Kuwa kane"); Rwanda writes "Kuwa kane, 22 Ukwakira 2026".
+ */
+export function formatDateIn(locale: Locale, date: Date, options: Intl.DateTimeFormatOptions): string {
+  if (locale !== 'rw') return new Intl.DateTimeFormat(DATE_TAGS[locale], options).format(date);
+  const parts = new Intl.DateTimeFormat(DATE_TAGS.rw, options).formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => {
+    const value = parts.find((p) => p.type === type)?.value;
+    return value && (type === 'weekday' || type === 'month') ? value.charAt(0).toUpperCase() + value.slice(1) : value;
+  };
+  const [weekday, day, month, year] = [part('weekday'), part('day'), part('month'), part('year')];
+  const when = [day, month, year].filter(Boolean).join(month !== undefined && /^\d+$/.test(month) ? '/' : ' ');
+  const time = part('hour') !== undefined ? [part('hour'), part('minute')].filter(Boolean).join(':') : '';
+  return [[weekday, when].filter(Boolean).join(', '), time].filter(Boolean).join(' ');
+}
+
 const compiled = new Map<string, IntlMessageFormat>();
 const catalogOf = (locale: Locale): Record<string, string> | undefined =>
   locale === 'rw' || locale === 'fr' ? CATALOGS[locale] : undefined;
@@ -69,6 +87,34 @@ export function say(locale: Locale | string | null | undefined, message: string,
  * before…") is recognised by the shape of its English, its values taken out
  * and put into the translation.
  */
+/**
+ * "a, b and c" as `locale` joins a list (§308.7). Kinyarwanda has no list
+ * pattern built in — it would come out with an English "and" — so its "na"
+ * (n’ before a vowel) is written here.
+ */
+export function listIn(locale: Locale, items: string[]): string {
+  if (items.length <= 1) return items[0] ?? '';
+  if (locale !== 'rw') return new Intl.ListFormat(DATE_TAGS[locale], { type: 'conjunction' }).format(items);
+  const last = items[items.length - 1];
+  return `${items.slice(0, -1).join(', ')} ${/^[aeiou]/i.test(last) ? `n’${last}` : `na ${last}`}`;
+}
+
+/**
+ * A value taken out of an English refusal, in `locale` too when it is one of
+ * our own words ("accepted", "opening hours") or a list of them — so a
+ * translated sentence never carries an English word inside it (§308.7). A
+ * name, a number or anything else is left as it came.
+ */
+function piece(locale: Locale, catalog: Record<string, string>, value: string | undefined): string | undefined {
+  if (!value) return value;
+  if (catalog[value]) return format(locale, catalog[value], {});
+  const parts = value.split(/, (?:and )?| and /);
+  if (parts.length > 1 && parts.every((part) => catalog[part])) {
+    return listIn(locale, parts.map((part) => format(locale, catalog[part], {})));
+  }
+  return value;
+}
+
 export function sayError(locale: Locale, message: string): string {
   if (locale === DEFAULT_LOCALE) return message;
   const catalog = catalogOf(locale);
@@ -82,7 +128,7 @@ export function sayError(locale: Locale, message: string): string {
     if (!translated) return message;
     const values: Values = {};
     pattern.names.forEach((name, i) => {
-      values[name] = match[i + 1];
+      values[name] = piece(locale, catalog, match[i + 1]);
     });
     return format(locale, translated, values);
   }

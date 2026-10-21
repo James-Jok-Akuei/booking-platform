@@ -90,7 +90,9 @@ export class MembersService {
       // so a customer's email could never complete a BUSINESS login to accept this.
       if (existingUser.role !== UserRole.BUSINESS) {
         throw new BadRequestException(
-          `This email is already registered as a ${existingUser.role.toLowerCase()} account and cannot join a business.`,
+          existingUser.role === UserRole.ADMIN
+            ? 'This email is already registered as an administrator account and cannot join a business.'
+            : 'This email is already registered as a customer account and cannot join a business.',
         );
       }
 
@@ -200,7 +202,9 @@ export class MembersService {
     }
     if (invitation.status !== InvitationStatus.PENDING) {
       throw new BadRequestException(
-        `This invitation is already ${invitation.status.toLowerCase()} and cannot be revoked.`,
+        invitation.status === InvitationStatus.ACCEPTED
+          ? 'This invitation has already been accepted, so it cannot be cancelled.'
+          : 'This invitation has already been cancelled.',
       );
     }
 

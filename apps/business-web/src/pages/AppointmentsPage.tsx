@@ -22,6 +22,7 @@ import { MoreMenu, type MoreItem } from '../ui/MoreMenu';
 import { Portal } from '../ui/Portal';
 import { Select } from '../ui/Select';
 import { Icon, type IconName } from '../ui/Icon';
+import { useScrollEdges } from '../ui/scrollEdges';
 import { addDays, clock, minutesBetween, relativeDay, sameDay, startOfDay, useNow } from '../lib/time';
 import {
   BookingInQuestion,
@@ -40,8 +41,8 @@ import { CalendarBody, CalendarHead, useCalendar } from './calendar/AppointmentC
 import './appointments.css';
 import { useAccess } from '../access';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { plural, t } from '@lingui/core/macro';
+import { formatDateTime } from '../i18n/format';
 
 export { reservationNo };
 
@@ -95,7 +96,7 @@ const readMode = (): 'list' | 'calendar' => {
 };
 
 const when = (iso: string) =>
-  new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' });
+  formatDateTime(new Date(iso), { dateStyle: 'medium', timeStyle: 'short' });
 
 type Filters = { locationId?: string; q?: string };
 
@@ -139,6 +140,7 @@ function useSettled<T>(value: T, ms = 280) {
  * booking, not just the ones loaded. What is shown can be downloaded.
  */
 export function AppointmentsPage() {
+  const tabsRow = useScrollEdges();
   const [params, setParams] = useSearchParams();
   const tab = TABS.find((t) => t.key === params.get('tab')) ?? TABS[0];
   // Changes some of the address's settings, keeping the rest.
@@ -439,7 +441,7 @@ export function AppointmentsPage() {
           {mode === 'list' && (
           <>
           <div className="ap-tabs-row pin-phone">
-            <div className="ap-tabs" role="tablist">
+            <div className="ap-tabs scroll-edges" role="tablist" ref={tabsRow}>
               {TABS.map((t, i) => {
                 const count = counts[i].data?.total;
                 return (
@@ -625,7 +627,7 @@ function TodayStrip({
       tone: 'night',
       label: t`To collect today`,
       value: money(toCollect, currency),
-      note: owing.length ? t`from ${owing.length} ${owing.length === 1 ? 'customer' : 'customers'}` : t`Nothing left to collect`,
+      note: owing.length ? plural(owing.length, { one: 'from # customer', other: 'from # customers' }) : t`Nothing left to collect`,
     },
   ];
 

@@ -241,4 +241,44 @@ describe('Sessions and two-step sign-in (§298)', () => {
       expect(after.totpSecret).toBeNull();
     });
   });
+
+  describe('an account signing in to an app that is not for it (§308.6)', () => {
+    const inApp = (email: string, code: string, app: 'business' | 'customer') =>
+      request(url, '/auth/otp/verify', { method: 'POST', body: { email, code, app } });
+
+    it('tells an administrator where to go before the authenticator step, and signs nobody in', async () => {
+      const admin = await createAdmin(prisma);
+      // Two-step on, as the demo administrator has it.
+      await prisma.user.update({ where: { id: admin.userId }, data: { totpEnabledAt: new Date(), totpSecret: 'sealed' } });
+      const before = await prisma.authSession.count({ where: { userId: admin.userId } });
+      const res = await inApp(admin.email, await askCode(admin.email), 'business');
+      expect(res.status).toBe(403);
+      expect(res.body).toMatchObject({ code: 'WRONG_APP', accountKind: 'ADMIN' });
+      expect(String(res.body.message)).toMatch(/admin console/);
+      expect(await prisma.authSession.count({ where: { userId: admin.userId } })).toBe(before);
+    });
+
+    it('tells a customer in the business app, and a business in the customer app', async () => {
+      const customer = await createCustomer(prisma);
+      const wrong = await inApp(customer.email, await askCode(customer.email), 'business');
+      expect(wrong.body).toMatchObject({ code: 'WRONG_APP', accountKind: 'CUSTOMER' });
+      // The right app signs them in as usual.
+      const right = await inApp(customer.email, await askCode(customer.email), 'customer');
+      expect(right.status).toBe(200);
+    });
+
+    it('names its refusals by code, whatever language their words are in', async () => {
+      const res = await request(url, '/auth/otp/request', {
+        method: 'POST',
+        body: { email: 'nobody-yet@example.com' },
+        headers: { 'Accept-Language': 'fr' },
+      });
+      expect(res.body).toMatchObject({ code: 'NO_ACCOUNT' });
+      const customer = await createCustomer(prisma);
+      await request(url, '/auth/otp/request', { method: 'POST', body: { email: customer.email } });
+      const again = await request(url, '/auth/otp/request', { method: 'POST', body: { email: customer.email } });
+      expect(again.body).toMatchObject({ code: 'CODE_COOLDOWN' });
+      expect(Number(again.body.waitSeconds)).toBeGreaterThan(0);
+    });
+  });
 });

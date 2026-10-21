@@ -1,6 +1,6 @@
 import { AppointmentStatus, Prisma } from '@prisma/client';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
-import { DATE_TAGS, say } from '../i18n/say';
+import { DATE_TAGS, formatDateIn, say } from '../i18n/say';
 import { formatMoney } from '../payments/currency';
 import { Badge, Block, Ticket, Tone, ticket } from './email-kit';
 
@@ -130,7 +130,7 @@ export const reservationNo = (id: string) => {
 
 /** A date's parts in the reader's language — the day before the month, a 24-hour clock (§308). */
 const parts = (at: Date, timeZone: string, options: Intl.DateTimeFormatOptions, locale: Locale = DEFAULT_LOCALE) =>
-  new Intl.DateTimeFormat(DATE_TAGS[locale], { timeZone, ...options }).format(at);
+  formatDateIn(locale, at, { timeZone, ...options });
 
 /** "Tuesday 20 October · 11:15 – 12:15", in the platform's own time. */
 export function whenText(b: Pick<BookingFacts, 'startTime' | 'endTime'>, timeZone: string, locale: Locale = DEFAULT_LOCALE) {

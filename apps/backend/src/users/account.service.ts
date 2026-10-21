@@ -254,8 +254,6 @@ export class AccountService {
     // the person is told before the address is gone.
     options: { bySupport?: boolean; beforeClosing?: () => Promise<void> } = {},
   ): Promise<ActionMessageDto> {
-    const you = options.bySupport ? 'They have' : 'You have';
-    const youAre = options.bySupport ? 'They are' : 'You are';
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, closedAt: true },
@@ -273,11 +271,12 @@ export class AccountService {
         startTime: { gte: new Date() },
       },
     });
+    // Whole sentences for each case, so each language says them its own way (§308).
     if (upcoming > 0) {
       throw new BadRequestException(
-        `${you} ${upcoming} booking(s) still to come. Cancel them first, or ` +
-          `wait until they have happened — a shop is expecting ${options.bySupport ? 'them' : 'you'}, and closing ` +
-          'now would leave them with a slot held for nobody.',
+        options.bySupport
+          ? `They have ${upcoming} booking(s) still to come. Cancel them first, or wait until they have happened — a shop is expecting them, and closing now would leave them with a slot held for nobody.`
+          : `You have ${upcoming} booking(s) still to come. Cancel them first, or wait until they have happened — a shop is expecting you, and closing now would leave them with a slot held for nobody.`,
       );
     }
 
@@ -301,10 +300,11 @@ export class AccountService {
         },
       });
       if (otherOwners === 0) {
+        const shop = ownership.businessProfile.name ?? '—';
         throw new BadRequestException(
-          `${youAre} the only owner of ${ownership.businessProfile.name ?? 'a business'}. ` +
-            'Make someone else an owner first, or it would be left with nobody ' +
-            'who can change anything.',
+          options.bySupport
+            ? `They are the only owner of ${shop}. Make someone else an owner first, or it would be left with nobody who can change anything.`
+            : `You are the only owner of ${shop}. Make someone else an owner first, or it would be left with nobody who can change anything.`,
         );
       }
     }

@@ -58,7 +58,7 @@ import { RwandaFlag } from '../../src/ui/RwandaFlag';
 import { Sheet } from '../../src/ui/Sheet';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 
 /** "City of Kigali" is what the state calls it; "Kigali" is what people say. */
 const shortName = (name: string) =>
@@ -467,7 +467,7 @@ export default function Discover() {
       title: bubble.name,
       message: seen
         ? t`You have seen today’s story. Watch it again, or open the shop.`
-        : t`${count === 1 ? 'A new story' : `${count} new stories`} from today.`,
+        : plural(count, { one: 'A new story from today.', other: '# new stories from today.' }),
       tone: 'accent',
       icon: 'aperture',
       actions: [
@@ -795,7 +795,7 @@ export default function Discover() {
               note={
                 shopCount === undefined
                   ? undefined
-                  : `${shopCount} ${shopCount === 1 ? 'place' : 'places'}`
+                  : plural(shopCount, { one: '# place', other: '# places' })
               }
             />
             <ScrollView
@@ -895,7 +895,7 @@ export default function Discover() {
             <SectionHead
               // "Discounts", not "On sale" (§284): the plainer word for everyone.
               title={t`Discounts`}
-              note={`${deals.data?.total ?? onSale.length} ${(deals.data?.total ?? onSale.length) === 1 ? 'service' : 'services'}`}
+              note={plural(deals.data?.total ?? onSale.length, { one: '# service', other: '# services' })}
             />
             <ScrollView
               horizontal
@@ -974,7 +974,7 @@ export default function Discover() {
           <FadeIn delay={60}>
             <SectionHead
               title={t`Services`}
-              note={`${services.data?.total} ${services.data?.total === 1 ? 'service' : 'services'}`}
+              note={services.data ? plural(services.data.total, { one: '# service', other: '# services' }) : undefined}
             />
             <View style={styles.grid}>
               {offers.map((service) => (

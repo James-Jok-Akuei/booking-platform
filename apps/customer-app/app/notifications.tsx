@@ -37,7 +37,7 @@ import { TopBar } from '../src/ui/TopBar';
 import { Undo } from '../src/ui/Undo';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../src/i18n/format';
+import { formatDateTime } from '../src/i18n/format';
 
 type Filter = 'all' | 'unread';
 type Section = { title: string; data: Notification[]; important?: boolean };
@@ -58,7 +58,7 @@ const dayGroup = (iso: string) => {
 };
 
 const fullWhen = (iso: string) =>
-  new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'full', timeStyle: 'short' });
+  formatDateTime(new Date(iso), { dateStyle: 'full', timeStyle: 'short' });
 
 /**
  * What the platform has told this person (§134, §159).
@@ -563,5 +563,5 @@ function openAction(link: string | null): { icon: IconName; label: string } {
   if (link.startsWith('/thread')) return { icon: 'chatbubble-outline', label: t`Open the conversation` };
   if (link.startsWith('/ticket')) return { icon: 'help-buoy-outline', label: t`Open the support request` };
   if (link.startsWith('/shop')) return { icon: 'storefront-outline', label: t`Open the shop` };
-  return { icon: 'arrow-forward', label: t`Open` };
+  return { icon: 'arrow-forward', label: t({ message: 'Open', context: 'a button: open it' }) };
 }

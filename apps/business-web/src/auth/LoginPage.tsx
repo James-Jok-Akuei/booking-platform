@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent, type ReactNode } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ApiError, requestOtp, signedOutWhy } from '../api/client';
+import { ApiError, refusalOf, requestOtp, signedOutWhy } from '../api/client';
 import { lengthWords } from '../session/words';
 import { getCategories, getMe, getReadiness, publishedLegal, wallPlaces, type LegalDocument } from '../api/business';
 import { TranslationNote } from '../ui/TranslationNote';
@@ -20,7 +20,7 @@ import './login.css';
 import { accessOf } from '../access';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate } from '../i18n/format';
 import { LanguageChoice } from '../ui/LanguageChoice';
 
 /** What the headline says a seller can grow, one after another. */
@@ -41,12 +41,14 @@ const DOCUMENT_NAME: Record<DocumentKind, string> = {
 /** The server's sentences, said the way a person would (§183). */
 function friendly(caught: unknown, fallback: string): string {
   if (!(caught instanceof ApiError)) return fallback;
-  const m = caught.message;
-  if (/invalid or expired/i.test(m)) return t`That code is not right, or it has run out. Check it and try again.`;
-  if (/too many incorrect/i.test(m)) return t`Too many wrong tries. Ask for a new code below.`;
-  if (/too many verification code requests/i.test(m))
-    return t`That is a lot of codes for one hour. Please try again a little later.`;
-  return m;
+  // By the refusal's name, so it reads the same in every language (§308).
+  const { code } = refusalOf(caught);
+  if (code === 'CODE_NOT_RIGHT') return t`That code is not right, or it has run out. Check it and try again.`;
+  if (code === 'TOO_MANY_TRIES') return t`Too many wrong tries. Ask for a new code below.`;
+  if (code === 'TOO_MANY_CODES') return t`That is a lot of codes for one hour. Please try again a little later.`;
+  if (code === 'ACCOUNT_CLOSED') return t`This account was closed. Use the same email to start a new business, or a different one.`;
+  // Anything else: the server's own sentence, already in the reader's language.
+  return caught.message;
 }
 
 /**
@@ -194,19 +196,19 @@ export function LoginPage() {
       // An email with no account is not a mistake: it is somebody new — or
       // a colleague a business invited, who was told to "simply sign in"
       // and has never had an account (§90.3).
-      if (caught instanceof ApiError && /no account yet/i.test(caught.message) && !role) {
+      if (refusalOf(caught).code === 'NO_ACCOUNT' && !role) {
         setIsNew(true);
         setStep('register');
         return;
       }
       // A code went out less than a minute ago and still works — so the
       // answer is "use that one", not an error.
-      const wait = caught instanceof ApiError ? /wait (\d+)s/i.exec(caught.message) : null;
-      if (wait) {
+      const { code: refusal, waitSeconds } = refusalOf(caught);
+      if (refusal === 'CODE_COOLDOWN') {
         setIsNew(Boolean(role));
         setCode('');
         setCodeState('idle');
-        setResendIn(Number(wait[1]));
+        setResendIn(waitSeconds ?? RESEND_SECONDS);
         setInfo(t`We sent you a code a moment ago. Enter that one.`);
         setStep('code');
         return;
@@ -249,6 +251,15 @@ export function LoginPage() {
       const where = await whereNext();
       later(() => navigate(where, { replace: true }), Math.max(0, 1900 - (Date.now() - began)));
     } catch (caught) {
+      // The right code, in the wrong app (§308.6): back to the email, with
+      // where that account belongs said plainly — another code would not help.
+      if (refusalOf(caught).code === 'WRONG_APP') {
+        setCode('');
+        setCodeState('idle');
+        setStep('email');
+        setError(friendly(caught, t`This email is not for the business app.`));
+        return;
+      }
       setCodeState('error');
       setShake(true);
       setError(friendly(caught, t`That code did not work. Please try again.`));
@@ -675,7 +686,7 @@ export function LoginPage() {
 
       {reading && (
         <Panel
-          eyebrow={open ? t`Version ${open.version} · ${new Date(open.publishedAt).toLocaleDateString(dateLocale(), { dateStyle: 'medium' })}` : t`Reading`}
+          eyebrow={open ? t`Version ${open.version} · ${formatDate(new Date(open.publishedAt), { dateStyle: 'medium' })}` : t`Reading`}
           title={open?.title ?? DOCUMENT_NAME[reading]}
           onClose={() => setReading(null)}
           width={680}

@@ -12,7 +12,7 @@ import { Panel } from '../ui/Panel';
 import './payout-detail.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDateTime } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 const PAGE = 30;
@@ -47,7 +47,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 const at = (iso: string | null) =>
   iso
-    ? new Date(iso).toLocaleString(dateLocale(), {
+    ? formatDateTime(new Date(iso), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',

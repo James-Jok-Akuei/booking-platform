@@ -9,7 +9,7 @@ import { ShopLogo } from '../ui/ShopLogo';
 import './followers.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate, formatTime } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 const TITLE_MAX = 60;
@@ -30,7 +30,7 @@ const IDEAS = [
 ];
 
 const day = (iso: string) =>
-  new Date(iso).toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' });
+  formatDate(new Date(iso), { weekday: 'long', day: 'numeric', month: 'long' });
 
 /**
  * Your followers (§287, §288): the customers who follow the shop see what is
@@ -132,14 +132,11 @@ export function FollowersPage() {
             </span>
             <div>
               <strong>{messages.isLoading ? '—' : followers.toLocaleString()}</strong>
-              <span>{followers === 1 ? t`person follows` : t`people follow`} {shopName}</span>
+              <span>{plural(followers, { one: `person follows ${shopName}`, other: `people follow ${shopName}` })}</span>
               {!messages.isLoading && followers > 0 && (
                 <span className="fl-count-offers">
-                  <Icon name="bell" size={13} /> {withOffers.toLocaleString()} {withOffers === 1 ? t`gets` : t`get`}
-                    <Trans>
-                      your
-                      offers as alerts
-                    </Trans>
+                  <Icon name="bell" size={13} />{' '}
+                  {plural(withOffers, { one: '# gets your offers as alerts', other: '# get your offers as alerts' })}
                   </span>
               )}
             </div>
@@ -233,7 +230,7 @@ export function FollowersPage() {
                 onClick={() => void askSend()}
               >
                 <Icon name="megaphone" size={17} />
-                {send.isPending ? t`Sending…` : t`Send to ${followers} ${followers === 1 ? 'follower' : 'followers'}`}
+                {send.isPending ? t`Sending…` : plural(followers, { one: 'Send to # follower', other: 'Send to # followers' })}
               </button>
             </article>
           ) : (
@@ -276,7 +273,7 @@ function Sent({ message, index }: { message: ShopMessage; index: number }) {
     <li style={{ animationDelay: `${index * 45}ms` }}>
       <div className="fl-sent-head">
         <strong>{message.title}</strong>
-        <time dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleDateString(dateLocale(), { dateStyle: 'medium' })}</time>
+        <time dateTime={message.createdAt}>{formatDate(new Date(message.createdAt), { dateStyle: 'medium' })}</time>
       </div>
       <p>{message.body}</p>
       <div className="fl-reach">
@@ -296,8 +293,8 @@ function LockScreen({ shopName, logoUrl, title, body }: { shopName: string; logo
   return (
     <div className="fl-phone" aria-label={t`How it looks on a follower's phone`}>
       <div className="fl-phone-time">
-        <span>{now.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-        <strong>{now.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' })}</strong>
+        <span>{formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+        <strong>{formatTime(now, { hour: '2-digit', minute: '2-digit' })}</strong>
       </div>
       <div className="fl-alert">
         <div className="fl-alert-app">

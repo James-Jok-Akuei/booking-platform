@@ -27,7 +27,7 @@ import { Icon, lookFor, type IconName } from '../ui/Icon';
 import { tick } from '../ui/haptic';
 import { useReducedMotion } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 
 /** How long each spotlight is on screen (§188): long enough to read it all. */
 const SLIDE_MS = 8000;
@@ -238,7 +238,7 @@ export function Spotlights({
         kind: 'rated',
         kicker: t`Top rated`,
         stat: `★ ${avg}`,
-        line: `${shopOf(r)} · ${r.location.ratingCount} ${r.location.ratingCount === 1 ? 'review' : 'reviews'}`,
+        line: `${shopOf(r)} · ${plural(r.location.ratingCount, { one: '# review', other: '# reviews' })}`,
         label: t`Top rated: ${r.name} at ${shopOf(r)}, rated ${avg}.`,
       });
     }
@@ -283,7 +283,7 @@ export function Spotlights({
         kicker: t`Top business`,
         title: name,
         stat: `★ ${avg}`,
-        line: `${top.ratingCount} ${top.ratingCount === 1 ? 'review' : 'reviews'} · ${top.district?.name ?? top.name}`,
+        line: `${plural(top.ratingCount, { one: '# review', other: '# reviews' })} · ${top.district?.name ?? top.name}`,
         image: top.business.coverImageUrl ?? top.business.logoUrl,
         logo: top.business.logoUrl,
         categoryIcon: top.business.category?.icon ?? null,

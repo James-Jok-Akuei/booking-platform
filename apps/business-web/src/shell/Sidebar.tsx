@@ -7,7 +7,7 @@ import { ShopLogo } from '../ui/ShopLogo';
 import { Icon, type IconName } from '../ui/Icon';
 import { roleLabel, type ShellData } from './useShellData';
 import { shopStateWord } from '../onboarding/steps';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 
 /**
  * The menu down the left (§131, §190).
@@ -68,7 +68,7 @@ export function Sidebar({
       return left
         ? {
             head: t`Finish setting up`,
-            text: t`${left} ${left === 1 ? 'thing' : 'things'} left before we can check your shop.`,
+            text: plural(left, { one: '# thing left before we can check your shop.', other: '# things left before we can check your shop.' }),
             to: '/welcome',
             icon: 'clock',
             tone: 'warn',

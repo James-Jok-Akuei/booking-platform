@@ -62,7 +62,11 @@ export function ServiceCard({
       onPress={onPress}
       scaleTo={0.96}
       accessibilityRole="button"
-      accessibilityLabel={t`${service.name} at ${service.business.name ?? service.location.name}, ${price}${sale ? `, ${sale.percent} percent off` : ''}`}
+      accessibilityLabel={
+        sale
+          ? t`${service.name} at ${shopName}, ${price}, ${sale.percent} percent off`
+          : t`${service.name} at ${shopName}, ${price}`
+      }
       style={[styles.card, { width }]}
       // The heart (§158), only for a signed-in reader — `saved` is absent
       // otherwise, and the button draws nothing for undefined. On top of the

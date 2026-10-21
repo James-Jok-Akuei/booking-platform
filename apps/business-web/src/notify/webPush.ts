@@ -1,4 +1,5 @@
 import { registerPushDevice, unregisterPushDevice } from '../api/business';
+import { t } from '@lingui/core/macro';
 
 /**
  * Alerts on this computer (§287): the browser's own notifications, through
@@ -32,9 +33,10 @@ export async function pushState(): Promise<PushState> {
 /** "Chrome on Mac", so a person can tell their devices apart. */
 function label() {
   const ua = navigator.userAgent;
-  const browser = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'A browser';
-  const os = /iPhone|iPad/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Android' : /Mac/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : 'a computer';
-  return `${browser} on ${os}`;
+  const browser = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : t`A browser`;
+  const os = /iPhone|iPad/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Android' : /Mac/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : t`a computer`;
+  // Kept as it is said now, in the language in use (§308).
+  return t`${browser} on ${os}`;
 }
 
 /** Asks the browser, subscribes, and tells the server. Must follow a click. */

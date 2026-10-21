@@ -3,6 +3,7 @@ import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import { Icon, type IconName } from './Icon';
 import { businessStart } from './links';
+import { shotsFor, useSiteLocale } from './i18n';
 
 /** Where on a screen the eye should go: a box, in percent of the picture. */
 type Spot = { x: number; y: number; w: number; h: number };
@@ -129,6 +130,7 @@ const prefersLessMotion = () =>
  * With reduced motion it is a plain set of three tabs.
  */
 export function Tour() {
+  const shots = shotsFor(useSiteLocale());
   const [active, setActive] = useState(0);
   // Bumped on a press, so the step's line starts filling again from empty.
   const [round, setRound] = useState(0);
@@ -255,12 +257,12 @@ export function Tour() {
                       <picture>
                         <source
                           media="(max-width: 899px)"
-                          srcSet={`/shots/steps/${step.key}-phone.jpg 640w, /shots/steps/${step.key}-phone@2x.jpg 780w`}
+                          srcSet={`${shots}/steps/${step.key}-phone.jpg 640w, ${shots}/steps/${step.key}-phone@2x.jpg 780w`}
                           sizes="300px"
                         />
                         <img
-                          src={`/shots/steps/${step.key}-desktop.jpg`}
-                          srcSet={`/shots/steps/${step.key}-desktop.jpg 1600w, /shots/steps/${step.key}-desktop@2x.jpg 2400w`}
+                          src={`${shots}/steps/${step.key}-desktop.jpg`}
+                          srcSet={`${shots}/steps/${step.key}-desktop.jpg 1600w, ${shots}/steps/${step.key}-desktop@2x.jpg 2400w`}
                           sizes="(min-width: 1440px) 1000px, 64vw"
                           alt={step.alt}
                           loading="lazy"

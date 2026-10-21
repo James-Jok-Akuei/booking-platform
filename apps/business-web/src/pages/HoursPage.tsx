@@ -24,7 +24,7 @@ import { Switch } from '../ui/Switch';
 import './hours.css';
 import { useAccess } from '../access';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 import { dayName } from '../i18n/format';
 
 /** Day names in the app's language (§308), Sunday first. */
@@ -399,13 +399,13 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
         <div>
           <h3><Trans>Opening hours</Trans></h3>
           <p>
-            {openDays === 0 ? t`Closed every day — nothing can be booked` : t`Open ${openDays} ${openDays === 1 ? 'day' : 'days'} a week`}
+            {openDays === 0 ? t`Closed every day — nothing can be booked` : plural(openDays, { one: 'Open # day a week', other: 'Open # days a week' })}
           </p>
         </div>
         {openDays > 1 && firstOpen && !readOnly && (
           <button type="button" className="hr-copy" onClick={copyFirst}>
             <Icon name="copy" size={15} />
-            <Trans>{DAYS()[firstOpen.dayOfWeek].slice(0, 3)}’s hours to every open day</Trans>
+            {t`Copy ${DAYS()[firstOpen.dayOfWeek]}’s hours to every open day`}
           </button>
         )}
       </header>
@@ -420,7 +420,7 @@ function WeekEditor({ location, onSaved, readOnly }: { location: Location; onSav
           return (
             <li key={day} className={`${h.isClosed ? 'is-off' : ''}${day === today ? ' is-today' : ''}`}>
               <span className="hr-day">
-                {DAYS()[day].slice(0, 3)}
+                {dayName(day, 'short')}
                 {day === today && <em><Trans>today</Trans></em>}
               </span>
               <Switch

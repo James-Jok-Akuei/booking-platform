@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 import { api } from './client';
 import type { components, paths } from './schema';
 
@@ -90,13 +91,14 @@ export type DepositStage = PaymentStatus['paymentStatus'];
  */
 export const explainFailedDeposit = (failureReason?: string): string => {
   const reason = failureReason ?? '';
+  // Whole sentences, so each language says them its own way (§308).
   if (reason.includes('APPROVAL_REJECTED'))
-    return 'The payment was declined on your phone. Nothing was taken.';
+    return t`The payment was declined on your phone. Nothing was taken. You can try again.`;
   if (reason.includes('EXPIRED') || reason.includes('TIMEOUT'))
-    return 'The request timed out before it was approved. Nothing was taken.';
+    return t`The request timed out before it was approved. Nothing was taken. You can try again.`;
   if (reason.includes('not configured'))
-    return 'Mobile money is not available right now. Nothing was taken.';
-  return 'The payment did not go through. Nothing was taken.';
+    return t`Mobile money is not available right now. Nothing was taken. You can try again.`;
+  return t`The payment did not go through. Nothing was taken. You can try again.`;
 };
 
 /**

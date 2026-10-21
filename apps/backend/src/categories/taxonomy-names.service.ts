@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
-import { readTranslations, taxonomyWord, type TaxonomyTranslations } from './taxonomy-words';
+import { OTHER_LANGUAGES, readTranslations, taxonomyWord, type TaxonomyTranslations } from './taxonomy-words';
 
 type Words = { name: string; description: string | null; translations: TaxonomyTranslations };
 
@@ -81,6 +81,26 @@ export class TaxonomyNamesService {
     }
   }
 
+  /**
+   * The categories and types whose Kinyarwanda or French name holds what was
+   * typed (§308.7) — "kogosha" finds barbershops, "beauté" the beauty shops —
+   * so a search in the reader's language finds what an English one would.
+   * Accents and capitals aside.
+   */
+  async spokenMatches(typed: string): Promise<{ categories: string[]; types: string[] }> {
+    const needle = fold(typed);
+    const found = { categories: [] as string[], types: [] as string[] };
+    if (needle.length < 2) return found;
+    await this.fresh();
+    for (const [id, words] of this.byId) {
+      const names = OTHER_LANGUAGES.map((l) => taxonomyWord(l, words.name, words.translations, 'name'));
+      if (names.some((name) => name !== words.name && fold(name).includes(needle))) {
+        (words.kind === 'category' ? found.categories : found.types).push(id);
+      }
+    }
+    return found;
+  }
+
   /** The answer, with every category and type in it said in `locale`. A copy: what was passed is left as it was. */
   async localise<T>(body: T, locale: Locale): Promise<T> {
     if (locale === DEFAULT_LOCALE || !isPlain(body)) return body;
@@ -120,6 +140,9 @@ export class TaxonomyNamesService {
     }
   }
 }
+
+/** Lower case, accents off: "Beauté" and "beaute" are the same search. */
+const fold = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
 
 const isPlain = (body: unknown) =>
   Array.isArray(body) || (!!body && typeof body === 'object' && Object.getPrototypeOf(body) === Object.prototype);

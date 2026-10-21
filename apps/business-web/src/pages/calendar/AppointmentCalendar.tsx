@@ -39,8 +39,8 @@ import {
 } from './model';
 import './calendar.css';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
-import { dateLocale, dayName } from '../../i18n/format';
+import { plural, t } from '@lingui/core/macro';
+import { dayName, formatDate } from '../../i18n/format';
 
 /*
  * The Appointments calendar (§229): the same bookings as the list, laid out
@@ -225,7 +225,7 @@ export function useCalendar({
       return scope.map((b) => make(range.days[0], [b], b.name, ''));
     }
     return range.days.map((day) =>
-      make(day, scope, day.toLocaleDateString(dateLocale(), { weekday: 'short' }), String(day.getDate())),
+      make(day, scope, formatDate(day, { weekday: 'short' }), String(day.getDate())),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [all, view, branch, scope.length, narrow, range.from.getTime(), shown.join(','), plan, nowMinuteKey]);
@@ -273,12 +273,12 @@ const rangeLabel = (cal: CalendarState) => {
   const { view, anchor, range, narrow } = cal;
   // A phone keeps it short, so the arrows, the date and the views share one row.
   const long = narrow ? 'short' : 'long';
-  if (view === 'day') return anchor.toLocaleDateString(dateLocale(), { weekday: long, day: 'numeric', month: long });
-  if (view === 'month') return anchor.toLocaleDateString(dateLocale(), { month: long, year: 'numeric' });
+  if (view === 'day') return formatDate(anchor, { weekday: long, day: 'numeric', month: long });
+  if (view === 'month') return formatDate(anchor, { month: long, year: 'numeric' });
   const first = range.days[0];
   const last = range.days[6];
   const sameMonth = first.getMonth() === last.getMonth();
-  return `${first.getDate()}${sameMonth ? '' : ` ${first.toLocaleDateString(dateLocale(), { month: 'short' })}`} – ${last.getDate()} ${last.toLocaleDateString(dateLocale(), { month: 'short', year: 'numeric' })}`;
+  return `${first.getDate()}${sameMonth ? '' : ` ${formatDate(first, { month: 'short' })}`} – ${last.getDate()} ${formatDate(last, { month: 'short', year: 'numeric' })}`;
 };
 
 // ---------------------------------------------------------------------------
@@ -442,7 +442,7 @@ function WeekStrip({ cal }: { cal: CalendarState }) {
             className={`${on ? 'is-on' : ''}${sameDay(day, cal.now) ? ' is-today' : ''}`}
             onClick={() => cal.setAnchor(day)}
           >
-            <em>{day.toLocaleDateString(dateLocale(), { weekday: 'narrow' })}</em>
+            <em>{formatDate(day, { weekday: 'narrow' })}</em>
             <strong>{day.getDate()}</strong>
             <i className={n ? 'has' : ''}>{n || ''}</i>
           </button>
@@ -476,7 +476,7 @@ function DayHeads({ cal }: { cal: CalendarState }) {
                 <strong>{col.sub}</strong>
               </>
             ) : (
-              <strong className="acal-head-name">{cal.columns.length > 1 ? col.title : col.day.toLocaleDateString(dateLocale(), { weekday: 'long' })}</strong>
+              <strong className="acal-head-name">{cal.columns.length > 1 ? col.title : formatDate(col.day, { weekday: 'long' })}</strong>
             )}
             <span className="acal-head-meta">
               {col.plan.closed ? (
@@ -573,7 +573,7 @@ function Insight({ cal }: { cal: CalendarState }) {
         {busiest && cal.view !== 'day' && (
           <div>
             <dt><Trans>Busiest</Trans></dt>
-            <dd>{dateOf(busiest[0]).toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric' })}</dd>
+            <dd>{formatDate(dateOf(busiest[0]), { weekday: 'short', day: 'numeric' })}</dd>
           </div>
         )}
       </dl>
@@ -605,7 +605,7 @@ function MiniMonth({ cal, onPick }: { cal: CalendarState; onPick: (day: Date) =>
   return (
     <div className="acal-mini">
       <header>
-        <strong>{month.toLocaleDateString(dateLocale(), { month: 'long', year: 'numeric' })}</strong>
+        <strong>{formatDate(month, { month: 'long', year: 'numeric' })}</strong>
         <span>
           <button type="button" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label={t`Previous month`}>
             <Icon name="chevronLeft" size={15} />
@@ -634,7 +634,7 @@ function MiniMonth({ cal, onPick }: { cal: CalendarState; onPick: (day: Date) =>
                 .filter(Boolean)
                 .join(' ')}
               onClick={() => onPick(d)}
-              title={n ? t`${n} booking${n === 1 ? '' : 's'}` : undefined}
+              title={n ? plural(n, { one: '# booking', other: '# bookings' }) : undefined}
             >
               {d.getDate()}
               {n > 0 && <i style={{ opacity: 0.35 + (0.65 * n) / most }} />}
@@ -1095,7 +1095,7 @@ function Fan({
             <Trans>{items.length} bookings · {hhmm(cluster.start)}–{hhmm(cluster.end)}</Trans>
           </strong>
           <span>
-            {column.day.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'short' })}
+            {formatDate(column.day, { weekday: 'long', day: 'numeric', month: 'short' })}
             {column.location ? ` · ${column.location.name}` : ''}
           </span>
         </div>

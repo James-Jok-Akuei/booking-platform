@@ -20,6 +20,7 @@ import { CHOICE_GROUPS_SELECT, STARTING_PRICE_GROUPS_SELECT } from '../business/
 import { startingPriceMinor } from '../business/service-choices';
 import { notePromptFor } from '../business/choice-suggestions';
 import { COUNTED_BOOKING_STATUSES, byPopularity } from './popularity';
+import { TaxonomyNamesService } from '../categories/taxonomy-names.service';
 
 /** Rows the bounding-box + haversine query returns. */
 interface DistanceRow {
@@ -54,6 +55,7 @@ export class DiscoveryService {
     private readonly settings: PlatformSettingsService,
     private readonly favourites: FavouritesService,
     config: ConfigService,
+    private readonly names: TaxonomyNamesService,
   ) {
     // The same single platform timezone AvailabilityService uses (§12). No
     // per-location timezone is stored anywhere, and inventing one here would
@@ -86,6 +88,8 @@ export class DiscoveryService {
     if (query.sort === DiscoverySort.DISTANCE && !distance) {
       throw new BadRequestException('sort=distance requires lat and lng.');
     }
+    // Kinds named in Kinyarwanda or French (§308.7).
+    const spoken = query.q ? await this.names.spokenMatches(query.q) : null;
 
     // (1) The bounding-box + haversine prefilter, when searching by distance.
     // Returns ids and distances only; the rest is loaded by the shared path
@@ -129,7 +133,7 @@ export class DiscoveryService {
     let openIds: string[] | null = null;
     if (query.openNow) {
       const candidates = await this.prisma.location.findMany({
-        where: this.buildWhere(query, restrictTo),
+        where: this.buildWhere(query, restrictTo, spoken),
         select: { id: true },
       });
       openNowByCandidate = await this.openNowByLocation(candidates.map((c) => c.id));
@@ -137,7 +141,7 @@ export class DiscoveryService {
       if (openIds.length === 0) return this.emptyPage(limit, offset, distance);
     }
 
-    const where = this.buildWhere(query, intersectIds(restrictTo, openIds));
+    const where = this.buildWhere(query, intersectIds(restrictTo, openIds), spoken);
 
     // Two orders cannot be expressed as a column Prisma can sort by: distance
     // lives in raw SQL, and popularity is a count from another table weighted by
@@ -339,6 +343,8 @@ export class DiscoveryService {
     // The branch rules, minus the filters that belong to the offer.
     const { q, maxPriceMinor, onSale, following, ...branchQuery } = query;
     const locationWhere = this.buildWhere(branchQuery as DiscoverLocationsDto, restrictTo);
+    // Kinds named in Kinyarwanda or French (§308.7).
+    const spoken = q ? await this.names.spokenMatches(q) : null;
     // Only shops this customer follows (§288): Home's "From places you follow".
     if (following) {
       if (!viewerId) return { total: 0, limit, offset, services: [] };
@@ -363,6 +369,9 @@ export class DiscoveryService {
                 { location: { business: { name: contains } } },
                 // A shop's kinds and what it wrote under "Other" (§267).
                 { location: { business: { kinds: { some: { OR: [{ otherLabel: contains }, { subcategory: { name: contains } }] } } } } },
+                ...(spoken && (spoken.types.length || spoken.categories.length)
+                  ? [{ location: { business: { kinds: { some: spokenKinds(spoken) } } } }]
+                  : []),
               ],
             }
           : {}),
@@ -945,7 +954,7 @@ export class DiscoveryService {
 
   // ---------- Shared ----------
 
-  private buildWhere(query: DiscoverLocationsDto, ids: string[] | null) {
+  private buildWhere(query: DiscoverLocationsDto, ids: string[] | null, spoken: SpokenKinds | null = null) {
     const where: Prisma.LocationWhereInput = {
       // A closed branch is not bookable and must not be discoverable (§89).
       // Applied in buildWhere so the count and the page agree about it, the
@@ -1012,6 +1021,10 @@ export class DiscoveryService {
             },
           },
         },
+        // The same kinds named in Kinyarwanda or French (§308.7).
+        ...(spoken && (spoken.types.length || spoken.categories.length)
+          ? [{ business: { is: { ...PUBLIC_BUSINESS, kinds: { some: spokenKinds(spoken) } } } }]
+          : []),
       ];
     }
 
@@ -1078,3 +1091,13 @@ export class DiscoveryService {
 }
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
+
+/** Kinds whose Kinyarwanda or French name matched the search (§308.7). */
+type SpokenKinds = { categories: string[]; types: string[] };
+const spokenKinds = (spoken: SpokenKinds): Prisma.BusinessKindWhereInput => ({
+  OR: [
+    ...(spoken.types.length ? [{ subcategoryId: { in: spoken.types } }] : []),
+    ...(spoken.categories.length ? [{ categoryId: { in: spoken.categories } }] : []),
+  ],
+});
+

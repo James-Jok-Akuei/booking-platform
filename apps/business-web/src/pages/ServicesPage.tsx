@@ -46,7 +46,7 @@ import {
 } from './choices/ChoicesEditor';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatTime, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 type Editor = { mode: 'new' } | { mode: 'edit'; service: Service; focus?: 'photos' };
@@ -925,7 +925,7 @@ type SaveLook = DraftSave | { kind: 'unsaved' } | { kind: 'clean' };
  * exists waits for "Save changes", and says when something has not been.
  */
 function SaveState({ look, editing }: { look: SaveLook; editing: boolean }) {
-  const at = (date: Date) => date.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  const at = (date: Date) => formatTime(date, { hour: '2-digit', minute: '2-digit' });
   const [icon, words, tone]: [ReactNode, string, string] =
     look.kind === 'saving'
       ? [<i className="sv-save-spin" />, editing ? t`Saving…` : t`Saving draft…`, 'is-saving']
@@ -1016,7 +1016,7 @@ function ServiceCard({
           <Icon name="image" size={14} />
           {service.images.length === 0
             ? t`No photos`
-            : t`${service.images.length} photo${service.images.length === 1 ? '' : 's'}`}
+            : plural(service.images.length, { one: '# photo', other: '# photos' })}
         </span>
       </button>
 
@@ -1597,7 +1597,7 @@ function ServiceForm({
           title={t`Questions for customers`}
           hint={
             groups.length > 0
-              ? t`${groups.length} ${groups.length === 1 ? 'question' : 'questions'} customers answer when they book`
+              ? plural(groups.length, { one: '# question customers answer when they book', other: '# questions customers answer when they book' })
               : t`Optional — ask what they want, like the cut or extras`
           }
         >
@@ -1841,7 +1841,7 @@ function isSaleOver(endsOn: string | null) {
 
 /** "Sun 12 Oct", for a YYYY-MM-DD. */
 function niceDay(ymd: string) {
-  return new Date(`${ymd}T12:00:00Z`).toLocaleDateString(dateLocale(), {
+  return formatDate(new Date(`${ymd}T12:00:00Z`), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',

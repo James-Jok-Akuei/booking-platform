@@ -49,7 +49,7 @@ export class AuthController {
   @ApiOkResponse({ type: SignedInDto })
   @HttpCode(HttpStatus.OK)
   verifyOtp(@Body() dto: VerifyOtpDto, @Headers('user-agent') userAgent?: string, @Ip() ip?: string) {
-    return this.authService.verifyOtp(dto.email, dto.code, { userAgent, ip, twoStepCode: dto.twoStepCode });
+    return this.authService.verifyOtp(dto.email, dto.code, { userAgent, ip, twoStepCode: dto.twoStepCode, app: dto.app });
   }
 
   @Post('refresh')

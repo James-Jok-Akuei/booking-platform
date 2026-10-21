@@ -16,7 +16,7 @@ import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
 import { addDays, startOfDay } from '../lib/time';
 import type { IconName } from '../ui/Icon';
 import { useAccess } from '../access';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 
 /**
  * Everything the "For you" adverts are made from (§204), from what the app
@@ -172,7 +172,7 @@ export function useAdData() {
       const noPhoto = onSale.filter((s) => s.images.length === 0);
       checks.push({
         key: 'service-photos',
-        label: noPhoto.length ? t`Photos on ${noPhoto.length} ${noPhoto.length === 1 ? 'service' : 'services'}` : t`Photos on every service`,
+        label: noPhoto.length ? plural(noPhoto.length, { one: 'Photos on # service', other: 'Photos on # services' }) : t`Photos on every service`,
         done: noPhoto.length === 0,
         to: '/services',
         icon: 'image',
@@ -181,7 +181,9 @@ export function useAdData() {
       const noWords = onSale.filter((s) => !s.description);
       checks.push({
         key: 'service-words',
-        label: noWords.length ? t`A description on ${noWords.length} ${noWords.length === 1 ? 'service' : 'services'}` : t`A description on every service`,
+        label: noWords.length
+          ? plural(noWords.length, { one: 'A description on # service', other: 'A description on # services' })
+          : t`A description on every service`,
         done: noWords.length === 0,
         to: '/services',
         icon: 'pencil',

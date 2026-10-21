@@ -155,10 +155,21 @@ for (const file of files) {
     NewExpression(path) {
       const { callee, arguments: args } = path.node;
       if (callee.type !== 'Identifier' || !EXCEPTIONS.has(callee.name) || !args[0]) return;
-      const arg = args[0];
-      if (!['StringLiteral', 'TemplateLiteral', 'BinaryExpression'].includes(arg.type)) return;
-      const message = messageOf(arg);
-      if (message) add(message.icu, 'error', file, arg.loc.start.line, message.pattern);
+      // new XException({ code: …, message: '…' }) — a refusal the apps tell apart by its code —
+      // and `one ? 'this sentence' : 'that one'`: each whole sentence is its own message.
+      const sentences = (node) => {
+        if (!node) return [];
+        if (node.type === 'ConditionalExpression') return [...sentences(node.consequent), ...sentences(node.alternate)];
+        if (node.type === 'ObjectExpression') {
+          const said = node.properties.find((p) => p.type === 'ObjectProperty' && (p.key.name ?? p.key.value) === 'message');
+          return said ? sentences(said.value) : [];
+        }
+        return ['StringLiteral', 'TemplateLiteral', 'BinaryExpression'].includes(node.type) ? [node] : [];
+      };
+      for (const arg of sentences(args[0])) {
+        const message = messageOf(arg);
+        if (message) add(message.icu, 'error', file, arg.loc.start.line, message.pattern);
+      }
     },
     ObjectProperty(path) {
       const { key, value } = path.node;

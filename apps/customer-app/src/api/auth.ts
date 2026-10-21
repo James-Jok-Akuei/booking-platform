@@ -1,4 +1,4 @@
-import { api, tokens, type AuthenticatedUser, type TokenPair } from './client';
+import { api, tokens, type AuthenticatedUser, type TokenPair, ApiError } from './client';
 import { forgetThisPhone } from '../push';
 import { uploadFile } from '../upload';
 import type { components } from './schema';
@@ -42,7 +42,8 @@ export const requestOtp = (email: string, role?: 'CUSTOMER') =>
 export async function verifyOtp(email: string, code: string): Promise<AuthenticatedUser> {
   const result = await api<TokenPair & { user: AuthenticatedUser }>('/auth/otp/verify', {
     method: 'POST',
-    body: { email, code },
+    // `app`: an account this app is not for is told where it belongs (§308.6).
+    body: { email, code, app: 'customer' },
     anonymous: true,
   });
   await tokens.set({ accessToken: result.accessToken, refreshToken: result.refreshToken }, result.user);
@@ -189,3 +190,9 @@ export type SignInSession = components['schemas']['SignInSessionDto'];
 export const listSessions = () => api<SignInSession[]>('/auth/sessions');
 export const endSignIn = (id: string) => api<{ message: string }>(`/auth/sessions/${id}/end`, { method: 'POST' });
 export const endOtherSessions = () => api<{ message: string }>('/auth/sessions/end-others', { method: 'POST' });
+
+/** A refusal's name (§308): told apart by it, never by its words, which come in the reader's language. */
+export const refusalOf = (caught: unknown): { code?: string; waitSeconds?: number } =>
+  caught instanceof ApiError && caught.payload && typeof caught.payload === 'object'
+    ? (caught.payload as { code?: string; waitSeconds?: number })
+    : {};

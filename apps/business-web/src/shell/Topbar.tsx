@@ -11,7 +11,7 @@ import { clock, useNow } from '../lib/time';
 import { roleLabel, type ShellData } from './useShellData';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate } from '../i18n/format';
 import { LanguageChoice } from '../ui/LanguageChoice';
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
@@ -44,7 +44,7 @@ export function Topbar({
   // The date and a clock, on every page (§235) — the one place they are on a
   // wide screen. Ticking keeps both right past midnight with the tab left open.
   const now = useNow(15_000);
-  const today = now.toLocaleDateString(dateLocale(), {
+  const today = formatDate(now, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

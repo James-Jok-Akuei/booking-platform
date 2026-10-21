@@ -23,10 +23,10 @@ import { TopBar } from '../src/ui/TopBar';
 import { showProblem } from '../src/ui/Dialog';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../src/i18n/format';
+import { formatDate } from '../src/i18n/format';
 
 const when = (iso: string) =>
-  new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' });
+  formatDate(new Date(iso), { dateStyle: 'medium' });
 
 /**
  * The documents, and what this person has agreed to (§122).

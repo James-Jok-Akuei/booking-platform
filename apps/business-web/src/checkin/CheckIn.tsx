@@ -17,7 +17,7 @@ import { Icon } from '../ui/Icon';
 import './checkin.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatTime, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 /**
@@ -84,10 +84,10 @@ const startOfToday = () => {
 };
 
 const clock = (iso: string) =>
-  new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  formatTime(new Date(iso), { hour: '2-digit', minute: '2-digit' });
 
 const dayLabel = (iso: string) =>
-  new Date(iso).toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
+  formatDate(new Date(iso), { weekday: 'short', day: 'numeric', month: 'short' });
 
 const span = (minutes: number) => {
   const m = Math.round(Math.abs(minutes));

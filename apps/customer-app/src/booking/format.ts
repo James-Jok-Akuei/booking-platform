@@ -1,6 +1,6 @@
 import type { Appointment } from '../api/booking';
 import type { ViewerPhoto } from '../ui/PhotoViewer';
-import { dateLocale } from '../i18n/format';
+import { formatDate, formatTime } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 /**
@@ -20,7 +20,7 @@ export type Bought = {
 };
 
 export const dayOf = (iso: string) =>
-  new Date(iso).toLocaleDateString(dateLocale(), {
+  formatDate(new Date(iso), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -28,7 +28,7 @@ export const dayOf = (iso: string) =>
   });
 
 export const timeOf = (iso: string) =>
-  new Date(iso).toLocaleTimeString(dateLocale(), { timeStyle: 'short' });
+  formatTime(new Date(iso), { timeStyle: 'short' });
 
 export const timeRange = (a: Pick<Appointment, 'startTime' | 'endTime'>) =>
   `${timeOf(a.startTime)} – ${timeOf(a.endTime)}`;

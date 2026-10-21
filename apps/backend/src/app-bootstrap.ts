@@ -3,6 +3,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import rateLimit, { type RateLimitRequestHandler } from 'express-rate-limit';
 import { LocalisedErrorsFilter } from './i18n/localised-errors.filter';
+import { localeOf } from './i18n/locales';
+import { msg, say } from './i18n/say';
 
 /**
  * Origins allowed to call this API from a browser, as a comma-separated list.
@@ -173,7 +175,15 @@ function applyRateLimits(app: INestApplication): void {
       limit,
       standardHeaders: 'draft-7',
       legacyHeaders: false,
-      message: { statusCode: 429, message, error: 'Too Many Requests' },
+      // In the language the app asks in (§308.7) — this answers before Nest's
+      // error filter ever sees the request, so it says the words itself.
+      handler: (req, res) => {
+        res.status(429).json({
+          statusCode: 429,
+          message: say(localeOf(req.headers['accept-language']), message),
+          error: 'Too Many Requests',
+        });
+      },
     });
 
   // Order matters: the narrow rules are mounted first, so a request to one of
@@ -186,7 +196,7 @@ function applyRateLimits(app: INestApplication): void {
    */
   app.use(
     '/auth/otp/request',
-    limiter(60_000, 5, 'Too many codes requested. Wait a minute and try again.'),
+    limiter(60_000, 5, msg('Too many codes requested. Wait a minute and try again.')),
   );
 
   /**
@@ -196,7 +206,7 @@ function applyRateLimits(app: INestApplication): void {
    */
   app.use(
     '/auth/otp/verify',
-    limiter(60_000, 10, 'Too many attempts. Wait a minute and try again.'),
+    limiter(60_000, 10, msg('Too many attempts. Wait a minute and try again.')),
   );
 
   /**
@@ -205,13 +215,13 @@ function applyRateLimits(app: INestApplication): void {
    */
   app.use(
     /^\/appointments\/[^/]+\/initiate-deposit-payment$/,
-    limiter(60_000, 10, 'Too many payment attempts. Wait a minute and try again.'),
+    limiter(60_000, 10, msg('Too many payment attempts. Wait a minute and try again.')),
   );
 
   /** Under §21.4's ten new threads a day, which counts relationships, not calls. */
   app.use(
     '/threads/inquiry',
-    limiter(60_000, 20, 'Too many messages started. Wait a minute and try again.'),
+    limiter(60_000, 20, msg('Too many messages started. Wait a minute and try again.')),
   );
 
   /**
@@ -232,8 +242,8 @@ function applyRateLimits(app: INestApplication): void {
    * Two windows: the short one is what a person never notices and a script hits
    * at once, the long one catches the patient version that stays underneath it.
    */
-  app.use(limiter(60_000, 600, 'Too many requests. Slow down and try again.'));
-  app.use(limiter(3_600_000, 10_000, 'Too many requests. Try again later.'));
+  app.use(limiter(60_000, 600, msg('Too many requests. Slow down and try again.')));
+  app.use(limiter(3_600_000, 10_000, msg('Too many requests. Try again later.')));
 
   // Counting is by client IP, so behind a proxy every request appears to come
   // from the proxy and ONE busy customer would rate-limit everybody. Express

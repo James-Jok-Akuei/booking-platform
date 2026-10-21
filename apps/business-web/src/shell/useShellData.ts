@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getMe, getProfile, getReadiness, listAppointments } from '../api/business';
@@ -68,6 +69,6 @@ export function useShellData() {
 
 export type ShellData = ReturnType<typeof useShellData>;
 
-/** "OWNER" → "Owner". */
+/** "OWNER" → "Owner", in the app's language. */
 export const roleLabel = (role: string | null) =>
-  role ? role.charAt(0) + role.slice(1).toLowerCase() : '';
+  role === 'OWNER' ? t`Owner` : role === 'MANAGER' ? t`Manager` : role === 'STAFF' ? t`Staff` : '';

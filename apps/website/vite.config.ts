@@ -2,6 +2,8 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 // Browser protections, and where to report a weakness (§298).
 import { securityTxt, webSecurity } from '../../scripts/web-security.mjs';
+// A page per language, for search (§308.7).
+import { languagePages } from './plugins/language-pages';
 
 /**
  * The public site (§239): the landing page at the root domain.
@@ -27,6 +29,7 @@ export default defineConfig(({ mode }) => {
       // Every sentence through Lingui (§308).
       react({ babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] } }),
       { name: 'site-url', transformIndexHtml: (html: string) => html.replaceAll('%SITE_URL%', siteUrl) },
+      languagePages(siteUrl),
       webSecurity({
         apiUrl: vite.VITE_API_URL,
         selfHostedFonts: true,

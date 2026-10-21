@@ -19,11 +19,11 @@ import { Stars } from '../ui/Stars';
 import './reviews.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate } from '../i18n/format';
 
 const PAGE = 20;
 
-const when = (iso: string) => new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' });
+const when = (iso: string) => formatDate(new Date(iso), { dateStyle: 'medium' });
 
 /** The reply is editable for a week after posting; the server enforces it. */
 const withinEditWindow = (responseAt: string) =>

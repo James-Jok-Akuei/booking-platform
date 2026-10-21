@@ -362,9 +362,14 @@ export const requestOtp = (email: string, role?: 'BUSINESS') =>
 export const verifyOtp = (email: string, code: string) =>
   api<TokenPair & { user: AuthenticatedUser }>('/auth/otp/verify', {
     method: 'POST',
-    body: { email, code },
+    // `app`: an account this app is not for is told where it belongs (§308.6).
+    body: { email, code, app: 'business' },
     anonymous: true,
   });
+
+/** A refusal's name (§308): told apart by it, never by its words, which come in the reader's language. */
+export const refusalOf = (caught: unknown): { code?: string; waitSeconds?: number } =>
+  caught instanceof ApiError && caught.body && typeof caught.body === 'object' ? (caught.body as { code?: string; waitSeconds?: number }) : {};
 
 export async function logout(): Promise<void> {
   const refreshToken = tokens.refresh;

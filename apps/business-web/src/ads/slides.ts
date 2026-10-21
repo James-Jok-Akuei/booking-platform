@@ -5,7 +5,7 @@ import { ago } from '../lib/time';
 import { guideTopics } from './guide';
 import { searchHow } from './tips';
 import type { AdData, JustIn } from './useAdData';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 
 /**
  * The adverts in the "For you" banner (§204), most useful first.
@@ -83,7 +83,7 @@ export function buildSlides(d: AdData): Slide[] {
     slides.push({
       key: 'best',
       effect: 'confetti',
-      gist: t`${d.best.count} ${d.best.count === 1 ? 'booking' : 'bookings'} in 30 days${d.best.onSale ? ' · discount on now' : d.access.runsBusiness ? ' · try a discount' : ''}`,
+      gist: plural(d.best.count, { one: '# booking in 30 days', other: '# bookings in 30 days' }) + (d.best.onSale ? t` · discount on now` : d.access.runsBusiness ? t` · try a discount` : ''),
       look: 'coral',
       icon: 'trendUp',
       eyebrow: t`Your best seller`,
@@ -129,7 +129,7 @@ export function buildSlides(d: AdData): Slide[] {
       look: 'night',
       icon: 'sparkles',
       eyebrow: t`Make your shop stand out`,
-      title: t`${d.missing.length} ${d.missing.length === 1 ? 'thing' : 'things'} left to add`,
+      title: plural(d.missing.length, { one: '# thing left to add', other: '# things left to add' }),
       text: t`Start with ${d.missing[0].label.toLowerCase()}: ${d.missing[0].why.charAt(0).toLowerCase()}${d.missing[0].why.slice(1)}`,
       stat: { value: `${d.score}%`, label: t`complete` },
       cta: { label: t`Add it now`, to: d.missing[0].to },
@@ -144,7 +144,7 @@ export function buildSlides(d: AdData): Slide[] {
       look: 'gold',
       icon: 'star',
       eyebrow: t`Customers are waiting`,
-      title: t`${d.unanswered} ${d.unanswered === 1 ? 'review is' : 'reviews are'} waiting for a reply`,
+      title: plural(d.unanswered, { one: '# review is waiting for a reply', other: '# reviews are waiting for a reply' }),
       text: t`Your reply sits under the review for everyone who reads it — the next customer reads both.`,
       cta: { label: t`Reply now`, to: '/reviews' },
     });

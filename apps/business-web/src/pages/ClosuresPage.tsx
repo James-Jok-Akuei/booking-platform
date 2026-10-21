@@ -18,8 +18,8 @@ import { Icon } from '../ui/Icon';
 import './closures.css';
 import { useAccess } from '../access';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
-import { dateLocale, dayName } from '../i18n/format';
+import { plural, select, t } from '@lingui/core/macro';
+import { dayName, formatDate } from '../i18n/format';
 
 /** A local calendar day as YYYY-MM-DD — the seller's today, not UTC's. */
 const ymdOf = (d: Date) =>
@@ -28,7 +28,7 @@ const today = () => ymdOf(new Date());
 const dayOf = (ymd: string) => new Date(`${ymd}T12:00:00`);
 
 const niceDate = (ymd: string) =>
-  dayOf(ymd).toLocaleDateString(dateLocale(), {
+  formatDate(dayOf(ymd), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -39,7 +39,18 @@ const isPast = (ymd: string) => ymd < today();
 
 /** Short day names in the app's language (§308), Monday first. */
 const WEEKDAYS = () => [1, 2, 3, 4, 5, 6, 0].map((day) => dayName(day, 'short'));
-const DAY_NAMES = () => [t`Sundays`, t`Mondays`, t`Tuesdays`, t`Wednesdays`, t`Thursdays`, t`Fridays`, t`Saturdays`];
+/** "Usually closed on Sundays" — a whole sentence per day, since "on Sundays" is said differently in each language. */
+const usuallyClosed = (weekday: number) =>
+  select(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][weekday] ?? 'other', {
+    sun: 'Usually closed on Sundays',
+    mon: 'Usually closed on Mondays',
+    tue: 'Usually closed on Tuesdays',
+    wed: 'Usually closed on Wednesdays',
+    thu: 'Usually closed on Thursdays',
+    fri: 'Usually closed on Fridays',
+    sat: 'Usually closed on Saturdays',
+    other: 'Usually closed on this day',
+  });
 
 /**
  * Days that do not follow the usual week (§102, §195, §207).
@@ -200,7 +211,7 @@ function MonthCalendar({
   for (let d = 0; d < 7; d++) if (!branch.hours.some((h) => h.dayOfWeek === d)) weeklyOff.add(d);
 
   const now = today();
-  const label = month.toLocaleDateString(dateLocale(), { month: 'long', year: 'numeric' });
+  const label = formatDate(month, { month: 'long', year: 'numeric' });
   const step = (by: number) => setMonth(new Date(month.getFullYear(), month.getMonth() + by, 1));
 
   return (
@@ -274,7 +285,7 @@ function MonthCalendar({
             >
               <span>{d.getDate()}</span>
               {breakCount > 0 && (
-                <i className="cal-breaks" aria-label={t`${breakCount} break${breakCount === 1 ? '' : 's'}`}>
+                <i className="cal-breaks" aria-label={plural(breakCount, { one: '# break', other: '# breaks' })}>
                   {Array.from({ length: Math.min(breakCount, 3) }, (_, i) => (
                     <b key={i} />
                   ))}
@@ -399,12 +410,12 @@ function DayPanel({
 
       <header className="cl-day-head" key={date}>
         <span className={`cl-day-tile${past ? ' is-past' : ''}`}>
-          <em>{d.toLocaleDateString(dateLocale(), { weekday: 'short' })}</em>
+          <em>{formatDate(d, { weekday: 'short' })}</em>
           <strong>{d.getDate()}</strong>
-          <em>{d.toLocaleDateString(dateLocale(), { month: 'short' })}</em>
+          <em>{formatDate(d, { month: 'short' })}</em>
         </span>
         <div>
-          <h2>{d.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
+          <h2>{formatDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
           <p>
             {usual.open ? (
               <>
@@ -412,7 +423,7 @@ function DayPanel({
               </>
             ) : (
               <>
-                <Icon name="moon" size={13} /><Trans>Usually closed on {DAY_NAMES()[usual.weekday]}</Trans>
+                <Icon name="moon" size={13} />{usuallyClosed(usual.weekday)}
               </>
             )}
           </p>
@@ -671,7 +682,7 @@ function ComingUp({
         <button type="button" className="cl-entry-open" onClick={() => onPick(row.date)} title={t`Open this day above`}>
           <span className="cl-date">
             <strong>{d.getDate()}</strong>
-            <span>{d.toLocaleDateString(dateLocale(), { month: 'short' })}</span>
+            <span>{formatDate(d, { month: 'short' })}</span>
           </span>
           <span className="cl-entry-text">
             <strong>{row.title}</strong>
@@ -703,7 +714,7 @@ function ComingUp({
           <p>
             {coming.length === 0
               ? t`Nothing taken out yet — every day follows your usual hours.`
-              : t`${coming.length} ${coming.length === 1 ? 'change' : 'changes'}. Click one to open its day above.`}
+              : plural(coming.length, { one: '# change. Click it to open its day above.', other: '# changes. Click one to open its day above.' })}
           </p>
         </div>
       </header>

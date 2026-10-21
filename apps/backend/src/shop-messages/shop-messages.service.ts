@@ -1,6 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { NotificationCategory, NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { formatDateIn, say } from '../i18n/say';
 import { NotificationsService } from '../notifications/notifications.service';
 import { BusinessAccessService } from '../business/business-access.service';
 import { ALL_BRANCHES_ONLY } from '../business/branch-scope';
@@ -351,7 +353,7 @@ export class ShopMessagesService {
    * Writes to every follower. For those who look after every branch: a shop's
    * followers follow the whole shop (§277).
    */
-  async send(userId: string, dto: SendShopMessageDto): Promise<ShopMessagesDto> {
+  async send(userId: string, dto: SendShopMessageDto, locale: Locale = DEFAULT_LOCALE): Promise<ShopMessagesDto> {
     const { businessId, scope } = await this.access.requireBusinessScope(userId);
     if (!scope.allLocations) throw new ForbiddenException(ALL_BRANCHES_ONLY);
 
@@ -369,8 +371,11 @@ export class ShopMessagesService {
     });
     if (last) {
       const next = new Date(last.createdAt.getTime() + SHOP_MESSAGE_EVERY_DAYS * DAY);
+      // Said here, in the sender's language: the date is not a word the error filter could translate.
       throw new BadRequestException(
-        `One message a week keeps people following. The next can go on ${next.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}.`,
+        say(locale, 'One message a week keeps people following. The next can go on {day}.', {
+          day: formatDateIn(locale, next, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Kigali' }),
+        }),
       );
     }
 

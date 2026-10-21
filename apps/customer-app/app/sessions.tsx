@@ -14,7 +14,7 @@ import { RowSkeleton } from '../src/ui/Skeleton';
 import { TopBar } from '../src/ui/TopBar';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../src/i18n/format';
+import { formatDate } from '../src/i18n/format';
 import { plural } from '@lingui/core/macro';
 
 /** "an unknown device" → "An unknown device", for the start of a line. */
@@ -28,7 +28,7 @@ function when(iso: string) {
   if (days <= 0) return t`today`;
   if (days === 1) return t`yesterday`;
   if (days < 7) return plural(days, { one: '# day ago', other: '# days ago' });
-  return new Date(iso).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
+  return formatDate(new Date(iso), { day: 'numeric', month: 'short' });
 }
 
 /**

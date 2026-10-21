@@ -59,14 +59,14 @@ import { showDialog, showProblem } from '../../src/ui/Dialog';
 import { DropVeil, useWebPhotoDrop } from '../../src/ui/webDrop';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../../src/i18n/format';
+import { formatDate } from '../../src/i18n/format';
 import { LanguageSheet, languagesToChoose, useLanguageName } from '../../src/components/LanguageSheet';
 
 /** How tall the dark header is before the safe area is added. */
 const HERO = 318;
 
 const joined = (iso: string) =>
-  new Date(iso).toLocaleDateString(dateLocale(), { month: 'long', year: 'numeric' });
+  formatDate(new Date(iso), { month: 'long', year: 'numeric' });
 
 /**
  * Who you are signed in as, and the way out.
@@ -490,7 +490,7 @@ Take a copy of your data first if you want one.`,
             <View style={styles.statRule} />
             <Stat
               value={follows.data?.follows.length}
-              label={t`Following`}
+              label={t({ message: 'Following', context: 'how many shops you follow' })}
               onPress={() => router.push('/saved')}
             />
           </FadeIn>
@@ -583,7 +583,7 @@ Take a copy of your data first if you want one.`,
                     <View style={styles.flex}>
                       <Text style={styles.number}>{spaced(number.phoneNumber)}</Text>
                       {number.lastUsedAt && (
-                        <Text style={type.small}><Trans>Last used {new Date(number.lastUsedAt).toLocaleDateString(dateLocale())}</Trans>
+                        <Text style={type.small}><Trans>Last used {formatDate(new Date(number.lastUsedAt))}</Trans>
                         </Text>
                       )}
                     </View>

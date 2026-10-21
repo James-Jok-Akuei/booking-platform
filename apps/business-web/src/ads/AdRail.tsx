@@ -10,7 +10,7 @@ import { tipFor } from './tips';
 import { useAdData, type AdData } from './useAdData';
 import './ads.css';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 
 /**
  * "For you" — the column down the right of every page on a wide screen (§204,
@@ -111,7 +111,7 @@ function HealthCard({ data }: { data: AdData }) {
           <span>
             {complete
               ? t`Photos, words, hours and payouts — all set.`
-              : t`${missing.length} ${missing.length === 1 ? 'thing' : 'things'} customers notice`}
+              : plural(missing.length, { one: '# thing customers notice', other: '# things customers notice' })}
           </span>
         </div>
       </div>

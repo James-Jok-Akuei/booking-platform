@@ -2,7 +2,7 @@ import { NotificationType } from '@prisma/client';
 import { adviceItems, adviceLead, type AdviceShop } from '../business/shop-advice';
 import { describeDevice } from '../auth/device';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
-import { DATE_TAGS, msg, say } from '../i18n/say';
+import { DATE_TAGS, formatDateIn, msg, say } from '../i18n/say';
 import { INTERNAL_CURRENCY, formatMoney } from '../payments/currency';
 import { Audience, dayKind } from './notification-catalog';
 
@@ -149,7 +149,7 @@ export function renderNotification(
   const l = ctx.locale ?? DEFAULT_LOCALE;
   if (ctx.compose) return ctx.compose(l);
   const fmt = (options: Intl.DateTimeFormatOptions) =>
-    ctx.startTime ? new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: ctx.timeZone, ...options }).format(ctx.startTime) : '';
+    ctx.startTime ? formatDateIn(l, ctx.startTime, { timeZone: ctx.timeZone, ...options }) : '';
   const clock = fmt({ hour: '2-digit', minute: '2-digit' });
   // "Tuesday 20 October at 11:15" and "Tue 20 Oct, 11:15".
   const when = ctx.startTime

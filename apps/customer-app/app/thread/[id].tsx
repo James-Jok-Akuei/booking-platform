@@ -35,10 +35,10 @@ import { showDialog, showProblem } from '../../src/ui/Dialog';
 import { DropVeil, useWebPhotoDrop } from '../../src/ui/webDrop';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../../src/i18n/format';
+import { formatTime, formatDate, formatDateTime } from '../../src/i18n/format';
 
 const clock = (iso: string) =>
-  new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  formatTime(new Date(iso), { hour: '2-digit', minute: '2-digit' });
 
 /** "Today", "Yesterday", "Monday", "6 October" — the pill between days. */
 const dayLabel = (iso: string) => {
@@ -48,8 +48,8 @@ const dayLabel = (iso: string) => {
   const days = Math.round((start(now) - start(d)) / 86_400_000);
   if (days === 0) return t`Today`;
   if (days === 1) return t`Yesterday`;
-  if (days < 7) return d.toLocaleDateString(dateLocale(), { weekday: 'long' });
-  return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' });
+  if (days < 7) return formatDate(d, { weekday: 'long' });
+  return formatDate(d, { day: 'numeric', month: 'long' });
 };
 const dayKey = (iso: string) => new Date(iso).toDateString();
 
@@ -285,7 +285,7 @@ function ThreadScreen() {
                 {thread.data.appointment.serviceName}
               </Text>
               <Text style={type.tiny} numberOfLines={1}>
-                {new Date(thread.data.appointment.startTime).toLocaleString(dateLocale(), {
+                {formatDateTime(new Date(thread.data.appointment.startTime), {
                   weekday: 'short',
                   day: 'numeric',
                   month: 'short',

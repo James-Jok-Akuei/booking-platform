@@ -28,7 +28,7 @@ import { Panel as SidePanel } from '../ui/Panel';
 import './support.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDateTime } from '../i18n/format';
 
 /** An icon for each kind of question, the same in the list and the form. */
 const CATEGORY_ICON: Record<TicketCategory, IconName> = {
@@ -99,7 +99,7 @@ const describeFile = (mimeType: string) => {
 };
 
 const when = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  iso ? formatDateTime(new Date(iso), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
 /** The window is enforced server-side; this only decides whether to offer it. */
 const withinReopenWindow = (resolvedAt: string | null) => {

@@ -12,7 +12,9 @@ import { Footer } from './Footer';
 import { Modal } from './Modal';
 import { LanguageChoice } from './LanguageChoice';
 import { useFitWords, useTightBar } from './fit';
-import { askIn } from './i18n';
+import { askIn, shotsFor, useSiteLocale } from './i18n';
+import { HEAD } from './i18n/head';
+import { i18n } from '@lingui/core';
 
 type Sheet = 'app' | 'how' | null;
 
@@ -27,9 +29,11 @@ type Sheet = 'app' | 'how' | null;
  */
 export function App() {
   const [sheet, setSheet] = useState<Sheet>(null);
-  // The tab's title in the page's language (§308); the page's own head is English, for search.
+  // The tab's title and description in the page's language (§308). The build
+  // writes the same into each language's own page (/rw/, /fr/), for search.
   useEffect(() => {
-    document.title = t`BwanguReservations — Book real shops in Rwanda, quickly`;
+    document.title = i18n._(HEAD.title);
+    document.querySelector('meta[name="description"]')?.setAttribute('content', i18n._(HEAD.description));
   }, []);
   return (
     <>
@@ -54,7 +58,7 @@ export function App() {
 // The descriptions are read when drawn, in the language then in use (§308).
 const SHOTS = [
   {
-    src: '/shots/overview.jpg',
+    src: 'overview.jpg',
     get alt() {
       return t`The business app: a shop’s day at a glance`;
     },
@@ -62,7 +66,7 @@ const SHOTS = [
     cls: 's1',
   },
   {
-    src: '/shots/calendar.jpg',
+    src: 'calendar.jpg',
     get alt() {
       return t`The business app: a week of bookings on a calendar`;
     },
@@ -70,7 +74,7 @@ const SHOTS = [
     cls: 's2',
   },
   {
-    src: '/shots/home.jpg',
+    src: 'home.jpg',
     get alt() {
       return t`The customer app: find a place`;
     },
@@ -78,7 +82,7 @@ const SHOTS = [
     cls: 's3',
   },
   {
-    src: '/shots/shop.jpg',
+    src: 'shop.jpg',
     get alt() {
       return t`The customer app: a shop’s page`;
     },
@@ -88,6 +92,7 @@ const SHOTS = [
 ] as const;
 
 function Hero({ onOpen }: { onOpen: (sheet: Sheet) => void }) {
+  const spoken = useSiteLocale();
   const ref = useRef<HTMLElement>(null);
   const copy = useRef<HTMLDivElement>(null);
   const title = useRef<HTMLHeadingElement>(null);
@@ -175,7 +180,7 @@ function Hero({ onOpen }: { onOpen: (sheet: Sheet) => void }) {
       <div className="stack" aria-label={t`Screens of the apps`}>
         {SHOTS.map((shot) => (
           <figure key={shot.src} className={`shot is-${shot.kind} ${shot.cls}`}>
-            <img src={shot.src} alt={shot.alt} loading="eager" decoding="async" draggable={false} />
+            <img src={`${shotsFor(spoken)}/${shot.src}`} alt={shot.alt} loading="eager" decoding="async" draggable={false} />
           </figure>
         ))}
       </div>
@@ -246,6 +251,7 @@ const toBusinesses = () => document.getElementById('businesses')?.scrollIntoView
  * approval among them, so nobody signs up expecting to be live the same minute.
  */
 function ForBusinesses() {
+  const spoken = useSiteLocale();
   const signUp = businessStart('signup');
   const signIn = businessStart('signin');
   return (
@@ -297,7 +303,7 @@ function ForBusinesses() {
 
         <div className="biz-visual" aria-hidden="true">
           <figure className="biz-shot">
-            <img src="/shots/overview.jpg" alt="" loading="lazy" decoding="async" draggable={false} />
+            <img src={`${shotsFor(spoken)}/overview.jpg`} alt="" loading="lazy" decoding="async" draggable={false} />
           </figure>
           <span className="biz-chip c1">
             <span className="biz-chip-icon is-orange">
@@ -414,6 +420,7 @@ function GetTheApp({ onClose }: { onClose: () => void }) {
  * who would rather read.
  */
 function HowItWorks({ onClose }: { onClose: () => void }) {
+  const spoken = useSiteLocale();
   const steps: Array<{ icon: IconName; title: string; text: string }> = [
     {
       icon: 'search',
@@ -433,7 +440,12 @@ function HowItWorks({ onClose }: { onClose: () => void }) {
   ];
   return (
     <Modal title={t`How booking works`} onClose={onClose} wide>
-      <video className="walkthrough" src="/video/how-booking-works.mp4" poster="/video/how-booking-works-poster.jpg" controls autoPlay playsInline preload="metadata" />
+      <video className="walkthrough" src="/video/how-booking-works.mp4" poster="/video/how-booking-works-poster.jpg" controls autoPlay playsInline preload="metadata">
+        {/* Its voice is English; the words under it come in the page's language, on by default when that is not English (§308.7). */}
+        <track kind="subtitles" srcLang="rw" label="Ikinyarwanda" src="/video/how-booking-works.rw.vtt" default={spoken === 'rw'} />
+        <track kind="subtitles" srcLang="fr" label="Français" src="/video/how-booking-works.fr.vtt" default={spoken === 'fr'} />
+        <track kind="captions" srcLang="en" label="English" src="/video/how-booking-works.en.vtt" />
+      </video>
       <ol className="steps is-row">
         {steps.map((step, i) => (
           <li key={step.icon}>

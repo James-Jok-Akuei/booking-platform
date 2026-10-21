@@ -15,6 +15,7 @@ import { ChatService } from '../../src/chat/chat.service';
 import { PaymentProviderRegistry } from '../../src/payments/payment-provider.registry';
 import { DisbursementProviderRegistry } from '../../src/payments/disbursement-provider.registry';
 import { MobileMoneyProvider } from '@prisma/client';
+import { TaxonomyNamesService } from '../../src/categories/taxonomy-names.service';
 import {
   InitiatePaymentParams,
   InitiatePaymentResult,
@@ -62,6 +63,8 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
       PlatformSettingsService,
       SupportLogService,
       HealthChoices,
+      // Category names in each language, which search reads too (§308.7); the database only.
+      TaxonomyNamesService,
       { provide: DisbursementProviderRegistry, useValue: new DisbursementProviderRegistry([]) },
       ...providers,
     ],

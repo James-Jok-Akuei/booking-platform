@@ -10,7 +10,7 @@ import { RichText } from '../ui/RichText';
 import { hasRichText, richToPlain } from '../lib/richText';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale, dayName } from '../i18n/format';
+import { dayName, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 /**
@@ -77,7 +77,7 @@ const duration = (minutes: number) => {
 };
 
 const niceDate = (ymd: string) =>
-  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
+  formatDate(new Date(`${ymd}T12:00:00Z`), { weekday: 'short', day: 'numeric', month: 'short' });
 
 function Ion({ name, size, color }: { name: IonName; size: number; color: string }) {
   return (

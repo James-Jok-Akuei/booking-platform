@@ -50,7 +50,7 @@ import { TopBar } from '../../src/ui/TopBar';
 import { showProblem } from '../../src/ui/Dialog';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../../src/i18n/format';
+import { formatDate } from '../../src/i18n/format';
 import { plural } from '@lingui/core/macro';
 
 /**
@@ -73,14 +73,14 @@ const nextDays = (count: number) =>
 const dayLabel = (ymd: string) => {
   const date = new Date(`${ymd}T12:00:00Z`);
   return {
-    weekday: date.toLocaleDateString(dateLocale(), { weekday: 'short' }),
-    day: date.toLocaleDateString(dateLocale(), { day: 'numeric' }),
-    month: date.toLocaleDateString(dateLocale(), { month: 'short' }),
+    weekday: formatDate(date, { weekday: 'short' }),
+    day: formatDate(date, { day: 'numeric' }),
+    month: formatDate(date, { month: 'short' }),
   };
 };
 
 const niceDate = (ymd: string) =>
-  new Date(`${ymd}T12:00:00Z`).toLocaleDateString(dateLocale(), {
+  formatDate(new Date(`${ymd}T12:00:00Z`), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -824,7 +824,7 @@ export default function Book() {
                             full
                               ? t`${time}, booked`
                               : few
-                                ? t`${time}, ${placesLeft} ${placesLeft === 1 ? 'place' : 'places'} left`
+                                ? plural(placesLeft, { one: `${time}, # place left`, other: `${time}, # places left` })
                                 : time
                           }
                           onPress={() => choose(time)}

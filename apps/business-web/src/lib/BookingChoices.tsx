@@ -4,6 +4,7 @@ import { Icon } from '../ui/Icon';
 import './booking-choices.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
+import { formatDateTime } from '../i18n/format';
 
 type Pick = NonNullable<Appointment['choices']>[number];
 
@@ -47,7 +48,7 @@ export function BookingChoices({
         <h3 className="ap-drawer-h bc-h">
           <Trans>What they chose</Trans>
         {a.choicesChangedAt && (
-            <span className="bc-changed" title={new Date(a.choicesChangedAt).toLocaleString()}>
+            <span className="bc-changed" title={formatDateTime(a.choicesChangedAt)}>
               <Icon name="pencil" size={12} />{' '}
               <Trans>changed since booking</Trans>
             </span>

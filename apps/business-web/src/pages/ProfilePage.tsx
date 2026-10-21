@@ -291,7 +291,7 @@ function Strength({ profile, locations }: { profile: BusinessProfile; locations:
         <p>
           {done === steps.length
             ? t`Everything a customer looks for is here.`
-            : t`${steps.length - done} ${steps.length - done === 1 ? 'thing' : 'things'} left — shops with photos and a good description get chosen first.`}
+            : plural(steps.length - done, { one: '# thing left — shops with photos and a good description get chosen first.', other: '# things left — shops with photos and a good description get chosen first.' })}
         </p>
         <ul>
           {steps.map((s) => (

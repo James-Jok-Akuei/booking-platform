@@ -284,7 +284,7 @@ export function Checkout({
             <Icon name="alert-circle-outline" size={19} color={theme.danger} />
             <View style={styles.flex}>
               <Text style={styles.failed}>
-                <Trans>{explainFailedDeposit(failureReason)} You can try again.</Trans>
+                {explainFailedDeposit(failureReason)}
               </Text>
               {/* The operator's own code, kept small. It is unreadable as copy
                   and essential on a support ticket. */}

@@ -64,7 +64,7 @@ import { accessOf } from '../access';
 import './welcome.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale, dayName, listOf } from '../i18n/format';
+import { dayName, listOf, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 /** The server's refusal in its own words, or ours. */
@@ -592,7 +592,9 @@ function KindQ({ nav, draft, onDraft }: { nav: Nav; draft: string[] | null; onDr
         <p className="wz-quiet wz-kind-count" aria-live="polite">
           {chosen.length === 0
             ? t`Nothing chosen yet.`
-            : t`${chosen.length} of up to ${MAX_KIND_CATEGORIES} chosen${full ? ' — take one off to choose another' : ''}.`}
+            : full
+              ? t`${chosen.length} of up to ${MAX_KIND_CATEGORIES} chosen — take one off to choose another.`
+              : t`${chosen.length} of up to ${MAX_KIND_CATEGORIES} chosen.`}
         </p>
       </Body>
       <Foot nav={nav} ready={chosen.length > 0} />
@@ -1158,7 +1160,7 @@ function OfferedHave({ nav, screen }: { nav: Nav; screen: Screen }) {
         nav.go('paid');
       }}
     >
-      <QHead screen={screen} title={t`What customers can book`} lead={t`You have ${offered.length} ${offered.length === 1 ? 'service' : 'services'} ready to book.`} />
+      <QHead screen={screen} title={t`What customers can book`} lead={plural(offered.length, { one: 'You have # service ready to book.', other: 'You have # services ready to book.' })} />
       <Body>
         <Have
           icon={<StepGlyph name="service" size={22} />}
@@ -1515,7 +1517,7 @@ function ReviewQ({ nav, readiness, email }: { nav: Nav; readiness: Readiness | u
           <h1 id="wz-title">{sent ? t`Your shop is with us for review` : t`Your shop is waiting for review`}</h1>
           <p className="wz-lead">
             {readiness.submittedAt && !sent
-              ? t`Sent ${new Date(readiness.submittedAt).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' })}. `
+              ? t`Sent ${formatDate(new Date(readiness.submittedAt), { day: 'numeric', month: 'long' })}. `
               : ''}
                 <Trans>Here is what happens next.</Trans>
               </p>

@@ -33,8 +33,12 @@ export const LANGUAGES: Language[] = [
   { code: 'fr', name: 'French', native: 'Français' },
 ];
 
-/** Finished and checked. Kinyarwanda and French join when their translators are done. */
-const OFFERED: AppLocale[] = ['en'];
+/**
+ * Offered to everyone (§308.7). Kinyarwanda and French were switched on on
+ * 2026-10-21 at the user's wish, before the native check — that check, and
+ * any small wording fixes it brings, follow in the translators' files.
+ */
+const OFFERED: AppLocale[] = ['en', 'rw', 'fr'];
 
 /**
  * The "long words" test language (§308): every sentence stretched, to see the

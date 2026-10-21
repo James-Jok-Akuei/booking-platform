@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { dateLocale } from '../i18n/format';
+import { formatTime, formatDate } from '../i18n/format';
 import { plural, t } from '@lingui/core/macro';
 
 /** Times and days, said the same way on every screen (§190). */
@@ -24,11 +24,11 @@ export const sameDay = (a: Date, b: Date) =>
 
 /** "16:00". */
 export const clock = (iso: string | Date) =>
-  new Date(iso).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  formatTime(new Date(iso), { hour: '2-digit', minute: '2-digit' });
 
 /** "Mon 12 Oct". */
 export const shortDay = (iso: string | Date) =>
-  new Date(iso).toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
+  formatDate(new Date(iso), { weekday: 'short', day: 'numeric', month: 'short' });
 
 /** "Today", "Tomorrow", "Yesterday", or "Mon 12 Oct". */
 export const relativeDay = (iso: string | Date, now = new Date()) => {
@@ -57,7 +57,7 @@ export const ago = (iso: string, now = Date.now()) => {
   if (minutes < 60 * 24) return t`${hours} h ago`;
   const days = Math.round(minutes / (60 * 24));
   if (days < 7) return plural(days, { one: '# day ago', other: '# days ago' });
-  return new Date(iso).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
+  return formatDate(new Date(iso), { day: 'numeric', month: 'short' });
 };
 
 /** Minutes from `start` to `end`. */

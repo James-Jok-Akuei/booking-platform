@@ -18,7 +18,7 @@ import { PressableScale } from '../../src/ui/PressableScale';
 import { Skeleton } from '../../src/ui/Skeleton';
 import { TopBar } from '../../src/ui/TopBar';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 
 const GAP = 8;
 
@@ -168,7 +168,7 @@ export default function Gallery() {
     <View style={styles.screen}>
       <TopBar
         title={t`Photos`}
-        subtitle={`${shopName} · ${all.length} ${all.length === 1 ? 'photo' : 'photos'}`}
+        subtitle={`${shopName} · ${plural(all.length, { one: '# photo', other: '# photos' })}`}
       />
 
       <ScrollView

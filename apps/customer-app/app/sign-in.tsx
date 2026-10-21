@@ -17,7 +17,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { requestOtp, signOut, verifyOtp } from '../src/api/auth';
+import { refusalOf, requestOtp, signOut, verifyOtp } from '../src/api/auth';
 import { ApiError } from '../src/api/client';
 import { AuthWall } from '../src/auth/AuthWall';
 import { CodeBoxes, type CodeState } from '../src/auth/CodeBoxes';
@@ -52,12 +52,14 @@ type Step = 'email' | 'register' | 'code' | 'done';
 /** The server's sentences, said the way a person would. */
 function friendly(caught: unknown, fallback: string): string {
   if (!(caught instanceof ApiError)) return fallback;
-  const m = caught.message;
-  if (/invalid or expired/i.test(m)) return t`That code is not right, or it has run out. Check it and try again.`;
-  if (/too many incorrect/i.test(m)) return t`Too many wrong tries. Ask for a new code below.`;
-  if (/too many verification code requests/i.test(m))
-    return t`That is a lot of codes for one hour. Please try again a little later.`;
-  return m;
+  // By the refusal's name, so it reads the same in every language (§308).
+  const { code } = refusalOf(caught);
+  if (code === 'CODE_NOT_RIGHT') return t`That code is not right, or it has run out. Check it and try again.`;
+  if (code === 'TOO_MANY_TRIES') return t`Too many wrong tries. Ask for a new code below.`;
+  if (code === 'TOO_MANY_CODES') return t`That is a lot of codes for one hour. Please try again a little later.`;
+  if (code === 'ACCOUNT_CLOSED') return t`This account was closed. Use the same email to start again, or a different one.`;
+  // Anything else: the server's own sentence, already in the reader's language.
+  return caught.message;
 }
 
 /**
@@ -190,19 +192,19 @@ export default function SignIn() {
     } catch (caught) {
       // The check the user asked for: an email with no account is not a
       // mistake, it is somebody new (§90.3).
-      if (caught instanceof ApiError && /no account yet/i.test(caught.message) && !role) {
+      if (refusalOf(caught).code === 'NO_ACCOUNT' && !role) {
         setIsNew(true);
         setStep('register');
         return;
       }
       // A code went out less than a minute ago and still works — so the
       // answer is "use that one", not an error.
-      const wait = caught instanceof ApiError ? /wait (\d+)s/i.exec(caught.message) : null;
-      if (wait) {
+      const { code: refusal, waitSeconds } = refusalOf(caught);
+      if (refusal === 'CODE_COOLDOWN') {
         setIsNew(Boolean(role));
         setCode('');
         setCodeState('idle');
-        setResendIn(Number(wait[1]));
+        setResendIn(waitSeconds ?? RESEND_SECONDS);
         setInfo(t`We sent you a code a moment ago. Enter that one.`);
         setStep('code');
         return;
@@ -244,6 +246,15 @@ export default function SignIn() {
       // Back where they were, which is usually a slot they are about to lose.
       later(() => router.dismissTo((next ?? '/') as never), 1750);
     } catch (caught) {
+      // The right code, in the wrong app (§308.6): back to the email, with
+      // where that account belongs said plainly — another code would not help.
+      if (refusalOf(caught).code === 'WRONG_APP') {
+        setCode('');
+        setCodeState('idle');
+        setStep('email');
+        setError(friendly(caught, t`This email is not for this app.`));
+        return;
+      }
       setCodeState('error');
       setError(friendly(caught, t`That code did not work. Please try again.`));
       later(() => {

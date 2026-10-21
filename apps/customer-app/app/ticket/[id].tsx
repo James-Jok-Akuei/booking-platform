@@ -24,11 +24,11 @@ import { TopBar } from '../../src/ui/TopBar';
 import { requireSignIn } from '../../src/components/SignInWall';
 import { showProblem } from '../../src/ui/Dialog';
 import { Trans } from '@lingui/react/macro';
-import { dateLocale } from '../../src/i18n/format';
+import { formatDateTime } from '../../src/i18n/format';
 import { t } from '@lingui/core/macro';
 
 const when = (iso: string) =>
-  new Date(iso).toLocaleString(dateLocale(), { dateStyle: 'medium', timeStyle: 'short' });
+  formatDateTime(new Date(iso), { dateStyle: 'medium', timeStyle: 'short' });
 
 /**
  * One support request, as a conversation (§137).

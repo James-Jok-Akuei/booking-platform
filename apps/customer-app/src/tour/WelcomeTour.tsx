@@ -30,6 +30,7 @@ import { useReducedMotion } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
+import { appLocale } from '../i18n';
 
 /**
  * The welcome story (§307): what somebody sees the first time they are signed
@@ -54,11 +55,24 @@ type Slide = {
   chip: { icon: IconName; title: string; text: string; tone: string };
 };
 
+/** The real screens, in each language (§308.7) — Metro needs every file named here. */
+const PICTURES: Record<string, Record<'en' | 'rw' | 'fr', ImageSourcePropType>> = {
+  find: { en: require('../../assets/tour/find.jpg'), rw: require('../../assets/tour/rw/find.jpg'), fr: require('../../assets/tour/fr/find.jpg') },
+  pick: { en: require('../../assets/tour/pick.jpg'), rw: require('../../assets/tour/rw/pick.jpg'), fr: require('../../assets/tour/fr/pick.jpg') },
+  pay: { en: require('../../assets/tour/pay.jpg'), rw: require('../../assets/tour/rw/pay.jpg'), fr: require('../../assets/tour/fr/pay.jpg') },
+  code: { en: require('../../assets/tour/code.jpg'), rw: require('../../assets/tour/rw/code.jpg'), fr: require('../../assets/tour/fr/code.jpg') },
+};
+
+const pictureOf = (key: string) => {
+  const locale = appLocale();
+  return PICTURES[key][locale === 'rw' || locale === 'fr' ? locale : 'en'];
+};
+
 /** The real screens, captured from this app (§260's rule): a place, a time, the deposit, the code. */
 const SLIDES: Slide[] = [
   {
     key: 'find',
-    image: require('../../assets/tour/find.jpg'),
+    get image() { return pictureOf('find'); },
     get title() { return t`Find a place near you`; },
     get text() { return t`Barbers, salons, spas and more — with their real photos, prices and reviews.`; },
     spot: { x: 3, y: 34, w: 94, h: 22 },
@@ -72,7 +86,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'pick',
-    image: require('../../assets/tour/pick.jpg'),
+    get image() { return pictureOf('pick'); },
     get title() { return t`Pick a time that suits you`; },
     get text() { return t`Every free time is there to see. Choose yours with a tap.`; },
     spot: { x: 7, y: 35, w: 86, h: 39 },
@@ -86,7 +100,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'pay',
-    image: require('../../assets/tour/pay.jpg'),
+    get image() { return pictureOf('pay'); },
     get title() { return t`Hold it with a small deposit`; },
     get text() { return t`A part of the price, by mobile money, approved on your own phone. The rest you pay at the shop.`; },
     spot: { x: 6, y: 22, w: 88, h: 8.5 },
@@ -100,7 +114,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'code',
-    image: require('../../assets/tour/code.jpg'),
+    get image() { return pictureOf('code'); },
     get title() { return t`Show your code when you arrive`; },
     get text() { return t`Six digits, on your booking and in your email. That is all the shop needs.`; },
     spot: { x: 9, y: 48.5, w: 82, h: 14.5 },

@@ -11,421 +11,429 @@ msgstr ""
 #: src/Footer.tsx:86
 #: src/Footer.tsx:87
 msgid "{0} — coming soon"
-msgstr ""
+msgstr "{0} — bizaboneka vuba"
 
 #. placeholder {0}: s.name
 #. placeholder {1}: s.business.name
 #: src/Places.tsx:143
 msgid "{0} at {1}"
-msgstr ""
+msgstr "{0} kuri {1}"
 
 #: src/Places.tsx:176
 msgid "{deposit} to book"
-msgstr ""
+msgstr "Fata gahunda na {deposit}"
 
-#: src/App.tsx:210
+#: src/App.tsx:215
 msgid "{total, plural, one {# place} other {# places}}"
-msgstr ""
+msgstr "{total, plural, one {Iduka #} other {Amaduka #}}"
 
 #: src/Places.tsx:110
 msgid "{total, plural, one {<0>#</0> service ready to <1>book</1> today.} other {<2>#</2> services ready to <3>book</3> today.}}"
-msgstr ""
+msgstr "{total, plural, one {Serivisi <0>#</0> ushobora <1>gufatira gahunda</1> uyu munsi.} other {Serivisi <2>#</2> ushobora <3>gufatira gahunda</3> uyu munsi.}}"
 
-#: src/App.tsx:214
+#: src/App.tsx:219
 msgid "{total, plural, one {Place you can<0/>book today.} other {Places you can<1/>book today.}}"
-msgstr ""
+msgstr "{total, plural, one {Iduka wafatiramo<0/>gahunda uyu munsi.} other {Amaduka wafatiramo<1/>gahunda uyu munsi.}}"
 
 #: src/Features.tsx:71
 msgid "A small deposit<0/>holds your time"
-msgstr ""
+msgstr "Avansi nto<0/>ikubikira umwanya"
 
-#: src/Tour.tsx:68
+#: src/Tour.tsx:69
 msgid "About five minutes"
-msgstr ""
+msgstr "Hafi iminota itanu"
 
-#: src/Tour.tsx:92
+#: src/Tour.tsx:93
 msgid "Approved"
-msgstr ""
+msgstr "Ryemejwe"
 
-#: src/App.tsx:369
+#: src/App.tsx:375
 msgid "Back to top"
-msgstr ""
+msgstr "Subira hejuru"
 
-#: src/App.tsx:421
+#: src/App.tsx:428
 msgid "Barbers, salons, spas, garages — with real photos, prices and open hours."
-msgstr ""
+msgstr "Abogoshi, saloni, spa, garaje — n’amafoto nyayo, ibiciro n’amasaha yo gufungura."
 
-#: src/App.tsx:266
+#: src/App.tsx:272
 msgid "Barbers, salons, spas, garages and more: customers find you, pick a free time and hold it with a small MoMo deposit. You see your whole day on one screen, and check people in with a code."
-msgstr ""
+msgstr "Abogoshi, saloni, spa, garaje n’ibindi: abakiriya bakubona, bagahitamo umwanya uboneka, bakawufatisha avansi nto ya MoMo. Ubona umunsi wawe wose ahantu hamwe, ukakira abantu ukoresheje kode."
 
 #: src/Features.tsx:28
 msgid "Barbers, salons, spas, garages, clinics and more — with their own photos, prices and opening hours. We check every shop before it is listed."
-msgstr ""
+msgstr "Abogoshi, saloni, spa, garaje, amavuriro n’ibindi — n’amafoto yabo bwite, ibiciro n’amasaha yo gufungura. Dusuzuma buri duka mbere y’uko rigaragara."
 
 #: src/Features.tsx:47
 msgid "Book in<0/>under a minute"
-msgstr ""
+msgstr "Fata gahunda<0/>mu munota umwe"
 
 #: src/Footer.tsx:60
 msgid "Book real places near you, hold your time with a small MoMo deposit, and show your code at the door."
-msgstr ""
+msgstr "Fata gahunda ku maduka nyayo akwegereye, ubike umwanya wawe ukoresheje avansi nto ya MoMo, hanyuma werekane kode yawe ku muryango."
 
-#: src/App.tsx:155
+#: src/i18n/head.ts:10
+msgid "Book your next appointment at real shops near you. Pay a small deposit with MTN MoMo, show your 6-digit code at the door."
+msgstr "Fata gahunda yawe ikurikira mu maduka nyayo akwegereye. Ishyura avansi nto na MTN MoMo, werekane kode yawe y’imibare 6 ku muryango."
+
+#: src/App.tsx:160
 msgid "Book your next<0/>appointment, Easily!"
-msgstr ""
+msgstr "Fata gahunda<0/>mu buryo bworoshye!"
 
-#: src/App.tsx:32
+#: src/i18n/head.ts:9
 msgid "BwanguReservations — Book real shops in Rwanda, quickly"
-msgstr ""
+msgstr "BwanguReservations — Fata gahunda ku maduka nyayo yo mu Rwanda, bwangu"
 
-#: src/Tour.tsx:247
+#: src/Tour.tsx:249
 msgid "BwanguReservations · For businesses"
-msgstr ""
+msgstr "BwanguReservations · Ku bacuruzi"
 
-#: src/App.tsx:391
+#: src/App.tsx:397
 msgid "BwanguReservations is coming to the App Store and Google Play. Businesses can already sign in on the web and set up their shop."
-msgstr ""
+msgstr "BwanguReservations iraza vuba kuri App Store na Google Play. Abacuruzi bashobora kwinjira ubu kuri interineti, bagategura iduka ryabo."
 
 #. placeholder {0}: s.label
 #: src/Footer.tsx:77
 msgid "BwanguReservations on {0}"
-msgstr ""
+msgstr "BwanguReservations kuri {0}"
 
 #: src/Footer.tsx:68
 msgid "BwanguReservations on social media"
-msgstr ""
+msgstr "BwanguReservations ku mbuga nkoranyambaga"
 
-#: src/App.tsx:403
+#: src/i18n/head.ts:11
+msgid "BwanguReservations: book your next appointment, easily — the app's Find a place and shop screens"
+msgstr "BwanguReservations: fata gahunda yawe ikurikira, byoroshye — amashusho ya porogaramu: “Shaka iduka” n’ipaji y’iduka"
+
+#: src/App.tsx:409
 #: src/Modal.tsx:37
 msgid "Close"
-msgstr ""
+msgstr "Funga"
 
-#: src/Tour.tsx:44
+#: src/Tour.tsx:45
 msgid "Code sent"
-msgstr ""
+msgstr "Kode yoherejwe"
 
-#: src/App.tsx:324
+#: src/App.tsx:330
 msgid "Customers can book you now"
-msgstr ""
+msgstr "Abakiriya bashobora gufata gahunda iwawe ubu"
 
-#: src/App.tsx:287
+#: src/App.tsx:293
 msgid "Deposits paid straight to MTN MoMo"
-msgstr ""
+msgstr "Avansi zishyurwa kuri MTN MoMo mu buryo butaziguye"
 
-#: src/App.tsx:290
+#: src/App.tsx:296
 msgid "Fewer people who book and do not come"
-msgstr ""
+msgstr "Abafata gahunda ntibaze baragabanuka"
 
 #: src/Places.tsx:125
 msgid "Find a place <0>-></0> Pick a free time <1>-></1> Show your code at the door."
-msgstr ""
+msgstr "Shaka iduka <0>-></0> Hitamo umwanya uboneka <1>-></1> Erekana kode yawe ku muryango."
 
-#: src/App.tsx:420
+#: src/App.tsx:427
 msgid "Find a shop near you"
-msgstr ""
+msgstr "Shaka iduka rikwegereye"
 
-#: src/App.tsx:136
-#: src/App.tsx:256
-#: src/App.tsx:342
+#: src/App.tsx:141
+#: src/App.tsx:262
+#: src/App.tsx:348
 #: src/Footer.tsx:114
 msgid "For businesses"
-msgstr ""
+msgstr "Ku bacuruzi"
 
 #: src/Footer.tsx:100
 msgid "For customers"
-msgstr ""
+msgstr "Ku bakiriya"
 
-#: src/Tour.tsx:232
+#: src/Tour.tsx:234
 msgid "Free to join · No card needed"
-msgstr ""
+msgstr "Kwiyandikisha ni ubuntu · Nta karita ikenewe"
 
-#: src/Tour.tsx:179
+#: src/Tour.tsx:181
 msgid "From sign-up to your first booking"
-msgstr ""
+msgstr "Kuva ufunguye konti kugeza kuri gahunda yawe ya mbere"
 
-#: src/App.tsx:259
+#: src/App.tsx:265
 msgid "Get booked<0/>while you work."
-msgstr ""
+msgstr "Bona gahunda<0/>mu gihe ukora."
 
-#: src/App.tsx:139
 #: src/App.tsx:144
-#: src/App.tsx:340
-#: src/App.tsx:383
+#: src/App.tsx:149
+#: src/App.tsx:346
+#: src/App.tsx:389
 #: src/Footer.tsx:103
 msgid "Get the app"
-msgstr ""
+msgstr "Shaka porogaramu"
 
-#: src/App.tsx:311
+#: src/App.tsx:317
 msgid "Haircut · Saturday 10:30"
-msgstr ""
+msgstr "Kogosha · Ku wa Gatandatu 10:30"
 
-#: src/App.tsx:343
+#: src/App.tsx:349
 msgid "Help"
-msgstr ""
+msgstr "Ubufasha"
 
-#: src/App.tsx:425
+#: src/App.tsx:432
 msgid "Hold your time with a small deposit"
-msgstr ""
+msgstr "Bika umwanya wawe ukoresheje avansi nto"
 
-#: src/App.tsx:435
+#: src/App.tsx:442
 #: src/Footer.tsx:106
 msgid "How booking works"
-msgstr ""
+msgstr "Uko gufata gahunda bikorwa"
 
-#: src/App.tsx:341
+#: src/App.tsx:347
 msgid "How it works"
-msgstr ""
+msgstr "Uko bikora"
 
 #: src/LanguageChoice.tsx:41
 msgid "Language"
-msgstr ""
+msgstr "Ururimi"
 
 #. placeholder {0}: now.native
 #: src/LanguageChoice.tsx:67
 msgid "Language: {0}"
-msgstr ""
+msgstr "Ururimi: {0}"
 
 #: src/Footer.tsx:132
 msgid "Legal"
-msgstr ""
+msgstr "Amategeko"
 
-#: src/Tour.tsx:182
+#: src/Tour.tsx:184
 msgid "Live in <0>three steps.</0>"
-msgstr ""
+msgstr "Jya ku murongo mu <0>ntambwe eshatu.</0>"
 
 #: src/Footer.tsx:127
 msgid "Live in three steps"
-msgstr ""
+msgstr "Jya ku murongo mu ntambwe eshatu"
 
 #: src/Footer.tsx:222
 msgid "Loading…"
-msgstr ""
+msgstr "Birimo kuza…"
 
 #: src/Footer.tsx:65
 msgid "Made for Rwanda"
-msgstr ""
+msgstr "Byakorewe u Rwanda"
 
-#: src/App.tsx:134
+#: src/App.tsx:139
 msgid "Main"
-msgstr ""
+msgstr "Menyu nyamukuru"
 
 #: src/Footer.tsx:97
 msgid "More"
-msgstr ""
+msgstr "Ibindi"
 
-#: src/App.tsx:308
+#: src/App.tsx:314
 msgid "New booking"
-msgstr ""
+msgstr "Gahunda nshya"
 
-#: src/App.tsx:426
+#: src/App.tsx:433
 msgid "Paid with MTN MoMo on your own phone. The rest you pay at the shop."
-msgstr ""
+msgstr "Wishyura na MTN MoMo kuri telefoni yawe. Asigaye yishyurirwa ku iduka."
 
 #: src/Features.tsx:78
 msgid "Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. If the shop has to cancel, you get it all back."
-msgstr ""
+msgstr "Ishyura igice cy’igiciro na MTN MoMo kuri telefoni yawe; asigaye yishyurirwa ku iduka. Nihaba ngombwa ko iduka rihagarika gahunda, usubizwa amafaranga yose."
 
 #: src/Footer.tsx:109
 msgid "Places to book"
-msgstr ""
+msgstr "Amaduka wafatiramo gahunda"
 
 #: src/Places.tsx:191
 msgid "Prices are set by each shop. The deposit is part of the price, not extra."
-msgstr ""
+msgstr "Ibiciro bishyirwaho na buri duka. Avansi ni igice cy’igiciro, si inyongera."
 
 #: src/Footer.tsx:164
 msgid "Prices in RWF · Deposits by MTN MoMo"
-msgstr ""
+msgstr "Ibiciro biri mu RWF · Avansi zishyurwa na MTN MoMo"
 
 #: src/Footer.tsx:26
 msgid "Privacy Policy"
-msgstr ""
+msgstr "Politiki y’Ibanga"
 
-#: src/App.tsx:346
+#: src/App.tsx:352
 msgid "Quick links"
-msgstr ""
+msgstr "Inzira z’ubusamo"
 
 #: src/Footer.tsx:211
 msgid "Read it in my language"
-msgstr ""
+msgstr "Soma mu rurimi rwanjye"
 
 #: src/Footer.tsx:211
 msgid "Read the English"
-msgstr ""
+msgstr "Soma mu Cyongereza"
 
 #: src/Features.tsx:21
 msgid "Real places,<0/>checked by us"
-msgstr ""
+msgstr "Amaduka nyayo,<0/>twasuzumye"
 
-#: src/Tour.tsx:187
+#: src/Tour.tsx:189
 msgid "Real screens from the app — exactly what you will see."
-msgstr ""
+msgstr "Amashusho nyayo ya porogaramu — ibyo uzabona neza neza."
 
-#: src/App.tsx:175
+#: src/App.tsx:180
 msgid "Screens of the apps"
-msgstr ""
+msgstr "Amashusho ya porogaramu"
 
 #: src/Places.tsx:188
 msgid "See every place in the app"
-msgstr ""
+msgstr "Reba amaduka yose muri porogaramu"
 
 #: src/Features.tsx:54
 msgid "See the free times for today and the days ahead, pick one, and it is yours. No phone calls, no waiting for a reply."
-msgstr ""
+msgstr "Reba imyanya iboneka uyu munsi n’iminsi iri imbere, uhitemo umwe, uba uwawe. Nta guhamagara, nta gutegereza igisubizo."
 
 #: src/Footer.tsx:32
 msgid "Seller Agreement"
-msgstr ""
+msgstr "Amasezerano y’Umucuruzi"
 
-#: src/Tour.tsx:56
+#: src/Tour.tsx:57
 msgid "Set up your shop"
-msgstr ""
+msgstr "Tegura iduka ryawe"
 
-#: src/Tour.tsx:62
+#: src/Tour.tsx:63
 msgid "Setting up a shop: its name, what kind of shop it is, and how customers will see it."
-msgstr ""
+msgstr "Gutegura iduka: izina ryaryo, ubwoko bwaryo, n’uko abakiriya bazaribona."
 
-#: src/App.tsx:430
+#: src/App.tsx:437
 msgid "Show your 6-digit code at the door"
-msgstr ""
+msgstr "Erekana kode yawe y’imibare 6 ku muryango"
 
 #: src/Features.tsx:104
 msgid "Show your 6-digit code when you arrive and you are checked in. We remind you the day before, so it is never a surprise."
-msgstr ""
+msgstr "Erekana kode yawe y’imibare 6 ugeze, uhite wakirwa. Tukwibutsa ku munsi ubanziriza gahunda, bityo ntibigutungure."
 
-#: src/App.tsx:277
+#: src/App.tsx:283
 #: src/Footer.tsx:123
 msgid "Sign in"
-msgstr ""
+msgstr "Injira"
 
-#: src/Tour.tsx:32
+#: src/Tour.tsx:33
 msgid "Sign up with your email"
-msgstr ""
+msgstr "Fungura konti ukoresheje imeyili yawe"
 
-#: src/App.tsx:282
+#: src/App.tsx:288
 msgid "Sign-ups for businesses open soon."
-msgstr ""
+msgstr "Kwiyandikisha ku bacuruzi biratangira vuba."
 
-#: src/Tour.tsx:47
+#: src/Tour.tsx:48
 msgid "Six digits — no password, ever"
-msgstr ""
+msgstr "Imibare itandatu — nta jambo ry’ibanga, na rimwe"
 
-#: src/Tour.tsx:71
+#: src/Tour.tsx:72
 msgid "Skip anything, add it later"
-msgstr ""
+msgstr "Simbuka icyo ushaka, ucyongereho nyuma"
 
-#: src/App.tsx:399
+#: src/App.tsx:405
 #: src/Footer.tsx:118
-#: src/Tour.tsx:229
+#: src/Tour.tsx:231
 msgid "Start selling"
-msgstr ""
+msgstr "Tangira gucuruza"
 
-#: src/App.tsx:274
+#: src/App.tsx:280
 msgid "Start selling — it is free"
-msgstr ""
+msgstr "Tangira gucuruza — ni ubuntu"
 
 #: src/Footer.tsx:143
 msgid "Talk to us"
-msgstr ""
+msgstr "Tuvugishe"
 
 #: src/Footer.tsx:20
 msgid "Terms of Use"
-msgstr ""
+msgstr "Amabwiriza y’Imikoreshereze"
 
-#: src/App.tsx:388
+#: src/App.tsx:394
 msgid "The app is on its way."
-msgstr ""
+msgstr "Porogaramu iri hafi kuboneka."
 
-#: src/App.tsx:59
+#: src/App.tsx:63
 msgid "The business app: a shop’s day at a glance"
-msgstr ""
+msgstr "Porogaramu y’abacuruzi: umunsi w’iduka mu ncamake"
 
-#: src/App.tsx:67
+#: src/App.tsx:71
 msgid "The business app: a week of bookings on a calendar"
-msgstr ""
+msgstr "Porogaramu y’abacuruzi: gahunda z’icyumweru kuri kalendari"
 
-#: src/Tour.tsx:86
+#: src/Tour.tsx:87
 msgid "The business app’s home page the moment a shop is posted: You are live!"
-msgstr ""
+msgstr "Paji ibanza ya porogaramu y’abacuruzi iduka rikimara gushyirwa ahagaragara: Uri ku murongo!"
 
-#: src/Tour.tsx:38
+#: src/Tour.tsx:39
 msgid "The business app’s sign-up: a 6-digit code sent to your email, typed into six boxes."
-msgstr ""
+msgstr "Gufungura konti muri porogaramu y’abacuruzi: kode y’imibare 6 yoherejwe kuri imeyili yawe, yandikwa mu dusanduku dutandatu."
 
-#: src/App.tsx:83
+#: src/App.tsx:87
 msgid "The customer app: a shop’s page"
-msgstr ""
+msgstr "Porogaramu y’abakiriya: paji y’iduka"
 
-#: src/App.tsx:75
+#: src/App.tsx:79
 msgid "The customer app: find a place"
-msgstr ""
+msgstr "Porogaramu y’abakiriya: shaka iduka"
 
-#: src/App.tsx:431
+#: src/App.tsx:438
 msgid "The shop checks you in with it. No password, no printout."
-msgstr ""
+msgstr "Iduka rikwakira rikoresheje iyo kode. Nta jambo ry’ibanga, nta mpapuro."
 
-#: src/Tour.tsx:193
+#: src/Tour.tsx:195
 msgid "The three steps"
-msgstr ""
+msgstr "Intambwe eshatu"
 
 #: src/Footer.tsx:218
 msgid "This could not be loaded just now. Please try again in a moment."
-msgstr ""
+msgstr "Ntibyashobotse gufunguka ubu. Ongera ugerageze mu kanya."
 
 #: src/Footer.tsx:208
 msgid "This is a translation. If it ever differs from the English, the English applies."
-msgstr ""
+msgstr "Iyi ni inyandiko yahinduwe mu Kinyarwanda. Nihagira aho itandukaniye n’iy’Icyongereza, hakurikizwa iy’Icyongereza."
 
 #: src/Footer.tsx:206
 msgid "This is the English, which applies wherever a translation differs."
-msgstr ""
+msgstr "Iyi ni inyandiko y’Icyongereza; ni yo ikurikizwa aho iyahinduwe itandukaniye na yo."
 
-#: src/Tour.tsx:95
+#: src/Tour.tsx:96
 msgid "Usually within one working day"
-msgstr ""
+msgstr "Akenshi mu munsi umwe w’akazi"
 
-#: src/Tour.tsx:83
+#: src/Tour.tsx:84
 msgid "Usually within one working day. Then you post your shop when you are ready, and customers can find you and book."
-msgstr ""
+msgstr "Akenshi mu munsi umwe w’akazi. Hanyuma ushyira iduka ryawe ahagaragara igihe witeguye, abakiriya bakakubona bagafata gahunda."
 
 #. placeholder {0}: doc.version
 #: src/Footer.tsx:198
 msgid "Version {0} · in force since {since}"
-msgstr ""
+msgstr "Verisiyo {0} · ikurikizwa kuva {since}"
 
-#: src/App.tsx:166
+#: src/App.tsx:171
 msgid "Watch how to book<0/>in under a minute!"
-msgstr ""
+msgstr "Reba uko wafata gahunda<0/>mu munota umwe!"
 
-#: src/Tour.tsx:80
+#: src/Tour.tsx:81
 msgid "We check it, you post it"
-msgstr ""
+msgstr "Turarisuzuma, ukarishyira ahagaragara"
 
-#: src/Tour.tsx:35
+#: src/Tour.tsx:36
 msgid "We send a 6-digit code, and that is your account. No password, no card."
-msgstr ""
+msgstr "Tukoherereza kode y’imibare 6, ubwo konti yawe iba ifunguye. Nta jambo ry’ibanga, nta karita."
 
 #: src/Features.tsx:125
 msgid "Why book here"
-msgstr ""
+msgstr "Impamvu wafatira gahunda hano"
 
-#: src/App.tsx:321
+#: src/App.tsx:327
 msgid "You are live!"
-msgstr ""
+msgstr "Uri ku murongo!"
 
-#: src/App.tsx:152
+#: src/App.tsx:157
 msgid "Your appointments, without the phone calls."
-msgstr ""
+msgstr "Gahunda zawe, nta guhamagara."
 
-#: src/App.tsx:293
+#: src/App.tsx:299
 msgid "Your bookings, messages and money in one place"
-msgstr ""
+msgstr "Gahunda zawe, ubutumwa n’amafaranga ahantu hamwe"
 
 #: src/Features.tsx:97
 msgid "Your code,<0/>not a queue"
-msgstr ""
+msgstr "Kode yawe,<0/>nta gutonda umurongo"
 
-#: src/Tour.tsx:59
+#: src/Tour.tsx:60
 msgid "Your name, a branch and one service — about five minutes. Skip anything and add it later."
-msgstr ""
+msgstr "Izina ryawe, ishami rimwe na serivisi imwe — hafi iminota itanu. Simbuka icyo ushaka, ucyongereho nyuma."

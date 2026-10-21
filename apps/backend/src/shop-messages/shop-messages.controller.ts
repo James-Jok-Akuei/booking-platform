@@ -21,6 +21,8 @@ import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-use
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import { BusinessRolesGuard } from '../business/guards/business-roles.guard';
 import { ShopMessagesService } from './shop-messages.service';
+import { RequestLocale } from '../i18n/request-locale.decorator';
+import type { Locale } from '../i18n/locales';
 import {
   FollowListDto,
   FollowOffersDto,
@@ -93,7 +95,7 @@ export class BusinessShopMessagesController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: ShopMessagesDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
-  send(@CurrentUser() user: AuthenticatedUser, @Body() dto: SendShopMessageDto) {
-    return this.shopMessages.send(user.userId, dto);
+  send(@CurrentUser() user: AuthenticatedUser, @Body() dto: SendShopMessageDto, @RequestLocale() locale: Locale) {
+    return this.shopMessages.send(user.userId, dto, locale);
   }
 }

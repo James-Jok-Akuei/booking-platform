@@ -983,3 +983,27 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 /* Headings may be one long word in another language (§308): it breaks
    inside its box instead of pushing the page wider than the screen. */
 h1, h2, h3 { overflow-wrap: anywhere; }
+
+/*
+ * Longer languages (§308.7). Kinyarwanda runs about a third longer than
+ * English, French a little; the densest parts of the app — tabs, the small
+ * labels on tiles — take `--words` to come down a step in them and keep their
+ * line, instead of being cut.
+ */
+:root { --words: 1; }
+html:lang(rw) { --words: 0.93; }
+html:lang(fr) { --words: 0.96; }
+
+/* A row that scrolls sideways fades the edge that has more beyond it (ui/scrollEdges.ts). */
+.scroll-edges[data-more~='end'] {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent);
+}
+.scroll-edges[data-more~='start'] {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(to left, #000 calc(100% - 44px), transparent);
+}
+.scroll-edges[data-more~='start'][data-more~='end'] {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 44px, #000 calc(100% - 44px), transparent);
+}

@@ -25,9 +25,9 @@ import { BranchPicker, branchWords } from './BranchPicker';
 import './staff.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale } from '../i18n/format';
+import { formatDate } from '../i18n/format';
 
-const when = (iso: string) => new Date(iso).toLocaleDateString(dateLocale(), { dateStyle: 'medium' });
+const when = (iso: string) => formatDate(new Date(iso), { dateStyle: 'medium' });
 
 /**
  * What each role may actually do, in the words of the person deciding (§277).
@@ -41,6 +41,14 @@ const ROLE_MEANS: Record<'OWNER' | StaffRole, string> = {
   get MANAGER() { return t`Runs their branches: bookings, cancellations, hours, closures and photos. A manager of every branch also changes the shopfront, services and prices, and sees the money.`; },
   get STAFF() { return t`Works the front desk at their branches: checks customers in, marks visits done, and answers messages and reviews. Cannot cancel bookings or see the money.`; },
 };
+
+/** "Invited as manager on 3 Oct · expires 10 Oct" — a whole sentence per role, never a role word glued in. */
+const invitedLine = (role: 'OWNER' | StaffRole, on: string, until: string) =>
+  role === 'OWNER'
+    ? t`Invited as owner on ${on} · expires ${until}`
+    : role === 'MANAGER'
+      ? t`Invited as manager on ${on} · expires ${until}`
+      : t`Invited as staff on ${on} · expires ${until}`;
 
 /** The same, in a few words, for a row. */
 const ROLE_SHORT: Record<'OWNER' | StaffRole, string> = {
@@ -163,10 +171,7 @@ export function StaffPage() {
                     <div className="st-who">
                       <strong>{invitation.email}</strong>
                       <span>
-                        <Trans>
-                          Invited as {invitation.role.toLowerCase()} on {when(invitation.createdAt)} · expires{' '}
-                          {when(invitation.expiresAt)}
-                        </Trans>
+                        {invitedLine(invitation.role, when(invitation.createdAt), when(invitation.expiresAt))}
                       </span>
                       <BranchChips value={invitation} branches={branches} />
                     </div>
@@ -190,7 +195,7 @@ export function StaffPage() {
                     <Avatar label={member.email} size={38} />
                     <div className="st-who">
                       <strong>{member.email}</strong>
-                      <span><Trans>was {member.role.toLowerCase()}</Trans></span>
+                      <span>{member.role === 'OWNER' ? t`was the owner` : member.role === 'MANAGER' ? t`was a manager` : t`was staff`}</span>
                     </div>
                   </li>
                 ))}

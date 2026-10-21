@@ -44,7 +44,7 @@ import './overview.css';
 import { useAccess } from '../access';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
-import { dateLocale, dayName } from '../i18n/format';
+import { dayName, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
 
 /**
@@ -89,7 +89,6 @@ const STATUS: Record<AppointmentStatus, { label: string; cls: string }> = {
 
 /** Short day names in the app's language (§308), Monday first. */
 const WEEKDAYS = () => [1, 2, 3, 4, 5, 6, 0].map((day) => dayName(day, 'short'));
-const WEEKDAY_NAMES = () => [t`Sundays`, t`Mondays`, t`Tuesdays`, t`Wednesdays`, t`Thursdays`, t`Fridays`, t`Saturdays`];
 
 const reduceMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -250,10 +249,10 @@ export function OverviewPage() {
                   date and the clock on every page (§234, §235). */}
               <span className="ov-country">
                 <RwandaFlag width={20} />
-                <Trans>Rwanda</Trans>
+                <span className="ov-country-name"><Trans>Rwanda</Trans></span>
               </span>
               <Icon name={now.getHours() < 17 ? 'sun' : 'moon'} size={16} />
-              <span className="ov-date">{now.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+              <span className="ov-date">{formatDate(now, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
               <span className="ov-clock">{clock(now)}</span>
             </p>
             <h1>
@@ -302,7 +301,9 @@ export function OverviewPage() {
           loading={bookings.isLoading}
           sub={
             lateToday.length > 0
-              ? t`${lateToday.length} running late${nextToday ? ` · next at ${clock(nextToday.startTime)}` : ''}`
+              ? nextToday
+                ? t`${lateToday.length} running late · next at ${clock(nextToday.startTime)}`
+                : t`${lateToday.length} running late`
               : nextToday
                 ? t`Next at ${clock(nextToday.startTime)}`
                 : t`Nobody else today`
@@ -338,7 +339,7 @@ export function OverviewPage() {
           decimals={1}
           empty={rating === null ? t`New` : undefined}
           loading={locations.isLoading}
-          sub={ratingCount > 0 ? t`from ${ratingCount} ${ratingCount === 1 ? 'review' : 'reviews'}` : t`No reviews yet`}
+          sub={ratingCount > 0 ? plural(ratingCount, { one: 'from # review', other: 'from # reviews' }) : t`No reviews yet`}
           to="/reviews"
           stars={rating}
         />
@@ -818,7 +819,7 @@ function Busiest({
     <div className="busy">
       <p className="busy-headline">
         <Trans>
-          <strong>{WEEKDAY_NAMES()[peakDay]}</strong> are your busiest, most often around{' '}
+          Your busiest day is <strong>{dayName(peakDay)}</strong>, most often around{' '}
           <strong>{String(peakHour).padStart(2, '0')}:00</strong>.
         </Trans>
       </p>

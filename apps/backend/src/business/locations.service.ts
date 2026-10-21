@@ -132,8 +132,9 @@ export class LocationsService {
       // time booked. Cancelling them is a decision with refunds attached
       // (§25), and it is not one a "close branch" button should make.
       throw new BadRequestException(
-        `This branch has ${upcoming} booking${upcoming === 1 ? '' : 's'} still to happen. ` +
-          'Cancel or complete them first, then close it.',
+        upcoming === 1
+          ? 'This branch has 1 booking still to happen. Cancel or complete it first, then close it.'
+          : `This branch has ${upcoming} bookings still to happen. Cancel or complete them first, then close it.`,
       );
     }
 

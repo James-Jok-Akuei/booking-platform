@@ -1,0 +1,192 @@
+CONDITIONS D’UTILISATION
+
+Dernière mise à jour : 12 octobre 2026
+
+Les présentes Conditions d’utilisation constituent l’accord entre vous et BwanguReservations (« nous », « la Plateforme ») lorsque vous utilisez l’application mobile BwanguReservations et les services associés. Veuillez les lire avant de réserver. En créant un compte ou en effectuant une réservation, vous les acceptez.
+
+Si vous gérez un établissement sur la Plateforme, le Contrat commerçant s’applique aussi à vous.
+
+
+1. QUI NOUS SOMMES
+
+BwanguReservations est une société immatriculée au Rwanda auprès de l’Office rwandais de développement (RDB).
+
+- Code de l’entreprise : [RDB COMPANY CODE]
+- Lieu d’immatriculation : [PLACE OF REGISTRATION]
+- Adresse : Downtown Kigali, Nyarugenge District, Ville de Kigali, Rwanda
+- Téléphone : +250 798 972 441
+- E-mail : jokditakeerleek@gmail.com
+- Ligne du service après-vente et de l’assistance : +250 798 972 441
+- Responsable des réclamations des consommateurs : [NAME], +250 798 972 441, jokditakeerleek@gmail.com
+- Licence de commerce électronique : [RICA LICENCE NUMBER, ONCE ISSUED]
+
+Nous donnons ces informations parce que la loi rwandaise relative à la concurrence et à la protection du consommateur (Loi n° 011/2026 du 26/02/2026) oblige les entreprises en ligne et les intermédiaires en ligne à vous dire qui ils sont.
+
+
+2. CE QU’EST LA PLATEFORME
+
+La Plateforme est une place de marché en ligne. Elle vous permet de trouver des établissements au Rwanda (par exemple des salons, des spas, des garages et des studios), de voir leurs services et leurs prix, de réserver un créneau et de payer un acompte pour retenir ce créneau.
+
+Nous sommes un intermédiaire. Le service que vous réservez est fourni par l’établissement, et non par nous. Le contrat portant sur le service lui-même est conclu entre vous et l’établissement. Nous sommes responsables de la Plateforme : afficher des annonces exactes, telles qu’elles nous sont fournies, prendre votre réservation, gérer votre acompte et vous aider en cas de problème.
+
+Chaque établissement est vérifié avant d’apparaître sur la Plateforme, et son nom et sa succursale sont indiqués sur sa page.
+
+
+3. QUI PEUT UTILISER LA PLATEFORME
+
+- Vous devez avoir au moins 18 ans, l’âge de la majorité au Rwanda, pour créer un compte et effectuer une réservation.
+- Vous pouvez réserver pour d’autres personnes, y compris des enfants, mais vous êtes responsable de la réservation et du paiement.
+- Vous devez donner une véritable adresse e-mail que vous contrôlez. Pour vous connecter, nous envoyons un code à usage unique à cette adresse. Protégez bien votre messagerie ; toute personne qui peut lire vos e-mails peut se connecter à votre place.
+- Une personne, un compte. Ne créez pas de compte pour d’autres personnes et ne partagez pas le vôtre.
+
+
+4. RÉSERVATIONS
+
+4.1 Effectuer une réservation. Vous choisissez un service, le nombre (lorsque l’établissement en autorise plus d’un), un jour et une heure. Avant que vous ne confirmiez, l’application affiche le prix total, l’acompte que vous payez maintenant et le reste que vous payez à l’établissement.
+
+4.2 Le créneau retenu. Lorsque vous confirmez, le créneau est retenu pour vous pendant 5 minutes, le temps de payer l’acompte. Si l’acompte n’est pas payé dans ce délai, le créneau n’est plus retenu et il est libéré pour les autres clients. Aucun montant n’est prélevé.
+
+4.3 Confirmation. Votre réservation n’est confirmée qu’à la réception de l’acompte. Vous recevez alors une confirmation et un code d’arrivée dans l’application et par e-mail. C’est votre preuve d’achat.
+
+4.4 Le code d’arrivée. Donnez votre code à l’établissement à votre arrivée. C’est ainsi que l’établissement confirme votre venue. Ne le communiquez à personne avant votre visite.
+
+4.5 Ponctualité. Veuillez arriver à l’heure. Si vous êtes en retard, l’établissement peut écourter votre service ou considérer la réservation comme manquée.
+
+4.6 Réservations pour plusieurs personnes ou articles. Lorsque vous réservez pour plus d’une personne ou d’un article, le prix est le prix pour une unité multiplié par le nombre choisi. L’application indique la durée de l’ensemble de la réservation.
+
+
+5. PRIX ET PAIEMENT
+
+5.1 Prix. Les prix sont fixés par chaque établissement et indiqués en francs rwandais (RWF). Le total affiché avant que vous ne confirmiez est le prix complet de la réservation. Nous n’ajoutons pas de frais en plus.
+
+5.2 L’acompte. Pour confirmer une réservation, vous payez un acompte, qui est un pourcentage du prix fixé par l’établissement. L’acompte fait partie du prix, ce n’est pas un supplément.
+
+5.3 Le reste à payer. Le reste du prix est payé directement à l’établissement lors de votre visite, selon le moyen de paiement que l’établissement accepte.
+
+5.4 Nos frais de service. Nous retenons des frais de service sur l’acompte. L’établissement reçoit le reste. Vous ne payez pas ces frais séparément.
+
+5.5 Comment payer. Les acomptes sont payés par MTN Mobile Money. Vous saisissez votre numéro mobile money et vous validez le paiement sur votre propre téléphone avec votre code PIN. Nous ne voyons ni ne conservons jamais votre code PIN. Votre fournisseur de mobile money peut appliquer ses propres frais ; ils sont indiqués par le fournisseur.
+
+5.6 Problèmes de paiement. Si un paiement échoue, aucune réservation n’est confirmée et vous pouvez réessayer. Si de l’argent est sorti de votre compte mobile money mais que la réservation n’a pas été confirmée, contactez-nous avec la référence affichée dans l’application et nous en retrouverons la trace.
+
+5.7 Taxes et reçus. Chaque établissement est responsable de ses propres taxes et de vous remettre tout reçu fiscal pour le service qu’il fournit.
+
+
+6. ANNULATIONS, VISITES MANQUÉES ET REMBOURSEMENTS
+
+6.1 Si l’établissement annule. Vous récupérez la totalité de votre acompte.
+
+6.2 Si vous annulez, ou si vous ne venez pas. L’acompte n’est pas remboursé. C’est l’acompte qui retient le créneau pour vous et qui empêche l’établissement de le donner à quelqu’un d’autre.
+
+6.3 Avant de payer. Si vous annulez avant de payer l’acompte, aucun montant n’est prélevé.
+
+6.4 Si le service n’est pas conforme à la description. Si le service que vous recevez est défectueux, ou différent de ce que vous avez réservé, prévenez d’abord l’établissement. Si cela ne règle pas le problème, prévenez-nous dans les 7 jours suivant votre visite en utilisant « Obtenir de l’aide » dans la réservation. Nous examinerons ce qui s’est passé et pourrons demander à l’établissement de refaire le service, ou rembourser l’acompte.
+
+6.5 Vos droits selon la loi. Rien dans les présentes Conditions ne vous retire un droit que la loi rwandaise vous accorde en tant que consommateur, y compris tout droit de vous rétracter d’un contrat à distance et d’être remboursé qui s’applique à votre réservation en vertu de la Loi n° 011/2026. Lorsque la loi vous donne droit à un remboursement, nous vous rembourserons dans les 15 jours suivant votre demande.
+
+6.6 Comment les remboursements sont versés. Les remboursements sont renvoyés sur le numéro mobile money qui a payé.
+
+
+7. VOTRE COMPTE ET LA MANIÈRE DONT VOUS DEVEZ UTILISER LA PLATEFORME
+
+Vous vous engagez à ne pas :
+
+- donner de fausses informations, ou vous faire passer pour quelqu’un d’autre ;
+- effectuer des réservations que vous n’avez pas l’intention d’honorer ;
+- harceler, menacer ou injurier un établissement, son personnel ou notre équipe d’assistance ;
+- utiliser la Plateforme pour quoi que ce soit d’illégal ;
+- tenter d’endommager, de surcharger ou de copier la Plateforme, ou d’y accéder sans autorisation ;
+- organiser le paiement de l’acompte en dehors de la Plateforme afin d’échapper aux présentes Conditions.
+
+Nous pouvons suspendre ou fermer un compte qui enfreint ces règles. Lorsque cela est possible, nous vous dirons pourquoi.
+
+
+8. AVIS
+
+- Vous ne pouvez laisser un avis sur un établissement qu’après une visite effectuée, réservée par la Plateforme.
+- Votre avis doit décrire honnêtement votre propre expérience. Il ne doit pas être faux, insultant ou discriminatoire, ni révéler des informations privées sur une autre personne.
+- L’établissement peut répondre publiquement à votre avis.
+- Nous n’écrivons, n’achetons ni ne modifions aucun avis. Nous pouvons masquer un avis qui enfreint ces règles.
+- En publiant un avis, vous nous autorisez à l’afficher sur la Plateforme à côté du nom que vous avez choisi d’afficher.
+
+
+9. MESSAGES ET ASSISTANCE
+
+9.1 Messages à un établissement. Vous pouvez envoyer un message à un établissement avant ou après avoir réservé. Utilisez les messages uniquement pour parler de cet établissement et de votre réservation.
+
+9.2 Assistance. Vous pouvez demander de l’aide à notre équipe d’assistance depuis n’importe quelle réservation. Nous pouvons lire les messages liés à une réservation lorsque cela est nécessaire pour régler une réclamation ou pour assurer la sécurité de la Plateforme.
+
+
+10. RÉCLAMATIONS
+
+10.1 Comment faire une réclamation. Ouvrez la réservation, choisissez « Obtenir de l’aide » et dites-nous ce qui s’est passé. Vous pouvez aussi écrire à jokditakeerleek@gmail.com ou appeler le +250 798 972 441.
+
+10.2 Notre réponse. Nous vous confirmerons la réception de votre réclamation dans les 72 heures, et nous vous donnerons notre réponse dans les 15 jours.
+
+10.3 Si notre réponse ne vous satisfait pas. Vous pouvez porter votre réclamation devant l’Autorité rwandaise d’inspection, de la concurrence et de la protection du consommateur (RICA), qui est l’autorité chargée de protéger les consommateurs au Rwanda.
+
+
+11. CE DONT NOUS SOMMES RESPONSABLES
+
+11.1 Le service lui-même. L’établissement est responsable de la qualité, de la sécurité et de la légalité du service qu’il fournit, de son personnel et de ses locaux.
+
+11.2 La Plateforme. Nous sommes responsables de faire fonctionner la Plateforme avec un soin raisonnable. Nous ne promettons pas qu’elle sera toujours disponible ou sans erreur. Nous pouvons effectuer des opérations de maintenance ou des modifications qui l’interrompent pendant une courte durée.
+
+11.3 Annonces. Les établissements nous fournissent leurs propres descriptions, photos, prix et horaires d’ouverture. Nous vérifions les établissements avant de les afficher sur la Plateforme et nous retirons les informations dont nous savons qu’elles sont illégales, mais nous ne pouvons pas vérifier chaque détail.
+
+11.4 Limites. Dans la mesure permise par la loi, nous ne sommes pas responsables des pertes que nous ne pouvions pas raisonnablement prévoir, ni du manquement d’un établissement à fournir un service, au-delà de l’aide que nous vous apportons pour récupérer ce que vous avez payé par la Plateforme. Rien dans les présentes Conditions ne limite une responsabilité qui ne peut pas être limitée selon la loi rwandaise.
+
+
+12. NOTRE CONTENU
+
+La Plateforme, son design, son nom et ses logiciels nous appartiennent, ou appartiennent à ceux qui nous en accordent la licence. Vous pouvez utiliser l’application pour vos propres réservations personnelles. Vous ne pouvez pas la copier, la revendre, ni utiliser notre nom ou notre logo sans notre autorisation écrite.
+
+
+13. VOS DONNÉES PERSONNELLES
+
+Nous traitons vos données personnelles comme le décrit notre Politique de confidentialité, conformément à la Loi n° 058/2021 du 13/10/2021 relative à la protection des données à caractère personnel et de la vie privée.
+
+
+14. NOS E-MAILS
+
+14.1 E-mails sur vos réservations. Nous vous envoyons les e-mails dont vous avez besoin : codes de connexion, confirmations, codes d’arrivée et nouvelles de vos réservations.
+
+14.2 Offres de la semaine. Nous envoyons des e-mails publicitaires uniquement si vous activez « Offres de la semaine par e-mail » dans votre compte. Chacun de ces e-mails est signalé comme une offre et contient un lien de désabonnement, et vous pouvez les désactiver à tout moment.
+
+
+15. FERMETURE DE VOTRE COMPTE
+
+15.1 Par vous. Vous pouvez fermer votre compte dans l’application à tout moment, dès que vous n’avez plus de réservation à venir. Vous pouvez d’abord télécharger une copie de vos données.
+
+15.2 Par nous. Nous pouvons suspendre ou fermer votre compte si vous enfreignez gravement ou à plusieurs reprises les présentes Conditions, ou si la loi l’exige.
+
+15.3 Ce qui se passe. Lorsqu’un compte est fermé, votre nom et votre adresse e-mail en sont supprimés. Les données des réservations et des paiements passés sont conservées sans votre identité lorsque la loi nous oblige à les conserver.
+
+
+16. MODIFICATION DES PRÉSENTES CONDITIONS
+
+Nous pouvons modifier les présentes Conditions, par exemple lorsque la loi change ou lorsque nous ajoutons des fonctionnalités. Dans ce cas, nous vous montrerons dans l’application ce qui a changé et nous vous demanderons d’accepter la nouvelle version. Les modifications ne concernent pas les réservations que vous avez déjà effectuées.
+
+
+17. SI NOUS ARRÊTONS LE SERVICE
+
+Si nous décidons d’arrêter d’exploiter la Plateforme, nous l’annoncerons sur la Plateforme au moins 30 jours à l’avance, et les réservations déjà payées seront honorées ou remboursées.
+
+
+18. DROIT APPLICABLE ET LITIGES
+
+18.1 Les présentes Conditions sont régies par les lois de la République du Rwanda.
+
+18.2 Nous chercherons d’abord à régler à l’amiable tout litige avec vous, par notre procédure de réclamation.
+
+18.3 Si cela échoue, l’un ou l’autre d’entre nous peut porter le litige devant les juridictions compétentes du Rwanda. Vous gardez à tout moment le droit de déposer une réclamation auprès de la RICA.
+
+18.4 Les présentes Conditions sont rédigées en anglais. Si nous fournissons une traduction en kinyarwanda ou en français et qu’il existe une différence, c’est la version anglaise qui s’applique, sauf si la loi en dispose autrement.
+
+
+19. CONTACT
+
+BwanguReservations
+Downtown Kigali, Nyarugenge District, Ville de Kigali, Rwanda
+jokditakeerleek@gmail.com
++250 798 972 441
