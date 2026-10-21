@@ -91,18 +91,26 @@ export function Thumb({ cover, size }: { cover: string | null; size: number }) {
   );
 }
 
+/** The small word after an amount — what that money is — in the app's language (§308.7). */
+const UNIT = {
+  get deposit() { return t({ message: 'deposit', context: 'after an amount: the money is the deposit' }); },
+  get due() { return t({ message: 'due', context: 'after an amount: still to be paid at the shop' }); },
+  get yours() { return t({ message: 'yours', context: 'after an amount: the shop’s share' }); },
+  get total() { return t({ message: 'total', context: 'after an amount: the full price' }); },
+};
+
 /** What the money looks like for this booking, in two lines. */
 export function payment(a: Appointment, money: Money) {
   const paid = Boolean(a.depositPaidAt);
   const due = dueAtShop(a);
   switch (a.status) {
     case 'PENDING_PAYMENT':
-      return { amount: money(a.depositAmountMinor, a.currency), unit: 'deposit', note: t`Not paid yet`, tone: 'warn', icon: 'hourglass' as IconName };
+      return { amount: money(a.depositAmountMinor, a.currency), unit: UNIT.deposit, note: t`Not paid yet`, tone: 'warn', icon: 'hourglass' as IconName };
     case 'BOOKED':
     case 'IN_PROGRESS':
       return {
         amount: due === null ? '—' : money(due, a.currency),
-        unit: due === null ? '' : 'due',
+        unit: due === null ? '' : UNIT.due,
         note: paid ? t`Deposit paid` : t`No deposit`,
         tone: paid ? 'ok' : 'muted',
         icon: (paid ? 'checkCircle' : 'info') as IconName,
@@ -110,18 +118,18 @@ export function payment(a: Appointment, money: Money) {
     case 'COMPLETED':
       return {
         amount: a.servicePriceMinor === null ? money(a.businessAmountMinor, a.currency) : money(a.servicePriceMinor, a.currency),
-        unit: a.servicePriceMinor === null ? 'yours' : 'total',
+        unit: a.servicePriceMinor === null ? UNIT.yours : UNIT.total,
         note: t`Deposit paid`,
         tone: 'ok',
         icon: 'checkCircle' as IconName,
       };
     case 'NO_SHOW':
-      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: t`Deposit kept`, tone: 'muted', icon: 'wallet' as IconName };
+      return { amount: money(a.businessAmountMinor, a.currency), unit: UNIT.yours, note: t`Deposit kept`, tone: 'muted', icon: 'wallet' as IconName };
     case 'CANCELLED':
       if (!paid) return { amount: '—', unit: '', note: t`No deposit`, tone: 'muted', icon: 'info' as IconName };
       if (a.cancelledBy === 'BUSINESS')
         return { amount: '—', unit: '', note: t`Deposit refunded`, tone: 'muted', icon: 'refresh' as IconName };
-      return { amount: money(a.businessAmountMinor, a.currency), unit: 'yours', note: t`Deposit kept`, tone: 'muted', icon: 'wallet' as IconName };
+      return { amount: money(a.businessAmountMinor, a.currency), unit: UNIT.yours, note: t`Deposit kept`, tone: 'muted', icon: 'wallet' as IconName };
   }
 }
 

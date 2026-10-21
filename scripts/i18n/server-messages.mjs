@@ -208,6 +208,27 @@ for (const file of files) {
   });
 }
 
+// ---- the ready-made questions for shops (§300.2, §308.7): every question, answer and note ----
+// Not keys (the first word of one()/several(), `key:`, `skip:`), not the names the
+// catalog is filed under (object keys) — those are matched in code, never shown.
+
+{
+  const file = join(ROOT, 'src', 'business', 'choice-suggestions.ts');
+  const ast = parse(readFileSync(file, 'utf8'), { sourceType: 'module', plugins: ['typescript'] });
+  traverse(ast, {
+    StringLiteral(path) {
+      const { node, parent } = path;
+      if (path.findParent((p) => p.isImportDeclaration() || p.isFunctionDeclaration() || p.isTSType())) return;
+      if (parent.type === 'ObjectProperty' && parent.key === node) return;
+      if (parent.type === 'ObjectProperty' && ['key', 'skip'].includes(parent.key.name)) return;
+      if (parent.type === 'ArrayExpression' && path.parentPath.parent.type === 'ObjectProperty' && path.parentPath.parent.key.name === 'skip') return;
+      if (parent.type === 'CallExpression' && parent.arguments[0] === node && ['one', 'several'].includes(parent.callee.name)) return;
+      if (/^[a-z0-9_.-]+$/.test(node.value)) return;
+      add(node.value, 'choice', file, node.loc.start.line, null);
+    },
+  });
+}
+
 // ---- the .po files: keep what is translated, add what is new, drop what is gone ----
 
 const poQuote = (text) =>
@@ -257,6 +278,7 @@ for (const locale of LOCALES) {
     if (str) translated[id] = str;
     const notes = [];
     if (entry.kinds.has('error')) notes.push('#. A refusal: the app shows it as the reason something did not work.');
+    if (entry.kinds.has('choice')) notes.push('#. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.');
     if (entry.kinds.has('taxonomy')) notes.push('#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.');
     if (entry.pattern) notes.push(`#. The names in {braces} are filled in by the server: ${entry.pattern.names.join(', ')}.`);
     blocks.push(

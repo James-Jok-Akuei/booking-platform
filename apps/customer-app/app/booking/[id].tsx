@@ -401,7 +401,7 @@ function Booking() {
                         ? t`Waiting for approval…`
                         : stage === 'FAILED'
                           ? t`Try again`
-                          : t`Pay now`
+                          : t({ message: 'Pay now', context: 'button: pay the deposit' })
                   }
                 />
               </View>

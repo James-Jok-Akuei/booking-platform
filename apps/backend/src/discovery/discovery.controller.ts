@@ -10,6 +10,8 @@ import { DiscoveryPageDto } from './dto/discovery-response.dto';
 import { DiscoverLocationsDto } from './dto/discover-locations.dto';
 import { DiscoveredServicePageDto, ShopfrontDto } from './dto/discovery-response.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
+import { RequestLocale } from '../i18n/request-locale.decorator';
+import type { Locale } from '../i18n/locales';
 
 /**
  * The customer front door.
@@ -59,7 +61,8 @@ export class DiscoveryController {
   findOne(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user?: AuthenticatedUser,
+    @RequestLocale() locale?: Locale,
   ) {
-    return this.discovery.findOne(id, user?.userId);
+    return this.discovery.findOne(id, user?.userId, locale);
   }
 }

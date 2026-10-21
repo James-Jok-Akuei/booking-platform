@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'rea
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '../api/business';
 import { Icon } from './Icon';
 import './drop-zone.css';
-import { t } from '@lingui/core/macro';
+import { plural, t } from '@lingui/core/macro';
 
 /**
  * Dropping files where a photo or a file is asked for (§305): drag one from
@@ -43,18 +43,25 @@ export function sortFiles(files: File[], kind: FileKind) {
     else taken.push(file);
   }
   const said: string[] = [];
+  // Whole sentences per count, in the app's language (§308.7).
+  const words = kind.words;
+  const limit = MAX_UPLOAD_MB;
   if (wrongKind.length) {
     said.push(
       wrongKind.length === 1 && files.length === 1
-        ? `That isn’t ${kind.words}.`
-        : `${wrongKind.length} ${wrongKind.length === 1 ? 'file isn’t' : 'files aren’t'} ${kind.words}, so ${wrongKind.length === 1 ? 'it was' : 'they were'} left out.`,
+        ? t`That isn’t ${words}.`
+        : plural(wrongKind.length, {
+            one: `# file isn’t ${words}, so it was left out.`,
+            other: `# files aren’t ${words}, so they were left out.`,
+          }),
     );
   }
   if (tooBig.length) {
+    const name = tooBig[0];
     said.push(
       tooBig.length === 1
-        ? `“${tooBig[0]}” is over ${MAX_UPLOAD_MB} MB — try a smaller copy.`
-        : `${tooBig.length} files are over ${MAX_UPLOAD_MB} MB and were left out.`,
+        ? t`“${name}” is over ${limit} MB — try a smaller copy.`
+        : plural(tooBig.length, { one: `# file is over ${limit} MB and was left out.`, other: `# files are over ${limit} MB and were left out.` }),
     );
   }
   return { taken, problem: said.length ? said.join(' ') : null };

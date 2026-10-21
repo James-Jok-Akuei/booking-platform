@@ -119,6 +119,10 @@ const CARD_PAD = 18;
  * Availability is asked for with the SERVICE's duration, and the chosen slot
  * is sent back as the shop's own wall-clock time (§133.8), as before.
  */
+/** "3 free", "None free" — one sentence, so each language says the count its own way (§308.7). */
+const freeIn = (count: number) =>
+  count === 0 ? t`None free` : plural(count, { one: '# free', other: '# free' });
+
 export default function Book() {
   const { id, serviceId } = useLocalSearchParams<{ id: string; serviceId: string }>();
   const router = useRouter();
@@ -797,10 +801,7 @@ export default function Book() {
                   <View style={styles.periodHead}>
                     <Icon name={period.icon} size={15} color={theme.ink2} />
                     <Text style={styles.periodLabel}>{period.label}</Text>
-                    <Text style={type.tiny}>
-                      {period.slots.filter((t) => t.placesLeft >= quantity).length || t`None`}
-                      <Trans>free</Trans>
-                    </Text>
+                    <Text style={type.tiny}>{freeIn(period.slots.filter((slot) => slot.placesLeft >= quantity).length)}</Text>
                   </View>
                   <View style={styles.slots}>
                     {period.slots.map(({ time, placesLeft }) => {

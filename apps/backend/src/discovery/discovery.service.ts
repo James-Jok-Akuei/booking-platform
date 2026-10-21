@@ -18,9 +18,10 @@ import { DiscoverLocationsDto, DiscoverySort } from './dto/discover-locations.dt
 import { DiscoveredServicePageDto, DiscoveryPageDto } from './dto/discovery-response.dto';
 import { CHOICE_GROUPS_SELECT, STARTING_PRICE_GROUPS_SELECT } from '../business/dto/service-choices.dto';
 import { startingPriceMinor } from '../business/service-choices';
-import { notePromptFor } from '../business/choice-suggestions';
+import { notePromptIn } from '../business/choice-suggestions';
 import { COUNTED_BOOKING_STATUSES, byPopularity } from './popularity';
 import { TaxonomyNamesService } from '../categories/taxonomy-names.service';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 
 /** Rows the bounding-box + haversine query returns. */
 interface DistanceRow {
@@ -568,7 +569,7 @@ export class DiscoveryService {
    * exists, is paginated and has its own exposure rules (§31). Duplicating them
    * here would mean two places to keep those rules right.
    */
-  async findOne(locationId: string, viewerId?: string) {
+  async findOne(locationId: string, viewerId?: string, locale: Locale = DEFAULT_LOCALE) {
     // findFirst, not findUnique: a closed branch must 404 for a customer the
     // same way it is absent from search (§89), and `where` on findUnique takes
     // only unique fields.
@@ -740,7 +741,7 @@ export class DiscoveryService {
         discount: price.discount,
         startingPriceMinor: startingPriceMinor(service.choiceGroups, price.priceMinor, service.priceConfirmedAtShop),
         // The shop's own words, else the ones for its kind (§300.5).
-        notePrompt: notePrompt ?? notePromptFor(location.business.kinds),
+        notePrompt: notePrompt ?? notePromptIn(locale, location.business.kinds),
         depositPercentage: offer.service.depositPercentage.toFixed(2),
         ...(viewerId ? { saved: savedServices.has(`${offer.service.id}:${locationId}`) } : {}),
         ...(rate

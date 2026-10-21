@@ -20120,6 +20120,21 @@ changes for the language where needed, never cutting words:
 - The role beside the shop's name ("Owner") and two timestamps were never
   translated; they are.
 
+**The ready-made questions** (§300.2) — about 1,180 questions, answers and
+notes a shop can add to a service — are in the translators' files too
+(`npm run i18n` reads choice-suggestions.ts, keys and catalog names left
+out) and are served in the language the seller app asks in
+(`suggestionsIn`); a follow-up's link names its answer in the same words, so
+the two still match. What a shop saves is its own words, in whatever
+language it saved them. The note box's default words on the shop page
+follow the customer's language (`notePromptIn`).
+
+Found while checking, and made whole sentences: the bookings list's small
+"due / deposit / yours / total" after an amount, the drop box's messages,
+the time picker's "15 free" (the number and word ran together, in English
+too), the home banner's "now … was …" and "New at …", the pay button
+(its own words, apart from the "Pay now" label beside the amount).
+
 **Still to do** (not code): the native speakers' reading of both languages
 in the apps; the lawyer's reading of the legal translations (and the
 official Kinyarwanda and French names of RDB, RICA, NCSA and the laws they

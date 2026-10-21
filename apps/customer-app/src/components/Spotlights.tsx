@@ -214,7 +214,7 @@ export function Spotlights({
         ...service(b),
         kind: 'booked',
         kicker: t`Most booked`,
-        stat: `${b.bookingCount} booked`,
+        stat: plural(b.bookingCount, { one: '# booked', other: '# booked' }),
         line: `${shopOf(b)} · ${areaOf(b)}`,
         label: t`Most booked: ${b.name} at ${shopOf(b)}, ${b.bookingCount} bookings.`,
       });
@@ -227,7 +227,7 @@ export function Spotlights({
         kind: 'deal',
         kicker: t`Discount`,
         stat: `−${d.discount.percent}%`,
-        line: `${shopOf(d)} · now ${now}, was ${was}`,
+        line: `${shopOf(d)} · ${t`now ${now}, was ${was}`}`,
         label: t`Discount: ${d.name} at ${shopOf(d)}, ${d.discount.percent}% off, now ${now}.`,
       });
     }
@@ -269,8 +269,8 @@ export function Spotlights({
         ...service(f),
         kind: 'fresh',
         kicker: t`Just added`,
-        stat: 'New',
-        line: `New at ${shopOf(f)} · ${areaOf(f)}`,
+        stat: t({ message: 'New', context: 'a service just added' }),
+        line: t`New at ${shopOf(f)} · ${areaOf(f)}`,
         label: t`Just added: ${f.name} at ${shopOf(f)}.`,
       });
     }
@@ -288,7 +288,10 @@ export function Spotlights({
         logo: top.business.logoUrl,
         categoryIcon: top.business.category?.icon ?? null,
         cta: t`Visit`,
-        label: t`Top business: ${name}, rated ${avg} from ${top.ratingCount} reviews.`,
+        label: plural(top.ratingCount, {
+          one: `Top business: ${name}, rated ${avg} from # review.`,
+          other: `Top business: ${name}, rated ${avg} from # reviews.`,
+        }),
         open: () => router.push(`/shop/${top.id}`),
       });
     }

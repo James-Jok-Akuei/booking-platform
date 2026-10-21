@@ -105,6 +105,10 @@ msgstr "· signed in {0}"
 msgid "“{0}” — a quick reply is the chance to win the booking."
 msgstr "“{0}” — a quick reply is the chance to win the booking."
 
+#: src/ui/DropZone.tsx:63
+msgid "“{name}” is over {limit} MB — try a smaller copy."
+msgstr "“{name}” is over {limit} MB — try a smaller copy."
+
 #: src/pages/choices/ChoicesEditor.tsx:218
 msgid "“{title}”: add at least one answer."
 msgstr "“{title}”: add at least one answer."
@@ -163,6 +167,16 @@ msgstr "{0, plural, one {# booking in 30 days} other {# bookings in 30 days}}"
 #: src/pages/ClosuresPage.tsx:717
 msgid "{0, plural, one {# change. Click it to open its day above.} other {# changes. Click one to open its day above.}}"
 msgstr "{0, plural, one {# change. Click it to open its day above.} other {# changes. Click one to open its day above.}}"
+
+#. placeholder {0}: tooBig.length
+#: src/ui/DropZone.tsx:64
+msgid "{0, plural, one {# file is over {limit} MB and was left out.} other {# files are over {limit} MB and were left out.}}"
+msgstr "{0, plural, one {# file is over {limit} MB and was left out.} other {# files are over {limit} MB and were left out.}}"
+
+#. placeholder {0}: wrongKind.length
+#: src/ui/DropZone.tsx:53
+msgid "{0, plural, one {# file isn’t {words}, so it was left out.} other {# files aren’t {words}, so they were left out.}}"
+msgstr "{0, plural, one {# file isn’t {words}, so it was left out.} other {# files aren’t {words}, so they were left out.}}"
 
 #. placeholder {0}: b.onTheWayCount
 #: src/pages/PayoutsPage.tsx:232
@@ -335,7 +349,7 @@ msgstr "{0} · last activity {1}"
 #. placeholder {0}: b.customerEmail
 #. placeholder {1}: reservationNo(a.id)
 #. placeholder {1}: reservationNo(b.appointmentId)
-#: src/lib/bookingLook.tsx:179
+#: src/lib/bookingLook.tsx:187
 #: src/pages/calendar/AppointmentCalendar.tsx:1143
 #: src/pages/PayoutDetail.tsx:361
 msgid "{0} · No. {1}"
@@ -1855,7 +1869,7 @@ msgstr "Arrived"
 
 #. placeholder {0}: clock(a.verifiedAt)
 #. placeholder {0}: when(payout.paidAt)
-#: src/lib/bookingLook.tsx:142
+#: src/lib/bookingLook.tsx:150
 #: src/pages/PayoutsPage.tsx:309
 msgid "Arrived {0}"
 msgstr "Arrived {0}"
@@ -2269,11 +2283,11 @@ msgstr "Bwangu<0>Reservations</0>"
 msgid "BwanguReservations · For businesses"
 msgstr "BwanguReservations · For businesses"
 
-#: src/lib/bookingLook.tsx:149
+#: src/lib/bookingLook.tsx:157
 msgid "By the customer"
 msgstr "By the customer"
 
-#: src/lib/bookingLook.tsx:149
+#: src/lib/bookingLook.tsx:157
 msgid "By you"
 msgstr "By you"
 
@@ -2639,7 +2653,7 @@ msgstr "clinic"
 #: src/pages/calendar/AppointmentCalendar.tsx:1111
 #: src/pages/LegalPage.tsx:198
 #: src/pages/PayoutDetail.tsx:158
-#: src/ui/DropZone.tsx:155
+#: src/ui/DropZone.tsx:162
 #: src/ui/Select.tsx:212
 msgid "Close"
 msgstr "Close"
@@ -3176,6 +3190,11 @@ msgstr "Deep-cleanse facial"
 msgid "dental practice"
 msgstr "dental practice"
 
+#: src/lib/bookingLook.tsx:96
+msgctxt "after an amount: the money is the deposit"
+msgid "deposit"
+msgstr "deposit"
+
 #: src/pages/AppointmentsPage.tsx:850
 #: src/pages/AppointmentsPage.tsx:1115
 msgid "Deposit"
@@ -3185,8 +3204,8 @@ msgstr "Deposit"
 msgid "Deposit %"
 msgstr "Deposit %"
 
-#: src/lib/bookingLook.tsx:119
-#: src/lib/bookingLook.tsx:124
+#: src/lib/bookingLook.tsx:127
+#: src/lib/bookingLook.tsx:132
 msgid "Deposit kept"
 msgstr "Deposit kept"
 
@@ -3196,8 +3215,8 @@ msgstr "Deposit not paid"
 
 #: src/auth/Moments.tsx:24
 #: src/checkin/CheckIn.tsx:432
-#: src/lib/bookingLook.tsx:106
 #: src/lib/bookingLook.tsx:114
+#: src/lib/bookingLook.tsx:122
 #: src/pages/AppointmentsPage.tsx:987
 #: src/tour/steps.ts:58
 msgid "Deposit paid"
@@ -3207,7 +3226,7 @@ msgstr "Deposit paid"
 msgid "Deposit paid on"
 msgstr "Deposit paid on"
 
-#: src/lib/bookingLook.tsx:123
+#: src/lib/bookingLook.tsx:131
 #: src/pages/AppointmentsPage.tsx:852
 #: src/pages/PayoutDetail.tsx:22
 msgid "Deposit refunded"
@@ -3262,7 +3281,7 @@ msgstr "Details"
 msgid "Did not arrive"
 msgstr "Did not arrive"
 
-#: src/lib/bookingLook.tsx:146
+#: src/lib/bookingLook.tsx:154
 #: src/pages/AppointmentsPage.tsx:990
 msgid "Did not come"
 msgstr "Did not come"
@@ -3417,6 +3436,11 @@ msgstr "Drop-in class"
 #: src/onboarding/Welcome.tsx:1219
 msgid "Dry cleaning"
 msgstr "Dry cleaning"
+
+#: src/lib/bookingLook.tsx:97
+msgctxt "after an amount: still to be paid at the shop"
+msgid "due"
+msgstr "due"
 
 #: src/checkin/CheckIn.tsx:103
 #: src/pages/OverviewPage.tsx:626
@@ -3833,14 +3857,14 @@ msgstr "Finish setting up your shop"
 msgid "Finish your questions"
 msgstr "Finish your questions"
 
-#: src/lib/bookingLook.tsx:144
+#: src/lib/bookingLook.tsx:152
 #: src/pages/SupportPage.tsx:80
 #: src/pages/SupportPage.tsx:191
 msgid "Finished"
 msgstr "Finished"
 
 #. placeholder {0}: clock(a.completedAt)
-#: src/lib/bookingLook.tsx:144
+#: src/lib/bookingLook.tsx:152
 msgid "Finished {0}"
 msgstr "Finished {0}"
 
@@ -4478,7 +4502,7 @@ msgstr "If you forget, a booking nobody checked in becomes a no-show by itself 2
 msgid "in {0}"
 msgstr "in {0}"
 
-#: src/lib/bookingLook.tsx:136
+#: src/lib/bookingLook.tsx:144
 msgid "In {days} days"
 msgstr "In {days} days"
 
@@ -4556,7 +4580,7 @@ msgstr "Ironing"
 msgid "It cannot be brought back."
 msgstr "It cannot be brought back."
 
-#: src/lib/bookingLook.tsx:211
+#: src/lib/bookingLook.tsx:219
 msgid "It cannot be changed back. "
 msgstr "It cannot be changed back. "
 
@@ -4979,12 +5003,12 @@ msgstr "Mark them as a no-show: the deposit is not refunded."
 msgid "Mark them done when finished"
 msgstr "Mark them done when finished"
 
-#: src/lib/bookingLook.tsx:198
+#: src/lib/bookingLook.tsx:206
 msgid "Mark this booking as done?"
 msgstr "Mark this booking as done?"
 
 #. placeholder {0}: clock(a.noShowAt)
-#: src/lib/bookingLook.tsx:146
+#: src/lib/bookingLook.tsx:154
 msgid "Marked {0}"
 msgstr "Marked {0}"
 
@@ -5335,8 +5359,8 @@ msgstr "No cover photo yet"
 msgid "No days chosen"
 msgstr "No days chosen"
 
-#: src/lib/bookingLook.tsx:106
-#: src/lib/bookingLook.tsx:121
+#: src/lib/bookingLook.tsx:114
+#: src/lib/bookingLook.tsx:129
 msgid "No deposit"
 msgstr "No deposit"
 
@@ -5493,7 +5517,7 @@ msgstr "Not available"
 msgid "Not available now — switch on to offer it"
 msgstr "Not available now — switch on to offer it"
 
-#: src/lib/bookingLook.tsx:133
+#: src/lib/bookingLook.tsx:141
 msgid "Not checked in"
 msgstr "Not checked in"
 
@@ -5525,12 +5549,12 @@ msgstr "Not on sale<0>{0}</0>"
 msgid "Not paid"
 msgstr "Not paid"
 
-#: src/lib/bookingLook.tsx:149
+#: src/lib/bookingLook.tsx:157
 #: src/pages/AppointmentsPage.tsx:887
 msgid "Not paid in time"
 msgstr "Not paid in time"
 
-#: src/lib/bookingLook.tsx:100
+#: src/lib/bookingLook.tsx:108
 msgid "Not paid yet"
 msgstr "Not paid yet"
 
@@ -5554,7 +5578,7 @@ msgstr "Not saved — trying again"
 msgid "Not sent. Try again."
 msgstr "Not sent. Try again."
 
-#: src/lib/bookingLook.tsx:217
+#: src/lib/bookingLook.tsx:225
 #: src/onboarding/usePostShop.tsx:40
 #: src/pages/AppointmentsPage.tsx:307
 #: src/pages/PayoutDetail.tsx:185
@@ -5781,7 +5805,7 @@ msgstr "On the way to going live"
 msgid "Once your shop is posted"
 msgstr "Once your shop is posted"
 
-#: src/ui/DropZone.tsx:130
+#: src/ui/DropZone.tsx:137
 msgid "One at a time here — the first one was used."
 msgstr "One at a time here — the first one was used."
 
@@ -6255,7 +6279,7 @@ msgstr "Pausing…"
 msgid "pay {0} now"
 msgstr "pay {0} now"
 
-#: src/lib/bookingLook.tsx:153
+#: src/lib/bookingLook.tsx:161
 msgid "Paying on their phone"
 msgstr "Paying on their phone"
 
@@ -7706,7 +7730,7 @@ msgid "Still to choose: one in {0}."
 msgstr "Still to choose: one in {0}."
 
 #. placeholder {0}: money(due, a.currency)
-#: src/lib/bookingLook.tsx:207
+#: src/lib/bookingLook.tsx:215
 msgid "Still to collect at the shop: <0>{0}</0>"
 msgstr "Still to collect at the shop: <0>{0}</0>"
 
@@ -8020,6 +8044,10 @@ msgstr "That is a lot of codes for one hour. Please try again a little later."
 msgid "That is a shortened link, which hides the coordinates. Open it in a browser first, then copy the full address from the bar."
 msgstr "That is a shortened link, which hides the coordinates. Open it in a browser first, then copy the full address from the bar."
 
+#: src/ui/DropZone.tsx:52
+msgid "That isn’t {words}."
+msgstr "That isn’t {words}."
+
 #: src/onboarding/Welcome.tsx:1395
 msgid "That number did not save."
 msgstr "That number did not save."
@@ -8100,7 +8128,7 @@ msgstr "the cover was not changed"
 msgid "The customer app’s checkout: the time chosen and the deposit paid by mobile money."
 msgstr "The customer app’s checkout: the time chosen and the deposit paid by mobile money."
 
-#: src/lib/bookingLook.tsx:212
+#: src/lib/bookingLook.tsx:220
 msgid "The customer can then rate the visit."
 msgstr "The customer can then rate the visit."
 
@@ -8112,7 +8140,7 @@ msgstr "The customer is told this reason, and if they have paid a deposit it is 
 msgid "The day you picked"
 msgstr "The day you picked"
 
-#: src/lib/bookingLook.tsx:212
+#: src/lib/bookingLook.tsx:220
 msgid "The deposit becomes yours to be paid out, and the customer can rate the visit."
 msgstr "The deposit becomes yours to be paid out, and the customer can rate the visit."
 
@@ -8576,7 +8604,7 @@ msgstr "Today {0} – {1}"
 msgid "Today’s schedule"
 msgstr "Today’s schedule"
 
-#: src/lib/bookingLook.tsx:136
+#: src/lib/bookingLook.tsx:144
 #: src/lib/time.ts:37
 msgid "Tomorrow"
 msgstr "Tomorrow"
@@ -8584,6 +8612,11 @@ msgstr "Tomorrow"
 #: src/auth/LoginPage.tsx:47
 msgid "Too many wrong tries. Ask for a new code below."
 msgstr "Too many wrong tries. Ask for a new code below."
+
+#: src/lib/bookingLook.tsx:99
+msgctxt "after an amount: the full price"
+msgid "total"
+msgstr "total"
 
 #: src/pages/choices/ChoicesEditor.tsx:1221
 msgid "Total"
@@ -9493,7 +9526,7 @@ msgstr "Whoever is using it will need a new code, sent to your email, to get bac
 msgid "Why <0>optional — customers do not see this</0>"
 msgstr "Why <0>optional — customers do not see this</0>"
 
-#: src/lib/bookingLook.tsx:142
+#: src/lib/bookingLook.tsx:150
 msgid "With you"
 msgstr "With you"
 
@@ -9562,7 +9595,7 @@ msgstr "Write to your followers"
 msgid "Yes"
 msgstr "Yes"
 
-#: src/lib/bookingLook.tsx:216
+#: src/lib/bookingLook.tsx:224
 msgid "Yes, mark done"
 msgstr "Yes, mark done"
 
@@ -10031,3 +10064,8 @@ msgstr "Your story"
 #: src/pages/FollowersPage.tsx:245
 msgid "Your title"
 msgstr "Your title"
+
+#: src/lib/bookingLook.tsx:98
+msgctxt "after an amount: the shop’s share"
+msgid "yours"
+msgstr "yours"

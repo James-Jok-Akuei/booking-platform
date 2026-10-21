@@ -8,24 +8,24 @@ msgstr ""
 "Language: rw\n"
 
 #. placeholder {0}: sale.percent
-#: app/book/[id].tsx:933
+#: app/book/[id].tsx:934
 msgid " · {0}% off"
 msgstr " · igabanywa rya {0}%"
 
 #. placeholder {0}: saleUntil(sale)
-#: app/book/[id].tsx:594
+#: app/book/[id].tsx:598
 msgid " · discount {0}"
 msgstr " · igabanywa {0}"
 
-#: app/book/[id].tsx:594
+#: app/book/[id].tsx:598
 msgid " · discount on now"
 msgstr " · igabanywa ririho ubu"
 
-#: app/book/[id].tsx:575
+#: app/book/[id].tsx:579
 msgid " · once, not per person"
 msgstr " · rimwe, si kuri buri muntu"
 
-#: app/book/[id].tsx:934
+#: app/book/[id].tsx:935
 msgid " · with choices"
 msgstr " · hamwe n’amahitamo"
 
@@ -34,7 +34,7 @@ msgid " Allergies and health go in the questions above, never here."
 msgstr " Allergie n’iby’ubuzima bisubizwa mu bibazo biri hejuru, ntibyandikwa hano."
 
 #. placeholder {0}: countWord(quantity)
-#: app/book/[id].tsx:597
+#: app/book/[id].tsx:601
 msgid " on {0}"
 msgstr " ku {0}"
 
@@ -57,6 +57,11 @@ msgstr "[ifoto]"
 #: app/(tabs)/messages.tsx:118
 msgid "{0, plural, one {{unreadTotal} unread in # conversation} other {{unreadTotal} unread in # conversations}}"
 msgstr "{0, plural, one {{unreadTotal} bitarasomwa mu kiganiro #} other {{unreadTotal} bitarasomwa mu biganiro #}}"
+
+#. placeholder {0}: b.bookingCount
+#: src/components/Spotlights.tsx:217
+msgid "{0, plural, one {# booked} other {# booked}}"
+msgstr "{0, plural, one {yafashwe #} other {yafashwe #}}"
 
 #. placeholder {0}: c.messages.length
 #: src/exportDocument.ts:129
@@ -95,7 +100,7 @@ msgstr "{0, plural, one {inkuru # y’uyu munsi, wayirebye} other {inkuru # z’
 #. placeholder {0}: missing.length - 1
 #. placeholder {1}: askedAs(missing[0])
 #. placeholder {2}: askedAs(missing[0])
-#: app/book/[id].tsx:717
+#: app/book/[id].tsx:721
 msgid "{0, plural, one {Answer “{1}” first and # more — the times depend on your answers.} other {Answer “{2}” first and # more — the times depend on your answers.}}"
 msgstr "{0, plural, one {Banza usubize “{1}” n’ikindi kibazo # — imyanya iboneka ishingira ku bisubizo byawe.} other {Banza usubize “{2}” n’ibindi bibazo # — imyanya iboneka ishingira ku bisubizo byawe.}}"
 
@@ -103,6 +108,11 @@ msgstr "{0, plural, one {Banza usubize “{1}” n’ikindi kibazo # — imyanya
 #: src/booking/format.ts:41
 msgid "{0, plural, one {For # person} other {For # people}}"
 msgstr "{0, plural, one {Ku muntu #} other {Ku bantu #}}"
+
+#. placeholder {0}: top.ratingCount
+#: src/components/Spotlights.tsx:291
+msgid "{0, plural, one {Top business: {name}, rated {avg} from # review.} other {Top business: {name}, rated {avg} from # reviews.}}"
+msgstr "{0, plural, one {Ubucuruzi bw’indashyikirwa: {name}, amanota {avg} ku gitekerezo #.} other {Ubucuruzi bw’indashyikirwa: {name}, amanota {avg} ku bitekerezo #.}}"
 
 #. placeholder {0}: service.name
 #: src/components/ServiceCard.tsx:68
@@ -138,12 +148,12 @@ msgid "{0} has changed"
 msgstr "{0} yahindutse"
 
 #. placeholder {0}: route.data.minutes
-#: app/book/[id].tsx:172
+#: app/book/[id].tsx:176
 msgid "{0} min by car"
 msgstr "Iminota {0} mu modoka"
 
 #. placeholder {0}: format(depositMinor)
-#: app/book/[id].tsx:943
+#: app/book/[id].tsx:944
 msgid "{0} now"
 msgstr "{0} ubu"
 
@@ -193,7 +203,7 @@ msgstr "Avansi ya {0}% · yemeza umwanya wawe"
 
 #. placeholder {0}: sale.percent
 #. placeholder {1}: format(savedMinor)
-#: app/book/[id].tsx:909
+#: app/book/[id].tsx:910
 msgid "{0}% off · you save {1}"
 msgstr "Igabanywa rya {0}% · uzigama {1}"
 
@@ -201,13 +211,17 @@ msgstr "Igabanywa rya {0}% · uzigama {1}"
 msgid "{away} away in a straight line"
 msgstr "Kuri {away} mu murongo ugororotse"
 
-#: app/book/[id].tsx:455
+#: app/book/[id].tsx:459
 msgid "{businessName}. View the shop"
 msgstr "{businessName}. Reba iduka"
 
 #: app/sign-in.tsx:520
 msgid "{clean}. Change email"
 msgstr "{clean}. Hindura imeyili"
+
+#: app/book/[id].tsx:124
+msgid "{count, plural, one {# free} other {# free}}"
+msgstr "{count, plural, one {umwanya # uboneka} other {imyanya # iboneka}}"
 
 #: app/categories.tsx:311
 msgid "{count, plural, one {# place} other {# places}}"
@@ -306,7 +320,7 @@ msgstr "{m} min"
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
-#: app/book/[id].tsx:282
+#: app/book/[id].tsx:286
 msgid "{n, plural, one {# person} other {# people}}"
 msgstr "{n, plural, one {umuntu #} other {abantu #}}"
 
@@ -326,15 +340,15 @@ msgstr "Amaduka {on} muri {all} ukurikira ni yo akoherereza promosiyo. Hitamo mu
 msgid "{percent} percent off"
 msgstr "Igabanywa rya {percent} ku ijana"
 
-#: app/book/[id].tsx:827
+#: app/book/[id].tsx:828
 msgid "{placesLeft, plural, one {{time}, # place left} other {{time}, # places left}}"
 msgstr "{placesLeft, plural, one {{time}, hasigaye umwanya #} other {{time}, hasigaye imyanya #}}"
 
-#: app/book/[id].tsx:814
+#: app/book/[id].tsx:815
 msgid "{placesLeft} left"
 msgstr "Hasigaye {placesLeft}"
 
-#: app/book/[id].tsx:322
+#: app/book/[id].tsx:326
 msgid "{quantity, plural, one {No time has room for # person on this day. Try fewer people, or another day.} other {No time has room for # people on this day. Try fewer people, or another day.}}"
 msgstr "{quantity, plural, one {Nta mwanya wakwakira umuntu # kuri uwo munsi. Gerageza abantu bake, cyangwa undi munsi.} other {Nta mwanya wakwakira abantu # kuri uwo munsi. Gerageza abantu bake, cyangwa undi munsi.}}"
 
@@ -358,7 +372,7 @@ msgstr "{shopCount, plural, one {iduka #} other {amaduka #}}"
 msgid "{since} ago"
 msgstr "Hashize {since}"
 
-#: app/book/[id].tsx:825
+#: app/book/[id].tsx:826
 msgid "{time}, booked"
 msgstr "{time}, byafashwe"
 
@@ -398,7 +412,7 @@ msgstr "2. Shyiramo PIN yawe ya MoMo ubwemeze."
 msgid "3. This screen updates on its own."
 msgstr "3. Iyi paji yivugurura ubwayo."
 
-#: app/book/[id].tsx:629
+#: app/book/[id].tsx:633
 msgid "A {depositPct}% deposit holds the time for you. The rest is paid at the shop."
 msgstr "Avansi ya {depositPct}% igufatira umwanya. Asigaye yishyurirwa ku iduka."
 
@@ -468,7 +482,7 @@ msgstr "Ibyerekeye"
 msgid "About a booking"
 msgstr "Ibyerekeye gahunda"
 
-#: app/book/[id].tsx:515
+#: app/book/[id].tsx:519
 msgid "About this service"
 msgstr "Ibyerekeye iyi serivisi"
 
@@ -620,11 +634,11 @@ msgid "Anonymous"
 msgstr "Utazwi"
 
 #. placeholder {0}: askedAs(missing[0])
-#: app/book/[id].tsx:721
+#: app/book/[id].tsx:725
 msgid "Answer “{0}” first — the times depend on your answers."
 msgstr "Banza usubize “{0}” — imyanya iboneka ishingira ku bisubizo byawe."
 
-#: app/book/[id].tsx:964
+#: app/book/[id].tsx:965
 msgid "Answer first"
 msgstr "Banza usubize"
 
@@ -649,7 +663,7 @@ msgstr "Ururimi rwa porogaramu"
 msgid "Approve the deposit on your own phone."
 msgstr "Emeza avansi kuri telefoni yawe."
 
-#: app/book/[id].tsx:498
+#: app/book/[id].tsx:502
 msgid "Ask"
 msgstr "Baza"
 
@@ -674,7 +688,7 @@ msgstr "Turimo kubaza telefoni yawe…"
 msgid "At the address right now?"
 msgstr "Uri kuri iyo aderesi ubu?"
 
-#: app/book/[id].tsx:622
+#: app/book/[id].tsx:626
 msgid "At the shop"
 msgstr "Ku iduka"
 
@@ -730,8 +744,8 @@ msgstr "Igiciro cyiza: {0} kuri {1}, {price}."
 msgid "Best rated"
 msgstr "Amanota menshi"
 
-#: app/book/[id].tsx:252
-#: app/book/[id].tsx:264
+#: app/book/[id].tsx:256
+#: app/book/[id].tsx:268
 #: app/thread/[id].tsx:263
 #: src/components/SavedServiceCard.tsx:138
 msgid "Book"
@@ -742,7 +756,7 @@ msgstr "Fata gahunda"
 msgid "Book {0}"
 msgstr "Fata gahunda ya {0}"
 
-#: app/book/[id].tsx:970
+#: app/book/[id].tsx:971
 msgid "Book {slot}"
 msgstr "Fata gahunda ya {slot}"
 
@@ -781,7 +795,7 @@ msgstr "Fata gahunda yawe ikurikira, byoroshye."
 msgid "Booked"
 msgstr "Byafashwe"
 
-#: app/book/[id].tsx:814
+#: app/book/[id].tsx:815
 msgctxt "a time with no places left"
 msgid "Booked"
 msgstr "Byafashwe"
@@ -945,8 +959,8 @@ msgstr "Twakwakiriye"
 msgid "Checkout"
 msgstr "Kwishyura"
 
-#: app/book/[id].tsx:676
-#: app/book/[id].tsx:968
+#: app/book/[id].tsx:680
+#: app/book/[id].tsx:969
 msgid "Choose a time"
 msgstr "Hitamo umwanya"
 
@@ -1021,11 +1035,11 @@ msgctxt "help request status"
 msgid "Closed"
 msgstr "Birafunze"
 
-#: app/book/[id].tsx:331
+#: app/book/[id].tsx:335
 msgid "Closed for today — the shop shuts at {shuts}. Pick another day."
 msgstr "Uyu munsi iduka ryafunze — rifunga saa {shuts}. Hitamo undi munsi."
 
-#: app/book/[id].tsx:318
+#: app/book/[id].tsx:322
 msgid "Closed on this day."
 msgstr "Kuri uyu munsi rirafunze."
 
@@ -1094,7 +1108,7 @@ msgstr "isomo ryo guteka"
 msgid "Could not add that"
 msgstr "Ntibyashobotse kubyongeraho"
 
-#: app/book/[id].tsx:237
+#: app/book/[id].tsx:241
 msgid "Could not book that"
 msgstr "Ntibyashobotse gufata iyo gahunda"
 
@@ -1114,7 +1128,7 @@ msgstr "Ntitwabashije kumenya aho uri ubu"
 msgid "Could not open maps"
 msgstr "Ntibyashobotse gufungura ikarita"
 
-#: app/book/[id].tsx:246
+#: app/book/[id].tsx:250
 #: app/shop/[id].tsx:121
 msgid "Could not open that"
 msgstr "Ntibyashobotse kubifungura"
@@ -1167,7 +1181,7 @@ msgstr "Itariki"
 msgid "day"
 msgstr "umunsi"
 
-#: app/book/[id].tsx:728
+#: app/book/[id].tsx:732
 msgid "Day"
 msgstr "Umunsi"
 
@@ -1343,7 +1357,7 @@ msgstr "Telefoni zose na mushakisha zose konti yawe ifunguyeho. Sohoka ku byo ut
 msgid "Every phone and browser with your account open — sign out any you do not know."
 msgstr "Telefoni na mushakisha zose konti yawe ifunguyeho — sohoka ku byo utazi."
 
-#: app/book/[id].tsx:321
+#: app/book/[id].tsx:325
 msgid "Every time is booked on this day. Pick another day."
 msgstr "Imyanya yose yafashwe kuri uyu munsi. Hitamo undi munsi."
 
@@ -1456,15 +1470,11 @@ msgstr "Siba"
 msgid "Four steps, from finding a place to showing your code."
 msgstr "Intambwe enye, kuva ku gushaka iduka kugeza ku kwerekana kode yawe."
 
-#: app/book/[id].tsx:802
-msgid "free"
-msgstr "iboneka"
-
 #: src/tour/WelcomeTour.tsx:96
 msgid "Fri 23 Oct, 10:00"
 msgstr "Kuwa Gatanu 23/10, 10:00"
 
-#: app/book/[id].tsx:561
+#: app/book/[id].tsx:565
 msgid "from"
 msgstr "guhera kuri"
 
@@ -1507,7 +1517,7 @@ msgstr "Bivuye ku iduka"
 msgid "From where you are now"
 msgstr "Uhereye aho uri ubu"
 
-#: app/book/[id].tsx:334
+#: app/book/[id].tsx:338
 msgid "Fully booked on this day."
 msgstr "Byuzuye kuri uyu munsi."
 
@@ -1588,7 +1598,7 @@ msgstr "Ubusabe bw’ubufasha bubikwa kuri konti yawe, bityo ni wowe wenyine ush
 msgid "Helped with this booking"
 msgstr "Twagufashije kuri iyi gahunda"
 
-#: src/components/Spotlights.tsx:541
+#: src/components/Spotlights.tsx:544
 msgid "Hide spotlights"
 msgstr "Hisha ibyatoranyijwe"
 
@@ -1625,7 +1635,7 @@ msgstr "Uko gufata gahunda bikora"
 msgid "How many {label}, type a number up to {max}"
 msgstr "Umubare wa {label}, andika umubare utarenze {max}"
 
-#: app/book/[id].tsx:686
+#: app/book/[id].tsx:690
 msgid "How many people?"
 msgstr "Abantu bangahe?"
 
@@ -1853,7 +1863,7 @@ msgstr "Ubutumwa"
 msgid "Message the shop"
 msgstr "Andikira iduka"
 
-#: app/book/[id].tsx:494
+#: app/book/[id].tsx:498
 msgid "Message the shop with a question"
 msgstr "Andikira iduka ubaze ikibazo"
 
@@ -1954,6 +1964,17 @@ msgstr "Bikeneye ko ubyitaho"
 msgid "New"
 msgstr "Bishya"
 
+#: src/components/Spotlights.tsx:272
+msgctxt "a service just added"
+msgid "New"
+msgstr "Gishya"
+
+#. placeholder {0}: shopOf(f)
+#. placeholder {1}: areaOf(f)
+#: src/components/Spotlights.tsx:273
+msgid "New at {0} · {1}"
+msgstr "Gishya kuri {0} · {1}"
+
 #: app/sign-in.tsx:427
 msgid "New here"
 msgstr "Uri mushya"
@@ -2009,7 +2030,7 @@ msgstr "Nta mafoto arashyirwaho."
 msgid "No services saved yet"
 msgstr "Nta serivisi urabika"
 
-#: app/book/[id].tsx:332
+#: app/book/[id].tsx:336
 msgid "No times left today. Pick another day."
 msgstr "Nta mwanya usigaye uyu munsi. Hitamo undi munsi."
 
@@ -2017,10 +2038,13 @@ msgstr "Nta mwanya usigaye uyu munsi. Hitamo undi munsi."
 msgid "Nobody has reviewed this place yet."
 msgstr "Nta muntu uratanga igitekerezo kuri iri duka."
 
-#: app/book/[id].tsx:801
 #: app/notifications.tsx:288
 msgid "None"
 msgstr "Nta na kimwe"
+
+#: app/book/[id].tsx:124
+msgid "None free"
+msgstr "Nta mwanya uboneka"
 
 #: app/notification-settings.tsx:52
 msgid "None of the {all} shops you follow send you offers. Choose under Saved → Following."
@@ -2213,6 +2237,10 @@ msgstr "ubu"
 msgid "Now"
 msgstr "Ubu"
 
+#: src/components/Spotlights.tsx:230
+msgid "now {now}, was {was}"
+msgstr "ubu {now}, mbere {was}"
+
 #: app/(tabs)/account.tsx:568
 msgid "Numbers you pay from"
 msgstr "Nimero wishyuriraho"
@@ -2331,7 +2359,7 @@ msgid "open now"
 msgstr "birafunguye ubu"
 
 #: app/(tabs)/index.tsx:697
-#: app/book/[id].tsx:536
+#: app/book/[id].tsx:540
 #: app/shop/[id].tsx:218
 msgid "Open now"
 msgstr "Birafunguye ubu"
@@ -2395,7 +2423,7 @@ msgstr "Itsinda ryacu ry’ubufasha ryagufashije"
 msgid "paid {paidOn}"
 msgstr "yishyuwe ku ya {paidOn}"
 
-#: app/book/[id].tsx:636
+#: app/book/[id].tsx:640
 msgid "Paid in full now, and the time is yours."
 msgstr "Urishyura byose ubu, umwanya ukaba uwawe."
 
@@ -2412,11 +2440,15 @@ msgstr "wishyura {0} ubu"
 msgid "Pay at the shop"
 msgstr "Wishyura ku iduka"
 
-#: app/book/[id].tsx:617
-#: app/book/[id].tsx:914
+#: app/book/[id].tsx:621
+#: app/book/[id].tsx:915
 #: app/booking/[id].tsx:385
-#: app/booking/[id].tsx:404
 #: src/booking/Checkout.tsx:182
+msgid "Pay now"
+msgstr "Wishyura ubu"
+
+#: app/booking/[id].tsx:404
+msgctxt "button: pay the deposit"
 msgid "Pay now"
 msgstr "Wishyura ubu"
 
@@ -2448,7 +2480,7 @@ msgstr "Kwishyura byagenze neza"
 msgid "Payment summary"
 msgstr "Incamake y’ubwishyu"
 
-#: app/book/[id].tsx:692
+#: app/book/[id].tsx:696
 msgid "people"
 msgstr "abantu"
 
@@ -2456,7 +2488,7 @@ msgstr "abantu"
 msgid "People"
 msgstr "Abantu"
 
-#: app/book/[id].tsx:281
+#: app/book/[id].tsx:285
 msgid "per person"
 msgstr "ku muntu"
 
@@ -2524,7 +2556,7 @@ msgstr "Hitamo 1"
 msgid "Pick a rating"
 msgstr "Hitamo amanota"
 
-#: app/book/[id].tsx:967
+#: app/book/[id].tsx:968
 msgid "Pick a time"
 msgstr "Hitamo umwanya"
 
@@ -2584,7 +2616,7 @@ msgstr "Biritegurwa…"
 msgid "Price"
 msgstr "Igiciro"
 
-#: app/book/[id].tsx:898
+#: app/book/[id].tsx:899
 msgid "private answers for the shop"
 msgstr "ibisubizo by’ibanga bigenewe iduka"
 
@@ -2954,7 +2986,7 @@ msgstr "Serivisi{0}"
 msgid "Share this place"
 msgstr "Sangiza iri duka"
 
-#: app/book/[id].tsx:407
+#: app/book/[id].tsx:411
 msgid "Share this service"
 msgstr "Sangiza iyi serivisi"
 
@@ -2998,7 +3030,7 @@ msgstr "Injira"
 msgid "Sign in or create an account"
 msgstr "Injira cyangwa ufungure konti"
 
-#: app/book/[id].tsx:971
+#: app/book/[id].tsx:972
 msgid "Sign in to book"
 msgstr "Injira ufate gahunda"
 
@@ -3252,7 +3284,7 @@ msgstr "Iyo foto irengeje MB 15 — gerageza iyoroheje."
 msgid "That request could not be found."
 msgstr "Ubwo busabe ntibwabonetse."
 
-#: app/book/[id].tsx:265
+#: app/book/[id].tsx:269
 msgid "That service is no longer offered here."
 msgstr "Iyo serivisi ntikiboneka hano."
 
@@ -3322,7 +3354,7 @@ msgstr "Iduka ryabanje"
 msgid "The shop cancelled this"
 msgstr "Iduka ryayihagaritse"
 
-#: app/book/[id].tsx:583
+#: app/book/[id].tsx:587
 msgid "The shop confirms the final price after seeing the job. The deposit is on this price."
 msgstr "Iduka ryemeza igiciro cya nyuma rimaze kureba akazi. Avansi ibarwa kuri iki giciro."
 
@@ -3454,14 +3486,14 @@ msgstr "iri duka"
 msgid "This week"
 msgstr "Iki cyumweru"
 
-#: app/book/[id].tsx:768
+#: app/book/[id].tsx:772
 #: src/booking/Checkout.tsx:302
 #: src/booking/Reservation.tsx:223
 msgid "Time"
 msgstr "Igihe"
 
 #. placeholder {0}: availability.data.timeZone
-#: app/book/[id].tsx:868
+#: app/book/[id].tsx:869
 msgid "Times are local to the shop ({0})."
 msgstr "Amasaha ni ay’aho iduka riri ({0})."
 
@@ -3477,7 +3509,7 @@ msgstr "Uzishyura ku iduka"
 msgid "today"
 msgstr "uyu munsi"
 
-#: app/book/[id].tsx:757
+#: app/book/[id].tsx:761
 #: app/notifications.tsx:52
 #: app/thread/[id].tsx:49
 msgid "Today"
@@ -3486,7 +3518,7 @@ msgstr "Uyu munsi"
 #. placeholder {0}: label.weekday
 #. placeholder {1}: label.day
 #. placeholder {2}: label.month
-#: app/book/[id].tsx:747
+#: app/book/[id].tsx:751
 msgid "Today, {0} {1} {2}"
 msgstr "Uyu munsi, {0} {1} {2}"
 
@@ -3498,11 +3530,6 @@ msgstr "Wagerageje nabi kenshi. Saba kode nshya hepfo."
 msgid "Top business"
 msgstr "Iduka ry’indashyikirwa"
 
-#. placeholder {0}: top.ratingCount
-#: src/components/Spotlights.tsx:291
-msgid "Top business: {name}, rated {avg} from {0} reviews."
-msgstr "Iduka ry’indashyikirwa: {name}, amanota {avg} ku bitekerezo {0}."
-
 #: src/components/Spotlights.tsx:239
 msgid "Top rated"
 msgstr "Ifite amanota menshi"
@@ -3513,15 +3540,15 @@ msgstr "Ifite amanota menshi"
 msgid "Top rated: {0} at {1}, rated {avg}."
 msgstr "Ifite amanota menshi: {0} kuri {1}, amanota {avg}."
 
-#: app/book/[id].tsx:905
-#: app/book/[id].tsx:932
+#: app/book/[id].tsx:906
+#: app/book/[id].tsx:933
 #: src/booking/Checkout.tsx:167
 #: src/booking/Reservation.tsx:260
 msgid "Total"
 msgstr "Igiteranyo"
 
 #. placeholder {0}: countWord(quantity)
-#: app/book/[id].tsx:932
+#: app/book/[id].tsx:933
 msgid "Total for {0}"
 msgstr "Igiteranyo ({0})"
 
@@ -3625,11 +3652,11 @@ msgstr "kugeza {day}"
 msgid "Until 2 hours before, as often as you like. The shop is told something changed."
 msgstr "Kugeza amasaha 2 mbere, inshuro zose ushaka. Iduka rimenyeshwa ko hari icyahindutse."
 
-#: app/book/[id].tsx:538
+#: app/book/[id].tsx:542
 msgid "Up to {places} people"
 msgstr "Kugeza ku bantu {places}"
 
-#: app/book/[id].tsx:687
+#: app/book/[id].tsx:691
 msgid "Up to {places}, all at once"
 msgstr "Kugeza kuri {places}, icyarimwe"
 
@@ -3704,7 +3731,7 @@ msgstr "Reba"
 msgid "View my reservation"
 msgstr "Reba gahunda yanjye"
 
-#: app/book/[id].tsx:479
+#: app/book/[id].tsx:483
 msgid "View their shop"
 msgstr "Reba iduka ryabo"
 
@@ -3722,7 +3749,7 @@ msgid "Was {0}"
 msgstr "Cyari {0}"
 
 #. placeholder {0}: format(sale.listPriceMinor)
-#: app/book/[id].tsx:593
+#: app/book/[id].tsx:597
 msgid "Was <0>{0}</0>"
 msgstr "Cyari <0>{0}</0>"
 
@@ -3986,7 +4013,7 @@ msgid "you rated this"
 msgstr "amanota watanze"
 
 #. placeholder {0}: format(savedMinor)
-#: app/book/[id].tsx:596
+#: app/book/[id].tsx:600
 msgid "You save {0}"
 msgstr "Uzigama {0}"
 
@@ -4015,7 +4042,7 @@ msgstr "Konti yawe yiteguye. Reka tugushakire ikintu cyiza."
 msgid "Your account, bookings, reviews, messages and questions to us — to read, print or keep."
 msgstr "Konti yawe, gahunda, ibitekerezo, ubutumwa n’ibibazo watubajije — byo gusoma, gucapa cyangwa kubika."
 
-#: app/book/[id].tsx:883
+#: app/book/[id].tsx:884
 #: app/booking/[id].tsx:234
 #: app/booking/[id].tsx:246
 msgid "Your booking"
@@ -4029,12 +4056,12 @@ msgstr "Gahunda zawe"
 msgid "Your bookings and messages stay with your account. You will need a new code to get back in."
 msgstr "Gahunda n’ubutumwa byawe biguma kuri konti yawe. Uzakenera kode nshya kugira ngo wongere winjire."
 
-#: app/book/[id].tsx:649
+#: app/book/[id].tsx:653
 #: src/booking/BookedChoices.tsx:40
 msgid "Your choices"
 msgstr "Ibyo wahisemo"
 
-#: app/book/[id].tsx:574
+#: app/book/[id].tsx:578
 msgid "Your choices <0>{addsWords}</0>"
 msgstr "Ibyo wahisemo <0>{addsWords}</0>"
 

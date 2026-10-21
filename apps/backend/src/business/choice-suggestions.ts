@@ -1,3 +1,5 @@
+import { CATALOGS } from '../i18n/catalogs';
+import type { Locale } from '../i18n/locales';
 import { ChoiceKind } from '@prisma/client';
 
 /**
@@ -2141,3 +2143,32 @@ export function everySuggestion(): Array<{ suggestions: ChoiceSuggestion[] }> {
     })),
   ]);
 }
+
+/**
+ * The words in `locale` (§308.7): the questions, answers and notes a shop
+ * reads, from the translators' files (`npm run i18n` reads this file), else
+ * the English. A link to an earlier answer (`showIf.option`) is said the same
+ * way as the answer it names, so the two still match.
+ */
+const wordIn = (locale: Locale, english: string) => (locale === 'en' ? english : CATALOGS[locale]?.[english] || english);
+
+export function suggestionsIn(locale: Locale, sections: SuggestionSection[]): SuggestionSection[] {
+  if (locale === 'en') return sections;
+  const w = (english: string) => wordIn(locale, english);
+  return sections.map((section) => ({
+    ...section,
+    category: w(section.category),
+    subcategory: w(section.subcategory),
+    suggestions: section.suggestions.map((s) => ({
+      ...s,
+      name: w(s.name),
+      question: w(s.question),
+      ...(s.hint ? { hint: w(s.hint) } : {}),
+      ...(s.showIf ? { showIf: { ...s.showIf, option: w(s.showIf.option) } } : {}),
+      options: s.options.map((o) => ({ ...o, label: w(o.label), ...(o.description ? { description: w(o.description) } : {}) })),
+    })),
+  }));
+}
+
+/** The note box's words for a shop's main kind, in `locale`. */
+export const notePromptIn = (locale: Locale, kinds: readonly ShopKind[]) => wordIn(locale, notePromptFor(kinds));

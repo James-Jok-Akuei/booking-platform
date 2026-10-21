@@ -433,8 +433,8 @@ export class BusinessController {
   @Get('services/choice-suggestions')
   @ApiOkResponse({ type: ChoiceSuggestionsDto })
   @BusinessRoles(BusinessMemberRole.OWNER, BusinessMemberRole.MANAGER)
-  choiceSuggestions(@CurrentUser() user: AuthenticatedUser) {
-    return this.services.choiceSuggestions(user.userId);
+  choiceSuggestions(@CurrentUser() user: AuthenticatedUser, @RequestLocale() locale: Locale) {
+    return this.services.choiceSuggestions(user.userId, locale);
   }
 
   @Get('services')

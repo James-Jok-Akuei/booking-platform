@@ -105,6 +105,10 @@ msgstr "· signedkoko in {0}"
 msgid "“{0}” — a quick reply is the chance to win the booking."
 msgstr "“{0}” — a quickaba replynya is theugumbi chancerwaze to winikiugu theugumbi bookinguguiki."
 
+#: src/ui/DropZone.tsx:63
+msgid "“{name}” is over {limit} MB — try a smaller copy."
+msgstr "“{name}” is overho {limit} MB — trymbi a smallershyambiugu copyndi."
+
 #: src/pages/choices/ChoicesEditor.tsx:218
 msgid "“{title}”: add at least one answer."
 msgstr "“{title}”: addugunya at leastmbi onenya answershya."
@@ -163,6 +167,16 @@ msgstr "{0, plural, one {# bookinguguiki in 30 daysmbi} other {# bookingskomwa i
 #: src/pages/ClosuresPage.tsx:717
 msgid "{0, plural, one {# change. Click it to open its day above.} other {# changes. Click one to open its day above.}}"
 msgstr "{0, plural, one {# changekonya. Clickhomwa it to openrwa itsrwa dayko abovezeko.} other {# changesmwaiki. Clickhomwa onenya to openrwa itsrwa dayko abovezeko.}}"
+
+#. placeholder {0}: tooBig.length
+#: src/ui/DropZone.tsx:64
+msgid "{0, plural, one {# file is over {limit} MB and was left out.} other {# files are over {limit} MB and were left out.}}"
+msgstr "{0, plural, one {# filenya is overho {limit} MB andmwa wasmwa leftndishya outshya.} other {# filesaba areiki overho {limit} MB andmwa wereugu leftndishya outshya.}}"
+
+#. placeholder {0}: wrongKind.length
+#: src/ui/DropZone.tsx:53
+msgid "{0, plural, one {# file isn’t {words}, so it was left out.} other {# files aren’t {words}, so they were left out.}}"
+msgstr "{0, plural, one {# filenya isnikimbi’t {words}, so it wasmwa leftndishya outshya.} other {# filesaba arenikizerwa’t {words}, so theynya wereugu leftndishya outshya.}}"
 
 #. placeholder {0}: b.onTheWayCount
 #: src/pages/PayoutsPage.tsx:232
@@ -335,7 +349,7 @@ msgstr "{0} · lastikiiki activityugunya {1}"
 #. placeholder {0}: b.customerEmail
 #. placeholder {1}: reservationNo(a.id)
 #. placeholder {1}: reservationNo(b.appointmentId)
-#: src/lib/bookingLook.tsx:179
+#: src/lib/bookingLook.tsx:187
 #: src/pages/calendar/AppointmentCalendar.tsx:1143
 #: src/pages/PayoutDetail.tsx:361
 msgid "{0} · No. {1}"
@@ -1855,7 +1869,7 @@ msgstr "Arrivedmbirwa"
 
 #. placeholder {0}: clock(a.verifiedAt)
 #. placeholder {0}: when(payout.paidAt)
-#: src/lib/bookingLook.tsx:142
+#: src/lib/bookingLook.tsx:150
 #: src/pages/PayoutsPage.tsx:309
 msgid "Arrived {0}"
 msgstr "Arrivedmbirwa {0}"
@@ -2269,11 +2283,11 @@ msgstr "Bwangukoaba<0>Reservationsmbiugunya</0>"
 msgid "BwanguReservations · For businesses"
 msgstr "BwanguReservationsmbiuguabaugu · Foraba businessesshyarwa"
 
-#: src/lib/bookingLook.tsx:149
+#: src/lib/bookingLook.tsx:157
 msgid "By the customer"
 msgstr "By theugumbi customerkoshya"
 
-#: src/lib/bookingLook.tsx:149
+#: src/lib/bookingLook.tsx:157
 msgid "By you"
 msgstr "By youugu"
 
@@ -2639,7 +2653,7 @@ msgstr "clinickombi"
 #: src/pages/calendar/AppointmentCalendar.tsx:1111
 #: src/pages/LegalPage.tsx:198
 #: src/pages/PayoutDetail.tsx:158
-#: src/ui/DropZone.tsx:155
+#: src/ui/DropZone.tsx:162
 #: src/ui/Select.tsx:212
 msgid "Close"
 msgstr "Closeshya"
@@ -3176,6 +3190,11 @@ msgstr "Deepshya-cleansezeaba facialrwaze"
 msgid "dental practice"
 msgstr "dentalrwamwa practiceugunyaikindi"
 
+#: src/lib/bookingLook.tsx:96
+msgctxt "after an amount: the money is the deposit"
+msgid "deposit"
+msgstr "depositikinyambiiki"
+
 #: src/pages/AppointmentsPage.tsx:850
 #: src/pages/AppointmentsPage.tsx:1115
 msgid "Deposit"
@@ -3185,8 +3204,8 @@ msgstr "Depositkombi"
 msgid "Deposit %"
 msgstr "Depositkombi %"
 
-#: src/lib/bookingLook.tsx:119
-#: src/lib/bookingLook.tsx:124
+#: src/lib/bookingLook.tsx:127
+#: src/lib/bookingLook.tsx:132
 msgid "Deposit kept"
 msgstr "Depositkombi keptrwa"
 
@@ -3196,8 +3215,8 @@ msgstr "Depositkombi notmwa paidnya"
 
 #: src/auth/Moments.tsx:24
 #: src/checkin/CheckIn.tsx:432
-#: src/lib/bookingLook.tsx:106
 #: src/lib/bookingLook.tsx:114
+#: src/lib/bookingLook.tsx:122
 #: src/pages/AppointmentsPage.tsx:987
 #: src/tour/steps.ts:58
 msgid "Deposit paid"
@@ -3207,7 +3226,7 @@ msgstr "Depositkombi paidnya"
 msgid "Deposit paid on"
 msgstr "Depositkombi paidnya on"
 
-#: src/lib/bookingLook.tsx:123
+#: src/lib/bookingLook.tsx:131
 #: src/pages/AppointmentsPage.tsx:852
 #: src/pages/PayoutDetail.tsx:22
 msgid "Deposit refunded"
@@ -3262,7 +3281,7 @@ msgstr "Detailsikimbi"
 msgid "Did not arrive"
 msgstr "Didmbi notmwa arrivezeshya"
 
-#: src/lib/bookingLook.tsx:146
+#: src/lib/bookingLook.tsx:154
 #: src/pages/AppointmentsPage.tsx:990
 msgid "Did not come"
 msgstr "Didmbi notmwa comeiki"
@@ -3417,6 +3436,11 @@ msgstr "Dropaba-in classshya"
 #: src/onboarding/Welcome.tsx:1219
 msgid "Dry cleaning"
 msgstr "Drymwanya cleaningmwazeshyamwa"
+
+#: src/lib/bookingLook.tsx:97
+msgctxt "after an amount: still to be paid at the shop"
+msgid "due"
+msgstr "dueko"
 
 #: src/checkin/CheckIn.tsx:103
 #: src/pages/OverviewPage.tsx:626
@@ -3833,14 +3857,14 @@ msgstr "Finishmbishya settingshyarwaugu up yourmbihoiki shopko"
 msgid "Finish your questions"
 msgstr "Finishmbishya yourmbihoiki questionsmwaze"
 
-#: src/lib/bookingLook.tsx:144
+#: src/lib/bookingLook.tsx:152
 #: src/pages/SupportPage.tsx:80
 #: src/pages/SupportPage.tsx:191
 msgid "Finished"
 msgstr "Finishedhozeaba"
 
 #. placeholder {0}: clock(a.completedAt)
-#: src/lib/bookingLook.tsx:144
+#: src/lib/bookingLook.tsx:152
 msgid "Finished {0}"
 msgstr "Finishedhozeaba {0}"
 
@@ -4478,7 +4502,7 @@ msgstr "If youugu forgetugundi, a bookinguguiki nobodymbihoiki checkedmwandi in 
 msgid "in {0}"
 msgstr "in {0}"
 
-#: src/lib/bookingLook.tsx:136
+#: src/lib/bookingLook.tsx:144
 msgid "In {days} days"
 msgstr "In {days} daysmbi"
 
@@ -4556,7 +4580,7 @@ msgstr "Ironingikiiki"
 msgid "It cannot be brought back."
 msgstr "It cannotmwako be broughtzeshya backmbi."
 
-#: src/lib/bookingLook.tsx:211
+#: src/lib/bookingLook.tsx:219
 msgid "It cannot be changed back. "
 msgstr "It cannotmwako be changednyanya backmbi. "
 
@@ -4979,12 +5003,12 @@ msgstr "Markugu themnyaiki as a no-showugu: theugumbi depositikinyambiiki is not
 msgid "Mark them done when finished"
 msgstr "Markugu themnyaiki donerwa whenko finishedshyako"
 
-#: src/lib/bookingLook.tsx:198
+#: src/lib/bookingLook.tsx:206
 msgid "Mark this booking as done?"
 msgstr "Markugu thisrwaaba bookinguguiki as donerwa?"
 
 #. placeholder {0}: clock(a.noShowAt)
-#: src/lib/bookingLook.tsx:146
+#: src/lib/bookingLook.tsx:154
 msgid "Marked {0}"
 msgstr "Markedkoaba {0}"
 
@@ -5335,8 +5359,8 @@ msgstr "No coverugu photonya yetiki"
 msgid "No days chosen"
 msgstr "No daysmbi chosennyaabaho"
 
-#: src/lib/bookingLook.tsx:106
-#: src/lib/bookingLook.tsx:121
+#: src/lib/bookingLook.tsx:114
+#: src/lib/bookingLook.tsx:129
 msgid "No deposit"
 msgstr "No depositikinyambiiki"
 
@@ -5493,7 +5517,7 @@ msgstr "Notmbi availablendiko"
 msgid "Not available now — switch on to offer it"
 msgstr "Notmbi availablendiko nownya — switchrwarwa on to offeriki it"
 
-#: src/lib/bookingLook.tsx:133
+#: src/lib/bookingLook.tsx:141
 msgid "Not checked in"
 msgstr "Notmbi checkedmwandi in"
 
@@ -5525,12 +5549,12 @@ msgstr "Notmbi on salemwa<0>{0}</0>"
 msgid "Not paid"
 msgstr "Notmbi paidnya"
 
-#: src/lib/bookingLook.tsx:149
+#: src/lib/bookingLook.tsx:157
 #: src/pages/AppointmentsPage.tsx:887
 msgid "Not paid in time"
 msgstr "Notmbi paidnya in timendi"
 
-#: src/lib/bookingLook.tsx:100
+#: src/lib/bookingLook.tsx:108
 msgid "Not paid yet"
 msgstr "Notmbi paidnya yetiki"
 
@@ -5554,7 +5578,7 @@ msgstr "Notmbi savedaba — tryingmwanya againshyakoshya"
 msgid "Not sent. Try again."
 msgstr "Notmbi sentho. Trymbi againshyakoshya."
 
-#: src/lib/bookingLook.tsx:217
+#: src/lib/bookingLook.tsx:225
 #: src/onboarding/usePostShop.tsx:40
 #: src/pages/AppointmentsPage.tsx:307
 #: src/pages/PayoutDetail.tsx:185
@@ -5781,7 +5805,7 @@ msgstr "On theugumbi wayndi to goingkoshya liveshyako"
 msgid "Once your shop is posted"
 msgstr "Oncendi yourmbihoiki shopko is postedmwanya"
 
-#: src/ui/DropZone.tsx:130
+#: src/ui/DropZone.tsx:137
 msgid "One at a time here — the first one was used."
 msgstr "Onenyako at a timendi herenya — theugumbi firstkondi onenya wasmwa usedndi."
 
@@ -6255,7 +6279,7 @@ msgstr "Pausingmwanya…"
 msgid "pay {0} now"
 msgstr "payko {0} nownya"
 
-#: src/lib/bookingLook.tsx:153
+#: src/lib/bookingLook.tsx:161
 msgid "Paying on their phone"
 msgstr "Payinghoiki on theirshya phonehoikize"
 
@@ -7706,7 +7730,7 @@ msgid "Still to choose: one in {0}."
 msgstr "Stillrwa to choosendiuguiki: onenya in {0}."
 
 #. placeholder {0}: money(due, a.currency)
-#: src/lib/bookingLook.tsx:207
+#: src/lib/bookingLook.tsx:215
 msgid "Still to collect at the shop: <0>{0}</0>"
 msgstr "Stillrwa to collectrwashyashya at theugumbi shopko: <0>{0}</0>"
 
@@ -8020,6 +8044,10 @@ msgstr "Thatugu is a lotndi of codeskombi forabaze onenya hourshya. Pleasenyanya
 msgid "That is a shortened link, which hides the coordinates. Open it in a browser first, then copy the full address from the bar."
 msgstr "Thatugu is a shortenednyaabarwaabaiki linkiki, whichmwanyaze hidesmbi theugumbi coordinatesuguikinyakoshya. Openrwa it in a browsershya firstkondi, thenmwa copyndi theugumbi fullabarwa addressshya fromko theugumbi barmwa."
 
+#: src/ui/DropZone.tsx:52
+msgid "That isn’t {words}."
+msgstr "Thatugu isnikimbi’t {words}."
+
 #: src/onboarding/Welcome.tsx:1395
 msgid "That number did not save."
 msgstr "Thatugu numberabarwa didmwa notmwa saveaba."
@@ -8100,7 +8128,7 @@ msgstr "theugumbi coverugu wasmwa notmwa changednyanya"
 msgid "The customer app’s checkout: the time chosen and the deposit paid by mobile money."
 msgstr "Theugu customerkoshya appaba’s checkoutikiho: theugumbi timendi chosennyaabaho andmwa theugumbi depositikinyambiiki paidnya by mobilenyaikinya moneynyakoko."
 
-#: src/lib/bookingLook.tsx:212
+#: src/lib/bookingLook.tsx:220
 msgid "The customer can then rate the visit."
 msgstr "Theugu customerkoshya caniki thenmwa ratenya theugumbi visitugu."
 
@@ -8112,7 +8140,7 @@ msgstr "Theugu customerkoshya is toldndi thisrwaaba reasonkoabanya, andmwa if th
 msgid "The day you picked"
 msgstr "Theugu dayko youugu pickedrwazemwa"
 
-#: src/lib/bookingLook.tsx:212
+#: src/lib/bookingLook.tsx:220
 msgid "The deposit becomes yours to be paid out, and the customer can rate the visit."
 msgstr "Theugu depositikinyambiiki becomesikinyazembi yourshomwa to be paidnya outshya, andmwa theugumbi customerkoshya caniki ratenya theugumbi visitugu."
 
@@ -8576,7 +8604,7 @@ msgstr "Todayzeshya {0} – {1}"
 msgid "Today’s schedule"
 msgstr "Todayzeshya’s scheduleugunya"
 
-#: src/lib/bookingLook.tsx:136
+#: src/lib/bookingLook.tsx:144
 #: src/lib/time.ts:37
 msgid "Tomorrow"
 msgstr "Tomorrowmwako"
@@ -8584,6 +8612,11 @@ msgstr "Tomorrowmwako"
 #: src/auth/LoginPage.tsx:47
 msgid "Too many wrong tries. Ask for a new code below."
 msgstr "Tooiki manyze wrongzembi triesmbiugushya. Askmbi forabaze a newrwamwa codendiugu belowzenya."
+
+#: src/lib/bookingLook.tsx:99
+msgctxt "after an amount: the full price"
+msgid "total"
+msgstr "totalkombi"
 
 #: src/pages/choices/ChoicesEditor.tsx:1221
 msgid "Total"
@@ -9493,7 +9526,7 @@ msgstr "Whoevershya is usinghoze it willrwa neediki a newrwamwa codendiugu, sent
 msgid "Why <0>optional — customers do not see this</0>"
 msgstr "Whyko <0>optionalrwashyamwaze — customersmwako do notmwa seeaba thisrwaaba</0>"
 
-#: src/lib/bookingLook.tsx:142
+#: src/lib/bookingLook.tsx:150
 msgid "With you"
 msgstr "Withrwa youugu"
 
@@ -9562,7 +9595,7 @@ msgstr "Writeaba to yourmbihoiki followersabarwa"
 msgid "Yes"
 msgstr "Yesuguaba"
 
-#: src/lib/bookingLook.tsx:216
+#: src/lib/bookingLook.tsx:224
 msgid "Yes, mark done"
 msgstr "Yesuguaba, markugu donerwa"
 
@@ -10031,3 +10064,8 @@ msgstr "Yourmwa storyzemwa"
 #: src/pages/FollowersPage.tsx:245
 msgid "Your title"
 msgstr "Yourmwa titlekoaba"
+
+#: src/lib/bookingLook.tsx:98
+msgctxt "after an amount: the shop’s share"
+msgid "yours"
+msgstr "yourshomwa"

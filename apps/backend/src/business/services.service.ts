@@ -43,8 +43,9 @@ import { platformToday, ymd } from './discount';
 import { branchIn } from './branch-scope';
 import { assertFitsInADay, planChoiceGroups } from './service-choices';
 import { loadChoiceGroups, saveChoiceGroups } from './choice-groups';
-import { notePromptFor, priceAtShopFor, suggestionsFor } from './choice-suggestions';
+import { notePromptIn, priceAtShopFor, suggestionsFor, suggestionsIn } from './choice-suggestions';
 import { KINDS_SELECT } from './kinds';
+import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 
 /**
  * Services belong to the *business*, not to a location.
@@ -449,15 +450,15 @@ export class ServicesService {
    * and the note box's words — for the service form to offer. Nothing is
    * added to any service until the shop saves it.
    */
-  async choiceSuggestions(userId: string) {
+  async choiceSuggestions(userId: string, locale: Locale = DEFAULT_LOCALE) {
     const businessId = await this.access.requireBusinessId(userId);
     const { kinds } = await this.prisma.businessProfile.findUniqueOrThrow({
       where: { id: businessId },
       select: { kinds: KINDS_SELECT },
     });
     return {
-      sections: suggestionsFor(kinds),
-      notePrompt: notePromptFor(kinds),
+      sections: suggestionsIn(locale, suggestionsFor(kinds)),
+      notePrompt: notePromptIn(locale, kinds),
       priceAtShop: priceAtShopFor(kinds),
     };
   }

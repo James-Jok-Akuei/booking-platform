@@ -1,5 +1,6 @@
-import { NotificationType } from '@prisma/client';
+import { ChoiceKind, NotificationType } from '@prisma/client';
 import { CATALOGS } from '../src/i18n/catalogs';
+import { suggestionsIn } from '../src/business/choice-suggestions';
 import { say, sayError } from '../src/i18n/say';
 import { renderEmail } from '../src/mail/email-kit';
 import { noticeEmail, readBody } from '../src/notifications/notification-email';
@@ -36,6 +37,10 @@ describe('The server, in the reader’s language (§308)', () => {
     'Please wait {waitSeconds}s before requesting another code.': 'Veuillez patienter {waitSeconds} s avant de demander un autre code.',
     '{count, plural, one {Photos on # service} other {Photos on # services}}':
       '{count, plural, one {Des photos sur # service} other {Des photos sur # services}}',
+    // A ready-made question and its answers (§308.7).
+    'Wearing a wig?': 'Vous portez une perruque ?',
+    'Yes, a wig': 'Oui, une perruque',
+    'Wig colour?': 'Couleur de la perruque ?',
     // A seeded type's name, as translators give it (§308.3).
     'Test Barbershop': 'Salon de barbier (test)',
   };
@@ -78,6 +83,36 @@ describe('The server, in the reader’s language (§308)', () => {
     const photos = '{count, plural, one {Photos on # service} other {Photos on # services}}';
     expect(say('fr', photos, { count: 1 })).toBe('Des photos sur 1 service');
     expect(say('en', photos, { count: 3 })).toBe('Photos on 3 services');
+  });
+
+  it('says the ready-made questions in the shop’s language, a follow-up still pointing at its answer', () => {
+    const sections = [
+      {
+        category: 'Test Beauty',
+        subcategory: 'Test Barbershop',
+        suggestions: [
+          { key: 't.wig', name: 'Wig', question: 'Wearing a wig?', kind: ChoiceKind.ONE, required: false, options: [{ label: 'Yes, a wig' }, { label: 'No' }] },
+          {
+            key: 't.colour',
+            name: 'Colour',
+            question: 'Wig colour?',
+            kind: ChoiceKind.ONE,
+            required: false,
+            showIf: { key: 't.wig', option: 'Yes, a wig' },
+            options: [{ label: 'Black' }],
+          },
+        ],
+      },
+    ];
+    const [french] = suggestionsIn('fr', sections);
+    expect(french.subcategory).toBe('Salon de barbier (test)');
+    expect(french.suggestions[0].question).toBe('Vous portez une perruque ?');
+    expect(french.suggestions[0].options[0].label).toBe('Oui, une perruque');
+    // The follow-up names the answer in the same words, so the two still match.
+    expect(french.suggestions[1].showIf).toEqual({ key: 't.wig', option: 'Oui, une perruque' });
+    // Not translated: as written. English: untouched.
+    expect(french.suggestions[1].options[0].label).toBe('Black');
+    expect(suggestionsIn('en', sections)).toBe(sections);
   });
 
   it('says a refusal written whole, and one with values in it, in the language asked', () => {
