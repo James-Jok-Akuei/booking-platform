@@ -26,6 +26,8 @@ import {
   SubcategoryRecordDto,
 } from './dto/category-response.dto';
 import { OTHER } from '../business/kinds';
+import { TaxonomyNamesService } from './taxonomy-names.service';
+import { readTranslations } from './taxonomy-words';
 import { SetCategoryLiveDto } from './dto/set-category-live.dto';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
@@ -57,7 +59,10 @@ import {
 @Roles(UserRole.ADMIN)
 @ApiErrors({ auth: true, roles: true, validation: true, notFound: true, conflict: true })
 export class AdminCategoriesController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly names: TaxonomyNamesService,
+  ) {}
 
   @Get('categories')
   @ApiOkResponse({ type: AdminCategoryDto, isArray: true })
@@ -69,12 +74,14 @@ export class AdminCategoriesController {
         name: true,
         icon: true,
         description: true,
+        translations: true,
         isLive: true,
         subcategories: {
           orderBy: { name: 'asc' },
           select: {
             id: true,
             name: true,
+            translations: true,
             isLive: true,
             _count: { select: { kinds: true } },
           },
@@ -102,12 +109,14 @@ export class AdminCategoriesController {
       name: category.name,
       icon: category.icon,
       description: category.description,
+      translations: readTranslations(category.translations),
       isLive: category.isLive,
       /** Businesses already in it. Shown before anything is switched off. */
       businessCount: inCategory.get(category.id)?.size ?? 0,
       subcategories: otherLast(category.subcategories).map((subcategory) => ({
         id: subcategory.id,
         name: subcategory.name,
+        translations: readTranslations(subcategory.translations),
         isLive: subcategory.isLive,
         businessCount: subcategory._count.kinds,
         /**
@@ -126,13 +135,16 @@ export class AdminCategoriesController {
   @ApiCreatedResponse({ type: CategoryRecordDto })
   async create(@Body() dto: CreateCategoryDto) {
     try {
-      return await this.prisma.category.create({
+      const created = await this.prisma.category.create({
         data: {
           name: dto.name.trim(),
           icon: dto.icon?.trim() || null,
           description: dto.description?.trim() || null,
+          ...(dto.translations ? { translations: readTranslations(dto.translations) } : {}),
         },
       });
+      this.names.forget();
+      return created;
     } catch (error) {
       throw this.asConflict(error, `A category called "${dto.name.trim()}" already exists.`);
     }
@@ -146,7 +158,7 @@ export class AdminCategoriesController {
   ) {
     await this.requireCategory(id);
     try {
-      return await this.prisma.category.update({
+      const updated = await this.prisma.category.update({
         where: { id },
         data: {
           ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
@@ -154,8 +166,12 @@ export class AdminCategoriesController {
           ...(dto.description !== undefined
             ? { description: dto.description.trim() || null }
             : {}),
+          // The boxes as they are now: a language emptied is a language removed.
+          ...(dto.translations !== undefined ? { translations: readTranslations(dto.translations) } : {}),
         },
       });
+      this.names.forget();
+      return updated;
     } catch (error) {
       throw this.asConflict(error, 'Another category already has that name.');
     }
@@ -188,9 +204,15 @@ export class AdminCategoriesController {
   ) {
     await this.requireCategory(id);
     try {
-      return await this.prisma.subcategory.create({
-        data: { categoryId: id, name: dto.name.trim() },
+      const created = await this.prisma.subcategory.create({
+        data: {
+          categoryId: id,
+          name: dto.name.trim(),
+          ...(dto.translations ? { translations: readTranslations(dto.translations) } : {}),
+        },
       });
+      this.names.forget();
+      return created;
     } catch (error) {
       throw this.asConflict(
         error,
@@ -207,10 +229,15 @@ export class AdminCategoriesController {
   ) {
     await this.requireSubcategory(id);
     try {
-      return await this.prisma.subcategory.update({
+      const updated = await this.prisma.subcategory.update({
         where: { id },
-        data: { name: dto.name.trim() },
+        data: {
+          ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
+          ...(dto.translations !== undefined ? { translations: readTranslations(dto.translations) } : {}),
+        },
       });
+      this.names.forget();
+      return updated;
     } catch (error) {
       throw this.asConflict(error, 'That category already has a type with that name.');
     }
@@ -291,7 +318,7 @@ export class AdminCategoriesController {
       throw new ConflictException(`A type cannot be called "${OTHER}".`);
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const promoted = await this.prisma.$transaction(async (tx) => {
       const existing = await tx.subcategory.findFirst({
         where: { categoryId: id, name: { equals: name, mode: 'insensitive' } },
         select: { id: true, name: true },
@@ -320,6 +347,9 @@ export class AdminCategoriesController {
       }
       return { subcategoryId: type.id, name: type.name, moved: writers.length };
     });
+    // A new type: the apps' words are read again (§308.3).
+    this.names.forget();
+    return promoted;
   }
 
   private async requireCategory(id: string) {

@@ -596,6 +596,9 @@ export type AdminSubcategory = components['schemas']['AdminSubcategoryDto'];
 
 export type AdminCategory = components['schemas']['AdminCategoryDto'];
 
+/** A category's or a type's words in Kinyarwanda and French, as typed here (§308.3). */
+export type TaxonomyTranslations = components['schemas']['TaxonomyTranslationsResponseDto'];
+
 export const listAdminCategories = () => api<AdminCategory[]>('/admin/categories');
 
 export const setCategoryLive = (id: string, isLive: boolean) =>
@@ -612,7 +615,7 @@ export const createCategory = (body: {
 
 export const updateCategory = (
   id: string,
-  body: { name?: string; icon?: string; description?: string },
+  body: { name?: string; icon?: string; description?: string; translations?: TaxonomyTranslations },
 ) => api<AdminCategory>(`/admin/categories/${id}`, { method: 'PATCH', body });
 
 /** What shops wrote under "Other", grouped, most-written first (§267). */
@@ -632,8 +635,11 @@ export const createSubcategory = (categoryId: string, name: string) =>
     body: { name },
   });
 
-export const updateSubcategory = (id: string, name: string) =>
-  api<AdminSubcategory>(`/admin/subcategories/${id}`, { method: 'PATCH', body: { name } });
+export const updateSubcategory = (id: string, name: string, translations?: TaxonomyTranslations) =>
+  api<AdminSubcategory>(`/admin/subcategories/${id}`, {
+    method: 'PATCH',
+    body: { name, ...(translations ? { translations } : {}) },
+  });
 
 export const setSubcategoryLive = (id: string, isLive: boolean) =>
   api<{ message: string }>(`/admin/subcategories/${id}/live`, {

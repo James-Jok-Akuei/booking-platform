@@ -139,6 +139,8 @@ export default function RootLayout() {
       return;
     }
     drawnIn.current = locale;
+    // What the server sent — category names among it (§308.3) — asked for again in the new language.
+    void queryClient.invalidateQueries();
     const back = here.current;
     requestAnimationFrame(() => router.replace({ pathname: back.pathname as never, params: back.params }));
   }, [appIn, locale, pathname, params]);

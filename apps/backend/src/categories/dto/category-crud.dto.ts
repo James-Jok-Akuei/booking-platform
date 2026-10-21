@@ -1,4 +1,31 @@
-import { IsOptional, IsString, Length, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsOptional, IsString, Length, MaxLength, ValidateNested } from 'class-validator';
+
+/** A name — and for a category, its description — in one other language (§308.3). Empty means not typed. */
+export class LanguageWordsDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  description?: string;
+}
+
+/** The words in Kinyarwanda and in French, as the console's boxes hold them. */
+export class TaxonomyTranslationsDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LanguageWordsDto)
+  rw?: LanguageWordsDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LanguageWordsDto)
+  fr?: LanguageWordsDto;
+}
 
 export class CreateCategoryDto {
   @IsString()
@@ -15,6 +42,11 @@ export class CreateCategoryDto {
   @IsString()
   @MaxLength(300)
   description?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TaxonomyTranslationsDto)
+  translations?: TaxonomyTranslationsDto;
 }
 
 export class UpdateCategoryDto {
@@ -32,18 +64,34 @@ export class UpdateCategoryDto {
   @IsString()
   @MaxLength(300)
   description?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TaxonomyTranslationsDto)
+  translations?: TaxonomyTranslationsDto;
 }
 
 export class CreateSubcategoryDto {
   @IsString()
   @Length(2, 60)
   name!: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TaxonomyTranslationsDto)
+  translations?: TaxonomyTranslationsDto;
 }
 
 export class UpdateSubcategoryDto {
+  @IsOptional()
   @IsString()
   @Length(2, 60)
-  name!: string;
+  name?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TaxonomyTranslationsDto)
+  translations?: TaxonomyTranslationsDto;
 }
 
 /**

@@ -49,9 +49,23 @@ export const __categoryDtoIsExact: NoExtraFields<CategoryDto, PublicCategoryRow>
 // The admin view (§128.33)
 // ---------------------------------------------------------------------------
 
+/** A name — and for a category, its description — in one other language (§308.3). */
+export class LanguageWordsResponseDto {
+  name?: string;
+  description?: string;
+}
+
+/** What the console's language boxes hold. A language not typed is left out. */
+export class TaxonomyTranslationsResponseDto {
+  rw?: LanguageWordsResponseDto;
+  fr?: LanguageWordsResponseDto;
+}
+
 export class AdminSubcategoryDto {
   id!: string;
   name!: string;
+  /** Its name in the other languages, as typed in the console (§308.3). */
+  translations!: TaxonomyTranslationsResponseDto;
   isLive!: boolean;
   /** Businesses already in it. Shown before anything is switched off. */
   businessCount!: number;
@@ -71,6 +85,8 @@ export class AdminCategoryDto {
   name!: string;
   icon!: string | null;
   description!: string | null;
+  /** Its name and description in the other languages, as typed in the console (§308.3). */
+  translations!: TaxonomyTranslationsResponseDto;
   isLive!: boolean;
   businessCount!: number;
   subcategories!: AdminSubcategoryDto[];

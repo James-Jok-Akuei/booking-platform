@@ -19936,3 +19936,34 @@ is English for search engines — a page per language (`/rw`, `/fr`, with
 `hreflang`) comes with the translations; the walkthrough video's voice is
 English (subtitles or a recording per language then); the legal documents
 open in English until the console has a box per language for them.
+
+### 308.3 Category and type names in each language (2026-10-21)
+
+Category and type names are the words customers see most, on every card and
+picker. They are said in the reader's language by the server, as it answers:
+- **Where the words come from**, in order: what the console typed for that
+  category or type (`categories.translations` / `subcategories.translations`,
+  migration `taxonomy_translations`); else the translators' version — the
+  seeded taxonomy's names and descriptions are in the server's `.po` files
+  with everything else (`npm run i18n` reads `prisma/seed.ts`); else English.
+  The console types them only for a name it made or changed, or to correct
+  one: the seeded list is translated with the apps' words, as §266 keeps the
+  list itself in the code.
+- **How**: every answer to a request in another language passes through one
+  step (`LocalisedNamesInterceptor`), which finds the categories and types
+  in it — by id, or by name where one is sent under "category"/"subcategory"
+  without its id — and gives their words in that language
+  (`TaxonomyNamesService`, the ~140 rows kept for a minute and read again
+  when the console changes one). So no endpoint has to remember, the rows
+  and every rule that reads a name stay English, and an English answer is
+  untouched. A shop that happens to share a type's name is left alone.
+- **The console** (Categories): editing a category or renaming a type opens
+  "In Kinyarwanda and French" — a name box per language, and for a
+  category what it covers; folded away until wanted, empty meaning the
+  translators' version. A small RW / FR beside a name says one was typed,
+  the words on hover.
+- **The apps** ask for their data again when the language changes, so names
+  follow at once; the website sends its language with its requests.
+
+**Left for later**: searching by a name in Kinyarwanda or French (search
+still matches the English names and the shops' own words).

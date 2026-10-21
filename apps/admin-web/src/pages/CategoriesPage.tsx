@@ -12,6 +12,7 @@ import {
   updateSubcategory,
   type AdminCategory,
   type AdminSubcategory,
+  type TaxonomyTranslations,
   listWriteIns,
   promoteWriteIn,
   type WriteIn,
@@ -218,7 +219,8 @@ function CategoryCard({ category, index, onChanged }: { category: AdminCategory;
 
   const toggle = useMutation({ mutationFn: (isLive: boolean) => setCategoryLive(category.id, isLive), onSuccess: done, onError: fail });
   const save = useMutation({
-    mutationFn: (body: { name: string; icon: string; description?: string }) => updateCategory(category.id, body),
+    mutationFn: (body: { name: string; icon: string; description?: string; translations: TaxonomyTranslations }) =>
+      updateCategory(category.id, body),
     onSuccess: () => {
       setEditing(false);
       done();
@@ -262,7 +264,10 @@ function CategoryCard({ category, index, onChanged }: { category: AdminCategory;
           <EditCategory category={category} busy={save.isPending} onSave={(body) => save.mutate(body)} onCancel={() => setEditing(false)} />
         ) : (
           <div className="tx-title">
-            <strong>{category.name}</strong>
+            <strong>
+              {category.name}
+              <Spoken translations={category.translations} />
+            </strong>
             <span>
               {shops(category.businessCount)}
               {category.description && ` · ${category.description}`}
@@ -319,22 +324,25 @@ function EditCategory({
 }: {
   category: AdminCategory;
   busy: boolean;
-  onSave: (body: { name: string; icon: string; description?: string }) => void;
+  onSave: (body: { name: string; icon: string; description?: string; translations: TaxonomyTranslations }) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState(category.name);
   const [description, setDescription] = useState(category.description ?? '');
   const [icon, setIcon] = useState(category.icon ?? 'store');
+  const [words, setWords] = useState<TaxonomyTranslations>(category.translations ?? {});
   return (
     <form
       className="tx-edit"
       onSubmit={(event) => {
         event.preventDefault();
-        if (name.trim().length >= 2) onSave({ name: name.trim(), icon, ...(description.trim() ? { description: description.trim() } : {}) });
+        if (name.trim().length >= 2)
+          onSave({ name: name.trim(), icon, ...(description.trim() ? { description: description.trim() } : {}), translations: words });
       }}
     >
       <input value={name} onChange={(event) => setName(event.target.value)} aria-label="Name" autoFocus maxLength={60} />
       <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="What it covers" aria-label="What it covers" maxLength={200} />
+      <OtherLanguages value={words} onChange={setWords} withDescription />
       <MarkPicker value={icon} onChange={setIcon} />
       <div className="tx-edit-acts">
         <button type="button" onClick={onCancel}>
@@ -363,8 +371,9 @@ function TypeRow({
 }) {
   const [editing, setEditing] = useState(false);
   const toggle = useMutation({ mutationFn: (isLive: boolean) => setSubcategoryLive(type.id, isLive), onSuccess: onChanged, onError });
+  const [words, setWords] = useState<TaxonomyTranslations>(type.translations ?? {});
   const rename = useMutation({
-    mutationFn: (name: string) => updateSubcategory(type.id, name),
+    mutationFn: (name: string) => updateSubcategory(type.id, name, words),
     onSuccess: () => {
       setEditing(false);
       onChanged();
@@ -405,21 +414,33 @@ function TypeRow({
             if (input.value.trim().length >= 2) rename.mutate(input.value.trim());
           }}
         >
-          <input name="name" defaultValue={type.name} autoFocus aria-label="New name" />
-          <button type="submit" className="primary" disabled={rename.isPending}>
-            Save
-          </button>
-          <button type="button" onClick={() => setEditing(false)}>
-            Cancel
-          </button>
+          <div className="tx-rename-row">
+            <input name="name" defaultValue={type.name} autoFocus aria-label="New name" />
+            <button type="submit" className="primary" disabled={rename.isPending}>
+              Save
+            </button>
+            <button type="button" onClick={() => setEditing(false)}>
+              Cancel
+            </button>
+          </div>
+          <OtherLanguages value={words} onChange={setWords} />
         </form>
       ) : (
         <>
           <span className="tx-type-name">
-            <b>{type.name}</b>
+            <b>
+              {type.name}
+              <Spoken translations={type.translations} />
+            </b>
             <em>{shadowed ? `Not offered while “${parentName}” is retired` : shops(type.businessCount)}</em>
           </span>
-          <button type="button" className="tx-icon-btn is-quiet" onClick={() => setEditing(true)} aria-label={`Rename ${type.name}`} title="Rename">
+          <button
+            type="button"
+            className="tx-icon-btn is-quiet"
+            onClick={() => setEditing(true)}
+            aria-label={`Rename ${type.name}`}
+            title="Rename, or name it in Kinyarwanda and French"
+          >
             <Icon name="pencil" size={14} />
           </button>
           <Toggle checked={type.isLive} disabled={toggle.isPending} onChange={(v) => void onToggle(v)} label={type.isLive ? 'Offered' : 'Retired'} />
@@ -500,5 +521,74 @@ function WriteIns({ onChanged }: { onChanged: () => void }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+const LANGUAGE_BOXES = [
+  { code: 'rw', label: 'Kinyarwanda' },
+  { code: 'fr', label: 'French' },
+] as const;
+
+/**
+ * Its name — and a category's description — in Kinyarwanda and French
+ * (§308.3). The seeded names are translated with the rest of the apps' words;
+ * these boxes are for a name made or changed here, or to correct one. Left
+ * empty, a language shows the translators' version, else the English.
+ */
+function OtherLanguages({
+  value,
+  onChange,
+  withDescription = false,
+}: {
+  value: TaxonomyTranslations;
+  onChange: (next: TaxonomyTranslations) => void;
+  withDescription?: boolean;
+}) {
+  const typed = LANGUAGE_BOXES.some(({ code }) => value[code]?.name || value[code]?.description);
+  const set = (code: 'rw' | 'fr', field: 'name' | 'description', text: string) =>
+    onChange({ ...value, [code]: { ...value[code], [field]: text } });
+  return (
+    <details className="tx-langs" open={typed}>
+      <summary>
+        <Icon name="globe" size={14} /> In Kinyarwanda and French
+        <span>Optional — empty uses the translators’ version</span>
+      </summary>
+      {LANGUAGE_BOXES.map(({ code, label }) => (
+        <div key={code} className="tx-lang">
+          <span className="tx-lang-code">{code.toUpperCase()}</span>
+          <input
+            value={value[code]?.name ?? ''}
+            onChange={(event) => set(code, 'name', event.target.value)}
+            placeholder={`Name in ${label}`}
+            aria-label={`Name in ${label}`}
+            maxLength={60}
+          />
+          {withDescription && (
+            <input
+              value={value[code]?.description ?? ''}
+              onChange={(event) => set(code, 'description', event.target.value)}
+              placeholder={`What it covers, in ${label}`}
+              aria-label={`What it covers, in ${label}`}
+              maxLength={200}
+            />
+          )}
+        </div>
+      ))}
+    </details>
+  );
+}
+
+/** Small marks beside a name typed here in another language, the words on hover. */
+function Spoken({ translations }: { translations?: TaxonomyTranslations }) {
+  const typed = LANGUAGE_BOXES.filter(({ code }) => translations?.[code]?.name);
+  if (typed.length === 0) return null;
+  return (
+    <span className="tx-spoken">
+      {typed.map(({ code, label }) => (
+        <abbr key={code} title={`${label}: ${translations![code]!.name}`}>
+          {code.toUpperCase()}
+        </abbr>
+      ))}
+    </span>
   );
 }

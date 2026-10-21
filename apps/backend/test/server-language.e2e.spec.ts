@@ -5,6 +5,7 @@ import { renderEmail } from '../src/mail/email-kit';
 import { noticeEmail, readBody } from '../src/notifications/notification-email';
 import { renderNotification } from '../src/notifications/notification-templates';
 import { NotificationsService } from '../src/notifications/notifications.service';
+import { TaxonomyNamesService } from '../src/categories/taxonomy-names.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { E2eContext, createE2eApp, request } from './setup/e2e-app';
 import { resetDatabase } from './setup/test-module';
@@ -35,6 +36,8 @@ describe('The server, in the reader’s language (§308)', () => {
     'Please wait {value0}s before requesting another code.': 'Veuillez patienter {value0} s avant de demander un autre code.',
     '{count, plural, one {Photos on # service} other {Photos on # services}}':
       '{count, plural, one {Des photos sur # service} other {Des photos sur # services}}',
+    // A seeded type's name, as translators give it (§308.3).
+    'Test Barbershop': 'Salon de barbier (test)',
   };
 
   beforeAll(async () => {
@@ -140,6 +143,47 @@ describe('The server, in the reader’s language (§308)', () => {
       (await prisma.notification.findFirstOrThrow({ where: { recipientId: userId } })).subject;
     expect(await subjectOf(french.userId)).toMatch(/^Annulé : Coupe, /);
     expect(await subjectOf(english.userId)).toBe('Cancelled: Coupe, Tue 20 Oct, 11:15');
+  });
+
+  it('says category and type names in the language asked: the console’s words first, then the translators’, then English', async () => {
+    const category = await prisma.category.create({
+      data: {
+        name: 'Test Beauty',
+        description: 'Hair, nails and spa days.',
+        translations: { fr: { name: 'Beauté (test)', description: 'Cheveux, ongles et spa.' } },
+        subcategories: { create: [{ name: 'Test Barbershop' }, { name: 'Test Nails' }] },
+      },
+    });
+    ctx.app.get(TaxonomyNamesService).forget();
+    const fr = { 'Accept-Language': 'fr' };
+
+    const list = (await request(ctx.url, '/categories', { headers: fr })).body as unknown as Array<{
+      id: string;
+      name: string;
+      description: string;
+      subcategories: Array<{ name: string }>;
+    }>;
+    const mine = list.find((c) => c.id === category.id)!;
+    expect(mine.name).toBe('Beauté (test)');
+    expect(mine.description).toBe('Cheveux, ongles et spa.');
+    expect(mine.subcategories.map((s) => s.name).sort()).toEqual(['Salon de barbier (test)', 'Test Nails']);
+
+    // In English, and in a language with nothing typed, the names are as they are.
+    const english = (await request(ctx.url, '/categories')).body as unknown as Array<{ id: string; name: string }>;
+    expect(english.find((c) => c.id === category.id)!.name).toBe('Test Beauty');
+    const rw = (await request(ctx.url, '/categories', { headers: { 'Accept-Language': 'rw' } })).body as unknown as Array<{
+      id: string;
+      name: string;
+    }>;
+    expect(rw.find((c) => c.id === category.id)!.name).toBe('Test Beauty');
+
+    // Sent without an id, under "subcategory": found by its name.
+    const names = ctx.app.get(TaxonomyNamesService);
+    const nested = await names.localise({ business: { subcategory: { name: 'Test Barbershop' } } }, 'fr');
+    expect(nested.business.subcategory.name).toBe('Salon de barbier (test)');
+    // A shop called like a type is a shop, not a type.
+    const shop = await names.localise({ business: { name: 'Test Barbershop' } }, 'fr');
+    expect(shop.business.name).toBe('Test Barbershop');
   });
 
   it('answers the settings and their refusals in the language the app asks in', async () => {

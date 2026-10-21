@@ -12,6 +12,7 @@ import { Footer } from './Footer';
 import { Modal } from './Modal';
 import { LanguageChoice } from './LanguageChoice';
 import { useFitWords, useTightBar } from './fit';
+import { askIn } from './i18n';
 
 type Sheet = 'app' | 'how' | null;
 
@@ -197,7 +198,7 @@ function Count() {
   const [total, setTotal] = useState<number | null>(null);
   useEffect(() => {
     const control = new AbortController();
-    fetch(`${API_URL}/discover/locations?limit=1`, { signal: control.signal })
+    fetch(`${API_URL}/discover/locations?limit=1`, { signal: control.signal, headers: { 'Accept-Language': askIn() } })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((page: { total: number }) => setTotal(page.total))
       .catch(() => setTotal(null));

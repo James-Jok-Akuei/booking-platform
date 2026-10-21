@@ -4295,9 +4295,19 @@ export interface components {
             description: string | null;
             subcategories: components["schemas"]["SubcategoryDto"][];
         };
+        LanguageWordsResponseDto: {
+            name?: string;
+            description?: string;
+        };
+        TaxonomyTranslationsResponseDto: {
+            rw?: components["schemas"]["LanguageWordsResponseDto"];
+            fr?: components["schemas"]["LanguageWordsResponseDto"];
+        };
         AdminSubcategoryDto: {
             id: string;
             name: string;
+            /** @description Its name in the other languages, as typed in the console (§308.3). */
+            translations: components["schemas"]["TaxonomyTranslationsResponseDto"];
             isLive: boolean;
             /** @description Businesses already in it. Shown before anything is switched off. */
             businessCount: number;
@@ -4315,15 +4325,26 @@ export interface components {
             name: string;
             icon: string | null;
             description: string | null;
+            /** @description Its name and description in the other languages, as typed in the console (§308.3). */
+            translations: components["schemas"]["TaxonomyTranslationsResponseDto"];
             isLive: boolean;
             businessCount: number;
             subcategories: components["schemas"]["AdminSubcategoryDto"][];
+        };
+        LanguageWordsDto: {
+            name?: string;
+            description?: string;
+        };
+        TaxonomyTranslationsDto: {
+            rw?: components["schemas"]["LanguageWordsDto"];
+            fr?: components["schemas"]["LanguageWordsDto"];
         };
         CreateCategoryDto: {
             name: string;
             /** @description An icon key or emoji for the frontends, never a URL. */
             icon?: string;
             description?: string;
+            translations?: components["schemas"]["TaxonomyTranslationsDto"];
         };
         CategoryRecordDto: {
             id: string;
@@ -4336,12 +4357,14 @@ export interface components {
             name?: string;
             icon?: string;
             description?: string;
+            translations?: components["schemas"]["TaxonomyTranslationsDto"];
         };
         SetCategoryLiveDto: {
             isLive: boolean;
         };
         CreateSubcategoryDto: {
             name: string;
+            translations?: components["schemas"]["TaxonomyTranslationsDto"];
         };
         SubcategoryRecordDto: {
             id: string;
@@ -4350,7 +4373,8 @@ export interface components {
             isLive: boolean;
         };
         UpdateSubcategoryDto: {
-            name: string;
+            name?: string;
+            translations?: components["schemas"]["TaxonomyTranslationsDto"];
         };
         WriteInBusinessDto: {
             id: string;
@@ -6603,7 +6627,7 @@ export interface components {
         };
         CreateTicketDto: {
             /** @enum {string} */
-            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            category: "OTHER" | "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE";
             subject: string;
             /** @description The opening message. A ticket with no description is not actionable. */
             body: string;
@@ -6630,7 +6654,7 @@ export interface components {
             businessId: string | null;
             appointmentId: string | null;
             /** @enum {string} */
-            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            category: "OTHER" | "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE";
             subject: string;
             /** @enum {string} */
             status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
@@ -6688,7 +6712,7 @@ export interface components {
             businessId: string | null;
             appointmentId: string | null;
             /** @enum {string} */
-            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            category: "OTHER" | "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE";
             subject: string;
             /** @enum {string} */
             status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
@@ -6741,7 +6765,7 @@ export interface components {
             /** @description The first message, from the administrator. */
             body: string;
             /** @enum {string} */
-            category?: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            category?: "OTHER" | "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE";
         };
         StartedTicketDto: {
             id: string;
@@ -6775,7 +6799,7 @@ export interface components {
             businessId: string | null;
             appointmentId: string | null;
             /** @enum {string} */
-            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            category: "OTHER" | "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE";
             subject: string;
             /** @enum {string} */
             status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
@@ -6829,7 +6853,7 @@ export interface components {
             businessId: string | null;
             appointmentId: string | null;
             /** @enum {string} */
-            category: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+            category: "OTHER" | "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE";
             subject: string;
             /** @enum {string} */
             status: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
@@ -17327,7 +17351,7 @@ export interface operations {
         parameters: {
             query?: {
                 status?: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
-                category?: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+                category?: "OTHER" | "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE";
                 limit?: number;
                 offset?: number;
             };
@@ -17680,7 +17704,7 @@ export interface operations {
         parameters: {
             query?: {
                 status?: "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "OPEN";
-                category?: "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE" | "OTHER";
+                category?: "OTHER" | "PAYMENT_ISSUE" | "APPOINTMENT_DISPUTE" | "ACCOUNT_ISSUE" | "TECHNICAL_ISSUE";
                 limit?: number;
                 offset?: number;
                 assignedAdminId?: string;

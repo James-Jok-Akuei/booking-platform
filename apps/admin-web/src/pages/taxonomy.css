@@ -51,9 +51,23 @@
 .tx-add-type input { flex: 1; min-width: 0; height: 42px; padding: 0; border: none; background: transparent; box-shadow: none !important; }
 .tx-add-type button { min-height: 32px; padding: 0 12px; border-radius: 10px; font-size: 13px; }
 
-.tx-rename { flex: 1; display: flex; gap: 6px; align-items: center; }
-.tx-rename input { flex: 1; min-width: 0; height: 38px; }
-.tx-rename button { min-height: 38px; padding: 0 12px; border-radius: 11px; font-size: 13px; }
+.tx-rename { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.tx-rename-row { display: flex; gap: 6px; align-items: center; }
+.tx-rename-row input { flex: 1; min-width: 0; height: 38px; }
+.tx-rename-row button { min-height: 38px; padding: 0 12px; border-radius: 11px; font-size: 13px; }
+
+/* A name in Kinyarwanda and French (§308.3): folded away until wanted. */
+.tx-langs { border: 1px dashed var(--line); border-radius: 12px; padding: 0 10px; background: rgba(255, 255, 255, 0.5); }
+.tx-langs[open] { padding-bottom: 10px; }
+.tx-langs summary { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-height: 36px; cursor: pointer; font-size: 12.5px; font-weight: 700; color: var(--ink-2); list-style: none; }
+.tx-langs summary::-webkit-details-marker { display: none; }
+.tx-langs summary span { font-weight: 550; color: var(--muted); }
+.tx-lang { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 6px; align-items: center; margin-top: 6px; }
+.tx-lang input { height: 36px; font-size: 13.5px; }
+.tx-lang input + input { grid-column: 2; }
+.tx-lang-code { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: var(--muted); text-align: center; }
+.tx-spoken { display: inline-flex; gap: 3px; margin-left: 7px; vertical-align: 2px; }
+.tx-spoken abbr { padding: 1px 5px; border-radius: 6px; background: var(--sunken, #f2efe9); font-size: 10px; font-weight: 800; letter-spacing: 0.05em; color: var(--muted); text-decoration: none; cursor: help; }
 
 .tx-edit { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .tx-edit input { height: 40px; }

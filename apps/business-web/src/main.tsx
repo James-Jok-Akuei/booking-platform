@@ -1,6 +1,6 @@
 // The language first: English is ready before any other file is read (§308).
 import { loadLocale, useAppLocale } from './i18n';
-import { Fragment, StrictMode, useEffect, type ReactNode } from 'react';
+import { Fragment, StrictMode, useEffect, useRef, type ReactNode } from 'react';
 import { i18n } from '@lingui/core';
 import { I18nProvider } from '@lingui/react';
 import { createRoot } from 'react-dom/client';
@@ -44,6 +44,13 @@ guardFileDrops();
 /** A new language is drawn afresh, every sentence in it; the address, and so the page, stays. */
 function Localised({ children }: { children: ReactNode }) {
   const locale = useAppLocale();
+  // What the server sent — category names among it (§308.3) — asked for again in the new language.
+  const drawnIn = useRef(locale);
+  useEffect(() => {
+    if (drawnIn.current === locale) return;
+    drawnIn.current = locale;
+    void queryClient.invalidateQueries();
+  }, [locale]);
   return (
     <I18nProvider i18n={i18n}>
       <Fragment key={locale}>{children}</Fragment>

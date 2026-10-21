@@ -11657,11 +11657,11 @@
             "schema": {
               "type": "string",
               "enum": [
+                "OTHER",
                 "PAYMENT_ISSUE",
                 "APPOINTMENT_DISPUTE",
                 "ACCOUNT_ISSUE",
-                "TECHNICAL_ISSUE",
-                "OTHER"
+                "TECHNICAL_ISSUE"
               ]
             }
           },
@@ -12061,11 +12061,11 @@
             "schema": {
               "type": "string",
               "enum": [
+                "OTHER",
                 "PAYMENT_ISSUE",
                 "APPOINTMENT_DISPUTE",
                 "ACCOUNT_ISSUE",
-                "TECHNICAL_ISSUE",
-                "OTHER"
+                "TECHNICAL_ISSUE"
               ]
             }
           },
@@ -20157,6 +20157,28 @@
           "subcategories"
         ]
       },
+      "LanguageWordsResponseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "TaxonomyTranslationsResponseDto": {
+        "type": "object",
+        "properties": {
+          "rw": {
+            "$ref": "#/components/schemas/LanguageWordsResponseDto"
+          },
+          "fr": {
+            "$ref": "#/components/schemas/LanguageWordsResponseDto"
+          }
+        }
+      },
       "AdminSubcategoryDto": {
         "type": "object",
         "properties": {
@@ -20165,6 +20187,14 @@
           },
           "name": {
             "type": "string"
+          },
+          "translations": {
+            "description": "Its name in the other languages, as typed in the console (§308.3).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaxonomyTranslationsResponseDto"
+              }
+            ]
           },
           "isLive": {
             "type": "boolean"
@@ -20181,6 +20211,7 @@
         "required": [
           "id",
           "name",
+          "translations",
           "isLive",
           "businessCount",
           "effectivelyLive"
@@ -20203,6 +20234,14 @@
             "type": "string",
             "nullable": true
           },
+          "translations": {
+            "description": "Its name and description in the other languages, as typed in the console (§308.3).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaxonomyTranslationsResponseDto"
+              }
+            ]
+          },
           "isLive": {
             "type": "boolean"
           },
@@ -20221,10 +20260,35 @@
           "name",
           "icon",
           "description",
+          "translations",
           "isLive",
           "businessCount",
           "subcategories"
         ]
+      },
+      "LanguageWordsDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 300
+          }
+        }
+      },
+      "TaxonomyTranslationsDto": {
+        "type": "object",
+        "properties": {
+          "rw": {
+            "$ref": "#/components/schemas/LanguageWordsDto"
+          },
+          "fr": {
+            "$ref": "#/components/schemas/LanguageWordsDto"
+          }
+        }
       },
       "CreateCategoryDto": {
         "type": "object",
@@ -20242,6 +20306,9 @@
           "description": {
             "type": "string",
             "maxLength": 300
+          },
+          "translations": {
+            "$ref": "#/components/schemas/TaxonomyTranslationsDto"
           }
         },
         "required": [
@@ -20292,6 +20359,9 @@
           "description": {
             "type": "string",
             "maxLength": 300
+          },
+          "translations": {
+            "$ref": "#/components/schemas/TaxonomyTranslationsDto"
           }
         }
       },
@@ -20313,6 +20383,9 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 60
+          },
+          "translations": {
+            "$ref": "#/components/schemas/TaxonomyTranslationsDto"
           }
         },
         "required": [
@@ -20349,11 +20422,11 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 60
+          },
+          "translations": {
+            "$ref": "#/components/schemas/TaxonomyTranslationsDto"
           }
-        },
-        "required": [
-          "name"
-        ]
+        }
       },
       "WriteInBusinessDto": {
         "type": "object",
@@ -27471,11 +27544,11 @@
           "category": {
             "type": "string",
             "enum": [
+              "OTHER",
               "PAYMENT_ISSUE",
               "APPOINTMENT_DISPUTE",
               "ACCOUNT_ISSUE",
-              "TECHNICAL_ISSUE",
-              "OTHER"
+              "TECHNICAL_ISSUE"
             ]
           },
           "subject": {
@@ -27532,11 +27605,11 @@
           },
           "category": {
             "enum": [
+              "OTHER",
               "PAYMENT_ISSUE",
               "APPOINTMENT_DISPUTE",
               "ACCOUNT_ISSUE",
-              "TECHNICAL_ISSUE",
-              "OTHER"
+              "TECHNICAL_ISSUE"
             ],
             "type": "string"
           },
@@ -27754,11 +27827,11 @@
           },
           "category": {
             "enum": [
+              "OTHER",
               "PAYMENT_ISSUE",
               "APPOINTMENT_DISPUTE",
               "ACCOUNT_ISSUE",
-              "TECHNICAL_ISSUE",
-              "OTHER"
+              "TECHNICAL_ISSUE"
             ],
             "type": "string"
           },
@@ -27920,11 +27993,11 @@
           "category": {
             "type": "string",
             "enum": [
+              "OTHER",
               "PAYMENT_ISSUE",
               "APPOINTMENT_DISPUTE",
               "ACCOUNT_ISSUE",
-              "TECHNICAL_ISSUE",
-              "OTHER"
+              "TECHNICAL_ISSUE"
             ]
           }
         },
@@ -28035,11 +28108,11 @@
           },
           "category": {
             "enum": [
+              "OTHER",
               "PAYMENT_ISSUE",
               "APPOINTMENT_DISPUTE",
               "ACCOUNT_ISSUE",
-              "TECHNICAL_ISSUE",
-              "OTHER"
+              "TECHNICAL_ISSUE"
             ],
             "type": "string"
           },
@@ -28265,11 +28338,11 @@
           },
           "category": {
             "enum": [
+              "OTHER",
               "PAYMENT_ISSUE",
               "APPOINTMENT_DISPUTE",
               "ACCOUNT_ISSUE",
-              "TECHNICAL_ISSUE",
-              "OTHER"
+              "TECHNICAL_ISSUE"
             ],
             "type": "string"
           },

@@ -9,6 +9,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import { createBusiness, createAdmin } from './setup/factories';
 import { AdminCategoriesController } from '../src/categories/admin-categories.controller';
+import { TaxonomyNamesService } from '../src/categories/taxonomy-names.service';
 import { NotificationsService } from '../src/notifications/notifications.service';
 
 /**
@@ -208,7 +209,7 @@ describe('Kinds of place a business is (§265)', () => {
       const c = await withOther();
       await profiles.setKinds(a.businessId, [c.other], [{ subcategoryId: c.other, label: 'Henna artist' }]);
       await profiles.setKinds(b.businessId, [c.named, c.other], [{ subcategoryId: c.other, label: 'henna ARTIST' }]);
-      const admin = new AdminCategoriesController(prisma);
+      const admin = new AdminCategoriesController(prisma, new TaxonomyNamesService(prisma));
 
       const writeIns = await admin.writeIns();
       expect(writeIns).toHaveLength(1);

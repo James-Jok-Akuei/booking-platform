@@ -615,6 +615,11 @@ model Category {
   /// for a decision they did not make.
   isLive Boolean @default(true)
 
+  /// Its name and description in the other languages (§308.3), typed in the
+  /// console: { "rw": { "name": "…", "description": "…" }, "fr": { … } }.
+  /// Empty for a language means the translators' version, else English.
+  translations Json?
+
   subcategories Subcategory[]
   businesses    BusinessProfile[]
   kinds         BusinessKind[]
@@ -636,6 +641,9 @@ model Subcategory {
   /// parent's state down would mean rewriting every child whenever a category
   /// is toggled, and the two would drift the first time that half-failed.
   isLive Boolean @default(true)
+
+  /// Its name in the other languages, as Category.translations (§308.3).
+  translations Json?
 
   businesses BusinessProfile[]
   kinds      BusinessKind[]

@@ -445,6 +445,21 @@ msgstr ""
 msgid "Account not found."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:234
+msgid "Accounting & Tax"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:260
+msgid "Acupuncture"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:258
+msgid "Acupuncture, nutrition, chiropractic, yoga and therapy."
+msgstr ""
+
 #: src/mail/booking-email.ts:304
 msgid "Add to calendar"
 msgstr ""
@@ -452,6 +467,11 @@ msgstr ""
 #. A refusal: the app shows it as the reason something did not work.
 #: src/auth/two-step.service.ts:128
 msgid "Administrator not found."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:251
+msgid "Adventure Activities"
 msgstr ""
 
 #: src/notifications/notification-catalog.ts:46
@@ -525,6 +545,11 @@ msgstr ""
 msgid "Anything you are owed is shown on the booking in the app."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:189
+msgid "Apartments & Short Stays"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/appointments/appointments.service.ts:1749
 #: src/appointments/appointments.service.ts:1817
@@ -535,6 +560,16 @@ msgstr ""
 
 #: src/notifications/notification-catalog.ts:145
 msgid "Approval, your team, stories taken down, support replies and notices from us."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:104
+msgid "Art Exhibits"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:147
+msgid "Art, Music & Culture"
 msgstr ""
 
 #: src/notifications/notification-templates.ts:231
@@ -549,9 +584,39 @@ msgstr ""
 msgid "Asking how a visit went, and when a shop replies to your review."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:47
+msgid "Auto Electrical"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:40
+msgid "Automotive"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:59
+msgid "Barbershop"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:54
+msgid "Beauty & Spa"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/ledger/ledger.service.ts:399
 msgid "Billing adjustment not found."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:250
+msgid "Boat & Lake Trips"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:77
+msgid "Book a table, or order ahead and collect it yourself. No delivery."
 msgstr ""
 
 #: src/notifications/notification-email.ts:50
@@ -591,6 +656,11 @@ msgstr ""
 msgid "Bookings customers have already made still stand, and you are expected to honour them. Nothing is written off — money owed to you is kept and paid once this is resolved. Write to us from Help to talk about it."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:60
+msgid "Braiding & Locs"
+msgstr ""
+
 #: src/payouts/payouts.service.ts:1168
 msgid "Branch"
 msgstr ""
@@ -599,6 +669,11 @@ msgstr ""
 #. The names in {braces} are filled in by the server: businessId, value1.
 #: src/payouts/payouts.service.ts:333
 msgid "Business {businessId} has available entries in more than one settlement currency ({value1}). A payout cannot span currencies."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:235
+msgid "Business Consulting"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -624,6 +699,26 @@ msgstr ""
 msgid "capacity must be at least 1."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:44
+msgid "Car Repair & Mechanic"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:42
+msgid "Car servicing, repairs, washing and driving lessons."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:45
+msgid "Car Wash & Detailing"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:177
+msgid "Carpentry & Furniture Repair"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: value0.
 #: src/tickets/dto/create-ticket.dto.ts:6
@@ -641,6 +736,11 @@ msgstr ""
 
 #: src/notifications/notifications.service.ts:540
 msgid "Change what we send in the app, under Account → Notifications."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:262
+msgid "Chiropractic"
 msgstr ""
 
 #: src/notifications/notification-templates.ts:591
@@ -703,9 +803,34 @@ msgstr ""
 msgid "Choose your district or use your exact location first, so we know what is near you."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:248
+msgid "City & Cultural Tours"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:141
+msgid "Classes and activities you join with other people."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:173
+msgid "Cleaning Services"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:156
+msgid "Clinics, dentists, eye care and tests, by appointment."
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/business/dto/set-hours.dto.ts:29
 msgid "closeTime must be in HH:mm 24-hour format"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:232
+msgid "Coaching"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -716,6 +841,16 @@ msgstr ""
 #. A refusal: the app shows it as the reason something did not work.
 #: src/places/dto/places.dto.ts:16
 msgid "code must be uppercase letters, digits or underscores, e.g. MUSANZE."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:105
+msgid "Comedy"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:98
+msgid "Concerts, shows, films, matches and exhibitions to go to."
 msgstr ""
 
 #: src/mail/mail.service.ts:166
@@ -732,6 +867,16 @@ msgstr ""
 
 #: src/notifications/notification-templates.ts:198
 msgid "Confirmed: {serviceName}, {short}"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:230
+msgid "Consultations"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:148
+msgid "Cooking Classes"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -751,6 +896,11 @@ msgstr ""
 
 #: src/payouts/payouts.service.ts:1175
 msgid "Currency"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:116
+msgid "Custom Clothing"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -797,6 +947,11 @@ msgstr ""
 msgid "customOpenTime must be in HH:mm 24-hour format"
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:133
+msgid "Dance Studio"
+msgstr ""
+
 #: src/payouts/payouts.service.ts:1164
 msgid "Date"
 msgstr ""
@@ -806,6 +961,16 @@ msgstr ""
 #: src/availability/dto/create-schedule-exception.dto.ts:7
 #: src/availability/dto/create-time-block.dto.ts:7
 msgid "date must be a calendar date in YYYY-MM-DD format"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:190
+msgid "Day Passes & Pools"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:159
+msgid "Dental"
 msgstr ""
 
 #: src/notifications/notification-email.ts:63
@@ -840,6 +1005,11 @@ msgstr ""
 msgid "Deposit: {amount}"
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:161
+msgid "Dermatology"
+msgstr ""
+
 #: src/notifications/notification-templates.ts:605
 msgid "Device: {device}"
 msgstr ""
@@ -851,6 +1021,21 @@ msgstr ""
 #: src/mail/mail.service.ts:184
 #: src/mail/mail.service.ts:189
 msgid "Did not ask for this?"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:261
+msgid "Diet & Nutrition"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:78
+msgid "Dine-in"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:75
+msgid "Dining"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -878,11 +1063,26 @@ msgstr ""
 msgid "displayName must be between 2 and 40 characters once whitespace is trimmed."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:88
+msgid "DJ & Live Music"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/legal/legal.service.ts:170
 #: src/legal/legal.service.ts:254
 #: src/legal/legal.service.ts:270
 msgid "Document not found."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:201
+msgid "Dog Training"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:203
+msgid "Dog Walking"
 msgstr ""
 
 #: src/mail/booking-email.ts:235
@@ -898,6 +1098,11 @@ msgstr ""
 #: src/business/service-drafts.service.ts:103
 #: src/business/service-drafts.service.ts:123
 msgid "Draft not found."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:49
+msgid "Driving School"
 msgstr ""
 
 #: src/mail/booking-email.ts:264
@@ -920,6 +1125,16 @@ msgstr ""
 msgid "Each one is in your notifications, and all of them under Appointments."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:144
+msgid "Educational"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:175
+msgid "Electrical"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/availability/dto/create-time-block.dto.ts:14
 msgid "endTime must be in HH:mm 24-hour format"
@@ -932,6 +1147,36 @@ msgstr ""
 
 #: src/mail/mail.service.ts:173
 msgid "Enter it in the app to sign in. If you are new here, the same code creates your account."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:91
+msgid "Equipment Rental"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:89
+msgid "Event Decor & Styling"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:215
+msgid "Event Photography"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:86
+msgid "Event Planning"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:81
+msgid "Event Services"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:96
+msgid "Events, Tickets & Movies"
 msgstr ""
 
 #: src/business/shop-advice.ts:134
@@ -960,6 +1205,46 @@ msgstr ""
 
 #: src/payouts/payouts.service.ts:1149
 msgid "Expected"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:160
+msgid "Eye Care"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:62
+msgid "Eyebrows & Lashes"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:64
+msgid "Facials"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:111
+msgid "Fashion & Tailoring"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:106
+msgid "Festivals"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:124
+msgid "Fitness & Sports"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:117
+msgid "Fittings & Styling"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:129
+msgid "Football Pitch"
 msgstr ""
 
 #: src/mail/email-kit.ts:664
@@ -1014,6 +1299,11 @@ msgstr ""
 msgid "gatewayChargeMinor must be a whole number of minor units."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:158
+msgid "General Clinic"
+msgstr ""
+
 #: src/mail/booking-email.ts:303
 msgid "Get directions"
 msgstr ""
@@ -1037,6 +1327,66 @@ msgstr ""
 msgid "Good news — your shop has been approved."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:246
+msgid "Gorilla & Wildlife Trekking"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:244
+msgid "Gorilla trekking, safaris, city tours, hikes and boat trips."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:218
+msgid "Graphic Design"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:198
+msgid "Grooming, training, sitting and vet visits."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:139
+msgid "Group Classes & Activities"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:188
+msgid "Guesthouses & Lodges"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:128
+msgid "Gym"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:126
+msgid "Gyms, pitches, courts, pools and sports clubs."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:58
+msgid "Hair"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:63
+msgid "Hair Removal"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:56
+msgid "Hair, barbers, nails, lashes, make-up, massage and spa days."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:154
+msgid "Health & Medical"
+msgstr ""
+
 #: src/notifications/notification-email.ts:96
 #: src/notifications/notification-email.ts:97
 msgid "Help"
@@ -1056,6 +1406,26 @@ msgstr ""
 
 #: src/mail/mail.service.ts:352
 msgid "Here is your new code"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:249
+msgid "Hiking & Nature Walks"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:169
+msgid "Home Services"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:187
+msgid "Hotel Rooms"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:183
+msgid "Hotels & Stays"
 msgstr ""
 
 #: src/business/shop-advice.ts:110
@@ -1129,6 +1499,11 @@ msgstr ""
 msgid "Invitation not found."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:236
+msgid "IT & Tech Support"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/announcements/announcements.service.ts:276
 msgid "It has already been sent."
@@ -1152,10 +1527,20 @@ msgstr ""
 msgid "it sits on every card customers see of you"
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:149
+msgid "Kids' Activities"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: value0.
 #: src/legal/dto/legal.dto.ts:6
 msgid "kind must be one of: {value0}"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:162
+msgid "Lab Tests"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -1168,9 +1553,24 @@ msgstr ""
 msgid "latitude and longitude must be provided together, or both omitted."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:119
+msgid "Laundry & Dry Cleaning"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/payouts/payouts.service.ts:359
 msgid "Ledger entries changed during the payout run. No payout was created."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:233
+msgid "Legal Consultation"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:227
+msgid "Lessons, coaching and expert advice, one to one."
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -1192,6 +1592,11 @@ msgstr ""
 msgid "locationId must be a branch id."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:66
+msgid "Make-up"
+msgstr ""
+
 #: src/notifications/notification-email.ts:58
 msgid "Marked as missed"
 msgstr ""
@@ -1199,6 +1604,36 @@ msgstr ""
 #: src/notifications/notification-templates.ts:263
 #: src/notifications/notification-templates.ts:274
 msgid "Marked as missed: {serviceName}"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:132
+msgid "Martial Arts"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:65
+msgid "Massage"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:90
+msgid "MC & Hosting"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:67
+msgid "Med Spa"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:263
+msgid "Meditation & Yoga"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:191
+msgid "Meeting & Conference Rooms"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -1230,6 +1665,11 @@ msgstr ""
 msgid "More than one {capability} provider is available ({value1}), so one has to be chosen rather than defaulted."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:102
+msgid "Movies"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: countryPrefix.
 #: src/payouts/payout-destinations.service.ts:443
@@ -1244,6 +1684,16 @@ msgstr ""
 #. A refusal: the app shows it as the reason something did not work.
 #: src/appointments/appointments.service.ts:921
 msgid "MTN MoMo is not answering right now, so the payment could not start. You have NOT been charged, and your booking is still held for a few minutes — please try again shortly."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:100
+msgid "Music & Concerts"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:61
+msgid "Nails"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -1671,7 +2121,11 @@ msgstr ""
 msgid "openTime must be in HH:mm 24-hour format"
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
 #: src/payouts/payouts.service.ts:1173
+#: prisma/seed.ts:50
+#: prisma/seed.ts:71
+#: prisma/seed.ts:78
 msgid "Other"
 msgstr ""
 
@@ -1767,6 +2221,11 @@ msgstr ""
 msgid "Our team took down one of your stories, so customers no longer see it."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:176
+msgid "Painting & Decorating"
+msgstr ""
+
 #: src/mail/mail.service.ts:345
 msgid "Pay the deposit in the app to confirm it. Your arrival code is {code}."
 msgstr ""
@@ -1814,6 +2273,36 @@ msgstr ""
 msgid "Person not found."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:229
+msgid "Personal Training"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:178
+msgid "Pest Control"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:200
+msgid "Pet Grooming"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:196
+msgid "Pet Services"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:202
+msgid "Pet Sitting & Boarding"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:204
+msgid "Pet Transport"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/users/dto/saved-number.dto.ts:11
 msgid "phoneNumber must be 8-15 digits, with no spaces or \"+\"."
@@ -1831,12 +2320,42 @@ msgstr ""
 msgid "Photo not found."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:212
+msgid "Photographers, videographers and creative studios."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:210
+msgid "Photography & Creative Services"
+msgstr ""
+
 #: src/business/shop-advice.ts:117
 msgid "Photos of {branches}"
 msgstr ""
 
 #: src/business/shop-advice.ts:118
 msgid "Photos of every branch"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:265
+msgid "Physiotherapy & Rehab"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:78
+msgid "Pick-up"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:134
+msgid "Pilates"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:84
+msgid "Planners, venues, DJs, MCs and decor for your own event. Excludes catering."
 msgstr ""
 
 #: src/payouts/payouts.service.ts:1172
@@ -1847,6 +2366,11 @@ msgstr ""
 #. The names in {braces} are filled in by the server: value0.
 #: src/auth/auth.service.ts:175
 msgid "Please wait {value0}s before requesting another code."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:174
+msgid "Plumbing"
 msgstr ""
 
 #: src/mail/mail.service.ts:280
@@ -1862,6 +2386,11 @@ msgstr ""
 msgid "Popular near you in {place}"
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:214
+msgid "Portrait Photography"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/business/dto/service-choices.dto.ts:153
 msgid "priceMinor must be a whole number of minor units"
@@ -1874,6 +2403,21 @@ msgstr ""
 
 #: src/mail/booking-email.ts:294
 msgid "Private answers — open the booking to read them."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:78
+msgid "Private Dining"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:216
+msgid "Product Photography"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:146
+msgid "Professional"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -1932,6 +2476,16 @@ msgstr ""
 msgid "Reason: {reason}"
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:220
+msgid "Recording Studio"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:145
+msgid "Recreational"
+msgstr ""
+
 #: src/notifications/notification-templates.ts:61
 msgid "Reference: {reference}"
 msgstr ""
@@ -1947,6 +2501,11 @@ msgstr ""
 
 #: src/notifications/notification-catalog.ts:61
 msgid "Reminders"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:171
+msgid "Repairs, cleaning and trades, done at your home."
 msgstr ""
 
 #: src/payouts/payouts.service.ts:1163
@@ -1977,6 +2536,16 @@ msgstr ""
 #. The names in {braces} are filled in by the server: value0.
 #: src/users/dto/list-users.dto.ts:8
 msgid "role must be one of: {value0}"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:185
+msgid "Rooms, guesthouses, day passes and meeting rooms."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:247
+msgid "Safaris & Game Drives"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -2052,6 +2621,16 @@ msgstr ""
 msgid "Service: {serviceName}"
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:225
+msgid "Services"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:118
+msgid "Shoe Repair"
+msgstr ""
+
 #: src/business/shop-advice.ts:201
 msgid "Shops with clear, high-resolution photos and full details get booked far more often. Before you post, finish your shop by adding:"
 msgstr ""
@@ -2075,6 +2654,11 @@ msgstr ""
 
 #: src/auth/auth.service.ts:875
 msgid "Signed out there."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:68
+msgid "Skin & Body Treatments"
 msgstr ""
 
 #: src/business/shop-advice.ts:112
@@ -2102,6 +2686,31 @@ msgstr ""
 #: src/discovery/discovery.service.ts:87
 #: src/discovery/discovery.service.ts:332
 msgid "sort=distance requires lat and lng."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:69
+msgid "Spa & Sauna"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:164
+msgid "Specialist Consultation"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:103
+msgid "Sporting Events"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:143
+msgid "Sports & Fitness"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:130
+msgid "Sports Courts"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -2157,9 +2766,34 @@ msgstr ""
 msgid "Story not found."
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:219
+msgid "Studio Rental"
+msgstr ""
+
 #: src/notifications/notification-templates.ts:355
 #: src/notifications/notification-templates.ts:376
 msgid "Subject: {subject}"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:131
+msgid "Swimming"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:115
+msgid "Tailoring & Alterations"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:113
+msgid "Tailors, fittings, alterations, shoe repair and laundry."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:70
+msgid "Tattoo & Piercing"
 msgstr ""
 
 #: src/notifications/notification-templates.ts:558
@@ -2424,6 +3058,16 @@ msgstr ""
 
 #: src/notifications/notification-templates.ts:182
 msgid "The time is held while they pay the deposit, which usually takes a minute or two. We will tell you when it is paid; if it is not paid within 5 minutes, the time is free again."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:101
+msgid "Theatre & Shows"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:264
+msgid "Therapy"
 msgstr ""
 
 #: src/notifications/notification-templates.ts:354
@@ -2743,9 +3387,24 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:242
+msgid "Tours & Experiences"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:237
+msgid "Translation Services"
+msgstr ""
+
 #. A refusal: the app shows it as the reason something did not work.
 #: src/auth/two-step.service.ts:112
 msgid "Turn on two-step sign-in first."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:231
+msgid "Tutoring"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -2757,6 +3416,11 @@ msgstr ""
 #. The names in {braces} are filled in by the server: value0.
 #: src/tickets/dto/update-ticket-status.dto.ts:28
 msgid "type must be one of: {value0}"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:46
+msgid "Tyre & Wheel Services"
 msgstr ""
 
 #. A refusal: the app shows it as the reason something did not work.
@@ -2781,6 +3445,31 @@ msgstr ""
 #. A refusal: the app shows it as the reason something did not work.
 #: src/users/users.service.ts:171
 msgid "User not found."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:163
+msgid "Vaccinations"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:48
+msgid "Vehicle Inspection"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:87
+msgid "Venue Booking"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:205
+msgid "Veterinary Clinic"
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:217
+msgid "Videography"
 msgstr ""
 
 #: src/mail/booking-email.ts:227
@@ -2901,6 +3590,11 @@ msgstr ""
 
 #: src/notifications/notifications.controller.ts:212
 msgid "We will not email you about {kind}. You will still see it in the app. You can turn the emails back on any time under Notifications."
+msgstr ""
+
+#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
+#: prisma/seed.ts:256
+msgid "Wellness"
 msgstr ""
 
 #: src/mail/booking-email.ts:289

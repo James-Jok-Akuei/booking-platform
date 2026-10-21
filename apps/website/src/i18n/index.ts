@@ -112,5 +112,8 @@ export function useSiteLocale(): SiteLocale {
   );
 }
 
+/** The language to ask the server in: category names come back in it (§308.3). */
+export const askIn = () => (current === 'en-XA' ? 'en' : current);
+
 /** How the language writes a date: the day before the month (§308). */
 export const dateLocale = () => (current === 'fr' ? 'fr-RW' : current === 'rw' ? 'rw-RW' : 'en-GB');

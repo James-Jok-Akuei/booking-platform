@@ -7,6 +7,7 @@
  * Reads every sentence a customer or a seller can get from the server:
  *   - say(locale, '…')               emails, notices, labels
  *   - msg('…')                       the same, kept in a list and said later
+ *   - prisma/seed.ts's CATEGORIES      the names of categories and types (§308.3)
  *   - throw new XxxException('…')    refusals, the filter says them in the reader's language
  *   - { message: '…' } in a check    the words of a refused form
  * and writes src/i18n/locales/<language>.po, the files translators work in —
@@ -170,6 +171,32 @@ for (const file of files) {
   });
 }
 
+// ---- the seeded taxonomy (§308.3): category and type names, category descriptions ----
+// The console can also type a name per language, which wins over these.
+
+{
+  const seed = join(ROOT, 'prisma', 'seed.ts');
+  const ast = parse(readFileSync(seed, 'utf8'), { sourceType: 'module', plugins: ['typescript'] });
+  traverse(ast, {
+    VariableDeclarator(path) {
+      if (path.node.id.type !== 'Identifier' || path.node.id.name !== 'CATEGORIES') return;
+      const list = path.node.init?.type === 'TSAsExpression' ? path.node.init.expression : path.node.init;
+      for (const element of list?.elements ?? []) {
+        if (element.type !== 'ObjectExpression') continue;
+        const field = (name) => element.properties.find((p) => p.key?.name === name)?.value;
+        const name = field('name');
+        const description = field('description');
+        const types = field('subcategories');
+        if (name?.type === 'StringLiteral') add(name.value, 'taxonomy', seed, name.loc.start.line, null);
+        if (description?.type === 'StringLiteral') add(description.value, 'taxonomy', seed, description.loc.start.line, null);
+        for (const type of types?.elements ?? []) {
+          if (type.type === 'StringLiteral') add(type.value, 'taxonomy', seed, type.loc.start.line, null);
+        }
+      }
+    },
+  });
+}
+
 // ---- the .po files: keep what is translated, add what is new, drop what is gone ----
 
 const poQuote = (text) =>
@@ -219,6 +246,7 @@ for (const locale of LOCALES) {
     if (str) translated[id] = str;
     const notes = [];
     if (entry.kinds.has('error')) notes.push('#. A refusal: the app shows it as the reason something did not work.');
+    if (entry.kinds.has('taxonomy')) notes.push('#. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.');
     if (entry.pattern) notes.push(`#. The names in {braces} are filled in by the server: ${entry.pattern.names.join(', ')}.`);
     blocks.push(
       [...notes, ...[...entry.refs].slice(0, 4).map((ref) => `#: ${ref}`), `msgid ${poQuote(id)}`, `msgstr ${poQuote(str)}`].join('\n'),

@@ -7,7 +7,7 @@ import { Modal } from './Modal';
 import { API_URL, CONTACT_EMAIL, CONTACT_PHONE, SOCIAL, businessStart } from './links';
 import { SocialIcon } from './SocialIcon';
 import { LanguageChoice } from './LanguageChoice';
-import { dateLocale } from './i18n';
+import { dateLocale, askIn } from './i18n';
 
 type Kind = 'TERMS_OF_USE' | 'PRIVACY_POLICY' | 'SELLER_AGREEMENT';
 type Doc = { title: string; version: number; body: string; publishedAt: string };
@@ -181,7 +181,7 @@ function LegalDoc({ kind, onClose }: { kind: Kind; onClose: () => void }) {
 
   useEffect(() => {
     const control = new AbortController();
-    fetch(`${API_URL}/legal/${kind}`, { signal: control.signal })
+    fetch(`${API_URL}/legal/${kind}`, { signal: control.signal, headers: { 'Accept-Language': askIn() } })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: Doc) => setDoc(d))
       .catch((e: Error) => e.name !== 'AbortError' && setFailed(true));

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { t } from '@lingui/core/macro';
 import { Plural, Trans } from '@lingui/react/macro';
 import { Icon } from './Icon';
+import { askIn } from './i18n';
 import { useInView } from './inView';
 import { API_URL, CUSTOMER_APP_URL } from './links';
 import { useSize } from './sheet';
@@ -53,7 +54,7 @@ export function Places({ onGetApp }: { onGetApp: () => void }) {
 
   useEffect(() => {
     const control = new AbortController();
-    fetch(`${API_URL}/discover/services?limit=24`, { signal: control.signal })
+    fetch(`${API_URL}/discover/services?limit=24`, { signal: control.signal, headers: { 'Accept-Language': askIn() } })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((data: { total: number; services: Found[] }) => setPage(data))
       .catch(() => setPage(null));
