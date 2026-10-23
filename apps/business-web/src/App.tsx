@@ -11,6 +11,7 @@ import { StoriesPage } from './pages/StoriesPage';
 import { NotificationSettingsPage } from './pages/NotificationSettingsPage';
 import { SecurityPage } from './pages/SecurityPage';
 import { FollowersPage } from './pages/FollowersPage';
+import { AppQrPage } from './pages/AppQrPage';
 import { ClosuresPage } from './pages/ClosuresPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { ReviewsPage } from './pages/ReviewsPage';
@@ -57,6 +58,7 @@ export function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/followers" element={<FollowersPage />} />
+        <Route path="/app-qr" element={<AppQrPage />} />
         <Route path="/notifications" element={<NotificationSettingsPage />} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/people" element={<StaffPage />} />

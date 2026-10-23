@@ -113,6 +113,14 @@ export const SECTIONS: NavGroup[] = [
         get keywords() { return t({ message: 'followers offers message customers blast promotion marketing send', context: 'search words' }); },
         get hint() { return t`Write to customers who follow your shop`; },
       },
+      {
+        // The code customers scan at the shop to get the app (§309).
+        to: '/app-qr',
+        get label() { return t`App QR code`; },
+        icon: 'qr',
+        get keywords() { return t({ message: 'qr code scan download app store google play install poster print counter card get customers', context: 'search words' }); },
+        get hint() { return t`A code customers scan to get the app`; },
+      },
     ],
   },
   {

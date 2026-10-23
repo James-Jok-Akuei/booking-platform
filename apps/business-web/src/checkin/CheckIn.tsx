@@ -14,6 +14,11 @@ import { useMoney } from '../money';
 import { Avatar } from '../ui/Avatar';
 import { CodeBoxes } from '../ui/CodeBoxes';
 import { Icon } from '../ui/Icon';
+import { ShowQr } from '../appqr/ShowQr';
+import { useCardWords } from '../appqr/useCardWords';
+import { useAppLocale } from '../i18n';
+import { customerAppLink } from '../lib/customerApp';
+import { useShellData } from '../shell/useShellData';
 import './checkin.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
@@ -131,6 +136,13 @@ function CheckInDialog({
   const [search, setSearch] = useState('');
   const [done, setDone] = useState<Appointment | null>(null);
   const autoChosen = useRef(Boolean(preset));
+  // The app QR code, shown while they are still at the counter (§309).
+  const [showingQr, setShowingQr] = useState(false);
+  const appLink = customerAppLink();
+  const shell = useShellData();
+  const shopName = shell.business?.name ?? t`Your business`;
+  const locale = useAppLocale();
+  const qrWords = useCardWords(locale === 'en-XA' ? 'en' : locale, shopName);
 
   const me = useQuery({ queryKey: ['me'], queryFn: getMe });
   const canVerifyManually =
@@ -459,6 +471,19 @@ function CheckInDialog({
                 </Trans>
               </p>
 
+              {appLink && (
+                <button type="button" className="ci-done-qr" onClick={() => setShowingQr(true)}>
+                  <span className="ci-done-qr-icon">
+                    <Icon name="qr" size={20} />
+                  </span>
+                  <span className="ci-done-qr-text">
+                    <strong><Trans>Show them the app QR code</Trans></strong>
+                    <small><Trans>So they can book you again from their phone.</Trans></small>
+                  </span>
+                  <Icon name="chevronRight" size={16} />
+                </button>
+              )}
+
               <div className="ci-done-actions">
                 <button type="button" onClick={again}>
                   <Icon name="ticket" size={18} />{' '}
@@ -472,6 +497,16 @@ function CheckInDialog({
           )}
         </div>
       </div>
+      {showingQr && appLink && (
+        <ShowQr
+          link={appLink.url}
+          shop={shopName}
+          logoUrl={shell.logoUrl}
+          words={qrWords}
+          lang={locale === 'en-XA' ? 'en' : locale}
+          onClose={() => setShowingQr(false)}
+        />
+      )}
     </div>
   );
 }

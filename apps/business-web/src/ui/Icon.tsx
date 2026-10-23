@@ -440,6 +440,22 @@ const PATHS = {
     </>
   ),
   dot: <circle cx="12" cy="12" r="4" />,
+  qr: (
+    <>
+      <rect x="3" y="3" width="6" height="6" rx="1.4" />
+      <rect x="15" y="3" width="6" height="6" rx="1.4" />
+      <rect x="3" y="15" width="6" height="6" rx="1.4" />
+      <path d="M15 15h2v2M21 15v.01M15 21h2M19 19h2v2M12 3v4M12 11v2h-2M3 12h4M17 12h4" />
+    </>
+  ),
+  printer: (
+    <>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+      <path d="M6 9V3h12v6" />
+      <rect x="6" y="14" width="12" height="8" rx="1" />
+    </>
+  ),
+  expand: <path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" />,
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof PATHS;

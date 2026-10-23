@@ -52,7 +52,8 @@ const CATALOGS: Record<Exclude<AppLocale, 'en'>, () => Promise<{ messages: Messa
 };
 const loaded: Partial<Record<AppLocale, Messages>> = { en };
 
-async function catalogFor(locale: AppLocale): Promise<Messages> {
+/** A language's sentences — fetched once, then kept. Also for words drawn in another language than the app's (the app QR card, §309). */
+export async function catalogFor(locale: AppLocale): Promise<Messages> {
   const have = loaded[locale];
   if (have) return have;
   const { messages } = await CATALOGS[locale as Exclude<AppLocale, 'en'>]();

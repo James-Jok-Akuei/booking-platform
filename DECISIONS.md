@@ -20156,3 +20156,42 @@ in the apps; the lawyer's reading of the legal translations (and the
 official Kinyarwanda and French names of RDB, RICA, NCSA and the laws they
 cite).
 
+
+## 309. The app QR code: customers scan it at the shop to get the app (2026-10-23)
+
+The user: the main way to bring customers onto the platform is the shops
+themselves — after serving someone, the shop shows a code, the customer scans
+it and goes straight to the app store instead of searching. The app is not
+published yet, so for now the code opens the customer app locally, as the
+terminal's QR does; it is switched to the stores later.
+
+- **Where**: the seller app's Customers section, "App QR code" (`/app-qr`,
+  found by ⌘K as "qr", "poster", "print"…), and on the check-in success screen
+  ("Show them the app QR code"), while the customer is still at the counter.
+- **The counter card** (`src/appqr/`): the shop's logo and name on the night
+  band, "Your next visit, booked in seconds.", the code, three steps (Scan the
+  code · Get the app · Book <shop> again), and how booking works in one line.
+  Its language is chosen on the page — a shop may run the app in English and
+  print its card in Kinyarwanda — from the translators' files like every other
+  sentence (`cardWords.ts`).
+- **Three ways out**: "Show to a customer" — the code as large as the screen
+  allows, on the night, the screen kept awake while it is up; Esc or ✕ puts
+  it away and only it. "Print the card" — the card alone on one A5 sheet, in
+  any of the three languages. "Download the picture" — 1080×1350 for WhatsApp
+  status and Instagram, long words shrinking a step at a time to fit.
+- **The code**: error correction H, so the platform's mark sits in the middle;
+  round dots and rounded corner squares, dark on white (colour on the dots
+  costs contrast). One drawing (`qr.ts`) for the screen, paper and the picture.
+  Read back with the browser's QR reader in every form: it gives the link
+  exactly. A light passes over it on the page; never on the full-screen one,
+  which is the one a camera reads.
+- **The link** (`lib/customerApp.ts`, the one place): `VITE_CUSTOMER_APP_URL`
+  when set; until then, in development, `exp://<this computer's Wi-Fi
+  address>:8081` — the address read when the dev server starts
+  (`vite.config.ts`), so it follows the computer when it moves networks. A
+  "For testing" note says so on the page. **When the app is published**, set
+  `VITE_CUSTOMER_APP_URL` to ONE link we control that sends each phone to its
+  own store — never a store's address — because shops print this code and
+  printed cards have to keep working whatever changes behind it. Until a link
+  is set in production the page keeps the card's place and says the code
+  appears once the app is in the stores.

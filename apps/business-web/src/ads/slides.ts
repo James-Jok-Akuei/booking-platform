@@ -6,6 +6,7 @@ import { guideTopics } from './guide';
 import { searchHow } from './tips';
 import type { AdData, JustIn } from './useAdData';
 import { plural, t } from '@lingui/core/macro';
+import { CUSTOMER_APP_URL } from '../lib/customerApp';
 
 /**
  * The adverts in the "For you" banner (§204), most useful first.
@@ -39,8 +40,6 @@ export type Slide = {
   gist?: string;
 };
 
-/** A link to the customer app, when there is one to give (VITE_CUSTOMER_APP_URL). */
-export const CUSTOMER_APP_URL = (import.meta.env.VITE_CUSTOMER_APP_URL as string | undefined)?.trim() || null;
 
 /** The two rules the banner teaches, each in one line (§225). */
 const LEARN_GIST: Record<string, string> = {
